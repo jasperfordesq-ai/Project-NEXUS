@@ -9,18 +9,21 @@
  * assertions are deterministic.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Users from 'lucide-react/icons/users';
 import Inbox from 'lucide-react/icons/inbox';
 
+import { createMockContexts } from '@/test/mock-contexts';
 import { BrokerStatCard } from '../BrokerStatCard';
 import { BrokerPageShell } from '../BrokerPageShell';
 import { BrokerEmptyState } from '../BrokerEmptyState';
 import { BrokerSkeleton } from '../BrokerSkeleton';
 import { BrokerStatusChip, brokerStatusColor } from '../BrokerStatusChip';
 import { BrokerSparkline } from '../BrokerSparkline';
+
+vi.mock('@/contexts', () => createMockContexts());
 
 function wrap(ui: React.ReactNode) {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -55,6 +58,17 @@ describe('BrokerStatCard', () => {
     expect(screen.getByText('+12%')).toBeInTheDocument();
     expect(screen.getByText('vs last month')).toBeInTheDocument();
   });
+
+  // Labels used to sit on one row beside the icon and the value, so a 4-up or
+  // 5-up grid broke them inside a word ("Unreview/ed Flags"). The label must
+  // keep its full-width, word-safe treatment.
+  it('never breaks a label inside a word', () => {
+    wrap(<BrokerStatCard label="Unreviewed Flags" value={33} icon={Users} />);
+    const label = screen.getByText('Unreviewed Flags');
+    expect(label.className).toContain('break-normal');
+    expect(label.className).toContain('[overflow-wrap:normal]');
+    expect(label.className).toContain('line-clamp-2');
+  });
 });
 
 describe('BrokerPageShell', () => {
@@ -75,6 +89,23 @@ describe('BrokerPageShell', () => {
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
     expect(screen.getByLabelText('Search members')).toBeInTheDocument();
     expect(screen.getByText('Page body')).toBeInTheDocument();
+  });
+
+  it('links to the guide article when `help` is given', () => {
+    wrap(
+      <BrokerPageShell title="Members" help={{ sectionId: 'broker_members', articleId: 'broker_members_list' }}>
+        <p>Page body</p>
+      </BrokerPageShell>
+    );
+    expect(screen.getByRole('link', { name: 'How this page works' })).toHaveAttribute(
+      'href',
+      '/test/broker/help/broker_members/broker_members_list'
+    );
+  });
+
+  it('shows no guide link when `help` is omitted', () => {
+    wrap(<BrokerPageShell title="Members"><p>Page body</p></BrokerPageShell>);
+    expect(screen.queryByRole('link', { name: 'How this page works' })).not.toBeInTheDocument();
   });
 });
 

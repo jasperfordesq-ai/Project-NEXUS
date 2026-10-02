@@ -439,6 +439,13 @@
     "vetting_international": "Controllo internazionale",
     "vetting_other": "Controllo Altro",
     "vetting_pvg_scotland": "Controllo Pvg Scozia",
-    "tabs_aria": "Sezioni di salvaguardia"
+    "tabs_aria": "Sezioni di salvaguardia",
+    "flag_reason_random_sample": "Campione casuale",
+    "flag_reason_first_contact": "Primo contatto",
+    "flag_reason_new_member": "Nuovo membro",
+    "flag_reason_high_risk_listing": "Annuncio ad alto rischio",
+    "flag_reason_flagged_user": "Membro segnalato",
+    "flag_reason_manual_monitoring": "Sotto monitoraggio",
+    "flag_reason_unknown": "Non registrato"
   }
 }

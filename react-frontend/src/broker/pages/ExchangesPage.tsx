@@ -15,7 +15,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
@@ -324,21 +323,13 @@ export function ExchangeManagement() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_exchanges', articleId: 'broker_exchange_list' }}
       title={t('exchanges.title')}
       description={t('exchanges.description')}
       icon={ArrowLeftRight}
       color="accent"
       actions={
         <>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft size={16} />}
-            size="sm"
-          >
-            {t('exchanges.back')}
-          </Button>
           <Button
             variant="tertiary"
             size="sm"
@@ -352,7 +343,7 @@ export function ExchangeManagement() {
       }
     >
       {/* KPI header — deep-links into the matching filtered view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('exchanges.stat_total')}
           value={stats.total}

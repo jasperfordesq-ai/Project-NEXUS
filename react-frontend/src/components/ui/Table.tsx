@@ -424,6 +424,9 @@ export function TableColumn({ align, className, scope: _scope, ...props }: Table
   return (
     <HeroUITable.Column
       className={combineClasses(
+        // Column headings are short labels; wrapping them mid-word
+        // ("Severit/y") is never what anyone wants.
+        'whitespace-nowrap',
         compatibility.classNames?.th,
         getAlignClass(align),
         className

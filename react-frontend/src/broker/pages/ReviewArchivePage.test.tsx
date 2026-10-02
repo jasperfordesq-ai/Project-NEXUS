@@ -168,9 +168,9 @@ describe('ReviewArchivePage — populated', () => {
     await waitFor(() => {
       expect(screen.getByText('Archived records')).toBeInTheDocument();
     });
-    expect(screen.getByText('Approved in view')).toBeInTheDocument();
-    expect(screen.getByText('Flagged in view')).toBeInTheDocument();
-    expect(screen.getByText('Reviewers in view')).toBeInTheDocument();
+    expect(screen.getByText('Approved on this page')).toBeInTheDocument();
+    expect(screen.getByText('Flagged on this page')).toBeInTheDocument();
+    expect(screen.getByText('Reviewers on this page')).toBeInTheDocument();
   });
 
   it('renders decision chips for approved and flagged records', async () => {

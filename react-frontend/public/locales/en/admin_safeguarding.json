@@ -439,6 +439,13 @@
     "vetting_international": "Vetting International",
     "vetting_other": "Vetting Other",
     "vetting_pvg_scotland": "Vetting Pvg Scotland",
-    "tabs_aria": "Safeguarding sections"
+    "tabs_aria": "Safeguarding sections",
+    "flag_reason_random_sample": "Random sample",
+    "flag_reason_first_contact": "First contact",
+    "flag_reason_new_member": "New member",
+    "flag_reason_high_risk_listing": "High-risk listing",
+    "flag_reason_flagged_user": "Flagged member",
+    "flag_reason_manual_monitoring": "Under monitoring",
+    "flag_reason_unknown": "Not recorded"
   }
 }

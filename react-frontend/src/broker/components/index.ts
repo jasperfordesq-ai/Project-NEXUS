@@ -10,7 +10,7 @@
  */
 
 export { BrokerStatCard, type BrokerStatColor } from './BrokerStatCard';
-export { BrokerPageShell } from './BrokerPageShell';
+export { BrokerPageShell, type BrokerPageHelp } from './BrokerPageShell';
 export { BrokerEmptyState } from './BrokerEmptyState';
 export { BrokerSkeleton } from './BrokerSkeleton';
 export { BrokerStatusChip, brokerStatusColor } from './BrokerStatusChip';

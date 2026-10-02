@@ -8086,7 +8086,8 @@ export default interface Resources {
         "transfer_in": "Transfer received",
         "transfer_out": "Transfer sent",
         "unknown": "Unknown transaction"
-      }
+      },
+      "marketplace_redemption_unavailable": "Not available yet: the marketplace checkout cannot apply regional-point discounts, so members cannot redeem points."
     },
     "research_partnerships": {
       "about": {
@@ -9332,6 +9333,8 @@ export default interface Resources {
       "option_two_factor_allow_trusted_devices_label": "Allow trusted devices",
       "option_two_factor_backup_code_count_desc": "Number of one-time recovery codes generated for future 2FA enrolments.",
       "option_two_factor_backup_code_count_label": "Backup code count",
+      "option_two_factor_require_members_desc": "When on, members must complete two-factor authentication before using their account. Existing sessions without verification must sign in again. Turning this off does not remove enrolled authenticators.",
+      "option_two_factor_require_members_label": "Require two-factor authentication for all members",
       "option_two_factor_trusted_device_days_desc": "How long a newly trusted device can skip the second factor.",
       "option_two_factor_trusted_device_days_label": "Trusted device duration (days)",
       "option_vetting_enabled_desc": "Enable member vetting requirements",
@@ -9362,8 +9365,6 @@ export default interface Resources {
       "option_volunteering_expense_require_receipt_label": "Require Receipt",
       "option_volunteering_expenses_enabled_desc": "Allow volunteers to submit expense claims",
       "option_volunteering_expenses_enabled_label": "Expenses Enabled",
-      "option_volunteering_guardian_consent_required_desc": "Require guardian consent for minor volunteers",
-      "option_volunteering_guardian_consent_required_label": "Guardian Consent Required",
       "option_volunteering_hours_require_verification_desc": "Logged hours must be verified/approved before counting",
       "option_volunteering_hours_require_verification_label": "Hours Require Verification",
       "option_volunteering_max_hours_per_shift_desc": "Maximum hours allowed per volunteer shift",
@@ -9481,7 +9482,10 @@ export default interface Resources {
       "translation_source_term_placeholder": "e.g. timebank",
       "translation_target_language": "Target language",
       "translation_target_term": "Target term",
-      "translation_target_term_placeholder": "Preferred translation"
+      "translation_target_term_placeholder": "Preferred translation",
+      "two_factor_admin_requirement": "Two-factor authentication is required for all administrators across the platform. Communities cannot turn this requirement off. Required accounts must verify at sign-in; remembered devices do not bypass enforcement.",
+      "two_factor_enforcement_hint": "This switch controls optional enrollment. Administrators always require MFA. Use Configure to require it for all members.",
+      "two_factor_optional_enrollment": "Allow optional two-factor enrollment"
     },
     "shared": {
       "broker_actions": "Broker Actions",
@@ -10560,8 +10564,6 @@ export default interface Resources {
       "option_volunteering_expense_require_receipt_label": "Require Receipt",
       "option_volunteering_expenses_enabled_desc": "Allow volunteers to submit expense claims",
       "option_volunteering_expenses_enabled_label": "Expenses Enabled",
-      "option_volunteering_guardian_consent_required_desc": "Require guardian consent for minor volunteers",
-      "option_volunteering_guardian_consent_required_label": "Guardian Consent Required",
       "option_volunteering_hours_require_verification_desc": "Logged hours must be verified/approved before counting",
       "option_volunteering_hours_require_verification_label": "Hours Require Verification",
       "option_volunteering_max_hours_per_shift_desc": "Maximum hours allowed per volunteer shift",
@@ -12274,6 +12276,7 @@ export default interface Resources {
       "action_edit": "Edit",
       "action_mark_complete": "Mark Complete",
       "action_mark_in_progress": "Mark in Progress",
+      "action_reopen_task": "Reopen task",
       "active_in_last_30": "Active in Last 30 Days",
       "activity_description_exchange_completed": "Completed exchange with {{member_name}}",
       "activity_description_group_joined": "Joined group: {{group_name}}",
@@ -12312,10 +12315,9 @@ export default interface Resources {
         "tenant_admin": "Tenant administrator",
         "unknown": "Administrator"
       },
-      "all_members": "All Members",
+      "assign_to_help": "The admin responsible for doing this task.",
+      "assigned_to_you": "{{name}} (you)",
       "back_to_all_tags": "Back to All Tags",
-      "biggest_dropoff": "Biggest Drop-off",
-      "biggest_dropoff_help": "This is the point in the journey where the highest number of members stop before reaching the next stage.",
       "cancel_button": "Cancel",
       "category_concern": "Concern",
       "category_follow_up": "Follow Up",
@@ -12323,11 +12325,8 @@ export default interface Resources {
       "category_onboarding": "Onboarding",
       "category_outreach": "Outreach",
       "category_support": "Support",
-      "change_from_previous_month": "from previous month",
       "clear": "Clear",
       "clear_filters": "Clear Filters",
-      "completed_journey": "Completed Journey",
-      "conversion_from_previous": "Conversion from previous stage",
       "coordinator_tasks_title": "Coordinator Tasks",
       "create_note": "Create Note",
       "create_task": "Create Task",
@@ -12336,8 +12335,6 @@ export default interface Resources {
       "crm_dashboard": "CRM Dashboard",
       "crm_dashboard_desc": "Overview of member engagement, tasks, tags, and onboarding progress",
       "crm_dashboard_title": "CRM Dashboard",
-      "crm_label": "CRM",
-      "crm_tasks": "CRM Tasks",
       "date_range_30": "Last 30 Days",
       "date_range_7": "Last 7 Days",
       "date_range_90": "Last 90 Days",
@@ -12349,11 +12346,9 @@ export default interface Resources {
       "delete_tag_aria": "Delete tag {{tag}}",
       "delete_task_confirm": "Are you sure you want to delete this task? This cannot be undone.",
       "delete_task_title": "Delete Task",
-      "dropped_off": "Dropped Off",
       "due_date_prefix": "Due",
       "edit_note_title": "Edit Note",
       "edit_task_title": "Edit Task",
-      "entry_stage": "Entry Stage",
       "export_failed": "Export Failed",
       "export_notes": "Export Notes",
       "export_stats": "Export Stats",
@@ -12373,26 +12368,51 @@ export default interface Resources {
       "failed_to_update_pin_status": "Failed to update pin status",
       "failed_to_update_task": "Failed to update task",
       "failed_to_update_task_status": "Failed to update task status",
-      "funnel_focus_desc": "The handoffs most likely to benefit from coordinator attention right now.",
-      "funnel_focus_title": "Attention Needed",
-      "funnel_stage_email_verified": "Email Verified",
-      "funnel_stage_first_exchange": "First Exchange",
-      "funnel_stage_first_listing": "First Listing",
-      "funnel_stage_profile_complete": "Profile Complete",
-      "funnel_stage_registered": "Registered",
-      "funnel_stage_repeat_user": "Repeat User",
+      "funnel_all_clear_body": "Every member has reached the final step. Nice work.",
+      "funnel_all_clear_title": "Nobody is waiting",
+      "funnel_chart_series": "New members",
+      "funnel_final_step_note": "These are your most active members.",
+      "funnel_hide_who": "Hide",
+      "funnel_hold_up_title": "Where most people get stuck",
+      "funnel_intro": "How far members have got since joining, and who might need a friendly nudge to take the next step.",
+      "funnel_joined_on": "Joined {{date}}",
+      "funnel_journey_help": "Each step counts the members who have reached it or gone further, so the numbers can only get smaller as you go down. Percentages are out of all members.",
+      "funnel_journey_title": "The member journey",
+      "funnel_month_so_far": "{{month}} (so far)",
+      "funnel_monthly_desc": "How many people joined in each of the last six months.",
+      "funnel_monthly_partial_note": "The lighter bar is the current month, which isn't over yet.",
+      "funnel_monthly_title": "New members each month",
+      "funnel_newest_shown": "Showing the {{shown}} newest of {{waiting}}.",
+      "funnel_no_members": "No members yet. Once people join, you'll see their progress here.",
+      "funnel_show_who": "Show who",
       "funnel_stage_unknown": "Unknown stage",
-      "funnel_summary_desc": "A short readout of what the funnel is saying right now, before you dive into the detail below.",
-      "funnel_summary_title": "What This Funnel Says Right Now",
-      "guide_conversion_body": "Each conversion percentage compares a stage only to the stage immediately before it, not to the original starting group.",
-      "guide_conversion_title": "Conversion Rate",
-      "guide_dropoff_body": "Drop-off counts show how many members were lost before reaching the next step, helping you spot where follow-up may matter most.",
-      "guide_dropoff_title": "Drop-off",
-      "guide_stage_width_body": "Wider stage bars mean more members from the original entry group are still active at that point in the journey.",
-      "guide_stage_width_title": "Stage Width",
+      "funnel_stat_members": "Members",
+      "funnel_stat_members_hint": "Everyone with an account, not counting banned or suspended accounts.",
+      "funnel_stat_new": "New in the last 30 days",
+      "funnel_stat_new_hint": "People who joined in the past month.",
+      "funnel_stat_regulars": "Regular members",
+      "funnel_stat_regulars_hint": "{{percent}} of members have made two or more exchanges.",
+      "funnel_step_email_verified_desc": "Clicked the link in their welcome email.",
+      "funnel_step_email_verified_title": "Confirmed email",
+      "funnel_step_email_verified_waiting": "They confirmed their email but haven't filled in their profile yet.",
+      "funnel_step_first_exchange_desc": "Gave or received time at least once.",
+      "funnel_step_first_exchange_title": "First exchange",
+      "funnel_step_first_exchange_waiting": "They've made one exchange but not a second one yet.",
+      "funnel_step_first_listing_desc": "Offered a skill or asked for help.",
+      "funnel_step_first_listing_title": "Posted a listing",
+      "funnel_step_first_listing_waiting": "They've posted a listing but haven't swapped any time yet.",
+      "funnel_step_profile_complete_desc": "Added a short bio and their location.",
+      "funnel_step_profile_complete_title": "Filled in profile",
+      "funnel_step_profile_complete_waiting": "Their profile is done, but they haven't posted an offer or request yet.",
+      "funnel_step_progress_label": "{{step}}: {{percent}} of all members",
+      "funnel_step_reached": "{{reached}} of {{total}} members",
+      "funnel_step_registered_desc": "Created an account.",
+      "funnel_step_registered_title": "Joined",
+      "funnel_step_registered_waiting": "They joined but haven't confirmed their email address yet.",
+      "funnel_step_repeat_user_desc": "Made two or more exchanges.",
+      "funnel_step_repeat_user_title": "Regular member",
+      "funnel_waiting_label": "Waiting at this step: {{waiting}}",
       "hours_ago": "{{count}} hours ago",
-      "how_to_read_desc": "A quick reference so the bars, percentages, and drop-off panels are easier to interpret at a glance.",
-      "how_to_read_title": "How to Read This Page",
       "just_now": "Just now",
       "label_active_members": "Active Members",
       "label_activity_type": "Activity Type",
@@ -12416,10 +12436,10 @@ export default interface Resources {
       "label_search_tags": "Search Tags",
       "label_tag": "Tag",
       "label_task_actions": "Task Actions",
+      "label_task_member": "Member this task is about",
       "label_title": "Title",
       "label_total_members": "Total Members",
       "label_user_i_d": "User I D",
-      "latest_month": "Latest Month",
       "loading_activity": "Loading Activity",
       "loading_dashboard": "Loading Dashboard",
       "loading_funnel": "Loading Funnel",
@@ -12427,18 +12447,9 @@ export default interface Resources {
       "loading_notes": "Loading Notes",
       "loading_tags": "Loading Tags",
       "loading_tasks": "Loading Tasks",
-      "loss_between_stages": "{{count}} lost between stages",
-      "loss_between_stages_one": "{{count}} lost between stages",
-      "loss_between_stages_other": "{{count}} lost between stages",
       "lost_since_previous": "lost since previous stage",
-      "lost_since_previous_stage": "{{count}} lost since previous stage",
-      "lost_since_previous_stage_one": "{{count}} lost since previous stage",
-      "lost_since_previous_stage_other": "{{count}} lost since previous stage",
       "mark_task_as_status": "Mark \"{{title}}\" as {{status}}",
       "member_count": "Member",
-      "member_funnel_desc": "A stage-by-stage view of how many entrants are still moving toward first exchange.",
-      "member_funnel_help": "Each stage bar shows how much of the original entry group is still present. The badge on the bar shows share of entrants for the first stage, then conversion from the previous stage for each later step.",
-      "member_funnel_title": "Member Journey",
       "member_notes_desc": "Add, view, and manage private coordinator notes for this member",
       "member_notes_title": "Member Notes",
       "member_tags_desc": "Tag members to categorise them for filtering and outreach",
@@ -12447,15 +12458,9 @@ export default interface Resources {
       "members_active_vs_total": "Active approved members vs total approved members",
       "members_count": "Members",
       "members_logged_in_recently": "Members active in the last 30 days",
-      "members_lost_at_step": "{{count}} members are lost at this step.",
-      "members_lost_at_step_one": "{{count}} members are lost at this step.",
-      "members_lost_at_step_other": "{{count}} members are lost at this step.",
       "members_not_signed_in": "Members not signed in",
       "members_tagged": "Members Tagged",
       "minutes_ago": "{{count}} minutes ago",
-      "monthly_registrations_desc": "Recent registration volume with month-over-month context.",
-      "monthly_registrations_help": "Use this trend to tell whether funnel changes are coming from weaker conversion, lower incoming registrations, or both at the same time.",
-      "monthly_registrations_title": "Monthly Registrations",
       "never_logged_in": "Never logged in",
       "new_this_month_summary": "New Members This Month",
       "no_activity_found": "No activity found",
@@ -12469,14 +12474,12 @@ export default interface Resources {
       "no_notes_hint_default": "No notes have been added yet. Add one above.",
       "no_notes_hint_filtered": "No notes match your current filters",
       "no_registration_data": "No registration data",
-      "no_stages_available": "No stages available",
       "no_tags_found": "No tags found",
       "no_tags_hint_default": "No tags have been created yet",
       "no_tags_hint_search": "No tags match your search",
       "no_tasks_found": "No tasks found",
       "no_tasks_hint_default": "No tasks have been created yet. Create one above.",
       "no_tasks_hint_filtered": "No tasks match your current filters",
-      "not_enough_stages": "Not enough stages",
       "note_action_delete": "Delete note",
       "note_action_edit": "Edit note",
       "note_action_pin": "Pin note",
@@ -12489,10 +12492,7 @@ export default interface Resources {
       "note_pinned": "Note Pinned",
       "note_unpinned": "Note Unpinned",
       "note_updated": "Note Updated",
-      "onboarding_funnel_desc": "Track where members stall between registration and meaningful participation so follow-up work lands where it matters.",
       "onboarding_funnel_title": "Onboarding Funnel",
-      "overall_conversion": "Overall Conversion",
-      "overall_conversion_help": "This is the percentage of members who make it from the first recorded stage all the way to the final stage shown on this page.",
       "page_title": "CRM",
       "pin_button_pinned": "Pinned",
       "pin_button_unpin": "Unpin",
@@ -12537,25 +12537,8 @@ export default interface Resources {
       "remove_tag_title": "Remove Tag",
       "retention_rate_summary": "30-Day Activity Rate",
       "signups_in_current_month": "Approved members created this month",
-      "snapshot_conversion_body": "{{members}} members currently reach {{stage}} from the first recorded stage.",
-      "snapshot_conversion_title": "End-to-end conversion",
       "snapshot_desc": "A short readout of what the funnel is saying right now, before you dive into the detail below.",
-      "snapshot_priority_body": "{{loss}} members are lost at this handoff, and {{rate}} make it through to the next step.",
-      "snapshot_priority_title": "Primary intervention point",
       "snapshot_title": "What This Funnel Says Right Now",
-      "snapshot_volume_body": "{{members}} registrations were recorded in {{month}}.",
-      "snapshot_volume_delta": "{{change}} compared with the previous month.",
-      "snapshot_volume_title": "Recent acquisition",
-      "stage_conversion_desc": "Stage-by-stage handoff quality across the full onboarding journey.",
-      "stage_conversion_help": "These cards compare each stage directly to the next one. A weaker percentage here usually means the next action, approval, or reminder needs attention.",
-      "stage_conversion_progress_label": "{{stage}} conversion from previous stage",
-      "stage_conversion_title": "Stage Conversion",
-      "stage_health_desc": "Volume and conversion strength for every stage in one glance.",
-      "stage_health_help": "Share of entrants tells you how much of the original cohort remains. Conversion from previous stage tells you how efficiently members move through the immediate handoff.",
-      "stage_health_title": "Stage Health",
-      "stage_number": "Stage {{number}}",
-      "stage_share_label": "Share of entrants",
-      "stage_share_progress_label": "{{stage}} share of entry stage",
       "status_all": "All",
       "status_cancelled": "Cancelled",
       "status_completed": "Completed",
@@ -12567,6 +12550,8 @@ export default interface Resources {
       "tag_removed_from_member": "Tag removed from member",
       "task_created": "Task Created",
       "task_deleted": "Task Deleted",
+      "task_form_intro": "Use a task to remember a follow-up, such as calling a member about their first exchange.",
+      "task_member_help": "Optional. Search by name or email.",
       "task_status_changed": "Task status changed",
       "task_updated": "Task Updated",
       "tasks_total": "Tasks Total",
@@ -12578,14 +12563,11 @@ export default interface Resources {
       "transition_health_help": "Share of entrants tells you how much of the original cohort remains. Conversion from previous stage tells you how efficiently members move through the immediate handoff.",
       "transition_health_title": "Stage Health",
       "transition_loss_detail": "{{members}} members are lost at this step.",
-      "transition_progress_label": "{{from}} to {{to}}",
       "update_note": "Update Note",
       "update_task": "Update Task",
       "user_with_id": "User #{{id}}",
       "valid_user_i_d_is_required": "A valid user ID is required",
-      "valid_user_id_required": "A valid user ID is required",
-      "weakest_handoff": "Weakest Handoff",
-      "weakest_handoff_help": "This is the lowest stage-to-stage conversion rate in the current funnel, even if another stage has a larger raw loss count."
+      "valid_user_id_required": "A valid user ID is required"
     },
     "shared": {
       "broker_actions": "Broker Actions",
@@ -14014,6 +13996,7 @@ export default interface Resources {
       "document_acceptance_rates": "Document Acceptance Rates",
       "document_created": "Document created",
       "document_deleted": "Document Deleted",
+      "document_has_published_record": "This document has been published or accepted by members, so deleting it would destroy their acceptance records. Deactivate it instead.",
       "document_updated": "Document updated",
       "draft_version_deleted": "Draft Version deleted",
       "draft_will_be_deleted": "Draft Will Be deleted",
@@ -14982,7 +14965,11 @@ export default interface Resources {
       "editor_description_for": "Version content for “{{title}}”.",
       "editor_title_create": "New version",
       "editor_title_edit": "Edit draft version",
+      "email_delivery_summary": "Email delivery — queued: {{pending}}; submitted to mail service: {{sent}}; failed: {{failed}}; suppressed: {{suppressed}}; skipped: {{skipped}}; needs review: {{unknown}}.",
+      "email_summary_help": "Required before publishing. This text is included in the email sent to every active account. For a new policy, explain its purpose; for an update, describe what changed.",
+      "emails_queued": "Policy emails queued. Check the delivery totals for progress.",
       "only_drafts_editable": "Only draft versions can be edited. Published versions are locked.",
+      "publication_email_info": "Publishing a policy automatically queues an informational email to all active accounts, including administrators and newsletter-unsubscribed members. This action queues missing recipients only; it does not resend successful emails. Invalid and suppressed addresses remain blocked.",
       "publish_step_1": "Mark this version as published",
       "publish_step_2": "Make it the current version shown to members",
       "publish_step_3": "Retire the previous current version",
@@ -21836,6 +21823,7 @@ export default interface Resources {
     "back_to_site": "Back to Site",
     "back_to_site_header": "Back to site",
     "badge_new": "NEW",
+    "badge_settings": "Badge settings",
     "billing": "Billing",
     "blog": "Blog",
     "blog_posts": "Blog Posts",
@@ -22143,6 +22131,7 @@ export default interface Resources {
     "content": "Content",
     "content_queue": "Content Queue",
     "coordinator_tasks": "Coordinator Tasks",
+    "courses": "Courses",
     "crm": "CRM",
     "crm_dashboard": "CRM Dashboard",
     "cron_jobs": "Cron Jobs",
@@ -22153,8 +22142,6 @@ export default interface Resources {
     "dashboard": "Dashboard",
     "deliverability": "Deliverability",
     "diagnostics": "Diagnostics",
-    "documentation": "Documentation",
-    "documentation_aria": "Platform documentation (opens in a new tab)",
     "donation_refunds": "Donation Refunds",
     "email_deliverability": "Email Deliverability",
     "email_settings": "Email Settings",
@@ -22166,6 +22153,7 @@ export default interface Resources {
     "event_settings": "Event Settings",
     "events": "Events",
     "expand_sidebar": "Expand sidebar",
+    "fadp": "Swiss data protection (FADP)",
     "feature_flags": "Feature Flags",
     "federation": "Federation",
     "federation_activity": "Activity Feed",
@@ -22193,6 +22181,8 @@ export default interface Resources {
     "gamification_hub": "Gamification Hub",
     "gdpr_dashboard": "GDPR Dashboard",
     "goals": "Goals",
+    "group_join_requests": "Group join requests",
+    "group_moderation": "Group moderation",
     "group_organization": "Tags & Collections",
     "group_ranking": "Group Ranking",
     "group_recommendations": "Group Recommendations",
@@ -22311,6 +22301,8 @@ export default interface Resources {
     "logout": "Log Out",
     "marketing": "Marketing",
     "marketplace": "Marketplace",
+    "marketplace_cases": "Reports & disputes",
+    "marketplace_coupons": "Coupons",
     "marketplace_dashboard": "Dashboard",
     "marketplace_moderation": "Moderation",
     "marketplace_sellers": "Sellers",
@@ -22335,6 +22327,7 @@ export default interface Resources {
     "my_profile": "My Profile",
     "national_kiss_dashboard": "National Caring Community Dashboard",
     "needs_attention": "Needs Attention",
+    "newsletter_segments": "Audience segments",
     "newsletters": "Newsletters",
     "nexus_score": "Nexus Score",
     "no_results": "No results found",
@@ -22350,6 +22343,7 @@ export default interface Resources {
     "partner_venues": "Partner Venues",
     "pending_approvals": "Pending Approvals",
     "performance": "Performance",
+    "permissions_list": "Permissions list",
     "plans_pricing": "Plans & Pricing",
     "platform_capabilities": "Platform switches",
     "platform_operations": "Platform Operations",
@@ -22362,6 +22356,7 @@ export default interface Resources {
     "recent": "Recent",
     "regional_analytics": "Regional Analytics",
     "regional_analytics_paid": "Regional Analytics (Paid)",
+    "registration_policy": "Registration policy",
     "reports": "Reports",
     "research_partnerships": "Research Partnerships",
     "residency_verifications": "Residency Verifications",
@@ -22383,17 +22378,22 @@ export default interface Resources {
       "email_settings": "SMTP|mail|SendGrid|from address",
       "error_404_tracking": "not found|broken links",
       "event_settings": "who can create events|creation policy|event permissions|default capacity|waitlist|reminders",
+      "fadp": "Switzerland|Swiss|nDSG|revDSG|data protection|processing register",
+      "group_join_requests": "membership requests|pending members|join group|approvals",
       "group_organization": "tags|collections|automatic assignment|bundles",
       "groups": "clubs|circles|communities",
       "help_faqs": "frequently asked questions|questions|help centre|answers",
+      "marketplace_cases": "DSA|disputes|complaints|reports|cases",
       "native_app": "native app|mobile app|android|ios|installs|installations|push|device|play store",
       "pending_approvals": "approval|waiting",
       "podcasts": "audio|shows|episodes",
+      "registration_policy": "sign-up rules|who can join|identity verification|email verification|registration",
       "residency_verifications": "residency|address|municipality|verification|attestation",
       "retention_policies": "retention|GDPR|disposal|purge|archive",
       "search_analytics": "queries|zero results|trending|Meilisearch",
       "sso_providers": "single sign-on|OpenID Connect|Entra|identity|login",
-      "support_reports": "bugs|feedback|diagnostics|Sentry"
+      "support_reports": "bugs|feedback|diagnostics|Sentry",
+      "url_redirects": "301|302|old links|moved pages|broken links"
     },
     "search_nav": "Search admin...",
     "secrets_vault": "Secrets Vault",
@@ -22405,6 +22405,7 @@ export default interface Resources {
       "system": "System"
     },
     "send_time_optimizer": "Send Time Optimizer",
+    "seo_audit": "SEO audit",
     "seo_overview": "SEO Overview",
     "settings": "Settings",
     "shared": {
@@ -22474,6 +22475,7 @@ export default interface Resources {
     "sso_providers": "Single Sign-On",
     "starting_balances": "Starting Balances",
     "subscribers": "Subscribers",
+    "subscriptions": "Subscriptions",
     "super_admin": "Super Admin",
     "super_admin_panel": "Super Admin Panel",
     "super_audit_log": "Audit Log",
@@ -22502,6 +22504,7 @@ export default interface Resources {
     "transactions": "Transactions",
     "translation_config": "Translation Settings",
     "trust_tiers": "Trust Tiers",
+    "url_redirects": "URL redirects",
     "user_monitoring": "User Monitoring",
     "user_report": "User Report",
     "users": "Users",
@@ -22539,6 +22542,35 @@ export default interface Resources {
       "title": "Visibility Rules"
     },
     "volunteering": "Volunteering",
+    "volunteering_nav": {
+      "applications": "Applications",
+      "expenses": "Expenses",
+      "giving_days": "Giving days",
+      "group_day_to_day": "Day to day",
+      "group_giving": "Giving",
+      "group_organisations_safety": "Organisations & safety",
+      "group_setup": "Setup",
+      "hours": "Hours to verify",
+      "keywords": {
+        "applications": "approvals|volunteer applications|sign-ups|pending volunteers|opportunities",
+        "expenses": "receipts|reimbursement|expense claims|mileage",
+        "giving_days": "fundraising|donations|appeals|campaigns",
+        "hours": "logged hours|verify hours|timesheets|hours audit|approve hours",
+        "organisations": "organizations|charities|charity|nonprofits|NGOs|partner organisations|volunteer organisations",
+        "projects": "project proposals|community proposals|ideas",
+        "safeguarding": "incidents|concerns|DLP|designated liaison person|reports",
+        "settings": "custom fields|reminders|webhooks|configuration",
+        "shift_swaps": "shifts|rota|cover|swap requests",
+        "training": "certificates|certifications|qualifications|compliance"
+      },
+      "organisations": "Organisations",
+      "overview": "Overview",
+      "projects": "Community projects",
+      "safeguarding": "Safeguarding & incidents",
+      "settings": "Settings",
+      "shift_swaps": "Shift swaps",
+      "training": "Training"
+    },
     "warmth_pass": "Warmth Pass",
     "zone_commerce": "Commerce",
     "zone_communications": "Communications",
@@ -23460,6 +23492,42 @@ export default interface Resources {
       "placeholder_search_by_name_or_email": "Search by Name or Email...",
       "placeholder_select_groups": "Select groups...",
       "placeholder_write_your_newsletter_content": "Write your newsletter content...",
+      "policy_email_col_clicks": "Clicks",
+      "policy_email_col_first_click": "First click",
+      "policy_email_col_first_open": "First open",
+      "policy_email_col_opens": "Opens",
+      "policy_email_col_recipient": "Recipient",
+      "policy_email_col_status": "Mail status",
+      "policy_email_counts": "Queued {{queued}} · Submitted {{submitted}} · Delivered {{delivered}} · Bounced {{bounced}} · Other exceptions {{exceptions}}",
+      "policy_email_delivery_status_failed": "Failed",
+      "policy_email_delivery_status_pending": "Queued",
+      "policy_email_delivery_status_retry": "Waiting to retry",
+      "policy_email_delivery_status_sending": "Sending",
+      "policy_email_delivery_status_sent": "Submitted",
+      "policy_email_delivery_status_skipped": "Skipped",
+      "policy_email_delivery_status_suppressed": "Blocked by delivery suppression",
+      "policy_email_delivery_status_unknown": "Outcome unknown",
+      "policy_email_description": "Automatic service notices sent when a policy is published. These include members who opted out of newsletters.",
+      "policy_email_empty": "No policy publication emails have been queued yet.",
+      "policy_email_engagement": "Opened {{opens}} · Clicked {{clicks}}",
+      "policy_email_error": "Policy email activity could not be loaded.",
+      "policy_email_filter_all": "All recipients",
+      "policy_email_filter_clicked": "Clicked",
+      "policy_email_filter_not_opened": "No recorded open",
+      "policy_email_filter_opened": "Opened",
+      "policy_email_recipients": "{{count}} recipients",
+      "policy_email_stats": "View engagement",
+      "policy_email_stats_note": "An open can come from an email preview or image proxy. A click shows that the policy link was followed; neither proves the policy was read or accepted.",
+      "policy_email_stats_title": "Policy email activity",
+      "policy_email_status_note": "Submitted means the mail service accepted the message. Delivered is confirmed by the provider; unconfirmed submissions are not proof of inbox delivery.",
+      "policy_email_submitted": "Submitted to mail service",
+      "policy_email_title": "Policy emails",
+      "policy_email_total_clicks": "{{count}} clicks in total",
+      "policy_email_total_opens": "{{count}} opens in total",
+      "policy_email_unique_clicks": "Unique clickers",
+      "policy_email_unique_opens": "Unique openers",
+      "policy_email_version": "{{title}} · version {{version}}",
+      "policy_email_view": "View policy versions",
       "preview": "Preview",
       "preview_text": "Preview Text",
       "public_subscribe_link": "Public Subscribe Link",
@@ -25215,6 +25283,7 @@ export default interface Resources {
     "reports": {
       "active_30d_total": "Active in 30 days",
       "active_members": "Active Members",
+      "all_status": "All statuses",
       "already_notified": "Already Notified",
       "at_risk": "At Risk",
       "auto_flag_suspicious_content": "Auto-flag suspicious content",
@@ -25472,13 +25541,12 @@ export default interface Resources {
       "failed_to_load_blog_posts": "Failed to load blog posts",
       "featured_image": "Featured image",
       "featured_image_desc": "Upload an image or paste a hosted image URL for this post.",
-      "featured_image_limits": "JPEG, PNG, GIF or WebP. Up to {{max}} MB, and no larger than {{max_megapixels}} megapixels or {{max_edge}} pixels on the longest side.",
+      "featured_image_format_hint": "JPEG, PNG, GIF, or WebP up to 10 MB",
       "featured_image_preview_alt": "Featured image preview",
       "featured_image_preview_empty": "No featured image selected",
       "featured_image_preview_unavailable": "The image preview is unavailable. Check the URL or upload another image.",
       "featured_image_remove": "Remove featured image",
-      "featured_image_too_large_file": "This image is {{size}} MB. The largest you can upload is {{max}} MB. Please choose a smaller image, or reduce its size and try again.",
-      "featured_image_too_large_pixels": "This image is {{width}} × {{height}} pixels, which is too large. Images can be up to {{max_megapixels}} megapixels and {{max_edge}} pixels on the longest side. Please resize it and try again.",
+      "featured_image_size_error": "Featured image must be 10 MB or smaller.",
       "featured_image_type_error": "Choose a JPEG, PNG, GIF, or WebP image.",
       "featured_image_upload": "Upload image",
       "featured_image_upload_failed": "Featured image upload failed.",
@@ -25500,6 +25568,8 @@ export default interface Resources {
       "meta_description": "Meta description",
       "meta_title": "Meta title",
       "meta_title_desc": "Overrides the page title in search results. Leave blank to use post title.",
+      "noindex": "NoIndex (hide from search engines)",
+      "noindex_desc": "Prevent search engines from indexing this post",
       "page_title": "Blog",
       "page_title_create": "Create blog post",
       "page_title_edit": "Edit blog post",
@@ -25518,9 +25588,6 @@ export default interface Resources {
       "publish": "Publish",
       "save_changes": "Save changes",
       "search_placeholder": "Search blog posts...",
-      "search_visible": "Show in search engines",
-      "search_visible_off": "Off — search engines are asked not to list this post.",
-      "search_visible_on": "On — search engines such as Google can list this post.",
       "seo_override": "SEO override (optional)",
       "slug_desc_create": "Auto-generated from title, or type a custom slug.",
       "slug_desc_edit": "Edit to customize the URL. Leave as-is to keep current slug.",
@@ -27307,6 +27374,13 @@ export default interface Resources {
       "filter_label_reviewed": "Reviewed flags",
       "filter_label_unreviewed": "Unreviewed flags",
       "filter_showing": "Showing",
+      "flag_reason_first_contact": "First contact",
+      "flag_reason_flagged_user": "Flagged member",
+      "flag_reason_high_risk_listing": "High-risk listing",
+      "flag_reason_manual_monitoring": "Under monitoring",
+      "flag_reason_new_member": "New member",
+      "flag_reason_random_sample": "Random sample",
+      "flag_reason_unknown": "Not recorded",
       "flagged_messages": "Flagged Messages",
       "from": "From",
       "guardian": "Guardian",
@@ -27485,6 +27559,7 @@ export default interface Resources {
       "label_ward_email": "Supported member's email",
       "mark_as_reviewed": "Mark as Reviewed",
       "member_preferences_desc": "View and manage individual member safeguarding preferences",
+      "member_preferences_load_failed": "The member list could not be loaded. Refresh the page to try again.",
       "member_safeguarding_preferences": "Member Safeguarding Preferences",
       "message_reviewed": "Message Reviewed",
       "never": "Never",
@@ -28914,6 +28989,7 @@ export default interface Resources {
         "loading": "Loading report...",
         "page": "Page",
         "reporter": "Reporter",
+        "request_type": "Type of request",
         "sentry_event": "Sentry event",
         "summary": "Summary",
         "title": "Report {{reference}}",
@@ -28950,8 +29026,10 @@ export default interface Resources {
         "labels": {
           "created": "Created",
           "impact": "Impact",
+          "jira": "Jira ticket",
           "page_url": "Page URL",
           "reporter": "Reporter",
+          "request_type": "Type of request",
           "route": "Route",
           "sentry_event": "Sentry event",
           "sentry_issue": "Sentry issue",
@@ -28974,6 +29052,14 @@ export default interface Resources {
         "major": "Major",
         "minor": "Minor"
       },
+      "jira": {
+        "error_title": "Jira reported a problem",
+        "handled": "Handled in Jira",
+        "open": "Open in Jira",
+        "status": "Jira status: {{status}}",
+        "status_hint": "This report is answered in the Jira help desk. Its status follows the Jira ticket, checked every 15 minutes. You can still add notes, or close it.",
+        "status_unknown": "not checked yet"
+      },
       "loading": "Loading support reports...",
       "messages": {
         "copied": "Diagnostics copied.",
@@ -28981,6 +29067,12 @@ export default interface Resources {
         "saved": "Support report updated."
       },
       "meta_title": "Support Reports",
+      "request_type": {
+        "account": "Account or sign-in",
+        "broken": "Problem",
+        "how_to": "Question",
+        "suggestion": "Suggestion"
+      },
       "stats": {
         "blocked": "Blocked",
         "open": "Open",
@@ -31219,6 +31311,7 @@ export default interface Resources {
       "placeholder_select_status": "Select a status...",
       "placeholder_select_type": "Select Type...",
       "reason_placeholder": "Enter reason...",
+      "reset_2fa_identity_reason": "Incident reference and how you verified the account holder’s identity (10–500 characters)",
       "reset_2fa_reason": "Reset by an administrator",
       "result_failed": "Result failed",
       "result_partial": "Result Partial",
@@ -31487,6 +31580,7 @@ export default interface Resources {
       "close": "Close",
       "col_actions": "Actions",
       "col_active": "Active",
+      "col_activity": "Activity",
       "col_amount": "Amount",
       "col_amount_paid": "Amount Paid",
       "col_applicant": "Applicant",
@@ -31498,22 +31592,17 @@ export default interface Resources {
       "col_certificate_ref": "Certificate Ref",
       "col_claims": "Claims",
       "col_completed": "Completed",
-      "col_consent_date": "Consent Date",
       "col_created": "Created",
       "col_date": "Date",
       "col_end_date": "End Date",
       "col_events": "Events",
       "col_expires": "Expires",
-      "col_expires_date": "Expires Date",
       "col_failures": "Failures",
       "col_field_type": "Field Type",
-      "col_guardian_email": "Guardian Email",
-      "col_guardian_name": "Guardian Name",
       "col_hours": "Hours",
       "col_incident_type": "Incident Type",
       "col_label": "Label",
       "col_members": "Members",
-      "col_minor_name": "Minor Name",
       "col_name": "Name",
       "col_opportunities": "Opportunities",
       "col_opportunity": "Opportunity",
@@ -31523,7 +31612,6 @@ export default interface Resources {
       "col_pending_amount": "Pending",
       "col_proposer": "Proposer",
       "col_receipt": "Receipt?",
-      "col_relationship": "Relationship",
       "col_reporter": "Reporter",
       "col_required": "Required",
       "col_severity": "Severity",
@@ -31543,6 +31631,7 @@ export default interface Resources {
       "col_url": "URL",
       "col_volunteer": "Volunteer",
       "col_volunteers": "Volunteers",
+      "col_wallet_balance": "Wallet balance",
       "completed_projects": "Completed Projects",
       "config_desc": "Tune custom intake fields, reminders, and webhook delivery for the volunteering module.",
       "config_tabs_aria": "Volunteer configuration sections",
@@ -31551,12 +31640,7 @@ export default interface Resources {
       "confirm_reject_swap": "Reject this shift swap request?",
       "confirm_run_reminders": "Run reminders",
       "confirm_send_test": "Are you sure you want to send test?",
-      "consent_renewal_body": "This consent has expired or is about to expire. Please request renewal from the volunteer.",
-      "consent_renewal_subject": "Guardian consent renewal required",
-      "consents_desc": "Monitor guardian consent records for minor volunteers.",
-      "consents_title": "Guardian consents",
       "contact_email_required": "A contact email is required.",
-      "contact_guardian": "contact guardian",
       "create": "Create",
       "create_giving_day": "Create Giving Day",
       "create_opportunity": "Create Opportunity",
@@ -31612,7 +31696,10 @@ export default interface Resources {
       "edit_policy": "Edit expense policy",
       "edit_webhook": "Edit Webhook",
       "enabled": "Enabled",
+      "expense_already_reviewed": "This expense has already been reviewed, so it cannot be approved or rejected again.",
+      "expense_not_approved": "Only an approved expense can be marked as paid.",
       "expense_org_breakdown_title": "Expenses by organisation",
+      "expense_paid_by_org_hint": "The organisation records payment from its own dashboard.",
       "expense_policies_title": "Expense policies",
       "expense_type_equipment": "Equipment",
       "expense_type_meals": "Meals",
@@ -31627,10 +31714,6 @@ export default interface Resources {
       "expenses_title": "Volunteer expenses",
       "expired": "Expired",
       "expires_on": "expires {{date}}",
-      "expiring_consents_warning": "{{count}} guardian consent expires within 30 days",
-      "expiring_consents_warning_one": "{{count}} guardian consent expires within 30 days",
-      "expiring_consents_warning_other": "{{count}} guardian consent expires within 30 days",
-      "expiring_consents_warning_plural": "{{count}} guardian consents expire within 30 days",
       "expiry_alert_title": "{{count}} training record expiring within 30 days",
       "expiry_alert_title_one": "{{count}} training record expiring within 30 days",
       "expiry_alert_title_other": "{{count}} training record expiring within 30 days",
@@ -31675,7 +31758,6 @@ export default interface Resources {
       "failed_to_delete_webhook": "Failed to delete webhook",
       "failed_to_load_activity": "Failed to load activity feed",
       "failed_to_load_approvals": "Failed to load approvals",
-      "failed_to_load_consents": "Failed to load guardian consents",
       "failed_to_load_donors": "Failed to load donors",
       "failed_to_load_expenses": "Failed to load expenses",
       "failed_to_load_fields": "Failed to load custom fields",
@@ -31797,8 +31879,6 @@ export default interface Resources {
       "move_up": "Move up",
       "name_required": "Name is required",
       "no": "No",
-      "no_consents": "No guardian consents",
-      "no_consents_desc": "No guardian consent records have been created yet.",
       "no_custom_fields": "No custom fields",
       "no_custom_fields_desc": "Add custom fields to collect extra volunteer information.",
       "no_delivery_logs": "No delivery logs found",
@@ -31849,6 +31929,20 @@ export default interface Resources {
       "org_updated": "Organisation updated",
       "org_website_label": "Website",
       "organization_members": "Organisation members",
+      "orgs_adjust_wallet": "Adjust wallet balance",
+      "orgs_approve_aria": "Approve {{name}}",
+      "orgs_awaiting_intro": "Approving an organisation makes it visible to members. The person who registered it is told either way. If you decline, you can add a reason, which is sent to them.",
+      "orgs_awaiting_title": "Waiting for your approval",
+      "orgs_decline_aria": "Decline {{name}}",
+      "orgs_filter_aria": "Filter organisations by status",
+      "orgs_manage": "Manage",
+      "orgs_manage_aria": "Manage {{name}}",
+      "orgs_no_match": "No organisations match this filter.",
+      "orgs_registered": "Registered {{date}}",
+      "orgs_stat_hours": "Hours logged: {{value}}",
+      "orgs_stat_opportunities": "Opportunities: {{value}}",
+      "orgs_stat_volunteers": "Volunteers: {{value}}",
+      "orgs_tab_waiting": "Waiting for approval",
       "page_title": "Volunteering",
       "payment_reconciliation_title": "Payment Reconciliation",
       "payment_reference": "Payment Reference",
@@ -31876,7 +31970,6 @@ export default interface Resources {
       "projects_desc": "Review and manage community-proposed volunteer projects.",
       "projects_title": "Community projects",
       "raised_amount": "Raised Amount",
-      "re_request": "Re-request",
       "reason_label": "Reason",
       "reason_placeholder": "Explain the adjustment...",
       "reason_required": "Reason is required",
@@ -32693,6 +32786,7 @@ export default interface Resources {
       "retry_verification": "Retry verification",
       "show_password": "Show password",
       "sign_up_link": "Sign up",
+      "stale_client": "This page was out of date and has been refreshed. Please sign in again.",
       "submit": "Sign In",
       "subtitle": "Sign in to your account",
       "subtitle_community": "Sign in to continue to {{name}}",
@@ -32711,11 +32805,37 @@ export default interface Resources {
       "twofa_trust_device": "Trust this device for {{days}} days",
       "twofa_use_backup": "Use backup code instead",
       "twofa_verify": "Verify",
+      "under_minimum_age": "This platform is for adults aged 18 and over, so you can't sign in with this account. If you think this is a mistake, please contact your community.",
       "verification_email_sent": "Verification email sent! Check your inbox.",
       "verification_failed": "Your identity verification was unsuccessful. You may retry the process or contact support for assistance."
     },
     "login_meta_description": "Sign in securely to your timebanking community account to manage listings, messages, events, exchanges, wallet activity, and profile settings.",
     "login_meta_title": "Log In",
+    "mandatory_setup": {
+      "cancel": "Return to sign in",
+      "code": "Six-digit verification code",
+      "failed": "Setup could not be completed. Retry, or return to sign in if your session has expired.",
+      "loading": "Loading setup…",
+      "manual": "Or enter this setup key manually:",
+      "qr_alt": "Authenticator setup QR code",
+      "reason": "Two-factor authentication is required for your account before you can continue.",
+      "recovery_copied": "Codes copied",
+      "recovery_copy": "Copy codes",
+      "recovery_copy_failed": "The codes could not be copied. Select them and copy them by hand.",
+      "recovery_download": "Download as a text file",
+      "recovery_download_failed": "The file could not be saved. Copy the codes instead.",
+      "recovery_file_generated": "Generated {{date}}",
+      "recovery_file_guidance": "Each code can be used once, if you lose access to your authenticator app. Keep this file somewhere safe. These codes are not shown again.",
+      "recovery_file_title": "Two-factor recovery codes",
+      "recovery_help": "Store these codes somewhere safe. Each code can be used once if you lose access to your authenticator.",
+      "recovery_once": "These codes are shown once. You will not see them again.",
+      "recovery_title": "Save your recovery codes",
+      "retry": "Retry setup",
+      "saved": "I have saved my recovery codes",
+      "scan": "Scan this QR code with your authenticator app.",
+      "title": "Set up two-factor authentication",
+      "verify": "Verify and continue"
+    },
     "page_meta": {
       "forgot_password": {
         "title": "Forgot Password"
@@ -33043,7 +33163,7 @@ export default interface Resources {
       "decision_approved": "Approved",
       "decision_flagged": "Flagged",
       "deleted": "deleted",
-      "description": "Read-only compliance records for reviewed broker message copies.",
+      "description": "A read-only record of every message copy a broker has already reviewed.",
       "detail_description": "A frozen, read-only snapshot of a reviewed message copy.",
       "detail_page_title": "Archive Record",
       "detail_title": "Archive Record",
@@ -33089,14 +33209,14 @@ export default interface Resources {
       "severity_high": "High",
       "severity_low": "Low",
       "severity_medium": "Medium",
-      "stat_approved": "Approved in view",
-      "stat_approved_hint": "On this page of results",
-      "stat_flagged": "Flagged in view",
-      "stat_flagged_hint": "On this page of results",
+      "stat_approved": "Approved on this page",
+      "stat_approved_hint": "Among the records shown",
+      "stat_flagged": "Flagged on this page",
+      "stat_flagged_hint": "Among the records shown",
       "stat_records": "Archived records",
-      "stat_records_hint": "Total in current filter",
-      "stat_reviewers": "Reviewers in view",
-      "stat_reviewers_hint": "Distinct deciding brokers",
+      "stat_records_hint": "Total matching this filter",
+      "stat_reviewers": "Reviewers on this page",
+      "stat_reviewers_hint": "Brokers who made these decisions",
       "tab_all": "All",
       "tab_approved": "Approved",
       "tab_flagged": "Flagged",
@@ -33132,6 +33252,7 @@ export default interface Resources {
       "cancel": "Cancel",
       "confirm": "Confirm",
       "error": "Something went wrong. Please try again.",
+      "how_this_page_works": "How this page works",
       "loading": "Loading...",
       "no_data": "No data available.",
       "refresh": "Refresh",
@@ -33141,7 +33262,7 @@ export default interface Resources {
       "admin_only_chip": "Admin only",
       "admin_only_tooltip": "Only tenant admins can change this policy setting.",
       "back": "Back",
-      "description": "Configure broker control settings for this tenant.",
+      "description": "Settings for how brokers work in this community.",
       "field_allow_hour_adjustment_help": "Brokers can adjust the hours on an exchange before approval.",
       "field_allow_hour_adjustment_label": "Allow broker hour adjustment",
       "field_auto_approve_low_risk_help": "Skip broker approval for exchanges classified as low risk.",
@@ -33244,7 +33365,7 @@ export default interface Resources {
     },
     "dashboard": {
       "activity": {
-        "chip_config_updated": "Config",
+        "chip_config_updated": "Settings",
         "chip_exchange_approved": "Approved",
         "chip_exchange_rejected": "Rejected",
         "chip_insurance_created": "Insurance Added",
@@ -33262,7 +33383,17 @@ export default interface Resources {
         "chip_risk_tag_created": "Risk Tagged",
         "chip_risk_tag_removed": "Risk Removed",
         "chip_risk_tag_updated": "Risk Updated",
-        "verb_config_updated": "updated broker configuration",
+        "detail_exchange": "Exchange #{{id}}",
+        "detail_listing": "Listing #{{id}}",
+        "detail_member": "Member #{{id}}",
+        "detail_message": "Message #{{id}}",
+        "detail_risk_level": "{{level}} risk",
+        "detail_settings_changed": "{{count}} settings changed",
+        "detail_settings_changed_one": "{{count}} setting changed",
+        "detail_settings_changed_other": "{{count}} settings changed",
+        "detail_was_risk_level": "was {{level}} risk",
+        "detail_with_notes": "with a note",
+        "verb_config_updated": "changed the broker settings",
         "verb_exchange_approved": "approved an exchange",
         "verb_exchange_rejected": "rejected an exchange",
         "verb_insurance_created": "added an insurance certificate",
@@ -33285,7 +33416,7 @@ export default interface Resources {
       "all_clear_hint": "Nothing is waiting on your review right now. New work will appear here the moment it arrives.",
       "broker_actions_heading": "Broker Actions",
       "deleted_user": "Deleted user",
-      "description": "Overview of pending exchanges, safeguarding review requests, insurance, and monitored users",
+      "description": "What needs your attention today, at a glance.",
       "high_risk_listings": "High Risk Listings",
       "links": {
         "configuration_desc": "Configure broker control settings.",
@@ -33365,7 +33496,7 @@ export default interface Resources {
       "confirm_approve_title": "Approve Exchange",
       "confirm_reject_message": "Please provide a reason for rejecting this exchange.",
       "confirm_reject_title": "Reject Exchange",
-      "description": "Review and approve or reject exchanges flagged for broker attention",
+      "description": "Exchanges that need a broker's decision, plus the full history of exchanges in your community.",
       "detail_approval_required": "Broker approval required",
       "detail_approved_label": "Broker approved",
       "detail_back_to_exchanges": "Back to Exchanges",
@@ -33630,7 +33761,7 @@ export default interface Resources {
       "modal_reject_title": "Reject Insurance Certificate",
       "modal_view_title": "Insurance Certificate",
       "no_members_found": "No members found.",
-      "page_description": "Manage member insurance certificates and verifications.",
+      "page_description": "Keep track of members' insurance certificates and whether each one has been checked.",
       "page_title": "Insurance Certificates",
       "reject": "Reject",
       "reject_certificate_aria": "Reject certificate",
@@ -34020,7 +34151,7 @@ export default interface Resources {
       "mark_reviewed": "Mark Reviewed",
       "mark_reviewed_aria": "Mark message as reviewed",
       "no_messages": "No messages to review.",
-      "page_description": "Review flagged conversations requiring broker oversight.",
+      "page_description": "Copies of member conversations sent to brokers for a safety check.",
       "quick_view_aria": "Quick view message",
       "quick_view_title": "Quick View",
       "retry": "Try again",
@@ -34035,12 +34166,12 @@ export default interface Resources {
       "severity_label": "Severity",
       "severity_urgent": "Urgent",
       "severity_warning": "Warning",
-      "stat_filtered": "In current filter",
-      "stat_filtered_hint": "Total matching this filter",
-      "stat_flagged": "Flagged in view",
-      "stat_flagged_hint": "Flagged rows on this page",
-      "stat_reviewed": "Reviewed in view",
-      "stat_reviewed_hint": "Reviewed rows on this page",
+      "stat_filtered": "Matching this filter",
+      "stat_filtered_hint": "Messages in the current tab",
+      "stat_flagged": "Flagged on this page",
+      "stat_flagged_hint": "Flagged messages among the rows shown",
+      "stat_reviewed": "Reviewed on this page",
+      "stat_reviewed_hint": "Reviewed messages among the rows shown",
       "stat_unreviewed": "Unreviewed messages",
       "stat_unreviewed_hint": "Across the whole queue",
       "status_reviewed": "Reviewed",
@@ -34061,7 +34192,7 @@ export default interface Resources {
       "title": "Feed Moderation"
     },
     "moderation_queue": {
-      "description": "Review content awaiting moderation before it goes live.",
+      "description": "Posts, listings and events waiting for approval before members can see them.",
       "title": "Content Queue"
     },
     "moderation_reports": {
@@ -34113,7 +34244,7 @@ export default interface Resources {
       "modal_title": "Monitor User",
       "no_expiry": "No expiry",
       "no_users_found": "No users found.",
-      "page_description": "Track members under broker oversight.",
+      "page_description": "Members whose messages are being checked by a broker for a while, and when that ends.",
       "page_title": "User Monitoring",
       "reason_label": "Reason",
       "reason_placeholder": "Why is this user being monitored?",
@@ -34219,7 +34350,7 @@ export default interface Resources {
       "confirm_remove_title": "Remove Risk Tag",
       "create_tag": "Create Tag",
       "created_success": "Risk tag created.",
-      "description": "Manage risk classifications on listings.",
+      "description": "Mark listings that need extra care, such as insurance, vetting or a broker's approval.",
       "edit_aria": "Edit risk tag",
       "empty_hint": "No listings are currently flagged. Tag a listing to apply controls like broker approval, insurance or vetting.",
       "empty_level_hint": "No listings currently carry this risk level.",
@@ -34314,6 +34445,8 @@ export default interface Resources {
       "tab_preferences": "Member Preferences",
       "tabs_aria": "Safeguarding tabs",
       "title": "Safeguarding",
+      "volunteering_incidents_description": "Safeguarding incidents reported through volunteering. You can update and close them; nobody sees or handles an incident about themselves.",
+      "volunteering_incidents_title": "Volunteering incidents",
       "yes": "Yes"
     },
     "safeguarding_options": {
@@ -34393,7 +34526,7 @@ export default interface Resources {
       "confirm_body": "Record the community decision for {{name}} under the applicable UK safeguarding scheme or schemes. NEXUS does not verify or retain certificates.",
       "confirm_button": "Confirm safeguarding certification",
       "confirm_title": "Confirm safeguarding certification",
-      "description": "Record UK-wide community safeguarding certifications without storing certificates or criminal-record information.",
+      "description": "Record which members have had their community safeguarding check confirmed. Certificates and criminal-record details are never stored here.",
       "details_title": "Certification details — {{name}}",
       "empty_filtered_hint": "Try another status or search term.",
       "empty_hint": "Members will appear here when they join this community.",
@@ -34448,10 +34581,10 @@ export default interface Resources {
       "scope_summary_help": "State exactly what this decision covers, for example adult workforce befriending or supervised activities with children.",
       "scope_summary_label": "Certified scope",
       "search_placeholder": "Search by member name...",
-      "stat_confirmed": "Confirmed attestations",
-      "stat_expired": "Expired confirmations",
-      "stat_review_requested": "Review requests",
-      "stat_revoked": "Revoked attestations",
+      "stat_confirmed": "Confirmed",
+      "stat_expired": "Expired",
+      "stat_review_requested": "Re-checks requested",
+      "stat_revoked": "Withdrawn",
       "stat_total_members": "Community members",
       "stats_error_title": "Vetting stats couldn't be loaded",
       "title": "Vetting confirmations",
@@ -36662,7 +36795,14 @@ export default interface Resources {
       "new_course": "New Course",
       "new_event": "New Event",
       "new_listing": "New Listing",
-      "new_podcast": "New Podcast"
+      "new_podcast": "New Podcast",
+      "section": {
+        "community": "Community",
+        "learning": "Learning",
+        "opportunities": "Opportunities",
+        "share": "Share",
+        "timebank": "Timebanking"
+      }
     },
     "credentials": {
       "status_expired": "Expired",
@@ -37154,6 +37294,7 @@ export default interface Resources {
       "banner": "You are viewing this account as an administrator.",
       "banner_named": "You are viewing {{name}}’s account as an administrator.",
       "handoff_failed": "That impersonation link has expired or was already used. Start again from the admin panel.",
+      "read_only": "Read-only support session. Return to your own account to make changes.",
       "stop": "Stop viewing"
     },
     "install": {
@@ -37455,6 +37596,7 @@ export default interface Resources {
       "coverage_intro": "Not everyone chooses to be listed. A member appears in this directory when:",
       "coverage_outro": "Everyone else is still a full member of the community. They just are not shown here.",
       "coverage_title": "You are seeing {{listed}} of the {{joined}} people who have joined",
+      "coverage_why": "Why?",
       "distance_km": "{{distance}} km",
       "empty_tip_location": "Try nearby members",
       "empty_tip_profiles": "Browse complete profiles",
@@ -37758,7 +37900,9 @@ export default interface Resources {
     "no_activity_title": "No activity yet",
     "not_available": "Not available",
     "oauth": {
+      "back_to_settings": "Back to account settings",
       "callback_failed": "Sign-in failed. Please try again.",
+      "callback_linking": "Linking your account…",
       "callback_signing_in": "Signing you in…",
       "cannot_disconnect_last": "Cannot disconnect your only sign-in method",
       "connect": "Connect",
@@ -37766,6 +37910,9 @@ export default interface Resources {
         "confirm": "This is your only remaining sign-in method. Disconnecting it will lock you out unless you set a password or add a passkey first. Continue?"
       },
       "connected_accounts": {
+        "community_subtitle": "Link a sign-in provider your community has set up, so you can use it to sign in to this account.",
+        "community_title": "Your community's sign-in providers",
+        "security_confirm_description": "Confirm your identity before connecting a new sign-in method.",
         "subtitle": "Sign in faster by connecting your Google, Apple, or Facebook account.",
         "title": "Connected accounts"
       },
@@ -37775,13 +37922,18 @@ export default interface Resources {
       "continue_with_google": "Continue with Google",
       "disconnect": "Disconnect",
       "disconnected": "Account disconnected.",
+      "link_failed": "We could not link this sign-in provider. Please try again from your account settings.",
+      "link_failed_title": "Could not link sign-in provider",
+      "link_identity_in_use": "This provider account is already linked to a different account in this community.",
+      "linked": "Sign-in provider linked.",
       "not_connected": "Not connected",
       "or_continue_with_email": "Or continue with email",
       "provider_apple": "Apple",
       "provider_facebook": "Facebook",
       "provider_google": "Google",
       "provider_unavailable": "Not available for this community",
-      "sign_in_with_provider": "Sign in with {{name}}"
+      "sign_in_with_provider": "Sign in with {{name}}",
+      "sso_link_required": "If you already have an account with this community, sign in with your usual method first, then link this provider from your account settings."
     },
     "offer_favour": {
       "back": "Back to Community Hub",
@@ -38183,6 +38335,8 @@ export default interface Resources {
     "question_required": "Required",
     "quick_create": {
       "close_aria": "Close create menu",
+      "new_challenge": "New Challenge",
+      "new_challenge_desc": "Invite ideas on a shared problem",
       "new_course": "New Course",
       "new_course_desc": "Teach a skill to your community",
       "new_event": "New Event",
@@ -38191,10 +38345,24 @@ export default interface Resources {
       "new_goal_desc": "Set a personal goal",
       "new_group": "New Group",
       "new_group_desc": "Start a community group",
+      "new_job": "New Job Vacancy",
+      "new_job_desc": "Advertise a paid role",
       "new_listing": "New Listing",
       "new_listing_desc": "Offer or request a service",
+      "new_marketplace_listing": "New Marketplace Listing",
+      "new_marketplace_listing_desc": "Sell or give away an item",
+      "new_message": "New Message",
+      "new_message_desc": "Start a conversation with a member",
+      "new_organisation": "Register an Organisation",
+      "new_organisation_desc": "Add a charity, group or business",
       "new_podcast": "New Podcast",
       "new_podcast_desc": "Start a show or record an episode",
+      "new_poll": "New Poll",
+      "new_poll_desc": "Ask your community a question",
+      "new_post": "New Post",
+      "new_post_desc": "Share an update with your community",
+      "new_volunteering": "New Volunteering Opportunity",
+      "new_volunteering_desc": "Ask for volunteers to help out",
       "offer_time": "Offer Time",
       "offer_time_desc": "Open the care hub",
       "title": "Create New"
@@ -38298,14 +38466,21 @@ export default interface Resources {
       "transfer": {
         "amount": "Amount",
         "amount_placeholder": "0.00",
+        "cancel": "Cancel",
+        "change_recipient": "Change",
+        "confirm_body": "Check this is the right person. You cannot undo a transfer once it is sent.",
+        "confirm_button": "Yes, send points",
+        "confirm_title": "Send {{points}} {{symbol}} to {{name}}?",
         "errors": {
-          "invalid_amount": "Enter a positive amount",
-          "invalid_recipient": "Enter a valid recipient member ID"
+          "choose_recipient": "Choose a member to send points to",
+          "invalid_amount": "Enter a positive amount"
         },
         "message": "Message (optional)",
         "message_placeholder": "Add a note for the recipient",
-        "recipient_id": "Recipient member ID",
-        "recipient_placeholder": "e.g. 123",
+        "recipient_hint": "Type at least 2 letters to search",
+        "recipient_label": "Who are you sending points to?",
+        "recipient_no_results": "No members found",
+        "recipient_search_placeholder": "Search by name...",
         "submit": "Send transfer",
         "success": "Transfer sent",
         "title": "Send points to another member"
@@ -38450,7 +38625,7 @@ export default interface Resources {
         "title": "My Safeguarding Reports"
       },
       "submit": {
-        "confidentiality": "Your report is sent only to designated safeguarding coordinators in your community. The person you report will not see your identity unless you choose to disclose it.",
+        "confidentiality": "Your report is read by the people who look after safeguarding in your community: its coordinators, brokers and administrators. They can see your name so they can follow up with you. The person you report cannot see your report, and will not learn your identity unless you choose to share it.",
         "errors": {
           "submit_failed": "We couldn't submit your report. Please try again or contact a coordinator directly."
         },
@@ -41396,6 +41571,8 @@ export default interface Resources {
     "session_expiring": "Your session is about to expire",
     "session_expiring_countdown_aria": "Session expires in {{seconds}} seconds",
     "session_expiring_message": "Your session will expire in {{seconds}} seconds. Extend your session to stay logged in.",
+    "session_mfa_required": "Two-factor authentication now required",
+    "session_mfa_required_message": "Your account now requires two-factor authentication. Please sign in again to set it up.",
     "update_available": "Update available",
     "validation": {
       "badge_keys_must_be_array": "badge_keys must be an array",
@@ -41525,7 +41702,6 @@ export default interface Resources {
         "failed_credit_claims": "Failed credit claims",
         "failed_deliveries": "Notifications failed",
         "finance": "Financial metrics",
-        "guardian_consents": "Guardian consents",
         "invitation_conversion": "Invitation conversion",
         "invitations_accepted": "Invitations accepted",
         "invitations_issued": "Invitations issued",
@@ -42559,12 +42735,10 @@ export default interface Resources {
         "confirm_archive": "Archive now",
         "edit_review": "Update decision",
         "publish": "Publish requirements",
-        "request_guardian_consent": "Request guardian consent",
         "retry": "Try again",
         "save_draft": "Save draft",
         "save_review": "Save review decision",
         "withdraw_acknowledgement": "Withdraw acknowledgement",
-        "withdraw_guardian_consent": "Withdraw consent request",
         "withdraw_review": "Withdraw decision"
       },
       "attendee": {
@@ -42577,9 +42751,7 @@ export default interface Resources {
         "loading": "Loading participation requirements",
         "success": {
           "acknowledge": "Code of conduct acknowledged.",
-          "request_guardian": "Guardian consent request sent.",
-          "withdraw_code": "Code acknowledgement withdrawn.",
-          "withdraw_guardian": "Guardian consent request withdrawn."
+          "withdraw_code": "Code acknowledgement withdrawn."
         },
         "title": "Participation requirements"
       },
@@ -42595,8 +42767,6 @@ export default interface Resources {
       "confirmations": {
         "withdraw_code_body": "This may block your participation until you acknowledge the current version again.",
         "withdraw_code_title": "Withdraw your code-of-conduct acknowledgement?",
-        "withdraw_guardian_body": "The current request will become invalid. You may need to send a new request before participating.",
-        "withdraw_guardian_title": "Withdraw the guardian consent request?",
         "withdraw_review_body": "This ends the active decision for {{name}} while preserving its audit history.",
         "withdraw_review_title": "Withdraw this participation decision?"
       },
@@ -42609,43 +42779,6 @@ export default interface Resources {
         "deny": "Participation blocked",
         "not_evaluated": "Not yet evaluated",
         "unavailable": "Verification unavailable"
-      },
-      "guardian": {
-        "description": "The guardian receives a private, time-limited link. Their identity and consent token are never shown in the event roster.",
-        "email_label": "Guardian email",
-        "name_label": "Guardian name",
-        "privacy_notice": "The address is encrypted for delivery and removed from the delivery envelope after processing.",
-        "relationship_label": "Relationship to the attendee",
-        "relationships": {
-          "carer": "Carer",
-          "guardian": "Guardian",
-          "legal_guardian": "Legal guardian",
-          "parent": "Parent"
-        },
-        "status": {
-          "active": "Consent granted",
-          "expired": "Expired",
-          "not_required": "Not required",
-          "pending": "Awaiting guardian",
-          "required": "Consent required",
-          "withdrawn": "Withdrawn"
-        },
-        "title": "Guardian consent"
-      },
-      "guardian_grant": {
-        "browse_events": "Browse events",
-        "confirm_label": "I am the named parent, guardian or carer and I consent to this attendee taking part.",
-        "description": "Confirm the email address that received this private link, then give consent for the attendee to take part under the event's published safety requirements.",
-        "email_hint": "Enter the same address that received the consent request.",
-        "email_label": "Guardian email address",
-        "invalid_description": "The link or email address may be incorrect, expired or already completed. Ask the attendee to send a new request.",
-        "invalid_title": "This consent link cannot be used",
-        "page_title": "Guardian consent",
-        "privacy_notice": "The link is time limited and can be used only for this event and requirement version. The response does not reveal whether an email address is registered.",
-        "submit": "Give consent",
-        "success_description": "The attendee can now continue once any other event requirements are complete.",
-        "success_title": "Consent recorded",
-        "title": "Review guardian consent"
       },
       "organizer": {
         "action_error": "The safety change could not be saved. Refresh the workspace and try again.",
@@ -42704,12 +42837,8 @@ export default interface Resources {
         "code_version": "Code text version",
         "code_version_hint": "Use a meaningful identifier, such as event-conduct-2026-01.",
         "description": "Draft changes are private until published. Publishing creates an immutable version for evidence matching.",
-        "guardian_required": "Require guardian consent for minors",
-        "guardian_required_hint": "Consent is bound to the exact published requirement version and event date.",
         "minimum_age": "Minimum age",
         "minimum_age_hint": "Leave blank when the event has no minimum age.",
-        "minor_threshold": "Minor age threshold",
-        "minor_threshold_hint": "Members below this age at the event need consent.",
         "status": {
           "archived": "Archived",
           "draft": "Draft",
@@ -44071,6 +44200,40 @@ export default interface Resources {
       "workflow_not_enabled": "Exchange workflow is not enabled"
     },
     "service_exchange": "Service Exchange",
+    "status_config": {
+      "accepted": {
+        "description": "The exchange has been accepted. The provider can start when ready.",
+        "label": "Accepted"
+      },
+      "cancelled": {
+        "description": "This exchange was cancelled.",
+        "label": "Cancelled"
+      },
+      "completed": {
+        "description": "The exchange has been completed and credits have been transferred.",
+        "label": "Completed"
+      },
+      "disputed": {
+        "description": "There is a disagreement about the hours. A broker will review this.",
+        "label": "Disputed"
+      },
+      "in_progress": {
+        "description": "The service is currently being provided.",
+        "label": "In Progress"
+      },
+      "pending_broker": {
+        "description": "This exchange requires broker approval before it can proceed.",
+        "label": "Awaiting Broker"
+      },
+      "pending_confirmation": {
+        "description": "Both parties need to confirm the hours worked to complete the exchange.",
+        "label": "Confirm Hours"
+      },
+      "pending_provider": {
+        "description": "Waiting for the service provider to accept or decline this request.",
+        "label": "Awaiting Provider"
+      }
+    },
     "subtitle": "Track your service exchange requests and confirmations",
     "tabs": {
       "active": "Active",
@@ -44517,6 +44680,8 @@ export default interface Resources {
       "not_found_description": "This member is no longer available or could not be loaded.",
       "not_found_error": "Member not found.",
       "not_found_heading": "Member not found",
+      "optin_required_action": "Federation settings",
+      "optin_required_heading": "Federation is not switched on for your account",
       "optin_required_tooltip": "Enable federation in your settings to connect with members on partner timebanks.",
       "page_title": "Member Profile",
       "reach_local_only": "Local only",
@@ -44843,6 +45008,16 @@ export default interface Resources {
       "breadcrumb_federation": "Federation",
       "breadcrumb_settings": "Settings",
       "communication": "Communication",
+      "debit_approval_expires": "Request expires {{date}}",
+      "debit_approval_note": "Approving does not move credits until the partner completes the transfer.",
+      "debit_approval_summary": "Approve {{amount}} hours to {{payee}}?",
+      "debit_approvals_heading": "Transfers awaiting your approval",
+      "debit_approvals_load_error": "Could not load pending transfers.",
+      "debit_approve": "Approve transfer",
+      "debit_decision_error": "Could not save your decision. Please try again.",
+      "debit_decision_saved": "Transfer decision saved",
+      "debit_reject": "Decline transfer",
+      "debit_reversal_summary": "Approve returning {{amount}} hours to {{payee}}?",
       "disable": "disable",
       "disable_federation": "Disable Federation",
       "email_notifications_description": "Receive email notifications for federation messages and activity.",
@@ -45792,6 +45967,15 @@ export default interface Resources {
         "title": "Goal buddies keep people moving"
       },
       "buddy_label": "Buddy",
+      "buddy_request_sent_chip": "Buddy offer sent",
+      "buddy_requests": {
+        "accept": "Accept",
+        "accept_aria": "Accept {{name}} as your buddy",
+        "decline": "Decline",
+        "decline_aria": "Decline the buddy offer from {{name}}",
+        "description": "These members have offered to support this goal. Nobody becomes your buddy unless you accept.",
+        "title": "Buddy offers"
+      },
       "create_goal": "Create Goal",
       "detail": {
         "buddy": "Buddy",
@@ -45801,6 +45985,7 @@ export default interface Resources {
         "goal_owner": "Goal Owner",
         "insights": "Goal insights",
         "no_buddy": "No buddy yet. Public goals can be picked up from Discover by another member.",
+        "no_buddy_consent": "No buddy yet. Members can offer to support this goal, and the goal owner decides whether to accept.",
         "no_progress": "No progress updates recorded yet.",
         "progress": "Progress",
         "progress_aria": "Goal progress: {{percent}}%",
@@ -45849,6 +46034,7 @@ export default interface Resources {
         "target_value_placeholder": "100"
       },
       "new_goal": "New Goal",
+      "offer_buddy": "Offer to be buddy",
       "overdue": "Overdue: ",
       "page_title": "Goals",
       "status": {
@@ -45868,6 +46054,10 @@ export default interface Resources {
         "buddy_action_sent": "Buddy support sent",
         "buddy_failed": "Failed to become buddy",
         "buddy_joined": "You are now a buddy!",
+        "buddy_request_accepted": "Buddy offer accepted",
+        "buddy_request_declined": "Buddy offer declined",
+        "buddy_request_failed": "Could not update the buddy offer",
+        "buddy_requested": "Offer sent. You will become a buddy once the goal owner accepts.",
         "complete_failed": "Failed to mark goal as complete",
         "completed": "Goal completed! Congratulations!",
         "create_failed": "Failed to create goal",
@@ -46180,6 +46370,7 @@ export default interface Resources {
     "create": {
       "add_participants": "Add Participants",
       "add_participants_desc": "Search for members and add them as providers or receivers. You need at least 1 provider and 1 receiver.",
+      "add_yourself": "Add yourself as",
       "aria_hour_split_preview": "Hour split preview",
       "back": "Back",
       "breadcrumb": "Create",
@@ -47146,6 +47337,8 @@ export default interface Resources {
       "vote_failed": "Failed to vote"
     },
     "try_again": "Try Again",
+    "type_filter_all": "All types",
+    "type_filter_label": "Group type",
     "unable_to_load": "Unable to Load Groups",
     "webhooks": {
       "active": "Active",
@@ -47235,6 +47428,1936 @@ export default interface Resources {
       "saved": "Page saved",
       "title_label": "Page Title",
       "title_placeholder": "Enter page title"
+    }
+  },
+  "help_admins": {
+    "sections": {
+      "admin_communication": {
+        "articles": {
+          "admin_inactive_members": {
+            "body": "The **Inactive members** page helps you find people who have stopped using your community, so you can check in with them.\n\nOpen **Analytics & Reporting** in the admin menu and press **Inactive Members**.\n\n## Finding inactive members\n\n1. Choose a **Days Threshold**, the number of days without activity.\n2. Press **Run Detection**.\n3. The list shows each member's last activity and last sign-in, grouped as at risk, inactive or dormant.\n\nPress **Export CSV** to download the list.\n\n## Sending a reminder\n\n1. Tick the members you want to contact.\n2. Press **Mark as Notified**.\n\n> Pressing **Mark as Notified** sends each selected member a friendly email inviting them back to your community. It does not only record a note.\n\nThe **Notified** column then shows who has been sent a reminder, so you do not contact people twice.\n\nA phone call or a personal message often works better than an email, especially for older members. Use the list to plan who to call.",
+            "summary": "Find members who have gone quiet and send them a friendly reminder to come back.",
+            "title": "Reaching out to inactive members"
+          },
+          "admin_newsletter_send": {
+            "body": "Newsletters are emails you send to your members and subscribers. Open **Marketing** in the admin menu and press **Newsletters**.\n\n## Writing a newsletter\n\n1. Press **Create Newsletter**.\n2. Under **Details**, write a **Subject Line** and **Preview Text**. Preview text is the short line people see before they open the email.\n3. Write your content. You can press **Load Template** to start from a template.\n4. Under **Target Audience**, choose who receives it: **All members**, **Members and subscribers**, **Subscribers only** or **Specific segment**.\n5. Press **Create** to save it as a draft.\n\n## Testing it\n\nPress **Send Test**. A copy goes to your own email address. Check it on your phone and computer.\n\n## Sending\n\n- To send now, press **Send Now**. It shows how many people will receive it. Confirm with **Save and send**.\n- To send later, set **Status** to **Scheduled** and choose a **Scheduled Date**. Then save.\n\n## After sending\n\nThe newsletter list shows open and click rates. Press **Stats** for more detail. You can also **Duplicate** a newsletter to reuse it, or **Resend to Non Openers**.\n\n> Once a newsletter is sent, it cannot be called back. Always send yourself a test first.",
+            "summary": "Write a newsletter, test it, and send it now or schedule it for later.",
+            "title": "Sending a newsletter"
+          },
+          "admin_newsletter_subscribers": {
+            "body": "Subscribers are the people who receive your newsletter. Open **Marketing** in the admin menu and press **Subscribers**.\n\n## Adding people\n\n- Press **Add Subscriber** to add one person by email.\n- Press **Import CSV** to add many people from a spreadsheet file. It needs an email column.\n- Press **Sync Now** under **Sync Platform Members**. This adds active, approved members who have chosen to receive newsletters.\n\n## Sharing a sign-up link\n\nCopy the **Public Subscribe Link** and share it, for example on posters or social media. People can use it to sign up themselves.\n\n## Other tasks\n\n- Press **Export CSV** to download your list.\n- Press **Remove Subscriber** next to someone to take them off the list.\n\n## Emails that do not arrive\n\nOpen **Bounces** under **Marketing** to see email addresses that could not be delivered. Check them and remove any that are wrong.\n\nSetting up how emails are sent for your community is handled by the platform team.\n\n> Only add people who have agreed to receive your newsletter. Everyone must be able to unsubscribe.",
+            "summary": "Add, import, export and remove newsletter subscribers, and share your sign-up link.",
+            "title": "Managing newsletter subscribers"
+          }
+        },
+        "summary": "Send newsletters, manage subscribers and reach out to members who have gone quiet.",
+        "title": "Newsletters and keeping in touch"
+      },
+      "admin_content": {
+        "articles": {
+          "admin_blog": {
+            "body": "The blog is a good place for community news, stories and updates.\n\n1. Open **Content** in the admin menu and press **Blog Posts**.\n2. Press **Create blog post**.\n3. Enter a **Title** and write your post under **Content**.\n4. Add a short **Excerpt**. It is shown in lists of posts.\n5. Add a **Featured image** if you like. JPEG, PNG, GIF or WebP files up to 10 MB work.\n6. Choose one or more **Categories**.\n7. Set **Status** to **Draft** to keep working, or **Published** to share it.\n8. Press **Create blog post**.\n\nMembers read published posts on the [Blog](/blog) page.\n\n## Editing a post\n\nOn the **Blog Admin** page, open the post, make your changes and press **Save changes**. You can switch a post back to **Draft** to hide it.\n\n## Working with several posts\n\nTick the posts you want, then choose an action such as publish, archive or delete.\n\n> Write short paragraphs and add a clear title. Many members read on a phone.",
+            "summary": "Share news with your community by writing and publishing blog posts.",
+            "title": "Writing a blog post"
+          },
+          "admin_categories": {
+            "body": "Categories help members find what they need. Members choose one when they post a listing or an event, for example \"Gardening\" or \"Transport\".\n\nOpen **Listings** in the admin menu and press **Categories**. If your community does not use listings, you find **Categories** under **Content** instead.\n\n## Adding a category\n\n1. Press **Add category**.\n2. Enter a **Name**.\n3. Choose a **Type**: **Listing**, **Event**, **Blog**, **Resource** or **Vol Opportunity** (volunteering).\n4. Choose a **Colour**.\n5. Press **Create category**.\n\n## Viewing by type\n\nUse the tabs **All**, **Listings**, **Events**, **Blog** and **Volunteering** to see one type at a time.\n\n## Changing or removing a category\n\nUse the actions on a category row to edit it. Press **Save changes** when you are done. To remove a category, choose delete and confirm. This cannot be undone.\n\n> Use everyday words for category names. Members search with the words they use themselves.",
+            "summary": "Create the categories members choose when they post listings, events, blog posts or volunteering.",
+            "title": "Managing categories"
+          },
+          "admin_event_rewards": {
+            "body": "If your community uses attendance rewards, members can receive hours for going to an event. The hours are paid when their attendance is checked and confirmed.\n\n## Setting a reward for an event\n\n1. Open **Community** in the admin menu and press **Events**.\n2. Open the actions for the event and press **Attendance reward**.\n3. Enter the **Reward per attendee (credits)**. Leave it empty for no reward.\n4. Press **Save reward**.\n\nThe hours are created by the community. They are not taken from the organiser.\n\nIf you see a message that minting is switched off at platform level, you can still set amounts. They are paid once the platform team switches rewards on.\n\n## Setting a monthly limit\n\nOpen **Event Settings**. In **Attendance rewards**, enter a **Monthly reward cap (credits)** if you want a limit. Leave it empty for no limit.\n\n## Checking and correcting rewards\n\nOn **Event Settings**, press **Open claims ledger**. This shows every reward with its **Status**, such as **Completed** or **Failed**.\n\n- Press **Retry** to try paying a failed reward again.\n- Press **Reverse** to take a reward back. Give a **Reason**. The member's balance may go below zero if they have already spent the hours.",
+            "summary": "Give members hours automatically when their attendance at an event is confirmed.",
+            "title": "Rewarding event attendance with hours"
+          },
+          "admin_events": {
+            "body": "You can see and manage every event in your community. Open **Community** in the admin menu and press **Events**.\n\n## Finding events\n\nUse the tabs **All**, **Draft**, **Pending review**, **Published**, **Cancelled** and **Archived**. Use **Search events...** to find one by name.\n\n## What you can do\n\nOpen the actions for an event. The choices depend on its status and can include:\n\n- **Approve** or **Reject**, for events waiting for review.\n- **Postpone** or **Cancel event**.\n- **Mark complete** or **Archive**, when it is over.\n- **Restore**, to bring back an archived event.\n- **Delete Event**, to remove it for good.\n\nYou can add a **Reason** to explain your decision. It is kept in the event's history and helps the organiser.\n\n## Choosing who can create events\n\nOpen **Event Settings** under **Community**. Choose **Who can create Events**, and switch on **Require Event approval** if events must be checked first. Add a **Reason for change**, then press **Save Event settings**.\n\n> Cancelling an event is kinder than deleting it. People who planned to come can see what happened.",
+            "summary": "Approve, change, cancel or remove events, and choose who can create them.",
+            "title": "Managing events"
+          },
+          "admin_groups": {
+            "body": "Groups let members with shared interests come together. Open **Community** in the admin menu and press **Groups**.\n\n## The group list\n\nThe **Group List** shows every group with its creator, number of members and status. Use the tabs to see groups that are **Pending review**, **Active**, **Dormant**, **Archived** or **Rejected**.\n\n## Changing a group's status\n\nOpen the actions for a group. Depending on its status you can:\n\n- **Approve and activate** a group waiting for review.\n- **Set as dormant** a group that has gone quiet.\n- **Reactivate** or **Restore to active** a dormant or archived group.\n- **Archive** a group that has finished.\n\nYou can also **View Group** or **Edit Group**.\n\n## Deleting a group\n\nPress **Delete Group**. To prevent mistakes, you are asked to type a confirmation. Deleting cannot be undone. Archiving is usually a better choice.\n\n## Membership requests\n\nPress **Approvals** to open **Group Approvals**. It lists people asking to join private groups. Press **Approve Membership** or **Reject Membership**.\n\n## Group types\n\nUnder **Group Types** you can create categories for groups, such as \"Neighbourhood\" or \"Hobby\". Press **Create Group Type**.",
+            "summary": "Approve new groups, handle membership requests and tidy up groups that are no longer active.",
+            "title": "Managing groups"
+          },
+          "admin_listings": {
+            "body": "Listings are the offers and requests members post. You manage them on the **Listings Admin** page. Open **Listings** in the admin menu and press **All Content**.\n\n## Finding listings\n\nUse the filters **All**, **Active**, **Inactive** and **Pending**. **Pending** shows listings waiting for approval. Use the search box to find a listing by its words.\n\n## Approving, rejecting and deleting\n\nEach listing has actions:\n\n- **Approve**: the listing goes live.\n- **Reject**: the listing does not go live.\n- **Delete**: removes the listing for good. This cannot be undone.\n\nYou are asked to confirm each time.\n\n## Featuring\n\nFeatured listings are shown more prominently to members. Press **Feature** on a listing, or open the **Featured** tab and search for an active listing. Press **Unfeature** to stop featuring it.\n\n## Holding new listings for checking\n\nTo check every new listing before members see it, open [Module Configuration](/admin/module-configuration). Press **Configure** on **Listings** and switch on **Require Moderation**. Then press **Save Changes**.\n\n> Brokers can also check held content in the Broker Panel, under **Content Queue**.",
+            "summary": "Check new listings, approve or reject them, and feature the best ones.",
+            "title": "Approving and featuring listings"
+          },
+          "admin_moderation": {
+            "body": "Checking content is done in the **Broker Panel**, which admins can use too. Press **Broker Panel** under **Overview** in the admin menu.\n\n## Content waiting for approval\n\nOpen **Content Queue**. It lists items held for checking, such as new listings or events.\n\n1. Read the item.\n2. Press **Approve** to let it go live.\n3. Or press **Reject**. Write a short reason so the author knows why.\n\nThe **Moderation Settings** on this page let you choose which kinds of content need checking, and whether suspicious content is flagged automatically.\n\n## Reports from members\n\nMembers can report content they think breaks your rules. Open **Reports** in the Broker Panel. The page is called **Reports Management**.\n\n1. Press **View details** to see what was reported, by whom and why.\n2. Deal with the content if needed, for example by removing it.\n3. Press **Resolve** when you have dealt with it, or **Dismiss** if no action is needed.\n\n## Other checks\n\nThe Broker Panel also has **Feed Posts** and **Comments** pages, and **Reviews** if your community uses reviews.\n\n> Be consistent. Decide with your team what is and is not allowed, and write it in your community guidelines.",
+            "summary": "Review content waiting for approval and deal with reports from members, in the Broker Panel.",
+            "title": "Checking reported and held content"
+          },
+          "admin_pages": {
+            "body": "You can add your own pages, such as \"How our timebank works\" or \"Contact us\".\n\n## Creating a page\n\n1. Open **Content** in the admin menu and press **Pages**.\n2. Press **Create Page**.\n3. Enter the page name and write the content.\n4. Check the **URL Slug**. This is the end of the page's web address, for example /page/about-us. It is filled in for you from the title.\n5. Set **Status** to **Draft** or **Published**.\n6. Under **Navigation Settings**, switch on **Show in menu** if you want a link to it. Choose a **Location**: **About Section** or **Footer**. Use **Menu Order** to set its position.\n7. Press **Create Pages**. When editing later, press **Save Changes**.\n\n## Your landing page\n\nThe landing page is the first page visitors see before they sign in.\n\n1. Open **Content** and press **Landing Page**.\n2. Edit the sections, such as **Hero**, **Audience cards**, **Feature highlights**, **Community stats**, **How it works**, **Core values** and **Call to action**.\n3. Press **Save changes**.\n\nIf you want to start again, press **Reset to defaults**. This replaces all your landing page changes.\n\n> Use **Preview** where it is offered to check a page before members see it.",
+            "summary": "Create information pages, add them to the menu, and design your public landing page.",
+            "title": "Adding your own pages and landing page"
+          },
+          "admin_resources": {
+            "body": "The knowledge base holds useful articles and documents for your members, such as a welcome pack or a guide to local services.\n\nOpen **Content** in the admin menu and press **Resources**. The **Resources Admin** page lists your articles with their status, views and how many people found them helpful. Use the **All**, **Published** and **Draft** tabs to filter.\n\n## Adding an article\n\n1. Press **New Article**.\n2. Enter a **Name**.\n3. Choose **Write** to type the article, or **Upload File** to use a document.\n4. Choose **Categories** if you use them.\n5. Switch on **Published** when it is ready for members, then press **Create Resources**. When you edit it later, press **Save Changes**.\n\nYou can add documents to an article under **Attachments** with **Add Attachment**.\n\n## Categories\n\nPress **Manage Categories** to organise your articles into groups.\n\n## Where members read them\n\nMembers find published articles in the [Knowledge base](/kb).\n\n> Keep articles short and check them once a year, so information such as phone numbers stays correct.",
+            "summary": "Write helpful articles and upload documents for members to read.",
+            "title": "Managing knowledge base articles"
+          }
+        },
+        "summary": "Listings, categories, blog, pages, knowledge base, events, groups and checking reported content.",
+        "title": "Content and moderation"
+      },
+      "admin_federation": {
+        "articles": {
+          "admin_federation_partnerships": {
+            "body": "You manage partnerships in **Partner Timebanks**. Open it from **Overview** in the admin menu.\n\n## Asking a community to partner\n\n1. Press **Partner directory**, then the **Browse partners** tab.\n2. Search for the community.\n3. Press **Request Partnership**.\n4. Add a short message if you like, then press **Send Request**.\n\nThe button changes to **Request Pending**. The other community can accept, decline or suggest different terms.\n\n## Answering a request\n\n1. Press **Partnerships**, then the **Incoming Requests** tab.\n2. Press **Approve** or **Reject**.\n3. Or press **Suggest different terms**. Choose the **Partnership level** and **What members can share**, then send it back.\n\n## Changing what members can share\n\nOpen an active partnership and choose the **Permissions** tab. Change what members can share. You can only do this while the partnership is active.\n\n## Ending a partnership\n\nOpen the partnership and press **Terminate**. Members of both communities lose access to each other's profiles, messages and exchanges.\n\n## How your community appears to others\n\nPress **Partner directory**, then **Our listing**. Check your community name, description, contact email, website and topics, then save your changes.",
+            "summary": "Ask another community to partner with yours, answer their requests and choose what members can share.",
+            "title": "Requesting and managing partnerships"
+          },
+          "admin_federation_switch_on": {
+            "body": "Federation lets your community partner with other communities on this platform. Members of partner communities can then find each other, message and exchange, depending on what you agree.\n\n## Switching it on\n\n1. Open [Module Configuration](/admin/module-configuration).\n2. Find **Federation** and press its switch.\n\nA new entry, **Partner Timebanks**, then appears under **Overview** in the admin menu. This is where you manage partnerships.\n\nThe platform team also controls whether communities on your installation can connect. If the partner directory stays empty, ask them.\n\n## Members choose for themselves\n\nSwitching federation on does not share anyone automatically. Each member decides. They visit the federation page in the member menu and press **Enable Federation**. They can also choose how visible their profile is.\n\n## Other platforms\n\nPartnerships are only with communities on this platform. Connecting with other platforms is not available.\n\n> Before you partner with another community, talk to them. Agree how you will handle problems between members.",
+            "summary": "Switch on Federation so your community can partner with other communities on the same platform.",
+            "title": "Connecting with other communities"
+          }
+        },
+        "summary": "Partner with other communities on the platform so your members can connect and exchange with theirs.",
+        "title": "Connecting with other communities"
+      },
+      "admin_getting_started": {
+        "articles": {
+          "admin_dashboard": {
+            "body": "When you open the admin panel, you land on the dashboard. It is called **Mission Control** and gives you a quick picture of your community.\n\n## Numbers at the top\n\nYou see figures such as **Total Members**, **Active Listings**, **Transactions** and **Hours Exchanged**. A second row shows **New Users This Month**, **Active Users**, **Total Listings** and **New Listings This Month**. Press **Refresh** to update them.\n\n## Things waiting for you\n\nWhen something needs your attention, a card appears with a **Review** button. For example:\n\n- **Members awaiting approval**: people who have signed up and are waiting to be let in.\n- **Listings awaiting moderation**: new listings held back for checking.\n- **Volunteering organizations awaiting approval**: only if your community uses volunteering.\n\n## Quick actions\n\nThe **Quick Actions** card has shortcuts such as **Manage Users**, **View Listings**, **New Blog Post** and **Settings**. If your community uses newsletters, you also see **Send Newsletter**.\n\n## Charts and activity\n\n**Transaction Trends** shows how many hours changed hands each month. **Real-time Activity** lists the latest things that happened in your community.\n\n> If you see a red card titled **Safeguarding step is OFF in your onboarding wizard**, read the Safeguarding section of this guide before you press its button.",
+            "summary": "The first page of the admin panel gives a quick picture of your community and anything waiting for you.",
+            "title": "What does the admin dashboard show?"
+          },
+          "admin_find_your_way": {
+            "body": "The menu on the left of the admin panel lists every page you can use. It is grouped under headings such as **People**, **Community**, **Communications**, **Growth**, **Commerce** and **Platform**.\n\n## Opening a group\n\nPress a group name, such as **Users** or **Content**, to see the pages inside it. Only one group opens at a time.\n\n## Searching the menu\n\nIf you cannot find a page, type a word into the box at the top of the menu that says **Search admin...**. For example, type \"categories\" or \"newsletter\". Press a result to go straight there.\n\n## Needs Attention\n\nWhen people are waiting for you, a short list called **Needs Attention** appears at the top of the menu. For example, **Pending Approvals** shows a number when new members are waiting to be approved.\n\n## Why some pages are missing\n\nThe menu only shows pages for features your community uses. If Events is switched off, for example, the Events pages are hidden. See \"How do I switch features on and off?\" in this guide.\n\nSome pages are only for the platform team, so you will not see them.\n\n## Making more room\n\nPress the button next to the word **Admin** at the top of the menu to fold the menu away. Press it again to open it.",
+            "summary": "How the admin menu is organised, how to search it and what the Needs Attention list means.",
+            "title": "Finding your way around the admin menu"
+          },
+          "admin_open_panel": {
+            "body": "The admin panel is where you set up and run your community. You open it from the thin bar at the very top of every page.\n\n1. Sign in with your admin account.\n2. Look at the bar at the top of the page.\n3. Press **Admin Panel**.\n\nOn a phone, open the menu and press **Admin Panel** there.\n\nYou only see this button if your account has admin rights. If you expected to see it and cannot, ask another admin in your community to check your role.\n\n## Going back to the member site\n\nPress **Back to site** at the top of the admin panel. You stay signed in, and you can come back at any time.\n\n## Signing out\n\nOpen the menu with your name or picture in the top right corner of the admin panel. Press **Sign Out**.\n\n> Changes you make in the admin panel affect everyone in your community. Check your work before you save.",
+            "summary": "Open the admin panel from the bar at the top of the site, and find your way back to the member pages.",
+            "title": "How do I open the admin panel?"
+          },
+          "admin_roles_explained": {
+            "body": "Your community has two kinds of staff roles. Admins set the community up. Brokers look after members day to day. Some communities call brokers \"coordinators\".\n\n## What admins do\n\n- Change community settings, branding and languages.\n- Switch features on and off.\n- Publish legal documents such as your terms.\n- Give people roles, and ban or delete accounts.\n- Everything a broker can do.\n\n## What brokers do\n\nBrokers work in the **Broker Panel**. There they approve new members, review exchanges and messages, check reported content, handle safeguarding and record vetting. They can also correct a member's balance, but not their own.\n\nBrokers cannot open the admin panel. They cannot change roles, community settings or legal documents, and they cannot ban or delete accounts.\n\n## Using the Broker Panel yourself\n\nAs an admin you can use the Broker Panel too. Press **Broker Panel** under **Overview** in the admin menu.\n\n## Other admin levels\n\nSome organisations run several communities together. A senior admin for that group may see **Super Admin Panel** in the menu, which covers the communities beneath theirs.\n\nThe platform team looks after the whole installation. A few settings are theirs alone. You will see a **Super admin only** label next to those.",
+            "summary": "Admins set up the community. Brokers run it day to day in their own Broker Panel.",
+            "title": "Admins, brokers and coordinators: what is the difference?"
+          }
+        },
+        "summary": "What the admin panel is, how to open it and how the admin role differs from brokers.",
+        "title": "Getting started as an admin"
+      },
+      "admin_help": {
+        "articles": {
+          "admin_ai_docs": {
+            "body": "If your community uses the AI assistant, it answers members' questions using a set of short documents. You can edit them to add your own rules and wording.\n\nOpen **Intelligence & Diagnostics** in the admin menu and press **AI Module Docs**.\n\n## How it works\n\nEach document has trigger keywords. When a member's question contains one of those words, the assistant reads that document before it answers. It uses up to four documents at a time.\n\n## Adding a document\n\n1. Press **New doc**.\n2. Enter a **Title**.\n3. Enter a **Module slug**, a short name using lowercase letters, numbers, dashes or underscores. You cannot change it later.\n4. Under **Trigger keywords (comma-separated)**, list the words that should bring this document up.\n5. Write the **Body** in plain language: what the feature does, how to use it and what is not possible.\n6. Keep **Active** switched on.\n7. Press **Create doc**.\n\nTo stop the assistant using a document, switch off **Active**. Inactive documents are never used.\n\n## Starter documents\n\nNew communities receive a starter set of documents. Press **Seed defaults** to add any that are missing. Your own changes are not overwritten.\n\n> The assistant can still make mistakes. Tell members to check important answers with your team.",
+            "summary": "Edit the short documents the AI assistant reads when it answers members' questions.",
+            "title": "Teaching the AI assistant about your community"
+          },
+          "admin_help_faqs": {
+            "body": "The Help Centre explains how the platform works. You can add questions and answers about your own community, such as opening times or local rules. Members see them in the [Help Centre](/help), as questions from your community.\n\n## Adding a question\n\n1. Open **Content** in the admin menu and press **Help FAQs**.\n2. Press **Add FAQ**.\n3. Write the **Question** as a member would ask it. For example: \"How do I earn time credits?\"\n4. Write the **Answer** members will see.\n5. Enter a **Category**, such as \"Joining\" or \"Events\". If you leave it empty, it goes under \"General\".\n6. Use **Sort order** to set its position. Lower numbers come first.\n7. Choose whether it is **Published** or a **Draft**.\n8. Press **Create FAQ**.\n\nQuestions are grouped by category in the Help Centre.\n\n## Changing or hiding a question\n\nUse the actions on a question to edit it, then press **Save changes**. Use its publish switch to hide it without deleting it. Press **Delete FAQ** to remove it for good.\n\n## Good to know\n\n- Your questions are shown exactly as written. They are not translated.\n- Until you publish your own, members may see a few general questions provided with the platform.\n\n> Look at the questions members ask you most often. Those make the best Help Centre entries.",
+            "summary": "Add questions and answers about your own community to the Help Centre that members read.",
+            "title": "Writing your own Help Centre questions"
+          },
+          "admin_support_reports": {
+            "body": "Members can press **Help & support** on the site to tell you something is not working. Their reports arrive on the **Support Reports** page. Each report shows what kind of request it is: a problem, a question, an account or sign-in problem, or a suggestion.\n\nOpen **Platform Operations** in the admin menu and press **Support Reports**. The number of open reports also appears at the top of the admin panel.\n\n## Looking at a report\n\n1. Filter the list by status if you want, such as **Open** or **Triaged**.\n2. Press **Review** on a report.\n3. Read what the member wrote and which page they were on.\n\n## Keeping track\n\n- Set the **Status**: **Open**, **Triaged**, **Resolved** or **Closed**.\n- Choose an **Assignee** to look after it.\n- Write **Triage notes** about what you found or did.\n- Press **Save triage**.\n\n## Passing it on\n\nSome reports are about a fault in the platform itself. Press **Copy engineering handoff** to copy a summary, including technical details, and send it to the platform team.\n\n> If a member reports a problem, let them know you have seen it. It helps people trust the service.",
+            "summary": "See the problem reports members send from the site and keep track of what happens to them.",
+            "title": "Reviewing problems members report"
+          }
+        },
+        "summary": "Write your own Help Centre questions, teach the AI assistant about your community and read problem reports.",
+        "title": "Help Centre and AI assistant"
+      },
+      "admin_members": {
+        "articles": {
+          "admin_add_members": {
+            "body": "You can create accounts for people, for example at a sign-up event or for someone who is not online.\n\n## Adding one person\n\n1. Open **Users** and press **Add User**.\n2. Fill in **First Name**, **Last Name** and **Email**. **Phone** is optional.\n3. Choose a **Role** and a **Status**. Choose **Active** so they can sign in straight away.\n4. Set a **Password** for their first sign-in.\n5. Switch on **Send Welcome Email** if you want them to receive sign-in instructions.\n6. Press **Create User**.\n\nYou see **User created successfully**. If your community gives new members a starting balance, they receive it.\n\n## Adding many people from a spreadsheet\n\n1. On the **Users** page, press **Import CSV**.\n2. Press **Download Template** to get a file in the right layout.\n3. Fill in the template and save it as a CSV file.\n4. Choose the file under **CSV File**.\n5. Choose a **Default Role**.\n6. Press **Import**.\n\nWhen it finishes, you see how many rows were imported and skipped, and any errors.\n\n> Only add people who have agreed to join. Tell them how you will use their details.",
+            "summary": "Create an account for someone, or add many people at once from a spreadsheet.",
+            "title": "Adding members yourself"
+          },
+          "admin_approve_members": {
+            "body": "If your community approves people before they can use the site, new sign-ups wait as **Pending** until you let them in.\n\n## Seeing who is waiting\n\nWhen people are waiting, you see **Pending Approvals** with a number under **Needs Attention** at the top of the admin menu. The dashboard also shows a **Members awaiting approval** card.\n\n## Approving one person\n\n1. Press **Pending Approvals**, or open **Users** and choose the **Pending** tab.\n2. Find the person and press the three-dot button on their row.\n3. Press **Approve**.\n4. Confirm in the window that opens.\n\nThe member is sent an approval email and can now use the site. If your community gives new members a starting balance, they receive it now.\n\n## Approving several people\n\nTick the box next to each person, then press **Approve** in the bar that appears.\n\n## If you do not want to approve someone\n\nLeave them pending while you find out more. If you decide not to let them in, you can **Ban** them or **Delete** their account from the same menu.\n\n> Brokers can approve members too, from **Members** or **Onboarding** in the Broker Panel.",
+            "summary": "Let new members into your community when your community approves people before they join.",
+            "title": "Approving new members"
+          },
+          "admin_change_role": {
+            "body": "You give someone extra rights by changing their role.\n\n1. Open **Users** in the admin menu and press **All Users**.\n2. Find the person. Press the three-dot button on their row, then **Edit**.\n3. Open the **Role** list.\n4. Choose **Member**, **Broker** or **Admin**.\n5. Press **Save Changes**.\n\n## Which role to choose\n\n- **Member**: an ordinary member.\n- **Broker**: helps run the community day to day in the **Broker Panel**. Some communities call this role \"coordinator\". The next time they sign in, they see **Broker Panel** in the bar at the top of the site.\n- **Admin**: full control of your community, including settings and roles. They see **Admin Panel** instead.\n\n## Limits\n\nYou can change the role of members and brokers. You cannot change another admin's role, email or status. Only someone with a higher level, such as the platform team, can do that.\n\nTo take rights away, choose **Member** and press **Save Changes**.\n\n> Give admin rights to as few people as you need. Admins can change everything, including other people's roles.",
+            "summary": "Change a member's role to Broker or Admin so they can help run your community.",
+            "title": "Making someone a broker or an admin"
+          },
+          "admin_crm_notes": {
+            "body": "The **CRM** pages help your team keep track of members and follow them up. Members do not see this information.\n\nOpen **CRM** in the admin menu. It contains:\n\n- **CRM Dashboard**: an overview of member engagement, tasks, tags and onboarding progress.\n- **Member Notes**: private notes about a member. Press **Add Note** to write one.\n- **Coordinator Tasks**: follow-up jobs for your team, such as \"phone new member\". Press **Create Task**.\n- **Member Tags**: labels you give members to group them, for example \"needs lifts\". Press **Add Tag**.\n- **Activity Timeline**: a timeline of what members have done and how your team has been in touch.\n- **Onboarding Funnel**: shows how many new members reach each stage, up to their first exchange, and where people drop off.\n\n## Writing good notes\n\nNotes are part of the member's record. Keep them short, factual and kind. Write only what your team needs to support the member.\n\n> Members can ask to see the information you hold about them. Write every note as if the member might read it one day.",
+            "summary": "Use the CRM pages to record private notes, plan follow-up tasks and group members with tags.",
+            "title": "Keeping notes, tasks and tags about members"
+          },
+          "admin_data_requests": {
+            "body": "Members can ask what data you hold about them, ask for a copy, or ask you to delete it. You track these requests on the **GDPR Requests** page.\n\n1. Open **Enterprise** in the admin menu and press **GDPR Dashboard**.\n2. Open the list of requests. Each one shows its **Type**, **Status** and **Deadline**.\n3. Press **View details** on a request.\n\n## Working on a request\n\n- **Assign**: give the request to a member of your team.\n- **Start processing**: show that work has begun.\n- **Add note**: record what you have done.\n- **Generate export**: create a copy of the member's data. You see **Export available** when it is ready.\n- **Mark complete**: finish the request.\n- **Reject**: refuse the request. You must give a reason.\n\nIf someone asks you by email or phone, press **Create request** to record it here.\n\n> Marking a deletion request complete erases the member's account and personal data. This cannot be undone. Check you have the right person first.\n\nKeep an eye on the **Deadline**. The page warns you when a request is overdue.",
+            "summary": "Record and deal with requests to see, move or delete a member's personal data.",
+            "title": "Handling a member's request about their data"
+          },
+          "admin_delete_member": {
+            "body": "Deleting an account permanently erases the member and their personal data. It cannot be undone.\n\n1. Open **Users** and find the member.\n2. Press the three-dot button on their row.\n3. Press **Delete**.\n4. Read the warning and confirm.\n\nThe member is sent an email to say their account has been deleted. The deletion is recorded in your activity records.\n\n## Before you delete\n\n- If you only want to stop someone for now, use **Suspend** instead. You can undo a suspension.\n- If the member asked for their data to be deleted, you can also handle it as a data request. See \"Handling a member's request about their data\".\n\n## Who can delete\n\nOnly admins can delete accounts. You cannot delete your own account from here, and you cannot delete another admin.\n\n> Deleting cannot be reversed. If you are not sure, suspend the account first and decide later.",
+            "summary": "Permanently erase a member and their personal data. This cannot be undone.",
+            "title": "Deleting a member's account"
+          },
+          "admin_find_member": {
+            "body": "All your members are listed on the **Users** page. In the admin menu, open **Users** and press **All Users**.\n\n## Searching\n\nType into the search box. You can search by name, email, phone number or member number. You can also type words such as \"pending\" or \"never logged in\", or \"role:admin\" to list your admins.\n\n## Tabs\n\nThe tabs across the top filter the list:\n\n- **All Users**\n- **Pending**: waiting for approval.\n- **Active**\n- **Suspended**\n- **Banned**\n- **Never Logged in**\n- **Onboarding Incomplete**: they have not finished the welcome steps.\n\n## What the list shows\n\nEach row shows the member's **Role**, **Status**, **Balance**, **Email activation** and the date they **Joined**.\n\n## Opening a member\n\nPress the three-dot button at the end of a row to see what you can do. Press **Edit** to open the member's full details. There you can change their details and role, correct their balance and help them sign in.",
+            "summary": "Search for any member by name, email, phone or status, and open their details.",
+            "title": "Finding a member"
+          },
+          "admin_identity_verification": {
+            "body": "Identity verification lets members prove who they are with an identity document and a selfie. Verified members are shown as verified.\n\n## Switching it on\n\n1. Open [Module Configuration](/admin/module-configuration).\n2. Find **Identity Verification** and press its switch.\n3. Press **Configure** to set the **Verification Fee (cents)**. This is a one-time fee for the check. Set it to 0 to make verification free.\n4. Press **Save Changes**.\n\n## What members see\n\nMembers who are not verified see **Verify Identity** in the bar at the top of the site. They press it to start the check. Once they pass, the bar shows **Verified** instead.\n\n## Checking identity when people join\n\nYou can also require an identity check at sign-up. Choose **Mode Verified** on the registration page. See \"Choosing how new people can join\".\n\n## Vetting is different\n\nIdentity verification shows a person is who they say they are. It is not safeguarding vetting. Brokers record vetting separately in the Broker Panel, under **Vetting confirmations**.\n\n> The fee is entered in cents, so 500 means 5.00 in your currency.",
+            "summary": "Switch on identity verification so members can prove who they are and show a verified badge.",
+            "title": "Checking members' identity"
+          },
+          "admin_onboarding_steps": {
+            "body": "New members go through a short set of welcome steps. You choose what those steps are.\n\n1. Open **Platform Operations** in the admin menu and press **Onboarding Settings**.\n2. Change the settings you need.\n3. Press **Save Settings** at the bottom.\n\n## The main settings\n\n- **Onboarding Enabled**: switches the welcome steps on or off.\n- **Onboarding Mandatory**: new members must finish the steps before they can use the site.\n- **Step Configuration**: switch each step on with **Enabled**, and make it compulsory with **Required**. The steps are welcome, profile, interests, skills, safeguarding and a final confirmation.\n- **Profile Requirements**: for example **Require Photo**, **Require Bio** and **Min Bio Length**.\n- **Listing Creation**: under **Listing Creation Mode**, choose whether listings made during the welcome steps go live at once, wait for approval, or are not allowed.\n- **Custom Text**: write a **Welcome Text** and **Help Text** in your own words.\n\n## Safeguarding step\n\nThe **Safeguarding Config** area controls the safeguarding questions new members see. Set it up in the order described in the Safeguarding section of this guide.\n\n> The page may show the title \"System\" at the top. You are in the right place if you see **Onboarding Enabled**.",
+            "summary": "Choose which welcome steps new members see, what they must fill in and what text they read.",
+            "title": "Setting up the welcome steps for new members"
+          },
+          "admin_sign_in_help": {
+            "body": "Most sign-in problems can be solved from the member's details page.\n\n1. Open **Users** and find the member.\n2. Press the three-dot button on their row, then **Edit**.\n3. Scroll to **Account Actions**.\n\n## Your options\n\n- **Send Password Reset**: emails the member a link to choose a new password. This is usually the best choice.\n- **Set Password**: lets you type a new password for them. Tell them the password in a private way and ask them to change it.\n- **Resend Welcome Email**: sends the welcome email again.\n\nIf the member never confirmed their email address, look at the **Email activation** area on the same page. Press **Resend verification email** to send the link again.\n\n## Lost access to two-factor sign-in\n\nIf the member used an authenticator app and has lost their phone, you can reset it.\n\n1. On the **Users** page, press the three-dot button on their row.\n2. Press **Reset 2FA**. This only appears if they use two-factor sign-in.\n3. Write a reason, including how you checked that you are really talking to the account holder.\n4. Confirm.\n\n> Always check a person's identity before resetting their sign-in. Someone may be pretending to be them.",
+            "summary": "Send a password reset, resend emails or reset two-factor sign-in for a member.",
+            "title": "Helping a member who cannot sign in"
+          },
+          "admin_suspend_ban": {
+            "body": "You can stop a member using your community. Suspending is for a pause. Banning is for more serious cases.\n\n## Suspending\n\n1. Open **Users** and find the member.\n2. Press the three-dot button on their row.\n3. Press **Suspend** and confirm.\n\nThe member cannot sign in until you reactivate them. They are sent an email to say their account is suspended.\n\nTo suspend several people, tick their boxes and press **Suspend** in the bar that appears. You are asked for a **Reason**.\n\n## Banning\n\nPress **Ban** in the same menu and confirm. The member loses access to the platform and is sent an email. Only admins can ban. Brokers can suspend but not ban.\n\n## Letting someone back in\n\nOpen the **Suspended** or **Banned** tab, press the three-dot button and press **Reactivate**. They are sent an email and can sign in again.\n\n> You cannot suspend or ban another admin. Ask the platform team if that is ever needed.",
+            "summary": "Stop someone using your community for a while or for good, and let them back in later.",
+            "title": "Suspending, banning or reactivating a member"
+          }
+        },
+        "summary": "Find, approve, help and manage members, and give people broker or admin rights.",
+        "title": "Managing members"
+      },
+      "admin_records": {
+        "articles": {
+          "admin_activity_log": {
+            "body": "The **Activity Log** is a record of actions taken in your community, newest first. Use it to check who changed something and when.\n\n1. Open **Platform Operations** in the admin menu.\n2. Press **Activity Log**.\n\nEach row shows:\n\n- **User**: the person who took the action, with their email address.\n- **Action**: what they did, such as **Approve User**, **Delete Listing** or **Grant Credits**.\n- **Description**: more detail, where it was recorded.\n- **IP Address**: the internet address the action came from.\n- **Date**: when it happened.\n\nThe log shows 20 entries at a time. Use the page numbers at the bottom to look further back. Press **Refresh** to load the newest entries.\n\n## Narrowing the list\n\nType a name, action or word into **Filter activity...**. The filter only looks at the entries on the page you are viewing. To search older entries, move to that page first.\n\n## What the log contains\n\nThe log records many admin actions, such as approving, suspending or deleting members, changing categories and removing content. It also records some things members do, such as confirming their email address or changing their cookie choices. It does not record everything that happens in your community.\n\n> The log shows members' email addresses and internet addresses. Treat it as personal information and share it only with people who need it.",
+            "summary": "See who took important actions in your community, and when.",
+            "title": "Checking the Activity Log"
+          },
+          "admin_consent_records": {
+            "body": "When members agree to something, such as your terms or optional emails, the platform keeps a consent record. You can see these records but you cannot change them. Only the member can give or withdraw their own consent.\n\n## Recent consent records\n\n1. Open **Enterprise** in the admin menu and press **GDPR Dashboard**.\n2. Press **Consent Records**.\n\nThe **GDPR Consents** page lists the most recent records. Each shows the **User**, the **Type** of consent, whether they **Consented** (**Yes** or **No**) and the **Date**.\n\n## Consent by type\n\nThe [GDPR Consent Types](/admin/enterprise/gdpr/consent-types) page shows each type of consent members can give. For each one you see:\n\n- whether it is **Required** or optional, and whether it is **Active**\n- the **Consent rate**: the share of your members' records that say yes\n\nPress **Users** on a consent type to see who has **Granted** or **Denied** it, with the date and internet address.\n\nThe list of consent types is the same for every community on the platform. The platform team looks after it, so you cannot add or change types yourself.\n\n> You cannot change a member's consent for them. If a member asks you about their consent, record what they asked for on the **Data Requests** page.",
+            "summary": "Check members' consent records and how many people have agreed to each type of consent.",
+            "title": "Seeing what members have agreed to"
+          },
+          "admin_data_retention": {
+            "body": "Data retention means how long you keep information. On the **Data Retention** page you can tell the platform to delete some kinds of old records automatically. Keeping less data for less time is good practice.\n\n1. Open **Platform Operations** in the admin menu.\n2. Press **Data Retention**.\n\nUnder **Retention policies** you see one row for each kind of record, such as **Activity log**, **Admin audit log**, **Notifications** and **Email log**. There are also rows for volunteering records, such as **Volunteer mood check-ins** and **Safeguarding incidents**. These only matter if your community uses volunteering.\n\n## Turning on a policy\n\n1. Enter the number of days to keep that kind of record.\n2. Press **Save**.\n3. Turn on the switch at the end of the row.\n\nYou see **Retention policy saved** each time a change is stored. The switch saves straight away.\n\nWhile a policy is off, those records are kept with no time limit.\n\n## Minimum periods\n\nYou can choose between 30 and 3,650 days. Some records have a longer minimum. The **Activity log** must be kept for at least 365 days. The **Admin audit log** and **Safeguarding incidents** must be kept for at least 2,555 days, which is about seven years. **Volunteer wellbeing alerts** must be kept for at least 730 days. If you enter less, a message tells you the allowed range.\n\n## Checking what was deleted\n\nThe platform deletes old records each night. **Recent disposal runs** lists each run, how many records were removed and whether it was **Completed**, **Partial** or **Failed**.\n\n> Deleted records cannot be brought back. Check your organisation's own rules on keeping records before you turn a policy on.",
+            "summary": "Choose how long old logs and notifications are kept before the platform deletes them.",
+            "title": "Setting how long records are kept"
+          },
+          "admin_gdpr_audit_log": {
+            "body": "The **GDPR Audit Log** records actions taken on members' personal data. It helps you show what was done, by whom and when.\n\n1. Open **Enterprise** in the admin menu and press **GDPR Dashboard**.\n2. Press **Link GDPR Audit Log**.\n\n## What is recorded\n\n- work on data requests, such as creating, assigning, adding a note or preparing an export\n- accounts being erased\n- members giving or withdrawing consent\n\nEach row shows the **User**, **Action**, **Entity** (what the action was about), **Entity ID**, **IP address** and **Date**. The **User** column shows the admin who acted. It is empty when a member acted for themselves.\n\n## Filtering\n\n1. Choose an **Action** or **Entity**, or set dates in **From** and **To**.\n2. Press **Apply**.\n3. Press **Clear** to see everything again.\n\nThe **Action** and **Entity** lists fill in from the entries you have already loaded.\n\n## Looking at one entry\n\nPress **View details** on a row. The **Audit entry** window shows the **Admin user**, the **Timestamp**, and the **Old value** and **New value** where they were recorded.\n\n> Entries stay in the log. You cannot edit or delete them from this page.",
+            "summary": "See a record of actions taken on data requests, account erasures and consent changes.",
+            "title": "Using the GDPR Audit Log"
+          },
+          "admin_gdpr_dashboard": {
+            "body": "The **GDPR Dashboard** brings together the pages you use to handle members' personal data. GDPR is the data protection law many communities follow. The same pages help wherever you have similar duties.\n\n1. Open **Enterprise** in the admin menu.\n2. Press **GDPR Dashboard**.\n\n## What you see first\n\n- **Pending requests**: how many members' data requests are still waiting.\n- A red warning if any request has waited more than 30 days. It reads, for example, \"3 overdue requests need attention\".\n- **New request**: record a request that reached you by email, phone or letter.\n\n## Where to go next\n\nThe cards at the bottom of the page open the other GDPR pages:\n\n- **Data Requests**: see and work on members' requests. You can also go straight to [the requests page](/admin/enterprise/gdpr/requests).\n- **Consent Records**: see what members have agreed to.\n- **Link GDPR Audit Log**: see a record of actions taken on requests and consents.\n\nPress **Refresh** to update the figures.\n\n> Deal with the oldest requests first. Many data protection laws give you about a month to reply.",
+            "summary": "Use the GDPR Dashboard to reach data requests, consent records and the GDPR audit log.",
+            "title": "Finding your way around the GDPR pages"
+          }
+        },
+        "summary": "Check what has happened in your community, see members' consent records and decide how long old records are kept.",
+        "title": "Privacy, records and data"
+      },
+      "admin_reports": {
+        "articles": {
+          "admin_community_analytics": {
+            "body": "All the reporting pages are listed together under **Analytics & Reporting** in the admin menu.\n\n## Community Analytics\n\nPress **Community Analytics**. It shows graphs and figures for member growth, exchanges and community health.\n\nPress **Export CSV** to download the figures as a spreadsheet file.\n\n## Other pages in this group\n\n- **Impact Report**: the social value of your community. See \"Creating an impact report\".\n- **Member Reports** and **Hours Reports**: detailed lists you can download. See \"Member and hours reports\".\n- **Inactive Members**: people who have gone quiet. See \"Reaching out to inactive members\".\n- **User Report**: each member's time credit statement, if your community uses the wallet.\n\nYou may also see reports for features you use, such as groups or newsletters.\n\n> Figures are only as good as the records behind them. Encourage members to record every exchange.",
+            "summary": "Use Community Analytics to follow member growth, exchanges and the health of your community.",
+            "title": "Seeing how your community is doing"
+          },
+          "admin_impact_report": {
+            "body": "The **Impact Report** turns your community's activity into figures you can share with funders, partners and your board.\n\nOpen **Analytics & Reporting** in the admin menu and press **Impact Report**.\n\n## Choosing the period\n\nSet the **Report Period** with a **From Date** and a **To Date**. Press **Refresh** to update the figures.\n\n## Setting the value of an hour\n\nThe social value is worked out from the hours exchanged and a value for each hour.\n\n1. Press **Configure**.\n2. Enter the **Hour Value**, the money value you give one hour of help in your area.\n3. Fill in any other figures you have, such as your **Total Investment**.\n4. Press **Save Configuration**.\n\nThe report can also work out a social return on investment. It needs your total investment and at least one outcome with a money value. Until then, it tells you it is not configured.\n\n## Downloading\n\nPress **Export CSV** for a spreadsheet file, or **Export PDF** for a document you can print or attach to an email.\n\n> Choose an hour value you can explain, for example a local living wage. Say in your report how you chose it.",
+            "summary": "Show the social value of your community for funders and partners, and download it as CSV or PDF.",
+            "title": "Creating an impact report"
+          },
+          "admin_member_hours_reports": {
+            "body": "Member and hours reports give you more detail than the dashboard. Both are under **Analytics & Reporting** in the admin menu.\n\n## Member reports\n\nPress **Member Reports**. The tabs show different views:\n\n- **Active**: members who are taking part.\n- **Registrations**: how many people joined over time.\n- **Retention**: how many people stay active.\n- **Engagement**: how members take part.\n- **Top Contributors**: the members giving the most.\n- **Least Active**: members who rarely take part.\n\n**Export CSV** works on the **Active** and **Least Active** tabs. On **Active**, it downloads your full member list, not only the period on screen. On the other tabs the button is not available.\n\n## Hours reports\n\nIf your community uses the wallet, press **Hours Reports**. The tabs are **By Category**, **By Member** and **Monthly Trend**. Press **Export CSV** to download what you see.\n\n> Downloaded files contain members' personal details. Store them safely and delete them when you no longer need them.",
+            "summary": "See who is active, how members join and stay, and where hours are being exchanged.",
+            "title": "Member and hours reports"
+          }
+        },
+        "summary": "Understand how your community is doing and download figures for funders and partners.",
+        "title": "Reports and analytics"
+      },
+      "admin_safeguarding": {
+        "articles": {
+          "admin_safeguarding_options": {
+            "body": "Safeguarding options are the choices members can make about their own safety, for example \"I would like a coordinator to help with my exchanges\".\n\nOpen the **Broker Panel** and press **Safeguarding Options**. You can also press **Manage Options** on the **Onboarding Settings** page.\n\n## Adding an option\n\n1. Press **Add Option**.\n2. Enter an **Option Key**, a short unique name for your team.\n3. Write the **Display Label** members will read.\n4. Choose the **Option Type**: **Checkbox**, **Select** or **Info**.\n5. Add **Description Help** to explain it, and a **Help URL** if you have one.\n6. Switch on **Required** only if every member must answer it.\n7. Under **Behavioral Triggers**, choose what happens when a member picks it.\n8. Press **Create Option**.\n\n## What the triggers do\n\n- **Notify safeguarding staff**: your team is told when the option is chosen.\n- **Require coordinator approval**: matches and exchanges involving the member wait for a coordinator to sign them off. Their messages are not copied.\n- **Vetted members only**: only members your community has vetted can contact them.\n- **Restrict matching**: matches involving the member are held on the Match Approvals page until a coordinator approves them. Neither member is told about a match before that.\n- **Monitor messaging**: other members cannot contact the member directly, and are offered a way to ask a coordinator instead. Messages are not copied. To copy a member's messages, a broker or admin must place them under monitoring in the Broker Panel.\n\nFor **Vetted members only**, you must also choose a **Required Vetting Type**. It must match your policy package, or the option cannot be saved.\n\n## Removing an option\n\nPress **Deactivate** and confirm. The option is no longer offered to members.",
+            "summary": "Create and change the safeguarding options members can choose, and decide what each one does.",
+            "title": "Choosing the safeguarding questions members see"
+          },
+          "admin_safeguarding_setup": {
+            "body": "Safeguarding helps protect members who may be vulnerable. Setting it up takes a few steps. Do them in this order.\n\n## Step 1: choose your policy package\n\nOnly admins can do this.\n\n1. Open the **Broker Panel** from the admin menu.\n2. Press **Vetting confirmations**.\n3. Under **Safeguarding policy package**, choose the package that matches where your community operates.\n4. Press **Save policy package**.\n\nIf no package fits your community, choose **Custom jurisdiction**. Vetted-only contact is then not available. See \"Making sure vetted-only contact works\".\n\n## Step 2: add the matching questions\n\n1. In the admin menu, open **Platform Operations** and press **Onboarding Settings**.\n2. In **Safeguarding Config**, choose the **Country Preset** for the same place as your policy package.\n3. Press **Apply Preset** and confirm. This replaces your current safeguarding options.\n\n## Step 3: switch the step on\n\n1. On the same page, under **Step Configuration**, switch on **Enabled** for the safeguarding step.\n2. Write a short **Safeguarding Intro** in your own words if you want.\n3. Press **Save Settings**.\n\n## Step 4: check the options\n\nPress **Manage Options** to review the questions. See \"Choosing the safeguarding questions members see\".\n\n> Do not apply a country preset that does not match your policy package. Members who choose \"vetted members only\" could then become impossible to contact.",
+            "summary": "Choose your safeguarding policy package, then add the matching safeguarding questions for new members.",
+            "title": "Setting up safeguarding for your community"
+          },
+          "admin_vetted_contact": {
+            "body": "Some members choose to be contacted only by vetted members. The platform protects them strictly. If your setup is incomplete, nobody can contact them at all, and they stop appearing in matches.\n\nThe member is not told. So it is important to check your setup.\n\n## What must be in place\n\n1. **A policy package is chosen.** In the Broker Panel, open **Vetting confirmations**. The **Policy package** must show a package, not \"Safeguarding jurisdiction not configured\".\n2. **The package supports vetted contact.** If the page says \"This jurisdiction does not yet have a supported contact-vetting policy\", vetted-only contact cannot work. Deactivate any option that uses **Vetted members only**.\n3. **The options match the package.** Each **Vetted members only** option must require the same vetting type as your package. Applying the matching **Country Preset** does this for you.\n4. **Vetting is recorded.** Brokers record vetting for members who may contact vetted-only members. They do this in **Vetting confirmations** with **Confirm safeguarding certification**.\n\n## Warning signs\n\nIf the **Vetting confirmations** page says \"An administrator must select the safeguarding jurisdiction before confirmations can be recorded\", step 1 is missing. Fix it straight away.\n\n> Never upload certificates, certificate numbers or criminal record details. Record only your community's decision.",
+            "summary": "Check your setup so members who asked for vetted-only contact do not become impossible to reach.",
+            "title": "Making sure vetted-only contact works"
+          }
+        },
+        "summary": "Set up safeguarding for your community in the right order, so vulnerable members are protected and still reachable.",
+        "title": "Safeguarding"
+      },
+      "admin_setup": {
+        "articles": {
+          "admin_community_details": {
+            "body": "Your community name, description and contact details live on the **Admin Settings** page.\n\n1. In the admin menu, open **Platform Operations** and press **Settings**.\n2. In the **General** card, change what you need.\n3. Press **Save settings** at the bottom of the form.\n\nYou see **Settings Saved** when it has worked.\n\n## What each field does\n\n- **Site Name**: the name of your community, shown across the site.\n- **Site Description**: a short line about your community.\n- **Support Email** and **Contact Phone**: how people can reach you. Write phone numbers in international format, starting with + and the country code.\n- **Default currency**: used for money, such as marketplace prices. It does not change hours.\n- **Date and number format**: how dates, times and numbers are written. It does not change the language.\n- **Footer Legal Text**: shown in the site footer and on legal and about pages.\n\n## More settings further down\n\nUnder **Additional configuration** there are more settings, such as the starting balance for new members. These save separately. Press **Save Changes** in that area when you change them.\n\n> Only the fields you changed are saved. Other admin pages keep their own values.",
+            "summary": "Update your community name, description, contact details and date format on the Admin Settings page.",
+            "title": "Changing your community name and contact details"
+          },
+          "admin_feature_settings": {
+            "body": "Many features have their own settings. You reach them from the feature's card on the **Module Configuration** page.\n\n1. Open [Module Configuration](/admin/module-configuration).\n2. Find the feature and press **Configure** on its card.\n3. Change the settings in the window that opens.\n4. Press **Save Changes**.\n\nSome settings show a **Coming Soon** label. You cannot change those yet.\n\n## Example: checking new listings first\n\nOn the **Listings** card, press **Configure**. Switch on **Require Moderation** so new listings must be approved before members see them. The **Auto-Approve Trusted Members** switch on the same card does not do anything yet.\n\n## Settings on their own page\n\nFor some features, **Configure** opens a separate page instead of a window. For example, **Events** opens **Event settings**. You can also find it in the admin menu under **Community**, as **Event Settings**.\n\nOn **Event settings** you choose **Who can create Events**:\n\n- **All active members**\n- **Brokers and administrators**\n- **Administrators only**\n\nYou can also switch on **Require Event approval**. Before you can save, write a short **Reason for change** under **Change control** at the bottom. Then press **Save Event settings**. The reason is kept in the page's **Configuration history**.",
+            "summary": "Use the Configure button on a feature to change its settings, such as holding new listings for approval.",
+            "title": "Changing how a feature works"
+          },
+          "admin_invite_codes": {
+            "body": "Invite codes let you control exactly who joins. Each code can be used a set number of times.\n\n## Switch on invite-only joining\n\n1. Open **Platform Operations**, then **Settings**, then press **Advanced policy**.\n2. Under **Registration Method**, choose **Mode Invite**.\n3. Press **Save Registration Policy**.\n\nAn **Invite Codes** area now appears on the page.\n\n## Create codes\n\n1. In **Invite Codes**, press **Generate Codes**.\n2. Choose the **Number of Codes** you want.\n3. Set **Max Uses per Code**. Leave it blank for no limit.\n4. Choose an **Expiry Date** if you want. Codes stop working at midnight on that date.\n5. Add a **Note (optional)** to remind you who the codes are for.\n6. Press **Generate**.\n\nThe new codes appear on screen. Press **Copy All Codes** to copy them, then send them to the people you are inviting. Press **Done** to close.\n\n## Managing codes\n\nThe list shows each code and its **Status**, such as **Active**, **Expired**, **Exhausted** (used up) or **Deactivated**. To stop a code working, press the deactivate button next to it.\n\n> Share codes privately, for example by email. Anyone who has a working code can join.",
+            "summary": "Create invite codes so only the people you choose can join your community.",
+            "title": "Inviting people with invite codes"
+          },
+          "admin_languages": {
+            "body": "You choose your community's languages at the bottom of the **Module Configuration** page.\n\n1. Open [Module Configuration](/admin/module-configuration).\n2. Scroll to the bottom, to **Platform Infrastructure**.\n3. Find **Language & Localisation**.\n4. Choose a **Default language**. This is the language people see first.\n5. Under **Available languages**, tick the languages members can switch to. One language is marked \"(always enabled)\".\n6. Press **Save changes**.\n\nIf you cannot see **Platform Infrastructure**, clear the search box at the top of the page. It is hidden while you search.\n\n## What members see\n\nEach member can choose their own language from the ones you allow. The site's buttons and menus change to that language.\n\nThings your community writes, such as pages, blog posts and Help Centre questions, are shown as they were written. They are not translated automatically. Write them in the language most of your members use.\n\n## Dates and numbers\n\nHow dates and numbers are written is a separate setting. Change it under **Date and number format** on the **Admin Settings** page.",
+            "summary": "Set the default language and choose which languages members can switch to.",
+            "title": "Choosing your community's languages"
+          },
+          "admin_legal_documents": {
+            "body": "You can publish your own legal documents. Until you do, members see the platform's standard versions.\n\n1. In the admin menu, open **Enterprise** and press **Legal Documents**.\n2. Press **Create Document**.\n3. Enter a **Title** and choose a **Type**.\n4. Under **Acceptance settings**, choose whether members must accept it.\n5. Press **Create Document**.\n6. You see \"Document created — now add its first version.\" Write the text of the first version and save it.\n\n## Types you can create\n\n- **Terms of Service**\n- **Privacy Policy**\n- **Cookie Policy**\n- **Accessibility Statement**\n- **Community Guidelines**\n- **Acceptable Use Policy**\n\nYou cannot change a document's type after you create it.\n\n## Asking members to accept\n\nSwitch on **Require acceptance** if members must actively agree. Then choose when, under **Require acceptance at**: **Registration**, **Next login**, **First use** or **No prompt**.\n\n## Where members read them\n\nMembers find your terms at [Terms](/terms), your privacy policy at [Privacy](/privacy) and your cookie policy at [Cookies](/cookies).\n\n> Take advice on the wording of legal documents. The platform shows your text but does not check it.",
+            "summary": "Create your own Terms of Service, Privacy Policy and other legal documents, and choose when members accept them.",
+            "title": "Adding your terms and privacy policy"
+          },
+          "admin_legal_updates": {
+            "body": "Legal documents keep every version. When you change your terms, you write a new version and publish it.\n\n1. Open **Enterprise** in the admin menu and press **Legal Documents**.\n2. Find the document and press **Manage content**. This opens **Legal Document Versions**.\n3. Press **Create New Version**.\n4. Fill in the **Version Number**, **Effective Date** and a **Summary of Changes**, then write the new text.\n5. Save it. Keep **Save as Draft** on while you are still working.\n6. When it is ready, press **Publish Version** and confirm.\n\n## What publishing does\n\nPublishing makes the new version the one members see. The previous version is retired. If the document requires acceptance, members are asked to accept the updated terms.\n\n## Telling members\n\nAfter publishing, press **Notify**. Choose **Notify All Active** to tell everyone, or **Notify Non Accepted** to tell only people who have not accepted yet.\n\n## Checking who has accepted\n\nOpen **Compliance Dashboard** under **Enterprise** in the admin menu. It shows how many members have accepted the current versions.\n\n> A published version cannot be edited. To make a correction, create another new version.",
+            "summary": "Write a new version, publish it and tell members that your terms have changed.",
+            "title": "Updating a legal document"
+          },
+          "admin_logo_branding": {
+            "body": "You add your logo on the **Admin Settings** page. Open **Platform Operations** in the admin menu and press **Settings**.\n\n## Header logo\n\nThis logo appears at the top of every page instead of your community's initials.\n\n1. Find the **Header Logo** card.\n2. Under **Header logo (light mode)**, press **Upload image** and choose your file.\n3. If you have a version for dark backgrounds, upload it under **Header logo (dark mode)**. This is optional.\n\nYour logo is saved as soon as it uploads. You see **Header logo updated**. To remove it, press the small cross next to the picture.\n\n> Use a PNG file with a transparent background. It looks right on both light and dark backgrounds. Files can be up to 2 MB.\n\n## Partner logo\n\nThe **Partner Logo** appears in the footer. Use it for a funder or partner organisation.\n\n1. Press **Upload image** under **Partner Logo**.\n2. Fill in **Partner logo label** and **Partner Logo Link URL** if you want them.\n3. Press **Save settings**.\n\nThe picture saves when it uploads. The label and link only save when you press **Save settings**.\n\n## Accessible header colour\n\nThe **Accessible header colour** card sets the header colour of your community's accessible website. Choose a **Header background colour** and an **Accent line colour**, then press **Save settings**. Use a strong, dark colour so the white text stays easy to read.",
+            "summary": "Upload a header logo for light and dark mode, and a partner logo for the footer.",
+            "title": "Adding your logo"
+          },
+          "admin_registration_policy": {
+            "body": "You decide how new people join your community on the **Registration & Identity Verification** page.\n\n1. Open **Platform Operations** in the admin menu and press **Settings**.\n2. In the **Registration & Access** card, press **Advanced policy**.\n3. Under **Registration Method**, choose how people join.\n4. Press **Save Registration Policy**.\n\nThe change applies straight away to anyone who signs up after it.\n\n## The choices\n\n- **Mode Open**: anyone can join without approval.\n- **Open with Admin Approval**: anyone can sign up, but an admin or broker must approve them before they can use the site.\n- **Mode Invite**: people need an invite code. See \"Inviting people with invite codes\".\n- **Mode Waitlist**: people join a waiting list. They wait as pending members until you approve them.\n- **Mode Verified**: people must pass an identity check when they sign up. This needs an identity verification service to be set up first, under **Verification Settings**.\n\n## Settings only the platform team can change\n\nYou can switch approval on, but only the platform team can switch it off again. Turning off email checks is also theirs to change. On the **Admin Settings** page, these switches show **Super admin only**.\n\nThe **Open Registration** switch on the **Admin Settings** page is a quick way to allow or stop new sign-ups.",
+            "summary": "Decide whether anyone can join, whether you approve people first, or whether they need an invite code.",
+            "title": "Choosing how new people can join"
+          },
+          "admin_switch_features": {
+            "body": "You switch whole sections of your community on or off on the **Module Configuration** page.\n\n1. Open [Module Configuration](/admin/module-configuration). Some admin accounts also see it under **Platform Operations** in the menu.\n2. Find the feature. Type its name in **Search modules**, or press **Core** or **Features** to shorten the list.\n3. Press the switch on the feature's card.\n\nThe change saves straight away. You see a message such as \"Events enabled\" or \"Events disabled\".\n\n## The two lists on the page\n\n**Core Modules** are the main parts of the site, such as **Listings**, **Wallet**, **Messages** and **Feed**. **Optional Features** are extras, such as **Events**, **Groups**, **Blog**, **Volunteering** and **Federation**.\n\n## What members notice\n\nWhen you switch a feature off, it disappears from menus and pages for everyone. Members cannot use it. The information already in it is kept. If you switch it back on, it returns as it was.\n\nMembers who follow an old link to a switched-off section may see a **Coming Soon** page.\n\n## Settings you cannot change\n\n**Two-factor authentication** and **Passkeys & biometric login** can only be changed by the platform team. If you try, you see an error.\n\n> Switch features on one at a time, and tell your members what is new. It is easier to support people that way.",
+            "summary": "Turn whole sections, such as Events, Groups or the Wallet, on or off for your community.",
+            "title": "How do I switch features on and off?"
+          },
+          "admin_translation_settings": {
+            "body": "If your community lets members translate messages, members see a **Translate to** button on messages, followed by their language. The **Translation Settings** page changes how those translations are made.\n\n1. Open **Platform Operations** in the admin menu.\n2. Press **Translation Settings**.\n\nEach change saves as soon as you make it. A short message confirms it, such as \"Context-aware translation updated\".\n\n## Settings that change translations\n\n- **Context-aware translation**: when on, the translation service also receives some earlier messages from the same conversation. This can make translations more accurate.\n- **Context message count**: how many earlier messages to send, from 1 to 20. It is only used when context-aware translation is on.\n- **Enable glossary**: when on, your own word list is used. See below.\n\n> Context-aware translation sends more of a private conversation to the translation service. Think about your members' privacy before you turn it on.\n\n## Adding your own translations\n\nA glossary is a list of words you always want translated in a certain way. For example, the name of your community, or the word you use for time credits.\n\n1. Turn on **Enable glossary**. The **Glossary Management** section appears.\n2. In **Source term**, enter the word as members write it.\n3. In **Target term**, enter the word you want in the translation.\n4. Choose the **Language** of the target term.\n5. Press **Add**.\n\nTo remove an entry, press the delete button at the end of its row.\n\n## Turning translation on or off\n\nTo switch message translation on or off for everyone, use **Message Translation** on the [Module Configuration](/admin/module-configuration) page.\n\nTranslation uses the platform's AI service. If members are told translation is unavailable, contact the platform team.",
+            "summary": "Change how message translation in messages works, and add your own translations for key words.",
+            "title": "Setting up message translation"
+          }
+        },
+        "summary": "Name, logo, languages, legal documents, joining rules and switching features on and off.",
+        "title": "Setting up your community"
+      },
+      "admin_timebanking": {
+        "articles": {
+          "admin_adjust_balance": {
+            "body": "If a member's balance is wrong, for example after a mistaken transfer, you can correct it.\n\n1. Open **Users** and find the member.\n2. Press the three-dot button on their row, then **Edit**.\n3. In the **Time Credits** card, press **Adjust Balance**.\n4. In **Amount**, enter the hours to add, such as 2. To take hours away, put a minus sign in front, such as -1.5.\n5. Write a **Reason**. You cannot continue without one.\n6. Press **Apply Adjustment**.\n\nYou can also do this from **User Report** by pressing **Adjust**.\n\n## What happens\n\n- The change appears in the member's transaction history with your reason.\n- The member receives a notification about it.\n- A balance cannot go below zero. If you try to take away more than they have, the change is refused.\n\n## Who can do this\n\nAdmins and brokers can correct balances. Brokers cannot change their own balance.\n\n> Before you correct a balance, check the member's history and talk to the people involved. Many problems are better solved by the members sending hours back to each other.",
+            "summary": "Add or take away hours to fix a mistake in a member's balance.",
+            "title": "Correcting a member's balance"
+          },
+          "admin_community_fund": {
+            "body": "The Community Fund is a shared pot of hours that belongs to your community, not to any one person. You can use it to support members who need more help than they can give back.\n\nOpen **Financial** in the admin menu and press **Community Fund**. At the top you see the **Current balance**, **Total deposited**, **Member donations** and **Total granted**.\n\n## Adding hours to the fund\n\n1. Under **Deposit into fund**, enter the **Credit Amount**.\n2. Write a **Reason**. It is stored in the fund's history.\n3. Press **Deposit credits**.\n\nThese hours are added to the fund. They are not taken from your own wallet.\n\n## Giving hours from the fund\n\n1. Under **Grant from fund**, find the member with **Search Member**.\n2. Enter the **Credit Amount**. You can see how much is **Available in fund**.\n3. Write a **Reason**.\n4. Press **Grant credits**.\n\nThe hours go into the member's wallet and appear in their history. You cannot grant more than the fund holds.\n\n## Members can give too\n\nMembers see the Community Fund on their [Wallet](/wallet) page. They can press **Donate** to give some of their own hours.\n\n**Fund activity** lists every deposit, grant and donation.\n\n> Agree a simple rule with your team about who can receive hours from the fund and why. It keeps things fair.",
+            "summary": "Add hours to the shared Community Fund and grant them to members who need them.",
+            "title": "Using the Community Fund"
+          },
+          "admin_starting_balance": {
+            "body": "A starting balance gives new members a few hours so they can ask for help straight away.\n\n## Setting the amount for everyone who joins\n\n1. Open **Platform Operations** in the admin menu and press **Settings**.\n2. Scroll down to **Additional configuration**.\n3. In the **Wallet & credits** card, enter the number of hours under **Starting balance**.\n4. Press **Save Changes** in that area.\n\nNew members receive the hours when they join. If your community approves members first, they receive them when they are approved. Enter 0 if you do not want to give a starting balance.\n\n> If this setting shows 0 but new members still receive hours, contact the platform team to check what is saved for your community.\n\n## Giving hours to one person\n\nUse this for members who joined before you set a starting balance, or for special cases.\n\n1. Open **Financial** in the admin menu and press **Starting Balances**.\n2. Under **Grant Starting Credits**, type the member's name or email in **Search Member** and choose them.\n3. Enter the **Credit Amount** in hours.\n4. Write a **Reason**. It is kept in the records.\n5. Press **Grant Credits**.\n\nThe **Grant History** list shows every grant, who made it and when.",
+            "summary": "Choose how many hours new members receive when they join, or give hours to someone by hand.",
+            "title": "Giving new members a starting balance"
+          },
+          "admin_timebanking_overview": {
+            "body": "The **Timebanking** pages show how time credits, or hours, move around your community. Open **Financial** in the admin menu and press **Timebanking**.\n\n## Timebanking Dashboard\n\nThe dashboard shows **Total Transactions**, **Total Volume**, **Avg Transaction** and **Active Alerts**. It lists your **Top Earners** and **Top Spenders**, with **Quick Links** to the other pages.\n\n## One member's statement\n\nOpen **User Report** from the dashboard's quick links, or from **Analytics & Reporting** in the menu. It lists each member's balance, hours earned and spent, and number of transactions.\n\n- Press the download button on a row to save that member's statement as a spreadsheet file.\n- Press **Adjust** to correct their balance.\n\n## Unusual activity\n\nOpen **Fraud Alerts**. The platform checks regularly for patterns worth a second look. These include very large transfers, many transfers in a short time, and hours passed round in a circle between members.\n\nFor each alert, choose **Investigate** while you look into it, **Resolve** when it is dealt with, or **Dismiss** if it is nothing to worry about.\n\n> An alert is not proof that anyone did something wrong. Talk to the members involved before you act.\n\n## Organisations\n\n**Org Wallets** shows the balances of volunteer organisations in your community.",
+            "summary": "Use the Timebanking pages to see totals, top earners, member statements and unusual activity.",
+            "title": "Seeing how hours move in your community"
+          }
+        },
+        "summary": "Starting balances, correcting balances, the Community Fund and keeping an eye on how hours move.",
+        "title": "Hours and the Community Fund"
+      }
+    }
+  },
+  "help_brokers": {
+    "sections": {
+      "broker_exchanges": {
+        "articles": {
+          "broker_approve_exchange": {
+            "body": "Exchanges waiting for you appear under the **Pending** tab in **Exchanges**.\n\n1. Open [Exchanges](/broker/exchanges). The counter **Pending broker review** shows how many are waiting.\n2. Press the **Pending** tab.\n3. Press the view button on a row to open the exchange. Check who the **Requester** and **Provider** are, the listing, and any **Risk Tag**.\n4. Press **Approve** or **Reject**.\n\n## Approving\n\nAdd a note in **Notes (optional)** if it helps, for example \"Please meet in a public place for the first session\". Press **Approve** to confirm.\n\nBoth members are told the exchange is approved and they can begin. Your note appears on their exchange page under **Broker Notes**.\n\n## Rejecting\n\nYou must give a reason in **Reason (required)**. Press **Reject** to confirm.\n\nThe exchange is cancelled. Both members get a notification that includes your reason. Your reason also appears on their exchange page, under the heading **Broker Notes**. Both members can read it, so write it kindly and plainly.\n\n## Things to know\n\n- You cannot approve or reject an exchange you are part of. Another broker must do it.\n- You cannot change the hours or add conditions when you approve. If something needs to change, reject it with a clear reason, or talk to the members before approving.\n\n> Before you approve, it helps to look at both members' records and any safeguarding choices they made.",
+            "summary": "Check an exchange that is waiting for a broker, then approve it or reject it with a reason.",
+            "title": "How do I approve or reject an exchange?"
+          },
+          "broker_exchange_list": {
+            "body": "[Exchanges](/broker/exchanges) lists the exchanges in your community. Use the tabs to filter them:\n\n- **All**: every exchange\n- **Pending**: waiting for a broker's approval\n- **Approved**: approved and ready to start\n- **In Progress**: the members are doing the work\n- **Completed**: finished and the hours have moved\n- **Cancelled**: stopped, or rejected by a broker\n- **Disputed**: the members disagree\n\nEach row shows the two members, the listing, the status, the hours and the date. The hours appear once the members have confirmed them.\n\n## The exchange page\n\nPress the view button on a row to open the exchange. It shows:\n\n- **Exchange progress**: where the exchange has got to\n- the **Requester** (the member asking for help) and the **Provider** (the member giving time)\n- any **Risk Tag** on the listing, and whether it needs **Broker approval required** or **Insurance required**\n- **Broker Notes** from the broker who decided on it\n- **History**: each step, such as **Request created**, **Provider confirmed hours** and **Requester confirmed hours**, with who did it and when\n\nPress **Back to Exchanges** to return to the list.",
+            "summary": "What each tab and status means, and what the exchange detail page shows.",
+            "title": "Understanding the Exchanges list"
+          },
+          "broker_exchange_problems": {
+            "body": "Sometimes members disagree about an exchange, or hours are recorded wrongly. Here is what the Broker Panel can do today.\n\n## Disputed exchanges\n\nAn exchange becomes **Disputed** when:\n\n- the two members confirm very different hours, or\n- a member presses **Report a problem** on the exchange in the phone app, for example because the other person did not turn up. The website does not have this button.\n\nThe members are told a broker will review it. You can see these exchanges under the **Disputed** tab in [Exchanges](/broker/exchanges).\n\nThe Broker Panel has no button to settle a dispute. While an exchange is disputed, no hours move.\n\n## What to do\n\n1. Open the exchange and read its **History**.\n2. Contact both members. Listen to each side.\n3. Agree a fair outcome with them. Write a note on each member's record.\n4. If hours should move, use **Adjust balance** on each member's record. Add hours to one and remove the same hours from the other. Mention the exchange in each reason.\n5. If the dispute is about behaviour or safety, follow your community's safeguarding process.\n\n## A completed exchange with the wrong hours\n\nThe Broker Panel cannot undo a completed exchange. Use **Adjust balance** on both members in the same way, after agreeing it with them.\n\n> Keep corrections rare, fair and explained. Members can see each adjustment and its reason in their wallet.",
+            "summary": "How disputes happen, what the Broker Panel can and cannot do about them, and how to correct mistakes.",
+            "title": "What can I do when an exchange goes wrong?"
+          },
+          "broker_exchange_when_approval": {
+            "body": "An exchange is an agreement between two members to swap time. In some communities a broker must approve an exchange before it can go ahead.\n\n## How it works\n\n1. A member asks to swap time with another member, usually from a listing.\n2. The other member accepts.\n3. At that point the site checks whether a broker needs to approve it.\n4. If so, the exchange waits in [Exchanges](/broker/exchanges) with the status **Pending Broker Approval**. Brokers and admins get a notification.\n\n## What decides it\n\n- **Safeguarding.** If either member chose a safeguarding option that needs broker approval, their exchanges always wait for a broker.\n- **Your community's rules.** An admin can turn on **Broker approval required** in [Configuration](/broker/configuration). With only that setting on, every exchange waits for a broker.\n- **Low-risk exchanges.** If an admin also turns on **Auto-approve low-risk exchanges**, most exchanges go ahead without a broker.\n\nEven with auto-approve on, a broker is still needed when:\n\n- the listing has a **High** or **Critical** risk tag\n- the listing's risk tag says **Broker approval required**\n- the hours are above **Max hours without approval**\n\n## What members see\n\nWhile they wait, both members see that the exchange is waiting for a broker. Nothing else happens until a broker approves or rejects it. Please deal with waiting exchanges promptly, because the members cannot start until you do.",
+            "summary": "Which exchanges wait for a broker, and what members see while they wait.",
+            "title": "When does an exchange need a broker's approval?"
+          },
+          "broker_insurance": {
+            "body": "Some activities need insurance. [Insurance](/broker/insurance) keeps a record of members' insurance.\n\nIf an admin has turned on **Insurance tracking enabled**, members can add their own insurance details from the **Privacy** tab in their **Settings**. These arrive here for you to check. If it is off, members cannot add them, and you add certificates for them here.\n\n## Adding a certificate for a member\n\n1. Press **Add Certificate**.\n2. Use **Search Member** to find the member.\n3. Choose the **Insurance Type**, such as **Public Liability** or **Professional Indemnity**.\n4. Fill in **Provider Name**, **Policy Number**, **Coverage Amount**, **Start Date** and **Expiry Date**.\n5. Press **Add Certificate**.\n\n## Checking a certificate\n\n- Use the tabs to see **Pending**, **Submitted**, **Verified**, **Expiring Soon**, **Expired** and **Rejected** certificates.\n- Press the view button to see the details. If a file is attached, press **View Certificate File**.\n- Press the verify button when you have checked it.\n- Press the reject button if it is not acceptable, and give a reason.\n- Press the delete button to remove a record you added in error.\n\n## Why it matters\n\nIf a listing's risk tag says **Insurance required**, the member who posted the listing needs a verified insurance certificate that has not expired. This is the member shown as **Provider** on the exchange. Without one, nobody can start an exchange on that listing. This check applies even when **Insurance tracking enabled** is off.\n\n> Follow your community's rules on what counts as acceptable insurance. Do not collect more personal information than you need.",
+            "summary": "Add, check, verify or reject members' insurance records.",
+            "title": "Recording insurance certificates"
+          },
+          "broker_match_approvals": {
+            "body": "[Match Approvals](/broker/match-approvals) holds suggested matches between a member and a listing that need a broker's check first. Neither member is told about the match until a broker approves it.\n\n## Which matches come here\n\nA match comes here when either member:\n\n- chose a safeguarding option with **Require coordinator approval** or **Restrict matching**, or\n- is under monitoring.\n\nAll other matches are shown to members straight away. When nothing is waiting, the page shows **No matches waiting**.\n\nBrokers, coordinators and admins get a notification when a match arrives. For one member, at most five new matches are sent at a time. The rest follow later.\n\n## Approving or rejecting\n\n- If you approve, both members are told. The member sees the listing among their matches, and the listing's owner is told who may get in touch.\n- If you reject, you must give a reason. Neither member is told, because neither of them ever saw the match. The same match is not sent again.\n\nYour decision and your name are recorded.\n\n## The page itself\n\nThe page has the tabs **Pending**, **Approved**, **Rejected** and **All**, and counters such as **Pending Review**. You cannot act on a match you are part of.\n\n> Agree with your safeguarding lead what to check before you approve a match.",
+            "summary": "Match Approvals holds suggested matches that a broker must check before either member is told about them.",
+            "title": "What is the Match Approvals page?"
+          },
+          "broker_risk_tags": {
+            "body": "A risk tag marks a listing that needs extra care, for example work at height or help with money. The tag is on the listing, not on the member.\n\n## Tagging a listing\n\n1. Open [Risk Tags](/broker/risk-tags).\n2. Press **Tag Listing**.\n3. In **Search Listing**, type part of the listing title and choose it.\n4. Choose a **Risk Level**: **Low**, **Medium**, **High** or **Critical**.\n5. Choose a **Risk Category**, such as **Safeguarding**, **Financial**, **Health & Safety**, **Legal**, **Reputation** or **Potential Fraud**.\n6. Add **Internal Notes** for other brokers if useful.\n7. Turn on **Broker approval required** if exchanges for this listing should wait for a broker. See the limits below.\n8. Turn on **Insurance required** if the member who posted the listing must have insurance on record.\n9. Press **Create Tag**.\n\nBrokers and admins are notified when a listing is tagged **High** or **Critical**.\n\n## What a tag changes\n\n- **Insurance required** always applies. No exchange on the listing can start until the member who posted it has a verified insurance certificate that has not expired.\n- **Broker approval required**, and a **High** or **Critical** level, only change approval when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Otherwise every exchange already waits for a broker, or none does.\n- If your community copies messages about high-risk listings, messages about **High** and **Critical** listings are copied to brokers.\n\n## Changing or removing a tag\n\nThe tabs filter tags by level. Use the edit button on a row to change a tag and press **Update Tag**. Use the remove button to delete it.",
+            "summary": "Risk tags mark listings to watch, and can require insurance or, in some set-ups, broker approval.",
+            "title": "Tagging a listing that needs extra care"
+          }
+        },
+        "summary": "Approve exchanges that need a broker, deal with problems, and tag listings that need extra care.",
+        "title": "Exchanges and listings"
+      },
+      "broker_good_practice": {
+        "articles": {
+          "broker_daily_routine": {
+            "body": "A few minutes each day keeps members safe and stops work piling up. This is a suggested routine. Adapt it to your community.\n\n1. Open the [Broker Dashboard](/broker) and read **What needs you now**.\n2. Deal with safeguarding first. Check **Safeguarding Alerts**, then flagged and unreviewed items in [Messages](/broker/messages).\n3. Check your notifications for coordinator help requests. Reply to each one.\n4. Approve or reject exchanges waiting in [Exchanges](/broker/exchanges). Members cannot start until you do.\n5. Approve new members waiting in [Members](/broker/members).\n6. Check [Reports](/broker/moderation/reports) and the [Content Queue](/broker/moderation/queue).\n7. Answer vetting review requests in [Vetting confirmations](/broker/vetting).\n8. Skim **Recent Activity** to see what other brokers have done.\n\n## Weekly\n\n- Look at [User Monitoring](/broker/monitoring). Decide whether each member still needs it, especially those in **Expiring within 7 days**.\n- Look at the **Never logged in** and **Onboarding incomplete** tabs in [Members](/broker/members). Offer help.\n- Check [Insurance](/broker/insurance) for certificates that are **Expiring Soon**.\n\n## Sharing the work\n\nIf several brokers share the work, agree who covers which days. Use member notes so everyone knows what has been done.",
+            "summary": "A short checklist to keep on top of the work without missing anything urgent.",
+            "title": "A simple daily routine for brokers"
+          },
+          "broker_fair_exchanges": {
+            "body": "Timebanking works because everyone's time is valued equally. One hour of help is worth one hour, whatever the task. Here is how you can help members keep exchanges fair.\n\n## Before an exchange\n\n- Encourage members to agree clearly what will be done, when and roughly how long it will take.\n- Suggest they use messages on the site to agree details. This keeps a record.\n- Remind members that nobody has to accept a request they are not comfortable with.\n\n## After an exchange\n\n- Encourage both members to confirm the hours promptly.\n- If they disagree, help them talk it through calmly. Most disagreements are misunderstandings.\n\n## Being fair as a broker\n\n- Apply the same rules to everyone.\n- Do not handle exchanges, reports or corrections that involve you, a relative or a close friend. Ask another broker.\n- Explain your decisions in plain words, especially when you reject something.\n- Keep corrections to balances rare, agreed and explained.\n\n## Encouraging everyone to take part\n\nSome members find it easier to give than to ask. Remind people that receiving help is part of timebanking too. Some members may need help to think of what they can offer. Everyone has something to give.",
+            "summary": "Good habits that make exchanges clear and fair for everyone.",
+            "title": "Helping members exchange time fairly"
+          },
+          "broker_privacy_records": {
+            "body": "As a broker you see information other members do not: notes, safeguarding choices, vetting decisions and some messages. Members trust you with it.\n\n## Handling information\n\n- Look only at what you need for the task in front of you.\n- Do not discuss members with other members.\n- Share concerns only with other brokers, your admin or your safeguarding lead, and only as needed.\n- Do not copy information out of the site into personal notes, email or chat apps.\n- Sign out when you finish, especially on a shared computer.\n\n## Keeping good records\n\n- Write notes as facts: what happened, when, and what you did.\n- Leave out opinions and guesses.\n- Write each note as if the member might one day read it. They may have the right to ask for the information held about them.\n- Give clear reasons when you reject, suspend, monitor or adjust a balance. These reasons stay on record.\n\n## What not to record\n\n- Vetting certificates, certificate numbers or check results\n- Health details, unless your community's rules say you may and it is needed\n- Passwords or bank details, ever\n\n> If you think information has been seen by someone who should not see it, tell your admin straight away.",
+            "summary": "How to handle what you see as a broker, and how to keep good records.",
+            "title": "Keeping members' information private"
+          },
+          "broker_safe_exchanges": {
+            "body": "Most exchanges are simple and safe. A little planning helps keep them that way.\n\n## Advice to share with members\n\n- Meet somewhere public for a first meeting, or have someone else there.\n- Tell a friend or family member where you are going and when you expect to be back.\n- Keep money, bank cards and passwords out of exchanges.\n- Trust your feelings. It is fine to say no, or to stop an exchange that feels wrong.\n- Tell a broker if anything worries you.\n\n## Extra care for some activities\n\nSome activities carry more risk. Examples are visiting someone's home, driving, work with tools, or support for someone who may be at risk. For these:\n\n- Tag the listing in [Risk Tags](/broker/risk-tags), so other brokers know to take care.\n- Ask for insurance with **Insurance required** where your community's rules say so.\n- Record vetting decisions for members who work with people at risk.\n- Consider arranging the first meeting yourself.\n\nA tag on its own does not always make exchanges wait for a broker. **Broker approval required** on a tag only takes effect when an admin has turned on both **Broker approval required** and **Auto-approve low-risk exchanges** in Configuration. Check with your admin how your community is set up.\n\n## Protected members\n\nSome members have asked for extra protection. Respect their choices, even if it makes arranging help slower. Never pass on their contact details without their agreement.\n\n> If you think someone is in danger, contact the emergency services first.",
+            "summary": "Practical safety advice for members, and the tools brokers can use when an exchange carries more risk.",
+            "title": "Helping members stay safe"
+          },
+          "broker_welcoming_members": {
+            "body": "The first few weeks decide whether a new member stays. A friendly broker makes a big difference.\n\n## When you approve someone\n\n- Approve new members promptly. People lose interest if they wait.\n- Send a short welcome message. Press **Send Message** from their row in [Members](/broker/members).\n- Offer a phone call or a meeting if they would like help getting started.\n\n## Helping them take their first step\n\n- Help them add a clear profile and one or two listings: something they can offer and something they would like.\n- Suggest a simple first exchange with a friendly, experienced member.\n- Tell them how hours work: one hour given earns one hour to spend.\n\n## Following up\n\n- Use [Onboarding](/broker/onboarding) to see where new members get stuck.\n- Check the **Onboarding incomplete** and **Never logged in** tabs in [Members](/broker/members) every week.\n- Add a note with the category **Onboarding** when you contact someone, so other brokers know.\n\n> Do not rush people. Some members take a while to feel confident. A kind word often matters more than any feature.",
+            "summary": "A warm start helps new members make their first exchange.",
+            "title": "Welcoming new members"
+          }
+        },
+        "summary": "Simple habits that keep your timebank fair, safe, friendly and well run.",
+        "title": "Good practice for brokers"
+      },
+      "broker_group_activities": {
+        "articles": {
+          "broker_community_pot": {
+            "body": "Some timebanks keep a shared account for the whole community, often called a Community Pot. It is an ordinary member account. It is not a special feature of the site.\n\nAsk your admin to create the account and agree who looks after it. That person signs in to the pot account to confirm its part in exchanges.\n\n## Option A: attendees contribute\n\nEach attendee gives an hour, which pays the leader and tops up the pot.\n\nExample: a workshop with a leader and 50 attendees.\n\n1. Create a group exchange with **Custom Hours**.\n2. Add the leader as a **Provider** with 1 hour.\n3. Add the Community Pot as a **Provider** with 49 hours.\n4. Add each of the 50 attendees as a **Receiver** with 1 hour.\n\nIn total, 50 hours are given and 50 are earned. Each attendee needs at least 1 hour in their balance.\n\n## Option B: the pot pays\n\nThe pot pays the leader, and attendees take part for free.\n\n1. Create a group exchange with **Custom Hours**.\n2. Add the leader as a **Provider** with 1 hour.\n3. Add the Community Pot as a **Receiver** with 1 hour.\n\nThe pot needs at least 1 hour in its balance.\n\n## Keep it fair and open\n\n- Agree with your community when the pot pays and when attendees pay.\n- Keep a note of what came in and went out.\n- Members can give hours to the shared **Community Fund** from their wallet. Only an admin can pay hours out of that fund. The Community Fund and a Community Pot account are separate things.\n- If your community gives hours for attending events, an admin sets the reward on each event. Brokers cannot set it.",
+            "summary": "A Community Pot is an ordinary member account that holds hours for the whole community. Two ways to use it.",
+            "title": "Using a Community Pot account for workshops"
+          },
+          "broker_create_group_exchange": {
+            "body": "You can organise a group exchange for a group, even if you are not taking part yourself.\n\n1. Go to [Group Exchanges](/group-exchanges) on the member side of the site. Press **Back to Site** if you are in the Broker Panel.\n2. Press **New Exchange**.\n3. **Details**: enter a **Title**, such as \"Bike repair workshop, 12 June\", and a **Description (optional)**. Enter the **Total Hours** and choose a **Split Type**. Press **Next**.\n4. **Participants**: search for members and add each one as a **Provider** or a **Receiver**. If you are taking part, use **Add yourself as**. You need at least one provider and one receiver. With **Custom Hours**, enter each person's hours. Press **Next**.\n5. **Review Split**: check the **Hour Split Preview**. It shows who gives, who receives and how many hours. Press **Back** to fix anything, or **Review** to go on.\n6. **Confirm**: check everything and press **Create Group Exchange**.\n\n## After you create it\n\n1. Open the exchange and press **Start Exchange**. Participants get a notification asking them to confirm.\n2. Help anyone who is unsure how to press **Confirm My Hours**.\n3. When everyone shows as **Confirmed**, press **Complete Exchange**.\n\n## Tips\n\n- Check every receiver has enough hours before you start. One short balance stops the whole exchange.\n- Every participant must confirm from their own account. Plan time for this, especially with large groups.\n- If the activity is cancelled, press **Cancel Exchange**. No hours move.",
+            "summary": "Step by step: create a group exchange, add participants and choose how hours are shared.",
+            "title": "Setting up a group exchange for a workshop"
+          },
+          "broker_group_exchange_basics": {
+            "body": "A group exchange records one activity with several people in it. Use one for a workshop, a group work day or a class. Any member can set one up, including you.\n\nGroup exchanges only work when your community uses both group exchanges and groups.\n\n## Who takes part\n\nEveryone in a group exchange has one of two roles:\n\n- **Provider**: gives time and earns hours\n- **Receiver**: receives time and gives hours\n\nThe hours given by all receivers must equal the hours earned by all providers.\n\n## How the hours are shared\n\nWhen you create it, you choose a **Split Type**:\n\n- **Equal Split**: the **Total Hours** are shared equally among the providers, and equally among the receivers.\n- **Custom Hours**: you set the hours for each person yourself.\n- **Weighted Split**: you give each person a weight, and hours are shared in proportion.\n\n## The steps\n\n1. The organiser creates it. It starts as a **Draft**.\n2. The organiser presses **Start Exchange**. Everyone is asked to confirm.\n3. Each participant signs in and presses **Confirm My Hours**.\n4. When everyone has confirmed, the organiser presses **Complete Exchange**.\n\nOn completion, all balances move at the same moment. If any part fails, for example a receiver does not have enough hours, nothing moves at all.\n\n## Changes\n\nSome changes clear everyone's confirmations, so everyone must confirm again:\n\n- changing the **Total Hours**\n- changing the **Split Type**\n- adding or removing a participant\n\nChanging only the title or description does not clear confirmations.\n\n> Group exchanges do not need a broker's approval.",
+            "summary": "A group exchange records time for several people at once, such as a workshop or a work day.",
+            "title": "How group exchanges work"
+          }
+        },
+        "summary": "Record time for workshops and group sessions with group exchanges, and use a Community Pot account.",
+        "title": "Workshops and group activities"
+      },
+      "broker_members": {
+        "articles": {
+          "broker_account_help": {
+            "body": "Many requests for help are about signing in. You can fix most of them from the member's record.\n\n1. Open [Members](/broker/members).\n2. Press the three-dot menu on the member's row and choose **View details**.\n3. Open the **Actions** tab.\n\n## \"I never got the email to confirm my address\"\n\nPress **Resend verification**. Ask the member to check their spam or junk folder too.\n\n## \"I forgot my password\"\n\nPress **Send password reset**. The member gets an email with a link to choose a new password. You never see or set their password.\n\n## \"I lost the phone I use for two-factor sign-in\"\n\nTwo-factor sign-in asks for a code from a phone app as well as a password.\n\n1. First, make sure the person asking really is the account holder. Follow your community's process for this.\n2. In the box above the button, write an incident reference and how you checked their identity. You need at least 10 characters.\n3. Press **Reset 2FA**.\n\nThe member is signed out everywhere and told by email and notification. They can then sign in with their password and set up two-factor again.\n\n> To reset two-factor sign-in, you must have signed in with two-factor yourself within the last few minutes. If you see an error, sign out, sign in again and retry straight away.",
+            "summary": "Resend a verification email, send a password reset, or reset two-factor sign-in for a member.",
+            "title": "Helping a member who cannot get into their account"
+          },
+          "broker_adjust_balance": {
+            "body": "You can add hours to a member's balance or take hours away. Use this to correct a mistake, not as a normal way to pay someone.\n\n1. Open [Members](/broker/members).\n2. Press the three-dot menu on the member's row and choose **View details**.\n3. Open the **Actions** tab and press **Adjust balance**.\n4. In **Amount (hours)**, type a positive number to add hours, or a negative number to remove hours. For example, type 2 to add two hours or -1.5 to remove one and a half.\n5. In **Reason**, explain why. This is required.\n6. Press **Apply adjustment**.\n\n## What the member sees\n\nThe adjustment appears in the member's wallet as a separate entry. It shows your reason and \"Admin\" as the other party. The member also gets a notification.\n\n## Limits\n\n- A balance cannot go below zero.\n- You cannot adjust your own balance. Ask another broker or an admin.\n- The change is recorded with your name, the reason and the balance before and after.\n\n## Correcting an exchange\n\nIf hours were recorded wrongly in a completed exchange, the Broker Panel cannot undo that exchange. The only fix available to you is to adjust each member's balance separately. Agree the correction with both members first. Mention the exchange in each reason so the history makes sense.\n\n> Adding hours creates new hours in your community. Follow your community's rules on when this is allowed.",
+            "summary": "Add or remove hours from a member's balance, with a reason the member can see.",
+            "title": "How do I correct a member's time balance?"
+          },
+          "broker_approve_new_members": {
+            "body": "If your community checks people before they can take part, each new registration waits for approval. You approve them from **Members** or **Onboarding**.\n\n1. Open [Members](/broker/members).\n2. Press the **Pending** tab. The red number on **Members** in the menu shows how many are waiting.\n3. Find the person. Press the three-dot menu at the end of their row and choose **View details** to check their details first.\n4. Press the three-dot menu again and choose **Approve**.\n5. Press **Approve** again to confirm.\n\nThe member can now sign in and use the site. They get a welcome email and a notification.\n\n## Starting hours\n\nWhen you approve someone, the site adds starting hours to their balance. This is 5 hours unless an admin has set a different starting balance. If your admin has set it to 0, no hours are added. Each member only ever gets their starting hours once.\n\n## Approving several people at once\n\n1. On the **Pending** tab, tick the box next to each person.\n2. Press **Approve selected**.\n\nStarting hours are added for each person you approve this way too. Use this only when you have already checked each person.\n\n## If you do not want to approve someone\n\nThere is no reject button in the Broker Panel. Leave the person pending and talk to your admin or your community's lead about what to do. Do not approve someone to \"sort it out later\".\n\n> The [Onboarding](/broker/onboarding) page has the same pending list under **Pending Approvals**, with an **Approve** option in each row's menu.",
+            "summary": "New registrations wait in the Pending tab until a broker or admin approves them.",
+            "title": "How do I approve a new member?"
+          },
+          "broker_member_details": {
+            "body": "Open a member's record to see everything about them in one place.\n\n1. Open [Members](/broker/members).\n2. Press the three-dot menu on their row.\n3. Choose **View details**.\n\nAt the top you see their name, status, role, email address and whether the email is verified.\n\n## Tabs in the record\n\n- **Overview**: their balance, when they joined, when they were last active, and whether they finished onboarding. A **Membership journey** line shows when they registered, verified their email and were approved.\n- **Compliance**: their **Contact attestation** (vetting decision), any **Insurance certificates** and any **Consents** they have given.\n- **Notes**: private notes from brokers and admins.\n- **Actions**: account tools, such as approving, suspending, sending a password reset or adjusting their balance. You can also edit parts of their profile here.\n\n## Editing a profile\n\nOn the **Actions** tab, press **Edit** next to **Profile**. You can change **First name**, **Last name**, **Phone**, **Location**, **Tagline** and **Bio**. Press **Save changes**.\n\nYou cannot change a member's email address, role or status here. Ask an admin if one of these needs to change.\n\n> Only change a member's profile when they ask you to, or when it breaks your community's rules. Tell them what you changed.",
+            "summary": "The member record brings together their status, balance, compliance records, notes and account actions.",
+            "title": "Viewing a member's full record"
+          },
+          "broker_member_notes": {
+            "body": "Notes let brokers and admins keep a shared record about a member. Members never see these notes.\n\n## Adding a note\n\n1. Open [Members](/broker/members).\n2. Press the notes button on the member's row, or choose **Notes** from the three-dot menu. You can also use the **Notes** tab in the member's record.\n3. Choose a **Category**: **General**, **Outreach**, **Support**, **Onboarding**, **Concern** or **Follow up**.\n4. Type your note in the box.\n5. Press the send button.\n\nEach note shows who wrote it and when.\n\n## Managing notes\n\n- **Pin note** keeps an important note at the top. Only an admin can pin a note.\n- **Edit note** corrects a note. Only an admin can edit a note.\n- **Delete note** removes a note. Only an admin can delete one. If you wrote something wrong, add a new note that corrects it.\n\n## What to write\n\nWrite facts, not opinions. Good notes are short and useful to the next broker, for example: \"Called 3 May. Prefers phone to email. Wants help finding gardening work.\"\n\n> Do not record vetting certificates, health details or other sensitive information in notes unless your community's rules say you may. A member can ask to see the information you hold about them.",
+            "summary": "Notes help brokers share context. Members cannot see them.",
+            "title": "Keeping private notes about a member"
+          },
+          "broker_members_list": {
+            "body": "[Members](/broker/members) lists everyone in your community. Across the top you see **Total members**, **Pending approval**, **Active members** and **Suspended members**. Press a counter to open that list.\n\n## Tabs\n\n- **All**: everyone\n- **Pending**: waiting for approval\n- **Active**: approved members who can use the site\n- **Suspended**: members who cannot sign in at the moment\n- **Never logged in**: approved members who have not signed in yet\n- **Onboarding incomplete**: members who have not finished the setup steps\n\nThe last two tabs are a good place to start when you want to offer help to people who are stuck.\n\n## Searching and filtering\n\n- Type a name or email into **Search members...**.\n- Use **Filter by role** to show only members, brokers or admins, for example.\n\n## What each row shows\n\nEach row shows the member's name, status, role, whether their email is verified, their balance in hours, when they were last active and when they joined.\n\n## Row actions\n\nPress the three-dot menu at the end of a row to:\n\n- **View details**: open the member's full record\n- **View Profile**: see their public profile in a new tab\n- **Send Message**: start a message to them in a new tab\n- **Notes**: read or add private notes\n- **Check Vetting**: open their vetting record\n- **Approve**, **Suspend** or **Reactivate**, depending on their status",
+            "summary": "Search the member list and use tabs to find people who are pending, suspended or have never signed in.",
+            "title": "Finding and filtering members"
+          },
+          "broker_supporting_members": {
+            "body": "Some members find websites confusing or stressful. You can make a big difference by being patient and practical.\n\n## Ways to help\n\n- Use the **Never logged in** and **Onboarding incomplete** tabs in [Members](/broker/members) to find people who may be stuck. Offer a phone call.\n- Sit with the member, or talk them through each step on the phone. Let them press the buttons themselves where they can.\n- Send a password reset or a verification email for them from their record.\n- With their permission, correct small mistakes in their profile, such as a spelling error in their name.\n- Suggest the accessible version of the site if your community offers one. It is simpler and works well with screen readers.\n- Write a note on their record about what helps them, such as \"prefers phone calls\".\n\n## What you cannot do for them\n\nThe Broker Panel does not let you post listings, send messages or record exchanges as if you were the member. Every action a member takes must come from their own account.\n\nNever ask for a member's password, and never sign in as them.\n\n## Family members and carers\n\nA member can link their account with a family member or carer they trust. The member does this themselves from the **Linked** tab in their **Settings**. The linked person can then help in the ways the member agrees to. This is the member's choice. Brokers cannot set it up for them.",
+            "summary": "Practical ways to help members who struggle with the website, and what the site does not let you do for them.",
+            "title": "Supporting members who find technology hard"
+          },
+          "broker_suspend_member": {
+            "body": "Suspending a member stops them signing in and taking part. It is reversible.\n\n## Suspending\n\n1. Open [Members](/broker/members) and find the member.\n2. Press the three-dot menu on their row and choose **Suspend**.\n3. Read the message and press **Suspend** to confirm.\n\nThe member gets a notification. Write a note on their record explaining why, so other brokers understand.\n\n## Suspending several members\n\nTick the box next to each person and press **Suspend selected**.\n\n## Reactivating\n\n1. Press the **Suspended** tab.\n2. Press the three-dot menu on the member's row and choose **Reactivate**.\n\nThe member can sign in again and is told their account is active. Press **Reactivate** only once: each press sends them another message.\n\n## Limits\n\n- You can only suspend and reactivate ordinary members. You cannot change another broker's or an admin's account.\n- If an admin banned a member, only an admin can reactivate them.\n\n> Suspension is a serious step. For a safeguarding concern, follow your community's safeguarding process first. You may only need to turn off the member's messaging, which you can do from **User Monitoring**.",
+            "summary": "Suspending stops a member signing in. You can reactivate them later.",
+            "title": "Suspending or reactivating a member"
+          }
+        },
+        "summary": "Approve new members, keep notes, help people with their accounts and correct balances.",
+        "title": "Looking after members"
+      },
+      "broker_moderation": {
+        "articles": {
+          "broker_comments_reviews": {
+            "body": "## Comments\n\n[Comments](/broker/moderation/comments) lists members' comments across the community.\n\n1. Search with **Search Comments or Users...** and press **Apply**.\n2. Find the comment.\n3. To remove it, press **Delete**, then **Delete Comment** to confirm.\n\nThe comment is removed for good. The author gets a notification and an email. The email says their comment was removed because it broke the community's standards, and offers a link to contact support. It does not include a reason from you.\n\n## Reviews\n\nIf your community uses reviews, [Reviews](/broker/moderation/reviews) lists the reviews members give each other. You can search, or filter by **Rating**.\n\n- **Flag**: takes the review off public view so it can be looked at. Nobody is notified.\n- **Hide**: takes the review off public view. The member who wrote it is notified.\n- **Delete**: removes the review for good. The member who wrote it is notified.\n\nEach action asks you to confirm first. There is no button to restore a flagged or hidden review, so choose carefully.\n\n> You cannot moderate a review you wrote, or a review about you. Ask another broker or an admin.",
+            "summary": "Delete comments that break the rules, and flag, hide or delete member reviews.",
+            "title": "Removing comments and reviews"
+          },
+          "broker_content_queue": {
+            "body": "The [Content Queue](/broker/moderation/queue) holds content that is waiting for a moderator before members can see it.\n\n## What arrives here\n\n- **Posts that look like spam.** The site hides a post automatically if it looks like spam, for example very long links or lots of capital letters. These posts arrive with the status **Flagged**.\n- **Events waiting for review.** If your community reviews new events, they wait here. An admin must approve events.\n\nThe list shows pending items when it opens. To see flagged posts, change the status filter at the top of the list to flagged.\n\n## Reviewing a post\n\n1. Read the item in the list.\n2. Press the approve button if it is fine. The post becomes visible to members.\n3. Press the reject button if it breaks the rules. Type a **Rejection Reason** and press **Reject Content**. The post stays hidden.\n\nThe counters at the top show how many items are **Pending Review**, **Flagged**, **Approved** and **Rejected**. Press **Refresh** to update the list.\n\n> You cannot review content you wrote yourself. Another broker or an admin must do it.",
+            "summary": "Posts that look like spam are held back for review. Approve them or reject them with a reason.",
+            "title": "Using the Content Queue"
+          },
+          "broker_feed_posts": {
+            "body": "[Feed Posts](/broker/moderation/feed) lists everything in your community's feed: posts, listings, events, polls and more.\n\n## Finding an item\n\n- Type in **Search Posts or Users...** to search by words or by the author's name.\n- Use **Post Type** to show one kind of item. Press **Apply**, or **Clear** to reset.\n\nEach row shows the author, the content, the type, whether it is **Visible** or **Hidden**, and when it was created.\n\n## Hiding an item\n\nPress **Hide**, then **Hide Post** to confirm. Members can no longer see it in the feed. The author gets a notification that their post was hidden. There is no button to show it again, so be sure first.\n\n## Deleting an item\n\nPress **Delete**, then **Delete Post** to confirm. There is no button to undo this. The item leaves the feed, and its likes and comments are deleted for good. The site keeps a record of a deleted post, but nobody can see it.\n\nThe author gets a notification and an email. The email says their post was removed because it broke the community's standards. It offers a link to contact support if they think it was a mistake. It does not include a reason from you, so tell the author yourself if they need to know more.\n\nFor a listing or an event, **Delete** removes it from the feed only. The listing or event itself stays.\n\n> You cannot hide or delete something you wrote. If a post only needs a small change, it is often kinder to message the author first.",
+            "summary": "Remove posts and other items from the community feed.",
+            "title": "Hiding or deleting feed posts"
+          },
+          "broker_reports": {
+            "body": "Members can report content that worries them, such as a post, comment, listing, event or review. Reports arrive in [Reports](/broker/moderation/reports). Brokers and admins get a notification when a new report arrives.\n\n## Reading a report\n\n1. Open [Reports](/broker/moderation/reports). The counters show **Total Reports**, **Pending**, **Resolved** and **Dismissed**.\n2. Use **Status** and **Content Type** to filter, then press **Apply**.\n3. Press **View details** on a report. You see who reported it, the reported item and its author, and the reason.\n\n## Closing a report\n\n- **Resolve**: you agree there was a problem and you have dealt with it. The person who reported it is told.\n- **Dismiss**: you looked at it and no action is needed. The person who reported it gets a neutral message.\n\nEach asks you to confirm.\n\n## Resolving does not remove anything\n\nResolving or dismissing a report only closes the report. It does not change the reported content. If content should go, remove it yourself from **Feed Posts**, **Comments** or **Reviews**.\n\nIf the reported item is deleted completely, the site can no longer tell who owned it. Only an admin can then close that report. Deleting a comment removes it completely. So for a report about a comment, resolve the report first, then delete the comment.\n\n> You cannot close a report you made, a report about you, or a report about something that is yours, such as your post, listing or comment, or a review you wrote or received. Leave those to another broker or an admin.",
+            "summary": "Read reports that members make about content, then resolve or dismiss them.",
+            "title": "Dealing with members' reports"
+          }
+        },
+        "summary": "Check content waiting for review, remove posts, comments and reviews, and deal with members' reports.",
+        "title": "Moderating content"
+      },
+      "broker_reports": {
+        "articles": {
+          "broker_figures_and_records": {
+            "body": "The Broker Panel shows counts and records to help you plan your work. It does not have downloads or exports. If you need a report for funders or your committee, ask your admin.\n\n## Counts\n\n- The [Broker Dashboard](/broker) shows what is waiting across the whole panel.\n- Most pages have counters at the top. For example, [Members](/broker/members) shows **Total members**, **Pending approval**, **Active members** and **Suspended members**.\n- [Onboarding](/broker/onboarding) shows how new members progress and how many register each month.\n- The red numbers in the menu show waiting work, updated about once a minute.\n\n## Activity history\n\n**Recent Activity** on the dashboard lists the 20 latest exchange approvals, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records, with who did each and when. It does not show member approvals or suspensions, content moderation, vetting or safeguarding changes.\n\n## Permanent records\n\n- [Review Archive](/broker/archives): read-only records of message reviews\n- Member notes: on each member's record\n- Exchange **History**: on each exchange page\n- Vetting decisions: in [Vetting confirmations](/broker/vetting)\n\n## Figures that could not load\n\nIf a counter shows a dash, or you see **Some metrics couldn't be loaded**, press **Refresh**. A dash means the number could not be loaded. It does not mean zero.",
+            "summary": "Where to find counts, activity history and permanent records in the Broker Panel.",
+            "title": "What figures and records can brokers see?"
+          },
+          "broker_onboarding_funnel": {
+            "body": "[Onboarding](/broker/onboarding) shows how new members are getting on. It helps you see where people get stuck, so you can offer help.\n\n## The counters\n\n- **Registered**: how many people have signed up, compared with last month\n- **Overall conversion**: the share of registered people who reached the last step, **Repeat User**\n- **Pending approvals**: people waiting for approval\n- **Biggest drop-off**: the step where most people stop\n\n## The Onboarding Funnel\n\nThe funnel shows how many members reached each step:\n\n1. **Registered**\n2. **Email Verified**\n3. **Profile Complete**\n4. **First Listing**\n5. **First Exchange**\n6. **Repeat User**\n\nA big drop between two steps shows where people need help. For example, many people who verify their email but never complete their profile may need a welcome call.\n\n## Registrations Trend\n\nThis chart shows new registrations each month for the last six months.\n\n## Pending Approvals\n\nAt the bottom is the list of people waiting for approval. Use the three-dot menu on a row to **Approve** them or **View Profile**.",
+            "summary": "The Onboarding page shows how far new members get, from registering to their first exchange.",
+            "title": "Seeing how new members are getting on"
+          }
+        },
+        "summary": "See how new members are getting on, and find the counts and records the Broker Panel keeps.",
+        "title": "Figures and records"
+      },
+      "broker_role": {
+        "articles": {
+          "broker_becoming_a_broker": {
+            "body": "Only a community admin can make someone a broker. You cannot ask for the role from your own account.\n\nThe admin opens the member's account in the admin panel. They set **Role** to **Broker** and save.\n\n## After you become a broker\n\n1. Sign in as usual.\n2. Look at the bar at the top of the page. You now see **Broker Panel**.\n3. Press **Broker Panel** to open it.\n\nIf you do not see the link, sign out and sign in again. If it is still missing, ask your admin to check your role.\n\n## When the role ends\n\nIf you stop being a broker, ask your admin to change your role back to **Member**. The Broker Panel link then disappears. Your notes and decisions stay on record with your name.\n\n> Brokers who are also admins see the admin panel link instead. From inside the Broker Panel, admins also see **Full Admin Panel** at the bottom of the menu.",
+            "summary": "A community admin gives the broker role from the admin panel. You then see the Broker Panel link.",
+            "title": "How does someone become a broker?"
+          },
+          "broker_can_and_cannot": {
+            "body": "Brokers look after members and daily activity. Admins look after the community's setup.\n\n## You can\n\n- approve, suspend and reactivate ordinary members\n- edit a member's name, phone, location, tagline and bio\n- resend a verification email, send a password reset, or reset two-factor sign-in\n- adjust an ordinary member's time balance, with a reason\n- keep private notes about members\n- approve or reject exchanges that need broker approval\n- tag listings with a risk level\n- review message copies, place members under monitoring and turn off their messaging\n- confirm, renew or revoke vetting decisions\n- record insurance certificates\n- remove posts, comments and reviews that break the rules, and close reports\n- change the safeguarding options members can choose\n- change the Broker Panel settings that are not marked **Admin only**\n\n## Only an admin can\n\n- change community settings, sections and branding\n- give someone a role, such as broker or admin\n- create, import, ban or delete accounts\n- reactivate a member who was banned (you can lift an ordinary suspension)\n- choose the community's safeguarding policy package\n- pay hours out of the Community Fund\n- set rewards for attending events\n\n## Checks that protect you\n\nTo keep things fair, the site stops you acting where you have a personal interest. You cannot:\n\n- approve or reject an exchange you are part of\n- moderate content you wrote or are part of\n- close a report you made\n- close a report about you, or about something that is yours, such as your post, listing or comment, or a review you wrote or received\n- adjust your own balance, or another broker's or an admin's\n\nYou also cannot change another broker's or an admin's account. If you try, you will see an error. Ask another broker or an admin to help instead.",
+            "summary": "A plain list of the tasks brokers can do, and the ones that need a community admin.",
+            "title": "What can a broker do, and what is only for admins?"
+          },
+          "broker_configuration": {
+            "body": "[Configuration](/broker/configuration) holds the settings for broker work in your community. Settings marked **Admin only** can only be changed by an admin. You can see them, but not change them.\n\nAfter changing anything, press **Save Changes**. **Unsaved changes** shows until you do.\n\n## Settings brokers can change\n\nThese decide which messages are copied to brokers:\n\n- **Copy first contact between members**: copies the first message between any two members.\n- **Copy messages from new members**: copies messages from members who joined recently. **New-member monitoring window (days)** sets how long \"recently\" is.\n- **Copy messages on high-risk listings**: copies messages about listings tagged high or critical risk.\n- **Random sample percentage**: copies this share of all other messages at random, for spot checks. For example, 5 means about 5 in every 100. At 100, every message is copied, the same as **Copy all messages to broker**, so agree any high number with your admin first.\n- **Archive retention (days)**: how long reviewed, unflagged message copies are kept before they are deleted.\n\n## Settings only an admin can change\n\n- **Broker messaging enabled**: the main switch. When it is off, no messages are copied to brokers, whatever the other settings say.\n- **Copy all messages to broker**: copies every message between members.\n- **Broker approval required**: exchanges wait for a broker's approval.\n- **Auto-approve low-risk exchanges**: lets most exchanges go ahead without a broker.\n- **Max hours without approval**: with auto-approve on, exchanges above this many hours still need a broker.\n- **Insurance tracking enabled**: lets members add insurance records in their settings.\n\n## Choosing settings\n\nCopying more messages gives brokers more to read. It also reaches further into members' privacy. Agree the settings with your admin and safeguarding lead. Choose the lightest settings that keep people safe.\n\n> This guide describes the settings that change how the site behaves. If you are unsure what a setting does, ask your admin before changing it.",
+            "summary": "Which messages are copied to brokers and how exchange approval works are set in Configuration.",
+            "title": "Changing the Broker Panel settings"
+          },
+          "broker_dashboard": {
+            "body": "The **Broker Dashboard** is the first page you see. It tells you what needs you now.\n\n## What needs you now\n\nAt the top, a box lists the kinds of work waiting for review, with the most urgent first. Press any line to go straight to that list. When nothing is waiting you see **All clear**.\n\n## The counters\n\nBelow that are counters. Each one opens the matching list, already filtered:\n\n- **Pending Exchanges**: exchanges waiting for broker approval\n- **Unreviewed Messages**: message copies nobody has reviewed yet\n- **High Risk Listings**: listings tagged high risk\n- **Monitored Users**: members under monitoring\n- **Vetting review requests**: members who asked for a vetting review\n- **Safeguarding Alerts**: urgent safeguarding items\n- **Onboarding Flags**: members whose safeguarding choices switch on protections\n\nIf a counter shows a dash, it could not load. Press **Refresh** to try again.\n\n## Quick Access and Recent Activity\n\n**Quick Access** has shortcuts to the main tools.\n\n**Recent Activity** lists the latest broker actions of some kinds only: exchange approvals and rejections, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records. It shows who did what and when.\n\nIt does not show member approvals or suspensions, balance changes, notes, content moderation, reports or vetting decisions. To check whether someone else has already dealt with one of these, look at the item itself, such as the member's record or notes.",
+            "summary": "The dashboard shows what is waiting for you, key counts and some recent broker actions.",
+            "title": "Using the Broker Dashboard"
+          },
+          "broker_finding_your_way": {
+            "body": "The Broker Panel has a menu on the left and a bar along the top. On a phone, press the menu button to open the menu.\n\n## The menu\n\nThe menu is grouped by type of work:\n\n- **Overview**: **Dashboard**, which shows what needs your attention now\n- **Daily Workflow**: **Members**, **Onboarding**, **Exchanges**, **Match Approvals** and **Messages**\n- **Moderation**: **Content Queue**, **Feed Posts**, **Comments**, **Reviews** and **Reports**\n- **Compliance & Oversight**: **Safeguarding**, **Safeguarding Options**, **Vetting confirmations**, **User Monitoring**, **Risk Tags** and **Insurance**\n- **Records**: **Review Archive**\n- **Settings**: **Configuration** and **Help**\n\nSome items only appear if your community uses that section. For example, **Exchanges** and **Match Approvals** only appear when your community uses the exchange workflow.\n\nA red number next to a menu item shows how many things are waiting. The numbers update about once a minute.\n\n## The top bar\n\n- **Back to Site** takes you back to the member side of the site.\n- **Search** opens a box where you type a page name, such as \"vetting\", and jump straight to it. You can also press Ctrl and K together (Cmd and K on a Mac).\n- **Help Center** opens the Broker Panel's own guidance page.\n- The bell opens your notifications.\n- Your name opens a menu with **My Profile** and **Sign Out**.\n\nTo make the menu narrower, press **Collapse sidebar** at the top of the menu.",
+            "summary": "The menu, the top bar, the search box and the red counters explained.",
+            "title": "Finding your way around the Broker Panel"
+          },
+          "broker_what_is_a_broker": {
+            "body": "A broker is the person who runs your timebank day to day. Some communities say \"coordinator\" instead. Both roles open the same **Broker Panel**.\n\nA broker helps members swap time fairly and safely. Typical tasks are:\n\n- welcoming new members and approving them when your community checks people before they join\n- signing off exchanges that need a broker's approval\n- reading messages that have been copied to brokers for safeguarding\n- recording your community's vetting decisions\n- removing posts, comments and reviews that break the rules\n- helping members who find the website hard to use\n\nYou do this work in the **Broker Panel**. It is a separate part of the site, built for day-to-day tasks. You still have your own member account as well. You can post listings and swap time like any other member.\n\n## A broker is not a junior admin\n\nA broker and a community admin have different jobs. An admin sets up the community: its settings, its sections and its rules. A broker works inside those rules with members. For that reason brokers are not allowed into the admin panel, and some settings in the Broker Panel are marked **Admin only**.\n\n> The decisions you make in the Broker Panel, such as approvals, reviews and balance changes, are recorded with your name. This keeps a clear record for your community.",
+            "summary": "Brokers and coordinators run the timebank day to day, using a separate part of the site called the Broker Panel.",
+            "title": "What is a broker or coordinator?"
+          }
+        },
+        "summary": "What brokers and coordinators do, what they can and cannot change, and how to find your way around the Broker Panel.",
+        "title": "Your role as a broker"
+      },
+      "broker_safeguarding": {
+        "articles": {
+          "broker_coordinator_help": {
+            "body": "Some members have asked not to be contacted directly. If another member tries to message them, the site stops the message. It offers a **Request coordinator help** button instead.\n\nWhen the member presses it, brokers and admins get a notification and an email. It says something like \"Coordinator help requested\", with the name of the person asking and the person they want to reach.\n\n## What to do\n\n1. Read the notification. Note who is asking and who they want to contact.\n2. Open the protected member's record in [Members](/broker/members). Read their notes.\n3. Contact the protected member in the way your community's process sets out, for example by phone. Ask if they are happy to be put in touch.\n4. If they agree, arrange the contact safely. For example, you could set up a first meeting with a broker present.\n5. If they do not agree, tell the person who asked, kindly and without giving reasons.\n6. Write a note on both members' records about what you did.\n\n## Things to know\n\n- The Broker Panel does not keep a list of these requests. The notification and email are your record, so act on them promptly.\n- Pressing the notification opens the **Safeguarding** page. That page needs extra access and may look empty. Use **Members** to find the member instead.\n- The protected member's safety comes first. Never share their contact details without their agreement.\n\n> A member may also be blocked because the person they want to reach only accepts contact from vetted members. They may then ask for a vetting review, which you handle in **Vetting confirmations**.",
+            "summary": "What to do when a member cannot message a protected member and asks a coordinator to help.",
+            "title": "When a member asks for coordinator help"
+          },
+          "broker_member_safeguarding_choices": {
+            "body": "When members join, your community can ask if they need extra support. They tick options such as needing a coordinator to arrange their exchanges. Each option can switch on one or more protections, called triggers.\n\n## What each trigger does\n\n- **Monitor messaging**: other members cannot message this member directly. Anyone who tries is offered **Request coordinator help** instead. The member is also left out of suggested matches. Their messages are not copied to brokers.\n- **Require coordinator approval**: any ordinary exchange this member takes part in waits for a broker's approval. Group exchanges have no approval step. Their suggested matches also wait in Match Approvals.\n- **Vetted members only**: only members with a confirmed vetting decision can contact this member. Until an admin has chosen your community's safeguarding policy package, nobody can contact a member with this protection.\n- **Restrict matching**: suggested matches involving this member wait in Match Approvals until a broker approves them. Neither member is told about a match before that.\n- **Notify safeguarding staff**: brokers and admins get a notification when a member ticks the option while joining.\n\nIf a member ticks several options, all their triggers apply together.\n\n## Changing their mind\n\nMembers can see and revoke their choices from the **Safeguarding & support** tab in their **Settings**. When they revoke a choice, brokers and admins are notified. Its protections stop unless another option they chose still applies them.\n\n## Seeing members' choices\n\nThe **Onboarding Flags** counter on the [Broker Dashboard](/broker) shows how many members have active safeguarding choices that switch on protections.\n\n> Treat these choices as private. Only other brokers and admins should know about them. Never mention them to other members.",
+            "summary": "Each safeguarding option can switch on protections. Here is what each one does.",
+            "title": "What happens when a member chooses a safeguarding option?"
+          },
+          "broker_message_review": {
+            "body": "Your community can copy some members' messages to brokers so you can check that people are safe. The message is still delivered normally. The copy goes to [Messages](/broker/messages) for review.\n\n## Why a message is copied\n\nEach copy shows a **Copy Reason**:\n\n- **First Contact**: the first message between two members\n- **New Member**: a message from someone who joined recently\n- **High Risk Listing**: a message about a listing tagged high or critical risk\n- **Flagged User**: a message to or from a member under monitoring\n- **Random Sample**: a message chosen at random for spot checks\n\nWhich of these apply depends on the settings in [Configuration](/broker/configuration).\n\n## What you can see\n\nWhen you open a copied message, you see it together with the messages that came before it in the same conversation, up to the 50 most recent. Messages sent after it are not shown. Earlier messages appear even if they were not copied. For a group conversation, you see the group's earlier messages. A message the sender has changed is marked **edited**.\n\n## What members are told\n\nWhen message copying is switched on, members see a notice in their conversations. It says messages may be reviewed by a coordinator for safeguarding.\n\n## Your responsibility\n\n- Read only what you need to make a decision.\n- Never share what you read, except with your safeguarding lead or when the law requires it.\n- Opening a copied message is recorded, and so are your review decisions, with your name.",
+            "summary": "Which messages are copied for review, what you can see, and what members are told.",
+            "title": "Why are messages copied to brokers?"
+          },
+          "broker_review_archive": {
+            "body": "The [Review Archive](/broker/archives) keeps a permanent record of message copies that a broker approved and archived. Records here cannot be edited.\n\n## Finding a record\n\n- Use the tabs: **All**, **Approved** or **Flagged**.\n- Type in **Search archive...** to search.\n\nEach row shows the sender, receiver, listing, **Copy Reason**, **Decision**, who decided and when.\n\n## Opening a record\n\nPress a row to open it. You see:\n\n- **Target Message**: the message that was copied\n- **Decision**: what was decided, by whom, and any **Decision Notes**\n- **Conversation Snapshot**: the messages between the two members, saved at the moment the record was archived\n\nA note at the top reminds you the record is preserved exactly as it was reviewed.\n\nIf the sender later edits the message, the archive record does not change. The updated copy goes back to **Unreviewed** in **Messages** for a new review.\n\n## Why it matters\n\nThe archive shows what your community knew and when it acted. It can support a safeguarding investigation. It also shows that reviews happened.\n\n> Records in the archive are kept. Message copies in **Messages** are different: once reviewed, unflagged copies are deleted after the number of days in **Archive retention (days)** in [Configuration](/broker/configuration). Flagged copies are kept longer.",
+            "summary": "The Review Archive keeps permanent, read-only records of message reviews.",
+            "title": "Using the Review Archive"
+          },
+          "broker_review_message": {
+            "body": "Message copies waiting for review are under the **Unreviewed** tab in **Messages**. The red number on **Messages** in the menu shows how many are waiting.\n\n1. Open [Messages](/broker/messages).\n2. Press the **Unreviewed** tab.\n3. Press the eye button on a row for a quick look, or open the message to see the conversation before it.\n4. Choose what to do.\n\n## Your choices\n\n- **Mark Reviewed** (or **Review** in the list): you have read it and there is no concern. In the quick view you can add **Review Notes** first.\n- **Flag**: you have a concern. Choose a **Severity** (**Info**, **Warning**, **Concern** or **Urgent**) and describe the concern in **Flag Reason**. A reason is required.\n- **Approve & Archive**: on the message page, this saves a permanent, read-only copy of the record in the **Review Archive**. You can add **Decision Notes**. Once archived, the record cannot be changed.\n\n## Tabs\n\n- **Unreviewed**: waiting for a broker\n- **Flagged**: messages a broker has flagged\n- **Reviewed**: messages already reviewed\n- **All**: everything\n\n## When the sender edits a message\n\nIf the sender changes a message after it was copied, the copy is updated with the new wording. It goes back to **Unreviewed**, even if someone had already reviewed or archived it, so a broker reads the new version. Any archive record already made stays as it was. A flag on the copy stays in place.\n\n## After you flag a message\n\nFlagging records your concern. It does not stop the member or warn anyone by itself. Decide what else is needed. You might place the member under monitoring, turn off their messaging, or contact your safeguarding lead.\n\n> Do not tell the member you have flagged their message unless your safeguarding lead agrees.",
+            "summary": "Mark a message as reviewed, flag a concern, or approve and archive it.",
+            "title": "How do I review a copied message?"
+          },
+          "broker_safeguarding_options": {
+            "body": "[Safeguarding Options](/broker/safeguarding-options) is the list of choices members see when they join. Brokers and admins can change it.\n\nThe page shows **Active Options** that members can choose, and **Inactive Options** that have been switched off.\n\n## Adding an option\n\n1. Press **Add Option**.\n2. Fill in **Option Key**. This is a short internal name with no spaces, such as needs_coordinator. Members do not see it.\n3. Fill in **Display Label**. This is the sentence members tick, for example \"I would like a coordinator to help arrange my exchanges\".\n4. Add **Description Help** to explain the option in plain words. Add a **Help URL** if your community has a page about it.\n5. Choose the **Option Type**: **Checkbox** for a simple tick box, **Select** for a list of answers, or **Info** for text only.\n6. Turn on **Required** only if every member must answer it.\n7. Under **Behavioral Triggers**, turn on the protections this option should switch on.\n8. Press **Create Option**.\n\nTo turn on **Vetted members only**, you also choose a **Required Vetting Type**. It must match the policy package your admin chose. If no package is chosen yet, the site will not save it.\n\n## Editing or switching off an option\n\n- Press the edit button on an option, make your changes and press **Save Changes**.\n- Press the switch-off button and confirm with **Deactivate**. Members can no longer choose it.\n\n## Changes that are blocked\n\nIf members have chosen an option that protects them, you cannot:\n\n- switch the option off\n- turn off one of its protections\n- change its **Required Vetting Type**\n\nYou will see an error instead. This keeps members' protections in place. You can still change the wording.\n\n> Changing options affects vulnerable people. Agree changes with your safeguarding lead first. Keep the wording short, kind and clear.",
+            "summary": "Add, edit or switch off the safeguarding options members see when they join.",
+            "title": "Changing the safeguarding options members can choose"
+          },
+          "broker_safeguarding_overview": {
+            "body": "Safeguarding means protecting members from harm, especially members who may be at risk. The Broker Panel gives you several tools for this. Each one has its own article.\n\n- **Members' safeguarding choices.** When they join, members can say they need extra support. Their choices can limit who contacts them or send their exchanges to a broker.\n- **Coordinator help requests.** When a member cannot message someone who is protected, they can ask a coordinator to help. Brokers and admins get a notification.\n- **Message review.** Some messages are copied to brokers to read, depending on your community's settings. You review them in **Messages**.\n- **User monitoring.** You can place a member under monitoring, so their messages are copied to brokers. You can also turn off their messaging.\n- **Vetting confirmations.** You record whether your community has completed its safety checks on a member. Some protected members can only be contacted by vetted members.\n- **Safeguarding Options.** You can change the list of choices members see when they join.\n\n## Your community's process comes first\n\nThese tools support your community's safeguarding process. They do not replace it. Your community should have a named safeguarding lead. Know who that person is and how to reach them.\n\n> If someone is in immediate danger, contact the emergency services first. Then tell your safeguarding lead.",
+            "summary": "An overview of the safeguarding tools brokers use, and how they fit together.",
+            "title": "How safeguarding works in the Broker Panel"
+          },
+          "broker_safeguarding_page": {
+            "body": "The [Safeguarding](/broker/safeguarding) page brings together safeguarding records in one place. Its tabs are:\n\n- **Flagged Messages**: message copies for safeguarding review\n- **Guardian Assignments**: records of guardian arrangements staff have made for members who want extra support\n- **Member Preferences**: the safeguarding choices members have made\n- **Support Actions**: actions prepared on a member's behalf that are waiting for their approval\n\n## Access\n\nThis page needs special safeguarding access, on top of the broker role. Without it the page looks empty, even when there are records. If you need this page for your work, ask your admin.\n\nEven with access, some actions on this page are only for admins or named safeguarding staff. These include creating guardian arrangements and recording approvals.\n\n## Where brokers do most of the work\n\nMost day-to-day safeguarding tasks happen on other pages that every broker can use:\n\n- [Messages](/broker/messages) for reviewing copied messages\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
+            "summary": "The Safeguarding page gathers flagged messages, guardian arrangements and members' choices. It needs extra access.",
+            "title": "What is on the Safeguarding page?"
+          },
+          "broker_user_monitoring": {
+            "body": "Monitoring copies every message a member sends or receives to brokers for review. Use it when you have a concern about a member.\n\n## Adding a member\n\n1. Open [User Monitoring](/broker/monitoring).\n2. Press **Add User**.\n3. In **Search User**, type a name or email and choose the member.\n4. In **Reason**, explain why. This is required. Future brokers will read it.\n5. Choose a **Duration**: 7, 14, 30, 60 or 90 days. Monitoring then ends by itself: copying stops, messaging is switched back on if you turned it off, and the member is told their restrictions have been lifted.\n6. If the member should not send messages at all for now, turn on **Disable messaging while monitored**.\n7. Press **Add User**.\n\n## What happens\n\n- The member gets a notification that their account is under review. If you turned off messaging, it says their messaging is restricted.\n- Copies of their messages arrive in [Messages](/broker/messages) with the reason **Flagged User**. Brokers and admins get a notification for each copy.\n- With messaging turned off, the member cannot send messages. They can still receive them.\n\n## Changing or ending monitoring\n\n- Press the edit button on the row to change the reason, duration or messaging setting, then press **Save Changes**.\n- Press the remove button and confirm with **Remove** to end monitoring. The member is told their restrictions have been lifted.\n\nThe counter **Expiring within 7 days** shows who will come off monitoring soon.\n\n> Monitoring is a serious step that affects a member's privacy. Keep it as short as possible, record why, and review it before it ends.",
+            "summary": "Copy a member's messages to brokers for a set time, and turn off their messaging if needed.",
+            "title": "Placing a member under monitoring"
+          },
+          "broker_vetting_confirm": {
+            "body": "Vetting means the safety checks your community carries out before someone works with people who may be at risk. [Vetting confirmations](/broker/vetting) records your community's decision only. It never stores certificates or check results.\n\n## Before you start\n\nThe **Safeguarding contact policy** box at the top shows your community's policy package and the confirmation it needs. An admin chooses the policy package. Until they do, you cannot record decisions, and you will see a message saying so.\n\n## Confirming a member\n\n1. Find the member. Use the search box or the **Confirmation status** filter.\n2. Press **Confirm attestation**. An attestation is a formal statement that the checks were done.\n3. Under **Underlying certification scheme(s)**, choose the checks your community completed.\n4. In **Certified scope**, describe exactly what the decision covers, for example \"befriending adults\".\n5. Add **Private broker notes** if needed. Do not enter certificate numbers or check results.\n6. Set **Community review due**. After this date the confirmation stops counting until someone renews it.\n7. Fill in **Authority membership expiry** if the scheme has one.\n8. Tick the box to confirm the checks were done.\n9. Press **Confirm safeguarding certification**.\n\n## Renewing\n\nWhen a confirmation has expired, the button says **Renew confirmation**. Follow the same steps.\n\n## Why it matters\n\nSome protected members only accept contact from vetted members. A member needs a confirmed, in-date decision to contact them.\n\n> Never ask a member to send you a vetting document through messages, and never upload one. The checks themselves stay in your community's own process, outside this site.",
+            "summary": "Record that your community has completed its safety checks on a member, without storing any documents.",
+            "title": "How do I record a vetting decision?"
+          },
+          "broker_vetting_revoke_review": {
+            "body": "## Revoking a confirmation\n\nRevoke a confirmation when it should no longer count, for example after a concern.\n\n1. Open [Vetting confirmations](/broker/vetting) and find the member.\n2. Press **Revoke attestation**.\n3. Choose a **Revocation reason**: **Community decision withdrawn**, **Member requested a correction**, **Safeguarding policy changed** or **Recorded in error**.\n4. Press **Revoke confirmation**.\n\nThe change applies straight away. The member can no longer contact protected members who only accept vetted contact.\n\n## Review requests\n\nA member can ask for a vetting review from the **Safeguarding & support** tab in their **Settings**. This often happens when they are blocked from contacting someone.\n\n1. Press the **Review requests** counter, or choose **Review requested** in the **Confirmation status** filter.\n2. If your community has completed its checks, press **Confirm attestation** and record the decision.\n3. If not, press **Resolve request**. Choose a **Review outcome**: **No change**, **Duplicate request** or **Member contacted**. Then press **Resolve request** again to confirm.\n\n## Viewing details\n\nPress **View details** to see the schemes, scope, private notes and dates for a member's current decision.\n\n> Every decision is recorded with your name and the reason. Take care, because these decisions control who can contact protected members.",
+            "summary": "Withdraw a vetting confirmation, or close a member's request for a vetting review.",
+            "title": "Revoking a vetting decision or answering a review request"
+          },
+          "broker_worried_about_member": {
+            "body": "If you are worried that a member is being harmed, or may harm someone, act promptly and calmly.\n\n## If someone is in immediate danger\n\nContact the emergency services straight away. Then tell your safeguarding lead.\n\n## Otherwise\n\n1. **Write down what you know.** Stick to facts: what you saw or were told, when, and by whom. Add a note with the category **Concern** on the member's record.\n2. **Tell your safeguarding lead.** They decide what happens next, including whether to involve outside agencies.\n3. **Do not investigate alone.** Do not question the people involved in detail unless your lead asks you to.\n4. **Do not warn the person you are worried about.** It could put someone at risk.\n5. **Do not delete anything.** Messages, notes and records may be needed as evidence.\n\n## Tools that can help while your lead decides\n\n- Place the member under monitoring, and turn off their messaging if needed, in [User Monitoring](/broker/monitoring).\n- Reject exchanges that are waiting for approval, with a neutral reason.\n- Tag a listing that worries you in [Risk Tags](/broker/risk-tags).\n- Revoke a vetting confirmation in [Vetting confirmations](/broker/vetting).\n- Suspend the member in [Members](/broker/members) if your lead agrees.\n\n## Look after yourself\n\nSafeguarding concerns can be upsetting. Talk to your safeguarding lead or another broker about how you feel.",
+            "summary": "Steps to take when you have a safeguarding concern, and the tools that can help.",
+            "title": "What should I do if I am worried about a member?"
+          }
+        },
+        "summary": "Members' safeguarding choices, message review, monitoring, vetting decisions and what to do when you are worried.",
+        "title": "Safeguarding"
+      }
+    }
+  },
+  "help_centre": {
+    "admin_panel": {
+      "open_full": "Open the admin guide",
+      "subtitle": "Step-by-step guides to setting up your community, managing members, safeguarding and every admin feature, in plain English.",
+      "title": "Complete admin guide"
+    },
+    "articles_count_one": "{{count}} guide",
+    "articles_count_other": "{{count}} guides",
+    "audience": {
+      "admins": {
+        "description": "Setting up your community, managing members and choosing features.",
+        "title": "For community admins"
+      },
+      "brokers": {
+        "description": "Approving members, arranging exchanges, safeguarding and group activities.",
+        "title": "For brokers and coordinators"
+      },
+      "members": {
+        "description": "Joining, offering help, exchanging time and staying safe.",
+        "title": "Using the platform"
+      }
+    },
+    "audience_nav_label": "Choose a guide",
+    "broker_panel": {
+      "back": "All broker guides",
+      "open_full": "Open the full guide",
+      "subtitle": "Plain-English guides to every part of the Broker Panel and the work of running exchanges.",
+      "title": "Broker and coordinator guide",
+      "view_in_help_centre": "Open in the Help Centre"
+    },
+    "community_faqs_description": "Answers written by the people who run {{name}}.",
+    "community_faqs_heading": "Questions from your community",
+    "contact_body": "If you can't find what you need, get in touch and a person will help you.",
+    "contact_button": "Contact us",
+    "contact_heading": "Still need help?",
+    "heading": "How can we help?",
+    "hero_eyebrow": "Help Centre",
+    "in_this_section": "More guides in this topic",
+    "meta_description": "Plain-English guides to everything on {{name}}: getting started, exchanging time, staying safe and running your community.",
+    "next_article": "Next",
+    "not_found_body": "It may have moved, or this feature may not be switched on in your community.",
+    "not_found_button": "Back to the Help Centre",
+    "not_found_title": "We couldn't find that guide",
+    "open_page": "Go to this page",
+    "page_title": "Help Centre",
+    "pager_label": "Other guides in this topic",
+    "popular_heading": "Most people start here",
+    "previous_article": "Previous",
+    "search_label": "Search the Help Centre",
+    "search_no_results_body": "Try a different or shorter word. You can also browse the topics, or contact us and a person will help.",
+    "search_no_results_title": "No guides matched your search",
+    "search_placeholder": "Search the guides, for example \"send hours\"",
+    "search_results_count_one": "{{count}} guide found",
+    "search_results_count_other": "{{count}} guides found",
+    "search_results_heading": "Guides matching \"{{query}}\"",
+    "sections_heading": "Browse by topic",
+    "subtitle": "Step-by-step guides to everything on {{name}}, written in plain English."
+  },
+  "help_members": {
+    "sections": {
+      "account_profile": {
+        "articles": {
+          "editing_your_profile": {
+            "body": "You edit your profile in **Settings**.\n\n1. Open [Settings](/settings). Or open [your profile](/profile) and press **Edit Profile**.\n2. Stay on the **Profile** tab.\n3. Change what you need under **Profile Information**.\n4. Press **Save Changes**.\n\n## What you can change\n\n- **Profile Photo**: press your photo, then choose **Take photo** or **Choose from library**. Use a JPG, PNG, GIF or WebP picture, up to 5MB.\n- **First Name** and **Last Name**.\n- **Tagline**: one short line about you.\n- **Bio**: a few sentences about who you are and what you enjoy.\n- **Location**: your town or city.\n- **Phone Number**: only the staff who run your community, such as administrators and coordinators, can see this.\n- **Profile Type**: **Individual** or **Organisation**. An organisation account shows its **Organisation Name** instead of a person's name.\n- **Date of Birth**: you only need this if you want to verify your identity. If you enter it, it must show you are 18 or over.\n\n> If your identity has been verified, your name and date of birth are locked. This keeps them matching your ID.\n\nA friendly photo and a short bio help other members feel comfortable getting in touch.",
+            "summary": "Change your photo, name, introduction and location on the Profile tab in Settings.",
+            "title": "How do I edit my profile?"
+          },
+          "identity_verification": {
+            "body": "If your community offers it, you can verify your identity. When it is done, an **ID Verified** badge appears on your profile. It is optional, unless your community asks for it when you join.\n\n## What you need\n\n- a valid government-issued photo ID\n- a device with a camera\n- about 2 to 5 minutes\n\n## How to do it\n\n1. Press **Verify Your Identity** at the top of the screen. On a phone, press **Menu** first. Or open [Verify your identity](/verify-identity-optional).\n2. Enter your **Date of Birth** and press **Continue**. It must match your ID.\n3. If your community charges a fee, you see the amount. It is a one-time fee. Press **Pay** to continue.\n4. Press **Start Verification**. Follow the steps to take a photo of your ID and a selfie.\n5. Wait for the result. The page updates by itself.\n\n## After verification\n\nYour name and date of birth are then locked, so they always match your ID.\n\nIf verification is unsuccessful, check that your photo of your ID is clear and well lit, and that your name and date of birth match your profile. Then press **Try Again**.\n\n> The check is carried out by an outside verification service. The badge shows that an ID was checked. It does not guarantee that someone is safe, so keep following the usual safety advice.",
+            "summary": "Verify your identity with a photo ID and a selfie, and an ID Verified badge appears on your profile.",
+            "title": "How do I get the ID Verified badge?"
+          },
+          "saved_items": {
+            "body": "Everything you save with the bookmark icon is kept on your **Saved Items** page. Only you can see it.\n\nOpen [Saved](/saved). You can also find **Saved** in the main menu.\n\n## Showing one kind of item\n\nUse the tabs at the top: **All**, **Post**, **Listing**, **Event**, **Job**, **Blog** and **Discussion**. The page shows how many items match, for example **12 saved items**.\n\nPress an item's title to open it.\n\n## Making a collection\n\nCollections are folders for your saved items.\n\n1. Press **New Collection**.\n2. Type a **Name**. You can add a **Description (optional)**.\n3. Press **Create**.\n\nTo show only one collection, choose it under **Collection**. To show everything again, clear the choice.\n\n## Changing or deleting a collection\n\n1. Press the small menu button next to the collection's name.\n2. Choose **Edit** to rename it, then press **Save**.\n3. Or choose **Delete**, then press **Delete Collection** to confirm.\n\nDeleting a collection does not delete the items in it. They stay on your Saved Items page.\n\n## Removing an item\n\nPress the bin button next to the item, labelled **Remove from saved**. The item itself is not deleted, only your bookmark.\n\nIf the page says **No saved items yet**, you have not saved anything so far.",
+            "summary": "See everything you have saved in one place, sort it into collections and remove what you no longer need.",
+            "title": "Finding and organising your saved items"
+          },
+          "skills_and_availability": {
+            "body": "Skills and availability help the right people find you.\n\n## Add your skills\n\n1. Open [Settings](/settings) and choose the **Skills** tab.\n2. Under **Your Skills**, press **Add Skill**.\n3. In the **Add a Skill** window, type a skill, for example \"gardening\".\n4. Choose one of the suggestions. If nothing matches, you can add your own wording instead.\n5. If you like, choose a **Category (optional)** and a **Proficiency Level**: **Beginner**, **Intermediate**, **Advanced** or **Expert**.\n6. Press **Add Skill**.\n\nTo remove a skill, press the remove button next to it. Other members can endorse your skills, which shows that others value them.\n\n## Show when you are free\n\n1. In [Settings](/settings), choose the **Availability** tab.\n2. Press the time slots when you are usually available.\n3. Press **Save**.\n\nYour availability is shown on your profile. It is only a guide. You always agree the actual time with the other member.\n\nTo see what skills other members offer, open the [Skills](/skills) page.",
+            "summary": "List what you can do and show the times you are usually free, so the right members can find you.",
+            "title": "Adding your skills and availability"
+          },
+          "what_other_members_see": {
+            "body": "Your profile helps members decide who to exchange with. This is what other members can see.\n\n## What members can see\n\n- your first name (your last name is hidden from other members)\n- your profile photo, tagline and bio\n- the location you typed, such as your town\n- your skills and the times you are usually available, if you added them\n- how many hours you have given and received, your rating and your badges\n- whether you have been online recently\n\nIf your profile type is **Organisation**, members see the organisation's name.\n\n## What members cannot see\n\n- your email address\n- your phone number\n- your date of birth\n- your time credit balance\n- your exact position on a map: other members only see a rough area, to within about 1 km\n\nYour community's coordinators and administrators can see more, including your full name and contact details. They need this to support members and keep people safe.\n\nYou can also choose who can see your profile at all. See **Who can see my profile?** in the **Privacy and safety** section.",
+            "summary": "Other members see your first name, photo, introduction and rough location. Your email and phone number stay private.",
+            "title": "What can other members see about me?"
+          },
+          "why_you_are_not_listed": {
+            "body": "Not every member appears in the [Members](/members) directory. Your community decides what a profile needs before it is listed. Usually this means:\n\n- you have finished setting up your profile\n- you have added a profile photo\n- you have written a short introduction\n- your privacy settings let people find you\n\nIf some members are not listed, the Members page shows a note about it. Press **Why?** to see what your community asks for, then press **Check whether you are listed**.\n\n## Check your privacy settings\n\n1. Open [Settings](/settings) and choose the **Privacy** tab.\n2. Look at **Who can see your profile**. If it is set to **Connections Only - Your connections**, only your connections can see you.\n3. Look at **Search Engine Indexing**. If it is turned off, you are also left out of the member directory and member search inside your community, not only outside search engines.\n4. Press **Save Privacy Settings**.\n\n> Some communities hide a profile from other members until it has a photo and a bio. Adding both is often the quickest fix.",
+            "summary": "The member directory only lists people who have finished their profile and are happy to be found.",
+            "title": "Why can't other members find me?"
+          }
+        },
+        "summary": "Edit your profile, see what other members can see, and add your skills.",
+        "title": "Your account and profile"
+      },
+      "ai_assistant": {
+        "articles": {
+          "about_ai_assistant": {
+            "body": "The **AI Assistant** is a chat tool. You type a question in everyday language, and it writes an answer. It is run by artificial intelligence (AI), not by a person.\n\n## Where to find it\n\nOpen [AI Assistant](/chat). You can also find **AI Assistant** in the main menu. On a phone, press **Menu** and look under **Explore**.\n\n## How to use it\n\n1. Type your question in the box at the bottom of the page.\n2. Press Enter, or press the send button. To start a new line without sending, hold Shift and press Enter.\n3. Read the answer. Some answers include cards you can press, for example to open a listing or an event.\n\nNot sure what to ask? Choose one of the examples under **Try asking...**.\n\nUnder each answer, press thumbs up or thumbs down to say whether it helped.\n\nTo clear the chat and start again, press the button to start a new conversation, at the top of the chat.\n\n## Daily limit\n\nYou can ask a limited number of questions each day. The number you have left is shown at the top, for example **5 left today**.",
+            "summary": "The AI Assistant answers questions about timebanking, your account and your community, in everyday language.",
+            "title": "What is the AI Assistant?"
+          },
+          "ai_assistant_allowance": {
+            "body": "The AI Assistant has two allowances: one for each day and one for each calendar month. Your community decides how large each one is.\n\n## Seeing what you have left\n\nOpen [AI Assistant](/chat). On a larger screen, the top of the chat shows how many you have left today, for example **5 left today**. This number does not appear on a narrow phone screen.\n\nThe monthly allowance is not shown on screen.\n\n## When the allowance starts again\n\n- The daily allowance starts again each day.\n- The monthly allowance starts again on the first day of each month.\n\nYou do not need to do anything. Unused questions do not carry over.\n\n## Why the number can go down by more than one\n\nWhen the AI Assistant looks something up for you, such as listings or events, that can count as more than one use. A simple question usually counts as one.\n\n## When you run out\n\nThe chat shows **You have reached your usage limit for now. Please try again later.** Try again the next day. If you have used your monthly allowance, try again next month.\n\nYou can still use every other part of the site as normal. If you think your allowance is too small, contact your community.",
+            "summary": "You have a daily and a monthly allowance. Both start again automatically, and your community sets how big they are.",
+            "title": "How many questions can I ask the AI Assistant?"
+          },
+          "ai_assistant_limits": {
+            "body": "## What it can do\n\nThe AI Assistant can look things up in your community and explain how things work. For example, it can:\n\n- explain how timebanking works\n- find listings, members and events that match what you ask\n- find help articles, jobs or marketplace items, if your community uses them\n- tell you your time credit balance\n\n## What it cannot do\n\nIt can only look things up. It cannot act for you. It cannot:\n\n- send or receive time credits\n- send messages to other members\n- create, change or delete listings\n- change your settings or your account\n\nTo do these things, use the normal pages of the site.\n\n## It can make mistakes\n\nThe AI Assistant can get things wrong, even when it sounds sure. Always check important details, such as dates, times and balances, on the page itself. For questions about your safety or your rights, ask a coordinator.\n\n## Your privacy\n\nYour questions are sent to an outside AI service so it can write an answer. Do not type passwords, bank details, health information or private details about other people. Your chat history is deleted if you delete your account.",
+            "summary": "It can look things up for you, but it cannot take actions. It can make mistakes, so check anything important.",
+            "title": "What the AI Assistant can and can't do"
+          }
+        },
+        "summary": "Ask questions about timebanking and your community, and get quick answers.",
+        "title": "AI Assistant"
+      },
+      "blog_resources": {
+        "articles": {
+          "blog_reading": {
+            "body": "Your community shares news and stories on the [Blog & News](/blog) page.\n\n- The newest post is shown large at the top.\n- Type in **Search posts...** to find a post.\n- Press a category button to see only posts on that subject. Press **All** to see everything.\n- Each post shows how long it takes to read, for example **4 min read**.\n- Press **Load More Posts** at the bottom to see older posts.\n\nPress a post to read it. Press **Back to Blog** to return to the list.\n\n## Liking and commenting\n\nWhen you are signed in, you can press **Like** or **Comment** under a post. You can also press **Share** to pass it on.\n\nBlog posts are written by your community's team. Members cannot write blog posts. If you have news to share, you can post it on the community feed instead, or suggest it to your community's administrators.\n\nBlog posts may also appear on the feed. Use the **Blog** filter there to see them.",
+            "summary": "Find stories, updates and announcements from your community.",
+            "title": "Reading community news and blog posts"
+          },
+          "community_newsletter": {
+            "body": "Your community may send a newsletter by email. You choose whether you get it.\n\n## Start or stop the newsletter\n\n1. Open [Settings](/settings).\n2. Choose the **Notifications** tab.\n3. Find **Marketing & Communications**.\n4. Switch **Marketing Emails** on or off.\n\nWhen you switch it on, you are asked to confirm. Press **Yes, subscribe me**.\n\n## Unsubscribe from an email\n\nEvery newsletter has an unsubscribe link at the bottom. Press it and you see **You're unsubscribed**. You do not need to sign in.\n\nStopping the newsletter does not stop important account emails, such as messages about your exchanges or your account security.\n\nWhen you first join, you can also tick **Send me occasional updates and tips** on the sign-up form.",
+            "summary": "Choose whether you receive newsletters and community updates by email.",
+            "title": "Getting or stopping the community newsletter"
+          },
+          "knowledge_base": {
+            "body": "The [Knowledge Base](/kb) is a set of guides and answers written by your community's team.\n\n## Find an article\n\n- Type a question or keyword into **Search the knowledge base...**.\n- Or press a category tab. **All** shows every article. Articles without a category are under **General**.\n\nPress an article to read it. Some articles include a video, files under **Attachments**, or links under **Related Articles**.\n\nPress **Back to Knowledge Base** to return to the list.\n\n## Tell us if it helped\n\nAt the end of each article you see **Was this article helpful?**. Press **Yes** or **No**. This helps the team improve the article. You can change your answer later.\n\nMembers cannot write knowledge base articles. If something is missing, contact your community's team.",
+            "summary": "Look up guides and answers written by your community team.",
+            "title": "Using the knowledge base"
+          },
+          "resources_library": {
+            "body": "The [Resources](/resources) page holds documents and files shared with the whole community. You might find forms, guides, leaflets or useful lists.\n\n## Find a resource\n\n- Type in **Search resources...** to search by title or description.\n- On a computer, choose a category from the **Categories** list on the left. Choose **All Resources** to see everything.\n- On a phone, use the filter button to choose a category.\n\n## Download a resource\n\nPress **Download** on the resource. It is saved to your device. The number of downloads is shown next to each file.\n\nYou need to be signed in to download.\n\n## Like or comment\n\nEach resource has **Like** and **Comment** buttons, so you can say it helped or ask a question about it.\n\n> Resources are shared by other members as well as staff. Take care with files from people you do not know, as you would with any download.",
+            "summary": "Browse documents and files that members and staff have shared.",
+            "title": "Finding and downloading resources"
+          },
+          "resources_upload": {
+            "body": "Any member can add a file to the [Resources](/resources) page.\n\n1. Open [Resources](/resources).\n2. Press **Upload Resource**.\n3. Type a **Title**. This is required.\n4. Add a **Description** so people know what the file is for.\n5. Choose a **Category**.\n6. Under **File**, drag your file in or press to choose it.\n7. Press **Upload**.\n\nYou can upload PDF, Word, Excel, text and CSV files, and JPG, PNG and GIF pictures. Each file can be up to 10 MB.\n\nYour resource appears straight away for everyone in your community. Only share files you have the right to share, and never upload anything with other people's private details.\n\n## Removing your resource\n\nPress the **Delete resource** button on your resource, then press **Delete** to confirm. This cannot be undone.\n\nYou cannot change a resource once it is uploaded. To correct it, delete it and upload a new version.",
+            "summary": "Upload a document or picture for all members to use.",
+            "title": "Sharing a resource with your community"
+          }
+        },
+        "summary": "Read community news, find shared documents and look up answers in the knowledge base.",
+        "title": "News, resources and guides"
+      },
+      "caring_community": {
+        "articles": {
+          "caregiver_dashboard": {
+            "body": "The **Caregiver Dashboard** brings together the people you care for. Go to [Caregiver Dashboard](/caring-community/caregiver).\n\n## If you are a caregiver\n\n**People I care for** lists the people you are linked to. For each active link you can:\n\n- Press **View care schedule** to see **Upcoming care** and **Recent care**.\n- Press **Request help on their behalf** to open the Request Help form for them.\n\nTo add someone, press **Link a care receiver**.\n\nIf you log a lot of volunteering hours in one week, the dashboard shows a reminder to rest. Looking after yourself matters too.\n\n## If someone asks to be your caregiver\n\nYou get a notification when a member asks to be linked as your caregiver. The link in the notification opens this dashboard. Under **Caregiver requests about me**:\n\n- Press **Confirm relationship** only if you know this person and agree.\n- Press **Reject request** if you do not agree.\n\nNo caregiver tools are given to the other person until you agree and staff have checked the request.\n\n> If you did not expect a request, or feel pressured, press **Reject request**. Then talk to your community coordinator.",
+            "summary": "See the people you care for, their care schedule, and answer caregiver requests about you.",
+            "title": "Using the Caregiver Dashboard"
+          },
+          "caring_data_export": {
+            "body": "You can download a copy of the information you have added to the Caring Community.\n\n1. Go to [My data export](/caring-community/my-data-export).\n2. Press **Download my data (JSON)**.\n3. Wait while it says **Preparing your export…**.\n\nYou see **Your export has started downloading.** The file is saved to your device.\n\n## What is in the file\n\nIt covers your Caring Community activity only, for example:\n\n- the hours you have logged\n- your support relationships\n- help requests and favours\n- hours you have gifted or transferred\n- safeguarding reports you have made\n\nIt does not include other members' personal information.\n\nThe file is in JSON format. This is a plain text format that computers read easily. It may look untidy if you open it yourself. If you need another format, contact your community coordinator.\n\n## Your whole account\n\nThis file does not cover the rest of your account, such as your messages or listings. For a copy of your whole account, use [Download your data](/settings/data-export) in your settings.",
+            "summary": "Download a file of the information you have added to the Caring Community, such as hours, gifts and reports.",
+            "title": "Downloading your Caring Community data"
+          },
+          "caring_hour_transfer": {
+            "body": "If you are moving to another community, you can ask for some of your time credits to go with you. Nothing moves until a coordinator approves it.\n\n## Before you start\n\n- The new community must be a partner of your community.\n- You usually need an account there, using the same email address you use here.\n- You can transfer up to 24 hours in one request.\n- You need at least that many hours in your wallet.\n\n## Asking for a transfer\n\n1. Open the [Caring Community](/caring-community) page and press the hour transfer option, or go to [Transfer Your Banked Hours](/caring-community/hour-transfer).\n2. Press **Browse communities** and choose the new community, then press **Select**.\n3. If no communities are listed, type the community's short name under **Or enter a community slug manually**. Ask the new community for it.\n4. Enter the **Hours to transfer**.\n5. Add a **Reason (optional)**.\n6. Press **Request Transfer**.\n\nYou see **Transfer request submitted. A coordinator will review it before hours move.**\n\n## What happens next\n\nYour request appears under **Your transfer history** as **Awaiting approval**. The hours stay in your wallet until a coordinator approves. The status then changes, for example to **Sent** or **Completed**, or to **Rejected**.\n\nYou cannot cancel a request yourself. Contact a coordinator if you change your mind.\n\n> If you see **Could not request the transfer. Please try again.**, check the community name and your balance. The new community may not be a partner, or may not have an account with your email. A coordinator can help.",
+            "summary": "If you move, you can ask to transfer time credits to a partner community. A coordinator reviews every request.",
+            "title": "Moving your hours to another community"
+          },
+          "caring_markt": {
+            "body": "The **Marktplatz** page brings together two kinds of things your community shares: help offered for time credits, and goods and services for sale.\n\nOpen the [Caring Community](/caring-community) page and press **Marktplatz**, or go straight to [Marktplatz](/caring-community/markt).\n\n## Choosing what to see\n\nUse the tabs at the top:\n\n- **All** shows both kinds together.\n- **Time Credits** shows offers and requests members have listed for time credits.\n- **Goods & Services** shows items from the marketplace, if your community uses it.\n\nEach card has a label, **Time Credits** or **Goods & Services**, so you can tell them apart.\n\n## Looking nearer to home\n\n- If your community is split into areas, choose one under **Area**.\n- Press **Near me** to see things close to you. This needs a location on your profile. If you have not set one, you are asked to add it.\n\n## Opening an item\n\nPress **View** on a card. This opens the full listing or item, where you can respond, message the person or buy.\n\nThe page shows only the newest items. To see everything, use the listings or marketplace pages themselves.",
+            "summary": "The Marktplatz page shows time-credit offers and local goods together, so you can browse both at once.",
+            "title": "Browsing offers and local goods in one place"
+          },
+          "caring_trust_tier": {
+            "body": "Your trust tier is a simple sign of how established you are in the Caring Community. It is worked out from three things.\n\nOpen [My Trust Level](/caring-community/my-trust-tier) to see yours.\n\n## The three signals\n\n- **Volunteer hours logged**: volunteering hours that have been approved.\n- **Positive reviews received**: reviews other members have left for you.\n- **Identity verified**: whether you have completed an identity check, if your community offers one.\n\nEach signal shows your progress, such as **3 of 10**, and whether it is **Achieved** or **In progress**.\n\n## The tiers\n\nThe tiers, from first to last, are **Newcomer**, **Member**, **Trusted**, **Verified** and **Coordinator**. Your community decides what each one needs. The page shows **Your current tier**, the **Next tier** and your **Progress to** the next one.\n\n## What the tier does not do\n\nYour tier does not give you extra permissions. Reaching the **Coordinator** tier does not make you one of your community's coordinators.\n\nYour tier is worked out again each time you open the page, so it changes as your hours and reviews grow.",
+            "summary": "Your trust tier reflects your volunteering, reviews and identity check. See what you need for the next tier.",
+            "title": "What is my trust tier?"
+          },
+          "gifting_hours": {
+            "body": "You can give some of your banked hours to another member of your community. These are the same time credits as in your wallet.\n\n1. On the [Caring Community](/caring-community) hub, press **Gift Hours**. You can also go to [Gift Your Hours](/caring-community/hour-gift).\n2. On the **Send** tab, find the person under **Who would you like to gift hours to?**. Type at least 2 letters of their name.\n3. Enter **How many hours?**. You can see how many hours you have available.\n4. Add a personal message if you like.\n5. Press **Gift Hours**.\n6. Check the details and press **Yes, gift hours**.\n\nThe hours leave your wallet straight away. They reach the other person when they accept.\n\n> The other person may not get a notification about your gift. Let them know you have sent it, and ask them to open **Gift Hours** and check their **Inbox**.\n\n## Receiving a gift\n\nOpen the **Inbox** tab. Press **Accept** to add the hours to your wallet. Press **Decline** to send them back.\n\n## Changing your mind\n\nOn the **Sent** tab, a gift waiting to be accepted shows **Awaiting acceptance**. Press **Withdraw gift** to cancel it. The hours come back to you.",
+            "summary": "Give some of your time credits to family, friends or anyone who needs them.",
+            "title": "How do I gift hours to someone?"
+          },
+          "linking_a_care_receiver": {
+            "body": "If you already look after a member informally, you can ask to be linked as their caregiver. This gives you some caregiver tools, such as asking for help on their behalf.\n\n1. On the [Caring Community](/caring-community) hub, press **Become a caregiver**. You can also go to [Link a Care Receiver](/caring-community/caregiver/link).\n2. Under **Find member**, type at least 2 letters of their name and choose them.\n3. Choose the **Relationship**: **Family member**, **Friend**, **Neighbour** or **Professional carer**.\n4. Enter the date under **Care started**.\n5. Add **Notes** if you like. The person you care for can see these.\n6. Press **Link a care receiver**.\n\n## The checks before the link is active\n\nA link does not start straight away. It goes through two checks:\n\n1. The person you care for is told and must agree. The status shows **Waiting for the care recipient**.\n2. Your community's staff then review it for safeguarding. The status shows **Waiting for staff safeguarding review**.\n\nWhen both are done, the status shows **Active** and you are both told. If the link is refused, it shows **Not approved**.\n\n> If a request is declined or withdrawn, you must wait 7 days before asking again.",
+            "summary": "Ask to be recorded as the caregiver of a member you already look after.",
+            "title": "How do I link to someone I care for?"
+          },
+          "my_safeguarding_reports": {
+            "body": "You can see the safeguarding reports you have made on the **My Safeguarding Reports** page.\n\nGo to [My Safeguarding Reports](/caring-community/safeguarding/my-reports). You can also press **View my reports** straight after you submit a report.\n\nEach report shows how urgent it is, the type of concern, the start of your description and the date you sent it.\n\n## What the statuses mean\n\n- **Submitted**: your report has been received.\n- **Triaged**: staff have looked at it and decided how to handle it.\n- **Under investigation**: staff are looking into it.\n- **Resolved**: staff have finished dealing with it.\n- **Dismissed**: staff decided no further action was needed.\n\nYou may also see **Escalated**. This means the report has been raised for more urgent attention.\n\n> You are not sent a notification when the status changes. Come back to this page to check. This page does not show what action was taken. If you are still worried, contact your community coordinator directly.",
+            "summary": "See the status of the safeguarding reports you have made.",
+            "title": "Checking on a concern you reported"
+          },
+          "offering_a_favour": {
+            "body": "A favour is a small act of kindness you want to record. Examples are carrying shopping, giving a lift or sharing a meal. Favours do not earn or cost time credits.\n\n1. On the [Caring Community](/caring-community) hub, press **Offer a Favour**. You can also go to [Offer a Favour](/caring-community/offer-favour).\n2. Under **What did you do to help?**, describe what you did.\n3. Choose a **Category** if you like, such as **Companionship** or **Transport**.\n4. Under **When?**, choose the date. It starts as today.\n5. Press **Record Favour**.\n\nYou see **Thank You!** Your community's coordinators can see the favours members record.\n\n## Favours or time credits?\n\n- Record a favour for an informal kindness you do not want credits for.\n- To earn time credits for help you give, use timebanking or volunteering instead. On the hub, press **Offer time** or **Log hours**.",
+            "summary": "Record an act of kindness you did for someone. No time credits are involved.",
+            "title": "How do I record a favour?"
+          },
+          "report_a_concern": {
+            "body": "If you are worried that someone is being harmed, neglected or taken advantage of, you can report it.\n\n> If someone is in immediate danger, contact your local emergency services first. Then make a report here.\n\n1. On the [Caring Community](/caring-community) hub, press **Report a Concern**. You can also go to [Report a Safeguarding Concern](/caring-community/safeguarding/report).\n2. Under **What kind of concern is this?**, choose the closest match.\n3. Under **How urgent is this?**, choose from **Critical (immediate risk to a person)** to **Low (worth flagging)**.\n4. Under **Describe your concern**, say what you saw or heard, when, and who was involved.\n5. If you have a link to evidence, add it under **Evidence link (optional)**.\n6. Press **Submit Report**.\n\nYou see **Report Submitted**.\n\n## The optional boxes for people and organisations\n\n**Person involved (optional)** and **Organisation involved (optional)** ask for a member or organisation number. If you do not know it, leave these empty. Give names in your description instead.\n\n## Who sees your report\n\nYour report is seen by the people who handle safeguarding in your community, such as coordinators and administrators. They can see that you made the report. The person you report about cannot see your report.\n\nChoose **Critical** only when a person is at immediate risk. In an emergency, always contact your local emergency services as well.",
+            "summary": "Tell your community's safeguarding staff if you are worried someone is at risk of harm.",
+            "title": "How do I report a safeguarding concern?"
+          },
+          "requesting_care_help": {
+            "body": "You ask for help with the **Request Help** form.\n\n1. On the [Caring Community](/caring-community) hub, press **I need some help** or **Request help**. You can also go straight to [Request Help](/caring-community/request-help).\n2. Under **What kind of help do you need?**, describe what you need in your own words. You can use up to 500 characters.\n3. Under **When do you need it?**, say when. For example, Tuesday afternoons, or as soon as possible.\n4. Under **How should we contact you?**, choose **By phone**, **By message** or **Either is fine**.\n5. Press **Request Help**.\n\nYou see **Request Received**.\n\n## Speaking instead of typing\n\nOn some devices you can press **Tap to speak your request** and say what you need. The form is filled in from your recording. Check it carefully before you press **Request Help**. Nothing is sent until you press it.\n\n## What happens next\n\nYour request is saved for your community's care coordinators to review. You cannot see or change your request afterwards on this page.\n\n> If you need help soon, or have not heard back, contact your community coordinator directly. If someone is in danger or needs urgent medical help, contact your local emergency services.",
+            "summary": "Tell your community what practical help you need and how to contact you.",
+            "title": "How do I ask for help?"
+          },
+          "support_relationships": {
+            "body": "A support relationship is a regular arrangement between a **Supporter**, who gives help, and a **Recipient**, who receives it. Your community's coordinators set these up. You cannot start one yourself.\n\nTo see yours, press **My Support Relationships** on the [Caring Community](/caring-community) hub, or go to [My Support Relationships](/caring-community/my-relationships).\n\n## What each one shows\n\n- The other person's name, and whether you are the **Supporter** or **Recipient**.\n- How often you meet, such as **Weekly**, and the hours expected.\n- The **Next check-in** date, or **Overdue** if it has passed.\n- **Recent hours logged**, with whether each entry is **Approved**, **Pending** or **Declined**. Coordinators record these hours.\n\n## Pausing, resuming or ending\n\n- Press **Pause** to stop for a while. The status changes to **Paused**. Press **Resume** when you are ready to start again.\n- Press **End relationship** to stop for good. This cannot be undone. Ended relationships no longer appear on this page.\n\n> The other person is not told automatically when you pause or end a relationship. Please let them know yourself, or ask your coordinator to.",
+            "summary": "See the regular support you give or receive, and pause or end it.",
+            "title": "What are support relationships?"
+          },
+          "what_is_caring_community": {
+            "body": "The Caring Community is a part of the platform for everyday care between neighbours. Examples are a lift to an appointment, help with shopping, or some company for an afternoon.\n\nOpen the **Community** menu and choose **Caring Community**, or go to [Caring Community](/caring-community).\n\nIt works alongside timebanking. Time you give is counted in the same time credits as the rest of the platform. There is one balance, not a separate currency.\n\n## What you can do from the hub\n\nThe hub groups its options:\n\n- **Get help**: ask for practical support and see your support relationships.\n- **Give help**: record a kindness, offer your time or log volunteering hours.\n- **Your hours**: for example, gift some of your hours to someone else.\n- **Safety & updates**: raise a safeguarding concern.\n\nYou only see options that your community has switched on.\n\n## It is new\n\nThe hub says the Caring Community is brand new, and that some parts are early previews. It depends on neighbours volunteering their time. If your community also uses volunteering, press **I'd like to help** to see volunteering opportunities.\n\n> The first time you visit, you may be asked **What brings you here today?** Your answer only changes which button is shown first. You can change it at any time.",
+            "summary": "A place in your community for everyday care, such as lifts, shopping and company.",
+            "title": "What is the Caring Community?"
+          }
+        },
+        "summary": "Ask for everyday care, record kindness, support people you care for and raise a concern.",
+        "title": "Caring Community"
+      },
+      "courses": {
+        "articles": {
+          "course_certificate": {
+            "body": "When you complete every lesson in a course, you finish the course and receive a certificate.\n\nWhen you finish, you see **You've completed this course.** You also get a notification and an email.\n\n## Printing your certificate\n\n1. Open [My learning](/courses/my-learning).\n2. Find the course under **Completed**.\n3. Press **Certificate**.\n4. Your certificate opens in a new window, ready to print or save.\n\nThe certificate shows your name, the course, the date and a certificate ID.\n\n> If nothing happens when you press **Certificate**, your browser may be blocking new windows. Allow pop-ups for this site and try again.\n\n## Leaving a review\n\nYou can review any course you are enrolled in.\n\n1. Open the course page.\n2. Go to **Reviews**.\n3. Choose a star rating under **Your rating**.\n4. Add a comment in **Share your experience (optional)** if you like.\n5. Press **Submit review**.\n\nYour review appears straight away. If you review the same course again, your new review replaces the old one.",
+            "summary": "What happens when you complete every lesson, and how to print your certificate.",
+            "title": "Finishing a course and getting a certificate"
+          },
+          "course_lessons_and_progress": {
+            "body": "You work through a course one lesson at a time in the course player.\n\n1. Open [My learning](/courses/my-learning).\n2. Press **Continue learning** on the course.\n3. Choose a lesson from the list on the left.\n4. Read, watch or listen to the lesson.\n5. Press **Mark as complete** when you have finished.\n\nA tick appears next to finished lessons. The **Course progress** bar shows how far you have got.\n\n## Types of lesson\n\nA lesson can be text, a video, a PDF document, a page from another website, or a quiz. Some videos have a **Transcript**, which is a written version of what is said.\n\n## Locked lessons\n\nThe course author can release lessons over time. A locked lesson shows a padlock and one of these messages:\n\n- **This lesson isn't available yet.**\n- **Available from** followed by a date.\n\nCome back on that date and the lesson will open.\n\n## Asking questions\n\nEach lesson has a **Discussion** area. Type in the box and press **Post**. You can reply to others with **Reply**. You can delete your own comments with **Delete**. Only people enrolled in the course, and the people running it, can see the discussion.\n\n## My learning\n\n[My learning](/courses/my-learning) splits your courses into **In progress** and **Completed**.",
+            "summary": "Open lessons, mark them complete and track your progress.",
+            "title": "Working through lessons"
+          },
+          "course_quizzes": {
+            "body": "Some lessons are quizzes. You need to pass each quiz to finish the course.\n\n1. Open the quiz lesson in the course player.\n2. Answer each question.\n3. Press **Submit answers**.\n\n## Your result\n\nMost questions are marked straight away. You see **Passed** or **Not passed yet**, and **Your score** as a percentage.\n\nIf you have not passed, change your answers and press **Submit answers** again.\n\n## Answers checked by a person\n\nSome quizzes include written answers. A computer cannot mark these. You see **Your answers were submitted for review.** The course author marks them later.\n\n> You cannot mark a quiz lesson as complete until you have passed it. This also means you cannot get the course certificate until every quiz is passed.",
+            "summary": "Answer quiz questions, see your score and try again if needed.",
+            "title": "How do course quizzes work?"
+          },
+          "creating_a_course": {
+            "body": "Many communities let members create courses. Some communities allow this only for chosen people, called instructors. If you are not allowed, you see an error when you save.\n\n1. Open [Courses](/courses) and press **Create course**.\n2. Fill in **Title**, **Short summary** and **Description**.\n3. Choose a **Level**, a **Category** and a **Visibility**: **Public** or **Members only**.\n4. Set a **Time-credit cost**. Leave it at zero for a free course.\n5. Press **Save**.\n\n## Adding lessons\n\nAfter saving, the **Course builder** opens.\n\n1. Press **Add section** and give it a **Section title**.\n2. Press **Add lesson** inside the section.\n3. Give it a **Lesson title** and choose a **Content type**.\n4. Add the text, a video address, a PDF address or quiz questions.\n5. Choose **Release timing** if you want the lesson to open later.\n6. Press **Save lesson**.\n\nFor videos, please add a **Transcript**. People who cannot hear or watch the video rely on it.\n\n## Publishing\n\nYour course starts as a **Draft**. Press **Publish** to make it visible. In some communities an administrator checks courses first. Your course then shows **Pending review** until it is approved.\n\nYou can see all your courses in the [Instructor dashboard](/courses/instructor). It shows enrolments, completions, **Grading** and **Analytics** for each course.",
+            "summary": "Build a course with sections and lessons, then publish it for others.",
+            "title": "How do I create my own course?"
+          },
+          "enrolling_in_a_course": {
+            "body": "You join a course by pressing **Enroll** on the course page.\n\n1. Open [Courses](/courses) and choose a course.\n2. Check the cost in the side panel.\n3. Press **Enroll**.\n4. You see the message **You're enrolled! Time to start learning.** and the first lesson opens.\n\n## Paying for a course\n\nCourses never cost money. A course is either free or costs time credits.\n\n- The credits move from your wallet to the wallet of the person who made the course.\n- You pay only once. If you leave and come back, you are not charged again.\n- If you do not have enough credits, you see **You don't have enough time credits to enrol.**\n\n## Courses you must finish first\n\nSome courses list **Prerequisites**. These are other courses you must complete first. Until you do, the **Enroll** button stays switched off. The page shows **Complete the prerequisite courses to unlock enrolment.**\n\n## Going back to a course\n\nOnce you are enrolled, the course page shows **Continue learning** instead. You can also find all your courses in [My learning](/courses/my-learning).",
+            "summary": "Join a course, pay any time-credit cost, and start learning.",
+            "title": "How do I enrol in a course?"
+          },
+          "finding_courses": {
+            "body": "You find courses on the **Courses** page. Open it from the **Community** menu, or go to [Courses](/courses).\n\n## Searching and filtering\n\n- Type in the **Search courses…** box to look for a topic.\n- Use **All categories** to show one category only.\n- Use **All levels** to choose **Beginner**, **Intermediate** or **Advanced**.\n- Press **Load more** at the bottom to see more courses.\n\nEach course card shows who made it and how many people have enrolled.\n\n## Looking at a course\n\nPress a course to open its page. There you can read:\n\n- **About this course**, a description written by the course author.\n- **Syllabus**, the list of sections and lessons.\n- **Prerequisites**, any courses you need to finish first.\n- **Reviews** from other learners.\n\nThe side panel shows the cost. It says **Free**, or a number of time credits. A time credit is one hour of time, the same currency you use in your wallet.\n\n> Some courses are marked **Members only**. You see these only when you are signed in.\n\nIf you see the message **No courses found.**, your community has not published any courses yet. Check back later.",
+            "summary": "Browse, search and filter the courses your community offers.",
+            "title": "How do I find a course?"
+          }
+        },
+        "summary": "Learn new skills from courses made by people in your community.",
+        "title": "Courses"
+      },
+      "events": {
+        "articles": {
+          "events_attendance_credits": {
+            "body": "Some events give you time credits for taking part. A time credit is the platform's unit of time: one credit is usually one hour.\n\nLook for the label **Earn** followed by a number of **time credits for attending** on the event page.\n\n## How it works\n\n1. Press **Going** on the event.\n2. Go to the event.\n3. Get checked in by the event staff, for example with your check-in code.\n\nThe credits are added to your [wallet](/wallet) after you are checked in. The wallet entry says **Attendance reward** and the event name.\n\n## Things to know\n\n- Saying you are going is not enough. You must be checked in.\n- You can only earn the reward once for each event.\n- If you check yourself in to an event you run, you do not get the reward.\n- The reward comes from the community. The organiser does not pay it.\n- Your community may set a monthly limit on the total credits it gives for attendance. If that limit has been reached, your reward is not paid straight away. An administrator can pay it later.\n- An administrator can take a reward back, for example if it was given by mistake. The credits are taken from your wallet, even if this takes your balance below zero. The wallet entry says **Attendance reward reversed** and the event name.\n- Most events do not have a reward. Your community's administrators decide which events do, and how much.\n\nThis is switched off in most communities. If you do not see the label on any event, your community does not use it.",
+            "summary": "Some events reward you with time credits when you are checked in.",
+            "title": "Earning time credits for attending an event"
+          },
+          "events_calendar": {
+            "body": "You can copy events into the calendar you already use, such as Google Calendar or Outlook.\n\n## Add one event\n\n1. Open the event.\n2. Find **Add to your calendar**.\n3. Press **Google Calendar** or **Outlook**, or press **Download .ics** for other calendar apps.\n\n## Keep your calendar up to date automatically\n\nPress **Calendar feeds** on the [Events](/events) page. You have two choices:\n\n- **Download community calendar** saves a file with the events you can see. It never includes private locations or meeting links.\n- Under **My registered events**, press **Create subscription**. This makes a private web address that your calendar app can follow. It shows the events you are going to.\n\n1. Give the subscription a name if you like.\n2. Press **Create subscription**.\n3. Press **Copy URL** and paste it into your calendar app's \"subscribe\" or \"add by URL\" option.\n\n> The full address is only shown once. Keep it private, because anyone who has it can see the events in it.\n\nIf you lose the address or stop using it, press **Revoke** next to the subscription. Your calendar app then stops getting updates. You can create a new one at any time.\n\nSome communities switch calendar feeds off.",
+            "summary": "Put one event in your phone or computer calendar, or subscribe to all the events you are going to.",
+            "title": "Adding events to your own calendar"
+          },
+          "events_create": {
+            "body": "You create an event with a short form, then publish it.\n\n1. Open the [Events](/events) page and press **Create Event**.\n2. Add a **Cover Image (optional)** if you have one.\n3. Type an **Event Title** and a **Description**. The description needs at least 20 characters.\n4. Choose a **Category (optional)**.\n5. Set the **Start Date** and **Start Time**. Add an end date and time if you know them, or tick **All-day event**.\n6. Add a **Location (optional)**. You can then describe the venue's accessibility.\n7. Set **Max Attendees (optional)**. Leave it empty for no limit.\n8. For an online event, switch on **Allow remote attendance** and paste the **Meeting Link**.\n9. Press **Create Event**.\n\n## Publish it\n\nA new event starts as a **Draft event**. Only you can see it. Open it and press **Publish event** when you are ready. If your community checks events first, press **Submit for review**.\n\n## Events for a group\n\nTo make an event for a group you belong to, open the group's **Events** tab and press **Create Event** there. The form shows **This event will be associated with your group.**\n\n## Repeating events\n\nSwitch on **Make this a recurring event** to create a series. Choose the **Frequency**, such as **Weekly** or **Monthly**, and the days in **Repeat on**. Under **Ends**, choose **After X occurrences**, **On a specific date**, or **Never (rolling schedule)**.\n\nWhen you edit one date in a series, you are asked to choose **Only this event** or **This and all future events**.",
+            "summary": "Fill in the event form, then publish your event so members can see it.",
+            "title": "How do I create an event?"
+          },
+          "events_finding": {
+            "body": "All your community's events are on the [Events](/events) page.\n\n## Choose a view\n\nAt the top of the page, choose how to see events:\n\n- **List** shows event cards\n- **Month** shows a calendar for the whole month\n- **Agenda** shows events day by day, starting today\n\nIn **Month** and **Agenda**, use **Previous**, **Today** and **Next** to move around. The search and filters below only apply to the **List** view.\n\n## Narrow down the list\n\n- Type in **Search events...** to find an event by name or description.\n- Use the time filter to choose **Upcoming**, **Past** or **All Events**.\n- Press a category button to see only that kind of event. Press **All** to see every category.\n- Press **Near me** and choose a **Radius** to see events close to you. This uses the location saved on your profile.\n- Use the venue filter to find events with **Step-free access confirmed**.\n\nPress **Clear filters** to start again.\n\n## What the cards tell you\n\nAn event card can show **Full**, a number of places left, or **Cancelled**. It also shows how many people are going or interested. Press a card to open the event.",
+            "summary": "Browse upcoming events as a list, a month calendar or an agenda, and narrow them down.",
+            "title": "How do I find events?"
+          },
+          "events_manage": {
+            "body": "You manage your own events from the event page.\n\n## Edit your event\n\nOpen your event and press **Edit**. Change the details and press **Update Event**.\n\n## See who is coming and check people in\n\nPress **Manage**. The management page has sections. You only see the ones you are allowed to use. The main ones are:\n\n- **People**, to see and manage everyone who has replied\n- **Check-in**, to scan check-in codes or find people by name on the day\n- **Organizer communications**, to send a message to attendees\n- **Team**, to give other members a role, such as a co-organiser or check-in staff\n\n## Cancel an event\n\n1. Open your event and press **Cancel Event**.\n2. Type the **Reason for cancellation**.\n3. Confirm.\n\nEveryone who replied is told the event is cancelled. For a repeating event, all future dates are cancelled too.\n\n## Archive an event\n\nPress **Archive** to take an event off the member list but keep its history. You can add a reason.\n\n> There is no way to delete an event from the member pages. Cancel or archive it instead.",
+            "summary": "See who is coming, message attendees, check people in, and cancel if plans change.",
+            "title": "Managing, cancelling or archiving your event"
+          },
+          "events_on_the_day": {
+            "body": "Some events ask you to check in when you arrive, have tickets, or take place online. These options appear once you have pressed **Going**.\n\n## Your check-in code\n\n1. Open the event.\n2. Find **Your event check-in code**.\n3. Press **Create check-in code**.\n4. Show the QR code to the event staff when you arrive. You can also press **Copy code** or **Print code**.\n\n> The code is only shown when you create it. Save or print it straight away.\n\nIf you lose it, press **Replace copied or lost code**. The old code stops working. The code does not contain your name or contact details.\n\nEvent staff can also find you by name and check you in by hand.\n\n## Tickets\n\nIf the organiser has set up tickets, open the **Tickets** tab and press **Reserve ticket**. Your reservations appear under **Your tickets**. To give a ticket back, press **Cancel ticket** and give a reason.\n\nAt the moment only free tickets can be reserved.\n\n## Online events\n\nAn online event shows **Remote attendance available**. The **Join Meeting** button appears shortly before the start, for people who are going. People on the waiting list cannot see the link.",
+            "summary": "Get your check-in code, reserve a free ticket, and find the link for an online event.",
+            "title": "Check-in codes, tickets and online events"
+          },
+          "events_reminders": {
+            "body": "Once you have pressed **Going** on an event, you can choose your own reminders.\n\n1. Open the event.\n2. Find **Event reminders**. It only appears after you say you are going.\n3. Make sure **Enable event reminders** is switched on.\n4. Under **Reminder times**, choose **7 days before**, **24 hours before** or **1 hour before**. You can choose more than one.\n5. For a different time, type a number in **Custom time in minutes** and press **Add custom time**. For example, 30 means half an hour before.\n6. Under **Delivery channels**, choose how to be reminded. The choices include **Email**, **Notification bell** and **Mobile push**.\n7. Press **Save reminders**.\n\nYou can have up to 10 reminders for one event.\n\nTo go back to the normal settings, press **Reset to defaults**.\n\n> Push reminders only reach your phone or browser if you have allowed notifications from the platform on that device.",
+            "summary": "Choose when you are reminded about an event you are going to, and how.",
+            "title": "Setting reminders for an event"
+          },
+          "events_rsvp": {
+            "body": "You reply to an event from its page. This is called an RSVP.\n\n1. Open the event from the [Events](/events) page.\n2. Find **RSVP for this event**.\n3. Press **Going**, **Interested** or **Not Going**.\n\n**Going** tells the organiser to expect you. It also unlocks the reminders, check-in code and tickets for the event. **Interested** lets you follow the event without promising to come.\n\n## Changing your mind\n\nPress a different button at any time. To remove your reply completely, press your current choice again. If you were going, you are asked to confirm first.\n\n## When an event is full\n\nIf there are no places left, the event shows **Full**. You can press **Join Waitlist** to join the waiting list. Your place in the queue is shown, for example **On Waitlist (#3)**. Press **Leave Waitlist** if you no longer want a place.\n\nIf your community uses timed offers, you may see **A place is available for you**. Press **Accept place** to take it, or **Decline place** to let someone else have it.\n\n## Other things on the event page\n\n- **Share** copies a link to the event.\n- **Attendees** shows who else is coming.\n- **Venue accessibility** shows what the organiser knows about access, such as **Step-free access** or a **Hearing loop**. \"Not known\" means the organiser has not checked.",
+            "summary": "Tell the organiser you are coming, join a waiting list when an event is full, or change your mind.",
+            "title": "How do I say I am going to an event?"
+          },
+          "events_who_can_create": {
+            "body": "Your community decides who can create events.\n\n- In most communities, any active member can create an event.\n- Some communities only let brokers and administrators create events. A broker is a member of staff who helps members arrange exchanges.\n- A few communities only let administrators create events.\n\n## How to tell\n\nIf you can create events, you see **Create Event** on the [Events](/events) page and **New Event** under the **+** button at the top of the page.\n\nIf your community keeps this for staff, the form shows **Only staff can create Events here**. Ask a community administrator if you would like an event set up.\n\n## Approval\n\nSome communities check new events before anyone else can see them. In that case you press **Submit for review** instead of **Publish event**. Your event shows **Pending review** until an administrator approves it.",
+            "summary": "In most communities any member can create events, but some keep this for staff.",
+            "title": "Who can create an event?"
+          }
+        },
+        "summary": "Find community events, say you are going, and run your own.",
+        "title": "Events"
+      },
+      "exchanges": {
+        "articles": {
+          "broker_approval": {
+            "body": "A broker is a community coordinator who helps arrange exchanges safely. Some communities ask a broker to approve exchanges before they go ahead.\n\nYou may see **Broker Approval Required** when you send a request. After the other member accepts, the status shows **Awaiting Broker**, and the timeline shows **Sent to Broker**.\n\nThe broker then either:\n\n- approves the exchange, and the status becomes **Accepted**; or\n- rejects it, and the exchange is cancelled.\n\nBoth of you are told either way. The broker may leave a note, shown under **Broker Notes** on the exchange page.\n\nAn exchange may need approval because of your community's settings, the number of hours, the kind of listing, or a member's safeguarding preferences. You do not need to do anything while you wait.",
+            "summary": "Why some exchanges wait for a coordinator, and what happens next.",
+            "title": "What does broker approval mean?"
+          },
+          "cancel_exchange": {
+            "body": "The member who sent the request can cancel an exchange before the work starts.\n\n1. Open the exchange.\n2. Press **Cancel Exchange**.\n3. Press **Cancel Exchange** again to confirm, or **Keep Exchange** to go back.\n\nYou can cancel while the status is **Awaiting Provider**, **Awaiting Broker** or **Accepted**. The other member is told. No hours move.\n\n> Cancelling cannot be undone. If you change your mind, send a new request.\n\nIf you posted the listing, you can **Decline** a request instead of accepting it.\n\nOnce the work has started, the cancel button is no longer shown. If plans change after that, talk to the other member or your coordinator.",
+            "summary": "Withdraw a request before the work starts.",
+            "title": "Cancelling an exchange"
+          },
+          "confirm_hours": {
+            "body": "Once the work is marked complete, both of you confirm how long it took. Hours only move when both of you have confirmed.\n\n1. Open the exchange. You can find it in the **Needs Confirmation** tab of [My Exchanges](/exchanges).\n2. Press **Confirm Hours**.\n3. Check the number in **Hours**. It starts at the proposed hours. Change it if the work took more or less time.\n4. Press **Confirm Hours** in the box.\n\nWhen you have both confirmed:\n\n- If the two numbers match, or are within a quarter of an hour, the exchange completes. Close numbers are averaged.\n- If they are further apart, the exchange is marked **Disputed** and a broker reviews it.\n\nYour community may limit how far the confirmed hours can differ from the proposed hours. If you enter a number outside that range, the nearest allowed number is used.\n\nWhen the exchange completes, the hours move from the person who received help to the person who gave it.\n\n> If the person paying does not have enough hours, the exchange cannot complete. You will see a message, and no hours move.",
+            "summary": "Both members confirm the time taken, then the hours move.",
+            "title": "Confirming the hours"
+          },
+          "exchange_disputes": {
+            "body": "If you and the other member confirm hours that are too far apart, the exchange is marked **Disputed**. The page says \"There is a disagreement about the hours. A broker will review this.\"\n\nYou both get an email about it. No hours move yet.\n\nIn the Broker Panel, a broker can:\n\n- read the exchange history and speak to both members; and\n- if hours should move, adjust each member's balance with a clear reason.\n\nThe Broker Panel has no button to settle or cancel a disputed exchange. Balance adjustments do not change the exchange's **Disputed** status. Ask your coordinator what was done.\n\nTo avoid a dispute, agree the hours with the other member before you both confirm.\n\nTo report another kind of problem, such as someone not turning up, press **Report a problem** on the exchange in the phone app. The website does not have this button; contact your coordinator there.",
+            "summary": "What happens when members confirm different hours, and what a coordinator can do in the Broker Panel.",
+            "title": "What happens if we disagree about the hours?"
+          },
+          "how_exchanges_work": {
+            "body": "An exchange is how two members agree on help and record the hours. Everything is kept in one place, from the request to the final hours.\n\n1. **Request**: you open a listing, press **Request Exchange** and propose the hours.\n2. **Answer**: the member who posted the listing accepts or declines.\n3. **Approval**: if your community requires it, a broker checks the exchange. A broker is a community coordinator who helps arrange exchanges.\n4. **Start**: the member who posted the listing presses **Start Exchange** when the work begins.\n5. **Finish**: they press **Mark Complete** when it is done.\n6. **Confirm**: both of you confirm the hours worked.\n7. **Payment**: when the confirmations agree, the hours move from the person who received help to the person who gave it.\n\nYou can follow all your exchanges on [My Exchanges](/exchanges). Each exchange page has an **Exchange Timeline** showing every step.\n\n> The member who posted the listing always does the accept, start and mark complete steps, even when their listing is a request for help. On the exchange page they are shown as the **Provider**, and the person who sent the request as the **Requester**.",
+            "summary": "The steps from a first request to the hours moving between wallets.",
+            "title": "How does an exchange work?"
+          },
+          "rate_exchange": {
+            "body": "After an exchange is completed, you can rate how it went.\n\n1. Open the completed exchange.\n2. Press **Rate This Exchange**.\n3. Choose one to five stars, from **Poor** to **Excellent**.\n4. Add a **Comment (optional)**.\n5. Press **Submit Rating**, or **Skip** to close without rating.\n\nYou can rate each exchange once. Ratings from both members appear under **Ratings** on the exchange page.\n\nIf your community uses reviews, you can also write a review that appears on the member's profile. See the Reviews section of this guide.",
+            "summary": "Give a star rating and comment after an exchange is completed.",
+            "title": "Rating an exchange"
+          },
+          "request_exchange": {
+            "body": "1. Open the listing you are interested in.\n2. Press **Request Exchange**.\n3. Check **Proposed Hours**. It starts at the listing's estimate. Change it if you have agreed something different.\n4. Add a **Message (optional)** to explain what you need or ask a question.\n5. Press **Send Request**.\n\nThe exchange page opens. Its status shows **Awaiting Provider** until the other member answers. They get a notification about your request.\n\nIf you see **Broker Approval Required**, a coordinator must also approve the exchange before it can go ahead.\n\nAfter sending, check the hours shown on the exchange page. If they are not what you expected, cancel and send a new request.\n\nYou cannot request an exchange on your own listing. If you already have an open exchange for a listing, the listing shows **Exchange** with its status instead of **Request Exchange**.\n\n> A request can be refused because of your community's safety rules or the other member's settings. If your request fails and you are not sure why, contact your coordinator.",
+            "summary": "Send a request with your proposed hours and a message.",
+            "title": "Requesting an exchange from a listing"
+          },
+          "respond_to_request": {
+            "body": "When someone requests an exchange on your listing, you get a notification. The request appears on [My Exchanges](/exchanges) with the label **Respond**.\n\n1. Open the exchange.\n2. Read the **Proposed Hours** and any **Message from requester**.\n3. Press **Accept Request** to agree, or **Decline** to say no.\n\nIf you decline, you can add a **Reason (optional)**. Then press **Decline Request**. The other member is told.\n\nAfter you accept, the status becomes **Accepted**. If your community needs broker approval, it shows **Awaiting Broker** first.\n\nTo talk about the details before you decide, press **Message** followed by the member's name, if your community has private messages.\n\n> Only accept work you are able and willing to do. It is fine to decline.",
+            "summary": "What to do when someone asks for an exchange on your listing.",
+            "title": "Accepting or declining a request"
+          },
+          "start_and_complete": {
+            "body": "The member who posted the listing moves the exchange along.\n\n1. When the work begins, open the exchange and press **Start Exchange**. The status becomes **In Progress**.\n2. When the work is done, press **Mark Complete**. The status becomes **Confirm Hours**.\n\nThe other member gets a notification at each step.\n\nNext, both of you confirm how many hours the work took. No hours move until you both confirm. See \"Confirming the hours\".\n\nWhile the exchange is under way, you can keep in touch with the **Message** button on the exchange page.\n\nOnce the work has started, the exchange can no longer be cancelled from the exchange page. If plans change, talk to the other member or your coordinator.",
+            "summary": "Tell the other member when the work begins and when it is done.",
+            "title": "Starting and finishing the work"
+          }
+        },
+        "summary": "Request help, agree the hours and confirm the time once the work is done.",
+        "title": "Exchanges"
+      },
+      "feed": {
+        "articles": {
+          "feed_edit_schedule": {
+            "body": "You can change or remove your own posts at any time, and you can set a post to appear later.\n\n## Edit or delete a post\n\n1. Find your post on the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Edit Post**, change the text, and press the button to save it. You can change the words but not the photos.\n4. Or choose **Delete Post**, then press **Delete** to confirm. This cannot be undone.\n\nAn edited post shows the word **edited** next to the time.\n\n## Schedule a post for later\n\n1. Write your post as usual.\n2. Press **Schedule post** under the text.\n3. Choose a **Date** and **Time**.\n4. Press **Set schedule**.\n5. Press **Schedule** to save it.\n\nThe post shows **Scheduled for** and the time you chose. It appears on the feed at that time. To go back to posting straight away, press **Clear schedule** before you save.",
+            "summary": "Change or remove a post you wrote, or choose a time for it to appear.",
+            "title": "Editing, deleting or scheduling a post"
+          },
+          "feed_filters": {
+            "body": "You can change the order of the feed and show only the kinds of post you want.\n\n## For You or Recent\n\nAt the top of the [feed](/feed), choose:\n\n- **For You**, which puts the posts most likely to interest you first\n- **Recent**, which shows the newest posts first\n\nOn a **For You** post, press **Why am I seeing this?** to see the reason it was picked.\n\n## Filters\n\nUse the filter buttons to show one kind of item, such as **Posts**, **Events** or **Polls**. **Following** shows posts from your connections. **Saved** shows posts you have saved. Press **All** to see everything again.\n\nWhich filters you see depends on the sections your community uses.\n\n## New posts\n\nWhen new posts arrive while you are reading, a bar appears at the top, such as **1 new post — Tap to see**. Press it to load them.",
+            "summary": "Switch between For You and Recent, and show only the kinds of post you want.",
+            "title": "Choosing what you see on the feed"
+          },
+          "feed_hide_mute_report": {
+            "body": "Every post has a three-dot menu with options for posts you do not want to see.\n\n1. Press the three-dot menu at the top right of the post.\n2. Choose one of these:\n\n- **Hide Post** removes that post from your feed.\n- **Not interested** hides it and shows you fewer posts like it.\n- **Mute** followed by the person's name stops their posts appearing in your feed. They are not told.\n- **Report Post** sends the post to your community's moderators.\n\n> At the moment you cannot undo hiding or muting from your account, so use them with care.\n\n## Reporting a post\n\n1. Choose **Report Post**.\n2. In **Reason**, describe what is wrong.\n3. Press **Submit Report**.\n\nYour community's moderators then review the report.\n\nIf someone is in danger, contact your local emergency services first.",
+            "summary": "Remove posts you do not want to see, stop seeing one person, or tell the moderators about a problem.",
+            "title": "Hiding, muting or reporting a post"
+          },
+          "feed_photos_links": {
+            "body": "You can add photos to any post, and links show a preview automatically.\n\n## Adding photos\n\n1. Open the post box on the [feed](/feed).\n2. Press the photo area that says **Click or drag photos here**, or drag photos onto it.\n3. Choose up to 10 photos. Each one can be up to 10 MB. JPEG, PNG, GIF and WebP files work.\n4. Drag the photos to change their order.\n5. Press **Add alt text** on each photo and describe what it shows.\n6. Write a few words to go with your photos.\n7. Press **Post**.\n\n> Alt text is read aloud to people who use screen readers. A short, plain description is best, for example \"Volunteers planting trees in the park\".\n\nLarge photos are made smaller before they upload. This can take a moment.\n\n## Adding a link\n\nPaste a web address into your post. The platform tries to show a preview with the page's title and picture.\n\nSome websites do not allow previews. In that case your post shows the link on its own.",
+            "summary": "Attach up to 10 photos, describe them for screen readers, and share links with a preview.",
+            "title": "Adding photos and links to a post"
+          },
+          "feed_post_update": {
+            "body": "You post updates from the [community feed](/feed).\n\n1. Open the [feed](/feed).\n2. Press the box that says **What's on your mind?**. A window opens.\n3. If the window shows a different form, such as **Listing**, press the **Post** tab at the top.\n4. Write your message. You can use up to 5,000 characters. The buttons above the text let you add bold, italics, lists and links.\n5. Use the buttons under the text to add an emoji or a GIF. Some browsers also let you speak your post with voice input.\n6. If your community uses groups, you see **Post to**. Leave **Public Feed** to share with the whole community, or choose one of your groups.\n7. Press **Post**.\n\nA quicker way to reach the **Post** form is the **+** button at the top of the page. Choose **New Post**.\n\n## Other things you can create here\n\nThe same window has tabs along the top. Depending on what your community uses, you may see **Listing**, **Event**, **Goal** and **Poll** as well as **Post**. Each tab opens a short form for that kind of item.\n\n> If you close the window part-way through, your browser keeps a draft on this device. It comes back the next time you open the post box.\n\n## Who sees your post\n\nA post to the **Public Feed** is seen by members of your community. A post to a group appears inside that group, for its members.\n\nIf you type @ followed by someone's username, they are told you mentioned them.",
+            "summary": "Write a post for your community feed or for one of your groups.",
+            "title": "How do I post an update?"
+          },
+          "feed_reactions_comments": {
+            "body": "You can react to a post with a quick feeling, or write a comment.\n\n## Reactions\n\nPress **Like** under a post. To choose a different reaction, hold your mouse over **Like**, or press and hold it on a phone. You can choose:\n\n- **Like**\n- **Love**\n- **Laugh**\n- **Wow**\n- **Sad**\n- **Celebrate**\n- **Clap**\n- **Time Credit**\n\nPress your reaction again to remove it. To see who reacted, press the reaction count.\n\n> The **Time Credit** reaction is a way of saying thank you. It does not send any hours.\n\n## Comments\n\n1. Press **Comment** under the post.\n2. Type in the box that says **Write a comment...**.\n3. To mention someone, type @ and start typing their name, then choose them from the list.\n4. Press the send button.\n\nUnder each comment you can press **Reply** to answer it, or **React** to add a reaction.\n\n## Change or remove your comment\n\nUnder your own comment, press **Edit** to change it, or **Delete** to remove it. Deleting a comment cannot be undone.",
+            "summary": "Show you like a post, choose a reaction, and join the conversation in the comments.",
+            "title": "Reacting and commenting on posts"
+          },
+          "feed_saving": {
+            "body": "You can save a post so you can find it again later.\n\nPress the bookmark icon on a post. It is saved straight away. Press it again to remove it.\n\n## Collections\n\nCollections are folders for your saved items. On a phone or tablet, press and hold the bookmark icon to choose one:\n\n1. Choose a collection, or **General (no collection)**.\n2. To start a new one, press **New collection**, type a name and press **Create collection**.\n\n## Finding saved items\n\nOpen [Saved](/saved). Your saved items appear here. You can also save listings, events, jobs, blog articles and group discussions in the same way.\n\n- Use the tabs to show only one kind of item.\n- Use **Collection** to show one collection.\n\nOn the feed, the **Saved** filter also shows the posts you have saved.\n\nOnly you can see what you have saved.",
+            "summary": "Bookmark posts and other items, and sort them into your own collections.",
+            "title": "Saving posts to read later"
+          },
+          "feed_sharing": {
+            "body": "Press **Share** under a post to see your sharing options.\n\n- **Repost** shares the post on the feed with your name on it. Press **Remove Repost** to undo it.\n- **Quote Post** reposts it with your own comment on top. Type your thoughts and press **Post**.\n- **Copy Link** copies the address of the post, so you can paste it anywhere.\n- **Share...** opens your device's sharing options. If your device has none, you can choose Email, WhatsApp, X, Facebook or LinkedIn.\n- **Send via Message** sends the post to another member in a private message. Search for their name, then press **Send**.\n\nYou cannot repost your own post.\n\n> A link to a post only works for people who can sign in to your community. Anyone else sees the sign-in page.",
+            "summary": "Repost, quote, copy a link or send a post to another member.",
+            "title": "Sharing a post"
+          }
+        },
+        "summary": "Share updates and photos, react and comment, and choose what you see.",
+        "title": "Community feed"
+      },
+      "finding_people": {
+        "articles": {
+          "connections": {
+            "body": "A connection is a member you know and want to keep in touch with.\n\n## Send a request\n\n1. Open the member's profile.\n2. Press **Connect**.\n\nThe button then shows **Cancel Request** until they answer.\n\n## Answer a request\n\n1. Open [Connections](/connections).\n2. Choose the **Pending** tab.\n3. Press **Accept** or **Decline**.\n\nYou can also press **Accept** on their profile.\n\n## Manage your connections\n\n- **My Connections** lists everyone you are connected to. Press **Message** to write to them, or **Disconnect** to remove them.\n- **Sent** lists requests you have sent. Press **Cancel Request** to withdraw one.\n\nOn a connected member's profile, you can also open the **More options** menu (three dots) and choose **Remove Connection**.",
+            "summary": "Send, accept and manage connection requests with people you know.",
+            "title": "Connecting with other members"
+          },
+          "explore_page": {
+            "body": "**Explore** is a starting point for finding out what is happening in your community. It opens a page called **Discover**.\n\nDepending on what your community uses, you may see sections such as:\n\n- **Popular Listings** and **Near You**\n- **Upcoming Events** and **Active Groups**\n- **Welcome Our Newest Members** and **People You May Know**, each with a **Connect** button\n- **Trending Posts**, **Trending Hashtags** and **From the Blog**\n- **Volunteer Opportunities** and **Organisations**\n\nPress **See All** next to a section to open the full list.\n\nThe top of the page shows community figures, such as the number of members and the hours exchanged.\n\n> If you cannot find **Explore** in the menu, your community is not using it.",
+            "summary": "See popular listings, events, groups and new members in one place.",
+            "title": "Using the Explore page"
+          },
+          "match_preferences": {
+            "body": "You can control how matching works for you.\n\n1. Open [Matches](/matches) and press **Match preferences**.\n2. Change the settings you want.\n3. Press **Save preferences**.\n\nThe settings are:\n\n- **Pause matching**: stops new suggestions and notifications until you turn it off again.\n- **Maximum distance** and **Minimum match quality**, under **Distance & quality**.\n- **Category interests**: tick the categories you want matches for. Leave them all unticked to match on every category.\n- **Match digest frequency**: **Daily**, **Fortnightly**, **Monthly** or **Never**.\n- **Hot match alerts**: be told straight away about very strong matches.\n- **Mutual match alerts**: be told when a match works both ways.\n\nDistance settings only work if your profile has a location.",
+            "summary": "Pause matching, set distance and quality, and choose how often you hear about matches.",
+            "title": "Changing your match preferences"
+          },
+          "matches": {
+            "body": "The **Matches** page suggests listings, groups, volunteering opportunities and events that may suit you.\n\n1. Open [Matches](/matches).\n2. Use the tabs to show **All** matches or one kind: **Listings**, **Group** or **Volunteering**. A tab only appears when you have matches of that kind.\n3. Turn on **Mutual matches only** to see matches that work both ways: they want what you offer, and offer what you need.\n\nEach card shows a match score and the main reasons. Some cards show **Why this score?** with more detail. Some include an explanation written by AI, which is labelled. Treat scores and explanations as a guide only.\n\nPress a card to open the listing, group, opportunity or event. On a card you can also:\n\n- press **Message** to write to the member who posted a listing;\n- press **Save match** to keep a listing match;\n- press **Not interested** and choose a reason, so you see fewer matches like it;\n- press **Join** on a group match.\n\n## Event matches\n\nEvent matches are upcoming events that you have not replied to yet. They are shown under **All**, marked **Event**. Open the event to see the details and say if you are going.\n\n## Getting better matches\n\nListing matches are based on your own listings. If you have none, the page asks you to **Create a listing**. Group, volunteering and event matches also use the categories of your listings and the skills and bio on your profile. Adding a location to your profile helps with distance.",
+            "summary": "See listings, groups, volunteering and events that may suit you, based on your listings and profile.",
+            "title": "Your matches and suggestions"
+          },
+          "member_directory": {
+            "body": "The **Members** page lists people in your community.\n\n1. Open [Members](/members).\n2. Type a name in **Search members...** to find someone.\n3. Choose **All Members**, **New Members** or **Most Active**, or pick an order under **Sort by**.\n4. Press **Near me** to see members close to the location on your profile.\n5. Press a member to open their profile.\n\n## Why can't I see someone?\n\nNot everyone is listed. The page may show a line such as \"You are seeing 40 of the 55 people who have joined\". Press **Why?** to see your community's rules.\n\nA member may be missing because they chose not to be listed. Your community may also only list members who have finished their profile, added a photo or written an introduction. Everyone who is not shown is still a full member.\n\n## Are you listed?\n\nPress **Check whether you are listed**. It opens the **Privacy** tab of your settings. The **Search Engine Indexing** switch there also decides whether you appear in the member directory.",
+            "summary": "Find members by name or area, and learn why some members are not listed.",
+            "title": "Browsing the member directory"
+          },
+          "search": {
+            "body": "Search looks for listings, members, events and groups in one place.\n\n1. Open [Search](/search).\n2. Type what you are looking for in **Search for anything...** and press **Search**.\n3. Use the tabs to see all results, or only one kind. The tabs you see depend on what your community uses.\n\nPress **Advanced Filters** to narrow the results by **Content Type**, **Category**, date, **Location** or **Skill Tags**, or to change **Sort By**.\n\n## Saving a search\n\n1. Press **Save this search**.\n2. Type a name for it.\n3. Press **Save**.\n\nYour saved searches are listed under **Saved Searches**, so you can run them again.\n\nIf you find nothing, check your spelling, try broader words, or reset the filters.",
+            "summary": "Find listings, members, events and groups in one search.",
+            "title": "Searching the community"
+          },
+          "skills_and_endorsements": {
+            "body": "The **Skills** page shows the skills members share, grouped by category.\n\n1. Open [Skills](/skills).\n2. Search for a skill, or open a category.\n3. Choose a skill to see members who offer it (**Offers**) and members who want it (**Wants**).\n\n## Adding your own skills\n\n1. On the Skills page, press **Add your own skills**. This opens the **Skills** tab in your settings.\n2. Press **Add Skill**.\n3. Choose a skill and your level, such as **Beginner** or **Expert**.\n\n## Endorsing someone\n\nAn endorsement is a quick way to say a member is good at a skill.\n\n1. Open the member's profile.\n2. Next to one of their skills, press the small endorse button. It says \"Endorse\" followed by the skill when you point at it.\n\nPress it again to remove your endorsement. The number beside a skill shows how many members have endorsed it.",
+            "summary": "Browse the skills members share, add your own, and endorse other members.",
+            "title": "Skills directory and endorsements"
+          }
+        },
+        "summary": "Search the community, browse members, connect and see suggested matches.",
+        "title": "Finding people"
+      },
+      "getting_started": {
+        "articles": {
+          "accessible_version": {
+            "body": "Yes. Your community also has a simpler, highly accessible version of the site. It uses plain, clear pages, and it is designed to work well with screen readers, keyboards and screen magnifiers.\n\nIt is the same community, with the same members. You sign in with the same email address and password.\n\n## How to open it\n\n- On a computer, press **WCAG 2.2 AA Version** in the thin bar at the very top of the screen. If you cannot see the bar, scroll back to the top of the page.\n- On a phone, press **Menu**, then press **WCAG 2.2 AA Version** near the bottom.\n\nIt opens in a new tab. WCAG 2.2 AA is the name of an international standard for accessible websites.\n\n## Making the main site easier to use\n\nYou can also change how the main site looks. Open [Settings](/settings), stay on the **Profile** tab, and scroll down to **Appearance Preferences**. There you can turn on **Large Text**, **High Contrast**, **Reduced Motion** or **Simplified Layout**. See **Changing language, dark mode and text size**.",
+            "summary": "Yes. A simpler, highly accessible version of the site is available. It opens in a new tab.",
+            "title": "Is there a simpler, more accessible version?"
+          },
+          "email_confirmation_and_approval": {
+            "body": "After you create your account, we send you an email with a link. Open the email and press the link to confirm your email address. You cannot sign in until you have done this.\n\n> Cannot find the email? Look in your junk or spam folder. To get a new link, go to the sign-in page, try to sign in, and press **Resend verification email**.\n\n## Approval by a coordinator\n\nIn many communities, a coordinator checks each new account before it can be used. If this applies, you see **Awaiting admin approval** after confirming your email. You get an email once your account is approved.\n\nUntil then, if you try to sign in, you see **You're registered and waiting for approval**.\n\n## Other checks your community may use\n\n- **Waiting list**: some communities add new members to a waiting list, and email you when a place opens.\n- **Identity check**: some communities ask you to verify your identity before your account is approved. If this is still to do, the sign-in page shows **Continue verification**.\n\nIf you have waited a while and heard nothing, [contact the community](/contact).",
+            "summary": "After you sign up, confirm your email address. In many communities a coordinator also approves each new member.",
+            "title": "Confirming your email and waiting for approval"
+          },
+          "finding_your_way_around": {
+            "body": "The menu only shows the parts of the site your community uses. So what you see may be a little different from what other communities see.\n\n## On a computer\n\nAlong the top of the screen you will usually find:\n\n- **Feed**: news and posts from your community\n- **Explore**: a place to discover what is going on, if your community uses it\n- **Timebanking**: your **Listings**, **Exchanges** and **Wallet**\n- **Messages**: private conversations with other members\n- **Community**: your **Dashboard**, **Members**, **Events**, **Groups** and more\n\nOn the right is the bell for your notifications, and a button with your name or photo. Press it for **My Profile**, **Wallet**, **Settings**, **Get the app** and **Log Out**.\n\n## On a phone\n\nA bar along the bottom of the screen has **Feed**, **Listings**, **Create**, **Messages** and **Menu**. Press **Menu** to see everything else, including **Settings**, **Help Center** and **Log Out**.\n\n## Your dashboard\n\nYour [Dashboard](/dashboard) gives you a summary: your balance, your listings, your messages and anything that needs your attention.\n\n> Looking for something? Press **Search** at the top of the screen, if your community uses it.",
+            "summary": "The menu at the top of the screen, or at the bottom on a phone, takes you to every part of your community.",
+            "title": "Finding your way around"
+          },
+          "first_time_setup": {
+            "body": "The first time you sign in, you may see a short guided setup called **Get Started**. It helps other members get to know you.\n\n1. **Welcome**: press **Let's Get Started**.\n2. **Profile**: add a photo and write a few words in **About you**. You need both to finish the setup.\n3. **Skills**: under **I can offer**, choose what you could help with. Under **I need help with**, choose what you would like help with.\n4. **Safeguarding**: if your community uses this step, you can tell coordinators that you would like extra support. See **What are safeguarding preferences?** in the **Privacy and safety** section.\n5. **Confirm**: check the summary under **Review Your Setup**, then press **Complete Setup**.\n\nWhen you finish, you are taken to your dashboard.\n\n> In some communities you must finish this setup before you can use the rest of the site. You can change your photo and your introduction later in **Settings**.",
+            "summary": "The first time you sign in, a short guided setup helps you add a photo, a few words about you, and your skills.",
+            "title": "Setting up your profile for the first time"
+          },
+          "how_time_credits_work": {
+            "body": "Time credits move from one member to another when help is given.\n\n1. You and another member agree what help is needed, and when.\n2. The help takes place.\n3. The member who received the help pays the member who gave it, in time credits. One hour of help is one time credit.\n\nDepending on how your community works, the credits are sent from the wallet, or they move when both members confirm the exchange is complete.\n\n## Your balance\n\nYour balance shows how many credits you have. You can see it in your [Wallet](/wallet). It also appears in hours next to **Wallet** in the menu under your name.\n\n## Things to know\n\n- Time credits are a record of time. They are not money.\n- Some communities give new members a few credits to start with. Others start everyone at zero.\n- You do not need any credits to offer help. Helping others is how most members earn them.\n\nFor step-by-step help with sending credits and reading your history, see the **Wallet** section of this Help Centre.",
+            "summary": "You earn time credits by giving help and spend them on getting help. Your balance is kept in your wallet.",
+            "title": "How do time credits work?"
+          },
+          "joining_your_community": {
+            "body": "You join by creating an account on your community's website. Open [Create your account](/register).\n\nOn a computer you see one form. On a phone the same form is split into four short steps: **Community**, **Details**, **Account** and **Terms**.\n\n1. If you are asked, choose your **Community**.\n2. Choose a **Profile Type**: **Individual**, or **Organisation** if you are joining for a group or charity.\n3. Enter your **First Name**, **Last Name**, **Location** and **Phone Number**.\n4. Enter your **Email** and choose a **Password**. Type it again in **Confirm Password**.\n5. If your community gave you an invite code, enter it in **Invite Code**.\n6. Read and accept the terms. Ticking this box also confirms that you are 18 or older.\n7. Press **Create Account**.\n\n## About your details\n\n- Your phone number must start with + and your country code. Only the staff who run your community, such as administrators and coordinators (also called brokers), can see it.\n- For **Location**, your town or city is enough. Other members can see what you type here, so do not enter your home address.\n- Your password must be at least 12 characters long. A phrase of three or four words is easy to remember and hard to guess.\n\n## If you cannot sign up\n\nSome communities only accept people with an invite code, keep a waiting list, or are not taking new members right now. The sign-up page tells you if this applies. You can [contact the community](/contact) to ask about joining.",
+            "summary": "Create an account with your name, email address and a password. Some communities also ask for an invite code.",
+            "title": "How do I join?"
+          },
+          "language_and_appearance": {
+            "body": "## Language\n\nOn a computer, press the language button in the thin bar at the top of the screen. It shows a short code, such as EN. On a phone, press **Menu** and use the language button near the bottom.\n\nYou can also open [Settings](/settings), stay on the **Profile** tab, and use **Language Preference**.\n\nYour choice is saved to your account, so it stays the same when you sign in on another device. The languages you can choose depend on your community.\n\n## Light and dark mode\n\nOpen the menu under your name and press **Dark Mode** or **Light Mode**.\n\nOr, in **Settings** on the **Profile** tab, find **Theme** and choose **Light**, **Dark** or **System**. **System** follows the setting on your device.\n\n## Text size and other display options\n\nIn **Settings**, on the **Profile** tab, scroll down to **Appearance Preferences**. There you can:\n\n- change the **Font Size**\n- choose an **Accent Color** for buttons and links\n- change the **Layout Density**, which is how much space there is between things\n- turn on **Large Text**, **High Contrast**, **Reduced Motion** or **Simplified Layout**\n\n**Reduced Motion** cuts down on animation. **Simplified Layout** removes decorative effects such as shadows and blur.",
+            "summary": "Choose your language, switch between light and dark mode, and make text larger or clearer.",
+            "title": "Changing language, dark mode and text size"
+          },
+          "using_on_your_phone": {
+            "body": "Yes. There are three ways, and you can choose the one that suits you. For step-by-step help for your device, open [Get the app](/install-app).\n\n## 1. Your phone's web browser\n\nOpen the website in your phone's browser and sign in. Every page and every feature works, and you always have the newest version. This is the most stable way to use it on a phone.\n\n## 2. Add it to your home screen\n\nYou can save the website to your home screen, so it opens from its own icon like an app. This works on Android phones using Chrome, and on Windows computers using Chrome or Edge.\n\nOn iPhone and iPad, saving it as an icon does not work reliably yet. The website itself works normally in Safari.\n\n## 3. The Android app\n\nThere is an app for Android phones on Google Play. It works on Android 7.0 or later. It is an early release that is still being developed, so some things may not work quite right yet. When you first open it, choose your community from the list.\n\nAn app for iPhone and iPad is not available yet.\n\n> Not sure which to choose? Use your phone's web browser.",
+            "summary": "Yes. Use your phone's web browser, add the site to your home screen, or try the Android app.",
+            "title": "Can I use it on my phone?"
+          },
+          "what_is_timebanking": {
+            "body": "Timebanking is a way for people in a community to help each other using time instead of money.\n\nWhen you spend an hour helping another member, you earn one **time credit**. A time credit is a record of one hour. You can then spend your credits to get help from someone else.\n\n## Everyone's time is equal\n\nAn hour is an hour, whatever the task. An hour of gardening, an hour of language practice and an hour of computer help are each worth one time credit. Nobody's time is worth more than anyone else's.\n\n## What people exchange\n\nMembers offer and ask for all kinds of everyday help, for example:\n\n- a lift to the shops\n- help with a form or a phone\n- a friendly chat or a walk\n- small jobs around the home or garden\n- teaching a skill, such as cooking or music\n\nYou do not need special qualifications. Everyone has something to offer.\n\n## Who looks after your community\n\nEach community has its own team. **Coordinators** (sometimes called **brokers**) help members connect and keep exchanges safe. **Administrators** look after the community and its settings. If you are unsure about anything, you can ask them.\n\nTo read more, open the [Timebanking Guide](/timebanking-guide).",
+            "summary": "Timebanking lets people help each other using time instead of money. One hour of help earns one time credit.",
+            "title": "What is timebanking?"
+          }
+        },
+        "summary": "What timebanking is, how to join, and how to find your way around.",
+        "title": "Getting started"
+      },
+      "goals": {
+        "articles": {
+          "goals_buddies": {
+            "body": "A goal buddy is another member who chooses to support your goal. Buddies can only join public goals.\n\n## Get a buddy\n\n1. Make your goal public. Switch on **Make Public** when you create or edit it.\n2. Other members can find it in the **Discover** tab and offer to be your buddy.\n3. Offers appear under **Buddy offers** on your goal. Press **Accept** or **Decline**. Nobody becomes your buddy unless you accept.\n\nEach goal can have one buddy.\n\n## Become someone's buddy\n\n1. Open [Goals](/goals) and choose **Discover**.\n2. Find a public goal you would like to support.\n3. Press **Offer to be buddy**.\n\nThe goal's owner decides. Once they accept, you are their buddy and the goal is listed under **Goal Buddies**. If they decline, you cannot offer again on that goal.\n\n## Supporting your buddy\n\nAs a buddy you can send a little encouragement:\n\n- **Nudge**, a gentle reminder to keep going\n- **Encourage**, a message of support\n- **Offer help**, to say you can help\n\nThe goal's owner is told each time. Keep it friendly. Nudges are reminders, not pressure.",
+            "summary": "Offer to support another member's public goal, or accept a buddy for your own.",
+            "title": "Goal buddies: supporting each other"
+          },
+          "goals_create": {
+            "body": "A goal is something you want to achieve, such as \"Give 10 hours this month\". You set goals on the [Goals](/goals) page.\n\n1. Open [Goals](/goals) and press **New Goal**.\n2. Type a **Goal Title**.\n3. Add a **Description** if you like.\n4. Set a **Target Value**. This is the number you are aiming for, such as 10 for ten hours.\n5. Choose a **Check-in cadence**: how often you want to record progress. The choices are **No cadence**, **Daily**, **Weekly**, **Every 2 weeks** or **Monthly**.\n6. Add a **Deadline (optional)**.\n7. Switch on **Make Public** if you want other members to see your goal and support it. Leave it off to keep the goal private.\n8. Press **Create Goal**.\n\n## Start from a template\n\nPress **From Template** to see ready-made goals. Choose a category, then choose a template. The goal is created for you, and you can change it afterwards.\n\n## Private and public goals\n\nA private goal is only seen by you. A public goal appears in **Discover**, where other members can see it and offer to be your buddy.",
+            "summary": "Create a personal goal from scratch or from a ready-made template.",
+            "title": "How do I set a goal?"
+          },
+          "goals_progress": {
+            "body": "You update your goals from the **My Goals** tab on the [Goals](/goals) page.\n\n## Quick update\n\nPress **+1** on a goal to add one to your progress.\n\n## Check in\n\nA check-in records your progress and how you feel.\n\n1. Press **Check In** on the goal.\n2. Move the slider to show your progress.\n3. Under **How are you feeling?**, choose a mood, such as **Good** or **Struggling**.\n4. Add a **Note (optional)**.\n5. Press **Record Check-in**.\n\nThe **History** tab in the same window lists your past check-ins.\n\n## Reminders\n\n1. Press **Set Reminder** on the goal.\n2. Choose how often: **Daily**, **Weekly**, **Every 2 weeks** or **Monthly**.\n\nThe button then shows **Reminder Active**. To stop reminders, press it again and choose **Remove Reminder**.\n\n## Finish, change or delete a goal\n\n- When you reach 100%, press **Mark Complete**.\n- To change a goal, use its menu and choose **Edit**.\n- To remove it, choose **Delete**, then confirm. This cannot be undone.\n\nOpen a goal to see **Goal insights**, such as your check-in streak, and a **Progress Timeline**.",
+            "summary": "Record progress, check in, set reminders and mark a goal as complete.",
+            "title": "Updating progress on a goal"
+          }
+        },
+        "summary": "Set yourself a goal, track your progress and get support from a buddy.",
+        "title": "Personal goals"
+      },
+      "group_exchanges": {
+        "articles": {
+          "cancel_group_exchange": {
+            "body": "The organiser can cancel a group exchange at any time before it is completed.\n\n1. Open the exchange.\n2. Press **Cancel Exchange**.\n3. Press **Cancel Exchange** again to confirm, or **Keep Exchange** to go back.\n\nNo hours move. The page shows **Exchange Cancelled**, and the exchange moves to the **Cancelled** tab.\n\n> Cancelling cannot be undone.\n\nA completed group exchange cannot be cancelled. If a completed exchange was wrong, contact your coordinator.\n\nIf you are a participant but not the organiser, you cannot cancel. If you no longer want to take part, ask the organiser before they start the exchange.",
+            "summary": "The organiser can cancel a group exchange before it is completed.",
+            "title": "Cancelling a group exchange"
+          },
+          "confirm_and_complete": {
+            "body": "## Starting (organiser)\n\nOpen the exchange and press **Start Exchange**. The status becomes **Pending Confirmation**. Every participant gets a notification and an email asking them to confirm.\n\nIf the hours do not balance, or a safety rule applies, the exchange does not start and a message explains why.\n\n## Confirming (everyone taking part)\n\n1. Open the exchange from the notification, or from the **Needs Confirmation** tab.\n2. Check your role and hours in the participant list.\n3. Press **Confirm My Hours**.\n\nThe **Confirmed** column shows who has confirmed. If the details change after you confirm, such as the hours or the people taking part, all confirmations are cleared and everyone needs to confirm again.\n\n## Completing (organiser)\n\nWhen everyone has confirmed, press **Complete Exchange**. Everyone's balance changes at the same time, and each payment appears in the wallet history of the people involved.\n\n> If any receiver does not have enough hours, the exchange does not complete and no hours move for anyone. You may need to cancel it and create a new one with different hours.",
+            "summary": "The organiser starts it, everyone confirms, then the organiser completes it.",
+            "title": "Starting, confirming and completing a group exchange"
+          },
+          "create_group_exchange": {
+            "body": "The form has four steps: **Details**, **Participants**, **Review Split** and **Confirm**.\n\n1. Open [Group Exchanges](/group-exchanges) and press **New Exchange**.\n2. On **Details**, enter a **Title**, a **Description (optional)** and the **Total Hours**. Choose a **Split Type**. Press **Next**.\n3. On **Participants**, search for members by name. Press **Provider** or **Receiver** next to each person. Add at least one of each, then press **Next**.\n4. On **Review Split**, check the **Hour Split Preview** and the **Per-Participant Summary**. Press **Review**.\n5. On **Confirm**, check everything and press **Create Group Exchange**.\n\nThe exchange is saved as a **Draft**. Nobody is asked to confirm yet. Before you start it, you can still add people with **Add Participants**, or remove them with the cross next to their name.\n\nType at least two letters to search. You can only find members who are listed in the member directory. Each member can be added once.\n\nPeople added later with **Add Participants** have no hours set. If you use **Custom Hours**, add everyone while you create the exchange.\n\n> Your community's safety rules may stop some members from being added to a group exchange.",
+            "summary": "Set up a group exchange in four steps.",
+            "title": "Creating a group exchange"
+          },
+          "providers_receivers": {
+            "body": "When you add people to a group exchange, you give each one a role.\n\n- **Provider**: gives time. Their balance goes up.\n- **Receiver**: receives time. Their balance goes down.\n\nThere must be at least one provider and one receiver.\n\n## Adding yourself\n\nThe member search does not show your own name. To take part yourself, use the **Add yourself as** box on the **Participants** step, and press **Provider** or **Receiver**.\n\nFor example, if you are leading a workshop, add yourself as a **Provider**. If you are organising help for yourself, add yourself as a **Receiver**.\n\nIf you do not add yourself, you organise the exchange but your own balance does not change.\n\n## Before you create it\n\nTo take someone off the list, press the cross next to their name.\n\nReceivers must have enough hours in their wallets when the exchange is completed.",
+            "summary": "Give each person the right role, and add yourself if you are taking part.",
+            "title": "Providers, receivers and adding yourself"
+          },
+          "split_options": {
+            "body": "The **Split Type** decides how many hours each person earns or pays.\n\n## Equal Split\n\nThe **Total Hours** are shared equally among the providers, and equally among the receivers.\n\nExample: total 4 hours, 2 providers and 4 receivers. Each provider earns 2 hours. Each receiver pays 1 hour.\n\n## Custom Hours\n\nYou type the hours for each person on the **Participants** step.\n\nExample: providers Ana 3 hours and Ben 1 hour. Receivers Cara 2 hours and Dev 2 hours.\n\nThe providers' hours must add up to the same as the receivers' hours. Here, both come to 4. If they do not match, the exchange will not start. You still need to enter a number in **Total Hours** on the first step.\n\n## Weighted Split\n\nYou give each person a **Weight**. The total hours are shared in proportion to the weights, separately for providers and receivers.\n\nExample: total 6 hours. Provider Ana has weight 2 and provider Ben has weight 1, so Ana earns 4 hours and Ben earns 2. Three receivers with weight 1 each pay 2 hours each.\n\nAlways check the **Hour Split Preview** before you create the exchange.",
+            "summary": "Equal Split, Custom Hours and Weighted Split, with examples.",
+            "title": "Choosing how to split the hours"
+          },
+          "what_is_group_exchange": {
+            "body": "A group exchange records hours when more than two people are involved. For example, several neighbours help at a garden workday, or one member runs a class for a group.\n\nEveryone taking part is either:\n\n- a **Provider**, who gives time and earns hours; or\n- a **Receiver**, who receives time and pays hours.\n\nThe member who sets it up is the organiser. The organiser adds the people, chooses how the hours are split, starts the exchange and completes it. The organiser only earns or pays hours if they also add themselves as a participant.\n\nEvery participant must confirm before any hours move. When the organiser completes the exchange, everyone's balance changes together.\n\nOpen [Group Exchanges](/group-exchanges) to see yours. The tabs are **All**, **Active**, **Needs Confirmation**, **Completed** and **Cancelled**.",
+            "summary": "One exchange that records hours for several people at once.",
+            "title": "What is a group exchange?"
+          },
+          "workshop_community_pot": {
+            "body": "Group exchanges work well for workshops and group activities. Some communities use a shared member account called **Community Pot** to hold hours for group activities. It is an ordinary member account, set up by your coordinator. It is not the same as the **Community Fund** in your wallet.\n\nHere are two ways to record a one-hour workshop with 50 attendees.\n\n## Option A: attendees contribute\n\nEach attendee pays one hour. The leader earns one hour. The rest goes into the pot.\n\n1. Create a group exchange with **Custom Hours**. Enter 50 in **Total Hours**.\n2. Add the leader as a **Provider** with 1 hour. If you are the leader, use **Add yourself as**.\n3. Add **Community Pot** as a **Provider** with 49 hours.\n4. Add the 50 attendees as **Receivers** with 1 hour each.\n\nProviders add up to 50 and receivers add up to 50, so the split balances. Each attendee needs at least one hour in their wallet.\n\n## Option B: the pot pays\n\nAttendees pay nothing. The pot pays the leader.\n\n1. Create a group exchange with **Equal Split**. Enter 1 in **Total Hours**.\n2. Add the leader as a **Provider**.\n3. Add **Community Pot** as a **Receiver**.\n\nThe pot needs at least one hour in its wallet.\n\n## Things to remember\n\n- Everyone must press **Confirm My Hours**, including each attendee and whoever looks after the Community Pot account.\n- The Community Pot account must be listed in the member directory, or you cannot find it in the search.\n- When the exchange completes, everyone's wallet history shows who paid whom.",
+            "summary": "Two ways to record a workshop using a shared Community Pot account.",
+            "title": "Recording hours for a workshop or group activity"
+          }
+        },
+        "summary": "Record hours for activities where several people give or receive time.",
+        "title": "Group exchanges"
+      },
+      "groups": {
+        "articles": {
+          "groups_create": {
+            "body": "You can start a group from the [Groups](/groups) page.\n\n1. Press **Create Group**.\n2. Type a **Group Name** and a **Description** that explains what the group is for.\n3. Add a **Location** if the group is for one area.\n4. Add a **Group Image** and a **Cover Image** if you like. JPEG, PNG, GIF and WebP work, up to 8 MB.\n5. Choose who can join. The choices are explained below.\n6. Press **Create Group**.\n\nYou become the group's **Owner**.\n\n## Who can join\n\n- **Public** — any member can join straight away\n- **Private** — members ask to join and a manager accepts them\n- **Secret** — the group is hidden and people join only by invitation. Not every community offers this.\n\n## Things to know\n\n- Some communities check new groups before they appear.\n- Some communities do not let members create groups, or limit how many groups one member can own. If you cannot create a group, ask a community administrator.\n- Your community may offer **Start from a template (optional)**. A template fills in suggested settings for you.\n\nOnly members can see what is posted inside a group, even a public one.",
+            "summary": "Create a new group, choose who can join, and become its owner.",
+            "title": "How do I start a group?"
+          },
+          "groups_discussions": {
+            "body": "There are two ways to talk in a group: the **Feed** tab for short posts, and the **Discussion** tab for longer conversations.\n\n## Post to the group feed\n\n1. Open the group and choose **Feed**.\n2. Press **What's on your mind?** and write your post.\n3. Press **Create Post**.\n\nYou can also choose a group under **Post to** when you write a post on the main community feed.\n\n## Start a discussion\n\n1. Open the group and choose **Discussion**.\n2. Press **New Discussion**.\n3. Give it a **Title** and write the **Content**.\n4. Press **Create Discussion**.\n\n## Reply to a discussion\n\n1. Open the discussion.\n2. Type in **Write a reply...**.\n3. Send your reply. You see **Reply sent**.\n\nGroup posts and discussions are only seen by group members.",
+            "summary": "Share a post with the group, or start a discussion and reply to others.",
+            "title": "Posting and discussing in a group"
+          },
+          "groups_files_gallery_wiki": {
+            "body": "Members can share documents, photos and written pages inside a group.\n\n## Files\n\n1. Open the **Files** tab.\n2. Press **Upload File** and choose a file. Each file can be up to 25 MB.\n3. Add a **Folder (optional)** or **Description (optional)** if it helps.\n4. Upload the file.\n\nUse **Search files...** to find a file. Press a file to download it.\n\n## Gallery\n\nOpen the **Gallery** tab to add photos and videos. You can add a **Caption (optional)**. Each item can be up to 50 MB. Use **All**, **Photos** or **Videos** to filter.\n\n## Wiki\n\nThe **Wiki** is a set of pages the group writes together, like a shared handbook.\n\n1. Press **New Page**.\n2. Type a **Page Title** and the text. Choose a **Parent Page (optional)** to put it under another page.\n3. Press **Create Page**.\n\nYou can edit pages you wrote or last changed. Press **Edit**, make your change, and add a **Change summary (optional)**. Press **History** to see earlier versions. Group managers can edit any page.",
+            "summary": "Upload documents and photos to a group and write shared pages together.",
+            "title": "Sharing files, photos and wiki pages"
+          },
+          "groups_finding": {
+            "body": "You find groups on the [Groups](/groups) page.\n\n- Type in **Search groups...** to find a group by name.\n- Press **All Groups**, **My Groups**, **Public** or **Private** to change what is listed. **My Groups** shows the groups you belong to.\n- Groups your community wants to highlight appear under **Featured Groups**.\n- **Recommended for you** suggests a few groups that match your interests. Each shows a match score, such as **80% match**.\n\nA group you already belong to shows a **Member** label. Press any group to open it.\n\nPress **Load More Groups** at the bottom to see more.\n\n## Groups you cannot see\n\nPrivate groups only appear in the list if you are already a member. Some groups are hidden completely and you can only join them with an invitation. If someone tells you about a group you cannot find, ask them to send you an invitation.",
+            "summary": "Browse and search the groups in your community, and see groups picked for you.",
+            "title": "How do I find a group?"
+          },
+          "groups_invitations": {
+            "body": "A group manager can invite you by email or by sending you a link.\n\n## Accepting an invitation\n\n1. Open the link in the email or message.\n2. Sign in if you are asked to.\n3. You see **Group Invitation**. Press **Accept Invitation**.\n4. You see **Invitation Accepted**. Press **Go to Group**.\n\nAn invitation lets you join straight away, even if the group is private or secret.\n\nAn email invitation only works for the account with that email address. If you see **This email invitation belongs to a different account.**, sign in with the right account. Invitations can also expire. If yours has, ask the manager for a new one.\n\n## Inviting people (group managers)\n\n1. Open your group and press **Invite**.\n2. To share a link, press **Generate Invite Link**, then **Copy**. Anyone with the link can join. A link lasts 14 days.\n3. To invite by email, type the addresses in **Or invite by email (comma-separated):**. Add a **Personal message (optional)** if you like.\n4. Press **Send Invitations**.\n\nYou see a result for each address, such as **Sent** or **Already a member**. Invitations you have sent are listed under **Pending Invitations**. Press **Revoke** to cancel one.",
+            "summary": "Accept an invitation to a group, or invite people if you manage one.",
+            "title": "Group invitations and invite links"
+          },
+          "groups_joining": {
+            "body": "Open the group and press **Join Group**. What happens next depends on the kind of group.\n\n## Public groups\n\nYou join straight away. You can now use all its sections.\n\n## Private groups\n\nPressing **Join Group** sends a request to the group's managers. You see **Join request submitted**. You are told when a manager accepts you.\n\nWhile you wait, the button shows **Cancel Join Request**. Press it if you change your mind.\n\n## Secret groups\n\nSecret groups do not appear in the list. You can only join one if a manager invites you.\n\n## What you can see before you join\n\nBefore you join, you can see the group's name, description and member count. The posts, discussions, files and other sections are only for members. You see **Members Only** or **Join to see the feed** until you join.\n\n> Your community may limit how many groups one member can join. If you reach the limit, you are told when you try to join another.",
+            "summary": "Join a public group straight away, or ask to join a private one.",
+            "title": "How do I join a group?"
+          },
+          "groups_managing": {
+            "body": "Each group has an **Owner**, who created it, and can have **Admins** who help run it. Together they are the group's managers.\n\n## What managers can do\n\n- Accept or turn down join requests. Press **View Pending Join Requests**, then **Accept** or **Reject**.\n- Invite people with **Invite**.\n- Remove a member. Open **Members** and choose **Remove from Group**.\n- Post notices with **New Announcement**, and pin them to the top with **Pin this announcement**.\n- Change the group's details, pictures, colours and who can join, under **Settings**.\n- Set up group **Challenges**, and create or remove **Channels**.\n- See the **Analytics** tab, and download member or activity lists.\n- Use the **Automation** tab to schedule posts, including repeating posts, and to set a **Welcome Message** for new members.\n\n## What only the owner can do\n\n- Make a member an admin with **Promote to Admin**, or undo it with **Demote to Member**.\n- Remove an admin.\n- Delete the group. The owner must type the group's name to confirm. This cannot be undone.\n\n> Community administrators can also do all of these things in any group.",
+            "summary": "What group owners and admins can do, from accepting members to deleting the group.",
+            "title": "Running a group as an owner or admin"
+          },
+          "groups_notifications_leaving": {
+            "body": "You can choose how much you hear from each group.\n\n## Notification settings\n\n1. Open the group.\n2. Press the megaphone button near the group name. It is labelled **Notification preferences**.\n3. Choose a **Notification Frequency**.\n4. Switch **Email notifications** and **Push notifications** on or off.\n5. Press **Save**.\n\nThe frequency choices are:\n\n- **Instant** to hear about new activity as it happens\n- **Digest** to get one summary a day\n- **Muted** to hear nothing from this group\n\n## Leaving a group\n\n1. Open the group.\n2. Press **Leave Group**.\n3. Confirm. You see **Left the group**.\n\nYou lose access to the group's discussions and files. You can ask to join again later.\n\n> The group's owner cannot leave their own group. If you are the only admin, you also cannot leave. Ask the owner to make another member an admin first.",
+            "summary": "Choose how often a group contacts you, or leave it.",
+            "title": "Group notifications and leaving a group"
+          },
+          "groups_qa_tasks_channels": {
+            "body": "These tabs help a group work together. Your community may not use all of them.\n\n## Q&A\n\n1. Open **Q&A** and press **Ask Question**.\n2. Other members answer with **Post Answer**.\n3. Vote answers up or down so the best ones rise to the top.\n\nSort by **Newest**, **Most Voted** or **Unanswered**. Group managers can mark the best answer.\n\n## Tasks\n\n**Tasks** is a shared to-do list.\n\n1. Press **Add Task**.\n2. Give it a **Title**, a **Priority** (**Low**, **Medium**, **High** or **Urgent**), a person under **Assigned to**, and a **Due date**.\n3. Move the task through **To Do**, **In Progress** and **Done** as work goes on.\n\n## Channels\n\n**Channels** are chat rooms. Choose a channel, type in **Type a message...** and press **Send**. Group managers create and remove channels.\n\n## Challenges\n\n**Challenges** are goals for the whole group, such as a number of new discussions by a date. The managers set them. You can see the progress, for example **12 / 20 Posts**. Taking part in the group moves the count forward.",
+            "summary": "Ask questions, share out work, chat in channels and follow group goals.",
+            "title": "Group Q&A, tasks, channels and challenges"
+          },
+          "groups_sections": {
+            "body": "Each group has tabs along the top. On a phone they are in a drop-down list. Some tabs sit under **More**.\n\n- **Feed** is for short posts to the group.\n- **Discussion** is for longer conversations with a title.\n- **Members** lists everyone in the group. **Owner** and **Admin** labels show who runs it.\n- **Events** lists the group's events.\n- **Files** holds shared documents.\n- **Announcements** holds important notices from the managers.\n- **Q&A** is for asking questions and voting on answers.\n- **Wiki** holds shared pages of information that members write together.\n- **Gallery** holds photos and videos.\n- **Channels** are chat rooms for the group.\n- **Tasks** is a shared to-do list.\n- **Challenges** shows group goals set by the managers.\n- **Subgroups** appears when a group has smaller groups inside it.\n\nYour community can switch some of these tabs off, so you may not see them all.\n\nPinned announcements also appear above the tabs with a **Pinned** label.",
+            "summary": "A quick guide to the tabs you see once you are a member.",
+            "title": "What is inside a group?"
+          }
+        },
+        "summary": "Join groups of members who share an interest, talk together and share files.",
+        "title": "Groups"
+      },
+      "jobs": {
+        "articles": {
+          "applying_for_a_job": {
+            "body": "You apply from the job's own page.\n\n1. Open the job from [Jobs](/jobs).\n2. Press **Apply Now**.\n3. Write a message under **Your message (optional)**. Say why you are a good fit.\n4. Add your CV if you like. It can be a PDF, DOC or DOCX file, up to 5MB.\n5. Press **Submit Application**.\n\nYou see **Application submitted successfully!** The person who posted the job is told straight away. You get a confirmation email.\n\n> Some communities ask for a message with every application, or do not accept CVs. If so, the form tells you.\n\n## Applying again quickly\n\nAfter your first application, your message is remembered. Next time you may see **Quick Apply with Saved Profile**, which sends it again in one step. You can also start a fresh message.\n\n## When you cannot apply\n\n- **You've already applied** means you have sent an application already. You can apply only once to each job.\n- **No longer accepting applications** means the job has closed or the deadline has passed.\n- **This is your vacancy** means you posted it yourself.\n\nAfter applying, press **Message Employer** on the job page to send the poster a message.",
+            "summary": "Send a message and your CV to the person who posted the vacancy.",
+            "title": "How do I apply for a job?"
+          },
+          "finding_jobs": {
+            "body": "You find vacancies on the **Job Vacancies** page. Open the **Community** menu and choose **Jobs**, or go to [Jobs](/jobs).\n\n1. Type in **Search vacancies...** to look for a word in the title, description or skills.\n2. Use the filters to narrow the list.\n3. Press **Load More** at the bottom to see more.\n\n## Filters\n\n- **Sort by**: **Newest**, **Closing Soon** or **Highest Salary**.\n- **Remote Only**: show roles you can do from home.\n- Job type: **Paid**, **Volunteer** or **Timebank**. A timebank role pays in time credits rather than money.\n- Commitment: **Full Time**, **Part Time**, **Flexible** or **One-off**.\n\n## Reading a job card\n\nEach card shows the title, who posted it, the location and the pay if there is any. **Featured** jobs are shown first. A card may say **Closes in** a number of days when the deadline is near.\n\nIf you have already applied, the card shows **Applied**.\n\n> The list shows open jobs that have no closing date, or that close today or later. Some communities check new jobs before they appear.",
+            "summary": "Search and filter the paid, volunteer and time-credit roles in your community.",
+            "title": "How do I find a job vacancy?"
+          },
+          "job_alerts": {
+            "body": "A job alert tells you when a new vacancy matching your choices is posted.\n\n1. Go to [Job Alerts](/jobs/alerts), or press **Job Alerts** on the Jobs page.\n2. Press **Create Alert**.\n3. Enter **Keywords**, separated by commas. For example, gardening, teaching.\n4. Add **Categories** if you like.\n5. Choose a **Job Type** and **Commitment Level**, or leave them as **Any**.\n6. Add a **Location**, or tick **Remote positions only**.\n7. Press **Create Alert**.\n\nWhen a matching vacancy is posted, you get a notification and an email.\n\n## Managing your alerts\n\nEach alert shows when it was created and when it last found a job.\n\n- Press the pause button to stop an alert for a while. It shows **Paused**. Press it again to restart it.\n- Press the delete button to remove an alert. You are asked to confirm.\n\n> An alert matches when at least one keyword appears in the job title or description. Use a few simple words to get better results.",
+            "summary": "Set up a job alert and hear about new vacancies that match what you want.",
+            "title": "How do I get alerts about new jobs?"
+          },
+          "job_details_and_saving": {
+            "body": "Press a job to open its page. It shows everything you need to decide whether to apply.\n\n- **About this role**: the full description.\n- **Skills Required**: the skills the poster wants.\n- **Application Deadline**: the last day to apply.\n- The pay, **Hours per Week** and any **Time Credits**.\n- **Contact Information**, if the poster added it.\n\n## Checking your skills\n\nIf the job lists skills, you may see a skills match. This compares the job with the skills on your profile. Press **Am I Qualified?** to see which skills you have and which ones you could develop.\n\nKeep your profile skills up to date to get a more useful match.\n\n## Saving a job\n\nPress the bookmark button at the top of the job page. You see **Job saved**. Find your saved jobs on the **Saved Jobs** tab of the [Jobs](/jobs) page. Press the button again to remove it.\n\n## Sharing a job\n\nPress **Share** and choose **Copy Link** or **Share via Email**. On some phones you also see **Share...**, which opens your phone's sharing options.\n\nPress **Back to Jobs** to return to the list.",
+            "summary": "Read the full details, check how well your skills match, and save or share a job.",
+            "title": "Looking at a job and saving it for later"
+          },
+          "job_interviews_and_offers": {
+            "body": "When a poster invites you to an interview or makes you an offer, you are told by notification. You respond on the [My Applications](/jobs/my-applications) page.\n\n## Interviews\n\nThe application shows the interview date, time, type and length. The status says **Interview Requested**.\n\n- Press **Accept** to confirm. The status changes to **Interview Confirmed**.\n- Press **Decline** if you cannot attend.\n- Press **Add to Calendar** to save the date to your calendar.\n- For video interviews, use the join button at the time of the interview.\n\nYou also get reminders before the interview.\n\n## Offers\n\nThe application shows **You received an offer!** with the details, such as the salary and start date.\n\n- Press **Accept Offer** to accept.\n- Press **Decline** to turn it down.\n\n> For **Timebank** roles, accepting an offer moves the job's time credits from the poster's wallet to yours straight away. If the poster does not have enough credits, accepting will not work. Talk to the poster if this happens.\n\nAccepting an offer marks the role as filled.",
+            "summary": "Accept or decline interview invitations and job offers.",
+            "title": "Responding to an interview or a job offer"
+          },
+          "job_posting_limits": {
+            "body": "You can have a set number of vacancies at the same time. Unless your community has changed it, the limit is 20.\n\n## What counts towards the limit\n\nVacancies that are **Open** or **Draft** count. Vacancies that are **Closed** or **Filled** do not.\n\nIf you reach the limit, you see a message like **You have reached the limit of 20 active job postings**. To post another, close or delete one you no longer need. See **Managing a vacancy you posted** in this section.\n\n## If you leave the deadline blank\n\nThe **Application Deadline** is optional when you [post a vacancy](/jobs/create). If you leave it empty, the deadline is set for you. Unless your community has changed it, it is 30 days from the day you post.\n\nThe form does not show this date while you fill it in. Open the vacancy afterwards to check it.\n\n## What happens on the deadline\n\n- People can apply until the end of the deadline day.\n- After that, the vacancy no longer appears in the job list, and nobody new can apply.\n- It can still show as **Open** on your **My Postings** tab. It still counts towards your limit until you close it.\n\nYou get a reminder 7 days before the deadline. To keep a vacancy going, press **Renew** and choose how many days to add.\n\n> If you have found someone, close the vacancy. This stops new applications and frees a space for your next one.",
+            "summary": "There is a limit on how many vacancies you can have at once, and a deadline is set for you if you leave it blank.",
+            "title": "How many jobs can I post, and when do they close?"
+          },
+          "managing_your_vacancy": {
+            "body": "Your vacancies are on the **My Postings** tab of the [Jobs](/jobs) page. Each one shows its status: **Open**, **Closed**, **Filled** or **Draft**.\n\nOpen one of your jobs to manage it. The page shows **You posted this vacancy** and your options.\n\n- **Edit**: change the details. Press **Save Changes** when done.\n- **Close Vacancy**: stop new applications. You can reopen it later.\n- **Reopen**: make a closed vacancy visible again.\n- **Renew**: extend the deadline by 7, 14, 30 or 60 days. This appears when the deadline has passed or the job is closed.\n- **Analytics**: see views, applications and other figures.\n- **Delete**: remove the vacancy.\n\n> Deleting is permanent. It also deletes every application, interview and offer for that job. If you only want to stop applications, use **Close Vacancy** instead.\n\n## Reminders\n\nYou get a reminder 7 days before your deadline. Open vacancies that have not been changed for a long time may be closed automatically.",
+            "summary": "Edit, close, reopen, renew or delete your vacancy, and see how it is doing.",
+            "title": "Managing a vacancy you posted"
+          },
+          "posting_a_job_vacancy": {
+            "body": "Any member can post a vacancy.\n\n1. Press **Post Vacancy** on the [Jobs](/jobs) page, or go to [Post a Job Vacancy](/jobs/create).\n2. Enter a **Job Title** and **Description**.\n3. Choose the **Job Type**: **Paid**, **Volunteer** or **Timebank**.\n4. Choose the **Commitment**, and add a **Category** and **Location**.\n5. List the **Skills Required**, separated by commas.\n6. Add the **Hours per Week**.\n7. For a timebank role, enter the **Time Credits Offered**.\n8. For a paid role, fill in the **Compensation** section, or tick **Salary is negotiable**.\n9. Choose an **Application Deadline**. If you leave it empty, a deadline is set for you.\n10. Press **Post Vacancy**.\n\nPress **Preview** first to see how it will look. Press **Save as Draft** to finish it later.\n\n> The **Contact Email** and **Contact Phone** you enter are shown to everyone who can see the job. Only add details you are happy to share.\n\n## Checks before a job goes live\n\nIn some communities an administrator checks new vacancies first. Your job then stays as **Draft** until it is approved. You get a notification when it is approved or rejected.\n\nFirst time posting? Press **Start Wizard** on the Jobs page for a step-by-step guide.",
+            "summary": "Advertise a paid, volunteer or time-credit role to your community.",
+            "title": "How do I post a job vacancy?"
+          },
+          "reviewing_job_applicants": {
+            "body": "You get a notification and an email each time someone applies. Their applications are listed on your job's page, under **Applications**.\n\n## Moving applicants through the stages\n\nEach application has buttons for the next step, such as **Screening**, **Interview**, **Accepted** or **Rejected**. The applicant is told when their status changes. Press **Message** to send an applicant a message.\n\n## Using the Kanban Board\n\nPress **Kanban Board** on your job page. It shows your applicants in columns, one for each stage. Drag a card to move it to another stage.\n\nOn each card you can:\n\n- Press **Download CV** to see the applicant's CV.\n- Press **Schedule Interview**. Choose the type, date, time and place or meeting link, then press **Send Interview Request**.\n- Press **Send Offer**. Enter the salary, start date and a message, then send it.\n\nThe applicant can accept or decline your interview request or offer. You are told when they do.\n\n> For **Timebank** roles, the time credits move from your wallet to the applicant when they accept your offer. Make sure you have enough credits before you send it.\n\nYou can send one offer to each applicant.",
+            "summary": "Move applicants through the stages, invite them to interview and make an offer.",
+            "title": "Reviewing applicants for your vacancy"
+          },
+          "tracking_job_applications": {
+            "body": "You follow your applications on the **My Applications** page. Press **My Applications** at the top of the [Jobs](/jobs) page, or go to [My Applications](/jobs/my-applications).\n\nEach application shows its status. For example:\n\n- **Pending**: the poster has not looked at it yet.\n- **Screening**: the poster is reviewing it.\n- **Interview**: you have been asked to an interview.\n- **Offer**: you have been offered the role.\n- **Accepted** or **Rejected**: a decision has been made.\n\nPress **Status History** to see each change and when it happened. You get a notification when your status changes.\n\n## Withdrawing an application\n\n1. Find the application.\n2. Press **Withdraw**.\n3. Check the message and confirm.\n\nYou see **Application withdrawn**.\n\n> Withdrawing cannot be undone. You cannot apply to the same job again afterwards. Any interview is cancelled, and any offer is withdrawn.\n\n## Your job data\n\nPress **Download my data** to save a copy of your job applications and related information as a file.",
+            "summary": "See where each application has got to, and withdraw one if you change your mind.",
+            "title": "Tracking and withdrawing your applications"
+          }
+        },
+        "summary": "Find paid, volunteer and time-credit roles, apply, and post your own vacancies.",
+        "title": "Jobs"
+      },
+      "listings": {
+        "articles": {
+          "browse_listings": {
+            "body": "Open [Listings](/listings) to see what members offer and need.\n\nType in the search box to look for words in the title, description, location or member's name, then press Enter.\n\nUse the choices next to the search box:\n\n- **Type**: **All Types**, **Offers** or **Requests**.\n- **Category**: pick one, or keep **All Categories**.\n- **Sort**: **Recommended** or **Newest first**.\n\nPress **Filters** for more choices:\n\n- **Duration**: **Quick (under 1h)**, **Short (1-3h)**, **Half day (3-6h)** or **Full day (6h+)**.\n- **Service mode**: **Remote available** or **In-person only**.\n- **Posted date**: **Today**, **This week** or **This month**.\n- **Near me**: shows listings close to the location on your profile. Then choose a distance.\n\nPress **Clear filters** to start again.\n\nYou can switch between grid and list layouts with the buttons at the top of the page.\n\n> **Near me** uses the location on your profile. If you have not set one, you will see a message asking you to add it.",
+            "summary": "Search listings and narrow them down by type, category, time and distance.",
+            "title": "Browsing and filtering listings"
+          },
+          "create_listing": {
+            "body": "You create a listing from the Listings page.\n\n1. Open [Listings](/listings) and press **Create Listing**.\n2. Under **Start with intent**, choose **Offer Help** or **Request Help**.\n3. Type a **Title**. Be specific, for example \"Weekly help with food shopping\" rather than one word.\n4. Write a **Description** of what you offer or need.\n5. Choose a **Category**. Add **Skill Tags** if you like.\n6. Under **Service delivery**, choose **In-person only**, **Remote only**, **Remote available** or **Depends on service**.\n7. Enter the **Estimated Hours** one exchange may take.\n8. Add a photo if you like.\n9. Press **Create Listing**.\n\nYour new listing then opens so you can check it.\n\nIf a field is missing or too short, a message appears under that field. Fix it and press **Create Listing** again.\n\nThe **Location** comes from your profile. To change it, update your location in your profile settings.\n\n> If your community checks new listings first, your listing shows the status **Pending** until a coordinator approves it. Your community may also limit how many listings each member can have.",
+            "summary": "Post an offer or a request in a few steps from the Listings page.",
+            "title": "How do I create a listing?"
+          },
+          "listing_ai_help": {
+            "body": "If your community allows it, the listing form can write a draft description for you.\n\n1. Type a **Title** first. The button stays greyed out until you do.\n2. If you like, write a few notes in the **Description** box. The helper uses them.\n3. Press **AI: Help me write this**.\n4. Wait while the button shows **Generating...**.\n\nThe draft replaces whatever was in the **Description** box.\n\n> Read the draft carefully before you save. It is written by a computer. It can make you sound more experienced, more available or more generous than you are, and it can add details you never gave. Change or delete anything that is not true.\n\nA good description says what you will actually do, when you are usually free, and anything the other person should know.\n\nIf the helper is not available in your community, you will see a message saying the description could not be generated. You can write the description yourself.",
+            "summary": "Get a draft description for your listing, then check it carefully before you save.",
+            "title": "Using the AI writing help on a listing"
+          },
+          "listing_details": {
+            "body": "Categories and tags help members find your listing. Your community sets the list of categories.\n\n- **Category**: choose the one that fits best. You can type to search the list. Your community may require a category.\n- **Skill Tags**: type a skill and press Enter. You can add up to 10 tags.\n- **Estimated Hours**: how long one exchange may take, between 0.5 and 100 hours.\n- **Hours Available (optional)**: the total hours you are willing to give across all exchanges. Leave it blank for no limit. It cannot be less than the estimated hours.\n\n## Optional service details\n\nOpen **Optional service details** to add:\n\n- **Experience**, for example **Beginner-friendly** or **Professional / certified**.\n- **Equipment**, for example **I'll provide everything needed** or **You'll need to provide your own**.\n- **Accessibility Notes**, up to 200 characters, such as \"step-free access\".\n\nWhen you save, these details are added to the end of your description, so everyone can read them.",
+            "summary": "Help the right members find your listing with a category, skill tags and extra details.",
+            "title": "Categories, skill tags and optional details"
+          },
+          "listing_map": {
+            "body": "If your community uses maps, you can see listings as pins on a map.\n\n1. Open [Listings](/listings).\n2. Press the map button next to the grid and list buttons.\n3. Press a pin to see the listing.\n4. Press **View listing** to open it.\n\nOnly listings with a location appear on the map. If none have one, you will see **No listings with location data**.\n\nA listing's location comes from the profile of the member who posted it. A listing page may also show a small map under **Service Location**.\n\nYour listings use the location on your profile, so keep it up to date.",
+            "summary": "If your community uses maps, view listings as pins on a map.",
+            "title": "Seeing listings on a map"
+          },
+          "listing_photo": {
+            "body": "A photo can make your listing easier to recognise.\n\n1. In the listing form, find **Add a photo**.\n2. Press **Click to add a photo** and choose a picture from your device.\n3. Check the preview. To remove it, press the cross in the corner of the preview.\n4. Save the listing.\n\nYou can add one photo on this form. It must be a JPG, PNG or WebP file, and smaller than 8MB. If the file is too big, you will see **Image must be under 8MB**.\n\nIf the photo cannot be uploaded, your listing is still saved without it and a message tells you so. Edit the listing to try again.\n\nTo change the photo later, edit the listing, remove the old photo and add a new one.\n\nChoose a picture you are happy for everyone in your community to see.",
+            "summary": "Add one picture to make your listing easier to recognise.",
+            "title": "Adding a photo to your listing"
+          },
+          "manage_listing": {
+            "body": "Your own listings are on your profile, in the **Listings** tab. Open one to manage it.\n\nWhen you view your own listing, these buttons appear near the title:\n\n- **Edit** opens the form. Make your changes and press **Update Listing**.\n- **Analytics** shows how many people viewed, contacted or saved the listing.\n- **Renew Listing** appears when a listing has expired. **Extend** appears when a listing has an end date. Both give it more time.\n- **Delete** removes the listing. Press **Delete listing** to confirm.\n\n> Deleting a listing cannot be undone.\n\n## Can I pause a listing?\n\nThere is no pause button. If you need a break, you can delete the listing and create it again later.\n\n## Expiry\n\nYour community may set listings to end after a while. The listing page shows the end date, for example \"Expires\" followed by the date. A listing can only be renewed a limited number of times. If renewing does not work, ask your coordinator.",
+            "summary": "Change your listing, give it more time, see how it is doing, or remove it.",
+            "title": "Editing, renewing or deleting your listing"
+          },
+          "offers_and_requests": {
+            "body": "A listing is a short post that tells the community what you can do or what you need.\n\nThere are two kinds:\n\n- An **Offer** is help you can give, such as gardening, a lift to the shops or help with a computer.\n- A **Request** is help you would like to receive.\n\nWhen someone helps you, you pay them in time credits. A time credit is one hour of someone's time. Every hour is worth the same, whatever the help is.\n\nOn the [Listings](/listings) page, each card shows whether it is **Offering** or **Requesting**, roughly how long it may take, and who posted it.\n\nYou can post both kinds. Many members offer one thing and ask for another.\n\nA card may also show a **Mutual match** badge. This means that member wants something you offer and offers something you need.\n\n> Your community can choose to accept only offers or only requests. If your listing is refused when you save it, ask your coordinator.",
+            "summary": "A listing tells the community what help you can give or what help you need.",
+            "title": "What are offers and requests?"
+          },
+          "report_listing": {
+            "body": "Report a listing if it looks unsafe, misleading or does not belong in your community.\n\n1. Open the listing.\n2. Press **Report listing**.\n3. Choose a reason: **Inappropriate content**, **Safety concern**, **Misleading description**, **Spam or scam**, **Not a timebank service** or **Other**.\n4. Add **Additional details** if you can. This is optional, but it helps.\n5. Press **Submit Report**.\n\nYou will see a thank-you message, and the button changes to **Reported**. You can report each listing only once.\n\nYour community's moderators are told about the report and review it.\n\n> If someone is in immediate danger, contact your local emergency services first.",
+            "summary": "Tell your community team about a listing that looks unsafe, misleading or wrong.",
+            "title": "Reporting a listing"
+          },
+          "respond_to_listing": {
+            "body": "Open a listing to see the full details and who posted it. Under **Respond to this listing** you will find these buttons:\n\n- **Request Exchange**: if your community uses exchange requests, this sends a request with the hours you propose. See the Exchanges section of this guide.\n- **Send Message**: if your community does not use exchange requests, this opens a private conversation with the member instead.\n- **Like** and **Comments**: show appreciation, or ask a question that everyone can see.\n- **Save**: keeps the listing in your [Saved](/saved) items so you can find it again.\n- **Share**: lets you share the listing or copy a link to it.\n- **Report listing**: tells the community team about a problem.\n\nIf you already have an exchange for this listing, the first button shows **Exchange** and its current status instead.\n\nPress the member's name to see their profile. It shows their reviews and other listings, under **More from** followed by their name.",
+            "summary": "Ask for help, send a message, save, share or comment on a listing.",
+            "title": "Responding to a listing"
+          }
+        },
+        "summary": "Post what you can offer or what you need, and find listings from other members.",
+        "title": "Offers and requests"
+      },
+      "marketplace": {
+        "articles": {
+          "browsing_the_marketplace": {
+            "body": "The marketplace is where members buy, sell and give away items. It is separate from timebanking, where you swap time.\n\nOpen the **Community** menu and choose **Marketplace**, or go to [Marketplace](/marketplace).\n\n## Searching\n\n1. Type in **Search marketplace...**.\n2. Press a category to see only that kind of item. Press **All** to see everything again.\n3. Press **Load More** to see more listings.\n\n**Featured Listings** appear at the top.\n\n## Advanced search\n\nUnder **Quick Links**, press **Advanced Search**, or go to [Advanced Search](/marketplace/search). Here you can filter by:\n\n- **Category**\n- **Price Range**\n- **Condition**, such as **New** or **Good**\n- How you get the item, such as **Pickup Only**\n- How recently it was posted\n\nPress **Reset Filters** to clear your choices.\n\n## Free items\n\nTo see only items members are giving away, go to [Free Items](/marketplace/free).\n\nIf you see **No Listings Found**, nobody has listed anything that matches yet.",
+            "summary": "Browse, search and filter the items other members are selling or giving away.",
+            "title": "How do I find things in the marketplace?"
+          },
+          "buying_an_item": {
+            "body": "You buy an item from its page with the **Buy Now** button.\n\n1. Open the item.\n2. Check the price and how you will get the item.\n3. If you see **Choose how to pay**, choose to pay with money or with time credits.\n4. Press **Buy Now**.\n5. If you pay with money, enter your card details and pay.\n\nThe order then appears in [My Orders](/marketplace/orders).\n\n## Paying with time credits\n\nSome sellers accept time credits, the platform's unit of time. When you press **Buy Now**, the credits move from your wallet to the seller's wallet straight away. You need enough credits in your wallet.\n\nWhen you pay with time credits, you cannot use a coupon and paid delivery is not offered. Choose collection or free delivery instead.\n\n## Free items\n\nFor a free item, pressing **Buy Now** claims it. No money changes hands. Message the seller to agree when to collect it.\n\n## Paying by card\n\nCard payment only works if your community has switched it on and the seller has set up payments. If it is not available, you see a message when you try to buy. Message the seller to agree what to do instead.\n\nWhen card payment is available, payments are handled by Stripe, a payment company. Card details are entered in Stripe's secure form.\n\n> If a card payment is not finished, the order is cancelled after a short time. You can then try again.\n\n## If something goes wrong\n\nContact the seller first using **Message Seller**. If you cannot sort it out, contact your community administrator.",
+            "summary": "Buy an item with money or time credits, or claim a free item.",
+            "title": "How do I buy an item?"
+          },
+          "looking_at_a_listing": {
+            "body": "Press an item to open its page. It shows the photos, price, condition, location and description. It also shows how you get the item, such as **Pickup Only**.\n\nA listing may show extra labels:\n\n- **Negotiable**: the seller is open to offers.\n- **Free**: the item is being given away.\n\n## The seller\n\nThe seller's card shows their name and when they joined. Press **View Profile** to see their other listings.\n\n## Asking the seller a question\n\n1. Press **Message Seller**.\n2. Your messages open with a note ready to send, saying you are interested in this item.\n3. Add your question and send it.\n\nIt is a good idea to agree how and where to collect the item before you buy.\n\n## Your next step\n\n- To pay the asking price, press **Buy Now**.\n- To suggest a different price, press **Make Offer**.\n\nItems marked **Negotiable** have no **Buy Now** button. You make an offer instead.\n\n> Meet in a public place when you collect an item, or bring someone with you. Never share your bank or card details in a message.",
+            "summary": "Read the details of an item, see who is selling it and send them a message.",
+            "title": "Looking at an item and contacting the seller"
+          },
+          "making_an_offer": {
+            "body": "An offer lets a buyer suggest a different price.\n\n## Making an offer\n\n1. Open the item and press **Make Offer**.\n2. Enter **Your Offer**. The **Asking price:** is shown for comparison.\n3. Add a message if you like.\n4. Press **Send Offer**.\n\nYou see **Offer sent successfully!** The seller is told. An offer expires after 2 days if the seller does not answer. You can make one offer at a time on each item.\n\n## Following your offers\n\nGo to [My Offers](/marketplace/my-offers). The **Sent** tab shows offers you made. The **Received** tab shows offers on your items.\n\nEach offer shows its status: **Pending**, **Accepted**, **Declined**, **Countered**, **Withdrawn** or **Expired**. While an offer is **Pending**, you can press **Withdraw** to cancel it.\n\n## Answering an offer on your item\n\n- Press **Accept** to agree the price.\n- Press **Decline** to turn it down.\n- Press **Counter** to suggest another price. Enter the **Counter Amount** and press **Send Counter**.\n\nIf a seller counters your offer, press **Accept Counter** to agree.\n\n## After an offer is accepted\n\nThe item is held for the buyer for 2 days. The buyer pays with **Pay accepted offer** on the offer. If they do not pay in time, the item becomes available again.",
+            "summary": "Suggest a price to a seller, or accept, decline or counter an offer you receive.",
+            "title": "Making and answering offers"
+          },
+          "managing_your_listings": {
+            "body": "Your listings are on the **My Listings** page. Under **Quick Links** on the marketplace, press **My Listings**, or go to [My Listings](/marketplace/my-listings).\n\nThe tabs show your **Active**, **Sold** and **Expired** listings.\n\n## Editing a listing\n\n1. Press **Edit** on the listing.\n2. Make your changes.\n3. Press **Save Changes**.\n\nIn communities that check listings, changing the details or photos sends the listing back to be checked again.\n\n## Renewing a listing\n\nListings expire after a set time. Expired listings move to the **Expired** tab. Press **Renew** to list the item again.\n\n## Removing a listing\n\n1. Press **Remove** on the listing.\n2. Confirm that you want to remove it.\n\nThis cannot be undone.\n\n> When you have sold or given away an item, remove its listing. Otherwise other members may still try to buy it.",
+            "summary": "Edit, renew or remove the items you have listed.",
+            "title": "Managing your listings"
+          },
+          "marketplace_listing_limits": {
+            "body": "A marketplace listing stays up for a set time. Unless your community has changed it, this is 30 days from when you list the item.\n\n## When a listing expires\n\nWhen the time is up, the listing is taken down for you. Other members can no longer find it. It moves to the **Expired** tab on your [My Listings](/marketplace/my-listings) page.\n\nTo put it back up:\n\n1. Open **My Listings**.\n2. Choose the **Expired** tab.\n3. Press **Renew** on the listing.\n\nYou see **Listing renewed successfully**. The listing then runs for another 30 days. In communities that check listings, it only appears again once it has been approved.\n\n## How many listings you can have\n\nYou can have up to 50 listings on sale at the same time, unless your community has changed this. Expired and sold listings do not count.\n\nIf you reach the limit, you see a message such as **Maximum of 50 active listings reached.** Remove a listing you no longer need, then try again.\n\n> When you have sold or given away an item, remove its listing. This frees a space and stops other members trying to buy it.",
+            "summary": "Listings last 30 days unless your community has changed this, and you can have up to 50 on sale at once.",
+            "title": "How long do marketplace listings last?"
+          },
+          "marketplace_orders": {
+            "body": "Your purchases are on the **My Orders** page. Press **My Orders** under **Quick Links**, or go to [My Orders](/marketplace/orders).\n\nUse the tabs **All**, **Active**, **Completed** and **Cancelled / Refunded** to sort your orders. Orders that are **Pending Payment** or **Disputed** are shown under **All** only.\n\n## Order statuses\n\n- **Pending Payment**: payment has not finished yet.\n- **Paid**: you have paid with money or time credits, or claimed a free item. The seller will now send or hand over the item.\n- **Shipped**: the seller has sent the item. You may see a tracking number.\n- **Delivered**: you have confirmed it arrived.\n- **Completed**: the order is finished.\n- **Disputed**: there is a problem with the order, and your community's administrators are looking into it. The order shows **Dispute Open**.\n- **Cancelled** or **Refunded**: the order did not go ahead, or your money or time credits were given back.\n\n## Confirming delivery\n\nWhen the item arrives, press **Confirm Delivery**, then confirm. This cannot be undone. The order becomes **Completed** after a waiting period.\n\n## Rating the seller\n\nOnce an order is **Completed**:\n\n1. Press **Leave Rating**.\n2. Choose a **Rating**.\n3. Add a comment if you like. You can tick **Submit anonymously**.\n4. Press **Submit Rating**.\n\n## For sellers\n\nOrders for your items are on [My Sales](/marketplace/orders/sales). When you send an item, press **Mark Shipped**. Add a tracking number if you have one, then press **Confirm Shipped**.",
+            "summary": "Track what you bought, confirm when it arrives and leave a rating.",
+            "title": "Following your orders and rating a seller"
+          },
+          "reporting_a_listing": {
+            "body": "If a listing looks unsafe, illegal, misleading or breaks your community's rules, please report it.\n\n1. Open the listing.\n2. Press **Report this listing**.\n3. Under **Reason**, describe the problem.\n4. Press **Submit Report**.\n\nYou see **Report submitted. Thank you.** and the report opens.\n\n## Following your report\n\nGo to [My reports and decisions](/marketplace/reports). It lists:\n\n- Reports you have made, marked **Submitted by you**.\n- Decisions about your own listings, marked **Affects your listing**.\n\nPress **View report** to see the details. The status tells you where it has got to. For example: **Received**, **Under review**, **Action taken** or **No action**.\n\n## Appealing a decision\n\nIf you disagree with a decision, you may be able to appeal.\n\n1. Open the report.\n2. Under **Appeal this decision**, explain why in **Appeal explanation**. Use at least 20 characters.\n3. Press **Submit appeal**.\n\nA moderator reviews your appeal. The final decision appears on the same page.\n\n> If an item puts someone in immediate danger, contact your local emergency services.",
+            "summary": "Tell moderators about an item that is unsafe, illegal or breaks the rules.",
+            "title": "How do I report a listing?"
+          },
+          "selling_an_item": {
+            "body": "You list an item from the **Sell Something** page.\n\n1. Press **Sell Something** on the [Marketplace](/marketplace), or go to [Sell Something](/marketplace/sell).\n2. Add **Photos**. You can drag them in or press to choose them. The first photo is the cover.\n3. Under **Details**, enter a **Title** and **Description**.\n4. Choose a **Category** and the **Condition**.\n5. Under **Pricing**, choose the **Price Type**: **Fixed Price**, **Negotiable** or **Free**.\n6. Enter the **Price** and **Currency**, unless the item is free.\n7. Under **Location & Delivery**, enter the **Location**.\n8. Choose the **Delivery Method**.\n9. Press **Publish Listing**.\n\nYou see **Listing created successfully!**\n\n## Choosing a delivery method\n\nChoose **Pickup Only** if the buyer will collect the item. Many communities do not allow items to be posted. If yours does not, choosing a posting option stops the listing being published. You see a message explaining this.\n\n## Before your listing appears\n\nIn many communities, an administrator checks new listings first. Your listing will not appear to others until it is approved. If it is not approved, you get a notification with the reason.\n\n> Only list items you own and are allowed to sell. Describe the condition honestly, and include any faults in the photos.",
+            "summary": "Create a listing with photos, a price and how the buyer gets the item.",
+            "title": "How do I sell or give away an item?"
+          }
+        },
+        "summary": "Buy, sell and give away items with other members of your community.",
+        "title": "Marketplace"
+      },
+      "messages": {
+        "articles": {
+          "archive_delete_conversations": {
+            "body": "You can clear a conversation out of your inbox.\n\n1. Open the conversation.\n2. Press the **More options** button (three dots) at the top.\n3. Choose **Delete for me** or **Delete for everyone**.\n4. Press **Delete** to confirm.\n\n**Delete for me** moves the conversation to your **Archived** tab. The other member keeps their copy.\n\n**Delete for everyone** removes the conversation from both your inbox and theirs.\n\n## Restoring a conversation\n\n1. Open [Messages](/messages) and choose the **Archived** tab.\n2. Press **Restore** next to the conversation.\n\nIt moves back to your **Inbox**.\n\nIf the other member writes to you again, the new messages appear in your inbox as usual.",
+            "summary": "Move a conversation out of your inbox, remove it for both of you, or bring it back.",
+            "title": "Removing or restoring a conversation"
+          },
+          "blocking_members": {
+            "body": "Blocking stops a member from contacting you.\n\n## Block someone\n\n1. Open their profile.\n2. Press the **More options** button (three dots).\n3. Choose **Block User**.\n4. Press **Block User** again to confirm.\n\nA blocked member cannot see your profile, message you or interact with your content. Their profile then shows \"You have blocked this user\".\n\n## Unblock someone\n\n1. Open [Blocked Users](/settings/blocked). You can also reach it from the **Privacy** tab in your settings.\n2. Press **Unblock** next to their name and confirm.\n\nYou can also press **Unblock User** on their profile.\n\nAfter you unblock someone, they can see your profile and message you again. You are not reconnected automatically.\n\n> If someone makes you feel unsafe, tell your coordinator as well as blocking them.",
+            "summary": "Stop a member from contacting you, and unblock them later if you wish.",
+            "title": "Blocking a member"
+          },
+          "coordinator_arrangement_needed": {
+            "body": "Sometimes you cannot message a member directly. A red box appears at the top of the conversation, and you cannot send messages there.\n\n## Coordinator arrangement needed\n\nThis member's safeguarding preferences say contact must be arranged by a coordinator. It is not a judgement about you.\n\n1. Press **Request coordinator help**.\n2. A note confirms the coordinator has been told.\n3. A broker, administrator or coordinator will contact you to help arrange things.\n\n## Community confirmation needed\n\nYour community needs to confirm a safety check (sometimes called vetting) before you can contact some members. Press **Request review of my vetting** to ask a broker to look at your record. Do not send certificates or criminal-record details through messages.\n\n## Safeguarding check temporarily unavailable\n\nThe safety rules could not be checked at the moment, so messaging is paused. Wait a little and press **Check again**. If it keeps happening, ask a coordinator.",
+            "summary": "What to do when you cannot message a member directly because of safeguarding settings.",
+            "title": "Coordinator arrangement needed"
+          },
+          "coordinator_review_notice": {
+            "body": "Some conversations show this notice: \"Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.\" On a phone, it appears as **Safeguarded conversation**.\n\nIt means one or both of these may be true:\n\n- A community coordinator may read the messages to help keep members safe.\n- One of you has chosen a supporter, such as a family member or carer, who can view their messages.\n\nThe notice is worded the same way whatever the reason. This protects the privacy of anyone who has a supporter.\n\nYou can close the notice with the cross. It comes back when you open the conversation again.\n\nIf you have chosen a supporter yourself, you will also see \"Someone you chose as a supporter can view your messages.\" Press **Manage this** to change it.\n\n> Write as you would in a shared space. Never send passwords or bank details in a message.",
+            "summary": "What the safeguarding notice in a conversation means, and why it looks the same for everyone.",
+            "title": "Why does it say a coordinator may review messages?"
+          },
+          "edit_delete_messages": {
+            "body": "You can change or remove messages you have sent.\n\n## Edit a message\n\n1. Point at your message, or press and hold it on a phone, and open the message options.\n2. Choose **Edit**.\n3. Change the text and press **Save**.\n\nYou can edit a message for up to 24 hours after you send it. An edited message shows **(edited)**. Voice messages cannot be edited.\n\n## Delete a message\n\n1. Open the message options and choose **Delete**.\n2. Choose one of these:\n\n- **Delete for everyone** removes the text for both of you. It is replaced by **[Message deleted]**.\n- **Delete for me** hides it from your view only. The other member still sees it.\n\nPress **Cancel** if you change your mind.\n\n> Think before you send. The other person may read a message before you edit or delete it.",
+            "summary": "Change a message you sent, or remove it for you or for both of you.",
+            "title": "Editing and deleting your messages"
+          },
+          "message_translation": {
+            "body": "If your community uses message translation, you and the other member can each write in your own language.\n\n## Translate one message\n\nUnder a message, press **Translate to** followed by your language. The translation appears with a **Translated** label.\n\nPress **View original** to see the words that were sent. Press **Show translation** to switch back.\n\n## Translate a whole conversation\n\nPress the translate button at the top of the conversation. On a phone, open **More options** (three dots) and choose **Translate messages automatically**.\n\nA note says messages are being translated into your language. Press **Turn off** to stop.\n\nThe language used is the one you have chosen for this website.\n\n> Translations are made automatically by a computer. They can be wrong, especially for names, slang or local words. If something matters, check with the other person.",
+            "summary": "Read messages in your own language, one at a time or for a whole conversation.",
+            "title": "Translating messages"
+          },
+          "start_conversation": {
+            "body": "Messages are private conversations between you and one other member.\n\n## Start a conversation\n\n- From a profile: press **Send Message**.\n- From the Messages page: open [Messages](/messages), press **New Message**, search for the member and choose them.\n- From a listing: press **Send Message**, if your community shows it. The conversation then shows which offer or request it is about.\n\n## Write and send\n\nType in **Type a message...** and press Enter, or press the send button. To start a new line, hold Shift and press Enter. A message can be up to 10,000 characters.\n\nYour conversations are listed in the **Inbox** tab. Use **Search conversations...** to find one. Inside a conversation, the magnifier button searches its messages.\n\n> If you see **Direct Messaging Disabled**, your community has turned off private messages. Use exchange requests instead. If you see **Messaging Restricted**, a community administrator has limited your messaging. Contact your coordinator if you think this is a mistake.",
+            "summary": "Start a one-to-one conversation with another member.",
+            "title": "Sending a private message"
+          },
+          "voice_and_attachments": {
+            "body": "You can send a recorded voice message or attach a file.\n\n## Voice message\n\n1. In a conversation, press the microphone button.\n2. If your browser asks, allow it to use your microphone.\n3. Speak. The screen shows **Recording...**.\n4. Press **Stop** when you finish.\n5. Listen back if you like. Press **Send**, or **Cancel** to throw it away.\n\nIf you see **Microphone Access Required**, allow the microphone in your browser settings and try again.\n\n## Attachments\n\n1. Press the paperclip button. On a phone, you may need to press the arrow first to show it.\n2. Choose a file. You can attach pictures, PDF files, Word documents and text files.\n3. Add a message if you like, then send.\n\nTo remove a file before you send it, press the cross next to it.\n\nYou can also react to a message with an emoji.",
+            "summary": "Record a voice message or attach a picture or document.",
+            "title": "Voice messages and attachments"
+          }
+        },
+        "summary": "Write privately to other members, send voice notes and understand safety notices.",
+        "title": "Messages"
+      },
+      "notifications": {
+        "articles": {
+          "email_digests": {
+            "body": "A digest is one email that gathers several updates together, instead of sending one email for each thing.\n\nOpen [Settings](/settings) and choose the **Notifications** tab. Then use the settings below, and press **Save Preferences** when you are done.\n\n## Activity in your groups and threads\n\nFind **Activity digest frequency** and choose:\n\n- **Off**: no digest emails. This is where it starts.\n- **Instant**: an email as things happen\n- **Daily**: one email a day\n- **Monthly**: one email a month\n\nDirect messages, connection requests and confirmations about time credits are not held back for a digest.\n\n## Suggested matches\n\nIf your community uses listings, find **Match Digest Emails**. Under **Digest Frequency**, choose **Daily**, **Fortnightly**, **Monthly** or **Never**.\n\nYou can also turn on **Hot Match Alerts**, for very good matches, and **Mutual Match Alerts**, for when someone you matched with also matches with you.\n\n## A monthly summary\n\nTurn on **Monthly Digest** to get a monthly summary of what is happening in your community.",
+            "summary": "Choose how often you get summary emails about group activity and suggested matches.",
+            "title": "Getting a summary email instead"
+          },
+          "email_notification_settings": {
+            "body": "You decide which emails you get.\n\n1. Open [Settings](/settings) and choose the **Notifications** tab.\n2. Turn each switch on or off.\n3. Press **Save Preferences**.\n\n## What you can choose\n\nThe switches you see depend on what your community uses. They include:\n\n- **New Messages**: when someone sends you a message\n- **Connection Requests**\n- **Event emails**: changes, cancellations and reminders for events\n- **Listing Activity**: responses to your listings\n- **Credit Transactions**: when time credits move in or out of your wallet\n- **New Reviews**\n- **Monthly Digest**: a monthly summary of community activity\n- **Marketing Emails**: newsletters and community updates\n\nIf you have an organisation account, you may also see **Organisation Notifications**.\n\n## Emails you cannot turn off\n\nSome emails are needed to keep your account working, so there is no switch for them. For example, emails that confirm your email address or reset your password.\n\n> Want fewer emails? See **Getting a summary email instead**.",
+            "summary": "Turn email notifications on or off for messages, listings, events, reviews and more.",
+            "title": "Choosing which emails you get"
+          },
+          "notification_bell": {
+            "body": "The bell at the top of the screen shows your notifications. A number on it tells you how many you have not read yet.\n\nPress the bell to see your latest notifications. Press one to go to the page it is about. Press **View all notifications** to open the full list.\n\nOn a phone, you can also press **Menu**. The number next to **Alerts** shows your unread notifications. Press it to open them.\n\n## On the Notifications page\n\nOn the [Notifications](/notifications) page you can:\n\n- switch between **All** and **Unread**\n- press **Mark all read** to clear the unread count\n- delete a notification you no longer need. If you delete one by mistake, press **Undo** straight away.\n- press **Settings** to choose which notifications you get\n\n> While you are using the site, some notifications also appear as a small pop-up, for example when a new message arrives.",
+            "summary": "The bell shows your notifications, such as new messages and replies. A number shows how many are unread.",
+            "title": "What is the bell at the top of the screen?"
+          },
+          "push_notifications": {
+            "body": "Push notifications are alerts that pop up on your phone or computer, like a text message alert. They can arrive even when the site is not open.\n\n## Turn them on\n\n1. On the device where you want alerts, open [Settings](/settings) and choose the **Notifications** tab.\n2. Under **Push Notifications**, turn on **Enable Push Notifications**.\n3. When your browser asks, allow notifications for this site.\n\nWhen it has worked, you see **You are subscribed on this device.** Repeat this on each device you use.\n\n## If it does not work\n\n- If you see **You have blocked notifications**, your browser is set to block them for this site. Change the notification permission for this site in your browser settings, then try again.\n- If you see **Your browser does not support push notifications**, try a different browser, or add the site to your home screen. See **Can I use it on my phone?**\n\n## In the Android app\n\nThe Android app can send you notifications even when it is closed. Allow notifications when the app asks. See [Get the app](/install-app).\n\n## Turning them off\n\nTurn off **Enable Push Notifications**. You can also block notifications for the site in your browser or phone settings.",
+            "summary": "Turn on push notifications to get alerts on your device, even when the site is not open.",
+            "title": "Getting notifications on your phone or computer"
+          }
+        },
+        "summary": "See alerts under the bell, and choose which emails and phone notifications you get.",
+        "title": "Notifications"
+      },
+      "organisations": {
+        "articles": {
+          "approving_volunteers_and_hours": {
+            "body": "As an organisation owner, you approve people who apply, and the hours they log.\n\n## Approving applications\n\n1. Open your dashboard from [My Organisations](/volunteering/my-organisations).\n2. Choose the **Applications** tab.\n3. Press **Approve** or **Decline** on each application. You can also use **Approve All** or **Decline All**.\n4. When you decline, you can add a **Decision note** to explain why.\n\nThe volunteer is told your decision.\n\n## Approving hours\n\n1. Choose the **Hours Review** tab.\n2. Check each entry: who, when and how many hours.\n3. Press **Approve** or **Decline**.\n\nWhen you approve hours, the volunteer receives time credits in their wallet straight away. You do not need to pay them separately.\n\n> Credits are paid for whole hours only. For example, 2.5 approved hours pays 2 time credits. An entry under one hour pays nothing.\n\nYou cannot approve hours you logged yourself. Please review hours promptly. Volunteers see them as **Awaiting approval** until you decide.",
+            "summary": "Accept applications and approve logged hours so volunteers receive time credits.",
+            "title": "Approving volunteers and their hours"
+          },
+          "browsing_organisations": {
+            "body": "You find organisations on the **Organisations** page. Open the **Community** menu and choose **Organisations**, or go to [Organisations](/organisations).\n\n1. Browse the list, or type in **Search organisations...**.\n2. Press an organisation to open its page.\n\nOnly organisations your community has approved appear here.\n\n## On an organisation's page\n\n- A description of the organisation.\n- How many **Opportunities**, **Volunteers** and **Hours Logged** it has.\n- Its star rating and **Reviews**, if your community uses reviews.\n- **Active Opportunities**, the volunteering you can apply for now.\n\nPress **Website** to visit the organisation's website. Press **Contact** to send it an email from your own email program.\n\n## Volunteering with an organisation\n\nThere is no button to join an organisation directly. You volunteer by applying to one of its opportunities.\n\n1. Find the opportunity under **Active Opportunities**.\n2. Press **Apply**.\n3. Add a message if you like, and press **Submit Application**.\n\nFollow your application on the **My Applications** tab of the [Volunteering](/volunteering) page.",
+            "summary": "Browse the charities, groups and partners that offer volunteering in your community.",
+            "title": "How do I find an organisation?"
+          },
+          "managing_your_organisation": {
+            "body": "If you run an approved organisation, you manage it from its dashboard.\n\n1. Open [My Organisations](/volunteering/my-organisations).\n2. Press **Manage** on your organisation.\n\nYou can also press **Manage this organisation** on the organisation's own page.\n\n## The dashboard tabs\n\n- **Overview** shows your figures, such as **Pending Applications** and **Hours Pending Review**. It also has quick buttons for the most common tasks.\n- **Applications** lists people who want to volunteer. Approve or decline them here.\n- **Hours Review** lists hours your volunteers have logged. Approve or decline them here.\n- **Volunteers** shows your **Volunteer Roster** and the hours each person has given.\n- **Wallet** shows your organisation's time-credit record.\n- **Settings** lets you change the name, description, contact email and website. Press **Save Changes** when you are done.\n\n> Only the owner and administrators of an organisation can use its dashboard. If you see **Access Denied**, you do not manage this organisation.",
+            "summary": "Where organisation owners review applications, approve hours and see their volunteers.",
+            "title": "Managing your organisation's dashboard"
+          },
+          "organisation_wallet": {
+            "body": "Each organisation has a **Wallet** that records the time credits it has given to volunteers.\n\nOpen your dashboard from [My Organisations](/volunteering/my-organisations) and choose the **Wallet** tab.\n\n## Paying volunteers\n\nYou pay volunteers by approving their hours. The credits are added to their wallet automatically. There is no separate payment button.\n\nYou do not need credits in the organisation's wallet first. The balance can go below zero. A negative balance shows how many credits your organisation has given out.\n\n## Adding credits\n\nYou can move credits from your own wallet into the organisation's wallet.\n\n1. Press **Deposit Credits**.\n2. Enter the **Amount (hours)**. Use whole numbers only, up to 1,000.\n3. Add a note if you like.\n4. Press **Deposit**.\n\nThe credits leave your personal wallet. If you do not have enough, the deposit fails.\n\n## Transaction History\n\n**Transaction History** lists every deposit, volunteer payment and adjustment.\n\n> Members cannot see your organisation's wallet balance. Only the people who manage the organisation can.",
+            "summary": "See the time credits your organisation has given out, and add credits if you choose.",
+            "title": "How does an organisation's wallet work?"
+          },
+          "posting_a_volunteer_opportunity": {
+            "body": "You need an approved organisation to post an opportunity. If you do not have one yet, [register your organisation](/organisations/register) first.\n\n1. Go to [Post Opportunity](/volunteering/create). You can also press **Post Opportunity** on your dashboard.\n2. Choose your **Organisation**.\n3. Enter an **Opportunity Title** of at least 5 characters.\n4. Write a **Description** of at least 20 characters. Say what volunteers will do and anything they need.\n5. Enter the **Location**, or tick **Remote opportunity** if people can help online or by phone.\n6. List the **Skills Needed**, if any.\n7. Choose a **Start Date** and **End Date** if the opportunity has them.\n8. Press **Post Opportunity**.\n\nYou see **Opportunity posted successfully!** Your opportunity goes live straight away. Members can find it on the [Volunteering](/volunteering) page.\n\n## When people apply\n\nYou get a notification and an email each time someone applies. Review applications on the **Applications** tab of your dashboard.\n\n> If you see **No Approved Organisation**, your organisation is still waiting for approval, or you do not manage one.",
+            "summary": "Ask for volunteers by posting an opportunity for your organisation.",
+            "title": "How do I post a volunteering opportunity?"
+          },
+          "registering_an_organisation": {
+            "body": "Any member can ask to register an organisation. A community administrator then approves it.\n\n1. Go to [Register Organisation](/organisations/register), or press **Register Organisation** on the Organisations page.\n2. Enter the **Organisation Name**. It must be at least 3 characters.\n3. Write a **Description** of at least 20 characters. Say what the organisation does and what volunteers would help with.\n4. Enter a **Contact Email**.\n5. Add a website under **Website (optional)** if you have one. It must start with http:// or https://.\n6. Read the **Organisation Registration Terms**.\n7. Tick **I have read and agree to the organisation registration terms above.**\n8. Press **Register Organisation**.\n\nYou see **Organisation Registered!** You are taken to [My Organisations](/volunteering/my-organisations).\n\n## What happens next\n\nYour organisation shows under **Pending Approval** until an administrator reviews it. The administrators are told about your request.\n\n- If it is approved, it appears on the Organisations page. You can then post opportunities and approve volunteers.\n- If it is not approved, it shows under **Declined**. Contact your community administrator to find out why.\n\n> If you see **Failed to register organisation. Please try again.**, the name may already be in use. Try a slightly different name, or ask your community administrator.",
+            "summary": "Add your charity, group or business so you can post volunteering opportunities.",
+            "title": "How do I register my organisation?"
+          },
+          "reviewing_an_organisation": {
+            "body": "If your community uses reviews, you can review an organisation you have volunteered with.\n\n1. Open the organisation's page from [Organisations](/organisations).\n2. Go to **Reviews** and press **Write review**.\n3. Choose a **Rating** from 1 to 5 stars.\n4. Write a **Comment**. Say what worked well or what others should know.\n5. Press **Submit review**.\n\nYou see **Review submitted.**\n\n## Who can leave a review\n\nThe **Write review** button is shown to everyone. But you can only send a review if you have really volunteered with that organisation. This means it approved your application, or approved hours you logged. If not, you see a message and the review is not saved.\n\nYou can leave one review for each organisation.\n\n> Please keep reviews fair and about your own experience. Your community's guidelines apply to reviews too.",
+            "summary": "Share your experience of volunteering with an organisation.",
+            "title": "How do I review an organisation?"
+          }
+        },
+        "summary": "Find local organisations, volunteer with them, or register and run your own.",
+        "title": "Organisations"
+      },
+      "other_communities": {
+        "articles": {
+          "federation_browse_message": {
+            "body": "Once you take part, the [Federation](/federation) page links to everything you can explore.\n\n## Partner communities\n\nOpen [Partner Communities](/federation/partners) to see the communities your community is partnered with. Each one shows what the partnership allows, such as **Messaging** or **Transactions**. Press **Browse Members** or **Browse Listings** to see what they offer.\n\n## Members\n\nOpen [Federation Members](/federation/members). Search by name or skill, or filter by community. Press **View Profile** to see a member, or **Send Message** to write to them.\n\nOn a member's profile you can also press **Connect** to ask to connect with them. Your connections with members of other communities are listed on [Federation Connections](/federation/connections), under **Connected**, **Received** and **Sent**. Press **Accept** to accept a request.\n\n## Listings\n\n[Federation Listings](/federation/listings) shows offers and requests from partner communities. Press **Contact** to message the person.\n\n## Messages\n\nMessages with partner members are kept on [Federation Messages](/federation/messages). Press **Compose Message** to write a new one.\n\n## Events and groups\n\nYou can browse partner communities' events and groups. At the moment you cannot reply to their events or join their groups from here.\n\nYou can only message members who allow messages from other communities.",
+            "summary": "Browse partner communities, their members and listings, and get in touch.",
+            "title": "Finding and messaging members of other communities"
+          },
+          "federation_join": {
+            "body": "You choose to take part from the [Federation](/federation) page.\n\n## The guided set-up\n\nThe guided set-up lets you choose your privacy settings before anything is shared. It is the best way to start.\n\n1. Open the [guided set-up](/federation/onboarding). You can also press **Set Up Federation** when you see it on a Federation page.\n2. The set-up is called **Join the Federation**. It has four steps: **Welcome**, **Privacy**, **Communication** and **Confirm**.\n3. On **Privacy**, choose what to share. For example, **Show my profile**, **Appear in search** and **Share my skills**.\n4. On **Communication**, choose whether to allow messages and time credit transfers.\n5. On **Confirm**, press **Enable Federation**.\n\nIf you are not ready, press **Do This Later**.\n\n## The quick way\n\nThe [Federation](/federation) page also has an **Enable Federation** button. This turns everything on with standard settings: your profile is visible and searchable, and people can message you and send you time credits. Your location is not shared.\n\n> If you use the quick button, check [Federation Settings](/federation/settings) straight afterwards and turn off anything you do not want.",
+            "summary": "Choose to take part, and decide what partner communities can see about you.",
+            "title": "How do I start connecting with other communities?"
+          },
+          "federation_privacy": {
+            "body": "You control what partner communities can see about you in [Federation Settings](/federation/settings).\n\n## Profile Visibility\n\n- **Show my profile** lets partner members see your profile.\n- **Appear in search** lets them find you when they search.\n- **Share my skills** shows your skills.\n- **Share my location** shows your location. This is off unless you turn it on.\n- **Show my reviews** shows reviews other members have left you.\n\n## Communication\n\n- **Allow messaging** lets partner members send you messages.\n- **Allow transactions** lets partner members send you time credits.\n- **Email notifications** sends you emails about activity from partner communities.\n\n## Service Reach\n\nUnder **Service availability**, say whether you help **Local only**, are happy to help remotely (**Remote OK**), or **Will travel**. Set a **Travel radius** in kilometres.\n\nPress **Save Settings** when you are done.\n\n## Stopping\n\nPress **Disable Federation**, either here or on the [Federation](/federation) page. On the Federation page you are asked to confirm: press **Yes, Disable**. You stop being visible to partner communities, and all your sharing settings are turned off.\n\nYou can start again later. If you do, check your settings again, because some may be switched back on.",
+            "summary": "Change your privacy settings for partner communities, or stop taking part.",
+            "title": "Choosing what other communities see, or stopping"
+          },
+          "federation_send_credits": {
+            "body": "You can send time credits to a member of a partner community, if both of you allow it.\n\n1. Open the member's profile from [Federation Members](/federation/members).\n2. Press **Send Credits**.\n3. Enter the **Amount (hours)**. It must be a whole number from 1 to 100.\n4. Add a **Description** saying what the credits are for. This is required.\n5. Send the credits.\n\n## When you cannot send credits\n\nSending only works when all of these are true:\n\n- you have switched on **Allow transactions** in [Federation Settings](/federation/settings)\n- the other member has switched it on too\n- the partnership between your communities allows transactions\n\nIf the member does not accept transfers, you see **This member does not accept federated credit transfers.**\n\n> Only send credits for help you have agreed with the member. Check the name and amount before you send.",
+            "summary": "Pay a member of a partner community for help they gave you.",
+            "title": "Sending time credits to someone in another community"
+          },
+          "federation_what_is_it": {
+            "body": "Your community can form partnerships with other communities on the platform. This is called federation. When it is on, you can meet members of partner communities as well as your own.\n\nYour community's administrators choose which communities to partner with. They also choose what each partnership allows. For example, one partner may allow messages, and another may also allow sending time credits.\n\n## What you can do\n\nDepending on the partnership, you can:\n\n- see which communities your community is partnered with\n- find members of those communities and view their profiles\n- send them messages and connect with them\n- browse their listings, events and groups\n- send time credits to their members\n\n## Taking part is your choice\n\nYou are not shown to other communities unless you choose to take part. You decide what they can see about you. See the article on joining in.\n\n## If you see \"Federation Not Available\"\n\nYour community has not switched this on. The page says **Contact your community admin to request federation access.** Ask your community's administrators if you would like it.",
+            "summary": "Your community can partner with other communities, so members can meet and help each other.",
+            "title": "What does connecting with other communities mean?"
+          }
+        },
+        "summary": "Meet members of partner communities, message them and exchange time credits.",
+        "title": "Connecting with other communities"
+      },
+      "podcasts": {
+        "articles": {
+          "creating_a_podcast": {
+            "body": "You make shows and episodes in the **Podcast Studio**. Go to [Podcast Studio](/podcasts/studio), or press **Create show** on the Podcasts page.\n\nIn most communities any member can create a show. If you are not allowed, the studio tells you.\n\n## Creating a show\n\n1. Under **Create show**, enter a **Show title**.\n2. Choose a **Category** and add **Show artwork** if you have it.\n3. Choose the **Visibility**. **Public** means anyone can listen. Some communities also offer **Members** and **Private**.\n4. Add a **Summary** and **Description**.\n5. Press **Create show**.\n\n## Adding an episode\n\n1. Under **Add episode**, choose the **Show**.\n2. Enter an **Episode title**.\n3. Upload your recording under **Hosted audio file**, or paste a web address in **Audio URL**.\n4. Add a **Summary**, and a **Transcript** if you can. A transcript helps people who cannot hear the audio.\n5. To release it later, use **Schedule publication**.\n6. Press **Add episode**.\n\n> Only upload audio you have the right to share, and get permission from anyone you record.\n\n## Managing your shows\n\nYour shows appear under **My shows**. Here you can edit, publish, archive or delete shows and episodes. In some communities a moderator checks new shows and episodes first. These show **Pending review** until approved.\n\n**Listener stats** shows how many people listened to your episodes.",
+            "summary": "Create a show and add episodes in the Podcast Studio.",
+            "title": "How do I start my own podcast show?"
+          },
+          "following_and_reporting_podcasts": {
+            "body": "You can follow a show to hear about new episodes.\n\n## Following a show\n\n1. Open the show's page.\n2. Press **Follow show**.\n3. You see **Show followed.**\n\nWhen a new episode is published, you get a notification. To stop, press **Unfollow show**.\n\nSome public shows also have an **RSS feed** button. You can add this address to a podcast app on your phone.\n\n## Reacting to an episode\n\nIf your community allows it, an episode page has a **React** button. Press it to show you liked the episode. Press it again to remove your reaction.\n\n## Reporting an episode\n\nIf an episode is harmful, misleading or breaks someone's rights, please report it.\n\n1. Open the episode page.\n2. Press **Report**.\n3. Choose a **Reason**: **Safety or harm**, **Spam or misleading content**, **Copyright or rights concern** or **Other**.\n4. Add **Details for moderators** to explain the problem.\n5. Press **Send report**.\n\nYou see **Report sent to moderators.** The community's moderators then review the episode.",
+            "summary": "Get told about new episodes, react to episodes and report a problem.",
+            "title": "Following shows and reporting episodes"
+          },
+          "listening_to_podcasts": {
+            "body": "You find podcasts on the **Podcasts** page. Open it from the **Community** menu, or go to [Podcasts](/podcasts).\n\n1. Browse the shows, or type in **Search shows**.\n2. Press a show to see its **Episodes**.\n3. Press **Listen** on an episode.\n4. Press **Play**.\n\n## Using the player\n\n- **Back 15s** and **Forward 30s** skip through the episode.\n- The speed buttons play faster, up to 2x.\n- If the episode has **Chapters**, press a chapter to jump to it.\n- Some episodes have a **Transcript**. Press **Download transcript** to save it as a text file.\n\nOn a computer you can use the keyboard. Press Space to play or pause. Use the left and right arrow keys to skip, and the up and down arrow keys to change the volume.\n\n## Listening while you browse\n\nOnce an episode is playing, a **Now playing** bar stays on screen as you move around the site. Press **Close player** to stop it.\n\n## Carrying on later\n\nIf you stop part way, the episode page offers **Resume from** a time, or **Start over**. This is remembered on the device you used. It does not carry over to another phone or computer.",
+            "summary": "Find a show, play an episode and keep listening while you browse.",
+            "title": "How do I listen to a podcast?"
+          }
+        },
+        "summary": "Listen to shows and audio stories made by members, or make your own.",
+        "title": "Podcasts"
+      },
+      "polls_ideas": {
+        "articles": {
+          "ideation_challenges_about": {
+            "body": "An ideation challenge is a question your community team asks everyone. For example: \"How can we welcome new members?\" Members send in ideas and vote for the ones they like.\n\nOpen [Ideas](/ideation) to see the current challenges. Each challenge is created by your community's administrators.\n\n## The stages of a challenge\n\nA challenge moves through these stages:\n\n- **Open** — you can send in ideas and vote\n- **Voting** — you can vote, but no new ideas are accepted\n- **Evaluating** — the team is reviewing the ideas\n- **Closed** — the challenge has finished\n\nUse the tabs at the top to show challenges at each stage.\n\n## What a challenge shows\n\nA challenge card can show **Submissions due** and **Voting ends** dates, the most ideas one person can send (**Max 3 ideas per person**, for example), and a **Prize** if there is one.\n\n## After a challenge\n\nThe team marks the best ideas as **Shortlisted** or **Winner**. The challenge page can then show **Impact Tracking**, with the **Winning Idea** and whether it is **Not Started**, **In Progress** or **Implemented**.\n\nPress **Impact Dashboard** to see what has come of past challenges. Press **Campaigns** to see challenges grouped by theme.",
+            "summary": "Challenges ask the community for ideas on a shared problem, then vote for the best ones.",
+            "title": "What are ideation challenges?"
+          },
+          "ideation_submit_vote": {
+            "body": "You can send in ideas while a challenge is **Open**.\n\n## Send in an idea\n\n1. Open the challenge from [Ideas](/ideation).\n2. Press **Submit Idea**.\n3. Give your idea a **Title** and a **Description**.\n4. To add a picture, video, document or web link, press **Add Attachment**, choose the type, and paste its web address.\n5. Press **Submit Idea**.\n\nYour ideas are counted, for example **Your ideas: 1/3**. When you reach the limit, the button disappears.\n\n## Vote for ideas\n\nPress **Vote** on any idea you support. Press **Unvote** to take your vote back. You can vote while a challenge is **Open** or in **Voting**. You cannot vote for your own idea.\n\nSort ideas by **Top Voted** or **Newest**.\n\n## Comment on an idea\n\n1. Open the idea.\n2. Type in the comment box.\n3. Press **Post Comment**.\n\nYou can delete your own comments with **Delete**.\n\n## Removing your idea\n\nOpen your idea and press **Delete Idea**. This cannot be undone. You cannot edit an idea after sending it, so read it through first.\n\nIf your idea is **Shortlisted** or a **Winner**, you may see **Create Team**. This starts a project team to put the idea into practice.",
+            "summary": "Share your idea for a challenge, vote for other ideas and join the discussion.",
+            "title": "Sending in an idea and voting"
+          },
+          "polls_create": {
+            "body": "Any member can create a poll.\n\n1. Open [Polls](/polls) and press **Create a poll**. You can also press the **+** button at the top of the page and choose **New Poll**.\n2. Type your **Question**.\n3. Add a **Description (optional)** if people need more background.\n4. Under **Options**, fill in at least two answers. Press **Add Option** to add more, up to six.\n5. Choose a **Poll Type**: **Standard (pick one)** or **Ranked Choice (order preferences)**.\n6. Add a **Category (optional)**, such as \"Events\".\n7. Switch on **Anonymous Voting** if you want to hide who voted.\n8. Set an **End date (optional)**. Leave it blank for no deadline.\n9. Press **Create Poll**.\n\n## After you create it\n\nYou can see the results for each option while the poll is open. Other people see them when it closes. If the poll is not anonymous, you are told when someone votes.\n\nAs the creator, you can:\n\n- press **Export results as CSV** to download the results as a spreadsheet file\n- press **Delete Poll** to remove it. This cannot be undone.\n\nYou cannot edit a poll after you create it. Check your question and options before you press **Create Poll**.",
+            "summary": "Ask your community a question and give them options to choose from.",
+            "title": "How do I create a poll?"
+          },
+          "polls_voting": {
+            "body": "You find your community's polls on the [Polls](/polls) page.\n\n## Find a poll\n\nUse the tabs at the top:\n\n- **Open** shows polls you can still vote in\n- **Closed** shows polls that have finished\n- **My Polls** shows polls you created\n\nUse the category list to narrow the polls by subject, or choose **All Categories**. Each open poll shows how much time is left to vote.\n\n## Vote in a normal poll\n\nPress the option you want. Your vote is saved straight away.\n\n> You can only vote once in each poll, and you cannot change your vote. Take a moment before you choose.\n\n## Vote in a ranked poll\n\nA poll marked **Ranked** asks you to put the options in order.\n\n1. Press **Rank Your Preferences**.\n2. Use the up and down arrows to put your favourite at the top.\n3. Press **Submit Rankings**.\n\n## Results\n\nThe number of votes is always shown. The result for each option is hidden until the poll closes, so early votes do not sway anyone. Open the **Closed** tab to see results.\n\nA poll marked **Anonymous** does not show who voted. You can also like, comment on and share polls.",
+            "summary": "Find open polls, cast your vote and see the results when a poll closes.",
+            "title": "How do I vote in a poll?"
+          }
+        },
+        "summary": "Vote in community polls, ask your own questions and share ideas for challenges.",
+        "title": "Polls and ideas"
+      },
+      "premium_offers": {
+        "articles": {
+          "donating_to_your_community": {
+            "body": "If your community accepts donations, you can give money by card to support it. Open the **Community** menu and choose **Donate**, or go to [Donate](/premium).\n\n## Giving once\n\n1. Press **Make a one-off donation**.\n2. Enter the **Amount** and choose the **Currency** and **Fund**.\n3. Add a message, or choose **Donate anonymously**, if you like.\n4. Press **Continue to Payment**, then enter your card details and pay.\n\nWhen it works, you see **Thank You!** and can view your receipt.\n\n## Giving regularly\n\nYour community may offer support levels for regular giving.\n\n1. Choose **Monthly** or **Yearly** at the top of the page.\n2. Pick a support level and press **Donate regularly**.\n3. You are taken to a secure payment page run by Stripe, a payment company. Enter your card details there.\n4. When you return, you see **You are all set!**\n\nIf you see **Still processing…**, your payment is going through. Press **Check status** after a moment.\n\n> Donations are gifts to your community. Giving regularly does not unlock extra features on the platform, and it does not change how other members see you or match with you.\n\nMoney donations are separate from time credits. You earn time credits by giving your time.",
+            "summary": "Give a one-off gift or set up a regular donation by card.",
+            "title": "How do I donate to my community?"
+          },
+          "managing_regular_donation": {
+            "body": "You manage a regular donation on the **My Support** page. Go to [My Support](/premium/manage).\n\nThe page shows your support level, whether you pay **Billed monthly** or **Billed yearly**, and the **Next billing** date.\n\n## Updating your card or payment details\n\nPress **Manage in Stripe**. This opens Stripe's billing page, where you can update your card.\n\n## Cancelling\n\n1. Press **Cancel regular donation**.\n2. Confirm that you want to cancel.\n\nYou see **Regular donation will end at the period end**. You are not charged again. Your donation stays active until the end of the period you have already paid for.\n\n## If a payment fails\n\nThe page shows a message asking you to update your card by a date. Press **Manage in Stripe** to update it.\n\n## Changing your support level\n\nBefore choosing a new level, cancel your current regular donation. This makes sure you are not paying for two at once. Then press **Change support level** and choose the new level.\n\nIf you see **No active regular donation**, you are not giving regularly at the moment. Press **View support levels** to start.",
+            "summary": "See your regular donation, update your card or stop giving.",
+            "title": "Changing or cancelling a regular donation"
+          },
+          "partner_venue_pass": {
+            "body": "Partner venues are local places, such as cafés, shops and community spaces, that welcome members of your community.\n\n## Finding venues\n\nOpen the **Community** menu and choose **Partner venues**, or go to [Partner venues](/venues). Each venue shows what it offers members, its address and a link to its website.\n\n## Your membership pass\n\n1. Press **My pass** on the venues page, or go to [My membership pass](/venues/pass). You can also press **My venue pass** in your wallet.\n2. A QR code appears on screen.\n3. When you visit a partner venue, show this code to the staff.\n4. The staff scan it and confirm your visit.\n\nYour visits are listed under **Recent visits**. A visit can be recorded once per venue per day.\n\n> The platform only records your visit. It does not take any payment or apply any discount. Any offer is given by the venue itself.\n\n## Keeping your pass safe\n\nIf you think someone has copied your code, press **Replace my code**. Your old code then stops working.\n\n## If you are venue staff\n\nIf your community has added you as staff at a venue, scan a member's pass with your phone camera. Sign in if asked, then press **Record visit**.",
+            "summary": "Find local venues that welcome members and show your pass when you visit.",
+            "title": "Using your membership pass at partner venues"
+          }
+        },
+        "summary": "Support your community with a donation, and use your membership pass at local venues.",
+        "title": "Donations and partner venues"
+      },
+      "privacy_safety": {
+        "articles": {
+          "adults_only": {
+            "body": "No. The platform is for adults aged 18 and over.\n\nWhen you create an account, you confirm that you are 18 or older.\n\nIf an account has a date of birth showing the person is under 18, that account cannot be used. Signing in shows a message that explains why.\n\nYou do not have to give your date of birth to join. You only need it if you choose to verify your identity. If you do enter a date of birth, it must show that you are 18 or over.\n\nIf you think an account has been refused by mistake, [contact the community](/contact).\n\n> If you are worried that someone under 18 is using the platform, tell your community.",
+            "summary": "No. The platform is for adults aged 18 and over.",
+            "title": "Can people under 18 join?"
+          },
+          "blocking_members": {
+            "body": "If a member is bothering you, you can block them.\n\n1. Open the member's profile.\n2. Press the **More options** button (three dots).\n3. Press **Block User**.\n4. Read the message, then press **Block User** again to confirm.\n\nThe three-dot menu on a post in the feed cannot block anyone. It lets you mute the person instead, which only hides their posts from your feed. Muting is not the same as blocking.\n\n## What blocking does\n\n- They cannot see your profile.\n- They cannot send you messages.\n- They cannot interact with your content.\n- Any connection between you is removed.\n\n## Unblocking someone\n\n1. Open [Settings](/settings), choose the **Privacy** tab and press **Blocked Users**. Or go straight to [Blocked Users](/settings/blocked).\n2. Press **Unblock** next to the person.\n3. Confirm that you want to unblock them.\n\nThey can then see your profile and message you again. You are not reconnected automatically.\n\n> Blocking protects you, but it does not tell your community about a problem. If someone has behaved badly or made you feel unsafe, also tell a coordinator.",
+            "summary": "Blocking stops a member from seeing your profile, messaging you or interacting with your content.",
+            "title": "How do I block someone?"
+          },
+          "contact_details_private": {
+            "body": "No. Other members cannot see your email address or your phone number. Only the staff who run your community, such as administrators and coordinators (also called brokers), can see them. This lets them contact you if they need to.\n\n## Talk through private messages\n\nYou can talk to other members in [Messages](/messages), the private messaging built into the site. You do not need to share a phone number, an email address, WhatsApp or a social media account to arrange an exchange.\n\nKeeping your conversations in **Messages** helps you:\n\n- keep your contact details private\n- keep a record of what you agreed\n- get help from your community if something goes wrong\n\n> Be careful if someone you have not met asks you to move to a phone call, text messages or another app straight away. It is fine to say no and stay in **Messages**.\n\n## If you decide to share your details\n\nSome members choose to swap phone numbers once they know and trust each other. That is up to you. Only share what you are comfortable with. Never share passwords, bank details or identity documents.",
+            "summary": "No. Other members never see your phone number or email address. Use private messages to arrange exchanges.",
+            "title": "Do other members see my phone number or email?"
+          },
+          "coordinator_message_review": {
+            "body": "Your messages are private between you and the other member. In some situations, a coordinator may review a conversation to keep people safe.\n\nWhen this can happen, you see a notice in the conversation. It says that messages may be reviewed by a coordinator for safeguarding, or seen by someone a member trusts to support them.\n\nChoosing your own safeguarding preferences does not, on its own, let coordinators read your messages.\n\n## When you cannot message someone directly\n\nSometimes you see a notice instead of the message box. This is usually because of the other member's safeguarding preferences.\n\n- **Coordinator arrangement needed**: the member needs a coordinator to arrange contact. Press **Request coordinator help**, and a coordinator will be in touch.\n- **Community confirmation needed**: the member only accepts contact from members your community has confirmed. Press **Request review of my vetting** to ask your community to review this. You can also do this in [Settings](/settings), on the **Safeguarding & support** tab, with **Request broker review**.\n- **Safeguarding check temporarily unavailable**: press **Check again**. If it keeps happening, ask a coordinator for help.\n\n> Do not upload or send any police check or criminal record document through the platform. Your community arranges any checks outside the platform.",
+            "summary": "Some conversations may be reviewed by a coordinator for safeguarding. You see a notice when this can happen.",
+            "title": "Can a coordinator read my messages?"
+          },
+          "muting_members": {
+            "body": "Muting a member stops their posts appearing in your community feed. It is a quiet way to see less of someone. It does not protect you from them.\n\n## How to mute someone\n\n1. Find one of their posts in the [feed](/feed).\n2. Press the three-dot menu at the top right of the post.\n3. Choose **Mute** followed by their name.\n\nYou see **User muted**, and their posts disappear from your feed. If your community uses groups, you can do the same from a post in a group's feed.\n\n## What muting does\n\n- Their posts no longer appear in your feed.\n- Their listings are left out of the suggestions picked for you.\n- They are not told that you muted them.\n\n## What muting does not do\n\n- They can still send you messages.\n- They can still see your profile and your posts.\n- You may still get notifications about things they do, such as commenting on your post.\n- Their listings still appear when you browse or search listings.\n\n> At the moment you cannot undo a mute from your account. Use it with care.\n\n## If you need more than muting\n\nIf you do not want someone to contact you at all, block them instead. Blocking stops them messaging you and seeing your profile. See **How do I block someone?** in this section.\n\nIf someone has behaved badly or made you feel unsafe, tell a coordinator as well.",
+            "summary": "Muting hides someone's posts from your feed. It is not the same as blocking and does not stop them contacting you.",
+            "title": "Muting a member: what it does and does not do"
+          },
+          "reporting_content": {
+            "body": "If you see something that breaks the rules, looks like a scam or worries you, report it.\n\n## Report a listing\n\n1. Open the listing.\n2. Press **Report listing**.\n3. Choose a reason, for example **Safety concern** or **Spam or scam**.\n4. If you want to, add more in **Additional details**.\n5. Press **Submit Report**.\n\n## Report a post in the feed\n\n1. Press the three-dot menu on the post.\n2. Press **Report Post**.\n3. Describe the problem in **Reason**.\n4. Press **Submit Report**.\n\nReports go to your community's moderators, who review them.\n\n## Worried about a person?\n\nIf a member's behaviour worries you, or you feel unsafe, [contact your community](/contact) and explain what happened. You can also block the member.\n\n> If anyone is in immediate danger, contact your local emergency services first.",
+            "summary": "Press Report listing on a listing, or Report Post on a feed post. Your community reviews reports.",
+            "title": "How do I report a listing or a post?"
+          },
+          "safeguarding_preferences": {
+            "body": "Safeguarding preferences let you ask for extra protection when you use the platform. They are for anyone who would like more support, for example if you consider yourself a vulnerable adult.\n\nYou can choose them during your first-time setup, if your community uses this step. Your community writes the questions.\n\n## What they can switch on\n\nDepending on your answers, one or more of these protections may apply. They are shown as labels next to each preference:\n\n- **Broker review**: a coordinator (also called a broker) checks and approves exchanges and matches involving you before they go ahead. This does not let them read your messages. If your community uses group exchanges, you cannot be added to one while this applies.\n- **Match approval**: a coordinator checks each match suggested for you before you or the other member are told about it.\n- **Vetted contacts only**: only members your community has confirmed through its own checks can find you and contact you.\n\nSome answers may mean that other members contact you through a coordinator, instead of messaging you directly. A coordinator may also get in touch to talk about how they can help.\n\n## Who can see them\n\nOnly your community's coordinators and administrators can see your safeguarding preferences. Other members cannot, and they never appear on your profile.\n\n## Removing a preference\n\n1. Open [Settings](/settings) and choose the **Safeguarding & support** tab.\n2. Find the preference and press **Revoke**.\n3. Press **Yes, revoke**.\n\nYour coordinators are told about the change.\n\n> Would you like extra support but did not choose it during setup? Contact your community coordinator.",
+            "summary": "Safeguarding preferences let you tell your community coordinators what extra support you need.",
+            "title": "What are safeguarding preferences?"
+          },
+          "staying_safe": {
+            "body": "Most exchanges go smoothly. These habits help keep it that way.\n\n## Before you meet\n\n- Read the member's profile, and their reviews if they have any.\n- Keep your conversation in **Messages**, so there is a record of what you agreed.\n- Agree clearly what will happen, when, where and for how long.\n- For a first meeting, choose a public place if you can, or make sure someone else is nearby.\n- Tell a friend or relative where you are going and when you expect to be back.\n\n## During the exchange\n\n- Trust your instincts. If something feels wrong, you can stop and leave.\n- You do not have to let anyone into your home if you are not comfortable.\n- Do not hand over money, bank cards, passwords or identity documents.\n\n## Afterwards\n\n- If something went wrong or worried you, tell a coordinator. [Contact your community](/contact).\n- If you feel unsafe, block the member.\n\n> If anyone is in immediate danger, contact your local emergency services first.\n\nIf an activity involves a vulnerable adult, ask your coordinator which rules apply.",
+            "summary": "Simple habits that help exchanges go well, especially the first time you meet someone.",
+            "title": "Staying safe when you meet someone"
+          },
+          "who_can_see_profile": {
+            "body": "You choose who can see your profile in your privacy settings.\n\n1. Open [Settings](/settings) and choose the **Privacy** tab.\n2. Under **Profile Visibility**, open **Who can see your profile**.\n3. Choose one of the options below.\n4. Press **Save Privacy Settings**.\n\nThe options are:\n\n- **Public - Anyone can view**\n- **Members Only - Community members**: only people who are signed in\n- **Connections Only - Your connections**: only members you are connected with\n\n## Search Engine Indexing\n\nThe **Search Engine Indexing** switch controls whether search engines, such as Google, may list your profile. Turning it off also takes you out of the member directory, member search and @mentions inside your community.\n\n## Partner communities\n\nIf your community is linked with partner communities, press **Federation Settings** on the same tab. There you can choose what members of those communities can see.\n\nYour community's administrators can still see your account details, so they can support you.",
+            "summary": "Choose whether your profile can be seen by anyone, by community members only, or by your connections only.",
+            "title": "Who can see my profile?"
+          }
+        },
+        "summary": "Keep your details private, choose who sees your profile, block or report problems, and stay safe.",
+        "title": "Privacy and safety"
+      },
+      "recognition": {
+        "articles": {
+          "recognition_badges": {
+            "body": "Badges mark the things you have done, such as your first exchange or a number of volunteer hours.\n\n## See your badges\n\n1. Open [Achievements](/achievements).\n2. Choose the **Badges** tab.\n\nBadges you have earned show the date you earned them. Badges you have not earned yet show **Locked**. Press any badge to see what it is for and how rare it is.\n\nUse the filter to show one type of badge, such as **Streaks**.\n\n## Choose badges for the members directory\n\n1. On the **Badges** tab, press **Manage Showcase**.\n2. Choose up to 5 badges.\n3. Press **Save Showcase**.\n\nYour chosen badges show a **Showcased** label. Other members see them next to your name in the members directory, if your community has one. Your choice does not change the badges shown on your profile page.\n\n## Journeys\n\nThe **Journeys** tab groups badges into sets. It shows how many badges in each set you have collected. Finishing a set earns you extra XP.\n\n## Engagement\n\nThe **Engagement** tab shows a year at a glance. Each month you did something useful, such as an exchange, a listing, a review or volunteer hours, is marked as active.",
+            "summary": "Collect badges for what you do, and choose up to five to show in the members directory.",
+            "title": "Earning and showing off badges"
+          },
+          "recognition_challenges_shop": {
+            "body": "Challenges are short targets set by your community, such as going to a number of events in a month.\n\n## Taking part in a challenge\n\n1. Open [Achievements](/achievements).\n2. Choose the **Challenges** tab.\n\nCurrent challenges are listed under **Active Challenges**. Each one shows your progress and when it ends. You do not need to sign up. Your progress is counted as you take part.\n\nWhen you finish a challenge, you are told. Press the **Claim** button, which shows the XP amount, to collect your reward. Some challenges also give a badge. Finished challenges move to **Completed**.\n\nIf you see **No active challenges**, there are none running right now.\n\n## The XP Shop\n\nThe **XP Shop** tab lists rewards you can get with your XP. Your community's administrators decide what is on offer.\n\n1. Check **Your balance**.\n2. Press **Purchase** on an item.\n\nItems you already have show **Owned**. If you need more XP, you are told how much.\n\nIf the shop is empty, your community has not added any rewards yet.",
+            "summary": "Complete challenges to win extra XP, and spend XP on rewards.",
+            "title": "Challenges and the XP Shop"
+          },
+          "recognition_leaderboard": {
+            "body": "The [leaderboard](/leaderboard) page celebrates what your community does together. It has four tabs:\n\n- **Most Active** ranks members\n- **Community Impact** shows what the whole community has achieved\n- **My Journey** shows your own progress over time\n- **Spotlight** highlights members\n\n## Using the rankings\n\nOn **Most Active**, choose what to rank by:\n\n- **XP**\n- **Volunteer Hours**\n- **Credits Earned**\n- **NexusScore**\n\nThen choose a period: **All Time**, **This Season**, **This Month** or **This Week**.\n\nYour own position is shown, for example **Your rank: #12 of 150 members**.\n\n## Seasons\n\nSome communities run seasons. A season is a set period of time with its own rewards. The season card shows how many days are left and your progress.\n\n> There is currently no setting to remove yourself from the leaderboard.",
+            "summary": "See the most active members, your community's impact and your own journey.",
+            "title": "The leaderboard and community views"
+          },
+          "recognition_nexus_score": {
+            "body": "Your NexusScore is a score out of 1,000. It sums up how you take part in your community. Open [NexusScore](/nexus-score) to see yours.\n\n## What makes up the score\n\nThe score has six parts:\n\n- **Community Engagement**, up to 250 points: giving and receiving time credits, your connections and how often you are active\n- **Contribution Quality**, up to 200 points: your ratings and reviews\n- **Volunteer Hours**, up to 200 points\n- **Platform Activity**, up to 150 points: your listings, events, groups and how often you sign in\n- **Badges & Achievements**, up to 100 points\n- **Social Impact**, up to 100 points: your posts and the likes they receive\n\n**Score Breakdown** shows how many points you have in each part. **How to improve** suggests what to do next.\n\n## Tiers\n\nAs your score grows, you move through tiers, from **Novice** up to **Legendary**. The page shows your tier and how many points you need for the next one.\n\nPress **Refresh** to update your score.",
+            "summary": "A score out of 1,000 that reflects how you take part in your community.",
+            "title": "What is my NexusScore?"
+          },
+          "recognition_xp_levels": {
+            "body": "XP means experience points. You earn them for taking part in your community. As your XP grows, you move up levels. There are 25 levels.\n\nXP is a thank-you for being active. It is separate from your time credits and is never used to pay for exchanges.\n\n## How you earn XP\n\nSome examples of what earns XP:\n\n- sending time credits to someone: 10 XP\n- creating a listing: 15 XP\n- leaving a review: 10 XP\n- joining a group: 10 XP\n- saying you are going to an event: 15 XP\n\nYou also earn XP from badges, challenges and the daily reward.\n\n## See your XP and level\n\nOpen [Achievements](/achievements). The top of the page shows your **Level**, your total XP, and how much more you need for the next level. You are told each time you reach a new level.\n\n## Daily reward\n\nThe **Daily Reward** card on the same page gives you a little XP each day.\n\n1. Press **Claim Reward**.\n2. Come back the next day to claim again.\n\nClaiming on days in a row builds a streak, such as **5 day streak**. Longer streaks give bonus XP. If you miss a day, the streak starts again.",
+            "summary": "You earn experience points for taking part, and they raise your level.",
+            "title": "What are XP and levels?"
+          },
+          "venue_visit_xp": {
+            "body": "Yes. Each time a partner venue records your visit, you earn 10 XP.\n\n## How a visit is recorded\n\n1. Open [My membership pass](/venues/pass).\n2. Show the QR code to the staff at the venue.\n3. The staff scan it and record your visit.\n\nYou do not need to scan anything yourself.\n\n## Limits\n\n- One visit per venue per day earns XP. Showing your pass again at the same venue that day earns nothing more.\n- Visits to different venues each count.\n\nThe XP is added quietly. No message tells you the amount. Check your total on [Achievements](/achievements).\n\nVisits can also count towards challenges your community runs. See **Challenges and the XP Shop** in this section.\n\n> A visit only records that you were there. It does not move any time credits or money.",
+            "summary": "Each recorded visit to a partner venue earns 10 XP, once per venue each day.",
+            "title": "Do partner venue visits earn XP?"
+          }
+        },
+        "summary": "Earn XP and badges for taking part, take on challenges and see the leaderboard.",
+        "title": "Badges, levels and recognition"
+      },
+      "reviews": {
+        "articles": {
+          "leave_review": {
+            "body": "A review is a star rating, with an optional comment, that appears on a member's profile.\n\n## After an exchange\n\n1. Open [Reviews](/reviews).\n2. Choose the **Pending Reviews** tab. It lists people you have exchanged hours with and not yet reviewed.\n3. Press **Write Review**.\n4. Choose a **Rating** from one to five stars.\n5. Add a **Comment (Optional)**, up to 2,000 characters.\n6. Press **Submit Review**.\n\n## From a profile\n\n1. Open the member's profile.\n2. Press **More options** (three dots) and choose **Write Review**.\n3. Choose a rating, add a comment if you like, and press **Submit Review**.\n\nA review linked to an exchange is marked **Transaction Review**. A review written from a profile is a **General Review**.\n\nYou can review each exchange once. You can write a general review of the same member once a day.\n\n> Be fair and specific. Reviews help other members decide who to work with.",
+            "summary": "Rate a member after you have exchanged hours, or write a review from their profile.",
+            "title": "How do I leave a review?"
+          },
+          "manage_reviews": {
+            "body": "Open [Reviews](/reviews) to see three tabs:\n\n- **Reviews Received**: what other members have said about you, with your **Average Rating** and **Total Reviews**.\n- **Reviews Given**: the reviews you have written.\n- **Pending Reviews**: exchanges you can still review.\n\n## Deleting a review you wrote\n\n1. Open the **Reviews Given** tab.\n2. Press the delete button on the review.\n3. Confirm.\n\nYou cannot delete reviews that other members wrote about you. If a review about you seems unfair or unsafe, contact your coordinator.\n\n## Other members' reviews\n\nA member's reviews appear on their profile, in the **Reviews** tab. Their listings also show their rating and how many reviews they have.",
+            "summary": "See reviews you have received and written, and delete one you wrote.",
+            "title": "Reading and managing your reviews"
+          }
+        },
+        "summary": "Leave feedback after an exchange and see what others say about you.",
+        "title": "Reviews"
+      },
+      "security_signin": {
+        "articles": {
+          "changing_email": {
+            "body": "At the moment you cannot change the email address on your account yourself. This protects your account, because changing the email address is a common way for someone else to take over an account.\n\nYour community's administrators can change it for you. [Contact your community](/contact) and tell them:\n\n- your name\n- the email address you use now\n- the new email address you want to use\n\nThey may ask you some questions to check that the request really comes from you.\n\n## If you have lost access to your old email\n\nYou can still sign in with your password. But you cannot use **Forgot password?** until your email address is updated, so contact your community as soon as you can.\n\n> Never share your password, even with someone who says they are from your community. Coordinators and administrators do not need your password to help you.",
+            "summary": "You cannot change your email address yourself. Your community's administrators can change it for you.",
+            "title": "Can I change my email address?"
+          },
+          "changing_password": {
+            "body": "1. Open [Settings](/settings) and choose the **Security** tab.\n2. Press **Change Password**.\n3. Enter your **Current Password**.\n4. Enter your **New Password**, then type it again in **Confirm New Password**.\n5. Press **Change Password**.\n\n## Good to know\n\n- Your new password must be at least 12 characters long.\n- You cannot reuse one of your recent passwords.\n- After the change, your account is signed out on your other devices, such as another phone or computer. You may need to sign in again on this device too.\n- You get a notification to tell you that your password was changed. If you did not change it, reset your password straight away and contact your community.\n\n> A phrase of three or four ordinary words is easier to remember, and harder to guess, than one word with symbols.",
+            "summary": "Change your password on the Security tab in Settings. You need your current password.",
+            "title": "How do I change my password?"
+          },
+          "forgotten_password": {
+            "body": "You can choose a new password using a link we email to you.\n\n1. On the [sign-in page](/login), press **Forgot password?**. Or open [Reset your password](/password/forgot).\n2. Enter your **Email address**.\n3. Press **Send reset instructions**.\n4. Open the email and press the link.\n5. Enter your **New Password**, then type it again to confirm it.\n6. Press **Reset Password**.\n7. Sign in with your new password.\n\n## Good to know\n\n- The link works for one hour. If it has expired, press **Request new link**.\n- For your security, the page always says an email has been sent, even if that address is not registered. If nothing arrives, check your junk or spam folder, and check you used the email address you signed up with.\n- Your new password must be at least 12 characters long. It cannot be one of your recent passwords.\n- After a reset, you are signed out on all your devices. Sign in again with your new password.\n\n> If you ask for several links in a short time, you may need to wait up to an hour before you can ask again.",
+            "summary": "Ask for a reset link by email, then choose a new password. The link works for one hour.",
+            "title": "I forgot my password"
+          },
+          "passkeys": {
+            "body": "A passkey lets you sign in with your fingerprint, your face or your device's screen lock, instead of typing a password. A passkey only works on your community's real website, which helps protect you from fake sites.\n\n## Set up a passkey\n\n1. Sign in with your password as usual.\n2. Open [Settings](/settings) and choose the **Security** tab.\n3. Find **Passkey Login** and press **Create a passkey**.\n4. Confirm it is you, with your password or a code, then press **Confirm**.\n5. Follow the steps your device shows, for example touch the fingerprint reader or use Windows Hello.\n\nEach device needs its own passkey, unless your passkey service copies them for you. For example, iCloud Keychain copies passkeys between Apple devices. To add another device, open this page on that device and press **Add another passkey**.\n\n## Sign in with a passkey\n\nOn the sign-in page, press **Sign in with a passkey**, then follow the steps on your device.\n\n## Manage your passkeys\n\nOn the **Security** tab you can **Rename passkey**, **Remove passkey** or **Remove All Passkeys**. After a change, you may need to sign in again on your other devices.\n\n> If your passkey does not appear when you sign in, sign in with your password instead. Then remove the old passkey and create a new one.",
+            "summary": "Use your fingerprint, your face or your device screen lock to sign in, instead of typing a password.",
+            "title": "Signing in with a passkey"
+          },
+          "signing_in": {
+            "body": "1. Open [Sign in](/login).\n2. If you are asked, choose your **Community**.\n3. Enter your **Email** and **Password**. To check what you typed, press the eye button in the password box.\n4. Press **Sign In**.\n\n## Other ways to sign in\n\n- **Passkey**: if your community offers passkeys and you have set one up, press **Sign in with a passkey**.\n- Google or Facebook: if your community allows it, you see **Continue with Google** or **Continue with Facebook**. You can connect or disconnect these accounts in [Settings](/settings), on the **Connected** tab. You cannot disconnect your only way of signing in.\n- An organisation account: some communities let you sign in with an account from a partner organisation. You see a button with that organisation's name.\n\n## If you use two-step verification\n\nAfter your password, you are asked for the six-digit code from your authenticator app. Enter it in **Authentication Code** and press **Verify**. You can tick the box to trust the device for a number of days, so you are not asked every time.\n\n## Signing out\n\nOpen the menu under your name and press **Log Out**. On a phone, press **Menu**, then **Log Out**. Always sign out when you use a shared or public computer.\n\n> After too many wrong attempts, signing in is paused for a short time. Wait, then try again, or reset your password.",
+            "summary": "Sign in with your email address and password, or with a passkey or another account if your community allows it.",
+            "title": "How do I sign in?"
+          },
+          "someone_got_into_account": {
+            "body": "If you think someone else has used your account, act quickly.\n\n1. **Change your password.** Open [Settings](/settings), choose the **Security** tab and press **Change Password**. This signs your account out on your other devices.\n2. If you cannot sign in, use [Forgot password?](/password/forgot) to set a new password. This also signs your account out everywhere.\n3. **Look at Active Sessions** on the **Security** tab. It lists the browsers and devices that have been signed in, and when each was last used.\n4. **Turn on two-step verification**, if your community offers it. See **Turning on two-step verification**.\n5. **Check your passkeys**, if you have any. Remove any you do not recognise.\n6. If you already use two-step verification, press **Forget all trusted devices**, so every device must enter a code again.\n7. **Tell your community.** [Contact them](/contact), so a coordinator can check for anything unusual, such as messages or time credits sent from your account.\n\n## Protect your account in future\n\n- Use a password that you do not use anywhere else.\n- Never share your password or your codes with anyone.\n- Sign out when you use a shared computer.\n- Be careful with emails that ask you to sign in. Check the website address before you type your password.",
+            "summary": "Change your password straight away, which signs your account out everywhere. Then check your security settings.",
+            "title": "What if someone else has got into my account?"
+          },
+          "two_step_verification": {
+            "body": "Two-step verification, also called two-factor authentication, adds a second check when you sign in. After your password, you enter a six-digit code from an app on your phone. The code changes every 30 seconds. Even if someone learns your password, they cannot sign in without your phone.\n\n## Before you start\n\nInstall a free authenticator app on your phone, such as **Google Authenticator**, **Microsoft Authenticator** or **Authy**.\n\n## Turn it on\n\n1. Open [Settings](/settings) and choose the **Security** tab.\n2. Next to **Two-Factor Authentication**, press **Enable**.\n3. Open your authenticator app and scan the QR code on the screen. If you cannot scan it, type the **Manual entry key** into the app instead.\n4. Type the six-digit code from the app into **Verification Code**.\n5. Press **Verify & Enable**.\n6. You now see **Your Backup Codes**. Save them somewhere safe, for example written on paper at home. Then press **I've Saved My Codes**.\n\n## Backup codes\n\nEach backup code works once. If you lose your phone, press **Use backup code instead** when you sign in, and enter one of them. You can make a new set of codes under **Recovery codes** on the **Security** tab.\n\n## Turning it off\n\nPress **Disable**, enter your password, then press **Disable 2FA**. Some accounts, such as administrator accounts, must keep it turned on.\n\n> Lost your phone and your backup codes? Contact your community's coordinator to get back into your account.",
+            "summary": "Add a code from an app on your phone to your sign-in, so a stolen password is not enough to get in.",
+            "title": "Turning on two-step verification"
+          }
+        },
+        "summary": "Sign in, reset a forgotten password, and keep your account secure.",
+        "title": "Signing in and security"
+      },
+      "troubleshooting": {
+        "articles": {
+          "cant_sign_in": {
+            "body": "Find the message or problem you have, then follow the advice.\n\n## Wrong email or password\n\nCheck you are using the email address you signed up with, and that Caps Lock is off. Press the eye button to see what you typed. If you still cannot get in, press **Forgot password?** and set a new password.\n\n## Too many attempts\n\nIf you see **Too many attempts**, wait a few minutes, then try again.\n\n## Your email is not confirmed\n\nPress **Resend verification email**, then open the link in the new email. Check your junk or spam folder too.\n\n## Waiting for approval\n\nIf you see **You're registered and waiting for approval**, a coordinator still needs to approve your account. You get an email when this happens. If you have been waiting a while, press **Contact the community**.\n\n## Identity check not finished\n\nIf you see that your identity verification is still in progress, press **Continue verification** to finish it.\n\n## Two-step verification problems\n\nLost your phone? Press **Use backup code instead** and enter one of your backup codes. If you have none left, contact your coordinator.\n\n## Adults only\n\nIf you see **This platform is for adults aged 18 and over**, the account belongs to someone under 18. If this is a mistake, [contact the community](/contact).\n\n## Wrong community\n\nIf you belong to more than one community, check you chose the right **Community** on the sign-in page.",
+            "summary": "The most common reasons you cannot sign in, and what to do about each one.",
+            "title": "I can't sign in"
+          },
+          "contacting_your_community": {
+            "body": "Your community has a team who can help with questions about your account, exchanges or anything else.\n\n1. Open [Contact Us](/contact). You can also find **Contact Us** at the bottom of the page on a computer.\n2. Enter your **Name** and **Email**.\n3. Choose a **Subject**, such as **Account Help** or **Technical Issue**.\n4. Write your **Message**.\n5. Press **Send Message**.\n\nYour message goes to your community's own contact address. They can reply to you by email.\n\n## Other ways to get help\n\n- For a technical fault, use **Help & support**. See **How do I report a problem?**\n- Read the [FAQ](/faq) and the rest of this [Help Centre](/help).\n- If your community has the AI Assistant, it can answer general questions. See the **AI Assistant** section.\n\n> If anyone is in immediate danger, contact your local emergency services first.",
+            "summary": "Send a message to your community's team using the contact form.",
+            "title": "How do I contact my community?"
+          },
+          "not_receiving_emails": {
+            "body": "If an email has not arrived, try these steps.\n\n1. **Wait a few minutes.** Emails can take a little while to arrive.\n2. **Look in your junk or spam folder.** If the email is there, mark it as not spam. This helps future emails reach your inbox.\n3. **Check the email address.** Make sure you are using the address you signed up with.\n4. **Ask for it again.** For a password reset, use [Forgot password?](/password/forgot). For email confirmation, try to sign in, then press **Resend verification email**.\n5. **Check your notification settings.** If you are missing notification emails, open [Settings](/settings), choose the **Notifications** tab, and check the switches are on.\n\n## Still nothing?\n\nSome email services hold back messages from senders they do not know. Add your community's email address to your contacts or safe senders list.\n\nIf that does not help, [contact your community](/contact) and tell them which email you were expecting.\n\n> Be careful with any email that asks for your password. Your community does not need your password to help you.",
+            "summary": "Check your spam folder, the email address you used, and your notification settings.",
+            "title": "I'm not receiving emails"
+          },
+          "report_a_problem": {
+            "body": "If something on the site is broken, or does not work as it should, you can send a report from the page where it happened.\n\n1. Stay on the page with the problem.\n2. Press **Help & support**. On a computer, it is a button in the bottom right corner of the screen. On a phone, press **Menu** and find it near the bottom. Then choose **Something isn't working**.\n3. In **Short summary**, write a few words, for example \"Save button does nothing\".\n4. In **What happened?**, describe what you did, what you expected, and what happened instead.\n5. Under **How much is this affecting you?**, choose how much it affects you, from **I cannot continue** to **Visual or wording issue**.\n6. Leave **Include technical diagnostics from this page** ticked. It helps the team find the fault.\n7. Press **Send**.\n\nYou then see **Sent**, with a reference. Keep the reference, in case you want to ask about your report later.\n\nFor a question, an account or sign-in problem, or an idea, choose **How do I…?**, **Account or sign-in problem** or **Suggest an improvement** instead. You are not asked about impact or technical details for those.\n\nYou need to be signed in to send a report. If a page fails to load, the error screen may also show a **Help & support** button.\n\n> To report a member, a listing or a safety worry, do not use **Help & support**. See the **Privacy and safety** section.",
+            "summary": "Use Help & support to tell the support team about something that is broken. You get a reference number.",
+            "title": "How do I report a problem?"
+          },
+          "something_not_working": {
+            "body": "If a page looks out of date, shows an error, or a button does nothing, try these steps in order.\n\n1. **Refresh the page.** Press your browser's reload button.\n2. **Close and reopen.** If you saved the site to your home screen, or use the Android app, close it fully and open it again.\n3. **Sign out and back in.** Open the menu under your name, press **Log Out**, then sign in again.\n4. **Update your browser** to the latest version.\n5. **Try another browser or device**, to see if the problem only happens in one place.\n\nAfter the site is updated, you may see **This page was out of date and has been refreshed. Please sign in again.** This is normal. Sign in again and carry on.\n\n## A page says Coming Soon\n\nSome parts of the site are only switched on in some communities. If a page says **Coming Soon**, that part is not switched on in your community. Ask your community if you would like to use it.\n\nIf the problem keeps happening, please tell us. See **How do I report a problem?**",
+            "summary": "Refresh the page, sign out and back in, or update your browser. Report the problem if it keeps happening.",
+            "title": "A page looks wrong or out of date"
+          }
+        },
+        "summary": "What to do when you cannot sign in, emails do not arrive, or something is not working.",
+        "title": "Help and troubleshooting"
+      },
+      "volunteering": {
+        "articles": {
+          "applying_to_volunteer": {
+            "body": "You apply with the **Apply** button on an opportunity card, or **Apply Now** on the opportunity's own page.\n\n1. Press **Apply** or **Apply Now**.\n2. Add a short message if you like. Tell the organisation why you would like to help.\n3. Press **Submit Application**.\n\nThe card then shows **Applied**. The organisation is told about your application.\n\n## Following your application\n\nOpen the **My Applications** tab on the [Volunteering](/volunteering) page. Each application shows one of these:\n\n- **Pending**: the organisation has not decided yet.\n- **Approved**: you have been accepted. You can now log hours for this organisation.\n- **Declined**: the organisation did not accept this application.\n\nThe organisation may add a note. It appears as **Organiser's note:**. You get a notification when they decide.\n\n## Withdrawing an application\n\nYou can withdraw an application while it is **Pending**. Press **Withdraw** on the application. There is no second question, so check first. You cannot withdraw an application once it is approved. Contact the organisation instead.\n\nIf your application was declined or withdrawn, you can apply again later.\n\n> Some communities have safeguarding rules about who can contact whom. If one of these applies, you see a message when you try to apply.",
+            "summary": "Send an application, follow its progress and withdraw it if your plans change.",
+            "title": "How do I apply to volunteer?"
+          },
+          "community_projects": {
+            "body": "If your community uses it, the **Projects** section lets members suggest volunteer projects.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Projects**.\n\n## Proposing a project\n\n1. Press **Propose a Project**.\n2. Fill in the **Title** and **Description**.\n3. Add a **Category**, a **Location**, the **Target Volunteers** and a **Proposed Date** if you know them.\n4. Press **Propose**.\n\nYou see **Project proposed successfully!** Community administrators review each proposal. Its status then changes, for example to **Under Review**, **Approved** or **Rejected**.\n\n## Supporting a project\n\nEach project card has a support button and shows how many supporters it has. Press it to add your support. Press it again to remove your support.\n\nEach card also shows how many volunteers the project still needs.",
+            "summary": "Suggest a volunteer project for your community, or show support for one.",
+            "title": "Proposing or supporting a community project"
+          },
+          "finding_volunteer_opportunities": {
+            "body": "You find opportunities on the **Opportunities** tab of the [Volunteering](/volunteering) page.\n\n1. Open [Volunteering](/volunteering).\n2. Type in the **Search opportunities...** box. It looks at titles, descriptions, places, skills and organisation names.\n3. Use the filters to look for opportunities near you or ones you can do **Remote**, which means online or by phone.\n4. Press **Load more** to see more results.\n\nEach card shows the organisation, the title, where it takes place, the dates and the skills needed.\n\n## Looking at an opportunity\n\nPress **View Details** to open the full opportunity. It shows the description, the organisation, the dates and the skills needed.\n\nIf you see **No opportunities found**, try a different search word or check back later.\n\n> The organisation name on a card may link to the organisation's own page. There you can see its other opportunities and read reviews.",
+            "summary": "Search and filter the opportunities posted by local organisations.",
+            "title": "How do I find a volunteering opportunity?"
+          },
+          "how_volunteering_works": {
+            "body": "Volunteering lets you give your time to local organisations and earn time credits for it. A time credit is one hour of time, the same currency you use in your wallet.\n\nIt works in four steps:\n\n1. Find an opportunity and apply.\n2. The organisation approves your application.\n3. You log the hours you give.\n4. The organisation approves your hours, and time credits are added to your wallet.\n\n## Finding the volunteering page\n\nOpen the **Community** menu and choose **Volunteering**, or go to [Volunteering](/volunteering).\n\nThe page has tabs:\n\n- **Opportunities** lists everything you can apply for.\n- **My Applications** shows the applications you have sent.\n- **My Hours** shows the hours you have logged.\n- **Certificates** lets you create a record of your approved hours.\n\nYour community may have extra sections too, such as **Wellbeing**, **Projects** or **Donations**. Press **More** to see them, and **Show fewer** to hide them again. On a phone, the sections appear in a drop-down list instead of tabs.\n\n> Your community chooses which sections to show. If you cannot see one described in this guide, your community has not switched it on.",
+            "summary": "Apply to an opportunity, log the hours you give, and get time credits once they are approved.",
+            "title": "How does volunteering work?"
+          },
+          "logging_volunteer_hours": {
+            "body": "You log hours on the **My Hours** tab of the [Volunteering](/volunteering) page.\n\n1. Open [Volunteering](/volunteering) and choose the **My Hours** tab.\n2. Press **Log Hours**.\n3. Choose the **Organisation** you volunteered for.\n4. Enter the **Date**.\n5. Enter the **Hours**, for example 3.5.\n6. Add a note about what you did, if you like.\n7. Press **Log Hours**.\n\nYou see **Hours logged successfully!**\n\n## Rules for logging hours\n\n- Each entry must be between a quarter of an hour and 24 hours. Your community may set a lower limit for one entry.\n- You can log at most 24 hours in total for one day, across all organisations.\n- You cannot log a date in the future, or more than 90 days ago.\n- You can make one entry per organisation per day. If an entry is declined, you can log that day again.\n- You can only choose organisations that have approved your application, or that you belong to.\n\nSome communities do not let members log their own hours. If so, you see a message when you try, and a coordinator records the hours instead.\n\n## Getting your time credits\n\nNew hours show as **Awaiting approval**. The organisation then approves or declines them. In some communities, hours are approved straight away.\n\nWhen hours are approved, time credits go into your wallet automatically. You get a notification.\n\n> Credits are paid for whole hours only. For example, 3.5 approved hours gives you 3 time credits. An entry of less than one hour gives no credits. If you can, log a longer session as one entry.\n\nIf hours are declined, you get a notification. Talk to the organisation if you think there is a mistake.",
+            "summary": "Record the time you gave so the organisation can approve it and pay you time credits.",
+            "title": "How do I log my volunteering hours?"
+          },
+          "volunteer_hours_and_certificates": {
+            "body": "Your **My Hours** tab shows a summary of the time you have given.\n\n- **Approved & credited**: hours the organisation has approved.\n- **Awaiting approval**: hours still waiting for a decision.\n- **Total Hours**: both added together.\n\nBelow the figures you can see **Hours by Organisation** and **Hours by Month**. These count approved hours only.\n\n## Creating a certificate\n\nA certificate is a record of all your approved volunteering hours, across every organisation. You might use it for a job application or a course.\n\n1. Open [Volunteering](/volunteering).\n2. Choose the **Certificates** tab.\n3. Press **Generate Certificate**.\n4. You see **Certificate generated!**\n\nEach certificate shows your verified hours, the dates they cover and the hours for each organisation.\n\n> Only approved hours count. If none of your hours are approved yet, you see a message saying so. Ask the organisation to review your hours first.\n\nA new certificate includes any hours approved since your last one, so you can create a fresh one whenever you need it.",
+            "summary": "Check your approved hours and create a certificate that lists them.",
+            "title": "Seeing your hours and getting a certificate"
+          },
+          "volunteer_training_and_incidents": {
+            "body": "If your community uses it, the **Safeguarding** section lets you keep a record of your training. You can also report an incident that happened while you were volunteering.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Safeguarding**.\n\n## Adding a training record\n\n1. Choose **Training Records** and press **Add Training**.\n2. Choose the **Training Type**.\n3. Fill in the **Training Name** and the **Provider**.\n4. Enter the **Date Completed** and any **Expiry Date**.\n5. Press **Save Record**.\n\nThe record starts as **Pending**. A community administrator checks it and marks it **Verified** or **Rejected**.\n\n## Reporting an incident\n\n1. Choose **Incident Reports** and press **Report Incident**.\n2. Give it a **Title**.\n3. Describe what happened in **Description**. Use at least 20 characters.\n4. Choose the **Severity**.\n5. If you like, type a short **Category** that describes the kind of incident.\n6. Press **Report Incident**.\n\nYou see **Incident reported.** Community administrators handle incident reports. The status changes as they work on it, for example **Investigating** or **Resolved**.\n\n> If someone is in immediate danger, contact your local emergency services first. Do not wait for a reply here.",
+            "summary": "Add your safeguarding training and report a safeguarding incident while volunteering.",
+            "title": "Recording training and reporting an incident"
+          },
+          "volunteer_wellbeing": {
+            "body": "If your community uses it, the **Wellbeing** section helps you notice when you might be doing too much.\n\n1. Open [Volunteering](/volunteering).\n2. Press **More**, then choose **Wellbeing**.\n3. Press **Log How I'm Feeling**.\n4. Choose a mood: **Struggling**, **Low**, **Okay**, **Good** or **Great**.\n5. Add a note if you like.\n6. Press **Submit Check-in**.\n\nYou see **Mood check-in recorded.**\n\n## What the page shows you\n\n- A **Wellbeing Score** out of 100.\n- How much you have volunteered this week and this month.\n- Your recent check-ins.\n- Suggested rest days, and self-care tips.\n\nIf the page shows a burnout warning, please take it seriously. Rest is part of volunteering well.\n\n> Community administrators can see when the system thinks a volunteer may be at risk of burnout. This is so they can offer support. If you are struggling, you can also talk to the organisation or your community coordinator directly.",
+            "summary": "Record how you feel and get suggestions about when to take a break.",
+            "title": "Checking in on your wellbeing"
+          },
+          "volunteering_donations": {
+            "body": "If your community uses it, the **Donations** section lets you give money to support the community. Money donations are not the same as time credits. You earn time credits by giving time.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Donations**.\n\n## Donating by card\n\n1. Press **Donate by card**.\n2. Enter the **Amount** and choose the **Currency**.\n3. Choose a **Fund** if you want your money used for something in particular.\n4. Add a message, or choose **Donate anonymously**, if you like.\n5. Press **Continue to Payment**.\n6. Enter your card details and pay.\n\nWhen the payment works, you see **Thank You!** Press **View Receipt** to see your receipt.\n\n## Recording a pledge\n\nIf you plan to pay another way, such as by bank transfer:\n\n1. Press **Pledge by bank transfer**.\n2. Enter the **Amount** and **Payment method**.\n3. Press **Record Pledge**.\n\nYour pledge shows as **Pending** until a community administrator confirms the money has arrived.\n\n## Giving days and your history\n\n**Active Giving Days** shows any fundraising campaigns running now. **My Donations** lists what you have given.",
+            "summary": "Give money by card or record a pledge. This is separate from time credits.",
+            "title": "Donating money to your community"
+          }
+        },
+        "summary": "Find volunteering opportunities, apply, log your hours and earn time credits.",
+        "title": "Volunteering"
+      },
+      "wallet": {
+        "articles": {
+          "donate_hours": {
+            "body": "You can give hours away without an exchange.\n\n1. Open [your wallet](/wallet) and press **Donate**.\n2. Under **Donate to**, choose **Community Fund** or **Another Member**.\n3. If you chose **Another Member**, search for them under **Search by member** and choose them.\n4. Enter the **Amount (hours)**. Your balance is shown under the box.\n5. Add a **Message (optional)** if you like.\n6. Press **Donate**.\n\nYou will see **Donation sent!**. Donations cannot be taken back.\n\n## About the Community Fund\n\nThe **Community Fund** is a shared pool of hours for your community. The fund card on your wallet shows how many hours it holds. You can also press **Donate** on that card.\n\nYour community's administrators decide how the fund is used. They can give hours from it to members.",
+            "summary": "Give hours to your community fund or to another member.",
+            "title": "Donating or gifting hours"
+          },
+          "hours_without_exchange_requests": {
+            "body": "Some communities do not use exchange requests. In that case, listings show **Send Message** instead of **Request Exchange**.\n\nHere is how to record an exchange then:\n\n1. Find a listing and press **Send Message** to agree the details, including the number of hours.\n2. Do the exchange.\n3. The person who received the help pays. They open [their wallet](/wallet), press **Send Credits**, choose the member, enter the hours and add a short description.\n\nYou can also send hours from the member's profile, with **Send Credits**.\n\n> Only send hours for time that has been given. If something went wrong, talk to the other member or your coordinator before paying.",
+            "summary": "If your community does not use exchange requests, pay for help from your wallet.",
+            "title": "Recording hours when there are no exchange requests"
+          },
+          "insufficient_balance": {
+            "body": "\"Insufficient balance\" means you do not have enough hours for what you are trying to do.\n\nYou may see it when you:\n\n- send hours with **Send Credits** (the form shows **Exceeds available balance**);\n- donate hours;\n- confirm hours at the end of an exchange where you are the one paying;\n- are a receiver in a group exchange when it is completed.\n\nNothing is taken from your wallet when this happens.\n\n## What you can do\n\n- Check **Your Balance** in [your wallet](/wallet).\n- Send or agree a smaller number of hours.\n- Earn hours by helping someone, for example by posting an offer.\n- Ask your coordinator if you think your balance is wrong.",
+            "summary": "You do not have enough hours for what you are trying to do. Nothing has been taken.",
+            "title": "What does \"insufficient balance\" mean?"
+          },
+          "send_hours": {
+            "body": "You send hours to pay a member for time they gave you.\n\n1. Open [your wallet](/wallet).\n2. Press **Send Credits**.\n3. In **Search by name or username...**, type the member's name and choose them from the list.\n4. Enter the **Amount (hours)**. You can use part-hours, such as 1.5.\n5. If you like, choose a **Category** and add a **Description**, such as what the help was.\n6. Check the summary. It shows who you are paying and your new balance.\n7. Press **Send Credits**.\n\nYou will see **Transfer successful**. The hours appear in both wallets.\n\nYou can also press **Send Credits** on a member's profile. The form opens with that member already chosen.\n\nYou cannot send more hours than you have. Your community may also set a limit for a single transfer.\n\n> Check the name and amount carefully before you send. You cannot cancel a transfer yourself. If you make a mistake, contact your coordinator.",
+            "summary": "Pay a member for time they gave you, straight from your wallet.",
+            "title": "How do I send hours to someone?"
+          },
+          "starting_balance": {
+            "body": "Your community may give new members some hours to start with. This lets you ask for help before you have given any.\n\nWhether there is a starting balance, and how many hours it is, is set by your community. When it applies, the hours are usually added when you join or when your account is approved. They appear in your [transaction history](/wallet).\n\nIf you expected a starting balance and cannot see one, contact your coordinator.\n\nYour community's administrators can also add hours to members' wallets for other reasons.",
+            "summary": "Some communities give new members hours to start with. It is a community setting.",
+            "title": "Do new members get a starting balance?"
+          },
+          "transaction_history": {
+            "body": "**Transaction History** on [your wallet](/wallet) lists the hours that have come in and gone out.\n\nEach entry shows a description, the other member and the amount. Hours you received show with a plus sign. Hours you sent show with a minus sign.\n\nUse the tabs to filter the list: **All**, **Earned**, **Spent** or **Pending**.\n\nPress **Load More** to see older entries.\n\nPress **Export** to download your history as a spreadsheet file (CSV). It includes the date, type, amount, description, other member and status. Only the entries loaded on screen, in the tab you have chosen, are included. For your full history, choose **All**, press **Load More** until no older entries appear, then press **Export**.\n\n## Group exchanges\n\nWhen a group exchange is completed, each payment appears as its own entry, starting \"Group exchange:\" followed by the exchange title. You can see exactly who paid whom.",
+            "summary": "See every payment in and out of your wallet, filter it and download it.",
+            "title": "Your transaction history"
+          },
+          "wallet_overview": {
+            "body": "Your wallet holds your time credits. One time credit is one hour.\n\nOpen [Wallet](/wallet) to see:\n\n- **Your Balance**, in hours.\n- Totals for **Earned**, **Spent** and **Pending**.\n- The **Send Credits** and **Donate** buttons.\n- The **Community Fund**, a shared pool of hours for your community.\n- Your **Transaction History**.\n\nYou earn hours when you help someone and they pay you, through an exchange or a transfer. You spend hours when someone helps you.\n\nPress **Refresh** to load the latest figures.\n\nIf you manage an organisation in your community, its hours are kept separately, in the organisation's own wallet on its dashboard.",
+            "summary": "Where to see your balance, send hours and find your history.",
+            "title": "Your wallet at a glance"
+          }
+        },
+        "summary": "Check your balance, send hours, donate and see your history.",
+        "title": "Wallet and hours"
+      },
+      "your_data": {
+        "articles": {
+          "cookie_settings": {
+            "body": "Cookies are small files that a website saves in your browser. When you first visit, you see a message called **We use cookies**. You can press:\n\n- **Accept all** to allow all cookies\n- **Essential only** to allow only the cookies the site needs to work\n- **Manage preferences** to choose for yourself\n\n## The types of cookie\n\n- **Essential**: needed for signing in, security and reporting faults. These are **Always on**.\n- **Analytics**: help the community understand how the site is used, such as usage statistics, page timings and recordings of how pages are used. These are optional.\n- **Preferences**: remember your choices, such as theme and language. These are optional.\n\n## Change your choice later\n\n- On a computer, press **Cookie Settings** at the bottom of any page.\n- On a phone, press **Menu**, open **Legal**, and press **Manage preferences**.\n\nMake your choices, then press **Save preferences**.\n\nFor more detail, read the [Cookie Policy](/cookies).",
+            "summary": "Choose whether to allow optional cookies, and change your choice at any time.",
+            "title": "Changing your cookie choices"
+          },
+          "data_rights_requests": {
+            "body": "You have rights over your personal data. As well as downloading it, you can send your community a request. Open [Settings](/settings), choose the **Privacy** tab and find **Data & Privacy Rights**.\n\n- **Data Rectification**: ask for information about you to be corrected, if it is wrong or incomplete.\n- **Restriction of Processing**: ask for your data to be stored, but not actively used.\n- **Right to Object**: object to your data being used for a particular purpose, such as marketing.\n\n## Sending a request\n\n1. Press the request you want to make.\n2. Read the explanation. It tells you how long a response can take.\n3. Press **Submit Request**.\n\nA confirmation email is sent to your email address.\n\n> You can correct most of your details yourself, straight away, on the **Profile** tab in **Settings**. A request is useful for things you cannot change yourself.",
+            "summary": "Send a request to correct your data, limit how it is used, or object to it being used.",
+            "title": "Asking to correct or limit the use of your data"
+          },
+          "deleting_your_account": {
+            "body": "You can delete your account yourself. This is permanent and cannot be undone.\n\n## Before you delete\n\n- If you want to keep a copy of your data, download it first. See **How do I download my data?**\n- Any time credits left in your wallet are not paid out or passed to anyone. If you would like them to go to another member, send them before you delete your account.\n- Finish or cancel any exchanges you have agreed with other members.\n\n## Delete your account\n\n1. Open [Settings](/settings) and choose the **Security** tab.\n2. Under **Account Actions**, press **Delete Account**. You can also find **Delete your account** on the **Privacy** tab.\n3. Type the word **DELETE** in the box.\n4. Enter your **Current Password**.\n5. Press **Delete My Account**.\n\nYou are signed out, and an email is sent to confirm that your account has been deleted.\n\n## What happens to your information\n\nYour name, contact details, profile, photo, active listings and preferences are removed or made anonymous. The words of messages you wrote are removed, but the other person keeps an anonymous record of the conversation. Records of past exchanges and time credits are kept without your name, because other members' records depend on them.",
+            "summary": "You can permanently delete your account from Settings. This cannot be undone.",
+            "title": "How do I delete my account?"
+          },
+          "download_your_data": {
+            "body": "You can download a copy of the information your community holds about you. This includes your profile, the hours you have given and received, your transactions, listings, events and more.\n\n1. Open [Settings](/settings) and choose the **Privacy** tab.\n2. Press **Download Your Data**. Or go straight to [Download Your Data](/settings/data-export).\n3. Under **Format**, choose the kind of file you want. The choices are explained below.\n4. Press **Download my data**.\n\nThe two formats are:\n\n- **ZIP archive (human-friendly)**: includes a guide that explains each part. Choose this if you are not sure.\n- **JSON (developer-friendly)**: one structured file. It is useful if you want to move your data to another service.\n\nThe file is prepared and saved to your device. Your past downloads are listed under **Recent exports**. You can download your data up to 5 times a day.\n\n> The file contains your personal information. Keep it somewhere private, and only share it with people you trust.",
+            "summary": "Download a copy of the information your community holds about you, as a file you can keep.",
+            "title": "How do I download my data?"
+          },
+          "legal_documents": {
+            "body": "You can read your community's legal documents at any time, without signing in:\n\n- [Terms of Service](/terms)\n- [Privacy Policy](/privacy)\n- [Cookie Policy](/cookies)\n- [Accessibility Statement](/accessibility)\n- [Community Guidelines](/community-guidelines)\n- [Acceptable Use Policy](/acceptable-use)\n\nThey are all listed together on the [Legal](/legal) page. On a phone, you can also press **Menu** and open **Legal**.\n\n## When a document changes\n\nIf an important document is updated, you may see **Updated legal documents** when you next use the site. Press **Read** to open each document. When you are ready, press **Accept & Continue**. You need to accept the updated documents to keep using the site.\n\nIf you do not agree with a change, [contact your community](/contact) before you accept it.",
+            "summary": "Your community's legal documents, such as the terms and the privacy policy, are all in one place.",
+            "title": "Where can I read the terms and privacy policy?"
+          }
+        },
+        "summary": "Download your data, make a data request, delete your account, and manage cookies.",
+        "title": "Your data and account"
+      }
     }
   },
   "ideation": {
@@ -51792,14 +53915,9 @@ export default interface Resources {
     "complete_setup": "Complete Setup",
     "complete_welcome_to": "Welcome to {{name}}",
     "confirm_title": "Review Your Setup",
-    "count_selected": "{{count}} selected",
-    "count_selected_one": "{{count}} selected",
-    "count_selected_other": "{{count}} selected",
     "edit": "Edit",
     "edit_profile": "Edit profile",
     "finish": "Finish",
-    "interests_description": "Select categories that interest you. This helps us personalise your experience and suggest relevant listings.",
-    "interests_title": "What are you interested in?",
     "lets_get_started": "Let's Get Started",
     "listing_need_help": "Looking for help with {{name}}",
     "listing_offer_help": "I can help with {{name}}",
@@ -51808,8 +53926,6 @@ export default interface Resources {
     "listings_to_create": "We'll create {{count}} listing(s) for you",
     "next": "Next",
     "no_bio_yet": "No bio yet",
-    "no_categories_available": "No categories available yet. You can skip this step and set your interests later in Settings.",
-    "no_categories_skip": "No categories available. You can skip this step.",
     "none_selected": "None selected",
     "page_meta": {
       "title": "Onboarding"
@@ -51857,13 +53973,15 @@ export default interface Resources {
     "safeguarding_intro": "Your safety matters to us. If you consider yourself a vulnerable adult, or if you would like additional support when using this community, please let us know below. Our coordinators can arrange safeguarded exchanges, mediate contact on your behalf, and ensure you are matched with appropriately vetted members. Your responses are confidential and only visible to community coordinators — never on your public profile.",
     "safeguarding_subtitle": "Let us know if you'd like additional support",
     "safeguarding_title": "Support & Safeguarding",
-    "select_or_skip": "Select one or more, or skip this step",
-    "skills_need_description": "Select categories you need help with. We'll create request listings for you.",
+    "skills_add_button": "Add",
+    "skills_add_own_label": "Add your own",
+    "skills_add_own_placeholder": "e.g. Bike repairs",
+    "skills_need_description": "Pick what you'd like help with, or add your own. We use this to suggest people and offers that fit.",
     "skills_need_title": "I need help with",
     "skills_needed_count": "{{count}} skill(s) needed",
     "skills_needed_count_one": "{{count}} skill(s) needed",
     "skills_needed_count_other": "{{count}} skill(s) needed",
-    "skills_offer_description": "Select skills you can offer to others. We'll create listings for you.",
+    "skills_offer_description": "Pick things you could help others with, or add your own. They go on your profile and help us match you with people who need them.",
     "skills_offer_title": "I can offer",
     "skills_to_offer_count": "{{count}} skill(s) to offer",
     "skills_to_offer_count_one": "{{count}} skill(s) to offer",
@@ -51871,13 +53989,11 @@ export default interface Resources {
     "skip": "Skip",
     "skip_for_now": "Skip for now",
     "step_confirm": "Confirm",
-    "step_interests": "Interests",
     "step_profile": "Profile",
     "step_safeguarding": "Safeguarding",
     "step_skills": "Skills",
     "step_welcome": "Welcome",
     "subtitle": "Set up your profile in a few easy steps",
-    "summary_interests": "Your Interests",
     "summary_needs": "Skills You Need",
     "summary_offers": "Skills You Offer",
     "take_photo": "Take photo",
@@ -53612,11 +55728,6 @@ export default interface Resources {
               "description": "Bulk community service exchanges across multiple members.",
               "title": "Group Exchanges"
             },
-            "guardian_consent": {
-              "description": "Guardian approval for a minor volunteer or event attendee: single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
-              "note": "Project NEXUS is for adults — signing up requires confirming you are 18 or older. This is for communities that run supervised activity with young people, where a coordinator sets the account up. It is switched off unless a community turns it on.",
-              "title": "Guardian Consent"
-            },
             "hiring_bias_audit": {
               "description": "Process analytics that surface possible bias in a community’s own hiring: how candidates progress through each stage, rejection rates and average time per stage, how strongly a skills match actually predicts the outcome, and which application sources succeed.",
               "title": "Hiring Bias Audit"
@@ -54464,6 +56575,17 @@ export default interface Resources {
       "monthly": "Monthly",
       "never": "Never"
     },
+    "mfa_recovery": {
+      "code": "Authenticator code",
+      "failed": "Unable to complete this action. Check your code and try again.",
+      "replace": "Replace recovery codes",
+      "revoke": "Forget all trusted devices",
+      "revoked": "Trusted devices removed. They will need verification at the next sign-in.",
+      "save": "Save these replacement codes somewhere secure before leaving this page.",
+      "saved": "I have saved these codes",
+      "title": "Recovery codes",
+      "warning": "Replacing codes invalidates your old unused codes. Enter a new authenticator code; if you just signed in, wait for the next code. If an earlier setup response was lost, you can replace your codes here."
+    },
     "notification_descriptions": {
       "achievement_milestones": "Badge unlocks, level ups, and achievement notifications",
       "activity_digest": "How often to email you a digest of activity in your groups and threads. Direct messages, connection requests, and transaction confirmations are always sent immediately.",
@@ -54603,6 +56725,7 @@ export default interface Resources {
       "choose_from_library": "Choose from library",
       "date_of_birth": "Date of Birth",
       "dob_description": "Required for identity verification",
+      "dob_under_minimum_age": "You must be 18 or over to use this platform. Please check the date of birth you entered.",
       "first_name": "First Name",
       "first_name_placeholder": "Your first name",
       "identity_verified_lock": "Your name is locked because your identity has been verified.",
@@ -54773,7 +56896,7 @@ export default interface Resources {
       "decline": "Decline",
       "description": "Choose who can help, and review exactly what help has been agreed.",
       "email_label": "Email Address",
-      "email_placeholder": "child@example.com",
+      "email_placeholder": "member@example.com",
       "empty_description": "Add someone you trust, then agree exactly how they can help.",
       "empty_title": "No account support set up",
       "load_failed": "Failed to load linked accounts",
@@ -54797,12 +56920,14 @@ export default interface Resources {
         "withdraw_button": "Stop them viewing my messages",
         "withdrawn_toast": "Message access withdrawn"
       },
-      "modal_description": "Enter their email address. They will receive a request, and support only starts once it has been agreed.",
+      "modal_description": "Enter the email address of the member you would like help from. They will get a request, and nothing changes until they accept. Once they do, they can see your account activity; you choose anything more, and you can change or end it at any time.",
       "modal_title": "Add someone who can help",
       "name_label": "Name (optional)",
       "name_placeholder": "Their display name",
       "outcome_they_control": "{{name}} chose what you can help with. You can only use the support they agreed to.",
       "outcome_you_control": "You choose what {{name}} can help with. You can change or remove this support at any time.",
+      "pending_help_request_for_you": "They have asked you to help with their account. You cannot help until you accept.",
+      "pending_helper_acceptance": "Waiting for them to accept. They cannot help with your account until they do.",
       "pending_member_approval": "Waiting for them to approve. They cannot access the account until they do.",
       "pending_your_approval": "They are asking to help with your account. They cannot access it unless you approve.",
       "permission_aria": "Toggle {{permission}} permission for {{name}}",
@@ -55093,6 +57218,7 @@ export default interface Resources {
     "twofa_manual_key": "Manual entry key:",
     "twofa_not_enabled": "Not enabled",
     "twofa_qr_alt": "2FA QR Code",
+    "twofa_required_policy": "Two-factor authentication is required for your account and cannot be disabled.",
     "twofa_scan_qr": "Scan this QR code with your authenticator app",
     "twofa_setup_title": "Set Up Two-Factor Authentication",
     "twofa_title": "Two-Factor Authentication",
@@ -56888,6 +59014,7 @@ export default interface Resources {
       "add_need": "Add Another Need",
       "description_label": "Description",
       "description_placeholder": "Describe your accessibility need...",
+      "duplicate_type": "Each type of need can only be added once. Change the type, or put the details together in one need.",
       "emergency_name": "Emergency Contact Name",
       "emergency_phone": "Emergency Contact Phone",
       "heading": "Accessibility & Accommodations",
@@ -56895,7 +59022,9 @@ export default interface Resources {
       "load_error": "Unable to load accessibility needs.",
       "need_type_label": "Need Type",
       "no_needs_desc": "Add your accessibility requirements so organisations can provide the right support.",
+      "no_needs_desc_private": "Keep a private note of your accessibility needs and the adjustments that help you. It is not shared with organisations or coordinators.",
       "no_needs_title": "No accessibility needs added",
+      "privacy_notice": "This is a private note for you. Organisations and coordinators cannot see it, including your emergency contact, so please tell an organiser directly about anything they need to know. You can change or remove it at any time.",
       "remove": "Remove need",
       "save": "Save Changes",
       "save_error": "Failed to save changes. Please try again.",
@@ -57444,35 +59573,6 @@ export default interface Resources {
       },
       "title": "Group Sign-ups"
     },
-    "guardian": {
-      "close": "Close",
-      "consent_required_body": "Because you're under 18, a parent or guardian needs to approve before you can volunteer. We'll email them a secure approval link.",
-      "consent_required_title": "Guardian approval needed",
-      "guardian_email": "Guardian's email address",
-      "guardian_name": "Guardian's full name",
-      "guardian_phone": "Guardian's phone (optional)",
-      "pending_body": "An approval request was sent to {{email}}. Ask them to check their inbox (and spam folder).",
-      "pending_title": "Waiting for guardian approval",
-      "relationship": "Relationship to you",
-      "relationship_carer": "Carer of the young volunteer",
-      "relationship_guardian": "Guardian",
-      "relationship_legal_guardian": "Legal guardian",
-      "relationship_parent": "Parent",
-      "request_failed": "We couldn't send the approval request. Please check the details and try again.",
-      "request_sent_body": "We've emailed {{email}} a secure approval link. Once they approve, you can volunteer right away.",
-      "request_sent_title": "Request sent",
-      "resend": "Send a new request",
-      "send_request": "Send approval request",
-      "sending": "Sending…",
-      "verify_confirm_button": "Confirm my approval",
-      "verify_confirm_intro": "Tap the button below to confirm you give consent for your young person to take part in volunteering with this community.",
-      "verify_error_body": "The approval link is invalid, has expired, or was already used. Please ask your young person to send a new request from their volunteering page.",
-      "verify_error_title": "This link didn't work",
-      "verify_loading": "Checking your approval link…",
-      "verify_success_body": "Your young person can now take part in volunteering with this community. You can withdraw consent at any time by contacting the community.",
-      "verify_success_title": "Consent confirmed — thank you!",
-      "verify_title": "Guardian consent"
-    },
     "heading": "Volunteering",
     "hero_eyebrow": "Volunteer & earn time credits",
     "hour": "hour",
@@ -57622,6 +59722,7 @@ export default interface Resources {
       "review_hours_other": "Review {{count}} Hours",
       "stats_unavailable": "Unable to load organization stats.",
       "tab_applications": "Applications",
+      "tab_expenses": "Expenses",
       "tab_hours_review": "Hours Review",
       "tab_overview": "Overview",
       "tab_settings": "Settings",
@@ -57631,6 +59732,45 @@ export default interface Resources {
       "total_approved_hours": "Total Approved Hours",
       "total_volunteers": "Volunteers",
       "wallet_balance": "Wallet Balance"
+    },
+    "org_expenses": {
+      "already_handled": "This claim has already been dealt with by someone else. The list has been refreshed.",
+      "approve": "Approve",
+      "approve_aria": "Approve the expense claim from {{name}}",
+      "approved_toast": "Expense claim approved.",
+      "dialog_summary": "{{name}} claimed {{amount}}.",
+      "empty_desc": "No claims match this filter.",
+      "empty_pending_desc": "There are no claims waiting for review.",
+      "empty_title": "No expense claims here",
+      "filter_all": "All",
+      "filter_label": "Filter claims by status",
+      "intro": "Expense claims your volunteers have submitted to this organisation. Approve or reject new claims, then mark approved claims as paid once you have paid them.",
+      "load_failed": "Could not load expense claims. Please try again.",
+      "mark_paid": "Mark as paid",
+      "mark_paid_aria": "Mark the expense claim from {{name}} as paid",
+      "own_claim_note": "This is your own claim. Another organisation admin must review it.",
+      "paid_confirm": "Mark as paid",
+      "paid_intro": "Only do this once the money has actually reached the volunteer.",
+      "paid_title": "Mark claim as paid",
+      "paid_toast": "Expense claim marked as paid.",
+      "payment_reference_display": "Payment reference: {{reference}}",
+      "payment_reference_label": "Payment reference (optional)",
+      "payment_reference_placeholder": "For example, a bank transfer reference",
+      "receipt_failed": "Could not open the receipt. Please try again.",
+      "reject": "Reject",
+      "reject_aria": "Reject the expense claim from {{name}}",
+      "reject_confirm": "Reject claim",
+      "reject_notes_label": "Reason (optional)",
+      "reject_notes_placeholder": "Tell the volunteer why the claim was rejected",
+      "reject_title": "Reject expense claim",
+      "rejected_toast": "Expense claim rejected.",
+      "stat_approved": "Approved (including paid)",
+      "stat_paid": "Paid",
+      "stat_pending": "Waiting for review",
+      "stat_total": "Total claimed",
+      "submitted_on": "Submitted {{date}}",
+      "view_receipt": "Receipt",
+      "view_receipt_aria": "View the receipt for {{name}}'s claim"
     },
     "org_hours_approved": "Hours approved.",
     "org_hours_approved_paid": "Hours approved — time credits added to the volunteer.",

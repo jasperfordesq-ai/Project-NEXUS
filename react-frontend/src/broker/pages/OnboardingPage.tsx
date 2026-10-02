@@ -386,6 +386,7 @@ export default function OnboardingPage() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_reports', articleId: 'broker_onboarding_funnel' }}
       title={t('onboarding.title')}
       description={t('onboarding.description')}
       icon={UserPlus}
@@ -403,7 +404,7 @@ export default function OnboardingPage() {
       }
     >
       {/* ── KPI cards — derived from the funnel + pending queue ──────────── */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('onboarding.kpi_registered')}
           value={firstStage?.count ?? null}

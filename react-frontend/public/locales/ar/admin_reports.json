@@ -296,7 +296,8 @@
     "days_count_few": "{{count}} يومًا",
     "days_count_many": "{{count}} يومًا",
     "days_count_two": "{{count}} يومًا",
-    "days_count_zero": "{{count}} يومًا"
+    "days_count_zero": "{{count}} يومًا",
+    "all_status": "جميع الحالات"
   },
   "municipal_reports": {
     "meta": {

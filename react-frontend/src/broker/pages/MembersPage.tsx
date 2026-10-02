@@ -773,6 +773,7 @@ export default function MembersPage() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_members', articleId: 'broker_members_list' }}
       title={t('members.title')}
       description={t('members.description')}
       icon={Users}
@@ -790,7 +791,7 @@ export default function MembersPage() {
       }
     >
       {/* ── KPI header — counts come from the same list endpoint, deep-linked ── */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('members.stat_total')}
           value={stats?.total ?? null}

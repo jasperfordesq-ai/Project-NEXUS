@@ -439,6 +439,13 @@
     "vetting_international": "الفحص الدولي",
     "vetting_other": "فحص أخرى",
     "vetting_pvg_scotland": "فحص Pvg اسكتلندا",
-    "tabs_aria": "أقسام الحماية"
+    "tabs_aria": "أقسام الحماية",
+    "flag_reason_random_sample": "عينة عشوائية",
+    "flag_reason_first_contact": "أول تواصل",
+    "flag_reason_new_member": "عضو جديد",
+    "flag_reason_high_risk_listing": "إعلان عالي الخطورة",
+    "flag_reason_flagged_user": "عضو مُعلَّم",
+    "flag_reason_manual_monitoring": "تحت المراقبة",
+    "flag_reason_unknown": "غير مسجَّل"
   }
 }

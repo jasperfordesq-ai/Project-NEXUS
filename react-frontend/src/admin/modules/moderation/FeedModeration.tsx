@@ -209,7 +209,7 @@ export default function FeedModeration() {
         )}
       </TableCell>,
       <TableCell key="created">
-        <span className="text-sm text-muted">
+        <span className="whitespace-nowrap text-sm tabular-nums text-muted">
           {new Date(post.created_at).toLocaleDateString(getFormattingLocale())}
         </span>
       </TableCell>,

@@ -439,6 +439,13 @@
     "vetting_international": "Vérification internationale",
     "vetting_other": "Vérification des autres",
     "vetting_pvg_scotland": "Vérification du Pvg Ecosse",
-    "tabs_aria": "Sections de protection"
+    "tabs_aria": "Sections de protection",
+    "flag_reason_random_sample": "Échantillon aléatoire",
+    "flag_reason_first_contact": "Premier contact",
+    "flag_reason_new_member": "Nouveau membre",
+    "flag_reason_high_risk_listing": "Annonce à haut risque",
+    "flag_reason_flagged_user": "Membre signalé",
+    "flag_reason_manual_monitoring": "Sous surveillance",
+    "flag_reason_unknown": "Non renseigné"
   }
 }

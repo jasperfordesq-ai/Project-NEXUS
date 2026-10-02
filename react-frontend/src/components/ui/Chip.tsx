@@ -154,6 +154,9 @@ function ChipRoot({
 
   const sharedProps = {
     className: combineClasses(
+      // A status chip must never break inside its word ("Visib/le") when a
+      // table column gets narrow — the column should widen or scroll instead.
+      'whitespace-nowrap',
       classNames?.base,
       radiusClass(radius),
       isDisabled && 'opacity-50 pointer-events-none',

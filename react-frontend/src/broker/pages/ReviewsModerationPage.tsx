@@ -13,21 +13,22 @@ import { useTranslation } from 'react-i18next';
 import Star from 'lucide-react/icons/star';
 import ReviewsModeration from '@/admin/modules/moderation/ReviewsModeration';
 import { BrokerPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function ReviewsModerationPage() {
   const { t } = useTranslation('broker');
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_moderation', articleId: 'broker_comments_reviews' }}
       title={t('moderation_reviews.title')}
       description={t('moderation_reviews.description')}
       icon={Star}
       color="warning"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed>
         <ReviewsModeration />
-      </div>
+      </AdminEmbed>
     </BrokerPageShell>
   );
 }

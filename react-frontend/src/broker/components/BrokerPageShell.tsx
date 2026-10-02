@@ -14,9 +14,38 @@
 
 import type { ReactNode } from 'react';
 import { isValidElement } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
+import BookOpen from 'lucide-react/icons/book-open';
+import { useTenant } from '@/contexts';
 import { motion } from '@/lib/motion';
 import type { BrokerStatColor } from './BrokerStatCard';
+
+/** A guide article in the broker help centre (`/broker/help/:section/:article`). */
+export interface BrokerPageHelp {
+  sectionId: string;
+  articleId: string;
+}
+
+/**
+ * Quiet "How this page works" link into the plain-English guide. Lives in
+ * its own component so pages (and tests) that pass no `help` never touch the
+ * tenant context.
+ */
+function BrokerPageHelpLink({ help }: { help: BrokerPageHelp }) {
+  const { t } = useTranslation('broker');
+  const { tenantPath } = useTenant();
+  return (
+    <Link
+      to={tenantPath(`/broker/help/${help.sectionId}/${help.articleId}`)}
+      className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+    >
+      <BookOpen size={15} aria-hidden="true" />
+      {t('common.how_this_page_works')}
+    </Link>
+  );
+}
 
 interface BrokerPageShellProps {
   title: string;
@@ -29,6 +58,8 @@ interface BrokerPageShellProps {
   actions?: ReactNode;
   /** Toolbar row rendered between header and content — filters, tabs, search. */
   toolbar?: ReactNode;
+  /** Guide article to link as "How this page works" under the description. */
+  help?: BrokerPageHelp;
   children: ReactNode;
 }
 
@@ -47,6 +78,7 @@ export function BrokerPageShell({
   color = 'accent',
   actions,
   toolbar,
+  help,
   children,
 }: BrokerPageShellProps) {
   const IconAsComponent = Icon as LucideIcon;
@@ -78,6 +110,7 @@ export function BrokerPageShell({
                 {description}
               </p>
             )}
+            {help && <BrokerPageHelpLink help={help} />}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2 sm:justify-end">{actions}</div>}
         </div>

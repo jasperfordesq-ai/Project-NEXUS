@@ -81,7 +81,7 @@ vi.mock('@/lib/serverTime', () => ({
 
 // ── import after mocks ────────────────────────────────────────────────────────
 
-import { BrokerDashboard } from './BrokerDashboardPage';
+import { BrokerDashboard, formatActivityDetails } from './BrokerDashboardPage';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests
@@ -260,5 +260,43 @@ describe('BrokerDashboard', () => {
       // just confirm the component mounted and getDashboard was called once
       expect(mockGetDashboard).toHaveBeenCalledTimes(1);
     }
+  });
+
+  // The audit log stores a JSON object in `details`; until October 2026 it was
+  // printed on the dashboard verbatim. These pin the plain-English rendering.
+  describe('formatActivityDetails', () => {
+    const t = (key: string, opts?: Record<string, unknown>) => {
+      const table: Record<string, string> = {
+        'dashboard.activity.detail_settings_changed': `${opts?.count} settings changed`,
+        'dashboard.activity.detail_exchange': `Exchange #${opts?.id}`,
+        'dashboard.activity.detail_message': `Message #${opts?.id}`,
+        'dashboard.activity.detail_with_notes': 'with a note',
+        'dashboard.activity.detail_listing': `Listing #${opts?.id}`,
+        'dashboard.activity.detail_risk_level': `${opts?.level} risk`,
+        'dashboard.activity.detail_was_risk_level': `was ${opts?.level} risk`,
+        'dashboard.activity.detail_member': `Member #${opts?.id}`,
+        'risk_tags.level_high': 'High',
+      };
+      return table[key] ?? String(opts?.defaultValue ?? key);
+    };
+
+    it('turns a configuration change into a count of settings', () => {
+      expect(formatActivityDetails('{"updated_keys":["a","b","c"],"actor_role":"admin"}', t)).toBe('3 settings changed');
+    });
+
+    it('names the message and whether a note was left', () => {
+      expect(formatActivityDetails('{"message_id":87,"has_notes":true,"actor_role":"admin"}', t)).toBe('Message #87 · with a note');
+    });
+
+    it('names the listing and translates the risk level', () => {
+      expect(formatActivityDetails('{"listing_id":164,"previous_risk_level":"high"}', t)).toBe('Listing #164 · was High risk');
+    });
+
+    it('passes plain sentences through and hides anything unparseable', () => {
+      expect(formatActivityDetails('Exchange #42 approved', t)).toBe('Exchange #42 approved');
+      expect(formatActivityDetails('{not json', t)).toBeNull();
+      expect(formatActivityDetails('{"actor_role":"admin"}', t)).toBeNull();
+      expect(formatActivityDetails(null, t)).toBeNull();
+    });
   });
 });

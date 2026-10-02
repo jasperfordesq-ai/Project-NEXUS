@@ -18,7 +18,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   Select,
@@ -37,7 +37,6 @@ import {
   Tab,
   Chip,
 } from '@/components/ui';
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Clock from 'lucide-react/icons/clock';
@@ -709,6 +708,7 @@ export function InsuranceCertificates() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_exchanges', articleId: 'broker_insurance' }}
       title={t('insurance.page_title')}
       description={t('insurance.page_description')}
       icon={ShieldCheck}
@@ -722,15 +722,6 @@ export function InsuranceCertificates() {
             onPress={() => { resetCreateForm(); setCreateOpen(true); }}
           >
             {t('insurance.add_certificate')}
-          </Button>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="secondary"
-            startContent={<ArrowLeft size={16} />}
-            size="sm"
-          >
-            {t('insurance.back')}
           </Button>
         </>
       }
@@ -749,7 +740,7 @@ export function InsuranceCertificates() {
       )}
 
       {/* KPI header — cards deep-link into the matching filtered view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('insurance.stat_total')}
           value={stats?.total ?? 0}

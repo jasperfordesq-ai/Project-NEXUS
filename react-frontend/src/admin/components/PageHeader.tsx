@@ -8,6 +8,7 @@
  * Consistent page title, description, and action buttons.
  * Automatically shows a contextual help button (?) when the current route
  * has an entry in the HELP_CONTENT registry.
+ * Inside an AdminEmbed (broker panel) it collapses to its actions only.
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -18,6 +19,7 @@ import HelpCircle from 'lucide-react/icons/help-circle';
 import type { HelpArticle } from '../data/helpContent';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useAdminEmbedded } from './AdminEmbedContext';
 
 const AdminHelpDrawer = lazy(() =>
   import('./AdminHelpDrawer').then((module) => ({ default: module.AdminHelpDrawer }))
@@ -34,6 +36,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, subtitle, icon, actions }: PageHeaderProps) {
   const { t } = useTranslation(['admin_nav', 'admin_help']);
   const body = description ?? subtitle;
+  const embedded = useAdminEmbedded();
   const location = useLocation();
   const [article, setArticle] = useState<HelpArticle | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -53,6 +56,18 @@ export function PageHeader({ title, description, subtitle, icon, actions }: Page
       cancelled = true;
     };
   }, [location.pathname, t]);
+
+  // Embedded in another panel (the broker panel): that panel already shows
+  // the title and description, so only the action buttons are rendered, as a
+  // slim toolbar row — or nothing when there are none. See AdminEmbedContext.
+  if (embedded) {
+    if (!actions) return null;
+    return (
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
+        {actions}
+      </div>
+    );
+  }
 
   return (
     <>

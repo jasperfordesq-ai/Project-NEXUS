@@ -8,13 +8,21 @@ import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const { mockQueue } = vi.hoisted(() => ({
-  mockQueue: vi.fn(() => <div data-testid="admin-content-queue" />),
+  mockQueue: vi.fn(),
 }));
 
-vi.mock('@/admin/modules/reports/ModerationQueuePage', () => ({
-  __esModule: true,
-  default: mockQueue,
-}));
+// The stand-in admin module reports whether it was rendered inside the
+// AdminEmbed provider — that flag is what collapses its PageHeader.
+vi.mock('@/admin/modules/reports/ModerationQueuePage', async () => {
+  const { useAdminEmbedded } = await import('@/admin/components/AdminEmbedContext');
+  return {
+    __esModule: true,
+    default: () => {
+      mockQueue();
+      return <div data-testid="admin-content-queue" data-embedded={String(useAdminEmbedded())} />;
+    },
+  };
+});
 
 const mockUser = vi.hoisted(() => ({ current: { id: 1, role: 'broker' } as Record<string, unknown> }));
 
@@ -23,11 +31,6 @@ vi.mock('@/contexts', () =>
     useAuth: () => ({ user: mockUser.current }),
   }),
 );
-
-vi.mock('@/lib/access', () => ({
-  hasAdminPanelAccess: (u: { role?: string } | null) =>
-    u?.role === 'admin' || u?.role === 'super_admin',
-}));
 
 describe('ContentQueuePage (broker)', () => {
   it('frames the admin content queue in the broker shell', async () => {
@@ -39,21 +42,26 @@ describe('ContentQueuePage (broker)', () => {
     expect(screen.getByTestId('admin-content-queue')).toBeInTheDocument();
   });
 
-  it('hides the admin-only Settings button for broker-role users', async () => {
+  // F-543 (2 Oct 2026): moderation settings are broker-or-admin, so nothing
+  // may hide the embedded page's Settings button from brokers any more. The
+  // module simply renders inside the AdminEmbed provider.
+  it('renders the queue inside the AdminEmbed provider with nothing hidden for brokers', async () => {
     mockUser.current = { id: 1, role: 'broker' };
     const Component = (await import('./ContentQueuePage')).default;
     render(<Component />);
 
-    const wrapper = screen.getByTestId('admin-content-queue').parentElement;
-    expect(wrapper?.className).toContain('button:first-of-type]:hidden');
+    const queue = screen.getByTestId('admin-content-queue');
+    expect(queue).toHaveAttribute('data-embedded', 'true');
+    expect(queue.parentElement?.className ?? '').not.toContain('hidden');
   });
 
-  it('keeps the Settings button for admins', async () => {
-    mockUser.current = { id: 2, role: 'admin' };
+  it('links to the plain-English guide for this page', async () => {
     const Component = (await import('./ContentQueuePage')).default;
     render(<Component />);
 
-    const wrapper = screen.getByTestId('admin-content-queue').parentElement;
-    expect(wrapper?.className).not.toContain('button:first-of-type]:hidden');
+    expect(screen.getByRole('link', { name: 'How this page works' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/broker/help/broker_moderation/broker_content_queue'),
+    );
   });
 });

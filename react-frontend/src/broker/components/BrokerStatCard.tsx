@@ -12,6 +12,14 @@
  *   success = compliance (vetting, insurance)
  *   warning = messages / monitoring / expiring
  *
+ * Layout is vertical on purpose. The earlier one-row layout (icon, label,
+ * value and chevron side by side) left a four- or five-up grid roughly 110px
+ * for the label, so labels wrapped onto two lines or broke inside a word
+ * ("Unreview/ed Flags") and the big numbers sat at different heights across
+ * the row. Here the label gets the card's full width, may take two full
+ * lines, never breaks inside a word, and the value always sits at the same
+ * height so a row of cards reads as one line of figures.
+ *
  * Features over the generic admin StatCard: animated count-up, optional
  * trend delta + sparkline, whole-card deep-link with hover lift, and a
  * skeleton loading state. Numbers animate only when motion is allowed
@@ -70,6 +78,14 @@ const sparkClass: Record<BrokerStatColor, string> = {
   neutral: 'text-muted',
 };
 
+/**
+ * Word-safe wrapping for short labels: wrap between words, never inside one,
+ * and never hyphenate. Shared with the admin StatCard so both tiles behave
+ * the same way inside the embedded admin modules.
+ */
+export const STAT_LABEL_CLASS =
+  'line-clamp-2 min-h-10 text-sm font-medium leading-5 text-muted break-normal [overflow-wrap:normal] [hyphens:none]';
+
 function AnimatedNumber({ value }: { value: number }) {
   const display = useCountUp(value);
   return <>{display.toLocaleString(getFormattingLocale())}</>;
@@ -91,46 +107,53 @@ export function BrokerStatCard({
   const { t } = useTranslation('broker');
 
   const IconAsComponent = Icon as LucideIcon;
-  const iconNode = isValidElement(Icon) ? Icon : <IconAsComponent size={22} />;
+  const iconNode = isValidElement(Icon) ? Icon : <IconAsComponent size={20} />;
 
   const showTrendRow = !loading && (delta !== undefined || (trend && trend.length >= 2));
 
   const body = (
-    <div className="w-full p-4 sm:p-5">
-      <div className="flex flex-row items-center gap-4">
+    <div className="flex h-full w-full flex-col p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${tileClass[color]}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${tileClass[color]}`}
         >
           {iconNode}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm font-medium leading-tight text-muted">{label}</p>
-          {loading ? (
-            <Skeleton
-              role="status"
-              aria-busy="true"
-              aria-label={t('common.loading')}
-              className="mt-1.5 h-7 w-16 rounded-md bg-surface-tertiary"
-            />
-          ) : (
-            <p className="mt-0.5 text-2xl font-semibold tracking-tight text-foreground tabular-nums">
-              {typeof value === 'number' ? <AnimatedNumber value={value} /> : (value ?? '—')}
-            </p>
-          )}
-          {description && !loading && <p className="mt-0.5 truncate text-xs text-muted">{description}</p>}
         </div>
         {to && (
           <ChevronRight
             size={16}
-            className="shrink-0 text-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-muted motion-reduce:transition-none"
+            className="mt-2 shrink-0 text-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-muted motion-reduce:transition-none"
             aria-hidden="true"
           />
         )}
       </div>
-      {/* Delta + sparkline live on their own row — sharing the main row
-          squeezed the label/delta into character-level wrapping on 4-up grids. */}
+
+      <p className={`mt-3 ${STAT_LABEL_CLASS}`}>{label}</p>
+
+      {loading ? (
+        <Skeleton
+          role="status"
+          aria-busy="true"
+          aria-label={t('common.loading')}
+          className="mt-1.5 h-8 w-20 rounded-md bg-surface-tertiary"
+        />
+      ) : (
+        <p className="mt-1 text-3xl font-semibold leading-none tracking-tight text-foreground tabular-nums">
+          {typeof value === 'number' ? <AnimatedNumber value={value} /> : (value ?? '—')}
+        </p>
+      )}
+
+      {description && !loading && (
+        <p className="mt-2 line-clamp-2 text-xs leading-4 text-muted break-normal [overflow-wrap:normal]">
+          {description}
+        </p>
+      )}
+
+      {/* Delta + sparkline live on their own row at the foot of the card, so
+          they never squeeze the label or the value. */}
       {showTrendRow && (
-        <div className="mt-3 flex items-center justify-between gap-3 border-t border-divider/60 pt-2.5">
+        <div className="mt-auto pt-3">
+        <div className="flex items-center justify-between gap-3 border-t border-divider/60 pt-2.5">
           {delta !== undefined ? (
             <span className="flex min-w-0 items-center gap-1">
               {delta >= 0 ? (
@@ -151,6 +174,7 @@ export function BrokerStatCard({
             <BrokerSparkline points={trend} className={`shrink-0 ${sparkClass[color]}`} />
           )}
         </div>
+        </div>
       )}
     </div>
   );
@@ -162,7 +186,7 @@ export function BrokerStatCard({
         as={Link}
         to={to}
         aria-label={linkAriaLabel ?? label}
-        className="group rounded-2xl border border-divider/70 bg-surface text-left shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:border-divider hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        className="group h-full rounded-2xl border border-divider/70 bg-surface text-left shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:border-divider hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
       >
         {body}
       </Card>
@@ -170,7 +194,7 @@ export function BrokerStatCard({
   }
 
   return (
-    <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+    <Card className="h-full rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
       {body}
     </Card>
   );

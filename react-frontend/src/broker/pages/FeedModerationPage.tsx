@@ -8,30 +8,31 @@
  *
  * Content moderation is a broker duty, so the broker panel reuses the full
  * admin FeedModeration module untouched, framed in BrokerPageShell. The
- * embedded page owns its own document title and data fetching; the shared
- * EMBED_RESTYLE hides the admin PageHeader's duplicate title block. See
- * SafeguardingPage for the pattern rationale.
+ * embedded page owns its own document title and data fetching; AdminEmbed
+ * collapses the admin PageHeader to its action buttons so the title is not
+ * shown twice. See SafeguardingPage for the pattern rationale.
  */
 
 import { useTranslation } from 'react-i18next';
 import MessageSquare from 'lucide-react/icons/message-square';
 import FeedModeration from '@/admin/modules/moderation/FeedModeration';
 import { BrokerPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function FeedModerationPage() {
   const { t } = useTranslation('broker');
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_moderation', articleId: 'broker_feed_posts' }}
       title={t('moderation_feed.title')}
       description={t('moderation_feed.description')}
       icon={MessageSquare}
       color="accent"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed>
         <FeedModeration />
-      </div>
+      </AdminEmbed>
     </BrokerPageShell>
   );
 }

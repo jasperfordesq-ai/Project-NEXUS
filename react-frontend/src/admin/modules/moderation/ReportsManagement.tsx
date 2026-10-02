@@ -288,7 +288,7 @@ export default function ReportsManagement() {
         )}
       </TableCell>,
       <TableCell key="created">
-        <span className="text-sm text-muted">
+        <span className="whitespace-nowrap text-sm tabular-nums text-muted">
           {new Date(report.created_at).toLocaleDateString(getFormattingLocale())}
         </span>
       </TableCell>,

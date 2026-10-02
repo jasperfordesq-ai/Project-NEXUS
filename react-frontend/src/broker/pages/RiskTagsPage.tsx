@@ -17,9 +17,8 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Shield from 'lucide-react/icons/shield';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
@@ -500,6 +499,7 @@ export function RiskTagsPage() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_exchanges', articleId: 'broker_risk_tags' }}
       title={t('risk_tags.title')}
       description={t('risk_tags.description')}
       icon={ShieldAlert}
@@ -513,15 +513,6 @@ export function RiskTagsPage() {
             size="sm"
           >
             {t('risk_tags.tag_listing')}
-          </Button>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft size={16} aria-hidden="true" />}
-            size="sm"
-          >
-            {t('risk_tags.back')}
           </Button>
         </>
       }
@@ -574,7 +565,7 @@ export function RiskTagsPage() {
       ) : (
         <>
           {/* KPI header — counts by level, deep-linked into the ?level= filter */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <BrokerStatCard
               label={t('risk_tags.stat_critical')}
               value={levelCounts.critical}

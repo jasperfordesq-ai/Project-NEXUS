@@ -288,7 +288,8 @@
     "members_selected_count_one": "{{count}}geselecteerd",
     "members_selected_count_other": "{{count}}geselecteerd",
     "days_count_one": "{{count}} dagen",
-    "days_count_other": "{{count}} dagen"
+    "days_count_other": "{{count}} dagen",
+    "all_status": "Alle statussen"
   },
   "municipal_reports": {
     "meta": {

@@ -290,6 +290,7 @@ export function MatchApprovalsPage() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_exchanges', articleId: 'broker_match_approvals' }}
       title={t('matching.title')}
       description={t('matching.description')}
       icon={UserCheck}
@@ -307,7 +308,7 @@ export function MatchApprovalsPage() {
       }
     >
       {/* Stats row */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('matching.stat_pending')}
           value={stats?.pending_count ?? 0}

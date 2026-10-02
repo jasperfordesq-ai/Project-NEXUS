@@ -102,19 +102,19 @@ interface ModerationSettings {
 // Labels are provided via i18n t() at render time — see getStatusOptions() / getContentTypeOptions()
 
 const STATUS_OPTION_KEYS = [
-  { key: '', i18nKey: 'moderation.all_status' },
-  { key: 'pending', i18nKey: 'moderation.pending' },
-  { key: 'flagged', i18nKey: 'moderation.flagged' },
-  { key: 'approved', i18nKey: 'moderation.approved' },
-  { key: 'rejected', i18nKey: 'moderation.rejected' },
+  { key: '', i18nKey: 'reports.all_status' },
+  { key: 'pending', i18nKey: 'reports.status_pending' },
+  { key: 'flagged', i18nKey: 'reports.status_flagged' },
+  { key: 'approved', i18nKey: 'reports.status_approved' },
+  { key: 'rejected', i18nKey: 'reports.status_rejected' },
 ];
 
 const CONTENT_TYPE_OPTION_KEYS = [
-  { key: '', i18nKey: 'moderation.all_types' },
-  { key: 'post', i18nKey: 'moderation.posts' },
-  { key: 'listing', i18nKey: 'moderation.listings' },
-  { key: 'event', i18nKey: 'moderation.events' },
-  { key: 'comment', i18nKey: 'moderation.comments' },
+  { key: '', i18nKey: 'reports.flag_all_types' },
+  { key: 'post', i18nKey: 'reports.content_type_post' },
+  { key: 'listing', i18nKey: 'reports.content_type_listing' },
+  { key: 'event', i18nKey: 'reports.content_type_event' },
+  { key: 'comment', i18nKey: 'reports.content_type_comment' },
 ];
 
 const STATUS_COLORS: Record<string, 'warning' | 'danger' | 'success' | 'default' | 'secondary'> = {
@@ -366,7 +366,7 @@ export function ModerationQueuePage() {
       />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label={t('reports.label_pending_review')}
           value={stats?.pending ?? '\u2014'}
@@ -530,7 +530,7 @@ export function ModerationQueuePage() {
                   </p>
                 )}
               </TableCell>
-              <TableCell className="text-sm text-muted">
+              <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted">
                 {new Date(item.submitted_at).toLocaleDateString(getFormattingLocale())}
               </TableCell>
               <TableCell>

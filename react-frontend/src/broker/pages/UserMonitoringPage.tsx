@@ -16,7 +16,6 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -35,7 +34,6 @@ import {
   Switch,
   Chip,
 } from '@/components/ui';
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Eye from 'lucide-react/icons/eye';
 import MessageCircleOff from 'lucide-react/icons/message-circle-off';
 import UserPlus from 'lucide-react/icons/user-plus';
@@ -47,7 +45,7 @@ import Clock from 'lucide-react/icons/clock';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import { usePageTitle } from '@/hooks';
-import { useTenant, useToast } from '@/contexts';
+import { useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { parseServerTimestamp, formatServerDate } from '@/lib/serverTime';
 import { adminBroker, adminUsers } from '@/admin/api/adminApi';
@@ -80,7 +78,6 @@ function expiryState(expiresAt: Date): { days: number; state: 'expired' | 'soon'
 export function UserMonitoring() {
   const { t } = useTranslation('broker');
   usePageTitle(t('monitoring.title'));
-  const { tenantPath } = useTenant();
   const toast = useToast();
 
   const [items, setItems] = useState<MonitoredUser[]>([]);
@@ -451,6 +448,7 @@ export function UserMonitoring() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_user_monitoring' }}
       title={t('monitoring.page_title')}
       description={t('monitoring.page_description')}
       icon={Eye}
@@ -464,15 +462,6 @@ export function UserMonitoring() {
             onPress={() => setMonitoringModalOpen(true)}
           >
             {t('monitoring.add_button')}
-          </Button>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft size={16} />}
-            size="sm"
-          >
-            {t('monitoring.back_button')}
           </Button>
         </>
       }

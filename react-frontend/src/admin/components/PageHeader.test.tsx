@@ -27,6 +27,7 @@ vi.mock('../data/helpContent', () => ({
 }));
 
 import { PageHeader } from './PageHeader';
+import { AdminEmbed } from './AdminEmbedContext';
 
 describe('PageHeader', () => {
   beforeEach(() => {
@@ -82,6 +83,28 @@ describe('PageHeader', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('help-drawer')).toHaveTextContent('Dashboard Help');
+    });
+  });
+
+  describe('inside AdminEmbed (broker panel)', () => {
+    it('renders only the actions, as a toolbar, when embedded', () => {
+      render(
+        <AdminEmbed>
+          <PageHeader title="Safeguarding" description="Admin copy" actions={<button>Refresh</button>} />
+        </AdminEmbed>,
+      );
+      expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Safeguarding' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Admin copy')).not.toBeInTheDocument();
+    });
+
+    it('renders nothing at all when embedded without actions', () => {
+      const { container } = render(
+        <AdminEmbed>
+          <PageHeader title="Loading state" description="Admin copy" />
+        </AdminEmbed>,
+      );
+      expect(container).toBeEmptyDOMElement();
     });
   });
 });

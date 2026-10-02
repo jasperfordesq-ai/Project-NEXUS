@@ -13,21 +13,22 @@ import { useTranslation } from 'react-i18next';
 import Flag from 'lucide-react/icons/flag';
 import ReportsManagement from '@/admin/modules/moderation/ReportsManagement';
 import { BrokerPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function ReportsPage() {
   const { t } = useTranslation('broker');
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_moderation', articleId: 'broker_reports' }}
       title={t('moderation_reports.title')}
       description={t('moderation_reports.description')}
       icon={Flag}
       color="danger"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed>
         <ReportsManagement />
-      </div>
+      </AdminEmbed>
     </BrokerPageShell>
   );
 }

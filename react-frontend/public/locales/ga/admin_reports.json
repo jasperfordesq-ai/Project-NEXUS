@@ -294,7 +294,8 @@
     "members_selected_count_two": "{{count}}roghnaithe",
     "days_count_few": "{{count}} lá",
     "days_count_many": "{{count}} lá",
-    "days_count_two": "{{count}} lá"
+    "days_count_two": "{{count}} lá",
+    "all_status": "Gach stádas"
   },
   "municipal_reports": {
     "meta": {

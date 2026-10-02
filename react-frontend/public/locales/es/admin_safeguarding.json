@@ -439,6 +439,13 @@
     "vetting_international": "Investigación internacional",
     "vetting_other": "Investigación de otros",
     "vetting_pvg_scotland": "Investigación de investigación de Pvg Escocia",
-    "tabs_aria": "Secciones de protección"
+    "tabs_aria": "Secciones de protección",
+    "flag_reason_random_sample": "Muestra aleatoria",
+    "flag_reason_first_contact": "Primer contacto",
+    "flag_reason_new_member": "Nuevo miembro",
+    "flag_reason_high_risk_listing": "Anuncio de alto riesgo",
+    "flag_reason_flagged_user": "Miembro marcado",
+    "flag_reason_manual_monitoring": "Bajo supervisión",
+    "flag_reason_unknown": "No registrado"
   }
 }

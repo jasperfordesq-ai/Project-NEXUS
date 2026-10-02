@@ -168,6 +168,7 @@ export function BrokerDashboard() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_role', articleId: 'broker_dashboard' }}
       title={t('dashboard.title')}
       description={t('dashboard.description')}
       icon={LayoutDashboard}
@@ -293,7 +294,7 @@ export function BrokerDashboard() {
           </Card>
 
           {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {showExchanges && (
               <BrokerStatCard
                 label={t('dashboard.pending_exchanges')}
@@ -418,6 +419,7 @@ export function BrokerDashboard() {
                     const actorName = fullName || t('dashboard.deleted_user');
                     const isLast = idx === (stats.recent_activity?.length ?? 0) - 1;
                     const dotColor = actionChipColorMap[entry.action_type] ?? 'default';
+                    const detailText = formatActivityDetails(entry.details, t);
                     return (
                       <li key={rowKey} className="relative flex gap-3 pb-0">
                         {/* timeline rail */}
@@ -435,8 +437,8 @@ export function BrokerDashboard() {
                               <span className="font-medium">{actorName}</span>{' '}
                               {formatActionLabel(entry.action_type, t)}
                             </p>
-                            {entry.details && (
-                              <p className="truncate text-xs text-muted">{entry.details}</p>
+                            {detailText && (
+                              <p className="line-clamp-2 text-xs text-muted">{detailText}</p>
                             )}
                           </div>
                           <span className="shrink-0 text-xs tabular-nums text-muted">
@@ -548,6 +550,67 @@ function formatActionLabel(actionType: string, t: TFunc): string {
   return suffix
     ? t(`dashboard.activity.verb_${suffix}`)
     : actionType.replace(/_/g, ' ');
+}
+
+/**
+ * Turn an audit entry's `details` into words a broker can read.
+ *
+ * org_audit_log rows carry a JSON object written by the controller
+ * (`{"updated_keys":[…],"actor_role":"admin"}`); until October 2026 that JSON
+ * was printed on the dashboard as-is. activity_log rows (insurance) already
+ * carry a plain sentence and pass straight through. Anything unparseable is
+ * hidden rather than dumped — the chip and verb above it still say what
+ * happened.
+ */
+export function formatActivityDetails(raw: string | null | undefined, t: TFunc): string | null {
+  if (!raw) return null;
+  const text = raw.trim();
+  if (!text) return null;
+  if (!text.startsWith('{')) return text;
+
+  let data: Record<string, unknown>;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    data = parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+
+  const idOf = (key: string): string | null => {
+    const v = data[key];
+    return typeof v === 'number' || (typeof v === 'string' && v !== '') ? String(v) : null;
+  };
+  const levelLabel = (level: string) => t(`risk_tags.level_${level}`, { defaultValue: level });
+  const parts: string[] = [];
+
+  if (Array.isArray(data.updated_keys)) {
+    parts.push(t('dashboard.activity.detail_settings_changed', { count: data.updated_keys.length }));
+  }
+  const exchangeId = idOf('exchange_id');
+  if (exchangeId) parts.push(t('dashboard.activity.detail_exchange', { id: exchangeId }));
+  const messageId = idOf('message_id');
+  if (messageId) parts.push(t('dashboard.activity.detail_message', { id: messageId }));
+  if (data.has_notes === true) parts.push(t('dashboard.activity.detail_with_notes'));
+  const listingId = idOf('listing_id');
+  if (listingId) parts.push(t('dashboard.activity.detail_listing', { id: listingId }));
+  const level = data.new_risk_level ?? data.risk_level;
+  if (typeof level === 'string' && level) {
+    parts.push(t('dashboard.activity.detail_risk_level', { level: levelLabel(level) }));
+  }
+  if (typeof data.previous_risk_level === 'string' && data.previous_risk_level) {
+    parts.push(t('dashboard.activity.detail_was_risk_level', { level: levelLabel(data.previous_risk_level) }));
+  }
+  if (typeof data.user_name === 'string' && data.user_name.trim()) {
+    parts.push(data.user_name.trim());
+  } else {
+    const userId = idOf('user_id');
+    if (userId) parts.push(t('dashboard.activity.detail_member', { id: userId }));
+  }
+  if (typeof data.reason === 'string' && data.reason.trim()) parts.push(data.reason.trim());
+  if (typeof data.notes === 'string' && data.notes.trim()) parts.push(data.notes.trim());
+
+  return parts.length > 0 ? parts.join(' · ') : null;
 }
 
 function formatTimeAgo(dateStr: string, t: TFunc): string {

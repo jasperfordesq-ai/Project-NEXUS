@@ -6,14 +6,26 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
+import { createMockContexts } from '@/test/mock-contexts';
+
 const { mockAdmin } = vi.hoisted(() => ({
-  mockAdmin: vi.fn(() => <div data-testid="admin-comments-moderation" />),
+  mockAdmin: vi.fn(),
 }));
 
-vi.mock('@/admin/modules/moderation/CommentsModeration', () => ({
-  __esModule: true,
-  default: mockAdmin,
-}));
+// The stand-in admin module reports whether it was rendered inside the
+// AdminEmbed provider — that flag is what collapses its PageHeader.
+vi.mock('@/admin/modules/moderation/CommentsModeration', async () => {
+  const { useAdminEmbedded } = await import('@/admin/components/AdminEmbedContext');
+  return {
+    __esModule: true,
+    default: () => {
+      mockAdmin();
+      return <div data-testid="admin-comments-moderation" data-embedded={String(useAdminEmbedded())} />;
+    },
+  };
+});
+
+vi.mock('@/contexts', () => createMockContexts());
 
 describe('CommentsModerationPage (broker)', () => {
   it('frames the admin module in the broker shell with broker-namespace copy', async () => {
@@ -26,11 +38,20 @@ describe('CommentsModerationPage (broker)', () => {
     expect(mockAdmin).toHaveBeenCalledTimes(1);
   });
 
-  it('scopes the duplicate-header suppression around the embedded module', async () => {
+  it('renders the admin module inside the AdminEmbed provider so its own header collapses', async () => {
     const Component = (await import('./CommentsModerationPage')).default;
     render(<Component />);
 
-    const wrapper = screen.getByTestId('admin-comments-moderation').parentElement;
-    expect(wrapper?.className).toContain(':first-child]:hidden');
+    expect(screen.getByTestId('admin-comments-moderation')).toHaveAttribute('data-embedded', 'true');
+  });
+
+  it('links to the plain-English guide for this page', async () => {
+    const Component = (await import('./CommentsModerationPage')).default;
+    render(<Component />);
+
+    expect(screen.getByRole('link', { name: 'How this page works' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/broker/help/'),
+    );
   });
 });

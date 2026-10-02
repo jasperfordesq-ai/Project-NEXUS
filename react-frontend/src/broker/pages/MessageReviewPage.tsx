@@ -23,7 +23,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
@@ -460,21 +459,13 @@ export function MessageReview() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_message_review' }}
       title={t('messages.title')}
       description={t('messages.page_description')}
       icon={MessageSquareWarning}
       color="warning"
       actions={
         <>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft size={16} />}
-            size="sm"
-          >
-            {t('messages.back')}
-          </Button>
           <Button
             variant="tertiary"
             size="sm"
@@ -488,7 +479,7 @@ export function MessageReview() {
       }
     >
       {/* KPI header — global unreviewed queue + in-view tallies */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('messages.stat_unreviewed')}
           value={unreviewedCount}

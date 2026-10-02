@@ -12,9 +12,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Check from 'lucide-react/icons/check';
 import CircleSlash from 'lucide-react/icons/circle-slash';
@@ -506,16 +505,13 @@ export function VettingRecords() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_vetting_confirm' }}
       title={t('vetting.title')}
       description={t('vetting.description')}
       icon={ShieldCheck}
       color="success"
       actions={(
         <>
-          <Button as={Link} to={tenantPath('/broker')} variant="tertiary" size="sm">
-            <ArrowLeft size={15} aria-hidden="true" />
-            {t('vetting.back')}
-          </Button>
           <Button isIconOnly variant="tertiary" size="sm" onPress={refreshAll} aria-label={t('vetting.refresh')}>
             <RefreshCw size={16} aria-hidden="true" />
           </Button>
@@ -583,7 +579,7 @@ export function VettingRecords() {
           </CardBody>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
           <BrokerStatCard label={t('vetting.stat_total_members')} value={stats?.total_members} icon={Users} color="neutral" loading={statsLoading} />
           <BrokerStatCard label={t('vetting.stat_review_requested')} value={reviewPending} icon={RefreshCw} color="warning" loading={statsLoading} to={tenantPath('/broker/vetting?status=review_requested')} />
           <BrokerStatCard label={t('vetting.stat_confirmed')} value={stats?.confirmed} icon={UserCheck} color="success" loading={statsLoading} to={tenantPath('/broker/vetting?status=confirmed')} />

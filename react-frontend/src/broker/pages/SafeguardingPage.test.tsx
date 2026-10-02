@@ -7,18 +7,30 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 
 const { mockSafeguardingDashboard, mockVolunteerSafeguarding, mockHasFeature } = vi.hoisted(() => ({
-  mockSafeguardingDashboard: vi.fn(({ routeBase }: { routeBase?: string }) => (
-    <div data-testid="shared-safeguarding-dashboard" data-route-base={routeBase} />
-  )),
+  mockSafeguardingDashboard: vi.fn(),
   mockVolunteerSafeguarding: vi.fn(({ canAssignDlp }: { canAssignDlp?: boolean }) => (
     <div data-testid="volunteering-incidents" data-can-assign-dlp={String(canAssignDlp)} />
   )),
   mockHasFeature: vi.fn((feature: string) => feature === 'volunteering'),
 }));
 
-vi.mock('@/admin/modules/safeguarding/SafeguardingDashboard', () => ({
-  SafeguardingDashboard: mockSafeguardingDashboard,
-}));
+// The stand-in dashboard reports whether it was rendered inside the
+// AdminEmbed provider — that flag is what collapses its own PageHeader.
+vi.mock('@/admin/modules/safeguarding/SafeguardingDashboard', async () => {
+  const { useAdminEmbedded } = await import('@/admin/components/AdminEmbedContext');
+  return {
+    SafeguardingDashboard: (props: { routeBase?: string }) => {
+      mockSafeguardingDashboard(props);
+      return (
+        <div
+          data-testid="shared-safeguarding-dashboard"
+          data-route-base={props.routeBase}
+          data-embedded={String(useAdminEmbedded())}
+        />
+      );
+    },
+  };
+});
 
 vi.mock('@/admin/modules/volunteering/VolunteerSafeguarding', () => ({
   VolunteerSafeguarding: mockVolunteerSafeguarding,
@@ -26,7 +38,7 @@ vi.mock('@/admin/modules/volunteering/VolunteerSafeguarding', () => ({
 
 vi.mock('@/contexts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts')>()),
-  useTenant: () => ({ hasFeature: mockHasFeature }),
+  useTenant: () => ({ hasFeature: mockHasFeature, tenantPath: (p: string) => `/test${p}` }),
 }));
 
 describe('SafeguardingPage (broker)', () => {
@@ -56,18 +68,13 @@ describe('SafeguardingPage (broker)', () => {
     ).toBeInTheDocument();
   });
 
-  it('scopes the duplicate-header suppression styles around the embedded dashboard', async () => {
+  it('renders the shared dashboard inside the AdminEmbed provider so its own header collapses', async () => {
     const mod = await import('./SafeguardingPage');
     const Component = mod.default;
 
     render(<Component />);
 
-    // The wrapper hides the admin PageHeader's duplicate title block via
-    // scoped CSS instead of forking the admin module — assert the wrapper is
-    // the dashboard's direct parent so the child selectors keep matching.
-    const dashboard = screen.getByTestId('shared-safeguarding-dashboard');
-    const wrapper = dashboard.parentElement;
-    expect(wrapper?.className).toContain(':first-child]:hidden');
+    expect(screen.getByTestId('shared-safeguarding-dashboard')).toHaveAttribute('data-embedded', 'true');
   });
 
   // F-536: volunteering incidents alert brokers and coordinators and link here.

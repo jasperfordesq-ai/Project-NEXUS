@@ -290,7 +290,8 @@
     "days_count_one": "{{count}} días",
     "days_count_other": "{{count}} días",
     "members_selected_count_many": "{{count}}seleccionado",
-    "days_count_many": "{{count}} días"
+    "days_count_many": "{{count}} días",
+    "all_status": "Todos los estados"
   },
   "municipal_reports": {
     "meta": {

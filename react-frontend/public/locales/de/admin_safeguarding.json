@@ -439,6 +439,13 @@
     "vetting_international": "Internationale Überprüfung",
     "vetting_other": "Andere überprüfen",
     "vetting_pvg_scotland": "Überprüfung von Pvg Schottland",
-    "tabs_aria": "Abschnitte sichern"
+    "tabs_aria": "Abschnitte sichern",
+    "flag_reason_random_sample": "Stichprobe",
+    "flag_reason_first_contact": "Erster Kontakt",
+    "flag_reason_new_member": "Neues Mitglied",
+    "flag_reason_high_risk_listing": "Inserat mit hohem Risiko",
+    "flag_reason_flagged_user": "Markiertes Mitglied",
+    "flag_reason_manual_monitoring": "Unter Beobachtung",
+    "flag_reason_unknown": "Nicht erfasst"
   }
 }

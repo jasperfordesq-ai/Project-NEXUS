@@ -12,21 +12,22 @@ import { useTranslation } from 'react-i18next';
 import Shield from 'lucide-react/icons/shield';
 import SafeguardingOptionsAdmin from '@/admin/modules/safeguarding/SafeguardingOptionsAdmin';
 import { BrokerPageShell } from '../components';
-import { EMBED_RESTYLE } from '../components/adminEmbed';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function SafeguardingOptionsPage() {
   const { t } = useTranslation('broker');
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_safeguarding_options' }}
       title={t('safeguarding_options.title')}
       description={t('safeguarding_options.description')}
       icon={Shield}
       color="danger"
     >
-      <div className={EMBED_RESTYLE}>
+      <AdminEmbed>
         <SafeguardingOptionsAdmin />
-      </div>
+      </AdminEmbed>
     </BrokerPageShell>
   );
 }

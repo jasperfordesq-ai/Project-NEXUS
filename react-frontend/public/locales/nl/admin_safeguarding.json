@@ -439,6 +439,13 @@
     "vetting_international": "Vetting Internationaal",
     "vetting_other": "Controle anders",
     "vetting_pvg_scotland": "Controle Pvg Schotland",
-    "tabs_aria": "Beschermingssecties"
+    "tabs_aria": "Beschermingssecties",
+    "flag_reason_random_sample": "Willekeurige steekproef",
+    "flag_reason_first_contact": "Eerste contact",
+    "flag_reason_new_member": "Nieuw lid",
+    "flag_reason_high_risk_listing": "Advertentie met hoog risico",
+    "flag_reason_flagged_user": "Gemarkeerd lid",
+    "flag_reason_manual_monitoring": "Onder toezicht",
+    "flag_reason_unknown": "Niet vastgelegd"
   }
 }

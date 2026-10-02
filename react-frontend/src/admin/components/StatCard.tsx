@@ -8,6 +8,11 @@
  * Displays a key metric with label, value, and optional trend indicator.
  * When `to` is provided, the whole card becomes a clickable link that
  * drills into the relevant filtered view — a chevron hint is shown on hover.
+ *
+ * The layout is vertical (icon, then label, then value) so the label has the
+ * card's full width. The previous single-row layout left ~110px for the label
+ * in a five-up grid, which broke words in half ("Pendin/g Review") and put the
+ * big numbers at different heights across one row.
  */
 
 
@@ -67,46 +72,48 @@ export function StatCard({
   // Discriminate via isValidElement: pre-rendered JSX passes through; component
   // references get instantiated with size={24}.
   const IconAsComponent = Icon as LucideIcon;
-  const iconNode = isValidElement(Icon) ? Icon : <IconAsComponent size={24} />;
+  const iconNode = isValidElement(Icon) ? Icon : <IconAsComponent size={20} />;
   const body = (
-    <CardBody className="flex flex-row items-center gap-4 p-4 sm:p-5">
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${colorMap[color]}`}>
-        {iconNode}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-muted">{resolvedLabel}</p>
-        {loading ? (
-          <Skeleton role="status" aria-busy="true" aria-label={t('shared.loading')} className="mt-1 h-7 w-20 rounded bg-surface-tertiary" />
-        ) : (
-          <p className="mt-0.5 text-2xl font-semibold text-foreground">
-            {typeof value === 'number' ? value.toLocaleString(getFormattingLocale()) : value}
-          </p>
-        )}
-        {description && (
-          <p className="mt-0.5 text-xs text-muted">{description}</p>
-        )}
-        {trend !== undefined && (
-          <div className="mt-0.5 flex items-center gap-1">
-            {trend >= 0 ? (
-              <TrendingUp size={14} className="text-success" />
-            ) : (
-              <TrendingDown size={14} className="text-danger" />
-            )}
-            <span className={`text-xs font-medium ${trend >= 0 ? 'text-success' : 'text-danger'}`}>
-              {trend > 0 ? '+' : ''}{trend}%
-            </span>
-            {trendLabel && (
-              <span className="text-xs text-muted">{trendLabel}</span>
-            )}
-          </div>
+    <CardBody className="flex h-full flex-col p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${colorMap[color]}`}>
+          {iconNode}
+        </div>
+        {to && (
+          <ChevronRight
+            size={16}
+            className="mt-2 shrink-0 text-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-muted"
+            aria-hidden="true"
+          />
         )}
       </div>
-      {to && (
-        <ChevronRight
-          size={18}
-          className="shrink-0 text-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-muted"
-          aria-hidden="true"
-        />
+      {/* Word-safe label: wraps between words only, never inside one, and
+          reserves two lines so a row of cards keeps its values level. */}
+      <p className="mt-3 line-clamp-2 min-h-10 text-sm font-medium leading-5 text-muted break-normal [overflow-wrap:normal] [hyphens:none]">{resolvedLabel}</p>
+      {loading ? (
+        <Skeleton role="status" aria-busy="true" aria-label={t('shared.loading')} className="mt-1.5 h-8 w-20 rounded bg-surface-tertiary" />
+      ) : (
+        <p className="mt-1 text-3xl font-semibold leading-none tracking-tight text-foreground tabular-nums">
+          {typeof value === 'number' ? value.toLocaleString(getFormattingLocale()) : value}
+        </p>
+      )}
+      {description && (
+        <p className="mt-2 line-clamp-2 text-xs leading-4 text-muted break-normal [overflow-wrap:normal]">{description}</p>
+      )}
+      {trend !== undefined && (
+        <div className="mt-2 flex items-center gap-1">
+          {trend >= 0 ? (
+            <TrendingUp size={14} className="text-success" />
+          ) : (
+            <TrendingDown size={14} className="text-danger" />
+          )}
+          <span className={`text-xs font-medium ${trend >= 0 ? 'text-success' : 'text-danger'}`}>
+            {trend > 0 ? '+' : ''}{trend}%
+          </span>
+          {trendLabel && (
+            <span className="text-xs text-muted">{trendLabel}</span>
+          )}
+        </div>
       )}
     </CardBody>
   );
@@ -118,14 +125,14 @@ export function StatCard({
         as={Link}
         to={to}
         aria-label={linkAriaLabel ?? resolvedLabel}
-        className="group border border-divider/70 bg-surface text-left shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-md"
+        className="group h-full border border-divider/70 bg-surface text-left shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-md"
       >
         {body}
       </Card>
     );
   }
 
-  return <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">{body}</Card>;
+  return <Card className="h-full border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">{body}</Card>;
 }
 
 export default StatCard;

@@ -292,7 +292,8 @@
     "members_selected_count_few": "Wybrano{{count}}",
     "members_selected_count_many": "Wybrano{{count}}",
     "days_count_few": "{{count}} dni",
-    "days_count_many": "{{count}} dni"
+    "days_count_many": "{{count}} dni",
+    "all_status": "Wszystkie stany"
   },
   "municipal_reports": {
     "meta": {

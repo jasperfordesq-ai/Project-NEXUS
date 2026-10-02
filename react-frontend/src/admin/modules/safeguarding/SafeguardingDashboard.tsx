@@ -176,6 +176,13 @@ const SEVERITY_COLORS: Record<string, 'default' | 'warning' | 'danger'> = {
 
 export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: SafeguardingDashboardProps = {}) {
   const { t } = useTranslation('admin_safeguarding');
+  // Flag reasons arrive as the broker-copy reason CODE (random_sample,
+  // first_contact, …). Show the translated label; an unknown code is at least
+  // shown as words rather than snake_case.
+  const flagReasonLabel = (code: string | null | undefined): string => {
+    const key = (code ?? 'unknown').trim();
+    return t(`safeguarding.flag_reason_${key}`, { defaultValue: key.replace(/_/g, ' ') });
+  };
   usePageTitle(t('safeguarding.page_title'));
   const toast = useToast();
   const { tenantPath } = useTenant();
@@ -580,7 +587,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
 
       {/* Stats — each card deep-links to the matching tab/filter combination */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
           <StatCard
             label={t('safeguarding.label_unreviewed_flags')}
             value={stats.unreviewed_flags}
@@ -737,10 +744,10 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                       </Chip>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted">{flag.flag_reason}</span>
+                      <span className="whitespace-nowrap text-sm text-muted">{flagReasonLabel(flag.flag_reason)}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted">{formatRelativeTime(flag.created_at)}</span>
+                      <span className="whitespace-nowrap text-sm text-muted">{formatRelativeTime(flag.created_at)}</span>
                     </TableCell>
                     <TableCell>
                       {flag.is_reviewed ? (
@@ -1116,7 +1123,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                       </div>
                       <div>
                         <span className="text-sm text-muted">{t('safeguarding.reason')}:</span>{' '}
-                        <span className="text-sm">{reviewTarget.flag_reason}</span>
+                        <span className="text-sm">{flagReasonLabel(reviewTarget.flag_reason)}</span>
                       </div>
                     </div>
 

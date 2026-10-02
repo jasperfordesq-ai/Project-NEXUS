@@ -439,6 +439,13 @@
     "vetting_international": "国際審査",
     "vetting_other": "その他の審査",
     "vetting_pvg_scotland": "Pvg スコットランドの審査",
-    "tabs_aria": "セクションの保護"
+    "tabs_aria": "セクションの保護",
+    "flag_reason_random_sample": "ランダム抽出",
+    "flag_reason_first_contact": "初回の連絡",
+    "flag_reason_new_member": "新規メンバー",
+    "flag_reason_high_risk_listing": "高リスクのリスティング",
+    "flag_reason_flagged_user": "フラグ付きメンバー",
+    "flag_reason_manual_monitoring": "モニタリング中",
+    "flag_reason_unknown": "記録なし"
   }
 }

@@ -439,6 +439,13 @@
     "vetting_international": "Grinnfhiosrúchán Idirnáisiúnta",
     "vetting_other": "Grinnfhiosrúchán Eile",
     "vetting_pvg_scotland": "Grinnfhiosrúchán Pvg Albain",
-    "tabs_aria": "Rannóga cosanta"
+    "tabs_aria": "Rannóga cosanta",
+    "flag_reason_random_sample": "Sampla randamach",
+    "flag_reason_first_contact": "Céad teagmháil",
+    "flag_reason_new_member": "Ball nua",
+    "flag_reason_high_risk_listing": "Liostú ardriosca",
+    "flag_reason_flagged_user": "Ball a bhfuil bratach air",
+    "flag_reason_manual_monitoring": "Faoi mhonatóireacht",
+    "flag_reason_unknown": "Gan taifeadadh"
   }
 }

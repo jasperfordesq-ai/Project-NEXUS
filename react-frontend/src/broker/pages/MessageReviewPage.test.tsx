@@ -173,9 +173,9 @@ describe('MessageReview (broker)', () => {
     render(<MessageReview />);
 
     expect(await screen.findByText('Unreviewed messages')).toBeInTheDocument();
-    expect(screen.getByText('Flagged in view')).toBeInTheDocument();
-    expect(screen.getByText('Reviewed in view')).toBeInTheDocument();
-    expect(screen.getByText('In current filter')).toBeInTheDocument();
+    expect(screen.getByText('Flagged on this page')).toBeInTheDocument();
+    expect(screen.getByText('Reviewed on this page')).toBeInTheDocument();
+    expect(screen.getByText('Matching this filter')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getAllByText('7').length).toBeGreaterThan(0);
     });

@@ -288,7 +288,8 @@
     "members_selected_count_one": "{{count}} 選択済み",
     "members_selected_count_other": "{{count}}が選択されました",
     "days_count_one": "{{count}}日",
-    "days_count_other": "{{count}} 日"
+    "days_count_other": "{{count}} 日",
+    "all_status": "すべてのステータス"
   },
   "municipal_reports": {
     "meta": {

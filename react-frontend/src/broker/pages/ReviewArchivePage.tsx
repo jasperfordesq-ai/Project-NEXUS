@@ -22,7 +22,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Archive from 'lucide-react/icons/archive';
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import Flag from 'lucide-react/icons/flag';
@@ -249,21 +248,13 @@ export function ReviewArchive() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_review_archive' }}
       title={t('archives.title')}
       description={t('archives.description')}
       icon={Archive}
       color="neutral"
       actions={
         <>
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft size={16} />}
-            size="sm"
-          >
-            {t('archives.back')}
-          </Button>
           <Button
             variant="tertiary"
             size="sm"
@@ -277,7 +268,7 @@ export function ReviewArchive() {
       }
     >
       {/* KPI header — derived from the records currently in view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <BrokerStatCard
           label={t('archives.stat_records')}
           value={total}

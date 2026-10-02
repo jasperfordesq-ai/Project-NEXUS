@@ -16,10 +16,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Save from 'lucide-react/icons/save';
 import Settings from 'lucide-react/icons/settings';
 import MessageSquare from 'lucide-react/icons/message-square';
@@ -157,7 +155,7 @@ function SettingRow({ label, help, locked = false, children }: SettingRowProps) 
 export default function BrokerConfiguration() {
   const { t } = useTranslation('broker');
   usePageTitle(t('configuration.page_title'));
-  const { tenantPath, hasFeature } = useTenant();
+  const { hasFeature } = useTenant();
   const { user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
@@ -275,6 +273,7 @@ export default function BrokerConfiguration() {
 
   return (
     <BrokerPageShell
+      help={{ sectionId: 'broker_role', articleId: 'broker_configuration' }}
       title={t('configuration.title')}
       description={t('configuration.description')}
       icon={Settings}
@@ -286,15 +285,6 @@ export default function BrokerConfiguration() {
               {t('configuration.unsaved_changes')}
             </Chip>
           )}
-          <Button
-            as={Link}
-            to={tenantPath('/broker')}
-            variant="tertiary"
-            startContent={<ArrowLeft className="w-4 h-4" />}
-            size="sm"
-          >
-            {t('configuration.back')}
-          </Button>
           <Button
             startContent={<Save className="w-4 h-4" />}
             onPress={handleSave}

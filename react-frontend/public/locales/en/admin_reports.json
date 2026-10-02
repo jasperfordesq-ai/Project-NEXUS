@@ -288,7 +288,8 @@
     "members_selected_count_one": "{{count}} selected",
     "members_selected_count_other": "{{count}} selected",
     "days_count_one": "{{count}} days",
-    "days_count_other": "{{count}} days"
+    "days_count_other": "{{count}} days",
+    "all_status": "All statuses"
   },
   "municipal_reports": {
     "meta": {
