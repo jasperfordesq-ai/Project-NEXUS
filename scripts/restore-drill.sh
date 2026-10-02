@@ -17,6 +17,8 @@
 #      (/opt/nexus-php/.backup-drill-key, root-only; its public half is one of
 #      the recipients in /opt/nexus-php/.backup-age-recipients). If that key is
 #      lost or wrong, the drill fails — within a month, not in a disaster.
+#      The uploads, storage and server-config (.env with APP_KEY) archives
+#      from the same night must also decrypt and hold files.
 #   3. Loads it into a throwaway MariaDB container (nexus-restore-drill).
 #   4. Asserts row counts on a few critical tables are sane against the live DB.
 #   5. Tears everything down, deletes the downloaded and decrypted files, and
@@ -115,38 +117,57 @@ The offsite backup could NOT be shown to restore. Treat this as urgent: until it
 trap 'fail "unexpected error on line $LINENO"' ERR
 trap cleanup EXIT
 
-# check_archive uploads|storage — download that night's encrypted volume
+# check_archive uploads|storage|config — download that night's encrypted
 # archive, decrypt it straight into `tar -t` (no plaintext copy on disk) and
-# require a complete, non-empty archive.
+# require a complete archive holding at least one FILE (an empty volume still
+# lists "./", so folders do not count). For config, the .env inside must also
+# carry an APP_KEY — without it a restored database's encrypted columns
+# cannot be read.
 ARCHIVES=""
 check_archive() {
-    local kind="$1" name listing entries
+    local kind="$1" name listing members files
     name="nexus_${kind}_${BACKUP_DATE}.tar.gz.age"
-    listing="$(rclone lsf "$RCLONE_REMOTE" --include "$name" --max-depth 1)" \
+    listing="$(rclone lsf "$RCLONE_REMOTE" --files-only --include "$name" --max-depth 1)" \
         || fail "could not list $RCLONE_REMOTE for the $kind backup"
     grep -qxF "$name" <<<"$listing" \
         || fail "$kind backup $name (same night as the database) is missing on $RCLONE_REMOTE"
     rclone copyto "$RCLONE_REMOTE/$name" "$WORK_DIR/$name" || fail "download of $kind backup $name failed"
     [ "$(head -c 21 "$WORK_DIR/$name")" = "age-encryption.org/v1" ] \
         || fail "$kind backup $name on Google Drive is not encrypted (no age header)"
-    entries="$(age -d -i "$DRILL_IDENTITY_FILE" "$WORK_DIR/$name" | tar -tzf - | wc -l)" \
+    members="$(age -d -i "$DRILL_IDENTITY_FILE" "$WORK_DIR/$name" | tar -tzf -)" \
         || fail "$kind backup $name could not be decrypted, or is not a complete archive"
+    files="$(grep -vc '/$' <<<"$members" || true)"
+    [ "${files:-0}" -gt 0 ] || fail "$kind backup $name holds no files (empty or wrong volume?)"
+    if [ "$kind" = "config" ]; then
+        local keys
+        keys="$(age -d -i "$DRILL_IDENTITY_FILE" "$WORK_DIR/$name" | tar -xzOf - .env 2>/dev/null | grep -c '^APP_KEY=.' || true)"
+        [ "${keys:-0}" -gt 0 ] \
+            || fail "config backup $name has no .env with an APP_KEY — encrypted database fields could not be read after a restore"
+    fi
     rm -f "$WORK_DIR/$name"
-    [ "${entries:-0}" -gt 0 ] || fail "$kind backup $name is an empty archive"
     ARCHIVES="${ARCHIVES}
-${kind}: ${name}, unlocked, ${entries} entries, archive complete"
-    success "$kind: $name — ${entries} entries, archive complete"
+${kind}: ${name}, unlocked, ${files} files, archive complete"
+    success "$kind: $name — ${files} files, archive complete"
 }
 
 # The public keys the nightly backup encrypts to, shortened, so the monthly
 # message lets the owner see their own keys are still on the list.
 RECIPIENTS_FILE="${BACKUP_AGE_RECIPIENTS_FILE:-/opt/nexus-php/.backup-age-recipients}"
 recipient_summary() {
-    if [ -r "$RECIPIENTS_FILE" ]; then
-        grep -E '^age1' "$RECIPIENTS_FILE" | cut -c1-16 | sed 's/$/…/' | paste -sd' ' -
-    else
+    local drill_pub="" k out=""
+    if [ ! -r "$RECIPIENTS_FILE" ]; then
         echo "(cannot read $RECIPIENTS_FILE)"
+        return 0
     fi
+    drill_pub="$(age-keygen -y "$DRILL_IDENTITY_FILE" 2>/dev/null || true)"
+    while IFS= read -r k; do
+        if [ "$k" = "$drill_pub" ]; then
+            out="${out} ${k:0:16}… (server drill key)"
+        else
+            out="${out} ${k:0:16}… (owner key)"
+        fi
+    done < <(grep -E '^age1' "$RECIPIENTS_FILE")
+    echo "${out# }"
 }
 
 echo ""
@@ -165,7 +186,7 @@ if [ "$DRILL_SOURCE" = "offsite" ]; then
     [ -r "$DRILL_IDENTITY_FILE" ] || fail "drill key $DRILL_IDENTITY_FILE is missing or unreadable"
 
     log "Locating newest encrypted backup on $RCLONE_REMOTE..."
-    LATEST="$(rclone lsf "$RCLONE_REMOTE" --include "nexus_db_*.sql.gz.age" --max-depth 1 | sort | tail -1)" \
+    LATEST="$(rclone lsf "$RCLONE_REMOTE" --files-only --include "nexus_db_*.sql.gz.age" --max-depth 1 | sort | tail -1)" \
         || fail "could not list $RCLONE_REMOTE"
     [ -n "$LATEST" ] || fail "no encrypted database backup (nexus_db_*.sql.gz.age) found on $RCLONE_REMOTE"
     DRILLED="$LATEST"
@@ -207,6 +228,7 @@ Note: ${PLAIN_LEFT} unencrypted file(s) are still in the Google Drive backups fo
     # without members' files.
     check_archive uploads
     check_archive storage
+    check_archive config
 else
     log "Locating most recent local backup..."
     BACKUP_FILE="$(ls -t "$BACKUP_DIR"/nexus_db_*.sql.gz 2>/dev/null | head -1 || true)"
@@ -282,6 +304,14 @@ for table in tenants users laravel_migrations; do
     drill="$(count_drill "$table")"
     COUNTS="${COUNTS}
 ${table}: restored ${drill}, live ${live}"
+    # A live count of 0 means the comparison could not be made (the query
+    # failed or the live database is unreachable) — that is not a pass.
+    if [ "${live:-0}" -le 0 ]; then
+        warn "$table: could not read the live count"
+        VERIFY_FAILED=1
+        COUNTS="${COUNTS} (live database count unreadable)"
+        continue
+    fi
     # Drill must be > 0 and <= live (live grows between backups + drill runs)
     if [ "${drill:-0}" -le 0 ]; then
         warn "$table: drill count $drill (expected > 0)"

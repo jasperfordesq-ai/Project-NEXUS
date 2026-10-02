@@ -33,7 +33,12 @@ case "${1:-}" in
                 fi
                 ;;
             *"SELECT COUNT"*)
-                printf '%s\n' "${STUB_ROW_COUNT:-5}"
+                # STUB_LIVE_COUNT: what the LIVE database (nexus-php-db) reports.
+                if [ -n "${STUB_LIVE_COUNT:-}" ] && [[ " $* " == *" nexus-php-db "* ]]; then
+                    printf '%s\n' "$STUB_LIVE_COUNT"
+                else
+                    printf '%s\n' "${STUB_ROW_COUNT:-5}"
+                fi
                 ;;
             *" -i "*)
                 cat > "${DOCKER_STUB_RESTORE_FILE:-/dev/null}"

@@ -63,11 +63,18 @@ mkdir -p "$WORK/vol/sub"
 printf 'photo\n' > "$WORK/vol/a.jpg"; printf 'doc\n' > "$WORK/vol/sub/b.pdf"
 tar czf "$WORK/vol.tar.gz" -C "$WORK/vol" .
 
-# put_encrypted DATE — the three encrypted files one nightly run uploads.
+# The server-config archive (.env with APP_KEY), as the nightly backup makes it.
+mkdir -p "$WORK/cfg" "$WORK/emptyvol/onlydir"
+printf 'APP_KEY=base64:dGVzdA==\nDB_PASS=x\n' > "$WORK/cfg/.env"
+tar czf "$WORK/config.tar.gz" -C "$WORK/cfg" .env
+tar czf "$WORK/emptyvol.tar.gz" -C "$WORK/emptyvol" .
+
+# put_encrypted DATE — the encrypted files one nightly run uploads.
 put_encrypted() {
     age -R "$WORK/recipients" -o "$REMOTE/nexus_db_$1.sql.gz.age" "$WORK/dump.sql.gz"
     age -R "$WORK/recipients" -o "$REMOTE/nexus_uploads_$1.tar.gz.age" "$WORK/vol.tar.gz"
     age -R "$WORK/recipients" -o "$REMOTE/nexus_storage_$1.tar.gz.age" "$WORK/vol.tar.gz"
+    age -R "$WORK/recipients" -o "$REMOTE/nexus_config_$1.tar.gz.age" "$WORK/config.tar.gz"
 }
 
 run_drill() {
@@ -76,7 +83,8 @@ run_drill() {
         ENV_FILE="$CASE/.env" \
         DRILL_TMP_PARENT="$CASE/tmp" \
         BACKUP_ALERT_ENV="$CASE/alerts.env" \
-        DRILL_IDENTITY_FILE="$WORK/drill.txt"         BACKUP_AGE_RECIPIENTS_FILE="$WORK/recipients" \
+        DRILL_IDENTITY_FILE="$WORK/drill.txt" \
+        BACKUP_AGE_RECIPIENTS_FILE="$WORK/recipients" \
         FAKE_REMOTE_ROOT="$CASE/remote" \
         CURL_STUB_LOG="$CASE/curl.log" \
         DOCKER_STUB_RESTORE_FILE="$CASE/restored.sql" \
@@ -102,6 +110,8 @@ put_encrypted "$TODAY"
 printf 'plain old file\n' | gzip > "$REMOTE/nexus_db_2026-04-01.sql.gz"
 printf 'plain pre-migrate\n' | gzip > "$REMOTE/pre-migrate-20260401-120000.sql.gz"
 printf 'old gpg copy\n' > "$REMOTE/pre-migrate-20260504-130018-bluegreen.sql.gz.gpg"
+# A sub-folder the owner might make for old files: must not be mistaken for a backup.
+mkdir -p "$REMOTE/zz-old-unencrypted"
 DRILL_RC=0; run_drill || DRILL_RC=$?
 [ "$DRILL_RC" -eq 0 ] && pass "drill exits 0" || { failt "drill exited $DRILL_RC"; tail -20 "$CASE/out.log" >&2; }
 gunzip -c "$WORK/dump.sql.gz" | cmp -s - "$CASE/restored.sql" && pass "restored exactly the decrypted dump" || failt "restored content differs from the dump"
@@ -109,8 +119,9 @@ grep -q "RESTORE DRILL PASSED" "$CASE/curl.log" && pass "Telegram 'passed' messa
 grep -q "nexus_db_${TODAY}.sql.gz.age" "$CASE/out.log" && pass "drilled the newest file" || failt "did not drill the newest file"
 grep -q "2 unencrypted file(s)" "$CASE/curl.log" && pass "reports both unencrypted files on Drive (nightly + pre-migrate), not the .gpg one" || failt "unencrypted-file count wrong: $(grep -o '[0-9?]* unencrypted' "$CASE/curl.log")"
 [ -z "$(ls -A "$CASE/tmp")" ] && pass "no decrypted file left behind" || failt "decrypted file left behind"
-grep -q "uploads: nexus_uploads_${TODAY}.tar.gz.age" "$CASE/curl.log" && grep -q "storage: nexus_storage_${TODAY}.tar.gz.age" "$CASE/curl.log"     && pass "uploads and storage backups were unlocked and checked" || failt "uploads/storage not reported as checked"
-grep -q "$(head -c 16 <<<"$(grep -m1 '^age1' "$WORK/recipients")")" "$CASE/curl.log"     && pass "PASSED message lists the keys the server encrypts to" || failt "PASSED message does not list the keys"
+grep -q "config: nexus_config_${TODAY}.tar.gz.age" "$CASE/curl.log" && pass "server config backup checked (APP_KEY present)" || failt "server config backup not reported as checked"
+grep -q "uploads: nexus_uploads_${TODAY}.tar.gz.age" "$CASE/curl.log" && grep -q "storage: nexus_storage_${TODAY}.tar.gz.age" "$CASE/curl.log" && pass "uploads and storage backups were unlocked and checked" || failt "uploads/storage not reported as checked"
+grep -q "$(head -c 16 <<<"$(grep -m1 '^age1' "$WORK/recipients")")" "$CASE/curl.log" && pass "PASSED message lists the keys the server encrypts to" || failt "PASSED message does not list the keys"
 
 # ---------------------------------------------------------------------------
 echo "case 2: the drill key cannot open the file (wrong or lost key)"
@@ -164,6 +175,36 @@ rm "$REMOTE/nexus_uploads_${TODAY}.tar.gz.age"
 age -R "$WORK/recipients" -o "$REMOTE/nexus_uploads_${OLD}.tar.gz.age" "$WORK/vol.tar.gz"
 DRILL_RC=0; run_drill || DRILL_RC=$?
 expect_fail "old uploads" "uploads"
+
+echo "case 6e: server config backup missing"
+setup_case no_config
+put_encrypted "$TODAY"
+rm "$REMOTE/nexus_config_${TODAY}.tar.gz.age"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "no config" "config"
+
+echo "case 6f: config backup present but holds no APP_KEY"
+setup_case config_no_key
+put_encrypted "$TODAY"
+printf 'DB_PASS=x\n' > "$WORK/cfg/.env.nokey"
+tar czf "$WORK/config-nokey.tar.gz" -C "$WORK/cfg" --transform 's/.env.nokey/.env/' .env.nokey 2>/dev/null \
+    || { mkdir -p "$WORK/cfg2"; printf 'DB_PASS=x\n' > "$WORK/cfg2/.env"; tar czf "$WORK/config-nokey.tar.gz" -C "$WORK/cfg2" .env; }
+age -R "$WORK/recipients" -o "$REMOTE/nexus_config_${TODAY}.tar.gz.age" "$WORK/config-nokey.tar.gz"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "config without APP_KEY" "APP_KEY"
+
+echo "case 6g: uploads archive holds only folders, no files"
+setup_case empty_uploads
+put_encrypted "$TODAY"
+age -R "$WORK/recipients" -o "$REMOTE/nexus_uploads_${TODAY}.tar.gz.age" "$WORK/emptyvol.tar.gz"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "empty uploads" "no files"
+
+echo "case 7c: live database counts unreadable"
+setup_case live_unreadable
+put_encrypted "$TODAY"
+DRILL_RC=0; run_drill STUB_LIVE_COUNT=0 || DRILL_RC=$?
+expect_fail "live unreadable" "live"
 
 echo "case 7: restore produced no rows"
 setup_case empty_restore
