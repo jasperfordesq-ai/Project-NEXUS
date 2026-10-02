@@ -271,14 +271,13 @@ describe('AdminSidebar', () => {
     expect(footerLinks[0].className).toContain('border-warning/30');
     expect(footerLinks[0].className).toContain('bg-warning/10');
 
-    // Documentation is external, so a plain anchor opening in a new tab — not a
-    // router link, which would route an absolute URL to a dead admin path.
-    expect(footerLinks[1]).toHaveTextContent('Documentation');
-    expect(footerLinks[1]).toHaveAttribute('href', 'https://docs.project-nexus.ie/');
-    expect(footerLinks[1]).toHaveAttribute('target', '_blank');
-    expect(footerLinks[1]).toHaveAttribute('rel', 'noopener noreferrer');
+    // The in-platform admin guide replaced the developer documentation link
+    // (2026-10-02): an ordinary in-app link, not an external new-tab anchor.
+    expect(footerLinks[1]).toHaveTextContent('Help Centre');
+    expect(footerLinks[1]).toHaveAttribute('href', '/test/help/admins');
+    expect(footerLinks[1]).not.toHaveAttribute('target');
 
-    expect(footer?.textContent).not.toContain('Help Centre');
+    expect(footer?.textContent).not.toContain('Documentation');
   });
 
   it('shows the Super Admin Panel overview link for god users', () => {

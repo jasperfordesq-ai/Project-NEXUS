@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The link pinned at the bottom of the admin sidebar now opens the platform's own Help Centre guide for community admins (`/help/admins`) instead of the developer documentation site, which was too technical for most admins. It opens in the same tab like every other sidebar link.
 - Community admins can no longer mark a volunteering expense claim as paid: the organisation that pays the volunteer records payment from its own dashboard. Community admins still see every claim and can approve or reject pending claims on the admin Expenses page, which now shows approved claims with a note instead of a "mark as paid" action. `PUT /v2/admin/volunteering/expenses/{id}` with `status: paid` now answers `403`.
 - Guests now count towards an event's limit, so an event shows fewer places available and can refuse a booking it would previously have accepted — the stated limit is now actually enforced, which matters where it is a fire limit. Cancelling a booking now also cancels the guests brought with it and frees their places for someone else (F-356).
 - A podcast episode or show that someone has reported can no longer be deleted by its creator while the report is still open — they are asked to archive it instead, or wait for a moderator. The reports themselves are now never deleted, so a creator can no longer clear their record by deleting and re-uploading the same audio (F-338).

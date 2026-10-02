@@ -107,21 +107,24 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('navigation', { name: /admin navigation/i })).toBeInTheDocument();
   });
 
-  it('pins a documentation link that opens in a new tab, expanded and collapsed', async () => {
+  it('pins a Help Centre link to the in-platform admin guide, expanded and collapsed', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
-    const { PROJECT_NEXUS_DOCS_URL } = await import('@/config/externalLinks');
 
-    const { rerender } = render(<AdminSidebar collapsed={false} />);
-    const link = screen.getByRole('link', { name: /platform documentation/i });
-    // Plain anchor, not a router Link: every other sidebar entry is an internal
-    // route, and routing to an absolute URL would produce a dead admin path.
-    expect(link).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
-    expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    const { container, rerender } = render(<AdminSidebar collapsed={false} />);
+    const footerLink = () => {
+      const links = Array.from(container.querySelectorAll('aside > div:last-child a'));
+      return links[links.length - 1];
+    };
+    // The in-platform guide, not the developer docs site it replaced.
+    expect(footerLink()).toHaveAttribute('href', '/test/help/admins');
+    expect(footerLink()).toHaveAccessibleName('Help Centre');
+    expect(footerLink()).not.toHaveAttribute('target');
+    expect(container.querySelector('a[href*="docs.project-nexus.ie"]')).toBeNull();
 
-    // Collapsed, the label is hidden but the link must still be reachable.
+    // Collapsed, the label is hidden but the link must still be reachable and named.
     rerender(<AdminSidebar collapsed />);
-    expect(screen.getByRole('link', { name: /platform documentation/i })).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
+    expect(footerLink()).toHaveAttribute('href', '/test/help/admins');
+    expect(footerLink()).toHaveAccessibleName('Help Centre');
   });
 
   it('shows an Admin heading link when not collapsed', async () => {

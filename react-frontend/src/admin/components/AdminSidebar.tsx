@@ -72,8 +72,6 @@ import BarChart2 from 'lucide-react/icons/chart-no-axes-column';
 import Lightbulb from 'lucide-react/icons/lightbulb';
 import Briefcase from 'lucide-react/icons/briefcase';
 import BookOpen from 'lucide-react/icons/book-open';
-import ExternalLink from 'lucide-react/icons/external-link';
-import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 import Cpu from 'lucide-react/icons/cpu';
 import Handshake from 'lucide-react/icons/handshake';
 import MapPin from 'lucide-react/icons/map-pin';
@@ -1090,28 +1088,22 @@ export function AdminSidebar({ collapsed = false, onToggle = () => undefined }: 
           </Tooltip>
         )}
 
-        {/* Platform documentation. External, so a plain anchor rather than a
-            router Link — every other entry in this sidebar is an internal route.
+        {/* The in-platform admin guide (Help Centre → "For community admins").
+            Until 2026-10-02 this slot linked to the developer documentation on
+            docs.project-nexus.ie, which is far too technical for most admins.
             Pinned here rather than beside "Help FAQs", which is content
             management for member-facing articles and a different thing entirely. */}
-        <Tooltip content={t('documentation')} placement="right" isDisabled={!collapsed}>
-          <a
-            href={PROJECT_NEXUS_DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={t('documentation_aria')}
+        <Tooltip content={t('help_centre')} placement="right" isDisabled={!collapsed}>
+          <Link
+            to={tenantPath('/help/admins')}
+            aria-label={t('help_centre')}
             className={`flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-secondary hover:text-foreground ${
               collapsed ? 'justify-center' : ''
             }`}
           >
-            <BookOpen size={16} className="shrink-0" />
-            {!collapsed && (
-              <>
-                <span className="min-w-0 flex-1 truncate">{t('documentation')}</span>
-                <ExternalLink size={12} className="shrink-0 opacity-70" aria-hidden="true" />
-              </>
-            )}
-          </a>
+            <HelpCircle size={16} className="shrink-0" />
+            {!collapsed && <span className="min-w-0 flex-1 truncate">{t('help_centre')}</span>}
+          </Link>
         </Tooltip>
       </div>
     </aside>
