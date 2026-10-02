@@ -52,6 +52,16 @@ echo ""
 # ---------------------------------------------------------------------------
 header "Step 1: Check rclone"
 
+# winget unpacks rclone into a versioned sub-folder of its Packages directory
+# and only adds it to PATH for NEW shells — so look there before installing.
+find_winget_rclone() {
+    local base="/c/Users/${USERNAME:-$USER}/AppData/Local/Microsoft/WinGet/Packages"
+    local exe
+    exe="$(find "$base" -maxdepth 3 -iname 'rclone.exe' 2>/dev/null | head -1 || true)"
+    [ -n "$exe" ] && export PATH="$PATH:$(dirname "$exe")"
+}
+command -v rclone &>/dev/null || find_winget_rclone
+
 if command -v rclone &>/dev/null; then
     success "rclone found: $(rclone version | head -1)"
 else
@@ -65,8 +75,8 @@ else
         echo "  4. Re-run this script"
         exit 1
     }
-    # Reload PATH
-    export PATH="$PATH:/c/Users/$USERNAME/AppData/Local/Microsoft/WinGet/Packages/Rclone.Rclone_Microsoft.Winget.Source_8wekyb3d8bbwe/"
+    # Reload PATH (the exe sits in a versioned sub-folder)
+    find_winget_rclone
     command -v rclone &>/dev/null || fail "rclone still not in PATH after install — restart Git Bash and re-run"
     success "rclone installed: $(rclone version | head -1)"
 fi
