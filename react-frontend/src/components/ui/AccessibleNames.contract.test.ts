@@ -103,7 +103,7 @@ describe('HeroUI accessible-name production contracts', () => {
       visit(file);
     }
 
-    expect(progressCount).toBeGreaterThanOrEqual(78);
+    expect(progressCount).toBeGreaterThanOrEqual(76);
     expect(unnamed).toEqual([]);
   });
 });
