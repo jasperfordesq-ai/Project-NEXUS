@@ -14,6 +14,10 @@
 # A monitor that messages every 15 minutes for the length of an outage teaches
 # its owner to ignore it.
 #
+# Slack is an optional second channel (secret SLACK_UPTIME_WEBHOOK, an incoming
+# webhook). It sends the same message at the same moments. When the secret is
+# absent the Slack step only warns; Telegram's behaviour is unchanged.
+#
 # This workflow does not fail when an endpoint is down: the alert is the signal,
 # and leaving every scheduled run red creates exactly the noise described above.
 # It DOES fail if the probe cannot run or the alert cannot be delivered, so a
@@ -34,7 +38,7 @@ on:
   workflow_dispatch:
     inputs:
       force_alert:
-        description: 'Send a Telegram message even if the state has not changed (use to test the alert path)'
+        description: 'Send the alert (Telegram, and Slack if configured) even if the state has not changed (use to test the alert path)'
         type: boolean
         default: false
 
@@ -151,6 +155,65 @@ jobs:
             echo "Telegram alert sent"
           else
             echo "::error::Telegram API rejected the message"
+            exit 1
+          fi
+
+      # Slack is a SECOND channel, added 2026-10-02 so an outage reaches the owner
+      # even when Telegram is missed. It is optional: with no SLACK_UPTIME_WEBHOOK
+      # secret this step warns and succeeds, so a missing Slack setup can never
+      # turn the run red on its own. Once the secret IS set, a rejected message
+      # fails the run, for the same reason Telegram does - a broken alert path
+      # must not look like a healthy platform.
+      #
+      # `!cancelled()` rather than the default `success()`, so a Telegram failure
+      # does not also stop the Slack message: the point of a second channel is
+      # that it still works when the first one does not.
+      #
+      # 🔴 This repository is PUBLIC. The webhook URL is the credential - anyone
+      # holding it can post into the channel - so it is never echoed, and nor is
+      # Slack's response body. Only the HTTP status code is printed.
+      - name: Send Slack alert
+        if: ${{ !cancelled() && steps.decide.outputs.alert == 'true' }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_UPTIME_WEBHOOK }}
+          HEALTHY:  ${{ steps.probe.outputs.healthy }}
+          SUMMARY:  ${{ steps.probe.outputs.summary }}
+          DETAIL:   ${{ steps.probe.outputs.detail }}
+          RUN_URL:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${SLACK_WEBHOOK}" ]; then
+            echo "::warning::SLACK_UPTIME_WEBHOOK secret is not set - Slack alert skipped (Telegram is unaffected)"
+            exit 0
+          fi
+
+          if [ "${HEALTHY}" = "true" ]; then
+            HEADING="RECOVERED - everything is responding again"
+          else
+            HEADING="SITE DOWN"
+          fi
+
+          MESSAGE=$(printf '%s\n\n%s\n\n%s\n\n%s' \
+            "${HEADING}" "${SUMMARY}" "${DETAIL}" "${RUN_URL}")
+
+          # jq builds the JSON so quotes and newlines in the probe output cannot
+          # break the payload. Slack requires &, < and > escaped in message text.
+          PAYLOAD_FILE=$(mktemp)
+          BODY_FILE=$(mktemp)
+          jq -n --arg text "${MESSAGE}" \
+            '{text: ($text | gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;"))}' \
+            > "${PAYLOAD_FILE}"
+
+          HTTP_CODE=$(curl -sS --max-time 20 --retry 2 \
+            -o "${BODY_FILE}" -w '%{http_code}' \
+            -H 'Content-Type: application/json' \
+            --data-binary "@${PAYLOAD_FILE}" \
+            "${SLACK_WEBHOOK}") || HTTP_CODE="000"
+
+          # A successful incoming-webhook call answers HTTP 200 with the body "ok".
+          if [ "${HTTP_CODE}" = "200" ] && [ "$(cat "${BODY_FILE}")" = "ok" ]; then
+            echo "Slack alert sent"
+          else
+            echo "::error::Slack webhook did not accept the message (HTTP ${HTTP_CODE})"
             exit 1
           fi
 

@@ -187,7 +187,7 @@ so this must be a deliberate, planned operation. See
 
 | What | Where it runs | Schedule | Alerts via |
 | --- | --- | --- | --- |
-| Uptime check (4 production hosts) | GitHub Actions (`uptime-check.yml`) | every 15 min | Telegram, on state **change** only |
+| Uptime check (addresses in `scripts/uptime-targets.json`) | GitHub Actions (`uptime-check.yml`) | every 15 min | Telegram, plus Slack when the `SLACK_UPTIME_WEBHOOK` secret is set; on state **change** only |
 | Deploy drift watchdog | GitHub Actions | every 30 min | Telegram |
 | ASP.NET database backup | Production host cron | ⛔ disabled 2026-08-10 with the retirement | — |
 | ASP.NET backup freshness | Production host cron | ⛔ disabled 2026-08-10 with the retirement | — |
