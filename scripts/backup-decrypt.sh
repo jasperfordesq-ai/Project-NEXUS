@@ -30,6 +30,10 @@
 set -euo pipefail
 umask 077
 
+# Docker image used on Windows. A supported Alpine release; any image with
+# `apk add age` works if this one is ever withdrawn (override with AGE_IMAGE).
+AGE_IMAGE="${AGE_IMAGE:-alpine:3.22}"
+
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
 KEY_FILE=""
@@ -61,7 +65,7 @@ fi
 [ "$OUT_NAME" != "$BASE" ] || fail "cannot work out an output name; pass one"
 [ ! -e "$DIR/$OUT_NAME" ] || fail "$DIR/$OUT_NAME already exists — not overwriting it"
 PARTIAL=".${OUT_NAME}.partial.$$"
-trap 'rm -f "$DIR/$PARTIAL"; [ "$SHOW" = "1" ] && rm -f "$DIR/$OUT_NAME"' EXIT
+trap 'rm -f "$DIR/$PARTIAL" "$DIR/.backup-decrypt-err.$$"; [ "$SHOW" = "1" ] && rm -f "$DIR/$OUT_NAME"' EXIT
 
 if [ -n "$KEY_FILE" ]; then
     KEY="$(grep -m1 -i '^AGE-SECRET-KEY-' "$KEY_FILE" || true)"
@@ -77,17 +81,32 @@ KEY="$(printf '%s' "$KEY" | tr -d ' \t\r\n' | tr 'a-z' 'A-Z')"
     || fail "that does not look like a backup key (it should start AGE-SECRET-KEY-1 and be 74 characters without spaces)"
 
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) ON_WINDOWS=1 ;; *) ON_WINDOWS=0 ;; esac
+ERR_FILE="$DIR/.backup-decrypt-err.$$"
+rc=0
 if [ "$ON_WINDOWS" = "0" ] && command -v age >/dev/null 2>&1; then
-    printf '%s\n' "$KEY" | age -d -i /dev/stdin -o "$DIR/$PARTIAL" "$DIR/$BASE" 2>/dev/null \
-        || fail "this key does NOT open $BASE"
+    printf '%s\n' "$KEY" | age -d -i /dev/stdin -o "$DIR/$PARTIAL" "$DIR/$BASE" 2>"$ERR_FILE" || rc=$?
 else
-    command -v docker >/dev/null 2>&1 || fail "needs age or Docker"
+    command -v docker >/dev/null 2>&1 || fail "needs age or Docker. Alternatively install age itself (https://age-encryption.org, or on Windows: winget install FiloSottile.age)."
     HOST_DIR="$(cd "$DIR" && (pwd -W 2>/dev/null || pwd))"
-    printf '%s\n' "$KEY" | MSYS_NO_PATHCONV=1 docker run -i --rm -v "$HOST_DIR:/w" alpine:3.20 \
-        sh -c 'apk add -q age >/dev/null 2>&1 && age -d -i /dev/stdin -o "/w/$1" "/w/$2" 2>/dev/null' sh "$PARTIAL" "$BASE" \
-        || fail "this key does NOT open $BASE"
+    # Exit 90 = age could not be installed inside the container (no internet,
+    # package mirror down). That says nothing about the key.
+    printf '%s\n' "$KEY" | MSYS_NO_PATHCONV=1 docker run -i --rm -v "$HOST_DIR:/w" "$AGE_IMAGE" \
+        sh -c 'apk add -q age >/dev/null 2>&1 || exit 90; age -d -i /dev/stdin -o "/w/$1" "/w/$2" 2>"/w/$3"' \
+        sh "$PARTIAL" "$BASE" "$(basename "$ERR_FILE")" || rc=$?
 fi
 KEY=""
+if [ "$rc" -ne 0 ]; then
+    AGE_ERR="$(head -c 400 "$ERR_FILE" 2>/dev/null || true)"
+    rm -f "$ERR_FILE"
+    if [ "$rc" -eq 90 ]; then
+        fail "could not install the age tool in Docker (no internet connection?). This is NOT a problem with your key — try again when online, or install age directly (winget install FiloSottile.age)."
+    fi
+    if grep -qi "no identity matched" <<<"$AGE_ERR"; then
+        fail "this key does NOT open $BASE (age: no identity matched)"
+    fi
+    fail "could not decrypt $BASE — this is not necessarily a problem with your key. The file may be damaged or incompletely downloaded; download it again and retry. age said: ${AGE_ERR:-no message}"
+fi
+rm -f "$ERR_FILE"
 mv "$DIR/$PARTIAL" "$DIR/$OUT_NAME"
 
 echo "PASS: this key opens $BASE"

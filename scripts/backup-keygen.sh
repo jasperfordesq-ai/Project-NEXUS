@@ -49,7 +49,8 @@ if [ "$ON_WINDOWS" = "0" ] && command -v age-keygen >/dev/null 2>&1; then
     OUT="$(age-keygen 2>/dev/null)"
 else
     command -v docker >/dev/null 2>&1 || { echo "✗ needs age-keygen or Docker" >&2; exit 1; }
-    OUT="$(MSYS_NO_PATHCONV=1 docker run --rm alpine:3.20 sh -c 'apk add -q age >/dev/null 2>&1 && age-keygen 2>/dev/null')"
+    OUT="$(MSYS_NO_PATHCONV=1 docker run --rm "${AGE_IMAGE:-alpine:3.22}" sh -c 'apk add -q age >/dev/null 2>&1 || exit 90; age-keygen 2>/dev/null')" \
+        || { echo "✗ could not run age in Docker (no internet connection, or Docker not running?). No key was made." >&2; exit 1; }
 fi
 
 SECRET="$(printf '%s\n' "$OUT" | grep -m1 '^AGE-SECRET-KEY-1')"

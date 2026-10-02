@@ -67,6 +67,18 @@ fi
 grep -q "FAIL" "$WORK/dec3.out" && pass "says FAIL" || failt "no FAIL message"
 [ -e "$WORK/nexus_db_2026-10-02.sql.gz" ] && failt "left a partial output file behind" || pass "no output file left behind"
 
+grep -q "does NOT open" "$WORK/dec3.out" && pass "wrong key is reported as a key problem" || failt "wrong key not reported as a key problem"
+
+echo "case 4b: right key, but the downloaded file is damaged — must NOT blame the key"
+head -c 120 "$WORK/nexus_db_2026-10-02.sql.gz.age" > "$WORK/nexus_db_2026-10-03.sql.gz.age"
+if bash "$DECRYPT" --key-file "$WORK/key-a.txt" "$WORK/nexus_db_2026-10-03.sql.gz.age" > "$WORK/dec5.out" 2>&1; then
+    failt "damaged file reported as success"
+else
+    pass "damaged file exits non-zero"
+fi
+grep -q "does NOT open" "$WORK/dec5.out" && failt "damaged file wrongly blamed on the key" || pass "damaged file not blamed on the key"
+grep -qi "not necessarily" "$WORK/dec5.out" && pass "says it is not necessarily the key, and shows why" || failt "no explanation for a non-key failure"
+
 echo "case 5: refuses to overwrite an existing file"
 printf 'keep me\n' > "$WORK/nexus_db_2026-10-02.sql.gz"
 if bash "$DECRYPT" --key-file "$WORK/key-a.txt" "$WORK/nexus_db_2026-10-02.sql.gz.age" > "$WORK/dec4.out" 2>&1; then
