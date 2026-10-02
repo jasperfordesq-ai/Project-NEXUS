@@ -473,6 +473,35 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Performance' })).toHaveAttribute('href', '/test/admin/performance');
   });
 
+  it('hides the Monitoring link from non-god super admins', () => {
+    // Owner decision 2026-10-02: /admin/enterprise/monitoring is god-only in the sidebar.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
+
+    expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Monitoring' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Monitoring link to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
+
+    expect(screen.getByRole('link', { name: 'Monitoring' })).toHaveAttribute('href', '/test/admin/enterprise/monitoring');
+  });
+
   it('shows the Module Configuration link to super admins', () => {
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>

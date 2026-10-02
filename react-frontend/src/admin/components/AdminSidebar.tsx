@@ -562,7 +562,9 @@ function useAdminNav(): NavSection[] {
           { label: t('gdpr_dashboard'), href: '/admin/enterprise/gdpr', icon: ShieldCheck },
           { label: t('legal_documents'), href: '/admin/legal-documents', icon: FileText },
           { label: t('compliance_dashboard'), href: '/admin/legal-documents/compliance', icon: ShieldCheck },
-          { label: t('monitoring'), href: '/admin/enterprise/monitoring', icon: Heart },
+          // God-only in the sidebar (owner decision, 2026-10-02). This hides the
+          // link only — the page and its API keep their existing admin gates.
+          ...(isGod ? [{ label: t('monitoring'), href: '/admin/enterprise/monitoring', icon: Heart }] : []),
         ],
       },
       {

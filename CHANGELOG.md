@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The "Roles & Permissions" link under Enterprise in the admin sidebar is now shown only to platform god users. Community administrators no longer see it in the sidebar; the page and its API are unchanged.
 - The Communications section of the admin panel (Email Settings, Email Deliverability, Deliverability) is now shown only to god accounts; super admins previously saw it too. Opening one of those pages by its address now returns anyone else to the admin dashboard. The underlying API permissions are unchanged.
 - The Performance page (Analytics & Reporting → Performance, `/admin/performance`) is now shown only to god accounts. The link is hidden from everyone else, and opening the page by its address returns them to the admin dashboard. Its API permissions are unchanged.
+- The Monitoring link (Enterprise → Monitoring, `/admin/enterprise/monitoring`) is now shown in the admin sidebar only to god accounts. Other administrators no longer see it in the sidebar; the page, the Enterprise dashboard shortcut to it, and its API are unchanged.
 
 ### Fixed
 
