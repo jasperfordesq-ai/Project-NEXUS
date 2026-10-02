@@ -1623,6 +1623,7 @@ cmd_deploy() {
     # Validate environment before doing anything irreversible
     . "$SELF_DIR/phases/validate-env.sh"
     validate_required_env_vars
+    secure_env_file_permissions
     validate_dockerfiles
 
     local active target commit release_dir release_meta

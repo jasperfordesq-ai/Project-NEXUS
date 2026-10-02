@@ -63,6 +63,43 @@ validate_required_env_vars() {
     log_ok "All required env vars present"
 }
 
+# F-541: .env holds every platform secret, and it and its .env.bak-* copies
+# were found readable by every local account (664/644). Nothing needs that:
+# the deploy and cron read it as root, and its owner is the deploy user. Every
+# deploy re-asserts owner-only (600), because a hand edit or a `cp` backup
+# (which takes the umask, not the source mode) silently reopens it. Stops the
+# deploy if a file cannot be tightened. Never prints file contents.
+# Regression test: scripts/test/test-env-file-permissions.sh
+secure_env_file_permissions() {
+    log_step "=== Secrets File Permissions ==="
+
+    local file current tightened=0
+    shopt -s nullglob
+    local files=("$DEPLOY_DIR/.env" "$DEPLOY_DIR"/.env.bak-*)
+    shopt -u nullglob
+
+    for file in "${files[@]}"; do
+        [ -f "$file" ] || continue
+        current="$(stat -c %a "$file" 2>/dev/null || echo unknown)"
+        # Any group or other permission bit set => readable/writable by others.
+        if [ "$current" = "unknown" ] || [ $((8#$current & 8#077)) -ne 0 ]; then
+            if chmod 600 "$file" 2>/dev/null; then
+                log_warn "tightened $(basename "$file") from $current to 600 (owner-only)"
+                tightened=$((tightened + 1))
+            else
+                log_err "could not restrict $file to owner-only (mode $current) — it holds platform secrets; aborting deploy"
+                exit 1
+            fi
+        fi
+    done
+
+    if [ "$tightened" -eq 0 ]; then
+        log_ok "secrets files are owner-only (600)"
+    else
+        log_ok "secrets files are owner-only (600) after tightening $tightened file(s)"
+    fi
+}
+
 validate_environment() {
     log_step "=== Pre-Deploy Validation ==="
 
@@ -70,6 +107,7 @@ validate_environment() {
 
     # Check required env vars first — fail fast before touching containers
     validate_required_env_vars
+    secure_env_file_permissions
 
     # Validate critical variable values (not just presence)
     local APP_ENV_VAL
