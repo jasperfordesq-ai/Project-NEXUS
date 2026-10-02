@@ -109,7 +109,6 @@ const GroupTypes = lazy(() => import('./modules/groups/GroupTypes'));
 const GroupDetail = lazy(() => import('./modules/groups/GroupDetail'));
 const GroupRecommendations = lazy(() => import('./modules/groups/GroupRecommendations'));
 const GroupRanking = lazy(() => import('./modules/groups/GroupRanking'));
-const GroupGeocode = lazy(() => import('./modules/groups/GroupGeocode'));
 const GroupOrganization = lazy(() => import('./modules/groups/GroupOrganization'));
 const ResidencyVerifications = lazy(() => import('./modules/users/ResidencyVerifications'));
 
@@ -275,10 +274,6 @@ const WebpConverter = lazy(() => import('./modules/system/WebpConverter'));
 const ImageSettings = lazy(() => import('./modules/system/ImageSettings'));
 const NativeApp = lazy(() => import('./modules/system/NativeApp'));
 const BlogRestore = lazy(() => import('./modules/system/BlogRestore'));
-
-// Community tools
-const SmartMatchUsers = lazy(() => import('./modules/community/SmartMatchUsers'));
-const SmartMatchMonitoring = lazy(() => import('./modules/community/SmartMatchMonitoring'));
 
 // Deliverability module
 const DeliverabilityDashboard = lazy(() => import('./modules/deliverability/DeliverabilityDashboard'));
@@ -579,12 +574,14 @@ export function AdminRoutes() {
       <Route path="groups/ranking" element={<Lazy><GroupRanking /></Lazy>} />
       <Route path="groups/organization" element={<Lazy><GroupOrganization /></Lazy>} />
       <Route path="residency-verifications" element={<FeatureGatedElement feature="caring_community"><Lazy><ResidencyVerifications /></Lazy></FeatureGatedElement>} />
-      <Route path="group-types" element={<Lazy><GroupList /></Lazy>} />
-      <Route path="group-ranking" element={<Lazy><GroupList /></Lazy>} />
-      <Route path="group-locations" element={<Lazy><GroupGeocode /></Lazy>} />
-      <Route path="geocode-groups" element={<Lazy><GroupGeocode /></Lazy>} />
-      <Route path="smart-match-users" element={<Lazy><SmartMatchUsers /></Lazy>} />
-      <Route path="smart-match-monitoring" element={<Lazy><SmartMatchMonitoring /></Lazy>} />
+      {/* Legacy hyphenated paths (F-533): the module gate matches by prefix, so these
+          duplicates escaped it. Each now redirects to its gated canonical page. */}
+      <Route path="group-types" element={<TenantRedirect to="/admin/groups/types" />} />
+      <Route path="group-ranking" element={<TenantRedirect to="/admin/groups/ranking" />} />
+      <Route path="group-locations" element={<TenantRedirect to="/admin/groups" />} />
+      <Route path="geocode-groups" element={<TenantRedirect to="/admin/groups" />} />
+      <Route path="smart-match-users" element={<TenantRedirect to="/broker/match-approvals" />} />
+      <Route path="smart-match-monitoring" element={<TenantRedirect to="/admin/smart-matching/analytics" />} />
       <Route path="volunteering" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteeringOverview /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/approvals" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerApprovals /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/swaps" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerSwaps /></Lazy></FeatureGatedElement>} />

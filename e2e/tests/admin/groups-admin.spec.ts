@@ -415,8 +415,10 @@ test('maps every Groups admin route and linked geocode alias', async ({ page }) 
     ['/admin/groups/recommendations', 'Group Recommendations'],
     ['/admin/groups/ranking', 'Group Ranking'],
     ['/admin/groups/organization', 'Group Organization'],
-    ['/admin/group-locations', 'Geocode'],
-    ['/admin/geocode-groups', 'Geocode'],
+    // Legacy aliases redirect to the gated Groups list (F-533) instead of
+    // rendering the ungated "not migrated" geocode stub.
+    ['/admin/group-locations', 'Group List'],
+    ['/admin/geocode-groups', 'Group List'],
   ];
 
   for (const [pathname, heading] of surfaces) {
