@@ -8,6 +8,10 @@
  *
  * Operational tools (not config): cache statistics and background jobs.
  * Previously lived inside /admin/tenant-features (now retired).
+ *
+ * The background jobs are the cron jobs, so that card is shown to god accounts
+ * only (owner decision 2026-10-02) — everyone else sees the cache card alone,
+ * and the jobs list is not even requested for them.
  */
 
 import { getFormattingLocale } from '@/lib/helpers';
@@ -21,7 +25,8 @@ import Database from 'lucide-react/icons/database';
 import Timer from 'lucide-react/icons/timer';
 import Play from 'lucide-react/icons/play';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
+import { useAuth, useToast } from '@/contexts';
+import { isGodUser } from '@/lib/access';
 import { adminConfig } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { CacheStats, BackgroundJob } from '../../api/types';
@@ -31,6 +36,8 @@ export default function Operations() {
   const { t } = useTranslation('admin_system');
   usePageTitle(t('operations.title'));
   const toast = useToast();
+  const { user } = useAuth();
+  const isGod = isGodUser(user);
 
   const [cacheStats, setCacheStats] = useState<CacheStats | null>(null);
   const [jobs, setJobs] = useState<BackgroundJob[]>([]);
@@ -40,14 +47,14 @@ export default function Operations() {
     setLoading(true);
     const [cacheRes, jobsRes] = await Promise.all([
       adminConfig.getCacheStats(),
-      adminConfig.getJobs(),
+      isGod ? adminConfig.getJobs() : Promise.resolve(null),
     ]);
     if (cacheRes.success && cacheRes.data) setCacheStats(cacheRes.data);
-    if (jobsRes.success && jobsRes.data) {
+    if (jobsRes?.success && jobsRes.data) {
       setJobs(Array.isArray(jobsRes.data) ? jobsRes.data : []);
     }
     setLoading(false);
-  }, []);
+  }, [isGod]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -83,7 +90,7 @@ export default function Operations() {
     <div>
       <PageHeader
         title={t('operations.title')}
-        description={t('operations.description')}
+        description={isGod ? t('operations.description') : t('operations.description_cache_only')}
         actions={
           <Button variant="tertiary" size="sm" startContent={<RefreshCw aria-hidden="true" size={16} />} onPress={load}>
             {t('operations.refresh')}
@@ -91,7 +98,7 @@ export default function Operations() {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className={isGod ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'grid grid-cols-1 gap-6'}>
         <Card>
           <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
             <Database aria-hidden="true" size={18} className="text-warning" />
@@ -126,37 +133,39 @@ export default function Operations() {
           </CardBody>
         </Card>
 
-        <Card>
-          <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
-            <Timer aria-hidden="true" size={18} className="text-accent" />
-            <h3 className="font-semibold">{t('operations.bg_jobs_heading')}</h3>
-          </CardHeader>
-          <CardBody className="px-4 pb-4 space-y-3">
-            {jobs.length > 0 ? jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">{getCronJobName(t, job)}</p>
-                  <p className="text-xs text-muted">
-                    {job.last_run_at
-                      ? t('operations.last_run', { date: new Date(job.last_run_at).toLocaleString(getFormattingLocale()) })
-                      : t('operations.never_run')}
-                  </p>
+        {isGod && (
+          <Card>
+            <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
+              <Timer aria-hidden="true" size={18} className="text-accent" />
+              <h3 className="font-semibold">{t('operations.bg_jobs_heading')}</h3>
+            </CardHeader>
+            <CardBody className="px-4 pb-4 space-y-3">
+              {jobs.length > 0 ? jobs.map((job) => (
+                <div key={job.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{getCronJobName(t, job)}</p>
+                    <p className="text-xs text-muted">
+                      {job.last_run_at
+                        ? t('operations.last_run', { date: new Date(job.last_run_at).toLocaleString(getFormattingLocale()) })
+                        : t('operations.never_run')}
+                    </p>
+                  </div>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="tertiary"
+                    onPress={() => handleRunJob(job.id)}
+                    aria-label={t('operations.run_job_label', { name: getCronJobName(t, job) })}
+                  >
+                    <Play aria-hidden="true" size={14} />
+                  </Button>
                 </div>
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="tertiary"
-                  onPress={() => handleRunJob(job.id)}
-                  aria-label={t('operations.run_job_label', { name: getCronJobName(t, job) })}
-                >
-                  <Play aria-hidden="true" size={14} />
-                </Button>
-              </div>
-            )) : (
-              <p className="text-sm text-muted">{t('operations.no_jobs')}</p>
-            )}
-          </CardBody>
-        </Card>
+              )) : (
+                <p className="text-sm text-muted">{t('operations.no_jobs')}</p>
+              )}
+            </CardBody>
+          </Card>
+        )}
       </div>
     </div>
   );

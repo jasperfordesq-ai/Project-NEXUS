@@ -374,4 +374,40 @@ describe('AdminSidebar', () => {
     expect(allLinks.filter((l) => l.getAttribute('href')?.includes('/admin/seo/prerender'))).toHaveLength(0);
     expect(allLinks.filter((l) => l.getAttribute('href')?.includes('/admin/cron-jobs/settings'))).toHaveLength(0);
   });
+
+  // Cron jobs are god-only (owner decision 2026-10-02): all four links, for
+  // everyone else — platform super admins included.
+  const CRON_HREFS = [
+    '/test/admin/cron-jobs',
+    '/test/admin/cron-jobs/logs',
+    '/test/admin/cron-jobs/setup',
+    '/test/admin/cron-jobs/settings',
+  ];
+
+  it.each([
+    ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
+    ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true }],
+  ])('hides every cron job link from %s', async (_who, user) => {
+    authState.user = user as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Platform Operations' }));
+    // Control: the section really opened.
+    expect(screen.getByRole('link', { name: 'Native App' })).toBeInTheDocument();
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs.filter((h) => h?.includes('/admin/cron-jobs'))).toEqual([]);
+  });
+
+  it('shows all four cron job links to a god account', async () => {
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Platform Operations' }));
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    for (const href of CRON_HREFS) {
+      expect(hrefs).toContain(href);
+    }
+  });
 });

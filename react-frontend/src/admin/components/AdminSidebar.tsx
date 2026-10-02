@@ -548,10 +548,15 @@ function useAdminNav(): NavSection[] {
           { label: t('activity_log'), href: '/admin/activity-log', icon: Activity },
           { label: t('retention_policies'), href: '/admin/retention', icon: Activity, keywords: keyword(t('search_keywords.retention_policies')) },
           { label: t('sso_providers'), href: '/admin/sso', icon: KeyIcon, keywords: keyword(t('search_keywords.sso_providers')) },
-          { label: t('cron_jobs'), href: '/admin/cron-jobs', icon: Timer },
-          { label: t('cron_logs'), href: '/admin/cron-jobs/logs', icon: FileText },
-          { label: t('cron_setup'), href: '/admin/cron-jobs/setup', icon: Wrench },
-          ...(isPlatformSuperAdmin ? [{ label: t('cron_settings'), href: '/admin/cron-jobs/settings', icon: Settings }] : []),
+          // Cron jobs are god accounts only (owner decision 2026-10-02). The
+          // routes are guarded by GodOnlyRoute too, so a typed URL does not
+          // reach the pages.
+          ...(isGod ? [
+            { label: t('cron_jobs'), href: '/admin/cron-jobs', icon: Timer },
+            { label: t('cron_logs'), href: '/admin/cron-jobs/logs', icon: FileText },
+            { label: t('cron_setup'), href: '/admin/cron-jobs/setup', icon: Wrench },
+            { label: t('cron_settings'), href: '/admin/cron-jobs/settings', icon: Settings },
+          ] : []),
         ],
       },
       {

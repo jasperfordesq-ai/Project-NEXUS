@@ -550,10 +550,13 @@ export function AdminRoutes() {
       <Route path="operations" element={<Lazy><Operations /></Lazy>} />
       <Route path="support-reports" element={<Lazy><SupportReportsPage /></Lazy>} />
       <Route path="translation-config" element={<Lazy><TranslationConfig /></Lazy>} />
-      <Route path="cron-jobs" element={<Lazy><CronJobs /></Lazy>} />
-      <Route path="cron-jobs/logs" element={<Lazy><CronJobLogs /></Lazy>} />
-      <Route path="cron-jobs/settings" element={<Lazy><CronJobSettings /></Lazy>} />
-      <Route path="cron-jobs/setup" element={<Lazy><CronJobSetup /></Lazy>} />
+      {/* Cron jobs — god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="cron-jobs" element={<Lazy><CronJobs /></Lazy>} />
+        <Route path="cron-jobs/logs" element={<Lazy><CronJobLogs /></Lazy>} />
+        <Route path="cron-jobs/settings" element={<Lazy><CronJobSettings /></Lazy>} />
+        <Route path="cron-jobs/setup" element={<Lazy><CronJobSetup /></Lazy>} />
+      </Route>
       <Route path="activity-log" element={<Lazy><ActivityLog /></Lazy>} />
       <Route path="retention" element={<Lazy><RetentionPolicies /></Lazy>} />
       <Route path="sso" element={<Lazy><SsoProviders /></Lazy>} />

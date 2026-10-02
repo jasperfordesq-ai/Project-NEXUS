@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Staitisticí taisce agus rialuithe poist chúlra.",
+    "description_cache_only": "Staitisticí agus rialuithe taisce.",
     "redis_label": "Redis",
     "memory_used": "Cuimhne a úsáidtear",
     "clear_cache": "Glan taisce tionónta",

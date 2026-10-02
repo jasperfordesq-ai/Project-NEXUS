@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Statystyki pamięci podręcznej i kontrola zadań w tle.",
+    "description_cache_only": "Statystyki i ustawienia pamięci podręcznej.",
     "redis_label": "Redis",
     "memory_used": "Używana pamięć",
     "clear_cache": "Wyczyść pamięć podręczną dzierżawy",

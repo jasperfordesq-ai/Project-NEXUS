@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "キャッシュ統計とバックグラウンド ジョブ制御。",
+    "description_cache_only": "キャッシュの統計と操作。",
     "redis_label": "Redis",
     "memory_used": "使用メモリ",
     "clear_cache": "テナントキャッシュをクリアする",

@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Cachestatistieken en taakcontroles op de achtergrond.",
+    "description_cache_only": "Cachestatistieken en -beheer.",
     "redis_label": "Redis",
     "memory_used": "Gebruikt geheugen",
     "clear_cache": "Tenantcache wissen",

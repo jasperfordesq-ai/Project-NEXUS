@@ -29212,6 +29212,7 @@ export default interface Resources {
       "cache_heading": "Cache",
       "clear_cache": "Clear tenant cache",
       "description": "Cache statistics and background job controls.",
+      "description_cache_only": "Cache statistics and controls.",
       "job_trigger_failed": "Failed to trigger job",
       "job_triggered": "Job triggered successfully",
       "keys": "Keys",

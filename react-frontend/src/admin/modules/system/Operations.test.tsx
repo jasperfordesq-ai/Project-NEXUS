@@ -7,13 +7,33 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { User } from '@/types/api';
 
 // ── mock contexts ────────────────────────────────────────────────────────────
 
 const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }));
 
+// The Background Jobs card (the cron jobs) is god-only, so most tests run as a
+// god; the non-god tests swap in a platform super admin who is not one.
+const GOD_USER = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+const SUPER_ADMIN_USER = { id: 2, name: 'Super Admin', role: 'admin', is_super_admin: true } as User;
+const authState = vi.hoisted(() => ({ user: null as User | null }));
+
 vi.mock('@/contexts', () =>
-  createMockContexts({ useToast: () => mockToast }),
+  createMockContexts({
+    useToast: () => mockToast,
+    useAuth: () => ({
+      user: authState.user,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
+  }),
 );
 
 // ── mock adminApi ────────────────────────────────────────────────────────────
@@ -59,6 +79,35 @@ function setupHappyPath() {
 describe('Operations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.user = { ...GOD_USER };
+  });
+
+  it('hides the background (cron) jobs from an admin who is not god, and does not fetch them', async () => {
+    authState.user = { ...SUPER_ADMIN_USER };
+    setupHappyPath();
+    render(<Operations />);
+
+    // Control: the page really loaded — the cache card rendered.
+    await waitFor(() => {
+      expect(screen.getByText('4.2 MB')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Background Jobs')).not.toBeInTheDocument();
+    expect(screen.queryByText('Email digest sender')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /run.*email digest sender/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Cache statistics and background job controls.')).not.toBeInTheDocument();
+    expect(screen.getByText('Cache statistics and controls.')).toBeInTheDocument();
+    expect(mockGetJobs).not.toHaveBeenCalled();
+  });
+
+  it('shows the background (cron) jobs card to a god account', async () => {
+    setupHappyPath();
+    render(<Operations />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Background Jobs')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Cache statistics and background job controls.')).toBeInTheDocument();
+    expect(mockGetJobs).toHaveBeenCalledTimes(1);
   });
 
   it('shows loading spinner while fetching', () => {

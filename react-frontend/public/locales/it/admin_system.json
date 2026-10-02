@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Statistiche della cache e controlli del lavoro in background.",
+    "description_cache_only": "Statistiche e controlli della cache.",
     "redis_label": "Redis",
     "memory_used": "Memoria utilizzata",
     "clear_cache": "Cancella la cache del tenant",

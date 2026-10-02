@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Estadísticas de caché y controles de trabajos en segundo plano.",
+    "description_cache_only": "Estadísticas y controles de caché.",
     "redis_label": "Redis",
     "memory_used": "Memoria utilizada",
     "clear_cache": "Borrar caché de inquilino",

@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Statistiques de cache et contrôles des tâches en arrière-plan.",
+    "description_cache_only": "Statistiques et contrôles du cache.",
     "redis_label": "Redis",
     "memory_used": "Mémoire utilisée",
     "clear_cache": "Vider le cache des locataires",

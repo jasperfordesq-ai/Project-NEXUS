@@ -104,6 +104,7 @@
   "operations": {
     "title": "Operations",
     "description": "Cache statistics and background job controls.",
+    "description_cache_only": "Cache statistics and controls.",
     "refresh": "Refresh",
     "cache_heading": "Cache",
     "bg_jobs_heading": "Background Jobs",

@@ -103,6 +103,7 @@
   },
   "operations": {
     "description": "Cache-Statistiken und Hintergrundjobkontrollen.",
+    "description_cache_only": "Cache-Statistiken und -Steuerung.",
     "redis_label": "Redis",
     "memory_used": "Verwendeter Speicher",
     "clear_cache": "Leeren Sie den Mandanten-Cache",
