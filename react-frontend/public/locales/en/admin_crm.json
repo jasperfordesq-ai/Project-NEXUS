@@ -389,6 +389,12 @@
     "members_lost_at_step_one": "{{count}} members are lost at this step.",
     "members_lost_at_step_other": "{{count}} members are lost at this step.",
     "tasks_total_count_one": "{{count}} Tasks Total",
-    "tasks_total_count_other": "{{count}} Tasks Total"
+    "tasks_total_count_other": "{{count}} Tasks Total",
+    "task_form_intro": "Use a task to remember a follow-up, such as calling a member about their first exchange.",
+    "label_task_member": "Member this task is about",
+    "task_member_help": "Optional. Search by name or email.",
+    "assign_to_help": "The admin responsible for doing this task.",
+    "assigned_to_you": "{{name}} (you)",
+    "action_reopen_task": "Reopen task"
   }
 }

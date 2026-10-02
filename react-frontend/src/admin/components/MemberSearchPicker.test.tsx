@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -43,7 +43,7 @@ describe('MemberSearchPicker', () => {
 
   it('renders the search input with the given label', () => {
     render(<MemberSearchPicker {...DEFAULT_PROPS} />);
-    expect(screen.getByLabelText(/Pick a member/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Pick a member/i })).toBeInTheDocument();
   });
 
   it('shows no dropdown before typing', () => {
@@ -54,8 +54,8 @@ describe('MemberSearchPicker', () => {
   it('shows noResultsText when query has ≥2 chars but API returns empty', async () => {
     vi.mocked(adminUsers.list).mockResolvedValue({ success: true, data: [] });
     render(<MemberSearchPicker {...DEFAULT_PROPS} />);
-    const input = screen.getByLabelText(/Pick a member/i);
-    fireEvent.change(input, { target: { value: 'zz' } });
+    const input = screen.getByRole('combobox', { name: /Pick a member/i });
+    await userEvent.type(input, 'zz');
     await waitFor(() => {
       expect(screen.getByText('No members found')).toBeInTheDocument();
       expect(adminUsers.list).toHaveBeenCalledWith(
@@ -70,8 +70,8 @@ describe('MemberSearchPicker', () => {
       data: MOCK_MEMBERS,
     });
     render(<MemberSearchPicker {...DEFAULT_PROPS} />);
-    const input = screen.getByLabelText(/Pick a member/i);
-    fireEvent.change(input, { target: { value: 'Ali' } });
+    const input = screen.getByRole('combobox', { name: /Pick a member/i });
+    await userEvent.type(input, 'Ali');
     await waitFor(() => {
       expect(screen.getByText('Alice Smith')).toBeInTheDocument();
     });
@@ -92,21 +92,45 @@ describe('MemberSearchPicker', () => {
         onSelectedMemberChange={onSelectedMemberChange}
       />
     );
-    const input = screen.getByLabelText(/Pick a member/i);
-    fireEvent.change(input, { target: { value: 'Ali' } });
+    const input = screen.getByRole('combobox', { name: /Pick a member/i });
+    await userEvent.type(input, 'Ali');
     await waitFor(() => {
       expect(screen.getByText('Alice Smith')).toBeInTheDocument();
     });
-    // Click the first result button
-    const resultBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('Alice Smith')
-    );
-    expect(resultBtn).toBeInTheDocument();
-    await userEvent.click(resultBtn!);
+    const option = screen.getByRole('option', { name: /Alice Smith/ });
+    await userEvent.click(option);
     expect(onValueChange).toHaveBeenCalledWith('1');
     expect(onSelectedMemberChange).toHaveBeenCalledWith(
       expect.objectContaining({ id: 1, name: 'Alice Smith' })
     );
+  });
+
+  it('renders results in a portalled listbox, not inside the field', async () => {
+    // Regression: the results used to be an absolutely positioned <div> inside
+    // the field, which a scrolling container (every admin modal body) clipped
+    // out of sight, so the search looked broken. They must live in a popover.
+    vi.mocked(adminUsers.list).mockResolvedValue({
+      success: true,
+      data: MOCK_MEMBERS,
+    } as never);
+    const { container } = render(
+      <div className="overflow-y-auto">
+        <MemberSearchPicker {...DEFAULT_PROPS} />
+      </div>
+    );
+    await userEvent.type(screen.getByRole('combobox', { name: /Pick a member/i }), 'Ali');
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2));
+    expect(container.contains(screen.getByRole('listbox'))).toBe(false);
+  });
+
+  it('shows members the server matched by email even when the name does not match', async () => {
+    vi.mocked(adminUsers.list).mockResolvedValue({
+      success: true,
+      data: [{ id: 3, name: 'Carol White', email: 'cw.volunteer@example.com', avatar_url: null }],
+    } as never);
+    render(<MemberSearchPicker {...DEFAULT_PROPS} />);
+    await userEvent.type(screen.getByRole('combobox', { name: /Pick a member/i }), 'volunteer');
+    expect(await screen.findByRole('option', { name: /Carol White/ })).toBeInTheDocument();
   });
 
   it('renders the selected member card when selectedMember is provided', () => {
@@ -141,8 +165,8 @@ describe('MemberSearchPicker', () => {
 
   it('does not call api when query is shorter than 2 chars', async () => {
     render(<MemberSearchPicker {...DEFAULT_PROPS} />);
-    const input = screen.getByLabelText(/Pick a member/i);
-    fireEvent.change(input, { target: { value: 'a' } });
+    const input = screen.getByRole('combobox', { name: /Pick a member/i });
+    await userEvent.type(input, 'a');
     // Wait a bit past debounce time
     await new Promise((r) => setTimeout(r, 400));
     expect(adminUsers.list).not.toHaveBeenCalled();
@@ -151,8 +175,8 @@ describe('MemberSearchPicker', () => {
   it('does not show dropdown when API returns success:false', async () => {
     vi.mocked(adminUsers.list).mockResolvedValue({ success: false, data: null });
     render(<MemberSearchPicker {...DEFAULT_PROPS} />);
-    const input = screen.getByLabelText(/Pick a member/i);
-    fireEvent.change(input, { target: { value: 'Ali' } });
+    const input = screen.getByRole('combobox', { name: /Pick a member/i });
+    await userEvent.type(input, 'Ali');
     await waitFor(() => {
       expect(adminUsers.list).toHaveBeenCalled();
     });

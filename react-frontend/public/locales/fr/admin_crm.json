@@ -393,6 +393,12 @@
     "activity_value_unknown_group": "Groupe inconnu",
     "just_now": "À l'instant",
     "due_date_prefix": "Échéant",
-    "priority_urgent": "Urgent"
+    "priority_urgent": "Urgent",
+    "task_form_intro": "Utilisez une tâche pour penser à un suivi, par exemple appeler un membre au sujet de son premier échange.",
+    "label_task_member": "Membre concerné par la tâche",
+    "task_member_help": "Facultatif. Recherchez par nom ou par e-mail.",
+    "assign_to_help": "L’administrateur chargé de réaliser cette tâche.",
+    "assigned_to_you": "{{name}} (vous)",
+    "action_reopen_task": "Rouvrir la tâche"
   }
 }

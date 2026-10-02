@@ -401,6 +401,12 @@
     "activity_value_system": "Córas",
     "activity_value_untitled_task": "Tasc gan teideal",
     "activity_value_unknown_group": "Grúpa anaithnid",
-    "just_now": "Anois amháin"
+    "just_now": "Anois amháin",
+    "task_form_intro": "Úsáid tasc chun cuimhneamh ar obair leantach, mar shampla glaoch ar bhall faoina gcéad mhalartú.",
+    "label_task_member": "An ball a bhaineann leis an tasc seo",
+    "task_member_help": "Roghnach. Cuardaigh de réir ainm nó ríomhphoist.",
+    "assign_to_help": "An riarthóir atá freagrach as an tasc seo a dhéanamh.",
+    "assigned_to_you": "{{name}} (tusa)",
+    "action_reopen_task": "Athoscail an tasc"
   }
 }

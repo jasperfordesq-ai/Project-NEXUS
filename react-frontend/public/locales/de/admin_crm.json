@@ -389,6 +389,12 @@
     "activity_value_unknown_group": "Unbekannte Gruppe",
     "just_now": "Gerade eben",
     "category_onboarding": "Einführung",
-    "activity_type_login": "Anmeldung"
+    "activity_type_login": "Anmeldung",
+    "task_form_intro": "Nutzen Sie eine Aufgabe, um an eine Nachverfolgung zu denken, zum Beispiel einen Anruf bei einem Mitglied wegen seines ersten Tauschs.",
+    "label_task_member": "Mitglied, um das es geht",
+    "task_member_help": "Optional. Nach Name oder E-Mail suchen.",
+    "assign_to_help": "Die Administratorin bzw. der Administrator, die bzw. der diese Aufgabe erledigt.",
+    "assigned_to_you": "{{name}} (Sie)",
+    "action_reopen_task": "Aufgabe wieder öffnen"
   }
 }

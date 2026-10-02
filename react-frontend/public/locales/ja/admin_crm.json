@@ -389,6 +389,12 @@
     "activity_value_untitled_task": "タイトル未設定のタスク",
     "activity_value_unknown_group": "不明なグループ",
     "tasks_total_count_one": "{{count}} タスク合計",
-    "just_now": "たった今"
+    "just_now": "たった今",
+    "task_form_intro": "タスクを使って、メンバーへの初回交換に関する電話など、フォローアップを忘れないようにしましょう。",
+    "label_task_member": "このタスクの対象メンバー",
+    "task_member_help": "任意。名前またはメールアドレスで検索します。",
+    "assign_to_help": "このタスクを担当する管理者です。",
+    "assigned_to_you": "{{name}}（あなた）",
+    "action_reopen_task": "タスクを再開"
   }
 }

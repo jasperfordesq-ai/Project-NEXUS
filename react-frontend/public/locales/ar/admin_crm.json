@@ -405,6 +405,12 @@
     "activity_value_system": "النظام",
     "activity_value_untitled_task": "مهمة بدون عنوان",
     "activity_value_unknown_group": "مجموعة غير معروفة",
-    "just_now": "الآن"
+    "just_now": "الآن",
+    "task_form_intro": "استخدم المهمة لتذكّر متابعة، مثل الاتصال بعضو بشأن أول تبادل له.",
+    "label_task_member": "العضو الذي تخصه هذه المهمة",
+    "task_member_help": "اختياري. ابحث بالاسم أو البريد الإلكتروني.",
+    "assign_to_help": "المسؤول المكلّف بتنفيذ هذه المهمة.",
+    "assigned_to_you": "{{name}} (أنت)",
+    "action_reopen_task": "إعادة فتح المهمة"
   }
 }

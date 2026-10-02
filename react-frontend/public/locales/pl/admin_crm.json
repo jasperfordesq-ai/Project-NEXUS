@@ -397,6 +397,12 @@
     "activity_value_untitled_task": "Nieopisane zadanie",
     "activity_value_unknown_group": "Nieznana grupa",
     "just_now": "Właśnie teraz",
-    "activity_type_login": "Zaloguj się"
+    "activity_type_login": "Zaloguj się",
+    "task_form_intro": "Użyj zadania, aby pamiętać o działaniu następczym, np. telefonie do członka w sprawie jego pierwszej wymiany.",
+    "label_task_member": "Członek, którego dotyczy zadanie",
+    "task_member_help": "Opcjonalnie. Szukaj po imieniu lub adresie e-mail.",
+    "assign_to_help": "Administrator odpowiedzialny za wykonanie tego zadania.",
+    "assigned_to_you": "{{name}} (ty)",
+    "action_reopen_task": "Otwórz zadanie ponownie"
   }
 }

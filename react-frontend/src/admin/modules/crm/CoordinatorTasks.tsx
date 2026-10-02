@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { CardBody, Card, Select, SelectItem, useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Spinner, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Checkbox, Pagination } from '@/components/ui';
+import { CardBody, Card, Select, SelectItem, useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Spinner, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Pagination, Tooltip } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -23,9 +23,12 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import Edit3 from 'lucide-react/icons/pen-line';
 import User from 'lucide-react/icons/user';
 import Search from 'lucide-react/icons/search';
+import Check from 'lucide-react/icons/check';
+import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import { Link } from 'react-router-dom';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { useTenant,
+import { useAuth,
+  useTenant,
   useToast } from '@/contexts';
 import { adminCrm } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
@@ -117,6 +120,8 @@ export default function CoordinatorTasks() {
   const { t: tNav } = useTranslation('admin_nav');
   useAdminPageMeta({ title: tNav('crm') });
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
+  const currentUserId = user?.id ? String(user.id) : '';
   const toast = useToast();
 
   // State
@@ -196,12 +201,14 @@ export default function CoordinatorTasks() {
     setFormTitle('');
     setFormDescription('');
     setFormPriority('medium');
-    setFormAssignedTo('');
+    // The API assigns a task with no assignee to the admin creating it, so
+    // show that choice instead of an empty "Select an item".
+    setFormAssignedTo(currentUserId);
     setFormUserId('');
     setFormMember(null);
     setFormDueDate('');
     setEditingTask(null);
-  }, []);
+  }, [currentUserId]);
 
   const openCreate = useCallback(() => {
     resetForm();
@@ -405,17 +412,31 @@ export default function CoordinatorTasks() {
               >
                 <CardBody className="p-4">
                   <div className="flex items-start gap-3">
-                    {/* Quick complete checkbox */}
-                    <div className="pt-0.5">
-                      <Checkbox
-                        isSelected={task.status === 'completed'}
-                        onChange={() => handleQuickComplete(task)}
+                    {/* Quick complete toggle. This was a 16px HeroUI checkbox
+                        whose white control vanished against the white card. */}
+                    <Tooltip
+                      content={task.status === 'completed' ? t('crm.action_reopen_task') : t('crm.action_mark_complete')}
+                      delay={300}
+                    >
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="outline"
+                        aria-pressed={task.status === 'completed'}
                         aria-label={t('crm.mark_task_as_status', {
                           title: task.title,
                           status: getStatusLabel(task.status === 'completed' ? 'pending' : 'completed'),
                         })}
-                      />
-                    </div>
+                        onPress={() => handleQuickComplete(task)}
+                        className={`mt-0.5 shrink-0 rounded-full border-2 ${
+                          task.status === 'completed'
+                            ? 'border-success bg-success text-white'
+                            : 'border-muted text-muted hover:border-success hover:text-success'
+                        }`}
+                      >
+                        <Check className="w-4 h-4" aria-hidden="true" />
+                      </Button>
+                    </Tooltip>
 
                     {/* Main content */}
                     <div className="flex-1 min-w-0">
@@ -450,13 +471,23 @@ export default function CoordinatorTasks() {
                             >
                               {t('crm.action_edit')}
                             </DropdownItem>
-                            <DropdownItem
-                              key="complete" id="complete"
-                              startContent={<CheckCircle className="w-4 h-4" />}
-                              onPress={() => handleStatusChange(task, 'completed')}
-                            >
-                              {t('crm.action_mark_complete')}
-                            </DropdownItem>
+                            {task.status === 'completed' ? (
+                              <DropdownItem
+                                key="reopen" id="reopen"
+                                startContent={<RotateCcw className="w-4 h-4" />}
+                                onPress={() => handleStatusChange(task, 'pending')}
+                              >
+                                {t('crm.action_reopen_task')}
+                              </DropdownItem>
+                            ) : (
+                              <DropdownItem
+                                key="complete" id="complete"
+                                startContent={<CheckCircle className="w-4 h-4" />}
+                                onPress={() => handleStatusChange(task, 'completed')}
+                              >
+                                {t('crm.action_mark_complete')}
+                              </DropdownItem>
+                            )}
                             <DropdownItem
                               key="in_progress" id="in_progress"
                               startContent={<Clock className="w-4 h-4" />}
@@ -557,11 +588,11 @@ export default function CoordinatorTasks() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex items-center gap-2">
-                {editingTask ? <Edit3 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              <ModalHeader>
                 {editingTask ? t('crm.edit_task_title') : t('crm.create_task_title')}
               </ModalHeader>
-              <ModalBody className="gap-4">
+              <ModalBody className="gap-5">
+                <p className="text-sm text-muted">{t('crm.task_form_intro')}</p>
                 <Input
                   label={t('crm.label_title')}
                   placeholder={t('crm.placeholder_enter_task_title')}
@@ -577,6 +608,34 @@ export default function CoordinatorTasks() {
                   onValueChange={setFormDescription}
                   minRows={3}
                 />
+                <MemberSearchPicker
+                  label={t('crm.label_task_member')}
+                  description={t('crm.task_member_help')}
+                  placeholder={t('crm.placeholder_type_name_or_email')}
+                  noResultsText={t('crm.no_members_found')}
+                  clearText={t('common.clear')}
+                  value={formUserId}
+                  selectedMember={formMember}
+                  onSelectedMemberChange={setFormMember}
+                  onValueChange={setFormUserId}
+                  size="md"
+                />
+                <Select
+                  label={t('crm.label_assign_to')}
+                  description={t('crm.assign_to_help')}
+                  selectedKeys={formAssignedTo ? [formAssignedTo] : []}
+                  onChange={(e) => setFormAssignedTo(e.target.value)}
+                >
+                  {admins.map((admin) => (
+                    <SelectItem key={String(admin.id)} id={String(admin.id)}>
+                      {String(admin.id) === currentUserId
+                        ? t('crm.assigned_to_you', { name: admin.name })
+                        : `${admin.name} (${t(`crm.admin_roles.${admin.role}`, {
+                          defaultValue: t('crm.admin_roles.unknown'),
+                        })})`}
+                    </SelectItem>
+                  ))}
+                </Select>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select
                     label={t('crm.label_priority')}
@@ -588,32 +647,6 @@ export default function CoordinatorTasks() {
                     <SelectItem key="high" id="high">{t('crm.priority_high')}</SelectItem>
                     <SelectItem key="urgent" id="urgent">{t('crm.priority_urgent')}</SelectItem>
                   </Select>
-                  <Select
-                    label={t('crm.label_assign_to')}
-                    selectedKeys={formAssignedTo ? [formAssignedTo] : []}
-                    onChange={(e) => setFormAssignedTo(e.target.value)}
-                  >
-                    {admins.map((admin) => (
-                      <SelectItem key={String(admin.id)} id={String(admin.id)}>
-                        {admin.name} ({t(`crm.admin_roles.${admin.role}`, {
-                          defaultValue: t('crm.admin_roles.unknown'),
-                        })})
-                      </SelectItem>
-                    ))}
-                  </Select>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <MemberSearchPicker
-                    label={t('crm.label_search_member')}
-                    placeholder={t('crm.placeholder_type_name_or_email')}
-                    noResultsText={t('crm.no_members_found')}
-                    clearText={t('common.clear')}
-                    value={formUserId}
-                    selectedMember={formMember}
-                    onSelectedMemberChange={setFormMember}
-                    onValueChange={setFormUserId}
-                    size="md"
-                  />
                   <Input
                     label={t('crm.label_due_date')}
                     type="date"

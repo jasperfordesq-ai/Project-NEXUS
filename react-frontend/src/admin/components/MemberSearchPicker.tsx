@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Search from 'lucide-react/icons/search';
 import { adminUsers } from '../api/adminApi';
 import type { AdminUser } from '../api/types';
-import { Button, Spinner, Input, Avatar } from '@/components/ui';
+import { Button, Spinner, Avatar, ComboBox, ComboBoxItem } from '@/components/ui';
 import { resolveUserDisplayName } from '@/lib/helpers';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -26,6 +26,8 @@ interface MemberSearchPickerProps {
   selectedMember?: MemberSearchMember | null;
   onSelectedMemberChange?: (member: MemberSearchMember | null) => void;
   label: string;
+  /** Optional help text shown under the field, in both the search and selected states. */
+  description?: string;
   placeholder: string;
   noResultsText: string;
   clearText: string;
@@ -65,6 +67,7 @@ export function MemberSearchPicker({
   selectedMember,
   onSelectedMemberChange,
   label,
+  description,
   placeholder,
   noResultsText,
   clearText,
@@ -76,7 +79,6 @@ export function MemberSearchPicker({
   const [results, setResults] = useState<MemberSearchMember[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [hydrationLoading, setHydrationLoading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [hydratedMember, setHydratedMember] = useState<MemberSearchMember | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -138,7 +140,6 @@ export function MemberSearchPicker({
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults([]);
-      setShowDropdown(false);
       return;
     }
 
@@ -151,16 +152,12 @@ export function MemberSearchPicker({
       try {
         const response = await adminUsers.list({ search: query.trim(), page: 1, limit: 8 });
         if (response.success) {
-          const members = normalizeSearchResults(response.data);
-          setResults(members);
-          setShowDropdown(members.length > 0);
+          setResults(normalizeSearchResults(response.data));
         } else {
           setResults([]);
-          setShowDropdown(false);
         }
       } catch {
         setResults([]);
-        setShowDropdown(false);
       } finally {
         setSearchLoading(false);
       }
@@ -179,7 +176,6 @@ export function MemberSearchPicker({
     onValueChange(String(member.id));
     setQuery('');
     setResults([]);
-    setShowDropdown(false);
   };
 
   const handleClear = () => {
@@ -188,7 +184,6 @@ export function MemberSearchPicker({
     onValueChange('');
     setQuery('');
     setResults([]);
-    setShowDropdown(false);
   };
 
   if (resolvedSelectedMember) {
@@ -215,59 +210,65 @@ export function MemberSearchPicker({
             {clearText}
           </Button>
         </div>
+        {description ? <p className="mt-1 text-xs text-muted">{description}</p> : null}
       </div>
     );
   }
 
+  // The results list is a HeroUI ComboBox popover, rendered in a portal. It
+  // used to be an absolutely positioned <div> inside the field, which a
+  // scrolling container (every admin modal body) clipped out of sight — the
+  // search ran, but its results could not be seen or clicked.
   return (
-    <div className={`relative ${className || ''}`}>
-      <Input
-        label={label}
-        placeholder={placeholder}
-        value={query}
-        onValueChange={setQuery}
-        onFocus={() => {
-          if (results.length > 0) {
-            setShowDropdown(true);
-          }
-        }}
-        onBlur={() => {
-          window.setTimeout(() => setShowDropdown(false), 200);
-        }}
-        isRequired={isRequired}
-        size={size}
-        startContent={<Search size={14} className="text-muted" />}
-        endContent={searchLoading || hydrationLoading ? <Spinner size="sm" /> : undefined}
-      />
-
-      {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-[14px] border border-border bg-overlay shadow-lg">
-          {results.map((member) => (
-            <Button
-              key={member.id}
-              variant="tertiary"
-              className="min-h-10 w-full justify-start gap-3 rounded-none px-3 py-2"
-              onMouseDown={(event) => event.preventDefault()}
-              onPress={() => handleSelect(member)}
-            >
-              <Avatar
-                src={member.avatar_url || undefined}
-                name={member.name}
-                size="sm"
-                className="shrink-0"
-              />
-              <div className="min-w-0 text-left">
-                <p className="truncate text-sm font-medium">{member.name}</p>
-                <p className="truncate text-xs text-muted">{member.email}</p>
-              </div>
-            </Button>
-          ))}
+    <ComboBox<MemberSearchMember>
+      className={className}
+      label={label}
+      description={description}
+      placeholder={placeholder}
+      isRequired={isRequired}
+      items={results}
+      inputValue={query}
+      onInputChange={setQuery}
+      menuTrigger="input"
+      allowsEmptyCollection
+      // The server already searched name AND email. React Aria's built-in
+      // filter would re-match on the item's name only and hide every member
+      // found by email address.
+      defaultFilter={() => true}
+      selectedKey={null}
+      onSelectionChange={(key) => {
+        if (key == null) return;
+        const member = results.find((candidate) => String(candidate.id) === String(key));
+        if (member) handleSelect(member);
+      }}
+      startContent={
+        searchLoading || hydrationLoading
+          ? <Spinner size="sm" className="ml-3 shrink-0" />
+          : <Search size={14} className="ml-3 shrink-0 text-muted" aria-hidden="true" />
+      }
+      renderEmptyState={() => (
+        <div role="status" className="flex items-center gap-2 px-3 py-2 text-sm text-muted">
+          {searchLoading ? <Spinner size="sm" /> : null}
+          {query.trim().length >= 2 && !searchLoading ? noResultsText : placeholder}
         </div>
       )}
-
-      {query.trim().length >= 2 && !searchLoading && results.length === 0 && (
-        <p className="mt-1 text-xs text-muted">{noResultsText}</p>
+    >
+      {(member: MemberSearchMember) => (
+        <ComboBoxItem id={member.id} textValue={member.name}>
+          <div className="flex min-w-0 items-center gap-3">
+            <Avatar
+              src={member.avatar_url || undefined}
+              name={member.name}
+              size="sm"
+              className="shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{member.name}</p>
+              {member.email ? <p className="truncate text-xs text-muted">{member.email}</p> : null}
+            </div>
+          </div>
+        </ComboBoxItem>
       )}
-    </div>
+    </ComboBox>
   );
 }

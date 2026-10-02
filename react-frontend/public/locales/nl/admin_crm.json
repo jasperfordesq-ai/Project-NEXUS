@@ -389,6 +389,12 @@
     "activity_value_untitled_task": "Ongetitelde taak",
     "activity_value_unknown_group": "Onbekende groep",
     "just_now": "Zojuist",
-    "activity_type_login": "Inloggen"
+    "activity_type_login": "Inloggen",
+    "task_form_intro": "Gebruik een taak om een opvolging te onthouden, zoals een lid bellen over zijn eerste ruil.",
+    "label_task_member": "Lid waar deze taak over gaat",
+    "task_member_help": "Optioneel. Zoek op naam of e-mailadres.",
+    "assign_to_help": "De beheerder die verantwoordelijk is voor deze taak.",
+    "assigned_to_you": "{{name}} (jij)",
+    "action_reopen_task": "Taak heropenen"
   }
 }

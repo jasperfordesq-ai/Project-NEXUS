@@ -393,6 +393,12 @@
     "activity_value_unknown_group": "Gruppo sconosciuto",
     "just_now": "Proprio adesso",
     "category_onboarding": "Onboarding",
-    "activity_type_login": "Accesso"
+    "activity_type_login": "Accesso",
+    "task_form_intro": "Usa un’attività per ricordarti un follow-up, come chiamare un membro riguardo al suo primo scambio.",
+    "label_task_member": "Membro a cui si riferisce l’attività",
+    "task_member_help": "Facoltativo. Cerca per nome o email.",
+    "assign_to_help": "L’amministratore responsabile di svolgere questa attività.",
+    "assigned_to_you": "{{name}} (tu)",
+    "action_reopen_task": "Riapri attività"
   }
 }

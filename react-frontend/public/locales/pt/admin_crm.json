@@ -393,6 +393,12 @@
     "activity_value_system": "Sistema",
     "activity_value_untitled_task": "Tarefa sem título",
     "activity_value_unknown_group": "Grupo desconhecido",
-    "just_now": "Agora mesmo"
+    "just_now": "Agora mesmo",
+    "task_form_intro": "Use uma tarefa para se lembrar de um acompanhamento, como ligar para um membro sobre a sua primeira troca.",
+    "label_task_member": "Membro a que esta tarefa se refere",
+    "task_member_help": "Opcional. Pesquise por nome ou email.",
+    "assign_to_help": "O administrador responsável por realizar esta tarefa.",
+    "assigned_to_you": "{{name}} (você)",
+    "action_reopen_task": "Reabrir tarefa"
   }
 }

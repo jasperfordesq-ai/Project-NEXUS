@@ -393,6 +393,12 @@
     "activity_value_system": "Sistema",
     "activity_value_untitled_task": "Tarea sin título",
     "activity_value_unknown_group": "Grupo desconocido",
-    "just_now": "Justo ahora"
+    "just_now": "Justo ahora",
+    "task_form_intro": "Usa una tarea para recordar un seguimiento, como llamar a un miembro sobre su primer intercambio.",
+    "label_task_member": "Miembro al que se refiere la tarea",
+    "task_member_help": "Opcional. Busca por nombre o correo electrónico.",
+    "assign_to_help": "El administrador responsable de realizar esta tarea.",
+    "assigned_to_you": "{{name}} (tú)",
+    "action_reopen_task": "Reabrir tarea"
   }
 }

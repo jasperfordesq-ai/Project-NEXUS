@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import { createUser } from '@/test/factories';
 import React from 'react';
 
 // ── adminApi mock ─────────────────────────────────────────────────────────────
@@ -90,6 +91,17 @@ const { mockToast } = vi.hoisted(() => ({
 
 vi.mock('@/contexts', () =>
   createMockContexts({
+    useAuth: () => ({
+      user: createUser({ id: 1, name: 'Admin User' }),
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
     useToast: () => mockToast,
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
@@ -242,10 +254,7 @@ describe('CoordinatorTasks', () => {
     await renderPage();
     await waitFor(() => screen.getByText('Task 1'));
 
-    // Checkbox for the task
-    const checkboxes = screen.getAllByRole('checkbox');
-    expect(checkboxes.length).toBeGreaterThan(0);
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(screen.getByRole('button', { name: /mark_task_as_status|Task 1/i, pressed: false }));
 
     await waitFor(() => {
       expect(mockAdminCrm.updateTask).toHaveBeenCalledWith(
@@ -264,13 +273,47 @@ describe('CoordinatorTasks', () => {
     await renderPage();
     await waitFor(() => screen.getByText('Task 1'));
 
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(screen.getByRole('button', { name: /mark_task_as_status|Task 1/i, pressed: true }));
 
     await waitFor(() => {
       expect(mockAdminCrm.updateTask).toHaveBeenCalledWith(
         1,
         expect.objectContaining({ status: 'pending' }),
+      );
+    });
+  });
+
+  it('renders the quick-complete control as a labelled button, not a bare checkbox', async () => {
+    // Regression: the 16px HeroUI checkbox was white on a white card and could
+    // not be seen. The control must be a real, labelled, visible button.
+    await renderPage();
+    await waitFor(() => screen.getByText('Task 1'));
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    const toggle = screen.getByRole('button', { name: /mark_task_as_status|Task 1/i, pressed: false });
+    expect(toggle.className).toMatch(/border-2/);
+  });
+
+  it('assigns a new task to the signed-in admin by default', async () => {
+    mockAdminCrm.createTask.mockResolvedValue({ success: true, data: makeTask(99) });
+    await renderPage();
+    await waitFor(() => screen.getByText('Task 1'));
+
+    const createBtn = screen.getAllByRole('button').find((b) => b.textContent?.match(/create task/i));
+    fireEvent.click(createBtn!);
+    await waitFor(() => document.querySelector('[role="dialog"]'));
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    const titleInput = Array.from(dialog.querySelectorAll('input')).find(
+      (el) => !el.getAttribute('type') || el.getAttribute('type') === 'text',
+    )!;
+    fireEvent.change(titleInput, { target: { value: 'Call Mary' } });
+
+    const saveBtn = Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent?.match(/create task/i))!;
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockAdminCrm.createTask).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Call Mary', assigned_to: 1 }),
       );
     });
   });
