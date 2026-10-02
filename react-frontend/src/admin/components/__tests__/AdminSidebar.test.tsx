@@ -413,6 +413,37 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Menus' })).toHaveAttribute('href', '/test/admin/menus');
   });
 
+  it('hides the whole Communications section from non-god super admins', () => {
+    // Owner decision 2026-10-02: email settings / deliverability are god-only.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    expect(screen.queryByRole('button', { name: 'Communications' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Email Settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Email Deliverability' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Deliverability' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Communications section to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Communications' }));
+
+    expect(screen.getByRole('link', { name: 'Email Settings' })).toHaveAttribute('href', '/test/admin/email-settings');
+    expect(screen.getByRole('link', { name: 'Email Deliverability' })).toHaveAttribute('href', '/test/admin/email-deliverability');
+    expect(screen.getByRole('link', { name: 'Deliverability' })).toHaveAttribute('href', '/test/admin/deliverability');
+  });
+
   it('shows the Module Configuration link to super admins', () => {
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>

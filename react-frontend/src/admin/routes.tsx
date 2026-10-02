@@ -14,6 +14,7 @@ import { Route, Navigate, Outlet, useParams } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 import { SuperAdminRoute } from './SuperAdminRoute';
+import { GodOnlyRoute } from './GodOnlyRoute';
 import type { TenantFeatures } from '@/types';
 
 /** Small wrapper so Navigate targets can use tenantPath() inside Route elements. */
@@ -437,8 +438,11 @@ export function AdminRoutes() {
 
       {/* ─── ADVANCED ─── */}
       <Route path="ai-settings" element={<Lazy><AiSettings /></Lazy>} />
-      <Route path="email-settings" element={<Lazy><EmailSettings /></Lazy>} />
-      <Route path="email-deliverability" element={<Lazy><EmailDeliverability /></Lazy>} />
+      {/* Communications section — god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="email-settings" element={<Lazy><EmailSettings /></Lazy>} />
+        <Route path="email-deliverability" element={<Lazy><EmailDeliverability /></Lazy>} />
+      </Route>
       <Route path="feed-algorithm" element={<TenantRedirect to="/admin/algorithm-settings" />} />
       <Route path="algorithm-settings" element={<Lazy><AlgorithmSettings /></Lazy>} />
       <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
@@ -705,12 +709,14 @@ export function AdminRoutes() {
       {/* ─── IDEATION / CHALLENGES ─── */}
       <Route path="ideation" element={<Lazy><IdeationAdmin /></Lazy>} />
 
-      {/* ─── DELIVERABILITY ─── */}
-      <Route path="deliverability" element={<Lazy><DeliverabilityDashboard /></Lazy>} />
-      <Route path="deliverability/list" element={<Lazy><DeliverablesList /></Lazy>} />
-      <Route path="deliverability/create" element={<Lazy><CreateDeliverable /></Lazy>} />
-      <Route path="deliverability/edit/:id" element={<Lazy><EditDeliverable /></Lazy>} />
-      <Route path="deliverability/analytics" element={<Lazy><DeliverabilityAnalytics /></Lazy>} />
+      {/* ─── DELIVERABILITY ─── god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="deliverability" element={<Lazy><DeliverabilityDashboard /></Lazy>} />
+        <Route path="deliverability/list" element={<Lazy><DeliverablesList /></Lazy>} />
+        <Route path="deliverability/create" element={<Lazy><CreateDeliverable /></Lazy>} />
+        <Route path="deliverability/edit/:id" element={<Lazy><EditDeliverable /></Lazy>} />
+        <Route path="deliverability/analytics" element={<Lazy><DeliverabilityAnalytics /></Lazy>} />
+      </Route>
 
       {/* ─── MATCHING DIAGNOSTIC ─── */}
       <Route path="matching-diagnostic" element={<Lazy><MatchingDiagnostic /></Lazy>} />

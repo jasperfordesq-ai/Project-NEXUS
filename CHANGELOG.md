@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Creating, editing, publishing, closing and exporting community surveys now requires a community administrator. The "official notices" switch previously granted this as well, which was never intended and let someone download every survey answer with the respondent's identity attached (F-347).
 - The roles and permissions screen now lists only the permissions the platform actually enforces. It previously offered 66, of which one worked — ticking any of the others told an administrator they had delegated something when they had not (F-363).
 - The "Roles & Permissions" link under Enterprise in the admin sidebar is now shown only to platform god users. Community administrators no longer see it in the sidebar; the page and its API are unchanged.
+- The Communications section of the admin panel (Email Settings, Email Deliverability, Deliverability) is now shown only to god accounts; super admins previously saw it too. Opening one of those pages by its address now returns anyone else to the admin dashboard. The underlying API permissions are unchanged.
 
 ### Security
 

@@ -93,7 +93,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { canAccessSuperPanel, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { canAccessSuperPanel, isGodUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
 interface NavItem {
@@ -178,8 +178,7 @@ function useAdminNav(): NavSection[] {
   const { counts } = useAdminBadgeCounts();
   const pendingUsersBadge = badgeForCount(counts.pending_users);
 
-  const userRecord = user as Record<string, unknown> | null;
-  const isGod = (user?.role as string) === 'god' || userRecord?.is_god === true;
+  const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
   const isPlatformSuperAdmin = isPlatformSuperAdminUser(user);
   // Server-resolved: covers both a platform super-admin and the super-admin of a
@@ -377,11 +376,12 @@ function useAdminNav(): NavSection[] {
       // /broker/safeguarding, /broker/safeguarding-options) on 2026-07-02.
       // Smart Matching is the only remaining item here — it now lives in the
       // Intelligence & Diagnostics section below.
-      // Email settings / deliverability are restricted to super admins
-      // (2026-07-02). When this is the only surviving section in the
-      // communications zone, hiding it also removes the zone header for
-      // non-super-admins (the zone-empty filter drops it).
-      ...(isSuperAdmin ? [{
+      // Email settings / deliverability are restricted to GOD accounts only
+      // (owner decision 2026-10-02; super admins until then). The routes are
+      // guarded by GodOnlyRoute too, so a typed URL does not reach them. When
+      // this is the only surviving section in the communications zone, hiding
+      // it also removes the zone header (the zone-empty filter drops it).
+      ...(isGod ? [{
         key: 'communications',
         label: t('communications'),
         icon: Mail,

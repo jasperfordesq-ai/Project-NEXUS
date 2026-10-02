@@ -81,6 +81,15 @@ export function isPlatformSuperAdminUser(user: UserLike): boolean {
   );
 }
 
+/**
+ * God account — the top tier, above platform super admin. Used for admin
+ * surfaces the owner has restricted to god accounts only (e.g. the email
+ * Communications section). A platform super admin is NOT a god.
+ */
+export function isGodUser(user: UserLike): boolean {
+  return userRole(user) === 'god' || user?.is_god === true;
+}
+
 /** How far the super panel reaches for this user. Server-resolved. */
 export type SuperPanelLevel = 'master' | 'regional' | 'none';
 
