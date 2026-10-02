@@ -1048,6 +1048,29 @@ jobs:
       - name: "BLOCKING: Deploy probes crawler delivery only after the render publishes"
         run: bash scripts/test/test-deploy-probe-after-prerender.sh
 
+      # Added 2026-10-02 (F-123). The nightly backup encrypts everything it
+      # sends offsite with age, the monthly restore drill decrypts the newest
+      # offsite copy and alerts, and deploy installs the drill's cron. Stubbed
+      # docker/rclone/curl, real age; no network, no database. The cron test
+      # writes root-owned cron files into a temp dir, hence sudo.
+      - name: Install age (backup encryption tests)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age
+
+      - name: "BLOCKING: Nightly backup sends only encrypted files offsite"
+        run: bash scripts/test/test-backup-offsite-encryption.sh
+
+      - name: "BLOCKING: Restore drill decrypts the offsite copy and alerts"
+        run: bash scripts/test/test-restore-drill-offsite.sh
+
+      - name: "BLOCKING: Deploy installs the backup and restore-drill crons"
+        run: sudo bash scripts/test/test-install-backup-cron.sh
+
+      - name: "BLOCKING: Backup encryption setup and owner key tools"
+        run: |
+          bash scripts/test/test-setup-backup-encryption.sh
+          bash scripts/test/test-backup-owner-tools.sh
+          bash scripts/test/test-backup-setup-contract.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:

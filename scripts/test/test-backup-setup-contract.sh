@@ -26,44 +26,50 @@ pass() { echo "  ok   $1"; }
 failt() { echo "  FAIL $1" >&2; FAILURES=$((FAILURES + 1)); }
 
 code() { grep -v '^[[:space:]]*#' "$1"; }   # ignore comment lines
+# Read each script once into a variable and grep a here-string. `code | grep -q`
+# under pipefail is unsafe: grep -q exits on the first match, the producer gets
+# SIGPIPE, the pipeline "fails", and a "must be absent" check then passes
+# exactly when the forbidden text IS present.
+LOCAL_CODE="$(code "$LOCAL")"
+SERVER_CODE="$(code "$SERVER")"
 
-if code "$LOCAL" | grep -qE 'rclone config create .*scope=drive\.file( |$)'; then
+if grep -qE 'rclone config create .*scope=drive\.file( |$)' <<<"$LOCAL_CODE"; then
     pass "local setup creates the remote with scope=drive.file"
 else
     failt "local setup does not request scope=drive.file"
 fi
-if code "$LOCAL" | grep -qE 'scope=drive([^.]|$)'; then
+if grep -qE 'scope=drive([^.]|$)' <<<"$LOCAL_CODE"; then
     failt "local setup still requests full-Drive scope=drive"
 else
     pass "no full-Drive scope requested"
 fi
-if code "$LOCAL" | grep -qiE 'full access'; then
+if grep -qiE 'full access' <<<"$LOCAL_CODE"; then
     failt "interactive fallback still tells the operator to choose full access"
 else
     pass "interactive fallback no longer says 'full access'"
 fi
-if code "$LOCAL" | grep -qE 'scp .*"\$RCLONE_CONF"'; then
+if grep -qE 'scp .*"\$RCLONE_CONF"' <<<"$LOCAL_CODE"; then
     failt "local setup uploads the whole rclone.conf (every remote's token)"
 else
     pass "whole rclone.conf is not uploaded"
 fi
-if code "$LOCAL" | grep -qE 'rclone config show "\$\{?REMOTE_NAME\}?"'; then
+if grep -qE 'rclone config show "\$\{?REMOTE_NAME\}?"' <<<"$LOCAL_CODE"; then
     pass "only the backup remote's section is extracted for upload"
 else
     failt "backup remote's section is not extracted with rclone config show"
 fi
 
-if code "$SERVER" | grep -qE '(curl|wget)[^|]*\|[[:space:]]*(sudo[[:space:]]+)?(ba|z)?sh'; then
+if grep -qE '(curl|wget)[^|]*\|[[:space:]]*(sudo[[:space:]]+)?(ba|z)?sh' <<<"$SERVER_CODE"; then
     failt "server setup still pipes a download into a shell"
 else
     pass "no curl|bash in server setup"
 fi
-if code "$SERVER" | grep -qE 'apt-get install -y[^#]*\brclone\b'; then
+if grep -qE 'apt-get install -y[^#]*\brclone\b' <<<"$SERVER_CODE"; then
     pass "rclone installed from apt"
 else
     failt "rclone not installed from apt"
 fi
-if code "$SERVER" | grep -qE 'apt-get install -y[^#]*\bage\b'; then
+if grep -qE 'apt-get install -y[^#]*\bage\b' <<<"$SERVER_CODE"; then
     pass "age installed from apt"
 else
     failt "age not installed from apt"
