@@ -12,7 +12,9 @@
  *
  * Currently wraps the Communications section (email settings, email
  * deliverability, deliverability), the Performance page, the Prerender Engine
- * and the Cron Jobs pages — owner decisions 2026-10-02.
+ * and the Cron Jobs pages — owner decisions 2026-10-02 — and the
+ * platform-maintenance tools (tests, seed generator, WebP converter, blog
+ * restore; F-534).
  */
 
 import { Navigate, Outlet } from 'react-router-dom';

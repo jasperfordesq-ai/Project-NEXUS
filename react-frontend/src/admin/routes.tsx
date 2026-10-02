@@ -555,12 +555,17 @@ export function AdminRoutes() {
       <Route path="activity-log" element={<Lazy><ActivityLog /></Lazy>} />
       <Route path="retention" element={<Lazy><RetentionPolicies /></Lazy>} />
       <Route path="sso" element={<Lazy><SsoProviders /></Lazy>} />
-      <Route path="tests" element={<Lazy><TestRunner /></Lazy>} />
-      <Route path="seed-generator" element={<Lazy><SeedGenerator /></Lazy>} />
-      <Route path="webp-converter" element={<Lazy><WebpConverter /></Lazy>} />
+      {/* Platform-maintenance tools — god accounts only (F-534). They act on, or
+          report about, the whole installation; the seed tool's API is platform
+          super admin only and the others are placeholders (F-535). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="tests" element={<Lazy><TestRunner /></Lazy>} />
+        <Route path="seed-generator" element={<Lazy><SeedGenerator /></Lazy>} />
+        <Route path="webp-converter" element={<Lazy><WebpConverter /></Lazy>} />
+        <Route path="blog-restore" element={<Lazy><BlogRestore /></Lazy>} />
+      </Route>
       <Route path="image-settings" element={<Lazy><ImageSettings /></Lazy>} />
       <Route path="native-app" element={<Lazy><NativeApp /></Lazy>} />
-      <Route path="blog-restore" element={<Lazy><BlogRestore /></Lazy>} />
 
       {/* ─── COMMUNITY TOOLS ─── */}
       <Route path="groups" element={<Lazy><GroupList /></Lazy>} />

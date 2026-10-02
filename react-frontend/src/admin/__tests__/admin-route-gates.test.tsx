@@ -8,7 +8,7 @@
  * admin route table, so a route that is re-added without its gate fails here.
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -24,8 +24,10 @@ const tenant = {
   tenantPath: (path: string) => `/test${path}`,
 };
 
+const auth = vi.hoisted(() => ({ user: { id: 1, role: 'admin' } as Record<string, unknown> }));
+
 vi.mock('@/contexts', () => ({
-  useAuth: () => ({ user: { id: 1, role: 'admin' }, isAuthenticated: true, isLoading: false, status: 'authenticated' }),
+  useAuth: () => ({ user: auth.user, isAuthenticated: true, isLoading: false, status: 'authenticated' }),
   useTenant: () => tenant,
 }));
 // Some modules in the route graph import useTenant from the direct path.
@@ -40,6 +42,11 @@ vi.mock('../modules/groups/GroupGeocode', () => ({ default: () => <div>page:Grou
 vi.mock('../modules/community/SmartMatchUsers', () => ({ default: () => <div>page:SmartMatchUsers</div> }));
 vi.mock('../modules/community/SmartMatchMonitoring', () => ({ default: () => <div>page:SmartMatchMonitoring</div> }));
 vi.mock('../modules/matching/MatchingAnalytics', () => ({ default: () => <div>page:MatchingAnalytics</div> }));
+vi.mock('../modules/dashboard/AdminDashboard', () => ({ default: () => <div>page:AdminDashboard</div> }));
+vi.mock('../modules/system/SeedGenerator', () => ({ default: () => <div>page:SeedGenerator</div> }));
+vi.mock('../modules/system/WebpConverter', () => ({ default: () => <div>page:WebpConverter</div> }));
+vi.mock('../modules/system/TestRunner', () => ({ default: () => <div>page:TestRunner</div> }));
+vi.mock('../modules/system/BlogRestore', () => ({ default: () => <div>page:BlogRestore</div> }));
 
 import { AdminRoutes } from '../routes';
 
@@ -60,6 +67,8 @@ function renderAt(path: string) {
   );
 }
 
+beforeEach(() => { auth.user = { id: 1, role: 'admin' }; });
+
 // F-533: the module gate matches by path prefix, so these hyphenated
 // duplicates escaped it. They now redirect to the gated canonical page.
 describe('legacy hyphenated admin paths redirect to their gated pages', () => {
@@ -73,5 +82,36 @@ describe('legacy hyphenated admin paths redirect to their gated pages', () => {
   ])('/admin/%s → %s', async (legacy, target) => {
     renderAt(`/test/admin/${legacy}`);
     expect(await screen.findByLabelText('path')).toHaveTextContent(new RegExp(`^${target}$`));
+  });
+});
+
+// F-534: platform-maintenance tools had no route guard. They act on, or
+// report about, the whole installation, so they are god accounts only — the
+// same guard as the other maintenance pages (owner decisions 2026-10-02).
+describe('platform-maintenance pages are god accounts only', () => {
+  const pages: Array<[string, string]> = [
+    ['seed-generator', 'page:SeedGenerator'],
+    ['webp-converter', 'page:WebpConverter'],
+    ['tests', 'page:TestRunner'],
+    ['blog-restore', 'page:BlogRestore'],
+  ];
+
+  it.each(pages)('sends a community administrator away from /admin/%s', async (path, page) => {
+    renderAt(`/test/admin/${path}`);
+    expect(await screen.findByLabelText('path')).toHaveTextContent(/^\/test\/admin$/);
+    expect(screen.queryByText(page)).not.toBeInTheDocument();
+  });
+
+  it.each(pages)('sends a platform super admin who is not a god away from /admin/%s', async (path, page) => {
+    auth.user = { id: 1, role: 'admin', is_super_admin: true };
+    renderAt(`/test/admin/${path}`);
+    expect(await screen.findByLabelText('path')).toHaveTextContent(/^\/test\/admin$/);
+    expect(screen.queryByText(page)).not.toBeInTheDocument();
+  });
+
+  it.each(pages)('opens /admin/%s for a god account', async (path, page) => {
+    auth.user = { id: 1, role: 'admin', is_god: true };
+    renderAt(`/test/admin/${path}`);
+    expect(await screen.findByText(page)).toBeInTheDocument();
   });
 });
