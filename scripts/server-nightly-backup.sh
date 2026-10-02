@@ -41,6 +41,8 @@ umask 077
 # Paths are overridable so scripts/test/test-backup-offsite-encryption.sh can
 # run this script in a sandbox; production uses the defaults.
 BACKUP_DIR="${BACKUP_DIR:-/opt/nexus-php/backups}"
+UPLOADS_VOLUME="${UPLOADS_VOLUME:-nexus-php-uploads}"
+STORAGE_VOLUME="${STORAGE_VOLUME:-nexus-php-storage}"
 ENV_FILE="${ENV_FILE:-/opt/nexus-php/.env}"
 DB_CONTAINER="${DB_CONTAINER:-nexus-php-db}"
 KEEP_DAYS="${KEEP_DAYS:-7}"
@@ -63,7 +65,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/backup-alert.sh"
 
 log()     { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"; }
 success() { log "✓ $1"; }
-fail()    { log "✗ ERROR: $1"; exit 1; }
+# Any failure of the nightly job is reported, not just the offsite step.
+fail()    {
+    log "✗ ERROR: $1"
+    backup_alert "NEXUS NIGHTLY BACKUP FAILED" "$1. Tonight's backup was not completed." || true
+    exit 1
+}
 
 log "=== Nightly backup starting ==="
 mkdir -p "$BACKUP_DIR"
@@ -77,9 +84,12 @@ chmod 755 "$BACKUP_DIR"
 # ---------------------------------------------------------------------------
 DB_BACKUP="${BACKUP_DIR}/nexus_db_${DATE}.sql.gz"
 
-DB_NAME=$(grep -E '^DB_(DATABASE|NAME)=' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')
-DB_USER=$(grep -E '^DB_(USERNAME|USER)='  "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')
-DB_PASS=$(grep -E '^DB_(PASSWORD|PASS)='  "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')
+# grep -m1, not `| head -1` (pipefail + SIGPIPE when both spellings exist);
+# keep everything after the first `=`; strip quotes and CR.
+env_value() { grep -m1 -E "^$1=" "$ENV_FILE" | cut -d= -f2- | tr -d "\"\r"; }
+DB_NAME=$(env_value 'DB_(DATABASE|NAME)')
+DB_USER=$(env_value 'DB_(USERNAME|USER)')
+DB_PASS=$(env_value 'DB_(PASSWORD|PASS)')
 
 [[ -z "${DB_NAME:-}" || -z "${DB_USER:-}" || -z "${DB_PASS:-}" ]] && \
     fail "Could not read DB credentials from $ENV_FILE"
@@ -90,6 +100,12 @@ MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$DB_CONTAINER" \
     | gzip > "$DB_BACKUP"
 
 [[ ! -s "$DB_BACKUP" ]] && fail "Database backup is empty"
+# A dump cut short (database restarted mid-dump, disk full) must never become
+# tonight's backup: it would restore as a database with tables missing.
+gzip -t "$DB_BACKUP" 2>/dev/null || fail "Database backup is not a valid gzip file"
+DUMP_TAIL="$(gunzip -c "$DB_BACKUP" | tail -n 3)"   # captured: no grep -q in a pipe
+grep -q "Dump completed" <<<"$DUMP_TAIL" \
+    || fail "Database backup is incomplete (no 'Dump completed' line at the end)"
 success "Database backup — $(du -sh "$DB_BACKUP" | cut -f1)"
 
 # ---------------------------------------------------------------------------
@@ -99,7 +115,7 @@ UPLOADS_BACKUP="${BACKUP_DIR}/nexus_uploads_${DATE}.tar.gz"
 
 log "Backing up uploads volume → $UPLOADS_BACKUP"
 docker run --rm \
-    -v nexus-php-uploads:/data:ro \
+    -v "${UPLOADS_VOLUME}:/data:ro" \
     -v "${BACKUP_DIR}:/out" \
     alpine \
     tar czf "/out/nexus_uploads_${DATE}.tar.gz" -C /data .
@@ -114,7 +130,7 @@ STORAGE_BACKUP="${BACKUP_DIR}/nexus_storage_${DATE}.tar.gz"
 
 log "Backing up storage volume → $STORAGE_BACKUP"
 docker run --rm \
-    -v nexus-php-storage:/data:ro \
+    -v "${STORAGE_VOLUME}:/data:ro" \
     -v "${BACKUP_DIR}:/out" \
     alpine \
     tar czf "/out/nexus_storage_${DATE}.tar.gz" -C /data .

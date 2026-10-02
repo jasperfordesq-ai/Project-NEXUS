@@ -18,7 +18,9 @@ case "${1:-}" in
     exec)
         case " $* " in
             *" mariadb-dump "*)
-                printf -- '-- fake dump\nCREATE TABLE t (id INT);\nINSERT INTO t VALUES (1);\n-- Dump completed on 2026-10-02 02:00:00\n'
+                printf -- '-- fake dump\nCREATE TABLE t (id INT);\nINSERT INTO t VALUES (1);\n'
+                # STUB_DUMP_INCOMPLETE=1: a dump cut short, no completion line.
+                [ -n "${STUB_DUMP_INCOMPLETE:-}" ] || printf -- '-- Dump completed on 2026-10-02 02:00:00\n'
                 ;;
             *"SELECT COUNT"*)
                 printf '%s\n' "${STUB_ROW_COUNT:-5}"

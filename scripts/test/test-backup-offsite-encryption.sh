@@ -161,6 +161,17 @@ else
 fi
 [ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "nothing uploaded" || failt "uploaded with no remote"
 
+echo "case 6: database dump cut short — nothing uploaded, alert"
+setup_case incomplete_dump
+printf '%s\n%s\n' "$PUB_A" "$PUB_B" > "$CASE/recipients"
+if run_backup BACKUP_AGE_RECIPIENTS_FILE="$CASE/recipients" STUB_DUMP_INCOMPLETE=1; then
+    failt "backup exited 0 with an incomplete dump"
+else
+    pass "backup exits non-zero"
+fi
+[ -z "$(find "$CASE/remote" -type f 2>/dev/null)" ] && pass "incomplete dump not uploaded" || failt "incomplete dump uploaded"
+grep -q "NIGHTLY BACKUP FAILED" "$CASE/curl.log" && pass "Telegram alert attempted" || failt "no alert for the failed dump"
+
 echo
 if [ "$FAILURES" -gt 0 ]; then
     echo "FAILED: $FAILURES check(s)" >&2
