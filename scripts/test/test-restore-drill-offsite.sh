@@ -171,6 +171,12 @@ put_encrypted "$TODAY"
 DRILL_RC=0; run_drill STUB_ROW_COUNT=0 || DRILL_RC=$?
 expect_fail "empty restore" "missing"
 
+echo "case 7b: tables restored but the triggers did not come back"
+setup_case no_triggers
+put_encrypted "$TODAY"
+DRILL_RC=0; run_drill STUB_DRILL_TRIGGERS=0 || DRILL_RC=$?
+expect_fail "no triggers" "triggers"
+
 echo "case 8: no offsite remote configured"
 setup_case no_remote
 DRILL_RC=0; run_drill STUB_RCLONE_REMOTES="" || DRILL_RC=$?

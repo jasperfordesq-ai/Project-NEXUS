@@ -22,6 +22,14 @@ case "${1:-}" in
                 # STUB_DUMP_INCOMPLETE=1: a dump cut short, no completion line.
                 [ -n "${STUB_DUMP_INCOMPLETE:-}" ] || printf -- '-- Dump completed on 2026-10-02 02:00:00\n'
                 ;;
+            *"information_schema.TRIGGERS"*)
+                # STUB_DRILL_TRIGGERS: what the restored (throwaway) copy reports.
+                if [ -n "${STUB_DRILL_TRIGGERS:-}" ] && [[ " $* " == *" nexus-restore-drill "* ]]; then
+                    printf '%s\n' "$STUB_DRILL_TRIGGERS"
+                else
+                    printf '%s\n' "${STUB_ROW_COUNT:-5}"
+                fi
+                ;;
             *"SELECT COUNT"*)
                 printf '%s\n' "${STUB_ROW_COUNT:-5}"
                 ;;

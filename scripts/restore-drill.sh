@@ -293,6 +293,35 @@ ${table}: restored ${drill}, live ${live}"
     fi
 done
 
+# Triggers (incl. the append-only safeguarding/consent protections) and views
+# are part of a working restore too. A restored copy with none, when the live
+# database has some, is a failed restore.
+query_drill() {
+    MYSQL_PWD="$DRILL_PASS" docker exec -e MYSQL_PWD "$DRILL_CONTAINER" \
+        mariadb -N -B -u root -e "$1" 2>/dev/null || echo 0
+}
+query_live() {
+    MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD "$SOURCE_DB_CONTAINER" \
+        mariadb -N -B -u "$DB_USER" -e "$1" 2>/dev/null || echo 0
+}
+for obj in TRIGGERS VIEWS; do
+    if [ "$obj" = "TRIGGERS" ]; then col="TRIGGER_SCHEMA"; else col="TABLE_SCHEMA"; fi
+    sql="SELECT COUNT(*) FROM information_schema.${obj} WHERE ${col} = '${DB_NAME}'"
+    live="$(query_live "$sql")"
+    drill="$(query_drill "$sql")"
+    label="$(printf '%s' "$obj" | tr 'A-Z' 'a-z')"
+    COUNTS="${COUNTS}
+${label}: restored ${drill}, live ${live}"
+    if [ "${live:-0}" -gt 0 ] && [ "${drill:-0}" -le 0 ]; then
+        warn "$label: none restored (live has $live)"
+        VERIFY_FAILED=1
+    elif [ "${drill:-0}" != "${live:-0}" ]; then
+        warn "$label: restored $drill, live $live (a migration since the backup can explain a small difference)"
+    else
+        success "$label: drill=$drill live=$live"
+    fi
+done
+
 if [ "$VERIFY_FAILED" -eq 1 ]; then
     fail "Restore drill FAILED — the backup restored but data is missing${COUNTS}"
 fi
