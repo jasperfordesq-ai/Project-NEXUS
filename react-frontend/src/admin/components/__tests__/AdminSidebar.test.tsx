@@ -531,6 +531,36 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Regional Analytics' })).toHaveAttribute('href', '/test/admin/analytics/regional');
   });
 
+  it('hides the Prerender Engine link from non-god super admins', () => {
+    // Owner decision 2026-10-02: /admin/seo/prerender is god-only. It used to be
+    // shown to every platform super admin, which is what the default mock user is.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
+
+    expect(screen.getByRole('link', { name: 'SEO Overview' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Prerender Engine' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Prerender Engine link to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
+
+    expect(screen.getByRole('link', { name: 'Prerender Engine' })).toHaveAttribute('href', '/test/admin/seo/prerender');
+  });
+
   it('shows the Module Configuration link to super admins', () => {
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>

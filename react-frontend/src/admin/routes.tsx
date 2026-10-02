@@ -448,8 +448,11 @@ export function AdminRoutes() {
       <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
       <Route path="seo/audit" element={<Lazy><SeoAudit /></Lazy>} />
       <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
-      <Route element={<SuperAdminRoute />}>
+      {/* Prerender Engine — god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
         <Route path="seo/prerender" element={<Lazy><PrerenderAdmin /></Lazy>} />
+      </Route>
+      <Route element={<SuperAdminRoute />}>
         <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />
       </Route>
       <Route path="404-errors" element={<Lazy><Error404Tracking /></Lazy>} />

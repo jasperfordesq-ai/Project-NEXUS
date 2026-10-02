@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Regional Analytics screen (Analytics & Reporting → Regional Analytics) is now available only to god accounts, until it is reworked. Its figures are drawn almost entirely from volunteering logs and Caring Community help requests, so a timebank without those modules saw a page of zeros. The link is hidden from everyone else, opening it by its address returns them to the admin dashboard, and its API now refuses anyone who is not a god — including platform super admins.
 - The Performance page (Analytics & Reporting → Performance, `/admin/performance`) is now shown only to god accounts. The link is hidden from everyone else, and opening the page by its address returns them to the admin dashboard. Its API permissions are unchanged.
 - The Monitoring link (Enterprise → Monitoring, `/admin/enterprise/monitoring`) is now shown in the admin sidebar only to god accounts. Other administrators no longer see it in the sidebar; the page, the Enterprise dashboard shortcut to it, and its API are unchanged.
+- The Prerender Engine page (Growth & Discovery → Prerender Engine, `/admin/seo/prerender`) is now shown only to god accounts; platform super admins previously saw it too. The link is hidden from everyone else, and opening the page by its address returns them to the admin dashboard. Its API permissions are unchanged.
 
 ### Fixed
 
