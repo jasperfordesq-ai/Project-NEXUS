@@ -135,7 +135,8 @@
       "page": "Strona",
       "created": "Utworzono",
       "diagnostics": "Diagnostyka",
-      "title": "Raport {{reference}}"
+      "title": "Raport {{reference}}",
+      "request_type": "Rodzaj zgłoszenia"
     },
     "fields": {
       "sentry_issue_url": "Adres URL problemu z funkcją Sentry",
@@ -174,7 +175,9 @@
         "page_url": "URL strony",
         "user_agent": "Agent użytkownika",
         "sentry_event": "Zdarzenie Sentry",
-        "sentry_issue": "Problem Sentry"
+        "sentry_issue": "Problem Sentry",
+        "request_type": "Rodzaj zgłoszenia",
+        "jira": "Zgłoszenie w Jira"
       },
       "headings": {
         "summary": "Podsumowanie:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "Nieprzypisane",
     "meta_title": "Raporty wsparcia",
-    "title": "Raporty wsparcia"
+    "title": "Raporty wsparcia",
+    "request_type": {
+      "broken": "Problem",
+      "how_to": "Pytanie",
+      "account": "Konto lub logowanie",
+      "suggestion": "Sugestia"
+    },
+    "jira": {
+      "handled": "Obsługiwane w Jira",
+      "status": "Status w Jira: {{status}}",
+      "status_unknown": "jeszcze nie sprawdzono",
+      "open": "Otwórz w Jira",
+      "status_hint": "Odpowiedź na to zgłoszenie jest udzielana w dziale pomocy Jira. Jego status odpowiada zgłoszeniu w Jira i jest sprawdzany co 15 minut. Nadal możesz dodawać notatki lub je zamknąć.",
+      "error_title": "Jira zgłosiła problem"
+    }
   }
 }

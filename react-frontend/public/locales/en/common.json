@@ -323,26 +323,64 @@
     "nexus_link_label": "Visit the Project NEXUS website"
   },
   "report_problem": {
-    "trigger": "Report a problem",
-    "title": "Report a problem",
+    "trigger": "Help & support",
+    "title": "Help & support",
     "auth_title": "Sign in required",
-    "auth_description": "Please sign in before sending a technical support report.",
+    "auth_description": "Please sign in before asking for help.",
     "summary_label": "Short summary",
     "description_label": "What happened?",
-    "impact_label": "Impact",
+    "impact_label": "How much is this affecting you?",
     "include_diagnostics": "Include technical diagnostics from this page",
     "cancel": "Cancel",
-    "submit": "Send report",
-    "submit_success": "Problem report sent.",
-    "submit_failed": "We could not send the report. Please try again.",
-    "success_title": "Report sent",
+    "submit": "Send",
+    "submit_success": "Thank you. Your message has been sent.",
+    "submit_failed": "We could not send your message. Please try again.",
+    "success_title": "Sent",
     "success_description": "Reference {{reference}} has been created.",
     "impact": {
       "blocked": "I cannot continue",
       "major": "A core task is broken",
       "minor": "Something is wrong but I can continue",
       "cosmetic": "Visual or wording issue"
-    }
+    },
+    "type_label": "What do you need help with?",
+    "types": {
+      "broken": {
+        "label": "Something isn't working",
+        "description": "A page, button or feature isn't doing what it should."
+      },
+      "how_to": {
+        "label": "How do I…?",
+        "description": "A question about using the site."
+      },
+      "account": {
+        "label": "Account or sign-in problem",
+        "description": "Trouble signing in, or a problem with your account. Never include your password."
+      },
+      "suggestion": {
+        "label": "Suggest an improvement",
+        "description": "An idea that would make the site better."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Short summary",
+        "description": "What happened?"
+      },
+      "how_to": {
+        "summary": "Your question in a few words",
+        "description": "Tell us a bit more"
+      },
+      "account": {
+        "summary": "What's wrong, in a few words",
+        "description": "Tell us a bit more"
+      },
+      "suggestion": {
+        "summary": "Your idea in a few words",
+        "description": "Tell us a bit more about your idea"
+      }
+    },
+    "close": "Close"
   },
   "mobile_tab": {
     "create": "Create",

@@ -326,26 +326,64 @@
     "nexus_link_label": "Tabhair cuairt ar shuíomh Project NEXUS"
   },
   "report_problem": {
-    "trigger": "Tuairiscigh fadhb",
-    "title": "Tuairiscigh fadhb",
+    "trigger": "Cabhair agus tacaíocht",
+    "title": "Cabhair agus tacaíocht",
     "auth_title": "Ní mór duit síniú isteach",
-    "auth_description": "Sínigh isteach sula seolann tú tuairisc chuig an bhfoireann tacaíochta teicniúla.",
+    "auth_description": "Sínigh isteach sula n-iarrann tú cabhair.",
     "summary_label": "Achoimre ghearr",
     "description_label": "Cad a tharla?",
-    "impact_label": "Tionchar",
+    "impact_label": "Cé chomh mór is atá sé seo ag cur isteach ort?",
     "include_diagnostics": "Cuir faisnéis dhiagnóiseach theicniúil ón leathanach seo san áireamh",
     "cancel": "Cealaigh",
-    "submit": "Seol tuairisc",
-    "submit_success": "Seoladh an tuairisc faoin bhfadhb.",
-    "submit_failed": "Níorbh fhéidir an tuairisc a sheoladh. Bain triail eile as.",
-    "success_title": "Tuairisc seolta",
+    "submit": "Seol",
+    "submit_success": "Go raibh maith agat. Seoladh do theachtaireacht.",
+    "submit_failed": "Níorbh fhéidir linn do theachtaireacht a sheoladh. Bain triail eile as.",
+    "success_title": "Seolta",
     "success_description": "Cruthaíodh an uimhir thagartha {{reference}}.",
     "impact": {
       "blocked": "Ní féidir liom leanúint ar aghaidh",
       "major": "Ní oibríonn ceann de na príomhthascanna",
       "minor": "Tá rud éigin mícheart ach is féidir liom leanúint ar aghaidh",
       "cosmetic": "Fadhb leis an gcuma nó leis an bhfoclaíocht"
-    }
+    },
+    "type_label": "Cén chabhair atá uait?",
+    "types": {
+      "broken": {
+        "label": "Níl rud éigin ag obair",
+        "description": "Níl leathanach, cnaipe nó gné ag déanamh mar ba chóir."
+      },
+      "how_to": {
+        "label": "Conas a dhéanaim…?",
+        "description": "Ceist faoi conas an suíomh a úsáid."
+      },
+      "account": {
+        "label": "Fadhb cuntais nó síniú isteach",
+        "description": "Deacracht síniú isteach, nó fadhb le do chuntas. Ná cuir do phasfhocal isteach riamh."
+      },
+      "suggestion": {
+        "label": "Moltaí feabhsúcháin",
+        "description": "Smaoineamh a chuirfeadh feabhas ar an suíomh."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Achoimre ghearr",
+        "description": "Cad a tharla?"
+      },
+      "how_to": {
+        "summary": "Do cheist i gcúpla focal",
+        "description": "Inis beagán eile dúinn"
+      },
+      "account": {
+        "summary": "Cad atá cearr, i gcúpla focal",
+        "description": "Inis beagán eile dúinn"
+      },
+      "suggestion": {
+        "summary": "Do smaoineamh i gcúpla focal",
+        "description": "Inis beagán eile dúinn faoi do smaoineamh"
+      }
+    },
+    "close": "Dún"
   },
   "mobile_tab": {
     "create": "Cruthaigh",

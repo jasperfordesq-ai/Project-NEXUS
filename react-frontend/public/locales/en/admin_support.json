@@ -138,7 +138,8 @@
       "created": "Created",
       "user_agent": "User agent",
       "sentry_event": "Sentry event",
-      "diagnostics": "Diagnostics"
+      "diagnostics": "Diagnostics",
+      "request_type": "Type of request"
     },
     "fields": {
       "status": "Status",
@@ -170,7 +171,9 @@
         "page_url": "Page URL",
         "user_agent": "User agent",
         "sentry_event": "Sentry event",
-        "sentry_issue": "Sentry issue"
+        "sentry_issue": "Sentry issue",
+        "request_type": "Type of request",
+        "jira": "Jira ticket"
       },
       "headings": {
         "summary": "Summary:",
@@ -185,6 +188,20 @@
       "save": "Failed to save the support report.",
       "copy": "Could not copy diagnostics.",
       "copy_handoff": "Could not copy the engineering handoff."
+    },
+    "request_type": {
+      "broken": "Problem",
+      "how_to": "Question",
+      "account": "Account or sign-in",
+      "suggestion": "Suggestion"
+    },
+    "jira": {
+      "handled": "Handled in Jira",
+      "status": "Jira status: {{status}}",
+      "status_unknown": "not checked yet",
+      "open": "Open in Jira",
+      "status_hint": "This report is answered in the Jira help desk. Its status follows the Jira ticket, checked every 15 minutes. You can still add notes, or close it.",
+      "error_title": "Jira reported a problem"
     }
   }
 }

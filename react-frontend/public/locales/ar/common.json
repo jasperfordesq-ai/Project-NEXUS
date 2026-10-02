@@ -327,26 +327,64 @@
     "nexus_link_label": "زيارة موقع Project NEXUS"
   },
   "report_problem": {
-    "trigger": "الإبلاغ عن مشكلة",
-    "title": "الإبلاغ عن مشكلة",
+    "trigger": "المساعدة والدعم",
+    "title": "المساعدة والدعم",
     "auth_title": "تسجيل الدخول مطلوب",
-    "auth_description": "يرجى تسجيل الدخول قبل إرسال تقرير الدعم الفني.",
+    "auth_description": "يرجى تسجيل الدخول قبل طلب المساعدة.",
     "summary_label": "ملخص قصير",
     "description_label": "ماذا حدث؟",
-    "impact_label": "التأثير",
+    "impact_label": "إلى أي مدى يؤثر هذا عليك؟",
     "include_diagnostics": "تضمين التشخيصات الفنية من هذه الصفحة",
     "cancel": "إلغاء",
-    "submit": "إرسال التقرير",
-    "submit_success": "تم إرسال تقرير المشكلة.",
-    "submit_failed": "تعذر إرسال التقرير. يرجى المحاولة مرة أخرى.",
-    "success_title": "تم إرسال التقرير",
+    "submit": "إرسال",
+    "submit_success": "شكرًا لك. تم إرسال رسالتك.",
+    "submit_failed": "تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى.",
+    "success_title": "تم الإرسال",
     "success_description": "تم إنشاء المرجع {{reference}}.",
     "impact": {
       "blocked": "لا يمكنني المتابعة",
       "major": "مهمة أساسية معطلة",
       "minor": "هناك خطأ ما لكن يمكنني المتابعة",
       "cosmetic": "مشكلة في العرض أو الصياغة"
-    }
+    },
+    "type_label": "ما الذي تحتاج المساعدة فيه؟",
+    "types": {
+      "broken": {
+        "label": "هناك شيء لا يعمل",
+        "description": "صفحة أو زر أو ميزة لا تعمل كما ينبغي."
+      },
+      "how_to": {
+        "label": "كيف أقوم بـ…؟",
+        "description": "سؤال حول استخدام الموقع."
+      },
+      "account": {
+        "label": "مشكلة في الحساب أو تسجيل الدخول",
+        "description": "صعوبة في تسجيل الدخول أو مشكلة في حسابك. لا تُدرج كلمة المرور أبدًا."
+      },
+      "suggestion": {
+        "label": "اقتراح تحسين",
+        "description": "فكرة تجعل الموقع أفضل."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "ملخص قصير",
+        "description": "ماذا حدث؟"
+      },
+      "how_to": {
+        "summary": "سؤالك في بضع كلمات",
+        "description": "أخبرنا بالمزيد"
+      },
+      "account": {
+        "summary": "ما المشكلة، في بضع كلمات",
+        "description": "أخبرنا بالمزيد"
+      },
+      "suggestion": {
+        "summary": "فكرتك في بضع كلمات",
+        "description": "أخبرنا بالمزيد عن فكرتك"
+      }
+    },
+    "close": "إغلاق"
   },
   "mobile_tab": {
     "create": "إنشاء",

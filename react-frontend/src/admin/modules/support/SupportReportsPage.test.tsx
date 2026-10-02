@@ -347,4 +347,60 @@ describe('SupportReportsPage', () => {
       expect(screen.getByText(/SR-001/)).toBeInTheDocument();
     }
   });
+  describe('Jira help desk', () => {
+    async function openDetail(report: ReturnType<typeof makeReport>) {
+      mockAdminSupportReports.list.mockResolvedValue(makeListResponse([report]));
+      mockAdminSupportReports.get.mockResolvedValue({ success: true, data: report });
+      const { default: SupportReportsPage } = await import('./SupportReportsPage');
+      render(<SupportReportsPage />);
+      await waitFor(() => screen.getByText(/SR-001/));
+      fireEvent.click(screen.getByRole('button', { name: 'Review' }));
+      await waitFor(() => expect(mockAdminSupportReports.get).toHaveBeenCalledWith(1));
+      return screen.findByRole('dialog');
+    }
+
+    it('shows the kind of request in the list', async () => {
+      mockAdminSupportReports.list.mockResolvedValue(makeListResponse([makeReport({ request_type: 'how_to' })]));
+      const { default: SupportReportsPage } = await import('./SupportReportsPage');
+      render(<SupportReportsPage />);
+
+      expect(await screen.findByText(/Question/)).toBeInTheDocument();
+    });
+
+    it('marks a report that has a Jira ticket as handled in Jira, with its status and a link', async () => {
+      const dialog = await openDetail(makeReport({
+        jira_issue_key: 'HELP-12',
+        jira_issue_url: 'https://jira.example.test/browse/HELP-12',
+        jira_status: 'Waiting for support',
+      }));
+
+      expect(dialog).toHaveTextContent('Handled in Jira');
+      expect(dialog).toHaveTextContent('HELP-12');
+      expect(dialog).toHaveTextContent('Waiting for support');
+      expect(screen.getByRole('button', { name: 'Open in Jira' })).toBeInTheDocument();
+      expect(dialog).toHaveTextContent('Its status follows the Jira ticket');
+
+      // Status can only stay as it is, or be closed.
+      const options = Array.from(dialog.querySelectorAll('option')).map((o) => o.getAttribute('value'));
+      expect(options).toContain('closed');
+      expect(options).not.toContain('resolved');
+      expect(options).not.toContain('triaged');
+    });
+
+    it('shows the problem when copying to Jira failed', async () => {
+      const dialog = await openDetail(makeReport({ jira_last_error: 'Jira: could not create the ticket (HTTP 503)' }));
+
+      expect(dialog).toHaveTextContent('Jira reported a problem');
+      expect(dialog).toHaveTextContent('Jira: could not create the ticket (HTTP 503)');
+      expect(dialog).not.toHaveTextContent('Handled in Jira');
+    });
+
+    it('shows nothing about Jira while the connection is off', async () => {
+      const dialog = await openDetail(makeReport());
+
+      expect(dialog).not.toHaveTextContent('Jira');
+      const options = Array.from(dialog.querySelectorAll('option')).map((o) => o.getAttribute('value'));
+      expect(options).toEqual(expect.arrayContaining(['open', 'triaged', 'resolved', 'closed']));
+    });
+  });
 });

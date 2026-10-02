@@ -323,26 +323,64 @@
     "nexus_link_label": "Project NEXUSのウェブサイトを訪問"
   },
   "report_problem": {
-    "trigger": "問題を報告",
-    "title": "問題を報告",
+    "trigger": "ヘルプとサポート",
+    "title": "ヘルプとサポート",
     "auth_title": "サインインが必要です",
-    "auth_description": "テクニカルサポートレポートを送信する前にサインインしてください。",
+    "auth_description": "サポートを依頼する前にサインインしてください。",
     "summary_label": "簡単な概要",
     "description_label": "何が起きましたか?",
-    "impact_label": "影響",
+    "impact_label": "どの程度困っていますか？",
     "include_diagnostics": "このページの技術診断情報を含める",
     "cancel": "キャンセル",
-    "submit": "レポートを送信",
-    "submit_success": "問題レポートを送信しました。",
-    "submit_failed": "レポートを送信できませんでした。もう一度お試しください。",
-    "success_title": "レポートを送信しました",
+    "submit": "送信",
+    "submit_success": "ありがとうございます。メッセージを送信しました。",
+    "submit_failed": "メッセージを送信できませんでした。もう一度お試しください。",
+    "success_title": "送信しました",
     "success_description": "参照番号 {{reference}} が作成されました。",
     "impact": {
       "blocked": "続行できません",
       "major": "主要なタスクが機能していません",
       "minor": "問題はありますが続行できます",
       "cosmetic": "表示または文言の問題"
-    }
+    },
+    "type_label": "どのようなことでお困りですか？",
+    "types": {
+      "broken": {
+        "label": "うまく動かない",
+        "description": "ページ、ボタン、または機能が正しく動作しません。"
+      },
+      "how_to": {
+        "label": "使い方を知りたい",
+        "description": "サイトの使い方についての質問です。"
+      },
+      "account": {
+        "label": "アカウントまたはサインインの問題",
+        "description": "サインインできない、またはアカウントに問題があります。パスワードは絶対に記入しないでください。"
+      },
+      "suggestion": {
+        "label": "改善を提案する",
+        "description": "サイトをより良くするアイデアです。"
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "概要",
+        "description": "何が起きましたか？"
+      },
+      "how_to": {
+        "summary": "質問を一言で",
+        "description": "もう少し詳しく教えてください"
+      },
+      "account": {
+        "summary": "問題を一言で",
+        "description": "もう少し詳しく教えてください"
+      },
+      "suggestion": {
+        "summary": "アイデアを一言で",
+        "description": "アイデアについてもう少し詳しく教えてください"
+      }
+    },
+    "close": "閉じる"
   },
   "mobile_tab": {
     "create": "作成",

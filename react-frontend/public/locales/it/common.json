@@ -324,26 +324,64 @@
     "nexus_link_label": "Visita il sito di Project NEXUS"
   },
   "report_problem": {
-    "trigger": "Segnala un problema",
-    "title": "Segnala un problema",
+    "trigger": "Aiuto e assistenza",
+    "title": "Aiuto e assistenza",
     "auth_title": "Accesso richiesto",
-    "auth_description": "Accedi prima di inviare una segnalazione tecnica al supporto.",
+    "auth_description": "Accedi prima di chiedere aiuto.",
     "summary_label": "Breve riepilogo",
     "description_label": "Che cosa è successo?",
-    "impact_label": "Impatto",
+    "impact_label": "Quanto ti sta creando problemi?",
     "include_diagnostics": "Includi la diagnostica tecnica di questa pagina",
     "cancel": "Annulla",
-    "submit": "Invia segnalazione",
-    "submit_success": "Segnalazione inviata.",
-    "submit_failed": "Non siamo riusciti a inviare la segnalazione. Riprova.",
-    "success_title": "Segnalazione inviata",
+    "submit": "Invia",
+    "submit_success": "Grazie. Il tuo messaggio è stato inviato.",
+    "submit_failed": "Non è stato possibile inviare il messaggio. Riprova.",
+    "success_title": "Inviato",
     "success_description": "Il riferimento {{reference}} è stato creato.",
     "impact": {
       "blocked": "Non posso continuare",
       "major": "Un'attività principale non funziona",
       "minor": "Qualcosa non va, ma posso continuare",
       "cosmetic": "Problema visivo o di testo"
-    }
+    },
+    "type_label": "Per cosa ti serve aiuto?",
+    "types": {
+      "broken": {
+        "label": "Qualcosa non funziona",
+        "description": "Una pagina, un pulsante o una funzione non fa quello che dovrebbe."
+      },
+      "how_to": {
+        "label": "Come faccio a…?",
+        "description": "Una domanda sull'uso del sito."
+      },
+      "account": {
+        "label": "Problema con l'account o l'accesso",
+        "description": "Difficoltà ad accedere o un problema con il tuo account. Non includere mai la tua password."
+      },
+      "suggestion": {
+        "label": "Suggerisci un miglioramento",
+        "description": "Un’idea per migliorare il sito."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Breve riepilogo",
+        "description": "Cosa è successo?"
+      },
+      "how_to": {
+        "summary": "La tua domanda in poche parole",
+        "description": "Raccontaci qualcosa in più"
+      },
+      "account": {
+        "summary": "Qual è il problema, in poche parole",
+        "description": "Raccontaci qualcosa in più"
+      },
+      "suggestion": {
+        "summary": "La tua idea in poche parole",
+        "description": "Raccontaci qualcosa in più sulla tua idea"
+      }
+    },
+    "close": "Chiudi"
   },
   "mobile_tab": {
     "create": "Crea",

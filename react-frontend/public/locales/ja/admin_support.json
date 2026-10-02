@@ -135,7 +135,8 @@
       "page": "ページ",
       "created": "作成済み",
       "diagnostics": "診断",
-      "title": "レポート {{reference}}"
+      "title": "レポート {{reference}}",
+      "request_type": "リクエストの種類"
     },
     "fields": {
       "sentry_issue_url": "セントリー問題の URL",
@@ -174,7 +175,9 @@
         "page_url": "ページ URL",
         "user_agent": "ユーザーエージェント",
         "sentry_event": "Sentry イベント",
-        "sentry_issue": "Sentry 問題"
+        "sentry_issue": "Sentry 問題",
+        "request_type": "リクエストの種類",
+        "jira": "Jira チケット"
       },
       "headings": {
         "summary": "概要:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "未割り当て",
     "meta_title": "サポートレポート",
-    "title": "サポートレポート"
+    "title": "サポートレポート",
+    "request_type": {
+      "broken": "不具合",
+      "how_to": "質問",
+      "account": "アカウントまたはサインイン",
+      "suggestion": "提案"
+    },
+    "jira": {
+      "handled": "Jira で対応中",
+      "status": "Jira のステータス: {{status}}",
+      "status_unknown": "未確認",
+      "open": "Jira で開く",
+      "status_hint": "この報告は Jira ヘルプデスクで回答されます。ステータスは Jira チケットに従い、15分ごとに確認されます。メモの追加やクローズは引き続き可能です。",
+      "error_title": "Jira で問題が発生しました"
+    }
   }
 }

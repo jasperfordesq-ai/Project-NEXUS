@@ -135,7 +135,8 @@
       "page": "الصفحة",
       "created": "تم الإنشاء",
       "diagnostics": "التشخيص",
-      "title": "تقرير {{reference}}"
+      "title": "تقرير {{reference}}",
+      "request_type": "نوع الطلب"
     },
     "fields": {
       "sentry_issue_url": "عنوان URL لمشكلة الحارس",
@@ -174,7 +175,9 @@
         "page_url": "رابط الصفحة",
         "user_agent": "وكيل المستخدم",
         "sentry_event": "حدث Sentry",
-        "sentry_issue": "مشكلة Sentry"
+        "sentry_issue": "مشكلة Sentry",
+        "request_type": "نوع الطلب",
+        "jira": "تذكرة Jira"
       },
       "headings": {
         "summary": "ملخص:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "غير مخصص",
     "meta_title": "تقارير الدعم",
-    "title": "تقارير الدعم"
+    "title": "تقارير الدعم",
+    "request_type": {
+      "broken": "مشكلة",
+      "how_to": "سؤال",
+      "account": "الحساب أو تسجيل الدخول",
+      "suggestion": "اقتراح"
+    },
+    "jira": {
+      "handled": "تتم معالجته في Jira",
+      "status": "حالة Jira: {{status}}",
+      "status_unknown": "لم يتم التحقق بعد",
+      "open": "فتح في Jira",
+      "status_hint": "يتم الرد على هذا البلاغ في مكتب مساعدة Jira. تتبع حالته تذكرة Jira، ويتم التحقق منها كل 15 دقيقة. لا يزال بإمكانك إضافة ملاحظات أو إغلاقه.",
+      "error_title": "أبلغ Jira عن مشكلة"
+    }
   }
 }

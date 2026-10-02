@@ -324,26 +324,64 @@
     "nexus_link_label": "Visita la web de Project NEXUS"
   },
   "report_problem": {
-    "trigger": "Informar de un problema",
-    "title": "Informar de un problema",
+    "trigger": "Ayuda y soporte",
+    "title": "Ayuda y soporte",
     "auth_title": "Inicio de sesión requerido",
-    "auth_description": "Inicia sesión antes de enviar un informe técnico de soporte.",
+    "auth_description": "Inicie sesión antes de pedir ayuda.",
     "summary_label": "Resumen breve",
     "description_label": "¿Qué ocurrió?",
-    "impact_label": "Impacto",
+    "impact_label": "¿Cuánto le está afectando?",
     "include_diagnostics": "Incluir diagnósticos técnicos de esta página",
     "cancel": "Cancelar",
-    "submit": "Enviar informe",
-    "submit_success": "Informe de problema enviado.",
-    "submit_failed": "No pudimos enviar el informe. Inténtalo de nuevo.",
-    "success_title": "Informe enviado",
+    "submit": "Enviar",
+    "submit_success": "Gracias. Su mensaje se ha enviado.",
+    "submit_failed": "No pudimos enviar su mensaje. Inténtelo de nuevo.",
+    "success_title": "Enviado",
     "success_description": "Se ha creado la referencia {{reference}}.",
     "impact": {
       "blocked": "No puedo continuar",
       "major": "Una tarea principal no funciona",
       "minor": "Algo va mal, pero puedo continuar",
       "cosmetic": "Problema visual o de texto"
-    }
+    },
+    "type_label": "¿Con qué necesita ayuda?",
+    "types": {
+      "broken": {
+        "label": "Algo no funciona",
+        "description": "Una página, un botón o una función no hace lo que debería."
+      },
+      "how_to": {
+        "label": "¿Cómo puedo…?",
+        "description": "Una pregunta sobre cómo usar el sitio."
+      },
+      "account": {
+        "label": "Problema con la cuenta o el acceso",
+        "description": "Problemas para iniciar sesión o con su cuenta. Nunca incluya su contraseña."
+      },
+      "suggestion": {
+        "label": "Sugerir una mejora",
+        "description": "Una idea que mejoraría el sitio."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Resumen breve",
+        "description": "¿Qué ha pasado?"
+      },
+      "how_to": {
+        "summary": "Su pregunta en pocas palabras",
+        "description": "Cuéntenos un poco más"
+      },
+      "account": {
+        "summary": "Qué ocurre, en pocas palabras",
+        "description": "Cuéntenos un poco más"
+      },
+      "suggestion": {
+        "summary": "Su idea en pocas palabras",
+        "description": "Cuéntenos un poco más sobre su idea"
+      }
+    },
+    "close": "Cerrar"
   },
   "mobile_tab": {
     "create": "Crear",

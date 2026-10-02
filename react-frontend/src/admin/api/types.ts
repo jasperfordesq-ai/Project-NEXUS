@@ -2344,6 +2344,7 @@ export interface AdminReport {
 
 export type AdminSupportReportStatus = 'open' | 'triaged' | 'resolved' | 'closed';
 export type AdminSupportReportImpact = 'blocked' | 'major' | 'minor' | 'cosmetic';
+export type AdminSupportRequestType = 'broken' | 'how_to' | 'account' | 'suggestion';
 
 export interface AdminSupportReportUser {
   id: number;
@@ -2376,6 +2377,16 @@ export interface AdminSupportReport {
   triaged_at?: string | null;
   resolved_at?: string | null;
   closed_at?: string | null;
+  /** Kind of "Help & support" request; older rows are 'broken'. */
+  request_type?: AdminSupportRequestType | null;
+  /** Set once the report has been copied to the Jira help desk. */
+  jira_issue_key?: string | null;
+  jira_issue_url?: string | null;
+  jira_synced_at?: string | null;
+  jira_last_error?: string | null;
+  /** Last status read back from Jira (Jira → platform only). */
+  jira_status?: string | null;
+  jira_status_checked_at?: string | null;
   created_at: string;
   updated_at?: string | null;
   reporter?: AdminSupportReportUser | null;

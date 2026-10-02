@@ -323,26 +323,64 @@
     "nexus_link_label": "Project NEXUS-Website besuchen"
   },
   "report_problem": {
-    "trigger": "Problem melden",
-    "title": "Problem melden",
+    "trigger": "Hilfe & Support",
+    "title": "Hilfe & Support",
     "auth_title": "Anmeldung erforderlich",
-    "auth_description": "Bitte melden Sie sich an, bevor Sie einen technischen Supportbericht senden.",
+    "auth_description": "Bitte melden Sie sich an, bevor Sie um Hilfe bitten.",
     "summary_label": "Kurze Zusammenfassung",
     "description_label": "Was ist passiert?",
-    "impact_label": "Auswirkung",
+    "impact_label": "Wie stark beeinträchtigt Sie das?",
     "include_diagnostics": "Technische Diagnosedaten von dieser Seite einschließen",
     "cancel": "Abbrechen",
-    "submit": "Bericht senden",
-    "submit_success": "Problembericht gesendet.",
-    "submit_failed": "Der Bericht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
-    "success_title": "Bericht gesendet",
+    "submit": "Senden",
+    "submit_success": "Vielen Dank. Ihre Nachricht wurde gesendet.",
+    "submit_failed": "Ihre Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "success_title": "Gesendet",
     "success_description": "Referenz {{reference}} wurde erstellt.",
     "impact": {
       "blocked": "Ich kann nicht fortfahren",
       "major": "Eine Kernaufgabe funktioniert nicht",
       "minor": "Etwas stimmt nicht, aber ich kann fortfahren",
       "cosmetic": "Visuelles oder Textproblem"
-    }
+    },
+    "type_label": "Wobei brauchen Sie Hilfe?",
+    "types": {
+      "broken": {
+        "label": "Etwas funktioniert nicht",
+        "description": "Eine Seite, eine Schaltfläche oder eine Funktion tut nicht, was sie soll."
+      },
+      "how_to": {
+        "label": "Wie kann ich …?",
+        "description": "Eine Frage zur Nutzung der Website."
+      },
+      "account": {
+        "label": "Problem mit Konto oder Anmeldung",
+        "description": "Probleme bei der Anmeldung oder mit Ihrem Konto. Geben Sie niemals Ihr Passwort an."
+      },
+      "suggestion": {
+        "label": "Verbesserung vorschlagen",
+        "description": "Eine Idee, die die Website besser machen würde."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Kurze Zusammenfassung",
+        "description": "Was ist passiert?"
+      },
+      "how_to": {
+        "summary": "Ihre Frage in wenigen Worten",
+        "description": "Erzählen Sie uns etwas mehr"
+      },
+      "account": {
+        "summary": "Was ist los, in wenigen Worten",
+        "description": "Erzählen Sie uns etwas mehr"
+      },
+      "suggestion": {
+        "summary": "Ihre Idee in wenigen Worten",
+        "description": "Erzählen Sie uns mehr über Ihre Idee"
+      }
+    },
+    "close": "Schließen"
   },
   "mobile_tab": {
     "create": "Erstellen",

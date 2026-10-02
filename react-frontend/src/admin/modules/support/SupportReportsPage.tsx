@@ -23,8 +23,10 @@ import type {
   AdminSupportReportStats,
   AdminSupportReportStatus,
   AdminSupportReportUser,
+  AdminSupportRequestType,
 } from '@/admin/api/types';
 import {
+  Alert,
   Button,
   Card,
   CardBody,
@@ -94,6 +96,7 @@ export function buildSupportReportHandoff(report: AdminSupportReport, t: TFuncti
     t('support_reports.handoff.title', { reference: report.reference }),
     '',
     field(t('support_reports.handoff.labels.tenant'), report.tenant_name ?? report.tenant_id),
+    field(t('support_reports.handoff.labels.request_type'), t(`support_reports.request_type.${requestTypeOf(report)}`)),
     field(t('support_reports.handoff.labels.impact'), impact),
     field(t('support_reports.handoff.labels.status'), status),
     field(t('support_reports.handoff.labels.created'), formatDateTime(report.created_at)),
@@ -103,6 +106,7 @@ export function buildSupportReportHandoff(report: AdminSupportReport, t: TFuncti
     field(t('support_reports.handoff.labels.user_agent'), report.user_agent ?? notProvided),
     field(t('support_reports.handoff.labels.sentry_event'), report.sentry_event_id ?? notProvided),
     field(t('support_reports.handoff.labels.sentry_issue'), report.sentry_issue_url ?? notProvided),
+    field(t('support_reports.handoff.labels.jira'), report.jira_issue_key ?? notProvided),
     '',
     t('support_reports.handoff.headings.summary'),
     report.summary,
@@ -398,7 +402,11 @@ export default function SupportReportsPage() {
                     <TableCell>
                       <div className="max-w-sm">
                         <p className="truncate text-sm font-medium text-foreground">{report.summary}</p>
-                        <p className="truncate text-xs text-muted">{report.route || t('support_reports.empty_value')}</p>
+                        <p className="truncate text-xs text-muted">
+                          {t(`support_reports.request_type.${requestTypeOf(report)}`)}
+                          {' · '}
+                          {report.route || t('support_reports.empty_value')}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -407,9 +415,14 @@ export default function SupportReportsPage() {
                       </Chip>
                     </TableCell>
                     <TableCell>
-                      <Chip size="sm" variant="soft" color={statusColor(report.status)}>
-                        {t(`support_reports.status.${report.status}`)}
-                      </Chip>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Chip size="sm" variant="soft" color={statusColor(report.status)}>
+                          {t(`support_reports.status.${report.status}`)}
+                        </Chip>
+                        {report.jira_issue_key ? (
+                          <Chip size="sm" variant="soft">{report.jira_issue_key}</Chip>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell>{report.reporter?.name ?? t('support_reports.empty_value')}</TableCell>
                     <TableCell>{report.assignee?.name ?? t('support_reports.unassigned')}</TableCell>
@@ -458,6 +471,7 @@ export default function SupportReportsPage() {
                   </section>
 
                   <section className="space-y-2 text-sm">
+                    <DetailRow label={t('support_reports.detail.request_type')} value={t(`support_reports.request_type.${requestTypeOf(selectedReport)}`)} />
                     <DetailRow label={t('support_reports.detail.reporter')} value={selectedReport.reporter?.name ?? t('support_reports.empty_value')} />
                     <DetailRow label={t('support_reports.detail.page')} value={selectedReport.route ?? t('support_reports.empty_value')} />
                     <DetailRow label={t('support_reports.detail.created')} value={formatDate(selectedReport.created_at)} />
@@ -466,13 +480,46 @@ export default function SupportReportsPage() {
                   </section>
                 </div>
 
+                {selectedReport.jira_issue_key ? (
+                  <section className="space-y-2 rounded-md border border-divider p-3" data-testid="support-report-jira">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Chip size="sm" variant="soft" color="primary">{t('support_reports.jira.handled')}</Chip>
+                      <span className="font-mono text-sm font-semibold">{selectedReport.jira_issue_key}</span>
+                      <span className="text-sm text-muted">
+                        {t('support_reports.jira.status', {
+                          status: selectedReport.jira_status ?? t('support_reports.jira.status_unknown'),
+                        })}
+                      </span>
+                      {selectedReport.jira_issue_url ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          startContent={<ExternalLink className="h-4 w-4" aria-hidden="true" />}
+                          onPress={() => openSafeUrl(selectedReport.jira_issue_url)}
+                        >
+                          {t('support_reports.jira.open')}
+                        </Button>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-muted">{t('support_reports.jira.status_hint')}</p>
+                  </section>
+                ) : null}
+
+                {selectedReport.jira_last_error ? (
+                  <Alert
+                    color="warning"
+                    title={t('support_reports.jira.error_title')}
+                    description={selectedReport.jira_last_error}
+                  />
+                ) : null}
+
                 <div className="grid gap-4 lg:grid-cols-3">
                   <Select
                     label={t('support_reports.fields.status')}
                     value={draft.status}
                     onValueChange={(value) => setDraft({ ...draft, status: value as AdminSupportReportStatus })}
                   >
-                    {STATUS_FILTERS.filter((status) => status !== 'all').map((status) => (
+                    {editableStatuses(selectedReport).map((status) => (
                       <SelectItem key={status} id={status}>
                         {t(`support_reports.status.${status}`)}
                       </SelectItem>
@@ -581,6 +628,24 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <p className="mt-0.5 break-words text-foreground">{value}</p>
     </div>
   );
+}
+
+function requestTypeOf(report: AdminSupportReport): AdminSupportRequestType {
+  return report.request_type ?? 'broken';
+}
+
+/**
+ * A report copied to Jira is answered there and its status mirrored back
+ * every 15 minutes, so here it can only keep its status or be closed (the
+ * server enforces the same rule: SUPPORT_REPORT_HANDLED_IN_JIRA).
+ */
+function editableStatuses(report: AdminSupportReport): AdminSupportReportStatus[] {
+  const all: AdminSupportReportStatus[] = ['open', 'triaged', 'resolved', 'closed'];
+  if (!report.jira_issue_key) {
+    return all;
+  }
+
+  return all.filter((status) => status === report.status || status === 'closed');
 }
 
 function impactColor(impact: AdminSupportReportImpact) {

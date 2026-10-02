@@ -324,26 +324,64 @@
     "nexus_link_label": "Visiter le site Project NEXUS"
   },
   "report_problem": {
-    "trigger": "Signaler un problème",
-    "title": "Signaler un problème",
+    "trigger": "Aide et assistance",
+    "title": "Aide et assistance",
     "auth_title": "Connexion requise",
-    "auth_description": "Veuillez vous connecter avant d'envoyer un rapport technique au support.",
+    "auth_description": "Veuillez vous connecter avant de demander de l'aide.",
     "summary_label": "Court résumé",
     "description_label": "Que s'est-il passé ?",
-    "impact_label": "Impact",
+    "impact_label": "Dans quelle mesure cela vous gêne-t-il ?",
     "include_diagnostics": "Inclure les diagnostics techniques de cette page",
     "cancel": "Annuler",
-    "submit": "Envoyer le rapport",
-    "submit_success": "Rapport de problème envoyé.",
-    "submit_failed": "Nous n'avons pas pu envoyer le rapport. Veuillez réessayer.",
-    "success_title": "Rapport envoyé",
+    "submit": "Envoyer",
+    "submit_success": "Merci. Votre message a été envoyé.",
+    "submit_failed": "Nous n'avons pas pu envoyer votre message. Veuillez réessayer.",
+    "success_title": "Envoyé",
     "success_description": "La référence {{reference}} a été créée.",
     "impact": {
       "blocked": "Je ne peux pas continuer",
       "major": "Une tâche essentielle est bloquée",
       "minor": "Quelque chose ne va pas, mais je peux continuer",
       "cosmetic": "Problème visuel ou de texte"
-    }
+    },
+    "type_label": "De quelle aide avez-vous besoin ?",
+    "types": {
+      "broken": {
+        "label": "Quelque chose ne fonctionne pas",
+        "description": "Une page, un bouton ou une fonction ne fait pas ce qu’il devrait."
+      },
+      "how_to": {
+        "label": "Comment faire pour… ?",
+        "description": "Une question sur l'utilisation du site."
+      },
+      "account": {
+        "label": "Problème de compte ou de connexion",
+        "description": "Difficulté à vous connecter ou problème avec votre compte. N’indiquez jamais votre mot de passe."
+      },
+      "suggestion": {
+        "label": "Suggérer une amélioration",
+        "description": "Une idée pour améliorer le site."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Résumé court",
+        "description": "Que s'est-il passé ?"
+      },
+      "how_to": {
+        "summary": "Votre question en quelques mots",
+        "description": "Dites-nous-en un peu plus"
+      },
+      "account": {
+        "summary": "Le problème, en quelques mots",
+        "description": "Dites-nous-en un peu plus"
+      },
+      "suggestion": {
+        "summary": "Votre idée en quelques mots",
+        "description": "Dites-nous-en un peu plus sur votre idée"
+      }
+    },
+    "close": "Fermer"
   },
   "mobile_tab": {
     "create": "Créer",

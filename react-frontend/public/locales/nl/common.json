@@ -323,26 +323,64 @@
     "nexus_link_label": "Bezoek de Project NEXUS-website"
   },
   "report_problem": {
-    "trigger": "Probleem melden",
-    "title": "Probleem melden",
+    "trigger": "Hulp en ondersteuning",
+    "title": "Hulp en ondersteuning",
     "auth_title": "Inloggen vereist",
-    "auth_description": "Log in voordat je een technisch supportrapport verstuurt.",
+    "auth_description": "Meld u aan voordat u om hulp vraagt.",
     "summary_label": "Korte samenvatting",
     "description_label": "Wat is er gebeurd?",
-    "impact_label": "Impact",
+    "impact_label": "Hoeveel last heeft u hiervan?",
     "include_diagnostics": "Technische diagnostiek van deze pagina toevoegen",
     "cancel": "Annuleren",
-    "submit": "Rapport verzenden",
-    "submit_success": "Probleemrapport verzonden.",
-    "submit_failed": "We konden het rapport niet verzenden. Probeer het opnieuw.",
-    "success_title": "Rapport verzonden",
+    "submit": "Versturen",
+    "submit_success": "Bedankt. Uw bericht is verstuurd.",
+    "submit_failed": "We konden uw bericht niet versturen. Probeer het opnieuw.",
+    "success_title": "Verstuurd",
     "success_description": "Referentie {{reference}} is aangemaakt.",
     "impact": {
       "blocked": "Ik kan niet doorgaan",
       "major": "Een kerntaak werkt niet",
       "minor": "Er klopt iets niet, maar ik kan doorgaan",
       "cosmetic": "Visueel probleem of tekstprobleem"
-    }
+    },
+    "type_label": "Waarmee heeft u hulp nodig?",
+    "types": {
+      "broken": {
+        "label": "Er werkt iets niet",
+        "description": "Een pagina, knop of functie doet niet wat hij zou moeten doen."
+      },
+      "how_to": {
+        "label": "Hoe kan ik…?",
+        "description": "Een vraag over het gebruik van de site."
+      },
+      "account": {
+        "label": "Probleem met account of aanmelden",
+        "description": "Moeite met aanmelden, of een probleem met uw account. Vermeld nooit uw wachtwoord."
+      },
+      "suggestion": {
+        "label": "Een verbetering voorstellen",
+        "description": "Een idee waardoor de site beter wordt."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Korte samenvatting",
+        "description": "Wat is er gebeurd?"
+      },
+      "how_to": {
+        "summary": "Uw vraag in een paar woorden",
+        "description": "Vertel ons iets meer"
+      },
+      "account": {
+        "summary": "Wat is er mis, in een paar woorden",
+        "description": "Vertel ons iets meer"
+      },
+      "suggestion": {
+        "summary": "Uw idee in een paar woorden",
+        "description": "Vertel ons iets meer over uw idee"
+      }
+    },
+    "close": "Sluiten"
   },
   "mobile_tab": {
     "create": "Aanmaken",

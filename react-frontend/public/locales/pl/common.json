@@ -325,26 +325,64 @@
     "nexus_link_label": "Odwiedź stronę Project NEXUS"
   },
   "report_problem": {
-    "trigger": "Zgłoś problem",
-    "title": "Zgłoś problem",
+    "trigger": "Pomoc i wsparcie",
+    "title": "Pomoc i wsparcie",
     "auth_title": "Wymagane logowanie",
-    "auth_description": "Zaloguj się przed wysłaniem technicznego zgłoszenia do pomocy.",
+    "auth_description": "Zaloguj się, zanim poprosisz o pomoc.",
     "summary_label": "Krótki opis",
     "description_label": "Co się stało?",
-    "impact_label": "Wpływ",
+    "impact_label": "Jak bardzo Ci to przeszkadza?",
     "include_diagnostics": "Dołącz diagnostykę techniczną z tej strony",
     "cancel": "Anuluj",
-    "submit": "Wyślij zgłoszenie",
-    "submit_success": "Zgłoszenie problemu zostało wysłane.",
-    "submit_failed": "Nie mogliśmy wysłać zgłoszenia. Spróbuj ponownie.",
-    "success_title": "Zgłoszenie wysłane",
+    "submit": "Wyślij",
+    "submit_success": "Dziękujemy. Twoja wiadomość została wysłana.",
+    "submit_failed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+    "success_title": "Wysłano",
     "success_description": "Utworzono numer referencyjny {{reference}}.",
     "impact": {
       "blocked": "Nie mogę kontynuować",
       "major": "Podstawowe zadanie nie działa",
       "minor": "Coś jest nie tak, ale mogę kontynuować",
       "cosmetic": "Problem wizualny lub tekstowy"
-    }
+    },
+    "type_label": "W czym potrzebujesz pomocy?",
+    "types": {
+      "broken": {
+        "label": "Coś nie działa",
+        "description": "Strona, przycisk lub funkcja nie działa tak, jak powinna."
+      },
+      "how_to": {
+        "label": "Jak mogę…?",
+        "description": "Pytanie o korzystanie z serwisu."
+      },
+      "account": {
+        "label": "Problem z kontem lub logowaniem",
+        "description": "Kłopot z zalogowaniem się lub problem z kontem. Nigdy nie podawaj hasła."
+      },
+      "suggestion": {
+        "label": "Zaproponuj ulepszenie",
+        "description": "Pomysł, dzięki któremu serwis będzie lepszy."
+      }
+    },
+    "fields": {
+      "broken": {
+        "summary": "Krótkie podsumowanie",
+        "description": "Co się stało?"
+      },
+      "how_to": {
+        "summary": "Twoje pytanie w kilku słowach",
+        "description": "Napisz nam trochę więcej"
+      },
+      "account": {
+        "summary": "Co jest nie tak, w kilku słowach",
+        "description": "Napisz nam trochę więcej"
+      },
+      "suggestion": {
+        "summary": "Twój pomysł w kilku słowach",
+        "description": "Napisz nam trochę więcej o swoim pomyśle"
+      }
+    },
+    "close": "Zamknij"
   },
   "mobile_tab": {
     "create": "Utwórz",

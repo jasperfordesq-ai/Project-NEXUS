@@ -135,7 +135,8 @@
       "page": "Pagina",
       "created": "Gemaakt",
       "diagnostics": "Diagnostiek",
-      "title": "Rapporteer {{reference}}"
+      "title": "Rapporteer {{reference}}",
+      "request_type": "Soort verzoek"
     },
     "fields": {
       "sentry_issue_url": "URL van Sentry-probleem",
@@ -174,7 +175,9 @@
         "sentry_event": "Sentry-gebeurtenis",
         "sentry_issue": "Sentry-probleem",
         "impact": "Impact",
-        "route": "Route"
+        "route": "Route",
+        "request_type": "Soort verzoek",
+        "jira": "Jira-ticket"
       },
       "headings": {
         "summary": "Samenvatting:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "Niet toegewezen",
     "meta_title": "Ondersteuningsrapporten",
-    "title": "Ondersteuningsrapporten"
+    "title": "Ondersteuningsrapporten",
+    "request_type": {
+      "broken": "Probleem",
+      "how_to": "Vraag",
+      "account": "Account of aanmelden",
+      "suggestion": "Suggestie"
+    },
+    "jira": {
+      "handled": "Behandeld in Jira",
+      "status": "Jira-status: {{status}}",
+      "status_unknown": "nog niet gecontroleerd",
+      "open": "Openen in Jira",
+      "status_hint": "Deze melding wordt beantwoord in de Jira-helpdesk. De status volgt het Jira-ticket en wordt elke 15 minuten gecontroleerd. U kunt nog steeds notities toevoegen of de melding sluiten.",
+      "error_title": "Jira meldde een probleem"
+    }
   }
 }

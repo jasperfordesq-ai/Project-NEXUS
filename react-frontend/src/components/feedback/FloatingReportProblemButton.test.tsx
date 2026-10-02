@@ -164,6 +164,11 @@ vi.mock('@/components/ui', async (importOriginal) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+function pickSomethingIsNotWorking() {
+  fireEvent.click(screen.getByRole('radio', { name: /Something isn't working/ }));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 describe('FloatingReportProblemButton', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -218,6 +223,8 @@ describe('FloatingReportProblemButton', () => {
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => screen.getByRole('dialog'));
+    // "Help & support": the fields appear once the member picks what they need.
+    pickSomethingIsNotWorking();
 
     expect(screen.getByTestId('summary-input')).toBeInTheDocument();
     expect(screen.getByTestId('description-textarea')).toBeInTheDocument();
@@ -229,6 +236,8 @@ describe('FloatingReportProblemButton', () => {
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => screen.getByRole('dialog'));
+    // "Help & support": the fields appear once the member picks what they need.
+    pickSomethingIsNotWorking();
 
     fireEvent.change(screen.getByTestId('summary-input'), { target: { value: 'Test bug title' } });
     fireEvent.change(screen.getByTestId('description-textarea'), {
@@ -256,6 +265,8 @@ describe('FloatingReportProblemButton', () => {
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => screen.getByRole('dialog'));
+    // "Help & support": the fields appear once the member picks what they need.
+    pickSomethingIsNotWorking();
 
     fireEvent.change(screen.getByTestId('summary-input'), { target: { value: 'Bug report' } });
     fireEvent.change(screen.getByTestId('description-textarea'), {
@@ -278,6 +289,8 @@ describe('FloatingReportProblemButton', () => {
 
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => screen.getByRole('dialog'));
+    // "Help & support": the fields appear once the member picks what they need.
+    pickSomethingIsNotWorking();
 
     fireEvent.change(screen.getByTestId('summary-input'), { target: { value: 'Bug report' } });
     fireEvent.change(screen.getByTestId('description-textarea'), {

@@ -135,7 +135,8 @@
       "page": "Seite",
       "created": "Erstellt",
       "diagnostics": "Diagnose",
-      "title": "Melden {{reference}}"
+      "title": "Melden {{reference}}",
+      "request_type": "Art der Anfrage"
     },
     "fields": {
       "sentry_issue_url": "URL des Sentry-Problems",
@@ -174,7 +175,9 @@
         "user_agent": "Benutzeragent",
         "sentry_event": "Sentry-Ereignis",
         "sentry_issue": "Sentry-Problem",
-        "route": "Route"
+        "route": "Route",
+        "request_type": "Art der Anfrage",
+        "jira": "Jira-Ticket"
       },
       "headings": {
         "summary": "Zusammenfassung:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "Nicht zugewiesen",
     "meta_title": "Supportberichte",
-    "title": "Supportberichte"
+    "title": "Supportberichte",
+    "request_type": {
+      "broken": "Problem",
+      "how_to": "Frage",
+      "account": "Konto oder Anmeldung",
+      "suggestion": "Vorschlag"
+    },
+    "jira": {
+      "handled": "In Jira bearbeitet",
+      "status": "Jira-Status: {{status}}",
+      "status_unknown": "noch nicht geprüft",
+      "open": "In Jira öffnen",
+      "status_hint": "Diese Meldung wird im Jira-Helpdesk beantwortet. Ihr Status folgt dem Jira-Ticket und wird alle 15 Minuten geprüft. Sie können weiterhin Notizen hinzufügen oder sie schließen.",
+      "error_title": "Jira hat ein Problem gemeldet"
+    }
   }
 }

@@ -38324,26 +38324,64 @@ export default interface Resources {
       "summary": "Always evolving."
     },
     "report_problem": {
-      "auth_description": "Please sign in before sending a technical support report.",
+      "auth_description": "Please sign in before asking for help.",
       "auth_title": "Sign in required",
       "cancel": "Cancel",
+      "close": "Close",
       "description_label": "What happened?",
+      "fields": {
+        "account": {
+          "description": "Tell us a bit more",
+          "summary": "What's wrong, in a few words"
+        },
+        "broken": {
+          "description": "What happened?",
+          "summary": "Short summary"
+        },
+        "how_to": {
+          "description": "Tell us a bit more",
+          "summary": "Your question in a few words"
+        },
+        "suggestion": {
+          "description": "Tell us a bit more about your idea",
+          "summary": "Your idea in a few words"
+        }
+      },
       "impact": {
         "blocked": "I cannot continue",
         "cosmetic": "Visual or wording issue",
         "major": "A core task is broken",
         "minor": "Something is wrong but I can continue"
       },
-      "impact_label": "Impact",
+      "impact_label": "How much is this affecting you?",
       "include_diagnostics": "Include technical diagnostics from this page",
-      "submit": "Send report",
-      "submit_failed": "We could not send the report. Please try again.",
-      "submit_success": "Problem report sent.",
+      "submit": "Send",
+      "submit_failed": "We could not send your message. Please try again.",
+      "submit_success": "Thank you. Your message has been sent.",
       "success_description": "Reference {{reference}} has been created.",
-      "success_title": "Report sent",
+      "success_title": "Sent",
       "summary_label": "Short summary",
-      "title": "Report a problem",
-      "trigger": "Report a problem"
+      "title": "Help & support",
+      "trigger": "Help & support",
+      "type_label": "What do you need help with?",
+      "types": {
+        "account": {
+          "description": "Trouble signing in, or a problem with your account. Never include your password.",
+          "label": "Account or sign-in problem"
+        },
+        "broken": {
+          "description": "A page, button or feature isn't doing what it should.",
+          "label": "Something isn't working"
+        },
+        "how_to": {
+          "description": "A question about using the site.",
+          "label": "How do I…?"
+        },
+        "suggestion": {
+          "description": "An idea that would make the site better.",
+          "label": "Suggest an improvement"
+        }
+      }
     },
     "request_help": {
       "back": "Back to Community Hub",

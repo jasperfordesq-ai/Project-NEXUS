@@ -33,6 +33,20 @@
         "en"
       ],
       "reason": "The name of a shared member account that a community creates for itself; it is data, not interface text."
+    },
+    {
+      "label": "Signaler un problème",
+      "locales": [
+        "fr"
+      ],
+      "reason": "The phone app's \"Report a problem\" button on an exchange (mobile/locales/fr/exchanges.json). The website's own button is now \"Help & support\", so these words no longer appear in the web interface text."
+    },
+    {
+      "label": "Tuairiscigh fadhb",
+      "locales": [
+        "ga"
+      ],
+      "reason": "The phone app's \"Report a problem\" button on an exchange (mobile/locales/ga/exchanges.json). The website's own button is now \"Help & support\", so these words no longer appear in the web interface text."
     }
   ]
 }

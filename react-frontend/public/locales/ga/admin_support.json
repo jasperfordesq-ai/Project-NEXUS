@@ -135,7 +135,8 @@
       "page": "Leathanach",
       "created": "Cruthaíodh",
       "diagnostics": "Ionstraimí Diagnóise",
-      "title": "Tuarascáil {{reference}}"
+      "title": "Tuarascáil {{reference}}",
+      "request_type": "Cineál iarratais"
     },
     "fields": {
       "sentry_issue_url": "URL na heisiúna seolta",
@@ -174,7 +175,9 @@
         "page_url": "URL na Leathanach",
         "user_agent": "Gníomhaire úsáideora",
         "sentry_event": "Imeacht Sentry",
-        "sentry_issue": "Fadhb Sentry"
+        "sentry_issue": "Fadhb Sentry",
+        "request_type": "Cineál iarratais",
+        "jira": "Ticéad Jira"
       },
       "headings": {
         "summary": "Achoimre:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "Neamhrialaithe",
     "meta_title": "Tacaigh Tuarascálacha",
-    "title": "Tacaigh Tuarascálacha"
+    "title": "Tacaigh Tuarascálacha",
+    "request_type": {
+      "broken": "Fadhb",
+      "how_to": "Ceist",
+      "account": "Cuntas nó síniú isteach",
+      "suggestion": "Moladh"
+    },
+    "jira": {
+      "handled": "Á láimhseáil in Jira",
+      "status": "Stádas Jira: {{status}}",
+      "status_unknown": "gan seiceáil fós",
+      "open": "Oscail in Jira",
+      "status_hint": "Freagraítear an tuairisc seo sa deasc chabhrach Jira. Leanann a stádas an ticéad Jira, a sheiceáiltear gach 15 nóiméad. Is féidir leat nótaí a chur leis fós, nó í a dhúnadh.",
+      "error_title": "Thuairiscigh Jira fadhb"
+    }
   }
 }

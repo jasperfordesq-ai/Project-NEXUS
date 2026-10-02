@@ -5,7 +5,7 @@
 
 import { type FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Bug from 'lucide-react/icons/bug';
+import LifeBuoy from 'lucide-react/icons/life-buoy';
 import Send from 'lucide-react/icons/send';
 
 import {
@@ -18,6 +18,8 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Radio,
+  RadioGroup,
   Select,
   SelectItem,
   Textarea,
@@ -28,10 +30,18 @@ import { getSupportDiagnosticsSnapshot, getSupportReportLocation } from '@/lib/s
 
 type Impact = 'blocked' | 'major' | 'minor' | 'cosmetic';
 
+/**
+ * The four kinds of "Help & support" request. They match the Jira help desk's
+ * request types, and the server's SupportReportController::REQUEST_TYPES.
+ * Only 'broken' asks for an impact and may carry technical diagnostics.
+ */
+type RequestType = 'broken' | 'how_to' | 'account' | 'suggestion';
+
 interface ReportProblemResponse {
   report: {
     id: number;
     reference: string;
+    request_type?: RequestType;
     status: string;
     impact: Impact;
     summary: string;
@@ -45,6 +55,7 @@ interface ReportProblemButtonProps {
 }
 
 const IMPACT_OPTIONS: Impact[] = ['blocked', 'major', 'minor', 'cosmetic'];
+const REQUEST_TYPES: RequestType[] = ['broken', 'how_to', 'account', 'suggestion'];
 
 export function ReportProblemButton({ className, mode = 'button' }: ReportProblemButtonProps) {
   const { t } = useTranslation('common');
@@ -55,6 +66,7 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
   // root boundary. No provider ⇒ treat as unauthenticated (already handled below).
   const isAuthenticated = useAuthOptional()?.isAuthenticated ?? false;
   const [isOpen, setIsOpen] = useState(false);
+  const [requestType, setRequestType] = useState<RequestType | null>(null);
   const [summary, setSummary] = useState('');
   const [description, setDescription] = useState('');
   const [impact, setImpact] = useState<Impact>('minor');
@@ -62,12 +74,19 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
 
+  const isBroken = requestType === 'broken';
+
   const canSubmit = useMemo(
-    () => isAuthenticated && summary.trim().length >= 3 && description.trim().length >= 10 && !isSubmitting,
-    [description, isAuthenticated, isSubmitting, summary],
+    () => isAuthenticated
+      && requestType !== null
+      && summary.trim().length >= 3
+      && description.trim().length >= 10
+      && !isSubmitting,
+    [description, isAuthenticated, isSubmitting, requestType, summary],
   );
 
   const resetForm = () => {
+    setRequestType(null);
     setSummary('');
     setDescription('');
     setImpact('minor');
@@ -82,32 +101,41 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSubmit) {
+    if (!canSubmit || requestType === null) {
       return;
     }
 
     setIsSubmitting(true);
-    const diagnostics = includeDiagnostics ? getSupportDiagnosticsSnapshot() : undefined;
+    const sendDiagnostics = isBroken && includeDiagnostics;
+    const diagnostics = sendDiagnostics ? getSupportDiagnosticsSnapshot() : undefined;
     // Path only — never the query string or fragment, which can carry
     // sign-in and reset tokens into a staff-readable record (F-281).
     const location = getSupportReportLocation();
     const pageUrl = location.pageUrl ?? undefined;
     const route = location.route ?? undefined;
-    const { captureSentryMessage } = await import('@/lib/sentry');
-    const sentryEventId = captureSentryMessage('Support report submitted', 'info', {
-      impact,
-      route,
-      page_url: pageUrl,
-      has_diagnostics: includeDiagnostics,
-    });
+
+    // A Sentry event only makes sense for something that is not working; a
+    // question or a suggestion is not an error.
+    let sentryEventId: string | undefined;
+    if (isBroken) {
+      const { captureSentryMessage } = await import('@/lib/sentry');
+      sentryEventId = captureSentryMessage('Support report submitted', 'info', {
+        impact,
+        route,
+        page_url: pageUrl,
+        has_diagnostics: sendDiagnostics,
+      }) ?? undefined;
+    }
+
     const response = await api.post<ReportProblemResponse>('/v2/support/reports', {
+      request_type: requestType,
       summary: summary.trim(),
       description: description.trim(),
-      impact,
+      ...(isBroken ? { impact } : {}),
       page_url: pageUrl,
       route,
-      sentry_event_id: sentryEventId ?? undefined,
-      include_diagnostics: includeDiagnostics,
+      sentry_event_id: sentryEventId,
+      include_diagnostics: sendDiagnostics,
       diagnostics,
     });
     setIsSubmitting(false);
@@ -119,18 +147,20 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
 
     const report = response.data.report;
     setReference(report.reference);
-    void import('@/lib/sentry').then(({ captureSentryFeedback }) => {
-      captureSentryFeedback({
-        message: `${report.reference}: ${report.summary}`,
-        source: 'support_report',
-        associatedEventId: sentryEventId,
-        url: pageUrl,
-        tags: {
-          support_report_reference: report.reference,
-          impact: report.impact,
-        },
+    if (isBroken) {
+      void import('@/lib/sentry').then(({ captureSentryFeedback }) => {
+        captureSentryFeedback({
+          message: `${report.reference}: ${report.summary}`,
+          source: 'support_report',
+          associatedEventId: sentryEventId,
+          url: pageUrl,
+          tags: {
+            support_report_reference: report.reference,
+            impact: report.impact,
+          },
+        });
       });
-    });
+    }
     toast.success(t('report_problem.submit_success'));
   };
 
@@ -142,7 +172,7 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
         size={mode === 'footer-link' ? 'sm' : 'md'}
         onPress={() => setIsOpen(true)}
         className={className}
-        startContent={<Bug className={mode === 'footer-link' ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden="true" />}
+        startContent={<LifeBuoy className={mode === 'footer-link' ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden="true" />}
       >
         {t('report_problem.trigger')}
       </Button>
@@ -177,55 +207,90 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
                 />
               ) : null}
 
-              <Input
-                isRequired
-                label={t('report_problem.summary_label')}
-                value={summary}
-                maxLength={180}
-                onValueChange={setSummary}
-              />
+              {reference ? null : (
+                <RadioGroup
+                  label={t('report_problem.type_label')}
+                  value={requestType ?? ''}
+                  onValueChange={(value) => {
+                    if (REQUEST_TYPES.includes(value as RequestType)) {
+                      setRequestType(value as RequestType);
+                    }
+                  }}
+                >
+                  {REQUEST_TYPES.map((type) => (
+                    <Radio key={type} value={type} description={t(`report_problem.types.${type}.description`)}>
+                      {t(`report_problem.types.${type}.label`)}
+                    </Radio>
+                  ))}
+                </RadioGroup>
+              )}
 
-              <Textarea
-                isRequired
-                label={t('report_problem.description_label')}
-                value={description}
-                minRows={5}
-                maxLength={5000}
-                onValueChange={setDescription}
-              />
+              {requestType && !reference ? (
+                <>
+                  <Input
+                    isRequired
+                    label={t(`report_problem.fields.${requestType}.summary`)}
+                    value={summary}
+                    maxLength={180}
+                    onValueChange={setSummary}
+                  />
 
-              <Select
-                label={t('report_problem.impact_label')}
-                value={impact}
-                onValueChange={(value) => {
-                  if (IMPACT_OPTIONS.includes(value as Impact)) {
-                    setImpact(value as Impact);
-                  }
-                }}
-              >
-                {IMPACT_OPTIONS.map((option) => (
-                  <SelectItem key={option} id={option}>
-                    {t(`report_problem.impact.${option}`)}
-                  </SelectItem>
-                ))}
-              </Select>
+                  <Textarea
+                    isRequired
+                    label={t(`report_problem.fields.${requestType}.description`)}
+                    value={description}
+                    minRows={5}
+                    maxLength={5000}
+                    onValueChange={setDescription}
+                  />
 
-              <Checkbox isSelected={includeDiagnostics} onValueChange={setIncludeDiagnostics}>
-                {t('report_problem.include_diagnostics')}
-              </Checkbox>
+                  {isBroken ? (
+                    <>
+                      <Select
+                        label={t('report_problem.impact_label')}
+                        value={impact}
+                        onValueChange={(value) => {
+                          if (IMPACT_OPTIONS.includes(value as Impact)) {
+                            setImpact(value as Impact);
+                          }
+                        }}
+                      >
+                        {IMPACT_OPTIONS.map((option) => (
+                          <SelectItem key={option} id={option}>
+                            {t(`report_problem.impact.${option}`)}
+                          </SelectItem>
+                        ))}
+                      </Select>
+
+                      <Checkbox isSelected={includeDiagnostics} onValueChange={setIncludeDiagnostics}>
+                        {t('report_problem.include_diagnostics')}
+                      </Checkbox>
+                    </>
+                  ) : null}
+                </>
+              ) : null}
             </ModalBody>
             <ModalFooter data-testid="report-problem-footer">
-              <Button type="button" variant="tertiary" onPress={close}>
-                {t('report_problem.cancel')}
-              </Button>
-              <Button
-                type="submit"
-                isDisabled={!canSubmit || Boolean(reference)}
-                isLoading={isSubmitting}
-                startContent={!isSubmitting ? <Send className="h-4 w-4" aria-hidden="true" /> : undefined}
-              >
-                {t('report_problem.submit')}
-              </Button>
+              {reference ? (
+                // Once sent, only the confirmation (with its reference) is left on screen.
+                <Button type="button" onPress={close}>
+                  {t('report_problem.close')}
+                </Button>
+              ) : (
+                <>
+                  <Button type="button" variant="tertiary" onPress={close}>
+                    {t('report_problem.cancel')}
+                  </Button>
+                  <Button
+                    type="submit"
+                    isDisabled={!canSubmit}
+                    isLoading={isSubmitting}
+                    startContent={!isSubmitting ? <Send className="h-4 w-4" aria-hidden="true" /> : undefined}
+                  >
+                    {t('report_problem.submit')}
+                  </Button>
+                </>
+              )}
             </ModalFooter>
           </form>
         </ModalContent>

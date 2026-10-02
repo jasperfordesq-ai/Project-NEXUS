@@ -67,15 +67,17 @@ describe('ReportProblemButton', () => {
     const user = userEvent.setup();
     render(<ReportProblemButton />);
 
-    await user.click(screen.getByRole('button', { name: 'Report a problem' }));
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+    await user.click(screen.getByRole('radio', { name: /Something isn't working/ }));
     await user.type(screen.getByLabelText('Short summary'), 'Checkout broken');
     await user.type(screen.getByLabelText('What happened?'), 'The checkout button does not respond.');
-    await user.click(screen.getByRole('button', { name: 'Send report' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
 
     await waitFor(() => expect(mocks.apiPost).toHaveBeenCalledTimes(1));
     expect(mocks.apiPost).toHaveBeenCalledWith('/v2/support/reports', expect.objectContaining({
       summary: 'Checkout broken',
       description: 'The checkout button does not respond.',
+      request_type: 'broken',
       impact: 'minor',
       sentry_event_id: 'sentry-event-123',
       include_diagnostics: true,
@@ -97,6 +99,11 @@ describe('ReportProblemButton', () => {
       }),
     }));
     expect(await screen.findByText('Reference NXR-260527-ABC123 has been created.')).toBeInTheDocument();
+    // Once sent, only the confirmation is left: no form, no second Send.
+    expect(screen.queryByLabelText('Short summary')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Send' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('report-problem-footer')).toHaveTextContent('Close');
   });
 
   it('F-281: never sends the page query string or fragment, even with diagnostics off', async () => {
@@ -108,11 +115,12 @@ describe('ReportProblemButton', () => {
       const user = userEvent.setup();
       render(<ReportProblemButton />);
 
-      await user.click(screen.getByRole('button', { name: 'Report a problem' }));
+      await user.click(screen.getByRole('button', { name: 'Help & support' }));
+      await user.click(screen.getByRole('radio', { name: /Something isn't working/ }));
       await user.type(screen.getByLabelText('Short summary'), 'Checkout broken');
       await user.type(screen.getByLabelText('What happened?'), 'The checkout button does not respond.');
       await user.click(screen.getByRole('checkbox', { name: 'Include technical diagnostics from this page' }));
-      await user.click(screen.getByRole('button', { name: 'Send report' }));
+      await user.click(screen.getByRole('button', { name: 'Send' }));
 
       await waitFor(() => expect(mocks.captureSentryFeedback).toHaveBeenCalledTimes(1));
 
@@ -137,11 +145,77 @@ describe('ReportProblemButton', () => {
     }
   });
 
+  it('asks what kind of help is needed before showing any fields', async () => {
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+
+    expect(screen.getByRole('radiogroup', { name: 'What do you need help with?' })).toBeInTheDocument();
+    for (const option of [/Something isn't working/, /How do I/, /Account or sign-in problem/, /Suggest an improvement/]) {
+      expect(screen.getByRole('radio', { name: option })).toBeInTheDocument();
+    }
+    expect(screen.queryByLabelText('Short summary')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it('sends a question without impact, diagnostics or a Sentry event', async () => {
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+    await user.click(screen.getByRole('radio', { name: /How do I/ }));
+
+    expect(screen.queryByText('How much is this affecting you?')).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Include technical diagnostics from this page' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Your question in a few words'), 'Joining a group');
+    await user.type(screen.getByLabelText('Tell us a bit more'), 'Where do I ask to join a group on my phone?');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() => expect(mocks.apiPost).toHaveBeenCalledTimes(1));
+    const [, payload] = mocks.apiPost.mock.calls[0] as [string, Record<string, unknown>];
+    expect(payload).toEqual(expect.objectContaining({
+      request_type: 'how_to',
+      summary: 'Joining a group',
+      include_diagnostics: false,
+    }));
+    expect(payload).not.toHaveProperty('impact');
+    expect(payload.diagnostics).toBeUndefined();
+    expect(mocks.captureSentryMessage).not.toHaveBeenCalled();
+    expect(mocks.captureSentryFeedback).not.toHaveBeenCalled();
+    expect(await screen.findByText('Reference NXR-260527-ABC123 has been created.')).toBeInTheDocument();
+  });
+
+  it('warns members never to send their password with an account problem', async () => {
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+    await user.click(screen.getByRole('radio', { name: /Account or sign-in problem/ }));
+
+    expect(screen.getByText(/Never include your password/)).toBeInTheDocument();
+  });
+
+  it('shows the server message when the daily limit is reached', async () => {
+    mocks.apiPost.mockResolvedValueOnce({ success: false, error: 'You have sent 5 reports in the last 24 hours.' });
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+    await user.click(screen.getByRole('radio', { name: /Suggest an improvement/ }));
+    await user.type(screen.getByLabelText('Your idea in a few words'), 'Dark map tiles');
+    await user.type(screen.getByLabelText('Tell us a bit more about your idea'), 'The map is very bright at night.');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith('You have sent 5 reports in the last 24 hours.'));
+  });
+
   it('uses viewport-constrained scrollable modal layout', async () => {
     const user = userEvent.setup();
     render(<ReportProblemButton />);
 
-    await user.click(screen.getByRole('button', { name: 'Report a problem' }));
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
 
     expect(screen.getByTestId('report-problem-form')).toHaveClass('max-h-full', 'min-h-0', 'flex-col');
     expect(screen.getByTestId('report-problem-body')).toHaveClass('min-h-0', 'overflow-y-auto');

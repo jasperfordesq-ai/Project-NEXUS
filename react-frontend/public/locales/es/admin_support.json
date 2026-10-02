@@ -135,7 +135,8 @@
       "page": "Página",
       "created": "Creado",
       "diagnostics": "Diagnósticos",
-      "title": "Reportar {{reference}}"
+      "title": "Reportar {{reference}}",
+      "request_type": "Tipo de solicitud"
     },
     "fields": {
       "sentry_issue_url": "URL del problema centinela",
@@ -174,7 +175,9 @@
         "page_url": "URL de la página",
         "user_agent": "Agente de usuario",
         "sentry_event": "Evento de Sentry",
-        "sentry_issue": "Problema de Sentry"
+        "sentry_issue": "Problema de Sentry",
+        "request_type": "Tipo de solicitud",
+        "jira": "Ticket de Jira"
       },
       "headings": {
         "summary": "Resumen:",
@@ -185,6 +188,20 @@
     },
     "unassigned": "No asignado",
     "meta_title": "Informes de Soporte",
-    "title": "Informes de Soporte"
+    "title": "Informes de Soporte",
+    "request_type": {
+      "broken": "Problema",
+      "how_to": "Pregunta",
+      "account": "Cuenta o acceso",
+      "suggestion": "Sugerencia"
+    },
+    "jira": {
+      "handled": "Gestionado en Jira",
+      "status": "Estado en Jira: {{status}}",
+      "status_unknown": "aún sin comprobar",
+      "open": "Abrir en Jira",
+      "status_hint": "Este informe se responde en el servicio de ayuda de Jira. Su estado sigue al del ticket de Jira y se comprueba cada 15 minutos. Aún puede añadir notas o cerrarlo.",
+      "error_title": "Jira informó de un problema"
+    }
   }
 }
