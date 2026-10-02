@@ -500,8 +500,6 @@ describe('AdminSidebar', () => {
     '/test/admin/groups/moderation',
     '/test/admin/courses',
     '/test/admin/newsletters/segments',
-    '/test/admin/seo/audit',
-    '/test/admin/seo/redirects',
     '/test/admin/marketplace/cases',
     '/test/admin/marketplace/coupons',
     '/test/admin/gamification/badge-config',
@@ -554,6 +552,63 @@ describe('AdminSidebar', () => {
     render(<AdminSidebar collapsed={false} />);
     hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
     for (const href of GOD_ONLY) expect(hrefs).toContain(href);
+  });
+
+  // The whole Growth & Discovery section is god-only (owner decision
+  // 2026-10-02), platform super admins included.
+  const GROWTH_DISCOVERY_HREFS = [
+    '/test/admin/seo',
+    '/test/admin/seo/audit',
+    '/test/admin/seo/redirects',
+    '/test/admin/search-analytics',
+    '/test/admin/seo/prerender',
+    '/test/admin/404-errors',
+  ];
+
+  it.each([
+    ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
+    ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true }],
+  ])('hides the whole Growth & Discovery section from %s', async (_who, user) => {
+    authState.user = user as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: 'Growth & Discovery' })).not.toBeInTheDocument();
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    for (const href of GROWTH_DISCOVERY_HREFS) expect(hrefs).not.toContain(href);
+    // Control: the same query does reach links inside collapsed panels.
+    expect(hrefs).toContain('/test/admin/settings');
+  });
+
+  it('keeps Growth & Discovery pages out of sidebar search for non-god admins', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+
+    // Control: a god account searching the same word does find the page.
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    const { unmount } = render(<AdminSidebar collapsed={false} />);
+    await userEvent.type(screen.getByRole('searchbox'), 'redirects');
+    await waitFor(() => {
+      expect(screen.getAllByRole('link').map((l) => l.getAttribute('href'))).toContain('/test/admin/seo/redirects');
+    });
+    unmount();
+
+    authState.user = { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true } as User;
+    render(<AdminSidebar collapsed={false} />);
+    await userEvent.type(screen.getByRole('searchbox'), 'redirects');
+    await waitFor(() => {
+      expect(screen.getByRole('searchbox')).toHaveValue('redirects');
+    });
+    expect(screen.queryAllByRole('link').map((l) => l.getAttribute('href'))).not.toContain('/test/admin/seo/redirects');
+  });
+
+  it('shows every Growth & Discovery link to a god account', async () => {
+    authState.user = { id: 1, name: 'God User', role: 'admin', is_god: true } as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    for (const href of GROWTH_DISCOVERY_HREFS) expect(hrefs).toContain(href);
   });
 
   it('shows all four cron job links to a god account', async () => {

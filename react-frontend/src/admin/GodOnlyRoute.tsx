@@ -11,8 +11,10 @@
  * page. Anyone who is not a god is sent back to the admin dashboard.
  *
  * Currently wraps the Communications section (email settings, email
- * deliverability, deliverability), the Performance page, the Prerender Engine
- * and the Cron Jobs pages — owner decisions 2026-10-02 — and the
+ * deliverability, deliverability), the Performance page, the whole Growth &
+ * Discovery section (SEO overview, SEO audit, URL redirects, Search Analytics,
+ * Prerender Engine, 404 error tracking) and the Cron Jobs pages — owner
+ * decisions 2026-10-02 — and the
  * platform-maintenance tools (tests, seed generator, WebP converter, blog
  * restore; F-534).
  */

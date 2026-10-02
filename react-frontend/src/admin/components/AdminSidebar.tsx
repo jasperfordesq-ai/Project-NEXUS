@@ -542,23 +542,25 @@ function useAdminNav(): NavSection[] {
           ...(isGod ? [{ label: t('performance'), href: '/admin/performance', icon: Activity }] : []),
         ],
       },
-      {
+      // The whole Growth & Discovery section is god accounts only (owner
+      // decision 2026-10-02; the Prerender Engine alone was god-only before).
+      // Every route below is guarded by GodOnlyRoute too, so a typed URL does
+      // not reach the pages.
+      ...(isGod ? [{
         key: 'discovery',
         label: t('growth_discovery'),
         icon: Search,
-        zone: 'growth',
+        zone: 'growth' as const,
         items: [
           { label: t('seo_overview'), href: '/admin/seo', icon: Search },
           // Neither page was linked from anywhere, the SEO overview included.
           { label: t('seo_audit'), href: '/admin/seo/audit', icon: ListChecks },
           { label: t('url_redirects'), href: '/admin/seo/redirects', icon: ArrowLeftRight, keywords: keyword(t('search_keywords.url_redirects')) },
           { label: t('search_analytics'), href: '/admin/search-analytics', icon: BarChart3, keywords: keyword(t('search_keywords.search_analytics')) },
-          // God accounts only (owner decision 2026-10-02). The route is guarded
-          // by GodOnlyRoute too, so a typed URL does not reach the page.
-          ...(isGod ? [{ label: t('prerender_engine'), href: '/admin/seo/prerender', icon: Zap }] : []),
+          { label: t('prerender_engine'), href: '/admin/seo/prerender', icon: Zap },
           { label: t('error_404_tracking'), href: '/admin/404-errors', icon: AlertTriangle, keywords: keyword(t('search_keywords.error_404_tracking')) },
         ],
-      },
+      }] : []),
       {
         key: 'financial',
         label: t('financial'),

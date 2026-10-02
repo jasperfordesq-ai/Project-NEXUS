@@ -440,17 +440,18 @@ export function AdminRoutes() {
       </Route>
       <Route path="feed-algorithm" element={<TenantRedirect to="/admin/algorithm-settings" />} />
       <Route path="algorithm-settings" element={<Lazy><AlgorithmSettings /></Lazy>} />
-      <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
-      <Route path="seo/audit" element={<Lazy><SeoAudit /></Lazy>} />
-      <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
-      {/* Prerender Engine — god accounts only (owner decision 2026-10-02). */}
+      {/* Growth & Discovery — every page god accounts only (owner decision
+          2026-10-02). Search Analytics, in the same section, is guarded below. */}
       <Route element={<GodOnlyRoute />}>
+        <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
+        <Route path="seo/audit" element={<Lazy><SeoAudit /></Lazy>} />
+        <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
         <Route path="seo/prerender" element={<Lazy><PrerenderAdmin /></Lazy>} />
+        <Route path="404-errors" element={<Lazy><Error404Tracking /></Lazy>} />
       </Route>
       <Route element={<SuperAdminRoute />}>
         <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />
       </Route>
-      <Route path="404-errors" element={<Lazy><Error404Tracking /></Lazy>} />
       <Route path="match-debug" element={<Lazy><MatchDebugPanel /></Lazy>} />
 
       {/* ─── BILLING ─── */}
@@ -747,7 +748,10 @@ export function AdminRoutes() {
 
       {/* ─── ANALYTICS & REPORTING ─── */}
       <Route path="community-analytics" element={<Lazy><CommunityAnalytics /></Lazy>} />
-      <Route path="search-analytics" element={<Lazy><SearchAnalytics /></Lazy>} />
+      {/* Listed under Growth & Discovery — god accounts only (owner decision 2026-10-02). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="search-analytics" element={<Lazy><SearchAnalytics /></Lazy>} />
+      </Route>
       <Route path="impact-report" element={<Lazy><ImpactReport /></Lazy>} />
       <Route path="reports/social-value" element={<TenantRedirect to="/admin/impact-report" />} />
       <Route path="reports/members" element={<Lazy><MemberReportsPage /></Lazy>} />
