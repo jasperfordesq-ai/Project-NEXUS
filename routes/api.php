@@ -3364,10 +3364,12 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::get('/v2/admin/crm/funnel', [\App\Http\Controllers\Api\AdminCrmController::class, 'funnel']);
     Route::get('/v2/admin/crm/notes', [\App\Http\Controllers\Api\AdminCrmController::class, 'listNotes']);
     Route::post('/v2/admin/crm/notes', [\App\Http\Controllers\Api\AdminCrmController::class, 'createNote']);
+    // F-545: the broker Members page edits, pins and deletes notes too.
+    // Concern notes the caller may not see stay refused (F-462/F-544).
+    Route::put('/v2/admin/crm/notes/{id}', [\App\Http\Controllers\Api\AdminCrmController::class, 'updateNote']);
+    Route::delete('/v2/admin/crm/notes/{id}', [\App\Http\Controllers\Api\AdminCrmController::class, 'deleteNote']);
 });
 Route::get('/v2/admin/crm/admins', [\App\Http\Controllers\Api\AdminCrmController::class, 'listAdmins']);
-Route::put('/v2/admin/crm/notes/{id}', [\App\Http\Controllers\Api\AdminCrmController::class, 'updateNote']);
-Route::delete('/v2/admin/crm/notes/{id}', [\App\Http\Controllers\Api\AdminCrmController::class, 'deleteNote']);
 Route::get('/v2/admin/crm/tasks', [\App\Http\Controllers\Api\AdminCrmController::class, 'listTasks']);
 Route::post('/v2/admin/crm/tasks', [\App\Http\Controllers\Api\AdminCrmController::class, 'createTask']);
 Route::put('/v2/admin/crm/tasks/{id}', [\App\Http\Controllers\Api\AdminCrmController::class, 'updateTask']);

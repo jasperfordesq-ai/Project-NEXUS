@@ -425,7 +425,7 @@ class AdminCrmController extends BaseApiController
     /** PUT /api/v2/admin/crm/notes/{id} */
     public function updateNote($id): JsonResponse
     {
-        $callerId = $this->requireAdmin();
+        $callerId = $this->requireBrokerOrAdmin(); // F-545
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
@@ -512,7 +512,7 @@ class AdminCrmController extends BaseApiController
     /** DELETE /api/v2/admin/crm/notes/{id} */
     public function deleteNote($id): JsonResponse
     {
-        $callerId = $this->requireAdmin();
+        $callerId = $this->requireBrokerOrAdmin(); // F-545
         $tenantId = TenantContext::getId();
         $id = (int) $id;
 
