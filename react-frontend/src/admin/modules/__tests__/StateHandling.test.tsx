@@ -8,8 +8,6 @@ import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 
 const apiMocks = vi.hoisted(() => ({
   getPermissions: vi.fn(),
-  getApprovals: vi.fn(),
-  getMatchingStats: vi.fn(),
   getSubscriptions: vi.fn(),
 }));
 
@@ -19,10 +17,6 @@ vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
 vi.mock('../../api/adminApi', () => ({
   adminEnterprise: { getPermissions: apiMocks.getPermissions },
-  adminMatching: {
-    getApprovals: apiMocks.getApprovals,
-    getMatchingStats: apiMocks.getMatchingStats,
-  },
   adminPlans: { getSubscriptions: apiMocks.getSubscriptions },
 }));
 
@@ -66,46 +60,14 @@ vi.mock('../../components/DataTable', () => ({
   StatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
-vi.mock('../../components/StatCard', () => ({
-  StatCard: ({ label, value }: { label: string; value: string | number }) => (
-    <div><span>{label}</span><strong>{value}</strong></div>
-  ),
-}));
-
 import { PermissionBrowser } from '../enterprise/PermissionBrowser';
-import { SmartMatchMonitoring } from '../community/SmartMatchMonitoring';
-import { SmartMatchUsers } from '../community/SmartMatchUsers';
 import { Subscriptions } from '../content/Subscriptions';
 
 const backendDetail = 'SQLSTATE secret backend detail';
 
-const zeroStats = {
-  overview: {
-    total_matches_today: 0,
-    total_matches_week: 0,
-    total_matches_month: 0,
-    hot_matches_count: 0,
-    mutual_matches_count: 0,
-    avg_match_score: 0,
-    avg_distance_km: 0,
-    cache_entries: 0,
-    cache_hit_rate: 0,
-    active_users_matching: 0,
-  },
-  score_distribution: {},
-  distance_distribution: {},
-  broker_approval_enabled: false,
-  pending_approvals: 0,
-  approved_count: 0,
-  rejected_count: 0,
-  approval_rate: 0,
-};
-
 beforeEach(() => {
   vi.clearAllMocks();
   apiMocks.getPermissions.mockResolvedValue({ success: true, data: {} });
-  apiMocks.getApprovals.mockResolvedValue({ success: true, data: [] });
-  apiMocks.getMatchingStats.mockResolvedValue({ success: true, data: zeroStats });
   apiMocks.getSubscriptions.mockResolvedValue({ success: true, data: [] });
 });
 
@@ -152,35 +114,6 @@ describe('PermissionBrowser load states', () => {
   });
 });
 
-describe('SmartMatchUsers load states', () => {
-  it('treats success:false as an error instead of no match results', async () => {
-    apiMocks.getApprovals.mockResolvedValueOnce({ success: false, error: backendDetail });
-    render(<SmartMatchUsers />);
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load match results');
-    expect(screen.queryByText('No match results')).not.toBeInTheDocument();
-    expect(screen.queryByText(backendDetail)).not.toBeInTheDocument();
-  });
-
-  it('retains confirmed matches when refresh rejects', async () => {
-    apiMocks.getApprovals
-      .mockResolvedValueOnce({ success: true, data: [{ id: 7, user_1_name: 'Ada', user_2_name: 'Grace' }] })
-      .mockRejectedValueOnce(new Error(backendDetail));
-    render(<SmartMatchUsers />);
-
-    expect(await screen.findByText(/Ada/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load match results');
-    expect(screen.getByText(/Ada/)).toBeInTheDocument();
-  });
-
-  it('renders a confirmed empty result only for success:true', async () => {
-    render(<SmartMatchUsers />);
-    expect(await screen.findByText('No match results')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-});
-
 describe('Subscriptions load states', () => {
   it('treats success:false as an error instead of no subscriptions', async () => {
     apiMocks.getSubscriptions.mockResolvedValueOnce({ success: false, error: backendDetail });
@@ -209,37 +142,5 @@ describe('Subscriptions load states', () => {
     render(<Subscriptions />);
     expect(await screen.findByText('No data available')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-});
-
-describe('SmartMatchMonitoring load states', () => {
-  it('does not turn a failed envelope into zero monitoring metrics', async () => {
-    apiMocks.getMatchingStats.mockResolvedValueOnce({ success: false, error: backendDetail });
-    render(<SmartMatchMonitoring />);
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load matching stats');
-    expect(screen.queryByText('Matches Generated')).not.toBeInTheDocument();
-    expect(screen.queryByText(backendDetail)).not.toBeInTheDocument();
-  });
-
-  it('renders confirmed numeric zeroes and a genuine empty distribution', async () => {
-    render(<SmartMatchMonitoring />);
-
-    expect(await screen.findByText('Matches Generated')).toBeInTheDocument();
-    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
-    expect(screen.getByText('No score distribution')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-
-  it('retains confirmed zero metrics when refresh resolves success:false', async () => {
-    apiMocks.getMatchingStats
-      .mockResolvedValueOnce({ success: true, data: zeroStats })
-      .mockResolvedValueOnce({ success: false, error: backendDetail });
-    render(<SmartMatchMonitoring />);
-
-    expect(await screen.findByText('Matches Generated')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to load matching stats');
-    expect(screen.getByText('Matches Generated')).toBeInTheDocument();
   });
 });

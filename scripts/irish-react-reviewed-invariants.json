@@ -593,10 +593,6 @@
       "value": "OK",
       "reason": "protocol-acronym-or-identifier"
     },
-    "admin_community.common.ok": {
-      "value": "OK",
-      "reason": "protocol-acronym-or-identifier"
-    },
     "admin_config.common.ok": {
       "value": "OK",
       "reason": "protocol-acronym-or-identifier"

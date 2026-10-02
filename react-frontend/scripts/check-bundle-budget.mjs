@@ -816,11 +816,6 @@ const moduleAdminNamespaceBudgets = [
     message: 'category admin surfaces must use the smaller admin_categories namespace instead of loading admin.json.',
   },
   {
-    dir: 'src/admin/modules/community',
-    namespace: 'admin_community',
-    message: 'community admin surfaces must use the smaller admin_community namespace instead of loading admin.json.',
-  },
-  {
     dir: 'src/admin/modules/deliverability',
     namespace: 'admin_deliverability',
     message: 'deliverability admin surfaces must use the smaller admin_deliverability namespace instead of loading admin.json.',

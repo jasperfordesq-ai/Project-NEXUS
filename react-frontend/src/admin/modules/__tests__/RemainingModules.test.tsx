@@ -5,8 +5,7 @@
 
 /**
  * Batch render tests for remaining untested admin modules:
- * - BlogPostForm, SmartMatchMonitoring, SmartMatchUsers,
- *   MatchingDiagnostic, NexusScoreAnalytics,
+ * - BlogPostForm, MatchingDiagnostic, NexusScoreAnalytics,
  *   LegalDocVersionList, CampaignForm, CreateBadge, GamificationHub,
  *   VolunteerApprovals, VolunteeringOverview, VolunteerOrganizations
  *
@@ -356,28 +355,6 @@ describe('BlogPostForm', () => {
         <BlogPostForm />
       </WRoute>
     );
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
-// ─── SmartMatchMonitoring ───────────────────────────────────────────────────
-
-import { SmartMatchMonitoring } from '../community/SmartMatchMonitoring';
-
-describe('SmartMatchMonitoring', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><SmartMatchMonitoring /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
-
-// ─── SmartMatchUsers ────────────────────────────────────────────────────────
-
-import { SmartMatchUsers } from '../community/SmartMatchUsers';
-
-describe('SmartMatchUsers', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><SmartMatchUsers /></W>);
     expect(container.querySelector('div')).toBeTruthy();
   });
 });
