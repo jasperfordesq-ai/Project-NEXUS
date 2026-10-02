@@ -56,8 +56,10 @@ class AdminSafeguardingControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_dashboard_rejects_coordinator_without_safeguarding_permission(): void
+    public function test_dashboard_admits_coordinator_without_individual_permission(): void
     {
+        // F-542: the broker panel's Safeguarding page is these endpoints, and
+        // brokers and coordinators have the whole broker panel.
         $coordinator = User::factory()->forTenant($this->testTenantId)->create([
             'role' => 'coordinator',
             'status' => 'active',
@@ -66,7 +68,7 @@ class AdminSafeguardingControllerTest extends TestCase
 
         $response = $this->apiGet('/v2/admin/safeguarding/dashboard');
 
-        $response->assertStatus(403);
+        $response->assertStatus(200);
     }
 
     public function test_dashboard_returns_401_for_unauthenticated(): void

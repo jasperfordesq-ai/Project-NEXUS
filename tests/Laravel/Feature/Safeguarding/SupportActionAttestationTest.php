@@ -119,15 +119,19 @@ class SupportActionAttestationTest extends TestCase
         return $broker;
     }
 
-    public function test_broker_without_safeguarding_manage_cannot_attest(): void
+    public function test_a_broker_needs_no_individual_grant_to_attest(): void
     {
+        // F-542 (owner decision, 2 Oct 2026): brokers have the whole broker
+        // panel. The safeguarding.manage grant this test once required cannot
+        // be issued from any screen, so the flow built for brokers was closed
+        // to all of them.
         [, , $actionId] = $this->seedPendingTransfer();
         $this->actingBroker(false);
 
         $this->apiPost("/v2/admin/safeguarding/support-actions/{$actionId}/attest", [
             'channel' => 'phone',
-        ])->assertStatus(403);
-        $this->assertSame('pending', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        ])->assertStatus(200);
+        $this->assertNotSame('pending', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
     }
 
     public function test_an_ordinary_member_cannot_reach_the_attest_endpoint(): void

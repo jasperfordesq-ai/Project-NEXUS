@@ -96,8 +96,10 @@ class SupportAuthorityAttestationTest extends TestCase
         return $broker;
     }
 
-    public function test_broker_without_safeguarding_manage_cannot_attest_authority(): void
+    public function test_a_broker_needs_no_individual_grant_to_attest_authority(): void
     {
+        // F-542 (owner decision, 2 Oct 2026): brokers have the whole broker
+        // panel; the safeguarding.manage grant cannot be issued from any screen.
         [, , $relationshipId] = $this->seedRepresentRelationship();
         $this->actingBroker(false);
 
@@ -105,7 +107,7 @@ class SupportAuthorityAttestationTest extends TestCase
             'relationship_id' => $relationshipId,
             'authority_type' => 'power_of_attorney',
             'acknowledged_sighted' => true,
-        ])->assertStatus(403);
+        ])->assertStatus(200);
     }
 
     public function test_an_ordinary_member_cannot_reach_the_attest_endpoint(): void

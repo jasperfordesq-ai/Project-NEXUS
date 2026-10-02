@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Geen voogdijopdrachten",
     "no_member_preferences": "Geen ledenvoorkeuren",
     "no_member_preferences_desc": "Er zijn nog geen leden die beschermingsvoorkeuren hebben geconfigureerd",
+    "member_preferences_load_failed": "De ledenlijst kon niet worden geladen. Vernieuw de pagina om het opnieuw te proberen.",
     "no_options_configured": "Geen opties geconfigureerd",
     "no_options_configured_desc": "Er zijn nog geen beschermingsopties gecreëerd",
     "none": "Geen",

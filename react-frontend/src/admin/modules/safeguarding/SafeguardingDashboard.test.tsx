@@ -496,6 +496,29 @@ describe('SafeguardingDashboard', () => {
     });
   });
 
+  it('says the member list could not be loaded when the server refuses it, not that there are no members (F-542)', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('dashboard')) return Promise.resolve(makeApiOk(makeStats()));
+      if (url.includes('flagged-messages')) return Promise.resolve(makeApiOk([]));
+      if (url.includes('assignments')) return Promise.resolve(makeApiOk([]));
+      if (url.includes('member-preferences')) return Promise.resolve(makeApiErr());
+      return Promise.resolve(makeApiOk(null));
+    });
+
+    const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
+    render(<SafeguardingDashboard routeBase="/broker/safeguarding" />);
+
+    await waitFor(() => screen.getAllByTestId('stat-card'));
+    const prefTab = screen.getAllByRole('tab').find((t) => t.textContent?.toLowerCase().includes('preference'));
+    expect(prefTab).toBeDefined();
+    await userEvent.click(prefTab!);
+
+    await waitFor(() => {
+      expect(screen.getByText(/member list could not be loaded/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/no members have configured safeguarding preferences/i)).not.toBeInTheDocument();
+  });
+
   it('shows error toast when API load fails', async () => {
     mockApi.get.mockRejectedValue(new Error('network'));
     const { SafeguardingDashboard } = await import('./SafeguardingDashboard');

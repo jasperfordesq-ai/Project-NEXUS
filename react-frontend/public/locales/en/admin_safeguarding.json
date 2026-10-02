@@ -375,6 +375,7 @@
     "no_guardian_assignments": "No guardian assignments",
     "no_member_preferences": "No member preferences",
     "no_member_preferences_desc": "No members have configured safeguarding preferences yet",
+    "member_preferences_load_failed": "The member list could not be loaded. Refresh the page to try again.",
     "no_options_configured": "No options configured",
     "no_options_configured_desc": "No safeguarding options have been created yet",
     "none": "None",

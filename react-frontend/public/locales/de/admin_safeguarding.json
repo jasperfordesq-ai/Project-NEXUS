@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Keine Betreuerzuweisungen",
     "no_member_preferences": "Keine Mitgliederpräferenzen",
     "no_member_preferences_desc": "Noch haben keine Mitglieder Schutzeinstellungen konfiguriert",
+    "member_preferences_load_failed": "Die Mitgliederliste konnte nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen.",
     "no_options_configured": "Keine Optionen konfiguriert",
     "no_options_configured_desc": "Es wurden noch keine Schutzoptionen erstellt",
     "none": "Keine",

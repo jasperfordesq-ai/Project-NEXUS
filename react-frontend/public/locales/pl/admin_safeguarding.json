@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Brak przypisań opiekunów",
     "no_member_preferences": "Brak preferencji członków",
     "no_member_preferences_desc": "Żaden członek nie skonfigurował jeszcze preferencji dotyczących zabezpieczeń",
+    "member_preferences_load_failed": "Nie udało się wczytać listy członków. Odśwież stronę, aby spróbować ponownie.",
     "no_options_configured": "Nie skonfigurowano żadnych opcji",
     "no_options_configured_desc": "Nie stworzono jeszcze żadnych opcji zabezpieczeń",
     "none": "Żadne",

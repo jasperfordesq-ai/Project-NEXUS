@@ -1497,10 +1497,14 @@ class AdminSafeguardingController extends BaseApiController
 
         if ($user) {
             $role = (string) ($user->role ?? 'member');
-            // Broker/coordinator is an operational role, not a junior admin.
-            // It reaches this controller through broker-or-admin middleware,
-            // but still needs the explicit safeguarding permission below.
-            if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)) {
+            // F-542 (owner decision, 2 Oct 2026): brokers and coordinators
+            // have the whole broker panel, and its Safeguarding page is these
+            // endpoints. 07860e414 had required an individual
+            // safeguarding.view grant instead, which no screen can issue, so
+            // every broker was refused. Broker stays an operational role —
+            // AdminTier still refuses it the generic admin panel — and the
+            // self-interest guards (F-404, F-455, F-456) apply to it here.
+            if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god', 'broker', 'coordinator'], true)) {
                 return $userId;
             }
 

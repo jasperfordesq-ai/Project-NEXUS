@@ -217,6 +217,8 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
 
   // Member safeguarding preferences from onboarding
   const [memberPreferences, setMemberPreferences] = useState<MemberSafeguardingEntry[]>([]);
+  // F-542: a refused or failed load must not read as "no members".
+  const [memberPreferencesFailed, setMemberPreferencesFailed] = useState(false);
 
   // Review modal
   const reviewModal = useDisclosure();
@@ -285,6 +287,10 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
       if (prefsRes.success) {
         const payload = prefsRes.data;
         setMemberPreferences(Array.isArray(payload) ? payload : []);
+        setMemberPreferencesFailed(false);
+      } else {
+        setMemberPreferences([]);
+        setMemberPreferencesFailed(true);
       }
 
       if (supportRes.success) {
@@ -863,7 +869,12 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
             </div>
           </CardHeader>
           <CardBody>
-            {memberPreferences.length === 0 ? (
+            {memberPreferencesFailed ? (
+              <div role="alert" className="py-8 text-center text-danger">
+                <Shield size={40} className="mx-auto mb-2 opacity-40" />
+                <p>{t('safeguarding.member_preferences_load_failed')}</p>
+              </div>
+            ) : memberPreferences.length === 0 ? (
               <div className="py-8 text-center text-muted">
                 <Shield size={40} className="mx-auto mb-2 opacity-40" />
                 <p>{t('safeguarding.no_member_preferences')}</p>

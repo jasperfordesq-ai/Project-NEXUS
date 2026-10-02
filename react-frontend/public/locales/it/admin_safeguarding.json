@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Nessun incarico di tutore",
     "no_member_preferences": "Nessuna preferenza del membro",
     "no_member_preferences_desc": "Nessun membro ha ancora configurato le preferenze di salvaguardia",
+    "member_preferences_load_failed": "Impossibile caricare l'elenco dei membri. Aggiorna la pagina per riprovare.",
     "no_options_configured": "Nessuna opzione configurata",
     "no_options_configured_desc": "Non è stata ancora creata alcuna opzione di salvaguardia",
     "none": "Nessuno",

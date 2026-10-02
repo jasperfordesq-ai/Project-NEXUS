@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Aucune mission de tuteur",
     "no_member_preferences": "Aucune préférence de membre",
     "no_member_preferences_desc": "Aucun membre n'a encore configuré ses préférences de protection",
+    "member_preferences_load_failed": "La liste des membres n'a pas pu être chargée. Actualisez la page pour réessayer.",
     "no_options_configured": "Aucune option configurée",
     "no_options_configured_desc": "Aucune option de protection n'a encore été créée",
     "none": "Aucun",

@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Nenhuma designação de guardião",
     "no_member_preferences": "Nenhuma preferência de membro",
     "no_member_preferences_desc": "Nenhum membro configurou preferências de proteção ainda",
+    "member_preferences_load_failed": "Não foi possível carregar a lista de membros. Atualize a página para tentar novamente.",
     "no_options_configured": "Nenhuma opção configurada",
     "no_options_configured_desc": "Nenhuma opção de proteção foi criada ainda",
     "none": "Nenhum",

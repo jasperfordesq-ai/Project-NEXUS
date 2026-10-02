@@ -375,6 +375,7 @@
     "no_guardian_assignments": "保護者の割り当てはありません",
     "no_member_preferences": "メンバーの好みはありません",
     "no_member_preferences_desc": "まだ安全保護設定を構成しているメンバーはいません",
+    "member_preferences_load_failed": "メンバー一覧を読み込めませんでした。ページを再読み込みしてもう一度お試しください。",
     "no_options_configured": "オプションが設定されていません",
     "no_options_configured_desc": "保護オプションはまだ作成されていません",
     "none": "なし",

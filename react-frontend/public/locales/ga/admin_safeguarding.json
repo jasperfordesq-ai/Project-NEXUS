@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Uimh sannacháin caomhnóir",
     "no_member_preferences": "Gan aon roghanna ball",
     "no_member_preferences_desc": "Níl roghanna cosanta cumraithe ag aon bhall fós",
+    "member_preferences_load_failed": "Níorbh fhéidir liosta na mball a lódáil. Athnuaigh an leathanach chun triail eile a bhaint as.",
     "no_options_configured": "Níl aon roghanna cumraithe",
     "no_options_configured_desc": "Níl aon roghanna cosanta cruthaithe fós",
     "none": "Dada",

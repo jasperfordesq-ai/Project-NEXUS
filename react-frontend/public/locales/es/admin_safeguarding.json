@@ -375,6 +375,7 @@
     "no_guardian_assignments": "Sin asignaciones de tutores",
     "no_member_preferences": "Sin preferencias de miembros",
     "no_member_preferences_desc": "Ningún miembro ha configurado preferencias de protección todavía",
+    "member_preferences_load_failed": "No se pudo cargar la lista de miembros. Actualiza la página para volver a intentarlo.",
     "no_options_configured": "No hay opciones configuradas",
     "no_options_configured_desc": "Aún no se han creado opciones de protección",
     "none": "Ninguno",
