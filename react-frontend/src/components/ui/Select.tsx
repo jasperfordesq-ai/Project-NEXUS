@@ -143,7 +143,13 @@ export function Select<T extends object = object>({
       variant={variant === 'underlined' ? 'secondary' : mapVariant(variant)}
     >
       {label && <Label className={classNames?.label}>{label}</Label>}
-      <HeroSelect.Trigger className={cn(SELECT_TRIGGER_SIZE_CLASSES[size], classNames?.trigger)}>
+      <HeroSelect.Trigger
+        className={cn(
+          SELECT_TRIGGER_SIZE_CLASSES[size],
+          isLoading ? SELECT_TRIGGER_END_PADDING[size] : SELECT_TRIGGER_INDICATOR_PADDING,
+          classNames?.trigger,
+        )}
+      >
         {startContent}
         <HeroSelect.Value className={classNames?.value}>
           {renderValue
@@ -187,10 +193,25 @@ export function Select<T extends object = object>({
   );
 }
 
+// Start padding only. HeroUI positions the chevron absolutely at the trigger's
+// end edge and reserves room for it with `pe-7`; a symmetric `px-*` here is a
+// utility, so it beat that component rule and the selected text ran under the
+// chevron. End padding is set separately below.
 const SELECT_TRIGGER_SIZE_CLASSES: Record<NonNullable<SelectProps['size']>, string> = {
-  sm: 'min-h-8 px-2 py-1 text-sm',
-  md: 'min-h-9 px-3 py-2 text-sm',
-  lg: 'min-h-12 px-4 py-3 text-base',
+  sm: 'min-h-8 ps-2 py-1 text-sm',
+  md: 'min-h-9 ps-3 py-2 text-sm',
+  lg: 'min-h-12 ps-4 py-3 text-base',
+};
+
+// Chevron sits at `end-2` and is `size-4`, so `pe-7` keeps text clear of it.
+const SELECT_TRIGGER_INDICATOR_PADDING = 'pe-7';
+
+// While loading, an in-flow spinner replaces the chevron, so plain end padding
+// matching the start side is enough.
+const SELECT_TRIGGER_END_PADDING: Record<NonNullable<SelectProps['size']>, string> = {
+  sm: 'pe-2',
+  md: 'pe-3',
+  lg: 'pe-4',
 };
 
 export interface SelectItemProps

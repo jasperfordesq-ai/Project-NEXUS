@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Dropdowns no longer let the selected text run underneath the arrow — first reported on the Priority filter in CRM → Coordinator Tasks. The shared dropdown applied even padding on both sides, which overrode the extra room HeroUI keeps on the right for the arrow; that room is now always reserved while the arrow is shown, at every size.
 - Coordinator Tasks (CRM → Coordinator Tasks): the button that marks a task complete can now be seen. It was a small white tick box on a white card; it is now a round button with a visible border and a tooltip, filled green once the task is done, and the task menu offers "Reopen task" for a completed task instead of "Mark Complete" again.
 - Searching for a member inside an admin pop-up now shows its results. The member search used by Coordinator Tasks, Member Notes, Member Tags, the Activity Timeline, partner venues and the caring-community admin pages drew its result list inside the pop-up, which cut it off, so the search appeared to do nothing. It is now a HeroUI ComboBox whose list floats above the pop-up. Members found by email address are also shown now; the list previously re-filtered the server's results by name and hid them.
 - The Create Task form now explains what a task is for, labels the member field "Member this task is about" with a hint, explains who "Assign to" means, and fills "Assign to" with you instead of an empty "Select an item" (a blank choice already meant you).

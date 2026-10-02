@@ -175,9 +175,9 @@ describe('Select compatibility contracts', () => {
   });
 
   it.each([
-    ['sm', ['min-h-8', 'px-2', 'py-1', 'text-sm']],
-    ['md', ['min-h-9', 'px-3', 'py-2', 'text-sm']],
-    ['lg', ['min-h-12', 'px-4', 'py-3', 'text-base']],
+    ['sm', ['min-h-8', 'ps-2', 'py-1', 'text-sm']],
+    ['md', ['min-h-9', 'ps-3', 'py-2', 'text-sm']],
+    ['lg', ['min-h-12', 'ps-4', 'py-3', 'text-base']],
   ] as const)('applies the requested %s trigger size instead of dropping it', (size, expectedClasses) => {
     const { container } = render(
       <Select label="Fruit" size={size}>
@@ -187,6 +187,35 @@ describe('Select compatibility contracts', () => {
 
     expect(container.querySelector('[data-slot="select"]')).toHaveAttribute('data-size', size);
     expect(screen.getByRole('button')).toHaveClass(...expectedClasses);
+  });
+
+  // HeroUI positions the chevron absolutely over the trigger's end edge and
+  // reserves room for it with `pe-7`. A symmetric `px-*` size utility beats that
+  // component rule, so the selected text ran underneath the chevron.
+  it.each(['sm', 'md', 'lg'] as const)(
+    'keeps end padding clear of the chevron at size %s',
+    (size) => {
+      render(
+        <Select label="Fruit" size={size}>
+          {OPTIONS}
+        </Select>,
+      );
+
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveClass('pe-7');
+      expect(trigger.className).not.toMatch(/(^|\s)px-\d/);
+    },
+  );
+
+  it('does not reserve chevron space while loading', () => {
+    render(
+      <Select label="Fruit" size="sm" isLoading>
+        {OPTIONS}
+      </Select>,
+    );
+
+    expect(screen.getByRole('button')).not.toHaveClass('pe-7');
+    expect(screen.getByRole('button')).toHaveClass('pe-2');
   });
 });
 
