@@ -784,7 +784,9 @@
     "orgs_stat_volunteers": "Freiwillige: {{value}}",
     "orgs_stat_opportunities": "Angebote: {{value}}",
     "orgs_stat_hours": "Erfasste Stunden: {{value}}",
-    "orgs_no_match": "Keine Organisation entspricht diesem Filter."
+    "orgs_no_match": "Keine Organisation entspricht diesem Filter.",
+    "expense_already_reviewed": "Diese Ausgabe wurde bereits geprüft und kann daher nicht erneut genehmigt oder abgelehnt werden.",
+    "expense_not_approved": "Nur eine genehmigte Ausgabe kann als bezahlt markiert werden."
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

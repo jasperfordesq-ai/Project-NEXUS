@@ -439,10 +439,10 @@ describe('VolunteerExpenses', () => {
     expect(screen.queryByRole('button', { name: /review/i })).not.toBeInTheDocument();
   });
 
-  it("shows the server's reason when a review is refused", async () => {
+  it('shows its own translated message, never the raw server text, when a review is refused', async () => {
     mockAdminVolunteering.reviewExpense.mockResolvedValue({
       success: false,
-      error: 'Expense not found or invalid status',
+      error: 'RAW SERVER TEXT MUST NOT RENDER',
     });
     const dialog = await openReviewFor(makeExpense({ id: 6, status: 'pending' }));
     const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
@@ -450,8 +450,9 @@ describe('VolunteerExpenses', () => {
     );
     fireEvent.click(confirmBtn!);
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Expense not found or invalid status');
+      expect(mockToast.error).toHaveBeenCalledWith('Failed to update expense');
     });
+    expect(mockToast.error).not.toHaveBeenCalledWith('RAW SERVER TEXT MUST NOT RENDER');
   });
 
   it('refreshes the list when the claim was already handled by someone else', async () => {

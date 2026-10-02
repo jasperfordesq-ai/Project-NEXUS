@@ -352,9 +352,16 @@ export function VolunteerExpenses() {
         setReviewModal(false);
         loadData();
       } else {
-        toast.error(res.error || t('volunteering.failed_to_update_expense'));
-        // Someone else moved this claim on since the list loaded: the choices in
-        // the dialog are stale, so close it and show the claim as it now stands.
+        // Someone else moved this claim on since the list loaded: say why in the
+        // admin's own language (the server's text is not shown directly), close
+        // the now-stale dialog and show the claim as it now stands.
+        if (res.code === 'INVALID_STATE') {
+          toast.error(t(reviewAction === 'paid'
+            ? 'volunteering.expense_not_approved'
+            : 'volunteering.expense_already_reviewed'));
+        } else {
+          toast.error(t('volunteering.failed_to_update_expense'));
+        }
         if (res.code === 'INVALID_STATE') {
           setReviewModal(false);
           loadData();

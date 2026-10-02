@@ -784,7 +784,9 @@
     "orgs_stat_volunteers": "Vrijwilligers: {{value}}",
     "orgs_stat_opportunities": "Vacatures: {{value}}",
     "orgs_stat_hours": "Geregistreerde uren: {{value}}",
-    "orgs_no_match": "Geen organisaties voldoen aan dit filter."
+    "orgs_no_match": "Geen organisaties voldoen aan dit filter.",
+    "expense_already_reviewed": "Deze uitgave is al beoordeeld en kan daarom niet opnieuw worden goedgekeurd of afgewezen.",
+    "expense_not_approved": "Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd."
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

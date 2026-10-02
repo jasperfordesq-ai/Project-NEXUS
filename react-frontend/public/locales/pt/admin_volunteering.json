@@ -800,7 +800,9 @@
     "orgs_stat_volunteers": "Voluntários: {{value}}",
     "orgs_stat_opportunities": "Oportunidades: {{value}}",
     "orgs_stat_hours": "Horas registradas: {{value}}",
-    "orgs_no_match": "Nenhuma organização corresponde a este filtro."
+    "orgs_no_match": "Nenhuma organização corresponde a este filtro.",
+    "expense_already_reviewed": "Esta despesa já foi analisada, por isso não pode ser aprovada nem rejeitada novamente.",
+    "expense_not_approved": "Apenas uma despesa aprovada pode ser marcada como paga."
   },
   "donation_refunds": {
     "page_title": "Reembolsos de doações",

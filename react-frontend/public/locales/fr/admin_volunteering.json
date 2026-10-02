@@ -800,7 +800,9 @@
     "orgs_stat_volunteers": "Bénévoles : {{value}}",
     "orgs_stat_opportunities": "Missions : {{value}}",
     "orgs_stat_hours": "Heures enregistrées : {{value}}",
-    "orgs_no_match": "Aucune organisation ne correspond à ce filtre."
+    "orgs_no_match": "Aucune organisation ne correspond à ce filtre.",
+    "expense_already_reviewed": "Cette dépense a déjà été examinée ; elle ne peut donc pas être approuvée ou refusée à nouveau.",
+    "expense_not_approved": "Seule une dépense approuvée peut être marquée comme payée."
   },
   "donation_refunds": {
     "page_title": "Remboursements de dons",

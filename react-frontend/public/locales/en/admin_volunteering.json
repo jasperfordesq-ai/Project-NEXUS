@@ -784,7 +784,9 @@
     "orgs_stat_volunteers": "Volunteers: {{value}}",
     "orgs_stat_opportunities": "Opportunities: {{value}}",
     "orgs_stat_hours": "Hours logged: {{value}}",
-    "orgs_no_match": "No organisations match this filter."
+    "orgs_no_match": "No organisations match this filter.",
+    "expense_already_reviewed": "This expense has already been reviewed, so it cannot be approved or rejected again.",
+    "expense_not_approved": "Only an approved expense can be marked as paid."
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",

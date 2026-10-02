@@ -816,7 +816,9 @@
     "orgs_stat_volunteers": "Wolontariusze: {{value}}",
     "orgs_stat_opportunities": "Oferty: {{value}}",
     "orgs_stat_hours": "Zarejestrowane godziny: {{value}}",
-    "orgs_no_match": "Żadna organizacja nie pasuje do tego filtra."
+    "orgs_no_match": "Żadna organizacja nie pasuje do tego filtra.",
+    "expense_already_reviewed": "Ten wydatek został już rozpatrzony, więc nie można go ponownie zatwierdzić ani odrzucić.",
+    "expense_not_approved": "Jako opłacony można oznaczyć tylko zatwierdzony wydatek."
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

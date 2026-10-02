@@ -848,7 +848,9 @@
     "orgs_stat_volunteers": "المتطوعون: {{value}}",
     "orgs_stat_opportunities": "الفرص: {{value}}",
     "orgs_stat_hours": "الساعات المسجلة: {{value}}",
-    "orgs_no_match": "لا توجد منظمات تطابق هذه التصفية."
+    "orgs_no_match": "لا توجد منظمات تطابق هذه التصفية.",
+    "expense_already_reviewed": "تمت مراجعة هذه النفقة بالفعل، لذا لا يمكن الموافقة عليها أو رفضها مرة أخرى.",
+    "expense_not_approved": "لا يمكن وضع علامة \"مدفوعة\" إلا على نفقة تمت الموافقة عليها."
   },
   "donation_refunds": {
     "page_title": "استرداد التبرعات",
