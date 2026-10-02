@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The CRM Activity Timeline (CRM → Activity Timeline) no longer says a member "Updated their profile" when the system changed their record. The entry was taken from the last time anything at all changed the member's account, so automatic changes — the leaderboard awarding season bonus points at midnight, an admin edit — appeared as the member editing their profile, including members who had not signed in. The entry is now recorded at the moment a member saves a change to their own profile or photo, and shows that time. Profile edits made before this release were never recorded, so they no longer appear.
 - Newsletter analytics (Analytics & Reporting → Newsletters) now shows each community's real figures. It reported "No analytics found" and zero campaigns on every community, including ones that had sent thousands of newsletter emails: its summary query asked the database for two columns that do not exist, and the failure was silently turned into an empty result. Its "Subscribers" figure now counts active newsletter subscribers rather than every active member, "Campaigns sent" no longer counts drafts, and if the figures cannot be loaded the page now says so instead of claiming nothing has been sent.
 
 ### Security

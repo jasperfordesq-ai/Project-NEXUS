@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
+use App\Services\ProfileEditRecorder;
 use App\Support\Authorization\AdminTier;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -927,16 +928,21 @@ class AdminCrmController extends BaseApiController
             } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
         }
 
-        // 8. Profile updates
+        // 8. Profile updates — one entry per save the member made themselves,
+        // written by ProfileEditRecorder at that moment. This used to read
+        // users.updated_at, which every write to the row moves (the
+        // leaderboard season job, admin edits), so system changes were shown
+        // as the member editing their profile.
         if (!$type || $type === 'profile_updated') {
-            $sql = "SELECT CONVERT('profile_updated' USING utf8mb4) COLLATE utf8mb4_unicode_ci as activity_type, u.id as user_id,
+            $sql = "SELECT CONVERT('profile_updated' USING utf8mb4) COLLATE utf8mb4_unicode_ci as activity_type, al.user_id,
                      CONVERT(u.name USING utf8mb4) COLLATE utf8mb4_unicode_ci as user_name,
                      CONVERT(u.avatar_url USING utf8mb4) COLLATE utf8mb4_unicode_ci as user_avatar,
-                     {$emptyDescriptionParams} as description_params, {$nullText} as metadata, u.updated_at as created_at
-                     FROM users u WHERE u.tenant_id = ? AND u.updated_at > u.created_at";
-            $p = [$tenantId]; $cp = [$tenantId];
-            if ($userId) { $sql .= " AND u.id = ?"; $p[] = $userId; $cp[] = $userId; }
-            if ($useDayFilter) { $sql .= " AND u.updated_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
+                     {$emptyDescriptionParams} as description_params, {$nullText} as metadata, al.created_at
+                     FROM activity_log al INNER JOIN users u ON u.id = al.user_id AND u.tenant_id = al.tenant_id
+                     WHERE al.tenant_id = ? AND al.action = ?";
+            $p = [$tenantId, ProfileEditRecorder::ACTION]; $cp = [$tenantId, ProfileEditRecorder::ACTION];
+            if ($userId) { $sql .= " AND al.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
+            if ($useDayFilter) { $sql .= " AND al.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
             $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
         }
 

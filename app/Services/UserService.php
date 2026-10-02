@@ -504,6 +504,13 @@ class UserService
                 }
             }
             if (!empty($changedFields) && ($updated ?? null) instanceof User) {
+                // The CRM timeline's "Updated their profile" reads this record,
+                // not users.updated_at, which system jobs also move.
+                ProfileEditRecorder::record(
+                    $userId,
+                    (int) ($updated->tenant_id ?? TenantContext::getId()),
+                    $changedFields,
+                );
                 MemberProfileUpdated::dispatch(
                     $updated,
                     $changedFields,
@@ -766,6 +773,7 @@ class UserService
             $oldAvatarUrl = $user->avatar_url;
             $user->avatar_url = $avatarUrl;
             $user->save();
+            ProfileEditRecorder::record($userId, (int) $user->tenant_id, ['avatar_url']);
 
             // Best-effort cleanup of the previous avatar so a user who
             // changes their picture frequently doesn't leak orphaned files
