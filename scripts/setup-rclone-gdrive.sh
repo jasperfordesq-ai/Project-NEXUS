@@ -42,12 +42,23 @@ echo ""
 # ---------------------------------------------------------------------------
 header "Step 1: Install rclone"
 
+# F-123: from the distribution's signed packages, not `curl … | bash`
+# (which ran an unreviewed script from the internet as root). age encrypts the
+# offsite copies (server-nightly-backup.sh).
 if command -v rclone &>/dev/null; then
     success "rclone already installed: $(rclone version | head -1)"
 else
-    log "Installing rclone..."
-    curl -fsSL https://rclone.org/install.sh | bash
+    log "Installing rclone from apt..."
+    apt-get update -qq
+    apt-get install -y rclone
     success "rclone installed: $(rclone version | head -1)"
+fi
+if command -v age &>/dev/null; then
+    success "age already installed: $(age --version 2>/dev/null || echo present)"
+else
+    log "Installing age from apt..."
+    apt-get install -y age
+    success "age installed: $(age --version 2>/dev/null || echo present)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -77,6 +88,11 @@ echo "nexus-backup-test $(date)" | rclone rcat "${RCLONE_REMOTE}/.nexus-test" ||
     fail "Could not write to ${RCLONE_REMOTE}. Check Google Drive permissions."
 rclone deletefile "${RCLONE_REMOTE}/.nexus-test" 2>/dev/null || true
 success "Write access confirmed — '${DRIVE_FOLDER}' folder ready in Google Drive"
+# With scope=drive.file rclone only sees files it created. If the token is new
+# and this shows 0, Google may have given rclone a NEW folder of the same name;
+# the old one (with the old unencrypted files) then has to be removed by hand.
+VISIBLE=$(rclone lsf "${RCLONE_REMOTE}" --max-depth 1 2>/dev/null | wc -l | tr -d ' ')
+log "Files rclone can see in ${RCLONE_REMOTE}: ${VISIBLE}"
 
 # ---------------------------------------------------------------------------
 # Step 4: Wire up cron job

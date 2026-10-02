@@ -105,14 +105,18 @@ if [[ "$SKIP_AUTH" == "false" ]]; then
     echo ""
     read -rp "Press ENTER to open the browser..."
 
-    rclone config create "$REMOTE_NAME" drive scope=drive || {
+    # F-123: drive.file = rclone can only see and change files it created
+    # itself, i.e. the backups. The old scope=drive gave the server's token the
+    # owner's ENTIRE Google Drive.
+    rclone config create "$REMOTE_NAME" drive scope=drive.file || {
         # Fallback: full interactive config
         echo ""
         warn "Automated config failed — running interactive config instead."
         echo "  When prompted:"
         echo "  • Storage type: enter the number for 'Google Drive'"
         echo "  • client_id / client_secret: leave blank (press Enter)"
-        echo "  • scope: enter 1 (full access)"
+        echo "  • scope: choose drive.file — 'Access to files created by rclone only'"
+        echo "    (NOT the first option, which opens the whole Drive)"
         echo "  • root_folder_id / service_account_file: leave blank"
         echo "  • Edit advanced config: No"
         echo "  • Use auto config: Yes  ← browser will open"
@@ -140,15 +144,26 @@ header "Step 3: Upload token to production server"
 [[ -f "$RCLONE_CONF" ]] || fail "rclone config not found at: $RCLONE_CONF"
 log "Config file: $RCLONE_CONF"
 
-log "Copying rclone config to server..."
+# Send the server ONLY the backup remote's section. The local rclone.conf may
+# hold other remotes (other accounts, other tokens) that the server must never
+# see.
+UPLOAD_CONF="$(mktemp)"
+trap 'rm -f "$UPLOAD_CONF"' EXIT
+chmod 600 "$UPLOAD_CONF"
+rclone config show "${REMOTE_NAME}" > "$UPLOAD_CONF" || fail "could not extract the '${REMOTE_NAME}' remote"
+grep -q "^\[${REMOTE_NAME}\]" "$UPLOAD_CONF" || fail "extracted config has no [${REMOTE_NAME}] section"
+grep -qE '^scope = drive\.file$' "$UPLOAD_CONF" \
+    || fail "the '${REMOTE_NAME}' remote is not limited to scope drive.file — re-run and re-authorise"
+
+log "Copying the '${REMOTE_NAME}' remote to the server..."
 # Create the config directory on the server first
 ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
     "sudo mkdir -p /root/.config/rclone && sudo chmod 700 /root/.config/rclone"
 
-# SCP the config to a temp location, then sudo move it into place
-scp -i "$SSH_KEY" "$RCLONE_CONF" "${SSH_HOST}:/tmp/rclone.conf"
+# SCP to a private temp location, then sudo move it into place
+scp -p -i "$SSH_KEY" "$UPLOAD_CONF" "${SSH_HOST}:/tmp/rclone.conf"   # -p keeps mode 600 in /tmp
 ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
-    "sudo mv /tmp/rclone.conf /root/.config/rclone/rclone.conf && sudo chmod 600 /root/.config/rclone/rclone.conf"
+    "sudo mv /tmp/rclone.conf /root/.config/rclone/rclone.conf && sudo chown root:root /root/.config/rclone/rclone.conf && sudo chmod 600 /root/.config/rclone/rclone.conf"
 
 success "Token uploaded to server"
 
