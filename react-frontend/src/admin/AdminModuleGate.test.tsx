@@ -66,6 +66,12 @@ describe('admin module boundaries', () => {
     renderPage('enterprise/fadp');
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
   });
+  // F-531 (E-078): the old KI-Agenten page needs the same two switches as its API.
+  it('blocks ai/ki-agents when caring_community is off but ai_agents is on', () => {
+    state.off.add('caring_community');
+    renderPage('ai/ki-agents');
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
   it('does not mount content while settings load', () => {
     state.loading = true;
     const effect = vi.fn();

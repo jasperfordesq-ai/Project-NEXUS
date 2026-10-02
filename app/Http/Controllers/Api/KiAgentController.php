@@ -41,8 +41,8 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        if (!$this->hasCaringCommunityAccess($tenantId)) {
-            return $this->respondForbidden('caring_community feature not enabled');
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
         }
 
         if (!KiAgentService::isAvailable()) {
@@ -57,8 +57,8 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        if (!$this->hasCaringCommunityAccess($tenantId)) {
-            return $this->respondForbidden('caring_community feature not enabled');
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
         }
 
         if (!KiAgentService::isAvailable()) {
@@ -80,6 +80,10 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
+
         if (!KiAgentService::isAvailable()) {
             return $this->respondWithData([]);
         }
@@ -97,6 +101,10 @@ class KiAgentController extends BaseApiController
     {
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
+
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
 
         if (!KiAgentService::isAvailable()) {
             return $this->respondNotFound('Run not found');
@@ -119,8 +127,8 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        if (!$this->hasCaringCommunityAccess($tenantId)) {
-            return $this->respondForbidden('caring_community feature not enabled');
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
         }
 
         if (!KiAgentService::isAvailable()) {
@@ -168,6 +176,10 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
+
         if (!KiAgentService::isAvailable()) {
             return $this->respondWithData([]);
         }
@@ -184,6 +196,10 @@ class KiAgentController extends BaseApiController
     {
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
+
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
 
         if (!KiAgentService::isAvailable()) {
             return $this->respondNotFound('Proposal not found');
@@ -207,6 +223,10 @@ class KiAgentController extends BaseApiController
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
+
         if (!KiAgentService::isAvailable()) {
             return $this->respondNotFound('Proposal not found');
         }
@@ -223,6 +243,10 @@ class KiAgentController extends BaseApiController
     {
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
+
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
 
         if (!KiAgentService::isAvailable()) {
             return $this->respondWithData(['approved' => 0, 'failed' => 0]);
@@ -259,6 +283,10 @@ class KiAgentController extends BaseApiController
     {
         $adminId  = $this->requireAdmin();
         $tenantId = $this->getTenantId();
+
+        if ($denied = $this->agentsDisabledResponse($tenantId)) {
+            return $denied;
+        }
 
         if (!KiAgentService::isAvailable()) {
             return $this->respondWithData([
@@ -310,6 +338,21 @@ class KiAgentController extends BaseApiController
     // =========================================================================
     // Private helpers
     // =========================================================================
+
+    /**
+     * Every action needs both switches: `ai_agents` (the agent switch the admin
+     * page and AgentAdminController follow) and `caring_community` (the module
+     * these agents work on). Until F-531 three actions checked only the second
+     * and seven — proposal approval among them — checked neither.
+     */
+    private function agentsDisabledResponse(int $tenantId): ?JsonResponse
+    {
+        if (!TenantContext::hasFeature('ai_agents') || !$this->hasCaringCommunityAccess($tenantId)) {
+            return $this->respondForbidden(__('api.module_disabled_for_community'));
+        }
+
+        return null;
+    }
 
     private function hasCaringCommunityAccess(int $tenantId): bool
     {
