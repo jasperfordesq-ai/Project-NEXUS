@@ -3427,4 +3427,9 @@ return [
     'ideation_submission_closed' => 'This challenge is not accepting new ideas.',
     'ideation_submission_deadline_passed' => 'The submission deadline has passed.',
     'ideation_submission_limit_reached' => 'You have reached the limit of :limit ideas for this challenge.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Offers help with something you need',
+    ],
+
 ];

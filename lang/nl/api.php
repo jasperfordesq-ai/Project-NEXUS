@@ -2903,4 +2903,9 @@ KANDIDATEN::candidates',
     'ideation_submission_closed' => 'Deze uitdaging accepteert geen nieuwe ideeën.',
     'ideation_submission_deadline_passed' => 'De inzendtermijn is verstreken.',
     'ideation_submission_limit_reached' => 'U hebt de limiet van :limit ideeën voor deze uitdaging bereikt.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Biedt hulp bij iets wat je nodig hebt',
+    ],
+
 ];

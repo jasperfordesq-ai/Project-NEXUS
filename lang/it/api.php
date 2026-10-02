@@ -2903,4 +2903,9 @@ CANDIDATI::candidates',
     'ideation_submission_closed' => 'Questa sfida non accetta nuove idee.',
     'ideation_submission_deadline_passed' => 'Il termine per le proposte è scaduto.',
     'ideation_submission_limit_reached' => 'Hai raggiunto il limite di :limit idee per questa sfida.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Offre aiuto per qualcosa di cui ha bisogno',
+    ],
+
 ];

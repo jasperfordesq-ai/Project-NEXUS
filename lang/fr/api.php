@@ -2903,4 +2903,9 @@ CANDIDATS ::candidates',
     'ideation_submission_closed' => 'Ce défi n’accepte pas de nouvelles idées.',
     'ideation_submission_deadline_passed' => 'La date limite de soumission est passée.',
     'ideation_submission_limit_reached' => 'Vous avez atteint la limite de :limit idées pour ce défi.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Propose de l\'aide pour quelque chose dont vous avez besoin',
+    ],
+
 ];

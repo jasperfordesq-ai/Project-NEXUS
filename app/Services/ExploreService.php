@@ -842,18 +842,36 @@ class ExploreService
                 if (!empty($userOfferedSkills)) {
                     $skillNames = array_map(fn($r) => $r->skill_name, $userOfferedSkills);
                     $placeholdersSkills = implode(',', array_fill(0, count($skillNames), '?'));
+                    // The tag column is `tag`. This query named `lst.skill_name`
+                    // until 2026-10-02; the SQL error was swallowed below, so
+                    // this source never returned anything.
                     $skillListingIds = DB::select("
                         SELECT DISTINCT lst.listing_id
                         FROM listing_skill_tags lst
                         JOIN listings l ON l.id = lst.listing_id AND l.tenant_id = ? AND l.status = 'active' AND l.user_id != ?
-                        WHERE lst.skill_name IN ({$placeholdersSkills})
+                        WHERE lst.tenant_id = ? AND lst.tag IN ({$placeholdersSkills})
                         LIMIT 8
-                    ", array_merge([$tenantId, $userId], $skillNames));
+                    ", array_merge([$tenantId, $userId, $tenantId], $skillNames));
                     $skillListingIds = array_map(fn($r) => (int) $r->listing_id, $skillListingIds);
                     $skillListingIds = array_filter($skillListingIds, fn(int $id) => !in_array($id, $excludeListingIds));
                 }
             } catch (\Throwable $e) {
                 // Skill matching tables may not exist — non-critical
+            }
+
+            // ─── Source 6: Offers for what the member needs help with ───
+            // The member's "I need help with" skills (onboarding wizard or
+            // Settings → Skills). A new member has no listings for the
+            // matching engine to start from, so this is often the only
+            // personal signal Explore has for them.
+            $needListingIds = [];
+            try {
+                $needListingIds = array_values(array_filter(
+                    $this->offersForNeededSkills($tenantId, $userId),
+                    fn(int $id) => !in_array($id, $excludeListingIds)
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('ExploreService: needed-skill offers failed', ['error' => $e->getMessage()]);
             }
 
             // ─── Merge all candidate IDs ───
@@ -862,7 +880,8 @@ class ExploreService
                 $cfListingIds,
                 $knnListingIds,
                 $embeddingListingIds,
-                $skillListingIds
+                $skillListingIds,
+                $needListingIds
             ));
 
             if (empty($allCandidateIds)) {
@@ -929,6 +948,13 @@ class ExploreService
                     $reasons[] = 'Matches your skills';
                 }
 
+                // Boost for an offer of something the member needs (+15).
+                // Shown first: it is the most concrete reason we have.
+                if (in_array($lid, $needListingIds)) {
+                    $score += 15;
+                    array_unshift($reasons, __('api.explore.reason_offers_what_you_need'));
+                }
+
                 // Historical boost/penalty from MatchLearningService (±15)
                 try {
                     $histBoost = $this->matchLearning->getHistoricalBoost($userId, $row);
@@ -970,6 +996,60 @@ class ExploreService
             Log::warning('ExploreService::getRecommendedListings failed', ['error' => $e->getMessage()]);
             return [];
         }
+    }
+
+    /**
+     * Active offers from other members that match one of the member's
+     * "I need help with" skills: by the listing's category name, a skill tag,
+     * or the skill appearing in the title. Newest first.
+     *
+     * @return int[] listing ids
+     */
+    private function offersForNeededSkills(int $tenantId, int $userId, int $limit = 8): array
+    {
+        $needs = DB::table('user_skills')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('is_requesting', 1)
+            ->limit(25)
+            ->pluck('skill_name')
+            ->map(fn($name) => trim((string) $name))
+            // Very short names ("IT", "Art") would match half the titles.
+            ->filter(fn($name) => mb_strlen($name) >= 3)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($needs)) {
+            return [];
+        }
+
+        return DB::table('listings as l')
+            ->leftJoin('categories as cat', function ($join) use ($tenantId) {
+                $join->on('cat.id', '=', 'l.category_id')->where('cat.tenant_id', '=', $tenantId);
+            })
+            ->where('l.tenant_id', $tenantId)
+            ->where('l.status', 'active')
+            ->where('l.type', 'offer')
+            ->where('l.user_id', '!=', $userId)
+            ->where(function ($match) use ($needs, $tenantId) {
+                $match->whereIn('cat.name', $needs)
+                    ->orWhereExists(function ($tags) use ($needs, $tenantId) {
+                        $tags->selectRaw('1')
+                            ->from('listing_skill_tags as lst')
+                            ->whereColumn('lst.listing_id', 'l.id')
+                            ->where('lst.tenant_id', $tenantId)
+                            ->whereIn('lst.tag', $needs);
+                    });
+                foreach ($needs as $name) {
+                    $match->orWhere('l.title', 'LIKE', '%' . addcslashes($name, '%_\\') . '%');
+                }
+            })
+            ->orderByDesc('l.created_at')
+            ->limit($limit)
+            ->pluck('l.id')
+            ->map(fn($id) => (int) $id)
+            ->all();
     }
 
     /**

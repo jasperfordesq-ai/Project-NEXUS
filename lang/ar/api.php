@@ -2903,4 +2903,9 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'ideation_submission_closed' => 'هذا التحدي لا يقبل أفكارًا جديدة.',
     'ideation_submission_deadline_passed' => 'انتهى الموعد النهائي لتقديم الأفكار.',
     'ideation_submission_limit_reached' => 'لقد وصلت إلى الحد الأقصى البالغ :limit من الأفكار لهذا التحدي.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'يقدّم المساعدة في شيء تحتاجه',
+    ],
+
 ];

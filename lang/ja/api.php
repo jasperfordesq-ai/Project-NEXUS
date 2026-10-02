@@ -2903,4 +2903,9 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'ideation_submission_closed' => 'このチャレンジでは新しいアイデアを受け付けていません。',
     'ideation_submission_deadline_passed' => 'アイデアの提出期限を過ぎています。',
     'ideation_submission_limit_reached' => 'このチャレンジに提出できるアイデア数の上限（:limit件）に達しました。',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'あなたが必要としていることを手伝えます',
+    ],
+
 ];

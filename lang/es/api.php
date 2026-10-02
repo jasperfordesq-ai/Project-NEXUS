@@ -2903,4 +2903,9 @@ CANDIDATOS::candidates',
     'ideation_submission_closed' => 'Este desafío no acepta nuevas ideas.',
     'ideation_submission_deadline_passed' => 'El plazo de presentación ha terminado.',
     'ideation_submission_limit_reached' => 'Has alcanzado el límite de :limit ideas para este desafío.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Ofrece ayuda con algo que necesitas',
+    ],
+
 ];

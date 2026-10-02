@@ -2903,4 +2903,9 @@ IARRTHÓIRÍ: :candidates',
     'ideation_submission_closed' => 'Níl an dúshlán seo ag glacadh le smaointe nua.',
     'ideation_submission_deadline_passed' => 'Tá an spriocdháta chun smaointe a chur isteach imithe thart.',
     'ideation_submission_limit_reached' => 'Tá an teorainn de :limit smaoineamh don dúshlán seo sroichte agat.',
+    // Explore — reasons shown on "Recommended for you" listings
+    'explore' => [
+        'reason_offers_what_you_need' => 'Tairgeann sé cabhair le rud a theastaíonn uait',
+    ],
+
 ];
