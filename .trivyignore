@@ -182,6 +182,29 @@ CVE-2026-97689
 CVE-2025-71329
 CVE-2025-71330
 
+# ── node-forge 1.4.0 RSA PKCS#1 v1.5 signature forgery (HIGH) — no fix exists ─
+# CVE-2026-85393 / GHSA-86w9-cpqp-85rv: verification accepts extra nested
+# DigestAlgorithm elements. GitHub Advisory Database records the affected range
+# as <= 1.4.0 with first_patched_version NONE, and 1.4.0 is the latest release,
+# so there is nothing to upgrade to. Started blocking 2026-10-02 (run
+# 36973675580) with no lockfile change — the advisory DB picked it up.
+#
+# Reachability: mobile/package-lock.json only, single instance
+# node_modules/node-forge, pulled in by @expo/cli and by
+# @expo/code-signing-certificates under expo-updates. Measured 2026-10-02:
+#   - expo-updates imports it only from cli/build/{configure,generate}CodeSigningAsync.js
+#     (the developer `expo-updates codesigning:*` command), not from its
+#     runtime entry build/index.js;
+#   - @expo/cli imports it from src/utils/codesigning.js and
+#     src/run/ios/codeSigning/Security.js — developer-machine / CI tooling;
+#   - no file under mobile/ app source imports node-forge or
+#     @expo/code-signing-certificates, and app.json sets no updates.codeSigning*
+#     so the shipped app performs no update-signature verification at all.
+# It therefore never ships in the APK/IPA and never verifies untrusted input on
+# a server. Mirrored in .npm-audit-exceptions.json (expires 2026-11-02).
+# Remove when node-forge publishes a fixed release. (added 2026-10-02)
+CVE-2026-85393
+
 # =============================================================================
 # DELETED at the 2026-08-28 review — kept here as a short record so a future
 # reader does not "rediscover" these and re-add them. Each was removed because

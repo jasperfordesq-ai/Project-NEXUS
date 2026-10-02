@@ -16,6 +16,14 @@
       "reason": "image-size JXL/HEIF-parser DoS — same package, same vulnerable range '*', same dev-bundler-only reachability and same absent fix as GHSA-w3rx-r6r6-pgpr above; see that entry for the full reasoning. Remove both together when a fixed image-size ships.",
       "added": "2026-08-08",
       "expires": "2026-11-26"
+    },
+    {
+      "id": "GHSA-86w9-cpqp-85rv",
+      "scope": "mobile",
+      "package": "node-forge",
+      "reason": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements (CVE-2026-85393). Affected range <= 1.4.0, first_patched_version NONE, and 1.4.0 is the latest release, so there is no version to upgrade to. Reachable only through developer tooling: @expo/cli (src/utils/codesigning.js, src/run/ios/codeSigning/Security.js) and expo-updates' `codesigning:*` CLI (cli/build/*CodeSigningAsync.js) — expo-updates' runtime entry build/index.js does not import it, no mobile app source imports node-forge or @expo/code-signing-certificates, and app.json configures no update code signing, so nothing in the shipped APK/IPA verifies a signature with it. Short expiry on purpose: re-check for a fixed node-forge then. Mirrored in .trivyignore.",
+      "added": "2026-10-02",
+      "expires": "2026-11-02"
     }
   ]
 }
