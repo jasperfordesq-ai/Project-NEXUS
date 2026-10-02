@@ -112,12 +112,21 @@ class OnboardingConfigService
      */
     public static function getActiveSteps(?int $tenantId = null): array
     {
+        $tenantId = $tenantId ?? TenantContext::getId();
         $config = self::getConfig($tenantId);
         $steps = [];
 
         foreach (self::STEPS as $slug => $meta) {
             $enabledKey = $meta['key'] . '_enabled';
             $requiredKey = $meta['key'] . '_required';
+
+            // The safeguarding step is on by default, but a community that has
+            // never configured any safeguarding options has nothing to ask.
+            // Showing the step anyway put an empty "no options configured"
+            // screen in front of every new member.
+            if ($slug === 'safeguarding' && !self::hasActiveSafeguardingOptions($tenantId)) {
+                continue;
+            }
 
             if (!empty($config[$enabledKey])) {
                 $steps[] = [
@@ -166,8 +175,10 @@ class OnboardingConfigService
             $unmet[] = 'bio_required';
         }
 
-        // If safeguarding step is enabled AND required, check preferences exist
-        if ($config['step_safeguarding_enabled'] && $config['step_safeguarding_required']) {
+        // If safeguarding step is enabled AND required AND actually shown
+        // (the community has options to answer), check preferences exist.
+        if ($config['step_safeguarding_enabled'] && $config['step_safeguarding_required']
+            && self::hasActiveSafeguardingOptions($tenantId ?? TenantContext::getId())) {
             $hasSafeguardingPrefs = DB::selectOne(
                 "SELECT 1 FROM user_safeguarding_preferences WHERE user_id = ? AND tenant_id = ? AND revoked_at IS NULL LIMIT 1",
                 [$userId, $tenantId ?? TenantContext::getId()]
@@ -178,6 +189,18 @@ class OnboardingConfigService
         }
 
         return $unmet;
+    }
+
+    /**
+     * Whether the tenant has at least one active safeguarding option for
+     * members to answer. Without one the safeguarding step is not shown.
+     */
+    private static function hasActiveSafeguardingOptions(int $tenantId): bool
+    {
+        return DB::table('tenant_safeguarding_options')
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->exists();
     }
 
     /**

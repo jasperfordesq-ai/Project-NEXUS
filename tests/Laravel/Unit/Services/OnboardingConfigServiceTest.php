@@ -56,6 +56,8 @@ class OnboardingConfigServiceTest extends TestCase
 
     public function test_getActiveSteps_returns_default_safeguarding_step(): void
     {
+        $this->seedSafeguardingOption();
+
         $steps = OnboardingConfigService::getActiveSteps($this->testTenantId);
 
         $slugs = array_column($steps, 'slug');
@@ -77,11 +79,64 @@ class OnboardingConfigServiceTest extends TestCase
             ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_safeguarding_enabled'],
             ['setting_value' => '1', 'setting_type' => 'boolean']
         );
+        $this->seedSafeguardingOption();
 
         $steps = OnboardingConfigService::getActiveSteps($this->testTenantId);
 
         $slugs = array_column($steps, 'slug');
         $this->assertContains('safeguarding', $slugs);
+    }
+
+    public function test_getActiveSteps_hides_safeguarding_when_community_has_no_options(): void
+    {
+        // The step is switched on (the default), but the community has never
+        // set up any safeguarding questions. Members must not be shown an
+        // empty "Safeguarding" step that says nothing has been configured.
+        DB::table('tenant_safeguarding_options')->where('tenant_id', $this->testTenantId)->delete();
+
+        $slugs = array_column(OnboardingConfigService::getActiveSteps($this->testTenantId), 'slug');
+
+        $this->assertNotContains('safeguarding', $slugs);
+        $this->assertContains('confirm', $slugs);
+    }
+
+    public function test_getActiveSteps_hides_safeguarding_when_every_option_is_inactive(): void
+    {
+        DB::table('tenant_safeguarding_options')->where('tenant_id', $this->testTenantId)->delete();
+        $this->seedSafeguardingOption(isActive: false);
+
+        $slugs = array_column(OnboardingConfigService::getActiveSteps($this->testTenantId), 'slug');
+
+        $this->assertNotContains('safeguarding', $slugs);
+    }
+
+    public function test_validateCompletion_does_not_demand_safeguarding_when_community_has_no_options(): void
+    {
+        DB::table('tenant_safeguarding_options')->where('tenant_id', $this->testTenantId)->delete();
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_safeguarding_required'],
+            ['setting_value' => '1', 'setting_type' => 'boolean']
+        );
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'avatar_url' => 'https://example.com/photo.jpg',
+            'bio' => 'A bio that is long enough to pass validation easily.',
+        ]);
+        TenantContext::setById($this->testTenantId);
+
+        $unmet = OnboardingConfigService::validateCompletion($this->testTenantId, $user->id);
+
+        $this->assertNotContains('safeguarding_required', $unmet);
+    }
+
+    private function seedSafeguardingOption(bool $isActive = true): void
+    {
+        DB::table('tenant_safeguarding_options')->insert([
+            'tenant_id' => $this->testTenantId,
+            'option_key' => 'test_option_' . bin2hex(random_bytes(4)),
+            'option_type' => 'checkbox',
+            'label' => 'Test safeguarding option',
+            'is_active' => $isActive ? 1 : 0,
+        ]);
     }
 
     public function test_getActiveSteps_excludes_disabled_steps(): void
