@@ -245,8 +245,14 @@ echo "$STAGED_TESTS" | sed 's/^/  - /'
 # phpunit.xml already declares (see AGENTS.md).
 # BROADCAST_CONNECTION: routes/channels.php resolves the default broadcaster at
 # route load and the pusher driver throws on a null key.
+# MAIL_HOST: the platform Mailer ignores MAIL_MAILER=array and connects to
+# MAIL_HOST for every email. The container's .env names `mailhog`, which does
+# not exist locally, so any staged test that sends mail (e.g. creating a
+# listing in RegistrationOnboardingTest) sat in a network wait indefinitely
+# and the commit never finished (2026-10-02).
 docker exec \
   -e MAIL_MAILER=array \
+  -e MAIL_HOST=127.0.0.1 \
   -e BROADCAST_CONNECTION=null \
   -e APP_KEY="base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=" \
   "$CONTAINER" php vendor/bin/phpunit --no-coverage --stop-on-failure $STAGED_TESTS
