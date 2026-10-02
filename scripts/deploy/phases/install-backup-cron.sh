@@ -18,8 +18,14 @@
 # night is harmless anyway (the dump filename is date-stamped and overwritten),
 # but flock keeps it clean.
 #
+# Also writes /etc/cron.d/nexus-restore-drill so restore-drill.sh runs at
+# 04:00 on the 1st of every month (F-123). Before this, the drill's schedule
+# existed only as a comment in its header, so nothing guaranteed it ran.
+#
 # Non-fatal: a failure here must never abort a deploy (the deploy script calls
 # it with `|| log_warn`). Modelled on install-prerender-cron.sh.
+#
+# Tests: scripts/test/test-install-backup-cron.sh
 # =============================================================================
 
 set -euo pipefail
@@ -30,6 +36,9 @@ LOG_DIR="${BACKUP_LOG_DIR:-$DEPLOY_DIR/logs}"
 BACKUP_SCRIPT="$DEPLOY_DIR/scripts/server-nightly-backup.sh"
 BACKUP_SCHEDULE="${BACKUP_CRON_SCHEDULE:-0 2 * * *}"
 LOCK_FILE="${BACKUP_LOCK_FILE:-$DEPLOY_DIR/.db-backup.lock}"
+DRILL_CRON_FILE="${DRILL_CRON_FILE:-/etc/cron.d/nexus-restore-drill}"
+DRILL_SCRIPT="$DEPLOY_DIR/scripts/restore-drill.sh"
+DRILL_SCHEDULE="${DRILL_CRON_SCHEDULE:-0 4 1 * *}"
 
 log() { echo "[$(date -Is)] install-backup-cron: $*"; }
 
@@ -53,9 +62,29 @@ if ! ls "$BACKUP_OUT_DIR"/nexus_db_*.sql.gz >/dev/null 2>&1; then
     nohup flock -n "$LOCK_FILE" bash "$BACKUP_SCRIPT" >> "$LOG_DIR/db-backup.log" 2>&1 &
 fi
 
-# Cron files in /etc/cron.d need a trailing newline and 0644 perms. flock -n
-# skips a run if a prior backup is still in flight (or a manual crontab entry
-# fired at the same time).
+# Cron files in /etc/cron.d need a trailing newline, root:root and 0644.
+# install_cron_file FILE CONTENT — rewrites only when the content differs.
+install_cron_file() {
+    local file="$1" desired="$2" tmp
+    if [ -f "$file" ] && [ "$(cat "$file")" = "$desired" ]; then
+        log "Cron file already up-to-date: $file"
+        return 0
+    fi
+    tmp=$(mktemp)
+    printf '%s\n' "$desired" > "$tmp"
+    if [ "$(id -u)" != "0" ]; then
+        sudo install -o root -g root -m 0644 "$tmp" "$file"
+    else
+        install -o root -g root -m 0644 "$tmp" "$file"
+    fi
+    rm -f "$tmp"
+    log "Installed cron at $file"
+}
+
+mkdir -p "$LOG_DIR"
+
+# flock -n skips a run if a prior backup is still in flight (or a manual
+# crontab entry fired at the same time).
 read -r -d '' DESIRED <<EOF || true
 # Project NEXUS — nightly database/uploads/storage backup (auto-installed by deploy)
 # Edits to this file are overwritten on every deploy. Source of truth:
@@ -67,27 +96,24 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 $BACKUP_SCHEDULE root flock -n $LOCK_FILE bash $BACKUP_SCRIPT >> $LOG_DIR/db-backup.log 2>&1
 EOF
+install_cron_file "$CRON_FILE" "$DESIRED"
 
-# Idempotency: only rewrite if content differs.
-if [ -f "$CRON_FILE" ] && [ "$(cat "$CRON_FILE")" = "$DESIRED" ]; then
-    log "Cron file already up-to-date: $CRON_FILE"
-    exit 0
-fi
+if [ -f "$DRILL_SCRIPT" ]; then
+    read -r -d '' DRILL_DESIRED <<EOF || true
+# Project NEXUS — monthly restore drill of the encrypted offsite backup (auto-installed by deploy)
+# Edits to this file are overwritten on every deploy. Source of truth:
+#   scripts/deploy/phases/install-backup-cron.sh
+# The drill reports every result to Telegram; see scripts/restore-drill.sh.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-mkdir -p "$LOG_DIR"
-TMP=$(mktemp)
-printf '%s\n' "$DESIRED" > "$TMP"
-
-# /etc/cron.d entries must be owned by root:root and 0644.
-if [ "$(id -u)" != "0" ]; then
-    sudo install -o root -g root -m 0644 "$TMP" "$CRON_FILE"
+$DRILL_SCHEDULE root bash $DRILL_SCRIPT >> $LOG_DIR/restore-drill.log 2>&1
+EOF
+    install_cron_file "$DRILL_CRON_FILE" "$DRILL_DESIRED"
 else
-    install -o root -g root -m 0644 "$TMP" "$CRON_FILE"
+    log "WARN: $DRILL_SCRIPT not present — skipping restore drill cron install"
 fi
-rm -f "$TMP"
 
 # Most modern distros pick up /etc/cron.d/* automatically — touching the dir is
 # a harmless nudge for implementations that need it.
 touch /etc/cron.d 2>/dev/null || true
-
-log "Installed cron at $CRON_FILE (schedule: $BACKUP_SCHEDULE)"
