@@ -890,8 +890,11 @@ class ExploreService
             }
 
             // ─── Fetch listing details for all candidates ───
+            // The member's own listings are excluded here, not per source:
+            // collaborative filtering's popular-listings fallback can return
+            // them.
             $placeholders = implode(',', array_fill(0, count($allCandidateIds), '?'));
-            $params = array_merge([$tenantId, $tenantId], $allCandidateIds);
+            $params = array_merge([$tenantId, $tenantId, $userId], $allCandidateIds);
             $rows = DB::select("
                 SELECT
                     l.id, l.title, l.type, l.image_url, l.location, l.category_id,
@@ -906,7 +909,7 @@ class ExploreService
                 FROM listings l
                 LEFT JOIN categories cat ON cat.id = l.category_id
                 JOIN users u ON u.id = l.user_id AND u.tenant_id = ? AND u.status = 'active'
-                WHERE l.tenant_id = ? AND l.status = 'active' AND l.id IN ({$placeholders})
+                WHERE l.tenant_id = ? AND l.status = 'active' AND l.user_id != ? AND l.id IN ({$placeholders})
             ", $params);
 
             // ─── Score each candidate using blended signals ───

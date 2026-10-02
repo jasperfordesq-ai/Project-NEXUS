@@ -12,6 +12,7 @@ use App\Services\ExploreService;
 use App\Services\MatchLearningService;
 use App\Services\SmartMatchingEngine;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
 
@@ -121,9 +122,30 @@ class ExploreSkillRecommendationsTest extends TestCase
 
         $recs = $this->recommended();
 
-        $this->assertArrayNotHasKey($request, $recs);
+        // A request may still be recommended by another source (the
+        // popular-listings fallback), just never as an offer of help.
+        $this->assertNotSame(
+            __('api.explore.reason_offers_what_you_need'),
+            $recs[$request]['match_reason'] ?? null
+        );
         $this->assertArrayNotHasKey($own, $recs);
         $this->assertArrayNotHasKey($elsewhere, $recs);
+    }
+
+    public function test_the_members_own_listing_is_never_recommended_whichever_source_suggests_it(): void
+    {
+        // Collaborative filtering falls back to the tenant's popular
+        // listings, which can include the member's own. This failed CI on
+        // 2026-10-02, where the test database is small enough for a new
+        // listing to rank as "popular".
+        $own = $this->listing($this->memberId, 'My own offer', 'offer');
+        $other = $this->listing($this->neighbourId, 'A neighbour offer', 'offer');
+        Cache::put("cf_uu_listings_{$this->testTenantId}_{$this->memberId}_10", [$own, $other], 60);
+
+        $recs = $this->recommended();
+
+        $this->assertArrayHasKey($other, $recs);
+        $this->assertArrayNotHasKey($own, $recs);
     }
 
     public function test_an_offered_skill_brings_up_listings_tagged_with_it(): void
