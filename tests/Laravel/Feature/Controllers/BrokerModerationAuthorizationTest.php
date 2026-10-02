@@ -428,12 +428,23 @@ class BrokerModerationAuthorizationTest extends TestCase
         $this->apiDelete("/v2/admin/feed/revoke-announcer/{$target->id}")->assertStatus(403);
     }
 
-    public function test_broker_cannot_read_or_update_moderation_settings(): void
+    public function test_broker_can_read_and_update_moderation_settings(): void
     {
+        // F-543 (owner decision, 2 Oct 2026): the settings panel is part of the
+        // broker panel's Content Queue page, and brokers have the whole panel.
         Sanctum::actingAs($this->broker());
 
+        $this->apiGet('/v2/admin/moderation/settings')->assertStatus(200);
+        $this->apiPut('/v2/admin/moderation/settings', ['require_post' => true])->assertStatus(200);
+        $this->assertTrue((bool) $this->apiGet('/v2/admin/moderation/settings')->json('data.require_post'));
+    }
+
+    public function test_a_plain_member_still_cannot_read_or_update_moderation_settings(): void
+    {
+        Sanctum::actingAs($this->member());
+
         $this->apiGet('/v2/admin/moderation/settings')->assertStatus(403);
-        $this->apiPut('/v2/admin/moderation/settings', ['auto_flag' => false])->assertStatus(403);
+        $this->apiPut('/v2/admin/moderation/settings', ['require_post' => true])->assertStatus(403);
     }
 
     // ================================================================

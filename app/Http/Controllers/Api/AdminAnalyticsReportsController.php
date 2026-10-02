@@ -722,7 +722,7 @@ class AdminAnalyticsReportsController extends BaseApiController
     /** GET /v2/admin/moderation/settings */
     public function moderationSettings(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireBrokerOrAdmin(); // F-543
         $tenantId = TenantContext::getId();
 
         $settings = $this->contentModerationService->getModerationSettings($tenantId);
@@ -733,7 +733,7 @@ class AdminAnalyticsReportsController extends BaseApiController
     /** PUT /v2/admin/moderation/settings */
     public function updateModerationSettings(): JsonResponse
     {
-        $this->requireAdmin();
+        $this->requireBrokerOrAdmin(); // F-543
         $tenantId = TenantContext::getId();
 
         // Allowlist matches ContentModerationService::updateSettings() accepted keys.

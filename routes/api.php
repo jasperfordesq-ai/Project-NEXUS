@@ -3907,16 +3907,18 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/v2/admin/members/inactive', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'inactiveMembers']);
     Route::post('/v2/admin/members/inactive/detect', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'detectInactive']);
     Route::post('/v2/admin/members/inactive/notify', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'markInactiveNotified']);
-    // Moderation SETTINGS stay admin-only — tenant moderation policy, same
-    // precedent as matching configuration.
-    Route::get('/v2/admin/moderation/settings', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'moderationSettings']);
-    Route::put('/v2/admin/moderation/settings', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'updateModerationSettings']);
 });
 // Broker-or-admin: the content moderation queue lives in the broker panel
 // (/broker/moderation/queue) since 2026-07-02. The controller adds a
 // self-dealing guard (a broker cannot review their own queued content).
 // See BrokerModerationAuthorizationTest.
 Route::middleware(['auth:sanctum', 'broker-or-admin'])->group(function () {
+    // F-543: the moderation settings panel is part of the broker panel's
+    // Content Queue page (owner decision, 2 Oct 2026: brokers have the whole
+    // broker panel). Until then they were admin-only and brokers saw blank
+    // switches whose save was refused.
+    Route::get('/v2/admin/moderation/settings', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'moderationSettings']);
+    Route::put('/v2/admin/moderation/settings', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'updateModerationSettings']);
     Route::get('/v2/admin/moderation/queue', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'moderationQueue']);
     Route::post('/v2/admin/moderation/{id}/review', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'moderationReview'])->middleware('throttle:nexus-route-60-per-1m');
     Route::get('/v2/admin/moderation/stats', [\App\Http\Controllers\Api\AdminAnalyticsReportsController::class, 'moderationStats']);
