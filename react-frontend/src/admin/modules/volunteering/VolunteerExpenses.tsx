@@ -353,6 +353,12 @@ export function VolunteerExpenses() {
         loadData();
       } else {
         toast.error(res.error || t('volunteering.failed_to_update_expense'));
+        // Someone else moved this claim on since the list loaded: the choices in
+        // the dialog are stale, so close it and show the claim as it now stands.
+        if (res.code === 'INVALID_STATE') {
+          setReviewModal(false);
+          loadData();
+        }
       }
     } catch {
       toast.error(t('volunteering.failed_to_update_expense'));

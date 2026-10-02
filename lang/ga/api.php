@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'Ní mór stádas athbhreithnithe a bheith ‘faofa’ nó ‘diúltaithe’.',
     'vol_expense_policy_not_found' => 'Níor aimsíodh polasaí caiteachais.',
     'vol_expense_review_own_forbidden' => 'Ní féidir leat do chostas féin a athbhreithniú.',
+    'vol_expense_not_pending' => 'Rinneadh athbhreithniú ar an gcostas seo cheana, mar sin ní féidir é a cheadú ná a dhiúltú arís.',
+    'vol_expense_not_approved' => 'Ní féidir ach costas ceadaithe a mharcáil mar íoctha.',
     'vol_project_title_required' => 'Tá teideal ag teastáil.',
     'vol_project_description_required' => 'Tá cur síos ag teastáil.',
     'vol_project_proposed_date_invalid' => 'Caithfidh an dáta molta a bheith ina dháta bailí (BBBB-MM-DD).',

@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'Lo stato della revisione deve essere "approvato" o "rifiutato".',
     'vol_expense_policy_not_found' => 'Polizza spese non trovata.',
     'vol_expense_review_own_forbidden' => 'Non è possibile rivedere le proprie spese.',
+    'vol_expense_not_pending' => 'Questa spesa è già stata esaminata, quindi non può essere approvata o respinta di nuovo.',
+    'vol_expense_not_approved' => 'Solo una spesa approvata può essere contrassegnata come pagata.',
     'vol_project_title_required' => 'Il titolo è obbligatorio.',
     'vol_project_description_required' => 'La descrizione è obbligatoria.',
     'vol_project_proposed_date_invalid' => 'La data proposta deve essere una data valida (AAAA-MM-GG).',

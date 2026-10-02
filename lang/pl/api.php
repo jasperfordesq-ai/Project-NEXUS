@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'Status recenzji musi być „zatwierdzony” lub „odrzucony”.',
     'vol_expense_policy_not_found' => 'Nie znaleziono zasad dotyczących wydatków.',
     'vol_expense_review_own_forbidden' => 'Nie możesz przeglądać swoich własnych wydatków.',
+    'vol_expense_not_pending' => 'Ten wydatek został już rozpatrzony, więc nie można go ponownie zatwierdzić ani odrzucić.',
+    'vol_expense_not_approved' => 'Jako opłacony można oznaczyć tylko zatwierdzony wydatek.',
     'vol_project_title_required' => 'Tytuł jest wymagany.',
     'vol_project_description_required' => 'Opis jest wymagany.',
     'vol_project_proposed_date_invalid' => 'Proponowana data musi być prawidłową datą (RRRR-MM-DD).',

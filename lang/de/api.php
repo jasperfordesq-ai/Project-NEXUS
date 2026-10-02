@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'Der Bewertungsstatus muss „Genehmigt“ oder „Abgelehnt“ sein.',
     'vol_expense_policy_not_found' => 'Spesenrichtlinie nicht gefunden.',
     'vol_expense_review_own_forbidden' => 'Sie können Ihre eigenen Ausgaben nicht überprüfen.',
+    'vol_expense_not_pending' => 'Diese Ausgabe wurde bereits geprüft und kann daher nicht erneut genehmigt oder abgelehnt werden.',
+    'vol_expense_not_approved' => 'Nur eine genehmigte Ausgabe kann als bezahlt markiert werden.',
     'vol_project_title_required' => 'Titel ist erforderlich.',
     'vol_project_description_required' => 'Beschreibung ist erforderlich.',
     'vol_project_proposed_date_invalid' => 'Das vorgeschlagene Datum muss ein gültiges Datum sein (JJJJ-MM-TT).',

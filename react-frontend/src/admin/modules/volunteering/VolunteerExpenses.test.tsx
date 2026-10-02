@@ -454,6 +454,26 @@ describe('VolunteerExpenses', () => {
     });
   });
 
+  it('refreshes the list when the claim was already handled by someone else', async () => {
+    mockAdminVolunteering.reviewExpense.mockResolvedValue({
+      success: false,
+      code: 'INVALID_STATE',
+      error: 'This expense has already been reviewed, so it cannot be approved or rejected again.',
+    });
+    const dialog = await openReviewFor(makeExpense({ id: 7, status: 'pending' }));
+    const loadsBefore = mockAdminVolunteering.getExpenses.mock.calls.length;
+    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
+      /^\s*approve\s*$/i.test(b.textContent ?? ''),
+    );
+    fireEvent.click(confirmBtn!);
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'This expense has already been reviewed, so it cannot be approved or rejected again.',
+      );
+      expect(mockAdminVolunteering.getExpenses.mock.calls.length).toBeGreaterThan(loadsBefore);
+    });
+  });
+
   it('renders policies section heading', async () => {
     mockAdminVolunteering.getExpensePolicies.mockResolvedValue({
       success: true,

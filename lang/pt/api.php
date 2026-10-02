@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'O status da revisão deve ser \'aprovado\' ou \'rejeitado\'.',
     'vol_expense_policy_not_found' => 'Política de despesas não encontrada.',
     'vol_expense_review_own_forbidden' => 'Você não pode revisar suas próprias despesas.',
+    'vol_expense_not_pending' => 'Esta despesa já foi analisada, por isso não pode ser aprovada nem rejeitada novamente.',
+    'vol_expense_not_approved' => 'Apenas uma despesa aprovada pode ser marcada como paga.',
     'vol_project_title_required' => 'O título é obrigatório.',
     'vol_project_description_required' => 'A descrição é obrigatória.',
     'vol_project_proposed_date_invalid' => 'A data proposta deve ser uma data válida (AAAA-MM-DD).',

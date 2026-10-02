@@ -2888,6 +2888,8 @@ return [
     'vol_expense_review_status_invalid' => "Review status must be 'approved' or 'rejected'.",
     'vol_expense_policy_not_found' => 'Expense policy not found.',
     'vol_expense_review_own_forbidden' => 'You cannot review your own expense.',
+    'vol_expense_not_pending' => 'This expense has already been reviewed, so it cannot be approved or rejected again.',
+    'vol_expense_not_approved' => 'Only an approved expense can be marked as paid.',
     'guardian_name_required' => 'Guardian name is required.',
     'guardian_email_required' => 'Guardian email is required.',
     'guardian_relationship_required' => 'Relationship is required.',

@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'يجب أن تكون حالة المراجعة "موافق عليها" أو "مرفوضة".',
     'vol_expense_policy_not_found' => 'لم يتم العثور على سياسة النفقات.',
     'vol_expense_review_own_forbidden' => 'لا يمكنك مراجعة نفقتك الخاصة.',
+    'vol_expense_not_pending' => 'تمت مراجعة هذه النفقة بالفعل، لذا لا يمكن الموافقة عليها أو رفضها مرة أخرى.',
+    'vol_expense_not_approved' => 'لا يمكن وضع علامة "مدفوعة" إلا على نفقة تمت الموافقة عليها.',
     'vol_project_title_required' => 'العنوان مطلوب.',
     'vol_project_description_required' => 'الوصف مطلوب.',
     'vol_project_proposed_date_invalid' => 'يجب أن يكون التاريخ المقترح تاريخًا صالحًا (YYYY-MM-DD).',

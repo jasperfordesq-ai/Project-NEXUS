@@ -223,7 +223,23 @@ class VolunteerExpenseControllerTest extends TestCase
         ]);
 
         $response->assertStatus(409);
+        $this->assertSame('INVALID_STATE', $response->json('errors.0.code'));
+        $this->assertSame(__('api.vol_expense_not_pending'), $response->json('errors.0.message'));
         $this->assertSame('approved', VolExpense::query()->whereKey($expense->id)->value('status'));
+
+        // Paying a claim that is not approved names that rule instead.
+        $pending = VolExpense::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $volunteer->id,
+            'organization_id' => $org->id,
+            'opportunity_id' => null,
+            'status' => 'pending',
+            'amount' => 5,
+            'submitted_at' => now(),
+        ]);
+        $paid = $this->apiPut("/v2/admin/volunteering/expenses/{$pending->id}", ['status' => 'paid']);
+        $paid->assertStatus(409);
+        $this->assertSame(__('api.vol_expense_not_approved'), $paid->json('errors.0.message'));
+        $this->assertSame('pending', VolExpense::query()->whereKey($pending->id)->value('status'));
     }
 
     public function test_review_expense_that_does_not_exist_is_404(): void

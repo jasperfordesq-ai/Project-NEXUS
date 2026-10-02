@@ -2272,6 +2272,8 @@ return [
     'vol_expense_review_status_invalid' => 'El estado de la revisión debe ser "aprobado" o "rechazado".',
     'vol_expense_policy_not_found' => 'Política de gastos no encontrada.',
     'vol_expense_review_own_forbidden' => 'No puede revisar sus propios gastos.',
+    'vol_expense_not_pending' => 'Este gasto ya ha sido revisado, por lo que no se puede aprobar ni rechazar de nuevo.',
+    'vol_expense_not_approved' => 'Solo un gasto aprobado se puede marcar como pagado.',
     'vol_project_title_required' => 'Se requiere título.',
     'vol_project_description_required' => 'Se requiere descripción.',
     'vol_project_proposed_date_invalid' => 'La fecha propuesta debe ser una fecha válida (AAAA-MM-DD).',
