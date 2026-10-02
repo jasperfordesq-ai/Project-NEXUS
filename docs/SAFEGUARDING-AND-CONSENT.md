@@ -67,7 +67,8 @@ safeguarding screens, and a guardian cannot grant themselves tiers on one.
 
 - **Created by staff, not by members.** `POST /v2/admin/safeguarding/assignments`,
   gated by `AdminSafeguardingController::requireSafeguardingStaff('manage')`, which
-  admits admin tiers, `broker`, and holders of the `safeguarding.manage` permission.
+  admits admin tiers, `broker`, `coordinator`, and holders of the `safeguarding.manage`
+  permission (brokers and coordinators by role since 2 October 2026, F-542).
   A member cannot create one.
 - **Consent belongs to the ward.** The ward sees their own arrangements at
   `GET /v2/safeguarding/my-guardians` and consents at

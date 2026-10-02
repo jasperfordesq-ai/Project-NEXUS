@@ -37,13 +37,26 @@ Brokers are deliberately refused the generic `/v2/admin/*` surface (tenant
 settings, federation controls, tenant CRUD). They get their own routes and their
 own application.
 
+**Every function of the broker application works for a broker** (owner decision,
+2 October 2026). Where a broker page reuses an admin endpoint — safeguarding,
+moderation settings, member notes, the vetting jurisdiction — that endpoint
+admits `broker` (and, except for vetting decisions, `coordinator`) by role, with
+no individual permission grant. If you add an endpoint to a broker page, put it in
+the `broker-or-admin` route group and use `requireBrokerOrAdmin()` (or
+`requireVettingDecisionMaker()` for vetting). The self-interest guards still
+apply: a broker cannot act on a record about themselves or about someone they do
+not outrank.
+
 ### What each tier adds
 
 - **Member** — their own content, their own exchanges, their own wallet.
 - **Broker / coordinator** — the community-operations role: approve members,
-  moderate listings and content, approve exchanges that need broker sign-off,
-  manage safeguarding assignments and vetting attestations, adjust a member's
-  balance. Scoped to one tenant.
+  moderate listings and content and the content-queue settings, approve
+  exchanges that need broker sign-off, see members' safeguarding preferences and
+  the flagged-message queue, manage safeguarding assignments, support and
+  authority attestations and vetting (brokers also set the vetting
+  jurisdiction; coordinators make no vetting decisions), keep member notes,
+  adjust a member's balance. Scoped to one tenant.
 - **Administrator** — everything a broker can do, plus tenant configuration:
   module and feature flags, categories, legal documents, registration policy,
   pages and branding. Scoped to one tenant. Cannot move users between tenants or
@@ -168,7 +181,7 @@ Permission slugs that are genuinely enforced in code today:
 
 | Slug | Enforced in |
 |---|---|
-| `safeguarding.manage`, `safeguarding.view` | `AdminSafeguardingController`, `CaringCommunity\SafeguardingService` |
+| `safeguarding.manage`, `safeguarding.view` | `CaringCommunity\SafeguardingService`, `AdminSafeguardingController` (for accounts that are neither admin tier nor broker/coordinator — those pass by role). No screen can grant either today. |
 | `volunteering.hours.review` | `VolunteerService` |
 | `national.kiss_dashboard.view` | `Admin/NationalKissDashboardController` |
 | `verein.members.import` | `EnsureIsAdmin` (the one permission-based bypass of the admin gate), `AdminCaringCommunityController` |

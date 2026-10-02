@@ -654,6 +654,12 @@ Summary, because getting this wrong is common:
   **deliberately returns `false` for `broker`/`coordinator`** — a broker is an
   operational role with its own application (`react-frontend/src/broker/`), not a
   lesser admin, and is deliberately refused generic `/v2/admin/*`.
+- 🔴 **But every function of the broker application must work for a broker**
+  (owner, 2 Oct 2026). An admin endpoint a broker page calls belongs in the
+  `broker-or-admin` route group with `requireBrokerOrAdmin()` — never "admins plus
+  an individual permission grant": no screen can issue one, and that exact change
+  (`07860e414`) left every broker's Safeguarding page empty for eight weeks
+  (F-542). Self-interest guards still apply.
 - Gates: `EnsureIsBrokerOrAdmin`, `EnsureIsAdmin`, `EnsureIsSuperAdmin`.
   `EnsureIsSuperAdmin` deliberately rejects `is_tenant_super_admin`.
 - Cross-tenant scoping in the super-admin panel is `app/Core/SuperPanelAccess.php`:
