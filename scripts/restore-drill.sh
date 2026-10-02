@@ -212,9 +212,12 @@ rm -f "$BACKUP_FILE"
 success "Restore complete"
 
 # 5. Sanity check — assert critical tables exist + row counts are sane vs live
-DB_USER="$(grep -E '^DB_(USERNAME|USER)=' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')"
-DB_PASS="$(grep -E '^DB_(PASSWORD|PASS)=' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')"
-DB_NAME="$(grep -E '^DB_(DATABASE|NAME)=' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '"')"
+# grep -m1, not `| head -1`: with pipefail an .env holding both spellings of a
+# key can SIGPIPE grep, which the ERR trap would report as a failed drill.
+env_value() { grep -m1 -E "^$1=" "$ENV_FILE" | cut -d= -f2- | tr -d "\"\r"; }
+DB_USER="$(env_value 'DB_(USERNAME|USER)')"
+DB_PASS="$(env_value 'DB_(PASSWORD|PASS)')"
+DB_NAME="$(env_value 'DB_(DATABASE|NAME)')"
 
 count_drill() {
     MYSQL_PWD="$DRILL_PASS" docker exec -e MYSQL_PWD "$DRILL_CONTAINER" \
