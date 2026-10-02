@@ -576,7 +576,12 @@
     "paid_title": "Rimborso elaborato",
     "paid_body": "La tua spesa di <strong>{{amount}} {{currency}}</strong> per <strong>{{type}}</strong> è stata pagata.",
     "paid_ref_label": "Riferimento pagamento",
-    "paid_cta": "Visualizza spesa"
+    "paid_cta": "Visualizza spesa",
+    "new_claim_subject": "Nuova richiesta di rimborso — {{organisation}}",
+    "new_claim_title": "Nuova richiesta di rimborso",
+    "new_claim_body": "<strong>{{volunteer}}</strong> ha chiesto il rimborso di <strong>{{amount}} {{currency}}</strong> per <strong>{{type}}</strong> a <strong>{{organisation}}</strong>. Ti preghiamo di esaminarla.",
+    "new_claim_bell": "{{volunteer}} ha inviato una richiesta di rimborso di {{amount}} {{currency}} a {{organisation}}",
+    "new_claim_cta": "Esamina la richiesta"
   },
   "listing_moderation": {
     "approved_subject": "Il tuo annuncio è stato approvato — {{title}}",

@@ -182,6 +182,7 @@ class VolunteerExpenseService
             throw new \RuntimeException(__('api.too_many_attempts'), 429);
         }
 
+        $created = false;
         try {
             // Validate against expense policy
             $policy = self::getApplicablePolicy($tenantId, $organizationId, $data['expense_type']);
@@ -249,6 +250,7 @@ class VolunteerExpenseService
                 'status' => 'pending',
                 'submitted_at' => now(),
             ]);
+            $created = true;
         } catch (\Illuminate\Database\QueryException $e) {
             if ($keyHash === null) {
                 throw $e;
@@ -265,7 +267,128 @@ class VolunteerExpenseService
             $capLock->release();
         }
 
-        return self::getExpense($expense->id) ?? [];
+        $result = self::getExpense($expense->id) ?? [];
+
+        // Only the request that created the claim tells the organisation; an
+        // idempotent replay or the loser of a duplicate race must not re-notify.
+        if ($created && $result !== []) {
+            self::notifyOrganisationOfNewClaim($result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Whether the user may review this organisation's expense claims: the
+     * organisation's creator, or an active owner/admin member of it.
+     *
+     * Deliberately narrower than VolunteerController::ensureOrgAccess(), which
+     * also admits community administrators: they review on the admin screen, and
+     * marking a claim paid belongs to the organisation alone (owner decision,
+     * 2 October 2026). Mirrors the reviewer rule VolunteerService::verifyHours uses.
+     */
+    public static function isOrganisationAdmin(int $tenantId, int $userId, int $organizationId): bool
+    {
+        $org = DB::table('vol_organizations')
+            ->where('id', $organizationId)
+            ->where('tenant_id', $tenantId)
+            ->first(['user_id']);
+
+        if (!$org) {
+            return false;
+        }
+        if ((int) $org->user_id === $userId) {
+            return true;
+        }
+
+        return DB::table('org_members')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
+            ->where('org_type', 'volunteer')
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->whereIn('role', ['owner', 'admin'])
+            ->exists();
+    }
+
+    /**
+     * Bell, push and email to every organisation admin (creator plus active
+     * owner/admin members) when a claim arrives, each in their own language.
+     * The claimant is never notified about their own claim.
+     */
+    private static function notifyOrganisationOfNewClaim(array $expense): void
+    {
+        try {
+            $tenantId = TenantContext::getId();
+            $organizationId = (int) ($expense['organization_id'] ?? 0);
+            $claimantId = (int) ($expense['user_id'] ?? 0);
+
+            $creatorId = (int) DB::table('vol_organizations')
+                ->where('id', $organizationId)
+                ->where('tenant_id', $tenantId)
+                ->value('user_id');
+
+            $adminIds = DB::table('org_members')
+                ->where('tenant_id', $tenantId)
+                ->where('organization_id', $organizationId)
+                ->where('org_type', 'volunteer')
+                ->where('status', 'active')
+                ->whereIn('role', ['owner', 'admin'])
+                ->pluck('user_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $recipientIds = array_values(array_unique(array_filter(
+                array_merge([$creatorId], $adminIds),
+                fn ($id) => $id > 0 && $id !== $claimantId
+            )));
+            if ($recipientIds === []) {
+                return;
+            }
+
+            $recipients = DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('id', $recipientIds)
+                ->get(['id', 'email', 'first_name', 'name', 'preferred_language']);
+
+            $link = '/volunteering/org/' . $organizationId . '/dashboard?tab=expenses';
+            $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
+            $volunteerName = (string) ($expense['volunteer_name'] ?? '') !== ''
+                ? (string) $expense['volunteer_name']
+                : UserDisplayName::resolve($expense);
+            $params = [
+                'volunteer' => $volunteerName,
+                'amount' => number_format((float) ($expense['amount'] ?? 0), 2),
+                'currency' => $expense['currency'] ?? strtoupper(TenantContext::getCurrency()),
+                'type' => $expense['expense_type'] ?? '',
+                'organisation' => $expense['organization_name'] ?? '',
+            ];
+
+            foreach ($recipients as $recipient) {
+                LocaleContext::withLocale($recipient, function () use ($recipient, $params, $link, $fullUrl, $tenantId) {
+                    $bell = __('emails_misc.expense.new_claim_bell', $params);
+                    \App\Models\Notification::createNotification((int) $recipient->id, $bell, $link, 'vol_expense_submitted');
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $recipient->id, 'vol_expense_submitted', $bell, $link);
+
+                    if (empty($recipient->email)) {
+                        return;
+                    }
+                    $escaped = array_map(fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'), $params);
+                    $html = EmailTemplateBuilder::make()
+                        ->title(__('emails_misc.expense.new_claim_title'))
+                        ->greeting($recipient->first_name ?? $recipient->name ?? __('emails.common.fallback_name'))
+                        ->paragraph(__('emails_misc.expense.new_claim_body', $escaped))
+                        ->button(__('emails_misc.expense.new_claim_cta'), $fullUrl)
+                        ->render();
+                    if (!\App\Services\EmailDispatchService::sendRaw($recipient->email, __('emails_misc.expense.new_claim_subject', $params), $html, null, null, null, 'volunteer_expense', ['tenant_id' => $tenantId])) {
+                        Log::warning('[VolunteerExpenseService] new claim email failed', ['user_id' => $recipient->id]);
+                    }
+                });
+            }
+        } catch (\Throwable $e) {
+            // A notification failure must not undo a claim that was saved.
+            Log::warning('[VolunteerExpenseService] new claim notification error: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -413,9 +536,10 @@ class VolunteerExpenseService
      * @param int $reviewerId The admin/org-admin reviewing
      * @param string $status 'approved' or 'rejected'
      * @param string|null $notes Optional reviewer notes
+     * @param int|null $organizationId When set, only a claim made to this organisation is touched
      * @return bool
      */
-    public static function reviewExpense(int $id, int $reviewerId, string $status, ?string $notes = null): bool
+    public static function reviewExpense(int $id, int $reviewerId, string $status, ?string $notes = null, ?int $organizationId = null): bool
     {
         if (!in_array($status, ['approved', 'rejected'], true)) {
             throw new \InvalidArgumentException(__('api.vol_expense_review_status_invalid'));
@@ -429,6 +553,7 @@ class VolunteerExpenseService
 
         $affected = VolExpense::where('id', $id)
             ->where('tenant_id', TenantContext::getId())
+            ->when($organizationId !== null, fn ($q) => $q->where('organization_id', $organizationId))
             ->where('status', 'pending')
             ->update([
                 'status' => $status,
@@ -486,12 +611,20 @@ class VolunteerExpenseService
      * @param int $id Expense ID
      * @param int $adminId Admin who processed payment
      * @param string|null $paymentReference Optional payment reference/transaction ID
+     * @param int|null $organizationId When set, only a claim made to this organisation is touched
      * @return bool
      */
-    public static function markPaid(int $id, int $adminId, ?string $paymentReference = null): bool
+    public static function markPaid(int $id, int $adminId, ?string $paymentReference = null, ?int $organizationId = null): bool
     {
+        // Nobody records payment of their own claim.
+        $expense = VolExpense::where('tenant_id', TenantContext::getId())->find($id);
+        if ($expense && (int) $expense->user_id === $adminId) {
+            throw new \InvalidArgumentException(__('api.vol_expense_review_own_forbidden'));
+        }
+
         $affected = VolExpense::where('id', $id)
             ->where('tenant_id', TenantContext::getId())
+            ->when($organizationId !== null, fn ($q) => $q->where('organization_id', $organizationId))
             ->where('status', 'approved')
             ->update([
                 'status' => 'paid',

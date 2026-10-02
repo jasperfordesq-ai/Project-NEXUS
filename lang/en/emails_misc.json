@@ -576,7 +576,12 @@
     "paid_title": "Reimbursement Processed",
     "paid_body": "Your expense of <strong>{{amount}} {{currency}}</strong> for <strong>{{type}}</strong> has been paid.",
     "paid_ref_label": "Payment reference",
-    "paid_cta": "View Expense"
+    "paid_cta": "View Expense",
+    "new_claim_subject": "New expense claim — {{organisation}}",
+    "new_claim_title": "New expense claim",
+    "new_claim_body": "<strong>{{volunteer}}</strong> has claimed <strong>{{amount}} {{currency}}</strong> for <strong>{{type}}</strong> from <strong>{{organisation}}</strong>. Please review it.",
+    "new_claim_bell": "{{volunteer}} submitted an expense claim of {{amount}} {{currency}} to {{organisation}}",
+    "new_claim_cta": "Review claim"
   },
   "listing_moderation": {
     "approved_subject": "Your listing has been approved — {{title}}",

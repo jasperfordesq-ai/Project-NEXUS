@@ -576,7 +576,12 @@
     "paid_title": "Reembolso procesado",
     "paid_body": "Tu gasto de <strong>{{amount}} {{currency}}</strong> para <strong>{{type}}</strong> ha sido pagado.",
     "paid_ref_label": "Referencia del pago",
-    "paid_cta": "Ver gasto"
+    "paid_cta": "Ver gasto",
+    "new_claim_subject": "Nueva solicitud de gastos — {{organisation}}",
+    "new_claim_title": "Nueva solicitud de gastos",
+    "new_claim_body": "<strong>{{volunteer}}</strong> ha solicitado <strong>{{amount}} {{currency}}</strong> por <strong>{{type}}</strong> a <strong>{{organisation}}</strong>. Revísala, por favor.",
+    "new_claim_bell": "{{volunteer}} ha enviado una solicitud de gastos de {{amount}} {{currency}} a {{organisation}}",
+    "new_claim_cta": "Revisar solicitud"
   },
   "listing_moderation": {
     "approved_subject": "Tu anuncio ha sido aprobado — {{title}}",

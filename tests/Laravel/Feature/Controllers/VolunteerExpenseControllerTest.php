@@ -226,20 +226,9 @@ class VolunteerExpenseControllerTest extends TestCase
         $this->assertSame('INVALID_STATE', $response->json('errors.0.code'));
         $this->assertSame(__('api.vol_expense_not_pending'), $response->json('errors.0.message'));
         $this->assertSame('approved', VolExpense::query()->whereKey($expense->id)->value('status'));
-
-        // Paying a claim that is not approved names that rule instead.
-        $pending = VolExpense::factory()->forTenant($this->testTenantId)->create([
-            'user_id' => $volunteer->id,
-            'organization_id' => $org->id,
-            'opportunity_id' => null,
-            'status' => 'pending',
-            'amount' => 5,
-            'submitted_at' => now(),
-        ]);
-        $paid = $this->apiPut("/v2/admin/volunteering/expenses/{$pending->id}", ['status' => 'paid']);
-        $paid->assertStatus(409);
-        $this->assertSame(__('api.vol_expense_not_approved'), $paid->json('errors.0.message'));
-        $this->assertSame('pending', VolExpense::query()->whereKey($pending->id)->value('status'));
+        // Paying a claim that is not approved is covered on the organisation
+        // route (VolunteerOrgExpenseControllerTest): community admins no longer
+        // mark claims paid at all.
     }
 
     public function test_review_expense_that_does_not_exist_is_404(): void
@@ -254,33 +243,6 @@ class VolunteerExpenseControllerTest extends TestCase
         ]);
 
         $response->assertStatus(404);
-    }
-
-    public function test_approved_expense_can_be_marked_paid(): void
-    {
-        $this->enableVolunteeringFeature($this->testTenantId);
-
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $volunteer = User::factory()->forTenant($this->testTenantId)->create();
-        $org = VolOrganization::factory()->forTenant($this->testTenantId)->create();
-        $expense = VolExpense::factory()->forTenant($this->testTenantId)->create([
-            'user_id' => $volunteer->id,
-            'organization_id' => $org->id,
-            'opportunity_id' => null,
-            'status' => 'approved',
-            'amount' => 12.5,
-            'submitted_at' => now(),
-        ]);
-
-        Sanctum::actingAs($admin);
-
-        $response = $this->apiPut("/v2/admin/volunteering/expenses/{$expense->id}", [
-            'status' => 'paid',
-            'payment_reference' => 'BANK-1',
-        ]);
-
-        $response->assertStatus(200);
-        $this->assertSame('paid', VolExpense::query()->whereKey($expense->id)->value('status'));
     }
 
     public function test_admin_expense_export_neutralizes_spreadsheet_formula_cells(): void

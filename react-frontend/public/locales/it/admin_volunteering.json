@@ -802,7 +802,8 @@
     "orgs_stat_hours": "Ore registrate: {{value}}",
     "orgs_no_match": "Nessuna organizzazione corrisponde a questo filtro.",
     "expense_already_reviewed": "Questa spesa è già stata esaminata, quindi non può essere approvata o respinta di nuovo.",
-    "expense_not_approved": "Solo una spesa approvata può essere contrassegnata come pagata."
+    "expense_not_approved": "Solo una spesa approvata può essere contrassegnata come pagata.",
+    "expense_paid_by_org_hint": "L'organizzazione registra il pagamento dalla propria dashboard."
   },
   "donation_refunds": {
     "page_title": "Rimborsi donazioni",

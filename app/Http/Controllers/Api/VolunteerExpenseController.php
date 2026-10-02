@@ -210,6 +210,15 @@ class VolunteerExpenseController extends BaseApiController
             [(int) $id, $tenantId]
         );
 
+        return $this->streamReceipt($expense, $tenantId);
+    }
+
+    /**
+     * Stream a claim's receipt from the private disk, or a 404. Shared by the
+     * admin and organisation routes so both keep the same prefix and traversal checks.
+     */
+    private function streamReceipt(?object $expense, int $tenantId): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse
+    {
         if (!$expense || empty($expense->receipt_path)) {
             return $this->respondWithError('NOT_FOUND', __('api.expense_not_found'), null, 404);
         }
@@ -245,12 +254,15 @@ class VolunteerExpenseController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_status_allowed', ['statuses' => implode(', ', $allowedStatuses)]), 'status', 422);
         }
 
+        // Marking a claim paid belongs to the organisation that pays it (owner
+        // decision, 2 October 2026). Community admins still approve and reject
+        // here; payment is recorded from the organisation dashboard.
+        if ($status === 'paid') {
+            return $this->respondWithError('FORBIDDEN', __('api.vol_expense_paid_by_organisation'), 'status', 403);
+        }
+
         try {
-            if ($status === 'paid') {
-                $result = $this->volunteerExpenseService->markPaid((int) $id, $adminId, $data['payment_reference'] ?? null);
-            } else {
-                $result = $this->volunteerExpenseService->reviewExpense((int) $id, $adminId, $status, $data['review_notes'] ?? null);
-            }
+            $result = $this->volunteerExpenseService->reviewExpense((int) $id, $adminId, $status, $data['review_notes'] ?? null);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('FORBIDDEN', $e->getMessage(), null, 403);
         }
@@ -269,6 +281,142 @@ class VolunteerExpenseController extends BaseApiController
         }
 
         return $this->respondWithData(['success' => true]);
+    }
+
+    /**
+     * The current user if they administer this organisation (creator, or an
+     * active owner/admin member), otherwise null. Community administrators are
+     * deliberately not included: they oversee claims from the admin screen.
+     */
+    private function organisationAdminId(int $orgId): ?int
+    {
+        $userId = $this->getUserId();
+
+        return VolunteerExpenseService::isOrganisationAdmin(TenantContext::getId(), $userId, $orgId)
+            ? $userId
+            : null;
+    }
+
+    /**
+     * A claim as an organisation admin sees it: no volunteer email, no internal
+     * receipt path, no embedded user record.
+     */
+    private function organisationView(array $item): array
+    {
+        return [
+            'id' => (int) $item['id'],
+            'user_id' => (int) $item['user_id'],
+            'volunteer_name' => $item['volunteer_name'] ?? '',
+            'avatar_url' => $item['user']['avatar_url'] ?? null,
+            'organization_id' => (int) $item['organization_id'],
+            'opportunity_id' => isset($item['opportunity_id']) ? (int) $item['opportunity_id'] : null,
+            'expense_type' => $item['expense_type'] ?? '',
+            'amount' => (float) ($item['amount'] ?? 0),
+            'currency' => $item['currency'] ?? '',
+            'description' => $item['description'] ?? '',
+            'status' => $item['status'] ?? '',
+            'has_receipt' => !empty($item['receipt_path']),
+            'submitted_at' => $item['submitted_at'] ?? null,
+            'reviewed_by' => isset($item['reviewed_by']) ? (int) $item['reviewed_by'] : null,
+            'reviewed_at' => $item['reviewed_at'] ?? null,
+            'review_notes' => $item['review_notes'] ?? null,
+            'paid_at' => $item['paid_at'] ?? null,
+            'payment_reference' => $item['payment_reference'] ?? null,
+        ];
+    }
+
+    /** GET /v2/volunteering/organisations/{id}/expenses — the organisation's claims. */
+    public function orgExpenses($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->rateLimit('vol_org_expenses', 60, 60);
+        $orgId = (int) $id;
+        if ($this->organisationAdminId($orgId) === null) {
+            return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
+        }
+
+        $filters = [
+            'organization_id' => $orgId,
+            'status' => $this->query('status'),
+            'cursor' => $this->query('cursor'),
+            'limit' => $this->queryInt('per_page', 20, 1, 50),
+        ];
+
+        $result = $this->volunteerExpenseService->getExpenses($filters);
+        $stats = $this->volunteerExpenseService->getExpenseStats($filters);
+
+        return $this->respondWithData([
+            'items' => array_map(fn (array $item) => $this->organisationView($item), $result['items']),
+            'stats' => $stats,
+            'cursor' => $result['cursor'],
+            'has_more' => $result['has_more'],
+        ]);
+    }
+
+    /**
+     * PUT /v2/volunteering/organisations/{id}/expenses/{expenseId}
+     * Approve or reject a pending claim, or mark an approved claim paid.
+     */
+    public function orgReviewExpense($id, $expenseId): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->rateLimit('vol_org_expense_review', 30, 60);
+        $orgId = (int) $id;
+        $expenseId = (int) $expenseId;
+        $reviewerId = $this->organisationAdminId($orgId);
+        if ($reviewerId === null) {
+            return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
+        }
+
+        $data = $this->getAllInput();
+        $status = $data['status'] ?? '';
+        $allowedStatuses = ['approved', 'rejected', 'paid'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_status_allowed', ['statuses' => implode(', ', $allowedStatuses)]), 'status', 422);
+        }
+
+        // A claim made to a different organisation, or in a different community,
+        // is "not found" from here — never "forbidden", which would confirm it exists.
+        $expense = $this->volunteerExpenseService->getExpense($expenseId);
+        if ($expense === null || (int) $expense['organization_id'] !== $orgId) {
+            return $this->respondWithError('NOT_FOUND', __('api.expense_not_found'), null, 404);
+        }
+
+        try {
+            $result = $status === 'paid'
+                ? $this->volunteerExpenseService->markPaid($expenseId, $reviewerId, $data['payment_reference'] ?? null, $orgId)
+                : $this->volunteerExpenseService->reviewExpense($expenseId, $reviewerId, $status, $data['review_notes'] ?? null, $orgId);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('FORBIDDEN', $e->getMessage(), null, 403);
+        }
+
+        if (!$result) {
+            $message = $status === 'paid'
+                ? __('api.vol_expense_not_approved')
+                : __('api.vol_expense_not_pending');
+            return $this->respondWithError('INVALID_STATE', $message, 'status', 409);
+        }
+
+        return $this->respondWithData(['success' => true]);
+    }
+
+    /** GET /v2/volunteering/organisations/{id}/expenses/{expenseId}/receipt */
+    public function orgDownloadReceipt($id, $expenseId): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse
+    {
+        $this->ensureFeature();
+        $this->rateLimit('vol_org_expense_receipt', 30, 60);
+        $orgId = (int) $id;
+        if ($this->organisationAdminId($orgId) === null) {
+            return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
+        }
+
+        $tenantId = TenantContext::getId();
+        $expense = \Illuminate\Support\Facades\DB::selectOne(
+            "SELECT id, receipt_path, receipt_filename FROM vol_expenses WHERE id = ? AND tenant_id = ? AND organization_id = ?",
+            [(int) $expenseId, $tenantId, $orgId]
+        );
+
+        return $this->streamReceipt($expense, $tenantId);
     }
 
     /** Returns raw CSV for expense export */

@@ -576,7 +576,12 @@
     "paid_title": "Reembolso processado",
     "paid_body": "A sua despesa de <strong>{{amount}} {{currency}}</strong> para <strong>{{type}}</strong> foi paga.",
     "paid_ref_label": "Referência do pagamento",
-    "paid_cta": "Ver despesa"
+    "paid_cta": "Ver despesa",
+    "new_claim_subject": "Novo pedido de reembolso — {{organisation}}",
+    "new_claim_title": "Novo pedido de reembolso",
+    "new_claim_body": "<strong>{{volunteer}}</strong> pediu o reembolso de <strong>{{amount}} {{currency}}</strong> por <strong>{{type}}</strong> à <strong>{{organisation}}</strong>. Por favor, analise-o.",
+    "new_claim_bell": "{{volunteer}} enviou um pedido de reembolso de {{amount}} {{currency}} à {{organisation}}",
+    "new_claim_cta": "Analisar pedido"
   },
   "listing_moderation": {
     "approved_subject": "O seu anúncio foi aprovado — {{title}}",

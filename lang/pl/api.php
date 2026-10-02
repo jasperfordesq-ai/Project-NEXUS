@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => 'Nie możesz przeglądać swoich własnych wydatków.',
     'vol_expense_not_pending' => 'Ten wydatek został już rozpatrzony, więc nie można go ponownie zatwierdzić ani odrzucić.',
     'vol_expense_not_approved' => 'Jako opłacony można oznaczyć tylko zatwierdzony wydatek.',
+    'vol_expense_paid_by_organisation' => 'Tylko organizacja może oznaczyć wniosek o zwrot kosztów jako opłacony.',
     'vol_project_title_required' => 'Tytuł jest wymagany.',
     'vol_project_description_required' => 'Opis jest wymagany.',
     'vol_project_proposed_date_invalid' => 'Proponowana data musi być prawidłową datą (RRRR-MM-DD).',

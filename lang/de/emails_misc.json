@@ -576,7 +576,12 @@
     "paid_title": "Erstattung verarbeitet",
     "paid_body": "Ihre Auslage über <strong>{{amount}} {{currency}}</strong> für <strong>{{type}}</strong> wurde bezahlt.",
     "paid_ref_label": "Zahlungsreferenz",
-    "paid_cta": "Auslage ansehen"
+    "paid_cta": "Auslage ansehen",
+    "new_claim_subject": "Neue Spesenabrechnung — {{organisation}}",
+    "new_claim_title": "Neue Spesenabrechnung",
+    "new_claim_body": "<strong>{{volunteer}}</strong> hat <strong>{{amount}} {{currency}}</strong> für <strong>{{type}}</strong> bei <strong>{{organisation}}</strong> geltend gemacht. Bitte prüfen Sie die Abrechnung.",
+    "new_claim_bell": "{{volunteer}} hat bei {{organisation}} eine Spesenabrechnung über {{amount}} {{currency}} eingereicht",
+    "new_claim_cta": "Abrechnung prüfen"
   },
   "listing_moderation": {
     "approved_subject": "Ihr Angebot wurde genehmigt — {{title}}",

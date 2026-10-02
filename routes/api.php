@@ -1327,6 +1327,13 @@ Route::middleware(['feature:volunteering', 'feature:organisations'])->group(func
     Route::get('/v2/volunteering/organisations/{id}/volunteers', [\App\Http\Controllers\Api\VolunteerController::class, 'orgVolunteers']);
     Route::get('/v2/volunteering/organisations/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'orgApplications']);
     Route::get('/v2/volunteering/organisations/{id}/hours/pending', [\App\Http\Controllers\Api\VolunteerController::class, 'orgHoursPending']);
+    // Expense claims made to the organisation. Gated in the controller by
+    // VolunteerExpenseService::isOrganisationAdmin() (creator or active
+    // owner/admin member) — narrower than ensureOrgAccess(): community admins
+    // review on /v2/admin/volunteering/expenses and never mark claims paid.
+    Route::get('/v2/volunteering/organisations/{id}/expenses', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgExpenses'])->whereNumber('id');
+    Route::put('/v2/volunteering/organisations/{id}/expenses/{expenseId}', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgReviewExpense'])->whereNumber(['id', 'expenseId']);
+    Route::get('/v2/volunteering/organisations/{id}/expenses/{expenseId}/receipt', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgDownloadReceipt'])->whereNumber(['id', 'expenseId']);
     Route::put('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'updateOrganisation']);
     Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
 });

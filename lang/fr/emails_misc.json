@@ -576,7 +576,12 @@
     "paid_title": "Remboursement effectué",
     "paid_body": "Votre dépense de <strong>{{amount}} {{currency}}</strong> pour <strong>{{type}}</strong> a été payée.",
     "paid_ref_label": "Référence de paiement",
-    "paid_cta": "Voir la dépense"
+    "paid_cta": "Voir la dépense",
+    "new_claim_subject": "Nouvelle note de frais — {{organisation}}",
+    "new_claim_title": "Nouvelle note de frais",
+    "new_claim_body": "<strong>{{volunteer}}</strong> demande le remboursement de <strong>{{amount}} {{currency}}</strong> pour <strong>{{type}}</strong> auprès de <strong>{{organisation}}</strong>. Merci de l’examiner.",
+    "new_claim_bell": "{{volunteer}} a soumis une note de frais de {{amount}} {{currency}} à {{organisation}}",
+    "new_claim_cta": "Examiner la note"
   },
   "listing_moderation": {
     "approved_subject": "Votre annonce a été approuvée — {{title}}",

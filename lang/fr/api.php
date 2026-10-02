@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => 'Vous ne pouvez pas revoir vos propres dépenses.',
     'vol_expense_not_pending' => 'Cette dépense a déjà été examinée ; elle ne peut donc pas être approuvée ou refusée à nouveau.',
     'vol_expense_not_approved' => 'Seule une dépense approuvée peut être marquée comme payée.',
+    'vol_expense_paid_by_organisation' => 'Seule l’organisation peut marquer une note de frais comme payée.',
     'vol_project_title_required' => 'Le titre est requis.',
     'vol_project_description_required' => 'Une description est requise.',
     'vol_project_proposed_date_invalid' => 'La date proposée doit être une date valide (AAAA-MM-JJ).',

@@ -576,7 +576,12 @@
     "paid_title": "Zwrot przetworzony",
     "paid_body": "Twój wydatek w wysokości <strong>{{amount}} {{currency}}</strong> za <strong>{{type}}</strong> został opłacony.",
     "paid_ref_label": "Numer referencyjny płatności",
-    "paid_cta": "Zobacz wydatek"
+    "paid_cta": "Zobacz wydatek",
+    "new_claim_subject": "Nowy wniosek o zwrot kosztów — {{organisation}}",
+    "new_claim_title": "Nowy wniosek o zwrot kosztów",
+    "new_claim_body": "<strong>{{volunteer}}</strong> wnioskuje o zwrot <strong>{{amount}} {{currency}}</strong> za <strong>{{type}}</strong> od <strong>{{organisation}}</strong>. Prosimy o jego rozpatrzenie.",
+    "new_claim_bell": "{{volunteer}} złożył(a) w {{organisation}} wniosek o zwrot kosztów na kwotę {{amount}} {{currency}}",
+    "new_claim_cta": "Rozpatrz wniosek"
   },
   "listing_moderation": {
     "approved_subject": "Twoje ogłoszenie zostało zatwierdzone — {{title}}",

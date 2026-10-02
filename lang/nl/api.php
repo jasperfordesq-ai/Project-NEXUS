@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => 'U kunt uw eigen uitgaven niet controleren.',
     'vol_expense_not_pending' => 'Deze uitgave is al beoordeeld en kan daarom niet opnieuw worden goedgekeurd of afgewezen.',
     'vol_expense_not_approved' => 'Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd.',
+    'vol_expense_paid_by_organisation' => 'Alleen de organisatie kan een onkostendeclaratie als betaald markeren.',
     'vol_project_title_required' => 'Titel is vereist.',
     'vol_project_description_required' => 'Beschrijving is vereist.',
     'vol_project_proposed_date_invalid' => 'De voorgestelde datum moet een geldige datum zijn (JJJJ-MM-DD).',

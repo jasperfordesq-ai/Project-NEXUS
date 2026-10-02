@@ -576,7 +576,12 @@
     "paid_title": "Aisíoc Próiseáilte",
     "paid_body": "Tá do chostas de <strong>{{amount}} {{currency}}</strong> do <strong>{{type}}</strong> íoctha.",
     "paid_ref_label": "Tagairt íocaíochta",
-    "paid_cta": "Féach ar an gcostas"
+    "paid_cta": "Féach ar an gcostas",
+    "new_claim_subject": "Éileamh costais nua — {{organisation}}",
+    "new_claim_title": "Éileamh costais nua",
+    "new_claim_body": "D’éiligh <strong>{{volunteer}}</strong> <strong>{{amount}} {{currency}}</strong> ar <strong>{{type}}</strong> ó <strong>{{organisation}}</strong>. Déan athbhreithniú air, le do thoil.",
+    "new_claim_bell": "Chuir {{volunteer}} éileamh costais {{amount}} {{currency}} faoi bhráid {{organisation}}",
+    "new_claim_cta": "Athbhreithnigh an t-éileamh"
   },
   "listing_moderation": {
     "approved_subject": "Tá do liosta formheasta — {{title}}",

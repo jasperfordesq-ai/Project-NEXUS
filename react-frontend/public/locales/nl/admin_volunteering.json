@@ -786,7 +786,8 @@
     "orgs_stat_hours": "Geregistreerde uren: {{value}}",
     "orgs_no_match": "Geen organisaties voldoen aan dit filter.",
     "expense_already_reviewed": "Deze uitgave is al beoordeeld en kan daarom niet opnieuw worden goedgekeurd of afgewezen.",
-    "expense_not_approved": "Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd."
+    "expense_not_approved": "Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd.",
+    "expense_paid_by_org_hint": "De organisatie registreert de betaling via haar eigen dashboard."
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

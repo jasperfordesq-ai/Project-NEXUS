@@ -576,7 +576,12 @@
     "paid_title": "تمت معالجة الاسترداد",
     "paid_body": "تم دفع نفقتك البالغة <strong>{{amount}} {{currency}}</strong> لـ <strong>{{type}}</strong>.",
     "paid_ref_label": "مرجع الدفع",
-    "paid_cta": "عرض النفقة"
+    "paid_cta": "عرض النفقة",
+    "new_claim_subject": "مطالبة نفقات جديدة — {{organisation}}",
+    "new_claim_title": "مطالبة نفقات جديدة",
+    "new_claim_body": "قدّم <strong>{{volunteer}}</strong> مطالبة بمبلغ <strong>{{amount}} {{currency}}</strong> مقابل <strong>{{type}}</strong> إلى <strong>{{organisation}}</strong>. يرجى مراجعتها.",
+    "new_claim_bell": "قدّم {{volunteer}} مطالبة نفقات بمبلغ {{amount}} {{currency}} إلى {{organisation}}",
+    "new_claim_cta": "مراجعة المطالبة"
   },
   "listing_moderation": {
     "approved_subject": "تمت الموافقة على إعلانك — {{title}}",

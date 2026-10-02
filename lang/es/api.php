@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => 'No puede revisar sus propios gastos.',
     'vol_expense_not_pending' => 'Este gasto ya ha sido revisado, por lo que no se puede aprobar ni rechazar de nuevo.',
     'vol_expense_not_approved' => 'Solo un gasto aprobado se puede marcar como pagado.',
+    'vol_expense_paid_by_organisation' => 'Solo la organización puede marcar una solicitud de gastos como pagada.',
     'vol_project_title_required' => 'Se requiere título.',
     'vol_project_description_required' => 'Se requiere descripción.',
     'vol_project_proposed_date_invalid' => 'La fecha propuesta debe ser una fecha válida (AAAA-MM-DD).',

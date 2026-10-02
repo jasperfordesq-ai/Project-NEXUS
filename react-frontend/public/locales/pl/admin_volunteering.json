@@ -818,7 +818,8 @@
     "orgs_stat_hours": "Zarejestrowane godziny: {{value}}",
     "orgs_no_match": "Żadna organizacja nie pasuje do tego filtra.",
     "expense_already_reviewed": "Ten wydatek został już rozpatrzony, więc nie można go ponownie zatwierdzić ani odrzucić.",
-    "expense_not_approved": "Jako opłacony można oznaczyć tylko zatwierdzony wydatek."
+    "expense_not_approved": "Jako opłacony można oznaczyć tylko zatwierdzony wydatek.",
+    "expense_paid_by_org_hint": "Organizacja odnotowuje płatność we własnym panelu."
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

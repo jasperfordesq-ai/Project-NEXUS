@@ -52,6 +52,7 @@
     "app/Services/SubAccountService.php": { "routes": [{ "input": "/settings?tab=linked-accounts", "expected": "native", "native_href": "/(modals)/settings-linked-accounts?tab=linked-accounts" }] },
     "app/Services/SupportPendingActionService.php": { "routes": [{ "input": "/settings?tab=linked-accounts", "expected": "native", "native_href": "/(modals)/settings-linked-accounts?tab=linked-accounts" }] },
     "app/Services/SupportReportNotificationService.php": { "routes": [{ "input": "/admin/support-reports?report=1", "expected": "suppressed" }] },
-    "app/Services/VolOrgWalletService.php": { "routes": [{ "input": "/wallet", "expected": "native", "native_href": "/(modals)/wallet" }, { "input": "/volunteering/org/1/dashboard", "expected": "native", "native_href": "/(modals)/volunteering-org-dashboard?id=1" }] }
+    "app/Services/VolOrgWalletService.php": { "routes": [{ "input": "/wallet", "expected": "native", "native_href": "/(modals)/wallet" }, { "input": "/volunteering/org/1/dashboard", "expected": "native", "native_href": "/(modals)/volunteering-org-dashboard?id=1" }] },
+    "app/Services/VolunteerExpenseService.php": { "routes": [{ "input": "/volunteering/org/1/dashboard?tab=expenses", "expected": "native", "native_href": "/(modals)/volunteering-org-dashboard?tab=expenses&id=1" }] }
   }
 }

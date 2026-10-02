@@ -576,7 +576,12 @@
     "paid_title": "払い戻し処理済み",
     "paid_body": "<strong>{{type}}</strong>の経費<strong>{{amount}} {{currency}}</strong>が支払われました。",
     "paid_ref_label": "支払い参照番号",
-    "paid_cta": "経費を見る"
+    "paid_cta": "経費を見る",
+    "new_claim_subject": "新しい経費精算 — {{organisation}}",
+    "new_claim_title": "新しい経費精算",
+    "new_claim_body": "<strong>{{volunteer}}</strong>さんが<strong>{{organisation}}</strong>に<strong>{{type}}</strong>の経費<strong>{{amount}} {{currency}}</strong>を申請しました。内容をご確認ください。",
+    "new_claim_bell": "{{volunteer}}さんが{{organisation}}に{{amount}} {{currency}}の経費精算を申請しました",
+    "new_claim_cta": "申請を確認"
   },
   "listing_moderation": {
     "approved_subject": "掲載が承認されました — {{title}}",

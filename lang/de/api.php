@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => 'Sie können Ihre eigenen Ausgaben nicht überprüfen.',
     'vol_expense_not_pending' => 'Diese Ausgabe wurde bereits geprüft und kann daher nicht erneut genehmigt oder abgelehnt werden.',
     'vol_expense_not_approved' => 'Nur eine genehmigte Ausgabe kann als bezahlt markiert werden.',
+    'vol_expense_paid_by_organisation' => 'Nur die Organisation kann eine Spesenabrechnung als bezahlt markieren.',
     'vol_project_title_required' => 'Titel ist erforderlich.',
     'vol_project_description_required' => 'Beschreibung ist erforderlich.',
     'vol_project_proposed_date_invalid' => 'Das vorgeschlagene Datum muss ein gültiges Datum sein (JJJJ-MM-TT).',

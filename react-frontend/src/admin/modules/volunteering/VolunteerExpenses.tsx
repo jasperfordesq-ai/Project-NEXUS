@@ -79,14 +79,16 @@ const STATUS_COLORS: Record<string, 'warning' | 'success' | 'danger' | 'accent'>
   paid: 'accent',
 };
 
-type ReviewAction = 'approved' | 'rejected' | 'paid';
+type ReviewAction = 'approved' | 'rejected';
 
-// The transitions the server accepts (VolunteerExpenseService::reviewExpense
-// takes only a pending expense; markPaid takes only an approved one). Offering
-// anything else just earns a refusal — paid and rejected are final.
+// The transitions a community admin may make here (VolunteerExpenseService::
+// reviewExpense takes only a pending expense). Marking an approved claim as
+// paid belongs to the organisation that pays it — it records payment from its
+// own dashboard, and this endpoint now answers 403 for status 'paid' (owner
+// decision, 2026-10-02). Paid and rejected are final.
 const ALLOWED_ACTIONS: Record<Expense['status'], ReviewAction[]> = {
   pending: ['approved', 'rejected'],
-  approved: ['paid'],
+  approved: [],
   rejected: [],
   paid: [],
 };
@@ -182,7 +184,6 @@ export function VolunteerExpenses() {
   const [reviewExpense, setReviewExpense] = useState<Expense | null>(null);
   const [reviewAction, setReviewAction] = useState<ReviewAction>('approved');
   const [reviewNotes, setReviewNotes] = useState('');
-  const [paymentReference, setPaymentReference] = useState('');
 
   // Date range filter
   const [dateFrom, setDateFrom] = useState<string>('');
@@ -331,7 +332,6 @@ export function VolunteerExpenses() {
     setReviewExpense(expense);
     setReviewAction(ALLOWED_ACTIONS[expense.status]?.[0] ?? 'approved');
     setReviewNotes('');
-    setPaymentReference('');
     setReviewModal(true);
   };
 
@@ -339,13 +339,10 @@ export function VolunteerExpenses() {
     if (!reviewExpense) return;
     setActionLoading(true);
     try {
-      const data: { status: string; review_notes?: string; payment_reference?: string } = {
+      const data: { status: string; review_notes?: string } = {
         status: reviewAction,
       };
       if (reviewNotes.trim()) data.review_notes = reviewNotes.trim();
-      if (reviewAction === 'paid' && paymentReference.trim()) {
-        data.payment_reference = paymentReference.trim();
-      }
       const res = await adminVolunteering.reviewExpense(reviewExpense.id, data);
       if (res.success) {
         toast.success(t('volunteering.expense_updated'));
@@ -356,9 +353,7 @@ export function VolunteerExpenses() {
         // admin's own language (the server's text is not shown directly), close
         // the now-stale dialog and show the claim as it now stands.
         if (res.code === 'INVALID_STATE') {
-          toast.error(t(reviewAction === 'paid'
-            ? 'volunteering.expense_not_approved'
-            : 'volunteering.expense_already_reviewed'));
+          toast.error(t('volunteering.expense_already_reviewed'));
         } else {
           toast.error(t('volunteering.failed_to_update_expense'));
         }
@@ -573,6 +568,8 @@ export function VolunteerExpenses() {
           >
             {t('volunteering.review')}
           </Button>
+        ) : item.status === 'approved' ? (
+          <span className="text-xs text-muted">{t('volunteering.expense_paid_by_org_hint')}</span>
         ) : null,
     },
   ];
@@ -864,7 +861,6 @@ export function VolunteerExpenses() {
                     <SelectItem key={action} id={action}>
                       {action === 'approved' && t('volunteering.approve')}
                       {action === 'rejected' && t('volunteering.reject')}
-                      {action === 'paid' && t('volunteering.mark_as_paid')}
                     </SelectItem>
                   ))}
                 </Select>
@@ -876,14 +872,6 @@ export function VolunteerExpenses() {
                   onValueChange={setReviewNotes}
                 />
 
-                {reviewAction === 'paid' && (
-                  <Input
-                    label={t('volunteering.payment_reference')}
-                    placeholder={t('volunteering.payment_reference_placeholder')}
-                    value={paymentReference}
-                    onValueChange={setPaymentReference}
-                  />
-                )}
               </div>
             )}
           </ModalBody>
@@ -897,13 +885,11 @@ export function VolunteerExpenses() {
               isLoading={actionLoading}
               startContent={
                 reviewAction === 'rejected' ? <XCircle aria-hidden="true" size={16} /> :
-                reviewAction === 'paid' ? <CreditCard aria-hidden="true" size={16} /> :
                 <CheckCircle aria-hidden="true" size={16} />
               }
             >
               {reviewAction === 'approved' && t('volunteering.approve')}
               {reviewAction === 'rejected' && t('volunteering.reject')}
-              {reviewAction === 'paid' && t('volunteering.mark_as_paid')}
             </Button>
           </ModalFooter>
         </ModalContent>

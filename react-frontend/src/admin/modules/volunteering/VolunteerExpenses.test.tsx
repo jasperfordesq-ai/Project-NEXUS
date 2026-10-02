@@ -402,24 +402,24 @@ describe('VolunteerExpenses', () => {
     return document.querySelector('[role="dialog"]') as HTMLElement;
   };
 
-  it('offers only "mark as paid" for an already-approved expense and sends status=paid', async () => {
-    const dialog = await openReviewFor(makeExpense({ id: 2, status: 'approved' }));
-
-    const options = Array.from(dialog.querySelectorAll('option')).map((o) => o.value);
-    expect(options).toEqual(['paid']);
-
-    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
-      /mark as paid/i.test(b.textContent ?? ''),
-    );
-    expect(confirmBtn).toBeDefined();
-    fireEvent.click(confirmBtn!);
-
-    await waitFor(() => {
-      expect(mockAdminVolunteering.reviewExpense).toHaveBeenCalledWith(
-        2,
-        expect.objectContaining({ status: 'paid' }),
-      );
+  // Owner decision (2026-10-02): community admins no longer mark claims paid —
+  // the organisation records payment from its own dashboard, and the admin
+  // endpoint answers 403 for status 'paid'. An approved claim therefore has no
+  // admin action, only a hint saying where payment is recorded.
+  it('offers no action on an approved expense and explains the organisation records payment', async () => {
+    mockAdminVolunteering.getExpenses.mockResolvedValue({
+      success: true,
+      data: { items: [makeExpense({ id: 2, status: 'approved' })], stats: makeStats() },
     });
+    const { VolunteerExpenses } = await import('./VolunteerExpenses');
+    render(<VolunteerExpenses />);
+    await waitFor(() => screen.getByTestId('data-table'));
+
+    expect(screen.queryByRole('button', { name: /review/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /mark as paid/i })).not.toBeInTheDocument();
+    expect(
+      screen.getByText('The organisation records payment from its own dashboard.'),
+    ).toBeInTheDocument();
   });
 
   it('offers only approve and reject for a pending expense', async () => {

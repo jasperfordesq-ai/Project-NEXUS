@@ -576,7 +576,12 @@
     "paid_title": "Vergoeding verwerkt",
     "paid_body": "Je onkosten van <strong>{{amount}} {{currency}}</strong> voor <strong>{{type}}</strong> zijn uitbetaald.",
     "paid_ref_label": "Betaalreferentie",
-    "paid_cta": "Onkosten bekijken"
+    "paid_cta": "Onkosten bekijken",
+    "new_claim_subject": "Nieuwe onkostendeclaratie — {{organisation}}",
+    "new_claim_title": "Nieuwe onkostendeclaratie",
+    "new_claim_body": "<strong>{{volunteer}}</strong> heeft <strong>{{amount}} {{currency}}</strong> voor <strong>{{type}}</strong> gedeclareerd bij <strong>{{organisation}}</strong>. Beoordeel de declaratie alstublieft.",
+    "new_claim_bell": "{{volunteer}} heeft een onkostendeclaratie van {{amount}} {{currency}} ingediend bij {{organisation}}",
+    "new_claim_cta": "Declaratie beoordelen"
   },
   "listing_moderation": {
     "approved_subject": "Je advertentie is goedgekeurd — {{title}}",

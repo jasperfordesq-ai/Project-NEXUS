@@ -2274,6 +2274,7 @@ return [
     'vol_expense_review_own_forbidden' => '自分自身の支出を確認することはできません。',
     'vol_expense_not_pending' => 'この経費はすでに審査済みのため、再度承認または却下することはできません。',
     'vol_expense_not_approved' => '支払済みにできるのは承認済みの経費のみです。',
+    'vol_expense_paid_by_organisation' => '経費精算を支払済みにできるのは団体のみです。',
     'vol_project_title_required' => 'タイトルは必須です。',
     'vol_project_description_required' => '説明は必須です。',
     'vol_project_proposed_date_invalid' => '提案された日付は有効な日付 (YYYY-MM-DD) である必要があります。',

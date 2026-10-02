@@ -2893,6 +2893,7 @@ return [
     'vol_expense_review_own_forbidden' => 'You cannot review your own expense.',
     'vol_expense_not_pending' => 'This expense has already been reviewed, so it cannot be approved or rejected again.',
     'vol_expense_not_approved' => 'Only an approved expense can be marked as paid.',
+    'vol_expense_paid_by_organisation' => 'Only the organisation can mark an expense claim as paid.',
     'guardian_name_required' => 'Guardian name is required.',
     'guardian_email_required' => 'Guardian email is required.',
     'guardian_relationship_required' => 'Relationship is required.',
