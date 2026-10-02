@@ -25,7 +25,9 @@
 BACKUP_ALERT_ENV="${BACKUP_ALERT_ENV:-/opt/nexus-php/.backup-alerts.env}"
 
 _backup_alert_value() {
-    grep -E "^$1=" "$BACKUP_ALERT_ENV" 2>/dev/null | head -1 | cut -d= -f2- | tr -d "\"' \r"
+    # grep -m1, not `| head -1`: callers run under pipefail, and head closing
+    # early can SIGPIPE grep and lose the value (and with it the alert).
+    grep -m1 -E "^$1=" "$BACKUP_ALERT_ENV" 2>/dev/null | cut -d= -f2- | tr -d "\"' \r"
 }
 
 backup_alert() {
