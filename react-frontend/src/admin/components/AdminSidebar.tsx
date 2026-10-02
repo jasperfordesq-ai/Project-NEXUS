@@ -622,8 +622,10 @@ function useAdminNav(): NavSection[] {
           { label: t('support_reports'), href: '/admin/support-reports', icon: Bug, keywords: keyword(t('search_keywords.support_reports')) },
           // The in-app admin help centre. Until 2026-10-02 only the Caring panel
           // linked to it. It lives here rather than in the pinned footer, which is
-          // deliberately held at two entries.
-          { label: t('help_centre'), href: '/admin/help', icon: HelpCircle },
+          // deliberately held at two entries. Every article on that page is about
+          // Caring Community, so without the module the link goes straight to the
+          // full admin guide, which the page otherwise only links to.
+          { label: t('help_centre'), href: hasFeature('caring_community') ? '/admin/help' : '/help/admins', icon: HelpCircle },
           { label: t('translation_config'), href: '/admin/translation-config', icon: Languages },
           { label: t('activity_log'), href: '/admin/activity-log', icon: Activity },
           { label: t('retention_policies'), href: '/admin/retention', icon: Activity, keywords: keyword(t('search_keywords.retention_policies')) },

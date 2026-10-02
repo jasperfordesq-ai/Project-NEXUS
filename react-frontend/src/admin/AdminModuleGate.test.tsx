@@ -32,10 +32,10 @@ function renderPage(path: string, effect = vi.fn()) {
 
 describe('admin module boundaries', () => {
   beforeEach(() => { state.enabled = true; state.loading = false; state.off.clear(); });
-  it.each(ADMIN_MODULE_REQUIREMENTS)('blocks $path and nested pages before mounting when disabled', ({ path }) => {
+  it.each(ADMIN_MODULE_REQUIREMENTS)('blocks $path and nested pages before mounting when disabled', ({ path, exact }) => {
     state.enabled = false;
     const effect = vi.fn();
-    renderPage(`${path}/42/edit`, effect);
+    renderPage(exact ? path : `${path}/42/edit`, effect);
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
     expect(effect).not.toHaveBeenCalled();
   });
@@ -65,6 +65,18 @@ describe('admin module boundaries', () => {
     state.off.add('fadp_compliance');
     renderPage('enterprise/fadp');
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
+  // 2026-10-02: the admin help centre lists only Caring Community articles, so
+  // it follows that switch. Its FAQ editor is general and must stay reachable.
+  it('blocks help when caring_community is off', () => {
+    state.off.add('caring_community');
+    renderPage('help');
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
+  it('keeps help/faqs reachable when caring_community is off', () => {
+    state.off.add('caring_community');
+    renderPage('help/faqs');
+    expect(screen.getByText('Module content')).toBeInTheDocument();
   });
   // F-531 (E-078): the old KI-Agenten page needs the same two switches as its API.
   it('blocks ai/ki-agents when caring_community is off but ai_agents is on', () => {

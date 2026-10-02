@@ -13,14 +13,18 @@ type Feature = keyof TenantFeatures;
  * Operational pages mirror the sidebar gates; setup and recovery stay reachable.
  * The first matching entry wins, so a nested page that sits inside a gated
  * section lists every switch it needs (e.g. coupons need the marketplace too).
+ * `exact` gates only the page itself, not the pages nested under it.
  */
 export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
-  path: string; feature?: Feature | readonly Feature[]; module?: keyof TenantModules;
+  path: string; feature?: Feature | readonly Feature[]; module?: keyof TenantModules; exact?: boolean;
 }> = [
   { path: 'ai/ki-agents', feature: ['ai_agents', 'caring_community'] },
   { path: 'agents', feature: 'ai_agents' },
   { path: 'marketplace/coupons', feature: ['marketplace', 'merchant_coupons'] },
   { path: 'enterprise/fadp', feature: 'fadp_compliance' },
+  // Every article in the admin help centre is about Caring Community. The FAQ
+  // editor nested under it (help/faqs) is general and stays ungated.
+  { path: 'help', feature: 'caring_community', exact: true },
   { path: 'listings', module: 'listings' },
   { path: 'timebanking', module: 'wallet' },
   { path: 'blog', feature: 'blog' },
@@ -49,7 +53,7 @@ export function AdminModuleGate() {
   const { hasFeature, hasModule, isLoading, tenantPath } = useTenant();
   const root = tenantPath('/admin');
   const path = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : '';
-  const requirement = ADMIN_MODULE_REQUIREMENTS.find(r => path === r.path || path.startsWith(`${r.path}/`));
+  const requirement = ADMIN_MODULE_REQUIREMENTS.find(r => path === r.path || (!r.exact && path.startsWith(`${r.path}/`)));
   if (isLoading) return null;
   const features: readonly Feature[] = typeof requirement?.feature === 'string'
     ? [requirement.feature] : (requirement?.feature ?? []);

@@ -542,6 +542,19 @@ describe('AdminSidebar', () => {
     expect(hrefs).toContain('/test/admin/settings');
   });
 
+  // The admin help centre lists only Caring Community articles (2026-10-02).
+  it('points Help Centre at the full admin guide when Caring Community is off', async () => {
+    mockHasFeature.mockImplementation((feature: string) => feature !== 'caring_community');
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs).not.toContain('/test/admin/help');
+    expect(hrefs).toContain('/test/help/admins');
+    // The general FAQ editor does not depend on the module.
+    expect(hrefs).toContain('/test/admin/help/faqs');
+  });
+
   it('shows the permissions list and subscriptions to god accounts only', async () => {
     const GOD_ONLY = ['/test/admin/enterprise/permissions', '/test/admin/plans/subscriptions'];
     const { AdminSidebar } = await import('./AdminSidebar');
