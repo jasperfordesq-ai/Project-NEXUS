@@ -596,7 +596,7 @@ function useAdminNav(): NavSection[] {
           { label: t('marketplace_moderation'), href: '/admin/marketplace/moderation', icon: ShieldCheck },
           { label: t('marketplace_sellers'), href: '/admin/marketplace/sellers', icon: Store },
           { label: t('marketplace_cases'), href: '/admin/marketplace/cases', icon: AlertTriangle, keywords: keyword(t('search_keywords.marketplace_cases')) },
-          // AdminModuleGate checks merchant_coupons for this path, not marketplace.
+          // AdminModuleGate checks marketplace AND merchant_coupons for this path.
           ...(hasFeature('merchant_coupons') ? [{ label: t('marketplace_coupons'), href: '/admin/marketplace/coupons', icon: Tag }] : []),
         ],
       }] : []),

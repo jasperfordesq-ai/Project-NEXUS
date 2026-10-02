@@ -9,10 +9,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AdminModuleGate, ADMIN_MODULE_REQUIREMENTS } from './AdminModuleGate';
 
-const state = vi.hoisted(() => ({ enabled: true, loading: false }));
+const state = vi.hoisted(() => ({ enabled: true, loading: false, off: new Set<string>() }));
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: () => ({
-    hasModule: () => state.enabled, hasFeature: () => state.enabled,
+    hasModule: () => state.enabled, hasFeature: (key: string) => state.enabled && !state.off.has(key),
     isLoading: state.loading, tenantPath: (path: string) => `/test${path}`,
   }),
 }));
@@ -31,7 +31,7 @@ function renderPage(path: string, effect = vi.fn()) {
 }
 
 describe('admin module boundaries', () => {
-  beforeEach(() => { state.enabled = true; state.loading = false; });
+  beforeEach(() => { state.enabled = true; state.loading = false; state.off.clear(); });
   it.each(ADMIN_MODULE_REQUIREMENTS)('blocks $path and nested pages before mounting when disabled', ({ path }) => {
     state.enabled = false;
     const effect = vi.fn();
@@ -47,6 +47,18 @@ describe('admin module boundaries', () => {
     state.enabled = false;
     renderPage(path);
     expect(screen.getByText('Module content')).toBeInTheDocument();
+  });
+  // F-529 (E-078): coupons are part of the marketplace — the sidebar shows them only
+  // inside the marketplace section, so the page must need the parent switch too.
+  it('blocks marketplace/coupons when the marketplace is off but merchant coupons are on', () => {
+    state.off.add('marketplace');
+    renderPage('marketplace/coupons');
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
+  it('blocks marketplace/coupons when merchant coupons are off but the marketplace is on', () => {
+    state.off.add('merchant_coupons');
+    renderPage('marketplace/coupons');
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
   });
   it('does not mount content while settings load', () => {
     state.loading = true;

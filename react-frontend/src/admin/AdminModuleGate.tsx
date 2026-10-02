@@ -7,12 +7,18 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useTenant } from '@/contexts';
 import type { TenantFeatures, TenantModules } from '@/types/api';
 
-/** Operational pages mirror the sidebar gates; setup and recovery stay reachable. */
+type Feature = keyof TenantFeatures;
+
+/**
+ * Operational pages mirror the sidebar gates; setup and recovery stay reachable.
+ * The first matching entry wins, so a nested page that sits inside a gated
+ * section lists every switch it needs (e.g. coupons need the marketplace too).
+ */
 export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
-  path: string; feature?: keyof TenantFeatures; module?: keyof TenantModules;
+  path: string; feature?: Feature | readonly Feature[]; module?: keyof TenantModules;
 }> = [
   { path: 'ai/ki-agents', feature: 'ai_agents' },
-  { path: 'marketplace/coupons', feature: 'merchant_coupons' },
+  { path: 'marketplace/coupons', feature: ['marketplace', 'merchant_coupons'] },
   { path: 'listings', module: 'listings' },
   { path: 'timebanking', module: 'wallet' },
   { path: 'blog', feature: 'blog' },
@@ -43,7 +49,9 @@ export function AdminModuleGate() {
   const path = pathname.startsWith(`${root}/`) ? pathname.slice(root.length + 1) : '';
   const requirement = ADMIN_MODULE_REQUIREMENTS.find(r => path === r.path || path.startsWith(`${r.path}/`));
   if (isLoading) return null;
-  if (requirement && ((requirement.feature && !hasFeature(requirement.feature))
+  const features: readonly Feature[] = typeof requirement?.feature === 'string'
+    ? [requirement.feature] : (requirement?.feature ?? []);
+  if (requirement && (features.some(feature => !hasFeature(feature))
     || (requirement.module && !hasModule(requirement.module)))) {
     return <Navigate to={tenantPath('/admin/not-found')} replace />;
   }
