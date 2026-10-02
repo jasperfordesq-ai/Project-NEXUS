@@ -18,6 +18,7 @@ export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
   path: string; feature?: Feature | readonly Feature[]; module?: keyof TenantModules;
 }> = [
   { path: 'ai/ki-agents', feature: ['ai_agents', 'caring_community'] },
+  { path: 'agents', feature: 'ai_agents' },
   { path: 'marketplace/coupons', feature: ['marketplace', 'merchant_coupons'] },
   { path: 'enterprise/fadp', feature: 'fadp_compliance' },
   { path: 'listings', module: 'listings' },

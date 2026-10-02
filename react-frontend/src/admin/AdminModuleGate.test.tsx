@@ -72,6 +72,13 @@ describe('admin module boundaries', () => {
     renderPage('ai/ki-agents');
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
   });
+  // F-532 (E-078): the new AI-agents pages follow ai_agents, like their sidebar
+  // links and AgentAdminController — and must not swallow ai/ki-agents.
+  it.each(['agents', 'agents/proposals', 'agents/runs'])('blocks %s when ai_agents is off', path => {
+    state.off.add('ai_agents');
+    renderPage(path);
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
   it('does not mount content while settings load', () => {
     state.loading = true;
     const effect = vi.fn();
