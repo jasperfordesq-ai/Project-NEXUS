@@ -630,7 +630,17 @@
     "impact_blocked": "Blokujący",
     "impact_major": "Poważny",
     "impact_minor": "Drobny",
-    "impact_cosmetic": "Kosmetyczny"
+    "impact_cosmetic": "Kosmetyczny",
+    "receipt_subject": "Otrzymaliśmy Twoje zgłoszenie (:reference)",
+    "receipt_title": "Otrzymaliśmy Twoje zgłoszenie",
+    "receipt_preview": "Twój numer referencyjny to :reference.",
+    "receipt_body": "Dziękujemy za kontakt. Twoje zgłoszenie trafiło do zespołu wsparcia i ktoś się nim zajmie.",
+    "receipt_type_label": "Rodzaj zgłoszenia",
+    "receipt_next": "Zachowaj numer referencyjny, jeśli zechcesz później zapytać o to zgłoszenie. Nie musisz odpowiadać na tę wiadomość.",
+    "type_broken": "Coś nie działa",
+    "type_how_to": "Jak mogę…?",
+    "type_account": "Problem z kontem lub logowaniem",
+    "type_suggestion": "Zaproponuj ulepszenie"
   },
   "event_guardian_consent": {
     "subject": "Wymagana zgoda opiekuna na udział w :event",

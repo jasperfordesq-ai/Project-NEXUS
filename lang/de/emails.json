@@ -630,7 +630,17 @@
     "impact_blocked": "Blockiert",
     "impact_major": "Schwerwiegend",
     "impact_minor": "Gering",
-    "impact_cosmetic": "Kosmetisch"
+    "impact_cosmetic": "Kosmetisch",
+    "receipt_subject": "Wir haben Ihre Anfrage erhalten (:reference)",
+    "receipt_title": "Wir haben Ihre Anfrage erhalten",
+    "receipt_preview": "Ihre Referenz lautet :reference.",
+    "receipt_body": "Vielen Dank für Ihre Nachricht. Ihre Anfrage ist beim Support-Team angekommen, und jemand wird sie sich ansehen.",
+    "receipt_type_label": "Art der Anfrage",
+    "receipt_next": "Bewahren Sie Ihre Referenz auf, falls Sie später nach dieser Anfrage fragen möchten. Sie müssen auf diese E-Mail nicht antworten.",
+    "type_broken": "Etwas funktioniert nicht",
+    "type_how_to": "Wie kann ich …?",
+    "type_account": "Problem mit Konto oder Anmeldung",
+    "type_suggestion": "Verbesserung vorschlagen"
   },
   "event_guardian_consent": {
     "subject": "Einwilligung einer sorgeberechtigten Person für :event erforderlich",

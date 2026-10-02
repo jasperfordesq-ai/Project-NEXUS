@@ -630,7 +630,17 @@
     "impact_blocked": "Coiscthe",
     "impact_major": "Mor",
     "impact_minor": "Mionur",
-    "impact_cosmetic": "Cosmaiteach"
+    "impact_cosmetic": "Cosmaiteach",
+    "receipt_subject": "Fuaireamar d'iarratas (:reference)",
+    "receipt_title": "Fuaireamar d'iarratas",
+    "receipt_preview": "Is é :reference d'uimhir thagartha.",
+    "receipt_body": "Go raibh maith agat as teagmháil a dhéanamh linn. Tá d'iarratas faighte ag an bhfoireann tacaíochta, agus breathnóidh duine éigin air.",
+    "receipt_type_label": "Cineál iarratais",
+    "receipt_next": "Coinnigh d'uimhir thagartha ar eagla go mbeidh ceist agat faoin iarratas seo níos déanaí. Ní gá duit freagra a thabhairt ar an ríomhphost seo.",
+    "type_broken": "Níl rud éigin ag obair",
+    "type_how_to": "Conas a dhéanaim…?",
+    "type_account": "Fadhb cuntais nó síniú isteach",
+    "type_suggestion": "Moltaí feabhsúcháin"
   },
   "event_guardian_consent": {
     "subject": "Toiliú caomhnóra de dhíth le haghaidh :event",

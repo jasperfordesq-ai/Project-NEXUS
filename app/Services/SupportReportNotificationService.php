@@ -38,6 +38,86 @@ class SupportReportNotificationService
     }
 
     /**
+     * Emails the member a receipt with their reference, in their own
+     * language. Sent by the platform itself (no Atlassian involved), so it
+     * works whatever the Jira switches say. Carries no technical details.
+     * A failure is logged and never fails the member's request.
+     */
+    public static function sendReceipt(SupportReport $report): void
+    {
+        if (!$report->user_id) {
+            return;
+        }
+
+        try {
+            TenantContext::runForTenant((int) $report->tenant_id, function () use ($report): void {
+                $member = User::withoutGlobalScopes()
+                    ->where('tenant_id', (int) $report->tenant_id)
+                    ->where('id', (int) $report->user_id)
+                    ->first(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name', 'preferred_language']);
+                if (!$member || empty($member->email)) {
+                    return;
+                }
+
+                LocaleContext::withLocale($member, function () use ($member, $report): void {
+                    $name = $member->first_name ?: ($member->name ?: __('emails.common.fallback_name'));
+                    $html = EmailTemplateBuilder::make()
+                        ->theme('success')
+                        ->title(__('emails.support_report.receipt_title'))
+                        ->previewText(__('emails.support_report.receipt_preview', ['reference' => $report->reference]))
+                        ->greeting($name)
+                        ->paragraph(__('emails.support_report.receipt_body'))
+                        ->infoCard([
+                            __('emails.support_report.reference_label') => (string) $report->reference,
+                            __('emails.support_report.receipt_type_label') => self::translatedRequestType((string) ($report->request_type ?: 'broken')),
+                            __('emails.support_report.summary_label') => (string) $report->summary,
+                        ])
+                        ->paragraph(__('emails.support_report.receipt_next'))
+                        ->render();
+
+                    $sent = EmailDispatchService::sendRaw(
+                        (string) $member->email,
+                        __('emails.support_report.receipt_subject', ['reference' => $report->reference]),
+                        $html,
+                        null,
+                        null,
+                        null,
+                        'support_report',
+                        [
+                            'tenant_id' => (int) $report->tenant_id,
+                            'source' => 'SupportReportNotificationService::sendReceipt',
+                            'idempotency_key' => 'support-report-receipt:' . (int) $report->id,
+                        ],
+                    );
+
+                    if (!$sent) {
+                        Log::warning('[SupportReportNotificationService] support report receipt returned false', [
+                            'report_id' => $report->id,
+                            'user_id' => $member->id,
+                        ]);
+                    }
+                });
+            });
+        } catch (\Throwable $e) {
+            Log::warning('[SupportReportNotificationService] support report receipt failed', [
+                'report_id' => $report->id,
+                'tenant_id' => $report->tenant_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private static function translatedRequestType(string $type): string
+    {
+        return match ($type) {
+            'how_to' => __('emails.support_report.type_how_to'),
+            'account' => __('emails.support_report.type_account'),
+            'suggestion' => __('emails.support_report.type_suggestion'),
+            default => __('emails.support_report.type_broken'),
+        };
+    }
+
+    /**
      * @return \Illuminate\Support\Collection<int, User>
      */
     private static function adminRecipients(int $tenantId)

@@ -527,7 +527,17 @@
     "impact_blocked": "Blocked",
     "impact_major": "Major",
     "impact_minor": "Minor",
-    "impact_cosmetic": "Cosmetic"
+    "impact_cosmetic": "Cosmetic",
+    "receipt_subject": "We've received your request (:reference)",
+    "receipt_title": "We've received your request",
+    "receipt_preview": "Your reference is :reference.",
+    "receipt_body": "Thank you for getting in touch. Your request has reached the support team, and someone will look at it.",
+    "receipt_type_label": "Type of request",
+    "receipt_next": "Keep your reference in case you want to ask about this request later. You don't need to reply to this email.",
+    "type_broken": "Something isn't working",
+    "type_how_to": "How do I…?",
+    "type_account": "Account or sign-in problem",
+    "type_suggestion": "Suggest an improvement"
   },
   "identity_verification": {
     "passed_subject": "Your identity has been verified",

@@ -630,7 +630,17 @@
     "impact_blocked": "ブロック中",
     "impact_major": "重大",
     "impact_minor": "軽微",
-    "impact_cosmetic": "外観上のみ"
+    "impact_cosmetic": "外観上のみ",
+    "receipt_subject": "リクエストを受け付けました（:reference）",
+    "receipt_title": "リクエストを受け付けました",
+    "receipt_preview": "受付番号は :reference です。",
+    "receipt_body": "お問い合わせいただきありがとうございます。リクエストはサポートチームに届きました。担当者が確認します。",
+    "receipt_type_label": "リクエストの種類",
+    "receipt_next": "このリクエストについて後でお問い合わせいただく場合に備えて、受付番号を控えておいてください。このメールへの返信は不要です。",
+    "type_broken": "うまく動かない",
+    "type_how_to": "使い方を知りたい",
+    "type_account": "アカウントまたはサインインの問題",
+    "type_suggestion": "改善を提案する"
   },
   "event_guardian_consent": {
     "subject": ":event への参加には保護者の同意が必要です",

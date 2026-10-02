@@ -160,11 +160,13 @@ class SupportReportApiTest extends TestCase
         $reference = $response->json('data.report.reference');
         $reportId = (int) $response->json('data.report.id');
 
-        $this->assertCount(1, $mailer->calls);
-        $this->assertSame($admin->email, $mailer->calls[0]['to']);
-        $this->assertSame('support_report', $mailer->calls[0]['options']['category']);
-        $this->assertSame($tenantId, $mailer->calls[0]['options']['tenant_id']);
-        $this->assertStringContainsString((string) $reference, $mailer->calls[0]['subject']);
+        // The member also gets their own receipt (SupportReportReceiptEmailTest);
+        // here only the admin email is under test.
+        $adminCalls = array_values(array_filter($mailer->calls, fn (array $c) => $c['to'] === $admin->email));
+        $this->assertCount(1, $adminCalls);
+        $this->assertSame('support_report', $adminCalls[0]['options']['category']);
+        $this->assertSame($tenantId, $adminCalls[0]['options']['tenant_id']);
+        $this->assertStringContainsString((string) $reference, $adminCalls[0]['subject']);
 
         $this->assertDatabaseHas('notifications', [
             'tenant_id' => $tenantId,
@@ -195,7 +197,9 @@ class SupportReportApiTest extends TestCase
         $response->assertCreated();
         $reportId = (int) $response->json('data.report.id');
 
-        $this->assertCount(0, $mailer->calls);
+        // No immediate admin email for a cosmetic report (the member's own
+        // receipt is not an admin email).
+        $this->assertCount(0, array_filter($mailer->calls, fn (array $c) => $c['to'] === $admin->email));
         $this->assertDatabaseHas('notifications', [
             'tenant_id' => $tenantId,
             'user_id' => $admin->id,

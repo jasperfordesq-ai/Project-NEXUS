@@ -630,7 +630,17 @@
     "impact_blocked": "Geblokkeerd",
     "impact_major": "Ernstig",
     "impact_minor": "Klein",
-    "impact_cosmetic": "Cosmetisch"
+    "impact_cosmetic": "Cosmetisch",
+    "receipt_subject": "We hebben uw verzoek ontvangen (:reference)",
+    "receipt_title": "We hebben uw verzoek ontvangen",
+    "receipt_preview": "Uw referentie is :reference.",
+    "receipt_body": "Bedankt voor uw bericht. Uw verzoek is bij het ondersteuningsteam aangekomen en iemand gaat ernaar kijken.",
+    "receipt_type_label": "Soort verzoek",
+    "receipt_next": "Bewaar uw referentie voor het geval u later naar dit verzoek wilt vragen. U hoeft niet op deze e-mail te antwoorden.",
+    "type_broken": "Er werkt iets niet",
+    "type_how_to": "Hoe kan ik…?",
+    "type_account": "Probleem met account of aanmelden",
+    "type_suggestion": "Een verbetering voorstellen"
   },
   "event_guardian_consent": {
     "subject": "Toestemming van een voogd nodig voor :event",

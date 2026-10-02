@@ -166,6 +166,10 @@ class SupportReportController extends BaseApiController
             ]);
         }
 
+        // The member's own receipt (their reference, in their language). It
+        // never fails the request; failures are logged inside.
+        SupportReportNotificationService::sendReceipt($report);
+
         if (SupportJiraTicketService::isEnabled()) {
             try {
                 CreateSupportJiraTicket::dispatch((int) $report->id, (int) $tenantId);

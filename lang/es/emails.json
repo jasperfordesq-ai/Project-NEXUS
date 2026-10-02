@@ -630,7 +630,17 @@
     "impact_blocked": "Bloqueado",
     "impact_major": "Mayor",
     "impact_minor": "Menor",
-    "impact_cosmetic": "Cosmético"
+    "impact_cosmetic": "Cosmético",
+    "receipt_subject": "Hemos recibido su solicitud (:reference)",
+    "receipt_title": "Hemos recibido su solicitud",
+    "receipt_preview": "Su referencia es :reference.",
+    "receipt_body": "Gracias por ponerse en contacto. Su solicitud ha llegado al equipo de soporte y alguien la revisará.",
+    "receipt_type_label": "Tipo de solicitud",
+    "receipt_next": "Guarde su referencia por si quiere preguntar por esta solicitud más adelante. No necesita responder a este correo.",
+    "type_broken": "Algo no funciona",
+    "type_how_to": "¿Cómo puedo…?",
+    "type_account": "Problema con la cuenta o el acceso",
+    "type_suggestion": "Sugerir una mejora"
   },
   "event_guardian_consent": {
     "subject": "Se necesita el consentimiento de una persona tutora para :event",

@@ -630,7 +630,17 @@
     "impact_blocked": "محجوب",
     "impact_major": "رئيسي",
     "impact_minor": "ثانوي",
-    "impact_cosmetic": "شكلي"
+    "impact_cosmetic": "شكلي",
+    "receipt_subject": "لقد استلمنا طلبك (:reference)",
+    "receipt_title": "لقد استلمنا طلبك",
+    "receipt_preview": "رقمك المرجعي هو :reference.",
+    "receipt_body": "شكرًا لتواصلك معنا. وصل طلبك إلى فريق الدعم، وسيطّلع عليه أحد أعضائه.",
+    "receipt_type_label": "نوع الطلب",
+    "receipt_next": "احتفظ برقمك المرجعي في حال أردت السؤال عن هذا الطلب لاحقًا. لا حاجة للرد على هذه الرسالة.",
+    "type_broken": "هناك شيء لا يعمل",
+    "type_how_to": "كيف أقوم بـ…؟",
+    "type_account": "مشكلة في الحساب أو تسجيل الدخول",
+    "type_suggestion": "اقتراح تحسين"
   },
   "event_guardian_consent": {
     "subject": "مطلوب موافقة ولي الأمر لحضور :event",
