@@ -166,6 +166,9 @@ class PersonalisedFeedService
     private function scoreCandidates(int $userId, int $tenantId, string $contentType, array $candidates): array
     {
         $userCtx = $this->loadUserContext($userId, $tenantId);
+        $listingTerms = empty($userCtx['skills'])
+            ? []
+            : $this->loadListingTerms($tenantId, $contentType, $candidates);
         $similarUserIds = $this->loadSimilarUsers($userId, $tenantId);
         $connectedUserIds = $this->loadConnectedUsers($userId, $tenantId);
         $engagedAuthorIds = $this->loadEngagedAuthors($userId, $tenantId, $similarUserIds);
@@ -173,7 +176,7 @@ class PersonalisedFeedService
         $now = time();
 
         foreach ($candidates as &$item) {
-            $interest = $this->signalInterestMatch($item, $userCtx);
+            $interest = $this->signalInterestMatch($item, $userCtx, $listingTerms, $contentType);
             $recency  = $this->signalRecency($item, $now);
             $collab   = $this->signalCollab($item, $engagedAuthorIds);
             $social   = $this->signalSocial($item, $connectedUserIds);
@@ -211,17 +214,83 @@ class PersonalisedFeedService
         return $candidates;
     }
 
-    private function signalInterestMatch(array $item, array $ctx): float
+    /**
+     * Interest match: does the item's listing category name or one of its
+     * skill tags equal one of the member's skill names?
+     *
+     * Compared by name, not id: user_skills.category_id references
+     * skill_categories while listings.category_id references categories, so
+     * the two ids are unrelated numbers.
+     *
+     * @param array<int, list<string>> $listingTerms listing id => lower-cased category name + skill tags
+     */
+    private function signalInterestMatch(array $item, array $ctx, array $listingTerms, string $contentType): float
     {
-        $userCats = $ctx['categories'] ?? [];
-        if (empty($userCats)) {
+        $skills = $ctx['skills'] ?? [];
+        if (empty($skills)) {
             return 0.5; // neutral
         }
-        $itemCat = (int) ($item['category_id'] ?? 0);
-        if ($itemCat === 0) {
+        $listingId = $this->listingIdOf($item, $contentType);
+        $terms = $listingId > 0 ? ($listingTerms[$listingId] ?? []) : [];
+        if (empty($terms)) {
             return 0.4;
         }
-        return in_array($itemCat, $userCats, true) ? 1.0 : 0.2;
+        return array_intersect($terms, $skills) !== [] ? 1.0 : 0.2;
+    }
+
+    /** Listing id of a candidate, or 0 when the item is not a listing. */
+    private function listingIdOf(array $item, string $contentType): int
+    {
+        if ($contentType === 'listings' || ($item['type'] ?? null) === 'listing') {
+            return (int) ($item['id'] ?? 0);
+        }
+        return 0;
+    }
+
+    /**
+     * Lower-cased category name and skill tags for every listing candidate,
+     * all scoped to the tenant.
+     *
+     * @return array<int, list<string>>
+     */
+    private function loadListingTerms(int $tenantId, string $contentType, array $candidates): array
+    {
+        $ids = [];
+        foreach ($candidates as $item) {
+            $id = $this->listingIdOf($item, $contentType);
+            if ($id > 0) {
+                $ids[$id] = true;
+            }
+        }
+        if ($ids === []) {
+            return [];
+        }
+        $ids = array_keys($ids);
+
+        $terms = [];
+        $add = static function (int $listingId, ?string $term) use (&$terms): void {
+            $term = mb_strtolower(trim((string) $term));
+            if ($term !== '') {
+                $terms[$listingId][$term] = true;
+            }
+        };
+
+        DB::table('listings as l')
+            ->join('categories as cat', function ($join) use ($tenantId) {
+                $join->on('cat.id', '=', 'l.category_id')->where('cat.tenant_id', '=', $tenantId);
+            })
+            ->where('l.tenant_id', $tenantId)
+            ->whereIn('l.id', $ids)
+            ->get(['l.id', 'cat.name'])
+            ->each(fn ($row) => $add((int) $row->id, $row->name));
+
+        DB::table('listing_skill_tags')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('listing_id', $ids)
+            ->get(['listing_id', 'tag'])
+            ->each(fn ($row) => $add((int) $row->listing_id, $row->tag));
+
+        return array_map(static fn (array $set) => array_keys($set), $terms);
     }
 
     private function signalRecency(array $item, int $now): float
@@ -289,7 +358,7 @@ class PersonalisedFeedService
 
     private function loadUserContext(int $userId, int $tenantId): array
     {
-        $cacheKey = "pfs:userctx:{$tenantId}:{$userId}";
+        $cacheKey = "pfs:userctx:v2:{$tenantId}:{$userId}";
         return Cache::remember($cacheKey, 300, function () use ($userId, $tenantId) {
             $u = DB::table('users')
                 ->where('id', $userId)
@@ -297,27 +366,32 @@ class PersonalisedFeedService
                 ->select(['id', 'latitude', 'longitude'])
                 ->first();
 
-            $cats = [];
+            // Skill names, lower-cased, matched against listing category
+            // names and skill tags. user_skills.category_id is a
+            // skill_categories id and is NULL for wizard-saved skills, so it
+            // cannot be compared with a listing's category_id.
+            $skills = [];
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('user_skills')) {
-                    $cats = DB::table('user_skills')
+                    $skills = DB::table('user_skills')
                         ->where('tenant_id', $tenantId)
                         ->where('user_id', $userId)
-                        ->pluck('category_id')
-                        ->filter()
-                        ->map(fn ($v) => (int) $v)
+                        ->limit(50)
+                        ->pluck('skill_name')
+                        ->map(fn ($name) => mb_strtolower(trim((string) $name)))
+                        ->filter(fn ($name) => $name !== '')
                         ->unique()
                         ->values()
                         ->all();
                 }
             } catch (\Throwable $e) {
-                $cats = [];
+                $skills = [];
             }
 
             return [
                 'lat'        => $u?->latitude,
                 'lng'        => $u?->longitude,
-                'categories' => $cats,
+                'skills'     => $skills,
             ];
         });
     }

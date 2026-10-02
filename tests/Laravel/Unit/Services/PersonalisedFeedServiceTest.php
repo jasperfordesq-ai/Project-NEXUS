@@ -78,22 +78,46 @@ class PersonalisedFeedServiceTest extends TestCase
      * Insert a skill_categories row and attach it to the user via user_skills.
      * Returns the generated category id.
      */
-    private function insertUserCategory(int $userId): int
+    /**
+     * Give the user a skill named $name and return the id of a listing
+     * category with that same name. Interest matching is by name: a user
+     * skill's category_id is a skill_categories id, unrelated to
+     * listings.category_id.
+     */
+    private function insertUserSkillAndMatchingCategory(int $userId, string $name): int
     {
-        $catId = DB::table('skill_categories')->insertGetId([
+        DB::table('user_skills')->insertOrIgnore([
             'tenant_id'  => self::TENANT_ID,
-            'name'       => 'Test Category',
-            'slug'       => 'test-cat-' . uniqid('', true),
+            'user_id'    => $userId,
+            'skill_name' => $name,
             'created_at' => now(),
         ]);
-        DB::table('user_skills')->insertOrIgnore([
+        return $this->insertListingCategory($name);
+    }
+
+    private function insertListingCategory(string $name): int
+    {
+        return DB::table('categories')->insertGetId([
+            'tenant_id'  => self::TENANT_ID,
+            'name'       => $name,
+            'slug'       => 'pfs-cat-' . uniqid('', true),
+            'type'       => 'listing',
+            'created_at' => now(),
+        ]);
+    }
+
+    private function insertListing(int $userId, ?int $categoryId, string $createdAt): int
+    {
+        return DB::table('listings')->insertGetId([
             'tenant_id'   => self::TENANT_ID,
             'user_id'     => $userId,
-            'category_id' => $catId,
-            'skill_name'  => 'Test Skill',
-            'created_at'  => now(),
+            'title'       => 'PFS listing',
+            'type'        => 'offer',
+            'status'      => 'active',
+            'category_id' => $categoryId,
+            'created_at'  => $createdAt,
+            'updated_at'  => $createdAt,
         ]);
-        return $catId;
     }
 
     /** Insert N likes rows for the given user so engagement count reaches threshold. */
@@ -254,31 +278,31 @@ class PersonalisedFeedServiceTest extends TestCase
     public function test_rank_personalised_promotes_category_matching_items(): void
     {
         $userId = $this->insertUser();
-        $catId  = $this->insertUserCategory($userId); // creates a real FK-valid category
+        $catId  = $this->insertUserSkillAndMatchingCategory($userId, 'Test Skill');
         $this->insertLikes($userId, PersonalisedFeedService::MIN_ENGAGEMENT_EVENTS);
         Cache::flush();
 
-        // Item A: matches user's category (interest=1.0)
-        // Item B: no category (interest=0.4 neutral)
-        // Item C: different category (interest=0.2 low)
         // All same recency to isolate the interest signal
-        $sameTime = now()->subHours(1)->toDateTimeString();
+        $sameTime  = now()->subHours(1)->toDateTimeString();
+        $authorId  = $this->insertUser();
+        $unrelated = $this->insertListing($authorId, $this->insertListingCategory('Unrelated'), $sameTime); // interest 0.2
+        $matching  = $this->insertListing($authorId, $catId, $sameTime);                                   // interest 1.0
+        $none      = $this->insertListing($authorId, null, $sameTime);                                     // interest 0.4
         $candidates = [
-            ['id' => 100, 'created_at' => $sameTime, 'category_id' => 999999],  // low interest (non-existent cat)
-            ['id' => 200, 'created_at' => $sameTime, 'category_id' => $catId],   // high interest
-            ['id' => 300, 'created_at' => $sameTime, 'category_id' => 0],        // neutral
+            ['id' => $unrelated, 'created_at' => $sameTime],
+            ['id' => $matching,  'created_at' => $sameTime],
+            ['id' => $none,      'created_at' => $sameTime],
         ];
 
-        $result = $this->svc->rank($userId, 'feed', $candidates);
+        $result = $this->svc->rank($userId, 'listings', $candidates);
         $this->assertCount(3, $result);
 
-        // The item matching the user's category (id=200) must score higher
-        // than the unrelated category (id=100)
         $positions = array_column($result, 'id');
-        $pos200 = array_search(200, $positions);
-        $pos100 = array_search(100, $positions);
-
-        $this->assertLessThan($pos100, $pos200, 'Category-matching item (200) should rank above unrelated item (100)');
+        $this->assertSame(
+            [$matching, $none, $unrelated],
+            $positions,
+            'Category-matching listing should rank first, uncategorised next, unrelated last'
+        );
     }
 
     // ── rank() — personalised: social signal promotes connected-user posts ─────
