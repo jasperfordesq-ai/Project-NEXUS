@@ -27,6 +27,8 @@ class SupportReportJiraStatusSyncTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // A call the fake Jira does not answer must fail, never reach the network.
+        Http::preventStrayRequests();
         config([
             'support_jira.enabled' => true,
             'support_jira.site_url' => self::BASE,

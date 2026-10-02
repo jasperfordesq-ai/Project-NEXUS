@@ -30,6 +30,8 @@ class SupportJiraCheckCommandTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // A call the fake Jira does not answer must fail, never reach the network.
+        Http::preventStrayRequests();
         config([
             // The whole point: the check works while the connection is OFF.
             'support_jira.enabled' => false,

@@ -167,8 +167,13 @@ class SupportReportController extends BaseApiController
         }
 
         // The member's own receipt (their reference, in their language). It
-        // never fails the request; failures are logged inside.
-        SupportReportNotificationService::sendReceipt($report);
+        // never fails the request; failures are logged inside. When Jira will
+        // email the member itself, this would be a second confirmation, so it
+        // is held back and sent only if the ticket finally cannot be created
+        // (CreateSupportJiraTicket::failed).
+        if (!SupportJiraTicketService::willEmailMember()) {
+            SupportReportNotificationService::sendReceipt($report);
+        }
 
         if (SupportJiraTicketService::isEnabled()) {
             try {

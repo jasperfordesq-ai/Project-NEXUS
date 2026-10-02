@@ -59,6 +59,11 @@ return [
         'cosmetic' => 'Low',
     ],
 
+    // Atlassian account id of the person who answers the help desk. Every new
+    // ticket is assigned to them, so Jira emails them "assigned to you".
+    // Empty = tickets stay unassigned.
+    'assignee_account_id' => trim((string) env('SUPPORT_JIRA_ASSIGNEE_ACCOUNT_ID', '')),
+
     'timeout_seconds' => (int) env('SUPPORT_JIRA_TIMEOUT', 15),
 
     // Reports one member may send in any rolling 24 hours (spam guard). This

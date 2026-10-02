@@ -11,6 +11,7 @@ namespace App\Jobs;
 use App\Core\TenantContext;
 use App\Models\SupportReport;
 use App\Services\SupportJiraTicketService;
+use App\Services\SupportReportNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -90,5 +91,19 @@ final class CreateSupportJiraTicket implements ShouldQueue
             'tenant_id' => $this->tenantId,
             'error' => $exception?->getMessage(),
         ]);
+
+        // The member was promised Jira's confirmation email instead of the
+        // platform receipt; since no ticket exists, send the receipt now so
+        // they are never left with nothing.
+        if (!SupportJiraTicketService::willEmailMember()) {
+            return;
+        }
+
+        $report = SupportReport::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
+            ->find($this->reportId);
+        if ($report && !$report->jira_issue_key) {
+            SupportReportNotificationService::sendReceipt($report);
+        }
     }
 }

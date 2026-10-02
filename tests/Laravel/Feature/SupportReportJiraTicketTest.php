@@ -28,6 +28,8 @@ class SupportReportJiraTicketTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // A call the fake Jira does not answer must fail, never reach the network.
+        Http::preventStrayRequests();
         config([
             'support_jira.enabled' => true,
             'support_jira.send_member_email' => false,
@@ -254,7 +256,11 @@ class SupportReportJiraTicketTest extends TestCase
                 ? Http::response(['errorMessage' => 'An account already exists for this email'], 400)
                 : Http::response(['accountId' => 'acct-member'], 201),
             self::BASE . '/rest/api/3/user/search*' => Http::response([['accountId' => 'acct-existing']], 200),
-            self::BASE . '/rest/servicedeskapi/servicedesk/2/customer' => Http::response(null, 204),
+            // GET: not yet a customer of this desk (so the user search is used);
+            // POST: adding the customer to the desk.
+            self::BASE . '/rest/servicedeskapi/servicedesk/2/customer*' => fn (Request $r) => $r->method() === 'GET'
+                ? Http::response(['values' => []], 200)
+                : Http::response(null, 204),
             self::BASE . '/rest/servicedeskapi/request' => Http::response(['issueKey' => 'HELP-42', 'issueId' => '10042'], 201),
             self::BASE . '/rest/api/3/issue/HELP-42' => Http::response(null, 204),
             self::BASE . '/rest/servicedeskapi/servicedesk/2/attachTemporaryFile' => Http::response(['temporaryAttachments' => [['temporaryAttachmentId' => 'temp-1']]], 201),

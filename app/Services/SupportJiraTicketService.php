@@ -41,6 +41,17 @@ class SupportJiraTicketService
     }
 
     /**
+     * True when Jira itself will email the member (the ticket is raised in
+     * their name), so the platform's own receipt would be a second, duplicate
+     * confirmation. The platform receipt is then sent only as a fallback if
+     * the ticket finally cannot be created (CreateSupportJiraTicket::failed).
+     */
+    public static function willEmailMember(): bool
+    {
+        return self::isEnabled() && (bool) config('support_jira.send_member_email', false);
+    }
+
+    /**
      * @throws \RuntimeException when Jira refuses or cannot be reached
      */
     public function sync(SupportReport $report): void
@@ -70,7 +81,7 @@ class SupportJiraTicketService
             'requestTypeId' => (string) config('support_jira.request_types.' . $requestType),
             'requestFieldValues' => [
                 'summary' => Str::limit((string) $report->summary, 250, ''),
-                'description' => $this->description($report, $requestType, $tenant),
+                'description' => $this->description($report, $requestType, $tenant, $this->sendMemberEmail() ? $member : null),
             ],
         ];
 
@@ -96,6 +107,7 @@ class SupportJiraTicketService
 
         $warnings = array_filter([
             $this->setPriorityAndLabels($issueKey, $report, $requestType, $tenant),
+            $this->assignIssue($issueKey, $report),
             $this->attachDiagnostics($serviceDeskId, $issueKey, $report),
         ]);
 
@@ -398,7 +410,11 @@ class SupportJiraTicketService
         return array_key_exists($type, (array) config('support_jira.request_types', [])) ? $type : 'broken';
     }
 
-    private function description(SupportReport $report, string $requestType, ?object $tenant): string
+    /**
+     * @param User|null $member set ONLY when send_member_email is on; the
+     *                          member's name and email are never sent otherwise
+     */
+    private function description(SupportReport $report, string $requestType, ?object $tenant, ?User $member = null): string
     {
         $lines = [
             trim((string) $report->description),
@@ -409,6 +425,16 @@ class SupportJiraTicketService
             'Community: ' . ($tenant->name ?? 'unknown') . ' (tenant id ' . $report->tenant_id . ')',
             'Platform user id: ' . ($report->user_id ?? 'unknown'),
         ];
+
+        if ($member !== null) {
+            $memberName = trim((string) $member->name);
+            if ($memberName !== '') {
+                $lines[] = 'Member: ' . $memberName;
+            }
+            if (!empty($member->email)) {
+                $lines[] = 'Member email: ' . $member->email;
+            }
+        }
 
         if ($requestType === 'broken') {
             $lines[] = 'Impact: ' . $report->impact;
@@ -458,6 +484,29 @@ class SupportJiraTicketService
         $error = $this->editIssueFields($issueKey, $fields);
 
         return $error === null ? null : $this->warn($report, 'set priority and labels', $error);
+    }
+
+    /**
+     * Assigns the new ticket to support_jira.assignee_account_id (the person
+     * who answers the help desk), so Jira emails them "assigned to you".
+     * Returns a warning string on failure, null on success or when unset.
+     */
+    private function assignIssue(string $issueKey, SupportReport $report): ?string
+    {
+        $accountId = trim((string) config('support_jira.assignee_account_id', ''));
+        if ($accountId === '') {
+            return null;
+        }
+
+        try {
+            $response = $this->client()->put('/rest/api/3/issue/' . rawurlencode($issueKey) . '/assignee', [
+                'accountId' => $accountId,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->warn($report, 'assign the ticket', $e->getMessage());
+        }
+
+        return $response->successful() ? null : $this->warn($report, 'assign the ticket', 'HTTP ' . $response->status());
     }
 
     /**
@@ -547,9 +596,27 @@ class SupportJiraTicketService
 
         $accountId = $created->successful() ? (string) ($created->json('accountId') ?? '') : '';
         if ($accountId === '' && $created->status() === 400) {
-            $found = $this->client()->get('/rest/api/3/user/search', ['query' => $email]);
-            if ($found->successful()) {
-                $accountId = (string) ($found->json('0.accountId') ?? '');
+            // Already an Atlassian account. Look in this help desk's own
+            // customers first (portal-only customers are not Jira users, so
+            // the user search may not see them), then the user search.
+            try {
+                $inDesk = $this->client()->get(
+                    '/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/customer',
+                    ['query' => $email, 'limit' => 1],
+                );
+                if ($inDesk->successful()) {
+                    $accountId = (string) ($inDesk->json('values.0.accountId') ?? '');
+                }
+            } catch (\Throwable $e) {
+                // Fall through to the user search below; the outcome is
+                // still decided by whether an account id is found.
+                Log::warning('[SupportJiraTicketService] help-desk customer lookup failed', ['error' => $this->scrub($e->getMessage())]);
+            }
+            if ($accountId === '') {
+                $found = $this->client()->get('/rest/api/3/user/search', ['query' => $email]);
+                if ($found->successful()) {
+                    $accountId = (string) ($found->json('0.accountId') ?? '');
+                }
             }
         }
 
