@@ -75,6 +75,12 @@ echo "case 3: recipients file holds a broken key line — no upload"
 run_case badkey BACKUP_AGE_RECIPIENTS_FILE="$WORK/recipients-bad" || true
 [ -z "$(find "$REMOTE" -type f)" ] && pass "nothing uploaded" || failt "uploaded despite encryption failure: $(ls "$REMOTE")"
 
+echo "case 3b: one owner key + the server's drill key — not enough, no upload"
+age-keygen -o "$WORK/drill.txt" 2>/dev/null
+printf '%s\n%s\n' "$(age-keygen -y "$WORK/a.txt")" "$(age-keygen -y "$WORK/drill.txt")" > "$WORK/recipients-drill"
+run_case drillonly BACKUP_AGE_RECIPIENTS_FILE="$WORK/recipients-drill" DRILL_IDENTITY_FILE="$WORK/drill.txt" || true
+[ -z "$(find "$REMOTE" -type f)" ] && pass "nothing uploaded" || failt "uploaded with only one owner key"
+
 echo "case 4: offsite clean-up touches only pre-migrate files"
 mkdir -p "$WORK/prune/remote/gdrive/nexus-backups"
 for f in nexus_db_2026-01-01.sql.gz.age pre-migrate-20260101-000000.sql.gz.age old-april-file.sql.gz; do

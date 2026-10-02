@@ -106,14 +106,20 @@ db_backup_with_offsite() {
     local enc_path=""
     local key_count=0
     if [ -r "$recipients" ]; then
-        key_count="$(grep -cE '^age1[0-9a-z]+$' "$recipients" || true)"
+        # Count the OWNER's keys only: the drill key lives on this server and
+        # is lost with it (same rule as server-nightly-backup.sh).
+        local drill_key="${DRILL_IDENTITY_FILE:-/opt/nexus-php/.backup-drill-key}" drill_pub=""
+        if [ -r "$drill_key" ] && command -v age-keygen >/dev/null 2>&1; then
+            drill_pub="$(age-keygen -y "$drill_key" 2>/dev/null || true)"
+        fi
+        key_count="$(grep -E '^age1[0-9a-z]+$' "$recipients" | grep -vxF "${drill_pub:-none}" | grep -c . || true)"
     fi
     if command -v age >/dev/null 2>&1 && [ "${key_count:-0}" -ge 2 ]; then
         enc_path="${backup_file}.age"
         if age -R "$recipients" -o "$enc_path" "$backup_file" 2>>"$LOG_FILE" \
             && [ "$(head -c 21 "$enc_path")" = "age-encryption.org/v1" ]; then
             upload_path="$enc_path"
-            log_ok "Backup encrypted for offsite (age, ${key_count} keys)"
+            log_ok "Backup encrypted for offsite (age, ${key_count} owner keys)"
         else
             log_warn "age encryption failed — offsite copy SKIPPED (not uploading plaintext)"
         fi
@@ -136,7 +142,7 @@ db_backup_with_offsite() {
             log_warn "GPG symmetric encryption failed — offsite copy SKIPPED (not uploading plaintext)"
         fi
     else
-        log_warn "No backup encryption configured (${recipients} missing or <2 keys) — offsite copy SKIPPED, not encrypted. Run scripts/setup-backup-encryption.sh"
+        log_warn "No backup encryption configured (${recipients} missing or fewer than 2 owner keys) — offsite copy SKIPPED, not encrypted. Run scripts/setup-backup-encryption.sh"
     fi
 
     # Offsite (best-effort): only an encrypted file, only if rclone + remote exist.
