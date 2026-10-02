@@ -58,7 +58,17 @@ setup_case() {
     : > "$CASE/restored.sql"
 }
 
-put_encrypted() { age -R "$WORK/recipients" -o "$REMOTE/nexus_db_$1.sql.gz.age" "$WORK/dump.sql.gz"; }
+# Volume tarballs, as the nightly backup makes them.
+mkdir -p "$WORK/vol/sub"
+printf 'photo\n' > "$WORK/vol/a.jpg"; printf 'doc\n' > "$WORK/vol/sub/b.pdf"
+tar czf "$WORK/vol.tar.gz" -C "$WORK/vol" .
+
+# put_encrypted DATE — the three encrypted files one nightly run uploads.
+put_encrypted() {
+    age -R "$WORK/recipients" -o "$REMOTE/nexus_db_$1.sql.gz.age" "$WORK/dump.sql.gz"
+    age -R "$WORK/recipients" -o "$REMOTE/nexus_uploads_$1.tar.gz.age" "$WORK/vol.tar.gz"
+    age -R "$WORK/recipients" -o "$REMOTE/nexus_storage_$1.tar.gz.age" "$WORK/vol.tar.gz"
+}
 
 run_drill() {
     env PATH="$CASE/bin:$PATH" \
@@ -66,7 +76,7 @@ run_drill() {
         ENV_FILE="$CASE/.env" \
         DRILL_TMP_PARENT="$CASE/tmp" \
         BACKUP_ALERT_ENV="$CASE/alerts.env" \
-        DRILL_IDENTITY_FILE="$WORK/drill.txt" \
+        DRILL_IDENTITY_FILE="$WORK/drill.txt"         BACKUP_AGE_RECIPIENTS_FILE="$WORK/recipients" \
         FAKE_REMOTE_ROOT="$CASE/remote" \
         CURL_STUB_LOG="$CASE/curl.log" \
         DOCKER_STUB_RESTORE_FILE="$CASE/restored.sql" \
@@ -97,6 +107,8 @@ grep -q "RESTORE DRILL PASSED" "$CASE/curl.log" && pass "Telegram 'passed' messa
 grep -q "nexus_db_${TODAY}.sql.gz.age" "$CASE/out.log" && pass "drilled the newest file" || failt "did not drill the newest file"
 grep -qi "unencrypted" "$CASE/curl.log" && pass "reports old unencrypted files still on Drive" || failt "did not report old unencrypted files on Drive"
 [ -z "$(ls -A "$CASE/tmp")" ] && pass "no decrypted file left behind" || failt "decrypted file left behind"
+grep -q "uploads: nexus_uploads_${TODAY}.tar.gz.age" "$CASE/curl.log" && grep -q "storage: nexus_storage_${TODAY}.tar.gz.age" "$CASE/curl.log"     && pass "uploads and storage backups were unlocked and checked" || failt "uploads/storage not reported as checked"
+grep -q "$(head -c 16 <<<"$(grep -m1 '^age1' "$WORK/recipients")")" "$CASE/curl.log"     && pass "PASSED message lists the keys the server encrypts to" || failt "PASSED message does not list the keys"
 
 # ---------------------------------------------------------------------------
 echo "case 2: the drill key cannot open the file (wrong or lost key)"
@@ -128,6 +140,28 @@ setup_case stale
 put_encrypted "$OLD"
 DRILL_RC=0; run_drill || DRILL_RC=$?
 expect_fail "stale" "days old"
+
+echo "case 6b: uploads backup missing on Drive"
+setup_case no_uploads
+put_encrypted "$TODAY"
+rm "$REMOTE/nexus_uploads_${TODAY}.tar.gz.age"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "no uploads" "uploads"
+
+echo "case 6c: storage backup decrypts but is not a valid archive"
+setup_case bad_storage
+put_encrypted "$TODAY"
+printf 'not a tarball\n' | age -R "$WORK/recipients" -o "$REMOTE/nexus_storage_${TODAY}.tar.gz.age"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "bad storage" "storage"
+
+echo "case 6d: uploads backup is from an older night than the database"
+setup_case old_uploads
+put_encrypted "$TODAY"
+rm "$REMOTE/nexus_uploads_${TODAY}.tar.gz.age"
+age -R "$WORK/recipients" -o "$REMOTE/nexus_uploads_${OLD}.tar.gz.age" "$WORK/vol.tar.gz"
+DRILL_RC=0; run_drill || DRILL_RC=$?
+expect_fail "old uploads" "uploads"
 
 echo "case 7: restore produced no rows"
 setup_case empty_restore

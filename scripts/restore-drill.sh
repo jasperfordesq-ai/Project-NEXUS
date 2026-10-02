@@ -115,6 +115,40 @@ The offsite backup could NOT be shown to restore. Treat this as urgent: until it
 trap 'fail "unexpected error on line $LINENO"' ERR
 trap cleanup EXIT
 
+# check_archive uploads|storage — download that night's encrypted volume
+# archive, decrypt it straight into `tar -t` (no plaintext copy on disk) and
+# require a complete, non-empty archive.
+ARCHIVES=""
+check_archive() {
+    local kind="$1" name listing entries
+    name="nexus_${kind}_${BACKUP_DATE}.tar.gz.age"
+    listing="$(rclone lsf "$RCLONE_REMOTE" --include "$name" --max-depth 1)" \
+        || fail "could not list $RCLONE_REMOTE for the $kind backup"
+    grep -qxF "$name" <<<"$listing" \
+        || fail "$kind backup $name (same night as the database) is missing on $RCLONE_REMOTE"
+    rclone copyto "$RCLONE_REMOTE/$name" "$WORK_DIR/$name" || fail "download of $kind backup $name failed"
+    [ "$(head -c 21 "$WORK_DIR/$name")" = "age-encryption.org/v1" ] \
+        || fail "$kind backup $name on Google Drive is not encrypted (no age header)"
+    entries="$(age -d -i "$DRILL_IDENTITY_FILE" "$WORK_DIR/$name" | tar -tzf - | wc -l)" \
+        || fail "$kind backup $name could not be decrypted, or is not a complete archive"
+    rm -f "$WORK_DIR/$name"
+    [ "${entries:-0}" -gt 0 ] || fail "$kind backup $name is an empty archive"
+    ARCHIVES="${ARCHIVES}
+${kind}: ${name}, unlocked, ${entries} entries, archive complete"
+    success "$kind: $name — ${entries} entries, archive complete"
+}
+
+# The public keys the nightly backup encrypts to, shortened, so the monthly
+# message lets the owner see their own keys are still on the list.
+RECIPIENTS_FILE="${BACKUP_AGE_RECIPIENTS_FILE:-/opt/nexus-php/.backup-age-recipients}"
+recipient_summary() {
+    if [ -r "$RECIPIENTS_FILE" ]; then
+        grep -E '^age1' "$RECIPIENTS_FILE" | cut -c1-16 | sed 's/$/…/' | paste -sd' ' -
+    else
+        echo "(cannot read $RECIPIENTS_FILE)"
+    fi
+}
+
 echo ""
 echo "════════════════════════════════════════════════════════════"
 echo "  RESTORE DRILL ($DRILL_SOURCE) — $(date '+%Y-%m-%d %H:%M:%S')"
@@ -160,6 +194,12 @@ Note: ${PLAIN_LEFT} old unencrypted backup file(s) are still on Google Drive. Re
     rm -f "$WORK_DIR/$LATEST" "$WORK_DIR/age.err"
     BACKUP_FILE="$WORK_DIR/drill.sql.gz"
     success "Downloaded and decrypted with the drill key"
+
+    # The uploads and storage archives from the SAME night must also unlock and
+    # be complete archives — otherwise a restore would bring back the database
+    # without members' files.
+    check_archive uploads
+    check_archive storage
 else
     log "Locating most recent local backup..."
     BACKUP_FILE="$(ls -t "$BACKUP_DIR"/nexus_db_*.sql.gz 2>/dev/null | head -1 || true)"
@@ -255,6 +295,9 @@ trap - ERR
 report "NEXUS RESTORE DRILL PASSED" \
     "Backup drilled: ${DRILLED}
 It was downloaded, decrypted and loaded into a throwaway database.${COUNTS}
+${ARCHIVES}
+
+Backups are locked to these keys (check yours are listed): $(recipient_summary)
 
 This proves the server's drill key. It does not prove your own keys: open the nexus_keycheck file with scripts/backup-decrypt.sh to check those.${NOTES}" \
     || { echo -e "${RED}✗${NC} Restore succeeded but the result could not be reported."; exit 1; }
