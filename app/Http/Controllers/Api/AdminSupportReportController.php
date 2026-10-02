@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\SupportJiraTicketService;
 use App\Support\UserDisplayName;
 
 class AdminSupportReportController extends BaseApiController
@@ -221,6 +222,10 @@ class AdminSupportReportController extends BaseApiController
             'sr.triaged_at',
             'sr.resolved_at',
             'sr.closed_at',
+            'sr.request_type',
+            'sr.jira_issue_key',
+            'sr.jira_synced_at',
+            'sr.jira_last_error',
             'sr.created_at',
             'sr.updated_at',
             'tenant.name as tenant_name',
@@ -362,6 +367,11 @@ class AdminSupportReportController extends BaseApiController
             'triaged_at' => $report->triaged_at,
             'resolved_at' => $report->resolved_at,
             'closed_at' => $report->closed_at,
+            'request_type' => $report->request_type ?? 'broken',
+            'jira_issue_key' => $report->jira_issue_key,
+            'jira_issue_url' => app(SupportJiraTicketService::class)->issueUrl($report->jira_issue_key),
+            'jira_synced_at' => $report->jira_synced_at,
+            'jira_last_error' => $report->jira_last_error,
             'created_at' => $report->created_at,
             'updated_at' => $report->updated_at,
             'reporter' => $report->user_id !== null ? $this->formatRelatedUser($report, 'reporter') : null,

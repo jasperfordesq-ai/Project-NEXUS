@@ -37,6 +37,10 @@ class SupportReport extends Model
         'triaged_at',
         'resolved_at',
         'closed_at',
+        'request_type',
+        'jira_issue_key',
+        'jira_synced_at',
+        'jira_last_error',
     ];
 
     protected $casts = [
@@ -44,6 +48,7 @@ class SupportReport extends Model
         'triaged_at' => 'datetime',
         'resolved_at' => 'datetime',
         'closed_at' => 'datetime',
+        'jira_synced_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

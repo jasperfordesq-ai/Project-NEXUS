@@ -6,8 +6,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Jobs\CreateSupportJiraTicket;
 use App\Models\SupportReport;
 use App\Models\User;
+use App\Services\SupportJiraTicketService;
 use App\Services\SupportReportNotificationService;
 use App\Services\SupportReportSentryService;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,13 @@ class SupportReportController extends BaseApiController
     protected bool $isV2Api = true;
 
     private const ALLOWED_IMPACTS = ['blocked', 'major', 'minor', 'cosmetic'];
+
+    /**
+     * The four kinds of "Help & support" request; they match the Jira help
+     * desk's request types. Only 'broken' asks for an impact and may carry
+     * diagnostics. Clients that send no type (web-uk, older builds) mean 'broken'.
+     */
+    private const REQUEST_TYPES = ['broken', 'how_to', 'account', 'suggestion'];
     private const FILTERED = '[filtered]';
     private const MAX_DIAGNOSTIC_DEPTH = 6;
     private const MAX_DIAGNOSTIC_ITEMS = 80;
@@ -49,10 +58,24 @@ class SupportReportController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = $this->getTenantId();
 
+        $dailyLimit = max(1, (int) config('support_jira.daily_member_limit', 5));
+        $sentToday = SupportReport::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+        if ($sentToday >= $dailyLimit) {
+            return $this->respondWithErrors([[
+                'code' => 'SUPPORT_REPORT_DAILY_LIMIT',
+                'message' => __('api.support_reports_daily_limit', ['count' => $dailyLimit]),
+            ]], 429);
+        }
+
         $validator = Validator::make($request->all(), [
+            'request_type' => ['nullable', 'string', 'in:' . implode(',', self::REQUEST_TYPES)],
             'summary' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['required', 'string', 'min:10', 'max:5000'],
-            'impact' => ['required', 'string', 'in:' . implode(',', self::ALLOWED_IMPACTS)],
+            'impact' => ['exclude_unless:request_type,broken,null', 'required', 'string', 'in:' . implode(',', self::ALLOWED_IMPACTS)],
             'module' => ['nullable', 'string', 'max:100'],
             'route' => ['nullable', 'string', 'max:255'],
             'page_url' => ['nullable', 'string', 'max:2048'],
@@ -68,6 +91,7 @@ class SupportReportController extends BaseApiController
             'description.max' => __('api.support_reports_description_max'),
             'impact.required' => __('api.support_reports_impact_required'),
             'impact.in' => __('api.support_reports_impact_invalid'),
+            'request_type.in' => __('api.support_reports_request_type_invalid'),
         ]);
 
         if ($validator->fails()) {
@@ -84,7 +108,9 @@ class SupportReportController extends BaseApiController
         }
 
         $validated = $validator->validated();
-        $includeDiagnostics = (bool) ($validated['include_diagnostics'] ?? false);
+        $requestType = (string) ($validated['request_type'] ?? 'broken');
+        // Diagnostics are collected only for something that is not working.
+        $includeDiagnostics = $requestType === 'broken' && (bool) ($validated['include_diagnostics'] ?? false);
         $diagnostics = $includeDiagnostics
             ? $this->normaliseDiagnostics($validated['diagnostics'] ?? null)
             : null;
@@ -94,9 +120,12 @@ class SupportReportController extends BaseApiController
             'user_id' => $userId,
             'reference' => $this->generateReference(),
             'source' => 'in_app',
+            'request_type' => $requestType,
             'summary' => trim((string) $validated['summary']),
             'description' => trim((string) $validated['description']),
-            'impact' => (string) $validated['impact'],
+            // The column is NOT NULL; a question or suggestion has no impact,
+            // so it is stored at the default and never mapped to a priority.
+            'impact' => (string) ($validated['impact'] ?? 'minor'),
             'status' => 'open',
             'module' => $this->nullableString($validated['module'] ?? null),
             'route' => $this->pathOnly($this->nullableString($validated['route'] ?? null)),
@@ -137,10 +166,25 @@ class SupportReportController extends BaseApiController
             ]);
         }
 
+        if (SupportJiraTicketService::isEnabled()) {
+            try {
+                CreateSupportJiraTicket::dispatch((int) $report->id, (int) $tenantId);
+            } catch (\Throwable $e) {
+                // The report is saved and admins notified, so the member's
+                // request genuinely succeeded; only the Jira copy is missing.
+                Log::error('[SupportReportController] could not queue the Jira ticket', [
+                    'report_id' => $report->id,
+                    'tenant_id' => $tenantId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         return $this->respondWithData([
             'report' => [
                 'id' => $report->id,
                 'reference' => $report->reference,
+                'request_type' => $report->request_type,
                 'status' => $report->status,
                 'impact' => $report->impact,
                 'summary' => $report->summary,

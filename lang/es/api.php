@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'La descripción no debe superar los 5.000 caracteres.',
     'support_reports_impact_required' => 'Indique cuánto le está afectando esto.',
     'support_reports_impact_invalid' => 'Elija un nivel de impacto válido.',
+    'support_reports_request_type_invalid' => 'Elija qué tipo de ayuda necesita.',
+    'support_reports_daily_limit' => 'Ha enviado :count informes en las últimas 24 horas. Espere un poco antes de enviar otro o responda a uno que ya haya enviado.',
     'support_report_not_found' => 'Informe de soporte no encontrado.',
     'support_reports_status_invalid' => 'Elija un estado de informe válido.',
     'support_reports_assignment_invalid' => 'Asigne el informe a un administrador activo de este tenant.',

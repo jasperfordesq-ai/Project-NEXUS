@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'La description ne doit pas dépasser 5 000 caractères.',
     'support_reports_impact_required' => 'Veuillez indiquer à quel point cela vous affecte.',
     'support_reports_impact_invalid' => 'Veuillez choisir un niveau d\'impact valide.',
+    'support_reports_request_type_invalid' => 'Veuillez choisir le type d\'aide dont vous avez besoin.',
+    'support_reports_daily_limit' => 'Vous avez envoyé :count signalements au cours des dernières 24 heures. Veuillez patienter un peu avant d\'en envoyer un autre, ou répondez à un signalement déjà envoyé.',
     'support_report_not_found' => 'Signalement au support introuvable.',
     'support_reports_status_invalid' => 'Veuillez choisir un statut de signalement valide.',
     'support_reports_assignment_invalid' => 'Veuillez attribuer le signalement à un administrateur actif de ce tenant.',

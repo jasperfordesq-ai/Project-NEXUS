@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'Die Beschreibung darf höchstens 5.000 Zeichen lang sein.',
     'support_reports_impact_required' => 'Bitte wählen Sie aus, wie stark Sie davon betroffen sind.',
     'support_reports_impact_invalid' => 'Bitte wählen Sie eine gültige Auswirkungsstufe.',
+    'support_reports_request_type_invalid' => 'Bitte wählen Sie aus, welche Art von Hilfe Sie benötigen.',
+    'support_reports_daily_limit' => 'Sie haben in den letzten 24 Stunden :count Meldungen gesendet. Bitte warten Sie etwas, bevor Sie eine weitere senden, oder antworten Sie auf eine bereits gesendete.',
     'support_report_not_found' => 'Support-Meldung nicht gefunden.',
     'support_reports_status_invalid' => 'Bitte wählen Sie einen gültigen Meldungsstatus.',
     'support_reports_assignment_invalid' => 'Bitte weisen Sie die Meldung einem aktiven Administrator dieses Mandanten zu.',

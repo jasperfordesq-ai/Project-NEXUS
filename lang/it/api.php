@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'La descrizione non deve superare i 5.000 caratteri.',
     'support_reports_impact_required' => 'Indicare quanto questo problema La sta condizionando.',
     'support_reports_impact_invalid' => 'Scegliere un livello di impatto valido.',
+    'support_reports_request_type_invalid' => 'Scegli il tipo di aiuto di cui hai bisogno.',
+    'support_reports_daily_limit' => 'Hai inviato :count segnalazioni nelle ultime 24 ore. Attendi un po\' prima di inviarne un\'altra, oppure rispondi a una che hai già inviato.',
     'support_report_not_found' => 'Segnalazione di supporto non trovata.',
     'support_reports_status_invalid' => 'Scegliere uno stato di segnalazione valido.',
     'support_reports_assignment_invalid' => 'Assegnare la segnalazione a un amministratore attivo di questo tenant.',

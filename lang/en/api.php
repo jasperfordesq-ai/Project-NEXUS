@@ -217,6 +217,8 @@ return [
     'support_reports_description_max' => 'The description must be 5,000 characters or fewer.',
     'support_reports_impact_required' => 'Please choose how much this is affecting you.',
     'support_reports_impact_invalid' => 'Please choose a valid impact level.',
+    'support_reports_request_type_invalid' => 'Please choose what kind of help you need.',
+    'support_reports_daily_limit' => 'You have sent :count reports in the last 24 hours. Please wait a little before sending another, or reply to one you have already sent.',
     'support_report_not_found'        => 'Support report not found.',
     'support_reports_status_invalid'  => 'Please choose a valid report status.',
     'support_reports_assignment_invalid' => 'Please assign the report to an active admin in this tenant.',

@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'Ní mór don chur síos a bheith 5,000 carachtar nó níos lú.',
     'support_reports_impact_required' => 'Roghnaigh cé chomh mór is atá sé seo ag dul i bhfeidhm ort.',
     'support_reports_impact_invalid' => 'Roghnaigh leibhéal tionchair bailí.',
+    'support_reports_request_type_invalid' => 'Roghnaigh cén cineál cabhrach atá uait.',
+    'support_reports_daily_limit' => 'Sheol tú :count tuairisc le 24 uair an chloig anuas. Fan tamall beag sula seolann tú ceann eile, nó freagair ceann atá seolta agat cheana.',
     'support_report_not_found' => 'Níor aimsíodh an tuairisc tacaíochta.',
     'support_reports_status_invalid' => 'Roghnaigh stádas tuairisce bailí.',
     'support_reports_assignment_invalid' => 'Sann an tuairisc do riarthóir gníomhach sa tionónta seo.',

@@ -18230,6 +18230,10 @@ CREATE TABLE `support_reports` (
   `closed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `request_type` varchar(24) DEFAULT NULL,
+  `jira_issue_key` varchar(32) DEFAULT NULL,
+  `jira_synced_at` timestamp NULL DEFAULT NULL,
+  `jira_last_error` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `support_reports_reference_unique` (`reference`),
   KEY `idx_support_reports_tenant_status_created` (`tenant_id`,`status`,`created_at`),
@@ -21625,7 +21629,8 @@ INSERT INTO `laravel_migrations` VALUES
 (454,'2026_09_26_150000_correct_group_exchange_ai_module_doc',136),
 (455,'2026_09_26_160000_create_feed_post_creation_receipts',137),
 (456,'2026_09_26_170000_create_goal_buddy_requests',138),
-(457,'2026_09_27_210000_repair_legacy_views_for_restore',139);
+(457,'2026_09_27_210000_repair_legacy_views_for_restore',139),
+(458,'2026_10_02_120000_add_jira_sync_to_support_reports',140);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

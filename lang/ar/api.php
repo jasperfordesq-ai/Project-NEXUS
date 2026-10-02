@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'يجب ألا يتجاوز الوصف 5,000 حرف.',
     'support_reports_impact_required' => 'يرجى اختيار مدى تأثير هذه المشكلة عليك.',
     'support_reports_impact_invalid' => 'يرجى اختيار مستوى تأثير صالح.',
+    'support_reports_request_type_invalid' => 'يرجى اختيار نوع المساعدة التي تحتاجها.',
+    'support_reports_daily_limit' => 'لقد أرسلت :count بلاغات خلال آخر 24 ساعة. يرجى الانتظار قليلاً قبل إرسال بلاغ آخر، أو الرد على بلاغ أرسلته بالفعل.',
     'support_report_not_found' => 'لم يتم العثور على بلاغ الدعم.',
     'support_reports_status_invalid' => 'يرجى اختيار حالة بلاغ صالحة.',
     'support_reports_assignment_invalid' => 'يرجى إسناد البلاغ إلى مسؤول نشط في هذا المستأجر.',

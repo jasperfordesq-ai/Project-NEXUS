@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => '説明は5,000文字以内にしてください。',
     'support_reports_impact_required' => '影響の大きさを選択してください。',
     'support_reports_impact_invalid' => '有効な影響レベルを選択してください。',
+    'support_reports_request_type_invalid' => '必要なサポートの種類を選択してください。',
+    'support_reports_daily_limit' => '過去24時間に:count件の報告を送信しました。次の報告を送る前に少しお待ちいただくか、送信済みの報告に返信してください。',
     'support_report_not_found' => 'サポート報告が見つかりません。',
     'support_reports_status_invalid' => '有効な報告ステータスを選択してください。',
     'support_reports_assignment_invalid' => 'このテナントのアクティブな管理者に報告を割り当ててください。',

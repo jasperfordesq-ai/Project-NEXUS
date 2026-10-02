@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'De beschrijving mag maximaal 5.000 tekens bevatten.',
     'support_reports_impact_required' => 'Kies hoeveel last u hiervan heeft.',
     'support_reports_impact_invalid' => 'Kies een geldig impactniveau.',
+    'support_reports_request_type_invalid' => 'Kies welk soort hulp u nodig heeft.',
+    'support_reports_daily_limit' => 'U hebt in de afgelopen 24 uur :count meldingen verstuurd. Wacht even voordat u er nog een verstuurt, of reageer op een melding die u al hebt verstuurd.',
     'support_report_not_found' => 'Supportmelding niet gevonden.',
     'support_reports_status_invalid' => 'Kies een geldige meldingsstatus.',
     'support_reports_assignment_invalid' => 'Wijs de melding toe aan een actieve beheerder van deze tenant.',

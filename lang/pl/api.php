@@ -2468,6 +2468,8 @@ return [
     'support_reports_description_max' => 'Opis może mieć najwyżej 5000 znaków.',
     'support_reports_impact_required' => 'Wybierz, jak bardzo to na Ciebie wpływa.',
     'support_reports_impact_invalid' => 'Wybierz prawidłowy poziom wpływu.',
+    'support_reports_request_type_invalid' => 'Wybierz, jakiego rodzaju pomocy potrzebujesz.',
+    'support_reports_daily_limit' => 'W ciągu ostatnich 24 godzin wysłano :count zgłoszeń. Odczekaj chwilę przed wysłaniem kolejnego lub odpowiedz na zgłoszenie, które już wysłano.',
     'support_report_not_found' => 'Nie znaleziono zgłoszenia do wsparcia.',
     'support_reports_status_invalid' => 'Wybierz prawidłowy status zgłoszenia.',
     'support_reports_assignment_invalid' => 'Przypisz zgłoszenie do aktywnego administratora tego tenanta.',
