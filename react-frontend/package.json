@@ -87,7 +87,7 @@
     "@types/papaparse": "^5.5.2",
     "@uiw/react-codemirror": "^4.25.10",
     "@vis.gl/react-google-maps": "^1.8.3",
-    "dompurify": "^3.4.2",
+    "dompurify": "^3.4.16",
     "grapesjs": "^0.21.2",
     "grapesjs-blocks-basic": "^1.0.2",
     "grapesjs-custom-code": "^1.0.2",
