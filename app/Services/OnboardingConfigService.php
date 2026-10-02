@@ -22,6 +22,12 @@ class OnboardingConfigService
 {
     /**
      * Default values — match pre-module hardcoded behavior exactly.
+     *
+     * Retired 2026-10-02, with any stored rows now ignored:
+     *   onboarding.step_interests_enabled / _required — the "What are you
+     *     interested in?" step; nothing on the platform read its answers.
+     *   onboarding.listing_creation_mode / listing_max_auto — turning the
+     *     skills step's answers into listings. Off in every community.
      */
     private const DEFAULTS = [
         'onboarding.enabled' => '1',
@@ -29,8 +35,6 @@ class OnboardingConfigService
         'onboarding.step_welcome_enabled' => '1',
         'onboarding.step_profile_enabled' => '1',
         'onboarding.step_profile_required' => '1',
-        'onboarding.step_interests_enabled' => '1',
-        'onboarding.step_interests_required' => '0',
         'onboarding.step_skills_enabled' => '1',
         'onboarding.step_skills_required' => '0',
         'onboarding.step_safeguarding_enabled' => '1',
@@ -39,8 +43,6 @@ class OnboardingConfigService
         'onboarding.avatar_required' => '1',
         'onboarding.bio_required' => '1',
         'onboarding.bio_min_length' => '10',
-        'onboarding.listing_creation_mode' => 'disabled',
-        'onboarding.listing_max_auto' => '3',
         'onboarding.require_completion_for_visibility' => '0',
         'onboarding.require_avatar_for_visibility' => '0',
         'onboarding.require_bio_for_visibility' => '0',
@@ -56,7 +58,6 @@ class OnboardingConfigService
     private const STEPS = [
         'welcome' => ['key' => 'step_welcome'],
         'profile' => ['key' => 'step_profile'],
-        'interests' => ['key' => 'step_interests'],
         'skills' => ['key' => 'step_skills'],
         'safeguarding' => ['key' => 'step_safeguarding'],
         'confirm' => ['key' => 'step_confirm'],
@@ -289,26 +290,6 @@ class OnboardingConfigService
     }
 
     /**
-     * Get the listing creation mode for a tenant.
-     */
-    public static function getListingCreationMode(?int $tenantId = null): string
-    {
-        $config = self::getConfig($tenantId);
-        $mode = $config['listing_creation_mode'] ?? 'disabled';
-        $allowed = ['disabled', 'suggestions_only', 'draft', 'pending_review', 'active'];
-        return in_array($mode, $allowed, true) ? $mode : 'disabled';
-    }
-
-    /**
-     * Get the max auto-generated listings allowed.
-     */
-    public static function getListingMaxAuto(?int $tenantId = null): int
-    {
-        $config = self::getConfig($tenantId);
-        return max(0, min(10, (int) ($config['listing_max_auto'] ?? 3)));
-    }
-
-    /**
      * Cast a setting value to the appropriate PHP type.
      */
     private static function castValue(string $key, string $raw): mixed
@@ -317,7 +298,6 @@ class OnboardingConfigService
         $booleans = [
             'enabled', 'mandatory',
             'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-            'step_interests_enabled', 'step_interests_required',
             'step_skills_enabled', 'step_skills_required',
             'step_safeguarding_enabled', 'step_safeguarding_required',
             'step_confirm_enabled',
@@ -330,7 +310,7 @@ class OnboardingConfigService
         }
 
         // Integer settings
-        $integers = ['bio_min_length', 'listing_max_auto'];
+        $integers = ['bio_min_length'];
         if (in_array($key, $integers, true)) {
             return (int) $raw;
         }

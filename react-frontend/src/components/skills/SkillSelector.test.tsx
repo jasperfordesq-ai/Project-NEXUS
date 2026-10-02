@@ -234,7 +234,7 @@ describe('SkillSelector', () => {
       if (url.includes('/v2/skills/search')) {
         return Promise.resolve({
           success: true,
-          data: [{ id: 5, name: 'JavaScript', category_name: 'Technology', category_id: 3 }],
+          data: [{ skill_name: 'JavaScript', category_id: 3, user_count: 4 }],
         });
       }
       return Promise.resolve({ success: false, data: null });
@@ -266,7 +266,7 @@ describe('SkillSelector', () => {
       if (url.includes('/v2/skills/search')) {
         return Promise.resolve({
           success: true,
-          data: [{ id: 9, name: 'Cooking', category_name: 'Lifestyle', category_id: 5 }],
+          data: [{ skill_name: 'Cooking', category_id: null, user_count: 2 }],
         });
       }
       return Promise.resolve({ success: false, data: null });
@@ -315,9 +315,49 @@ describe('SkillSelector', () => {
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/v2/users/me/skills',
-        expect.objectContaining({ skill_name: 'Cooking' })
+        expect.objectContaining({ skill_name: 'Cooking', is_offering: true, is_requesting: false })
       );
     });
+  });
+
+  it('can record a skill the member wants help with, not just one they offer', async () => {
+    mockApi.post.mockResolvedValue({ success: true, data: {} });
+
+    const { SkillSelector } = await import('./SkillSelector');
+    render(<SkillSelector userSkills={[]} onSkillsChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Add Skill/i }));
+    await waitFor(() => screen.getByRole('dialog'));
+    fireEvent.change(document.querySelector('input') as HTMLInputElement, { target: { value: 'Piano lessons' } });
+
+    // Untick "Offers", tick "Wants"
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Offers' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Wants' }));
+
+    const footer = screen.getByTestId('modal-footer');
+    const submit = Array.from(footer.querySelectorAll('button')).find((b) => b.textContent?.includes('Add Skill'));
+    await waitFor(() => expect(submit).not.toBeDisabled());
+    fireEvent.click(submit!);
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith(
+        '/v2/users/me/skills',
+        expect.objectContaining({ skill_name: 'Piano lessons', is_offering: false, is_requesting: true })
+      );
+    });
+  });
+
+  it('shows a "Wants" marker on skills the member wants help with', async () => {
+    const { SkillSelector } = await import('./SkillSelector');
+    render(
+      <SkillSelector
+        userSkills={[makeSkill({ id: 7, skill_name: 'Piano', is_offering: 0, is_requesting: 1 })]}
+        onSkillsChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Piano')).toBeInTheDocument();
+    expect(screen.getByText('Wants')).toBeInTheDocument();
   });
 
   it('calls DELETE endpoint when remove button is clicked', async () => {

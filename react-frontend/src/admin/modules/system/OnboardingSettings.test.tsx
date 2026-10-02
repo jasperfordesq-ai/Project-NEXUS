@@ -131,8 +131,6 @@ const MOCK_CONFIG = {
   step_welcome_enabled: true,
   step_profile_enabled: true,
   step_profile_required: true,
-  step_interests_enabled: true,
-  step_interests_required: false,
   step_skills_enabled: true,
   step_skills_required: false,
   step_safeguarding_enabled: true,
@@ -141,8 +139,6 @@ const MOCK_CONFIG = {
   avatar_required: true,
   bio_required: true,
   bio_min_length: 20,
-  listing_creation_mode: 'disabled',
-  listing_max_auto: 3,
   require_completion_for_visibility: false,
   require_avatar_for_visibility: false,
   require_bio_for_visibility: false,
@@ -220,7 +216,8 @@ describe('OnboardingSettings', () => {
     // Verify all section headings are present
     expect(screen.getByText('Step Configuration')).toBeInTheDocument();
     expect(screen.getByText('Profile Requirements')).toBeInTheDocument();
-    expect(screen.getByText('Listing Creation')).toBeInTheDocument();
+    // The retired auto-listing section must not come back.
+    expect(screen.queryByText('Listing Creation')).not.toBeInTheDocument();
     expect(screen.getByText('Visibility Gating')).toBeInTheDocument();
     expect(screen.getByText('Safeguarding Config')).toBeInTheDocument();
     expect(screen.getByText('Custom Text')).toBeInTheDocument();

@@ -32,7 +32,8 @@ class OnboardingConfigServiceTest extends TestCase
         $this->assertTrue($config['avatar_required']);
         $this->assertTrue($config['bio_required']);
         $this->assertEquals(10, $config['bio_min_length']);
-        $this->assertEquals('disabled', $config['listing_creation_mode']);
+        $this->assertArrayNotHasKey('listing_creation_mode', $config);
+        $this->assertArrayNotHasKey('step_interests_enabled', $config);
         $this->assertTrue($config['step_safeguarding_enabled']);
         $this->assertFalse($config['require_completion_for_visibility']);
     }
@@ -63,7 +64,7 @@ class OnboardingConfigServiceTest extends TestCase
         $slugs = array_column($steps, 'slug');
         $this->assertContains('welcome', $slugs);
         $this->assertContains('profile', $slugs);
-        $this->assertContains('interests', $slugs);
+        $this->assertNotContains('interests', $slugs);
         $this->assertContains('skills', $slugs);
         $this->assertContains('confirm', $slugs);
         $this->assertContains('safeguarding', $slugs);
@@ -142,13 +143,26 @@ class OnboardingConfigServiceTest extends TestCase
     public function test_getActiveSteps_excludes_disabled_steps(): void
     {
         DB::table('tenant_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_interests_enabled'],
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_skills_enabled'],
             ['setting_value' => '0', 'setting_type' => 'boolean']
         );
 
         $steps = OnboardingConfigService::getActiveSteps($this->testTenantId);
 
         $slugs = array_column($steps, 'slug');
+        $this->assertNotContains('skills', $slugs);
+    }
+
+    public function test_getActiveSteps_never_includes_the_retired_interests_step(): void
+    {
+        // A community that had it switched on keeps the stored row; it is ignored.
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_interests_enabled'],
+            ['setting_value' => '1', 'setting_type' => 'boolean']
+        );
+
+        $slugs = array_column(OnboardingConfigService::getActiveSteps($this->testTenantId), 'slug');
+
         $this->assertNotContains('interests', $slugs);
     }
 
@@ -225,30 +239,5 @@ class OnboardingConfigServiceTest extends TestCase
         // update() re-fires the observer and resets the tenant context again.
         TenantContext::setById($this->testTenantId);
         $this->assertTrue(OnboardingConfigService::isProfileVisible($this->testTenantId, $user->id));
-    }
-
-    public function test_getListingCreationMode_returns_disabled_by_default(): void
-    {
-        $this->assertEquals('disabled', OnboardingConfigService::getListingCreationMode($this->testTenantId));
-    }
-
-    public function test_getListingCreationMode_returns_configured_mode(): void
-    {
-        DB::table('tenant_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.listing_creation_mode'],
-            ['setting_value' => 'draft', 'setting_type' => 'string']
-        );
-
-        $this->assertEquals('draft', OnboardingConfigService::getListingCreationMode($this->testTenantId));
-    }
-
-    public function test_getListingCreationMode_rejects_invalid_mode(): void
-    {
-        DB::table('tenant_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.listing_creation_mode'],
-            ['setting_value' => 'INVALID', 'setting_type' => 'string']
-        );
-
-        $this->assertEquals('disabled', OnboardingConfigService::getListingCreationMode($this->testTenantId));
     }
 }

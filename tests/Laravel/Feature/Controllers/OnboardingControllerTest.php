@@ -175,7 +175,7 @@ class OnboardingControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_complete_filters_cross_tenant_category_ids(): void
+    private function readyToCompleteUser(): User
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
@@ -186,34 +186,171 @@ class OnboardingControllerTest extends TestCase
         ]);
         Sanctum::actingAs($user, ['*']);
 
-        // Insert a category belonging to a different tenant (999)
+        return $user;
+    }
+
+    private function giveSkill(int $userId, string $name, bool $offering, bool $requesting, string $level = 'intermediate'): void
+    {
+        DB::table('user_skills')->insert([
+            'user_id' => $userId,
+            'tenant_id' => $this->testTenantId,
+            'skill_name' => $name,
+            'proficiency' => $level,
+            'is_offering' => (int) $offering,
+            'is_requesting' => (int) $requesting,
+        ]);
+    }
+
+    /** @return array<string, array{offering: bool, requesting: bool}> */
+    private function savedSkills(int $userId): array
+    {
+        $out = [];
+        foreach (DB::table('user_skills')->where('tenant_id', $this->testTenantId)->where('user_id', $userId)->get() as $row) {
+            $out[$row->skill_name] = ['offering' => (bool) $row->is_offering, 'requesting' => (bool) $row->is_requesting];
+        }
+        ksort($out);
+
+        return $out;
+    }
+
+    public function test_complete_saves_wizard_skills_into_user_skills(): void
+    {
+        $user = $this->readyToCompleteUser();
+
+        $response = $this->apiPost('/v2/onboarding/complete', [
+            'skills' => [
+                'offer' => ['Gardening', '  Dog walking  ', 'gardening', '', '<b>Baking</b>'],
+                'need'  => ['Computer help', 'Gardening'],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame([
+            'Baking'        => ['offering' => true,  'requesting' => false],
+            'Computer help' => ['offering' => false, 'requesting' => true],
+            'Dog walking'   => ['offering' => true,  'requesting' => false],
+            'Gardening'     => ['offering' => true,  'requesting' => true],
+        ], $this->savedSkills($user->id));
+
+        // Nothing goes to the retired store any more.
+        $this->assertSame(0, DB::table('user_interests')->where('user_id', $user->id)->count());
+    }
+
+    public function test_complete_skills_lists_replace_the_members_existing_flags(): void
+    {
+        $user = $this->readyToCompleteUser();
+        $this->giveSkill($user->id, 'Cooking', true, false, 'expert');
+        $this->giveSkill($user->id, 'Painting', true, true, 'beginner');
+
+        // The member kept Cooking (typed in a different case), unticked
+        // Painting as an offer but still wants help with it, and added Sewing.
+        $this->apiPost('/v2/onboarding/complete', [
+            'skills' => ['offer' => ['cooking', 'Sewing'], 'need' => ['Painting']],
+        ])->assertStatus(200);
+
+        $this->assertSame([
+            'Cooking'  => ['offering' => true,  'requesting' => false],
+            'Painting' => ['offering' => false, 'requesting' => true],
+            'Sewing'   => ['offering' => true,  'requesting' => false],
+        ], $this->savedSkills($user->id));
+        // The existing row was updated, not replaced: its level survives.
+        $this->assertSame('expert', DB::table('user_skills')->where('user_id', $user->id)->where('skill_name', 'Cooking')->value('proficiency'));
+    }
+
+    public function test_complete_removes_a_skill_the_member_unticked_in_both_lists(): void
+    {
+        $user = $this->readyToCompleteUser();
+        $this->giveSkill($user->id, 'Cooking', true, false);
+
+        $this->apiPost('/v2/onboarding/complete', ['skills' => ['offer' => [], 'need' => []]])->assertStatus(200);
+
+        $this->assertSame([], $this->savedSkills($user->id));
+    }
+
+    public function test_complete_with_replace_false_only_adds(): void
+    {
+        // The wizard sends replace=false when it could not load the member's
+        // existing skills — their earlier skills must survive.
+        $user = $this->readyToCompleteUser();
+        $this->giveSkill($user->id, 'Cooking', true, false);
+
+        $this->apiPost('/v2/onboarding/complete', [
+            'skills' => ['offer' => ['Sewing'], 'need' => [], 'replace' => false],
+        ])->assertStatus(200);
+
+        $this->assertSame([
+            'Cooking' => ['offering' => true, 'requesting' => false],
+            'Sewing'  => ['offering' => true, 'requesting' => false],
+        ], $this->savedSkills($user->id));
+    }
+
+    public function test_complete_without_skills_leaves_existing_skills_alone(): void
+    {
+        // "Skip for now" sends no skills at all — it must not wipe anything.
+        $user = $this->readyToCompleteUser();
+        $this->giveSkill($user->id, 'Cooking', true, false);
+
+        $this->apiPost('/v2/onboarding/complete', [])->assertStatus(200);
+
+        $this->assertSame(['Cooking' => ['offering' => true, 'requesting' => false]], $this->savedSkills($user->id));
+    }
+
+    public function test_complete_rejects_over_long_skill_names_and_caps_the_count(): void
+    {
+        $user = $this->readyToCompleteUser();
+        $many = array_map(fn ($i) => "Skill {$i}", range(1, 40));
+
+        $this->apiPost('/v2/onboarding/complete', [
+            'skills' => ['offer' => array_merge([str_repeat('x', 101)], $many), 'need' => 'not-a-list'],
+        ])->assertStatus(200);
+
+        $saved = $this->savedSkills($user->id);
+        $this->assertCount(OnboardingService::SKILLS_PER_DIRECTION_MAX, $saved);
+        $this->assertArrayNotHasKey(str_repeat('x', 101), $saved);
+    }
+
+    public function test_complete_from_older_app_maps_listing_categories_to_skills(): void
+    {
+        // App versions still on the store send listing-category ids as
+        // offers/needs. Those become skills named after the category; a
+        // category from another community is ignored; nothing is cleared;
+        // interests are accepted but not stored; no listing is created.
+        $user = $this->readyToCompleteUser();
+        $this->giveSkill($user->id, 'Cooking', true, false);
+
         DB::insert(
             "INSERT INTO categories (tenant_id, name, slug, created_at) VALUES (?, ?, ?, NOW())",
             [999, 'Cross-Tenant Category', 'cross-tenant-cat-' . uniqid()]
         );
         $otherCatId = (int) DB::getPdo()->lastInsertId();
-
-        // Insert a category belonging to the test tenant
         DB::insert(
             "INSERT INTO categories (tenant_id, name, slug, created_at) VALUES (?, ?, ?, NOW())",
-            [$this->testTenantId, 'Valid Category', 'valid-cat-' . uniqid()]
+            [$this->testTenantId, 'Home Repairs', 'home-repairs-' . uniqid()]
         );
         $validCatId = (int) DB::getPdo()->lastInsertId();
 
-        $response = $this->apiPost('/v2/onboarding/complete', [
-            'interests' => [$otherCatId, $validCatId],
-        ]);
+        $this->apiPost('/v2/onboarding/complete', [
+            'interests' => [$validCatId],
+            'offers' => [$otherCatId, $validCatId],
+            'needs' => [$validCatId],
+        ])->assertStatus(200);
 
-        $response->assertStatus(200);
+        $this->assertSame([
+            'Cooking'      => ['offering' => true, 'requesting' => false],
+            'Home Repairs' => ['offering' => true, 'requesting' => true],
+        ], $this->savedSkills($user->id));
+        $this->assertSame(0, DB::table('user_interests')->where('user_id', $user->id)->count());
+        $this->assertSame(0, DB::table('listings')->where('user_id', $user->id)->count());
+    }
 
-        // Verify only the valid tenant category was saved as an interest
-        $savedInterests = DB::table('user_interests')
-            ->where('user_id', $user->id)
-            ->pluck('category_id')
-            ->all();
+    public function test_config_no_longer_offers_an_interests_step(): void
+    {
+        $this->authenticatedUser();
 
-        $this->assertContains($validCatId, $savedInterests);
-        $this->assertNotContains($otherCatId, $savedInterests);
+        $slugs = array_column($this->apiGet('/v2/onboarding/config')->assertStatus(200)->json('data.steps'), 'slug');
+
+        $this->assertNotContains('interests', $slugs);
+        $this->assertContains('skills', $slugs);
     }
 
     public function test_complete_validates_avatar_required(): void

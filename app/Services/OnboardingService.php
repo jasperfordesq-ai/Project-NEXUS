@@ -8,10 +8,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Events\OnboardingCompleted;
-use App\I18n\LocaleContext;
 use App\Models\Category;
-use App\Models\Listing;
-use App\Services\OnboardingConfigService;
 use App\Models\User;
 use App\Models\UserInterest;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * OnboardingService — Laravel DI-based service for post-registration onboarding wizard.
  *
- * Handles onboarding completion tracking, interest/skill saving, and auto-listing creation.
+ * Handles onboarding completion tracking and saving the skills chosen in the wizard.
  * All queries are tenant-scoped via HasTenantScope trait on models.
  */
 class OnboardingService
@@ -131,189 +128,138 @@ class OnboardingService
             ->all();
     }
 
-    /**
-     * Save user's category interests (from onboarding Step 2).
-     * Replaces all existing 'interest' type entries.
-     */
-    public static function saveInterests(int $userId, array $categoryIds): void
-    {
-        $tenantId = TenantContext::getId();
+    /** Longest skill name user_skills.skill_name can hold. */
+    public const SKILL_NAME_MAX = 100;
 
-        UserInterest::where('user_id', $userId)
-            ->where('interest_type', 'interest')
-            ->delete();
-
-        if (empty($categoryIds)) {
-            return;
-        }
-
-        // Batch insert — single query instead of N firstOrCreate calls.
-        // The unique index (tenant_id, user_id, category_id, interest_type)
-        // makes insertOrIgnore safe against duplicates.
-        $rows = [];
-        $now = now();
-        foreach ($categoryIds as $catId) {
-            $rows[] = [
-                'user_id'       => $userId,
-                'tenant_id'     => $tenantId,
-                'category_id'   => (int) $catId,
-                'interest_type' => 'interest',
-                'created_at'    => $now,
-            ];
-        }
-        DB::table('user_interests')->insertOrIgnore($rows);
-    }
+    /** Most skills one onboarding submission may record per direction. */
+    public const SKILLS_PER_DIRECTION_MAX = 25;
 
     /**
-     * Save user's skill offers and needs (from onboarding Step 3).
-     * Replaces all existing skill_offer and skill_need entries.
+     * Save the skills a member chose in the onboarding wizard into
+     * user_skills — the table matching, Explore and the personalised feed read.
+     *
+     * Until 2026-10-02 the wizard wrote listing-category ids into
+     * user_interests, which nothing outside the wizard ever read.
+     *
+     * $replace = true  — the lists are the member's complete offer/need state
+     *                    (the current wizard prefills from user_skills): flags
+     *                    not in the lists are cleared, and a row left with
+     *                    neither flag is removed.
+     * $replace = false — additive only (older app versions that send
+     *                    listing-category ids): nothing is cleared.
+     *
+     * Names compare case-insensitively (the column's collation), so
+     * "Gardening" chosen here updates an existing "gardening" row.
+     *
+     * @param string[] $offerNames
+     * @param string[] $needNames
      */
-    public static function saveSkills(int $userId, array $offers, array $needs): void
+    public static function saveOnboardingSkills(int $userId, array $offerNames, array $needNames, bool $replace): void
     {
         $tenantId = TenantContext::getId();
+        $offerNames = self::normaliseSkillNames($offerNames);
+        $needNames = self::normaliseSkillNames($needNames);
 
-        UserInterest::where('user_id', $userId)
-            ->whereIn('interest_type', ['skill_offer', 'skill_need'])
-            ->delete();
+        $existing = DB::table('user_skills')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->get(['id', 'skill_name', 'is_offering', 'is_requesting']);
+
+        $offerKeys = array_flip(array_map('mb_strtolower', $offerNames));
+        $needKeys = array_flip(array_map('mb_strtolower', $needNames));
+        $seen = [];
+
+        foreach ($existing as $row) {
+            $key = mb_strtolower((string) $row->skill_name);
+            $seen[$key] = true;
+            $offering = isset($offerKeys[$key]) || (!$replace && (bool) $row->is_offering);
+            $requesting = isset($needKeys[$key]) || (!$replace && (bool) $row->is_requesting);
+
+            if (!$offering && !$requesting) {
+                DB::table('user_skills')
+                    ->where('id', $row->id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->delete();
+                continue;
+            }
+
+            if ($offering !== (bool) $row->is_offering || $requesting !== (bool) $row->is_requesting) {
+                DB::table('user_skills')
+                    ->where('id', $row->id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->update(['is_offering' => (int) $offering, 'is_requesting' => (int) $requesting]);
+            }
+        }
 
         $rows = [];
-        $now = now();
-        foreach ($offers as $catId) {
+        foreach (array_unique(array_merge($offerNames, $needNames)) as $name) {
+            $key = mb_strtolower($name);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
             $rows[] = [
                 'user_id'       => $userId,
                 'tenant_id'     => $tenantId,
-                'category_id'   => (int) $catId,
-                'interest_type' => 'skill_offer',
-                'created_at'    => $now,
-            ];
-        }
-        foreach ($needs as $catId) {
-            $rows[] = [
-                'user_id'       => $userId,
-                'tenant_id'     => $tenantId,
-                'category_id'   => (int) $catId,
-                'interest_type' => 'skill_need',
-                'created_at'    => $now,
+                'category_id'   => null,
+                'skill_name'    => $name,
+                'proficiency'   => 'intermediate',
+                'is_offering'   => (int) isset($offerKeys[$key]),
+                'is_requesting' => (int) isset($needKeys[$key]),
             ];
         }
         if (!empty($rows)) {
-            DB::table('user_interests')->insertOrIgnore($rows);
+            DB::table('user_skills')->insert($rows);
         }
     }
 
     /**
-     * Auto-create listings from selected skills, respecting admin config.
+     * Listing-category ids → their names, for older app versions whose skills
+     * step still offers the community's listing categories.
      *
-     * Modes (controlled by onboarding.listing_creation_mode tenant setting):
-     *   - disabled:        No listings created (default — safe)
-     *   - suggestions_only: Returns suggestion data but creates nothing (for dashboard)
-     *   - draft:           Creates listings with status='draft' (only visible to owner)
-     *   - pending_review:  Creates with moderation_status='pending_review' (admin approves)
-     *   - active:          Creates as active (not recommended — original spam behavior)
-     *
-     * Respects onboarding.listing_max_auto cap (0-10).
-     *
-     * @return array List of created listing IDs (empty for disabled/suggestions_only)
+     * @param int[] $categoryIds
+     * @return string[]
      */
-    public static function autoCreateListings(int $userId, array $offers, array $needs): array
+    public static function categoryNamesForSkills(array $categoryIds): array
     {
-        $tenantId = TenantContext::getId();
-        $mode = OnboardingConfigService::getListingCreationMode($tenantId);
-        $maxListings = OnboardingConfigService::getListingMaxAuto($tenantId);
+        if (empty($categoryIds)) {
+            return [];
+        }
 
-        // Disabled mode — no listings created (safe default)
-        if ($mode === 'disabled' || $mode === 'suggestions_only') {
-            if (!empty($offers) || !empty($needs)) {
-                Log::info('Onboarding: listing creation skipped', [
-                    'user_id' => $userId,
-                    'mode' => $mode,
-                    'offers_count' => count($offers),
-                    'needs_count' => count($needs),
-                ]);
+        return Category::where('tenant_id', TenantContext::getId())
+            ->whereIn('id', $categoryIds)
+            ->pluck('name')
+            ->map(fn ($name) => (string) $name)
+            ->all();
+    }
+
+    /**
+     * Trim, strip markup, drop blanks and over-long names, de-duplicate
+     * case-insensitively, and cap the count.
+     *
+     * @param array<mixed> $names
+     * @return string[]
+     */
+    private static function normaliseSkillNames(array $names): array
+    {
+        $out = [];
+        foreach ($names as $name) {
+            if (!is_string($name)) {
+                continue;
             }
-            return [];
+            $clean = trim(preg_replace('/\s+/u', ' ', strip_tags($name)) ?? '');
+            if ($clean === '' || mb_strlen($clean) > self::SKILL_NAME_MAX) {
+                continue;
+            }
+            $out[mb_strtolower($clean)] ??= $clean;
+            if (count($out) >= self::SKILLS_PER_DIRECTION_MAX) {
+                break;
+            }
         }
 
-        // Cap total listings
-        $allItems = [];
-        foreach ($offers as $catId) {
-            $allItems[] = ['type' => 'offer', 'category_id' => (int) $catId];
-        }
-        foreach ($needs as $catId) {
-            $allItems[] = ['type' => 'request', 'category_id' => (int) $catId];
-        }
-        $allItems = array_slice($allItems, 0, $maxListings);
-
-        if (empty($allItems)) {
-            return [];
-        }
-
-        // Get category names for titles
-        $catIds = array_unique(array_column($allItems, 'category_id'));
-        $categories = Category::where('tenant_id', $tenantId)->whereIn('id', $catIds)->pluck('name', 'id')->all();
-
-        $createdIds = [];
-
-        // Determine status based on mode
-        $status = match ($mode) {
-            'draft' => 'draft',
-            'pending_review' => 'active', // Active but with moderation_status = pending_review
-            'active' => 'active',
-            default => 'draft',
-        };
-        $moderationStatus = $mode === 'pending_review' ? 'pending_review' : null;
-
-        // Auto-generated listing copy must render in the creating member's
-        // preferred language, not the request/queue locale. Without this, a
-        // non-English member onboarding on a tenant with auto-listing enabled
-        // gets English titles/descriptions persisted as their own listings.
-        $prefLang = DB::table('users')->where('id', $userId)->value('preferred_language');
-
-        foreach ($allItems as $item) {
-            $isOffer = $item['type'] === 'offer';
-
-            $copy = LocaleContext::withLocale($prefLang, function () use ($isOffer, $categories, $item) {
-                $catName = $categories[$item['category_id']]
-                    ?? __('api.onboarding.auto_listing.fallback_category');
-
-                return $isOffer
-                    ? [
-                        'title'       => __('api.onboarding.auto_listing.offer_title', ['category' => $catName]),
-                        'description' => __('api.onboarding.auto_listing.offer_description', ['category' => $catName]),
-                    ]
-                    : [
-                        'title'       => __('api.onboarding.auto_listing.request_title', ['category' => $catName]),
-                        'description' => __('api.onboarding.auto_listing.request_description', ['category' => $catName]),
-                    ];
-            });
-
-            // firstOrCreate prevents duplicate listings if onboarding is retried
-            $listing = Listing::firstOrCreate(
-                [
-                    'user_id'     => $userId,
-                    'category_id' => $item['category_id'],
-                    'type'        => $item['type'],
-                ],
-                [
-                    'title'            => $copy['title'],
-                    'description'      => $copy['description'],
-                    'status'           => $status,
-                    'moderation_status' => $moderationStatus,
-                ]
-            );
-
-            $createdIds[] = $listing->id;
-        }
-
-        Log::info('Onboarding: listings created', [
-            'user_id' => $userId,
-            'mode' => $mode,
-            'count' => count($createdIds),
-            'status' => $status,
-            'moderation' => $moderationStatus,
-        ]);
-
-        return $createdIds;
+        return array_values($out);
     }
 
     /**

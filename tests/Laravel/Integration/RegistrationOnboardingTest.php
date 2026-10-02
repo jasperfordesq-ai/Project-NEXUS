@@ -306,13 +306,9 @@ class RegistrationOnboardingTest extends TestCase
             ->count();
         $this->assertEquals(0, $listingCount, 'Onboarding should NOT auto-create listings');
 
-        // Verify response reports zero listings created
-        $data = $response->json('data') ?? $response->json();
-        $responseData = $data['data'] ?? $data;
-        $this->assertEquals(0, $responseData['listings_created'] ?? 0);
     }
 
-    public function test_onboarding_still_saves_interests_and_skills(): void
+    public function test_onboarding_saves_skills_where_matching_reads_them(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([
             'status'               => 'active',
@@ -324,36 +320,26 @@ class RegistrationOnboardingTest extends TestCase
 
         Sanctum::actingAs($user, ['*']);
 
-        $categories = Category::where('tenant_id', $this->testTenantId)->pluck('id')->toArray();
-
         $response = $this->apiPost('/v2/onboarding/complete', [
-            'interests' => array_slice($categories, 0, 2),
-            'offers'    => array_slice($categories, 0, 1),
-            'needs'     => array_slice($categories, 0, 1),
+            'skills' => ['offer' => ['Gardening'], 'need' => ['Computer help']],
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
 
-        // Verify interests were saved
-        $interestCount = DB::table('user_interests')
+        $offering = DB::table('user_skills')
+            ->where('tenant_id', $this->testTenantId)
             ->where('user_id', $user->id)
-            ->where('interest_type', 'interest')
-            ->count();
-        $this->assertGreaterThanOrEqual(1, $interestCount, 'Interests should be saved');
-
-        // Verify skill offers were saved
-        $offerCount = DB::table('user_interests')
+            ->where('is_offering', 1)
+            ->pluck('skill_name')
+            ->all();
+        $requesting = DB::table('user_skills')
+            ->where('tenant_id', $this->testTenantId)
             ->where('user_id', $user->id)
-            ->where('interest_type', 'skill_offer')
-            ->count();
-        $this->assertGreaterThanOrEqual(1, $offerCount, 'Skill offers should be saved');
-
-        // Verify skill needs were saved
-        $needCount = DB::table('user_interests')
-            ->where('user_id', $user->id)
-            ->where('interest_type', 'skill_need')
-            ->count();
-        $this->assertGreaterThanOrEqual(1, $needCount, 'Skill needs should be saved');
+            ->where('is_requesting', 1)
+            ->pluck('skill_name')
+            ->all();
+        $this->assertSame(['Gardening'], $offering);
+        $this->assertSame(['Computer help'], $requesting);
     }
 
     // =========================================================================

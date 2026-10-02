@@ -36,8 +36,8 @@ describe('useOnboardingConfig', () => {
     expect(result.current.config.enabled).toBe(true);
     expect(result.current.config.mandatory).toBe(true);
     expect(result.current.config.bio_min_length).toBe(10);
-    expect(result.current.config.listing_creation_mode).toBe('disabled');
-    expect(result.current.steps.length).toBe(5);
+    // Retired 2026-10-02: no interests step, no auto-listing setting.
+    expect(result.current.steps.map((s) => s.slug)).toEqual(['welcome', 'profile', 'skills', 'confirm']);
   });
 
   it('loads config from API', async () => {
@@ -48,7 +48,6 @@ describe('useOnboardingConfig', () => {
           enabled: false,
           mandatory: false,
           bio_min_length: 50,
-          listing_creation_mode: 'draft',
           step_safeguarding_enabled: true,
         },
         steps: [
@@ -83,7 +82,7 @@ describe('useOnboardingConfig', () => {
 
     // Should have defaults, not crash
     expect(result.current.config.enabled).toBe(true);
-    expect(result.current.steps.length).toBe(5);
+    expect(result.current.steps.length).toBe(4);
   });
 
   it('calls the correct API endpoint', async () => {

@@ -4,12 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Save from 'lucide-react/icons/save';
 import Sparkles from 'lucide-react/icons/sparkles';
 import UserCircle from 'lucide-react/icons/circle-user';
-import Heart from 'lucide-react/icons/heart';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import Shield from 'lucide-react/icons/shield';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import Eye from 'lucide-react/icons/eye';
-import ListChecks from 'lucide-react/icons/list-checks';
 import FileText from 'lucide-react/icons/file-text';
 import Globe from 'lucide-react/icons/globe';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
@@ -49,8 +47,6 @@ interface OnboardingConfig {
   step_welcome_enabled: boolean;
   step_profile_enabled: boolean;
   step_profile_required: boolean;
-  step_interests_enabled: boolean;
-  step_interests_required: boolean;
   step_skills_enabled: boolean;
   step_skills_required: boolean;
   step_safeguarding_enabled: boolean;
@@ -59,8 +55,6 @@ interface OnboardingConfig {
   avatar_required: boolean;
   bio_required: boolean;
   bio_min_length: number;
-  listing_creation_mode: string;
-  listing_max_auto: number;
   require_completion_for_visibility: boolean;
   require_avatar_for_visibility: boolean;
   require_bio_for_visibility: boolean;
@@ -97,24 +91,14 @@ const DEFAULT_COUNTRY_PRESET_LABEL_KEY = 'system.onboarding.preset_custom';
 const STEP_ICONS: Record<string, typeof Sparkles> = {
   welcome: Sparkles,
   profile: UserCircle,
-  interests: Heart,
   skills: HandHeart,
   safeguarding: Shield,
   confirm: CheckCircle,
 };
 
-const LISTING_MODES = [
-  { key: 'disabled', labelKey: 'system.onboarding.listing_mode_disabled', descriptionKey: 'system.onboarding.listing_mode_disabled_desc' },
-  { key: 'suggestions_only', labelKey: 'system.onboarding.listing_mode_suggestions', descriptionKey: 'system.onboarding.listing_mode_suggestions_desc' },
-  { key: 'draft', labelKey: 'system.onboarding.listing_mode_draft', descriptionKey: 'system.onboarding.listing_mode_draft_desc' },
-  { key: 'pending_review', labelKey: 'system.onboarding.listing_mode_pending', descriptionKey: 'system.onboarding.listing_mode_pending_desc' },
-  { key: 'active', labelKey: 'system.onboarding.listing_mode_active', descriptionKey: 'system.onboarding.listing_mode_active_desc' },
-];
-
 const STEPS_CONFIG = [
   { key: 'welcome', labelKey: 'system.onboarding.step_welcome', descriptionKey: 'system.onboarding.step_welcome_desc' },
   { key: 'profile', labelKey: 'system.onboarding.step_profile', descriptionKey: 'system.onboarding.step_profile_desc' },
-  { key: 'interests', labelKey: 'system.onboarding.step_interests', descriptionKey: 'system.onboarding.step_interests_desc' },
   { key: 'skills', labelKey: 'system.onboarding.step_skills', descriptionKey: 'system.onboarding.step_skills_desc' },
   { key: 'safeguarding', labelKey: 'system.onboarding.step_safeguarding', descriptionKey: 'system.onboarding.step_safeguarding_desc' },
   { key: 'confirm', labelKey: 'system.onboarding.step_confirm', descriptionKey: 'system.onboarding.step_confirm_desc' },
@@ -323,32 +307,6 @@ export function OnboardingSettings() {
               </div>
             </Switch>
             <Input type="number" label={t('system.onboarding.min_bio_length')} value={String(config.bio_min_length)} onValueChange={(v) => updateConfig('bio_min_length', parseInt(v) || 0)} variant="secondary" min={0} max={500} description={t('system.onboarding.min_bio_length_desc')} isDisabled={!config.bio_required} className="max-w-xs" />
-          </CardBody>
-        </Card>
-
-        {/* Section 4: Listing Creation */}
-        <Card>
-          <CardHeader className="flex flex-col items-start gap-1 pb-0">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <ListChecks aria-hidden="true" className="w-5 h-5" />
-              {t('system.onboarding.listing_creation')}
-            </h3>
-            <p className="text-sm text-theme-muted">{t('system.onboarding.listing_creation_desc')}</p>
-          </CardHeader>
-          <CardBody className="gap-4">
-            <Select label={t('system.onboarding.listing_creation_mode')} selectedKeys={[config.listing_creation_mode]} onSelectionChange={(keys) => { const key = Array.from(keys)[0] as string; updateConfig('listing_creation_mode', key); }} variant="secondary" description={t(LISTING_MODES.find(m => m.key === config.listing_creation_mode)?.descriptionKey ?? 'system.onboarding.listing_mode_disabled_desc')}>
-              {LISTING_MODES.map((mode) => (
-                <SelectItem key={mode.key} id={mode.key} textValue={t(mode.labelKey)}>
-                  <div>
-                    <p className="font-medium">{t(mode.labelKey)}</p>
-                    <p className="text-xs text-muted">{t(mode.descriptionKey)}</p>
-                  </div>
-                </SelectItem>
-              ))}
-            </Select>
-            {config.listing_creation_mode !== 'disabled' && config.listing_creation_mode !== 'suggestions_only' && (
-              <Input type="number" label={t('system.onboarding.max_auto_listings')} value={String(config.listing_max_auto)} onValueChange={(v) => updateConfig('listing_max_auto', Math.min(10, Math.max(0, parseInt(v) || 0)))} variant="secondary" min={0} max={10} description={t('system.onboarding.max_auto_listings_desc')} className="max-w-xs" />
-            )}
           </CardBody>
         </Card>
 

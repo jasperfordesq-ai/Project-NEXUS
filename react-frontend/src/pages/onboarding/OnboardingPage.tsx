@@ -4,14 +4,20 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Onboarding Page - Post-registration 5-step wizard
+ * Onboarding Page - Post-registration wizard (steps come from the tenant's
+ * onboarding config)
  *
  * Steps:
- *  1. Welcome      - Benefits overview, community introduction
- *  2. Your Profile - Upload profile photo + write bio (MANDATORY — cannot skip)
- *  3. Interests    - Select categories you're interested in (optional — can skip)
- *  4. Skills       - Mark which categories you can offer / need help with (optional)
- *  5. Confirm      - Profile preview + summary + auto-create listings
+ *  - Welcome      - Benefits overview, community introduction
+ *  - Your Profile - Upload profile photo + write bio (MANDATORY — cannot skip)
+ *  - Skills       - What the member can offer / would like help with (optional).
+ *                   Saved into the member's skills, which matching, Explore and
+ *                   the personalised feed use.
+ *  - Safeguarding - Only when the community has safeguarding options set up
+ *  - Confirm      - Profile preview + summary
+ *
+ * The "What are you interested in?" step was removed on 2026-10-02: nothing on
+ * the platform ever used its answers.
  *
  * Route: /onboarding
  */
@@ -45,7 +51,6 @@ import { Chip } from '@/components/ui/Chip';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@/components/ui/Dropdown';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
-import { TagGroup, Tag } from '@/components/ui/TagGroup';
 import { Textarea } from '@/components/ui/Textarea';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -56,6 +61,7 @@ import { AVATAR_UPLOAD_ACCEPT, isAvatarFileTooLarge, isSupportedAvatarFile } fro
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
+import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -66,6 +72,12 @@ interface Category {
   name: string;
   slug: string | null;
   color: string | null;
+}
+
+interface MySkill {
+  skill_name: string;
+  is_offering: number | boolean;
+  is_requesting: number | boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -125,16 +137,16 @@ export function OnboardingPage() {
   // Track whether existing user data has been loaded into wizard state (one-shot)
   const userDataLoaded = useRef(false);
 
-  // Categories loaded from API
+  // The community's listing categories, offered as one-tap skill suggestions
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
-  // Step 3: Selected interest category IDs
-  const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
-
-  // Step 4: Skill offers and needs
-  const [skillOffers, setSkillOffers] = useState<number[]>([]);
-  const [skillNeeds, setSkillNeeds] = useState<number[]>([]);
+  // Skills step: names of what the member can offer / would like help with.
+  // skillsPrefilled is true once the member's existing skills were loaded, so
+  // the server may treat these lists as their complete set.
+  const [offerSkills, setOfferSkills] = useState<string[]>([]);
+  const [needSkills, setNeedSkills] = useState<string[]>([]);
+  const [skillsPrefilled, setSkillsPrefilled] = useState(false);
 
   // Step 5: Submission + completion
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,7 +200,7 @@ export function OnboardingPage() {
   }, [user?.onboarding_completed, navigate, tenantPath, isComplete]);
 
   // ── Pre-populate all wizard fields from existing user data (one-shot on mount) ──
-  // Fetches /v2/onboarding/status to get existing interests and skills,
+  // Loads the member's existing skills (/v2/users/me/skills) into the skills step,
   // and reads bio from the user context. Runs once when user is available.
 
   useEffect(() => {
@@ -200,34 +212,16 @@ export function OnboardingPage() {
       setBio(user.bio);
     }
 
-    // Fetch existing interests/skills to pre-select them in steps 3 & 4
-    api.get<{
-      onboarding_completed: boolean;
-      has_avatar: boolean;
-      has_bio: boolean;
-      interests: Array<{ category_id: number; interest_type: string }>;
-    }>('/v2/onboarding/status').then(response => {
-      if (!mountedRef.current || !response.success || !response.data) return;
-      const interests = response.data.interests ?? [];
-      setSelectedInterests(
-        interests
-          .filter(i => i.interest_type === 'interest')
-          .map(i => i.category_id)
-      );
-      setSkillOffers(
-        interests
-          .filter(i => i.interest_type === 'skill_offer')
-          .map(i => i.category_id)
-      );
-      setSkillNeeds(
-        interests
-          .filter(i => i.interest_type === 'skill_need')
-          .map(i => i.category_id)
-      );
+    // Pre-select the member's existing skills (e.g. added in Settings → Skills)
+    api.get<MySkill[]>('/v2/users/me/skills').then(response => {
+      if (!mountedRef.current || !response.success) return;
+      const mine = Array.isArray(response.data) ? response.data : [];
+      setOfferSkills(mine.filter(s => !!Number(s.is_offering)).map(s => s.skill_name));
+      setNeedSkills(mine.filter(s => !!Number(s.is_requesting)).map(s => s.skill_name));
+      setSkillsPrefilled(true);
     }).catch(() => {
       // Non-fatal: wizard still works, just starts with empty selections
     });
-     
   }, [user]);
 
   // ── Move focus to step content on step change (screen reader accessibility) ──
@@ -264,14 +258,14 @@ export function OnboardingPage() {
     }
   }, [user?.avatar_url, user?.bio, currentStep, profileStepIdx, nextAfterProfile, MIN_BIO_LENGTH]);
 
-  // ── Load categories when reaching step 3 ───────────────────────────────
+  // ── Load suggestion categories when reaching the skills step ─────────────
 
   useEffect(() => {
-    if (currentStep >= 3 && categories.length === 0 && !categoriesLoading) {
+    if (currentStepSlug === 'skills' && categories.length === 0 && !categoriesLoading) {
       loadCategories();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- lazy load categories at step 3; loadCategories excluded to avoid loop
-  }, [currentStep]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- lazy load on the skills step; loadCategories excluded to avoid loop
+  }, [currentStepSlug]);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -403,43 +397,22 @@ export function OnboardingPage() {
     }
   }, [bio, user?.avatar_url, toast, refreshUser, goNextAnimated, t, MIN_BIO_LENGTH]);
 
-  // ── Save interests + proceed handler (Step 3) ──────────────────────────
+  // ── Skill suggestions (the community's listing categories) ──────────────
 
-  const handleSaveInterestsAndProceed = useCallback(async () => {
-    // Interests are saved atomically with skills in /v2/onboarding/complete.
-    // Just advance — no separate API call needed.
-    goNextAnimated();
-  }, [goNextAnimated]);
-
-  // Interest/skill multi-selection (steps 3–4) is handled directly by the
-  // TagGroup `onSelectionChange` setters below — no per-item toggle handlers needed.
-
-  // ── Category name lookup ─────────────────────────────────────────────────
-
-  const categoryMap = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const cat of categories) {
-      map.set(cat.id, cat.name);
-    }
-    return map;
-  }, [categories]);
-
-  const getCategoryName = useCallback(
-    (id: number) => categoryMap.get(id) || 'Unknown',
-    [categoryMap]
-  );
+  const skillSuggestions = useMemo(() => categories.map((c) => c.name), [categories]);
 
   // ── Shared onboarding submission logic ──────────────────────────────────
 
-  const submitOnboarding = useCallback(async (interests: number[], offers: number[], needs: number[]) => {
+  const submitOnboarding = useCallback(async (skills: { offer: string[]; need: string[] } | null) => {
     try {
       setIsSubmitting(true);
 
-      const response = await api.post('/v2/onboarding/complete', {
-        interests,
-        offers,
-        needs,
-      });
+      // `replace` tells the server these lists are the member's whole set
+      // (only safe when their existing skills were loaded into the wizard).
+      const response = await api.post(
+        '/v2/onboarding/complete',
+        skills ? { skills: { ...skills, replace: skillsPrefilled } } : {},
+      );
 
       if (!mountedRef.current) return;
 
@@ -470,18 +443,18 @@ export function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, navigate, tenantPath, refreshUser, goToStep, profileStepIdx, t]);
+  }, [toast, navigate, tenantPath, refreshUser, goToStep, profileStepIdx, t, skillsPrefilled]);
 
   // ── Completion handler ───────────────────────────────────────────────────
 
   const handleComplete = useCallback(async () => {
-    await submitOnboarding(selectedInterests, skillOffers, skillNeeds);
-  }, [submitOnboarding, selectedInterests, skillOffers, skillNeeds]);
+    await submitOnboarding({ offer: offerSkills, need: needSkills });
+  }, [submitOnboarding, offerSkills, needSkills]);
 
-  // ── Skip handler (skips interests/skills — photo+bio already done) ──────
+  // ── Skip handler (saves no skills — photo+bio already done) ─────────────
 
   const handleSkip = useCallback(async () => {
-    await submitOnboarding([], [], []);
+    await submitOnboarding(null);
   }, [submitOnboarding]);
 
   // ── Animation variants ─────────────────────────────────────────────────
@@ -618,9 +591,8 @@ export function OnboardingPage() {
           completedSteps={getCompletedSteps({
             hasAvatar,
             hasBio,
-            selectedInterests,
-            skillOffers,
-            skillNeeds,
+            offerSkills,
+            needSkills,
             stepSlugToIndex,
           })}
           onStepClick={(step) => {
@@ -912,196 +884,36 @@ export function OnboardingPage() {
             </div>
           )}
 
-          {/* ─── Step 3: Select Interests (OPTIONAL) ─── */}
-          {currentStepSlug === 'interests' && (
-            <div className="space-y-6">
-              <GlassCard className="p-6">
-                <h2 className="text-lg font-semibold text-theme-primary mb-1 flex items-center gap-2">
-                  <Heart
-                    className="w-5 h-5 text-rose-500"
-                    aria-hidden="true"
-                  />
-                  {t('interests_title')}
-                </h2>
-                <p className="text-theme-muted text-sm mb-6">
-                  {t('interests_description')}
-                </p>
-
-                {categoriesLoading ? (
-                  <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex items-center justify-center py-12">
-                    <Spinner size="lg" />
-                  </div>
-                ) : categories.length === 0 ? (
-                  <div className="text-center py-8">
-                    <HelpCircle
-                      className="w-10 h-10 text-theme-subtle mx-auto mb-2"
-                      aria-hidden="true"
-                    />
-                    <p className="text-theme-muted text-sm">
-                      {t('no_categories_available')}
-                    </p>
-                  </div>
-                ) : (
-                  <TagGroup
-                    aria-label={t('interests_title')}
-                    selectionMode="multiple"
-                    selectedKeys={new Set(selectedInterests.map(String))}
-                    onSelectionChange={(keys) => setSelectedInterests(keys === 'all' ? categories.map((c) => c.id) : Array.from(keys).map(Number))}
-                  >
-                    <TagGroup.List className="flex flex-wrap gap-2">
-                      {categories.map((cat) => (
-                        <Tag
-                          key={cat.id}
-                          id={String(cat.id)}
-                          className="data-[selected=true]:bg-emerald-500/20 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-400"
-                        >
-                          {cat.name}
-                        </Tag>
-                      ))}
-                    </TagGroup.List>
-                  </TagGroup>
-                )}
-
-                {categories.length > 0 && (
-                  <p className="text-xs text-theme-subtle mt-4">
-                    {selectedInterests.length === 0
-                      ? t('select_or_skip')
-                      : t('count_selected', { count: selectedInterests.length })}
-                  </p>
-                )}
-              </GlassCard>
-
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="tertiary"
-                  className="text-theme-muted"
-                  onPress={goBackAnimated}
-                  startContent={<ArrowLeft className="w-4 h-4" aria-hidden="true" />}
-                >
-                  {t('back')}
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="tertiary"
-                    className="text-theme-subtle"
-                    onPress={goNextAnimated}
-                    endContent={<SkipForward className="w-4 h-4" aria-hidden="true" />}
-                  >
-                    {t('skip')}
-                  </Button>
-                  <Button
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium"
-                    endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}
-                    onPress={handleSaveInterestsAndProceed}
-                    isDisabled={categoriesLoading}
-                  >
-                    {t('next')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─── Step 4: Your Skills (OPTIONAL — shows ALL categories) ─── */}
+          {/* ─── Skills (OPTIONAL) — saved into the member's skills ─── */}
           {currentStepSlug === 'skills' && (
             <div className="space-y-6">
-              {/* Offers section */}
-              <GlassCard className="p-6">
-                <h2 className="text-lg font-semibold text-theme-primary mb-1 flex items-center gap-2">
-                  <HandHeart
-                    className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
-                    aria-hidden="true"
-                  />
-                  {t('skills_offer_title')}
-                </h2>
-                <p className="text-theme-muted text-sm mb-4">
-                  {t('skills_offer_description')}
-                </p>
+              <OnboardingSkillsPicker
+                title={t('skills_offer_title')}
+                description={t('skills_offer_description')}
+                icon={<HandHeart className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />}
+                suggestions={skillSuggestions}
+                selected={offerSkills}
+                onChange={setOfferSkills}
+                countLabel={t('skills_to_offer_count', { count: offerSkills.length })}
+                selectedClassName="data-[selected=true]:bg-emerald-500/20 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-400"
+              />
 
-                {categoriesLoading ? (
-                  <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex items-center justify-center py-8">
-                    <Spinner size="md" />
-                  </div>
-                ) : categories.length === 0 ? (
-                  <p className="text-theme-subtle text-sm py-4">
-                    {t('no_categories_skip')}
-                  </p>
-                ) : (
-                  <TagGroup
-                    aria-label={t('skills_offer_title')}
-                    selectionMode="multiple"
-                    selectedKeys={new Set(skillOffers.map(String))}
-                    onSelectionChange={(keys) => setSkillOffers(keys === 'all' ? categories.map((c) => c.id) : Array.from(keys).map(Number))}
-                  >
-                    <TagGroup.List className="flex flex-wrap gap-2">
-                      {categories.map((cat) => (
-                        <Tag
-                          key={cat.id}
-                          id={String(cat.id)}
-                          className="data-[selected=true]:bg-emerald-500/20 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-400"
-                        >
-                          {cat.name}
-                        </Tag>
-                      ))}
-                    </TagGroup.List>
-                  </TagGroup>
-                )}
+              <OnboardingSkillsPicker
+                title={t('skills_need_title')}
+                description={t('skills_need_description')}
+                icon={<HelpCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />}
+                suggestions={skillSuggestions}
+                selected={needSkills}
+                onChange={setNeedSkills}
+                countLabel={t('skills_needed_count', { count: needSkills.length })}
+                selectedClassName="data-[selected=true]:bg-amber-500/20 data-[selected=true]:text-amber-600 dark:data-[selected=true]:text-amber-400"
+              />
 
-                {skillOffers.length > 0 && (
-                  <p className="text-xs text-theme-success mt-3 font-medium">
-                    {t('skills_to_offer_count', { count: skillOffers.length })}
-                  </p>
-                )}
-              </GlassCard>
-
-              {/* Needs section */}
-              <GlassCard className="p-6">
-                <h2 className="text-lg font-semibold text-theme-primary mb-1 flex items-center gap-2">
-                  <HelpCircle
-                    className="w-5 h-5 text-amber-600 dark:text-amber-400"
-                    aria-hidden="true"
-                  />
-                  {t('skills_need_title')}
-                </h2>
-                <p className="text-theme-muted text-sm mb-4">
-                  {t('skills_need_description')}
-                </p>
-
-                {categoriesLoading ? (
-                  <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex items-center justify-center py-8">
-                    <Spinner size="md" />
-                  </div>
-                ) : categories.length === 0 ? (
-                  <p className="text-theme-subtle text-sm py-4">
-                    {t('no_categories_skip')}
-                  </p>
-                ) : (
-                  <TagGroup
-                    aria-label={t('skills_need_title')}
-                    selectionMode="multiple"
-                    selectedKeys={new Set(skillNeeds.map(String))}
-                    onSelectionChange={(keys) => setSkillNeeds(keys === 'all' ? categories.map((c) => c.id) : Array.from(keys).map(Number))}
-                  >
-                    <TagGroup.List className="flex flex-wrap gap-2">
-                      {categories.map((cat) => (
-                        <Tag
-                          key={cat.id}
-                          id={String(cat.id)}
-                          className="data-[selected=true]:bg-amber-500/20 data-[selected=true]:text-amber-600 dark:data-[selected=true]:text-amber-400"
-                        >
-                          {cat.name}
-                        </Tag>
-                      ))}
-                    </TagGroup.List>
-                  </TagGroup>
-                )}
-
-                {skillNeeds.length > 0 && (
-                  <p className="text-xs text-theme-warning mt-3 font-medium">
-                    {t('skills_needed_count', { count: skillNeeds.length })}
-                  </p>
-                )}
-              </GlassCard>
+              {categoriesLoading && (
+                <div role="status" aria-busy="true" aria-label={t('loading', { ns: 'common' })} className="flex items-center justify-center">
+                  <Spinner size="sm" />
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <Button
@@ -1186,28 +998,15 @@ export function OnboardingPage() {
 
                 <Separator className="my-4" />
 
-                {/* Interests summary */}
+                {/* Skills summary */}
                 <div className="space-y-4">
-                  <SummarySection
-                    icon={<Heart className="w-4 h-4 text-rose-500" />}
-                    title={t('summary_interests')}
-                    items={selectedInterests}
-                    getCategoryName={getCategoryName}
-                    chipColor="accent"
-                    emptyText={t('none_selected')}
-                    onEdit={() => goToStep(stepSlugToIndex.get('interests') ?? 3)}
-                  />
-
-                  <Separator />
-
                   <SummarySection
                     icon={<HandHeart className="w-4 h-4 text-emerald-500" />}
                     title={t('summary_offers')}
-                    items={skillOffers}
-                    getCategoryName={getCategoryName}
+                    items={offerSkills}
                     chipColor="success"
                     emptyText={t('none_selected')}
-                    onEdit={() => goToStep(stepSlugToIndex.get('skills') ?? 4)}
+                    onEdit={stepSlugToIndex.has('skills') ? () => goToStep(stepSlugToIndex.get('skills') ?? 1) : undefined}
                   />
 
                   <Separator />
@@ -1215,11 +1014,10 @@ export function OnboardingPage() {
                   <SummarySection
                     icon={<HelpCircle className="w-4 h-4 text-[var(--color-warning)]" />}
                     title={t('summary_needs')}
-                    items={skillNeeds}
-                    getCategoryName={getCategoryName}
+                    items={needSkills}
                     chipColor="warning"
                     emptyText={t('none_selected')}
-                    onEdit={() => goToStep(stepSlugToIndex.get('skills') ?? 4)}
+                    onEdit={stepSlugToIndex.has('skills') ? () => goToStep(stepSlugToIndex.get('skills') ?? 1) : undefined}
                   />
                 </div>
               </GlassCard>
@@ -1277,22 +1075,19 @@ export function OnboardingPage() {
 function getCompletedSteps(state: {
   hasAvatar: boolean;
   hasBio: boolean;
-  selectedInterests: number[];
-  skillOffers: number[];
-  skillNeeds: number[];
+  offerSkills: string[];
+  needSkills: string[];
   stepSlugToIndex: Map<string, number>;
 }): Set<number> {
   const completed = new Set<number>();
   const idx = state.stepSlugToIndex;
-  const welcomeIdx = idx.get('welcome') ?? 1;
-  const profileIdx = idx.get('profile') ?? 2;
-  const interestsIdx = idx.get('interests') ?? 3;
-  const skillsIdx = idx.get('skills') ?? 4;
+  const welcomeIdx = idx.get('welcome');
+  const profileIdx = idx.get('profile');
+  const skillsIdx = idx.get('skills');
 
-  completed.add(welcomeIdx); // Welcome is always "done" once visited
-  if (state.hasAvatar && state.hasBio) completed.add(profileIdx);
-  if (state.selectedInterests.length > 0) completed.add(interestsIdx);
-  if (state.skillOffers.length > 0 || state.skillNeeds.length > 0) completed.add(skillsIdx);
+  if (welcomeIdx) completed.add(welcomeIdx); // Welcome is always "done" once visited
+  if (profileIdx && state.hasAvatar && state.hasBio) completed.add(profileIdx);
+  if (skillsIdx && (state.offerSkills.length > 0 || state.needSkills.length > 0)) completed.add(skillsIdx);
   return completed;
 }
 
@@ -1425,14 +1220,13 @@ function ValidationItem({ checked, label }: { checked: boolean; label: string })
 interface SummarySectionProps {
   icon: React.ReactNode;
   title: string;
-  items: number[];
-  getCategoryName: (id: number) => string;
+  items: string[];
   chipColor: 'accent' | 'success' | 'warning';
   emptyText: string;
-  onEdit: () => void;
+  onEdit?: () => void;
 }
 
-function SummarySection({ icon, title, items, getCategoryName, chipColor, emptyText, onEdit }: SummarySectionProps) {
+function SummarySection({ icon, title, items, chipColor, emptyText, onEdit }: SummarySectionProps) {
   const { t } = useTranslation('onboarding');
   return (
     <div>
@@ -1441,20 +1235,22 @@ function SummarySection({ icon, title, items, getCategoryName, chipColor, emptyT
           {icon}
           {title}
         </h3>
-        <Button
-          variant="tertiary"
-          size="sm"
-          onPress={onEdit}
-          className="min-h-6 min-w-0 p-0 text-xs text-emerald-600 hover:underline dark:text-emerald-400"
-        >
-          {t('edit')}
-        </Button>
+        {onEdit && (
+          <Button
+            variant="tertiary"
+            size="sm"
+            onPress={onEdit}
+            className="min-h-6 min-w-0 p-0 text-xs text-emerald-600 hover:underline dark:text-emerald-400"
+          >
+            {t('edit')}
+          </Button>
+        )}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {items.length > 0 ? (
-          items.map((catId) => (
-            <Chip key={catId} size="sm" variant="soft" color={chipColor}>
-              {getCategoryName(catId)}
+          items.map((name) => (
+            <Chip key={name} size="sm" variant="soft" color={chipColor}>
+              {name}
             </Chip>
           ))
         ) : (

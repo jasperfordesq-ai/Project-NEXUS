@@ -1692,8 +1692,7 @@
       "TS2322": 1
     },
     "src/pages/onboarding/OnboardingPage.test.tsx": {
-      "TS2322": 1,
-      "TS2345": 1
+      "TS2322": 1
     },
     "src/pages/onboarding/SafeguardingStep.test.tsx": {
       "TS2322": 1
@@ -1915,6 +1914,6 @@
   },
   "totals": {
     "fileCount": 565,
-    "errorCount": 1728
+    "errorCount": 1727
   }
 }

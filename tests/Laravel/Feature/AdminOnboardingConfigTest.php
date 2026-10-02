@@ -63,7 +63,9 @@ class AdminOnboardingConfigTest extends TestCase
         $this->assertNotNull($config);
         $this->assertTrue($config['enabled']);
         $this->assertTrue($config['mandatory']);
-        $this->assertEquals('disabled', $config['listing_creation_mode']);
+        // Retired 2026-10-02 — no longer part of the config at all.
+        $this->assertArrayNotHasKey('listing_creation_mode', $config);
+        $this->assertArrayNotHasKey('step_interests_enabled', $config);
     }
 
     public function test_get_config_returns_active_steps(): void
@@ -118,13 +120,22 @@ class AdminOnboardingConfigTest extends TestCase
         $this->assertEquals('50', $row->setting_value);
     }
 
-    public function test_update_config_validates_listing_creation_mode(): void
+    public function test_update_config_ignores_retired_settings(): void
     {
         $this->actingAsAdmin();
         $response = $this->apiPut('/v2/admin/config/onboarding', [
-            'listing_creation_mode' => 'INVALID',
+            'enabled' => true,
+            'listing_creation_mode' => 'active',
+            'listing_max_auto' => 5,
+            'step_interests_enabled' => true,
         ]);
-        $this->assertEquals(422, $response->getStatusCode());
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = $response->json('data') ?? $response->json();
+        $updated = $data['updated_keys'] ?? $data['data']['updated_keys'] ?? [];
+        $this->assertNotContains('listing_creation_mode', $updated);
+        $this->assertNotContains('listing_max_auto', $updated);
+        $this->assertNotContains('step_interests_enabled', $updated);
     }
 
     public function test_update_config_validates_bio_min_length_range(): void
@@ -153,7 +164,6 @@ class AdminOnboardingConfigTest extends TestCase
             'enabled' => false,
             'mandatory' => false,
             'bio_min_length' => 25,
-            'listing_creation_mode' => 'draft',
         ]);
         $this->assertEquals(200, $response->getStatusCode());
 
@@ -162,7 +172,6 @@ class AdminOnboardingConfigTest extends TestCase
         $this->assertContains('enabled', $updated);
         $this->assertContains('mandatory', $updated);
         $this->assertContains('bio_min_length', $updated);
-        $this->assertContains('listing_creation_mode', $updated);
     }
 
     // =========================================================================

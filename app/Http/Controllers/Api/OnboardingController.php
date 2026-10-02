@@ -16,8 +16,8 @@ use App\Services\SafeguardingPreferenceService;
 /**
  * OnboardingController -- New member onboarding flow.
  *
- * Supports admin-configurable steps, safeguarding preferences, and
- * listing creation modes. All methods are tenant-scoped.
+ * Supports admin-configurable steps, safeguarding preferences and the
+ * member's skills. All methods are tenant-scoped.
  */
 class OnboardingController extends BaseApiController
 {
@@ -33,7 +33,6 @@ class OnboardingController extends BaseApiController
         $userId = $this->requireAuth();
 
         $complete = $this->onboardingService->isOnboardingComplete($userId);
-        $interests = $this->onboardingService->getUserInterests($userId);
 
         $user = \App\Models\User::findById($userId);
         $hasAvatar = !empty($user['avatar_url'] ?? '');
@@ -43,7 +42,9 @@ class OnboardingController extends BaseApiController
             'onboarding_completed' => $complete,
             'has_avatar'           => $hasAvatar,
             'has_bio'              => $hasBio,
-            'interests'            => $interests,
+            // Retired 2026-10-02: the wizard no longer records interests.
+            // Kept as an empty list so app versions that still read it work.
+            'interests'            => [],
         ]);
     }
 
@@ -66,28 +67,27 @@ class OnboardingController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
-        $interests = $this->input('interests', []);
-        $offers = $this->input('offers', []);
-        $needs = $this->input('needs', []);
-
-        // Sanitize: ensure all IDs are positive integers with no duplicates
-        $interests = is_array($interests) ? array_values(array_unique(array_filter(array_map('intval', $interests), fn ($id) => $id > 0))) : [];
-        $offers    = is_array($offers)    ? array_values(array_unique(array_filter(array_map('intval', $offers),    fn ($id) => $id > 0))) : [];
-        $needs     = is_array($needs)     ? array_values(array_unique(array_filter(array_map('intval', $needs),     fn ($id) => $id > 0))) : [];
-
-        // Validate category IDs belong to current tenant
-        $tenantId = TenantContext::getId();
-        if (!empty($interests) || !empty($offers) || !empty($needs)) {
-            $allCatIds = array_unique(array_merge($interests, $offers, $needs));
-            $validCatIds = DB::table('categories')
-                ->where('tenant_id', $tenantId)
-                ->whereIn('id', $allCatIds)
-                ->pluck('id')
-                ->all();
-            $validSet = array_flip($validCatIds);
-            $interests = array_values(array_filter($interests, fn ($id) => isset($validSet[$id])));
-            $offers = array_values(array_filter($offers, fn ($id) => isset($validSet[$id])));
-            $needs = array_values(array_filter($needs, fn ($id) => isset($validSet[$id])));
+        // Current clients send `skills: {offer: string[], need: string[],
+        // replace?: bool}`, saved into user_skills. With replace (the default)
+        // the lists are the member's complete set; the wizard sends
+        // replace=false when it could not load their existing skills, so a
+        // failed prefill can never wipe them.
+        // Older app versions send `offers` / `needs` as listing-category ids;
+        // those are mapped to skill names and added without clearing anything.
+        // `interests` is still accepted from them but no longer stored: nothing
+        // on the platform ever used it.
+        $skills = $this->input('skills');
+        $replaceSkills = false;
+        if (is_array($skills)) {
+            $replaceSkills = filter_var($skills['replace'] ?? true, FILTER_VALIDATE_BOOLEAN);
+            $offerNames = is_array($skills['offer'] ?? null) ? $skills['offer'] : [];
+            $needNames = is_array($skills['need'] ?? null) ? $skills['need'] : [];
+        } else {
+            $toIds = fn ($v) => is_array($v)
+                ? array_values(array_unique(array_filter(array_map('intval', $v), fn ($id) => $id > 0)))
+                : [];
+            $offerNames = $this->onboardingService->categoryNamesForSkills($toIds($this->input('offers', [])));
+            $needNames = $this->onboardingService->categoryNamesForSkills($toIds($this->input('needs', [])));
         }
 
         // All-or-nothing: wrap in transaction with row-level lock to prevent double-completion
@@ -106,8 +106,6 @@ class OnboardingController extends BaseApiController
                 DB::rollback();
                 return $this->respondWithData([
                     'message' => __('api_controllers_2.onboarding.already_completed'),
-                    'listings_created' => 0,
-                    'listing_ids' => [],
                 ]);
             }
 
@@ -137,9 +135,7 @@ class OnboardingController extends BaseApiController
             // must self-classify as vulnerable. Per-option `is_required` flags
             // are still enforced client-side at the SafeguardingStep component.
 
-            $this->onboardingService->saveInterests($userId, $interests);
-            $this->onboardingService->saveSkills($userId, $offers, $needs);
-            $listingIds = $this->onboardingService->autoCreateListings($userId, $offers, $needs);
+            $this->onboardingService->saveOnboardingSkills($userId, $offerNames, $needNames, $replaceSkills);
             $this->onboardingService->completeOnboarding($userId);
 
             DB::commit();
@@ -153,9 +149,7 @@ class OnboardingController extends BaseApiController
         }
 
         return $this->respondWithData([
-            'message'          => __('api.onboarding.complete'),
-            'listings_created' => count($listingIds),
-            'listing_ids'      => $listingIds,
+            'message' => __('api.onboarding.complete'),
         ]);
     }
 

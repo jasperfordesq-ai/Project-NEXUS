@@ -28,16 +28,18 @@ class AdminOnboardingConfigController extends BaseApiController
 
     /**
      * Allowed setting keys that can be updated via PUT.
+     *
+     * step_interests_* and listing_creation_mode / listing_max_auto were
+     * retired on 2026-10-02 (see OnboardingConfigService) and are now
+     * ignored like any other unknown key.
      */
     private const ALLOWED_KEYS = [
         'enabled', 'mandatory',
         'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-        'step_interests_enabled', 'step_interests_required',
         'step_skills_enabled', 'step_skills_required',
         'step_safeguarding_enabled', 'step_safeguarding_required',
         'step_confirm_enabled',
         'avatar_required', 'bio_required', 'bio_min_length',
-        'listing_creation_mode', 'listing_max_auto',
         'require_completion_for_visibility', 'require_avatar_for_visibility', 'require_bio_for_visibility',
         'welcome_text', 'help_text', 'safeguarding_intro_text',
         'country_preset',
@@ -49,7 +51,6 @@ class AdminOnboardingConfigController extends BaseApiController
     private const BOOLEAN_KEYS = [
         'enabled', 'mandatory',
         'step_welcome_enabled', 'step_profile_enabled', 'step_profile_required',
-        'step_interests_enabled', 'step_interests_required',
         'step_skills_enabled', 'step_skills_required',
         'step_safeguarding_enabled', 'step_safeguarding_required',
         'step_confirm_enabled',
@@ -93,29 +94,11 @@ class AdminOnboardingConfigController extends BaseApiController
                 continue; // Skip unknown keys silently
             }
 
-            // Validate listing_creation_mode
-            if ($key === 'listing_creation_mode') {
-                $allowed = ['disabled', 'suggestions_only', 'draft', 'pending_review', 'active'];
-                if (!in_array($value, $allowed, true)) {
-                    $errors[] = "Invalid listing_creation_mode: {$value}";
-                    continue;
-                }
-            }
-
             // Validate bio_min_length
             if ($key === 'bio_min_length') {
                 $value = (int) $value;
                 if ($value < 0 || $value > 500) {
                     $errors[] = 'bio_min_length must be between 0 and 500';
-                    continue;
-                }
-            }
-
-            // Validate listing_max_auto
-            if ($key === 'listing_max_auto') {
-                $value = (int) $value;
-                if ($value < 0 || $value > 10) {
-                    $errors[] = 'listing_max_auto must be between 0 and 10';
                     continue;
                 }
             }
@@ -134,7 +117,7 @@ class AdminOnboardingConfigController extends BaseApiController
             if (in_array($key, self::BOOLEAN_KEYS, true)) {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
                 $type = 'boolean';
-            } elseif (in_array($key, ['bio_min_length', 'listing_max_auto'], true)) {
+            } elseif ($key === 'bio_min_length') {
                 $value = (string) (int) $value;
                 $type = 'integer';
             } elseif (in_array($key, ['welcome_text', 'help_text', 'safeguarding_intro_text'], true)) {

@@ -15,7 +15,7 @@ import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 vi.mock('@/lib/api', () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: [], meta: {} }),
-    post: vi.fn().mockResolvedValue({ success: true, data: { listings_created: 0 } }),
+    post: vi.fn().mockResolvedValue({ success: true, data: {} }),
     put: vi.fn().mockResolvedValue({ success: true, data: {} }),
     upload: vi.fn().mockResolvedValue({ success: true, data: { avatar_url: '/uploads/avatar.jpg' } }),
   },
@@ -69,8 +69,6 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
       step_welcome_enabled: true,
       step_profile_enabled: true,
       step_profile_required: true,
-      step_interests_enabled: true,
-      step_interests_required: false,
       step_skills_enabled: true,
       step_skills_required: false,
       step_safeguarding_enabled: false,
@@ -79,8 +77,6 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
       avatar_required: true,
       bio_required: true,
       bio_min_length: 10,
-      listing_creation_mode: 'disabled',
-      listing_max_auto: 3,
       require_completion_for_visibility: false,
       require_avatar_for_visibility: false,
       require_bio_for_visibility: false,
@@ -92,7 +88,6 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
     steps: [
       { slug: 'welcome', label: 'Welcome', required: false },
       { slug: 'profile', label: 'Your Profile', required: true },
-      { slug: 'interests', label: 'Interests', required: false },
       { slug: 'skills', label: 'Skills', required: false },
       { slug: 'confirm', label: 'Confirm', required: true },
     ],
@@ -102,7 +97,7 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // Extend the shared UI mock with an interactive TagGroup/Tag pair. The page's
-// interest/skill pickers use HeroUI v3's selection-based TagGroup, whose
+// skill pickers use HeroUI v3's selection-based TagGroup, whose
 // generic stubs render as inert divs. This override wires `selectedKeys` /
 // `onSelectionChange` through context so clicking a Tag toggles selection,
 // and exposes the selected state via role="button" + aria-pressed for queries.
@@ -429,7 +424,7 @@ describe('OnboardingPage', () => {
     expect(nextButton).toBeDisabled();
   });
 
-  it('advances from profile to interests after saving the bio under StrictMode', async () => {
+  it('advances from profile to skills after saving the bio under StrictMode', async () => {
     // Regression: the mounted-guard effect was cleanup-only, so StrictMode's
     // simulated unmount left mountedRef false for the component's whole life
     // and handleSaveProfileAndProceed silently returned after its PUT —
@@ -487,31 +482,15 @@ describe('OnboardingPage', () => {
 
     render(<OnboardingPage />);
 
-    // The user has avatar+bio, so the component auto-skips to step 3 (interests).
-    // Navigate forward through interests -> skills -> confirm
+    // The user has avatar+bio, so the component auto-skips to step 3 (skills).
     await waitFor(() => {
-      // Should have auto-skipped past profile to interests (step 3)
       expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
     });
+    await user.click(screen.getByText('Skip'));
 
-    // Click through interests step (optional, just click Next/Skip)
-    const skipOrNext = screen.queryByText('Skip') || screen.queryByText('Next');
-    if (skipOrNext) {
-      await user.click(skipOrNext);
-    }
-
-    // Now on skills step — skip again
+    // Now on confirm step — click "Finish"
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Step 4.*\(current\)/ })).toBeInTheDocument();
-    });
-    const skipOrNext2 = screen.queryByText('Skip') || screen.queryByText('Next');
-    if (skipOrNext2) {
-      await user.click(skipOrNext2);
-    }
-
-    // Now on confirm step — click "Complete Setup" or equivalent
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 5.*\(current\)/ })).toBeInTheDocument();
     });
     const completeBtn = screen.queryByText(/Complete Setup|Finish|Complete/);
     if (completeBtn) {
@@ -550,7 +529,7 @@ describe('OnboardingPage', () => {
     expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
   });
 
-  // ── Interest & Skill selection tests ────────────────────────────────────
+  // ── Skills step ─────────────────────────────────────────────────────────
 
   const mockCategories = [
     { id: 1, name: 'Gardening', slug: 'gardening', icon: null, color: null },
@@ -558,10 +537,12 @@ describe('OnboardingPage', () => {
     { id: 3, name: 'Technology', slug: 'technology', icon: null, color: null },
   ];
 
-  /** Helper: override useAuth to give the user avatar + bio so the component
-   *  auto-skips past profile (step 2) straight to interests (step 3). Also
-   *  sets up api.get to return mock categories.                              */
-  async function setupWithProfileComplete() {
+  /** Helper: give the user avatar + bio so the component auto-skips past
+   *  profile (step 2) straight to skills (step 3). api.get returns the mock
+   *  categories and the member's existing skills.                            */
+  async function setupWithProfileComplete(
+    mySkills: { success: boolean; data?: unknown } = { success: true, data: [] },
+  ) {
     const { useAuth } = await import('@/contexts');
     vi.mocked(useAuth).mockReturnValue({
       user: {
@@ -576,148 +557,138 @@ describe('OnboardingPage', () => {
       refreshUser: vi.fn().mockResolvedValue(undefined),
     } as unknown as ReturnType<typeof useAuth>);
 
-    // When the component reaches step 3, it calls api.get('/v2/onboarding/categories')
     vi.mocked(api.get).mockImplementation(async (url: string) => {
       if (url === '/v2/onboarding/categories') {
         return { success: true, data: mockCategories, meta: {} } as never;
+      }
+      if (url === '/v2/users/me/skills') {
+        return { meta: {}, ...mySkills } as never;
       }
       return { success: true, data: [], meta: {} } as never;
     });
   }
 
-  it('renders interest categories on step 3', async () => {
-    await setupWithProfileComplete();
+  async function reachSkillsStep() {
+    render(<OnboardingPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 3: Skills \(current\)/ })).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getAllByText('Gardening').length).toBe(2);
+    });
+  }
 
+  /** The two pickers render in order: [0] = I can offer, [1] = I'd like help with. */
+  const chips = (name: string) => screen.getAllByText(name).map((el) => el.closest('[role="button"]'));
+
+  it('no longer shows an interests step', async () => {
+    await setupWithProfileComplete();
     render(<OnboardingPage />);
 
-    // User has avatar+bio, so the component auto-skips to step 3 (interests)
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
-    });
-
-    // Categories should be loaded and rendered as chips
-    await waitFor(() => {
-      expect(screen.getByText('Gardening')).toBeInTheDocument();
-    });
-    expect(screen.getByText('Cooking')).toBeInTheDocument();
-    expect(screen.getByText('Technology')).toBeInTheDocument();
-
-    // Verify the interests heading is shown
-    expect(screen.getByText('What are you interested in?')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Interests/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('What are you interested in?')).not.toBeInTheDocument();
   });
 
-  it('toggling interest selects/deselects category', async () => {
+  it('offers community categories as one-tap suggestions in both skill lists', async () => {
     await setupWithProfileComplete();
-    const { userEvent } = await import('@/test/test-utils');
-    const user = userEvent.setup();
+    await reachSkillsStep();
 
-    render(<OnboardingPage />);
-
-    // Wait for step 3 and categories to load
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText('Gardening')).toBeInTheDocument();
-    });
-
-    // Find the Gardening chip and click to select
-    const gardeningChip = screen.getByText('Gardening').closest('[role="button"]') || screen.getByText('Gardening');
-    await user.click(gardeningChip);
-
-    // After clicking, the chip should have aria-pressed="true" (selected)
-    await waitFor(() => {
-      const chip = screen.getByText('Gardening').closest('[role="button"]');
-      expect(chip).toHaveAttribute('aria-pressed', 'true');
-    });
-
-    // Click again to deselect — re-query the chip (the previous reference can
-    // be stale after the re-render that followed selection).
-    const selectedChip = screen.getByText('Gardening').closest('[role="button"]') || screen.getByText('Gardening');
-    await user.click(selectedChip);
-
-    await waitFor(() => {
-      const chip = screen.getByText('Gardening').closest('[role="button"]');
-      expect(chip).toHaveAttribute('aria-pressed', 'false');
-    });
-  });
-
-  it('renders skill offers and needs on step 4', async () => {
-    await setupWithProfileComplete();
-    const { userEvent } = await import('@/test/test-utils');
-    const user = userEvent.setup();
-
-    render(<OnboardingPage />);
-
-    // Auto-skips to step 3 (interests)
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
-    });
-
-    // Wait for categories to load, then skip to step 4
-    await waitFor(() => {
-      expect(screen.getByText('Gardening')).toBeInTheDocument();
-    });
-
-    // Click "Skip" to advance past interests to skills (step 4)
-    const skipButton = screen.getByText('Skip');
-    await user.click(skipButton);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 4.*\(current\)/ })).toBeInTheDocument();
-    });
-
-    // Verify offer and need section headings render
     expect(screen.getByText('I can offer')).toBeInTheDocument();
     expect(screen.getByText('I need help with')).toBeInTheDocument();
-
-    // Categories should also be rendered in both sections
-    // "Gardening" appears in both offer and need sections
-    const gardeningElements = screen.getAllByText('Gardening');
-    expect(gardeningElements.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Cooking')).toHaveLength(2);
+    expect(screen.getAllByText('Technology')).toHaveLength(2);
+    // The old copy promised listings would be created; that no longer happens.
+    expect(screen.queryByText(/create listings/i)).not.toBeInTheDocument();
   });
 
-  it('skip button on confirm step calls complete with empty arrays', async () => {
+  it('saves tapped and typed skills as the member\'s skills', async () => {
     await setupWithProfileComplete();
     const { userEvent } = await import('@/test/test-utils');
     const user = userEvent.setup();
+    await reachSkillsStep();
 
-    render(<OnboardingPage />);
+    // Offer: tap a suggestion, then type one of their own.
+    await user.click(chips('Gardening')[0]!);
+    await user.type(screen.getAllByPlaceholderText('e.g. Bike repairs')[0]!, 'Bike repairs');
+    await user.click(screen.getAllByRole('button', { name: /^Add$/ })[0]!);
+    // Need: tap a suggestion.
+    await user.click(chips('Technology')[1]!);
 
-    // Auto-skips to step 3 (interests)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
-    });
-    await waitFor(() => {
-      expect(screen.getByText('Gardening')).toBeInTheDocument();
-    });
-
-    // Skip interests -> step 4 (skills)
-    await user.click(screen.getByText('Skip'));
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 4.*\(current\)/ })).toBeInTheDocument();
+      expect(chips('Gardening')[0]).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByText('Bike repairs')).toBeInTheDocument();
     });
 
-    // Skip skills -> step 5 (confirm)
-    const skipButtons = screen.getAllByText('Skip');
-    await user.click(skipButtons[skipButtons.length - 1]);
+    await user.click(screen.getByText('Next'));
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 5.*\(current\)/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Step 4: Confirm \(current\)/ })).toBeInTheDocument();
     });
-
-    // Clear any previous api.post calls
     vi.mocked(api.post).mockClear();
-
-    // Click "Skip for now" on the confirm step — this calls handleSkip → submitOnboarding([], [], [])
-    const skipForNow = screen.getByText('Skip for now');
-    await user.click(skipForNow);
+    await user.click(screen.getByText('Finish'));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/v2/onboarding/complete', {
-        interests: [],
-        offers: [],
-        needs: [],
+        skills: { offer: ['Gardening', 'Bike repairs'], need: ['Technology'], replace: true },
       });
+    });
+  });
+
+  it('pre-selects skills the member already has', async () => {
+    await setupWithProfileComplete({
+      success: true,
+      data: [
+        { skill_name: 'Cooking', is_offering: 1, is_requesting: 0 },
+        { skill_name: 'Piano', is_offering: 0, is_requesting: 1 },
+      ],
+    });
+    await reachSkillsStep();
+
+    await waitFor(() => {
+      expect(chips('Cooking')[0]).toHaveAttribute('aria-pressed', 'true');
+    });
+    expect(chips('Cooking')[1]).toHaveAttribute('aria-pressed', 'false');
+    // A skill that is not a category still appears — only in the list it belongs to.
+    expect(chips('Piano')).toHaveLength(1);
+    expect(chips('Piano')[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('I need help with').closest('div')?.parentElement).toHaveTextContent('Piano');
+  });
+
+  it('does not ask the server to replace skills it could not load', async () => {
+    await setupWithProfileComplete({ success: false });
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    await reachSkillsStep();
+
+    await user.click(chips('Cooking')[0]!);
+    await user.click(screen.getByText('Next'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 4: Confirm \(current\)/ })).toBeInTheDocument();
+    });
+    vi.mocked(api.post).mockClear();
+    await user.click(screen.getByText('Finish'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/v2/onboarding/complete', {
+        skills: { offer: ['Cooking'], need: [], replace: false },
+      });
+    });
+  });
+
+  it('skip for now on the confirm step saves no skills', async () => {
+    await setupWithProfileComplete();
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    await reachSkillsStep();
+
+    await user.click(screen.getByText('Skip'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 4: Confirm \(current\)/ })).toBeInTheDocument();
+    });
+    vi.mocked(api.post).mockClear();
+    await user.click(screen.getByText('Skip for now'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/v2/onboarding/complete', {});
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Select, SelectItem, useDisclosure, Button, Chip, Spinner, Input, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
+import { Select, SelectItem, useDisclosure, Button, Checkbox, Chip, Spinner, Input, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -9,6 +9,10 @@ import { Select, SelectItem, useDisclosure, Button, Chip, Spinner, Input, Modal,
  *
  * Used in settings/profile to add skills with proficiency levels.
  * Fetches skill categories from API and supports search.
+ *
+ * Each skill records whether the member offers it, wants help with it, or
+ * both — matching reads both directions. Until 2026-10-02 this form could
+ * only record offers.
  */
 
 import { useState, useEffect, useCallback, useRef, useId } from 'react';
@@ -42,15 +46,22 @@ export interface UserSkill {
   category_name?: string;
   category_id?: number;
   proficiency_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  is_offering?: number | boolean;
+  is_requesting?: number | boolean;
   endorsement_count?: number;
   created_at?: string;
 }
 
+/**
+ * Shape returned by GET /v2/skills/search — skill names other members of this
+ * community already use, most common first. (This component read `id` /
+ * `name` / `category_name`, which the endpoint never returns, until
+ * 2026-10-02 — so every suggestion rendered blank.)
+ */
 interface SkillSearchResult {
-  id: number;
-  name: string;
-  category_name: string;
-  category_id: number;
+  skill_name: string;
+  category_id: number | null;
+  user_count: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,6 +122,16 @@ export function SkillChip({
   return (
     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
       <span className="text-sm font-medium text-theme-primary">{skill.skill_name}</span>
+      {!!Number(skill.is_requesting) && (
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400">
+          {t('skills.wants')}
+        </span>
+      )}
+      {!!Number(skill.is_requesting) && !!Number(skill.is_offering) && (
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+          {t('skills.offers')}
+        </span>
+      )}
       {showProficiency && (
         <ProficiencyDots level={skill.proficiency_level} />
       )}
@@ -160,6 +181,8 @@ export function SkillSelector({
   const [selectedSkill, setSelectedSkill] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [proficiency, setProficiency] = useState<string>('intermediate');
+  const [isOffering, setIsOffering] = useState(true);
+  const [isRequesting, setIsRequesting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const listboxId = useId();
@@ -223,7 +246,10 @@ export function SkillSelector({
 
   // Add skill
   const handleAddSkill = async (skillName?: string, categoryId?: number) => {
-    const name = skillName || selectedSkill.trim();
+    // The Add button is enabled as soon as something is typed, so a typed
+    // name must be enough — without the fallback, pressing Add after typing a
+    // custom skill silently did nothing unless "Use …" was pressed first.
+    const name = skillName || selectedSkill.trim() || searchQuery.trim();
     if (!name) return;
 
     try {
@@ -232,6 +258,8 @@ export function SkillSelector({
         skill_name: name,
         category_id: categoryId || (selectedCategory ? parseInt(selectedCategory) : undefined),
         proficiency_level: proficiency,
+        is_offering: isOffering,
+        is_requesting: isRequesting,
       });
 
       if (response.success) {
@@ -239,6 +267,8 @@ export function SkillSelector({
         setSelectedSkill('');
         setSearchQuery('');
         setSearchResults([]);
+        setIsOffering(true);
+        setIsRequesting(false);
         onSkillsChange();
         onClose();
       } else {
@@ -254,10 +284,10 @@ export function SkillSelector({
 
   // Select a search result into the form (shared by click + keyboard)
   const selectResult = (result: SkillSearchResult) => {
-    setSelectedSkill(result.name);
-    setSelectedCategory(result.category_id.toString());
+    setSelectedSkill(result.skill_name);
+    if (result.category_id) setSelectedCategory(String(result.category_id));
     setSearchResults([]);
-    setSearchQuery(result.name);
+    setSearchQuery(result.skill_name);
     setSelectedIndex(-1);
   };
 
@@ -384,7 +414,7 @@ export function SkillSelector({
               >
                 {searchResults.map((result, index) => (
                   <div
-                    key={result.id}
+                    key={`${result.skill_name}-${result.category_id ?? 0}`}
                     id={`${listboxId}-opt-${index}`}
                     role="option"
                     aria-selected={index === selectedIndex}
@@ -401,8 +431,7 @@ export function SkillSelector({
                       index === selectedIndex ? 'bg-theme-hover' : 'hover:bg-theme-hover'
                     }`}
                   >
-                    <span className="text-sm font-medium text-theme-primary">{result.name}</span>
-                    <span className="text-xs text-theme-subtle ml-2">{tc('skills.search_result_category', { category: result.category_name })}</span>
+                    <span className="text-sm font-medium text-theme-primary">{result.skill_name}</span>
                   </div>
                 ))}
               </div>
@@ -461,6 +490,16 @@ export function SkillSelector({
               <SelectItem key="expert" id="expert">{tc('skills.proficiency.expert')}</SelectItem>
             </Select>
 
+            {/* Direction — matching uses both */}
+            <div className="flex flex-wrap gap-6">
+              <Checkbox isSelected={isOffering} onValueChange={setIsOffering}>
+                {tc('skills.offers')}
+              </Checkbox>
+              <Checkbox isSelected={isRequesting} onValueChange={setIsRequesting}>
+                {tc('skills.wants')}
+              </Checkbox>
+            </div>
+
             {/* Selected skill preview */}
             {(selectedSkill || searchQuery) && (
               <div className="p-3 rounded-lg bg-theme-elevated border border-theme-default">
@@ -482,7 +521,7 @@ export function SkillSelector({
               className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
               onPress={() => handleAddSkill()}
               isLoading={isAdding}
-              isDisabled={!selectedSkill && !searchQuery}
+              isDisabled={(!selectedSkill && !searchQuery) || (!isOffering && !isRequesting)}
             >
               {tc('skills.add_skill')}
             </Button>

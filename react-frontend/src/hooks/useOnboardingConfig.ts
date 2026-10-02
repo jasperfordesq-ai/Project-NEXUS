@@ -11,7 +11,7 @@
  * OnboardingPage to render a dynamic wizard based on admin settings.
  *
  * Falls back to safe defaults that match the pre-module hardcoded behavior,
- * so tenants with no configuration see the same 5-step wizard as before.
+ * so tenants with no configuration still get a working wizard.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -29,8 +29,6 @@ export interface OnboardingConfig {
   step_welcome_enabled: boolean;
   step_profile_enabled: boolean;
   step_profile_required: boolean;
-  step_interests_enabled: boolean;
-  step_interests_required: boolean;
   step_skills_enabled: boolean;
   step_skills_required: boolean;
   step_safeguarding_enabled: boolean;
@@ -39,8 +37,6 @@ export interface OnboardingConfig {
   avatar_required: boolean;
   bio_required: boolean;
   bio_min_length: number;
-  listing_creation_mode: string;
-  listing_max_auto: number;
   require_completion_for_visibility: boolean;
   require_avatar_for_visibility: boolean;
   require_bio_for_visibility: boolean;
@@ -57,8 +53,6 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   step_welcome_enabled: true,
   step_profile_enabled: true,
   step_profile_required: true,
-  step_interests_enabled: true,
-  step_interests_required: false,
   step_skills_enabled: true,
   step_skills_required: false,
   step_safeguarding_enabled: true,
@@ -67,8 +61,6 @@ const DEFAULT_CONFIG: OnboardingConfig = {
   avatar_required: true,
   bio_required: true,
   bio_min_length: 10,
-  listing_creation_mode: 'disabled',
-  listing_max_auto: 3,
   require_completion_for_visibility: false,
   require_avatar_for_visibility: false,
   require_bio_for_visibility: false,
@@ -81,7 +73,6 @@ const DEFAULT_CONFIG: OnboardingConfig = {
 const DEFAULT_STEPS: OnboardingStepConfig[] = [
   { slug: 'welcome', required: false },
   { slug: 'profile', required: true },
-  { slug: 'interests', required: false },
   { slug: 'skills', required: false },
   { slug: 'confirm', required: true },
 ];
