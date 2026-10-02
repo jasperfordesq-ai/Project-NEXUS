@@ -49,7 +49,7 @@ case "$cmd" in
         for f in "$src"/*; do
             [ -f "$f" ] || continue
             b="$(basename "$f")"
-            matches "$b" && cp -p "$f" "$(map "$dst")/$b"
+            if matches "$b"; then cp -p "$f" "$(map "$dst")/$b"; fi
         done
         ;;
     delete)
@@ -71,7 +71,7 @@ case "$cmd" in
         for f in "$dir"/*; do
             [ -f "$f" ] || continue
             b="$(basename "$f")"
-            matches "$b" && printf '%s\n' "$b"
+            if matches "$b"; then printf '%s\n' "$b"; fi
         done
         ;;
     copyto)

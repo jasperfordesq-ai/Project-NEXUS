@@ -8,6 +8,8 @@
 **/.husky/*         text eol=lf
 # Hook scripts carry no .sh extension, so the rules above miss them too.
 scripts/git-hooks/* text eol=lf
+# The backup scripts' test stubs carry no extension either.
+scripts/test/backup-stubs/* text eol=lf
 Makefile    text eol=lf
 
 # Default behaviour for text files

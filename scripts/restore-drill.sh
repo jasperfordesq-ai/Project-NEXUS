@@ -4,72 +4,172 @@
 # Author: Jasper Ford
 # See NOTICE file for attribution and acknowledgements.
 #
-# Monthly restore drill — verifies that backups can actually be restored.
+# Monthly restore drill — verifies that the OFFSITE backup can actually be restored.
 #
-# Backups you've never restored aren't backups. This script:
-#   1. Picks the most recent nightly DB backup (nexus_db_*.sql.gz)
-#      OR the most recent pre-migrate backup if no nightly is found.
-#   2. Loads it into a throwaway MariaDB container (nexus-restore-drill).
-#   3. Asserts row counts on a few critical tables match the live DB
-#      within tolerance (live grows between drill runs).
-#   4. Tears the throwaway container down.
+# Backups you've never restored aren't backups, and an encrypted backup whose
+# key has gone missing is no backup at all. By default (DRILL_SOURCE=offsite)
+# this script:
+#   1. Finds the newest encrypted DB backup on the offsite remote
+#      (nexus_db_*.sql.gz.age, written by server-nightly-backup.sh) and refuses
+#      if there is none, if it is older than DRILL_MAX_AGE_DAYS, or if the file
+#      is not really age-encrypted.
+#   2. Downloads it and decrypts it with the drill's own key
+#      (/opt/nexus-php/.backup-drill-key, root-only; its public half is one of
+#      the recipients in /opt/nexus-php/.backup-age-recipients). If that key is
+#      lost or wrong, the drill fails — within a month, not in a disaster.
+#   3. Loads it into a throwaway MariaDB container (nexus-restore-drill).
+#   4. Asserts row counts on a few critical tables are sane against the live DB.
+#   5. Tears everything down, deletes the downloaded and decrypted files, and
+#      sends a Telegram message either way (scripts/backup-alert.sh). A drill that
+#      cannot send its message fails: a silent drill is the failure mode this
+#      replaces.
 #
-# Recommended cron (run on production server, monthly):
-#   sudo crontab -e
-#   0 4 1 * * bash /opt/nexus-php/scripts/restore-drill.sh \
-#               >> /opt/nexus-php/logs/restore-drill.log 2>&1
+# The drill key proves the pipeline and the server's key. It cannot prove the
+# OWNER's keys still exist — that is the owner's key check
+# (scripts/backup-decrypt.sh on the nexus_keycheck_*.txt.age file).
 #
-# Local dev drill (proves restorability on the dev machine, no prod access):
-#   Every path/container is overridable, so you can drill the local Docker DB.
+# Cron (installed by scripts/deploy/phases/install-backup-cron.sh):
+#   0 4 1 * * root bash /opt/nexus-php/scripts/restore-drill.sh >> /opt/nexus-php/logs/restore-drill.log 2>&1
+#
+# Local dev drill (plain local dump, no offsite, alerts optional):
 #   1. Dump the local DB the same way the nightly backup does:
 #        DB_PASS=$(grep -E '^DB_(PASSWORD|PASS)=' .env | head -1 | cut -d= -f2 | tr -d '"')
 #        mkdir -p /tmp/drill/backups
 #        MYSQL_PWD="$DB_PASS" docker exec -e MYSQL_PWD nexus-php-db \
 #          mariadb-dump -u nexus nexus | gzip > /tmp/drill/backups/nexus_db_$(date +%F).sql.gz
 #   2. Run the drill against the local source container + that backup:
-#        BACKUP_DIR=/tmp/drill/backups SOURCE_DB_CONTAINER=nexus-php-db \
+#        DRILL_SOURCE=local BACKUP_DIR=/tmp/drill/backups SOURCE_DB_CONTAINER=nexus-php-db \
 #        ENV_FILE="$(pwd)/.env" DRILL_CONTAINER=nexus-restore-drill-local DRILL_PORT=33307 \
 #          bash scripts/restore-drill.sh
-#   Last proven locally: 2026-06-21 — restored nexus into a throwaway container and
-#   matched live row counts (tenants/users/laravel_migrations). PASS.
+#
+# Tests: scripts/test/test-restore-drill-offsite.sh
 #
 # Exit codes:
-#   0 — drill passed, backups are restorable
-#   1 — drill failed, alert immediately
+#   0 — drill passed and was reported
+#   1 — drill failed (or could not be reported), alert immediately
 
-set -euo pipefail
+set -Eeuo pipefail
+umask 077
 
+DRILL_SOURCE="${DRILL_SOURCE:-offsite}"
 BACKUP_DIR="${BACKUP_DIR:-/opt/nexus-php/backups}"
 ENV_FILE="${ENV_FILE:-/opt/nexus-php/.env}"
 SOURCE_DB_CONTAINER="${SOURCE_DB_CONTAINER:-nexus-php-db}"
 DRILL_CONTAINER="${DRILL_CONTAINER:-nexus-restore-drill}"
 DRILL_PORT="${DRILL_PORT:-33307}"
+DRILL_IDENTITY_FILE="${DRILL_IDENTITY_FILE:-/opt/nexus-php/.backup-drill-key}"
+DRILL_MAX_AGE_DAYS="${DRILL_MAX_AGE_DAYS:-3}"
+DRILL_TMP_PARENT="${DRILL_TMP_PARENT:-/opt/nexus-php/backups}"
 DRILL_PASS="$(head -c 16 /dev/urandom | base64 | tr -d '/+=')"
+# Offsite drills must be able to report; local dev drills need not.
+if [ "$DRILL_SOURCE" = "offsite" ]; then
+    DRILL_REQUIRE_ALERTS="${DRILL_REQUIRE_ALERTS:-1}"
+else
+    DRILL_REQUIRE_ALERTS="${DRILL_REQUIRE_ALERTS:-0}"
+fi
+if [[ -z "${RCLONE_REMOTE:-}" ]] && command -v rclone &>/dev/null; then
+    if rclone listremotes 2>/dev/null | grep -q "^gdrive:"; then
+        RCLONE_REMOTE="gdrive:nexus-backups"
+    fi
+fi
+RCLONE_REMOTE="${RCLONE_REMOTE:-}"
+
+# shellcheck source=backup-alert.sh
+source "$(dirname "${BASH_SOURCE[0]}")/backup-alert.sh"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 log()     { echo -e "${CYAN}→${NC} [$(date '+%H:%M:%S')] $1"; }
 success() { echo -e "${GREEN}✓${NC} $1"; }
 warn()    { echo -e "${YELLOW}⚠${NC} $1"; }
-fail()    { echo -e "${RED}✗${NC} $1"; cleanup; exit 1; }
+
+WORK_DIR=""
+DRILLED="(none)"
+NOTES=""
 
 cleanup() {
     docker rm -f "$DRILL_CONTAINER" >/dev/null 2>&1 || true
+    if [ -n "$WORK_DIR" ]; then rm -rf "$WORK_DIR"; fi
 }
+
+report() {  # $1 title, $2 body
+    if ! backup_alert "$1" "$2"; then
+        if [ "$DRILL_REQUIRE_ALERTS" = "1" ]; then
+            echo -e "${RED}✗${NC} The drill result could not be reported, so the drill counts as FAILED." >&2
+            return 1
+        fi
+    fi
+    return 0
+}
+
+fail() {
+    trap - ERR
+    echo -e "${RED}✗${NC} $1"
+    cleanup
+    report "NEXUS RESTORE DRILL FAILED" \
+        "$1
+
+Backup drilled: ${DRILLED}
+The offsite backup could NOT be shown to restore. Treat this as urgent: until it passes, assume the Google Drive copies cannot be used.${NOTES}" || true
+    exit 1
+}
+trap 'fail "unexpected error on line $LINENO"' ERR
 trap cleanup EXIT
 
 echo ""
 echo "════════════════════════════════════════════════════════════"
-echo "  RESTORE DRILL — $(date '+%Y-%m-%d %H:%M:%S')"
+echo "  RESTORE DRILL ($DRILL_SOURCE) — $(date '+%Y-%m-%d %H:%M:%S')"
 echo "════════════════════════════════════════════════════════════"
 
+mkdir -p "$DRILL_TMP_PARENT"
+WORK_DIR="$(mktemp -d "$DRILL_TMP_PARENT/.restore-drill-XXXXXX")"
+
 # 1. Find a backup to restore
-log "Locating most recent backup..."
-BACKUP_FILE="$(ls -t "$BACKUP_DIR"/nexus_db_*.sql.gz 2>/dev/null | head -1 || true)"
-if [ -z "$BACKUP_FILE" ]; then
-    BACKUP_FILE="$(ls -t "$BACKUP_DIR"/pre-migrate-*.sql.gz 2>/dev/null | head -1 || true)"
+if [ "$DRILL_SOURCE" = "offsite" ]; then
+    [ -n "$RCLONE_REMOTE" ] || fail "no offsite remote configured (rclone remote 'gdrive:' not found)"
+    command -v rclone >/dev/null 2>&1 || fail "rclone is not installed"
+    command -v age >/dev/null 2>&1 || fail "age is not installed (apt-get install -y age)"
+    [ -r "$DRILL_IDENTITY_FILE" ] || fail "drill key $DRILL_IDENTITY_FILE is missing or unreadable"
+
+    log "Locating newest encrypted backup on $RCLONE_REMOTE..."
+    LATEST="$(rclone lsf "$RCLONE_REMOTE" --include "nexus_db_*.sql.gz.age" --max-depth 1 | sort | tail -1)" \
+        || fail "could not list $RCLONE_REMOTE"
+    [ -n "$LATEST" ] || fail "no encrypted database backup (nexus_db_*.sql.gz.age) found on $RCLONE_REMOTE"
+    DRILLED="$LATEST"
+
+    PLAIN_LEFT="$(rclone lsf "$RCLONE_REMOTE" --include "nexus_*.gz" --max-depth 1 | wc -l | tr -d ' ')" || PLAIN_LEFT="?"
+    if [ "$PLAIN_LEFT" != "0" ]; then
+        NOTES="
+Note: ${PLAIN_LEFT} old unencrypted backup file(s) are still on Google Drive. Remove them once encrypted backups are proven."
+        warn "${PLAIN_LEFT} old unencrypted file(s) still on $RCLONE_REMOTE"
+    fi
+
+    BACKUP_DATE="$(printf '%s' "$LATEST" | sed -n 's/^nexus_db_\([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\)\.sql\.gz\.age$/\1/p')"
+    [ -n "$BACKUP_DATE" ] || fail "cannot read a date from $LATEST"
+    AGE_DAYS=$(( ( $(date +%s) - $(date -d "$BACKUP_DATE" +%s) ) / 86400 ))
+    if [ "$AGE_DAYS" -gt "$DRILL_MAX_AGE_DAYS" ]; then
+        fail "newest encrypted backup $LATEST is ${AGE_DAYS} days old (limit ${DRILL_MAX_AGE_DAYS}) — the nightly offsite copy has stopped"
+    fi
+    log "Drilling: $LATEST (${AGE_DAYS} day(s) old)"
+
+    rclone copyto "$RCLONE_REMOTE/$LATEST" "$WORK_DIR/$LATEST" || fail "download of $LATEST failed"
+    [ "$(head -c 21 "$WORK_DIR/$LATEST")" = "age-encryption.org/v1" ] \
+        || fail "$LATEST on Google Drive is not encrypted (no age header)"
+
+    age -d -i "$DRILL_IDENTITY_FILE" -o "$WORK_DIR/drill.sql.gz" "$WORK_DIR/$LATEST" 2>"$WORK_DIR/age.err" \
+        || fail "could not decrypt $LATEST with the drill key ($(head -c 200 "$WORK_DIR/age.err"))"
+    rm -f "$WORK_DIR/$LATEST" "$WORK_DIR/age.err"
+    BACKUP_FILE="$WORK_DIR/drill.sql.gz"
+    success "Downloaded and decrypted with the drill key"
+else
+    log "Locating most recent local backup..."
+    BACKUP_FILE="$(ls -t "$BACKUP_DIR"/nexus_db_*.sql.gz 2>/dev/null | head -1 || true)"
+    if [ -z "$BACKUP_FILE" ]; then
+        BACKUP_FILE="$(ls -t "$BACKUP_DIR"/pre-migrate-*.sql.gz 2>/dev/null | head -1 || true)"
+    fi
+    [ -n "$BACKUP_FILE" ] || fail "No backups found in $BACKUP_DIR"
+    DRILLED="$(basename "$BACKUP_FILE") (local)"
+    log "Drilling: $DRILLED ($(du -sh "$BACKUP_FILE" | cut -f1))"
 fi
-[ -z "$BACKUP_FILE" ] && fail "No backups found in $BACKUP_DIR"
-log "Drilling: $(basename "$BACKUP_FILE") ($(du -sh "$BACKUP_FILE" | cut -f1))"
 
 # 2. Verify integrity before bothering to spin up MariaDB
 gzip -t "$BACKUP_FILE" 2>/dev/null || fail "Backup gzip integrity failed"
@@ -79,7 +179,7 @@ success "Backup integrity OK"
 
 # 3. Spin up a throwaway MariaDB container
 log "Starting throwaway MariaDB container ($DRILL_CONTAINER)..."
-cleanup  # in case a prior drill left one behind
+docker rm -f "$DRILL_CONTAINER" >/dev/null 2>&1 || true  # in case a prior drill left one behind
 docker run -d --rm \
     --name "$DRILL_CONTAINER" \
     -e MARIADB_ROOT_PASSWORD="$DRILL_PASS" \
@@ -90,9 +190,10 @@ docker run -d --rm \
     --health-timeout=3s \
     --health-retries=20 \
     mariadb:10.11 \
-    >/dev/null
+    >/dev/null || fail "could not start the throwaway database"
 
 # Wait for healthy
+state="missing"
 for _ in {1..40}; do
     state="$(docker inspect -f '{{.State.Health.Status}}' "$DRILL_CONTAINER" 2>/dev/null || echo missing)"
     [ "$state" = "healthy" ] && break
@@ -107,6 +208,7 @@ gunzip -c "$BACKUP_FILE" \
     | MYSQL_PWD="$DRILL_PASS" docker exec -i -e MYSQL_PWD "$DRILL_CONTAINER" \
         mariadb -u root nexus \
     || fail "Restore failed"
+rm -f "$BACKUP_FILE"
 success "Restore complete"
 
 # 5. Sanity check — assert critical tables exist + row counts are sane vs live
@@ -124,9 +226,12 @@ count_live() {
 }
 
 VERIFY_FAILED=0
+COUNTS=""
 for table in tenants users laravel_migrations; do
     live="$(count_live "$table")"
     drill="$(count_drill "$table")"
+    COUNTS="${COUNTS}
+${table}: restored ${drill}, live ${live}"
     # Drill must be > 0 and <= live (live grows between backups + drill runs)
     if [ "${drill:-0}" -le 0 ]; then
         warn "$table: drill count $drill (expected > 0)"
@@ -139,8 +244,16 @@ for table in tenants users laravel_migrations; do
 done
 
 if [ "$VERIFY_FAILED" -eq 1 ]; then
-    fail "Restore drill FAILED — backups exist but data is missing"
+    fail "Restore drill FAILED — the backup restored but data is missing${COUNTS}"
 fi
 
-success "Restore drill PASSED — backups are restorable"
+cleanup
+trap - ERR
+report "NEXUS RESTORE DRILL PASSED" \
+    "Backup drilled: ${DRILLED}
+It was downloaded, decrypted and loaded into a throwaway database.${COUNTS}
+
+This proves the server's drill key. It does not prove your own keys: open the nexus_keycheck file with scripts/backup-decrypt.sh to check those.${NOTES}" \
+    || { echo -e "${RED}✗${NC} Restore succeeded but the result could not be reported."; exit 1; }
+success "Restore drill PASSED — the offsite backup is restorable"
 echo ""

@@ -6,6 +6,9 @@
 #
 # Test stub for `docker`, used by the backup/restore-drill shell tests.
 #   docker exec … mariadb-dump …   → prints a tiny fake dump with the completion marker
+#   docker exec -i … mariadb …      → (restore) saves stdin to $DOCKER_STUB_RESTORE_FILE
+#   docker exec … -e "SELECT COUNT(*) …" → prints $STUB_ROW_COUNT (default 5)
+#   docker inspect …                → "healthy"
 #   docker run … -v HOST:/out … /out/NAME → writes a small tarball to HOST/NAME
 # Anything else is logged and succeeds.
 set -euo pipefail
@@ -13,7 +16,20 @@ printf 'docker %s\n' "$*" >> "${DOCKER_STUB_LOG:-/dev/null}"
 
 case "${1:-}" in
     exec)
-        printf -- '-- fake dump\nCREATE TABLE t (id INT);\nINSERT INTO t VALUES (1);\n-- Dump completed on 2026-10-02 02:00:00\n'
+        case " $* " in
+            *" mariadb-dump "*)
+                printf -- '-- fake dump\nCREATE TABLE t (id INT);\nINSERT INTO t VALUES (1);\n-- Dump completed on 2026-10-02 02:00:00\n'
+                ;;
+            *"SELECT COUNT"*)
+                printf '%s\n' "${STUB_ROW_COUNT:-5}"
+                ;;
+            *" -i "*)
+                cat > "${DOCKER_STUB_RESTORE_FILE:-/dev/null}"
+                ;;
+        esac
+        ;;
+    inspect)
+        printf 'healthy\n'
         ;;
     run)
         out_host=""
