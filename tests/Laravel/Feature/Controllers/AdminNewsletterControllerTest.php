@@ -152,6 +152,80 @@ class AdminNewsletterControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Regression: the summary query read `newsletters.open_rate` /
+     * `click_rate`, which do not exist. The query threw, a catch swallowed it,
+     * and the page reported zero campaigns on every tenant while real sends,
+     * opens and clicks were sitting in the table.
+     */
+    public function test_analytics_reports_real_sent_campaign_figures(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $base = [
+            'tenant_id' => $this->testTenantId,
+            'content' => '<p>Hello</p>',
+            'target_audience' => 'all_members',
+            'created_by' => $admin->id,
+            'created_at' => now()->subDays(3),
+            'updated_at' => now()->subDays(2),
+        ];
+
+        DB::table('newsletters')->insert([
+            $base + [
+                'name' => 'Analytics A', 'subject' => 'Analytics A', 'status' => 'sent',
+                'total_recipients' => 100, 'total_sent' => 100, 'total_failed' => 2,
+                'total_opens' => 60, 'unique_opens' => 40, 'total_clicks' => 15, 'unique_clicks' => 10,
+                'sent_at' => now()->subDays(2),
+            ],
+            $base + [
+                'name' => 'Analytics B', 'subject' => 'Analytics B', 'status' => 'sent',
+                'total_recipients' => 100, 'total_sent' => 100, 'total_failed' => 0,
+                'total_opens' => 25, 'unique_opens' => 20, 'total_clicks' => 5, 'unique_clicks' => 4,
+                'sent_at' => now()->subDay(),
+            ],
+        ]);
+        // A draft is not a sent campaign and must not be counted as one.
+        DB::table('newsletters')->insert(
+            $base + ['name' => 'Analytics draft', 'subject' => 'Analytics draft', 'status' => 'draft']
+        );
+
+        DB::table('newsletter_subscribers')->insert([
+            ['tenant_id' => $this->testTenantId, 'email' => 'nl-active-1@example.test', 'status' => 'active', 'unsubscribe_token' => bin2hex(random_bytes(16))],
+            ['tenant_id' => $this->testTenantId, 'email' => 'nl-active-2@example.test', 'status' => 'active', 'unsubscribe_token' => bin2hex(random_bytes(16))],
+            ['tenant_id' => $this->testTenantId, 'email' => 'nl-gone@example.test', 'status' => 'unsubscribed', 'unsubscribe_token' => bin2hex(random_bytes(16))],
+        ]);
+
+        $expectedSubscribers = DB::table('newsletter_subscribers')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('status', 'active')
+            ->count();
+        $sentBefore = DB::table('newsletters')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('status', 'sent')
+            ->get();
+
+        $response = $this->apiGet('/v2/admin/newsletters/analytics');
+
+        $response->assertStatus(200);
+        $data = $response->json('data');
+
+        $this->assertSame($sentBefore->count(), $data['total_newsletters'], 'Only sent campaigns count as campaigns sent');
+        $this->assertSame((int) $sentBefore->sum('total_sent'), $data['totals']['total_sent']);
+        $this->assertSame((int) $sentBefore->sum('unique_opens'), $data['totals']['unique_opens']);
+        $this->assertSame((int) $sentBefore->sum('unique_clicks'), $data['totals']['unique_clicks']);
+        $this->assertGreaterThanOrEqual(200, $data['totals']['total_sent']);
+        $this->assertNotEmpty($data['monthly_breakdown']);
+        $this->assertContains('Analytics A', array_column($data['top_performers'], 'subject'));
+
+        $expectedOpenRate = round($sentBefore->sum('unique_opens') / $sentBefore->sum('total_sent') * 100, 1);
+        $this->assertEquals($expectedOpenRate, $data['avg_open_rate']);
+
+        // Subscribers are newsletter subscribers, not every active member.
+        $this->assertSame($expectedSubscribers, $data['total_subscribers']);
+    }
+
     // ================================================================
     // PER-CAMPAIGN REPORTING - stats/openers/clickers
     // ================================================================

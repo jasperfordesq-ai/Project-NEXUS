@@ -729,97 +729,97 @@ class AdminNewsletterController extends BaseApiController
             return $this->respondWithData($data);
         }
 
-        try {
-            // Summary counts
-            $row = DB::selectOne(
-                "SELECT COUNT(*) as total, SUM(CASE WHEN status='sent' THEN 1 ELSE 0 END) as sent,
-                        AVG(open_rate) as avg_open, AVG(click_rate) as avg_click
-                 FROM newsletters WHERE tenant_id = ?",
-                [$tenantId]
-            );
+        // No try/catch here on purpose. This method used to read
+        // `newsletters.open_rate` / `click_rate`, columns that do not exist, and a
+        // catch turned the SQL error into an all-zero payload, so the page told
+        // every tenant it had sent nothing. A failure must surface, not look empty.
 
-            if ($row) {
-                $data['total_newsletters'] = (int) ($row->total ?? 0);
-                $data['total_sent'] = (int) ($row->sent ?? 0);
-                $data['avg_open_rate'] = round((float) ($row->avg_open ?? 0), 1);
-                $data['avg_click_rate'] = round((float) ($row->avg_click ?? 0), 1);
-            }
-
-            $subStmt = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND status = 'active'",
-                [$tenantId]
-            );
-            $subRow = $subStmt;
-            $data['total_subscribers'] = (int) ($subRow->cnt ?? 0);
-
-            // Full analytics from sent newsletters (mirrors legacy PHP admin)
-            $newsletters = \App\Models\Newsletter::where('status', 'sent')
+        // Subscribers means newsletter subscribers, not every active member.
+        $data['total_subscribers'] = $this->tableExists('newsletter_subscribers')
+            ? DB::table('newsletter_subscribers')
                 ->where('tenant_id', $tenantId)
-                ->orderByDesc('sent_at')
-                ->get()
-                ->map(fn($n) => $n->toArray())
-                ->all();
+                ->where('status', 'active')
+                ->count()
+            : DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->count();
 
-            $totals = &$data['totals'];
-            $monthlyStats = [];
-            $topPerformers = [];
+        // Full analytics from sent newsletters (mirrors legacy PHP admin)
+        $newsletters = \App\Models\Newsletter::where('status', 'sent')
+            ->where('tenant_id', $tenantId)
+            ->orderByDesc('sent_at')
+            ->get()
+            ->map(fn($n) => $n->toArray())
+            ->all();
 
-            foreach ($newsletters as $newsletter) {
-                $totals['newsletters_sent']++;
-                $totals['total_sent'] += (int) ($newsletter['total_sent'] ?? 0);
-                $totals['total_failed'] += (int) ($newsletter['total_failed'] ?? 0);
-                $totals['total_opens'] += (int) ($newsletter['total_opens'] ?? 0);
-                $totals['unique_opens'] += (int) ($newsletter['unique_opens'] ?? 0);
-                $totals['total_clicks'] += (int) ($newsletter['total_clicks'] ?? 0);
-                $totals['unique_clicks'] += (int) ($newsletter['unique_clicks'] ?? 0);
+        $totals = &$data['totals'];
+        $monthlyStats = [];
+        $topPerformers = [];
 
-                // Group by month
-                $sentAt = $newsletter['sent_at'] ?? null;
-                if ($sentAt) {
-                    $month = date('Y-m', strtotime($sentAt));
-                    if (!isset($monthlyStats[$month])) {
-                        $monthlyStats[$month] = [
-                            'month' => $month,
-                            'newsletters' => 0,
-                            'sent' => 0,
-                            'opens' => 0,
-                            'clicks' => 0,
-                        ];
-                    }
-                    $monthlyStats[$month]['newsletters']++;
-                    $monthlyStats[$month]['sent'] += (int) ($newsletter['total_sent'] ?? 0);
-                    $monthlyStats[$month]['opens'] += (int) ($newsletter['unique_opens'] ?? 0);
-                    $monthlyStats[$month]['clicks'] += (int) ($newsletter['unique_clicks'] ?? 0);
-                }
+        foreach ($newsletters as $newsletter) {
+            $totals['newsletters_sent']++;
+            $totals['total_sent'] += (int) ($newsletter['total_sent'] ?? 0);
+            $totals['total_failed'] += (int) ($newsletter['total_failed'] ?? 0);
+            $totals['total_opens'] += (int) ($newsletter['total_opens'] ?? 0);
+            $totals['unique_opens'] += (int) ($newsletter['unique_opens'] ?? 0);
+            $totals['total_clicks'] += (int) ($newsletter['total_clicks'] ?? 0);
+            $totals['unique_clicks'] += (int) ($newsletter['unique_clicks'] ?? 0);
 
-                // Top performers (min 10 recipients)
-                $totalSent = (int) ($newsletter['total_sent'] ?? 0);
-                if ($totalSent >= 10) {
-                    $openRate = round(((int) ($newsletter['unique_opens'] ?? 0) / $totalSent) * 100, 1);
-                    $clickRate = round(((int) ($newsletter['unique_clicks'] ?? 0) / $totalSent) * 100, 1);
-                    $topPerformers[] = [
-                        'id' => (int) $newsletter['id'],
-                        'subject' => $newsletter['subject'] ?? '',
-                        'sent_at' => $newsletter['sent_at'] ?? '',
-                        'total_sent' => $totalSent,
-                        'open_rate' => $openRate,
-                        'click_rate' => $clickRate,
+            // Group by month
+            $sentAt = $newsletter['sent_at'] ?? null;
+            if ($sentAt) {
+                $month = date('Y-m', strtotime($sentAt));
+                if (!isset($monthlyStats[$month])) {
+                    $monthlyStats[$month] = [
+                        'month' => $month,
+                        'newsletters' => 0,
+                        'sent' => 0,
+                        'opens' => 0,
+                        'clicks' => 0,
                     ];
                 }
+                $monthlyStats[$month]['newsletters']++;
+                $monthlyStats[$month]['sent'] += (int) ($newsletter['total_sent'] ?? 0);
+                $monthlyStats[$month]['opens'] += (int) ($newsletter['unique_opens'] ?? 0);
+                $monthlyStats[$month]['clicks'] += (int) ($newsletter['unique_clicks'] ?? 0);
             }
 
-            // Sort monthly by month ascending
-            ksort($monthlyStats);
-            $data['monthly_breakdown'] = array_values($monthlyStats);
-
-            // Sort top performers by open rate descending, take top 10
-            usort($topPerformers, function ($a, $b) {
-                return $b['open_rate'] <=> $a['open_rate'];
-            });
-            $data['top_performers'] = array_slice($topPerformers, 0, 10);
-        } catch (\Exception $e) {
-            // Return defaults on error
+            // Top performers (min 10 recipients)
+            $totalSent = (int) ($newsletter['total_sent'] ?? 0);
+            if ($totalSent >= 10) {
+                $openRate = round(((int) ($newsletter['unique_opens'] ?? 0) / $totalSent) * 100, 1);
+                $clickRate = round(((int) ($newsletter['unique_clicks'] ?? 0) / $totalSent) * 100, 1);
+                $topPerformers[] = [
+                    'id' => (int) $newsletter['id'],
+                    'subject' => $newsletter['subject'] ?? '',
+                    'sent_at' => $newsletter['sent_at'] ?? '',
+                    'total_sent' => $totalSent,
+                    'open_rate' => $openRate,
+                    'click_rate' => $clickRate,
+                ];
+            }
         }
+
+        // Sort monthly by month ascending
+        ksort($monthlyStats);
+        $data['monthly_breakdown'] = array_values($monthlyStats);
+
+        // Sort top performers by open rate descending, take top 10
+        usort($topPerformers, function ($a, $b) {
+            return $b['open_rate'] <=> $a['open_rate'];
+        });
+        $data['top_performers'] = array_slice($topPerformers, 0, 10);
+
+        // Campaign counts and average rates come from the sent campaigns alone,
+        // weighted by recipients (unique opens / emails sent across all of them).
+        $data['total_newsletters'] = $totals['newsletters_sent'];
+        $data['total_sent'] = $totals['total_sent'];
+        if ($totals['total_sent'] > 0) {
+            $data['avg_open_rate'] = round($totals['unique_opens'] / $totals['total_sent'] * 100, 1);
+            $data['avg_click_rate'] = round($totals['unique_clicks'] / $totals['total_sent'] * 100, 1);
+        }
+        unset($totals);
 
         return $this->respondWithData($data);
     }

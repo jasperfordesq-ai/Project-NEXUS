@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The "Roles & Permissions" link under Enterprise in the admin sidebar is now shown only to platform god users. Community administrators no longer see it in the sidebar; the page and its API are unchanged.
 - The Communications section of the admin panel (Email Settings, Email Deliverability, Deliverability) is now shown only to god accounts; super admins previously saw it too. Opening one of those pages by its address now returns anyone else to the admin dashboard. The underlying API permissions are unchanged.
 
+### Fixed
+
+- Newsletter analytics (Analytics & Reporting → Newsletters) now shows each community's real figures. It reported "No analytics found" and zero campaigns on every community, including ones that had sent thousands of newsletter emails: its summary query asked the database for two columns that do not exist, and the failure was silently turned into an empty result. Its "Subscribers" figure now counts active newsletter subscribers rather than every active member, "Campaigns sent" no longer counts drafts, and if the figures cannot be loaded the page now says so instead of claiming nothing has been sent.
+
 ### Security
 
 - **An account record can no longer leak private fields if it is ever turned into a response by mistake.** The safety net that hides private account fields only covered the current password field. It now also hides the old password column still filled in for some older accounts, the password-reset token, and contact, location, payment and role details, so an accidental output elsewhere in the code cannot expose them (F-417).

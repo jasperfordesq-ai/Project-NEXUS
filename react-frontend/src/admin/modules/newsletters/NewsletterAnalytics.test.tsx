@@ -306,6 +306,38 @@ describe('NewsletterAnalytics', () => {
     });
   });
 
+  // A failed load used to fall through to "No analytics found / Send a
+  // newsletter to start…", which told admins of communities that had sent
+  // thousands of emails that they had sent nothing.
+  it('shows a load error, not the empty state, when the request fails', async () => {
+    mockAdminNewsletters.getAnalytics.mockResolvedValue({ success: false, data: null });
+    const { NewsletterAnalytics } = await import('./NewsletterAnalytics');
+    render(<NewsletterAnalytics />);
+
+    expect(await screen.findByText('Failed to load data')).toBeInTheDocument();
+    expect(screen.queryByText('No analytics found')).not.toBeInTheDocument();
+  });
+
+  it('shows a load error, not the empty state, when the request throws', async () => {
+    mockAdminNewsletters.getAnalytics.mockRejectedValue(new Error('Network error'));
+    const { NewsletterAnalytics } = await import('./NewsletterAnalytics');
+    render(<NewsletterAnalytics />);
+
+    expect(await screen.findByText('Failed to load data')).toBeInTheDocument();
+    expect(screen.queryByText('No analytics found')).not.toBeInTheDocument();
+  });
+
+  it('still shows the empty state when the load succeeds with no campaigns', async () => {
+    mockAdminNewsletters.getAnalytics.mockResolvedValue(
+      makeRes(makeAnalytics({ total_newsletters: 0, totals: undefined, monthly_breakdown: [], top_performers: [] }))
+    );
+    const { NewsletterAnalytics } = await import('./NewsletterAnalytics');
+    render(<NewsletterAnalytics />);
+
+    expect(await screen.findByText('No analytics found')).toBeInTheDocument();
+    expect(screen.queryByText('Failed to load data')).not.toBeInTheDocument();
+  });
+
   it('does not crash when API throws', async () => {
     mockAdminNewsletters.getAnalytics.mockRejectedValue(new Error('Network error'));
     const { NewsletterAnalytics } = await import('./NewsletterAnalytics');

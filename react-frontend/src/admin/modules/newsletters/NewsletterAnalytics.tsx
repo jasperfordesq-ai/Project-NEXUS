@@ -129,9 +129,14 @@ export function NewsletterAnalytics() {
   usePageTitle(t('newsletters.newsletter_analytics_title'));
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  // A failed load must not fall through to the "no analytics yet" empty state:
+  // that message told communities with thousands of sent emails they had sent
+  // nothing.
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadFailed(false);
     try {
       const res = await adminNewsletters.getAnalytics();
       if (res.success && res.data) {
@@ -141,9 +146,13 @@ export function NewsletterAnalytics() {
         } else {
           setData(payload as AnalyticsData);
         }
+      } else {
+        setData(null);
+        setLoadFailed(true);
       }
     } catch {
       setData(null);
+      setLoadFailed(true);
     }
     setLoading(false);
   }, []);
@@ -511,8 +520,20 @@ export function NewsletterAnalytics() {
         </Card>
       )}
 
+      {/* ── Load Error ────────────────────────────────────────────────── */}
+      {!loading && loadFailed && (
+        <Card className="mt-6">
+          <CardBody className="flex flex-col items-center justify-center py-16 text-center" role="alert">
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-danger/10">
+              <AlertTriangle aria-hidden="true" size={40} className="text-danger" />
+            </div>
+            <h3 className="text-lg font-semibold">{t('newsletters.failed_to_load_data')}</h3>
+          </CardBody>
+        </Card>
+      )}
+
       {/* ── Empty State ───────────────────────────────────────────────── */}
-      {!loading && !hasData && (
+      {!loading && !loadFailed && !hasData && (
         <Card className="mt-6">
           <CardBody className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-surface-secondary">
