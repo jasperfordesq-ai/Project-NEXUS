@@ -531,6 +531,35 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Regional Analytics' })).toHaveAttribute('href', '/test/admin/analytics/regional');
   });
 
+  it('hides the Impact Report link from non-god super admins', () => {
+    // Owner decision 2026-10-02: /admin/impact-report is god-only in the sidebar.
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Community Analytics' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Impact Report' })).not.toBeInTheDocument();
+  });
+
+  it('shows the Impact Report link to god users', () => {
+    Object.assign(mockUser, {
+      role: 'admin',
+      is_super_admin: false,
+      is_tenant_super_admin: false,
+      is_god: true,
+    });
+
+    render(
+      <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Analytics & Reporting' }));
+
+    expect(screen.getByRole('link', { name: 'Impact Report' })).toHaveAttribute('href', '/test/admin/impact-report');
+  });
+
   it('hides the Prerender Engine link from non-god super admins', () => {
     // Owner decision 2026-10-02: /admin/seo/prerender is god-only. It used to be
     // shown to every platform super admin, which is what the default mock user is.

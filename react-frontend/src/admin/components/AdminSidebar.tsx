@@ -455,7 +455,9 @@ function useAdminNav(): NavSection[] {
         zone: 'growth',
         items: [
           { label: t('community_analytics'), href: '/admin/community-analytics', icon: BarChart3 },
-          { label: t('impact_report'), href: '/admin/impact-report', icon: FileText },
+          // God-only in the sidebar (owner decision, 2026-10-02). This hides the
+          // link only — the page and its API keep their existing admin gates.
+          ...(isGod ? [{ label: t('impact_report'), href: '/admin/impact-report', icon: FileText }] : []),
           { label: t('member_reports'), href: '/admin/reports/members', icon: Users },
           ...(hasModule('wallet') ? [{ label: t('hours_reports'), href: '/admin/reports/hours', icon: Clock }] : []),
           { label: t('inactive_members'), href: '/admin/reports/inactive-members', icon: UserX },
