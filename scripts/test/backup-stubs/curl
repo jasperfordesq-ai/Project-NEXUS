@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+#
+# Test stub for `curl`: records the arguments and any config read from stdin
+# (`-K -`), so tests can assert an alert was sent without touching the network.
+set -euo pipefail
+{
+    printf 'curl %s\n' "$*"
+    for arg in "$@"; do
+        if [ "$arg" = "-" ]; then
+            printf 'stdin: %s\n' "$(cat)"
+        fi
+    done
+} >> "${CURL_STUB_LOG:-/dev/null}"

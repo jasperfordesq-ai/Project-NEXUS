@@ -133,6 +133,7 @@ CLAUDE.md
 !/scripts/migrate-production.sh
 !/scripts/backup-production-db.sh
 !/scripts/server-nightly-backup.sh
+!/scripts/backup-alert.sh
 !/scripts/setup-rclone-gdrive.sh
 !/scripts/setup-rclone-local.sh
 !/scripts/restore-drill.sh

@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+#
+# Test stub for `rclone`, used by the backup/restore-drill shell tests.
+# A remote path "name:folder" maps to the directory $FAKE_REMOTE_ROOT/name/folder.
+# Supports only what the scripts under test use: listremotes, copy/sync (local
+# dir → remote, with --include), delete (with --include and --min-age), lsf (with
+# --include) and copyto (remote file → local file). Every call is logged.
+set -euo pipefail
+printf 'rclone %s\n' "$*" >> "${RCLONE_STUB_LOG:-/dev/null}"
+
+: "${FAKE_REMOTE_ROOT:?FAKE_REMOTE_ROOT must be set for the rclone stub}"
+
+is_remote() { [[ "$1" == *:* && "$1" != /* ]]; }
+map() { printf '%s/%s/%s' "$FAKE_REMOTE_ROOT" "${1%%:*}" "${1#*:}"; }
+
+cmd="${1:-}"; shift || true
+positional=()
+include=""
+min_age=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --include) include="$2"; shift 2 ;;
+        --include=*) include="${1#--include=}"; shift ;;
+        --min-age) min_age="$2"; shift 2 ;;
+        --min-age=*) min_age="${1#--min-age=}"; shift ;;
+        --transfers|--log-level|--max-depth|--retries|--checkers) shift 2 ;;
+        --*) shift ;;
+        *) positional+=("$1"); shift ;;
+    esac
+done
+
+matches() { [ -z "$include" ] && return 0; [[ "$1" == $include ]]; }
+
+case "$cmd" in
+    listremotes)
+        printf '%s' "${STUB_RCLONE_REMOTES-gdrive:
+}"
+        ;;
+    copy|sync)
+        # sync is modelled as copy: enough to show what a sync would upload.
+        src="${positional[0]}"; dst="${positional[1]}"
+        is_remote "$dst" || { echo "stub: $cmd only supports local → remote" >&2; exit 2; }
+        [ -n "${STUB_RCLONE_FAIL_COPY:-}" ] && { echo "stub: simulated upload failure" >&2; exit 1; }
+        mkdir -p "$(map "$dst")"
+        for f in "$src"/*; do
+            [ -f "$f" ] || continue
+            b="$(basename "$f")"
+            matches "$b" && cp -p "$f" "$(map "$dst")/$b"
+        done
+        ;;
+    delete)
+        dir="$(map "${positional[0]}")"
+        [ -d "$dir" ] || exit 0
+        days="${min_age%d}"
+        for f in "$dir"/*; do
+            [ -f "$f" ] || continue
+            b="$(basename "$f")"
+            matches "$b" || continue
+            if [ -z "$days" ] || [ -n "$(find "$f" -mmin +"$((days * 1440))")" ]; then
+                rm -f "$f"
+            fi
+        done
+        ;;
+    lsf)
+        dir="$(map "${positional[0]}")"
+        [ -d "$dir" ] || exit 0
+        for f in "$dir"/*; do
+            [ -f "$f" ] || continue
+            b="$(basename "$f")"
+            matches "$b" && printf '%s\n' "$b"
+        done
+        ;;
+    copyto)
+        src="${positional[0]}"; dst="${positional[1]}"
+        is_remote "$src" || { echo "stub: copyto only supports remote → local" >&2; exit 2; }
+        cp "$(map "$src")" "$dst"
+        ;;
+    *)
+        ;;
+esac
