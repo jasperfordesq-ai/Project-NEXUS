@@ -417,6 +417,30 @@ See [docs/govuk-alpha/RESEARCH.md](docs/govuk-alpha/RESEARCH.md) for the archite
 
 ---
 
+### 🔴 THE CONFLUENCE POLICY HUB BELONGS TO THE DATA PROTECTION OFFICER — HANDS OFF (CRITICAL)
+
+The charity's Atlassian site (Jira + Confluence) holds a **policy / governance hub that the Data
+Protection Officer created and owns.** Neither the owner nor any agent may touch it. This applies to
+every session and every tool: the Atlassian MCP connector, a browser, the API, or email.
+
+- **Never** create, edit, comment on, move, archive or restructure the DPO's Confluence pages or spaces.
+  That includes the governance hub, the privacy notice and every policy.
+- **Never** change Atlassian organisation or site settings, users or permissions, and never touch the
+  DPO's own Jira board.
+- **Never** make or imply a data-protection decision. For example, never decide that the privacy notice
+  covers Atlassian as a processor. That decision is the DPO's.
+- **Never** edit platform documents to match a policy, or a policy to match the platform. Report the
+  mismatch to the owner.
+- **Allowed:** the **HELP** "Timebank Help Desk" Jira Service Management space, for reading and working
+  support tickets.
+- If a task seems to need anything else on that site, stop and tell the owner what the DPO would need to
+  do.
+
+Access details (site, connector, fallbacks) are in the private
+`.local-docs-archive/support-helpdesk/README-ATLASSIAN-ACCESS-AND-BOUNDARIES.md`.
+
+---
+
 ### 🔴 SECURITY WORK IS A MAINTAINED RECORD, NOT A ONE-OFF (CRITICAL)
 
 **Project NEXUS hosts communities for public-sector bodies, and they have supplier-assurance
