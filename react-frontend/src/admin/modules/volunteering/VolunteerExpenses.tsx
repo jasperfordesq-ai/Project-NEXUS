@@ -79,6 +79,18 @@ const STATUS_COLORS: Record<string, 'warning' | 'success' | 'danger' | 'accent'>
   paid: 'accent',
 };
 
+type ReviewAction = 'approved' | 'rejected' | 'paid';
+
+// The transitions the server accepts (VolunteerExpenseService::reviewExpense
+// takes only a pending expense; markPaid takes only an approved one). Offering
+// anything else just earns a refusal — paid and rejected are final.
+const ALLOWED_ACTIONS: Record<Expense['status'], ReviewAction[]> = {
+  pending: ['approved', 'rejected'],
+  approved: ['paid'],
+  rejected: [],
+  paid: [],
+};
+
 function parsePayload<T>(raw: unknown): T {
   if (raw && typeof raw === 'object' && 'data' in raw) {
     return (raw as { data: T }).data;
@@ -168,7 +180,7 @@ export function VolunteerExpenses() {
   // Review modal
   const [reviewModal, setReviewModal] = useState(false);
   const [reviewExpense, setReviewExpense] = useState<Expense | null>(null);
-  const [reviewAction, setReviewAction] = useState<'approved' | 'rejected' | 'paid'>('approved');
+  const [reviewAction, setReviewAction] = useState<ReviewAction>('approved');
   const [reviewNotes, setReviewNotes] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
 
@@ -317,7 +329,7 @@ export function VolunteerExpenses() {
 
   const openReview = (expense: Expense) => {
     setReviewExpense(expense);
-    setReviewAction('approved');
+    setReviewAction(ALLOWED_ACTIONS[expense.status]?.[0] ?? 'approved');
     setReviewNotes('');
     setPaymentReference('');
     setReviewModal(true);
@@ -340,7 +352,7 @@ export function VolunteerExpenses() {
         setReviewModal(false);
         loadData();
       } else {
-        toast.error(t('volunteering.failed_to_update_expense'));
+        toast.error(res.error || t('volunteering.failed_to_update_expense'));
       }
     } catch {
       toast.error(t('volunteering.failed_to_update_expense'));
@@ -539,15 +551,16 @@ export function VolunteerExpenses() {
     {
       key: 'actions',
       label: t('volunteering.col_actions'),
-      render: (item) => (
-        <Button
-          size="sm"
-          variant="tertiary"
-          onPress={() => openReview(item)}
-        >
-          {t('volunteering.review')}
-        </Button>
-      ),
+      render: (item) =>
+        (ALLOWED_ACTIONS[item.status]?.length ?? 0) > 0 ? (
+          <Button
+            size="sm"
+            variant="tertiary"
+            onPress={() => openReview(item)}
+          >
+            {t('volunteering.review')}
+          </Button>
+        ) : null,
     },
   ];
 
@@ -831,12 +844,16 @@ export function VolunteerExpenses() {
                   selectedKeys={[reviewAction]}
                   onSelectionChange={(keys) => {
                     const val = Array.from(keys)[0] as string;
-                    setReviewAction(val as 'approved' | 'rejected' | 'paid');
+                    setReviewAction(val as ReviewAction);
                   }}
                 >
-                  <SelectItem key="approved" id="approved">{t('volunteering.approve')}</SelectItem>
-                  <SelectItem key="rejected" id="rejected">{t('volunteering.reject')}</SelectItem>
-                  <SelectItem key="paid" id="paid">{t('volunteering.mark_as_paid')}</SelectItem>
+                  {ALLOWED_ACTIONS[reviewExpense.status].map((action) => (
+                    <SelectItem key={action} id={action}>
+                      {action === 'approved' && t('volunteering.approve')}
+                      {action === 'rejected' && t('volunteering.reject')}
+                      {action === 'paid' && t('volunteering.mark_as_paid')}
+                    </SelectItem>
+                  ))}
                 </Select>
 
                 <Textarea

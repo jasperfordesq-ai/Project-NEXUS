@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Volunteer expenses (Admin → Volunteering → Expenses): the review window always opened on "Approve", even for an expense that was already approved, and approving it again failed with only "Failed to update expense". The window now offers just the next valid step — approve or reject a pending claim, mark an approved one as paid — and paid or rejected claims no longer show a Review button. When the server does refuse a change, its reason is shown, and a claim in the wrong state now answers 409 rather than a misleading 404 "not found" (`PUT /api/v2/admin/volunteering/expenses/{id}`).
+
 - Corrected wrong translations on the volunteering admin pages: the Decline button read "decrease" in Arabic and "decay" in Irish; Arabic also showed "energetic" for Active and "decreased" for Declined; the Irish page title said "willing organisations"; Japanese used "withdraw" for Decline. Hour amounts no longer run into the unit ("12horas") in most languages.
 
 - Dropdowns no longer let the selected text run underneath the arrow — first reported on the Priority filter in CRM → Coordinator Tasks. The shared dropdown applied even padding on both sides, which overrode the extra room HeroUI keeps on the right for the arrow; that room is now always reserved while the arrow is shown, at every size.

@@ -383,6 +383,77 @@ describe('VolunteerExpenses', () => {
     }
   });
 
+  // The server only approves/rejects a PENDING expense and only pays an
+  // APPROVED one (VolunteerExpenseService::reviewExpense / markPaid). The modal
+  // used to open on "Approve" for every row, so reviewing an already-approved
+  // expense sent status=approved, which the server refused — the admin saw
+  // only "Failed to update expense".
+  const openReviewFor = async (expense: Record<string, unknown>) => {
+    mockAdminVolunteering.getExpenses.mockResolvedValue({
+      success: true,
+      data: { items: [expense], stats: makeStats() },
+    });
+    const { VolunteerExpenses } = await import('./VolunteerExpenses');
+    render(<VolunteerExpenses />);
+    await waitFor(() => screen.getByTestId('data-table'));
+    const reviewBtn = screen.getByRole('button', { name: /review/i });
+    fireEvent.click(reviewBtn);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+    return document.querySelector('[role="dialog"]') as HTMLElement;
+  };
+
+  it('offers only "mark as paid" for an already-approved expense and sends status=paid', async () => {
+    const dialog = await openReviewFor(makeExpense({ id: 2, status: 'approved' }));
+
+    const options = Array.from(dialog.querySelectorAll('option')).map((o) => o.value);
+    expect(options).toEqual(['paid']);
+
+    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
+      /mark as paid/i.test(b.textContent ?? ''),
+    );
+    expect(confirmBtn).toBeDefined();
+    fireEvent.click(confirmBtn!);
+
+    await waitFor(() => {
+      expect(mockAdminVolunteering.reviewExpense).toHaveBeenCalledWith(
+        2,
+        expect.objectContaining({ status: 'paid' }),
+      );
+    });
+  });
+
+  it('offers only approve and reject for a pending expense', async () => {
+    const dialog = await openReviewFor(makeExpense({ id: 3, status: 'pending' }));
+    const options = Array.from(dialog.querySelectorAll('option')).map((o) => o.value);
+    expect(options).toEqual(['approved', 'rejected']);
+  });
+
+  it.each(['paid', 'rejected'])('shows no Review button for a %s expense', async (status) => {
+    mockAdminVolunteering.getExpenses.mockResolvedValue({
+      success: true,
+      data: { items: [makeExpense({ id: 4, status })], stats: makeStats() },
+    });
+    const { VolunteerExpenses } = await import('./VolunteerExpenses');
+    render(<VolunteerExpenses />);
+    await waitFor(() => screen.getByTestId('data-table'));
+    expect(screen.queryByRole('button', { name: /review/i })).not.toBeInTheDocument();
+  });
+
+  it("shows the server's reason when a review is refused", async () => {
+    mockAdminVolunteering.reviewExpense.mockResolvedValue({
+      success: false,
+      error: 'Expense not found or invalid status',
+    });
+    const dialog = await openReviewFor(makeExpense({ id: 6, status: 'pending' }));
+    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
+      /^\s*approve\s*$/i.test(b.textContent ?? ''),
+    );
+    fireEvent.click(confirmBtn!);
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Expense not found or invalid status');
+    });
+  });
+
   it('renders policies section heading', async () => {
     mockAdminVolunteering.getExpensePolicies.mockResolvedValue({
       success: true,

@@ -194,6 +194,79 @@ class VolunteerExpenseControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * Re-approving an already-approved expense used to answer 404 "not found",
+     * though the expense plainly exists — the admin UI could only say "Failed to
+     * update expense". A real expense in the wrong state is a 409, and it must
+     * be left untouched.
+     */
+    public function test_review_expense_in_wrong_state_is_409_not_404(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create();
+        $org = VolOrganization::factory()->forTenant($this->testTenantId)->create();
+        $expense = VolExpense::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $volunteer->id,
+            'organization_id' => $org->id,
+            'opportunity_id' => null,
+            'status' => 'approved',
+            'amount' => 12.5,
+            'submitted_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut("/v2/admin/volunteering/expenses/{$expense->id}", [
+            'status' => 'approved',
+        ]);
+
+        $response->assertStatus(409);
+        $this->assertSame('approved', VolExpense::query()->whereKey($expense->id)->value('status'));
+    }
+
+    public function test_review_expense_that_does_not_exist_is_404(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut('/v2/admin/volunteering/expenses/999999999', [
+            'status' => 'approved',
+        ]);
+
+        $response->assertStatus(404);
+    }
+
+    public function test_approved_expense_can_be_marked_paid(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create();
+        $org = VolOrganization::factory()->forTenant($this->testTenantId)->create();
+        $expense = VolExpense::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $volunteer->id,
+            'organization_id' => $org->id,
+            'opportunity_id' => null,
+            'status' => 'approved',
+            'amount' => 12.5,
+            'submitted_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut("/v2/admin/volunteering/expenses/{$expense->id}", [
+            'status' => 'paid',
+            'payment_reference' => 'BANK-1',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame('paid', VolExpense::query()->whereKey($expense->id)->value('status'));
+    }
+
     public function test_admin_expense_export_neutralizes_spreadsheet_formula_cells(): void
     {
         $this->enableVolunteeringFeature($this->testTenantId);

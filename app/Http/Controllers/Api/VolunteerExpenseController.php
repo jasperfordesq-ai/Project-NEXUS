@@ -256,6 +256,12 @@ class VolunteerExpenseController extends BaseApiController
         }
 
         if (!$result) {
+            // The service refuses a transition from the wrong state (approve/reject
+            // need 'pending', paid needs 'approved') the same way it refuses a
+            // missing row. Only the missing row is a 404.
+            if ($this->volunteerExpenseService->getExpense((int) $id) !== null) {
+                return $this->respondWithError('INVALID_STATE', __('api.expense_not_found_or_invalid'), 'status', 409);
+            }
             return $this->respondWithError('NOT_FOUND', __('api.expense_not_found_or_invalid'), null, 404);
         }
 
