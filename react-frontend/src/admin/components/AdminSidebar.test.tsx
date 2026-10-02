@@ -304,10 +304,8 @@ describe('AdminSidebar', () => {
     expect(enterpriseTrigger).toHaveAttribute('aria-expanded', 'true');
 
     // Assert the specific enterprise destinations so a wrong-href regression fails
-    expect(screen.getByRole('link', { name: 'Enterprise Dashboard' })).toHaveAttribute(
-      'href',
-      '/test/admin/enterprise',
-    );
+    // The Enterprise dashboard is god-only (owner decision 2026-10-02).
+    expect(screen.queryByRole('link', { name: 'Enterprise Dashboard' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toHaveAttribute(
       'href',
       '/test/admin/enterprise/gdpr',
@@ -322,6 +320,10 @@ describe('AdminSidebar', () => {
     render(<AdminSidebar collapsed={false} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
+    expect(screen.getByRole('link', { name: 'Enterprise Dashboard' })).toHaveAttribute(
+      'href',
+      '/test/admin/enterprise',
+    );
     expect(screen.getByRole('link', { name: 'Roles & Permissions' })).toHaveAttribute(
       'href',
       '/test/admin/enterprise/roles',
@@ -335,6 +337,7 @@ describe('AdminSidebar', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Enterprise' }));
     expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Enterprise Dashboard' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Roles & Permissions' })).not.toBeInTheDocument();
   });
 

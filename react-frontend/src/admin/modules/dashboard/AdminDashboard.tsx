@@ -21,7 +21,8 @@ import Settings from 'lucide-react/icons/settings';
 import Rocket from 'lucide-react/icons/rocket';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
-import { useTenant, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { isGodUser } from '@/lib/access';
 import { useOnboardingConfig } from '@/hooks/useOnboardingConfig';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { adminDashboard } from '../../api/adminApi';
@@ -59,6 +60,9 @@ export function AdminDashboard() {
   const { t } = useTranslation('admin_dashboard');
   useAdminPageMeta({ title: t('title'), description: t('subtitle') });
   const { tenantPath, hasFeature } = useTenant();
+  const { user } = useAuth();
+  // The Enterprise dashboard is god accounts only (owner decision 2026-10-02).
+  const isGod = isGodUser(user);
   const toast = useToast();
 
   /** Quick action items matching the legacy PHP dashboard sidebar */
@@ -333,6 +337,7 @@ export function AdminDashboard() {
                 );
               })}
             </div>
+            {isGod && (
             <div className="mt-3 pt-3 border-t border-divider">
               <Link
                 to={tenantPath('/admin/enterprise')}
@@ -345,6 +350,7 @@ export function AdminDashboard() {
                 <ChevronRight size={14} />
               </Link>
             </div>
+            )}
           </CardBody>
         </Card>
 

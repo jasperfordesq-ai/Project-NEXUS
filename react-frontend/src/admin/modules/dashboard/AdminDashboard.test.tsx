@@ -11,9 +11,11 @@ import userEvent from '@testing-library/user-event';
 // ── @/contexts ────────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 const mockHasFeature = vi.hoisted(() => vi.fn(() => true));
+const mockAuthUser = vi.hoisted(() => ({ current: { id: 1, role: 'admin' } as Record<string, unknown> }));
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({ user: mockAuthUser.current, isAuthenticated: true, isLoading: false, status: 'authenticated' }),
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (p: string) => `/test${p}`,
@@ -115,6 +117,7 @@ describe('AdminDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHasFeature.mockReturnValue(true);
+    mockAuthUser.current = { id: 1, role: 'admin' };
     mockUseOnboardingConfig.mockReturnValue({ config: { step_safeguarding_enabled: true }, isLoading: false });
   });
 
@@ -224,6 +227,27 @@ describe('AdminDashboard', () => {
 
     await waitFor(() => {
       expect(screen.queryByRole('link', { name: /send newsletter/i })).not.toBeInTheDocument();
+    });
+  });
+
+  // The Enterprise dashboard is god accounts only (owner decision 2026-10-02).
+  it('hides the Enterprise dashboard link from an ordinary admin', async () => {
+    setupSuccessfulLoad();
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /send newsletter/i })).toBeInTheDocument();
+    });
+    expect(document.querySelector('a[href="/test/admin/enterprise"]')).toBeNull();
+  });
+
+  it('shows the Enterprise dashboard link to a god account', async () => {
+    mockAuthUser.current = { id: 1, role: 'admin', is_god: true };
+    setupSuccessfulLoad();
+    render(<AdminDashboard />);
+
+    await waitFor(() => {
+      expect(document.querySelector('a[href="/test/admin/enterprise"]')).not.toBeNull();
     });
   });
 

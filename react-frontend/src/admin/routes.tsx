@@ -487,12 +487,16 @@ export function AdminRoutes() {
       </Route>
 
       {/* ─── ENTERPRISE ─── */}
-      <Route path="enterprise" element={<Lazy><EnterpriseDashboard /></Lazy>} />
-      <Route path="enterprise/roles" element={<Lazy><RoleList /></Lazy>} />
-      <Route path="enterprise/roles/create" element={<Lazy><RoleForm /></Lazy>} />
-      <Route path="enterprise/roles/:id" element={<Lazy><RoleForm /></Lazy>} />
-      <Route path="enterprise/roles/:id/edit" element={<Lazy><RoleForm /></Lazy>} />
-      <Route path="enterprise/permissions" element={<Lazy><PermissionBrowser /></Lazy>} />
+      {/* Enterprise dashboard, Roles and Permissions — god accounts only (owner
+          decisions 2026-10-01/02; the roles editor was never finished). */}
+      <Route element={<GodOnlyRoute />}>
+        <Route path="enterprise" element={<Lazy><EnterpriseDashboard /></Lazy>} />
+        <Route path="enterprise/roles" element={<Lazy><RoleList /></Lazy>} />
+        <Route path="enterprise/roles/create" element={<Lazy><RoleForm /></Lazy>} />
+        <Route path="enterprise/roles/:id" element={<Lazy><RoleForm /></Lazy>} />
+        <Route path="enterprise/roles/:id/edit" element={<Lazy><RoleForm /></Lazy>} />
+        <Route path="enterprise/permissions" element={<Lazy><PermissionBrowser /></Lazy>} />
+      </Route>
       <Route path="enterprise/gdpr" element={<Lazy><GdprDashboard /></Lazy>} />
       <Route path="enterprise/gdpr/requests" element={<Lazy><GdprRequests /></Lazy>} />
       <Route path="enterprise/gdpr/requests/create" element={<Lazy><GdprRequestCreate /></Lazy>} />

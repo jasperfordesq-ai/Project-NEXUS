@@ -13,8 +13,9 @@
  * Currently wraps the Communications section (email settings, email
  * deliverability, deliverability), the Performance page, the whole Growth &
  * Discovery section (SEO overview, SEO audit, URL redirects, Search Analytics,
- * Prerender Engine, 404 error tracking) and the Cron Jobs pages — owner
- * decisions 2026-10-02 — and the
+ * Prerender Engine, 404 error tracking), the Cron Jobs pages and the
+ * Enterprise dashboard — owner decisions 2026-10-02 — Enterprise Roles and
+ * Permissions (2026-10-01), and the
  * platform-maintenance tools (tests, seed generator, WebP converter, blog
  * restore; F-534).
  */

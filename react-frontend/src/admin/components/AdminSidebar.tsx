@@ -645,10 +645,12 @@ function useAdminNav(): NavSection[] {
         icon: Building2,
         zone: 'platform',
         items: [
-          { label: t('enterprise_dashboard'), href: '/admin/enterprise', icon: Building2 },
-          // God-only in the sidebar (owner decision, 2026-10-01). This hides the
-          // link only — the API behind it is still gated on requireAdmin().
+          // God-only (owner decisions: Roles & Permissions 2026-10-01, the
+          // dashboard 2026-10-02 — much of it is unfinished). The routes are
+          // guarded by GodOnlyRoute too, so a typed URL does not reach the
+          // pages; the API behind them is still gated on requireAdmin().
           ...(isGod ? [
+            { label: t('enterprise_dashboard'), href: '/admin/enterprise', icon: Building2 },
             { label: t('roles_permissions'), href: '/admin/enterprise/roles', icon: KeyIcon },
             // Read-only catalogue that sits beside Roles; it had no link at all.
             { label: t('permissions_list'), href: '/admin/enterprise/permissions', icon: ListChecks },
