@@ -19,6 +19,7 @@ export const ADMIN_MODULE_REQUIREMENTS: ReadonlyArray<{
 }> = [
   { path: 'ai/ki-agents', feature: 'ai_agents' },
   { path: 'marketplace/coupons', feature: ['marketplace', 'merchant_coupons'] },
+  { path: 'enterprise/fadp', feature: 'fadp_compliance' },
   { path: 'listings', module: 'listings' },
   { path: 'timebanking', module: 'wallet' },
   { path: 'blog', feature: 'blog' },

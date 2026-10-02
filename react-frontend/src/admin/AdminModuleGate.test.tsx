@@ -60,6 +60,12 @@ describe('admin module boundaries', () => {
     renderPage('marketplace/coupons');
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
   });
+  // F-530 (E-078): the Swiss FADP page follows its own switch, like the sidebar link.
+  it('blocks enterprise/fadp when fadp_compliance is off', () => {
+    state.off.add('fadp_compliance');
+    renderPage('enterprise/fadp');
+    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
   it('does not mount content while settings load', () => {
     state.loading = true;
     const effect = vi.fn();

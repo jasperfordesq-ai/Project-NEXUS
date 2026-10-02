@@ -22,6 +22,18 @@ class FadpComplianceController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * The admin side of the compliance pack follows its own module switch
+     * (off by default), the same rule as the admin sidebar link (F-530).
+     * The two member routes are deliberately not gated here.
+     */
+    private function requireFadpEnabled(): void
+    {
+        if (!TenantContext::hasFeature('fadp_compliance')) {
+            abort(403, __('api.module_disabled_for_community'));
+        }
+    }
+
     public function __construct(
         private readonly FadpComplianceService $service,
     ) {}
@@ -114,6 +126,7 @@ class FadpComplianceController extends BaseApiController
     public function getRetentionConfig(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -134,6 +147,7 @@ class FadpComplianceController extends BaseApiController
     public function updateRetentionConfig(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         $config          = $this->input('config');
@@ -172,6 +186,7 @@ class FadpComplianceController extends BaseApiController
     public function getProcessingActivities(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -198,6 +213,7 @@ class FadpComplianceController extends BaseApiController
     public function upsertProcessingActivity(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         $activityName = trim((string) ($this->input('activity_name') ?? ''));
@@ -248,6 +264,7 @@ class FadpComplianceController extends BaseApiController
     public function deleteProcessingActivity(int $id): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -271,6 +288,7 @@ class FadpComplianceController extends BaseApiController
     public function exportConsentLedger(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -288,6 +306,7 @@ class FadpComplianceController extends BaseApiController
     public function processingRegister(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -306,6 +325,7 @@ class FadpComplianceController extends BaseApiController
     public function disclosurePack(): JsonResponse
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {
@@ -321,6 +341,7 @@ class FadpComplianceController extends BaseApiController
     public function processingRegisterCsv(): \Illuminate\Http\Response
     {
         $this->requireAdmin();
+        $this->requireFadpEnabled();
         $tenantId = TenantContext::getId();
 
         if (! FadpComplianceService::isAvailable()) {

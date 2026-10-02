@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ class FadpComplianceControllerTest extends TestCase
     public function test_disclosure_pack_connects_residency_retention_consent_and_profiling(): void
     {
         $this->resetFadpState();
+        $this->enableFadpCompliance();
 
         $member = User::factory()->forTenant($this->testTenantId)->create([
             'email' => 'fadp-member@example.test',
@@ -90,6 +92,7 @@ class FadpComplianceControllerTest extends TestCase
     public function test_processing_register_csv_exports_dpa_columns(): void
     {
         $this->resetFadpState();
+        $this->enableFadpCompliance();
 
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
             'email' => 'fadp-csv-admin@example.test',
@@ -134,6 +137,16 @@ class FadpComplianceControllerTest extends TestCase
         $this->assertStringContainsString('"tenant_name","data_residency","dpa_contact_email"', $response->getContent());
         $this->assertStringContainsString('"Consent ledger"', $response->getContent());
         $this->assertStringContainsString('"Switzerland"', $response->getContent());
+    }
+
+    /** The admin routes follow the fadp_compliance switch (F-530); these cases are about the enabled module. */
+    private function enableFadpCompliance(): void
+    {
+        $row = DB::table('tenants')->where('id', $this->testTenantId)->first(['features']);
+        $current = json_decode((string) ($row->features ?? '{}'), true) ?: [];
+        $current['fadp_compliance'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode($current)]);
+        TenantContext::setById($this->testTenantId);
     }
 
     private function resetFadpState(): void
