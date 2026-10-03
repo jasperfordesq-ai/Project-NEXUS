@@ -162,7 +162,15 @@ class AdminBrokerController extends BaseApiController
     // DASHBOARD
     // ============================================
 
-    /** GET /api/v2/admin/broker/dashboard */
+    /**
+     * GET /api/v2/admin/broker/dashboard
+     *
+     * Query parameters:
+     *  - `activity_limit` (1–100, default 20): rows in `recent_activity`.
+     *  - `only=activity`: return `recent_activity` alone and skip every count,
+     *    for the dashboard's "See all" drawer, which pages the feed without a
+     *    second route.
+     */
     public function dashboard(): JsonResponse
     {
         $viewerId = $this->requireBrokerOrAdmin();
@@ -182,20 +190,64 @@ class AdminBrokerController extends BaseApiController
             return $this->respondWithError('TENANT_CONTEXT_ERROR', __('api.tenant_context_error'), null, 403);
         }
 
-        $tenantWhere = $effectiveTenantId !== null ? 'tenant_id = ?' : '1=1';
-        $tenantParams = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
-
         // Track which metrics failed to load so the response shape lets the
         // frontend distinguish "real zero" from "we couldn't compute this".
         // A safeguarding dashboard that silently coerces DB errors to zero
         // is dangerous — the user sees a clean dashboard during exactly the
         // moments they need it most.
         $failedMetrics = [];
+        $activityLimit = $this->queryInt('activity_limit', 20, 1, 100) ?? 20;
+
+        if ($this->query('only') === 'activity') {
+            $recentActivity = [];
+            try {
+                $recentActivity = $this->recentBrokerActivity($effectiveTenantId, $activityLimit);
+            } catch (\Exception $e) {
+                $failedMetrics[] = 'recent_activity';
+                \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard recent_activity failed: ' . $e->getMessage());
+            }
+
+            return $this->respondWithData([
+                'recent_activity' => $recentActivity,
+                '_partial' => !empty($failedMetrics),
+                '_failed_metrics' => $failedMetrics,
+            ]);
+        }
+
+        $tenantWhere = $effectiveTenantId !== null ? 'tenant_id = ?' : '1=1';
+        $tenantParams = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
+
+        // One definition per queue, shared by the tile's count, the age of its
+        // oldest item and its trend, so the three can never disagree with each
+        // other or with the list the tile opens.
+        //
+        // F-436: the Messages queues withhold the viewer's own conversations,
+        // so every message figure must too, or a broker who is a party to a
+        // copied message sees a number the list never reaches.
+        $exchangeQueueWhere = "{$tenantWhere} AND status IN ('pending_broker', 'disputed')";
+        $messageSelfExclusion = 'sender_id <> ? AND receiver_id <> ?';
+        $messageParams = array_merge($tenantParams, [$viewerId, $viewerId]);
+        $unreviewedQueueWhere = "{$tenantWhere} AND reviewed_at IS NULL AND {$messageSelfExclusion}";
+        $urgentQueueWhere = "{$tenantWhere} AND flagged = 1 AND reviewed_at IS NULL AND {$messageSelfExclusion}";
+        $pendingMembersWhere = "{$tenantWhere} AND is_approved = 0";
+        $openReportsWhere = "{$tenantWhere} AND status IN ('open', 'pending')";
+
+        // When each queue's oldest item arrived (ISO-8601), or null when the
+        // queue is empty or the figure could not be read. Filled in beside the
+        // matching count below, from the same WHERE.
+        $oldestWaiting = [
+            'pending_exchanges' => null,
+            'unreviewed_messages' => null,
+            'safeguarding_alerts' => null,
+            'open_reports' => null,
+            'pending_members' => null,
+            'vetting_review_requests' => null,
+        ];
 
         $pendingExchanges = 0;
         try {
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM exchange_requests WHERE {$tenantWhere} AND status IN ('pending_broker', 'disputed')",
+                "SELECT COUNT(*) as cnt FROM exchange_requests WHERE {$exchangeQueueWhere}",
                 $tenantParams
             );
             $pendingExchanges = (int) ($row->cnt ?? 0);
@@ -206,15 +258,9 @@ class AdminBrokerController extends BaseApiController
 
         $unreviewedMessages = 0;
         try {
-            // F-436: the Messages queue this tile links to withholds the
-            // viewer's own conversations, so the count must too, or a broker
-            // who is a party to a copied message sees a number the list never
-            // reaches.
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM broker_message_copies
-                 WHERE {$tenantWhere} AND reviewed_at IS NULL
-                   AND sender_id <> ? AND receiver_id <> ?",
-                array_merge($tenantParams, [$viewerId, $viewerId])
+                "SELECT COUNT(*) as cnt FROM broker_message_copies WHERE {$unreviewedQueueWhere}",
+                $messageParams
             );
             $unreviewedMessages = (int) ($row->cnt ?? 0);
         } catch (\Exception $e) {
@@ -285,12 +331,8 @@ class AdminBrokerController extends BaseApiController
             // broker could open. Owner decision, 3 Oct 2026: the tile counts
             // what it opens; fraud alerts stay with administrators.
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM broker_message_copies
-                 WHERE {$tenantWhere}
-                   AND flagged = 1
-                   AND reviewed_at IS NULL
-                   AND sender_id <> ? AND receiver_id <> ?",
-                array_merge($tenantParams, [$viewerId, $viewerId])
+                "SELECT COUNT(*) as cnt FROM broker_message_copies WHERE {$urgentQueueWhere}",
+                $messageParams
             );
             $safeguardingAlerts = (int) ($row->cnt ?? 0);
         } catch (\Exception $e) {
@@ -323,7 +365,7 @@ class AdminBrokerController extends BaseApiController
             // The tile opens Members → Pending. Same rule as that list
             // (AdminUsersController::index, status=pending): not yet approved.
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM users WHERE {$tenantWhere} AND is_approved = 0",
+                "SELECT COUNT(*) as cnt FROM users WHERE {$pendingMembersWhere}",
                 $tenantParams
             );
             $pendingMembers = (int) ($row->cnt ?? 0);
@@ -338,23 +380,205 @@ class AdminBrokerController extends BaseApiController
             // (AdminReportsController::index, status=pending), which treats the
             // legacy 'pending' value and 'open' as one state, and — below admin
             // tier — leaves out reports the caller is a party to (F-454, F-549).
+            // The oldest open report is read here too, from the same rows, so a
+            // complaint about the broker can never set the age of their queue.
             if ($this->callerIsAdminTier()) {
                 $row = DB::selectOne(
-                    "SELECT COUNT(*) as cnt FROM reports WHERE {$tenantWhere} AND status IN ('open', 'pending')",
+                    "SELECT COUNT(*) as cnt, MIN(created_at) as oldest FROM reports WHERE {$openReportsWhere}",
                     $tenantParams
                 );
                 $openReports = (int) ($row->cnt ?? 0);
+                $oldestWaiting['open_reports'] = $this->isoTimestamp($row->oldest ?? null);
             } else {
                 $candidates = DB::select(
-                    "SELECT id, tenant_id, reporter_id, target_type, target_id FROM reports
-                     WHERE {$tenantWhere} AND status IN ('open', 'pending')",
+                    "SELECT id, tenant_id, reporter_id, target_type, target_id, created_at FROM reports
+                     WHERE {$openReportsWhere}",
                     $tenantParams
                 );
-                $openReports = count(app(\App\Services\ReportQueueVisibility::class)->filterForBroker($candidates, $viewerId));
+                $visible = app(\App\Services\ReportQueueVisibility::class)->filterForBroker($candidates, $viewerId);
+                $openReports = count($visible);
+                $arrivals = array_filter(array_map(fn (object $report) => $report->created_at ?? null, $visible));
+                $oldestWaiting['open_reports'] = $arrivals === [] ? null : $this->isoTimestamp(min($arrivals));
             }
         } catch (\Exception $e) {
             $failedMetrics[] = 'open_reports';
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard open_reports failed: ' . $e->getMessage());
+        }
+
+        // The oldest item in each of the other queues: MIN() over exactly the
+        // rows the count above selected, so the tile's "oldest waiting" is the
+        // first row of its list sorted oldest first (`sort=oldest` on the
+        // exchanges and messages lists exists for that reading).
+        $oldestQueries = [
+            'pending_exchanges' => ["SELECT MIN(created_at) as oldest FROM exchange_requests WHERE {$exchangeQueueWhere}", $tenantParams],
+            'unreviewed_messages' => ["SELECT MIN(created_at) as oldest FROM broker_message_copies WHERE {$unreviewedQueueWhere}", $messageParams],
+            'safeguarding_alerts' => ["SELECT MIN(created_at) as oldest FROM broker_message_copies WHERE {$urgentQueueWhere}", $messageParams],
+            'pending_members' => ["SELECT MIN(created_at) as oldest FROM users WHERE {$pendingMembersWhere}", $tenantParams],
+        ];
+        foreach ($oldestQueries as $queue => [$sql, $params]) {
+            try {
+                $row = DB::selectOne($sql, $params);
+                $oldestWaiting[$queue] = $this->isoTimestamp($row->oldest ?? null);
+            } catch (\Exception $e) {
+                $failedMetrics[] = "oldest_waiting.{$queue}";
+                \Illuminate\Support\Facades\Log::warning("[AdminBroker] Dashboard oldest_waiting.{$queue} failed: " . $e->getMessage());
+            }
+        }
+
+        // Vetting re-checks: the Vetting page lists requests by name, not by
+        // age, so the oldest is read with the same policy filter the count
+        // used (see pendingVettingReviewRequests()).
+        $vettingPolicy = null;
+        try {
+            if ($effectiveTenantId !== null) {
+                $vettingPolicy = app(\App\Services\SafeguardingJurisdictionService::class)->getPolicy($effectiveTenantId);
+                $pending = $this->vettingReviewRequestsUnderPolicy($effectiveTenantId, $vettingPolicy)
+                    ?->where('r.status', \App\Models\SafeguardingVettingReviewRequest::STATUS_PENDING);
+                $oldestWaiting['vetting_review_requests'] = $pending === null
+                    ? null
+                    : $this->isoTimestamp($pending->min('r.requested_at'));
+            } else {
+                $row = DB::selectOne(
+                    "SELECT MIN(requested_at) as oldest FROM safeguarding_vetting_review_requests WHERE {$tenantWhere} AND status = 'pending'",
+                    $tenantParams
+                );
+                $oldestWaiting['vetting_review_requests'] = $this->isoTimestamp($row->oldest ?? null);
+            }
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'oldest_waiting.vetting_review_requests';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard oldest_waiting.vetting_review_requests failed: ' . $e->getMessage());
+        }
+
+        // Trends: how many items ARRIVED each day for the last fortnight (the
+        // sparkline, oldest first, today last) and the change against the
+        // fortnight before (null when that fortnight had none). Arrivals, not
+        // the queue's size — a queue's size on past days is not recorded. One
+        // GROUP BY DATE() query per queue over 28 days; the viewer's own
+        // conversations and reports about them are left out as above.
+        $trends = [];
+        $today = Carbon::today();
+        $windowStart = $today->copy()->subDays(27)->format('Y-m-d H:i:s');
+        $trendQueries = [
+            // Exchange requests created — the volume the broker queue draws from.
+            'pending_exchanges' => ['exchange_requests', 'created_at', $tenantWhere, $tenantParams],
+            'unreviewed_messages' => ['broker_message_copies', 'created_at', "{$tenantWhere} AND {$messageSelfExclusion}", $messageParams],
+            'safeguarding_alerts' => ['broker_message_copies', 'created_at', "{$tenantWhere} AND flagged = 1 AND {$messageSelfExclusion}", $messageParams],
+            // Sign-ups per day — every new member starts in this queue on a
+            // community that approves members by hand.
+            'pending_members' => ['users', 'created_at', $tenantWhere, $tenantParams],
+        ];
+        foreach ($trendQueries as $queue => [$table, $column, $where, $params]) {
+            try {
+                $rows = DB::select(
+                    "SELECT DATE({$column}) as day, COUNT(*) as cnt FROM {$table}
+                     WHERE {$where} AND {$column} >= ?
+                     GROUP BY DATE({$column})",
+                    array_merge($params, [$windowStart])
+                );
+                $trends[$queue] = $this->trendFromDailyCounts(
+                    array_map(fn (object $r) => [(string) $r->day, (int) $r->cnt], $rows),
+                    $today
+                );
+            } catch (\Exception $e) {
+                $failedMetrics[] = "trends.{$queue}";
+                \Illuminate\Support\Facades\Log::warning("[AdminBroker] Dashboard trends.{$queue} failed: " . $e->getMessage());
+            }
+        }
+        try {
+            if ($this->callerIsAdminTier()) {
+                $rows = DB::select(
+                    "SELECT DATE(created_at) as day, COUNT(*) as cnt FROM reports
+                     WHERE {$tenantWhere} AND created_at >= ?
+                     GROUP BY DATE(created_at)",
+                    array_merge($tenantParams, [$windowStart])
+                );
+                $daily = array_map(fn (object $r) => [(string) $r->day, (int) $r->cnt], $rows);
+            } else {
+                // Below admin tier the visibility rule needs the report's target
+                // (F-454), so the window's rows are filtered then bucketed here.
+                $candidates = DB::select(
+                    "SELECT id, tenant_id, reporter_id, target_type, target_id, created_at FROM reports
+                     WHERE {$tenantWhere} AND created_at >= ?",
+                    array_merge($tenantParams, [$windowStart])
+                );
+                $visible = app(\App\Services\ReportQueueVisibility::class)->filterForBroker($candidates, $viewerId);
+                $daily = array_map(
+                    fn (object $r) => [Carbon::parse((string) $r->created_at)->toDateString(), 1],
+                    array_values(array_filter($visible, fn (object $r) => !empty($r->created_at)))
+                );
+            }
+            $trends['open_reports'] = $this->trendFromDailyCounts($daily, $today);
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'trends.open_reports';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard trends.open_reports failed: ' . $e->getMessage());
+        }
+        try {
+            if ($effectiveTenantId !== null) {
+                $vettingPolicy ??= app(\App\Services\SafeguardingJurisdictionService::class)->getPolicy($effectiveTenantId);
+                $query = $this->vettingReviewRequestsUnderPolicy($effectiveTenantId, $vettingPolicy);
+                $rows = $query === null ? [] : $query
+                    ->where('r.requested_at', '>=', $windowStart)
+                    ->selectRaw('DATE(r.requested_at) as day, COUNT(*) as cnt')
+                    ->groupByRaw('DATE(r.requested_at)')
+                    ->get()
+                    ->all();
+            } else {
+                $rows = DB::select(
+                    "SELECT DATE(requested_at) as day, COUNT(*) as cnt FROM safeguarding_vetting_review_requests
+                     WHERE {$tenantWhere} AND requested_at >= ?
+                     GROUP BY DATE(requested_at)",
+                    array_merge($tenantParams, [$windowStart])
+                );
+            }
+            $trends['vetting_review_requests'] = $this->trendFromDailyCounts(
+                array_map(fn (object $r) => [(string) $r->day, (int) $r->cnt], $rows),
+                $today
+            );
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'trends.vetting_review_requests';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard trends.vetting_review_requests failed: ' . $e->getMessage());
+        }
+
+        // "My week": what the viewer themselves decided in the last seven
+        // days, from the decision columns each table already keeps. Never
+        // another broker's work — the figures are per viewer, not per tenant.
+        $myWeek = null;
+        try {
+            $since = Carbon::now()->subDays(7)->format('Y-m-d H:i:s');
+            $decided = fn (string $sql, array $params): int => (int) (DB::selectOne($sql, $params)->cnt ?? 0);
+            $exchangesDecided = $decided(
+                // Approvals, rejections, settlements and reversals all write a
+                // broker-role history row; one exchange counts once however
+                // many steps it took.
+                "SELECT COUNT(DISTINCT exchange_id) as cnt FROM exchange_history
+                 WHERE {$tenantWhere} AND actor_id = ? AND actor_role = 'broker' AND created_at >= ?",
+                array_merge($tenantParams, [$viewerId, $since])
+            );
+            $messagesReviewed = $decided(
+                "SELECT COUNT(*) as cnt FROM broker_message_copies
+                 WHERE {$tenantWhere} AND reviewed_by = ? AND reviewed_at >= ?",
+                array_merge($tenantParams, [$viewerId, $since])
+            );
+            $matchesDecided = $decided(
+                "SELECT COUNT(*) as cnt FROM match_approvals
+                 WHERE {$tenantWhere} AND reviewed_by = ? AND reviewed_at >= ?",
+                array_merge($tenantParams, [$viewerId, $since])
+            );
+            $vettingHandled = $decided(
+                "SELECT COUNT(*) as cnt FROM safeguarding_vetting_review_requests
+                 WHERE {$tenantWhere} AND handled_by = ? AND handled_at >= ?",
+                array_merge($tenantParams, [$viewerId, $since])
+            );
+            $myWeek = [
+                'exchanges_decided' => $exchangesDecided,
+                'messages_reviewed' => $messagesReviewed,
+                'matches_decided' => $matchesDecided,
+                'vetting_handled' => $vettingHandled,
+                'total' => $exchangesDecided + $messagesReviewed + $matchesDecided + $vettingHandled,
+            ];
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'my_week';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard my_week failed: ' . $e->getMessage());
         }
 
         // Every broker-panel page shows a notice while the community has no
@@ -376,75 +600,7 @@ class AdminBrokerController extends BaseApiController
 
         $recentActivity = [];
         try {
-            // Activity feed reads from BOTH activity_log and org_audit_log,
-            // because insurance and broker actions are split between them.
-            // Safeguarding contact decisions have their own append-only event
-            // table and are deliberately not represented as legacy vetting
-            // record or document actions here.
-            //
-            // Each branch returns a literal `source` column ('activity' /
-            // 'audit') so the frontend can build a stable composite React
-            // key — without it, id=1 from activity_log collides with id=1
-            // from org_audit_log and React mis-reconciles list rows.
-            $actWhere      = $effectiveTenantId !== null ? 'al.tenant_id = ?' : '1=1';
-            $auditWhere    = $effectiveTenantId !== null ? 'oal.tenant_id = ?' : '1=1';
-            $actParams     = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
-            $unionParams   = array_merge($actParams, $actParams);
-            $recentActivity = DB::select(
-                // ActivityLog::log writes the specific action key to the
-                // `action` column and the broad category ('admin', 'system',
-                // ...) to `action_type`. Filter on `action`.
-                // The two tables have different default collations on
-                // production (activity_log = utf8mb4_general_ci,
-                // org_audit_log = utf8mb4_unicode_ci) and the `action` /
-                // `details` columns inherited those defaults. Without
-                // explicit COLLATE clauses, MySQL's UNION ALL fails with
-                // ER 1271 ("Illegal mix of collations") and the entire
-                // recent_activity feed silently falls into the catch-all
-                // (now reported via _partial). Force both branches to
-                // utf8mb4_unicode_ci so the UNION is robust regardless
-                // of which side wins the collation negotiation. action
-                // values are ASCII-safe enum keys; details are short
-                // JSON strings — neither cares which Unicode collation
-                // we pick, only that they match.
-                "(SELECT al.id, 'activity' AS source,
-                         al.tenant_id, al.user_id,
-                         al.action COLLATE utf8mb4_unicode_ci AS action_type,
-                         CONVERT(al.details USING utf8mb4) COLLATE utf8mb4_unicode_ci AS details,
-                         al.created_at,
-                         u.first_name, u.last_name, t.name as tenant_name
-                  FROM activity_log al
-                  LEFT JOIN users u ON u.id = al.user_id
-                  LEFT JOIN tenants t ON al.tenant_id = t.id
-                  WHERE {$actWhere} AND al.action IN (
-                      'insurance_cert_created', 'insurance_cert_updated',
-                      'insurance_cert_verified', 'insurance_cert_rejected',
-                      'insurance_cert_deleted'
-                  ))
-                 UNION ALL
-                 (SELECT oal.id, 'audit' AS source,
-                         oal.tenant_id, oal.user_id,
-                         oal.action COLLATE utf8mb4_unicode_ci AS action_type,
-                         CONVERT(oal.details USING utf8mb4) COLLATE utf8mb4_unicode_ci AS details,
-                         oal.created_at,
-                         u.first_name, u.last_name, t.name as tenant_name
-                  FROM org_audit_log oal
-                  LEFT JOIN users u ON u.id = oal.user_id
-                  LEFT JOIN tenants t ON oal.tenant_id = t.id
-                  WHERE {$auditWhere} AND oal.action IN (
-                      'exchange_approved', 'exchange_rejected',
-                      'broker_message_reviewed', 'broker_message_approved',
-                      'broker_message_flagged',
-                      'listing_risk_tag_created', 'listing_risk_tag_updated',
-                      'listing_risk_tag_removed',
-                      'user_monitoring_added', 'user_monitoring_removed',
-                      'broker_config_updated'
-                  ))
-                 ORDER BY created_at DESC
-                 LIMIT 20",
-                $unionParams
-            );
-            $recentActivity = array_map(fn($r) => (array)$r, $recentActivity);
+            $recentActivity = $this->recentBrokerActivity($effectiveTenantId, $activityLimit);
         } catch (\Exception $e) {
             $failedMetrics[] = 'recent_activity';
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard recent_activity failed: ' . $e->getMessage());
@@ -461,6 +617,9 @@ class AdminBrokerController extends BaseApiController
             'pending_members' => in_array('pending_members', $failedMetrics, true) ? null : $pendingMembers,
             'open_reports' => in_array('open_reports', $failedMetrics, true) ? null : $openReports,
             'safeguarding_jurisdiction_configured' => $jurisdictionConfigured,
+            'oldest_waiting' => $oldestWaiting,
+            'trends' => $trends,
+            'my_week' => $myWeek,
             'recent_activity' => $recentActivity,
             // Frontend uses this to render a banner when one or more
             // metrics dropped to null instead of a real number, so a DB
@@ -468,6 +627,172 @@ class AdminBrokerController extends BaseApiController
             '_partial' => !empty($failedMetrics),
             '_failed_metrics' => $failedMetrics,
         ]);
+    }
+
+    /**
+     * The broker activity feed: the latest broker, member, report and
+     * moderation actions from BOTH activity_log and org_audit_log, because
+     * the actions are split between them. Safeguarding contact decisions have
+     * their own append-only event table and are deliberately not represented
+     * as legacy vetting record or document actions here.
+     *
+     * Each branch returns a literal `source` column ('activity' / 'audit') so
+     * the frontend can build a stable composite React key — without it, id=1
+     * from activity_log collides with id=1 from org_audit_log and React
+     * mis-reconciles list rows. `target_user_id` is the member an audit row
+     * is about (org_audit_log only; activity_log has no such column), so a
+     * row can link to that member.
+     *
+     * @return list<array<string, mixed>>
+     * @throws \Exception when either table cannot be read
+     */
+    private function recentBrokerActivity(?int $effectiveTenantId, int $limit): array
+    {
+        $actWhere = $effectiveTenantId !== null ? 'al.tenant_id = ?' : '1=1';
+        $auditWhere = $effectiveTenantId !== null ? 'oal.tenant_id = ?' : '1=1';
+        $actParams = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
+        $rows = DB::select(
+            // ActivityLog::log writes the specific action key to the
+            // `action` column and the broad category ('admin', 'system',
+            // ...) to `action_type`. Filter on `action`.
+            // The two tables have different default collations on
+            // production (activity_log = utf8mb4_general_ci,
+            // org_audit_log = utf8mb4_unicode_ci) and the `action` /
+            // `details` columns inherited those defaults. Without
+            // explicit COLLATE clauses, MySQL's UNION ALL fails with
+            // ER 1271 ("Illegal mix of collations") and the entire
+            // recent_activity feed silently falls into the catch-all
+            // (now reported via _partial). Force both branches to
+            // utf8mb4_unicode_ci so the UNION is robust regardless
+            // of which side wins the collation negotiation. action
+            // values are ASCII-safe enum keys; details are short
+            // JSON strings — neither cares which Unicode collation
+            // we pick, only that they match.
+            "(SELECT al.id, 'activity' AS source,
+                     al.tenant_id, al.user_id, NULL AS target_user_id,
+                     al.action COLLATE utf8mb4_unicode_ci AS action_type,
+                     CONVERT(al.details USING utf8mb4) COLLATE utf8mb4_unicode_ci AS details,
+                     al.created_at,
+                     u.first_name, u.last_name, t.name as tenant_name
+              FROM activity_log al
+              LEFT JOIN users u ON u.id = al.user_id
+              LEFT JOIN tenants t ON al.tenant_id = t.id
+              WHERE {$actWhere} AND al.action IN (
+                  'insurance_cert_created', 'insurance_cert_updated',
+                  'insurance_cert_verified', 'insurance_cert_rejected',
+                  'insurance_cert_deleted',
+                  'admin_approve_user', 'admin_reject_user',
+                  'admin_suspend_user', 'admin_reactivate_user',
+                  'resolve_report', 'dismiss_report',
+                  'hide_comment', 'delete_comment',
+                  'flag_review', 'hide_review', 'delete_review',
+                  'hide_feed_item', 'delete_feed_item'
+              ))
+             UNION ALL
+             (SELECT oal.id, 'audit' AS source,
+                     oal.tenant_id, oal.user_id, oal.target_user_id,
+                     oal.action COLLATE utf8mb4_unicode_ci AS action_type,
+                     CONVERT(oal.details USING utf8mb4) COLLATE utf8mb4_unicode_ci AS details,
+                     oal.created_at,
+                     u.first_name, u.last_name, t.name as tenant_name
+              FROM org_audit_log oal
+              LEFT JOIN users u ON u.id = oal.user_id
+              LEFT JOIN tenants t ON oal.tenant_id = t.id
+              WHERE {$auditWhere} AND oal.action IN (
+                  'exchange_approved', 'exchange_rejected',
+                  'exchange_dispute_resolved', 'exchange_dispute_cancelled',
+                  'exchange_reversed',
+                  'match_approved', 'match_rejected',
+                  'member_balance_adjusted',
+                  'broker_message_reviewed', 'broker_message_approved',
+                  'broker_message_flagged',
+                  'listing_risk_tag_created', 'listing_risk_tag_updated',
+                  'listing_risk_tag_removed',
+                  'user_monitoring_added', 'user_monitoring_removed',
+                  'broker_config_updated'
+              ))
+             ORDER BY created_at DESC
+             LIMIT ?",
+            array_merge($actParams, $actParams, [$limit])
+        );
+
+        return array_map(fn ($r) => (array) $r, $rows);
+    }
+
+    /**
+     * Vetting review requests the Vetting page can list: those raised under
+     * the community's CURRENT policy, for a member who still exists. Mirrors
+     * MemberVettingAttestationService::countPendingReviewRequests(), minus the
+     * status filter (callers add it), so the tile's count, its oldest item and
+     * its trend all read the same rows — a request raised under a previous
+     * policy is neither listed nor counted. Null when the community has no
+     * policy, in which case the page lists nothing.
+     * test_oldest_waiting_matches_the_oldest_row_of_each_queue pins the two.
+     *
+     * @param array<string, mixed> $policy
+     */
+    private function vettingReviewRequestsUnderPolicy(int $tenantId, array $policy): ?\Illuminate\Database\Query\Builder
+    {
+        if (($policy['scheme_code'] ?? null) === null || ($policy['attestation_code'] ?? null) === null || ($policy['policy_version'] ?? null) === null) {
+            return null;
+        }
+
+        return DB::table('safeguarding_vetting_review_requests as r')
+            ->join('users as u', function ($join) use ($tenantId): void {
+                $join->on('u.id', '=', 'r.user_id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->whereNotIn('u.status', ['deleted', 'deactivated'])
+            ->where('r.tenant_id', $tenantId)
+            ->where('r.scheme_code', $policy['scheme_code'])
+            ->where('r.attestation_code', $policy['attestation_code'])
+            ->where('r.purpose_code', $policy['purpose_code'])
+            ->where('r.scope_type', $policy['scope_type'])
+            ->where('r.scope_identifier', $policy['scope_identifier'])
+            ->where('r.policy_version', $policy['policy_version']);
+    }
+
+    /**
+     * Fourteen daily points (oldest first, today last, zero-filled) and the
+     * percentage change of those fourteen days against the fourteen before,
+     * null when the earlier fortnight had nothing to compare with.
+     *
+     * @param list<array{0: string, 1: int}> $dailyCounts  [YYYY-MM-DD, count] pairs
+     * @return array{points: list<int>, delta: int|null}
+     */
+    private function trendFromDailyCounts(array $dailyCounts, Carbon $today): array
+    {
+        $byDay = [];
+        foreach ($dailyCounts as [$day, $count]) {
+            $byDay[$day] = ($byDay[$day] ?? 0) + $count;
+        }
+
+        $points = [];
+        for ($daysAgo = 13; $daysAgo >= 0; $daysAgo--) {
+            $points[] = $byDay[$today->copy()->subDays($daysAgo)->toDateString()] ?? 0;
+        }
+        $previous = 0;
+        for ($daysAgo = 27; $daysAgo >= 14; $daysAgo--) {
+            $previous += $byDay[$today->copy()->subDays($daysAgo)->toDateString()] ?? 0;
+        }
+        $current = array_sum($points);
+
+        return [
+            'points' => $points,
+            'delta' => $previous > 0 ? (int) round(($current - $previous) / $previous * 100) : null,
+        ];
+    }
+
+    /** A database timestamp as ISO-8601 for the client, or null when there is none. */
+    private function isoTimestamp(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        try {
+            return Carbon::parse((string) $value)->toIso8601String();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     // ============================================
@@ -483,6 +808,9 @@ class AdminBrokerController extends BaseApiController
         $page = $this->queryInt('page', 1, 1);
         $perPage = $this->queryInt('per_page', 20, 1, 100);
         $status = $this->query('status');
+        // `sort=oldest` is how the dashboard reads the age of this queue; the
+        // default (newest first) is unchanged. Whitelisted literal, never input.
+        $order = $this->query('sort') === 'oldest' ? 'ASC' : 'DESC';
         $offset = ($page - 1) * $perPage;
 
         try {
@@ -528,7 +856,7 @@ class AdminBrokerController extends BaseApiController
                 LEFT JOIN listings l ON er.listing_id = l.id
                 LEFT JOIN tenants t ON er.tenant_id = t.id
                 WHERE {$where}
-                ORDER BY er.created_at DESC
+                ORDER BY er.created_at {$order}
                 LIMIT ? OFFSET ?",
                 $queryParams
             );
@@ -1225,6 +1553,9 @@ class AdminBrokerController extends BaseApiController
         $page = $this->queryInt('page', 1, 1);
         $perPage = $this->queryInt('per_page', 20, 1, 100);
         $filter = $this->query('filter', 'all');
+        // `sort=oldest` is how the dashboard reads the age of this queue; the
+        // default (newest first) is unchanged. Whitelisted literal, never input.
+        $order = $this->query('sort') === 'oldest' ? 'ASC' : 'DESC';
         $offset = ($page - 1) * $perPage;
 
         try {
@@ -1292,7 +1623,7 @@ class AdminBrokerController extends BaseApiController
                 LEFT JOIN listings l ON bmc.related_listing_id = l.id
                 LEFT JOIN tenants t ON bmc.tenant_id = t.id
                 WHERE {$where}
-                ORDER BY bmc.created_at DESC
+                ORDER BY bmc.created_at {$order}
                 LIMIT ? OFFSET ?",
                 $queryParams
             );

@@ -6,28 +6,34 @@
 /**
  * Broker Command Center
  *
- * The flagship broker page: a "what needs you now" triage hero ranking the
- * open review queues by severity, a deep-linked KPI grid, a quick-action
- * launcher, and the broker activity timeline. Every tile drills into the
- * relevant management page with the filter already applied.
+ * The flagship broker page, top to bottom:
+ *   1. "What needs you now" — the open review queues ranked by severity.
+ *   2. A compact warning when the community has no safeguarding jurisdiction.
+ *   3. Quick links — one row of small buttons (the sidebar has the same pages).
+ *   4. "Waiting for you" (the first items of each queue, with quick decisions)
+ *      beside "My week" (what this broker decided in the last 7 days).
+ *   5. The KPI grid — every tile deep-links with its filter applied, says how
+ *      long its oldest item has waited, and shows a fortnight of arrivals.
+ *   6. Recent activity — the broker action timeline, with "See all".
+ *   7. The collapsible guide.
  *
- * Parity: PHP BrokerControlsController::dashboard()
+ * Each number appears once: the hero ranks the queues, the inbox shows the
+ * items, the tiles carry the age and the trend.
+ *
+ * Parity: AdminBrokerController::dashboard()
  */
 
-import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Card, CardBody, Button, Chip } from '@/components/ui';
+import { Alert, Card, CardBody, Button } from '@/components/ui';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Eye from 'lucide-react/icons/eye';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import ChevronRight from 'lucide-react/icons/chevron-right';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import Activity from 'lucide-react/icons/activity';
 import Settings from 'lucide-react/icons/settings';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CheckCircle2 from 'lucide-react/icons/circle-check-big';
@@ -36,23 +42,38 @@ import Zap from 'lucide-react/icons/zap';
 import UserCheck from 'lucide-react/icons/user-check';
 import UserPlus from 'lucide-react/icons/user-plus';
 import Flag from 'lucide-react/icons/flag';
+import CalendarCheck from 'lucide-react/icons/calendar-check';
 import type { LucideIcon } from 'lucide-react';
 import { usePageTitle } from '@/hooks';
-import { useTenant, useToast } from '@/contexts';
-import { adminBroker } from '@/admin/api/adminApi';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { adminBroker, adminMatching } from '@/admin/api/adminApi';
+import { isAdminTierUser } from '@/lib/access';
+import { getFormattingLocale } from '@/lib/helpers';
+import { parseServerTimestamp } from '@/lib/serverTime';
 import {
   BrokerPageShell,
   BrokerStatCard,
   BrokerSkeleton,
   BrokerEmptyState,
+  BrokerSectionCard,
+  BrokerActivityTimeline,
   useCountUp,
   type BrokerStatColor,
 } from '../components';
-import type { BrokerDashboardStats, BrokerActivityEntry } from '@/admin/api/types';
-import { parseServerTimestamp } from '@/lib/serverTime';
+import type { BrokerDashboardStats } from '@/admin/api/types';
+import type {
+  BrokerDashboardPayload,
+  BrokerMyWeek,
+  BrokerTrendQueue,
+  MatchApprovalStatsWithReviewTime,
+} from '../dashboardTypes';
 import { BrokerControlsHelp } from './BrokerHelpPage';
 import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
 import { BrokerInbox } from '../components/BrokerInbox';
+
+// The activity feed's plain-English rendering lives with the timeline now;
+// re-exported so existing imports (and its tests) keep working.
+export { formatActivityDetails } from '../components/BrokerActivityTimeline';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Triage queues — severity-weighted so the hero always surfaces the most
@@ -88,42 +109,111 @@ const queuePillClass: Record<BrokerStatColor, string> = {
   neutral: 'border-divider bg-surface-secondary text-muted hover:bg-surface-tertiary',
 };
 
-// Quick-link metadata. Title + description are translated at render time
-// using the broker.dashboard.links.* namespace. Path/icon/color are
-// presentation-only and stay defined here.
+// Quick-link metadata. Titles are translated at render time from the
+// broker.dashboard.links.* namespace; the sidebar lists the same pages, so
+// these are a single compact row rather than seven cards.
 const QUICK_LINKS = [
-  { key: 'exchanges',       icon: ArrowLeftRight,       color: 'accent'  as const, path: '/broker/exchanges',       feature: 'exchange_workflow' as const },
-  { key: 'match_approvals', icon: UserCheck,            color: 'accent'  as const, path: '/broker/match-approvals', feature: 'exchange_workflow' as const },
-  { key: 'risk_tags',       icon: ShieldAlert,          color: 'danger'  as const, path: '/broker/risk-tags' },
-  { key: 'messages',        icon: MessageSquareWarning, color: 'warning' as const, path: '/broker/messages' },
-  { key: 'monitoring',      icon: Eye,                  color: 'warning' as const, path: '/broker/monitoring' },
-  { key: 'vetting',         icon: ShieldCheck,          color: 'success' as const, path: '/broker/vetting' },
-  { key: 'configuration',   icon: Settings,             color: 'neutral' as const, path: '/broker/configuration' },
+  { key: 'exchanges',       icon: ArrowLeftRight,       path: '/broker/exchanges',       feature: 'exchange_workflow' as const },
+  { key: 'match_approvals', icon: UserCheck,            path: '/broker/match-approvals', feature: 'exchange_workflow' as const },
+  { key: 'risk_tags',       icon: ShieldAlert,          path: '/broker/risk-tags' },
+  { key: 'messages',        icon: MessageSquareWarning, path: '/broker/messages' },
+  { key: 'monitoring',      icon: Eye,                  path: '/broker/monitoring' },
+  { key: 'vetting',         icon: ShieldCheck,          path: '/broker/vetting' },
+  { key: 'configuration',   icon: Settings,             path: '/broker/configuration' },
 ];
 
-// Tailwind JIT needs full class names at build time — dynamic `bg-${color}/10` won't work
-const tileBgClass: Record<BrokerStatColor, string> = {
-  accent: 'bg-accent/10 text-accent',
-  danger: 'bg-danger/10 text-danger',
-  warning: 'bg-warning/10 text-warning',
-  success: 'bg-success/10 text-success',
-  neutral: 'bg-surface-secondary text-muted',
-};
+type TFunc = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * "Oldest waiting 3 days" for a queue's oldest arrival; "Oldest arrived
+ * today" for one that came in today; nothing when the queue is empty.
+ */
+export function oldestWaitingLabel(iso: string | null | undefined, t: TFunc, now: Date = new Date()): string | undefined {
+  const date = parseServerTimestamp(iso);
+  if (!date) return undefined;
+  const days = Math.floor(Math.max(0, now.getTime() - date.getTime()) / 86_400_000);
+  return days === 0 ? t('dashboard.oldest_waiting_today') : t('dashboard.oldest_waiting_days', { count: days });
+}
 
 function HeroTotal({ value }: { value: number }) {
   const display = useCountUp(value);
   return <>{display.toLocaleString(getFormattingLocale())}</>;
 }
 
+function WeekFigure({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-xl bg-surface-secondary/60 px-3 py-2.5">
+      <p className="text-xl font-semibold leading-none tracking-tight text-foreground tabular-nums">{value}</p>
+      <p className="mt-1.5 text-xs leading-4 text-muted">{label}</p>
+    </div>
+  );
+}
+
+interface MyWeekCardProps {
+  week: BrokerMyWeek | null | undefined;
+  failed: boolean;
+  /** Average hours to review a match (exchange-workflow communities only). */
+  avgReviewHours: number | null;
+  /** Lay the figures out in one row when the card has the whole width. */
+  wide: boolean;
+}
+
+function MyWeekCard({ week, failed, avgReviewHours, wide }: MyWeekCardProps) {
+  const { t } = useTranslation('broker');
+  const nothingYet = !failed && (!week || week.total === 0);
+  const figures = week
+    ? [
+        { key: 'exchanges_decided', value: week.exchanges_decided },
+        { key: 'messages_reviewed', value: week.messages_reviewed },
+        { key: 'matches_decided', value: week.matches_decided },
+        { key: 'vetting_handled', value: week.vetting_handled },
+      ]
+    : [];
+  const showAverage = avgReviewHours !== null && Number.isFinite(avgReviewHours) && avgReviewHours > 0;
+
+  return (
+    <BrokerSectionCard
+      title={t('dashboard.my_week.title')}
+      icon={CalendarCheck}
+      color="success"
+      count={failed ? null : (week?.total ?? null)}
+      description={t('dashboard.my_week.description')}
+    >
+      {failed ? (
+        <BrokerEmptyState bare icon={AlertCircle} color="danger" title={t('dashboard.could_not_load')} className="py-6" />
+      ) : nothingYet ? (
+        <p className="text-sm leading-6 text-muted">{t('dashboard.my_week.empty')}</p>
+      ) : (
+        <div className={`grid grid-cols-2 gap-2 ${wide ? 'sm:grid-cols-4 xl:grid-cols-5' : ''}`}>
+          {figures.map((f) => (
+            <WeekFigure key={f.key} label={t(`dashboard.my_week.${f.key}`)} value={f.value.toLocaleString(getFormattingLocale())} />
+          ))}
+          {showAverage && (
+            <WeekFigure
+              label={t('dashboard.my_week.avg_review_hours')}
+              value={t('dashboard.my_week.avg_review_value', { hours: avgReviewHours.toFixed(1) })}
+            />
+          )}
+        </div>
+      )}
+    </BrokerSectionCard>
+  );
+}
+
 export function BrokerDashboard() {
   const { t } = useTranslation('broker');
   usePageTitle(t('dashboard.title'));
   const { tenantPath, hasFeature } = useTenant();
+  const { user } = useAuth();
   const toast = useToast();
 
-  const [stats, setStats] = useState<BrokerDashboardStats | null>(null);
+  const [stats, setStats] = useState<BrokerDashboardPayload | null>(null);
+  const [avgReviewHours, setAvgReviewHours] = useState<number | null>(null);
+  const [inboxVisible, setInboxVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+
+  const showExchanges = hasFeature('exchange_workflow');
 
   // Stash the latest `t` and `toast` in refs so loadDashboard's identity
   // doesn't churn on every language switch (which would otherwise refetch
@@ -141,13 +231,31 @@ export function BrokerDashboard() {
       setLoadError(false);
     }
     try {
-      const res = await adminBroker.getDashboard();
+      const [res, matchRes] = await Promise.all([
+        adminBroker.getDashboard(),
+        // The match review time comes from the matching module's own stats;
+        // it is a nicety, so its failure never fails the dashboard.
+        showExchanges ? adminMatching.getApprovalStats(7).catch(() => null) : Promise.resolve(null),
+      ]);
       if (res.success && res.data) {
-        setStats(res.data);
+        // The extras are declared beside the page until admin/api/types.ts is
+        // free to carry them (see dashboardTypes.ts).
+        setStats(res.data as BrokerDashboardPayload);
         setLoadError(false);
       } else if (!quiet) {
         setLoadError(true);
         toastRef.current.error(tRef.current('dashboard.load_failed'));
+      }
+      if (matchRes?.success && matchRes.data) {
+        // Same unwrap BrokerLayout does: the stats endpoint sometimes wraps its
+        // payload once more in `data`.
+        const payload = matchRes.data as unknown;
+        const matchStats =
+          payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)
+            ? (payload as { data: MatchApprovalStatsWithReviewTime }).data
+            : (payload as MatchApprovalStatsWithReviewTime);
+        const hours = Number(matchStats?.avg_review_hours);
+        setAvgReviewHours(Number.isFinite(hours) ? hours : null);
       }
     } catch {
       if (!quiet) {
@@ -157,14 +265,12 @@ export function BrokerDashboard() {
     } finally {
       if (!quiet) setLoading(false);
     }
-  }, []);
+  }, [showExchanges]);
 
   useEffect(() => {
-    loadDashboard();
+    void loadDashboard();
   }, [loadDashboard]);
   useBrokerAutoRefresh(() => void loadDashboard(true));
-
-  const showExchanges = hasFeature('exchange_workflow');
 
   // Rank the non-empty queues: severity first, then volume. `_partial` loads
   // can leave some counters null — those are excluded rather than treated as 0
@@ -186,6 +292,26 @@ export function BrokerDashboard() {
 
   const quickLinks = QUICK_LINKS.filter((l) => !l.feature || hasFeature(l.feature));
 
+  const failedMetrics = stats?._failed_metrics ?? [];
+  const failed = (metric: string) => failedMetrics.includes(metric);
+
+  // What every KPI tile gets beyond its count: the sparkline and delta from
+  // the queue's trend, how long its oldest item has waited, and whether its
+  // own figure failed. A flat zero fortnight draws no sparkline.
+  const queueTileProps = (key: BrokerTrendQueue, count: number | null | undefined) => {
+    const trend = stats?.trends?.[key];
+    const points = trend?.points && trend.points.some((p) => p > 0) ? trend.points : undefined;
+    return {
+      trend: points,
+      delta: typeof trend?.delta === 'number' ? trend.delta : undefined,
+      deltaLabel: t('dashboard.vs_previous_fortnight'),
+      description: count ? oldestWaitingLabel(stats?.oldest_waiting?.[key], t) : undefined,
+      failed: failed(key),
+    };
+  };
+
+  const canSetJurisdiction = isAdminTierUser(user);
+
   return (
     <BrokerPageShell
       help={{ sectionId: 'broker_role', articleId: 'broker_dashboard' }}
@@ -197,7 +323,7 @@ export function BrokerDashboard() {
         <Button
           variant="tertiary"
           startContent={<RefreshCw size={16} />}
-          onPress={() => loadDashboard()}
+          onPress={() => void loadDashboard()}
           isLoading={loading}
           size="sm"
         >
@@ -208,7 +334,7 @@ export function BrokerDashboard() {
       {/* Partial-load banner — surfaces when the controller's per-query
           try/catch swallowed at least one error. Hiding this would mask
           a DB hiccup as a clean dashboard, exactly the wrong direction
-          for a risk-surfacing UI. */}
+          for a risk-surfacing UI. The affected tiles are marked too. */}
       {stats?._partial && (
         // Same treatment as the panel's other notices: foreground text on the
         // card surface with an amber edge (the amber-on-amber card it replaces
@@ -226,7 +352,7 @@ export function BrokerDashboard() {
           title={t('dashboard.partial_title')}
           description={t('dashboard.partial_body')}
           endContent={(
-            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => loadDashboard()}>
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => void loadDashboard()}>
               <RefreshCw size={14} aria-hidden="true" />
               {t('dashboard.refresh')}
             </Button>
@@ -238,6 +364,7 @@ export function BrokerDashboard() {
         <div className="space-y-6">
           <BrokerSkeleton variant="cards" count={1} />
           <BrokerSkeleton variant="stats" count={8} />
+          <BrokerSkeleton variant="timeline" count={4} />
         </div>
       ) : loadError && !stats ? (
         // Distinct error state — a load failure must never render as a
@@ -248,7 +375,7 @@ export function BrokerDashboard() {
           title={t('dashboard.load_error_title')}
           hint={t('dashboard.load_error_hint')}
           action={
-            <Button size="sm" variant="danger-soft" onPress={() => loadDashboard()}>
+            <Button size="sm" variant="danger-soft" onPress={() => void loadDashboard()}>
               {t('dashboard.refresh')}
             </Button>
           }
@@ -324,10 +451,68 @@ export function BrokerDashboard() {
             </CardBody>
           </Card>
 
-          {/* ── Waiting for you — the first items of each queue, with the
-              quick decisions (approve a member, mark a routine message
-              reviewed) available right here ─────────────────────────────── */}
-          <BrokerInbox showExchanges={showExchanges} />
+          {/* ── Safeguarding jurisdiction not set — a compact pointer. Only an
+              admin can set it (owner decision, 3 Oct 2026); everyone else is
+              told who to ask. ─────────────────────────────────────────────── */}
+          {stats?.safeguarding_jurisdiction_configured === false && (
+            <Card
+              role="status"
+              className="mb-6 rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface shadow-sm"
+            >
+              <CardBody className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning ring-1 ring-inset ring-current/10">
+                    <ShieldAlert size={18} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{t('jurisdiction_notice.title')}</p>
+                    <p className="text-sm leading-5 text-muted">
+                      {canSetJurisdiction ? t('jurisdiction_notice.effect_vetting') : t('jurisdiction_notice.action_ask_admin')}
+                    </p>
+                  </div>
+                </div>
+                {canSetJurisdiction && (
+                  <Button as={Link} to={tenantPath('/broker/safeguarding-options')} size="sm" variant="primary" className="shrink-0 self-start sm:self-center">
+                    {t('jurisdiction_notice.set_button')}
+                  </Button>
+                )}
+              </CardBody>
+            </Card>
+          )}
+
+          {/* ── Quick links — one compact row; the sidebar has the same pages ── */}
+          <nav aria-label={t('dashboard.quick_access')} className="mb-6 flex flex-wrap gap-2">
+            {quickLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Button
+                  key={link.path}
+                  as={Link}
+                  to={tenantPath(link.path)}
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-full"
+                  startContent={<Icon size={14} aria-hidden="true" />}
+                >
+                  {t(`dashboard.links.${link.key}_title`)}
+                </Button>
+              );
+            })}
+          </nav>
+
+          {/* ── Waiting for you (the first items of each queue, with quick
+              decisions) beside My week ────────────────────────────────────── */}
+          <div className={`mb-8 grid grid-cols-1 gap-4 ${inboxVisible ? 'xl:grid-cols-[2fr_1fr]' : ''}`}>
+            <div className={inboxVisible ? 'min-w-0' : 'hidden'}>
+              <BrokerInbox showExchanges={showExchanges} onVisibilityChange={setInboxVisible} />
+            </div>
+            <MyWeekCard
+              week={stats?.my_week}
+              failed={failed('my_week')}
+              avgReviewHours={showExchanges ? avgReviewHours : null}
+              wide={!inboxVisible}
+            />
+          </div>
 
           {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
           <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
@@ -338,6 +523,7 @@ export function BrokerDashboard() {
               color="accent"
               loading={loading}
               to={tenantPath('/broker/members?status=pending')}
+              {...queueTileProps('pending_members', stats?.pending_members)}
             />
             <BrokerStatCard
               label={t('dashboard.open_reports')}
@@ -346,6 +532,7 @@ export function BrokerDashboard() {
               color="warning"
               loading={loading}
               to={tenantPath('/broker/moderation/reports?status=pending')}
+              {...queueTileProps('open_reports', stats?.open_reports)}
             />
             {showExchanges && (
               <BrokerStatCard
@@ -355,6 +542,7 @@ export function BrokerDashboard() {
                 color="accent"
                 loading={loading}
                 to={tenantPath('/broker/exchanges?status=needs_action')}
+                {...queueTileProps('pending_exchanges', stats?.pending_exchanges)}
               />
             )}
             <BrokerStatCard
@@ -364,6 +552,7 @@ export function BrokerDashboard() {
               color="warning"
               loading={loading}
               to={tenantPath('/broker/messages?status=unreviewed')}
+              {...queueTileProps('unreviewed_messages', stats?.unreviewed_messages)}
             />
             <BrokerStatCard
               label={t('dashboard.high_risk_listings')}
@@ -372,6 +561,7 @@ export function BrokerDashboard() {
               color="danger"
               loading={loading}
               to={tenantPath('/broker/risk-tags?level=elevated')}
+              failed={failed('high_risk_listings')}
             />
             <BrokerStatCard
               label={t('dashboard.monitored_users')}
@@ -380,6 +570,7 @@ export function BrokerDashboard() {
               color="warning"
               loading={loading}
               to={tenantPath('/broker/monitoring')}
+              failed={failed('monitored_users')}
             />
             <BrokerStatCard
               label={t('dashboard.vetting_review_requests')}
@@ -388,6 +579,7 @@ export function BrokerDashboard() {
               color="warning"
               loading={loading}
               to={tenantPath('/broker/vetting?status=review_requested')}
+              {...queueTileProps('vetting_review_requests', stats?.vetting_review_requests)}
             />
             <BrokerStatCard
               label={t('dashboard.safeguarding_alerts')}
@@ -396,6 +588,7 @@ export function BrokerDashboard() {
               color="danger"
               loading={loading}
               to={tenantPath('/broker/messages?status=urgent')}
+              {...queueTileProps('safeguarding_alerts', stats?.safeguarding_alerts)}
             />
             <BrokerStatCard
               label={t('dashboard.safeguarding_flags')}
@@ -404,112 +597,14 @@ export function BrokerDashboard() {
               color="warning"
               loading={loading}
               to={tenantPath('/broker/safeguarding/support-needs')}
+              failed={failed('onboarding_safeguarding_flags')}
             />
-          </div>
-
-          {/* ── Quick-action launcher ────────────────────────────────────── */}
-          <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">
-            {t('dashboard.quick_access')}
-          </h2>
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {quickLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Card
-                  key={link.path}
-                  isPressable
-                  as={Link}
-                  to={tenantPath(link.path)}
-                  className="group rounded-2xl border border-divider/70 bg-surface text-left shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:border-divider hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                >
-                  <CardBody className="flex flex-row items-center gap-4 p-4">
-                    <div
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${tileBgClass[link.color]}`}
-                    >
-                      <Icon size={22} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-foreground">
-                        {t(`dashboard.links.${link.key}_title`)}
-                      </p>
-                      <p className="line-clamp-2 text-sm text-muted">
-                        {t(`dashboard.links.${link.key}_desc`)}
-                      </p>
-                    </div>
-                    <ChevronRight
-                      size={18}
-                      className="shrink-0 text-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-muted motion-reduce:transition-none"
-                      aria-hidden="true"
-                    />
-                  </CardBody>
-                </Card>
-              );
-            })}
           </div>
 
           {/* ── Activity timeline ────────────────────────────────────────── */}
-          <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">
-            {t('dashboard.recent_activity')}
-          </h2>
-          {stats?.recent_activity && stats.recent_activity.length > 0 ? (
-            <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-              <CardBody className="p-0">
-                <div className="flex items-center gap-2 border-b border-divider px-4 py-3">
-                  <Activity size={16} className="text-muted" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-foreground">
-                    {t('dashboard.broker_actions_heading')}
-                  </span>
-                </div>
-                <ul className="px-4 py-2">
-                  {stats.recent_activity.map((entry: BrokerActivityEntry, idx) => {
-                    // Composite key: ids collide between activity_log and
-                    // org_audit_log, so the source tag from the controller is
-                    // load-bearing here. Falling back to action_type+id keeps
-                    // older API responses (pre-source) from breaking.
-                    const rowKey = `${entry.source ?? entry.action_type}-${entry.id}`;
-                    const fullName = resolveUserDisplayName(entry);
-                    const actorName = fullName || t('dashboard.deleted_user');
-                    const isLast = idx === (stats.recent_activity?.length ?? 0) - 1;
-                    const dotColor = actionChipColorMap[entry.action_type] ?? 'default';
-                    const detailText = formatActivityDetails(entry.details, t);
-                    return (
-                      <li key={rowKey} className="relative flex gap-3 pb-0">
-                        {/* timeline rail */}
-                        <div className="flex flex-col items-center">
-                          <span
-                            aria-hidden="true"
-                            className={`mt-4 h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-surface ${timelineDotClass[dotColor]}`}
-                          />
-                          {!isLast && <span aria-hidden="true" className="w-px flex-1 bg-divider" />}
-                        </div>
-                        <div className="flex min-w-0 flex-1 items-center gap-3 py-3">
-                          <ActivityChip actionType={entry.action_type} />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm text-foreground">
-                              <span className="font-medium">{actorName}</span>{' '}
-                              {formatActionLabel(entry.action_type, t)}
-                            </p>
-                            {detailText && (
-                              <p className="line-clamp-2 text-xs text-muted">{detailText}</p>
-                            )}
-                          </div>
-                          <span className="shrink-0 text-xs tabular-nums text-muted">
-                            {formatTimeAgo(entry.created_at, t)}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </CardBody>
-            </Card>
-          ) : (
-            <BrokerEmptyState
-              icon={Activity}
-              title={t('dashboard.no_recent_activity')}
-              hint={t('dashboard.no_recent_activity_hint')}
-            />
-          )}
+          <div className="mb-8">
+            <BrokerActivityTimeline entries={stats?.recent_activity ?? []} failed={failed('recent_activity')} />
+          </div>
 
           {/* Collapsible guidance panel — title visible, body tucked into accordion sections */}
           <BrokerControlsHelp />
@@ -517,170 +612,6 @@ export function BrokerDashboard() {
       )}
     </BrokerPageShell>
   );
-}
-
-type ChipColor = 'success' | 'danger' | 'accent' | 'warning' | 'default';
-
-const timelineDotClass: Record<ChipColor, string> = {
-  success: 'bg-success',
-  danger: 'bg-danger',
-  accent: 'bg-accent',
-  warning: 'bg-warning',
-  default: 'bg-muted/60',
-};
-
-// Action keys MUST match the action strings emitted by the backend dashboard
-// query in AdminBrokerController::dashboard (UNION of activity_log +
-// org_audit_log). Any mismatch causes the row to render with a default-grey
-// chip and a readable snake_case fallback label.
-const actionChipColorMap: Record<string, ChipColor> = {
-  // org_audit_log entries (broker controller writes via AuditLogService::log)
-  exchange_approved: 'success',
-  exchange_rejected: 'danger',
-  match_approved: 'success',
-  match_rejected: 'danger',
-  broker_message_reviewed: 'accent',
-  broker_message_approved: 'success',
-  broker_message_flagged: 'warning',
-  listing_risk_tag_created: 'warning',
-  listing_risk_tag_updated: 'warning',
-  listing_risk_tag_removed: 'default',
-  user_monitoring_added: 'default',
-  user_monitoring_removed: 'default',
-  broker_config_updated: 'accent',
-  // activity_log entries (insurance controller writes via ActivityLog::log)
-  insurance_cert_created: 'accent',
-  insurance_cert_updated: 'accent',
-  insurance_cert_verified: 'success',
-  insurance_cert_rejected: 'danger',
-  insurance_cert_deleted: 'default',
-};
-
-// Action keys → broker.json sub-key suffix. The full path is
-// `dashboard.activity.chip_${suffix}` and `dashboard.activity.verb_${suffix}`.
-// Mapping is needed because the backend emits keys like
-// 'broker_message_reviewed' but i18n keys are kept short ('message_reviewed').
-const actionI18nKeySuffix: Record<string, string> = {
-  exchange_approved: 'exchange_approved',
-  exchange_rejected: 'exchange_rejected',
-  match_approved: 'match_approved',
-  match_rejected: 'match_rejected',
-  broker_message_reviewed: 'message_reviewed',
-  broker_message_approved: 'message_approved',
-  broker_message_flagged: 'message_flagged',
-  listing_risk_tag_created: 'risk_tag_created',
-  listing_risk_tag_updated: 'risk_tag_updated',
-  listing_risk_tag_removed: 'risk_tag_removed',
-  user_monitoring_added: 'monitoring_added',
-  user_monitoring_removed: 'monitoring_removed',
-  broker_config_updated: 'config_updated',
-  insurance_cert_created: 'insurance_created',
-  insurance_cert_updated: 'insurance_updated',
-  insurance_cert_verified: 'insurance_verified',
-  insurance_cert_rejected: 'insurance_rejected',
-  insurance_cert_deleted: 'insurance_deleted',
-};
-
-function ActivityChip({ actionType }: { actionType: string }) {
-  const { t } = useTranslation('broker');
-  const color: ChipColor = actionChipColorMap[actionType] ?? 'default';
-  const suffix = actionI18nKeySuffix[actionType];
-  const label = suffix
-    ? t(`dashboard.activity.chip_${suffix}`)
-    : actionType.replace(/_/g, ' ');
-  return (
-    <Chip size="sm" variant="tertiary" color={color} className="shrink-0">
-      {label}
-    </Chip>
-  );
-}
-
-type TFunc = (key: string, options?: Record<string, unknown>) => string;
-
-function formatActionLabel(actionType: string, t: TFunc): string {
-  const suffix = actionI18nKeySuffix[actionType];
-  return suffix
-    ? t(`dashboard.activity.verb_${suffix}`)
-    : actionType.replace(/_/g, ' ');
-}
-
-/**
- * Turn an audit entry's `details` into words a broker can read.
- *
- * org_audit_log rows carry a JSON object written by the controller
- * (`{"updated_keys":[…],"actor_role":"admin"}`); until October 2026 that JSON
- * was printed on the dashboard as-is. activity_log rows (insurance) already
- * carry a plain sentence and pass straight through. Anything unparseable is
- * hidden rather than dumped — the chip and verb above it still say what
- * happened.
- */
-export function formatActivityDetails(raw: string | null | undefined, t: TFunc): string | null {
-  if (!raw) return null;
-  const text = raw.trim();
-  if (!text) return null;
-  if (!text.startsWith('{')) return text;
-
-  let data: Record<string, unknown>;
-  try {
-    const parsed: unknown = JSON.parse(text);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-    data = parsed as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-
-  const idOf = (key: string): string | null => {
-    const v = data[key];
-    return typeof v === 'number' || (typeof v === 'string' && v !== '') ? String(v) : null;
-  };
-  const levelLabel = (level: string) => t(`risk_tags.level_${level}`, { defaultValue: level });
-  const parts: string[] = [];
-
-  if (Array.isArray(data.updated_keys)) {
-    parts.push(t('dashboard.activity.detail_settings_changed', { count: data.updated_keys.length }));
-  }
-  const exchangeId = idOf('exchange_id');
-  if (exchangeId) parts.push(t('dashboard.activity.detail_exchange', { id: exchangeId }));
-  const messageId = idOf('message_id');
-  if (messageId) parts.push(t('dashboard.activity.detail_message', { id: messageId }));
-  if (data.has_notes === true) parts.push(t('dashboard.activity.detail_with_notes'));
-  const listingId = idOf('listing_id');
-  if (listingId) parts.push(t('dashboard.activity.detail_listing', { id: listingId }));
-  const level = data.new_risk_level ?? data.risk_level;
-  if (typeof level === 'string' && level) {
-    parts.push(t('dashboard.activity.detail_risk_level', { level: levelLabel(level) }));
-  }
-  if (typeof data.previous_risk_level === 'string' && data.previous_risk_level) {
-    parts.push(t('dashboard.activity.detail_was_risk_level', { level: levelLabel(data.previous_risk_level) }));
-  }
-  if (typeof data.user_name === 'string' && data.user_name.trim()) {
-    parts.push(data.user_name.trim());
-  } else {
-    const userId = idOf('user_id');
-    if (userId) parts.push(t('dashboard.activity.detail_member', { id: userId }));
-  }
-  if (typeof data.reason === 'string' && data.reason.trim()) parts.push(data.reason.trim());
-  if (typeof data.notes === 'string' && data.notes.trim()) parts.push(data.notes.trim());
-
-  return parts.length > 0 ? parts.join(' · ') : null;
-}
-
-function formatTimeAgo(dateStr: string, t: TFunc): string {
-  const date = parseServerTimestamp(dateStr);
-  if (!date) return '';
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  // Clock skew between server and client can produce a negative diff.
-  // Clamp to 0 so the user doesn't see "in the future" labels on rows
-  // that just happened.
-  const diffMins = Math.max(0, Math.floor(diffMs / 60000));
-  if (diffMins < 1) return t('dashboard.time_just_now');
-  if (diffMins < 60) return t('dashboard.time_minutes_ago', { count: diffMins });
-  const diffHrs = Math.floor(diffMins / 60);
-  if (diffHrs < 24) return t('dashboard.time_hours_ago', { count: diffHrs });
-  const diffDays = Math.floor(diffHrs / 24);
-  if (diffDays < 7) return t('dashboard.time_days_ago', { count: diffDays });
-  return date.toLocaleDateString(getFormattingLocale());
 }
 
 export default BrokerDashboard;

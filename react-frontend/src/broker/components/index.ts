@@ -18,3 +18,5 @@ export { BrokerSparkline } from './BrokerSparkline';
 export { useCountUp } from './useCountUp';
 export { AdminOnlyBadge } from './AdminOnlyBadge';
 export { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
+export { BrokerSectionCard } from './BrokerSectionCard';
+export { BrokerActivityTimeline, formatActivityDetails } from './BrokerActivityTimeline';

@@ -4,41 +4,68 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { User } from '@/types/api';
 
 // ── stable mock data ──────────────────────────────────────────────────────────
 
-const MOCK_STATS = vi.hoisted(() => ({
-  pending_exchanges: 5,
-  unreviewed_messages: 3,
-  high_risk_listings: 2,
-  monitored_users: 10,
-  vetting_review_requests: 4,
-  safeguarding_alerts: 0,
-  onboarding_safeguarding_flags: 2,
-  _partial: false,
-  recent_activity: [
-    {
-      id: 1,
-      action_type: 'exchange_approved',
-      first_name: 'Alice',
-      last_name: 'Broker',
-      details: 'Exchange #42 approved',
-      created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 min ago
-      source: 'org_audit_log',
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
+
+const MOCK_STATS = vi.hoisted(() => {
+  const daysAgoIso = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
+  return {
+    pending_exchanges: 5,
+    unreviewed_messages: 3,
+    high_risk_listings: 2,
+    monitored_users: 10,
+    vetting_review_requests: 4,
+    safeguarding_alerts: 0,
+    onboarding_safeguarding_flags: 2,
+    pending_members: 0,
+    open_reports: 0,
+    safeguarding_jurisdiction_configured: true,
+    oldest_waiting: {
+      pending_exchanges: daysAgoIso(3),
+      unreviewed_messages: daysAgoIso(0),
+      safeguarding_alerts: null,
+      open_reports: null,
+      pending_members: null,
+      vetting_review_requests: daysAgoIso(1),
     },
-  ],
-}));
+    trends: {
+      pending_exchanges: { points: [0, 1, 0, 2, 1, 0, 0, 1, 3, 0, 1, 0, 2, 1], delta: 50 },
+      unreviewed_messages: { points: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], delta: null },
+    },
+    my_week: { exchanges_decided: 4, messages_reviewed: 12, matches_decided: 0, vetting_handled: 1, total: 17 },
+    _partial: false,
+    _failed_metrics: [] as string[],
+    recent_activity: [
+      {
+        id: 1,
+        action_type: 'exchange_approved',
+        first_name: 'Alice',
+        last_name: 'Broker',
+        details: 'Exchange #42 approved',
+        created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 min ago
+        source: 'org_audit_log',
+      },
+    ],
+  };
+});
 
 // ── adminApi mock ─────────────────────────────────────────────────────────────
 
 const mockGetDashboard = vi.hoisted(() => vi.fn());
+const mockGetApprovalStats = vi.hoisted(() => vi.fn());
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminBroker: {
     getDashboard: mockGetDashboard,
+  },
+  adminMatching: {
+    getApprovalStats: mockGetApprovalStats,
   },
 }));
 
@@ -49,10 +76,12 @@ vi.mock('../components/BrokerInbox', () => ({ BrokerInbox: () => null }));
 // ── contexts ──────────────────────────────────────────────────────────────────
 
 const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }));
+const mockAuth = vi.hoisted(() => ({ user: null as unknown as null | { id: number; role: string } }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({ user: mockAuth.user as unknown as User | null, isAuthenticated: true, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle' as const, error: null }),
     useTenant: () => ({
       tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' },
       tenantPath: (p: string) => `/hour-timebank${p}`,
@@ -77,15 +106,9 @@ vi.mock('./BrokerHelpPage', () => ({
   BrokerControlsHelp: () => <div data-testid="broker-help" />,
 }));
 
-// ── lib/serverTime ────────────────────────────────────────────────────────────
-
-vi.mock('@/lib/serverTime', () => ({
-  parseServerTimestamp: (s: string) => new Date(s),
-}));
-
 // ── import after mocks ────────────────────────────────────────────────────────
 
-import { BrokerDashboard, formatActivityDetails } from './BrokerDashboardPage';
+import { BrokerDashboard, formatActivityDetails, oldestWaitingLabel } from './BrokerDashboardPage';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests
@@ -94,6 +117,8 @@ import { BrokerDashboard, formatActivityDetails } from './BrokerDashboardPage';
 describe('BrokerDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth.user = null;
+    mockGetApprovalStats.mockResolvedValue({ success: true, data: { pending_count: 2, avg_review_hours: 6.25 } });
   });
 
   it('shows loading spinner initially', () => {
@@ -248,15 +273,103 @@ describe('BrokerDashboard', () => {
       data: { ...MOCK_STATS, _partial: true },
     });
     render(<BrokerDashboard />);
-    // Wait for data to load (stat labels appear)
     await waitFor(() => {
       expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0);
     });
-    // The partial banner renders — find the Card with warning border
-    // The i18n key dashboard.partial_title/body may translate to any text;
-    // assert the warning-coloured card element exists (border-warning class)
-    const warningCard = document.querySelector('.border-warning\\/30, .bg-warning\\/10');
-    expect(warningCard).toBeInTheDocument();
+    expect(screen.getByText("Some numbers couldn't be loaded")).toBeInTheDocument();
+  });
+
+  // The banner alone left the broker hunting for the dash. The tile whose
+  // figure failed now says so itself.
+  it('marks a tile whose figure could not be computed, not just the banner', async () => {
+    mockGetDashboard.mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_STATS, _partial: true, _failed_metrics: ['monitored_users'], monitored_users: null },
+    });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getAllByText('Monitored Users').length).toBeGreaterThan(0));
+    const tile = screen.getByRole('link', { name: 'Monitored Users' });
+    expect(within(tile).getByText('Could not load')).toBeInTheDocument();
+    expect(within(tile).getByText('—')).toBeInTheDocument();
+    // A tile that loaded is not marked.
+    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).queryByText('Could not load')).not.toBeInTheDocument();
+  });
+
+  it('says how long each queue\'s oldest item has waited, and shows the fortnight change', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getAllByText('Pending Exchanges').length).toBeGreaterThan(0));
+    const exchanges = screen.getByRole('link', { name: 'Pending Exchanges' });
+    expect(within(exchanges).getByText('Oldest waiting 3 days')).toBeInTheDocument();
+    expect(within(exchanges).getByText('+50%')).toBeInTheDocument();
+    expect(within(exchanges).getByText('vs previous fortnight')).toBeInTheDocument();
+    expect(exchanges.querySelector('svg[aria-hidden="true"] polyline, svg[aria-hidden="true"] path')).not.toBeNull();
+    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).getByText('Oldest arrived today')).toBeInTheDocument();
+    expect(within(screen.getByRole('link', { name: 'Vetting review requests' })).getByText('Oldest waiting 1 day')).toBeInTheDocument();
+    // An empty queue says nothing about age, and a flat fortnight draws no sparkline or delta.
+    const alerts = screen.getByRole('link', { name: 'Safeguarding Alerts' });
+    expect(within(alerts).queryByText(/Oldest/)).not.toBeInTheDocument();
+    expect(within(screen.getByRole('link', { name: 'Unreviewed Messages' })).queryByText('vs previous fortnight')).not.toBeInTheDocument();
+  });
+
+  it('shows what the broker decided this week, with the match review time on exchange-workflow communities', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('My week')).toBeInTheDocument());
+    expect(mockGetApprovalStats).toHaveBeenCalledWith(7);
+    expect(screen.getByText('Exchanges decided')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Messages reviewed')).toBeInTheDocument();
+    expect(screen.getByText('6.3 h')).toBeInTheDocument();
+    expect(screen.getByText('Average time to review a match')).toBeInTheDocument();
+  });
+
+  it('says so in words when nothing has been decided this week', async () => {
+    mockGetDashboard.mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_STATS, my_week: { exchanges_decided: 0, messages_reviewed: 0, matches_decided: 0, vetting_handled: 0, total: 0 } },
+    });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('My week')).toBeInTheDocument());
+    expect(screen.getByText(/Nothing decided yet this week/)).toBeInTheDocument();
+    expect(screen.queryByText('Exchanges decided')).not.toBeInTheDocument();
+  });
+
+  it('renders the quick links as one row of small buttons, not cards', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByRole('navigation', { name: 'Quick Access' })).toBeInTheDocument());
+    const nav = screen.getByRole('navigation', { name: 'Quick Access' });
+    const links = within(nav).getAllByRole('link');
+    expect(links).toHaveLength(7);
+    expect(links.map((l) => l.textContent)).toContain('Exchange Management');
+    // The old cards carried a description line each; the row does not.
+    expect(within(nav).queryByText('Review and approve exchange requests flagged for broker attention.')).not.toBeInTheDocument();
+  });
+
+  describe('safeguarding jurisdiction not set', () => {
+    it('tells a broker to ask an admin, without a button', async () => {
+      mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerDashboard />);
+      await waitFor(() => expect(screen.getByText('Safeguarding jurisdiction not set')).toBeInTheDocument());
+      expect(screen.getByText('Only an admin can set it. Please ask an admin in your community to set it.')).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Set the jurisdiction' })).not.toBeInTheDocument();
+    });
+
+    it('gives an admin a button to the safeguarding options', async () => {
+      mockAuth.user = { id: 1, role: 'admin' };
+      mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerDashboard />);
+      await waitFor(() => expect(screen.getByText('Safeguarding jurisdiction not set')).toBeInTheDocument());
+      expect(screen.getByRole('link', { name: 'Set the jurisdiction' })).toHaveAttribute('href', '/hour-timebank/broker/safeguarding-options');
+    });
+
+    it('shows nothing when the jurisdiction is set or unknown', async () => {
+      mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: null } });
+      render(<BrokerDashboard />);
+      await waitFor(() => expect(screen.getAllByText('Unreviewed Messages').length).toBeGreaterThan(0));
+      expect(screen.queryByText('Safeguarding jurisdiction not set')).not.toBeInTheDocument();
+    });
   });
 
   it('shows no-recent-activity state when recent_activity is empty', async () => {
@@ -308,6 +421,19 @@ describe('BrokerDashboard', () => {
     }
   });
 
+  describe('oldestWaitingLabel', () => {
+    const t = (key: string, opts?: Record<string, unknown>) => (opts?.count !== undefined ? `${key}:${opts.count}` : key);
+
+    it('counts whole days since the oldest arrival, and says today for a same-day one', () => {
+      const now = new Date('2026-10-03T12:00:00Z');
+      expect(oldestWaitingLabel('2026-10-03T08:00:00Z', t, now)).toBe('dashboard.oldest_waiting_today');
+      expect(oldestWaitingLabel('2026-10-02T11:00:00Z', t, now)).toBe('dashboard.oldest_waiting_days:1');
+      expect(oldestWaitingLabel('2026-09-24 09:00:00', t, now)).toBe('dashboard.oldest_waiting_days:9');
+      expect(oldestWaitingLabel(null, t, now)).toBeUndefined();
+      expect(oldestWaitingLabel(daysAgo(0), t)).toBe('dashboard.oldest_waiting_today');
+    });
+  });
+
   // The audit log stores a JSON object in `details`; until October 2026 it was
   // printed on the dashboard verbatim. These pin the plain-English rendering.
   describe('formatActivityDetails', () => {
@@ -328,6 +454,10 @@ describe('BrokerDashboard', () => {
 
     it('turns a configuration change into a count of settings', () => {
       expect(formatActivityDetails('{"updated_keys":["a","b","c"],"actor_role":"admin"}', t)).toBe('3 settings changed');
+    });
+
+    it('says nothing for a save that changed no settings, instead of "0 settings changed"', () => {
+      expect(formatActivityDetails('{"updated_keys":[],"actor_role":"admin"}', t)).toBeNull();
     });
 
     it('names the message and whether a note was left', () => {

@@ -34,8 +34,9 @@ import { useTranslation } from 'react-i18next';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import TrendingDown from 'lucide-react/icons/trending-down';
 import ChevronRight from 'lucide-react/icons/chevron-right';
+import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import type { LucideIcon } from 'lucide-react';
-import { Card, Skeleton } from '@/components/ui';
+import { Card, Chip, Skeleton } from '@/components/ui';
 import { useCountUp } from './useCountUp';
 import { BrokerSparkline } from './BrokerSparkline';
 
@@ -60,6 +61,13 @@ interface BrokerStatCardProps {
   trend?: number[];
   /** Accessible label when the card is a link; falls back to `label`. */
   linkAriaLabel?: string;
+  /**
+   * The figure could not be computed (the dashboard names it in
+   * `_failed_metrics`). Shows a dash and a "Could not load" chip on the tile
+   * itself, so the warning sits where the number is missing rather than only
+   * in a banner at the top of the page.
+   */
+  failed?: boolean;
 }
 
 const tileClass: Record<BrokerStatColor, string> = {
@@ -103,13 +111,14 @@ export function BrokerStatCard({
   deltaLabel,
   trend,
   linkAriaLabel,
+  failed = false,
 }: BrokerStatCardProps) {
   const { t } = useTranslation('broker');
 
   const IconAsComponent = Icon as LucideIcon;
   const iconNode = isValidElement(Icon) ? Icon : <IconAsComponent size={20} />;
 
-  const showTrendRow = !loading && (delta !== undefined || (trend && trend.length >= 2));
+  const showTrendRow = !loading && !failed && (delta !== undefined || (trend && trend.length >= 2));
 
   const body = (
     <div className="flex h-full w-full flex-col p-3.5 sm:p-5">
@@ -139,11 +148,23 @@ export function BrokerStatCard({
         />
       ) : (
         <p className="mt-1 text-2xl font-semibold leading-none tracking-tight text-foreground tabular-nums sm:text-3xl">
-          {typeof value === 'number' ? <AnimatedNumber value={value} /> : (value ?? '—')}
+          {failed ? '—' : typeof value === 'number' ? <AnimatedNumber value={value} /> : (value ?? '—')}
         </p>
       )}
 
-      {description && !loading && (
+      {failed && !loading && (
+        <Chip
+          size="sm"
+          variant="soft"
+          color="warning"
+          className="mt-2 w-fit"
+          startContent={<AlertTriangle size={12} aria-hidden="true" />}
+        >
+          {t('dashboard.could_not_load')}
+        </Chip>
+      )}
+
+      {description && !loading && !failed && (
         <p className="mt-2 line-clamp-2 text-xs leading-4 text-muted break-normal [overflow-wrap:normal]">
           {description}
         </p>

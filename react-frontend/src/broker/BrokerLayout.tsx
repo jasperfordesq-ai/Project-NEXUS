@@ -73,7 +73,7 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
 
 export function BrokerLayout() {
   const { t } = useTranslation('broker');
-  const { hasFeature, tenant } = useTenant();
+  const { hasFeature, tenant, tenantPath } = useTenant();
   const showMatches = hasFeature('exchange_workflow');
   // Remembered per browser: a broker who works with the sidebar tucked away
   // should not have to tuck it away again after every reload.
@@ -88,6 +88,7 @@ export function BrokerLayout() {
   const [jurisdictionConfigured, setJurisdictionConfigured] = useState<boolean | null>(null);
   const { user } = useAuth();
   const { pathname } = useLocation();
+  const onDashboard = pathname === tenantPath('/broker') || pathname === tenantPath('/broker/');
   const drawerRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
@@ -321,7 +322,12 @@ export function BrokerLayout() {
           {/* A detail page names its record for the current crumb through this provider. */}
           <BrokerBreadcrumbProvider>
             <BrokerBreadcrumbs />
-            {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
+            {/* Every page carries the notice while the jurisdiction is unset,
+                except the dashboard, which shows its own compact card under
+                the triage hero (Oct 2026) — two notices on one screen is noise. */}
+            {jurisdictionConfigured === false && !onDashboard && (
+              <JurisdictionNotice canSet={isAdminTierUser(user)} />
+            )}
             <Outlet />
           </BrokerBreadcrumbProvider>
         </div>

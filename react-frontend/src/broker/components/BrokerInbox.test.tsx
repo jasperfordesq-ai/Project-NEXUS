@@ -15,12 +15,16 @@ const api = vi.hoisted(() => ({
   getMessages: vi.fn(),
   reviewMessage: vi.fn(),
   getExchanges: vi.fn(),
+  vettingList: vi.fn(),
+  getApprovals: vi.fn(),
   get: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminUsers: { list: api.usersList, approve: api.approve },
   adminBroker: { getMessages: api.getMessages, reviewMessage: api.reviewMessage, getExchanges: api.getExchanges },
+  adminVetting: { list: api.vettingList },
+  adminMatching: { getApprovals: api.getApprovals },
 }));
 vi.mock('@/lib/api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api')>()),
@@ -41,6 +45,17 @@ import { BrokerInbox } from './BrokerInbox';
 
 const ok = <T,>(data: T, total?: number) => ({ success: true, data, meta: { total: total ?? (Array.isArray(data) ? data.length : 0) } });
 
+const SUPPORT_NEEDS = [
+  {
+    user_id: 31, user_name: 'Rosa Keane', consent_given_at: '2026-09-28 10:00:00', has_triggers: true, is_declination_only: false,
+    needs_review: true, options: [{ option_key: 'vetted_only', label: 'Vetted contact only', is_declination: false }],
+  },
+  {
+    user_id: 32, user_name: 'Seen Already', consent_given_at: '2026-09-20 10:00:00', has_triggers: true, is_declination_only: false,
+    needs_review: false, options: [],
+  },
+];
+
 describe('BrokerInbox ("Waiting for you")', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,13 +65,15 @@ describe('BrokerInbox ("Waiting for you")', () => {
       { id: 22, sender_name: 'Cal', receiver_name: 'Dee', message_body: 'Send cash first', flagged: true },
     ]));
     api.getExchanges.mockResolvedValue(ok([]));
-    api.get.mockResolvedValue(ok([]));
+    api.vettingList.mockResolvedValue(ok([]));
+    api.getApprovals.mockResolvedValue(ok([]));
+    api.get.mockImplementation((url: string) => Promise.resolve(url.includes('member-preferences') ? ok([]) : ok([])));
   });
 
-  const renderInbox = () =>
+  const renderInbox = (showExchanges = true) =>
     render(
       <ConfirmDialogProvider>
-        <BrokerInbox showExchanges />
+        <BrokerInbox showExchanges={showExchanges} />
       </ConfirmDialogProvider>,
     );
 
@@ -66,6 +83,12 @@ describe('BrokerInbox ("Waiting for you")', () => {
     expect(screen.getByText('Waiting for you')).toBeInTheDocument();
     expect(screen.getByText('Ann → Ben')).toBeInTheDocument();
     expect(screen.queryByText('Pending Exchanges')).not.toBeInTheDocument();
+    expect(screen.queryByText('Support needs not yet seen')).not.toBeInTheDocument();
+  });
+
+  it('asks the messages queue for three rows only', async () => {
+    renderInbox();
+    await waitFor(() => expect(api.getMessages).toHaveBeenCalledWith({ filter: 'unreviewed', per_page: 3 }));
   });
 
   it('offers Mark reviewed on a routine message but only Open on a flagged one', async () => {
@@ -100,11 +123,66 @@ describe('BrokerInbox ("Waiting for you")', () => {
     await waitFor(() => expect(screen.queryByText('Ann → Ben')).not.toBeInTheDocument());
   });
 
-  it('renders nothing when every queue is empty', async () => {
+  // Support needs were the heaviest-weighted queue in the hero yet absent here.
+  // The page lists everyone and shows "not yet seen" by default; the same rule applies.
+  it('lists members with support needs nobody has seen yet, each opening their own record', async () => {
+    api.get.mockImplementation((url: string) => Promise.resolve(url.includes('member-preferences') ? ok(SUPPORT_NEEDS) : ok([])));
+    renderInbox();
+    await waitFor(() => expect(screen.getByText('Rosa Keane')).toBeInTheDocument());
+    expect(screen.getByText('Support needs not yet seen')).toBeInTheDocument();
+    expect(screen.queryByText('Seen Already')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: "Open Rosa Keane's support needs" }))
+      .toHaveAttribute('href', '/test/broker/safeguarding/support-needs?user=31');
+    expect(screen.getByText(/Vetted contact only/)).toBeInTheDocument();
+  });
+
+  it('lists vetting re-checks that are still pending and opens the review-requested filter', async () => {
+    api.vettingList.mockResolvedValue({
+      success: true,
+      data: [
+        { user_id: 41, first_name: 'Tomás', last_name: 'Byrne', email: 't@example.org', review_status: 'pending', requested_at: '2026-09-25 09:00:00' },
+        { user_id: 42, first_name: 'Done', last_name: 'Already', email: 'd@example.org', review_status: 'resolved', requested_at: '2026-09-01 09:00:00' },
+      ],
+      meta: { pagination: { total: 1 } },
+    });
+    renderInbox();
+    await waitFor(() => expect(screen.getByText('Tomás Byrne')).toBeInTheDocument());
+    expect(api.vettingList).toHaveBeenCalledWith({ status: 'review_requested', per_page: 3 });
+    expect(screen.queryByText('Done Already')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open the vetting re-check for Tomás Byrne' }))
+      .toHaveAttribute('href', '/test/broker/vetting?status=review_requested');
+  });
+
+  it('lists proposed matches waiting for approval, each opening its own page, only on exchange-workflow communities', async () => {
+    api.getApprovals.mockResolvedValue(ok([
+      { id: 5, user_1_name: 'Úna', user_2_name: 'Víctor', listing_title: 'Garden help', match_score: 82.4, status: 'pending', created_at: '2026-09-30' },
+    ]));
+    renderInbox();
+    await waitFor(() => expect(screen.getByText('Úna ↔ Víctor')).toBeInTheDocument());
+    expect(api.getApprovals).toHaveBeenCalledWith({ status: 'pending' });
+    expect(screen.getByText('Matches to approve')).toBeInTheDocument();
+    expect(screen.getByText('Garden help · 82% match')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open match 5' })).toHaveAttribute('href', '/test/broker/match-approvals/5');
+
+    vi.clearAllMocks();
+    api.getApprovals.mockResolvedValue(ok([]));
+    renderInbox(false);
+    await waitFor(() => expect(api.getMessages).toHaveBeenCalled());
+    expect(api.getApprovals).not.toHaveBeenCalled();
+    expect(api.getExchanges).not.toHaveBeenCalled();
+  });
+
+  it('renders nothing when every queue is empty, and says so', async () => {
     api.usersList.mockResolvedValue(ok([]));
     api.getMessages.mockResolvedValue(ok([]));
-    const { container } = renderInbox();
+    const onVisibilityChange = vi.fn();
+    const { container } = render(
+      <ConfirmDialogProvider>
+        <BrokerInbox showExchanges onVisibilityChange={onVisibilityChange} />
+      </ConfirmDialogProvider>,
+    );
     await waitFor(() => expect(api.get).toHaveBeenCalled());
     expect(container.querySelector('section')).toBeNull();
+    expect(onVisibilityChange).toHaveBeenLastCalledWith(false);
   });
 });

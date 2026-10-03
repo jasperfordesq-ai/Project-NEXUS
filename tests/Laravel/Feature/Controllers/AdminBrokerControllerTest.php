@@ -380,6 +380,240 @@ class AdminBrokerControllerTest extends TestCase
         $this->assertSame((int) $listed, $tile);
     }
 
+    /**
+     * Each queue tile now says how long its oldest item has been waiting. That
+     * timestamp must be the one a broker reaches by opening the tile's list and
+     * sorting oldest first — same WHERE, same self-exclusions (F-436, F-454,
+     * F-549) — so the card can never promise an item the list hides.
+     */
+    public function test_oldest_waiting_matches_the_oldest_row_of_each_queue(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $b->id);
+        $iso = fn ($value) => \Carbon\Carbon::parse($value)->toIso8601String();
+        $at = fn (int $daysAgo) => now()->subDays($daysAgo)->format('Y-m-d H:i:s');
+
+        // Exchanges: the disputed one is the oldest in the queue; the completed
+        // one, older still, is not in the queue at all.
+        foreach ([['pending_broker', 3], ['disputed', 11], ['completed', 50]] as [$status, $daysAgo]) {
+            DB::table('exchange_requests')->insert([
+                'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+                'requester_id' => $a->id, 'provider_id' => $b->id, 'proposed_hours' => 1.0,
+                'status' => $status, 'created_at' => $at($daysAgo), 'updated_at' => $at($daysAgo),
+            ]);
+        }
+        // Messages: the broker's own conversation is the oldest unreviewed copy
+        // but is withheld from their queue (F-436), so it must not be the answer.
+        $this->insertMessageCopy($broker->id, $a->id, ['created_at' => $at(30)]);
+        $this->insertMessageCopy($a->id, $b->id, ['created_at' => $at(9)]);
+        $this->insertMessageCopy($a->id, $b->id, ['created_at' => $at(5), 'flagged' => true]);
+        $this->insertMessageCopy($a->id, $b->id, ['created_at' => $at(40), 'reviewed_at' => now(), 'reviewed_by' => $broker->id]);
+        // Members waiting for approval.
+        User::factory()->forTenant($this->testTenantId)->create(['is_approved' => 0, 'status' => 'pending', 'created_at' => $at(12)]);
+        User::factory()->forTenant($this->testTenantId)->create(['is_approved' => 0, 'status' => 'pending', 'created_at' => $at(2)]);
+        // Reports: the complaint about the broker is the oldest but is withheld
+        // from their queue (F-454), so it must not be the answer (F-549).
+        foreach ([[$b->id, 7], [$broker->id, 45]] as [$about, $daysAgo]) {
+            DB::table('reports')->insert([
+                'tenant_id' => $this->testTenantId, 'reporter_id' => $a->id,
+                'target_type' => 'user', 'target_id' => $about, 'reason' => 'safety_concern',
+                'status' => 'open', 'created_at' => $at($daysAgo), 'updated_at' => $at($daysAgo),
+            ]);
+        }
+        // Vetting: a request under a retired policy is the oldest, but the
+        // Vetting page never lists it.
+        $policy = app(\App\Services\SafeguardingJurisdictionService::class)->getPolicy($this->testTenantId);
+        $policyIsSet = $policy['scheme_code'] !== null && $policy['attestation_code'] !== null && $policy['policy_version'] !== null;
+        $vetting = function (array $codes, int $daysAgo) use ($b, $broker, $at): void {
+            DB::table('safeguarding_vetting_review_requests')->insert(array_merge([
+                'tenant_id' => $this->testTenantId, 'user_id' => $b->id, 'jurisdiction' => 'IE',
+                'purpose_code' => 'safeguarded_member_contact', 'scope_type' => 'tenant', 'scope_identifier' => '',
+                'status' => 'pending', 'request_source' => 'policy_rotation', 'requested_by' => $broker->id,
+                'requested_at' => $at($daysAgo), 'created_at' => $at($daysAgo), 'updated_at' => $at($daysAgo),
+            ], $codes));
+        };
+        $vetting(['scheme_code' => 'retired_scheme', 'attestation_code' => 'retired_attestation', 'policy_version' => 'retired:' . uniqid()], 60);
+        if ($policyIsSet) {
+            $vetting([
+                'jurisdiction' => $policy['jurisdiction'], 'scheme_code' => $policy['scheme_code'],
+                'attestation_code' => $policy['attestation_code'], 'purpose_code' => $policy['purpose_code'],
+                'scope_type' => $policy['scope_type'], 'scope_identifier' => $policy['scope_identifier'],
+                'policy_version' => $policy['policy_version'],
+            ], 15);
+        }
+        Sanctum::actingAs($broker);
+
+        $oldest = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.oldest_waiting');
+        $this->assertIsArray($oldest);
+
+        $firstOf = fn (string $uri, string $column) => $iso($this->apiGet($uri)->assertOk()->json("data.0.{$column}"));
+        $this->assertSame($firstOf('/v2/admin/broker/exchanges?status=needs_action&sort=oldest&per_page=1', 'created_at'), $oldest['pending_exchanges']);
+        $this->assertSame($firstOf('/v2/admin/broker/messages?filter=unreviewed&sort=oldest&per_page=1', 'created_at'), $oldest['unreviewed_messages']);
+        $this->assertSame($firstOf('/v2/admin/broker/messages?filter=urgent&sort=oldest&per_page=1', 'created_at'), $oldest['safeguarding_alerts']);
+        $this->assertSame($firstOf('/v2/admin/users?status=pending&sort=created_at&order=asc&limit=1', 'created_at'), $oldest['pending_members']);
+        $this->assertNotSame($iso($at(30)), $oldest['unreviewed_messages'], 'The broker\'s own conversation must not set the age of their queue.');
+
+        $reports = $this->apiGet('/v2/admin/reports?status=pending&limit=100')->assertOk()->json('data');
+        $oldestReport = min(array_map($iso, array_column($reports, 'created_at')));
+        $this->assertSame($oldestReport, $oldest['open_reports']);
+        $this->assertNotSame($iso($at(45)), $oldest['open_reports'], 'A complaint about the broker must not set the age of their queue.');
+
+        $vettingRows = $this->apiGet('/v2/admin/vetting?status=review_requested&per_page=100')->assertOk()->json('data');
+        $requested = array_map($iso, array_filter(array_column(
+            array_filter($vettingRows, fn (array $row) => ($row['review_status'] ?? null) === 'pending'),
+            'requested_at',
+        )));
+        $this->assertSame($requested === [] ? null : min($requested), $oldest['vetting_review_requests']);
+        $this->assertNotSame($iso($at(60)), $oldest['vetting_review_requests'], 'A request under a retired policy must not set the age of the queue.');
+    }
+
+    /**
+     * The tiles' sparklines show how many items arrived each day for the last
+     * fortnight, and the delta compares that fortnight with the one before. Run
+     * in a brand-new community so the counts are exact.
+     */
+    public function test_trends_count_items_created_per_day_over_the_last_fortnight(): void
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Trend fixture community', 'slug' => 'trend-fixture-' . uniqid(), 'domain' => null,
+            'is_active' => true, 'depth' => 0, 'allows_subtenants' => false, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->withTenant($tenantId);
+        // The factory spreads created_at over the past year; these three sign up today.
+        $broker = User::factory()->forTenant($tenantId)->create(['role' => 'broker', 'status' => 'active', 'is_approved' => 1, 'created_at' => now()]);
+        $a = User::factory()->forTenant($tenantId)->create(['is_approved' => 1, 'created_at' => now()]);
+        $b = User::factory()->forTenant($tenantId)->create(['is_approved' => 1, 'created_at' => now()]);
+        $listingId = $this->makeListingId($tenantId, $b->id);
+        $at = fn (int $daysAgo) => now()->subDays($daysAgo)->setTime(12, 0)->format('Y-m-d H:i:s');
+
+        // Exchanges: 1 today, 2 yesterday, 1 in the previous fortnight, 1 before both windows.
+        foreach ([0, 1, 1, 20, 40] as $daysAgo) {
+            DB::table('exchange_requests')->insert([
+                'tenant_id' => $tenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+                'proposed_hours' => 1.0, 'status' => 'pending_broker', 'created_at' => $at($daysAgo), 'updated_at' => $at($daysAgo),
+            ]);
+        }
+        // Messages: 2 today of which one is the broker's own conversation (F-436: not theirs to see).
+        $this->insertMessageCopy($a->id, $b->id, ['tenant_id' => $tenantId, 'created_at' => $at(0)]);
+        $this->insertMessageCopy($broker->id, $a->id, ['tenant_id' => $tenantId, 'created_at' => $at(0)]);
+        Sanctum::actingAs($broker);
+
+        $trends = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.trends');
+        $this->assertIsArray($trends);
+
+        $exchanges = $trends['pending_exchanges'];
+        $this->assertCount(14, $exchanges['points']);
+        $this->assertSame(1, $exchanges['points'][13], 'The last point is today.');
+        $this->assertSame(2, $exchanges['points'][12], 'The point before it is yesterday.');
+        $this->assertSame(3, array_sum($exchanges['points']));
+        $this->assertSame(200, $exchanges['delta'], '3 this fortnight against 1 the fortnight before.');
+
+        $messages = $trends['unreviewed_messages'];
+        $this->assertSame(1, $messages['points'][13], 'The broker\'s own conversation is not counted.');
+        $this->assertNull($messages['delta'], 'No previous fortnight to compare with.');
+
+        // Three members signed up today (the broker and two members); nobody before.
+        $this->assertSame(3, $trends['pending_members']['points'][13]);
+        $this->assertNull($trends['pending_members']['delta']);
+    }
+
+    /**
+     * "My week": what the viewer themselves decided in the last seven days —
+     * never another broker's work, never anything older.
+     */
+    public function test_my_week_counts_only_the_viewers_decisions_from_the_last_seven_days(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $other = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $b->id);
+        $at = fn (int $daysAgo) => now()->subDays($daysAgo)->format('Y-m-d H:i:s');
+
+        // Messages: one reviewed by the viewer this week, one too long ago, one by someone else.
+        $this->insertMessageCopy($a->id, $b->id, ['reviewed_by' => $broker->id, 'reviewed_at' => $at(1)]);
+        $this->insertMessageCopy($a->id, $b->id, ['reviewed_by' => $broker->id, 'reviewed_at' => $at(10)]);
+        $this->insertMessageCopy($a->id, $b->id, ['reviewed_by' => $other->id, 'reviewed_at' => $at(1)]);
+        // Matches: one decided by the viewer this week.
+        DB::table('match_approvals')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $a->id, 'listing_id' => $listingId, 'listing_owner_id' => $b->id,
+            'match_score' => 70, 'status' => 'approved', 'submitted_at' => $at(3), 'reviewed_by' => $broker->id, 'reviewed_at' => $at(2),
+        ]);
+        // Vetting: one re-check handled by the viewer this week.
+        DB::table('safeguarding_vetting_review_requests')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $b->id, 'jurisdiction' => 'IE', 'scheme_code' => 'scheme',
+            'attestation_code' => 'attestation', 'purpose_code' => 'safeguarded_member_contact', 'scope_type' => 'tenant',
+            'scope_identifier' => '', 'policy_version' => 'v1', 'status' => 'resolved', 'request_source' => 'policy_rotation',
+            'requested_by' => $other->id, 'requested_at' => $at(6), 'handled_by' => $broker->id, 'handled_at' => $at(3),
+            'created_at' => $at(6), 'updated_at' => $at(3),
+        ]);
+        // Exchanges: two history rows on one exchange count once; an older decision does not count.
+        $exchange = fn () => (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+            'proposed_hours' => 1.0, 'status' => 'accepted', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $recent = $exchange();
+        $stale = $exchange();
+        $history = fn (int $exchangeId, string $when) => DB::table('exchange_history')->insert([
+            'tenant_id' => $this->testTenantId, 'exchange_id' => $exchangeId, 'action' => 'status_changed',
+            'actor_id' => $broker->id, 'actor_role' => 'broker', 'old_status' => 'pending_broker', 'new_status' => 'accepted', 'created_at' => $when,
+        ]);
+        $history($recent, $at(1));
+        $history($recent, $at(1));
+        $history($stale, $at(9));
+        Sanctum::actingAs($broker);
+
+        $week = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.my_week');
+
+        $this->assertSame([
+            'exchanges_decided' => 1,
+            'messages_reviewed' => 1,
+            'matches_decided' => 1,
+            'vetting_handled' => 1,
+            'total' => 4,
+        ], $week);
+    }
+
+    /**
+     * The activity feed left out match decisions, dispute settlements and every
+     * member / report / moderation action, and could not link a row to the
+     * member it was about. It also had a fixed length of 20, so "See all"
+     * needs a longer page without a second route.
+     */
+    public function test_recent_activity_covers_member_and_moderation_actions_and_can_be_paged_on_its_own(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('org_audit_log')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $broker->id, 'target_user_id' => $member->id,
+            'action' => 'match_approved', 'details' => json_encode(['approval_id' => 7]), 'created_at' => now()->subMinutes(2),
+        ]);
+        DB::table('activity_log')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $broker->id, 'action' => 'admin_approve_user',
+            'action_type' => 'admin', 'details' => "Approved user #{$member->id}", 'created_at' => now()->subMinute(),
+        ]);
+        Sanctum::actingAs($broker);
+
+        $feed = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.recent_activity');
+        $byAction = array_column($feed, null, 'action_type');
+
+        $this->assertArrayHasKey('match_approved', $byAction);
+        $this->assertSame('audit', $byAction['match_approved']['source']);
+        $this->assertSame($member->id, (int) $byAction['match_approved']['target_user_id']);
+        $this->assertArrayHasKey('admin_approve_user', $byAction);
+        $this->assertSame('activity', $byAction['admin_approve_user']['source']);
+        $this->assertNull($byAction['admin_approve_user']['target_user_id']);
+
+        $this->assertCount(1, $this->apiGet('/v2/admin/broker/dashboard?activity_limit=1')->assertOk()->json('data.recent_activity'));
+
+        $activityOnly = $this->apiGet('/v2/admin/broker/dashboard?only=activity&activity_limit=100')->assertOk();
+        $this->assertGreaterThanOrEqual(2, count($activityOnly->json('data.recent_activity')));
+        $activityOnly->assertJsonMissingPath('data.pending_exchanges');
+        $activityOnly->assertJsonMissingPath('data.trends');
+    }
+
     public function test_dashboard_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();
@@ -471,6 +705,34 @@ class AdminBrokerControllerTest extends TestCase
     }
 
     // ================================================================
+    /**
+     * The dashboard's "oldest waiting" reads the queue oldest-first, so the
+     * list must offer that order. The default (newest first) is unchanged.
+     */
+    public function test_exchanges_and_messages_can_be_listed_oldest_first(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $b->id);
+        $exchange = fn (string $when) => (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+            'proposed_hours' => 1.0, 'status' => 'disputed', 'created_at' => $when, 'updated_at' => $when,
+        ]);
+        $olderExchange = $exchange(now()->subYears(30)->format('Y-m-d H:i:s'));
+        $newerExchange = $exchange(now()->addYears(5)->format('Y-m-d H:i:s'));
+        $olderMessage = $this->insertMessageCopy($a->id, $b->id, ['created_at' => now()->subYears(30)->format('Y-m-d H:i:s')]);
+        $newerMessage = $this->insertMessageCopy($a->id, $b->id, ['created_at' => now()->addYears(5)->format('Y-m-d H:i:s')]);
+        Sanctum::actingAs($admin);
+
+        $firstId = fn (string $uri) => (int) $this->apiGet($uri)->assertOk()->json('data.0.id');
+
+        $this->assertSame($olderExchange, $firstId('/v2/admin/broker/exchanges?status=needs_action&sort=oldest&per_page=1'));
+        $this->assertSame($newerExchange, $firstId('/v2/admin/broker/exchanges?status=needs_action&per_page=1'));
+        $this->assertSame($olderMessage, $firstId('/v2/admin/broker/messages?filter=unreviewed&sort=oldest&per_page=1'));
+        $this->assertSame($newerMessage, $firstId('/v2/admin/broker/messages?filter=unreviewed&per_page=1'));
+    }
+
     // RISK TAGS — GET /v2/admin/broker/risk-tags
     // ================================================================
 

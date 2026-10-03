@@ -267,6 +267,19 @@ describe('BrokerLayout', () => {
   describe('safeguarding jurisdiction notice', () => {
     const NOTICE = 'Safeguarding jurisdiction not set';
 
+    // A list page: the dashboard is the one route that carries its own card.
+    beforeEach(() => {
+      window.history.replaceState({}, '', '/test/broker/members');
+    });
+
+    it('leaves the dashboard to its own compact card instead of doubling up', async () => {
+      window.history.replaceState({}, '', '/test/broker');
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalled());
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+
     it('shows nothing when the jurisdiction is set', async () => {
       mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: true } });
       render(<BrokerLayout />);

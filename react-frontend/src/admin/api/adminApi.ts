@@ -969,10 +969,12 @@ export const adminMarketplace = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const adminBroker = {
-  getDashboard: () =>
-    api.get<BrokerDashboardStats>('/v2/admin/broker/dashboard'),
+  /** `activity_limit` (1–100) sizes `recent_activity`; `only: 'activity'` returns just that feed. */
+  getDashboard: (params: { activity_limit?: number; only?: 'activity' } = {}) =>
+    api.get<BrokerDashboardStats>(`/v2/admin/broker/dashboard${buildQuery(params)}`),
 
-  getExchanges: (params: { page?: number; status?: string } = {}) =>
+  /** `sort: 'oldest'` lists oldest first (the dashboard's reading); default is newest first. */
+  getExchanges: (params: { page?: number; per_page?: number; status?: string; sort?: 'oldest' } = {}) =>
     api.get<PaginatedResponse<ExchangeRequest>>(
       `/v2/admin/broker/exchanges${buildQuery(params)}`
     ),
@@ -1004,7 +1006,8 @@ export const adminBroker = {
   getRiskTags: (params: { risk_level?: string } = {}) =>
     api.get<RiskTag[]>(`/v2/admin/broker/risk-tags${buildQuery(params)}`),
 
-  getMessages: (params: { page?: number; filter?: string; q?: string } = {}) =>
+  /** `sort: 'oldest'` lists oldest first (the dashboard's reading); default is newest first. */
+  getMessages: (params: { page?: number; per_page?: number; filter?: string; q?: string; sort?: 'oldest' } = {}) =>
     api.get<PaginatedResponse<BrokerMessage>>(
       `/v2/admin/broker/messages${buildQuery(params)}`
     ),
