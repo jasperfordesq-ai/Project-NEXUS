@@ -1531,7 +1531,15 @@
     "save": "保存",
     "refresh": "更新",
     "no_data": "データがありません。",
-    "how_this_page_works": "このページの使い方"
+    "how_this_page_works": "このページの使い方",
+    "export_csv": "CSVをエクスポート",
+    "exporting": "エクスポート中…",
+    "export_done": "エクスポートした行数: {{count}}",
+    "export_truncated": "最初の{{count}}行のみエクスポートしました。残りをエクスポートするには絞り込みを狭めてください。",
+    "export_failed": "エクスポートを完了できませんでした。",
+    "export_nothing": "エクスポートするものがありません。",
+    "open_member": "{{name}}の記録を開く",
+    "unknown_member": "不明なメンバー"
   },
   "help": {
     "page_title": "ヘルプ - ブローカー",

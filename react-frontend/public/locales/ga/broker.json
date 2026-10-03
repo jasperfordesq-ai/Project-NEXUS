@@ -1596,7 +1596,15 @@
     "save": "Sábháil",
     "refresh": "Athnuaigh",
     "no_data": "Níl aon sonraí ar fáil.",
-    "how_this_page_works": "Conas a oibríonn an leathanach seo"
+    "how_this_page_works": "Conas a oibríonn an leathanach seo",
+    "export_csv": "Easpórtáil CSV",
+    "exporting": "Á easpórtáil…",
+    "export_done": "Rónna easpórtáilte: {{count}}",
+    "export_truncated": "Níor easpórtáladh ach na chéad {{count}} ró. Cúngaigh an scagaire chun an chuid eile a easpórtáil.",
+    "export_failed": "Níorbh fhéidir an t-easpórtáil a chríochnú.",
+    "export_nothing": "Níl aon rud le heaspórtáil.",
+    "open_member": "Oscail taifead {{name}}",
+    "unknown_member": "Ball anaithnid"
   },
   "help": {
     "page_title": "Cabhair - Bróicéir",

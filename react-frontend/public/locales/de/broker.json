@@ -1536,7 +1536,15 @@
     "save": "Speichern",
     "refresh": "Aktualisieren",
     "no_data": "Keine Daten verfügbar.",
-    "how_this_page_works": "So funktioniert diese Seite"
+    "how_this_page_works": "So funktioniert diese Seite",
+    "export_csv": "Als CSV exportieren",
+    "exporting": "Wird exportiert…",
+    "export_done": "Exportierte Zeilen: {{count}}",
+    "export_truncated": "Nur die ersten {{count}} Zeilen wurden exportiert. Grenzen Sie den Filter ein, um den Rest zu exportieren.",
+    "export_failed": "Der Export konnte nicht abgeschlossen werden.",
+    "export_nothing": "Es gibt nichts zu exportieren.",
+    "open_member": "Datensatz von {{name}} öffnen",
+    "unknown_member": "Unbekanntes Mitglied"
   },
   "help": {
     "page_title": "Hilfe - Broker",

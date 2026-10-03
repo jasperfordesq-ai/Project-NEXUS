@@ -1551,7 +1551,15 @@
     "save": "Guardar",
     "refresh": "Actualizar",
     "no_data": "No hay datos disponibles.",
-    "how_this_page_works": "Cómo funciona esta página"
+    "how_this_page_works": "Cómo funciona esta página",
+    "export_csv": "Exportar CSV",
+    "exporting": "Exportando…",
+    "export_done": "Filas exportadas: {{count}}",
+    "export_truncated": "Solo se exportaron las primeras {{count}} filas. Acote el filtro para exportar el resto.",
+    "export_failed": "No se pudo completar la exportación.",
+    "export_nothing": "No hay nada que exportar.",
+    "open_member": "Abrir la ficha de {{name}}",
+    "unknown_member": "Miembro desconocido"
   },
   "help": {
     "page_title": "Ayuda - Intermediario",

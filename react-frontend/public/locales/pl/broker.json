@@ -1576,7 +1576,15 @@
     "save": "Zapisz",
     "refresh": "Odśwież",
     "no_data": "Brak dostępnych danych.",
-    "how_this_page_works": "Jak działa ta strona"
+    "how_this_page_works": "Jak działa ta strona",
+    "export_csv": "Eksportuj CSV",
+    "exporting": "Eksportowanie…",
+    "export_done": "Wyeksportowane wiersze: {{count}}",
+    "export_truncated": "Wyeksportowano tylko pierwsze {{count}} wierszy. Zawęź filtr, aby wyeksportować resztę.",
+    "export_failed": "Nie udało się ukończyć eksportu.",
+    "export_nothing": "Nie ma nic do wyeksportowania.",
+    "open_member": "Otwórz kartę {{name}}",
+    "unknown_member": "Nieznany członek"
   },
   "help": {
     "page_title": "Pomoc - Broker",

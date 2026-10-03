@@ -1536,7 +1536,15 @@
     "save": "Save",
     "refresh": "Refresh",
     "no_data": "No data available.",
-    "how_this_page_works": "How this page works"
+    "how_this_page_works": "How this page works",
+    "export_csv": "Export CSV",
+    "exporting": "Exporting…",
+    "export_done": "Rows exported: {{count}}",
+    "export_truncated": "Only the first {{count}} rows were exported. Narrow the filter to export the rest.",
+    "export_failed": "The export could not be completed.",
+    "export_nothing": "There is nothing to export.",
+    "open_member": "Open {{name}}'s record",
+    "unknown_member": "Unknown member"
   },
   "help": {
     "page_title": "Help - Broker",

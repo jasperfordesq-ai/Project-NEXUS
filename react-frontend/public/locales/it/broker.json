@@ -1551,7 +1551,15 @@
     "save": "Salva",
     "refresh": "Aggiorna",
     "no_data": "Nessun dato disponibile.",
-    "how_this_page_works": "Come funziona questa pagina"
+    "how_this_page_works": "Come funziona questa pagina",
+    "export_csv": "Esporta CSV",
+    "exporting": "Esportazione in corso…",
+    "export_done": "Righe esportate: {{count}}",
+    "export_truncated": "Sono state esportate solo le prime {{count}} righe. Restringi il filtro per esportare il resto.",
+    "export_failed": "Impossibile completare l'esportazione.",
+    "export_nothing": "Non c'è nulla da esportare.",
+    "open_member": "Apri la scheda di {{name}}",
+    "unknown_member": "Membro sconosciuto"
   },
   "help": {
     "page_title": "Guida - Broker",

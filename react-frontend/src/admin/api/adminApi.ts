@@ -1061,7 +1061,7 @@ export const adminBroker = {
   approveMessage: (id: number, notes?: string) =>
     api.post<{ success: boolean }>(`/v2/admin/broker/messages/${id}/approve`, { notes }),
 
-  getArchives: (params: { page?: number; decision?: string; search?: string; from?: string; to?: string } = {}) =>
+  getArchives: (params: { page?: number; per_page?: number; decision?: string; search?: string; from?: string; to?: string } = {}) =>
     api.get<PaginatedResponse<BrokerArchive>>(
       `/v2/admin/broker/archives${buildQuery(params)}`
     ),

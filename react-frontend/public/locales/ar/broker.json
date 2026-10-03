@@ -1616,7 +1616,15 @@
     "save": "حفظ",
     "refresh": "تحديث",
     "no_data": "لا توجد بيانات متاحة.",
-    "how_this_page_works": "كيف تعمل هذه الصفحة"
+    "how_this_page_works": "كيف تعمل هذه الصفحة",
+    "export_csv": "تصدير CSV",
+    "exporting": "جارٍ التصدير…",
+    "export_done": "الصفوف المصدَّرة: {{count}}",
+    "export_truncated": "تم تصدير أول {{count}} صف فقط. ضيّق عامل التصفية لتصدير الباقي.",
+    "export_failed": "تعذّر إكمال التصدير.",
+    "export_nothing": "لا يوجد شيء للتصدير.",
+    "open_member": "فتح سجل {{name}}",
+    "unknown_member": "عضو غير معروف"
   },
   "help": {
     "page_title": "المساعدة - الوسيط",

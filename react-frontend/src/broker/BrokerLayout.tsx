@@ -26,6 +26,7 @@ import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
 import { BrokerCommandPalette } from './components/BrokerCommandPalette';
 import { BrokerShortcutsModal } from './components/BrokerShortcutsModal';
 import { BrokerBreadcrumbProvider } from './BrokerBreadcrumbContext';
+import { BrokerMemberWindowProvider } from './BrokerMemberWindow';
 import { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
 import { useBrokerAutoRefresh } from './useBrokerAutoRefresh';
 import { recordBrokerVisit } from './useBrokerRecentPages';
@@ -321,6 +322,9 @@ export function BrokerLayout() {
         <div className="p-3 sm:p-4 md:p-6">
           {/* A detail page names its record for the current crumb through this provider. */}
           <BrokerBreadcrumbProvider>
+          {/* The member window is mounted once here and driven by ?member=,
+              so every page can open it (BrokerMemberWindow). */}
+          <BrokerMemberWindowProvider>
             <BrokerBreadcrumbs />
             {/* Every page carries the notice while the jurisdiction is unset,
                 except the dashboard, which shows its own compact card under
@@ -329,6 +333,7 @@ export function BrokerLayout() {
               <JurisdictionNotice canSet={isAdminTierUser(user)} />
             )}
             <Outlet />
+          </BrokerMemberWindowProvider>
           </BrokerBreadcrumbProvider>
         </div>
       </main>

@@ -60,6 +60,9 @@ vi.mock('@/contexts', () =>
 );
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
+// The panel-wide member window is a heavy child with its own suite
+// (BrokerMemberWindow.test.tsx); here it only needs to mount quietly.
+vi.mock('./components/MemberDetailModal', () => ({ default: () => null }));
 vi.mock('@/lib/access', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/access')>()),
   hasAdminPanelAccess: vi.fn(() => true),

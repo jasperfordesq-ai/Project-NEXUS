@@ -1536,7 +1536,15 @@
     "save": "Opslaan",
     "refresh": "Vernieuwen",
     "no_data": "Geen gegevens beschikbaar.",
-    "how_this_page_works": "Hoe deze pagina werkt"
+    "how_this_page_works": "Hoe deze pagina werkt",
+    "export_csv": "Exporteren als CSV",
+    "exporting": "Bezig met exporteren…",
+    "export_done": "Geëxporteerde rijen: {{count}}",
+    "export_truncated": "Alleen de eerste {{count}} rijen zijn geëxporteerd. Verfijn het filter om de rest te exporteren.",
+    "export_failed": "De export kon niet worden voltooid.",
+    "export_nothing": "Er is niets om te exporteren.",
+    "open_member": "Dossier van {{name}} openen",
+    "unknown_member": "Onbekend lid"
   },
   "help": {
     "page_title": "Hulp - Makelaar",
