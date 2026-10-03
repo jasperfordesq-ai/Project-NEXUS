@@ -251,9 +251,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReportsController.php:371:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReportsController.php:335:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReportsController.php",
-            "line": 371,
+            "line": 335,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reporterId",
@@ -264,9 +264,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReportsController.php:441:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReportsController.php:405:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReportsController.php",
-            "line": 441,
+            "line": 405,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reporterId",

@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Log;
 use App\I18n\LocaleContext;
 use App\Models\ActivityLog;
 use App\Models\Notification;
+use App\Services\ReportQueueVisibility;
 use App\Services\ReportTargetResolver;
-use App\Support\FeedItemTables;
 
 /**
  * AdminReportsController -- Admin user and content report handling.
@@ -79,66 +79,10 @@ class AdminReportsController extends BaseApiController
         if ($this->callerIsAdminTier()) {
             return null;
         }
-        $parties = $this->reportParties($report);
-        if ($parties === null || in_array($callerId, $parties, true)) {
+        if (!app(ReportQueueVisibility::class)->brokerMayHandle($report, $callerId)) {
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_moderate_own_content'), null, 403);
         }
         return null;
-    }
-
-    /**
-     * Members with a personal stake in a report: who filed it, and who the
-     * reported item belongs to or is about.
-     *
-     * @return list<int>|null Null when content ownership cannot be established.
-     */
-    private function reportParties(object $report): ?array
-    {
-        $parties = [(int) $report->reporter_id];
-        $type = $report->target_type ?? null;
-        $targetId = (int) ($report->target_id ?? 0);
-
-        if ($type === 'user') {
-            $parties[] = $targetId;
-            return $parties;
-        }
-
-        $targets = ReportTargetResolver::resolveMany([$report]);
-        $authorId = $targets["{$type}:{$targetId}"]['target_author_id'] ?? null;
-        if ($authorId === null && $targetId > 0 && is_string($type)) {
-            // The report API accepts every reactable feed item, while the
-            // display resolver covers only a subset. Resolve ownership for
-            // the remaining types before a broker can close the report.
-            $ownerColumn = match ($type) {
-                'volunteer' => 'created_by',
-                'blog' => 'author_id',
-                'goal', 'poll', 'challenge', 'resource', 'job', 'discussion' => 'user_id',
-                default => null,
-            };
-            $table = FeedItemTables::TABLES[$type] ?? null;
-            if ($ownerColumn !== null && $table !== null) {
-                $authorId = DB::table($table)
-                    ->where('id', $targetId)
-                    ->where('tenant_id', (int) $report->tenant_id)
-                    ->value($ownerColumn);
-            }
-        }
-        if ($authorId === null) {
-            return null;
-        }
-        $parties[] = (int) $authorId;
-
-        if ($type === 'review' && $targetId > 0) {
-            $receiverId = DB::table('reviews')
-                ->where('id', $targetId)
-                ->where('tenant_id', (int) $report->tenant_id)
-                ->value('receiver_id');
-            if ($receiverId !== null) {
-                $parties[] = (int) $receiverId;
-            }
-        }
-
-        return $parties;
     }
 
     public function index(): JsonResponse
@@ -187,34 +131,54 @@ class AdminReportsController extends BaseApiController
 
         $where = !empty($conditions) ? implode(' AND ', $conditions) : '1=1';
 
-        $total = (int) DB::selectOne(
-            "SELECT COUNT(*) as total FROM reports r LEFT JOIN users reporter ON r.reporter_id = reporter.id WHERE {$where}",
-            $params
-        )->total;
-
-        $reports = DB::select(
-            "SELECT r.*, reporter.name as reporter_name, reporter.avatar_url as reporter_avatar, t.name as tenant_name
+        $select = "SELECT r.*, reporter.name as reporter_name, reporter.avatar_url as reporter_avatar, t.name as tenant_name
              FROM reports r
              LEFT JOIN users reporter ON r.reporter_id = reporter.id
-             LEFT JOIN tenants t ON r.tenant_id = t.id
-             WHERE {$where}
-             ORDER BY r.created_at DESC
-             LIMIT ? OFFSET ?",
-            array_merge($params, [$limit, $offset])
-        );
+             LEFT JOIN tenants t ON r.tenant_id = t.id";
 
-        // F-454: the read side of F-218. A caller below admin tier does not see
-        // reports they are a party to — the queue would otherwise hand the
-        // reported person the complainant's name and the complaint itself.
-        // This is a list, so the row is excluded rather than the route refused;
-        // the caller could not resolve or dismiss those reports in any case.
-        if (! $this->callerIsAdminTier()) {
-            $visible = array_values(array_filter(
-                $reports,
-                fn ($report) => $this->guardBrokerNotParty($report, $callerId) === null,
-            ));
-            $total = max(0, $total - (count($reports) - count($visible)));
-            $reports = $visible;
+        if ($this->callerIsAdminTier()) {
+            $total = (int) DB::selectOne(
+                "SELECT COUNT(*) as total FROM reports r LEFT JOIN users reporter ON r.reporter_id = reporter.id WHERE {$where}",
+                $params
+            )->total;
+
+            $reports = DB::select(
+                "{$select} WHERE {$where} ORDER BY r.created_at DESC, r.id DESC LIMIT ? OFFSET ?",
+                array_merge($params, [$limit, $offset])
+            );
+        } else {
+            // F-454: the read side of F-218. A caller below admin tier does not
+            // see reports they are a party to — the queue would otherwise hand
+            // the reported person the complainant's name and the complaint
+            // itself. This is a list, so the row is excluded rather than the
+            // route refused.
+            //
+            // F-549: filter EVERY matching report before paging. Filtering only
+            // the page being returned left withheld reports on other pages in
+            // the total, so the gap between total and reachable rows told the
+            // broker how many complaints were about them. The dashboard's
+            // open-reports count uses the same rule (ReportQueueVisibility).
+            $candidates = DB::select(
+                "SELECT r.id, r.tenant_id, r.reporter_id, r.target_type, r.target_id
+                 FROM reports r LEFT JOIN users reporter ON r.reporter_id = reporter.id
+                 WHERE {$where} ORDER BY r.created_at DESC, r.id DESC",
+                $params
+            );
+            $visibleIds = array_map(
+                static fn (object $row) => (int) $row->id,
+                app(ReportQueueVisibility::class)->filterForBroker($candidates, $callerId),
+            );
+            $total = count($visibleIds);
+            $pageIds = array_slice($visibleIds, $offset, $limit);
+
+            $reports = [];
+            if ($pageIds !== []) {
+                $placeholders = implode(',', array_fill(0, count($pageIds), '?'));
+                $reports = DB::select(
+                    "{$select} WHERE r.id IN ({$placeholders}) ORDER BY r.created_at DESC, r.id DESC",
+                    $pageIds
+                );
+            }
         }
 
         $targets = ReportTargetResolver::resolveMany($reports);
@@ -453,13 +417,37 @@ class AdminReportsController extends BaseApiController
      */
     public function stats(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $callerId = $this->requireBrokerOrAdmin();
         $superAdmin = $this->isSuperAdmin();
         $tenantId = $this->getTenantId();
 
         $effectiveTenantId = $this->resolveEffectiveTenantId($superAdmin, $tenantId);
         $tenantWhere = $effectiveTenantId !== null ? 'tenant_id = ?' : '1=1';
         $tenantParams = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
+
+        // F-549: below admin tier these boxes count the queue the caller can
+        // reach. Counting every report made "Pending" minus the visible rows
+        // the number of complaints about the caller (F-454 withholds those).
+        if (!$this->callerIsAdminTier()) {
+            $visible = app(ReportQueueVisibility::class)->filterForBroker(
+                DB::select(
+                    "SELECT id, tenant_id, reporter_id, target_type, target_id, status FROM reports WHERE {$tenantWhere}",
+                    $tenantParams
+                ),
+                $callerId
+            );
+            $byStatus = fn (array $statuses) => count(array_filter(
+                $visible,
+                static fn (object $r) => in_array($r->status, $statuses, true),
+            ));
+
+            return $this->respondWithData([
+                'total' => count($visible),
+                'pending' => $byStatus(['open', 'pending']),
+                'resolved' => $byStatus(['resolved']),
+                'dismissed' => $byStatus(['dismissed']),
+            ]);
+        }
 
         $stats = DB::selectOne(
             "SELECT
