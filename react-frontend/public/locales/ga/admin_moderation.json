@@ -290,7 +290,15 @@
     "rating_aria": "{{n}} as 5 réalta",
     "content_type_unknown": "Ábhar anaithnid",
     "content_type_post": "Postáil",
-    "post_type_blog": "Post Blag"
+    "post_type_blog": "Post Blag",
+    "report_reasons": {
+      "safety_concern": "Imní sábháilteachta",
+      "inappropriate": "Ábhar míchuí",
+      "misleading": "Míthreorach",
+      "spam": "Turscar nó camscéim",
+      "not_timebank_service": "Ní seirbhís bainc ama é",
+      "other": "Eile"
+    }
   },
   "something_wrong": "Chuaigh rud éigin mícheart. Bain triail eile as."
 }

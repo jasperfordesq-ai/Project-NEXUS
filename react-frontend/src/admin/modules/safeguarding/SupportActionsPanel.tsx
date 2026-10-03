@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { ModerationCards, useModerationCards } from '@/admin/components/ModerationCards';
 import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import {
   ATTEST_CHANNELS,
@@ -45,6 +46,7 @@ export function SupportActionsPanel() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [supportActions, setSupportActions] = useState<SupportActionRow[]>([]);
+  const showCards = useModerationCards();
   const [authorityRels, setAuthorityRels] = useState<AuthorityRelationship[]>([]);
 
   // Attest an offline confirmation (co-decide)
@@ -183,6 +185,103 @@ export function SupportActionsPanel() {
     );
   }
 
+  // One row's cells, keyed by column — shared by the table and the phone
+  // cards (ModerationCards), so a phone shows each item as a card with its
+  // button on screen instead of a table that scrolls sideways.
+  const supportColumns = [
+    { key: 'what', label: t('safeguarding.support.col_what') },
+    { key: 'supported', label: t('safeguarding.support.col_supported') },
+    { key: 'prepared_by', label: t('safeguarding.support.col_prepared_by') },
+    { key: 'created', label: t('safeguarding.col_created') },
+    { key: 'expires', label: t('safeguarding.col_expires') },
+    { key: 'actions', label: t('safeguarding.col_actions') },
+  ];
+  const renderSupportCells = (action: SupportActionRow) => [
+    <TableCell key="what">
+      <span className="text-sm">
+        {t(`safeguarding.support.type_${action.action_type}`)}
+        {action.payload_summary.title ? ` — ${action.payload_summary.title}` : ''}
+        {action.payload_summary.amount != null ? ` — ${action.payload_summary.amount}` : ''}
+        {action.payload_summary.recipient_id != null ? ` → ${action.payload_summary.recipient_name ?? ''} (#${action.payload_summary.recipient_id})` : ''}
+      </span>
+    </TableCell>,
+    <TableCell key="supported"><span className="text-sm">{action.supported_name}</span></TableCell>,
+    <TableCell key="prepared_by"><span className="text-sm">{action.supporter_name}</span></TableCell>,
+    <TableCell key="created">
+      <span className="text-sm text-muted">{action.created_at ? formatRelativeTime(action.created_at) : ''}</span>
+    </TableCell>,
+    <TableCell key="expires">
+      <span className="text-sm text-muted">
+        {action.expires_at ? new Date(action.expires_at).toLocaleDateString(getFormattingLocale()) : ''}
+      </span>
+    </TableCell>,
+    <TableCell key="actions">
+      <Button
+        size="sm"
+        variant="secondary"
+        startContent={<ClipboardCheck size={14} />}
+        onPress={() => {
+          setAttestTarget(action);
+          setAttestChannel('phone');
+          setAttestWitness('');
+          attestModal.onOpen();
+        }}
+      >
+        {t('safeguarding.support.attest_button')}
+      </Button>
+    </TableCell>,
+  ];
+
+  const authorityColumns = [
+    { key: 'supported', label: t('safeguarding.support.col_supported') },
+    { key: 'supporter', label: t('safeguarding.authority.col_supporter') },
+    { key: 'records', label: t('safeguarding.authority.col_records') },
+    { key: 'actions', label: t('safeguarding.col_actions') },
+  ];
+  const renderAuthorityCells = (rel: AuthorityRelationship) => [
+    <TableCell key="supported"><span className="text-sm">{rel.supported_name}</span></TableCell>,
+    <TableCell key="supporter"><span className="text-sm">{rel.supporter_name}</span></TableCell>,
+    <TableCell key="records">
+      <div className="flex flex-wrap gap-1">
+        {rel.attestations.length === 0 && (
+          <Chip size="sm" variant="soft" color="warning">{t('safeguarding.authority.none_recorded')}</Chip>
+        )}
+        {rel.attestations.map((attestation) => (
+          <Chip
+            key={attestation.id}
+            size="sm"
+            variant="soft"
+            color={attestation.decision === 'active' ? 'success' : 'default'}
+            onClose={attestation.decision === 'active' ? () => {
+              setRevokeAuthorityTarget(attestation);
+              setRevokeAuthorityReason('authority_ended');
+              revokeAuthorityModal.onOpen();
+            } : undefined}
+          >
+            {t(`safeguarding.authority.type_${attestation.authority_type}`)}
+            {attestation.decision === 'revoked' ? ` — ${t('safeguarding.authority.revoked_chip')}` : ''}
+          </Chip>
+        ))}
+      </div>
+    </TableCell>,
+    <TableCell key="actions">
+      <Button
+        size="sm"
+        variant="secondary"
+        startContent={<ShieldCheck size={14} />}
+        onPress={() => {
+          setAuthorityTarget(rel);
+          setAuthorityType('power_of_attorney');
+          setAuthorityAcknowledged(false);
+          setAuthorityScope('');
+          authorityModal.onOpen();
+        }}
+      >
+        {t('safeguarding.authority.attest_button')}
+      </Button>
+    </TableCell>,
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
@@ -206,55 +305,25 @@ export function SupportActionsPanel() {
           <p className="text-sm text-muted">{t('safeguarding.support.intro')}</p>
         </CardHeader>
         <CardBody>
-          <Table aria-label={t('safeguarding.support.title')} removeWrapper>
-            <TableHeader>
-              <TableColumn>{t('safeguarding.support.col_what')}</TableColumn>
-              <TableColumn>{t('safeguarding.support.col_supported')}</TableColumn>
-              <TableColumn>{t('safeguarding.support.col_prepared_by')}</TableColumn>
-              <TableColumn>{t('safeguarding.col_created')}</TableColumn>
-              <TableColumn>{t('safeguarding.col_expires')}</TableColumn>
-              <TableColumn>{t('safeguarding.col_actions')}</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent={t('safeguarding.support.none_pending')}>
-              {supportActions.map((action) => (
-                <TableRow key={action.id}>
-                  <TableCell>
-                    <span className="text-sm">
-                      {t(`safeguarding.support.type_${action.action_type}`)}
-                      {action.payload_summary.title ? ` — ${action.payload_summary.title}` : ''}
-                      {action.payload_summary.amount != null ? ` — ${action.payload_summary.amount}` : ''}
-                      {action.payload_summary.recipient_id != null ? ` → ${action.payload_summary.recipient_name ?? ''} (#${action.payload_summary.recipient_id})` : ''}
-                    </span>
-                  </TableCell>
-                  <TableCell><span className="text-sm">{action.supported_name}</span></TableCell>
-                  <TableCell><span className="text-sm">{action.supporter_name}</span></TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted">{action.created_at ? formatRelativeTime(action.created_at) : ''}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted">
-                      {action.expires_at ? new Date(action.expires_at).toLocaleDateString(getFormattingLocale()) : ''}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      startContent={<ClipboardCheck size={14} />}
-                      onPress={() => {
-                        setAttestTarget(action);
-                        setAttestChannel('phone');
-                        setAttestWitness('');
-                        attestModal.onOpen();
-                      }}
-                    >
-                      {t('safeguarding.support.attest_button')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {showCards ? (
+            <ModerationCards
+              ariaLabel={t('safeguarding.support.title')}
+              columns={supportColumns}
+              items={supportActions}
+              getKey={(action) => action.id}
+              renderCells={renderSupportCells}
+              emptyContent={t('safeguarding.support.none_pending')}
+            />
+          ) : (
+            <Table aria-label={t('safeguarding.support.title')} removeWrapper>
+              <TableHeader>
+                {supportColumns.map((col) => <TableColumn key={col.key}>{col.label}</TableColumn>)}
+              </TableHeader>
+              <TableBody emptyContent={t('safeguarding.support.none_pending')}>
+                {supportActions.map((action) => <TableRow key={action.id}>{renderSupportCells(action)}</TableRow>)}
+              </TableBody>
+            </Table>
+          )}
         </CardBody>
       </Card>
 
@@ -267,61 +336,25 @@ export function SupportActionsPanel() {
           <p className="text-sm text-muted">{t('safeguarding.authority.intro')}</p>
         </CardHeader>
         <CardBody>
-          <Table aria-label={t('safeguarding.authority.title')} removeWrapper>
-            <TableHeader>
-              <TableColumn>{t('safeguarding.support.col_supported')}</TableColumn>
-              <TableColumn>{t('safeguarding.authority.col_supporter')}</TableColumn>
-              <TableColumn>{t('safeguarding.authority.col_records')}</TableColumn>
-              <TableColumn>{t('safeguarding.col_actions')}</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent={t('safeguarding.authority.none')}>
-              {authorityRels.map((rel) => (
-                <TableRow key={rel.relationship_id}>
-                  <TableCell><span className="text-sm">{rel.supported_name}</span></TableCell>
-                  <TableCell><span className="text-sm">{rel.supporter_name}</span></TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {rel.attestations.length === 0 && (
-                        <Chip size="sm" variant="soft" color="warning">{t('safeguarding.authority.none_recorded')}</Chip>
-                      )}
-                      {rel.attestations.map((attestation) => (
-                        <Chip
-                          key={attestation.id}
-                          size="sm"
-                          variant="soft"
-                          color={attestation.decision === 'active' ? 'success' : 'default'}
-                          onClose={attestation.decision === 'active' ? () => {
-                            setRevokeAuthorityTarget(attestation);
-                            setRevokeAuthorityReason('authority_ended');
-                            revokeAuthorityModal.onOpen();
-                          } : undefined}
-                        >
-                          {t(`safeguarding.authority.type_${attestation.authority_type}`)}
-                          {attestation.decision === 'revoked' ? ` — ${t('safeguarding.authority.revoked_chip')}` : ''}
-                        </Chip>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      startContent={<ShieldCheck size={14} />}
-                      onPress={() => {
-                        setAuthorityTarget(rel);
-                        setAuthorityType('power_of_attorney');
-                        setAuthorityAcknowledged(false);
-                        setAuthorityScope('');
-                        authorityModal.onOpen();
-                      }}
-                    >
-                      {t('safeguarding.authority.attest_button')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {showCards ? (
+            <ModerationCards
+              ariaLabel={t('safeguarding.authority.title')}
+              columns={authorityColumns}
+              items={authorityRels}
+              getKey={(rel) => rel.relationship_id}
+              renderCells={renderAuthorityCells}
+              emptyContent={t('safeguarding.authority.none')}
+            />
+          ) : (
+            <Table aria-label={t('safeguarding.authority.title')} removeWrapper>
+              <TableHeader>
+                {authorityColumns.map((col) => <TableColumn key={col.key}>{col.label}</TableColumn>)}
+              </TableHeader>
+              <TableBody emptyContent={t('safeguarding.authority.none')}>
+                {authorityRels.map((rel) => <TableRow key={rel.relationship_id}>{renderAuthorityCells(rel)}</TableRow>)}
+              </TableBody>
+            </Table>
+          )}
         </CardBody>
       </Card>
 

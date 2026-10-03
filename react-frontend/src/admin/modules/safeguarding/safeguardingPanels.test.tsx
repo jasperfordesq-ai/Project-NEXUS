@@ -268,10 +268,10 @@ describe('SupportActionsPanel', () => {
     const { SupportActionsPanel } = await import('./SupportActionsPanel');
     render(<SupportActionsPanel />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /Record offline approval/ }));
-    expect(await screen.findByText(/member will be notified/i)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /Record the member's yes/ }));
+    expect(await screen.findByText(/member is told it was recorded/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Witness (optional)'), { target: { value: 'Nora Neighbour' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Record and carry out' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Record yes and carry it out' }));
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/safeguarding/support-actions/71/attest', {
@@ -279,5 +279,49 @@ describe('SupportActionsPanel', () => {
         witness: 'Nora Neighbour',
       });
     });
+  });
+
+  it('shows each item as a card with its button on screen on a phone, not a sideways-scrolling table', async () => {
+    const matchMedia = vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      matches: query === '(max-width: 767px)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('authority-attestations')) {
+        return Promise.resolve(ok({
+          relationships: [{ relationship_id: 9, supporter_name: 'Sam Supporter', supported_name: 'Molly Member', relationship_type: 'family', attestations: [] }],
+        }));
+      }
+      return Promise.resolve(ok({
+        actions: [{
+          id: 71, action_type: 'credit_transfer', payload_summary: { amount: 3 },
+          supported_name: 'Molly Member', supporter_name: 'Sam Supporter',
+          created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString(),
+        }],
+      }));
+    });
+    try {
+      const { SupportActionsPanel } = await import('./SupportActionsPanel');
+      render(<SupportActionsPanel />);
+
+      const waiting = await screen.findByRole('list', { name: "Waiting for a member's yes" });
+      expect(waiting).toHaveTextContent('Molly Member');
+      expect(waiting).toHaveTextContent('Set up by');
+      expect(screen.getByRole('button', { name: /Record the member's yes/ })).toBeInTheDocument();
+
+      const proof = screen.getByRole('list', { name: 'Proof that a supporter may act alone' });
+      expect(proof).toHaveTextContent('Not noted yet');
+      expect(screen.getByRole('button', { name: 'Note that I have seen it' })).toBeInTheDocument();
+      expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    } finally {
+      matchMedia.mockRestore();
+    }
   });
 });

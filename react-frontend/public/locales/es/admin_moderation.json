@@ -290,7 +290,15 @@
     "pagination_label": "Paginación de la cola de moderación",
     "user_fallback": "Usuario desconocido",
     "rating_aria": "{{n}} de 5 estrellas",
-    "content_type_unknown": "Tipo de contenido desconocido"
+    "content_type_unknown": "Tipo de contenido desconocido",
+    "report_reasons": {
+      "safety_concern": "Preocupación de seguridad",
+      "inappropriate": "Contenido inapropiado",
+      "misleading": "Engañoso",
+      "spam": "Spam o estafa",
+      "not_timebank_service": "No es un servicio de banco de tiempo",
+      "other": "Otro"
+    }
   },
   "something_wrong": "Algo salió mal. Por favor inténtalo de nuevo."
 }

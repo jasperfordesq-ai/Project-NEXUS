@@ -381,6 +381,38 @@ describe('ReportsManagement', () => {
     expect(dismissBtn).toBeDefined();
   });
 
+  it('shows a reason code as words, and a written reason exactly as the member wrote it', async () => {
+    const byEndpoint = (endpoint: string) => {
+      if (endpoint?.includes('stats')) {
+        return {
+          data: makeStats(), isLoading: false, error: null,
+          execute: vi.fn(), refetch: vi.fn(), reset: vi.fn(), setData: vi.fn(),
+          loading: false, meta: null,
+        };
+      }
+      return {
+        data: [
+          makeReport({ id: 1, reason: 'safety_concern' }),
+          makeReport({ id: 2, reason: 'not_timebank_service' }),
+          makeReport({ id: 3, reason: 'He keeps messaging me' }),
+        ],
+        isLoading: false, error: null,
+        execute: vi.fn(), refetch: vi.fn(), reset: vi.fn(), setData: vi.fn(),
+        loading: false, meta: { total_pages: 1, total: 3 },
+      };
+    };
+    mockUseApi.mockImplementation(byEndpoint as unknown as Parameters<typeof mockUseApi.mockImplementation>[0]);
+
+    const { default: ReportsManagement } = await import('./ReportsManagement');
+    render(<ReportsManagement />);
+
+    expect(await screen.findByText('Safety concern')).toBeInTheDocument();
+    expect(screen.getByText('Not a timebank service')).toBeInTheDocument();
+    expect(screen.getByText('He keeps messaging me')).toBeInTheDocument();
+    expect(screen.queryByText('safety_concern')).not.toBeInTheDocument();
+    expect(screen.queryByText('not_timebank_service')).not.toBeInTheDocument();
+  });
+
   it('renders the reported target preview and a View details action', async () => {
     mockUseApi.mockImplementation((endpoint: string) => {
       if (endpoint?.includes('stats')) {

@@ -290,7 +290,15 @@
     "user_fallback": "Onbekende gebruiker",
     "rating_aria": "{{n}} van 5 sterren",
     "content_type_unknown": "Onbekend inhoudstype",
-    "content_type_post": "Post"
+    "content_type_post": "Post",
+    "report_reasons": {
+      "safety_concern": "Veiligheidsrisico",
+      "inappropriate": "Ongepaste inhoud",
+      "misleading": "Misleidend",
+      "spam": "Spam of oplichterij",
+      "not_timebank_service": "Geen tijdbankdienst",
+      "other": "Anders"
+    }
   },
   "something_wrong": "Er is iets misgegaan. Probeer het opnieuw."
 }

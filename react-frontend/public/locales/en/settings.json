@@ -409,9 +409,9 @@
       "tiers_capability_credits": "Your time credits",
       "tiers_option_none": "Nothing",
       "tiers_option_co_decide": "Prepare only — you approve each one",
-      "tiers_option_represent": "Do it on their own",
+      "tiers_option_represent": "They can act on their own",
       "tiers_aria": "What {{name}} may do about {{capability}}",
-      "tiers_explainer": "\"Prepare only\" means they set something up and nothing happens until you say yes. \"Do it on their own\" means it happens straight away, recorded as done by them on your behalf.",
+      "tiers_explainer": "\"Prepare only\" means they set something up and nothing happens until you say yes. \"They can act on their own\" means it happens straight away, and is recorded as done by them on your behalf.",
       "current_access_label": "Current account support",
       "tiers_toast": "Saved.",
       "tiers_error": "Could not save that. Nothing was changed."

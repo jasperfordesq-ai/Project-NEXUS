@@ -53,6 +53,20 @@ export default function ReportsManagement() {
     { label: t('moderation.status_dismissed'), value: 'dismissed' },
   ];
 
+  // Some report forms (the listing report, the phone app's feed report) send one of
+  // these codes instead of the member's own words. Show the code as words; show
+  // anything else exactly as the member wrote it.
+  const REPORT_REASON_LABELS: Record<string, string> = {
+    safety_concern: t('moderation.report_reasons.safety_concern'),
+    inappropriate: t('moderation.report_reasons.inappropriate'),
+    misleading: t('moderation.report_reasons.misleading'),
+    spam: t('moderation.report_reasons.spam'),
+    not_timebank_service: t('moderation.report_reasons.not_timebank_service'),
+    other: t('moderation.report_reasons.other'),
+  };
+  const reasonText = (reason: string | null | undefined): string =>
+    (reason ? REPORT_REASON_LABELS[reason.trim()] : undefined) ?? reason ?? '';
+
   const toast = useToast();
   const { user } = useAuth();
   const { tenantPath } = useTenant();
@@ -281,7 +295,7 @@ export default function ReportsManagement() {
         {renderTargetSummary(report)}
       </TableCell>,
       <TableCell key="reason">
-        <span className="text-sm font-medium text-foreground">{report.reason}</span>
+        <span className="text-sm font-medium text-foreground">{reasonText(report.reason)}</span>
       </TableCell>,
       <TableCell key="status">
         {(report.status === 'open' || report.status === 'pending') && (
@@ -385,7 +399,7 @@ export default function ReportsManagement() {
       {stats && (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <Card  className="border border-border">
-            <CardBody className="flex flex-row items-center gap-3 p-4">
+            <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-accent-soft dark:bg-accent-soft">
                 <Flag aria-hidden="true" className="w-6 h-6 text-accent" />
               </div>
@@ -396,7 +410,7 @@ export default function ReportsManagement() {
             </CardBody>
           </Card>
           <Card  className="border border-border">
-            <CardBody className="flex flex-row items-center gap-3 p-4">
+            <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-warning-100 dark:bg-warning-900/30">
                 <AlertCircle aria-hidden="true" className="w-6 h-6 text-warning" />
               </div>
@@ -407,7 +421,7 @@ export default function ReportsManagement() {
             </CardBody>
           </Card>
           <Card  className="border border-border">
-            <CardBody className="flex flex-row items-center gap-3 p-4">
+            <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-success-100 dark:bg-success-900/30">
                 <CheckCircle2 aria-hidden="true" className="w-6 h-6 text-success" />
               </div>
@@ -418,7 +432,7 @@ export default function ReportsManagement() {
             </CardBody>
           </Card>
           <Card  className="border border-border">
-            <CardBody className="flex flex-row items-center gap-3 p-4">
+            <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-surface-secondary">
                 <XCircle aria-hidden="true" className="w-6 h-6 text-muted" />
               </div>
@@ -701,7 +715,7 @@ export default function ReportsManagement() {
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
                     {t('moderation.drawer_reason')}
                   </h3>
-                  <p className="whitespace-pre-line text-sm text-foreground">{detailReport.reason}</p>
+                  <p className="whitespace-pre-line text-sm text-foreground">{reasonText(detailReport.reason)}</p>
                 </section>
 
                 {/* Meta */}

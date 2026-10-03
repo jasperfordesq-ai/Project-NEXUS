@@ -290,7 +290,15 @@
     "user_fallback": "Unbekannter Benutzer",
     "rating_aria": "{{n}} von 5 Sternen",
     "content_type_unknown": "Unbekannter Inhaltstyp",
-    "col_reporter": "Reporter"
+    "col_reporter": "Reporter",
+    "report_reasons": {
+      "safety_concern": "Sicherheitsbedenken",
+      "inappropriate": "Unangemessener Inhalt",
+      "misleading": "Irreführend",
+      "spam": "Spam oder Betrug",
+      "not_timebank_service": "Keine Zeitbank-Dienstleistung",
+      "other": "Sonstiges"
+    }
   },
   "something_wrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
 }

@@ -398,7 +398,7 @@
     "guardians_title": "Opiekunowie",
     "guardians_description": "Ustalenia dotyczące opiekunów dla członków, którzy chcą dodatkowego wsparcia.",
     "support_actions_title": "Działania wspierające",
-    "support_actions_description": "Działania przygotowane dla członka, które czekają na jego odpowiedź."
+    "support_actions_description": "To, co osoba wspierająca przygotowała dla członka i co czeka na jego zgodę, oraz dowód, że osoba wspierająca może działać samodzielnie."
   },
   "vetting": {
     "title": "Potwierdzenia weryfikacji",

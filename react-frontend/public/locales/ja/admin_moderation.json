@@ -290,7 +290,15 @@
     "pagination_label": "モデレーションキューのページネーション",
     "user_fallback": "不明なユーザー",
     "rating_aria": "{{n}} 5つ星のうち",
-    "content_type_unknown": "不明なコンテンツタイプ"
+    "content_type_unknown": "不明なコンテンツタイプ",
+    "report_reasons": {
+      "safety_concern": "安全上の懸念",
+      "inappropriate": "不適切なコンテンツ",
+      "misleading": "誤解を招く内容",
+      "spam": "スパムまたは詐欺",
+      "not_timebank_service": "タイムバンキングサービスではない",
+      "other": "その他"
+    }
   },
   "something_wrong": "何か問題が発生しました。もう一度試してください。"
 }

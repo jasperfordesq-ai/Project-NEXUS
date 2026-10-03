@@ -290,7 +290,15 @@
     "pagination_label": "Paginação da fila de moderação",
     "user_fallback": "Usuário desconhecido",
     "rating_aria": "{{n}} de 5 estrelas",
-    "content_type_unknown": "Tipo de conteúdo desconhecido"
+    "content_type_unknown": "Tipo de conteúdo desconhecido",
+    "report_reasons": {
+      "safety_concern": "Preocupação de segurança",
+      "inappropriate": "Conteúdo inapropriado",
+      "misleading": "Enganador",
+      "spam": "Spam ou fraude",
+      "not_timebank_service": "Não é um serviço de banco de tempo",
+      "other": "Outro"
+    }
   },
   "something_wrong": "Algo deu errado. Por favor, tente novamente."
 }

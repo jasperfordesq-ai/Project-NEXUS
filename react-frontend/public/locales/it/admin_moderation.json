@@ -290,7 +290,15 @@
     "user_fallback": "Utente sconosciuto",
     "rating_aria": "{{n}} su 5 stelle",
     "content_type_unknown": "Tipo di contenuto sconosciuto",
-    "col_reporter": "Reporter"
+    "col_reporter": "Reporter",
+    "report_reasons": {
+      "safety_concern": "Problema di sicurezza",
+      "inappropriate": "Contenuto inappropriato",
+      "misleading": "Fuorviante",
+      "spam": "Spam o truffa",
+      "not_timebank_service": "Non è un servizio di banca del tempo",
+      "other": "Altro"
+    }
   },
   "something_wrong": "Qualcosa è andato storto. Per favore riprova."
 }

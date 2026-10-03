@@ -380,7 +380,7 @@
     "guardians_title": "ガーディアン",
     "guardians_description": "追加のサポートを希望するメンバーのためのガーディアンの取り決め。",
     "support_actions_title": "支援アクション",
-    "support_actions_description": "メンバーのために準備され、本人の回答を待っているアクション。"
+    "support_actions_description": "支援者がメンバーのために準備し、メンバーの「はい」を待っているもの、および支援者が単独で行動できることの証明。"
   },
   "vetting": {
     "title": "審査確認",

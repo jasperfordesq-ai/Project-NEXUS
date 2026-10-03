@@ -290,7 +290,15 @@
     "user_fallback": "Nieznany użytkownik",
     "rating_aria": "{{n}} z 5 gwiazdek",
     "content_type_unknown": "Nieznany typ treści",
-    "col_reporter": "Dziennikarz"
+    "col_reporter": "Dziennikarz",
+    "report_reasons": {
+      "safety_concern": "Zagrożenie bezpieczeństwa",
+      "inappropriate": "Nieodpowiednia treść",
+      "misleading": "Wprowadza w błąd",
+      "spam": "Spam lub oszustwo",
+      "not_timebank_service": "Nie jest usługą banku czasu",
+      "other": "Inne"
+    }
   },
   "something_wrong": "Coś poszło nie tak. Spróbuj ponownie."
 }

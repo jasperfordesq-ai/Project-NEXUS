@@ -405,7 +405,7 @@ describe('SubAccountsManager', () => {
     expect(await screen.findByText('Current account support')).toBeInTheDocument();
     expect(screen.getByText('Your activity: No access')).toBeInTheDocument();
     expect(screen.getByText('Your listings: Prepare only — you approve each one')).toBeInTheDocument();
-    expect(screen.getByText('Your time credits: Do it on their own')).toBeInTheDocument();
+    expect(screen.getByText('Your time credits: They can act on their own')).toBeInTheDocument();
   });
 
   it('labels staff-recorded guardian arrangements separately from active account support', async () => {

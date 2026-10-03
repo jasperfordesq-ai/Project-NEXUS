@@ -290,7 +290,15 @@
     "load_error": "Failed to load the moderation queue.",
     "pagination_label": "Moderation queue pagination",
     "user_fallback": "Unknown user",
-    "rating_aria": "{{n}} out of 5 stars"
+    "rating_aria": "{{n}} out of 5 stars",
+    "report_reasons": {
+      "safety_concern": "Safety concern",
+      "inappropriate": "Inappropriate content",
+      "misleading": "Misleading",
+      "spam": "Spam or scam",
+      "not_timebank_service": "Not a timebank service",
+      "other": "Other"
+    }
   },
   "something_wrong": "Something went wrong. Please try again."
 }

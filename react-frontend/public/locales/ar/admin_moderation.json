@@ -290,7 +290,15 @@
     "pagination_label": "ترقيم الصفحات في قائمة انتظار الإشراف",
     "user_fallback": "مستخدم غير معروف",
     "rating_aria": "{{n}} من أصل 5 نجوم",
-    "content_type_unknown": "نوع المحتوى غير المعروف"
+    "content_type_unknown": "نوع المحتوى غير المعروف",
+    "report_reasons": {
+      "safety_concern": "مخاوف تتعلق بالسلامة",
+      "inappropriate": "محتوى غير لائق",
+      "misleading": "مضلل",
+      "spam": "بريد عشوائي أو احتيال",
+      "not_timebank_service": "ليست خدمة بنك وقت",
+      "other": "أخرى"
+    }
   },
   "something_wrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
 }

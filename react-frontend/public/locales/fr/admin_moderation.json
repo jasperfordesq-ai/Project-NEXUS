@@ -290,7 +290,15 @@
     "user_fallback": "Utilisateur inconnu",
     "rating_aria": "{{n}} étoiles sur 5",
     "content_type_unknown": "Type de contenu inconnu",
-    "post_type_discussion": "Discussion"
+    "post_type_discussion": "Discussion",
+    "report_reasons": {
+      "safety_concern": "Problème de sécurité",
+      "inappropriate": "Contenu inapproprié",
+      "misleading": "Trompeur",
+      "spam": "Spam ou arnaque",
+      "not_timebank_service": "Pas un service de banque de temps",
+      "other": "Autre"
+    }
   },
   "something_wrong": "Quelque chose s'est mal passé. Veuillez réessayer."
 }

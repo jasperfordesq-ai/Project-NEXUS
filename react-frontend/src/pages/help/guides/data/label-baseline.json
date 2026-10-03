@@ -122,7 +122,6 @@
     "members/recognition/recognition_nexus_score: Platform Activity",
     "members/recognition/recognition_nexus_score: Social Impact",
     "members/security_signin/someone_got_into_account: Check your passkeys",
-    "members/troubleshooting/cant_sign_in: This platform is for adults aged 18 and over",
     "members/troubleshooting/cant_sign_in: Too many attempts",
     "members/troubleshooting/something_not_working: Try another browser or device",
     "members/troubleshooting/something_not_working: Update your browser"
@@ -348,9 +347,7 @@
     "members/polls_ideas/ideation_challenges_about: Stemmen eindigt op",
     "members/recognition/recognition_nexus_score: Activiteit op het platform",
     "members/recognition/recognition_nexus_score: Betrokkenheid bij de gemeenschap",
-    "members/recognition/recognition_nexus_score: Insignes en prestaties",
     "members/recognition/recognition_nexus_score: Sociale impact",
-    "members/recognition/venue_visit_xp: Uitdagingen en de XP-winkel",
     "members/security_signin/someone_got_into_account: Bekijk de Actieve Sessies",
     "members/security_signin/someone_got_into_account: Controleer je passkeys",
     "members/security_signin/someone_got_into_account: Zet tweestapsverificatie aan",
