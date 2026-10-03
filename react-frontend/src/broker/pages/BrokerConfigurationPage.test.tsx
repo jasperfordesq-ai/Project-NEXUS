@@ -322,14 +322,21 @@ describe('BrokerConfigurationPage', () => {
     ).not.toBeDisabled();
   });
 
-  it('strips admin-only keys from the save payload for brokers', async () => {
-    mockRole = 'user';
+  // F-547: a broker's save sends only the settings the broker changed. The
+  // server refuses the WHOLE save (403) when a non-admin sends any admin-only
+  // key, even with its value unchanged — and the GET returns keys the page
+  // never shows (exchange_workflow_enabled), so echoing the loaded config back
+  // meant no broker could ever save this page.
+  async function brokerSaveAfter(loaded: Record<string, unknown>, edit?: () => void) {
+    mockRole = 'broker';
+    mockAdminBroker.getConfiguration.mockResolvedValue({ success: true, data: loaded });
     const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
     render(<BrokerConfigurationPage />);
 
     await waitFor(() => {
       expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
     });
+    edit?.();
 
     const saveBtn = findSaveButton();
     if (saveBtn) fireEvent.click(saveBtn);
@@ -337,12 +344,53 @@ describe('BrokerConfigurationPage', () => {
     await waitFor(() => {
       expect(mockAdminBroker.saveConfiguration).toHaveBeenCalled();
     });
+    return mockAdminBroker.saveConfiguration.mock.calls[0][0] as Record<string, unknown>;
+  }
 
-    const payload = mockAdminBroker.saveConfiguration.mock.calls[0][0] as Record<string, unknown>;
+  it('sends a broker only the settings they changed', async () => {
+    const payload = await brokerSaveAfter({ ...defaultConfig }, () => {
+      fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+    });
+
+    expect(payload).toEqual({ copy_first_contact: false });
+  });
+
+  it('never sends a broker an admin-only key the page does not show (F-547)', async () => {
+    const payload = await brokerSaveAfter(
+      { ...defaultConfig, exchange_workflow_enabled: true, require_broker_approval: true },
+      () => {
+        fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+      },
+    );
+
+    expect(payload).not.toHaveProperty('exchange_workflow_enabled');
+    expect(payload).not.toHaveProperty('require_broker_approval');
     expect(payload).not.toHaveProperty('broker_messaging_enabled');
-    expect(payload).not.toHaveProperty('vetting_enabled');
-    expect(payload).toHaveProperty('broker_contact_email');
-    expect(payload).toHaveProperty('retention_days');
+  });
+
+  it("does not send back a sample rate an admin set at the blanket-copy level (F-547)", async () => {
+    // At 100 the server treats the rate as the admin-only "copy all" policy (F-242)
+    // and refuses a broker's save that contains it.
+    const payload = await brokerSaveAfter({ ...defaultConfig, random_sample_percentage: 100 }, () => {
+      fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+    });
+
+    expect(payload).not.toHaveProperty('random_sample_percentage');
+  });
+
+  it('still sends an admin the whole configuration', async () => {
+    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
+    render(<BrokerConfigurationPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
+    });
+    const saveBtn = findSaveButton();
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith(defaultConfig);
+    });
   });
 
   it('renders numeric input fields for time-based settings', async () => {

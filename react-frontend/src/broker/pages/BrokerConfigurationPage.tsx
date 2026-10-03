@@ -211,6 +211,10 @@ export default function BrokerConfiguration() {
   /** true when the row's control is an admin-only policy the current user can't change. */
   const isLocked = (key: keyof BrokerConfig) => !canEditKey(key);
 
+  // The configuration as the server last returned it, so a broker's save can
+  // send only what the broker changed (F-547).
+  const savedConfigRef = useRef<Partial<BrokerConfig>>({});
+
   // Stash t/toast in refs so loadConfig's identity never churns (a t/toast
   // dependency would refetch on every language switch and can loop vitest).
   const tRef = useRef(t);
@@ -224,6 +228,7 @@ export default function BrokerConfiguration() {
     try {
       const res = await adminBroker.getConfiguration();
       if (res.success && res.data) {
+        savedConfigRef.current = res.data;
         setConfig(res.data);
       } else {
         setLoadError(true);
@@ -243,14 +248,23 @@ export default function BrokerConfiguration() {
   async function handleSave() {
     setSaving(true);
     try {
+      // F-547: a non-admin sends only the settings they changed. The server
+      // refuses the whole save if it contains any admin-only key, even
+      // unchanged — and the loaded config carries admin-only keys this page
+      // never shows (e.g. exchange_workflow_enabled) or that an admin set to
+      // an admin-only value (random_sample_percentage at 100, F-242).
+      const saved = savedConfigRef.current;
       const payload = isAdminTier
         ? config
         : (Object.fromEntries(
-            Object.entries(config).filter(([key]) => canEditKey(key as keyof BrokerConfig))
+            Object.entries(config).filter(([key, value]) =>
+              canEditKey(key as keyof BrokerConfig)
+              && value !== saved[key as keyof BrokerConfig])
           ) as Partial<BrokerConfig>);
 
       const res = await adminBroker.saveConfiguration(payload);
       if (res.success) {
+        savedConfigRef.current = { ...saved, ...config, ...res.data };
         if (res.data) {
           setConfig(prev => ({ ...prev, ...res.data }));
         }
