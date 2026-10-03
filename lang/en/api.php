@@ -2438,6 +2438,8 @@ return [
     'group_files_upload_forbidden'      => 'You do not have permission to upload group files',
     'group_file_size_exceeded'          => 'The file is too large',
     'group_file_type_not_allowed'       => 'This file type is not allowed',
+    'pdf_active_content_refused' => 'This PDF contains scripts or other interactive content, so it can’t be uploaded. Print or export it to a new PDF and try again.',
+    'pdf_not_inspectable' => 'This PDF couldn’t be checked for safety (it may be password-protected or damaged), so it can’t be uploaded. Save an unprotected copy as a new PDF and try again.',
     'group_file_store_failed'           => 'Failed to store file',
     'group_file_not_found'              => 'File not found',
     'group_file_delete_forbidden'       => 'You do not have permission to delete this file',

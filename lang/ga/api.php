@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'Níl cead agat comhaid ghrúpa a uaslódáil',
     'group_file_size_exceeded' => 'Tá an comhad ró-mhór',
     'group_file_type_not_allowed' => 'Ní cheadaítear an cineál comhaid seo',
+    'pdf_active_content_refused' => 'Tá scripteanna nó ábhar idirghníomhach eile sa PDF seo, mar sin ní féidir é a uaslódáil. Priontáil nó easpórtáil é chuig PDF nua agus bain triail eile as.',
+    'pdf_not_inspectable' => 'Níorbh fhéidir sábháilteacht an PDF seo a sheiceáil (d’fhéadfadh sé a bheith cosanta le pasfhocal nó damáistithe), mar sin ní féidir é a uaslódáil. Sábháil cóip gan chosaint mar PDF nua agus bain triail eile as.',
     'group_file_store_failed' => 'Theip ar an gcomhad a stóráil',
     'group_file_not_found' => 'Comhad gan aimsiú',
     'group_file_delete_forbidden' => 'Níl cead agat an comhad seo a scriosadh',

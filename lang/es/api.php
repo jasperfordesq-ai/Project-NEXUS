@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'No tienes permiso para subir archivos grupales',
     'group_file_size_exceeded' => 'El archivo es demasiado grande.',
     'group_file_type_not_allowed' => 'Este tipo de archivo no está permitido',
+    'pdf_active_content_refused' => 'Este PDF contiene scripts u otro contenido interactivo, por lo que no se puede subir. Imprímalo o expórtelo a un PDF nuevo e inténtelo de nuevo.',
+    'pdf_not_inspectable' => 'No se ha podido comprobar la seguridad de este PDF (puede estar protegido con contraseña o dañado), por lo que no se puede subir. Guarde una copia sin protección como un PDF nuevo e inténtelo de nuevo.',
     'group_file_store_failed' => 'No se pudo almacenar el archivo',
     'group_file_not_found' => 'Archivo no encontrado',
     'group_file_delete_forbidden' => 'No tienes permiso para eliminar este archivo',

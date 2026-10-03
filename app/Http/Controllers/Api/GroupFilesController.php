@@ -92,7 +92,8 @@ class GroupFilesController extends BaseApiController
                 'IDEMPOTENCY_CONFLICT' => 409,
                 'GROUP_QUOTA_EXCEEDED', 'TENANT_QUOTA_EXCEEDED' => 409,
                 'INVALID_TYPE', 'INVALID_FILE', 'INVALID_NAME', 'INVALID_DIMENSIONS',
-                'INVALID_FOLDER', 'DESCRIPTION_TOO_LONG', 'IDEMPOTENCY_INVALID' => 422,
+                'INVALID_FOLDER', 'DESCRIPTION_TOO_LONG', 'IDEMPOTENCY_INVALID',
+                'PDF_ACTIVE_CONTENT', 'PDF_NOT_INSPECTABLE' => 422,
                 default => 500,
             };
             return $errors !== []

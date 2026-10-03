@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'Vous n\'êtes pas autorisé à télécharger des fichiers de groupe',
     'group_file_size_exceeded' => 'Le fichier est trop volumineux',
     'group_file_type_not_allowed' => 'Ce type de fichier n\'est pas autorisé',
+    'pdf_active_content_refused' => 'Ce PDF contient des scripts ou d’autres contenus interactifs et ne peut donc pas être téléversé. Imprimez-le ou exportez-le dans un nouveau PDF, puis réessayez.',
+    'pdf_not_inspectable' => 'La sécurité de ce PDF n’a pas pu être vérifiée (il est peut-être protégé par mot de passe ou endommagé) ; il ne peut donc pas être téléversé. Enregistrez une copie non protégée dans un nouveau PDF, puis réessayez.',
     'group_file_store_failed' => 'Échec du stockage du fichier',
     'group_file_not_found' => 'Fichier introuvable',
     'group_file_delete_forbidden' => 'Vous n\'êtes pas autorisé à supprimer ce fichier',

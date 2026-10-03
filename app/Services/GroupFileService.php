@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Exceptions\GroupStorageQuarantineException;
+use App\Support\Uploads\PdfActiveContentInspector;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\UploadedFile;
@@ -541,6 +542,18 @@ final class GroupFileService
         if ($mime === null || ! in_array($extension, self::MIME_EXTENSIONS[$mime] ?? [], true)) {
             $this->errors[] = ['code' => 'INVALID_TYPE', 'message' => __('api.group_file_type_not_allowed'), 'field' => 'file'];
             return null;
+        }
+
+        if ($mime === 'application/pdf') {
+            // F-551: the RejectActivePdfUploads middleware refuses these at the
+            // API edge; repeated here so group files never depend on it alone.
+            $verdict = PdfActiveContentInspector::inspectFile($realPath);
+            if ($verdict !== PdfActiveContentInspector::CLEAN) {
+                $this->errors[] = $verdict === PdfActiveContentInspector::ACTIVE
+                    ? ['code' => 'PDF_ACTIVE_CONTENT', 'message' => __('api.pdf_active_content_refused'), 'field' => 'file']
+                    : ['code' => 'PDF_NOT_INSPECTABLE', 'message' => __('api.pdf_not_inspectable'), 'field' => 'file'];
+                return null;
+            }
         }
 
         if (str_starts_with($mime, 'image/')) {

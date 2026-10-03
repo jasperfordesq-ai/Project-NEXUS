@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'Nie masz uprawnień do przesyłania plików grupowych',
     'group_file_size_exceeded' => 'Plik jest za duży',
     'group_file_type_not_allowed' => 'Ten typ pliku jest niedozwolony',
+    'pdf_active_content_refused' => 'Ten plik PDF zawiera skrypty lub inne treści interaktywne, dlatego nie można go przesłać. Wydrukuj go lub wyeksportuj do nowego pliku PDF i spróbuj ponownie.',
+    'pdf_not_inspectable' => 'Nie udało się sprawdzić bezpieczeństwa tego pliku PDF (może być chroniony hasłem lub uszkodzony), dlatego nie można go przesłać. Zapisz niechronioną kopię jako nowy plik PDF i spróbuj ponownie.',
     'group_file_store_failed' => 'Nie udało się zapisać pliku',
     'group_file_not_found' => 'Nie znaleziono pliku',
     'group_file_delete_forbidden' => 'Nie masz uprawnień do usunięcia tego pliku',

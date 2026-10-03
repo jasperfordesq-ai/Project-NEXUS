@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'グループファイルをアップロードする権限がありません',
     'group_file_size_exceeded' => 'ファイルが大きすぎます',
     'group_file_type_not_allowed' => 'このファイルの種類は許可されていません',
+    'pdf_active_content_refused' => 'このPDFにはスクリプトなどの対話型コンテンツが含まれているため、アップロードできません。新しいPDFとして印刷またはエクスポートしてから、もう一度お試しください。',
+    'pdf_not_inspectable' => 'このPDFの安全性を確認できませんでした（パスワードで保護されているか、破損している可能性があります）。そのためアップロードできません。保護されていないコピーを新しいPDFとして保存してから、もう一度お試しください。',
     'group_file_store_failed' => 'ファイルの保存に失敗しました',
     'group_file_not_found' => 'ファイルが見つかりません',
     'group_file_delete_forbidden' => 'このファイルを削除する権限がありません',

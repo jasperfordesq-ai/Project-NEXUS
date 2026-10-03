@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'Você não tem permissão para fazer upload de arquivos de grupo',
     'group_file_size_exceeded' => 'O arquivo é muito grande',
     'group_file_type_not_allowed' => 'Este tipo de arquivo não é permitido',
+    'pdf_active_content_refused' => 'Este PDF contém scripts ou outro conteúdo interativo, por isso não pode ser carregado. Imprima-o ou exporte-o para um novo PDF e tente novamente.',
+    'pdf_not_inspectable' => 'Não foi possível verificar a segurança deste PDF (pode estar protegido por palavra-passe ou danificado), por isso não pode ser carregado. Guarde uma cópia sem proteção como um novo PDF e tente novamente.',
     'group_file_store_failed' => 'Falha ao armazenar arquivo',
     'group_file_not_found' => 'Arquivo não encontrado',
     'group_file_delete_forbidden' => 'Você não tem permissão para excluir este arquivo',

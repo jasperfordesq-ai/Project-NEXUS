@@ -675,6 +675,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SeoRedirectMiddleware::class,
         ], append: [
             'throttle:api',
+            // F-551: refuse uploaded PDFs carrying scripts or other active
+            // content, whichever feature they were uploaded to. After the
+            // throttle so a flood of uploads is limited before any parsing.
+            \App\Http\Middleware\RejectActivePdfUploads::class,
             // Terminable: writes the request's performance sample AFTER the
             // response has been sent, so it costs the user nothing. Position in
             // the stack is irrelevant — timing comes from LARAVEL_START.

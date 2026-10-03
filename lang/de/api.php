@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'Sie sind nicht berechtigt, Gruppendateien hochzuladen',
     'group_file_size_exceeded' => 'Die Datei ist zu groß',
     'group_file_type_not_allowed' => 'Dieser Dateityp ist nicht zulässig',
+    'pdf_active_content_refused' => 'Diese PDF-Datei enthält Skripte oder andere interaktive Inhalte und kann daher nicht hochgeladen werden. Drucken oder exportieren Sie sie als neue PDF-Datei und versuchen Sie es erneut.',
+    'pdf_not_inspectable' => 'Diese PDF-Datei konnte nicht auf Sicherheit geprüft werden (sie ist möglicherweise passwortgeschützt oder beschädigt) und kann daher nicht hochgeladen werden. Speichern Sie eine ungeschützte Kopie als neue PDF-Datei und versuchen Sie es erneut.',
     'group_file_store_failed' => 'Datei konnte nicht gespeichert werden',
     'group_file_not_found' => 'Datei nicht gefunden',
     'group_file_delete_forbidden' => 'Sie haben keine Berechtigung zum Löschen dieser Datei',

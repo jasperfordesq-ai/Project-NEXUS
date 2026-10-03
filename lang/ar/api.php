@@ -1911,6 +1911,8 @@ return [
     'group_files_upload_forbidden' => 'ليس لديك الإذن بتحميل ملفات المجموعة',
     'group_file_size_exceeded' => 'الملف كبير جدًا',
     'group_file_type_not_allowed' => 'هذا النوع من الملفات غير مسموح به',
+    'pdf_active_content_refused' => 'يحتوي ملف PDF هذا على نصوص برمجية أو محتوى تفاعلي آخر، لذا لا يمكن رفعه. اطبعه أو صدّره إلى ملف PDF جديد ثم حاول مرة أخرى.',
+    'pdf_not_inspectable' => 'تعذّر التحقق من أمان ملف PDF هذا (قد يكون محميًا بكلمة مرور أو تالفًا)، لذا لا يمكن رفعه. احفظ نسخة غير محمية كملف PDF جديد ثم حاول مرة أخرى.',
     'group_file_store_failed' => 'فشل في تخزين الملف',
     'group_file_not_found' => 'لم يتم العثور على الملف',
     'group_file_delete_forbidden' => 'ليس لديك الإذن بحذف هذا الملف',
