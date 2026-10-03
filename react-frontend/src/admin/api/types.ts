@@ -481,6 +481,8 @@ export interface MatchApprovalStats {
   rejected_count: number;
   avg_approval_time: number;
   approval_rate: number;
+  /** Mean hours from submission to decision — on the wire from MatchApprovalWorkflowService::getStatistics. */
+  avg_review_hours?: number;
 }
 
 export interface MatchingGatesConfig {
@@ -1285,6 +1287,40 @@ export type UpdateBlogPostPayload = Partial<CreateBlogPostPayload>;
 // Broker Controls
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** The dashboard queues that carry an oldest-item age and a fortnight trend. */
+export type BrokerTrendQueue =
+  | 'pending_exchanges'
+  | 'unreviewed_messages'
+  | 'safeguarding_alerts'
+  | 'open_reports'
+  | 'pending_members'
+  | 'vetting_review_requests';
+
+export interface BrokerQueueTrend {
+  /** Items that arrived each day for the last 14 days, oldest first, today last. */
+  points: number[];
+  /** Percent change of those 14 days against the 14 before; null when the earlier fortnight had none. */
+  delta: number | null;
+}
+
+/** What the viewer themselves decided in the last 7 days. */
+export interface BrokerMyWeek {
+  exchanges_decided: number;
+  messages_reviewed: number;
+  matches_decided: number;
+  vetting_handled: number;
+  total: number;
+}
+
+/** Parameters `GET /v2/admin/broker/dashboard` accepts since October 2026. */
+export interface BrokerDashboardParams {
+  /** Rows in `recent_activity` (1–100, default 20). */
+  activity_limit?: number;
+  /** `activity`: return `recent_activity` alone, skipping every count. */
+  only?: 'activity';
+}
+
+/** Parity: AdminBrokerController::dashboard(). */
 export interface BrokerDashboardStats {
   // Each metric is `null` when the controller's per-query try/catch
   // failed to compute it. Frontend renders null as a dash and surfaces
@@ -1303,6 +1339,12 @@ export interface BrokerDashboardStats {
   open_reports?: number | null;
   /** Whether the community has chosen its safeguarding jurisdiction; null = unknown (all-tenants view or lookup failed). */
   safeguarding_jurisdiction_configured?: boolean | null;
+  /** ISO-8601 arrival time of each queue's oldest waiting item; null when the queue is empty or the figure failed. */
+  oldest_waiting?: Partial<Record<BrokerTrendQueue, string | null>>;
+  /** Per queue; a queue whose trend failed is simply absent (and named in `_failed_metrics` as `trends.<queue>`). */
+  trends?: Partial<Record<BrokerTrendQueue, BrokerQueueTrend>>;
+  /** The viewer's own decisions in the last 7 days; null when the figure failed. */
+  my_week?: BrokerMyWeek | null;
   recent_activity: BrokerActivityEntry[];
   /** True when one or more metrics failed to load. */
   _partial?: boolean;
@@ -1324,10 +1366,15 @@ export interface BrokerActivityEntry {
   action_type: string;
   details: string | null;
   created_at: string;
+  /** The member an audit row is about (org_audit_log only). */
+  target_user_id?: number | null;
 }
 
 export interface ExchangeRequest {
   id: number;
+  /** Broker who decided, and when (from exchange_history). Added Oct 2026. */
+  broker_name?: string | null;
+  broker_decided_at?: string | null;
   requester_id: number;
   requester_name: string;
   provider_id: number;
@@ -1355,6 +1402,8 @@ export interface ExchangeRequest {
 export interface RiskTag {
   id: number;
   listing_id: number;
+  /** Listing owner's user id, so the owner can open the member window. */
+  owner_id?: number | null;
   listing_title?: string;
   owner_name?: string;
   risk_level: 'low' | 'medium' | 'high' | 'critical';
@@ -1429,6 +1478,9 @@ export interface BrokerMessageDetail {
 
 export interface BrokerArchive {
   id: number;
+  sender_id?: number | null;
+  receiver_id?: number | null;
+  decided_by?: number | null;
   sender_name: string;
   receiver_name: string;
   listing_title?: string;
