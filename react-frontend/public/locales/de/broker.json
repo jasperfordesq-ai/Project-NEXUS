@@ -397,15 +397,14 @@
     "list_error_body": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "refresh": "Prüfbestätigungen aktualisieren",
     "policy_title": "Schutzrichtlinie für Kontakte",
-    "policy_jurisdiction": "Richtlinienpaket",
+    "policy_jurisdiction": "Rechtsraum",
     "policy_attestation": "Erforderliche Bestätigung",
     "policy_purpose": "Schutzzweck",
     "purpose_safeguarded_contact": "Gesicherter Mitgliederkontakt",
     "policy_load_error": "Die Schutzrichtlinie konnte nicht geladen werden. Entscheidungen sind deaktiviert, bis sie verfügbar sind.",
-    "policy_unconfigured": "Ein Administrator muss die schützende Gerichtsbarkeit auswählen, bevor Bestätigungen aufgezeichnet werden können.",
     "policy_not_available": "In dieser Gerichtsbarkeit gibt es noch keine unterstützte Richtlinie zur Kontaktüberprüfung. Entscheidungen sind deaktiviert.",
-    "jurisdiction_label": "Schutzrichtlinienpaket",
-    "save_jurisdiction": "Policenpaket speichern",
+    "jurisdiction_label": "Rechtsraum für den Schutz",
+    "save_jurisdiction": "Rechtsraum speichern",
     "privacy_title": "Laden Sie keine Überprüfungsdokumente hoch",
     "privacy_body": "Erfassen Sie nur den operativen Umfang und die interne Entscheidung. Laden Sie keine Zertifikate, Zertifikatsnummern, Offenlegungsergebnisse, Ausweisdokumente oder Strafregisterinformationen in NEXUS hoch oder fügen Sie sie nicht ein.",
     "scheme_unavailable": "Nicht verfügbar",
@@ -480,7 +479,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Garda-Überprüfung",
     "attestation_uk_safeguarding_clearance": "Sicherheitsfreigabe für das Vereinigte Königreich",
-    "attestation_other": "Schutzbestätigung"
+    "attestation_other": "Schutzbestätigung",
+    "jurisdiction_placeholder": "Nicht festgelegt",
+    "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wende dich an einen Admin deiner Gemeinschaft."
   },
   "member_detail": {
     "load_failed": "Mitglied konnte nicht geladen werden.",
@@ -1126,8 +1127,8 @@
     "load_failed": "Broker-Konfiguration konnte nicht geladen werden.",
     "save_failed": "Broker-Konfiguration konnte nicht gespeichert werden.",
     "save_success": "Broker-Konfiguration gespeichert.",
-    "limited_access_title": "Richtliniensteuerungen sind nur für Admins",
-    "limited_access_body": "Broker können hier operative Schwellenwerte und Prüfeinstellungen speichern. Mandantenweite Richtlinienschalter sind zur Orientierung sichtbar, müssen aber von einem Admin geändert werden.",
+    "limited_access_title": "Manche Einstellungen kann nur ein Admin ändern",
+    "limited_access_body": "Einstellungen mit der Markierung „Nur Admin“ werden angezeigt, damit du siehst, wie deine Gemeinschaft eingerichtet ist. Wenn eine davon geändert werden muss, wende dich an einen Admin deiner Gemeinschaft.",
     "section_messaging": "Nachrichten",
     "section_message_copy_rules": "Nachrichten-Kopierregeln",
     "section_broker_visibility": "Broker-Sichtbarkeit",
@@ -1213,14 +1214,25 @@
     "section_broker_visibility_desc": "Was Mitglieder über die Broker-Aufsicht in dieser Community sehen können.",
     "section_message_copy_rules_desc": "Welche Mitgliedernachrichten dem Broker zur Prüfung kopiert werden.",
     "section_compliance_safeguarding_desc": "Überwachung von Überprüfung und Versicherung, Durchsetzung und Ablaufwarnungen.",
-    "admin_only_chip": "Nur Admin",
-    "admin_only_tooltip": "Nur Mieteradministratoren können diese Richtlinieneinstellung ändern.",
     "unsaved_changes": "Nicht gespeicherte Änderungen",
     "load_error_title": "Broker-Konfiguration konnte nicht geladen werden",
     "load_error_hint": "Versuchen Sie es erneut — bleibt der Fehler bestehen, ist die API möglicherweise nicht verfügbar.",
     "retry": "Erneut versuchen",
     "field_vetting_expiry_warning_days_help": "Tage vor Ablauf eines Überprüfungsdatensatzes, ab denen Ablaufwarnungen beginnen.",
     "field_insurance_expiry_warning_days_help": "Tage vor Ablauf eines Versicherungszertifikats, ab denen Ablaufwarnungen beginnen."
+  },
+  "admin_only": {
+    "label": "Nur Admin",
+    "hint": "Nur ein Admin kann das ändern. Wenn es geändert werden muss, wende dich an einen Admin deiner Gemeinschaft."
+  },
+  "jurisdiction_notice": {
+    "title": "Rechtsraum für den Schutz nicht festgelegt",
+    "intro": "Deine Gemeinschaft hat ihren Rechtsraum für den Schutz noch nicht gewählt. Bis er festgelegt ist:",
+    "effect_vetting": "Broker können keine Überprüfungsbestätigungen erfassen.",
+    "effect_contact": "Mitglieder, die nur von überprüften Personen kontaktiert werden möchten, können weder kontaktiert noch vermittelt werden.",
+    "action_admin": "Nur ein Admin kann ihn festlegen. Als Admin kannst du das auf der Seite „Bestätigungen prüfen“ tun.",
+    "action_ask_admin": "Nur ein Admin kann ihn festlegen. Bitte einen Admin deiner Gemeinschaft, das zu tun.",
+    "set_button": "Rechtsraum festlegen"
   },
   "matching": {
     "title": "Match-Genehmigungen",

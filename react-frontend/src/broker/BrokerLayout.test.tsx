@@ -14,6 +14,7 @@ import userEvent from '@testing-library/user-event';
 const mockGetDashboard = vi.hoisted(() => vi.fn());
 const mockUsersList = vi.hoisted(() => vi.fn());
 const mockApprovalStats = vi.hoisted(() => vi.fn());
+const mockRole = vi.hoisted(() => ({ value: 'broker' as 'broker' | 'admin' }));
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminBroker: {
@@ -30,7 +31,7 @@ vi.mock('@/admin/api/adminApi', () => ({
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({
-      user: { id: 1, name: 'Broker User', email: 'broker@test.ie', role: 'broker' },
+      user: { id: 1, name: 'Broker User', email: 'broker@test.ie', role: mockRole.value },
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
@@ -50,7 +51,10 @@ vi.mock('@/contexts', () =>
 );
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-vi.mock('@/lib/access', () => ({ hasAdminPanelAccess: vi.fn(() => true) }));
+vi.mock('@/lib/access', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/access')>()),
+  hasAdminPanelAccess: vi.fn(() => true),
+}));
 vi.mock('@/lib/helpers', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/helpers')>();
   return {
@@ -82,6 +86,7 @@ const BROKER_DASHBOARD = {
 describe('BrokerLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRole.value = 'broker';
     mockGetDashboard.mockResolvedValue({ success: true, data: BROKER_DASHBOARD });
     // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
     // paginated endpoints: `data` is the bare row array and pagination lives on the
@@ -155,6 +160,45 @@ describe('BrokerLayout', () => {
     // Should still render layout without throwing
     await waitFor(() => {
       expect(screen.getByTestId('outlet-sentinel')).toBeInTheDocument();
+    });
+  });
+  // The safeguarding jurisdiction notice (owner decision, 3 Oct 2026): every
+  // broker-panel page shows it while the community has no jurisdiction.
+  describe('safeguarding jurisdiction notice', () => {
+    const NOTICE = 'Safeguarding jurisdiction not set';
+
+    it('shows nothing when the jurisdiction is set', async () => {
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: true } });
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalled());
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+
+    it('shows nothing when the server could not say (null or missing)', async () => {
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: null } });
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalled());
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+
+    it('tells a broker to ask an admin, with no button to the setting', async () => {
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerLayout />);
+
+      expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+      expect(screen.getByText('Brokers cannot record vetting confirmations.')).toBeInTheDocument();
+      expect(screen.getByText(/Please ask an admin in your community to set it/)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Set the jurisdiction/ })).toBeNull();
+    });
+
+    it('gives an admin a button to the setting', async () => {
+      mockRole.value = 'admin';
+      mockGetDashboard.mockResolvedValue({ success: true, data: { ...BROKER_DASHBOARD, safeguarding_jurisdiction_configured: false } });
+      render(<BrokerLayout />);
+
+      expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Set the jurisdiction/ })).toBeInTheDocument();
+      expect(screen.queryByText(/Please ask an admin in your community to set it/)).toBeNull();
     });
   });
 });

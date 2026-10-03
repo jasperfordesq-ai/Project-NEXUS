@@ -397,15 +397,14 @@
     "list_error_body": "Controleer je verbinding en probeer het opnieuw.",
     "refresh": "Vernieuw de controlebevestigingen",
     "policy_title": "Het borgen van het contactbeleid",
-    "policy_jurisdiction": "Beleidspakket",
+    "policy_jurisdiction": "Rechtsgebied",
     "policy_attestation": "Vereiste bevestiging",
     "policy_purpose": "Doel beschermen",
     "purpose_safeguarded_contact": "Beveiligd ledencontact",
     "policy_load_error": "Het beschermingsbeleid kan niet worden geladen. Beslissingen worden uitgeschakeld totdat deze beschikbaar zijn.",
-    "policy_unconfigured": "Een beheerder moet het beschermende rechtsgebied selecteren voordat bevestigingen kunnen worden vastgelegd.",
     "policy_not_available": "Dit rechtsgebied beschikt nog niet over een ondersteund beleid voor contactcontrole. Beslissingen zijn uitgeschakeld.",
-    "jurisdiction_label": "Beleidspakket waarborgen",
-    "save_jurisdiction": "Beleidspakket opslaan",
+    "jurisdiction_label": "Rechtsgebied voor bescherming",
+    "save_jurisdiction": "Rechtsgebied opslaan",
     "privacy_title": "Upload geen controledocumenten",
     "privacy_body": "Leg alleen de operationele reikwijdte en het interne besluit vast. Upload of plak geen certificaten, certificaatnummers, openbaarmakingsresultaten, identiteitsdocumenten of strafbladinformatie in NEXUS.",
     "scheme_unavailable": "Niet beschikbaar",
@@ -480,7 +479,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Garda-keuring",
     "attestation_uk_safeguarding_clearance": "Britse vrijwaring",
-    "attestation_other": "Bevestiging veiligstellen"
+    "attestation_other": "Bevestiging veiligstellen",
+    "jurisdiction_placeholder": "Niet ingesteld",
+    "jurisdiction_admin_only_hint": "Alleen een admin kan het rechtsgebied voor bescherming wijzigen. Moet het anders, vraag het dan aan een admin van je gemeenschap."
   },
   "member_detail": {
     "load_failed": "Laden van lid mislukt.",
@@ -1126,8 +1127,8 @@
     "load_failed": "Makelaarconfiguratie kon niet worden geladen.",
     "save_failed": "Makelaarconfiguratie kon niet worden opgeslagen.",
     "save_success": "Makelaarconfiguratie opgeslagen.",
-    "limited_access_title": "Beleidsinstellingen zijn alleen voor beheerders",
-    "limited_access_body": "Brokers kunnen hier operationele drempels en beoordelingsinstellingen opslaan. Tenantbrede beleidsknoppen zijn zichtbaar als context, maar moeten door een beheerder worden gewijzigd.",
+    "limited_access_title": "Sommige instellingen kan alleen een admin wijzigen",
+    "limited_access_body": "Instellingen met ‘Alleen admin’ worden getoond zodat je ziet hoe je gemeenschap is ingericht. Moet er een anders, vraag het dan aan een admin van je gemeenschap.",
     "section_messaging": "Berichten",
     "section_message_copy_rules": "Berichtkopieerregels",
     "section_broker_visibility": "Zichtbaarheid van de makelaar",
@@ -1213,14 +1214,25 @@
     "section_broker_visibility_desc": "Wat leden kunnen zien over brokertoezicht in deze community.",
     "section_message_copy_rules_desc": "Welke ledenberichten worden gekopieerd naar de broker ter beoordeling.",
     "section_compliance_safeguarding_desc": "Tracking van screening en verzekering, handhaving en vervalwaarschuwingen.",
-    "admin_only_chip": "Alleen admin",
-    "admin_only_tooltip": "Alleen huurderbeheerders kunnen deze beleidsinstelling wijzigen.",
     "unsaved_changes": "Niet-opgeslagen wijzigingen",
     "load_error_title": "Kon brokerconfiguratie niet laden",
     "load_error_hint": "Probeer het opnieuw — als het probleem aanhoudt, is de API mogelijk niet beschikbaar.",
     "retry": "Opnieuw proberen",
     "field_vetting_expiry_warning_days_help": "Aantal dagen vóór het verlopen van een screeningrecord waarop vervalwaarschuwingen beginnen.",
     "field_insurance_expiry_warning_days_help": "Aantal dagen vóór het verlopen van een verzekeringscertificaat waarop vervalwaarschuwingen beginnen."
+  },
+  "admin_only": {
+    "label": "Alleen admin",
+    "hint": "Alleen een admin kan dit wijzigen. Moet het anders, vraag het dan aan een admin van je gemeenschap."
+  },
+  "jurisdiction_notice": {
+    "title": "Rechtsgebied voor bescherming niet ingesteld",
+    "intro": "Je gemeenschap heeft nog geen rechtsgebied voor bescherming gekozen. Totdat het is ingesteld:",
+    "effect_vetting": "Kunnen brokers geen bevestigingen van doorlichting vastleggen.",
+    "effect_contact": "Kunnen leden die alleen door doorgelichte mensen benaderd willen worden, niet worden benaderd of gekoppeld.",
+    "action_admin": "Alleen een admin kan het instellen. Als admin kun je dat doen op de pagina ‘Bevestigingen doorlichten’.",
+    "action_ask_admin": "Alleen een admin kan het instellen. Vraag een admin van je gemeenschap om dat te doen.",
+    "set_button": "Rechtsgebied instellen"
   },
   "matching": {
     "title": "Matchgoedkeuringen",

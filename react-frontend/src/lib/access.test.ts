@@ -17,6 +17,7 @@ import {
   superPanelLevel,
   isSuperAdminUser,
   canCreateEvents,
+  isAdminTierUser,
 } from './access';
 
 describe('hasBrokerRole', () => {
@@ -325,5 +326,28 @@ describe('canCreateEvents', () => {
     expect(canCreateEvents({ role: 'member' })).toBe(true);
     expect(canCreateEvents({ role: 'admin', can_create_events: false })).toBe(false);
     expect(canCreateEvents({ is_super_admin: true, can_create_events: false })).toBe(false);
+  });
+});
+
+describe('isAdminTierUser', () => {
+  it('is true for admin role strings', () => {
+    for (const role of ['admin', 'tenant_admin', 'super_admin', 'god']) {
+      expect(isAdminTierUser({ role })).toBe(true);
+    }
+  });
+
+  it('is false for broker and coordinator', () => {
+    expect(isAdminTierUser({ role: 'broker' })).toBe(false);
+    expect(isAdminTierUser({ role: 'coordinator' })).toBe(false);
+  });
+
+  it('counts an admin flag whatever the role string says, as the server does', () => {
+    expect(isAdminTierUser({ role: 'broker', is_admin: true })).toBe(true);
+    expect(isAdminTierUser({ role: 'member', is_tenant_super_admin: true })).toBe(true);
+  });
+
+  it('requires the flag to be strictly true and is null safe', () => {
+    expect(isAdminTierUser({ role: 'member', is_admin: 1 })).toBe(false);
+    expect(isAdminTierUser(null)).toBe(false);
   });
 });

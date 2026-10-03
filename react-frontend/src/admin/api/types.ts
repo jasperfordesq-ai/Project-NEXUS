@@ -1297,6 +1297,8 @@ export interface BrokerDashboardStats {
   vetting_review_requests: number | null;
   safeguarding_alerts: number | null;
   onboarding_safeguarding_flags: number | null;
+  /** Whether the community has chosen its safeguarding jurisdiction; null = unknown (all-tenants view or lookup failed). */
+  safeguarding_jurisdiction_configured?: boolean | null;
   recent_activity: BrokerActivityEntry[];
   /** True when one or more metrics failed to load. */
   _partial?: boolean;

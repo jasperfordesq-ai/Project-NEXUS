@@ -38,6 +38,42 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertJsonMissingPath('data.vetting_expiring');
     }
 
+    /**
+     * Every broker-panel page shows a notice while the community has no
+     * safeguarding jurisdiction. The panel reads it from this endpoint because
+     * every broker-panel role can — coordinators cannot read the vetting policy.
+     */
+    public function test_dashboard_reports_whether_the_safeguarding_jurisdiction_is_set(): void
+    {
+        DB::table('tenant_safeguarding_settings')->where('tenant_id', $this->testTenantId)->delete();
+        $jurisdictions = app(\App\Services\SafeguardingJurisdictionService::class);
+        $jurisdictions->forget($this->testTenantId);
+
+        foreach (['broker', 'coordinator'] as $role) {
+            Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create(['role' => $role, 'status' => 'active']));
+            $this->apiGet('/v2/admin/broker/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.safeguarding_jurisdiction_configured', false);
+        }
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        DB::table('tenant_safeguarding_settings')->insert([
+            'tenant_id' => $this->testTenantId,
+            'jurisdiction' => 'ireland',
+            'policy_version' => 'safeguarded-contact-v1:test',
+            'configured_by' => $admin->id,
+            'configured_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $jurisdictions->forget($this->testTenantId);
+
+        Sanctum::actingAs($admin);
+        $this->apiGet('/v2/admin/broker/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.safeguarding_jurisdiction_configured', true);
+    }
+
     public function test_dashboard_does_not_count_false_safeguarding_checkbox_as_a_flag(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

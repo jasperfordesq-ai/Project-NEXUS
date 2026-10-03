@@ -397,15 +397,14 @@
     "list_error_body": "接続を確認して、もう一度お試しください。",
     "refresh": "審査確認を更新する",
     "policy_title": "連絡先の保護ポリシー",
-    "policy_jurisdiction": "ポリシーパッケージ",
+    "policy_jurisdiction": "管轄",
     "policy_attestation": "必須確認",
     "policy_purpose": "保護の目的",
     "purpose_safeguarded_contact": "安全に保護されたメンバーの連絡先",
     "policy_load_error": "保護ポリシーをロードできませんでした。決定は利用可能になるまで無効になります。",
-    "policy_unconfigured": "管理者は、確認を記録する前に、保護管轄区域を選択する必要があります。",
     "policy_not_available": "この管轄区域には、サポートされている接触者検査ポリシーがまだありません。決定は無効になります。",
-    "jurisdiction_label": "保護ポリシーパッケージ",
-    "save_jurisdiction": "ポリシーパッケージの保存",
+    "jurisdiction_label": "保護の管轄",
+    "save_jurisdiction": "管轄を保存",
     "privacy_title": "審査書類をアップロードしないでください",
     "privacy_body": "運用範囲と内部決定のみを記録します。証明書、証明書番号、開示結果、身分証明書、犯罪歴情報を NEXUS にアップロードしたり貼り付けたりしないでください。",
     "scheme_unavailable": "利用不可",
@@ -480,7 +479,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "ガルダの審査",
     "attestation_uk_safeguarding_clearance": "英国の安全防護措置許可",
-    "attestation_other": "安全確保の確認"
+    "attestation_other": "安全確保の確認",
+    "jurisdiction_placeholder": "未設定",
+    "jurisdiction_admin_only_hint": "保護の管轄を変更できるのは管理者だけです。変更が必要な場合は、コミュニティの管理者に依頼してください。"
   },
   "member_detail": {
     "load_failed": "メンバーの読み込みに失敗しました。",
@@ -1126,8 +1127,8 @@
     "load_failed": "ブローカー設定を読み込めませんでした。",
     "save_failed": "ブローカー設定を保存できませんでした。",
     "save_success": "ブローカー設定を保存しました。",
-    "limited_access_title": "ポリシー設定は管理者専用です",
-    "limited_access_body": "ブローカーはここで運用しきい値とレビュー設定を保存できます。テナント全体のポリシー切り替えは参考として表示されますが、変更できるのは管理者だけです。",
+    "limited_access_title": "一部の設定は管理者しか変更できません",
+    "limited_access_body": "「管理者専用」と表示された設定は、コミュニティの設定内容を確認できるように表示されています。変更が必要な場合は、コミュニティの管理者に依頼してください。",
     "section_messaging": "メッセージング",
     "section_message_copy_rules": "メッセージコピールール",
     "section_broker_visibility": "ブローカーの可視性",
@@ -1213,14 +1214,25 @@
     "section_broker_visibility_desc": "このコミュニティでブローカーの監督についてメンバーが確認できる内容。",
     "section_message_copy_rules_desc": "どのメンバーメッセージがレビュー用にブローカーへコピーされるか。",
     "section_compliance_safeguarding_desc": "審査と保険の追跡、強制、有効期限の警告。",
-    "admin_only_chip": "管理者専用",
-    "admin_only_tooltip": "このポリシー設定を変更できるのはテナント管理者だけです。",
     "unsaved_changes": "未保存の変更",
     "load_error_title": "ブローカー設定を読み込めませんでした",
     "load_error_hint": "もう一度お試しください — 失敗が続く場合、APIが利用できない可能性があります。",
     "retry": "再試行",
     "field_vetting_expiry_warning_days_help": "審査記録が期限切れになる何日前から有効期限の警告を開始するか。",
     "field_insurance_expiry_warning_days_help": "保険証明書が期限切れになる何日前から有効期限の警告を開始するか。"
+  },
+  "admin_only": {
+    "label": "管理者専用",
+    "hint": "これを変更できるのは管理者だけです。変更が必要な場合は、コミュニティの管理者に依頼してください。"
+  },
+  "jurisdiction_notice": {
+    "title": "保護の管轄が設定されていません",
+    "intro": "このコミュニティはまだ保護の管轄を選んでいません。設定されるまでは:",
+    "effect_vetting": "ブローカーは審査の確認を記録できません。",
+    "effect_contact": "審査済みの人からの連絡だけを希望したメンバーには、連絡もマッチングもできません。",
+    "action_admin": "設定できるのは管理者だけです。管理者であるあなたは、「審査確認」ページで設定できます。",
+    "action_ask_admin": "設定できるのは管理者だけです。コミュニティの管理者に設定を依頼してください。",
+    "set_button": "管轄を設定する"
   },
   "matching": {
     "title": "マッチ承認",

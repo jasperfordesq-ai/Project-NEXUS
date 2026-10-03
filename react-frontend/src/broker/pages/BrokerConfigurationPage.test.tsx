@@ -299,7 +299,7 @@ describe('BrokerConfigurationPage', () => {
       expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
     });
 
-    expect(screen.queryByText('Policy controls are admin-only')).toBeNull();
+    expect(screen.queryByText('Some settings can only be changed by an admin')).toBeNull();
     expect(screen.queryByText('Admin only')).toBeNull();
   });
 
@@ -309,7 +309,7 @@ describe('BrokerConfigurationPage', () => {
     render(<BrokerConfigurationPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Policy controls are admin-only')).toBeInTheDocument();
+      expect(screen.getByText('Some settings can only be changed by an admin')).toBeInTheDocument();
     });
 
     // Every admin-only row carries the lock chip…

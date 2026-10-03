@@ -16,14 +16,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminBroker, adminUsers, adminMatching } from '@/admin/api/adminApi';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
+import { isAdminTierUser } from '@/lib/access';
 import type { MatchApprovalStats } from '@/admin/api/types';
 import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSidebar';
 import { BrokerHeader } from './components/BrokerHeader';
 import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
 import { BrokerCommandPalette } from './components/BrokerCommandPalette';
+import { JurisdictionNotice } from './components/JurisdictionNotice';
 
 const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_members: 0,
@@ -46,6 +48,11 @@ export function BrokerLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [badges, setBadges] = useState<BrokerBadgeCounts>(EMPTY_BADGES);
+  // From the dashboard read the badges already make, so the "jurisdiction not
+  // set" notice costs no extra request. Only an explicit `false` shows it —
+  // unknown (null) must not cry wolf.
+  const [jurisdictionConfigured, setJurisdictionConfigured] = useState<boolean | null>(null);
+  const { user } = useAuth();
   const { pathname } = useLocation();
   const drawerRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -117,6 +124,8 @@ export function BrokerLayout() {
           support_needs_unseen: Number(safeguarding?.support_needs_unseen ?? 0),
           pending_support_actions: Number(safeguarding?.pending_support_actions ?? 0),
         });
+        const configured = d.safeguarding_jurisdiction_configured;
+        setJurisdictionConfigured(typeof configured === 'boolean' ? configured : null);
       }
     } catch {
       // Badges are non-critical — silently fail (e.g. on 401/403/network).
@@ -257,6 +266,7 @@ export function BrokerLayout() {
       >
         <div className="p-3 sm:p-4 md:p-6">
           <BrokerBreadcrumbs />
+          {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
           <Outlet />
         </div>
       </main>

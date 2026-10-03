@@ -406,15 +406,14 @@
     "list_error_body": "Controlla la connessione e riprova.",
     "refresh": "Aggiorna le conferme del controllo",
     "policy_title": "Politica di contatto per la tutela",
-    "policy_jurisdiction": "Pacchetto di regole",
+    "policy_jurisdiction": "Giurisdizione",
     "policy_attestation": "Conferma richiesta",
     "policy_purpose": "Scopo di salvaguardia",
     "purpose_safeguarded_contact": "Contatto membro protetto",
     "policy_load_error": "Impossibile caricare la politica di salvaguardia. Le decisioni sono disabilitate finché non sono disponibili.",
-    "policy_unconfigured": "Un amministratore deve selezionare la giurisdizione di salvaguardia prima che le conferme possano essere registrate.",
     "policy_not_available": "Questa giurisdizione non dispone ancora di una politica di controllo dei contatti supportata. Le decisioni sono disabilitate.",
-    "jurisdiction_label": "Pacchetto di politiche di salvaguardia",
-    "save_jurisdiction": "Salva pacchetto policy",
+    "jurisdiction_label": "Giurisdizione di salvaguardia",
+    "save_jurisdiction": "Salva giurisdizione",
     "privacy_title": "Non caricare documenti di verifica",
     "privacy_body": "Registrare solo l'ambito operativo e la decisione interna. Non caricare o incollare certificati, numeri di certificati, risultati di divulgazione, documenti di identità o informazioni del casellario giudiziario in NEXUS.",
     "scheme_unavailable": "Non disponibile",
@@ -489,7 +488,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Controllo del Garda",
     "attestation_uk_safeguarding_clearance": "Autorizzazione di salvaguardia del Regno Unito",
-    "attestation_other": "Salvaguardia della conferma"
+    "attestation_other": "Salvaguardia della conferma",
+    "jurisdiction_placeholder": "Non impostata",
+    "jurisdiction_admin_only_hint": "Solo un amministratore può modificare la giurisdizione di salvaguardia. Se va cambiata, chiedi a un amministratore della tua comunità."
   },
   "member_detail": {
     "load_failed": "Impossibile caricare il membro.",
@@ -1138,8 +1139,8 @@
     "load_failed": "Impossibile caricare la configurazione del broker.",
     "save_failed": "Impossibile salvare la configurazione del broker.",
     "save_success": "Configurazione del broker salvata.",
-    "limited_access_title": "I controlli delle policy sono riservati agli admin",
-    "limited_access_body": "I broker possono salvare qui soglie operative e impostazioni di revisione. Le opzioni di policy a livello di tenant sono visibili come contesto, ma devono essere modificate da un admin.",
+    "limited_access_title": "Alcune impostazioni possono essere modificate solo da un amministratore",
+    "limited_access_body": "Le impostazioni contrassegnate come «Solo amministratore» sono visibili per mostrarti come è configurata la tua comunità. Se una di esse va cambiata, chiedi a un amministratore della tua comunità.",
     "section_messaging": "Messaggistica",
     "section_message_copy_rules": "Regole di copia dei messaggi",
     "section_broker_visibility": "Visibilità del broker",
@@ -1225,14 +1226,25 @@
     "section_broker_visibility_desc": "Cosa possono vedere i membri riguardo alla supervisione del broker in questa comunità.",
     "section_message_copy_rules_desc": "Quali messaggi dei membri vengono copiati al broker per la revisione.",
     "section_compliance_safeguarding_desc": "Tracciamento di verifica e assicurazione, applicazione delle regole e avvisi di scadenza.",
-    "admin_only_chip": "Solo amministratore",
-    "admin_only_tooltip": "Solo gli amministratori dell'inquilino possono modificare questa impostazione di policy.",
     "unsaved_changes": "Modifiche non salvate",
     "load_error_title": "Impossibile caricare la configurazione del broker",
     "load_error_hint": "Riprova — se continua a fallire, l'API potrebbe non essere disponibile.",
     "retry": "Riprova",
     "field_vetting_expiry_warning_days_help": "Giorni prima della scadenza di un record di verifica in cui iniziano gli avvisi di scadenza.",
     "field_insurance_expiry_warning_days_help": "Giorni prima della scadenza di un certificato assicurativo in cui iniziano gli avvisi di scadenza."
+  },
+  "admin_only": {
+    "label": "Solo amministratore",
+    "hint": "Solo un amministratore può modificarlo. Se va cambiato, chiedi a un amministratore della tua comunità."
+  },
+  "jurisdiction_notice": {
+    "title": "Giurisdizione di salvaguardia non impostata",
+    "intro": "La tua comunità non ha ancora scelto la sua giurisdizione di salvaguardia. Finché non viene impostata:",
+    "effect_vetting": "I broker non possono registrare le conferme di verifica.",
+    "effect_contact": "I membri che hanno chiesto di essere contattati solo da persone verificate non possono essere contattati né abbinati.",
+    "action_admin": "Solo un amministratore può impostarla. Come amministratore, puoi farlo nella pagina «Conferme di controllo».",
+    "action_ask_admin": "Solo un amministratore può impostarla. Chiedi a un amministratore della tua comunità di farlo.",
+    "set_button": "Imposta la giurisdizione"
   },
   "matching": {
     "title": "Approvazioni abbinamenti",

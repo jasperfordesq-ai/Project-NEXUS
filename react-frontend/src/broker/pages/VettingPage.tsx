@@ -52,7 +52,10 @@ import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { formatServerDateTime } from '@/lib/serverTime';
+import { isAdminTierUser } from '@/lib/access';
+import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import {
+  AdminOnlyBadge,
   BrokerEmptyState,
   BrokerPageShell,
   BrokerSkeleton,
@@ -161,14 +164,9 @@ export function VettingRecords() {
   const [resolutionCode, setResolutionCode] = useState<ReviewResolutionCode | ''>('');
   const [resolving, setResolving] = useState(false);
 
-  const role = String(user?.role ?? '');
-  const userFlags = user as Record<string, unknown> | null;
-  const canConfigurePolicy =
-    ['admin', 'tenant_admin', 'super_admin', 'god'].includes(role) ||
-    userFlags?.is_admin === true ||
-    userFlags?.is_super_admin === true ||
-    userFlags?.is_tenant_super_admin === true ||
-    userFlags?.is_god === true;
+  // Only an admin may choose the safeguarding jurisdiction (owner decision,
+  // 3 Oct 2026). Everyone else sees it, read-only, marked Admin only.
+  const canConfigurePolicy = isAdminTierUser(user);
 
   const policy = policyData?.policy ?? stats?.policy ?? null;
   const canRecordDecision = Boolean(policy?.configured && policy.contact_policy_available);
@@ -289,6 +287,8 @@ export function VettingRecords() {
       }
       toast.success(t('vetting.toast_policy_saved'));
       refreshAll();
+      // Clears the panel-wide "jurisdiction not set" notice at once.
+      window.dispatchEvent(new Event(BROKER_BADGES_REFRESH_EVENT));
     } catch {
       toast.error(t('vetting.toast_policy_failed'));
     } finally {
@@ -539,36 +539,65 @@ export function VettingRecords() {
               </div>
             </div>
 
-            {!policyLoading && policy && !canRecordDecision && (
-              <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground">
-                <AlertTriangle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />
-                <p>{policy.configured ? t('vetting.policy_not_available') : t('vetting.policy_unconfigured')}</p>
+            {/* "Not set" is announced by the panel-wide JurisdictionNotice
+                above every broker page; this covers a jurisdiction that is set
+                but has no supported contact-vetting policy. */}
+            {!policyLoading && policy && policy.configured && !canRecordDecision && (
+              <div className="flex items-start gap-2 rounded-xl border border-warning/40 bg-surface p-3 text-sm text-foreground">
+                <AlertTriangle size={17} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                <p>{t('vetting.policy_not_available')}</p>
               </div>
             )}
 
-            {canConfigurePolicy && policyData && (
-              <div className="flex flex-col gap-3 border-t border-divider/70 pt-4 sm:flex-row sm:items-end">
-                <Select
-                  className="sm:max-w-md"
-                  label={t('vetting.jurisdiction_label')}
-                  selectedKeys={selectedJurisdiction ? new Set([selectedJurisdiction]) : new Set()}
-                  onSelectionChange={(keys) => setSelectedJurisdiction(String(Array.from(keys)[0] ?? ''))}
-                >
-                  {policyData.jurisdictions.map((jurisdiction) => (
-                    <SelectItem key={jurisdiction.code} id={jurisdiction.code} textValue={jurisdiction.label}>
-                      {jurisdiction.label}
-                    </SelectItem>
-                  ))}
-                </Select>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  isPending={savingPolicy}
-                  isDisabled={!selectedJurisdiction || selectedJurisdiction === policyData.policy.jurisdiction}
-                  onPress={handleSavePolicy}
-                >
-                  {t('vetting.save_jurisdiction')}
-                </Button>
+            {policyData && (
+              <div className="border-t border-divider/70 pt-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span id="jurisdiction-label" className="text-sm font-medium text-foreground">
+                    {t('vetting.jurisdiction_label')}
+                  </span>
+                  {!canConfigurePolicy && <AdminOnlyBadge />}
+                </div>
+                {canConfigurePolicy ? (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Select
+                      className="sm:max-w-md"
+                      aria-labelledby="jurisdiction-label"
+                      placeholder={t('vetting.jurisdiction_placeholder')}
+                      selectedKeys={selectedJurisdiction ? new Set([selectedJurisdiction]) : new Set()}
+                      onSelectionChange={(keys) => setSelectedJurisdiction(String(Array.from(keys)[0] ?? ''))}
+                    >
+                      {policyData.jurisdictions.map((jurisdiction) => (
+                        <SelectItem key={jurisdiction.code} id={jurisdiction.code} textValue={jurisdiction.label}>
+                          {jurisdiction.label}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      isPending={savingPolicy}
+                      isDisabled={!selectedJurisdiction || selectedJurisdiction === policyData.policy.jurisdiction}
+                      onPress={handleSavePolicy}
+                    >
+                      {t('vetting.save_jurisdiction')}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Plain full-contrast text, not a disabled dropdown: a
+                        disabled control is drawn faded, and the broker needs to
+                        read the current value. */}
+                    <div
+                      role="textbox"
+                      aria-readonly="true"
+                      aria-labelledby="jurisdiction-label"
+                      className="rounded-xl border border-divider bg-surface-secondary px-3 py-2 text-sm font-medium text-foreground sm:max-w-md"
+                    >
+                      {policyData.policy.configured ? policyData.policy.label : t('vetting.jurisdiction_placeholder')}
+                    </div>
+                    <p className="mt-2 text-sm text-foreground">{t('vetting.jurisdiction_admin_only_hint')}</p>
+                  </>
+                )}
               </div>
             )}
 

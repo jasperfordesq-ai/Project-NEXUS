@@ -424,15 +424,14 @@
     "list_error_body": "Seiceáil do nasc agus bain triail eile as.",
     "refresh": "Athnuaigh deimhnithe grinnfhiosrúcháin",
     "policy_title": "Beartas teagmhála cosanta",
-    "policy_jurisdiction": "Pacáiste beartais",
+    "policy_jurisdiction": "Dlínse",
     "policy_attestation": "Fianú riachtanach",
     "policy_purpose": "Cuspóir cosanta",
     "purpose_safeguarded_contact": "Teagmháil ball cosanta",
     "policy_load_error": "Níorbh fhéidir an beartas cosanta a luchtú. Tá cinntí díchumasaithe go dtí go mbeidh sé ar fáil.",
-    "policy_unconfigured": "Ní mór do riarthóir an dlínse cosanta a roghnú sular féidir deimhnithe a thaifeadadh.",
     "policy_not_available": "Níl beartas tacaithe um ghrinnfhiosrúchán teagmhála ag an dlínse seo go fóill. Tá cinntí díchumasaithe.",
-    "jurisdiction_label": "Pacáiste beartais cosanta",
-    "save_jurisdiction": "Sábháil an pacáiste beartais",
+    "jurisdiction_label": "Dlínse cosanta",
+    "save_jurisdiction": "Sábháil an dlínse",
     "privacy_title": "Ná uaslódáil doiciméid ghrinnfhiosrúcháin",
     "privacy_body": "Ná taifead ach an raon feidhme oibríochtúil agus an cinneadh inmheánach. Ná huaslódáil ná greamaigh deimhnithe, uimhreacha deimhnithe, torthaí nochtaithe, doiciméid aitheantais ná faisnéis faoi thaifid choiriúla in NEXUS.",
     "scheme_unavailable": "Níl sé ar fáil",
@@ -507,7 +506,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Grinnfhiosrúchán an Gharda Síochána",
     "attestation_uk_safeguarding_clearance": "Imréiteach cosanta na RA",
-    "attestation_other": "Deimhniú cosanta"
+    "attestation_other": "Deimhniú cosanta",
+    "jurisdiction_placeholder": "Gan socrú",
+    "jurisdiction_admin_only_hint": "Ní féidir ach le riarthóir an dlínse cosanta a athrú. Más gá í a athrú, iarr ar riarthóir i do phobal."
   },
   "member_detail": {
     "load_failed": "Níorbh fhéidir an ball a luchtú.",
@@ -1162,8 +1163,8 @@
     "load_failed": "Níorbh fhéidir cumraíocht an bhróicéara a luchtú.",
     "save_failed": "Níorbh fhéidir cumraíocht an bhróicéara a shábháil.",
     "save_success": "Sábháladh cumraíocht an bhróicéara.",
-    "limited_access_title": "Is do riarthóirí amháin iad rialuithe beartais",
-    "limited_access_body": "Is féidir le bróicéirí tairseacha oibríochtúla agus socruithe athbhreithnithe a shábháil anseo. Tá lascanna beartais don tionónta ar fad le feiceáil mar chomhthéacs, ach ní mór do riarthóir iad a athrú.",
+    "limited_access_title": "Ní féidir ach le riarthóir roinnt socruithe a athrú",
+    "limited_access_body": "Taispeántar na socruithe atá marcáilte “Do riarthóirí amháin” ionas go bhfeicfidh tú conas atá do phobal socraithe. Más gá ceann acu a athrú, iarr ar riarthóir i do phobal.",
     "section_messaging": "Teachtaireachtaí",
     "section_message_copy_rules": "Rialacha maidir le cóipeáil teachtaireachtaí",
     "section_broker_visibility": "Infheictheacht an bhróicéara",
@@ -1249,14 +1250,25 @@
     "section_broker_visibility_desc": "Cad is féidir le baill a fheiceáil faoi mhaoirseacht bróicéara sa phobal seo.",
     "section_message_copy_rules_desc": "Cé na teachtaireachtaí ó bhaill a chóipeáiltear chuig an mbróicéir lena n-athbhreithniú.",
     "section_compliance_safeguarding_desc": "Rianú grinnfhiosrúcháin agus árachais, forfheidhmiú agus rabhaidh éaga.",
-    "admin_only_chip": "Do riarthóirí amháin",
-    "admin_only_tooltip": "Ní féidir ach le riarthóirí tionónta an socrú beartais seo a athrú.",
     "unsaved_changes": "Athruithe gan sábháil",
     "load_error_title": "Níorbh fhéidir cumraíocht an bhróicéara a luchtú",
     "load_error_hint": "Bain triail eile as — má leanann an teip ar aghaidh, b'fhéidir nach bhfuil an API ar fáil.",
     "retry": "Bain triail eile as",
     "field_vetting_expiry_warning_days_help": "An líon laethanta roimh dhul in éag do thaifead grinnfhiosrúcháin a thosóidh na rabhaidh éaga.",
     "field_insurance_expiry_warning_days_help": "An líon laethanta roimh dhul in éag do theastas árachais a thosóidh na rabhaidh éaga."
+  },
+  "admin_only": {
+    "label": "Do riarthóirí amháin",
+    "hint": "Ní féidir é seo a athrú ach ag riarthóir. Más gá é a athrú, iarr ar riarthóir i do phobal."
+  },
+  "jurisdiction_notice": {
+    "title": "Níl an dlínse cosanta socraithe",
+    "intro": "Níl a dhlínse cosanta roghnaithe ag do phobal fós. Go dtí go socrófar í:",
+    "effect_vetting": "Ní féidir le bróicéirí deimhnithe grinnfhiosrúcháin a thaifeadadh.",
+    "effect_contact": "Ní féidir teagmháil a dhéanamh le baill a d’iarr nach ndéanfadh ach daoine grinnfhiosraithe teagmháil leo, ná iad a mheaitseáil.",
+    "action_admin": "Ní féidir ach le riarthóir í a shocrú. Mar riarthóir, is féidir leat í a shocrú ar an leathanach “Deimhnithe grinnfhiosrúcháin”.",
+    "action_ask_admin": "Ní féidir ach le riarthóir í a shocrú. Iarr ar riarthóir i do phobal í a shocrú.",
+    "set_button": "Socraigh an dlínse"
   },
   "matching": {
     "title": "Faomhadh meaitseálacha",

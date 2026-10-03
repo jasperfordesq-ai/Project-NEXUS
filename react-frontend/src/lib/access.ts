@@ -38,6 +38,27 @@ export function hasAdminPanelAccess(user: UserLike): boolean {
   );
 }
 
+/**
+ * Admin tier for broker-panel settings that only an admin may change (the
+ * "Admin only" settings and the safeguarding jurisdiction). Matches the
+ * server's admin-tier check in AdminBrokerController::saveConfiguration():
+ * an admin flag counts whatever the role string says, unlike
+ * hasAdminPanelAccess(), which keeps flagged brokers out of the admin panel.
+ */
+export function isAdminTierUser(user: UserLike): boolean {
+  const role = userRole(user);
+  return (
+    role === 'admin' ||
+    role === 'tenant_admin' ||
+    role === 'super_admin' ||
+    role === 'god' ||
+    user?.is_admin === true ||
+    user?.is_super_admin === true ||
+    user?.is_tenant_super_admin === true ||
+    user?.is_god === true
+  );
+}
+
 export function hasBrokerPanelAccess(user: UserLike): boolean {
   const role = userRole(user);
   return (

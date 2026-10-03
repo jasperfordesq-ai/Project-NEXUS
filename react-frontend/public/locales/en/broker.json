@@ -397,15 +397,14 @@
     "list_error_body": "Check your connection and try again.",
     "refresh": "Refresh vetting confirmations",
     "policy_title": "Safeguarding contact policy",
-    "policy_jurisdiction": "Policy package",
+    "policy_jurisdiction": "Jurisdiction",
     "policy_attestation": "Required confirmation",
     "policy_purpose": "Safeguarding purpose",
     "purpose_safeguarded_contact": "Safeguarded member contact",
     "policy_load_error": "The safeguarding policy could not be loaded. Decisions are disabled until it is available.",
-    "policy_unconfigured": "An administrator must select the safeguarding jurisdiction before confirmations can be recorded.",
     "policy_not_available": "This jurisdiction does not yet have a supported contact-vetting policy. Decisions are disabled.",
-    "jurisdiction_label": "Safeguarding policy package",
-    "save_jurisdiction": "Save policy package",
+    "jurisdiction_label": "Safeguarding jurisdiction",
+    "save_jurisdiction": "Save jurisdiction",
     "privacy_title": "Do not upload vetting documents",
     "privacy_body": "Record the operational scope and internal decision only. Do not upload or paste certificates, certificate numbers, disclosure results, identity documents, or criminal-record information into NEXUS.",
     "scheme_unavailable": "Not available",
@@ -480,7 +479,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Garda vetting",
     "attestation_uk_safeguarding_clearance": "UK safeguarding clearance",
-    "attestation_other": "Safeguarding confirmation"
+    "attestation_other": "Safeguarding confirmation",
+    "jurisdiction_placeholder": "Not set",
+    "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community."
   },
   "member_detail": {
     "load_failed": "Failed to load member.",
@@ -1126,8 +1127,8 @@
     "load_failed": "Failed to load broker configuration.",
     "save_failed": "Failed to save broker configuration.",
     "save_success": "Broker configuration saved.",
-    "limited_access_title": "Policy controls are admin-only",
-    "limited_access_body": "Brokers can save operational thresholds and review settings here. Tenant-wide policy toggles are visible for context but must be changed by an admin.",
+    "limited_access_title": "Some settings can only be changed by an admin",
+    "limited_access_body": "Settings marked Admin only are shown so you can see how your community is set up. If one of them needs changing, ask an admin in your community.",
     "section_messaging": "Messaging",
     "section_message_copy_rules": "Message Copy Rules",
     "section_broker_visibility": "Broker Visibility",
@@ -1213,14 +1214,25 @@
     "section_broker_visibility_desc": "What members can see about broker oversight in this community.",
     "section_message_copy_rules_desc": "Which member messages are copied to the broker for review.",
     "section_compliance_safeguarding_desc": "Vetting and insurance tracking, enforcement, and expiry warnings.",
-    "admin_only_chip": "Admin only",
-    "admin_only_tooltip": "Only tenant admins can change this policy setting.",
     "unsaved_changes": "Unsaved changes",
     "load_error_title": "Couldn't load broker configuration",
     "load_error_hint": "Try again — if it keeps failing, the API may be unavailable.",
     "retry": "Retry",
     "field_vetting_expiry_warning_days_help": "Days before a vetting record expires that expiry warnings begin.",
     "field_insurance_expiry_warning_days_help": "Days before an insurance certificate expires that expiry warnings begin."
+  },
+  "admin_only": {
+    "label": "Admin only",
+    "hint": "Only an admin can change this. If it needs changing, ask an admin in your community."
+  },
+  "jurisdiction_notice": {
+    "title": "Safeguarding jurisdiction not set",
+    "intro": "Your community has not chosen its safeguarding jurisdiction yet. Until it is set:",
+    "effect_vetting": "Brokers cannot record vetting confirmations.",
+    "effect_contact": "Members who asked to be contacted only by vetted people cannot be contacted or matched.",
+    "action_admin": "Only an admin can set it. As an admin, you can set it on the Vetting confirmations page.",
+    "action_ask_admin": "Only an admin can set it. Please ask an admin in your community to set it.",
+    "set_button": "Set the jurisdiction"
   },
   "matching": {
     "title": "Match Approvals",

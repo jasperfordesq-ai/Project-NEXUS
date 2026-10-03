@@ -316,6 +316,23 @@ class AdminBrokerController extends BaseApiController
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard onboarding_safeguarding_flags failed: ' . $e->getMessage());
         }
 
+        // Every broker-panel page shows a notice while the community has no
+        // safeguarding jurisdiction: brokers cannot record vetting decisions,
+        // and members who asked for vetted-only contact cannot be reached. Read
+        // here because every broker-panel role can read this endpoint, and
+        // coordinators cannot read the vetting policy itself. Null = unknown
+        // (all-tenants view, or the lookup failed), never "configured".
+        $jurisdictionConfigured = null;
+        if ($effectiveTenantId !== null) {
+            try {
+                $jurisdictionConfigured = (bool) (app(\App\Services\SafeguardingJurisdictionService::class)
+                    ->getPolicy($effectiveTenantId)['configured'] ?? false);
+            } catch (\Throwable $e) {
+                $failedMetrics[] = 'safeguarding_jurisdiction_configured';
+                \Illuminate\Support\Facades\Log::error('[AdminBroker] Dashboard jurisdiction lookup failed: ' . $e->getMessage());
+            }
+        }
+
         $recentActivity = [];
         try {
             // Activity feed reads from BOTH activity_log and org_audit_log,
@@ -400,6 +417,7 @@ class AdminBrokerController extends BaseApiController
             'vetting_review_requests' => in_array('vetting_review_requests', $failedMetrics, true) ? null : $vettingReviewRequests,
             'safeguarding_alerts' => in_array('safeguarding_alerts', $failedMetrics, true) ? null : $safeguardingAlerts,
             'onboarding_safeguarding_flags' => in_array('onboarding_safeguarding_flags', $failedMetrics, true) ? null : $onboardingSafeguardingFlags,
+            'safeguarding_jurisdiction_configured' => $jurisdictionConfigured,
             'recent_activity' => $recentActivity,
             // Frontend uses this to render a banner when one or more
             // metrics dropped to null instead of a real number, so a DB

@@ -406,15 +406,14 @@
     "list_error_body": "Comprueba tu conexión e inténtalo de nuevo.",
     "refresh": "Actualizar confirmaciones de verificación",
     "policy_title": "Política de protección de contactos",
-    "policy_jurisdiction": "Paquete de políticas",
+    "policy_jurisdiction": "Jurisdicción",
     "policy_attestation": "Confirmación requerida",
     "policy_purpose": "Finalidad de protección",
     "purpose_safeguarded_contact": "Contacto de miembro protegido",
     "policy_load_error": "No se pudo cargar la política de protección. Las decisiones están deshabilitadas hasta que esté disponible.",
-    "policy_unconfigured": "Un administrador debe seleccionar la jurisdicción de protección antes de que se puedan registrar las confirmaciones.",
     "policy_not_available": "Esta jurisdicción aún no cuenta con una política de investigación de contactos compatible. Las decisiones están inhabilitadas.",
-    "jurisdiction_label": "Paquete de políticas de protección",
-    "save_jurisdiction": "Guardar paquete de políticas",
+    "jurisdiction_label": "Jurisdicción de protección",
+    "save_jurisdiction": "Guardar jurisdicción",
     "privacy_title": "No cargue documentos de investigación",
     "privacy_body": "Registre únicamente el alcance operativo y la decisión interna. No cargue ni pegue certificados, números de certificados, resultados de divulgación, documentos de identidad o información de antecedentes penales en NEXUS.",
     "scheme_unavailable": "No disponible",
@@ -489,7 +488,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "investigación de antecedentes de la garda",
     "attestation_uk_safeguarding_clearance": "Autorización de protección del Reino Unido",
-    "attestation_other": "Confirmación de protección"
+    "attestation_other": "Confirmación de protección",
+    "jurisdiction_placeholder": "Sin definir",
+    "jurisdiction_admin_only_hint": "Solo un administrador puede cambiar la jurisdicción de protección. Si hay que cambiarla, pídeselo a un administrador de tu comunidad."
   },
   "member_detail": {
     "load_failed": "No se pudo cargar el miembro.",
@@ -1138,8 +1139,8 @@
     "load_failed": "No se pudo cargar la configuración del intermediario.",
     "save_failed": "No se pudo guardar la configuración del intermediario.",
     "save_success": "Configuración del intermediario guardada.",
-    "limited_access_title": "Los controles de política son solo para administradores",
-    "limited_access_body": "Los intermediarios pueden guardar aquí umbrales operativos y ajustes de revisión. Los controles de política de todo el tenant se muestran como contexto, pero debe cambiarlos un administrador.",
+    "limited_access_title": "Algunos ajustes solo los puede cambiar un administrador",
+    "limited_access_body": "Los ajustes marcados como «Solo administrador» se muestran para que veas cómo está configurada tu comunidad. Si hay que cambiar alguno, pídeselo a un administrador de tu comunidad.",
     "section_messaging": "Mensajería",
     "section_message_copy_rules": "Reglas de copia de mensajes",
     "section_broker_visibility": "Visibilidad del intermediario",
@@ -1225,14 +1226,25 @@
     "section_broker_visibility_desc": "Lo que los miembros pueden ver sobre la supervisión del intermediario en esta comunidad.",
     "section_message_copy_rules_desc": "Qué mensajes de los miembros se copian al intermediario para su revisión.",
     "section_compliance_safeguarding_desc": "Seguimiento de verificación y seguro, aplicación de normas y avisos de caducidad.",
-    "admin_only_chip": "Solo administrador",
-    "admin_only_tooltip": "Solo los administradores del inquilino pueden cambiar este ajuste de política.",
     "unsaved_changes": "Cambios sin guardar",
     "load_error_title": "No se pudo cargar la configuración del intermediario",
     "load_error_hint": "Inténtalo de nuevo — si sigue fallando, es posible que la API no esté disponible.",
     "retry": "Reintentar",
     "field_vetting_expiry_warning_days_help": "Días antes de que caduque un registro de verificación en los que comienzan los avisos de caducidad.",
     "field_insurance_expiry_warning_days_help": "Días antes de que caduque un certificado de seguro en los que comienzan los avisos de caducidad."
+  },
+  "admin_only": {
+    "label": "Solo administrador",
+    "hint": "Solo un administrador puede cambiar esto. Si hay que cambiarlo, pídeselo a un administrador de tu comunidad."
+  },
+  "jurisdiction_notice": {
+    "title": "Jurisdicción de protección sin definir",
+    "intro": "Tu comunidad aún no ha elegido su jurisdicción de protección. Hasta que se defina:",
+    "effect_vetting": "Los intermediarios no pueden registrar confirmaciones de verificación.",
+    "effect_contact": "Los miembros que pidieron que solo los contacten personas verificadas no pueden ser contactados ni emparejados.",
+    "action_admin": "Solo un administrador puede definirla. Como administrador, puedes hacerlo en la página «Confirmaciones de verificación».",
+    "action_ask_admin": "Solo un administrador puede definirla. Pide a un administrador de tu comunidad que lo haga.",
+    "set_button": "Definir la jurisdicción"
   },
   "matching": {
     "title": "Aprobaciones de coincidencias",

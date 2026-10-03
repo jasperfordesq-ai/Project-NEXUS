@@ -33176,6 +33176,10 @@ export default interface Resources {
     "unable_to_load": "Unable to Load Posts"
   },
   "broker": {
+    "admin_only": {
+      "hint": "Only an admin can change this. If it needs changing, ask an admin in your community.",
+      "label": "Admin only"
+    },
     "archives": {
       "back": "Back",
       "back_to_archives": "Back to Archive",
@@ -33291,8 +33295,6 @@ export default interface Resources {
       "save": "Save"
     },
     "configuration": {
-      "admin_only_chip": "Admin only",
-      "admin_only_tooltip": "Only tenant admins can change this policy setting.",
       "back": "Back",
       "description": "Settings for how brokers work in this community.",
       "field_allow_hour_adjustment_help": "Brokers can adjust the hours on an exchange before approval.",
@@ -33370,8 +33372,8 @@ export default interface Resources {
       "field_vetting_expiry_warning_days_aria": "Vetting expiry warning in days",
       "field_vetting_expiry_warning_days_help": "Days before a vetting record expires that expiry warnings begin.",
       "field_vetting_expiry_warning_days_label": "Vetting expiry warning (days)",
-      "limited_access_body": "Brokers can save operational thresholds and review settings here. Tenant-wide policy toggles are visible for context but must be changed by an admin.",
-      "limited_access_title": "Policy controls are admin-only",
+      "limited_access_body": "Settings marked Admin only are shown so you can see how your community is set up. If one of them needs changing, ask an admin in your community.",
+      "limited_access_title": "Some settings can only be changed by an admin",
       "load_error_hint": "Try again — if it keeps failing, the API may be unavailable.",
       "load_error_title": "Couldn't load broker configuration",
       "load_failed": "Failed to load broker configuration.",
@@ -33840,6 +33842,15 @@ export default interface Resources {
       "verify_success": "Insurance certificate verified.",
       "view_certificate_file": "View Certificate File",
       "view_details_aria": "View certificate details"
+    },
+    "jurisdiction_notice": {
+      "action_admin": "Only an admin can set it. As an admin, you can set it on the Vetting confirmations page.",
+      "action_ask_admin": "Only an admin can set it. Please ask an admin in your community to set it.",
+      "effect_contact": "Members who asked to be contacted only by vetted people cannot be contacted or matched.",
+      "effect_vetting": "Brokers cannot record vetting confirmations.",
+      "intro": "Your community has not chosen its safeguarding jurisdiction yet. Until it is set:",
+      "set_button": "Set the jurisdiction",
+      "title": "Safeguarding jurisdiction not set"
     },
     "layout": {
       "close_navigation": "Close navigation",
@@ -34592,19 +34603,20 @@ export default interface Resources {
       "filter_not_confirmed": "Not confirmed",
       "filter_review_requested": "Review requested",
       "filter_revoked": "Revoked confirmations",
-      "jurisdiction_label": "Safeguarding policy package",
+      "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community.",
+      "jurisdiction_label": "Safeguarding jurisdiction",
+      "jurisdiction_placeholder": "Not set",
       "list_error_body": "Check your connection and try again.",
       "list_error_title": "Contact attestations could not be loaded",
       "no_private_notes": "No private notes recorded.",
       "not_applicable": "Not applicable",
       "not_recorded": "Not recorded",
       "policy_attestation": "Required confirmation",
-      "policy_jurisdiction": "Policy package",
+      "policy_jurisdiction": "Jurisdiction",
       "policy_load_error": "The safeguarding policy could not be loaded. Decisions are disabled until it is available.",
       "policy_not_available": "This jurisdiction does not yet have a supported contact-vetting policy. Decisions are disabled.",
       "policy_purpose": "Safeguarding purpose",
       "policy_title": "Safeguarding contact policy",
-      "policy_unconfigured": "An administrator must select the safeguarding jurisdiction before confirmations can be recorded.",
       "privacy_body": "Record the operational scope and internal decision only. Do not upload or paste certificates, certificate numbers, disclosure results, identity documents, or criminal-record information into NEXUS.",
       "privacy_title": "Do not upload vetting documents",
       "private_notes_help": "Visible only to authorised brokers and administrators. Do not enter certificate numbers, disclosure results or criminal-record information.",
@@ -34629,7 +34641,7 @@ export default interface Resources {
       "revoke_body": "Revoke the community's current safeguarding confirmation for {{name}}.",
       "revoke_button": "Revoke confirmation",
       "revoke_title": "Revoke confirmation",
-      "save_jurisdiction": "Save policy package",
+      "save_jurisdiction": "Save jurisdiction",
       "scheme_unavailable": "Not available",
       "scope_summary_help": "State exactly what this decision covers, for example adult workforce befriending or supervised activities with children.",
       "scope_summary_label": "Certified scope",

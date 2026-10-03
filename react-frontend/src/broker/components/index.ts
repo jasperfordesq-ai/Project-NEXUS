@@ -16,3 +16,5 @@ export { BrokerSkeleton } from './BrokerSkeleton';
 export { BrokerStatusChip, brokerStatusColor } from './BrokerStatusChip';
 export { BrokerSparkline } from './BrokerSparkline';
 export { useCountUp } from './useCountUp';
+export { AdminOnlyBadge } from './AdminOnlyBadge';
+export { JurisdictionNotice } from './JurisdictionNotice';

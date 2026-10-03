@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   },
   setSearchParams: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+  user: { id: 1, role: 'admin', is_admin: true } as Record<string, unknown>,
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({ adminVetting: mocks.adminVetting }));
@@ -42,7 +43,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/contexts', () => createMockContexts({
-  useAuth: () => ({ user: { id: 1, role: 'admin', is_admin: true } }),
+  useAuth: () => ({ user: mocks.user }),
   useTenant: () => ({ tenantPath: (path: string) => `/test${path}`, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
   useToast: () => mocks.toast,
 }));
@@ -134,6 +135,7 @@ const makeMember = (overrides: Record<string, unknown> = {}) => ({
 describe('VettingRecords', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.user = { id: 1, role: 'admin', is_admin: true };
     mocks.adminVetting.list.mockResolvedValue({
       success: true,
       data: [makeMember()],
@@ -298,5 +300,26 @@ describe('VettingRecords', () => {
     render(<VettingRecords />);
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'vetting.action_confirm' })).toBeDisabled());
+  });
+  // Owner decision, 3 Oct 2026: only an admin chooses the safeguarding
+  // jurisdiction, but everyone sees it, marked Admin only.
+  it('shows a broker the jurisdiction read-only, marked Admin only', async () => {
+    mocks.user = { id: 2, role: 'broker' };
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    expect(await screen.findByText('vetting.jurisdiction_label')).toBeInTheDocument();
+    expect(screen.getByText('admin_only.label')).toBeInTheDocument();
+    expect(screen.getByText('vetting.jurisdiction_admin_only_hint')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'vetting.save_jurisdiction' })).toBeNull();
+  });
+
+  it('lets an admin choose the jurisdiction, with no Admin only mark', async () => {
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    expect(await screen.findByRole('button', { name: 'vetting.save_jurisdiction' })).toBeInTheDocument();
+    expect(screen.queryByText('admin_only.label')).toBeNull();
+    expect(screen.queryByText('vetting.jurisdiction_admin_only_hint')).toBeNull();
   });
 });

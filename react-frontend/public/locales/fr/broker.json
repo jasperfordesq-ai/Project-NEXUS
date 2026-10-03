@@ -406,15 +406,14 @@
     "list_error_body": "Vérifiez votre connexion et réessayez.",
     "refresh": "Actualiser les confirmations de vérification",
     "policy_title": "Politique de contact (protection)",
-    "policy_jurisdiction": "Ensemble de politiques",
+    "policy_jurisdiction": "Juridiction",
     "policy_attestation": "Confirmation requise",
     "policy_purpose": "Objectif de protection",
     "purpose_safeguarded_contact": "Contact membre protégé",
     "policy_load_error": "La politique de protection n'a pas pu être chargée. Les décisions sont désactivées jusqu'à ce qu'elle soit disponible.",
-    "policy_unconfigured": "Un administrateur doit sélectionner la juridiction de protection avant que les confirmations puissent être enregistrées.",
     "policy_not_available": "Cette juridiction ne dispose pas encore d’une politique de vérification des contacts prise en charge. Les décisions sont désactivées.",
-    "jurisdiction_label": "Ensemble de politiques de protection",
-    "save_jurisdiction": "Enregistrer le package de règles",
+    "jurisdiction_label": "Juridiction de protection",
+    "save_jurisdiction": "Enregistrer la juridiction",
     "privacy_title": "Ne téléchargez pas de documents de vérification",
     "privacy_body": "Enregistrez uniquement la portée opérationnelle et la décision interne. Ne téléchargez pas et ne collez pas de certificats, de numéros de certificat, de résultats de divulgation, de documents d'identité ou d'informations relatives à un casier judiciaire dans NEXUS.",
     "scheme_unavailable": "Pas disponible",
@@ -489,7 +488,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Vérification Garda",
     "attestation_uk_safeguarding_clearance": "Habilitation de protection (Royaume-Uni)",
-    "attestation_other": "Confirmation de protection"
+    "attestation_other": "Confirmation de protection",
+    "jurisdiction_placeholder": "Non définie",
+    "jurisdiction_admin_only_hint": "Seul un administrateur peut modifier la juridiction de protection. S’il faut la changer, demandez à un administrateur de votre communauté."
   },
   "member_detail": {
     "load_failed": "Échec du chargement du membre.",
@@ -1138,8 +1139,8 @@
     "load_failed": "Échec du chargement de la configuration du courtier.",
     "save_failed": "Échec de l'enregistrement de la configuration du courtier.",
     "save_success": "Configuration du courtier enregistrée.",
-    "limited_access_title": "Les contrôles de politique sont réservés aux admins",
-    "limited_access_body": "Les courtiers peuvent enregistrer ici les seuils opérationnels et les paramètres de revue. Les réglages de politique du tenant restent visibles pour contexte, mais doivent être modifiés par un admin.",
+    "limited_access_title": "Certains paramètres ne peuvent être modifiés que par un administrateur",
+    "limited_access_body": "Les paramètres marqués « Administrateur uniquement » sont affichés pour que vous voyiez comment votre communauté est configurée. S’il faut en changer un, demandez à un administrateur de votre communauté.",
     "section_messaging": "Messagerie",
     "section_message_copy_rules": "Règles de copie de messages",
     "section_broker_visibility": "Visibilité du courtier",
@@ -1225,14 +1226,25 @@
     "section_broker_visibility_desc": "Ce que les membres peuvent voir de la supervision du courtier dans cette communauté.",
     "section_message_copy_rules_desc": "Quels messages des membres sont copiés au courtier pour examen.",
     "section_compliance_safeguarding_desc": "Suivi de la vérification et de l'assurance, application des règles et avertissements d'expiration.",
-    "admin_only_chip": "Administrateur uniquement",
-    "admin_only_tooltip": "Seuls les administrateurs du locataire peuvent modifier ce paramètre de politique.",
     "unsaved_changes": "Modifications non enregistrées",
     "load_error_title": "Impossible de charger la configuration du courtier",
     "load_error_hint": "Réessayez — si l'échec persiste, l'API est peut-être indisponible.",
     "retry": "Réessayer",
     "field_vetting_expiry_warning_days_help": "Nombre de jours avant l'expiration d'un dossier de vérification à partir duquel les avertissements d'expiration commencent.",
     "field_insurance_expiry_warning_days_help": "Nombre de jours avant l'expiration d'un certificat d'assurance à partir duquel les avertissements d'expiration commencent."
+  },
+  "admin_only": {
+    "label": "Administrateur uniquement",
+    "hint": "Seul un administrateur peut modifier ce paramètre. S’il faut le changer, demandez à un administrateur de votre communauté."
+  },
+  "jurisdiction_notice": {
+    "title": "Juridiction de protection non définie",
+    "intro": "Votre communauté n’a pas encore choisi sa juridiction de protection. Tant qu’elle n’est pas définie :",
+    "effect_vetting": "Les intermédiaires ne peuvent pas enregistrer de confirmations de vérification.",
+    "effect_contact": "Les membres qui ont demandé à n’être contactés que par des personnes vérifiées ne peuvent être ni contactés ni mis en relation.",
+    "action_admin": "Seul un administrateur peut la définir. En tant qu’administrateur, vous pouvez le faire sur la page « Confirmations de vérification ».",
+    "action_ask_admin": "Seul un administrateur peut la définir. Demandez à un administrateur de votre communauté de le faire.",
+    "set_button": "Définir la juridiction"
   },
   "matching": {
     "title": "Approbations d'appariement",

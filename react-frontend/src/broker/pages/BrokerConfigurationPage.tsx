@@ -10,9 +10,9 @@
  *
  * Restyled to the broker design language: BrokerPageShell frame, grouped
  * section cards (icon + title + one-line description), admin-only settings
- * surfaced with a lock chip + tooltip instead of bare disabled inputs, and
- * an honest load-error state with retry. Setting keys and the save payload
- * are byte-identical to the previous implementation.
+ * surfaced with the shared AdminOnlyBadge instead of bare disabled inputs,
+ * and an honest load-error state with retry. A non-admin's save sends only
+ * the settings they changed (F-547).
  */
 
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
@@ -36,18 +36,20 @@ import {
   Button,
   Input,
   Switch,
-  Chip,
-  Tooltip,
   Separator,
+  Chip,
+  Alert,
 } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { adminBroker } from '@/admin/api/adminApi';
 import type { BrokerConfig } from '@/admin/api/types';
 import { useAuth, useTenant, useToast } from '@/contexts';
+import { isAdminTierUser } from '@/lib/access';
 import {
   BrokerPageShell,
   BrokerSkeleton,
   BrokerEmptyState,
+  AdminOnlyBadge,
   type BrokerStatColor,
 } from '../components';
 
@@ -108,24 +110,6 @@ function SectionCard({ icon: Icon, color, title, description, children }: Sectio
   );
 }
 
-/** Lock chip + tooltip marking a tenant-wide policy the current user can't change. */
-function AdminOnlyChip() {
-  const { t } = useTranslation('broker');
-  return (
-    <Tooltip content={t('configuration.admin_only_tooltip')}>
-      <Chip
-        size="sm"
-        variant="soft"
-        color="default"
-        className="shrink-0"
-        startContent={<Lock size={11} aria-hidden="true" />}
-      >
-        {t('configuration.admin_only_chip')}
-      </Chip>
-    </Tooltip>
-  );
-}
-
 interface SettingRowProps {
   label: string;
   help: string;
@@ -141,7 +125,7 @@ function SettingRow({ label, help, locked = false, children }: SettingRowProps) 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <p className="font-medium text-foreground">{label}</p>
-          {locked && <AdminOnlyChip />}
+          {locked && <AdminOnlyBadge />}
         </div>
         <p className="mt-0.5 text-sm leading-5 text-muted">{help}</p>
       </div>
@@ -193,17 +177,7 @@ export default function BrokerConfiguration() {
     insurance_expiry_warning_days: 30,
   });
 
-  const role = (user?.role as string) || '';
-  const userRecord = user as Record<string, unknown> | null;
-  const isAdminTier =
-    role === 'admin' ||
-    role === 'tenant_admin' ||
-    role === 'super_admin' ||
-    role === 'god' ||
-    userRecord?.is_admin === true ||
-    userRecord?.is_super_admin === true ||
-    userRecord?.is_tenant_super_admin === true ||
-    userRecord?.is_god === true;
+  const isAdminTier = isAdminTierUser(user);
 
   const canEditKey = (key: keyof BrokerConfig) =>
     isAdminTier || !ADMIN_ONLY_CONFIG_KEYS.includes(key as (typeof ADMIN_ONLY_CONFIG_KEYS)[number]);
@@ -330,17 +304,20 @@ export default function BrokerConfiguration() {
       ) : (
         <div className="space-y-6">
           {!isAdminTier && (
-            <Card className="rounded-2xl border border-warning/30 bg-warning/10 shadow-sm shadow-black/[0.03]">
-              <CardBody className="flex flex-row items-start gap-3 py-3">
-                <Lock size={18} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
-                <div className="min-w-0 text-sm">
-                  <p className="font-medium text-warning">
-                    {t('configuration.limited_access_title')}
-                  </p>
-                  <p className="text-muted">{t('configuration.limited_access_body')}</p>
-                </div>
-              </CardBody>
-            </Card>
+            // Dark text on the card surface with an amber edge: the amber-on-
+            // pale-amber card this replaces measured 3.6:1, below WCAG AA.
+            <Alert
+              color="warning"
+              className="rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+              classNames={{
+                title: 'text-sm font-semibold text-foreground',
+                description: 'text-sm leading-6 text-foreground',
+                icon: 'text-warning',
+              }}
+              icon={<Lock size={18} aria-hidden="true" />}
+              title={t('configuration.limited_access_title')}
+              description={t('configuration.limited_access_body')}
+            />
           )}
 
           {/* ── Messaging ─────────────────────────────────────────────────── */}

@@ -415,15 +415,14 @@
     "list_error_body": "Sprawdź połączenie i spróbuj ponownie.",
     "refresh": "Odśwież potwierdzenia weryfikacji",
     "policy_title": "Polityka ochrony kontaktów",
-    "policy_jurisdiction": "Pakiet zasad",
+    "policy_jurisdiction": "Jurysdykcja",
     "policy_attestation": "Wymagane potwierdzenie",
     "policy_purpose": "Cel ochronny",
     "purpose_safeguarded_contact": "Chroniony kontakt członków",
     "policy_load_error": "Nie można załadować zasady zabezpieczającej. Decyzje są wyłączone, dopóki nie będą dostępne.",
-    "policy_unconfigured": "Przed zarejestrowaniem potwierdzeń administrator musi wybrać jurysdykcję zabezpieczającą.",
     "policy_not_available": "W tej jurysdykcji nie obowiązują jeszcze zasady weryfikacji kontaktów. Decyzje są wyłączone.",
-    "jurisdiction_label": "Pakiet polityk ochronnych",
-    "save_jurisdiction": "Zapisz pakiet zasad",
+    "jurisdiction_label": "Jurysdykcja ochrony",
+    "save_jurisdiction": "Zapisz jurysdykcję",
     "privacy_title": "Nie przesyłaj dokumentów weryfikacyjnych",
     "privacy_body": "Zapisz wyłącznie zakres operacyjny i decyzję wewnętrzną. Nie przesyłaj ani nie wklejaj do NEXUSA certyfikatów, numerów certyfikatów, wyników ujawnień, dokumentów tożsamości ani informacji z rejestru karnego.",
     "scheme_unavailable": "Niedostępne",
@@ -498,7 +497,9 @@
     "attestation_access_ni": "AccessNI",
     "attestation_garda_vetting": "Kontrola Gardy",
     "attestation_uk_safeguarding_clearance": "Wielka Brytania zapewniająca zezwolenie",
-    "attestation_other": "Potwierdzenie zabezpieczające"
+    "attestation_other": "Potwierdzenie zabezpieczające",
+    "jurisdiction_placeholder": "Nie ustawiono",
+    "jurisdiction_admin_only_hint": "Tylko administrator może zmienić jurysdykcję ochrony. Jeśli trzeba ją zmienić, poproś administratora swojej społeczności."
   },
   "member_detail": {
     "load_failed": "Nie udało się załadować danych członka.",
@@ -1150,8 +1151,8 @@
     "load_failed": "Nie udało się załadować konfiguracji brokera.",
     "save_failed": "Nie udało się zapisać konfiguracji brokera.",
     "save_success": "Konfiguracja brokera zapisana.",
-    "limited_access_title": "Ustawienia polityk są tylko dla administratorów",
-    "limited_access_body": "Brokerzy mogą tu zapisywać progi operacyjne i ustawienia przeglądu. Przełączniki polityk dla całego tenant są widoczne jako kontekst, ale może je zmienić tylko administrator.",
+    "limited_access_title": "Niektóre ustawienia może zmienić tylko administrator",
+    "limited_access_body": "Ustawienia oznaczone jako „Tylko administrator” są widoczne, abyś wiedział(a), jak skonfigurowana jest Twoja społeczność. Jeśli któreś z nich trzeba zmienić, poproś administratora swojej społeczności.",
     "section_messaging": "Wiadomości",
     "section_message_copy_rules": "Reguły kopiowania wiadomości",
     "section_broker_visibility": "Widoczność brokera",
@@ -1237,14 +1238,25 @@
     "section_broker_visibility_desc": "Co członkowie mogą widzieć na temat nadzoru brokera w tej społeczności.",
     "section_message_copy_rules_desc": "Które wiadomości członków są kopiowane do brokera w celu przeglądu.",
     "section_compliance_safeguarding_desc": "Śledzenie weryfikacji i ubezpieczenia, egzekwowanie zasad oraz ostrzeżenia o wygaśnięciu.",
-    "admin_only_chip": "Tylko administrator",
-    "admin_only_tooltip": "Tylko administratorzy najemcy mogą zmieniać to ustawienie zasad.",
     "unsaved_changes": "Niezapisane zmiany",
     "load_error_title": "Nie udało się załadować konfiguracji brokera",
     "load_error_hint": "Spróbuj ponownie — jeśli błąd się powtarza, API może być niedostępne.",
     "retry": "Spróbuj ponownie",
     "field_vetting_expiry_warning_days_help": "Liczba dni przed wygaśnięciem rekordu weryfikacji, po której zaczynają pojawiać się ostrzeżenia o wygaśnięciu.",
     "field_insurance_expiry_warning_days_help": "Liczba dni przed wygaśnięciem certyfikatu ubezpieczeniowego, po której zaczynają pojawiać się ostrzeżenia o wygaśnięciu."
+  },
+  "admin_only": {
+    "label": "Tylko administrator",
+    "hint": "Tylko administrator może to zmienić. Jeśli trzeba to zmienić, poproś administratora swojej społeczności."
+  },
+  "jurisdiction_notice": {
+    "title": "Nie ustawiono jurysdykcji ochrony",
+    "intro": "Twoja społeczność nie wybrała jeszcze jurysdykcji ochrony. Dopóki nie zostanie ustawiona:",
+    "effect_vetting": "Brokerzy nie mogą zapisywać potwierdzeń weryfikacji.",
+    "effect_contact": "Z członkami, którzy poprosili, by kontaktowały się z nimi tylko osoby zweryfikowane, nie można się skontaktować ani ich dopasować.",
+    "action_admin": "Może ją ustawić tylko administrator. Jako administrator możesz to zrobić na stronie „Potwierdzenia weryfikacji”.",
+    "action_ask_admin": "Może ją ustawić tylko administrator. Poproś administratora swojej społeczności, aby to zrobił.",
+    "set_button": "Ustaw jurysdykcję"
   },
   "matching": {
     "title": "Zatwierdzenia dopasowań",
