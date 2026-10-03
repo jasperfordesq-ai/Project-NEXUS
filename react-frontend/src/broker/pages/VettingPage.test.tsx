@@ -314,6 +314,28 @@ describe('VettingRecords', () => {
     expect(screen.queryByRole('button', { name: 'vetting.save_jurisdiction' })).toBeNull();
   });
 
+  it('F-550: shows a coordinator the records with no decision buttons, and says why', async () => {
+    mocks.user = { id: 3, role: 'coordinator' };
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.getByText('vetting.coordinator_view_only')).toBeInTheDocument();
+    for (const name of ['vetting.action_confirm', 'vetting.action_renew', 'vetting.action_revoke', 'vetting.action_resolve']) {
+      expect(screen.queryByRole('button', { name: new RegExp(name) })).toBeNull();
+    }
+  });
+
+  it('F-550 control: a broker still gets the decision buttons and no coordinator note', async () => {
+    mocks.user = { id: 2, role: 'broker' };
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.queryByText('vetting.coordinator_view_only')).toBeNull();
+    expect(screen.getAllByRole('button', { name: /vetting\.action_(confirm|renew|revoke)/ }).length).toBeGreaterThan(0);
+  });
+
   it('lets an admin choose the jurisdiction, with no Admin only mark', async () => {
     const { VettingRecords } = await import('./VettingPage');
     render(<VettingRecords />);

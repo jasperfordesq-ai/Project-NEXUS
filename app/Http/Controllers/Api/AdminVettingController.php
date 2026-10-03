@@ -56,7 +56,7 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting */
     public function list(): JsonResponse
     {
-        $this->requireVettingDecisionMaker();
+        $this->requireVettingReader();
         $tenantId = TenantContext::getId();
 
         $result = $this->attestations->listMembers($tenantId, [
@@ -74,7 +74,7 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting/stats */
     public function stats(): JsonResponse
     {
-        $this->requireVettingDecisionMaker();
+        $this->requireVettingReader();
 
         return $this->respondWithData($this->attestations->stats(TenantContext::getId()));
     }
@@ -82,7 +82,7 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting/{id} */
     public function show(int $id): JsonResponse
     {
-        $callerId = $this->requireVettingDecisionMaker();
+        $callerId = $this->requireVettingReader();
         $record = $this->attestations->getById($id, TenantContext::getId());
 
         if ($record === null) {
@@ -95,7 +95,7 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting/user/{userId} */
     public function getUserRecords(int $userId): JsonResponse
     {
-        $callerId = $this->requireVettingDecisionMaker();
+        $callerId = $this->requireVettingReader();
 
         try {
             $records = $this->attestations->getUserRecords($userId, TenantContext::getId());
@@ -112,7 +112,7 @@ class AdminVettingController extends BaseApiController
     /** GET /v2/admin/vetting/policy */
     public function policy(): JsonResponse
     {
-        $this->requireVettingDecisionMaker();
+        $this->requireVettingReader();
         $tenantId = TenantContext::getId();
 
         return $this->respondWithData([
@@ -121,6 +121,21 @@ class AdminVettingController extends BaseApiController
             'revocation_reason_codes' => MemberVettingAttestationService::REVOCATION_REASON_CODES,
             'review_resolution_codes' => MemberVettingAttestationService::REVIEW_RESOLUTION_CODES,
         ]);
+    }
+
+    /**
+     * F-550: who may READ vetting records — brokers, coordinators and admins.
+     *
+     * Coordinators run the broker panel, whose Vetting page and member details
+     * read these routes; the documented rule is that they see vetting but make
+     * no vetting decisions. The reads used requireVettingDecisionMaker(), which
+     * refuses coordinators, so their Vetting page and the vetting part of a
+     * member's details failed to load. Decisions (confirm, revoke, resolve)
+     * stay on requireVettingDecisionMaker().
+     */
+    private function requireVettingReader(): int
+    {
+        return $this->requireBrokerOrAdmin();
     }
 
     /** PUT /v2/admin/vetting/policy */

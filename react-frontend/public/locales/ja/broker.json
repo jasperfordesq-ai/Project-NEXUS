@@ -483,7 +483,8 @@
     "attestation_uk_safeguarding_clearance": "英国の安全防護措置許可",
     "attestation_other": "安全確保の確認",
     "jurisdiction_placeholder": "未設定",
-    "jurisdiction_admin_only_hint": "保護の管轄を変更できるのは管理者だけです。変更が必要な場合は、コミュニティの管理者に依頼してください。"
+    "jurisdiction_admin_only_hint": "保護の管轄を変更できるのは管理者だけです。変更が必要な場合は、コミュニティの管理者に依頼してください。",
+    "coordinator_view_only": "コーディネーターはここで審査記録を閲覧できますが、確認・更新・取り消し・解決ができるのはブローカーまたは管理者のみです。"
   },
   "member_detail": {
     "load_failed": "メンバーの読み込みに失敗しました。",

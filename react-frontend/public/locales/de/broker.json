@@ -483,7 +483,8 @@
     "attestation_uk_safeguarding_clearance": "Sicherheitsfreigabe für das Vereinigte Königreich",
     "attestation_other": "Schutzbestätigung",
     "jurisdiction_placeholder": "Nicht festgelegt",
-    "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft."
+    "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft.",
+    "coordinator_view_only": "Als Koordinator:in können Sie Überprüfungsnachweise hier einsehen, aber nur ein Broker oder eine Administratorin kann sie bestätigen, erneuern, widerrufen oder abschließen."
   },
   "member_detail": {
     "load_failed": "Mitglied konnte nicht geladen werden.",

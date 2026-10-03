@@ -492,7 +492,8 @@
     "attestation_uk_safeguarding_clearance": "Autorización de protección del Reino Unido",
     "attestation_other": "Confirmación de protección",
     "jurisdiction_placeholder": "Sin definir",
-    "jurisdiction_admin_only_hint": "Solo un administrador puede cambiar la jurisdicción de protección. Si hay que cambiarla, pídeselo a un administrador de tu comunidad."
+    "jurisdiction_admin_only_hint": "Solo un administrador puede cambiar la jurisdicción de protección. Si hay que cambiarla, pídeselo a un administrador de tu comunidad.",
+    "coordinator_view_only": "Como coordinador puede ver aquí los registros de verificación, pero solo un intermediario o un administrador puede confirmarlos, renovarlos, revocarlos o resolverlos."
   },
   "member_detail": {
     "load_failed": "No se pudo cargar el miembro.",

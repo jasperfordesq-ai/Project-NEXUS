@@ -501,7 +501,8 @@
     "attestation_uk_safeguarding_clearance": "Wielka Brytania zapewniająca zezwolenie",
     "attestation_other": "Potwierdzenie zabezpieczające",
     "jurisdiction_placeholder": "Nie ustawiono",
-    "jurisdiction_admin_only_hint": "Tylko administrator może zmienić jurysdykcję ochrony. Jeśli trzeba ją zmienić, poproś administratora swojej społeczności."
+    "jurisdiction_admin_only_hint": "Tylko administrator może zmienić jurysdykcję ochrony. Jeśli trzeba ją zmienić, poproś administratora swojej społeczności.",
+    "coordinator_view_only": "Jako koordynator możesz tu przeglądać rekordy weryfikacji, ale tylko pośrednik lub administrator może je potwierdzić, odnowić, cofnąć lub rozpatrzyć."
   },
   "member_detail": {
     "load_failed": "Nie udało się załadować danych członka.",

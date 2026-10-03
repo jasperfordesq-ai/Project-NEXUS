@@ -483,7 +483,8 @@
     "attestation_uk_safeguarding_clearance": "UK safeguarding clearance",
     "attestation_other": "Safeguarding confirmation",
     "jurisdiction_placeholder": "Not set",
-    "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community."
+    "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community.",
+    "coordinator_view_only": "As a coordinator you can see vetting records here, but only a broker or an administrator can confirm, renew, revoke or resolve them."
   },
   "member_detail": {
     "load_failed": "Failed to load member.",

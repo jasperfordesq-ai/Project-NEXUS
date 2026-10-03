@@ -22,6 +22,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import UserCheck from 'lucide-react/icons/user-check';
 import Users from 'lucide-react/icons/users';
+import Info from 'lucide-react/icons/info';
 
 import {
   Avatar,
@@ -170,6 +171,9 @@ export function VettingRecords() {
 
   const policy = policyData?.policy ?? stats?.policy ?? null;
   const canRecordDecision = Boolean(policy?.configured && policy.contact_policy_available);
+  // Coordinators see vetting but make no vetting decisions (the server refuses
+  // them: requireVettingDecisionMaker), so they get no decision buttons.
+  const isCoordinator = String(user?.role ?? '') === 'coordinator';
   const reviewPending = stats?.review_pending ?? stats?.review_requested ?? 0;
   const certificationLabel = useCallback((code: string, recordPolicy = policy) =>
     recordPolicy?.certification_options.find((option) => option.code === code)?.label
@@ -451,7 +455,7 @@ export function VettingRecords() {
       label: t('vetting.col_actions'),
       render: (item) => (
         <div className="flex flex-wrap gap-2">
-          {item.decision !== 'confirmed' || item.is_expired ? (
+          {isCoordinator ? null : item.decision !== 'confirmed' || item.is_expired ? (
             <Button
               size="sm"
               variant="secondary"
@@ -478,7 +482,7 @@ export function VettingRecords() {
               {t('vetting.action_details')}
             </Button>
           )}
-          {item.review_status === 'pending' && item.review_request_id && (
+          {!isCoordinator && item.review_status === 'pending' && item.review_request_id && (
             <Button
               size="sm"
               variant="tertiary"
@@ -493,7 +497,7 @@ export function VettingRecords() {
         </div>
       ),
     },
-  ], [canRecordDecision, certificationLabel, openConfirm, openDetails, policyData?.review_resolution_codes, t]);
+  ], [canRecordDecision, certificationLabel, isCoordinator, openConfirm, openDetails, policyData?.review_resolution_codes, t]);
 
   const emptyContent = (
     <BrokerEmptyState
@@ -540,6 +544,13 @@ export function VettingRecords() {
                 )}
               </div>
             </div>
+
+            {isCoordinator && (
+              <div className="flex items-start gap-2 rounded-xl border border-divider/70 bg-surface-secondary p-3 text-sm text-foreground">
+                <Info size={17} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
+                <p>{t('vetting.coordinator_view_only')}</p>
+              </div>
+            )}
 
             {/* "Not set" is announced by the panel-wide JurisdictionNotice
                 above every broker page; this covers a jurisdiction that is set

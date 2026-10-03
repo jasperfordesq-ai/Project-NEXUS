@@ -34698,6 +34698,7 @@ export default interface Resources {
       "confirm_body": "Record the community decision for {{name}} under the applicable UK safeguarding scheme or schemes. NEXUS does not verify or retain certificates.",
       "confirm_button": "Confirm safeguarding certification",
       "confirm_title": "Confirm safeguarding certification",
+      "coordinator_view_only": "As a coordinator you can see vetting records here, but only a broker or an administrator can confirm, renew, revoke or resolve them.",
       "description": "Record which members have had their community safeguarding check confirmed. Certificates and criminal-record details are never stored here.",
       "details_title": "Certification details — {{name}}",
       "empty_filtered_hint": "Try another status or search term.",

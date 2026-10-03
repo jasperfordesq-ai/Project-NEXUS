@@ -492,7 +492,8 @@
     "attestation_uk_safeguarding_clearance": "Habilitation de protection (Royaume-Uni)",
     "attestation_other": "Confirmation de protection",
     "jurisdiction_placeholder": "Non définie",
-    "jurisdiction_admin_only_hint": "Seul un administrateur peut modifier la juridiction de protection. S’il faut la changer, demandez à un administrateur de votre communauté."
+    "jurisdiction_admin_only_hint": "Seul un administrateur peut modifier la juridiction de protection. S’il faut la changer, demandez à un administrateur de votre communauté.",
+    "coordinator_view_only": "En tant que coordinateur, vous pouvez consulter ici les vérifications, mais seul un courtier ou un administrateur peut les confirmer, les renouveler, les révoquer ou les traiter."
   },
   "member_detail": {
     "load_failed": "Échec du chargement du membre.",

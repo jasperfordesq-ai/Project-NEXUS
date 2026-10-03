@@ -510,7 +510,8 @@
     "attestation_uk_safeguarding_clearance": "Imréiteach cosanta na RA",
     "attestation_other": "Deimhniú cosanta",
     "jurisdiction_placeholder": "Gan socrú",
-    "jurisdiction_admin_only_hint": "Ní féidir ach le riarthóir an dlínse cosanta a athrú. Más gá í a athrú, iarr ar riarthóir i do phobal."
+    "jurisdiction_admin_only_hint": "Ní féidir ach le riarthóir an dlínse cosanta a athrú. Más gá í a athrú, iarr ar riarthóir i do phobal.",
+    "coordinator_view_only": "Mar chomhordaitheoir is féidir leat taifid ghrinnfhiosrúcháin a fheiceáil anseo, ach ní féidir ach le bróicéir nó le riarthóir iad a dheimhniú, a athnuachan, a chúlghairm nó a réiteach."
   },
   "member_detail": {
     "load_failed": "Níorbh fhéidir an ball a luchtú.",

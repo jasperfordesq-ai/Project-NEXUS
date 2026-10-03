@@ -492,7 +492,8 @@
     "attestation_uk_safeguarding_clearance": "Autorizzazione di salvaguardia del Regno Unito",
     "attestation_other": "Salvaguardia della conferma",
     "jurisdiction_placeholder": "Non impostata",
-    "jurisdiction_admin_only_hint": "Solo un amministratore può modificare la giurisdizione di salvaguardia. Se va cambiata, chiedi a un amministratore della tua comunità."
+    "jurisdiction_admin_only_hint": "Solo un amministratore può modificare la giurisdizione di salvaguardia. Se va cambiata, chiedi a un amministratore della tua comunità.",
+    "coordinator_view_only": "Come coordinatore puoi vedere qui le verifiche, ma solo un broker o un amministratore può confermarle, rinnovarle, revocarle o risolverle."
   },
   "member_detail": {
     "load_failed": "Impossibile caricare il membro.",

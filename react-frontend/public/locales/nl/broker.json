@@ -483,7 +483,8 @@
     "attestation_uk_safeguarding_clearance": "Britse vrijwaring",
     "attestation_other": "Bevestiging veiligstellen",
     "jurisdiction_placeholder": "Niet ingesteld",
-    "jurisdiction_admin_only_hint": "Alleen een admin kan het rechtsgebied voor bescherming wijzigen. Moet het anders, vraag het dan aan een admin van je gemeenschap."
+    "jurisdiction_admin_only_hint": "Alleen een admin kan het rechtsgebied voor bescherming wijzigen. Moet het anders, vraag het dan aan een admin van je gemeenschap.",
+    "coordinator_view_only": "Als coördinator kunt u hier screeningsgegevens bekijken, maar alleen een makelaar of beheerder kan ze bevestigen, verlengen, intrekken of afhandelen."
   },
   "member_detail": {
     "load_failed": "Laden van lid mislukt.",
