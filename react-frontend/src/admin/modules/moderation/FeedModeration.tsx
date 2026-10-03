@@ -23,6 +23,7 @@ import { adminSuper } from '@/admin/api/adminApi';
 import { canModerateContent } from '@/lib/roles';
 import { htmlToPlainText } from '@/lib/sanitize';
 import type { AdminFeedPost } from '@/admin/api/types';
+import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 
 export default function FeedModeration() {
   const { t } = useTranslation('admin_moderation');
@@ -244,6 +245,7 @@ export default function FeedModeration() {
   };
 
   // Determine columns based on super admin status
+  const showCards = useModerationCards();
   const columns = isSuperAdmin
     ? [
         { key: 'user', label: t('moderation.col_user') },
@@ -346,29 +348,46 @@ export default function FeedModeration() {
       )}
 
       {/* Table */}
-      <Table aria-label={t('moderation.label_feed_posts_table')}>
-        <TableHeader>
-          {columns.map((col) => (
-            <TableColumn key={col.key}>{col.label}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody
-          items={posts}
+      {/* Phones get one card per row, built from the same cells (ModerationCards). */}
+      {showCards ? (
+        <ModerationCards
+          ariaLabel={t('moderation.label_feed_posts_table')}
+          columns={columns}
+          items={posts ?? []}
+          getKey={(row) => row.id}
+          renderCells={renderCells}
           isLoading={isLoading}
-          loadingContent={<Spinner />}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeType ? t('moderation.no_posts_match_filters') : t('moderation.no_posts_to_moderate')}
             </div>
           }
-        >
-          {(post) => (
-            <TableRow key={post.id}>
-              {renderCells(post)}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+        />
+      ) : (
+        <Table aria-label={t('moderation.label_feed_posts_table')}>
+          <TableHeader>
+            {columns.map((col) => (
+              <TableColumn key={col.key}>{col.label}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody
+            items={posts}
+            isLoading={isLoading}
+            loadingContent={<Spinner />}
+            emptyContent={
+              <div className="text-center py-8 text-muted">
+                {activeSearch || activeType ? t('moderation.no_posts_match_filters') : t('moderation.no_posts_to_moderate')}
+              </div>
+            }
+          >
+            {(post) => (
+              <TableRow key={post.id}>
+                {renderCells(post)}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

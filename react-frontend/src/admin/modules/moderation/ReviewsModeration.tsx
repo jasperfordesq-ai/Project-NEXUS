@@ -23,6 +23,7 @@ import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
 import type { AdminReview } from '@/admin/api/types';
+import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 
 export default function ReviewsModeration() {
   const { t } = useTranslation('admin_moderation');
@@ -261,6 +262,7 @@ export default function ReviewsModeration() {
   };
 
   // Determine columns based on super admin status
+  const showCards = useModerationCards();
   const columns = isSuperAdmin
     ? [
         { key: 'reviewer', label: t('moderation.col_reviewer') },
@@ -365,16 +367,15 @@ export default function ReviewsModeration() {
       )}
 
       {/* Table */}
-      <Table aria-label={t('moderation.label_reviews_table')}>
-        <TableHeader>
-          {columns.map((col) => (
-            <TableColumn key={col.key}>{col.label}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody
-          items={reviews}
+      {/* Phones get one card per row, built from the same cells (ModerationCards). */}
+      {showCards ? (
+        <ModerationCards
+          ariaLabel={t('moderation.label_reviews_table')}
+          columns={columns}
+          items={reviews ?? []}
+          getKey={(row) => row.id}
+          renderCells={renderCells}
           isLoading={isLoading}
-          loadingContent={<Spinner />}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeRating
@@ -382,14 +383,34 @@ export default function ReviewsModeration() {
                 : t('moderation.no_reviews_to_moderate')}
             </div>
           }
-        >
-          {(review) => (
-            <TableRow key={review.id}>
-              {renderCells(review)}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+        />
+      ) : (
+        <Table aria-label={t('moderation.label_reviews_table')}>
+          <TableHeader>
+            {columns.map((col) => (
+              <TableColumn key={col.key}>{col.label}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody
+            items={reviews}
+            isLoading={isLoading}
+            loadingContent={<Spinner />}
+            emptyContent={
+              <div className="text-center py-8 text-muted">
+                {activeSearch || activeRating
+                  ? t('moderation.no_reviews_match_filters')
+                  : t('moderation.no_reviews_to_moderate')}
+              </div>
+            }
+          >
+            {(review) => (
+              <TableRow key={review.id}>
+                {renderCells(review)}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

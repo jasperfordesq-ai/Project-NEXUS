@@ -16,6 +16,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
+import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -142,6 +143,7 @@ export function ModerationQueuePage() {
   const toast = useToast();
 
   const [items, setItems] = useState<ModerationItem[]>([]);
+  const showCards = useModerationCards();
   const [stats, setStats] = useState<ModerationStats | null>(null);
   const [settings, setSettings] = useState<ModerationSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -333,6 +335,90 @@ export function ModerationQueuePage() {
     return text.length > len ? text.substring(0, len) + t('reports.ellipsis') : text;
   };
 
+  // One row's cells, keyed by column — shared by the table and the phone
+  // cards (ModerationCards), so the content is described once.
+  const queueColumns = [
+    { key: 'content', label: t('reports.col_content') },
+    { key: 'type', label: t('reports.col_type') },
+    { key: 'author', label: t('reports.col_author') },
+    { key: 'status', label: t('reports.col_status') },
+    { key: 'submitted', label: t('reports.col_submitted') },
+    { key: 'actions', label: t('reports.col_actions') },
+  ];
+  const renderQueueCells = (item: ModerationItem) => [
+      <TableCell key="content">
+        <div className="max-w-xs">
+          <p className="text-sm font-medium text-foreground truncate">{item.title || t('reports.untitled')}</p>
+          {item.body && (
+            <p className="text-xs text-muted truncate">{truncate(item.body, 80)}</p>
+          )}
+          {item.auto_flagged && item.auto_flag_reason && (
+            <p className="text-xs text-danger mt-1">
+              {t('reports.auto_flagged_reason', { reason: item.auto_flag_reason })}
+            </p>
+          )}
+        </div>
+      </TableCell>,
+      <TableCell key="type">
+        <Chip size="sm" variant="soft" color={TYPE_COLORS[item.content_type] ?? 'default'}>
+          {contentTypeLabel(item.content_type)}
+        </Chip>
+      </TableCell>,
+      <TableCell key="author">
+        <div className="flex items-center gap-2">
+          <Avatar size="sm" src={item.author_avatar ?? undefined} name={item.author_name} />
+          <span className="text-sm">{item.author_name}</span>
+        </div>
+      </TableCell>,
+      <TableCell key="status">
+        <Chip size="sm" variant="soft" color={STATUS_COLORS[item.status] ?? 'default'}>
+          {statusLabel(item.status)}
+        </Chip>
+        {item.rejection_reason && (
+          <p className="text-xs text-danger mt-1 max-w-[120px] truncate">
+            {item.rejection_reason}
+          </p>
+        )}
+      </TableCell>,
+      <TableCell key="submitted" className="whitespace-nowrap text-sm tabular-nums text-muted">
+        {new Date(item.submitted_at).toLocaleDateString(getFormattingLocale())}
+      </TableCell>,
+      <TableCell key="actions">
+        {(item.status === 'pending' || item.status === 'flagged') && (
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              isIconOnly
+              onPress={() => handleApprove(item.id)}
+              isLoading={actionLoading === item.id}
+              isDisabled={actionLoading !== null}
+              aria-label={t('reports.label_approve')}
+            >
+              <CheckCircle size={16} />
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              isIconOnly
+              onPress={() => openRejectModal(item.id)}
+              isLoading={actionLoading === item.id}
+              isDisabled={actionLoading !== null}
+              aria-label={t('reports.label_reject')}
+            >
+              <XCircle size={16} />
+            </Button>
+          </div>
+        )}
+        {item.status === 'approved' && (
+          <span className="text-xs text-success">{t('reports.label_approved')}</span>
+        )}
+        {item.status === 'rejected' && (
+          <span className="text-xs text-muted">{t('reports.label_rejected')}</span>
+        )}
+      </TableCell>,
+  ];
+
   return (
     <div>
       <PageHeader
@@ -366,7 +452,7 @@ export function ModerationQueuePage() {
       />
 
       {/* Stats Cards */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label={t('reports.label_pending_review')}
           value={stats?.pending ?? '\u2014'}
@@ -479,98 +565,35 @@ export function ModerationQueuePage() {
         />
       </div>
 
-      {/* Queue Table */}
-      <Table aria-label={t('reports.label_moderation_queue')}>
-        <TableHeader>
-          <TableColumn>{t('reports.col_content')}</TableColumn>
-          <TableColumn>{t('reports.col_type')}</TableColumn>
-          <TableColumn>{t('reports.col_author')}</TableColumn>
-          <TableColumn>{t('reports.col_status')}</TableColumn>
-          <TableColumn>{t('reports.col_submitted')}</TableColumn>
-          <TableColumn>{t('reports.col_actions')}</TableColumn>
-        </TableHeader>
-        <TableBody
-          emptyContent={t('reports.no_items_in_queue')}
+      {/* Queue — a table, or one card per item on a phone */}
+      {showCards ? (
+        <ModerationCards
+          ariaLabel={t('reports.label_moderation_queue')}
+          columns={queueColumns}
+          items={items}
+          getKey={(item) => item.id}
+          renderCells={renderQueueCells}
           isLoading={loading}
-          loadingContent={<Spinner />}
-        >
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>
-                <div className="max-w-xs">
-                  <p className="text-sm font-medium text-foreground truncate">{item.title || t('reports.untitled')}</p>
-                  {item.body && (
-                    <p className="text-xs text-muted truncate">{truncate(item.body, 80)}</p>
-                  )}
-                  {item.auto_flagged && item.auto_flag_reason && (
-                    <p className="text-xs text-danger mt-1">
-                      {t('reports.auto_flagged_reason', { reason: item.auto_flag_reason })}
-                    </p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Chip size="sm" variant="soft" color={TYPE_COLORS[item.content_type] ?? 'default'}>
-                  {contentTypeLabel(item.content_type)}
-                </Chip>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Avatar size="sm" src={item.author_avatar ?? undefined} name={item.author_name} />
-                  <span className="text-sm">{item.author_name}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Chip size="sm" variant="soft" color={STATUS_COLORS[item.status] ?? 'default'}>
-                  {statusLabel(item.status)}
-                </Chip>
-                {item.rejection_reason && (
-                  <p className="text-xs text-danger mt-1 max-w-[120px] truncate">
-                    {item.rejection_reason}
-                  </p>
-                )}
-              </TableCell>
-              <TableCell className="whitespace-nowrap text-sm tabular-nums text-muted">
-                {new Date(item.submitted_at).toLocaleDateString(getFormattingLocale())}
-              </TableCell>
-              <TableCell>
-                {(item.status === 'pending' || item.status === 'flagged') && (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      isIconOnly
-                      onPress={() => handleApprove(item.id)}
-                      isLoading={actionLoading === item.id}
-                      isDisabled={actionLoading !== null}
-                      aria-label={t('reports.label_approve')}
-                    >
-                      <CheckCircle size={16} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      isIconOnly
-                      onPress={() => openRejectModal(item.id)}
-                      isLoading={actionLoading === item.id}
-                      isDisabled={actionLoading !== null}
-                      aria-label={t('reports.label_reject')}
-                    >
-                      <XCircle size={16} />
-                    </Button>
-                  </div>
-                )}
-                {item.status === 'approved' && (
-                  <span className="text-xs text-success">{t('reports.label_approved')}</span>
-                )}
-                {item.status === 'rejected' && (
-                  <span className="text-xs text-muted">{t('reports.label_rejected')}</span>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          emptyContent={t('reports.no_items_in_queue')}
+        />
+      ) : (
+        <Table aria-label={t('reports.label_moderation_queue')}>
+          <TableHeader>
+            {queueColumns.map((col) => (
+              <TableColumn key={col.key}>{col.label}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody
+            emptyContent={t('reports.no_items_in_queue')}
+            isLoading={loading}
+            loadingContent={<Spinner />}
+          >
+            {items.map((item) => (
+              <TableRow key={item.id}>{renderQueueCells(item)}</TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       {totalPages > 1 && (
         <div className="flex justify-center mt-4">

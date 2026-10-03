@@ -27,6 +27,7 @@ import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
 import type { AdminReport, ModerationStats } from '@/admin/api/types';
+import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 
 export default function ReportsManagement() {
   const { t } = useTranslation('admin_moderation');
@@ -338,6 +339,7 @@ export default function ReportsManagement() {
   };
 
   // Determine columns based on super admin status
+  const showCards = useModerationCards();
   const columns = isSuperAdmin
     ? [
       t('moderation.col_reporter'),
@@ -381,7 +383,7 @@ export default function ReportsManagement() {
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <Card  className="border border-border">
             <CardBody className="flex flex-row items-center gap-3 p-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-accent-soft dark:bg-accent-soft">
@@ -509,16 +511,15 @@ export default function ReportsManagement() {
       )}
 
       {/* Table */}
-      <Table aria-label={t('moderation.label_reports_table')}  isStriped>
-        <TableHeader>
-          {columns.map((col) => (
-            <TableColumn key={col}>{col}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody
-          items={reports}
+      {/* Phones get one card per row, built from the same cells (ModerationCards). */}
+      {showCards ? (
+        <ModerationCards
+          ariaLabel={t('moderation.label_reports_table')}
+          columns={columns}
+          items={reports ?? []}
+          getKey={(row) => row.id}
+          renderCells={renderCells}
           isLoading={isLoading}
-          loadingContent={<Spinner />}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeType || activeStatus
@@ -526,14 +527,34 @@ export default function ReportsManagement() {
                 : t('moderation.no_reports_to_review')}
             </div>
           }
-        >
-          {(report) => (
-            <TableRow key={report.id}>
-              {renderCells(report)}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+        />
+      ) : (
+        <Table aria-label={t('moderation.label_reports_table')}  isStriped>
+          <TableHeader>
+            {columns.map((col) => (
+              <TableColumn key={col}>{col}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody
+            items={reports}
+            isLoading={isLoading}
+            loadingContent={<Spinner />}
+            emptyContent={
+              <div className="text-center py-8 text-muted">
+                {activeSearch || activeType || activeStatus
+                  ? t('moderation.no_reports_match_filters')
+                  : t('moderation.no_reports_to_review')}
+              </div>
+            }
+          >
+            {(report) => (
+              <TableRow key={report.id}>
+                {renderCells(report)}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

@@ -21,6 +21,7 @@ import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
 import type { AdminComment } from '@/admin/api/types';
+import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 
 export default function CommentsModeration() {
   const { t } = useTranslation('admin_moderation');
@@ -210,6 +211,7 @@ export default function CommentsModeration() {
   };
 
   // Determine columns based on super admin status
+  const showCards = useModerationCards();
   const columns = isSuperAdmin
     ? [
       t('moderation.col_user'),
@@ -310,16 +312,15 @@ export default function CommentsModeration() {
       )}
 
       {/* Table */}
-      <Table aria-label={t('moderation.label_comments_table')}>
-        <TableHeader>
-          {columns.map((col) => (
-            <TableColumn key={col}>{col}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody
-          items={comments}
+      {/* Phones get one card per row, built from the same cells (ModerationCards). */}
+      {showCards ? (
+        <ModerationCards
+          ariaLabel={t('moderation.label_comments_table')}
+          columns={columns}
+          items={comments ?? []}
+          getKey={(row) => row.id}
+          renderCells={renderCells}
           isLoading={isLoading}
-          loadingContent={<Spinner />}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeContentType
@@ -327,14 +328,34 @@ export default function CommentsModeration() {
                 : t('moderation.no_comments_to_moderate')}
             </div>
           }
-        >
-          {(comment) => (
-            <TableRow key={comment.id}>
-              {renderCells(comment)}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+        />
+      ) : (
+        <Table aria-label={t('moderation.label_comments_table')}>
+          <TableHeader>
+            {columns.map((col) => (
+              <TableColumn key={col}>{col}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody
+            items={comments}
+            isLoading={isLoading}
+            loadingContent={<Spinner />}
+            emptyContent={
+              <div className="text-center py-8 text-muted">
+                {activeSearch || activeContentType
+                  ? t('moderation.no_comments_match_filters')
+                  : t('moderation.no_comments_to_moderate')}
+              </div>
+            }
+          >
+            {(comment) => (
+              <TableRow key={comment.id}>
+                {renderCells(comment)}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
