@@ -223,19 +223,61 @@ describe('RiskTagsPage', () => {
     expect(screen.queryByTestId('datatable-loading')).not.toBeInTheDocument();
   });
 
-  // The broker dashboard's "High-risk listings" tile counts high AND critical
+  // The broker dashboard's "High risk listings" tile counts high AND critical
   // tags and links here with ?level=elevated. It used to link to ?level=high,
   // which hid every critical tag behind a number that included them.
-  it('keeps ?level=elevated and asks the API for high and critical together', async () => {
+  it('keeps ?level=elevated and shows high and critical tags only', async () => {
+    mockAdminBroker.getRiskTags.mockResolvedValue({
+      success: true,
+      data: [
+        makeTag({ id: 1, listing_id: 10, listing_title: 'High One', risk_level: 'high' }),
+        makeTag({ id: 2, listing_id: 11, listing_title: 'Critical One', risk_level: 'critical' }),
+        makeTag({ id: 3, listing_id: 12, listing_title: 'Medium One', risk_level: 'medium' }),
+      ],
+    });
     window.history.pushState({}, '', '/broker/risk-tags?level=elevated');
     try {
       const { RiskTagsPage } = await import('./RiskTagsPage');
       render(<RiskTagsPage />);
 
       await waitFor(() => {
-        expect(mockAdminBroker.getRiskTags).toHaveBeenCalledWith({ risk_level: 'elevated' });
+        expect(screen.getByText('Critical One')).toBeInTheDocument();
       });
+      expect(screen.getByText('High One')).toBeInTheDocument();
+      expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /High and critical/ })).toBeInTheDocument();
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
+  // The count boxes above the table were counted from the FILTERED list, so
+  // opening one level showed 0 for every other level.
+  it('counts every level in the boxes while a level tab filters the table', async () => {
+    mockAdminBroker.getRiskTags.mockResolvedValue({
+      success: true,
+      data: [
+        makeTag({ id: 1, listing_id: 10, listing_title: 'High One', risk_level: 'high' }),
+        makeTag({ id: 2, listing_id: 11, listing_title: 'Medium One', risk_level: 'medium' }),
+        makeTag({ id: 3, listing_id: 12, listing_title: 'Low One', risk_level: 'low' }),
+        makeTag({ id: 4, listing_id: 13, listing_title: 'Low Two', risk_level: 'low' }),
+      ],
+    });
+    window.history.pushState({}, '', '/broker/risk-tags?level=high');
+    try {
+      const { RiskTagsPage } = await import('./RiskTagsPage');
+      render(<RiskTagsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('High One')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
+      // The whole register is loaded once; the tab never asks the server to filter.
+      expect(mockAdminBroker.getRiskTags).toHaveBeenCalledWith({});
+
+      expect(within(screen.getByLabelText('View Medium risk tags')).getByText('1')).toBeInTheDocument();
+      expect(within(screen.getByLabelText('View Low risk tags')).getByText('2')).toBeInTheDocument();
+      expect(within(screen.getByLabelText('View High risk tags')).getByText('1')).toBeInTheDocument();
     } finally {
       window.history.pushState({}, '', '/');
     }

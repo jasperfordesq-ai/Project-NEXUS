@@ -186,20 +186,23 @@ export function RiskTagsPage() {
   const [selectedListing, setSelectedListing] = useState<ListingSearchResult | null>(null);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Stash the latest `t` and `toast` in refs so loadItems' identity only
-  // churns on the filter — a language switch must not refetch the register.
+  // Stash the latest `t` and `toast` in refs so loadItems keeps one identity —
+  // a language switch must not refetch the register.
   const tRef = useRef(t);
   const toastRef = useRef(toast);
   tRef.current = t;
   toastRef.current = toast;
 
+  // Always load the WHOLE register; the level tab filters the table only.
+  // The KPI boxes above the table count every level, so they must come from
+  // the unfiltered register. They used to be counted from the filtered
+  // response, so opening ?level=high (or the dashboard's ?level=elevated)
+  // showed "0" for every other level.
   const loadItems = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const res = await adminBroker.getRiskTags({
-        risk_level: riskLevel === 'all' ? undefined : riskLevel,
-      });
+      const res = await adminBroker.getRiskTags({});
       if (res.success && Array.isArray(res.data)) {
         setItems(res.data);
       } else {
@@ -212,7 +215,7 @@ export function RiskTagsPage() {
       setLoading(false);
       setHasLoaded(true);
     }
-  }, [riskLevel]);
+  }, []);
 
   useEffect(() => {
     loadItems();
@@ -341,19 +344,26 @@ export function RiskTagsPage() {
     }
   }
 
-  // Client-side search filtering
+  // Table rows: the level tab first (elevated = high + critical, the set the
+  // dashboard's High risk listings tile counts), then the search box.
   const filteredItems = useMemo(() => {
-    if (!tableSearch.trim()) return items;
+    const byLevel =
+      riskLevel === 'all'
+        ? items
+        : riskLevel === 'elevated'
+          ? items.filter((item) => item.risk_level === 'high' || item.risk_level === 'critical')
+          : items.filter((item) => item.risk_level === riskLevel);
+    if (!tableSearch.trim()) return byLevel;
     const q = tableSearch.toLowerCase();
-    return items.filter(item =>
+    return byLevel.filter(item =>
       (item.listing_title ?? '').toLowerCase().includes(q) ||
       (item.owner_name ?? '').toLowerCase().includes(q) ||
       (item.risk_category ?? '').toLowerCase().includes(q) ||
       (item.tagged_by_name ?? '').toLowerCase().includes(q)
     );
-  }, [items, tableSearch]);
+  }, [items, riskLevel, tableSearch]);
 
-  // KPI header — per-level counts derived from the loaded register.
+  // KPI header — per-level counts from the whole register, whatever tab is open.
   const levelCounts = useMemo(() => {
     const counts: Record<(typeof RISK_LEVEL_KEYS)[number], number> = {
       low: 0,
