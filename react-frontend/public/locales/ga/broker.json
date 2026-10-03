@@ -55,7 +55,6 @@
     "moderation_reports": "Tuairiscí",
     "safeguarding_options": "Roghanna cosanta",
     "safeguarding_support_needs": "Riachtanais tacaíochta na mball",
-    "safeguarding_flagged": "Teachtaireachtaí brataithe",
     "safeguarding_guardians": "Caomhnóirí",
     "safeguarding_support_actions": "Gníomhartha tacaíochta",
     "safeguarding_volunteering": "Teagmhais oibre dheonaigh"
@@ -403,8 +402,6 @@
     "retry": "Bain triail eile as",
     "support_needs_title": "Riachtanais tacaíochta na mball",
     "support_needs_description": "Baill a d’inis dúinn gur mhaith leo tacaíocht bhreise, agus an méid a athraíonn sé sin dóibh.",
-    "flagged_title": "Teachtaireachtaí brataithe",
-    "flagged_description": "Cóipeanna de theachtaireachtaí ag fanacht le seiceáil cosanta.",
     "guardians_title": "Caomhnóirí",
     "guardians_description": "Socruithe caomhnóra do bhaill ar mian leo tacaíocht bhreise.",
     "support_actions_title": "Gníomhartha tacaíochta",
@@ -810,7 +807,13 @@
     "detail_message_count_other": "{{count}} teachtaireacht",
     "detail_message_count_few": "{{count}} teachtaireacht",
     "detail_message_count_many": "{{count}} teachtaireacht",
-    "detail_message_count_two": "{{count}} teachtaireacht"
+    "detail_message_count_two": "{{count}} teachtaireacht",
+    "tab_urgent": "Práinneach",
+    "empty_urgent_title": "Níl aon rud práinneach",
+    "empty_urgent_hint": "Níl aon teachtaireacht bhrataithe ag fanacht le hathbhreithniú.",
+    "search_placeholder": "Cuardaigh teachtaireachtaí nó ainmneacha",
+    "empty_search_title": "Níl aon teachtaireacht a mheaitseálann do chuardach",
+    "empty_search_hint": "Bain triail as focal nó ainm eile."
   },
   "monitoring": {
     "title": "Monatóireacht úsáideoirí",

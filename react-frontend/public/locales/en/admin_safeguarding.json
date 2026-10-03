@@ -470,14 +470,6 @@
       "seen_by": "Seen by {{name}} {{when}}",
       "seen": "Seen {{when}}"
     },
-    "flagged_page": {
-      "intro": "Copies of messages taken for a safeguarding check. Read each one and mark it as reviewed. These are the same message copies as on the Messages page.",
-      "filter_label": "Show",
-      "filter_unreviewed": "Waiting for review",
-      "filter_critical": "High and critical",
-      "filter_reviewed": "Reviewed",
-      "filter_all": "All"
-    },
     "guardians_page": {
       "intro": "Guardian arrangements staff have recorded for members who want extra support, and whether the member has agreed.",
       "filter_label": "Show",

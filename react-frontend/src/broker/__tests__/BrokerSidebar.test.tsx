@@ -139,7 +139,6 @@ describe('BrokerSidebar', () => {
     const safeguarding = links.filter((href) => href?.startsWith('/broker/safeguarding'));
     expect(safeguarding).toEqual([
       '/broker/safeguarding/support-needs',
-      '/broker/safeguarding/flagged-messages',
       '/broker/safeguarding/guardians',
       '/broker/safeguarding/support-actions',
       '/broker/safeguarding-options',

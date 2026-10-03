@@ -200,15 +200,39 @@ class AdminBrokerControllerTest extends TestCase
         Sanctum::actingAs($admin);
 
         $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.safeguarding_alerts');
-        $messages = $this->apiGet('/v2/admin/safeguarding/flagged-messages?limit=200')->assertOk()->json('data');
-        // The safeguarding page's `?filter=critical` drill-down, as the
-        // dashboard component applies it.
-        $critical = array_filter(
-            $messages,
-            static fn (array $m): bool => !$m['is_reviewed'] && in_array($m['severity'], ['high', 'critical'], true),
-        );
+        // Since October 2026 the card opens the Messages queue's "Urgent"
+        // view (the separate safeguarding Flagged messages page was merged
+        // into Messages).
+        $urgent = $this->apiGet('/v2/admin/broker/messages?filter=urgent&per_page=100')->assertOk();
 
-        $this->assertSame(count($critical), $tile);
+        $this->assertSame((int) $urgent->json('meta.total'), $tile);
+        foreach ($urgent->json('data') as $row) {
+            $this->assertTrue($row['flagged']);
+            $this->assertNull($row['reviewed_at']);
+        }
+    }
+
+    public function test_messages_queue_searches_message_text_and_names(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $sender = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Zebedee', 'last_name' => 'Quarrington']);
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $third = User::factory()->forTenant($this->testTenantId)->create();
+        $byText = $this->insertMessageCopy($other->id, $third->id, ['message_body' => 'Can you help with the xylophone-lesson?']);
+        $byName = $this->insertMessageCopy($sender->id, $other->id);
+        $neither = $this->insertMessageCopy($other->id, $third->id, ['message_body' => 'Nothing to see']);
+        Sanctum::actingAs($broker);
+
+        $ids = fn (string $q) => array_map('intval', array_column(
+            $this->apiGet('/v2/admin/broker/messages?per_page=100&q=' . urlencode($q))->assertOk()->json('data'),
+            'id',
+        ));
+
+        $this->assertContains($byText, $ids('xylophone'));
+        $this->assertNotContains($neither, $ids('xylophone'));
+        $this->assertContains($byName, $ids('Quarrington'));
+        // A LIKE wildcard typed by the broker is matched literally.
+        $this->assertSame([], $ids('%%%zz-no-such-thing'));
     }
 
     public function test_vetting_tile_matches_the_review_requested_filter(): void

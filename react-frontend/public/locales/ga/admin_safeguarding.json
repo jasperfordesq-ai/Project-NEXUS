@@ -470,14 +470,6 @@
       "seen_by": "Chonaic {{name}} é {{when}}",
       "seen": "Feicthe {{when}}"
     },
-    "flagged_page": {
-      "intro": "Cóipeanna de theachtaireachtaí a tógadh le haghaidh seiceáil cosanta. Léigh gach ceann agus marcáil mar athbhreithnithe é. Is iad seo na cóipeanna céanna atá ar an leathanach Teachtaireachtaí.",
-      "filter_label": "Taispeáin",
-      "filter_unreviewed": "Ag fanacht le hathbhreithniú",
-      "filter_critical": "Ard agus criticiúil",
-      "filter_reviewed": "Athbhreithnithe",
-      "filter_all": "Gach ceann"
-    },
     "guardians_page": {
       "intro": "Socruithe caomhnóra a thaifead an fhoireann do bhaill ar mian leo tacaíocht bhreise, agus cé acu ar aontaigh an ball nó nár aontaigh.",
       "filter_label": "Taispeáin",

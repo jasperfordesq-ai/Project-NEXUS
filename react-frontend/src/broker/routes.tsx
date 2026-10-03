@@ -12,7 +12,7 @@ import { Suspense, lazy } from 'react';
 import { Route, Navigate, useLocation } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
-import { safeguardingRedirectTarget } from './safeguardingRedirect';
+import { flaggedMessagesTarget, safeguardingRedirectTarget } from './safeguardingRedirect';
 
 /**
  * Tenant-aware fallback for unmatched /broker/* paths. Without using
@@ -30,6 +30,17 @@ function BrokerSafeguardingIndexRedirect() {
   const { tenantPath } = useTenant();
   const location = useLocation();
   return <Navigate to={tenantPath(safeguardingRedirectTarget(location.search))} replace />;
+}
+
+/**
+ * Old /broker/safeguarding/flagged-messages links → the Messages queue,
+ * which lists the same message copies (merged October 2026).
+ */
+function BrokerFlaggedMessagesRedirect() {
+  const { tenantPath } = useTenant();
+  const location = useLocation();
+  const filter = new URLSearchParams(location.search).get('filter');
+  return <Navigate to={tenantPath(flaggedMessagesTarget(filter))} replace />;
 }
 
 /** Volunteering incidents depend on the tenant's `volunteering` feature. */
@@ -102,7 +113,6 @@ const ArchiveDetailPage = lazy(() => import('./pages/ArchiveDetailPage'));
 
 // Safeguarding — one page per job (was one page with four tabs until Oct 2026)
 const SafeguardingSupportNeedsPage = lazy(() => import('./pages/SafeguardingSupportNeedsPage'));
-const SafeguardingFlaggedMessagesPage = lazy(() => import('./pages/SafeguardingFlaggedMessagesPage'));
 const SafeguardingGuardiansPage = lazy(() => import('./pages/SafeguardingGuardiansPage'));
 const SafeguardingSupportActionsPage = lazy(() => import('./pages/SafeguardingSupportActionsPage'));
 const SafeguardingVolunteeringPage = lazy(() => import('./pages/SafeguardingVolunteeringPage'));
@@ -141,7 +151,7 @@ export function BrokerRoutes() {
       {/* Safeguarding — the bare path maps old ?tab= links onto the pages */}
       <Route path="safeguarding" element={<BrokerSafeguardingIndexRedirect />} />
       <Route path="safeguarding/support-needs" element={<Lazy><SafeguardingSupportNeedsPage /></Lazy>} />
-      <Route path="safeguarding/flagged-messages" element={<Lazy><SafeguardingFlaggedMessagesPage /></Lazy>} />
+      <Route path="safeguarding/flagged-messages" element={<BrokerFlaggedMessagesRedirect />} />
       <Route path="safeguarding/guardians" element={<Lazy><SafeguardingGuardiansPage /></Lazy>} />
       <Route path="safeguarding/support-actions" element={<Lazy><SafeguardingSupportActionsPage /></Lazy>} />
       <Route path="safeguarding/volunteering" element={<VolunteeringFeatureRoute><Lazy><SafeguardingVolunteeringPage /></Lazy></VolunteeringFeatureRoute>} />

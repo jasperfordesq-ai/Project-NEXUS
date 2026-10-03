@@ -470,14 +470,6 @@
       "seen_by": "Zobaczone przez {{name}} {{when}}",
       "seen": "Zobaczone {{when}}"
     },
-    "flagged_page": {
-      "intro": "Kopie wiadomości pobrane do kontroli bezpieczeństwa. Przeczytaj każdą i oznacz jako sprawdzoną. To te same kopie, co na stronie Wiadomości.",
-      "filter_label": "Pokaż",
-      "filter_unreviewed": "Czeka na sprawdzenie",
-      "filter_critical": "Wysokie i krytyczne",
-      "filter_reviewed": "Sprawdzone",
-      "filter_all": "Wszystkie"
-    },
     "guardians_page": {
       "intro": "Ustalenia dotyczące opiekunów zapisane przez zespół dla członków, którzy chcą dodatkowego wsparcia, oraz informacja, czy członek się zgodził.",
       "filter_label": "Pokaż",

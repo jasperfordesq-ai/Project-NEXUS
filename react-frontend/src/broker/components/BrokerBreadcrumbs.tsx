@@ -21,7 +21,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   safeguarding: 'breadcrumbs.safeguarding',
   'safeguarding-options': 'breadcrumbs.safeguarding_options',
   'support-needs': 'nav.safeguarding_support_needs',
-  'flagged-messages': 'nav.safeguarding_flagged',
   guardians: 'nav.safeguarding_guardians',
   'support-actions': 'nav.safeguarding_support_actions',
   volunteering: 'nav.safeguarding_volunteering',

@@ -470,14 +470,6 @@
       "seen_by": "Gezien door {{name}} {{when}}",
       "seen": "Gezien {{when}}"
     },
-    "flagged_page": {
-      "intro": "Kopieën van berichten die zijn gemaakt voor een beschermingscontrole. Lees ze een voor een en markeer ze als beoordeeld. Dit zijn dezelfde kopieën als op de pagina Berichten.",
-      "filter_label": "Toon",
-      "filter_unreviewed": "Wacht op beoordeling",
-      "filter_critical": "Hoog en kritiek",
-      "filter_reviewed": "Beoordeeld",
-      "filter_all": "Alle"
-    },
     "guardians_page": {
       "intro": "Voogdijafspraken die medewerkers hebben vastgelegd voor leden die extra ondersteuning willen, en of het lid heeft ingestemd.",
       "filter_label": "Toon",

@@ -55,7 +55,6 @@
     "moderation_reports": "報告",
     "safeguarding_options": "セーフガーディング設定",
     "safeguarding_support_needs": "メンバーのサポートニーズ",
-    "safeguarding_flagged": "フラグ付きメッセージ",
     "safeguarding_guardians": "ガーディアン",
     "safeguarding_support_actions": "支援アクション",
     "safeguarding_volunteering": "ボランティア活動のインシデント"
@@ -376,8 +375,6 @@
     "retry": "再試行",
     "support_needs_title": "メンバーのサポートニーズ",
     "support_needs_description": "追加のサポートを希望すると伝えてくれたメンバーと、それによって変わること。",
-    "flagged_title": "フラグ付きメッセージ",
-    "flagged_description": "セーフガーディング確認を待っているメッセージのコピー。",
     "guardians_title": "ガーディアン",
     "guardians_description": "追加のサポートを希望するメンバーのためのガーディアンの取り決め。",
     "support_actions_title": "支援アクション",
@@ -780,7 +777,13 @@
     "detail_flag_banner_title": "レビュー用にフラグ付き",
     "detail_decision_prompt": "このメッセージコピーのレビュー決定を記録してください。",
     "detail_message_count_other": "{{count}}件のメッセージ",
-    "detail_message_count_one": "{{count}} メッセージ"
+    "detail_message_count_one": "{{count}} メッセージ",
+    "tab_urgent": "緊急",
+    "empty_urgent_title": "緊急の項目はありません",
+    "empty_urgent_hint": "レビュー待ちのフラグ付きメッセージはありません。",
+    "search_placeholder": "メッセージまたは名前を検索",
+    "empty_search_title": "検索に一致するメッセージはありません",
+    "empty_search_hint": "別の言葉や名前で試してください。"
   },
   "monitoring": {
     "title": "ユーザー監視",

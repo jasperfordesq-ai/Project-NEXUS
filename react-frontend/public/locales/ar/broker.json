@@ -55,7 +55,6 @@
     "moderation_reports": "البلاغات",
     "safeguarding_options": "خيارات الحماية",
     "safeguarding_support_needs": "احتياجات الدعم لدى الأعضاء",
-    "safeguarding_flagged": "الرسائل المُعلَّمة",
     "safeguarding_guardians": "الأوصياء",
     "safeguarding_support_actions": "إجراءات الدعم",
     "safeguarding_volunteering": "حوادث التطوع"
@@ -412,8 +411,6 @@
     "retry": "إعادة المحاولة",
     "support_needs_title": "احتياجات الدعم لدى الأعضاء",
     "support_needs_description": "الأعضاء الذين أخبرونا بأنهم يرغبون في دعم إضافي، وما يغيّره ذلك بالنسبة لهم.",
-    "flagged_title": "الرسائل المُعلَّمة",
-    "flagged_description": "نسخ رسائل بانتظار فحص الحماية.",
     "guardians_title": "الأوصياء",
     "guardians_description": "ترتيبات الوصاية للأعضاء الذين يرغبون في دعم إضافي.",
     "support_actions_title": "إجراءات الدعم",
@@ -820,7 +817,13 @@
     "detail_message_count_few": "{{count}} رسالة",
     "detail_message_count_many": "{{count}} رسالة",
     "detail_message_count_two": "{{count}} رسالة",
-    "detail_message_count_zero": "{{count}} رسالة"
+    "detail_message_count_zero": "{{count}} رسالة",
+    "tab_urgent": "عاجلة",
+    "empty_urgent_title": "لا شيء عاجل",
+    "empty_urgent_hint": "لا توجد رسالة مُعلَّمة بانتظار المراجعة.",
+    "search_placeholder": "ابحث في الرسائل أو الأسماء",
+    "empty_search_title": "لا توجد رسائل تطابق بحثك",
+    "empty_search_hint": "جرّب كلمة أو اسمًا آخر."
   },
   "monitoring": {
     "title": "مراقبة المستخدمين",

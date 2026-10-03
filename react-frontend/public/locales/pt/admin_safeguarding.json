@@ -470,14 +470,6 @@
       "seen_by": "Visto por {{name}} {{when}}",
       "seen": "Visto {{when}}"
     },
-    "flagged_page": {
-      "intro": "Cópias de mensagens tiradas para uma verificação de proteção. Leia cada uma e marque-a como revista. São as mesmas cópias da página Mensagens.",
-      "filter_label": "Mostrar",
-      "filter_unreviewed": "A aguardar revisão",
-      "filter_critical": "Altos e críticos",
-      "filter_reviewed": "Revisado",
-      "filter_all": "Todos"
-    },
     "guardians_page": {
       "intro": "Acordos de tutela que a equipa registou para membros que querem apoio adicional, e se o membro concordou.",
       "filter_label": "Mostrar",

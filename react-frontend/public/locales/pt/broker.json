@@ -55,7 +55,6 @@
     "moderation_reports": "Denúncias",
     "safeguarding_options": "Opções de proteção",
     "safeguarding_support_needs": "Necessidades de apoio dos membros",
-    "safeguarding_flagged": "Mensagens sinalizadas",
     "safeguarding_guardians": "Tutores",
     "safeguarding_support_actions": "Ações de apoio",
     "safeguarding_volunteering": "Incidentes de voluntariado"
@@ -385,8 +384,6 @@
     "retry": "Tentar novamente",
     "support_needs_title": "Necessidades de apoio dos membros",
     "support_needs_description": "Membros que nos disseram que gostariam de apoio adicional, e o que isso muda para eles.",
-    "flagged_title": "Mensagens sinalizadas",
-    "flagged_description": "Cópias de mensagens a aguardar uma verificação de proteção.",
     "guardians_title": "Tutores",
     "guardians_description": "Acordos de tutela para membros que querem apoio adicional.",
     "support_actions_title": "Ações de apoio",
@@ -790,7 +787,13 @@
     "detail_decision_prompt": "Registre uma decisão de revisão para esta cópia de mensagem.",
     "detail_message_count_one": "{{count}} mensagens",
     "detail_message_count_other": "{{count}} mensagens",
-    "detail_message_count_many": "{{count}} mensagens"
+    "detail_message_count_many": "{{count}} mensagens",
+    "tab_urgent": "Urgentes",
+    "empty_urgent_title": "Nada urgente",
+    "empty_urgent_hint": "Nenhuma mensagem sinalizada aguarda revisão.",
+    "search_placeholder": "Pesquisar mensagens ou nomes",
+    "empty_search_title": "Nenhuma mensagem corresponde à sua pesquisa",
+    "empty_search_hint": "Experimente outra palavra ou nome."
   },
   "monitoring": {
     "title": "Monitorização de usuários",

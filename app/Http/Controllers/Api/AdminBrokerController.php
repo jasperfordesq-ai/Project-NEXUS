@@ -1121,13 +1121,36 @@ class AdminBrokerController extends BaseApiController
                 $conditions[] = 'bmc.reviewed_at IS NULL';
             } elseif ($filter === 'flagged') {
                 $conditions[] = 'bmc.flagged = 1';
+            } elseif ($filter === 'urgent') {
+                // Flagged and nobody has reviewed it yet — what the broker
+                // dashboard's "Safeguarding Alerts" card counts and opens.
+                // (Since October 2026 this queue also replaces the separate
+                // safeguarding "Flagged messages" page, which listed the
+                // same copies.)
+                $conditions[] = 'bmc.flagged = 1 AND bmc.reviewed_at IS NULL';
             } elseif ($filter === 'reviewed') {
                 $conditions[] = 'bmc.reviewed_at IS NOT NULL';
             }
 
+            // Free-text search over the message and both people's names.
+            $search = trim((string) $this->query('q', ''));
+            if ($search !== '') {
+                $like = '%' . addcslashes(mb_substr($search, 0, 100), '%_\\') . '%';
+                $conditions[] = '(bmc.message_body LIKE ?'
+                    . ' OR ' . UserDisplayName::sql('s', '') . ' LIKE ?'
+                    . ' OR ' . UserDisplayName::sql('r', '') . ' LIKE ?)';
+                array_push($params, $like, $like, $like);
+            }
+
             $where = !empty($conditions) ? implode(' AND ', $conditions) : '1=1';
 
-            $countRow = DB::selectOne("SELECT COUNT(*) as cnt FROM broker_message_copies bmc WHERE {$where}", $params);
+            $countRow = DB::selectOne(
+                "SELECT COUNT(*) as cnt FROM broker_message_copies bmc
+                LEFT JOIN users s ON bmc.sender_id = s.id
+                LEFT JOIN users r ON bmc.receiver_id = r.id
+                WHERE {$where}",
+                $params
+            );
             $total = (int) ($countRow->cnt ?? 0);
 
             $queryParams = array_merge($params, [$perPage, $offset]);

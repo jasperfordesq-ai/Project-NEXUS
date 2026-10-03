@@ -66,7 +66,7 @@ interface QueueDef {
 }
 
 const QUEUES: QueueDef[] = [
-  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/safeguarding/flagged-messages?filter=critical', weight: 6 },
+  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/messages?status=urgent', weight: 6 },
   { key: 'high_risk_listings', labelKey: 'dashboard.high_risk_listings', icon: ShieldAlert, color: 'danger', path: '/broker/risk-tags?level=elevated', weight: 5 },
   { key: 'unreviewed_messages', labelKey: 'dashboard.unreviewed_messages', icon: MessageSquareWarning, color: 'warning', path: '/broker/messages?status=unreviewed', weight: 4 },
   { key: 'pending_exchanges', labelKey: 'dashboard.pending_exchanges', icon: ArrowLeftRight, color: 'accent', path: '/broker/exchanges?status=needs_action', weight: 4 },
@@ -343,7 +343,7 @@ export function BrokerDashboard() {
               icon={AlertTriangle}
               color="danger"
               loading={loading}
-              to={tenantPath('/broker/safeguarding/flagged-messages?filter=critical')}
+              to={tenantPath('/broker/messages?status=urgent')}
             />
             <BrokerStatCard
               label={t('dashboard.safeguarding_flags')}

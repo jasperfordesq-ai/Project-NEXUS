@@ -55,7 +55,6 @@
     "moderation_reports": "Zgłoszenia",
     "safeguarding_options": "Opcje ochrony",
     "safeguarding_support_needs": "Potrzeby wsparcia członków",
-    "safeguarding_flagged": "Oznaczone wiadomości",
     "safeguarding_guardians": "Opiekunowie",
     "safeguarding_support_actions": "Działania wspierające",
     "safeguarding_volunteering": "Incydenty w wolontariacie"
@@ -394,8 +393,6 @@
     "retry": "Spróbuj ponownie",
     "support_needs_title": "Potrzeby wsparcia członków",
     "support_needs_description": "Członkowie, którzy powiedzieli nam, że chcieliby dodatkowego wsparcia, i co to dla nich zmienia.",
-    "flagged_title": "Oznaczone wiadomości",
-    "flagged_description": "Kopie wiadomości czekające na kontrolę bezpieczeństwa.",
     "guardians_title": "Opiekunowie",
     "guardians_description": "Ustalenia dotyczące opiekunów dla członków, którzy chcą dodatkowego wsparcia.",
     "support_actions_title": "Działania wspierające",
@@ -800,7 +797,13 @@
     "detail_message_count_one": "{{count}} wiadomości",
     "detail_message_count_other": "{{count}} wiadomości",
     "detail_message_count_few": "{{count}} wiadomości",
-    "detail_message_count_many": "{{count}} wiadomości"
+    "detail_message_count_many": "{{count}} wiadomości",
+    "tab_urgent": "Pilne",
+    "empty_urgent_title": "Nic pilnego",
+    "empty_urgent_hint": "Żadna oznaczona wiadomość nie czeka na sprawdzenie.",
+    "search_placeholder": "Szukaj wiadomości lub nazwisk",
+    "empty_search_title": "Brak wiadomości pasujących do wyszukiwania",
+    "empty_search_hint": "Spróbuj innego słowa lub nazwiska."
   },
   "monitoring": {
     "title": "Monitorowanie użytkowników",

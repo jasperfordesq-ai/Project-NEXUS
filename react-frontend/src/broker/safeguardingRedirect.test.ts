@@ -4,11 +4,12 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect } from 'vitest';
-import { safeguardingRedirectTarget } from './safeguardingRedirect';
+import { flaggedMessagesTarget, safeguardingRedirectTarget } from './safeguardingRedirect';
 
 /**
- * Every link written before the four tabs became pages must still land on the
- * page it meant — the broker dashboard tiles, the guide and old bookmarks.
+ * Every link written before the four tabs became pages — and before flagged
+ * messages joined the Messages queue — must still land on the page it meant:
+ * the broker dashboard tiles, the guide, bell notifications and bookmarks.
  */
 describe('safeguardingRedirectTarget', () => {
   it.each([
@@ -22,11 +23,25 @@ describe('safeguardingRedirectTarget', () => {
     ['?tab=assignments&filter=active', '/broker/safeguarding/guardians?filter=active'],
     ['?tab=assignments&filter=consented', '/broker/safeguarding/guardians?filter=consented'],
     ['?tab=support', '/broker/safeguarding/support-actions'],
-    ['?tab=flagged', '/broker/safeguarding/flagged-messages'],
-    ['?filter=unreviewed', '/broker/safeguarding/flagged-messages?filter=unreviewed'],
-    ['?filter=critical', '/broker/safeguarding/flagged-messages?filter=critical'],
-    ['?filter=reviewed', '/broker/safeguarding/flagged-messages?filter=reviewed'],
+    // Flagged messages now live in the Messages queue.
+    ['?tab=flagged', '/broker/messages'],
+    ['?filter=unreviewed', '/broker/messages'],
+    ['?filter=critical', '/broker/messages?status=urgent'],
+    ['?filter=reviewed', '/broker/messages?status=reviewed'],
   ])('%s → %s', (search, expected) => {
     expect(safeguardingRedirectTarget(search)).toBe(expected);
+  });
+});
+
+describe('flaggedMessagesTarget (old /broker/safeguarding/flagged-messages links)', () => {
+  it.each([
+    [null, '/broker/messages'],
+    ['unreviewed', '/broker/messages'],
+    ['critical', '/broker/messages?status=urgent'],
+    ['reviewed', '/broker/messages?status=reviewed'],
+    ['all', '/broker/messages?status=all'],
+    ['nonsense', '/broker/messages'],
+  ])('%s → %s', (filter, expected) => {
+    expect(flaggedMessagesTarget(filter)).toBe(expected);
   });
 });

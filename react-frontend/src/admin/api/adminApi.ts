@@ -986,7 +986,7 @@ export const adminBroker = {
   getRiskTags: (params: { risk_level?: string } = {}) =>
     api.get<RiskTag[]>(`/v2/admin/broker/risk-tags${buildQuery(params)}`),
 
-  getMessages: (params: { page?: number; filter?: string } = {}) =>
+  getMessages: (params: { page?: number; filter?: string; q?: string } = {}) =>
     api.get<PaginatedResponse<BrokerMessage>>(
       `/v2/admin/broker/messages${buildQuery(params)}`
     ),

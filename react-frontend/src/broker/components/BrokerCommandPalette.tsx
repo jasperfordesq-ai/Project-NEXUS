@@ -71,7 +71,6 @@ export const BROKER_DESTINATIONS: BrokerDestination[] = [
   { key: 'moderation-reviews', labelKey: 'nav.moderation_reviews', icon: Star, path: '/broker/moderation/reviews', feature: 'reviews' },
   { key: 'moderation-reports', labelKey: 'nav.moderation_reports', icon: Flag, path: '/broker/moderation/reports' },
   { key: 'safeguarding-support-needs', labelKey: 'nav.safeguarding_support_needs', icon: HeartHandshake, path: '/broker/safeguarding/support-needs' },
-  { key: 'safeguarding-flagged', labelKey: 'nav.safeguarding_flagged', icon: Flag, path: '/broker/safeguarding/flagged-messages' },
   { key: 'safeguarding-guardians', labelKey: 'nav.safeguarding_guardians', icon: Users, path: '/broker/safeguarding/guardians' },
   { key: 'safeguarding-support-actions', labelKey: 'nav.safeguarding_support_actions', icon: ClipboardCheck, path: '/broker/safeguarding/support-actions' },
   { key: 'safeguarding-volunteering', labelKey: 'nav.safeguarding_volunteering', icon: HandHeart, path: '/broker/safeguarding/volunteering', feature: 'volunteering' },

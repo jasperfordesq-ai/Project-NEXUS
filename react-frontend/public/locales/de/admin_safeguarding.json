@@ -470,14 +470,6 @@
       "seen_by": "Gesehen von {{name}} {{when}}",
       "seen": "Gesehen {{when}}"
     },
-    "flagged_page": {
-      "intro": "Kopien von Nachrichten, die für eine Schutzprüfung erstellt wurden. Lesen Sie jede und markieren Sie sie als überprüft. Es sind dieselben Nachrichtenkopien wie auf der Seite Nachrichten.",
-      "filter_label": "Anzeigen",
-      "filter_unreviewed": "Wartet auf Prüfung",
-      "filter_critical": "Hoch und kritisch",
-      "filter_reviewed": "Bewertet",
-      "filter_all": "Alle"
-    },
     "guardians_page": {
       "intro": "Vom Team erfasste Betreuungsvereinbarungen für Mitglieder, die zusätzliche Unterstützung wünschen, und ob das Mitglied zugestimmt hat.",
       "filter_label": "Anzeigen",

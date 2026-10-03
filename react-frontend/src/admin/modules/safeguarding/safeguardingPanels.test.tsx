@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * The four safeguarding panels — each one a page of its own in the broker
- * panel since October 2026 (they were four tabs of SafeguardingDashboard).
+ * The safeguarding panels — each one a page of its own in the broker
+ * panel since October 2026 (they were tabs of SafeguardingDashboard; its
+ * flagged-messages tab became the Messages queue's "Urgent" view).
  * Cases carried over from the dashboard's tests, plus the new Members'
  * support needs behaviour: "not yet seen" by default, plain-English
  * protections, and Mark as seen.
@@ -79,19 +80,6 @@ const makeNeed = (overrides = {}) => ({
   seen_at: null,
   seen_by_name: null,
   needs_review: true,
-  ...overrides,
-});
-
-const makeFlag = (overrides = {}) => ({
-  id: 1,
-  message_id: 10,
-  message_content: 'Test message content',
-  sender: { id: 101, name: 'Alice Sender', avatar_url: null },
-  recipient: { id: 102, name: 'Bob Recipient', avatar_url: null },
-  severity: 'medium' as const,
-  flag_reason: 'first_contact',
-  is_reviewed: false,
-  created_at: '2026-01-01T12:00:00Z',
   ...overrides,
 });
 
@@ -223,36 +211,6 @@ describe("MemberSupportNeedsPanel (Members' support needs)", () => {
     render(<MemberSupportNeedsPanel />);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-describe('FlaggedMessagesPanel', () => {
-  it('shows messages waiting for review by default and reviews one', async () => {
-    mockApi.get.mockResolvedValue(ok([makeFlag(), makeFlag({ id: 2, message_content: 'Old reviewed one', is_reviewed: true })]));
-    mockApi.post.mockResolvedValue(ok({}));
-    const { FlaggedMessagesPanel } = await import('./FlaggedMessagesPanel');
-    render(<FlaggedMessagesPanel />);
-
-    expect(await screen.findByText('Test message content')).toBeInTheDocument();
-    expect(screen.queryByText('Old reviewed one')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Review/ }));
-    fireEvent.click(await screen.findByRole('button', { name: /Mark as Reviewed/i }));
-
-    await waitFor(() => {
-      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/safeguarding/flagged-messages/1/review', { notes: '' });
-    });
-  });
-
-  it('honours an old ?filter=reviewed link', async () => {
-    window.history.replaceState({}, '', '/?filter=reviewed');
-    mockApi.get.mockResolvedValue(ok([makeFlag(), makeFlag({ id: 2, message_content: 'Old reviewed one', is_reviewed: true })]));
-    const { FlaggedMessagesPanel } = await import('./FlaggedMessagesPanel');
-    render(<FlaggedMessagesPanel />);
-
-    expect(await screen.findByText('Old reviewed one')).toBeInTheDocument();
-    expect(screen.queryByText('Test message content')).not.toBeInTheDocument();
   });
 });
 

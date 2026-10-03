@@ -55,7 +55,6 @@
     "moderation_reports": "Meldungen",
     "safeguarding_options": "Schutzoptionen",
     "safeguarding_support_needs": "Unterstützungsbedarf der Mitglieder",
-    "safeguarding_flagged": "Markierte Nachrichten",
     "safeguarding_guardians": "Betreuungspersonen",
     "safeguarding_support_actions": "Unterstützungsaktionen",
     "safeguarding_volunteering": "Vorfälle im Ehrenamt"
@@ -376,8 +375,6 @@
     "retry": "Erneut versuchen",
     "support_needs_title": "Unterstützungsbedarf der Mitglieder",
     "support_needs_description": "Mitglieder, die uns mitgeteilt haben, dass sie zusätzliche Unterstützung wünschen, und was sich dadurch für sie ändert.",
-    "flagged_title": "Markierte Nachrichten",
-    "flagged_description": "Nachrichtenkopien, die auf eine Schutzprüfung warten.",
     "guardians_title": "Betreuungspersonen",
     "guardians_description": "Betreuungsvereinbarungen für Mitglieder, die zusätzliche Unterstützung wünschen.",
     "support_actions_title": "Unterstützungsaktionen",
@@ -780,7 +777,13 @@
     "detail_flag_banner_title": "Zur Prüfung markiert",
     "detail_decision_prompt": "Erfassen Sie eine Prüfentscheidung für diese Nachrichtenkopie.",
     "detail_message_count_one": "{{count}} Nachrichten",
-    "detail_message_count_other": "{{count}} Nachrichten"
+    "detail_message_count_other": "{{count}} Nachrichten",
+    "tab_urgent": "Dringend",
+    "empty_urgent_title": "Nichts Dringendes",
+    "empty_urgent_hint": "Keine markierte Nachricht wartet auf Prüfung.",
+    "search_placeholder": "Nachrichten oder Namen suchen",
+    "empty_search_title": "Keine Nachrichten entsprechen Ihrer Suche",
+    "empty_search_hint": "Versuchen Sie ein anderes Wort oder einen anderen Namen."
   },
   "monitoring": {
     "title": "Nutzerüberwachung",

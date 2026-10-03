@@ -55,7 +55,6 @@
     "moderation_reports": "Signalements",
     "safeguarding_options": "Options de protection",
     "safeguarding_support_needs": "Besoins d’accompagnement des membres",
-    "safeguarding_flagged": "Messages signalés",
     "safeguarding_guardians": "Tuteurs",
     "safeguarding_support_actions": "Actions d’accompagnement",
     "safeguarding_volunteering": "Incidents liés au bénévolat"
@@ -385,8 +384,6 @@
     "retry": "Réessayer",
     "support_needs_title": "Besoins d’accompagnement des membres",
     "support_needs_description": "Les membres qui nous ont dit souhaiter un accompagnement supplémentaire, et ce que cela change pour eux.",
-    "flagged_title": "Messages signalés",
-    "flagged_description": "Copies de messages en attente d’une vérification de protection.",
     "guardians_title": "Tuteurs",
     "guardians_description": "Dispositifs de tutelle pour les membres qui souhaitent un accompagnement supplémentaire.",
     "support_actions_title": "Actions d’accompagnement",
@@ -790,7 +787,13 @@
     "detail_decision_prompt": "Enregistrez une décision d'examen pour ce message.",
     "detail_message_count_one": "{{count}} messages",
     "detail_message_count_other": "{{count}} messages",
-    "detail_message_count_many": "{{count}} messages"
+    "detail_message_count_many": "{{count}} messages",
+    "tab_urgent": "Urgents",
+    "empty_urgent_title": "Rien d’urgent",
+    "empty_urgent_hint": "Aucun message signalé n’attend de révision.",
+    "search_placeholder": "Rechercher des messages ou des noms",
+    "empty_search_title": "Aucun message ne correspond à votre recherche",
+    "empty_search_hint": "Essayez un autre mot ou un autre nom."
   },
   "monitoring": {
     "title": "Surveillance des utilisateurs",

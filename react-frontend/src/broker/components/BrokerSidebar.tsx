@@ -119,16 +119,14 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       ],
     },
     {
-      // One page per safeguarding job (Oct 2026). These were four tabs on a
+      // One page per safeguarding job (Oct 2026). These were tabs on a
       // single page and brokers said things were hidden; Members' support
       // needs leads because those answers change what a member can do.
+      // Flagged messages are not here: they are the Messages queue above.
       key: 'safeguarding',
       title: t('sidebar.section_safeguarding'),
       items: [
         { key: 'safeguarding-support-needs', label: t('nav.safeguarding_support_needs'), icon: HeartHandshake, path: '/broker/safeguarding/support-needs', badgeKey: 'support_needs_unseen' },
-        // No badge: these are the same message copies the Messages item above
-        // already counts, and showing the number twice would double it.
-        { key: 'safeguarding-flagged', label: t('nav.safeguarding_flagged'), icon: Flag, path: '/broker/safeguarding/flagged-messages' },
         { key: 'safeguarding-guardians', label: t('nav.safeguarding_guardians'), icon: Users, path: '/broker/safeguarding/guardians' },
         { key: 'safeguarding-support-actions', label: t('nav.safeguarding_support_actions'), icon: ClipboardCheck, path: '/broker/safeguarding/support-actions', badgeKey: 'pending_support_actions' },
         ...(showVolunteering

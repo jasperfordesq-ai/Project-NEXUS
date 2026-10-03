@@ -470,14 +470,6 @@
       "seen_by": "Vu par {{name}} {{when}}",
       "seen": "Vu {{when}}"
     },
-    "flagged_page": {
-      "intro": "Copies de messages prises pour une vérification de protection. Lisez chacune et marquez-la comme révisée. Ce sont les mêmes copies que sur la page Messages.",
-      "filter_label": "Afficher",
-      "filter_unreviewed": "En attente de révision",
-      "filter_critical": "Élevés et critiques",
-      "filter_reviewed": "Révisé",
-      "filter_all": "Tous"
-    },
     "guardians_page": {
       "intro": "Dispositifs de tutelle enregistrés par l’équipe pour les membres qui souhaitent un accompagnement supplémentaire, et si le membre a donné son accord.",
       "filter_label": "Afficher",

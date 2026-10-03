@@ -70,14 +70,23 @@ vi.mock('@/admin/components', () => ({
     data,
     isLoading,
     emptyContent,
+    searchable,
+    searchPlaceholder,
+    onSearch,
   }: {
     columns: { key: string; label: string; render?: (item: unknown) => React.ReactNode }[];
     data: unknown[];
     isLoading?: boolean;
     emptyContent?: React.ReactNode;
+    searchable?: boolean;
+    searchPlaceholder?: string;
+    onSearch?: (q: string) => void;
     [key: string]: unknown;
   }) => (
     <div data-testid="data-table">
+      {searchable && (
+        <input type="search" aria-label={searchPlaceholder} onChange={(e) => onSearch?.(e.target.value)} />
+      )}
       {isLoading && <div role="status" aria-busy="true" aria-label="loading">Loading…</div>}
       {!isLoading && data.length === 0 && (
         <div data-testid="empty-table">{emptyContent ?? 'No items'}</div>
@@ -360,6 +369,31 @@ describe('MessageReview (broker)', () => {
     await waitFor(() => {
       expect(screen.getByText('Alice')).toBeInTheDocument();
     });
+  });
+
+  it('opens the Urgent view (flagged, not yet reviewed) from ?status=urgent — the dashboard alerts card', async () => {
+    routerState.params = new URLSearchParams('status=urgent');
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await waitFor(() => {
+      expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'urgent' });
+    });
+    expect(screen.getByRole('tab', { name: /Urgent/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('searches the whole queue on the server', async () => {
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    fireEvent.change(await screen.findByRole('searchbox', { name: 'Search messages or names' }), {
+      target: { value: '  xylophone ' },
+    });
+
+    await waitFor(() => {
+      expect(mockAdminBroker.getMessages).toHaveBeenLastCalledWith({ page: 1, filter: 'unreviewed', q: 'xylophone' });
+    });
+    expect(await screen.findByText('No messages match your search')).toBeInTheDocument();
   });
 
   it('renders filter tabs (unreviewed, flagged, reviewed, all)', async () => {

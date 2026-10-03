@@ -55,7 +55,6 @@
     "moderation_reports": "Reports",
     "safeguarding_options": "Safeguarding Options",
     "safeguarding_support_needs": "Members' support needs",
-    "safeguarding_flagged": "Flagged messages",
     "safeguarding_guardians": "Guardians",
     "safeguarding_support_actions": "Support actions",
     "safeguarding_volunteering": "Volunteering incidents"
@@ -376,8 +375,6 @@
     "retry": "Retry",
     "support_needs_title": "Members' support needs",
     "support_needs_description": "Members who told us they would like extra support, and what that changes for them.",
-    "flagged_title": "Flagged messages",
-    "flagged_description": "Message copies waiting for a safeguarding check.",
     "guardians_title": "Guardians",
     "guardians_description": "Guardian arrangements for members who want extra support.",
     "support_actions_title": "Support actions",
@@ -780,7 +777,13 @@
     "detail_flag_banner_title": "Flagged for review",
     "detail_decision_prompt": "Record a review decision for this message copy.",
     "detail_message_count_one": "{{count}} messages",
-    "detail_message_count_other": "{{count}} messages"
+    "detail_message_count_other": "{{count}} messages",
+    "tab_urgent": "Urgent",
+    "empty_urgent_title": "Nothing urgent",
+    "empty_urgent_hint": "No flagged message is waiting for review.",
+    "search_placeholder": "Search messages or names",
+    "empty_search_title": "No messages match your search",
+    "empty_search_hint": "Try a different word or name."
   },
   "monitoring": {
     "title": "User Monitoring",

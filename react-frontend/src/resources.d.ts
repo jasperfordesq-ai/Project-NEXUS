@@ -27382,14 +27382,6 @@ export default interface Resources {
       "flag_reason_random_sample": "Random sample",
       "flag_reason_unknown": "Not recorded",
       "flagged_messages": "Flagged Messages",
-      "flagged_page": {
-        "filter_all": "All",
-        "filter_critical": "High and critical",
-        "filter_label": "Show",
-        "filter_reviewed": "Reviewed",
-        "filter_unreviewed": "Waiting for review",
-        "intro": "Copies of messages taken for a safeguarding check. Read each one and mark it as reviewed. These are the same message copies as on the Messages page."
-      },
       "from": "From",
       "guardian": "Guardian",
       "guardian_assignment_created": "Guardian assignment created",
@@ -34170,8 +34162,12 @@ export default interface Resources {
       "empty_flagged_title": "No flagged messages",
       "empty_reviewed_hint": "Messages you mark as reviewed will appear here.",
       "empty_reviewed_title": "No reviewed messages yet",
+      "empty_search_hint": "Try a different word or name.",
+      "empty_search_title": "No messages match your search",
       "empty_unreviewed_hint": "No messages are waiting for review. New broker copies will appear here as they arrive.",
       "empty_unreviewed_title": "All caught up",
+      "empty_urgent_hint": "No flagged message is waiting for review.",
+      "empty_urgent_title": "Nothing urgent",
       "error_hint": "The review queue failed to load. Try again — if it keeps failing, the API may be unavailable.",
       "error_title": "Couldn't load messages",
       "filter_all": "All",
@@ -34204,6 +34200,7 @@ export default interface Resources {
       "review_notes_placeholder": "Add review notes...",
       "review_tabs_aria": "Message review filter",
       "reviewed_success": "Message marked as reviewed.",
+      "search_placeholder": "Search messages or names",
       "severity_concern": "Concern",
       "severity_info": "Info",
       "severity_label": "Severity",
@@ -34223,6 +34220,7 @@ export default interface Resources {
       "tab_flagged": "Flagged",
       "tab_reviewed": "Reviewed",
       "tab_unreviewed": "Unreviewed",
+      "tab_urgent": "Urgent",
       "title": "Message Review",
       "view": "View"
     },
@@ -34325,7 +34323,6 @@ export default interface Resources {
       "onboarding": "Onboarding",
       "risk_tags": "Risk Tags",
       "safeguarding": "Safeguarding",
-      "safeguarding_flagged": "Flagged messages",
       "safeguarding_guardians": "Guardians",
       "safeguarding_options": "Safeguarding Options",
       "safeguarding_support_actions": "Support actions",
@@ -34472,8 +34469,6 @@ export default interface Resources {
       "col_status": "Status",
       "col_ward": "Supported member",
       "description": "Monitor safeguarding alerts, guardian assignments, and member preferences.",
-      "flagged_description": "Message copies waiting for a safeguarding check.",
-      "flagged_title": "Flagged messages",
       "guardians_description": "Guardian arrangements for members who want extra support.",
       "guardians_title": "Guardians",
       "load_error_body": "One or more sections above failed to load. Retry — if the failure persists, check the broker logs.",
@@ -48085,7 +48080,7 @@ export default interface Resources {
             "title": "Using the Review Archive"
           },
           "broker_review_message": {
-            "body": "Message copies waiting for review are under the **Unreviewed** tab in **Messages**. The red number on **Messages** in the menu shows how many are waiting.\n\n1. Open [Messages](/broker/messages).\n2. Press the **Unreviewed** tab.\n3. Press the eye button on a row for a quick look, or open the message to see the conversation before it.\n4. Choose what to do.\n\n## Your choices\n\n- **Mark Reviewed** (or **Review** in the list): you have read it and there is no concern. In the quick view you can add **Review Notes** first.\n- **Flag**: you have a concern. Choose a **Severity** (**Info**, **Warning**, **Concern** or **Urgent**) and describe the concern in **Flag Reason**. A reason is required.\n- **Approve & Archive**: on the message page, this saves a permanent, read-only copy of the record in the **Review Archive**. You can add **Decision Notes**. Once archived, the record cannot be changed.\n\n## Tabs\n\n- **Unreviewed**: waiting for a broker\n- **Flagged**: messages a broker has flagged\n- **Reviewed**: messages already reviewed\n- **All**: everything\n\n## When the sender edits a message\n\nIf the sender changes a message after it was copied, the copy is updated with the new wording. It goes back to **Unreviewed**, even if someone had already reviewed or archived it, so a broker reads the new version. Any archive record already made stays as it was. A flag on the copy stays in place.\n\n## After you flag a message\n\nFlagging records your concern. It does not stop the member or warn anyone by itself. Decide what else is needed. You might place the member under monitoring, turn off their messaging, or contact your safeguarding lead.\n\n> Do not tell the member you have flagged their message unless your safeguarding lead agrees.",
+            "body": "Message copies waiting for review are under the **Unreviewed** tab in **Messages**. The red number on **Messages** in the menu shows how many are waiting.\n\n1. Open [Messages](/broker/messages).\n2. Press the **Unreviewed** tab.\n3. Press the eye button on a row for a quick look, or open the message to see the conversation before it.\n4. Choose what to do.\n\n## Your choices\n\n- **Mark Reviewed** (or **Review** in the list): you have read it and there is no concern. In the quick view you can add **Review Notes** first.\n- **Flag**: you have a concern. Choose a **Severity** (**Info**, **Warning**, **Concern** or **Urgent**) and describe the concern in **Flag Reason**. A reason is required.\n- **Approve & Archive**: on the message page, this saves a permanent, read-only copy of the record in the **Review Archive**. You can add **Decision Notes**. Once archived, the record cannot be changed.\n\n## Tabs\n\n- **Unreviewed**: waiting for a broker\n- **Urgent**: flagged messages nobody has reviewed yet. Check these first.\n- **Flagged**: messages a broker has flagged\n- **Reviewed**: messages already reviewed\n- **All**: everything\n\n## When the sender edits a message\n\nIf the sender changes a message after it was copied, the copy is updated with the new wording. It goes back to **Unreviewed**, even if someone had already reviewed or archived it, so a broker reads the new version. Any archive record already made stays as it was. A flag on the copy stays in place.\n\n## After you flag a message\n\nFlagging records your concern. It does not stop the member or warn anyone by itself. Decide what else is needed. You might place the member under monitoring, turn off their messaging, or contact your safeguarding lead.\n\n> Do not tell the member you have flagged their message unless your safeguarding lead agrees.",
             "summary": "Mark a message as reviewed, flag a concern, or approve and archive it.",
             "title": "How do I review a copied message?"
           },
@@ -48100,7 +48095,7 @@ export default interface Resources {
             "title": "How safeguarding works in the Broker Panel"
           },
           "broker_safeguarding_page": {
-            "body": "Safeguarding has its own section in the sidebar. Each page does one job:\n\n- **Members' support needs**: members who told us they would like extra support, what that changes for them, and whether a broker has seen it. Start here. Read each new answer, then press **Mark as seen**.\n- **Flagged messages**: copies of messages taken for a safeguarding check. These are the same copies as on the [Messages](/broker/messages) page.\n- **Guardians**: guardian arrangements staff have recorded, and whether the member has agreed.\n- **Support actions**: actions prepared on a member's behalf that are waiting for their answer.\n\n## When a member changes their answers\n\nIf a member changes their answers after you marked them as seen, they show as **Not yet seen** again. That way you never miss a change.\n\n## Other safeguarding pages\n\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
+            "body": "Safeguarding has its own section in the sidebar. Each page does one job:\n\n- **Members' support needs**: members who told us they would like extra support, what that changes for them, and whether a broker has seen it. Start here. Read each new answer, then press **Mark as seen**.\n- **Guardians**: guardian arrangements staff have recorded, and whether the member has agreed.\n- **Support actions**: actions prepared on a member's behalf that are waiting for their answer.\n\nFlagged messages are in [Messages](/broker/messages), under the **Urgent** tab.\n\n## When a member changes their answers\n\nIf a member changes their answers after you marked them as seen, they show as **Not yet seen** again. That way you never miss a change.\n\n## Other safeguarding pages\n\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
             "summary": "The Safeguarding page gathers flagged messages, guardian arrangements and members' choices. It needs extra access.",
             "title": "What is on the Safeguarding page?"
           },

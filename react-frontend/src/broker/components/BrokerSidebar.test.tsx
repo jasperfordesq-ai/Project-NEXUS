@@ -92,7 +92,8 @@ describe('BrokerSidebar — expanded', () => {
     // Safeguarding is a section of its own pages (was one page with four tabs).
     expect(screen.getByText('Safeguarding')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Members' support needs/i })).toHaveAttribute('href', '/test/broker/safeguarding/support-needs');
-    expect(screen.getByRole('link', { name: /Flagged messages/i })).toHaveAttribute('href', '/test/broker/safeguarding/flagged-messages');
+    // Flagged messages are the Messages queue's "Urgent" view, not a second page.
+    expect(screen.queryByRole('link', { name: /Flagged messages/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /^Guardians$/i })).toHaveAttribute('href', '/test/broker/safeguarding/guardians');
     expect(screen.getByRole('link', { name: /Support actions/i })).toHaveAttribute('href', '/test/broker/safeguarding/support-actions');
     expect(screen.getByRole('link', { name: /Volunteering incidents/i })).toHaveAttribute('href', '/test/broker/safeguarding/volunteering');

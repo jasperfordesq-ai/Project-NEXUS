@@ -470,14 +470,6 @@
       "seen_by": "Visto por {{name}} {{when}}",
       "seen": "Visto {{when}}"
     },
-    "flagged_page": {
-      "intro": "Copias de mensajes tomadas para una revisión de protección. Lea cada una y márquela como revisada. Son las mismas copias de mensajes que en la página Mensajes.",
-      "filter_label": "Mostrar",
-      "filter_unreviewed": "Pendientes de revisión",
-      "filter_critical": "Altos y críticos",
-      "filter_reviewed": "Revisado",
-      "filter_all": "Todos"
-    },
     "guardians_page": {
       "intro": "Acuerdos de tutela que el personal ha registrado para miembros que desean apoyo adicional, y si el miembro ha dado su acuerdo.",
       "filter_label": "Mostrar",

@@ -33,6 +33,7 @@ import Inbox from 'lucide-react/icons/inbox';
 import MessageSquare from 'lucide-react/icons/message-square';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import SearchX from 'lucide-react/icons/search-x';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Sparkles from 'lucide-react/icons/sparkles';
 import type { LucideIcon } from 'lucide-react';
@@ -94,7 +95,10 @@ const PANEL_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
 
 // The active tab is driven by the URL so deep-links from the broker
 // dashboard stat cards land on the right filter.
-const ALLOWED_FILTERS = ['unreviewed', 'flagged', 'reviewed', 'all'] as const;
+// `urgent` = flagged and not yet reviewed: what the dashboard's Safeguarding
+// Alerts card counts. It replaced the safeguarding "Flagged messages" page
+// (October 2026), which listed these same copies a second time.
+const ALLOWED_FILTERS = ['unreviewed', 'urgent', 'flagged', 'reviewed', 'all'] as const;
 type MessageFilter = (typeof ALLOWED_FILTERS)[number];
 
 // Per-filter empty states — an empty review queue is good news (success),
@@ -104,6 +108,7 @@ const EMPTY_META: Record<
   { icon: LucideIcon; color: BrokerStatColor; titleKey: string; hintKey: string }
 > = {
   unreviewed: { icon: Sparkles, color: 'success', titleKey: 'messages.empty_unreviewed_title', hintKey: 'messages.empty_unreviewed_hint' },
+  urgent: { icon: ShieldCheck, color: 'success', titleKey: 'messages.empty_urgent_title', hintKey: 'messages.empty_urgent_hint' },
   flagged: { icon: ShieldCheck, color: 'success', titleKey: 'messages.empty_flagged_title', hintKey: 'messages.empty_flagged_hint' },
   reviewed: { icon: CheckCircle, color: 'neutral', titleKey: 'messages.empty_reviewed_title', hintKey: 'messages.empty_reviewed_hint' },
   all: { icon: MessageSquare, color: 'neutral', titleKey: 'messages.empty_all_title', hintKey: 'messages.empty_all_hint' },
@@ -146,6 +151,19 @@ export function MessageReview() {
   const [page, setPage] = useState(1);
   const [reviewingId, setReviewingId] = useState<number | null>(null);
 
+  // Server-side search over the message text and both people's names.
+  // Debounced so typing doesn't fire a request on every keystroke.
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(handle);
+  }, [search]);
+  const handleSearch = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
   // Global unreviewed KPI — from the existing broker messages stats endpoint.
   const [unreviewedCount, setUnreviewedCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(true);
@@ -179,6 +197,7 @@ export function MessageReview() {
       const res = await adminBroker.getMessages({
         page,
         filter: filter === 'all' ? undefined : filter,
+        q: debouncedSearch || undefined,
       });
       if (res.success && Array.isArray(res.data)) {
         setItems(res.data as BrokerMessage[]);
@@ -192,7 +211,7 @@ export function MessageReview() {
       setLoading(false);
       setHasLoaded(true);
     }
-  }, [page, filter]);
+  }, [page, filter, debouncedSearch]);
 
   const loadUnreviewedCount = useCallback(async () => {
     setCountLoading(true);
@@ -541,6 +560,15 @@ export function MessageReview() {
             }
           />
           <Tab
+            key="urgent"
+            title={
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} />
+                <span>{t('messages.tab_urgent')}</span>
+              </div>
+            }
+          />
+          <Tab
             key="flagged"
             title={
               <div className="flex items-center gap-2">
@@ -591,20 +619,32 @@ export function MessageReview() {
           columns={columns}
           data={items}
           isLoading={loading}
-          searchable={false}
+          searchable
+          searchPlaceholder={t('messages.search_placeholder')}
+          onSearch={handleSearch}
           onRefresh={refreshAll}
           totalItems={total}
           page={page}
           pageSize={20}
           onPageChange={setPage}
           emptyContent={
-            <BrokerEmptyState
-              bare
-              icon={emptyMeta.icon}
-              color={emptyMeta.color}
-              title={t(emptyMeta.titleKey)}
-              hint={t(emptyMeta.hintKey)}
-            />
+            debouncedSearch ? (
+              <BrokerEmptyState
+                bare
+                icon={SearchX}
+                color="neutral"
+                title={t('messages.empty_search_title')}
+                hint={t('messages.empty_search_hint')}
+              />
+            ) : (
+              <BrokerEmptyState
+                bare
+                icon={emptyMeta.icon}
+                color={emptyMeta.color}
+                title={t(emptyMeta.titleKey)}
+                hint={t(emptyMeta.hintKey)}
+              />
+            )
           }
         />
       )}

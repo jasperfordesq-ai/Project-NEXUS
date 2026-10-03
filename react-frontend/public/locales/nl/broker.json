@@ -55,7 +55,6 @@
     "moderation_reports": "Meldingen",
     "safeguarding_options": "Beschermingsopties",
     "safeguarding_support_needs": "Ondersteuningsbehoeften van leden",
-    "safeguarding_flagged": "Gemarkeerde berichten",
     "safeguarding_guardians": "Voogden",
     "safeguarding_support_actions": "Ondersteuningsacties",
     "safeguarding_volunteering": "Incidenten bij vrijwilligerswerk"
@@ -376,8 +375,6 @@
     "retry": "Opnieuw proberen",
     "support_needs_title": "Ondersteuningsbehoeften van leden",
     "support_needs_description": "Leden die ons vertelden dat ze extra ondersteuning willen, en wat dat voor hen verandert.",
-    "flagged_title": "Gemarkeerde berichten",
-    "flagged_description": "Berichtkopieën die wachten op een beschermingscontrole.",
     "guardians_title": "Voogden",
     "guardians_description": "Voogdijafspraken voor leden die extra ondersteuning willen.",
     "support_actions_title": "Ondersteuningsacties",
@@ -780,7 +777,13 @@
     "detail_flag_banner_title": "Gemarkeerd voor beoordeling",
     "detail_decision_prompt": "Leg een beoordelingsbeslissing vast voor deze berichtkopie.",
     "detail_message_count_one": "{{count}} berichten",
-    "detail_message_count_other": "{{count}} berichten"
+    "detail_message_count_other": "{{count}} berichten",
+    "tab_urgent": "Dringend",
+    "empty_urgent_title": "Niets dringends",
+    "empty_urgent_hint": "Er wacht geen gemarkeerd bericht op beoordeling.",
+    "search_placeholder": "Berichten of namen zoeken",
+    "empty_search_title": "Geen berichten gevonden voor uw zoekopdracht",
+    "empty_search_hint": "Probeer een ander woord of een andere naam."
   },
   "monitoring": {
     "title": "Gebruikersbewaking",

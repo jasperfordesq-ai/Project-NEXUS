@@ -8,37 +8,19 @@
  *
  * The safeguarding work used to be one dashboard with four tabs. Brokers told
  * us the tabs hid things, so each tab is now its own page in the broker panel
- * (Members' support needs, Flagged messages, Guardians, Support actions), and
- * each page renders one of the panels in this folder. What the panels share
- * lives here.
+ * (Members' support needs, Guardians, Support actions), and each page renders
+ * one of the panels in this folder. The flagged-messages tab listed the same
+ * message copies as the Messages queue and was merged into it. What the
+ * panels share lives here.
  */
 
-import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import type { Key } from '@heroui/react/rac';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types (API shapes)
 // ─────────────────────────────────────────────────────────────────────────────
-
-export interface FlaggedMessage {
-  id: number;
-  message_id: number;
-  message_content: string;
-  sender: { id: number; name: string; avatar_url?: string | null };
-  recipient: { id: number; name: string; avatar_url?: string | null };
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  flag_reason: string;
-  flag_categories?: string[];
-  ward_name?: string;
-  guardian_name?: string;
-  is_reviewed: boolean;
-  reviewed_by?: string;
-  review_notes?: string;
-  reviewed_at?: string;
-  created_at: string;
-}
 
 export interface GuardianAssignment {
   id: number;
@@ -128,29 +110,6 @@ export interface AuthorityRelationship {
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-
-export const SEVERITY_COLORS: Record<string, 'default' | 'warning' | 'danger'> = {
-  low: 'default',
-  medium: 'warning',
-  high: 'warning',
-  critical: 'danger',
-};
-
-/**
- * Flag reasons arrive as the broker-copy reason CODE (random_sample,
- * first_contact, …). Show the translated label; a code with no label falls
- * back to the translated "unknown" reason rather than untranslated text.
- */
-export function useFlagReasonLabel(): (code: string | null | undefined) => string {
-  const { t } = useTranslation('admin_safeguarding');
-  return useCallback(
-    (code) => {
-      const key = (code ?? 'unknown').trim();
-      return t(`safeguarding.flag_reason_${key}`, { defaultValue: t('safeguarding.flag_reason_unknown') });
-    },
-    [t],
-  );
-}
 
 /**
  * Tell the broker panel's sidebar to refresh its counts now rather than at its

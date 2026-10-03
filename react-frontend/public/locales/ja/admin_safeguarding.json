@@ -470,14 +470,6 @@
       "seen_by": "{{name}} さんが確認済み（{{when}}）",
       "seen": "確認済み（{{when}}）"
     },
-    "flagged_page": {
-      "intro": "セーフガーディング確認のために取得されたメッセージのコピーです。それぞれを読み、レビュー済みにしてください。これらは「メッセージ」ページと同じコピーです。",
-      "filter_label": "表示",
-      "filter_unreviewed": "レビュー待ち",
-      "filter_critical": "高・重大",
-      "filter_reviewed": "レビュー済み",
-      "filter_all": "すべて"
-    },
     "guardians_page": {
       "intro": "追加のサポートを希望するメンバーのためにスタッフが記録したガーディアンの取り決めと、メンバーが同意したかどうかです。",
       "filter_label": "表示",
