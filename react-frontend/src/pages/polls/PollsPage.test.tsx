@@ -165,6 +165,37 @@ describe('PollsPage', () => {
     });
   });
 
+  // HELP-10: a member wrote a description in paragraphs with a numbered list,
+  // and the poll card ran it all together into one paragraph.
+  it('keeps the line breaks the author typed in a poll description', async () => {
+    const description = 'Hi everyone!\n\nThese sessions will cover:\n\n1. Tool tutorials\n2. Live matching\n\nWould you attend?';
+    const poll = {
+      id: 40,
+      question: 'Friday office hours?',
+      description,
+      expires_at: null,
+      created_at: '2026-10-03T17:20:04Z',
+      total_votes: 0,
+      status: 'open',
+      has_voted: false,
+      voted_option_id: null,
+      options: [
+        { id: 140, label: 'Yes', vote_count: null, percentage: null },
+        { id: 141, label: 'No', vote_count: null, percentage: null },
+      ],
+      creator: { id: 218, name: 'Poll Author', avatar_url: null },
+    };
+    mockApiGet.mockImplementation((url: string) => Promise.resolve(
+      url.startsWith('/v2/polls?') ? { success: true, data: [poll] } : { success: true, data: [] },
+    ));
+    render(<PollsPage />);
+
+    const shown = await screen.findByText(/1\. Tool tutorials/);
+
+    expect(shown.textContent).toBe(description);
+    expect(shown.className).toContain('whitespace-pre-wrap');
+  });
+
   it('keeps an option input mounted and focused while typing', async () => {
     const user = userEvent.setup();
     mockApiGet.mockResolvedValue({ success: true, data: { polls: [], has_more: false, next_cursor: null } });

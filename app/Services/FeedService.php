@@ -1433,6 +1433,7 @@ class FeedService
             $pollDataMap[$pollId] = [
                 'id' => $pollId,
                 'question' => $poll->question ?? '',
+                'description' => $poll->description ?? null,
                 'options' => $optionsForResponse,
                 'total_votes' => $totalVotesForResponse,
                 'user_vote_option_id' => $userVotes[$pollId] ?? null,

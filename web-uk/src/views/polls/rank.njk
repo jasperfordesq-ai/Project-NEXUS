@@ -20,7 +20,7 @@
         {{ govukTag({ text: t("govuk_alpha_gamification.ranked.badge"), classes: "govuk-tag--purple" }) }}
       </div>
 
-      {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+      {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
       {% if statusBanner and statusBanner.type == "success" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="poll-rank-status-title">

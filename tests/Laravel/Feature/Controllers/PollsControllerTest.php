@@ -356,6 +356,27 @@ class PollsControllerTest extends TestCase
         $this->assertTrue($item['poll_data']['is_active']);
     }
 
+    /** HELP-10: the feed card had no description to show, so only the question reached the feed. */
+    public function test_feed_poll_carries_the_description_with_its_line_breaks(): void
+    {
+        $this->enablePollsFeature();
+        $this->authenticatedUser();
+        $description = "Hi everyone!\n\nThese sessions will cover:\n\n1. Tool tutorials\n2. Live matching";
+        $created = $this->apiPost('/v2/polls', [
+            'question' => 'Friday office hours?',
+            'description' => $description,
+            'options' => ['Yes', 'No'],
+        ])->assertCreated();
+        $pollId = (int) $created->json('data.id');
+
+        $feed = $this->apiGet('/v2/feed?type=polls&mode=chronological');
+
+        $feed->assertOk();
+        $item = collect($feed->json('data'))->firstWhere('id', $pollId);
+        $this->assertNotNull($item, 'The newly created poll must be present in the polls feed.');
+        $this->assertSame($description, $item['poll_data']['description']);
+    }
+
     public function test_feed_vote_with_an_option_from_another_poll_is_rejected_not_a_server_error(): void
     {
         $this->enablePollsFeature();

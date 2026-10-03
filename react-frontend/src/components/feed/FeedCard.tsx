@@ -1274,6 +1274,13 @@ const FeedCardInner = React.memo(function FeedCardInner({
                       </h3>
                     )}
 
+                    {/* Description — keep the author's paragraphs and lists */}
+                    {pollData.description && (
+                      <p className="px-5 pt-1.5 text-sm leading-relaxed text-theme-secondary whitespace-pre-wrap break-words">
+                        {pollData.description}
+                      </p>
+                    )}
+
                     {/* Options */}
                     <div className="px-5 pt-3 pb-2 space-y-2">
                       {pollData.options.map((option) => {

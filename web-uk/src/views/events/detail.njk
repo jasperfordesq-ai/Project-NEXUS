@@ -402,7 +402,7 @@
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ poll.question }}</h3>
                 <strong class="govuk-tag govuk-tag--{% if poll.isOpen %}green{% else %}grey{% endif %}">{{ t("events.poll_" + ("open" if poll.isOpen else "closed") + "_tag") }}</strong>
               </div>
-              {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+              {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
               {% if poll.options.length == 0 %}
                 <div class="govuk-inset-text"><p class="govuk-body">{{ t("events.poll_no_options") }}</p></div>

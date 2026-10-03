@@ -151,6 +151,7 @@ export interface FeedItem {
 export interface PollData {
   id: number;
   question: string;
+  description?: string | null;
   options: PollOption[];
   total_votes: number | null;
   user_vote_option_id: number | null;

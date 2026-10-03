@@ -52,7 +52,7 @@
         </div>
       {% endif %}
 
-      {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+      {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
       {% if poll.pollType == "ranked" %}
         <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.rank_link") }}{% endif %}</a>

@@ -115,7 +115,7 @@
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
                 {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closes_on", { date: poll.expiresAt | formatDate }) }}{% endif %}
               </p>
-              {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+              {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
               {% if poll.pollType == "ranked" %}
                 <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.nav.rank_this_poll") }}{% endif %}</a>
@@ -181,7 +181,7 @@
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
                 {{ t("polls.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {{ t("polls.closed_on", { date: poll.expiresAt | formatDate }) }}{% endif %} - {{ tc("polls.votes_count", poll.totalVotes, { count: poll.totalVotes }) }}
               </p>
-              {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+              {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
               {% if poll.resultsVisible %}
                 {{ renderResults(poll) }}
               {% else %}

@@ -263,7 +263,7 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
         {/* Question */}
         <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">{poll.question}</h3>
         {poll.description && (
-          <p className="text-sm text-[var(--text-secondary)] mb-3">{poll.description}</p>
+          <p className="text-sm text-[var(--text-secondary)] mb-3 whitespace-pre-wrap break-words">{poll.description}</p>
         )}
 
         {/* Options */}

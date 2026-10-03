@@ -259,6 +259,33 @@ describe('FeedCard', () => {
     expect(screen.getByText('5 votes')).toBeInTheDocument();
   });
 
+  // HELP-10: the feed showed only a poll's question, so a description written
+  // in paragraphs with a numbered list never reached anyone reading the feed.
+  it('shows a poll description with the line breaks the author typed', () => {
+    const description = 'Hi everyone!\n\nThese sessions will cover:\n\n1. Tool tutorials\n2. Live matching';
+    const item: FeedItem = {
+      ...baseFeedItem,
+      type: 'poll',
+      poll_data: {
+        id: 1,
+        question: 'Friday office hours?',
+        description,
+        options: [
+          { id: 10, text: 'Yes', vote_count: null, percentage: null },
+          { id: 11, text: 'No', vote_count: null, percentage: null },
+        ],
+        total_votes: null,
+        user_vote_option_id: null,
+        is_active: true,
+      },
+    };
+    render(<FeedCard {...defaultProps} item={item} />);
+
+    const shown = screen.getByText(/1\. Tool tutorials/);
+    expect(shown.textContent).toBe(description);
+    expect(shown.className).toContain('whitespace-pre-wrap');
+  });
+
   it('renders poll results when user has voted', () => {
     const item: FeedItem = {
       ...baseFeedItem,
