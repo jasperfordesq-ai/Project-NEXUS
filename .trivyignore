@@ -189,10 +189,20 @@ CVE-2025-71330
 #
 # Reachability: development tooling only, and only ever fed the repo's own
 # glob patterns, never untrusted input.
-#   - web-uk/package-lock.json: nodemon (devDependency, the local auto-reload
-#     dev server) → chokidar 3.6.0 → braces. Not in the production image.
-#   - mobile/package-lock.json: lint-staged (devDependency, pre-commit file
-#     matching) → micromatch 4.0.8 → braces. Not in the APK/IPA.
+#   - web-uk/package-lock.json: chokidar 3.6.0 → braces, reached from nodemon
+#     and sass (devDependencies) and from nunjucks, whose OPTIONAL chokidar
+#     peer means it IS installed in the production image. It never runs there:
+#     nunjucks require()s chokidar only when `watch` is on, and
+#     web-uk/src/server.js sets `watch: NODE_ENV === 'development'`, while the
+#     production image and compose.webuk.bluegreen.yml set NODE_ENV=production.
+#     Even in development it only expands the repo's own template paths.
+#     Mirrored in .npm-audit-exceptions.json (GHSA-vfj7-8cjw-p6xm).
+#   - mobile/package-lock.json: micromatch 4.0.8 → braces, reached from
+#     lint-staged (devDependency, pre-commit file matching) and from metro's
+#     file map (metro-file-map, jest-haste-map, @jest/transform — the Expo /
+#     React-Native dev bundler, which npm records as non-dev). No app source
+#     imports braces or micromatch, so neither is in the APK/IPA bundle.
+#     Mirrored in .npm-audit-exceptions.json (GHSA-vfj7-8cjw-p6xm).
 #
 # Remove this entry when a fixed braces is published and the lockfiles pick it
 # up. (added 2026-10-03)

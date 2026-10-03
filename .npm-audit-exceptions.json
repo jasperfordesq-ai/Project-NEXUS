@@ -24,6 +24,22 @@
       "reason": "node-forge RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm elements (CVE-2026-85393). Affected range <= 1.4.0, first_patched_version NONE, and 1.4.0 is the latest release, so there is no version to upgrade to. Reachable only through developer tooling: @expo/cli (src/utils/codesigning.js, src/run/ios/codeSigning/Security.js) and expo-updates' `codesigning:*` CLI (cli/build/*CodeSigningAsync.js) — expo-updates' runtime entry build/index.js does not import it, no mobile app source imports node-forge or @expo/code-signing-certificates, and app.json configures no update code signing, so nothing in the shipped APK/IPA verifies a signature with it. Short expiry on purpose: re-check for a fixed node-forge then. Mirrored in .trivyignore.",
       "added": "2026-10-02",
       "expires": "2026-11-02"
+    },
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "scope": "mobile",
+      "package": "braces",
+      "reason": "braces stack-exhaustion DoS through deeply nested patterns (CVE-2026-93687), first reported 2026-10-03. braces 3.0.3 is the latest release and no fixed version exists. npm counts it as a production dependency only because metro's file map (metro-file-map, jest-haste-map, @jest/transform) lists micromatch -> braces as a dependency; metro is the Expo/React-Native dev bundler and runs on a developer machine or CI runner, never in the shipped app. No mobile app source imports braces or micromatch, so neither is in the APK/IPA bundle, and the patterns it expands are the repo's own globs, not untrusted input. Same reachability class as the image-size entries above. Short expiry on purpose: re-check for a fixed braces then. Mirrored in .trivyignore (CVE-2026-93687).",
+      "added": "2026-10-03",
+      "expires": "2026-11-03"
+    },
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "scope": "web-uk",
+      "package": "braces",
+      "reason": "braces stack-exhaustion DoS (CVE-2026-93687); braces 3.0.3 is the latest release and no fixed version exists. In web-uk it arrives via chokidar 3.6.0, from nodemon and sass (devDependencies) and from nunjucks's OPTIONAL chokidar peer — so it IS installed in the production image, but never executed there: nunjucks require()s chokidar only when its `watch` option is on (node_modules/nunjucks/src/node-loaders.js), and web-uk/src/server.js sets `watch: NODE_ENV === 'development'`, while the production image (web-uk/Dockerfile) and compose.webuk.bluegreen.yml run with NODE_ENV=production. Even in development chokidar only expands the repo's own template paths, never request input. Short expiry on purpose: re-check for a fixed braces then. Mirrored in .trivyignore (CVE-2026-93687).",
+      "added": "2026-10-03",
+      "expires": "2026-11-03"
     }
   ]
 }

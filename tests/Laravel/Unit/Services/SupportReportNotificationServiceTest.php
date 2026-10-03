@@ -190,49 +190,10 @@ class SupportReportNotificationServiceTest extends TestCase
         $this->assertGreaterThan($before, $after);
     }
 
-    // ─────────────────────────────────────────────────────────────────────
-    // shouldSendImmediateEmail — tested via reflection
-    // ─────────────────────────────────────────────────────────────────────
-
-    public function test_shouldSendImmediateEmail_returns_true_for_blocked(): void
-    {
-        $ref = new \ReflectionClass(SupportReportNotificationService::class);
-        $method = $ref->getMethod('shouldSendImmediateEmail');
-        $method->setAccessible(true);
-
-        $result = $method->invoke(null, 'blocked');
-        $this->assertTrue($result);
-    }
-
-    public function test_shouldSendImmediateEmail_returns_true_for_major(): void
-    {
-        $ref = new \ReflectionClass(SupportReportNotificationService::class);
-        $method = $ref->getMethod('shouldSendImmediateEmail');
-        $method->setAccessible(true);
-
-        $result = $method->invoke(null, 'major');
-        $this->assertTrue($result);
-    }
-
-    public function test_shouldSendImmediateEmail_returns_false_for_minor(): void
-    {
-        $ref = new \ReflectionClass(SupportReportNotificationService::class);
-        $method = $ref->getMethod('shouldSendImmediateEmail');
-        $method->setAccessible(true);
-
-        $result = $method->invoke(null, 'minor');
-        $this->assertFalse($result);
-    }
-
-    public function test_shouldSendImmediateEmail_returns_false_for_cosmetic(): void
-    {
-        $ref = new \ReflectionClass(SupportReportNotificationService::class);
-        $method = $ref->getMethod('shouldSendImmediateEmail');
-        $method->setAccessible(true);
-
-        $result = $method->invoke(null, 'cosmetic');
-        $this->assertFalse($result);
-    }
+    // shouldSendImmediateEmail() was removed on 2026-10-03 (594c627af): every
+    // report now emails the admins whatever its impact. That behaviour is
+    // pinned in Feature\SupportReportApiTest::
+    // test_low_priority_support_reports_also_email_admins_and_create_a_bell_notification.
 
     // ─────────────────────────────────────────────────────────────────────
     // translatedImpact — tested via reflection
