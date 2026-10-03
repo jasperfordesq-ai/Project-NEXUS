@@ -640,7 +640,8 @@
     "type_broken": "うまく動かない",
     "type_how_to": "使い方を知りたい",
     "type_account": "アカウントまたはサインインの問題",
-    "type_suggestion": "改善を提案する"
+    "type_suggestion": "改善を提案する",
+    "receipt_jira_notice": "このリクエストへの返信は :sender からメールで届きます。このアドレスから、まずメールアドレスの確認をお願いする短いメッセージが届きます。迷惑メールフォルダーを確認してそのリンクを開いてください。開かないと返信が届きません。"
   },
   "event_guardian_consent": {
     "subject": ":event への参加には保護者の同意が必要です",

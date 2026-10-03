@@ -640,7 +640,8 @@
     "type_broken": "Quelque chose ne fonctionne pas",
     "type_how_to": "Comment faire pour… ?",
     "type_account": "Problème de compte ou de connexion",
-    "type_suggestion": "Suggérer une amélioration"
+    "type_suggestion": "Suggérer une amélioration",
+    "receipt_jira_notice": "Les réponses à cette demande vous seront envoyées depuis :sender. Cette adresse vous enverra d'abord un court message vous demandant de confirmer votre adresse e-mail — cherchez-le dans votre dossier de courrier indésirable et suivez son lien, sinon les réponses ne vous parviendront pas."
   },
   "event_guardian_consent": {
     "subject": "Consentement d’une personne responsable requis pour :event",

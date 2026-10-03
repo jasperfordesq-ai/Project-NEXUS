@@ -52,6 +52,22 @@ class SupportJiraTicketService
     }
 
     /**
+     * The address Jira's customer notifications come from, so the platform
+     * receipt can tell the member where to look. Explicit setting first;
+     * otherwise Jira Cloud's default, jira@<site host>.
+     */
+    public static function notificationSender(): string
+    {
+        $explicit = trim((string) config('support_jira.notification_sender', ''));
+        if ($explicit !== '') {
+            return $explicit;
+        }
+        $host = (string) parse_url((string) config('support_jira.site_url', ''), PHP_URL_HOST);
+
+        return $host !== '' ? 'jira@' . $host : '';
+    }
+
+    /**
      * @throws \RuntimeException when Jira refuses or cannot be reached
      */
     public function sync(SupportReport $report): void
@@ -103,7 +119,7 @@ class SupportJiraTicketService
         if ($raiseFor !== null && !$response->successful() && in_array($response->status(), [400, 403, 404], true)) {
             $detail = $this->jiraErrorDetail($response);
             $fallbackNote = 'Raised by the platform account, NOT in the member’s name — Jira refused (HTTP '
-                . $response->status() . ($detail !== '' ? ': ' . $detail : '') . '). The member was sent the platform receipt instead.';
+                . $response->status() . ($detail !== '' ? ': ' . $detail : '') . '). Jira will not email the member; they have the platform receipt.';
             Log::warning('[SupportJiraTicketService] Jira refused to raise the ticket in the member’s name; raising under the platform account', [
                 'report_id' => $report->id,
                 'tenant_id' => $report->tenant_id,
@@ -138,10 +154,6 @@ class SupportJiraTicketService
 
         if ($warnings !== []) {
             $this->recordError($report, implode(' | ', $warnings));
-        }
-
-        if ($fallbackNote !== null) {
-            SupportReportNotificationService::sendReceipt($report);
         }
     }
 

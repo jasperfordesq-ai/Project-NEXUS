@@ -640,7 +640,8 @@
     "type_broken": "Níl rud éigin ag obair",
     "type_how_to": "Conas a dhéanaim…?",
     "type_account": "Fadhb cuntais nó síniú isteach",
-    "type_suggestion": "Moltaí feabhsúcháin"
+    "type_suggestion": "Moltaí feabhsúcháin",
+    "receipt_jira_notice": "Seolfar freagraí ar an iarratas seo ó :sender. Seolfaidh an seoladh sin teachtaireacht ghearr chugat ar dtús ag iarraidh ort do sheoladh ríomhphoist a dhearbhú — féach i d'fhillteán dramhphoist agus lean an nasc inti, nó ní shroichfidh na freagraí thú."
   },
   "event_guardian_consent": {
     "subject": "Toiliú caomhnóra de dhíth le haghaidh :event",

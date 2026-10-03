@@ -167,13 +167,14 @@ class SupportReportController extends BaseApiController
         }
 
         // The member's own receipt (their reference, in their language). It
-        // never fails the request; failures are logged inside. When Jira will
-        // email the member itself, this would be a second confirmation, so it
-        // is held back and sent only if the ticket finally cannot be created
-        // (CreateSupportJiraTicket::failed).
-        if (!SupportJiraTicketService::willEmailMember()) {
-            SupportReportNotificationService::sendReceipt($report);
-        }
+        // never fails the request; failures are logged inside. Always sent,
+        // even when Jira will email the member too: it goes out through the
+        // platform's authenticated domain and reaches the inbox, whereas Jira
+        // first sends a *.atlassian.net "confirm your email address" message
+        // that lands in junk and holds every later notification until the
+        // member clicks it (seen live, 3 Oct 2026). When Jira will also
+        // write, the receipt says so and where to look.
+        SupportReportNotificationService::sendReceipt($report);
 
         if (SupportJiraTicketService::isEnabled()) {
             try {

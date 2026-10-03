@@ -640,7 +640,8 @@
     "type_broken": "Er werkt iets niet",
     "type_how_to": "Hoe kan ik…?",
     "type_account": "Probleem met account of aanmelden",
-    "type_suggestion": "Een verbetering voorstellen"
+    "type_suggestion": "Een verbetering voorstellen",
+    "receipt_jira_notice": "Antwoorden op dit verzoek worden gemaild vanaf :sender. Dat adres stuurt u eerst een kort bericht met de vraag uw e-mailadres te bevestigen — kijk daarvoor in uw map met ongewenste e-mail en volg de link, anders bereiken de antwoorden u niet."
   },
   "event_guardian_consent": {
     "subject": "Toestemming van een voogd nodig voor :event",

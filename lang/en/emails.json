@@ -537,7 +537,8 @@
     "type_broken": "Something isn't working",
     "type_how_to": "How do I…?",
     "type_account": "Account or sign-in problem",
-    "type_suggestion": "Suggest an improvement"
+    "type_suggestion": "Suggest an improvement",
+    "receipt_jira_notice": "Replies to this request will be emailed from :sender. That address will first send you a short message asking you to confirm your email address — please check your junk or spam folder for it and follow its link, or replies will not reach you."
   },
   "identity_verification": {
     "passed_subject": "Your identity has been verified",

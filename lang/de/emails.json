@@ -640,7 +640,8 @@
     "type_broken": "Etwas funktioniert nicht",
     "type_how_to": "Wie kann ich …?",
     "type_account": "Problem mit Konto oder Anmeldung",
-    "type_suggestion": "Verbesserung vorschlagen"
+    "type_suggestion": "Verbesserung vorschlagen",
+    "receipt_jira_notice": "Antworten zu dieser Anfrage kommen per E-Mail von :sender. Diese Adresse schickt Ihnen zuerst eine kurze Nachricht mit der Bitte, Ihre E-Mail-Adresse zu bestätigen — sehen Sie dafür bitte in Ihrem Spam- oder Junk-Ordner nach und folgen Sie dem Link, sonst erreichen Sie die Antworten nicht."
   },
   "event_guardian_consent": {
     "subject": "Einwilligung einer sorgeberechtigten Person für :event erforderlich",

@@ -640,7 +640,8 @@
     "type_broken": "Algo não está a funcionar",
     "type_how_to": "Como faço para…?",
     "type_account": "Problema de conta ou de início de sessão",
-    "type_suggestion": "Sugerir uma melhoria"
+    "type_suggestion": "Sugerir uma melhoria",
+    "receipt_jira_notice": "As respostas a este pedido serão enviadas por email a partir de :sender. Esse endereço enviar-lhe-á primeiro uma breve mensagem a pedir que confirme o seu endereço de email — procure-a na pasta de lixo eletrónico e siga a ligação, caso contrário as respostas não lhe chegarão."
   },
   "event_guardian_consent": {
     "subject": "É necessário o consentimento de uma pessoa responsável para :event",

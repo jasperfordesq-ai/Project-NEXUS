@@ -640,7 +640,8 @@
     "type_broken": "Coś nie działa",
     "type_how_to": "Jak mogę…?",
     "type_account": "Problem z kontem lub logowaniem",
-    "type_suggestion": "Zaproponuj ulepszenie"
+    "type_suggestion": "Zaproponuj ulepszenie",
+    "receipt_jira_notice": "Odpowiedzi w sprawie tego zgłoszenia będą wysyłane z adresu :sender. Najpierw otrzymasz z niego krótką wiadomość z prośbą o potwierdzenie adresu e-mail — sprawdź folder ze spamem i kliknij zawarty w niej link, bo inaczej odpowiedzi do Ciebie nie dotrą."
   },
   "event_guardian_consent": {
     "subject": "Wymagana zgoda opiekuna na udział w :event",

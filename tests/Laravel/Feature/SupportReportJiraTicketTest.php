@@ -147,7 +147,7 @@ class SupportReportJiraTicketTest extends TestCase
         $this->assertNull($this->recorded('/rest/servicedeskapi/servicedesk/2/customer', 'POST'));
     }
 
-    public function test_if_jira_refuses_the_members_name_the_ticket_is_raised_by_the_platform_and_the_member_gets_the_receipt(): void
+    public function test_if_jira_refuses_the_members_name_the_ticket_is_raised_by_the_platform_instead(): void
     {
         config(['support_jira.send_member_email' => true]);
         $mailer = new SupportReportJiraTicketRecordingMailer();
@@ -175,9 +175,9 @@ class SupportReportJiraTicketTest extends TestCase
         $this->assertStringContainsString('NOT in the member', (string) $row->jira_last_error);
         $this->assertStringContainsString('Cannot add customer accounts', (string) $row->jira_last_error);
 
-        $receipts = array_values(array_filter($mailer->calls, fn (array $c) => $c['to'] === $member->email));
-        $this->assertCount(1, $receipts, 'Jira will not email the member, so the platform must');
-        $this->assertStringContainsString('NXR-T-JIRA01', $receipts[0]['subject']);
+        // The platform receipt was already sent when the request was saved;
+        // the fallback must not send a second one.
+        $this->assertCount(0, array_filter($mailer->calls, fn (array $c) => $c['to'] === $member->email));
     }
 
     public function test_a_jira_outage_records_the_error_and_rethrows_so_the_queue_retries(): void

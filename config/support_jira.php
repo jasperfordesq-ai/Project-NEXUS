@@ -64,6 +64,12 @@ return [
     // Empty = tickets stay unassigned.
     'assignee_account_id' => trim((string) env('SUPPORT_JIRA_ASSIGNEE_ACCOUNT_ID', '')),
 
+    // Address Jira's customer notifications are sent from (named in the
+    // platform receipt so members know where to look). Empty = jira@<site
+    // host>, Jira Cloud's default. Set it once a custom sender domain is
+    // configured in the help desk.
+    'notification_sender' => trim((string) env('SUPPORT_JIRA_NOTIFICATION_SENDER', '')),
+
     'timeout_seconds' => (int) env('SUPPORT_JIRA_TIMEOUT', 15),
 
     // Reports one member may send in any rolling 24 hours (spam guard). This

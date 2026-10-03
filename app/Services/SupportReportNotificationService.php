@@ -61,7 +61,7 @@ class SupportReportNotificationService
 
                 LocaleContext::withLocale($member, function () use ($member, $report): void {
                     $name = $member->first_name ?: ($member->name ?: __('emails.common.fallback_name'));
-                    $html = EmailTemplateBuilder::make()
+                    $builder = EmailTemplateBuilder::make()
                         ->theme('success')
                         ->title(__('emails.support_report.receipt_title'))
                         ->previewText(__('emails.support_report.receipt_preview', ['reference' => $report->reference]))
@@ -72,8 +72,18 @@ class SupportReportNotificationService
                             __('emails.support_report.receipt_type_label') => self::translatedRequestType((string) ($report->request_type ?: 'broken')),
                             __('emails.support_report.summary_label') => (string) $report->summary,
                         ])
-                        ->paragraph(__('emails.support_report.receipt_next'))
-                        ->render();
+                        ->paragraph(__('emails.support_report.receipt_next'));
+
+                    // Jira first sends the member a *.atlassian.net "confirm your
+                    // email address" message that often lands in junk, and holds
+                    // every later notification until it is clicked. Say so once.
+                    if (SupportJiraTicketService::willEmailMember() && SupportJiraTicketService::notificationSender() !== '') {
+                        $builder->highlight(__('emails.support_report.receipt_jira_notice', [
+                            'sender' => SupportJiraTicketService::notificationSender(),
+                        ]));
+                    }
+
+                    $html = $builder->render();
 
                     $sent = EmailDispatchService::sendRaw(
                         (string) $member->email,

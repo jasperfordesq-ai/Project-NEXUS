@@ -115,7 +115,7 @@ class SupportJiraMemberFlowTest extends TestCase
         $this->assertStringNotContainsString($member->email, $everything);
     }
 
-    public function test_when_jira_will_email_the_member_the_platform_receipt_is_held_back(): void
+    public function test_the_platform_receipt_is_always_sent_and_warns_about_jiras_confirmation_email(): void
     {
         Queue::fake();
         $member = $this->member();
@@ -127,11 +127,14 @@ class SupportJiraMemberFlowTest extends TestCase
             'description' => 'Where do I ask to join a group on my phone?',
         ])->assertCreated();
 
-        $this->assertCount(0, $this->callsTo($member->email), 'Jira sends the confirmation; the platform must not send a second one');
+        $receipts = $this->callsTo($member->email);
+        $this->assertCount(1, $receipts, 'the platform receipt reaches the inbox; Jira first sends a confirm-your-email message that lands in junk');
+        $this->assertStringContainsString('jira@helpdesk.example.test', $receipts[0]['body']);
+        $this->assertStringContainsString('confirm your email address', $receipts[0]['body']);
         Queue::assertPushed(CreateSupportJiraTicket::class);
     }
 
-    public function test_when_jira_will_not_email_the_member_the_platform_receipt_is_sent(): void
+    public function test_the_receipt_does_not_mention_jira_when_jira_will_not_email_the_member(): void
     {
         config(['support_jira.send_member_email' => false]);
         Queue::fake();
@@ -144,30 +147,35 @@ class SupportJiraMemberFlowTest extends TestCase
             'description' => 'Where do I ask to join a group on my phone?',
         ])->assertCreated();
 
-        $this->assertCount(1, $this->callsTo($member->email));
-    }
-
-    public function test_if_the_ticket_finally_fails_the_member_gets_the_platform_receipt_instead(): void
-    {
-        $member = $this->member();
-        $reportId = $this->insertReport($member);
-
-        (new CreateSupportJiraTicket($reportId, $this->testTenantId))->failed(new \RuntimeException('Jira down'));
-
         $receipts = $this->callsTo($member->email);
         $this->assertCount(1, $receipts);
-        $this->assertStringContainsString('NXR-F-', $receipts[0]['subject']);
+        $this->assertStringNotContainsString('jira@', $receipts[0]['body']);
     }
 
-    public function test_no_fallback_receipt_when_the_member_was_never_promised_a_jira_email(): void
+    public function test_a_configured_sender_address_overrides_the_default(): void
     {
-        config(['support_jira.send_member_email' => false]);
+        config(['support_jira.notification_sender' => 'help@timebank.example']);
+        Queue::fake();
+        $member = $this->member();
+        Sanctum::actingAs($member, ['*']);
+
+        $this->apiPost('/v2/support/reports', [
+            'request_type' => 'suggestion',
+            'summary' => 'An idea',
+            'description' => 'A darker map for night-time would be nice.',
+        ])->assertCreated();
+
+        $this->assertStringContainsString('help@timebank.example', $this->callsTo($member->email)[0]['body']);
+    }
+
+    public function test_a_final_jira_failure_sends_no_second_receipt(): void
+    {
         $member = $this->member();
         $reportId = $this->insertReport($member);
 
         (new CreateSupportJiraTicket($reportId, $this->testTenantId))->failed(new \RuntimeException('Jira down'));
 
-        $this->assertCount(0, $this->callsTo($member->email), 'they already had the platform receipt at submit time');
+        $this->assertCount(0, $this->callsTo($member->email), 'the receipt went out when the request was saved');
     }
 
     private function runJob(int $reportId): void
