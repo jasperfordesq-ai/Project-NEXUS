@@ -92,6 +92,27 @@ final class F552ReactNginxVersionDisclosureTest extends TestCase
         }
     }
 
+    /**
+     * The deploy's Dockerfile sanity check greps Dockerfile.prod for the nginx
+     * base image and aborts the deploy when it does not match. The first F-552
+     * commit changed the image line but not the check (`FROM nginx:alpine`), so
+     * the next production deploy would have stopped before building anything.
+     */
+    public function test_the_deploy_sanity_check_still_recognises_the_production_image(): void
+    {
+        $script = $this->read('scripts/deploy/phases/validate-env.sh');
+        self::assertSame(
+            1,
+            preg_match("/grep -qE '([^']+)' react-frontend\\/Dockerfile\\.prod/", $script, $match),
+            'validate_dockerfiles() must check Dockerfile.prod with an extended-regex grep'
+        );
+        $pattern = '/' . str_replace('/', '\\/', $match[1]) . '/m';
+
+        foreach (self::DOCKERFILES as $file) {
+            self::assertMatchesRegularExpression($pattern, str_replace("\r\n", "\n", $this->read($file)), "The deploy check would reject {$file}");
+        }
+    }
+
     public function test_both_configs_hide_the_nginx_version(): void
     {
         foreach (self::CONFIGS as $file) {

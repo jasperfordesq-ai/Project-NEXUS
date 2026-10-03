@@ -200,7 +200,9 @@ validate_dockerfiles() {
     local FAILED=0
 
     if [ -f "react-frontend/Dockerfile.prod" ]; then
-        if grep -q "FROM nginx:alpine" react-frontend/Dockerfile.prod; then
+        # Any Alpine-based nginx production image (e.g. nginx:1.30-alpine). Pinned
+        # against both Dockerfiles by F552ReactNginxVersionDisclosureTest.
+        if grep -qE '^FROM nginx:[^[:space:]]*alpine' react-frontend/Dockerfile.prod; then
             log_ok "Dockerfile.prod: nginx base image confirmed (production)"
         else
             log_err "Dockerfile.prod: nginx base image NOT found — wrong Dockerfile?"
