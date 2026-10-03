@@ -389,6 +389,14 @@ describe('CourseBuilder', () => {
     fireEvent.changeText(screen.getByLabelText('Question'), 'Question');
     fireEvent.press(screen.getByText('Add question'));
     await waitFor(() => expect(screen.getByLabelText('Question').props.value).toBe(''));
+    /*
+      The cleared prompt is committed one step before the route guard hears about it: the
+      lesson reports from an effect, and the builder relays that from another effect. On a
+      slow runner the assertion can land between the two and see the stale "question in
+      flight" report ({ isDirty: true, isSaving: true }), so wait for the relay itself.
+    */
+    await waitFor(() => expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false }));
+    await act(async () => {});
     expect(changed).toHaveBeenLastCalledWith({ isDirty: true, isSaving: false });
     expect(mockUpdateCourseLesson).not.toHaveBeenCalled();
   });

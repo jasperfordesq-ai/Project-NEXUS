@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The mobile course-builder test "does not consider an unsaved lesson title saved when a quiz question is added" now waits for the builder to pass the lesson's final state on to the route guard before checking it. The lesson reports its state from one effect and the builder relays it from another; on the slower CI runner the check sometimes landed between the two and saw the earlier "question being added" report. The CI log showed only that report, with no lesson save started, so the component itself was correct.
 - The broker dashboard's "Pending Exchanges" card counts exchanges waiting for a broker's approval and exchanges in dispute, but clicking it opened a list of the first kind only. A community whose queue held only disputes saw a number on the card and an empty page behind it. The card now opens a new "Needs action" tab on the Exchanges page that shows both, so the number and the list always match. The tab shows its own count and is translated into all eleven languages.
 - The broker Help Centre guide on revoking a vetting decision now names the counter by its current label ("Re-checks requested"), in all eleven languages. The broker panel renamed it but the guide still said "Review requests".
 - The safeguarding dashboard showed an untranslated, machine-made label for a flag reason it had no wording for; it now shows the translated "not recorded" reason.
