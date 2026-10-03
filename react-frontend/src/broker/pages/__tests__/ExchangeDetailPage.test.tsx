@@ -117,17 +117,19 @@ describe('ExchangeDetailPage', () => {
     expect(screen.getByText('Provider accepted request')).toBeInTheDocument();
   });
 
-  it('renders the pipeline without a highlighted stage for statuses outside the linear lifecycle', async () => {
+  it('highlights the in_progress stage of the lifecycle pipeline', async () => {
     mockShowExchange.mockResolvedValue({ success: true, data: DETAIL });
 
     render(<ExchangeDetailPage />);
 
     await waitFor(() => expect(screen.getByText('Kate Liddell')).toBeInTheDocument());
 
-    // in_progress is not one of the linear pipeline stages nor a terminal
-    // state — no step is marked current, but the status chip still names it.
-    expect(document.querySelector('[aria-current="step"]')).toBeNull();
-    expect(screen.getByText('In progress')).toBeInTheDocument();
+    // in_progress is a real workflow stage (ExchangeWorkflowService), so the
+    // strip marks it current — until Oct 2026 the strip omitted it and a live
+    // exchange showed no current step at all.
+    const current = document.querySelector('[aria-current="step"]');
+    expect(current).not.toBeNull();
+    expect(current?.textContent).toContain('In progress');
     expect(screen.getByText('Nikita Serkevich')).toBeInTheDocument();
   });
 });

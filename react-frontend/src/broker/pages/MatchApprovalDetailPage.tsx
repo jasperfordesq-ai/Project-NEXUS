@@ -13,7 +13,6 @@
  * module and restyled to the broker design language.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +21,7 @@ import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import MapPin from 'lucide-react/icons/map-pin';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
 import User from 'lucide-react/icons/user';
 import FileText from 'lucide-react/icons/file-text';
 import Clock from 'lucide-react/icons/clock';
@@ -30,6 +30,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
+import { formatServerDateTime } from '@/lib/serverTime';
 import { adminMatching } from '@/admin/api/adminApi';
 import type { MatchApproval, MatchApprovalDetail } from '@/admin/api/types';
 import {
@@ -72,6 +73,14 @@ function scoreLabelKey(score: number): string {
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
+// "Not found" (the API answered, there is no such match) is a different
+// message from "the request itself failed" (network, 500) — only the latter
+// is worth a Retry.
+type LoadErrorKind = 'not_found' | 'load_failed';
+
+// Guide article for this page; shared with the list.
+const HELP = { sectionId: 'broker_exchanges', articleId: 'broker_match_approvals' } as const;
+
 export function MatchApprovalDetailPage() {
   const { t } = useTranslation('broker');
   usePageTitle(t('matching.detail_title'));
@@ -82,7 +91,7 @@ export function MatchApprovalDetailPage() {
 
   const [item, setItem] = useState<MatchApprovalDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ kind: LoadErrorKind; message: string | null } | null>(null);
 
   const [approveLoading, setApproveLoading] = useState(false);
 
@@ -108,24 +117,29 @@ export function MatchApprovalDetailPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectLoading, setRejectLoading] = useState(false);
 
+  // Every request is wrapped: a thrown request used to escape this loader and
+  // leave the skeleton up for ever.
   const loadItem = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
-    const res = await adminMatching.getApproval(Number(id));
-    if (res.success && res.data) {
-      const data = res.data as unknown;
-      if (data && typeof data === 'object' && 'data' in data) {
-        setItem((data as { data: MatchApprovalDetail }).data);
+    try {
+      const res = await adminMatching.getApproval(Number(id));
+      if (res.success && res.data) {
+        const data = res.data as unknown;
+        if (data && typeof data === 'object' && 'data' in data) {
+          setItem((data as { data: MatchApprovalDetail }).data);
+        } else {
+          setItem(data as MatchApprovalDetail);
+        }
       } else {
-        setItem(data as MatchApprovalDetail);
+        setError({ kind: 'not_found', message: res.error || null });
       }
-    } else {
-      setError(res.error || t('matching.load_failed'));
+    } catch {
+      setError({ kind: 'load_failed', message: null });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    // Fetch is keyed on the record id only — `t` lives in render scope.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -135,14 +149,19 @@ export function MatchApprovalDetailPage() {
   const handleApprove = async () => {
     if (!item) return;
     setApproveLoading(true);
-    const res = await adminMatching.approveMatch(item.id);
-    if (res.success) {
-      toast.success(t('matching.approved_toast'));
-      void queue.goNext();
-    } else {
-      toast.error(res.error || t('matching.approve_failed'));
+    try {
+      const res = await adminMatching.approveMatch(item.id);
+      if (res.success) {
+        toast.success(t('matching.approved_toast'));
+        void queue.goNext();
+      } else {
+        toast.error(res.error || t('matching.approve_failed'));
+      }
+    } catch {
+      toast.error(t('matching.approve_failed'));
+    } finally {
+      setApproveLoading(false);
     }
-    setApproveLoading(false);
   };
 
   const handleReject = async () => {
@@ -152,16 +171,22 @@ export function MatchApprovalDetailPage() {
       return;
     }
     setRejectLoading(true);
-    const res = await adminMatching.rejectMatch(item.id, rejectReason.trim());
-    if (res.success) {
-      toast.success(t('matching.rejected_toast'));
-      setRejectModal(false);
-      setRejectReason('');
-      void queue.goNext();
-    } else {
-      toast.error(res.error || t('matching.reject_failed'));
+    try {
+      const res = await adminMatching.rejectMatch(item.id, rejectReason.trim());
+      if (res.success) {
+        toast.success(t('matching.rejected_toast'));
+        // Close only on success; a failed request keeps the typed reason.
+        setRejectModal(false);
+        setRejectReason('');
+        void queue.goNext();
+      } else {
+        toast.error(res.error || t('matching.reject_failed'));
+      }
+    } catch {
+      toast.error(t('matching.reject_failed'));
+    } finally {
+      setRejectLoading(false);
     }
-    setRejectLoading(false);
   };
 
   const backButton = (
@@ -177,21 +202,50 @@ export function MatchApprovalDetailPage() {
 
   if (loading) {
     return (
-      <BrokerPageShell title={t('matching.detail_title')} icon={UserCheck} color="accent" actions={backButton}>
+      <BrokerPageShell
+        help={HELP}
+        title={t('matching.detail_title')}
+        description={t('matching.detail_description')}
+        icon={UserCheck}
+        color="accent"
+        actions={backButton}
+      >
         <BrokerSkeleton variant="detail" />
       </BrokerPageShell>
     );
   }
 
   if (error || !item) {
+    const kind: LoadErrorKind = error?.kind ?? 'not_found';
     return (
-      <BrokerPageShell title={t('matching.detail_title')} icon={UserCheck} color="accent" actions={backButton}>
+      <BrokerPageShell
+        help={HELP}
+        title={t('matching.detail_title')}
+        description={t('matching.detail_description')}
+        icon={UserCheck}
+        color="accent"
+        actions={backButton}
+      >
         <BrokerEmptyState
           icon={XCircle}
           color="danger"
-          title={t('matching.not_found_title')}
-          hint={error || t('matching.not_found_hint')}
-          action={backButton}
+          title={kind === 'load_failed' ? t('matching.load_failed') : t('matching.not_found_title')}
+          hint={kind === 'load_failed' ? t('matching.load_error_hint') : error?.message || t('matching.not_found_hint')}
+          action={
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {kind === 'load_failed' && (
+                <Button
+                  variant="danger-soft"
+                  size="sm"
+                  startContent={<RefreshCw size={16} aria-hidden="true" />}
+                  onPress={loadItem}
+                >
+                  {t('matching.retry')}
+                </Button>
+              )}
+              {backButton}
+            </div>
+          }
         />
       </BrokerPageShell>
     );
@@ -205,7 +259,9 @@ export function MatchApprovalDetailPage() {
 
   return (
     <BrokerPageShell
+      help={HELP}
       title={t('matching.detail_title')}
+      description={t('matching.detail_description')}
       icon={UserCheck}
       color="accent"
       actions={
@@ -349,8 +405,8 @@ export function MatchApprovalDetailPage() {
               <p className="text-lg font-medium text-foreground">{item.listing_title}</p>
               <div className="flex gap-2">
                 {item.listing_type && (
-                  <Chip size="sm" variant="soft" className="capitalize">
-                    {item.listing_type}
+                  <Chip size="sm" variant="soft">
+                    {t(`matching.listing_type_${item.listing_type}`, { defaultValue: t('status.unknown') })}
                   </Chip>
                 )}
                 {item.listing_status && <BrokerStatusChip status={item.listing_status} />}
@@ -381,7 +437,7 @@ export function MatchApprovalDetailPage() {
               <div className="flex items-center gap-3">
                 <p className="text-sm text-muted">{t('matching.reviewed_at')}</p>
                 <p className="text-sm tabular-nums text-foreground">
-                  {new Date(item.reviewed_at).toLocaleString(getFormattingLocale())}
+                  {formatServerDateTime(item.reviewed_at)}
                 </p>
               </div>
               {item.notes && (

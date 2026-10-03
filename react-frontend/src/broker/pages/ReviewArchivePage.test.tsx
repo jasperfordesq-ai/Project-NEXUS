@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -163,14 +163,42 @@ describe('ReviewArchivePage — populated', () => {
     });
   });
 
-  it('renders the KPI header derived from the fetched rows', async () => {
+  // Approved / Flagged used to count the rows on screen under a label that
+  // read like a total. Each now reads the paginated total of a one-page probe
+  // per decision; Reviewers has no such probe and keeps its honest label.
+  it('renders whole-archive totals for Approved and Flagged, and an honest per-page Reviewers count', async () => {
+    mockGetArchives.mockImplementation(async ({ decision }: { decision?: string }) => {
+      const totals: Record<string, number> = { approved: 41, flagged: 9 };
+      if (decision && decision in totals) return { success: true, data: [], meta: { total: totals[decision] } };
+      return { success: true, data: ARCHIVE_ROWS, meta: { total: 2 } };
+    });
     render(<ReviewArchive />);
     await waitFor(() => {
       expect(screen.getByText('Archived records')).toBeInTheDocument();
     });
-    expect(screen.getByText('Approved on this page')).toBeInTheDocument();
-    expect(screen.getByText('Flagged on this page')).toBeInTheDocument();
+    expect(screen.getByText('Approved records')).toBeInTheDocument();
+    expect(screen.getByText('Flagged records')).toBeInTheDocument();
+    expect(screen.queryByText('Approved on this page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flagged on this page')).not.toBeInTheDocument();
     expect(screen.getByText('Reviewers on this page')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('41')).toBeInTheDocument();
+      expect(screen.getByText('9')).toBeInTheDocument();
+    });
+    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, decision: 'approved' });
+    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, decision: 'flagged' });
+  });
+
+  it('names an unexpected decision through the shared status chip, never a capitalised slug', async () => {
+    mockGetArchives.mockResolvedValue({
+      success: true,
+      data: [{ ...ARCHIVE_ROWS[0], decision: 'weird_new_state' }],
+      meta: { total: 1 },
+    });
+    render(<ReviewArchive />);
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.queryByText('Weird New State')).not.toBeInTheDocument();
   });
 
   it('renders decision chips for approved and flagged records', async () => {
@@ -217,11 +245,57 @@ describe('ReviewArchivePage — empty', () => {
   });
 });
 
+describe('ReviewArchivePage — search', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.history.replaceState({}, '', '/');
+    mockGetArchives.mockResolvedValue({ success: true, data: ARCHIVE_ROWS, meta: { total: 2 } });
+  });
+
+  // Every keystroke used to fire a request. The search now waits 300 ms of
+  // quiet before asking the server, as the Messages page already did.
+  it('debounces the search so one request goes out for a word, not one per letter', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      render(<ReviewArchive />);
+      await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+      const listCallsBefore = mockGetArchives.mock.calls.filter((c) => 'search' in (c[0] ?? {})).length;
+
+      const input = screen.getByRole('textbox', { name: 'Search archive' });
+      fireEvent.change(input, { target: { value: 'a' } });
+      fireEvent.change(input, { target: { value: 'al' } });
+      fireEvent.change(input, { target: { value: 'ali' } });
+
+      // Nothing yet: still inside the debounce window.
+      await vi.advanceTimersByTimeAsync(100);
+      expect(mockGetArchives.mock.calls.filter((c) => c[0]?.search === 'ali').length).toBe(0);
+
+      await vi.advanceTimersByTimeAsync(300);
+      await waitFor(() => {
+        expect(mockGetArchives).toHaveBeenCalledWith(expect.objectContaining({ page: 1, search: 'ali' }));
+      });
+      const listCallsAfter = mockGetArchives.mock.calls.filter((c) => 'search' in (c[0] ?? {})).length;
+      expect(listCallsAfter - listCallsBefore).toBe(1);
+      expect(mockGetArchives).not.toHaveBeenCalledWith(expect.objectContaining({ search: 'a' }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('ReviewArchivePage — error', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.replaceState({}, '', '/');
     mockGetArchives.mockRejectedValue(new Error('Network error'));
+  });
+
+  it('treats a success:false list response as an error, not an empty archive', async () => {
+    mockGetArchives.mockResolvedValue({ success: false, error: 'nope' });
+    render(<ReviewArchive />);
+    expect(await screen.findByText("Couldn't load the archive")).toBeInTheDocument();
+    expect(screen.queryByText('No archived records found.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 
   it('shows error toast on load failure', async () => {
@@ -232,9 +306,19 @@ describe('ReviewArchivePage — error', () => {
   });
 
   it('renders an honest error state with retry when loading fails', async () => {
-    mockGetArchives
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce({ success: true, data: ARCHIVE_ROWS, meta: { total: 2 } });
+    // The KPI probes share the endpoint, so fail the LIST call (the one that
+    // carries a `search` key) once rather than whichever call comes first.
+    let listFailed = false;
+    mockGetArchives.mockImplementation(async (params: Record<string, unknown>) => {
+      if ('search' in params) {
+        if (!listFailed) {
+          listFailed = true;
+          throw new Error('Network error');
+        }
+        return { success: true, data: ARCHIVE_ROWS, meta: { total: 2 } };
+      }
+      return { success: true, data: [], meta: { total: 0 } };
+    });
     const user = userEvent.setup();
     render(<ReviewArchive />);
 
@@ -259,14 +343,18 @@ describe('ReviewArchivePage — filter tabs', () => {
     render(<ReviewArchive />);
     await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
 
+    // The KPI probe already asked for decision=approved once; the tab click
+    // must add a list request for it (the list call carries a `search` key).
+    const listCalls = () =>
+      mockGetArchives.mock.calls.filter((c) => c[0]?.decision === 'approved' && 'search' in (c[0] ?? {})).length;
+    expect(listCalls()).toBe(0);
+
     // Find the Approved tab (HeroUI Tabs renders tab items with role=tab)
     const approvedTab = screen.getByRole('tab', { name: /approved/i });
     await user.click(approvedTab);
 
     await waitFor(() => {
-      expect(mockGetArchives).toHaveBeenCalledWith(
-        expect.objectContaining({ decision: 'approved' }),
-      );
+      expect(listCalls()).toBe(1);
     });
   });
 

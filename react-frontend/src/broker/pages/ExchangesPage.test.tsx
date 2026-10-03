@@ -274,6 +274,108 @@ describe('ExchangeManagement — populated state', () => {
   });
 });
 
+describe('ExchangeManagement — a failed decision keeps the typed reason', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.history.pushState({}, '', '/broker/exchanges');
+    mockAdminBroker.getExchanges.mockResolvedValue(POPULATED_RESPONSE);
+  });
+
+  // Until this fix the finally block closed the modal and wiped the textarea on
+  // every outcome, so a broker whose reject failed (network blip, 403) lost
+  // the reason they had just written and had no idea which it was.
+  it('keeps the reject modal and the reason open when the request fails', async () => {
+    const user = userEvent.setup();
+    mockAdminBroker.rejectExchange.mockResolvedValue({ success: false, error: 'Server said no' });
+    render(<ExchangeManagement />);
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Reject Exchange' }));
+    const reason = await screen.findByLabelText(/Reason \(required\)/);
+    await user.type(reason, 'Not a safe exchange');
+    await user.click(screen.getByRole('button', { name: 'Reject' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Reason \(required\)/)).toHaveValue('Not a safe exchange');
+  });
+
+  it('closes the modal only once the decision succeeded', async () => {
+    const user = userEvent.setup();
+    mockAdminBroker.approveExchange.mockResolvedValue({ success: true });
+    render(<ExchangeManagement />);
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Approve Exchange' }));
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: 'Approve' }));
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+});
+
+describe('ExchangeManagement — KPI cards and labels', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.history.pushState({}, '', '/broker/exchanges');
+    // One probe per status; the list itself is the unfiltered call.
+    mockAdminBroker.getExchanges.mockImplementation(async ({ status }: { status?: string }) => {
+      const totals: Record<string, number> = { pending_broker: 3, needs_action: 5, disputed: 2 };
+      if (status && status in totals) {
+        return { success: true, data: [], meta: { total: totals[status] } };
+      }
+      return { success: true, data: [EXCHANGE_PENDING, EXCHANGE_COMPLETED], meta: { total: 10 } };
+    });
+  });
+
+  // The header grid had two cards in a four-card grid. The two new cards must
+  // read the same probe the tabs read, so a card never disagrees with its list.
+  it('shows Needs action and Disputed cards whose numbers match the tab counts', async () => {
+    render(<ExchangeManagement />);
+    // The label appears on the card and on the tab; the card is the link.
+    expect(await screen.findByRole('link', { name: 'Needs action' })).toBeInTheDocument();
+    expect(screen.getByText('Awaiting your approval or in dispute')).toBeInTheDocument();
+    expect(screen.getByText('Members disagree about the hours')).toBeInTheDocument();
+
+    // Needs-action: card value + tab badge both read 5.
+    await waitFor(() => expect(screen.getAllByText('5').length).toBeGreaterThanOrEqual(2));
+    // Disputed total 2 appears on its card.
+    expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('link', { name: 'Disputed' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/broker/exchanges?status=disputed'),
+    );
+    expect(screen.getByRole('link', { name: 'Needs action' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/broker/exchanges?status=needs_action'),
+    );
+  });
+
+  it('writes hours through a translated label instead of a bare "h" suffix', async () => {
+    render(<ExchangeManagement />);
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.getByText('2 hours')).toBeInTheDocument();
+    expect(screen.getByText('1 hour')).toBeInTheDocument();
+    expect(screen.queryByText('2h')).not.toBeInTheDocument();
+  });
+
+  it('uses the panel-wide soft danger style for the row Reject button', async () => {
+    render(<ExchangeManagement />);
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    const reject = screen.getByRole('button', { name: 'Reject Exchange' });
+    expect(reject.className).toContain('danger-soft');
+  });
+
+  it('carries the current tab into the detail link so Back can return to it', async () => {
+    mockAdminBroker.getExchanges.mockResolvedValue(POPULATED_RESPONSE);
+    renderAt('/broker/exchanges?status=disputed');
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    const details = screen.getAllByRole('link', { name: 'View Exchange Details' });
+    expect(details[0]).toHaveAttribute('href', expect.stringContaining('/broker/exchanges/1?queue=disputed'));
+  });
+});
+
 describe('ExchangeManagement — error state', () => {
   beforeEach(() => {
     vi.clearAllMocks();

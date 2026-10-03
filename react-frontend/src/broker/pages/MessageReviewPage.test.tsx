@@ -202,12 +202,110 @@ describe('MessageReview (broker)', () => {
     render(<MessageReview />);
 
     expect(await screen.findByText('Unreviewed messages')).toBeInTheDocument();
-    expect(screen.getByText('Flagged on this page')).toBeInTheDocument();
-    expect(screen.getByText('Reviewed on this page')).toBeInTheDocument();
+    expect(screen.getByText('Flagged messages')).toBeInTheDocument();
+    expect(screen.getByText('Reviewed messages')).toBeInTheDocument();
     expect(screen.getByText('Matching this filter')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getAllByText('7').length).toBeGreaterThan(0);
     });
+  });
+
+  // The Flagged / Reviewed cards used to count the rows on the current page
+  // while being labelled like totals. They now read the paginated total of a
+  // one-page probe per tab, the same number the Urgent tab badge shows.
+  it('counts Flagged, Reviewed and Urgent across the whole queue, not just this page', async () => {
+    mockAdminBroker.getMessages.mockImplementation(async ({ filter }: { filter?: string }) => {
+      const totals: Record<string, number> = { flagged: 7, reviewed: 12, urgent: 3 };
+      if (filter && filter in totals) return makeListRes([], totals[filter]);
+      return makeListRes([makeMessage({ flagged: true, flag_severity: 'concern' })], 1);
+    });
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await waitFor(() => expect(screen.getByText('Alice')).toBeInTheDocument());
+    expect(screen.queryByText('Flagged on this page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Reviewed on this page')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('7')).toBeInTheDocument();
+      expect(screen.getByText('12')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Every flagged message, not just this page')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Urgent/ }).textContent).toContain('3');
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'flagged' });
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'reviewed' });
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'urgent' });
+  });
+
+  it('treats a success:false list response as an error, not a silent empty queue', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue({ success: false, error: 'nope' });
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    expect(await screen.findByText("Couldn't load messages")).toBeInTheDocument();
+    expect(screen.queryByText('All caught up')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+
+  it('shows the header Refresh busy while either the list or the count is still loading', async () => {
+    mockAdminBroker.getUnreviewedCount.mockImplementation(() => new Promise(() => {}));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await waitFor(() => expect(screen.getByTestId('data-table')).toBeInTheDocument());
+    const refresh = screen.getByRole('button', { name: /Refresh/ });
+    expect(refresh).toHaveAttribute('data-pending', 'true');
+  });
+
+  it('disables the Flag confirm until a reason is typed', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await waitFor(() => screen.getByText('Alice'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Flag message' }));
+    await waitFor(() => document.querySelector('[role="dialog"]'));
+    const confirm = Array.from(document.querySelectorAll('[role="dialog"] button')).find(
+      (b) => b.textContent?.trim() === 'Flag',
+    ) as HTMLButtonElement;
+    expect(confirm).toBeDefined();
+    expect(confirm).toBeDisabled();
+
+    fireEvent.change(document.querySelector('[role="dialog"] textarea')!, { target: { value: 'Suspicious' } });
+    await waitFor(() => expect(confirm).not.toBeDisabled());
+  });
+
+  it('shows the copy reason translated in the quick view and offers Close, not Cancel', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ copy_reason: 'first_contact' })], 1));
+    mockAdminBroker.showMessage.mockResolvedValue({ success: true, data: { copy: { message_body: 'Hi' }, thread: [] } });
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await waitFor(() => screen.getByText('Alice'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Quick view message' }));
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Hi')).toBeInTheDocument());
+
+    // Translated label (table column + quick view), never the slug.
+    expect(screen.getAllByText('First Contact').length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText('first_contact')).not.toBeInTheDocument();
+    const dialogButtons = Array.from(document.querySelectorAll('[role="dialog"] button')).map((b) => b.textContent?.trim());
+    expect(dialogButtons).toContain('Close');
+    expect(dialogButtons).not.toContain('Cancel');
+  });
+
+  it('renders flag severities through the shared status chip', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([
+      makeMessage({ id: 1, flagged: true, flag_severity: 'urgent' }),
+      makeMessage({ id: 2, sender_name: 'Cara', flagged: true, flag_severity: 'concern' }),
+    ], 2));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await waitFor(() => screen.getByText('Alice'));
+
+    // "Urgent" is also a tab label; the chip is the one inside a .chip.
+    const urgentChip = screen.getAllByText('Urgent').map((el) => el.closest('.chip')).find(Boolean);
+    expect(urgentChip?.className).toContain('chip--primary');
+    expect(screen.getByText('Concern').closest('.chip')?.className).toContain('chip--soft');
   });
 
   it('honours a deep-linked ?status=flagged filter', async () => {
@@ -293,7 +391,9 @@ describe('MessageReview (broker)', () => {
     });
   });
 
-  it('shows error toast when flag submitted with empty reason', async () => {
+  // The confirm is disabled while the reason is empty (Oct 2026), so an empty
+  // submission can no longer reach the API at all.
+  it('cannot submit a flag with an empty reason', async () => {
     mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
@@ -304,17 +404,13 @@ describe('MessageReview (broker)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Flag message' }));
     await waitFor(() => document.querySelector('[role="dialog"]'));
 
-    // Click flag confirm button without filling reason
+    // The confirm button is disabled without a reason; clicking does nothing.
     const dialogBtns = document.querySelectorAll('[role="dialog"] button');
-    const confirmBtn = Array.from(dialogBtns).find((b) =>
-      b.textContent?.toLowerCase().includes('flag')
-    );
-    if (confirmBtn) {
-      fireEvent.click(confirmBtn);
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalled();
-      });
-    }
+    const confirmBtn = Array.from(dialogBtns).find((b) => b.textContent?.trim() === 'Flag');
+    expect(confirmBtn).toBeDefined();
+    expect(confirmBtn).toBeDisabled();
+    fireEvent.click(confirmBtn!);
+    expect(mockAdminBroker.flagMessage).not.toHaveBeenCalled();
   });
 
   it('calls flagMessage with reason and severity when flag form is submitted', async () => {
@@ -377,9 +473,19 @@ describe('MessageReview (broker)', () => {
   });
 
   it('renders an honest error state with retry when loading fails', async () => {
-    mockAdminBroker.getMessages
-      .mockRejectedValueOnce(new Error('network'))
-      .mockResolvedValueOnce(makeListRes([makeMessage()], 1));
+    // The KPI probes share the endpoint, so fail the LIST call (unreviewed
+    // filter) once rather than whichever call happens to come first.
+    let listFailed = false;
+    mockAdminBroker.getMessages.mockImplementation(async ({ filter }: { filter?: string }) => {
+      if (filter === 'unreviewed') {
+        if (!listFailed) {
+          listFailed = true;
+          throw new Error('network');
+        }
+        return makeListRes([makeMessage()], 1);
+      }
+      return makeListRes([], 0);
+    });
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
 

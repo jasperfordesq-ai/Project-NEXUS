@@ -15,12 +15,16 @@
 
 import { useTranslation } from 'react-i18next';
 import MessageSquare from 'lucide-react/icons/message-square';
+import { usePageTitle } from '@/hooks';
 import FeedModeration from '@/admin/modules/moderation/FeedModeration';
 import { BrokerPageShell } from '../components';
 import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function FeedModerationPage() {
   const { t } = useTranslation('broker');
+  // The embedded admin module sets its own title too; React runs a child's
+  // effects before its parent's, so this wrapper's title wins the browser tab.
+  usePageTitle(t('moderation_feed.title'));
 
   return (
     <BrokerPageShell

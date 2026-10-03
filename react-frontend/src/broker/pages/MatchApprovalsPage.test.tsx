@@ -40,6 +40,11 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+vi.mock('@/lib/serverTime', () => ({
+  formatServerDate: (v: string) => `server:${v}`,
+  formatServerDateTime: (v: string) => `server-dt:${v}`,
+}));
+
 import { MatchApprovalsPage } from './MatchApprovalsPage';
 
 const APPROVAL = {
@@ -176,6 +181,85 @@ describe('MatchApprovalsPage', () => {
     await waitFor(() => {
       expect(mockRejectMatch).toHaveBeenCalledWith(11, 'Too far apart');
     });
+  });
+
+  // Until Oct 2026 neither request had a try/catch: a thrown request left the
+  // spinner on for ever, and a stats failure printed "0" on every card as if
+  // the queue were empty.
+  it('shows a shaped skeleton, not an empty table, while first loading', () => {
+    mockGetApprovals.mockReturnValue(new Promise(() => {}));
+    renderPage();
+    const busy = screen.getAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
+    expect(busy).toBeDefined();
+    expect(screen.queryByText('No matches waiting')).not.toBeInTheDocument();
+  });
+
+  it('shows an honest error state with Retry when the list request throws', async () => {
+    mockGetApprovals
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce({ success: true, data: [APPROVAL], meta: { total: 1 } });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText("Couldn't load match approvals")).toBeInTheDocument();
+    expect(screen.queryByText('No matches waiting')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+  });
+
+  it('treats a success:false list response as a failure, not an empty queue', async () => {
+    mockGetApprovals.mockResolvedValue({ success: false, error: 'nope' });
+    renderPage();
+    expect(await screen.findByText("Couldn't load match approvals")).toBeInTheDocument();
+  });
+
+  it('shows a dash on every stat card when the stats request fails, never 0', async () => {
+    mockGetApprovalStats.mockRejectedValue(new Error('network'));
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(4));
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+  });
+
+  it('keeps the reject modal and the typed reason open when the request fails', async () => {
+    mockRejectMatch.mockResolvedValue({ success: false, error: 'Server said no' });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    const textarea = await screen.findByLabelText(/rejection reason/i);
+    await user.type(textarea, 'Too far apart');
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/rejection reason/i)).toHaveValue('Too far apart');
+  });
+
+  it('closes the reject modal once the rejection succeeded', async () => {
+    mockRejectMatch.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.type(await screen.findByLabelText(/rejection reason/i), 'Too far apart');
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('draws the two parties with an icon, not a raw ↔ character, and dates the row in server time', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Alice Member')).toBeInTheDocument());
+    expect(screen.queryByText('↔')).not.toBeInTheDocument();
+    expect(document.querySelector('svg.lucide-arrow-left-right')).not.toBeNull();
+    expect(screen.getByText('server:2026-06-30T10:00:00Z')).toBeInTheDocument();
   });
 
   it('shows the all-caught-up empty state when the pending queue is empty', async () => {

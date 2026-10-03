@@ -8,18 +8,37 @@ import { render, screen } from '@/test/test-utils';
 
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockAdmin } = vi.hoisted(() => ({
+const { mockAdmin, titleEffects } = vi.hoisted(() => ({
   mockAdmin: vi.fn(),
+  titleEffects: [] as string[],
 }));
 
+// usePageTitle is an effect in the real hook; record the order the effects
+// commit in, which is what decides whose title the browser tab ends up with.
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks')>();
+  const { useEffect } = await import('react');
+  return {
+    ...actual,
+    usePageTitle: (title: string) => {
+      useEffect(() => {
+        titleEffects.push(title);
+      }, [title]);
+    },
+  };
+});
+
 // The stand-in admin module reports whether it was rendered inside the
-// AdminEmbed provider — that flag is what collapses its PageHeader.
+// AdminEmbed provider — that flag is what collapses its PageHeader — and,
+// like the real module, sets its own page title.
 vi.mock('@/admin/modules/safeguarding/SafeguardingOptionsAdmin', async () => {
   const { useAdminEmbedded } = await import('@/admin/components/AdminEmbedContext');
+  const { usePageTitle } = await import('@/hooks');
   return {
     __esModule: true,
     default: () => {
       mockAdmin();
+      usePageTitle('Admin: Safeguarding Options');
       return <div data-testid="admin-safeguarding-options" data-embedded={String(useAdminEmbedded())} />;
     },
   };
@@ -43,6 +62,15 @@ describe('SafeguardingOptionsPage (broker)', () => {
     render(<Component />);
 
     expect(screen.getByTestId('admin-safeguarding-options')).toHaveAttribute('data-embedded', 'true');
+  });
+
+  it('sets its own browser-tab title after the embedded module sets its', async () => {
+    titleEffects.length = 0;
+    const Component = (await import('./SafeguardingOptionsPage')).default;
+    render(<Component />);
+
+    expect(titleEffects).toContain('Admin: Safeguarding Options');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Safeguarding Options');
   });
 
   it('links to the plain-English guide for this page', async () => {

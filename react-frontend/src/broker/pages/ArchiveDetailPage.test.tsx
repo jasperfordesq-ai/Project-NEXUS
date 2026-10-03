@@ -264,6 +264,34 @@ describe('ArchiveDetail', () => {
     expect(screen.getByText('High')).toBeInTheDocument();
   });
 
+  // Message-scale severities (info/warning/concern/urgent) had no entry in the
+  // shared chip, so a flagged record's severity read "Unknown".
+  it('names a message-scale severity instead of Unknown', async () => {
+    mockAdminBroker.showArchive.mockResolvedValue({
+      success: true,
+      data: { ...mockArchive, decision: 'flagged', flag_reason: 'Shared a phone number', flag_severity: 'concern' },
+    });
+
+    render(<ArchiveDetail />);
+
+    await waitFor(() => expect(screen.getByText('Shared a phone number')).toBeInTheDocument());
+    expect(screen.getByText('Concern')).toBeInTheDocument();
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+  });
+
+  it('names an unexpected decision through the shared status chip, never a capitalised slug', async () => {
+    mockAdminBroker.showArchive.mockResolvedValue({
+      success: true,
+      data: { ...mockArchive, decision: 'weird_new_state' },
+    });
+
+    render(<ArchiveDetail />);
+
+    await waitFor(() => expect(screen.getByText('Hello there!')).toBeInTheDocument());
+    expect(screen.getAllByText('Unknown').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Weird New State')).not.toBeInTheDocument();
+  });
+
   it('shows listing_title when present', async () => {
     mockAdminBroker.showArchive.mockResolvedValue({ success: true, data: mockArchive });
 

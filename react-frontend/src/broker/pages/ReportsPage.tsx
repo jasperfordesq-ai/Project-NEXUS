@@ -11,12 +11,16 @@
 
 import { useTranslation } from 'react-i18next';
 import Flag from 'lucide-react/icons/flag';
+import { usePageTitle } from '@/hooks';
 import ReportsManagement from '@/admin/modules/moderation/ReportsManagement';
 import { BrokerPageShell } from '../components';
 import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function ReportsPage() {
   const { t } = useTranslation('broker');
+  // The embedded admin module sets its own title too; React runs a child's
+  // effects before its parent's, so this wrapper's title wins the browser tab.
+  usePageTitle(t('moderation_reports.title'));
 
   return (
     <BrokerPageShell

@@ -70,29 +70,17 @@ import {
   type BrokerStatColor,
 } from '../components';
 
-type SeverityChipColor = 'default' | 'warning' | 'danger';
-type SeverityChipVariant = 'tertiary' | 'primary';
+// Flag severities (info / warning / concern / urgent, and the older
+// low…critical scale) all render through BrokerStatusChip, whose one colour
+// map the Message detail and Archive pages read too.
 
-function severityColor(severity?: string): { color: SeverityChipColor; variant: SeverityChipVariant } {
-  switch (severity?.toLowerCase()) {
-    case 'medium':
-    case 'warning':
-      return { color: 'warning', variant: 'tertiary' };
-    case 'high':
-    case 'concern':
-      return { color: 'danger', variant: 'tertiary' };
-    case 'critical':
-    case 'urgent':
-      return { color: 'danger', variant: 'primary' };
-    default:
-      return { color: 'default', variant: 'tertiary' };
-  }
+/** Reads the paginated total out of a getMessages response. */
+function readTotal(res: Awaited<ReturnType<typeof adminBroker.getMessages>>): number | null {
+  if (!res.success || !Array.isArray(res.data)) return null;
+  const meta = res.meta as Record<string, unknown> | undefined;
+  const value = Number(meta?.total ?? meta?.total_items ?? res.data.length);
+  return Number.isFinite(value) ? value : null;
 }
-
-// Severities that map onto the panel-wide status vocabulary render through
-// BrokerStatusChip so their colors match every other broker page; the
-// message-specific scale (info/warning/concern/urgent) keeps its own chips.
-const PANEL_SEVERITIES = new Set(['low', 'medium', 'high', 'critical']);
 
 // The active tab is driven by the URL so deep-links from the broker
 // dashboard stat cards land on the right filter.
@@ -169,6 +157,17 @@ export function MessageReview() {
   const [unreviewedCount, setUnreviewedCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(true);
 
+  // Whole-queue totals for the Flagged / Reviewed cards and the Urgent tab
+  // badge. There is no stats endpoint for these, so each is a one-page probe
+  // of the list endpoint read for meta.total only — the same number its tab
+  // shows, so a card can never disagree with its list.
+  const [queueTotals, setQueueTotals] = useState<{
+    flagged: number | null;
+    reviewed: number | null;
+    urgent: number | null;
+  }>({ flagged: null, reviewed: null, urgent: null });
+  const [totalsLoading, setTotalsLoading] = useState(true);
+
   // Flag modal state
   const [flagModalOpen, setFlagModalOpen] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
@@ -204,6 +203,9 @@ export function MessageReview() {
         setItems(res.data as BrokerMessage[]);
         const meta = res.meta as Record<string, unknown> | undefined;
         setTotal(Number(meta?.total ?? meta?.total_items ?? res.data.length));
+      } else {
+        // A success:false answer is a failure, not an empty queue.
+        setLoadError(true);
       }
     } catch {
       setLoadError(true);
@@ -213,6 +215,26 @@ export function MessageReview() {
       setHasLoaded(true);
     }
   }, [page, filter, debouncedSearch]);
+
+  const loadQueueTotals = useCallback(async () => {
+    setTotalsLoading(true);
+    try {
+      const [flaggedRes, reviewedRes, urgentRes] = await Promise.all([
+        adminBroker.getMessages({ page: 1, filter: 'flagged' }),
+        adminBroker.getMessages({ page: 1, filter: 'reviewed' }),
+        adminBroker.getMessages({ page: 1, filter: 'urgent' }),
+      ]);
+      setQueueTotals({
+        flagged: readTotal(flaggedRes),
+        reviewed: readTotal(reviewedRes),
+        urgent: readTotal(urgentRes),
+      });
+    } catch {
+      // KPI header degrades to em-dashes; the list load owns error messaging.
+    } finally {
+      setTotalsLoading(false);
+    }
+  }, []);
 
   const loadUnreviewedCount = useCallback(async () => {
     setCountLoading(true);
@@ -237,9 +259,14 @@ export function MessageReview() {
     loadUnreviewedCount();
   }, [loadUnreviewedCount]);
 
+  useEffect(() => {
+    loadQueueTotals();
+  }, [loadQueueTotals]);
+
   const refreshAll = () => {
     loadItems();
     loadUnreviewedCount();
+    loadQueueTotals();
   };
 
   // Bulk review — Unreviewed tab only. The server skips flagged copies (a
@@ -267,6 +294,7 @@ export function MessageReview() {
         setSelectedIds(new Set());
         loadItems();
         loadUnreviewedCount();
+        loadQueueTotals();
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -285,6 +313,7 @@ export function MessageReview() {
         toast.success(t('messages.reviewed_success'));
         loadItems();
         loadUnreviewedCount();
+        loadQueueTotals();
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -315,6 +344,7 @@ export function MessageReview() {
         toast.success(t('messages.flag_success'));
         setFlagModalOpen(false);
         loadItems();
+        loadQueueTotals();
       } else {
         toast.error(res?.error || t('messages.flag_failed'));
       }
@@ -360,6 +390,7 @@ export function MessageReview() {
         closeDetail();
         loadItems();
         loadUnreviewedCount();
+        loadQueueTotals();
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -368,32 +399,17 @@ export function MessageReview() {
     } finally {
       setDetailReviewLoading(false);
     }
-  }, [detailItem, detailReviewNotes, closeDetail, loadItems, loadUnreviewedCount, toast, t]);
+  }, [detailItem, detailReviewNotes, closeDetail, loadItems, loadUnreviewedCount, loadQueueTotals, toast, t]);
 
   const isDetailReviewed = !!(detailItem?.reviewed_at);
 
-  // Severity chip — panel-wide values route through BrokerStatusChip so the
-  // colors match every other broker page; the message-domain scale keeps a
-  // flag-badged chip with its translated label.
-  const renderSeverity = (severityRaw: string) => {
-    const severity = severityRaw.toLowerCase();
-    if (PANEL_SEVERITIES.has(severity)) {
-      return <BrokerStatusChip status={severity} />;
-    }
-    const { color, variant } = severityColor(severity);
-    return (
-      <Chip size="sm" variant={variant} color={color} className="capitalize">
-        <Flag size={12} aria-hidden="true" />
-        <Chip.Label>
-          {t(`messages.severity_${severity}`, { defaultValue: severity.replace(/_/g, ' ') })}
-        </Chip.Label>
-      </Chip>
-    );
-  };
+  // Severity chip — one shared map for every broker page (see BrokerStatusChip).
+  const renderSeverity = (severityRaw: string) => <BrokerStatusChip status={severityRaw} />;
 
-  // In-view KPI tallies — derived from the rows the page already fetched.
-  const flaggedInView = items.filter((i) => i.flagged).length;
-  const reviewedInView = items.filter((i) => !!i.reviewed_at).length;
+  // Copy reasons are slugs (first_contact, random_sample…); the table column
+  // and the quick view show the same translated label.
+  const copyReasonLabel = (reason: string) =>
+    t(`messages.copy_reason_${reason}`, { defaultValue: reason.replace(/_/g, ' ') });
 
   const emptyMeta = EMPTY_META[filter];
 
@@ -445,9 +461,7 @@ export function MessageReview() {
       render: (item) => (
         item.copy_reason ? (
           <Chip size="sm" variant="tertiary" color="default">
-            {t(`messages.copy_reason_${item.copy_reason}`, {
-              defaultValue: item.copy_reason.replace(/_/g, ' '),
-            })}
+            {copyReasonLabel(item.copy_reason)}
           </Chip>
         ) : <span className="text-sm text-muted">—</span>
       ),
@@ -538,14 +552,14 @@ export function MessageReview() {
             size="sm"
             startContent={<RefreshCw size={16} />}
             onPress={refreshAll}
-            isLoading={loading && countLoading}
+            isLoading={loading || countLoading || totalsLoading}
           >
             {t('common.refresh')}
           </Button>
         </>
       }
     >
-      {/* KPI header — global unreviewed queue + in-view tallies */}
+      {/* KPI header — whole-queue totals, each the same number its tab shows */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('messages.stat_unreviewed')}
@@ -557,22 +571,22 @@ export function MessageReview() {
           description={t('messages.stat_unreviewed_hint')}
         />
         <BrokerStatCard
-          label={t('messages.stat_flagged')}
-          value={flaggedInView}
+          label={t('messages.stat_flagged_total')}
+          value={queueTotals.flagged}
           icon={Flag}
           color="danger"
-          loading={!hasLoaded}
+          loading={totalsLoading}
           to={tenantPath('/broker/messages?status=flagged')}
-          description={t('messages.stat_flagged_hint')}
+          description={t('messages.stat_flagged_total_hint')}
         />
         <BrokerStatCard
-          label={t('messages.stat_reviewed')}
-          value={reviewedInView}
+          label={t('messages.stat_reviewed_total')}
+          value={queueTotals.reviewed}
           icon={CheckCircle}
           color="success"
-          loading={!hasLoaded}
+          loading={totalsLoading}
           to={tenantPath('/broker/messages?status=reviewed')}
-          description={t('messages.stat_reviewed_hint')}
+          description={t('messages.stat_reviewed_total_hint')}
         />
         <BrokerStatCard
           label={t('messages.stat_filtered')}
@@ -613,6 +627,11 @@ export function MessageReview() {
               <div className="flex items-center gap-2">
                 <AlertCircle size={14} />
                 <span>{t('messages.tab_urgent')}</span>
+                {queueTotals.urgent !== null && queueTotals.urgent > 0 && (
+                  <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
+                    {queueTotals.urgent}
+                  </Chip>
+                )}
               </div>
             }
           />
@@ -780,6 +799,7 @@ export function MessageReview() {
               color="warning"
               onPress={handleFlag}
               isLoading={flagLoading}
+              isDisabled={!flagReason.trim()}
               startContent={!flagLoading && <Flag size={14} />}
             >
               {t('messages.flag_action')}
@@ -833,7 +853,8 @@ export function MessageReview() {
                     <div>
                       <p className="mb-0.5 text-xs font-medium uppercase text-muted">{t('messages.detail_reason')}</p>
                       <p className="text-foreground">
-                        {detailItem.flag_reason || detailItem.copy_reason}
+                        {detailItem.flag_reason ||
+                          (detailItem.copy_reason ? copyReasonLabel(detailItem.copy_reason) : '—')}
                       </p>
                     </div>
                   )}
@@ -908,7 +929,7 @@ export function MessageReview() {
 
           <ModalFooter>
             <Button variant="tertiary" onPress={closeDetail} isDisabled={detailReviewLoading}>
-              {t('messages.cancel')}
+              {t('messages.close')}
             </Button>
             {!isDetailReviewed && detailItem && (
               <Button

@@ -51,25 +51,29 @@ import {
 const ALLOWED_DECISIONS = ['all', 'approved', 'flagged'] as const;
 type DecisionFilter = (typeof ALLOWED_DECISIONS)[number];
 
-// Decision chip — 'approved' is a panel-wide status and routes through
-// BrokerStatusChip so its color matches every other broker page; 'flagged'
-// is archive-domain vocabulary the shared chip can't cover, so it keeps a
-// flag-badged danger chip with its translated label.
+// Decision chip — 'flagged' keeps its flag-badged danger chip; every other
+// decision (approved, or anything unexpected) goes through BrokerStatusChip,
+// which names the unknown with a translated "Unknown" rather than a
+// capitalised slug.
 function DecisionChip({ decision }: { decision: string }) {
   const { t } = useTranslation('broker');
-  if (decision === 'approved') {
-    return <BrokerStatusChip status="approved" />;
+  if (decision !== 'flagged') {
+    return <BrokerStatusChip status={decision} />;
   }
   return (
     <Chip size="sm" variant="soft" color="danger">
       <Flag size={12} aria-hidden="true" />
-      <Chip.Label>
-        {t(`archives.decision_${decision}`, {
-          defaultValue: decision.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        })}
-      </Chip.Label>
+      <Chip.Label>{t('archives.decision_flagged')}</Chip.Label>
     </Chip>
   );
+}
+
+/** Reads the paginated total out of a getArchives response. */
+function readTotal(res: Awaited<ReturnType<typeof adminBroker.getArchives>>): number | null {
+  if (!res.success || !Array.isArray(res.data)) return null;
+  const meta = res.meta as Record<string, unknown> | undefined;
+  const value = Number(meta?.total ?? meta?.total_items ?? res.data.length);
+  return Number.isFinite(value) ? value : null;
 }
 
 export function ReviewArchive() {
@@ -108,7 +112,24 @@ export function ReviewArchive() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
+
+  // Server-side search over both people's names. Debounced so typing doesn't
+  // fire a request on every keystroke (same pattern as the Messages page).
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(handle);
+  }, [search]);
+
+  // Whole-archive totals for the Approved / Flagged cards: one-page probes of
+  // the list endpoint read for meta.total only, so each card shows the same
+  // number its tab would list. Reviewers has no such probe and stays per-page.
+  const [archiveTotals, setArchiveTotals] = useState<{ approved: number | null; flagged: number | null }>({
+    approved: null,
+    flagged: null,
+  });
+  const [totalsLoading, setTotalsLoading] = useState(true);
 
   // Stash the latest `t`/`toast` in refs so the fetch effect is keyed on the
   // page/filter/search params only — keeping them in the dep array re-fetches
@@ -125,12 +146,15 @@ export function ReviewArchive() {
       const res = await adminBroker.getArchives({
         page,
         decision: filter === 'all' ? undefined : filter,
-        search: search.trim() || undefined,
+        search: debouncedSearch || undefined,
       });
       if (res.success && Array.isArray(res.data)) {
         setItems(res.data as BrokerArchive[]);
         const meta = res.meta as Record<string, unknown> | undefined;
         setTotal(Number(meta?.total ?? meta?.total_items ?? res.data.length));
+      } else {
+        // A success:false answer is a failure, not an empty archive.
+        setLoadError(true);
       }
     } catch {
       setLoadError(true);
@@ -139,11 +163,35 @@ export function ReviewArchive() {
       setLoading(false);
       setHasLoaded(true);
     }
-  }, [page, filter, search]);
+  }, [page, filter, debouncedSearch]);
+
+  const loadArchiveTotals = useCallback(async () => {
+    setTotalsLoading(true);
+    try {
+      const [approvedRes, flaggedRes] = await Promise.all([
+        adminBroker.getArchives({ page: 1, decision: 'approved' }),
+        adminBroker.getArchives({ page: 1, decision: 'flagged' }),
+      ]);
+      setArchiveTotals({ approved: readTotal(approvedRes), flagged: readTotal(flaggedRes) });
+    } catch {
+      // KPI header degrades to em-dashes; the list load owns error messaging.
+    } finally {
+      setTotalsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadItems();
   }, [loadItems]);
+
+  useEffect(() => {
+    loadArchiveTotals();
+  }, [loadArchiveTotals]);
+
+  const refreshAll = () => {
+    loadItems();
+    loadArchiveTotals();
+  };
 
   const handleFilterChange = (key: string | number) => {
     setFilter(key as DecisionFilter);
@@ -155,14 +203,11 @@ export function ReviewArchive() {
     setPage(1);
   };
 
-  // In-view KPI tallies — derived from the rows the page already fetched.
-  // This is an immutable record, so there is no live "queue" to count; the
-  // cards summarise what the broker is currently looking at.
-  const approvedInView = items.filter((i) => i.decision === 'approved').length;
-  const flaggedInView = items.filter((i) => i.decision === 'flagged').length;
+  // Reviewers is the one card still derived from the rows on screen — there
+  // is no endpoint that counts distinct reviewers — and its label says so.
   const reviewersInView = new Set(items.map((i) => i.decided_by_name)).size;
 
-  const isFiltered = filter !== 'all' || search.trim() !== '';
+  const isFiltered = filter !== 'all' || debouncedSearch !== '';
 
   const columns: Column<BrokerArchive>[] = [
     {
@@ -259,15 +304,15 @@ export function ReviewArchive() {
             variant="tertiary"
             size="sm"
             startContent={<RefreshCw size={16} />}
-            onPress={loadItems}
-            isLoading={loading && hasLoaded}
+            onPress={refreshAll}
+            isLoading={(loading && hasLoaded) || totalsLoading}
           >
             {t('common.refresh')}
           </Button>
         </>
       }
     >
-      {/* KPI header — derived from the records currently in view */}
+      {/* KPI header — whole-archive totals, plus the per-page reviewer count */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('archives.stat_records')}
@@ -278,22 +323,22 @@ export function ReviewArchive() {
           description={t('archives.stat_records_hint')}
         />
         <BrokerStatCard
-          label={t('archives.stat_approved')}
-          value={approvedInView}
+          label={t('archives.stat_approved_total')}
+          value={archiveTotals.approved}
           icon={CheckCircle}
           color="success"
-          loading={!hasLoaded}
+          loading={totalsLoading}
           to={tenantPath('/broker/archives?decision=approved')}
-          description={t('archives.stat_approved_hint')}
+          description={t('archives.stat_approved_total_hint')}
         />
         <BrokerStatCard
-          label={t('archives.stat_flagged')}
-          value={flaggedInView}
+          label={t('archives.stat_flagged_total')}
+          value={archiveTotals.flagged}
           icon={Flag}
           color="danger"
-          loading={!hasLoaded}
+          loading={totalsLoading}
           to={tenantPath('/broker/archives?decision=flagged')}
-          description={t('archives.stat_flagged_hint')}
+          description={t('archives.stat_flagged_total_hint')}
         />
         <BrokerStatCard
           label={t('archives.stat_reviewers')}
@@ -369,7 +414,7 @@ export function ReviewArchive() {
           title={t('archives.error_title')}
           hint={t('archives.error_hint')}
           action={
-            <Button size="sm" variant="danger-soft" onPress={loadItems}>
+            <Button size="sm" variant="danger-soft" onPress={refreshAll}>
               {t('archives.retry')}
             </Button>
           }
@@ -382,7 +427,7 @@ export function ReviewArchive() {
           data={items}
           isLoading={loading}
           searchable={false}
-          onRefresh={loadItems}
+          onRefresh={refreshAll}
           totalItems={total}
           page={page}
           pageSize={20}

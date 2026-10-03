@@ -15,7 +15,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Card,
@@ -50,6 +50,7 @@ import { usePageTitle } from '@/hooks';
 import { adminBroker } from '@/admin/api/adminApi';
 import type { ExchangeDetail as ExchangeDetailType } from '@/admin/api/types';
 import { useTenant, useToast } from '@/contexts';
+import { resolveAvatarUrl } from '@/lib/helpers';
 import { formatServerDateTime } from '@/lib/serverTime';
 import {
   BrokerPageShell,
@@ -69,13 +70,27 @@ import { useBrokerQueue } from '../useBrokerQueue';
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Lifecycle pipeline — the linear happy path plus the terminal off-ramps this
-// page already knows about. Unknown statuses render the strip with no stage
-// highlighted (the status chip in the card header still names them).
+// Lifecycle pipeline — the linear happy path in the order
+// ExchangeWorkflowService::TRANSITIONS walks it, plus the terminal off-ramps.
+// Unknown statuses render the strip with no stage highlighted (the status
+// chip in the card header still names them).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PIPELINE_STAGES = ['pending', 'pending_broker', 'accepted', 'completed'] as const;
-const TERMINAL_STATUSES = new Set(['cancelled', 'disputed']);
+const PIPELINE_STAGES = [
+  'pending_provider',
+  'pending_broker',
+  'accepted',
+  'in_progress',
+  'pending_confirmation',
+  'completed',
+] as const;
+const TERMINAL_STATUSES = new Set(['cancelled', 'disputed', 'expired']);
+
+// Tabs on the exchanges list that a detail link can carry as `?queue=`, so
+// Back returns to the tab the broker came from rather than the whole list.
+const EXCHANGE_QUEUES = new Set([
+  'needs_action', 'pending_broker', 'accepted', 'in_progress', 'completed', 'cancelled', 'disputed',
+]);
 
 function StatusPipeline({ status }: { status: string }) {
   const { t } = useTranslation('broker');
@@ -148,9 +163,18 @@ export default function ExchangeDetail() {
   const { t } = useTranslation('broker');
   usePageTitle(t('exchanges.detail_title'));
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { tenantPath } = useTenant();
   const toast = useToast();
   const [data, setData] = useState<ExchangeDetailType | null>(null);
+
+  // Where Back goes: the list tab this exchange was opened from (`?queue=`),
+  // or the plain list when none is known or the value is not a tab we have.
+  const queueParam = searchParams.get('queue');
+  const backPath =
+    queueParam && EXCHANGE_QUEUES.has(queueParam)
+      ? `/broker/exchanges?status=${queueParam}`
+      : '/broker/exchanges';
   const [loading, setLoading] = useState(true);
   const [errorKind, setErrorKind] = useState<LoadErrorKind | null>(null);
 
@@ -232,7 +256,7 @@ export default function ExchangeDetail() {
   const backButton = (
     <Button
       as={Link}
-      to={tenantPath('/broker/exchanges')}
+      to={tenantPath(backPath)}
       variant="tertiary"
       size="sm"
       startContent={<ArrowLeft size={16} aria-hidden="true" />}
@@ -387,7 +411,7 @@ export default function ExchangeDetail() {
           <CardBody>
             <div className="flex items-start gap-4">
               <Avatar
-                src={exchange.requester_avatar || undefined}
+                src={exchange.requester_avatar ? resolveAvatarUrl(exchange.requester_avatar) : undefined}
                 name={exchange.requester_name}
                 size="lg"
                 className="shrink-0"
@@ -409,7 +433,7 @@ export default function ExchangeDetail() {
           <CardBody>
             <div className="flex items-start gap-4">
               <Avatar
-                src={exchange.provider_avatar || undefined}
+                src={exchange.provider_avatar ? resolveAvatarUrl(exchange.provider_avatar) : undefined}
                 name={exchange.provider_name}
                 size="lg"
                 className="shrink-0"

@@ -365,6 +365,74 @@ describe('MessageDetail (broker)', () => {
     });
   });
 
+  // Back used to go to the unfiltered list whatever tab the message was opened
+  // from; the queue is already known from ?queue=, so Back honours it.
+  it('returns to the queue tab the message was opened from', async () => {
+    window.history.pushState({}, '', '/test/broker/messages/7?queue=urgent');
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages?status=urgent');
+    window.history.pushState({}, '', '/');
+  });
+
+  it('returns to the plain messages list when no queue is known', async () => {
+    window.history.pushState({}, '', '/test/broker/messages/7');
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages');
+  });
+
+  it('links to the guide on reviewing a message', async () => {
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
+    expect(screen.getByRole('link', { name: 'How this page works' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/broker/help/broker_safeguarding/broker_review_message'),
+    );
+  });
+
+  // The archive record used to print "Flagged" for any decision other than
+  // approved. It now names the decision that was actually recorded.
+  it('shows the recorded archive decision rather than assuming Flagged', async () => {
+    mockAdminBroker.showMessage.mockResolvedValue(
+      makeSuccess(makeDetail({
+        archive: { decision: 'rejected', decided_by_name: 'Admin User', decided_at: '2025-01-02T10:00:00Z', decision_notes: null },
+      }))
+    );
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Admin User')).toBeInTheDocument());
+    expect(screen.getByText('Rejected')).toBeInTheDocument();
+    expect(screen.queryByText('Flagged')).not.toBeInTheDocument();
+  });
+
+  it('renders the severity through the shared status chip, filled only for urgent', async () => {
+    mockAdminBroker.showMessage.mockResolvedValue(
+      makeSuccess(makeDetail({ copy: makeCopy({ flagged: true, flag_reason: 'Odd', flag_severity: 'info' }) }))
+    );
+    const { MessageDetail } = await import('./MessageDetailPage');
+    const { unmount } = render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Flagged for review')).toBeInTheDocument());
+    const info = screen.getByText('Info').closest('.chip');
+    expect(info?.className).toContain('chip--accent');
+    expect(info?.className).toContain('chip--soft');
+    unmount();
+
+    mockAdminBroker.showMessage.mockResolvedValue(
+      makeSuccess(makeDetail({ copy: makeCopy({ flagged: true, flag_reason: 'Odd', flag_severity: 'urgent' }) }))
+    );
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Flagged for review')).toBeInTheDocument());
+    expect(screen.getByText('Urgent').closest('.chip')?.className).toContain('chip--primary');
+  });
+
   // The server sends MySQL tinyints (0/1), not booleans. `{msg.is_edited && …}`
   // with is_edited = 0 printed a stray "0" beside every message.
   it('prints nothing for a not-edited message when the server sends is_edited as 0', async () => {

@@ -113,16 +113,19 @@ export function ExchangeManagement() {
 
   // KPI header state. There is no dedicated exchange-stats endpoint, so the
   // header reuses the page's own list endpoint: one unfiltered probe for the
-  // grand total, one pending_broker probe for the review queue and one
-  // needs_action probe for the tab badge, reading only meta.total from each.
+  // grand total plus one probe each for pending_broker, needs_action and
+  // disputed, reading only meta.total from each. The cards and the tab badges
+  // read the same numbers, so a card can never disagree with its list.
   const [stats, setStats] = useState<{
     total: number | null;
     pending: number | null;
     needsAction: number | null;
+    disputed: number | null;
   }>({
     total: null,
     pending: null,
     needsAction: null,
+    disputed: null,
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -169,15 +172,17 @@ export function ExchangeManagement() {
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const [allRes, pendingRes, needsActionRes] = await Promise.all([
+      const [allRes, pendingRes, needsActionRes, disputedRes] = await Promise.all([
         adminBroker.getExchanges({ page: 1 }),
         adminBroker.getExchanges({ page: 1, status: 'pending_broker' }),
         adminBroker.getExchanges({ page: 1, status: 'needs_action' }),
+        adminBroker.getExchanges({ page: 1, status: 'disputed' }),
       ]);
       setStats({
         total: readTotal(allRes),
         pending: readTotal(pendingRes),
         needsAction: readTotal(needsActionRes),
+        disputed: readTotal(disputedRes),
       });
     } catch {
       // KPI header degrades to em-dashes; the list load owns error messaging.
@@ -216,6 +221,10 @@ export function ExchangeManagement() {
 
       if (res?.success) {
         toast.success(t('exchanges.action_succeeded'));
+        // Close only on success. A failed request keeps the modal and the
+        // typed reason on screen, so the broker can retry or copy it out.
+        setActionModal(null);
+        setActionText('');
         refreshAll();
       } else {
         toast.error(res?.error || t('exchanges.action_failed'));
@@ -224,10 +233,13 @@ export function ExchangeManagement() {
       toast.error(t('exchanges.action_failed'));
     } finally {
       setActionLoading(false);
-      setActionModal(null);
-      setActionText('');
     }
   };
+
+  // Carry the current tab into the detail link so its Back button can return
+  // to the same tab instead of the unfiltered list.
+  const detailPath = (exchangeId: number) =>
+    status === 'all' ? `/broker/exchanges/${exchangeId}` : `/broker/exchanges/${exchangeId}?queue=${status}`;
 
   const openActionModal = (type: ActionType, item: ExchangeRequest) => {
     setActionModal({ type, item });
@@ -276,7 +288,9 @@ export function ExchangeManagement() {
       sortable: true,
       render: (item) => (
         <span className="text-sm tabular-nums text-foreground">
-          {item.final_hours != null ? `${item.final_hours}h` : '—'}
+          {item.final_hours != null
+            ? t('exchanges.settle_hours_value', { count: Number(item.final_hours) })
+            : '—'}
         </span>
       ),
     },
@@ -300,7 +314,7 @@ export function ExchangeManagement() {
             size="sm"
             variant="tertiary"
             as={Link}
-            to={tenantPath(`/broker/exchanges/${item.id}`)}
+            to={tenantPath(detailPath(item.id))}
             aria-label={t('exchanges.view_details_aria')}
           >
             <Eye size={14} />
@@ -320,7 +334,7 @@ export function ExchangeManagement() {
               <Button
                 isIconOnly
                 size="sm"
-                variant="danger"
+                variant="danger-soft"
                 onPress={() => openActionModal('reject', item)}
                 aria-label={t('exchanges.reject_aria')}
               >
@@ -373,6 +387,24 @@ export function ExchangeManagement() {
           loading={statsLoading}
           description={t('exchanges.stat_pending_hint')}
           to={tenantPath('/broker/exchanges?status=pending_broker')}
+        />
+        <BrokerStatCard
+          label={t('exchanges.stat_needs_action')}
+          value={stats.needsAction}
+          icon={AlertCircle}
+          color="accent"
+          loading={statsLoading}
+          description={t('exchanges.stat_needs_action_hint')}
+          to={tenantPath('/broker/exchanges?status=needs_action')}
+        />
+        <BrokerStatCard
+          label={t('exchanges.stat_disputed')}
+          value={stats.disputed}
+          icon={AlertTriangle}
+          color="danger"
+          loading={statsLoading}
+          description={t('exchanges.stat_disputed_hint')}
+          to={tenantPath('/broker/exchanges?status=disputed')}
         />
       </div>
 

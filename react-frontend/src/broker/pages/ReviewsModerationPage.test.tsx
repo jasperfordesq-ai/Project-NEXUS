@@ -8,18 +8,37 @@ import { render, screen } from '@/test/test-utils';
 
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockAdmin } = vi.hoisted(() => ({
+const { mockAdmin, titleEffects } = vi.hoisted(() => ({
   mockAdmin: vi.fn(),
+  titleEffects: [] as string[],
 }));
 
+// usePageTitle is an effect in the real hook; record the order the effects
+// commit in, which is what decides whose title the browser tab ends up with.
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks')>();
+  const { useEffect } = await import('react');
+  return {
+    ...actual,
+    usePageTitle: (title: string) => {
+      useEffect(() => {
+        titleEffects.push(title);
+      }, [title]);
+    },
+  };
+});
+
 // The stand-in admin module reports whether it was rendered inside the
-// AdminEmbed provider — that flag is what collapses its PageHeader.
+// AdminEmbed provider — that flag is what collapses its PageHeader — and,
+// like the real module, sets its own page title.
 vi.mock('@/admin/modules/moderation/ReviewsModeration', async () => {
   const { useAdminEmbedded } = await import('@/admin/components/AdminEmbedContext');
+  const { usePageTitle } = await import('@/hooks');
   return {
     __esModule: true,
     default: () => {
       mockAdmin();
+      usePageTitle('Admin: Reviews Moderation');
       return <div data-testid="admin-reviews-moderation" data-embedded={String(useAdminEmbedded())} />;
     },
   };
@@ -43,6 +62,15 @@ describe('ReviewsModerationPage (broker)', () => {
     render(<Component />);
 
     expect(screen.getByTestId('admin-reviews-moderation')).toHaveAttribute('data-embedded', 'true');
+  });
+
+  it('sets its own browser-tab title after the embedded module sets its', async () => {
+    titleEffects.length = 0;
+    const Component = (await import('./ReviewsModerationPage')).default;
+    render(<Component />);
+
+    expect(titleEffects).toContain('Admin: Reviews Moderation');
+    expect(titleEffects[titleEffects.length - 1]).toBe('Reviews Moderation');
   });
 
   it('links to the plain-English guide for this page', async () => {

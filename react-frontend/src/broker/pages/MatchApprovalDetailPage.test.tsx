@@ -38,6 +38,11 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+vi.mock('@/lib/serverTime', () => ({
+  formatServerDate: (v: string) => `server:${v}`,
+  formatServerDateTime: (v: string) => `server-dt:${v}`,
+}));
+
 import { MatchApprovalDetailPage } from './MatchApprovalDetailPage';
 
 const DETAIL = {
@@ -150,5 +155,77 @@ describe('MatchApprovalDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Match not found')).toBeInTheDocument();
     });
+  });
+
+  // A thrown request used to escape the loader and leave the skeleton up for
+  // ever. Now it is a distinct error with a Retry.
+  it('shows an error state with Retry when the request throws, and reloads on Retry', async () => {
+    mockGetApproval
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce({ success: true, data: DETAIL });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText('Failed to load match approval')).toBeInTheDocument();
+    expect(screen.queryByText('Match not found')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+    expect(mockGetApproval).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the reject modal and the typed reason open when the request fails', async () => {
+    mockRejectMatch.mockResolvedValue({ success: false, error: 'Server said no' });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Reject Match' }));
+    await user.type(await screen.findByLabelText(/rejection reason/i), 'Too far apart');
+    const submitButtons = screen.getAllByRole('button', { name: 'Reject Match' });
+    await user.click(submitButtons[submitButtons.length - 1] as HTMLElement);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/rejection reason/i)).toHaveValue('Too far apart');
+  });
+
+  it('does not leave the approve button spinning when the approve request throws', async () => {
+    mockApproveMatch.mockRejectedValue(new Error('network'));
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Approve Match' }));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to approve match'));
+    expect(screen.getByRole('button', { name: 'Approve Match' })).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('describes the page and links to its guide article', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+    expect(
+      screen.getByText('Check why these two were matched, then approve or reject before the member is told.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'How this page works' })).toHaveAttribute(
+      'href',
+      '/test/broker/help/broker_exchanges/broker_match_approvals',
+    );
+  });
+
+  it('translates the listing type instead of printing the raw slug', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('91%')).toBeInTheDocument());
+    expect(screen.getByText('Request')).toBeInTheDocument();
+    expect(screen.queryByText('request')).not.toBeInTheDocument();
+  });
+
+  it('shows the review time in server time', async () => {
+    mockGetApproval.mockResolvedValue({
+      success: true,
+      data: { ...DETAIL, status: 'approved', reviewed_at: '2026-07-01T09:00:00Z', reviewer_name: 'Rita Broker' },
+    });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('server-dt:2026-07-01T09:00:00Z')).toBeInTheDocument());
   });
 });

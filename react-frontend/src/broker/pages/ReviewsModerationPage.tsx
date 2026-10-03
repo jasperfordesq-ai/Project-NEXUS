@@ -11,12 +11,16 @@
 
 import { useTranslation } from 'react-i18next';
 import Star from 'lucide-react/icons/star';
+import { usePageTitle } from '@/hooks';
 import ReviewsModeration from '@/admin/modules/moderation/ReviewsModeration';
 import { BrokerPageShell } from '../components';
 import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
 
 export default function ReviewsModerationPage() {
   const { t } = useTranslation('broker');
+  // The embedded admin module sets its own title too; React runs a child's
+  // effects before its parent's, so this wrapper's title wins the browser tab.
+  usePageTitle(t('moderation_reviews.title'));
 
   return (
     <BrokerPageShell

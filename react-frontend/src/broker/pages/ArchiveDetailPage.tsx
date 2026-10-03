@@ -53,23 +53,19 @@ import {
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
-// Decision chip — 'approved' is a panel-wide status and routes through
-// BrokerStatusChip so its color matches every other broker page; 'flagged'
-// is archive-domain vocabulary the shared chip can't cover, so it keeps a
-// flag-badged danger chip with its translated label.
+// Decision chip — 'flagged' keeps its flag-badged danger chip; every other
+// decision (approved, or anything unexpected) goes through BrokerStatusChip,
+// which names the unknown with a translated "Unknown" rather than a
+// capitalised slug. Mirrors ReviewArchivePage.
 function DecisionChip({ decision }: { decision: string }) {
   const { t } = useTranslation('broker');
-  if (decision === 'approved') {
-    return <BrokerStatusChip status="approved" />;
+  if (decision !== 'flagged') {
+    return <BrokerStatusChip status={decision} />;
   }
   return (
     <Chip size="sm" variant="soft" color="danger">
       <Flag size={12} aria-hidden="true" />
-      <Chip.Label>
-        {t(`archives.decision_${decision}`, {
-          defaultValue: decision.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        })}
-      </Chip.Label>
+      <Chip.Label>{t('archives.decision_flagged')}</Chip.Label>
     </Chip>
   );
 }

@@ -81,31 +81,29 @@ const COPY_REASON_COLORS: Record<string, 'accent' | 'danger' | 'success' | 'warn
 };
 
 // ─── Flag severity presentation ───────────────────────────────────────────────
-// Chip colors mirror MessageReviewPage's severity mapping; banner tints follow
-// the dashboard's gradient hero pattern. Tailwind JIT needs literal classes.
+// The chip itself is BrokerStatusChip (one colour map for every broker page:
+// info→accent, warning→warning, concern→danger, urgent→filled danger). The
+// banner and medallion tints below follow that same scale and the
+// dashboard's gradient hero pattern. Tailwind JIT needs literal classes.
 
 type FlagSeverity = 'info' | 'warning' | 'concern' | 'urgent';
 
-const SEVERITY_CHIP_COLORS: Record<FlagSeverity, 'default' | 'warning' | 'danger'> = {
-  info: 'default',
-  warning: 'warning',
-  concern: 'danger',
-  urgent: 'danger',
-};
-
 const SEVERITY_BANNER_CLASSES: Record<FlagSeverity, string> = {
-  info: 'border-divider/70 bg-gradient-to-br from-surface-secondary via-surface to-surface',
+  info: 'border-accent/30 bg-gradient-to-br from-accent/10 via-surface to-surface',
   warning: 'border-warning/30 bg-gradient-to-br from-warning/10 via-surface to-surface',
   concern: 'border-danger/30 bg-gradient-to-br from-danger/10 via-surface to-surface',
   urgent: 'border-danger/30 bg-gradient-to-br from-danger/10 via-surface to-surface',
 };
 
 const SEVERITY_MEDALLION_CLASSES: Record<FlagSeverity, string> = {
-  info: 'bg-surface-tertiary text-muted',
+  info: 'bg-accent/10 text-accent',
   warning: 'bg-warning/10 text-warning',
   concern: 'bg-danger/10 text-danger',
   urgent: 'bg-danger/10 text-danger',
 };
+
+/** Guide article for this page: reviewing one message copy. */
+const HELP = { sectionId: 'broker_safeguarding', articleId: 'broker_review_message' } as const;
 
 function normalizeSeverity(severity?: string | null): FlagSeverity {
   const s = (severity || '').toLowerCase();
@@ -144,9 +142,11 @@ export function MessageDetail() {
   // The queue this message was opened from (?queue=), so "next" stays in it.
   const [searchParams] = useSearchParams();
   const queueParam = searchParams.get('queue');
-  const queueName: MessageQueue = (MESSAGE_QUEUES as readonly string[]).includes(queueParam ?? '')
-    ? (queueParam as MessageQueue)
-    : 'unreviewed';
+  const hasKnownQueue = (MESSAGE_QUEUES as readonly string[]).includes(queueParam ?? '');
+  const queueName: MessageQueue = hasKnownQueue ? (queueParam as MessageQueue) : 'unreviewed';
+  // Back returns to the tab the message was opened from; with no ?queue= it
+  // goes to the plain list (which opens on Unreviewed anyway).
+  const backPath = hasKnownQueue ? `/broker/messages?status=${queueName}` : '/broker/messages';
   const queue = useBrokerQueue({
     currentId: id ? Number(id) : null,
     fetchQueue: async () => {
@@ -262,7 +262,7 @@ export function MessageDetail() {
       variant="tertiary"
       size="sm"
       startContent={<ArrowLeft size={16} />}
-      onPress={() => navigate(tenantPath('/broker/messages'))}
+      onPress={() => navigate(tenantPath(backPath))}
     >
       {t('messages.back')}
     </Button>
@@ -273,6 +273,7 @@ export function MessageDetail() {
   if (loading) {
     return (
       <BrokerPageShell
+        help={HELP}
         title={t('messages.detail_page_title')}
         description={t('messages.detail_page_description')}
         icon={MessageSquareWarning}
@@ -289,6 +290,7 @@ export function MessageDetail() {
   if (error || !detail) {
     return (
       <BrokerPageShell
+        help={HELP}
         title={t('messages.detail_page_title')}
         description={t('messages.detail_page_description')}
         icon={MessageSquareWarning}
@@ -314,7 +316,7 @@ export function MessageDetail() {
                 variant="tertiary"
                 size="sm"
                 startContent={<ArrowLeft size={16} />}
-                onPress={() => navigate(tenantPath('/broker/messages'))}
+                onPress={() => navigate(tenantPath(backPath))}
               >
                 {t('messages.detail_back_to_messages')}
               </Button>
@@ -330,12 +332,12 @@ export function MessageDetail() {
   const isReviewed = !!copy.reviewed_at;
   const isFlagged = copy.flagged;
   const severity = normalizeSeverity(copy.flag_severity);
-  const severityLabel = copy.flag_severity
-    ? t(`messages.severity_${severity}`, { defaultValue: copy.flag_severity })
-    : t('messages.flagged_label');
+  // Same label the status chip shows, for the "Flagged (Urgent)" text.
+  const severityLabel = copy.flag_severity ? t(`status.${severity}`) : t('messages.flagged_label');
 
   return (
     <BrokerPageShell
+      help={HELP}
       title={t('messages.detail_page_title')}
       description={t('messages.detail_page_description')}
       icon={MessageSquareWarning}
@@ -364,9 +366,13 @@ export function MessageDetail() {
                 <h3 className="font-semibold tracking-tight text-foreground">
                   {t('messages.detail_flag_banner_title')}
                 </h3>
-                <Chip size="sm" variant="soft" color={SEVERITY_CHIP_COLORS[severity]}>
-                  {severityLabel}
-                </Chip>
+                {copy.flag_severity ? (
+                  <BrokerStatusChip status={severity} />
+                ) : (
+                  <Chip size="sm" variant="soft" color="danger">
+                    {severityLabel}
+                  </Chip>
+                )}
               </div>
               {copy.flag_reason ? (
                 <p className="mt-1 whitespace-pre-wrap text-sm text-foreground/80">{copy.flag_reason}</p>
@@ -567,15 +573,8 @@ export function MessageDetail() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-1">
                 <p className="text-xs text-muted">{t('messages.detail_decision')}</p>
-                <Chip
-                  size="sm"
-                  variant="soft"
-                  color={archive.decision === 'approved' ? 'success' : 'danger'}
-                >
-                  {archive.decision === 'approved'
-                    ? t('status.approved')
-                    : t('messages.flagged_label')}
-                </Chip>
+                {/* The decision actually recorded (approved / flagged / …), never an assumed "Flagged". */}
+                <BrokerStatusChip status={archive.decision} />
               </div>
               <div className="min-w-0 space-y-1">
                 <p className="text-xs text-muted">{t('messages.detail_decided_by')}</p>

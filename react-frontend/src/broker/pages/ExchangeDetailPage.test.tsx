@@ -54,6 +54,18 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+const { mockResolveAvatarUrl } = vi.hoisted(() => ({
+  mockResolveAvatarUrl: vi.fn((url: string | null | undefined) => (url ? `resolved:${url}` : '')),
+}));
+
+vi.mock('@/lib/helpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/helpers')>();
+  return {
+    ...actual,
+    resolveAvatarUrl: mockResolveAvatarUrl,
+  };
+});
+
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeExchange = (overrides = {}) => ({
   id: 42,
@@ -145,6 +157,105 @@ describe('ExchangeDetailPage (ExchangeDetail)', () => {
       expect(current).toBeTruthy();
       expect(current?.textContent).toContain('Pending Broker Approval');
     });
+  });
+
+  // Every status the workflow service can produce (ExchangeWorkflowService
+  // TRANSITIONS) must light a stage. Until this fix pending_provider,
+  // in_progress and pending_confirmation had no stage, so the strip showed
+  // nothing current for a live exchange.
+  it.each([
+    ['pending_provider', 'Pending Provider'],
+    ['pending_broker', 'Pending Broker Approval'],
+    ['accepted', 'Accepted'],
+    ['in_progress', 'In Progress'],
+    ['pending_confirmation', 'Pending Confirmation'],
+    ['completed', 'Completed'],
+  ])('highlights the %s stage in the lifecycle pipeline', async (status, label) => {
+    mockAdminBroker.showExchange.mockResolvedValue({ success: true, data: makeDetail({ status }) });
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => {
+      const current = document.querySelector('[aria-current="step"]');
+      expect(current).toBeTruthy();
+      expect(current?.textContent).toContain(label);
+    });
+    // Six linear stages, in workflow order (the badge number is stripped; a
+    // completed stage shows a tick instead of its number).
+    const stages = Array.from(document.querySelectorAll('ol[aria-label="Exchange progress"] > li'))
+      .slice(0, 6)
+      .map((li) => (li.textContent ?? '').replace(/^\d+/, ''));
+    expect(stages).toEqual([
+      'Pending Provider',
+      'Pending Broker Approval',
+      'Accepted',
+      'In Progress',
+      'Pending Confirmation',
+      'Completed',
+    ]);
+  });
+
+  it.each(['cancelled', 'disputed', 'expired'])('shows %s as a terminal off-ramp', async (status) => {
+    mockAdminBroker.showExchange.mockResolvedValue({ success: true, data: makeDetail({ status }) });
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => {
+      const current = document.querySelector('[aria-current="step"]');
+      expect(current).toBeTruthy();
+      expect(current?.className).toContain('items-center');
+    });
+    // No linear stage is lit when the exchange left the happy path.
+    expect(document.querySelectorAll('[aria-current="step"]').length).toBe(1);
+  });
+
+  it('returns to the exchanges tab the broker came from when ?queue= is set', async () => {
+    window.history.pushState({}, '', '/test/broker/exchanges/42?queue=disputed');
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('Alice Requester')).toBeInTheDocument());
+    expect(screen.getByRole('link', { name: 'Back to Exchanges' })).toHaveAttribute(
+      'href',
+      '/test/broker/exchanges?status=disputed',
+    );
+    window.history.pushState({}, '', '/');
+  });
+
+  it('returns to the plain exchanges list when no queue is known', async () => {
+    window.history.pushState({}, '', '/test/broker/exchanges/42');
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('Alice Requester')).toBeInTheDocument());
+    expect(screen.getByRole('link', { name: 'Back to Exchanges' })).toHaveAttribute('href', '/test/broker/exchanges');
+  });
+
+  it('ignores an unknown ?queue= value', async () => {
+    window.history.pushState({}, '', '/test/broker/exchanges/42?queue=javascript');
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('Alice Requester')).toBeInTheDocument());
+    expect(screen.getByRole('link', { name: 'Back to Exchanges' })).toHaveAttribute('href', '/test/broker/exchanges');
+    window.history.pushState({}, '', '/');
+  });
+
+  it('resolves party avatars through the shared avatar helper', async () => {
+    mockAdminBroker.showExchange.mockResolvedValue({
+      success: true,
+      data: makeDetail({ requester_avatar: '/uploads/alice.png', provider_avatar: '/uploads/bob.png' }),
+    });
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('Alice Requester')).toBeInTheDocument());
+    // jsdom never fires image load, so the <img> itself is not observable;
+    // the helper being asked for both uploads is what the fix guarantees.
+    expect(mockResolveAvatarUrl).toHaveBeenCalledWith('/uploads/alice.png');
+    expect(mockResolveAvatarUrl).toHaveBeenCalledWith('/uploads/bob.png');
+  });
+
+  it('leaves a party without an uploaded avatar on initials, not on the default image', async () => {
+    mockResolveAvatarUrl.mockClear();
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('Alice Requester')).toBeInTheDocument());
+    expect(mockResolveAvatarUrl).not.toHaveBeenCalled();
   });
 
   it('marks a cancelled exchange as a terminal pipeline stage and hides actions', async () => {

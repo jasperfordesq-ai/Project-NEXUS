@@ -20,7 +20,7 @@ import { BrokerStatCard } from '../BrokerStatCard';
 import { BrokerPageShell } from '../BrokerPageShell';
 import { BrokerEmptyState } from '../BrokerEmptyState';
 import { BrokerSkeleton } from '../BrokerSkeleton';
-import { BrokerStatusChip, brokerStatusColor } from '../BrokerStatusChip';
+import { BrokerStatusChip, brokerStatusColor, brokerStatusVariant } from '../BrokerStatusChip';
 import { BrokerSparkline } from '../BrokerSparkline';
 
 vi.mock('@/contexts', () => createMockContexts());
@@ -158,6 +158,44 @@ describe('BrokerStatusChip', () => {
     expect(brokerStatusColor('rejected')).toBe('danger');
     expect(brokerStatusColor('critical')).toBe('danger');
     expect(brokerStatusColor('unknown_thing')).toBe('default');
+  });
+
+  // Message-flag severities (info / warning / concern / urgent) and the archive
+  // decision "flagged" used to be missing, so the Archive detail page showed
+  // "Unknown" for a flagged record's severity and each message page kept its
+  // own colour map. One map, one set of labels, everywhere.
+  it.each([
+    ['info', 'Info'],
+    ['warning', 'Warning'],
+    ['concern', 'Concern'],
+    ['urgent', 'Urgent'],
+    ['flagged', 'Flagged'],
+  ])('labels the message severity / decision %s as %s', (status, label) => {
+    wrap(<BrokerStatusChip status={status} />);
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+  });
+
+  it('colours message severities on one shared scale', () => {
+    expect(brokerStatusColor('info')).toBe('accent');
+    expect(brokerStatusColor('warning')).toBe('warning');
+    expect(brokerStatusColor('concern')).toBe('danger');
+    expect(brokerStatusColor('urgent')).toBe('danger');
+    expect(brokerStatusColor('flagged')).toBe('danger');
+  });
+
+  // concern and urgent are both danger-red; urgent is the filled chip so the
+  // two are told apart at a glance.
+  it('fills the chip only for urgent', () => {
+    expect(brokerStatusVariant('urgent')).toBe('primary');
+    expect(brokerStatusVariant('concern')).toBe('soft');
+    expect(brokerStatusVariant('approved')).toBe('soft');
+
+    const { container: urgent } = wrap(<BrokerStatusChip status="urgent" />);
+    expect(urgent.querySelector('.chip--primary')).not.toBeNull();
+    const { container: concern } = wrap(<BrokerStatusChip status="concern" />);
+    expect(concern.querySelector('.chip--soft')).not.toBeNull();
+    expect(concern.querySelector('.chip--primary')).toBeNull();
   });
 });
 

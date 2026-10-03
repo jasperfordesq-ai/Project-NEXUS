@@ -18,11 +18,12 @@
  * into the right queue.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+import AlertCircle from 'lucide-react/icons/circle-alert';
+import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import Clock from 'lucide-react/icons/clock';
@@ -35,6 +36,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
+import { formatServerDate } from '@/lib/serverTime';
 import { adminMatching } from '@/admin/api/adminApi';
 import { DataTable, type Column } from '@/admin/components';
 import type { MatchApproval, MatchApprovalStats } from '@/admin/api/types';
@@ -56,6 +58,7 @@ import {
   BrokerPageShell,
   BrokerStatCard,
   BrokerEmptyState,
+  BrokerSkeleton,
   BrokerStatusChip,
 } from '../components';
 
@@ -84,7 +87,10 @@ export function MatchApprovalsPage() {
   const [items, setItems] = useState<MatchApproval[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
+  // null = not loaded or failed; the cards then show a dash, never a false 0.
   const [stats, setStats] = useState<MatchApprovalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -94,39 +100,61 @@ export function MatchApprovalsPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectLoading, setRejectLoading] = useState(false);
 
+  // Every request is wrapped: until Oct 2026 a thrown request escaped these
+  // loaders and left the spinner on for ever, and a failed stats call left the
+  // cards reading "0" as if the queue were empty.
   const loadItems = useCallback(async () => {
     setLoading(true);
-    const res = await adminMatching.getApprovals({
-      status: status === 'all' ? undefined : status,
-      page,
-    });
-    if (res.success && res.data) {
-      const data = res.data as unknown;
-      if (data && typeof data === 'object' && 'data' in data) {
-        const pd = data as { data: MatchApproval[]; meta?: { total: number } };
-        setItems(pd.data || []);
-        setTotal(pd.meta?.total || 0);
-      } else if (Array.isArray(data)) {
-        setItems(data);
-        const metaTotal = (res.meta as Record<string, unknown> | undefined)?.total;
-        setTotal(typeof metaTotal === 'number' ? metaTotal : data.length);
+    setLoadError(false);
+    try {
+      const res = await adminMatching.getApprovals({
+        status: status === 'all' ? undefined : status,
+        page,
+      });
+      if (res.success && res.data) {
+        const data = res.data as unknown;
+        if (data && typeof data === 'object' && 'data' in data) {
+          const pd = data as { data: MatchApproval[]; meta?: { total: number } };
+          setItems(pd.data || []);
+          setTotal(pd.meta?.total || 0);
+        } else if (Array.isArray(data)) {
+          setItems(data);
+          const metaTotal = (res.meta as Record<string, unknown> | undefined)?.total;
+          setTotal(typeof metaTotal === 'number' ? metaTotal : data.length);
+        } else {
+          setLoadError(true);
+        }
+      } else {
+        setLoadError(true);
       }
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
     }
-    setLoading(false);
   }, [page, status]);
 
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
-    const res = await adminMatching.getApprovalStats(30);
-    if (res.success && res.data) {
-      const data = res.data as unknown;
-      if (data && typeof data === 'object' && 'data' in data) {
-        setStats((data as { data: MatchApprovalStats }).data);
+    try {
+      const res = await adminMatching.getApprovalStats(30);
+      if (res.success && res.data) {
+        const data = res.data as unknown;
+        if (data && typeof data === 'object' && 'data' in data) {
+          setStats((data as { data: MatchApprovalStats }).data);
+        } else {
+          setStats(data as MatchApprovalStats);
+        }
       } else {
-        setStats(data as MatchApprovalStats);
+        setStats(null);
       }
+    } catch {
+      // Decorative KPI header — degrade to dashes; the list owns the error state.
+      setStats(null);
+    } finally {
+      setStatsLoading(false);
     }
-    setStatsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -149,14 +177,19 @@ export function MatchApprovalsPage() {
 
   const handleApprove = async (item: MatchApproval) => {
     setActionLoading(item.id);
-    const res = await adminMatching.approveMatch(item.id);
-    if (res.success) {
-      toast.success(t('matching.approved_toast'));
-      refreshAll();
-    } else {
-      toast.error(res.error || t('matching.approve_failed'));
+    try {
+      const res = await adminMatching.approveMatch(item.id);
+      if (res.success) {
+        toast.success(t('matching.approved_toast'));
+        refreshAll();
+      } else {
+        toast.error(res.error || t('matching.approve_failed'));
+      }
+    } catch {
+      toast.error(t('matching.approve_failed'));
+    } finally {
+      setActionLoading(null);
     }
-    setActionLoading(null);
   };
 
   const handleReject = async () => {
@@ -167,16 +200,23 @@ export function MatchApprovalsPage() {
     }
 
     setRejectLoading(true);
-    const res = await adminMatching.rejectMatch(rejectModal.item.id, rejectReason.trim());
-    if (res.success) {
-      toast.success(t('matching.rejected_toast'));
-      refreshAll();
-    } else {
-      toast.error(res.error || t('matching.reject_failed'));
+    try {
+      const res = await adminMatching.rejectMatch(rejectModal.item.id, rejectReason.trim());
+      if (res.success) {
+        toast.success(t('matching.rejected_toast'));
+        // Close only on success — a failed request keeps the modal and the
+        // typed reason on screen so the broker can retry.
+        setRejectModal(null);
+        setRejectReason('');
+        refreshAll();
+      } else {
+        toast.error(res.error || t('matching.reject_failed'));
+      }
+    } catch {
+      toast.error(t('matching.reject_failed'));
+    } finally {
+      setRejectLoading(false);
     }
-    setRejectLoading(false);
-    setRejectModal(null);
-    setRejectReason('');
   };
 
   const columns: Column<MatchApproval>[] = [
@@ -189,7 +229,7 @@ export function MatchApprovalsPage() {
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-foreground">{item.user_1_name}</p>
           </div>
-          <span aria-hidden="true" className="shrink-0 text-xs text-muted">↔</span>
+          <ArrowLeftRight size={14} className="shrink-0 text-muted" aria-hidden="true" />
           <Avatar src={item.user_2_avatar || undefined} name={item.user_2_name} size="sm" className="shrink-0" />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-foreground">{item.user_2_name}</p>
@@ -238,7 +278,7 @@ export function MatchApprovalsPage() {
       sortable: true,
       render: (item) => (
         <span className="text-sm tabular-nums text-muted">
-          {new Date(item.created_at).toLocaleDateString(getFormattingLocale())}
+          {formatServerDate(item.created_at)}
         </span>
       ),
     },
@@ -311,28 +351,28 @@ export function MatchApprovalsPage() {
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('matching.stat_pending')}
-          value={stats?.pending_count ?? 0}
+          value={stats ? stats.pending_count : null}
           icon={Clock}
           color="warning"
           loading={statsLoading}
         />
         <BrokerStatCard
           label={t('matching.stat_approved')}
-          value={stats?.approved_count ?? 0}
+          value={stats ? stats.approved_count : null}
           icon={CheckCircle}
           color="success"
           loading={statsLoading}
         />
         <BrokerStatCard
           label={t('matching.stat_rejected')}
-          value={stats?.rejected_count ?? 0}
+          value={stats ? stats.rejected_count : null}
           icon={XCircle}
           color="danger"
           loading={statsLoading}
         />
         <BrokerStatCard
           label={t('matching.stat_approval_rate')}
-          value={stats ? `${stats.approval_rate}%` : '0%'}
+          value={stats ? `${stats.approval_rate}%` : null}
           icon={TrendingUp}
           color="accent"
           loading={statsLoading}
@@ -392,29 +432,46 @@ export function MatchApprovalsPage() {
         </Tabs>
       </div>
 
-      {/* Data table */}
-      <DataTable
-        stickyActions
-        mobileCards
-        columns={columns}
-        data={items}
-        isLoading={loading}
-        searchable={false}
-        onRefresh={refreshAll}
-        totalItems={total}
-        page={page}
-        pageSize={20}
-        onPageChange={setPage}
-        emptyContent={
-          <BrokerEmptyState
-            bare
-            icon={status === 'pending' ? Sparkles : UserCheck}
-            color={status === 'pending' ? 'success' : 'neutral'}
-            title={status === 'pending' ? t('matching.empty_pending_title') : t('matching.empty_status_title')}
-            hint={status === 'pending' ? t('matching.empty_pending_hint') : t('matching.empty_status_hint')}
-          />
-        }
-      />
+      {initialLoad ? (
+        <BrokerSkeleton variant="table" />
+      ) : loadError && items.length === 0 ? (
+        // Honest failure state — an errored load must never masquerade as an
+        // empty "no matches waiting" queue.
+        <BrokerEmptyState
+          icon={AlertCircle}
+          color="danger"
+          title={t('matching.load_error_title')}
+          hint={t('matching.load_error_hint')}
+          action={
+            <Button size="sm" variant="danger-soft" onPress={refreshAll}>
+              {t('matching.retry')}
+            </Button>
+          }
+        />
+      ) : (
+        <DataTable
+          stickyActions
+          mobileCards
+          columns={columns}
+          data={items}
+          isLoading={loading}
+          searchable={false}
+          onRefresh={refreshAll}
+          totalItems={total}
+          page={page}
+          pageSize={20}
+          onPageChange={setPage}
+          emptyContent={
+            <BrokerEmptyState
+              bare
+              icon={status === 'pending' ? Sparkles : UserCheck}
+              color={status === 'pending' ? 'success' : 'neutral'}
+              title={status === 'pending' ? t('matching.empty_pending_title') : t('matching.empty_status_title')}
+              hint={status === 'pending' ? t('matching.empty_pending_hint') : t('matching.empty_status_hint')}
+            />
+          }
+        />
+      )}
 
       {/* Reject modal with reason */}
       <Modal
