@@ -16,6 +16,9 @@ import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '../../components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
+import { BrokerEmptyState } from '@/broker/components/BrokerEmptyState';
 import { ModerationCards, useModerationCards } from '../../components/ModerationCards';
 import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
@@ -141,6 +144,7 @@ export function ModerationQueuePage() {
   usePageTitle(t('reports.page_title'));
 
   const toast = useToast();
+  const { embedded } = useAdminEmbed();
 
   const [items, setItems] = useState<ModerationItem[]>([]);
   const showCards = useModerationCards();
@@ -183,8 +187,10 @@ export function ModerationQueuePage() {
   );
 
   // Load queue
-  const loadQueue = useCallback(async () => {
-    setLoading(true);
+  // `quiet` keeps the current rows on screen while fresh ones load — used by
+  // the broker panel's auto-refresh so the list never flashes empty.
+  const loadQueue = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(page),
@@ -419,8 +425,23 @@ export function ModerationQueuePage() {
       </TableCell>,
   ];
 
+  // The embedded (broker) queue shows "all caught up" the way broker pages
+  // do; the admin panel keeps its one-line table placeholder.
+  const queueEmpty = embedded ? (
+    <BrokerEmptyState
+      bare
+      icon={Shield}
+      color="success"
+      title={t('reports.no_items_in_queue')}
+      hint={t('reports.no_items_in_queue_hint')}
+    />
+  ) : (
+    t('reports.no_items_in_queue')
+  );
+
   return (
     <div>
+      <AdminEmbedAutoRefresh reload={() => { void loadQueue(true); void loadStats(); }} />
       <PageHeader
         title={t('reports.moderation_queue_page_title')}
         description={t('reports.moderation_queue_page_desc')}
@@ -565,16 +586,19 @@ export function ModerationQueuePage() {
         />
       </div>
 
-      {/* Queue — a table, or one card per item on a phone */}
-      {showCards ? (
+      {/* Queue — a table, or one card per item on a phone. Embedded, the
+          first load is a shaped skeleton and later loads keep the rows. */}
+      {embedded && loading && items.length === 0 ? (
+        <BrokerSkeleton variant="table" />
+      ) : showCards ? (
         <ModerationCards
           ariaLabel={t('reports.label_moderation_queue')}
           columns={queueColumns}
           items={items}
           getKey={(item) => item.id}
           renderCells={renderQueueCells}
-          isLoading={loading}
-          emptyContent={t('reports.no_items_in_queue')}
+          isLoading={loading && !embedded}
+          emptyContent={queueEmpty}
         />
       ) : (
         <Table aria-label={t('reports.label_moderation_queue')}>
@@ -584,8 +608,8 @@ export function ModerationQueuePage() {
             ))}
           </TableHeader>
           <TableBody
-            emptyContent={t('reports.no_items_in_queue')}
-            isLoading={loading}
+            emptyContent={queueEmpty}
+            isLoading={loading && !embedded}
             loadingContent={<Spinner />}
           >
             {items.map((item) => (

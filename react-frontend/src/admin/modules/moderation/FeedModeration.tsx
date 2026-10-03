@@ -17,6 +17,8 @@ import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/admin/components/PageHeader';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
@@ -28,6 +30,7 @@ import { ModerationCards, useModerationCards } from '../../components/Moderation
 export default function FeedModeration() {
   const { t } = useTranslation('admin_moderation');
   usePageTitle(t('moderation.page_title'));
+  const { embedded } = useAdminEmbed();
 
   const POST_TYPES = [
     { label: t('moderation.filter_all_types'), value: '' },
@@ -156,6 +159,10 @@ export default function FeedModeration() {
   };
 
   const posts = data || [];
+  // Embedded in the broker panel the first load is a shaped skeleton and a
+  // reload keeps the current rows on screen, so auto-refresh never flashes.
+  const showSkeleton = embedded && isLoading && data === null;
+  const tableLoading = isLoading && !embedded;
   const totalPages = meta?.total_pages || 1;
 
   // Build cell content for a post row
@@ -267,6 +274,7 @@ export default function FeedModeration() {
 
   return (
     <div className="space-y-6">
+      <AdminEmbedAutoRefresh reload={() => void execute()} />
       <PageHeader
         title={t('moderation.feed_moderation_title')}
         description={isSuperAdmin ? t('moderation.feed_desc_super') : t('moderation.feed_desc')}
@@ -349,14 +357,16 @@ export default function FeedModeration() {
 
       {/* Table */}
       {/* Phones get one card per row, built from the same cells (ModerationCards). */}
-      {showCards ? (
+      {showSkeleton ? (
+        <BrokerSkeleton variant="table" />
+      ) : showCards ? (
         <ModerationCards
           ariaLabel={t('moderation.label_feed_posts_table')}
           columns={columns}
           items={posts ?? []}
           getKey={(row) => row.id}
           renderCells={renderCells}
-          isLoading={isLoading}
+          isLoading={tableLoading}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeType ? t('moderation.no_posts_match_filters') : t('moderation.no_posts_to_moderate')}
@@ -372,7 +382,7 @@ export default function FeedModeration() {
           </TableHeader>
           <TableBody
             items={posts}
-            isLoading={isLoading}
+            isLoading={tableLoading}
             loadingContent={<Spinner />}
             emptyContent={
               <div className="text-center py-8 text-muted">

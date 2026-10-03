@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import Shield from 'lucide-react/icons/shield';
 import { usePageTitle } from '@/hooks';
 import ModerationQueuePage from '@/admin/modules/reports/ModerationQueuePage';
-import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 import { BrokerPageShell } from '../components';
 
 export default function ContentQueuePage() {
@@ -26,16 +26,21 @@ export default function ContentQueuePage() {
   // effects before its parent's, so this wrapper's title is the one that
   // lands in the browser tab.
   usePageTitle(t('moderation_queue.title'));
+  // The embedded module's own action buttons (Refresh, Settings…) render
+  // into the broker page header, so the content area starts with the
+  // content — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <BrokerPageShell
+      actions={actionsSlot}
       help={{ sectionId: 'broker_moderation', articleId: 'broker_content_queue' }}
       title={t('moderation_queue.title')}
       description={t('moderation_queue.description')}
       icon={Shield}
       color="accent"
     >
-      <AdminEmbed>
+      <AdminEmbed actionsHost={actionsHost}>
         <ModerationQueuePage />
       </AdminEmbed>
     </BrokerPageShell>

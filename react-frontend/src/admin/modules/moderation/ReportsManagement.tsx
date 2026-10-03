@@ -23,6 +23,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/admin/components/PageHeader';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
@@ -32,6 +34,7 @@ import { ModerationCards, useModerationCards } from '../../components/Moderation
 export default function ReportsManagement() {
   const { t } = useTranslation('admin_moderation');
   usePageTitle(t('moderation.page_title'));
+  const { embedded } = useAdminEmbed();
   useAdminPageMeta({
     title: t('moderation.reports_management_title'),
     description: t('moderation.reports_meta_description'),
@@ -189,6 +192,10 @@ export default function ReportsManagement() {
   };
 
   const reports = data || [];
+  // Embedded in the broker panel the first load is a shaped skeleton and a
+  // reload keeps the current rows on screen, so auto-refresh never flashes.
+  const showSkeleton = embedded && isLoading && data === null;
+  const tableLoading = isLoading && !embedded;
   const totalPages = meta?.total_pages || 1;
 
   // Known content types get a translated label; unknown enum values remain
@@ -377,6 +384,7 @@ export default function ReportsManagement() {
 
   return (
     <div className="space-y-6">
+      <AdminEmbedAutoRefresh reload={() => { void execute(); void refetchStats(); }} />
       <PageHeader
         title={t('moderation.reports_management_title')}
         description={isSuperAdmin ? t('moderation.reports_desc_super') : t('moderation.reports_desc')}
@@ -526,14 +534,16 @@ export default function ReportsManagement() {
 
       {/* Table */}
       {/* Phones get one card per row, built from the same cells (ModerationCards). */}
-      {showCards ? (
+      {showSkeleton ? (
+        <BrokerSkeleton variant="table" />
+      ) : showCards ? (
         <ModerationCards
           ariaLabel={t('moderation.label_reports_table')}
           columns={columns}
           items={reports ?? []}
           getKey={(row) => row.id}
           renderCells={renderCells}
-          isLoading={isLoading}
+          isLoading={tableLoading}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeType || activeStatus
@@ -551,7 +561,7 @@ export default function ReportsManagement() {
           </TableHeader>
           <TableBody
             items={reports}
-            isLoading={isLoading}
+            isLoading={tableLoading}
             loadingContent={<Spinner />}
             emptyContent={
               <div className="text-center py-8 text-muted">

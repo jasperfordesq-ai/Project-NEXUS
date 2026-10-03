@@ -223,6 +223,7 @@
     "no_inactive_members_found": "Níor aimsíodh aon bhall neamhghníomhach",
     "no_inactive_members_run_detection": "Níor aimsíodh aon bhall neamhghníomhach. Rith braite chun iad a aithint.",
     "no_items_in_queue": "Níl aon earraí sa scuaine",
+    "no_items_in_queue_hint": "Níl aon rud ag fanacht le hathbhreithniú. Taispeánfar míreanna nua anseo de réir mar a phostálann baill.",
     "no_registration_data": "Gan sonraí clárúcháin",
     "no_retention_data": "Gan sonraí coinneála",
     "not_yet": "Ní Fós",

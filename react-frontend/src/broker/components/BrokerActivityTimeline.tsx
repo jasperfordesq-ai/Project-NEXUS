@@ -34,7 +34,10 @@ import { useTenant } from '@/contexts';
 import { adminBroker } from '@/admin/api/adminApi';
 import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { formatServerDateTime, parseServerTimestamp } from '@/lib/serverTime';
-import type { BrokerDashboardActivityEntry, BrokerDashboardExtras } from '../dashboardTypes';
+import type {
+  BrokerActivityEntry as BrokerDashboardActivityEntry,
+  BrokerDashboardStats as BrokerDashboardExtras,
+} from '@/admin/api/types';
 import { BrokerEmptyState } from './BrokerEmptyState';
 import { BrokerSectionCard } from './BrokerSectionCard';
 import { BrokerSkeleton } from './BrokerSkeleton';

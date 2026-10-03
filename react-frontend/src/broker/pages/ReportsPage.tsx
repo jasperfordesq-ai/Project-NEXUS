@@ -14,23 +14,28 @@ import Flag from 'lucide-react/icons/flag';
 import { usePageTitle } from '@/hooks';
 import ReportsManagement from '@/admin/modules/moderation/ReportsManagement';
 import { BrokerPageShell } from '../components';
-import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 export default function ReportsPage() {
   const { t } = useTranslation('broker');
   // The embedded admin module sets its own title too; React runs a child's
   // effects before its parent's, so this wrapper's title wins the browser tab.
   usePageTitle(t('moderation_reports.title'));
+  // The embedded module's own action buttons (Refresh, Settings…) render
+  // into the broker page header, so the content area starts with the
+  // content — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <BrokerPageShell
+      actions={actionsSlot}
       help={{ sectionId: 'broker_moderation', articleId: 'broker_reports' }}
       title={t('moderation_reports.title')}
       description={t('moderation_reports.description')}
       icon={Flag}
       color="danger"
     >
-      <AdminEmbed>
+      <AdminEmbed actionsHost={actionsHost}>
         <ReportsManagement />
       </AdminEmbed>
     </BrokerPageShell>

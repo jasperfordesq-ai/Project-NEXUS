@@ -21,6 +21,7 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Shield from 'lucide-react/icons/shield';
+import Users from 'lucide-react/icons/users';
 import {
   Avatar, Button, Card, CardBody, CardHeader, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader,
   Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure,
@@ -30,13 +31,42 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
 import { SafeguardingFilterBar, type GuardianAssignment } from './safeguardingShared';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
+import { BrokerEmptyState } from '@/broker/components/BrokerEmptyState';
 
 type GuardianFilter = 'active' | 'consented' | 'all';
 const GUARDIAN_FILTERS: readonly GuardianFilter[] = ['active', 'consented', 'all'];
 
-export function GuardiansPanel() {
+/** A member's name — a button that opens their record when the host panel offers one, plain text otherwise. */
+function MemberLabel({ id, name, onOpen }: { id: number; name: string; onOpen?: (userId: number) => void }) {
+  const { t } = useTranslation('admin_safeguarding');
+  if (!onOpen) return <span className="text-sm">{name}</span>;
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(id)}
+      aria-label={t('safeguarding.open_member', { name })}
+      className="inline max-w-full truncate text-left text-sm font-medium text-accent underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    >
+      {name}
+    </button>
+  );
+}
+
+interface GuardiansPanelProps {
+  /**
+   * Open a member's record. The broker panel passes its panel-wide member
+   * window (`useMemberWindow().open`) so ward and guardian names open it;
+   * the admin panel passes nothing and names stay plain text.
+   */
+  onOpenMember?: (userId: number) => void;
+}
+
+export function GuardiansPanel({ onOpenMember }: GuardiansPanelProps = {}) {
   const { t } = useTranslation('admin_safeguarding');
   const toast = useToast();
+  const { embedded } = useAdminEmbed();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawFilter = searchParams.get('filter');
   const filter: GuardianFilter = (GUARDIAN_FILTERS as readonly string[]).includes(rawFilter ?? '')
@@ -52,8 +82,10 @@ export function GuardiansPanel() {
   const [guardianEmail, setGuardianEmail] = useState('');
   const [creating, setCreating] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // `quiet` keeps the current rows on screen while fresh ones load — used by
+  // the broker panel's auto-refresh so the table never flashes.
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const res = await api.get('/v2/admin/safeguarding/assignments');
       if (res.success) {
@@ -180,10 +212,15 @@ export function GuardiansPanel() {
           </div>
         </CardHeader>
         <CardBody>
+          <AdminEmbedAutoRefresh reload={() => void load(true)} />
           {loading ? (
-            <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-10">
-              <Spinner size="lg" />
-            </div>
+            embedded ? (
+              <BrokerSkeleton variant="table" count={4} />
+            ) : (
+              <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-10">
+                <Spinner size="lg" />
+              </div>
+            )
           ) : failed ? (
             <div role="alert" className="py-8 text-center text-danger">
               <Shield size={40} className="mx-auto mb-2 opacity-40" aria-hidden="true" />
@@ -200,19 +237,32 @@ export function GuardiansPanel() {
                 <TableColumn>{t('safeguarding.col_expires')}</TableColumn>
                 <TableColumn>{t('safeguarding.col_actions')}</TableColumn>
               </TableHeader>
-              <TableBody emptyContent={t('safeguarding.no_guardian_assignments')}>
+              <TableBody
+                emptyContent={
+                  embedded ? (
+                    <BrokerEmptyState
+                      bare
+                      icon={Users}
+                      title={t('safeguarding.no_guardian_assignments')}
+                      hint={t('safeguarding.no_guardian_assignments_hint')}
+                    />
+                  ) : (
+                    t('safeguarding.no_guardian_assignments')
+                  )
+                }
+              >
                 {visible.map((assignment) => (
                   <TableRow key={assignment.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar size="sm" name={assignment.ward.name} className="h-6 w-6" />
-                        <span className="text-sm">{assignment.ward.name}</span>
+                        <MemberLabel id={assignment.ward.id} name={assignment.ward.name} onOpen={onOpenMember} />
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar size="sm" name={assignment.guardian.name} className="h-6 w-6" />
-                        <span className="text-sm">{assignment.guardian.name}</span>
+                        <MemberLabel id={assignment.guardian.id} name={assignment.guardian.name} onOpen={onOpenMember} />
                       </div>
                     </TableCell>
                     <TableCell>

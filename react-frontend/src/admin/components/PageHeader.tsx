@@ -8,7 +8,9 @@
  * Consistent page title, description, and action buttons.
  * Automatically shows a contextual help button (?) when the current route
  * has an entry in the HELP_CONTENT registry.
- * Inside an AdminEmbed (broker panel) it collapses to its actions only.
+ * Inside an AdminEmbed (broker panel) it collapses to its actions only, and
+ * when the host page provides an element in its own header those actions
+ * are rendered there, so the content area starts with the content.
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -19,7 +21,7 @@ import HelpCircle from 'lucide-react/icons/help-circle';
 import type { HelpArticle } from '../data/helpContent';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { useAdminEmbedded } from './AdminEmbedContext';
+import { AdminEmbedActions, useAdminEmbed } from './AdminEmbedContext';
 
 const AdminHelpDrawer = lazy(() =>
   import('./AdminHelpDrawer').then((module) => ({ default: module.AdminHelpDrawer }))
@@ -36,7 +38,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, subtitle, icon, actions }: PageHeaderProps) {
   const { t } = useTranslation(['admin_nav', 'admin_help']);
   const body = description ?? subtitle;
-  const embedded = useAdminEmbedded();
+  const { embedded } = useAdminEmbed();
   const location = useLocation();
   const [article, setArticle] = useState<HelpArticle | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -63,9 +65,15 @@ export function PageHeader({ title, description, subtitle, icon, actions }: Page
   if (embedded) {
     if (!actions) return null;
     return (
-      <div className="mb-4 flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
+      <AdminEmbedActions
+        fallback={
+          <div className="mb-4 flex flex-wrap items-center justify-end gap-2 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
+            {actions}
+          </div>
+        }
+      >
         {actions}
-      </div>
+      </AdminEmbedActions>
     );
   }
 

@@ -19,6 +19,8 @@ import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import PageHeader from '@/admin/components/PageHeader';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
@@ -28,6 +30,7 @@ import { ModerationCards, useModerationCards } from '../../components/Moderation
 export default function ReviewsModeration() {
   const { t } = useTranslation('admin_moderation');
   usePageTitle(t('moderation.page_title'));
+  const { embedded } = useAdminEmbed();
 
   const RATING_FILTERS = [
     { label: t('moderation.filter_all_ratings'), value: '' },
@@ -143,6 +146,10 @@ export default function ReviewsModeration() {
   };
 
   const reviews = data || [];
+  // Embedded in the broker panel the first load is a shaped skeleton and a
+  // reload keeps the current rows on screen, so auto-refresh never flashes.
+  const showSkeleton = embedded && isLoading && data === null;
+  const tableLoading = isLoading && !embedded;
   const totalPages = meta?.total_pages || 1;
 
   const renderStars = (rating: number) => {
@@ -286,6 +293,7 @@ export default function ReviewsModeration() {
 
   return (
     <div className="space-y-6">
+      <AdminEmbedAutoRefresh reload={() => void execute()} />
       <PageHeader
         title={t('moderation.reviews_moderation_title')}
         description={isSuperAdmin ? t('moderation.reviews_desc_super') : t('moderation.reviews_desc')}
@@ -368,14 +376,16 @@ export default function ReviewsModeration() {
 
       {/* Table */}
       {/* Phones get one card per row, built from the same cells (ModerationCards). */}
-      {showCards ? (
+      {showSkeleton ? (
+        <BrokerSkeleton variant="table" />
+      ) : showCards ? (
         <ModerationCards
           ariaLabel={t('moderation.label_reviews_table')}
           columns={columns}
           items={reviews ?? []}
           getKey={(row) => row.id}
           renderCells={renderCells}
-          isLoading={isLoading}
+          isLoading={tableLoading}
           emptyContent={
             <div className="text-center py-8 text-muted">
               {activeSearch || activeRating
@@ -393,7 +403,7 @@ export default function ReviewsModeration() {
           </TableHeader>
           <TableBody
             items={reviews}
-            isLoading={isLoading}
+            isLoading={tableLoading}
             loadingContent={<Spinner />}
             emptyContent={
               <div className="text-center py-8 text-muted">

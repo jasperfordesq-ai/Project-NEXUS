@@ -11,6 +11,23 @@ import i18n from '@/i18n';
 
 vi.mock('@/contexts', () => createMockContexts());
 
+// The broker tile has its own tests; here only the hand-over matters.
+vi.mock('@/broker/components/BrokerStatCard', () => ({
+  BrokerStatCard: (props: Record<string, unknown>) => (
+    <div
+      data-testid="broker-stat-card"
+      data-color={String(props.color)}
+      data-to={props.to === undefined ? undefined : String(props.to)}
+      data-link-aria-label={props.linkAriaLabel === undefined ? undefined : String(props.linkAriaLabel)}
+      data-loading={String(props.loading)}
+      data-delta={props.delta === undefined ? undefined : String(props.delta)}
+      data-delta-label={props.deltaLabel === undefined ? undefined : String(props.deltaLabel)}
+    >
+      {String(props.label)}
+    </div>
+  ),
+}));
+
 import { StatCard } from './StatCard';
 
 describe('StatCard', () => {
@@ -121,3 +138,47 @@ function getAllByAriabusy(busy: boolean) {
 function getAriabusy(busy: boolean) {
   return getAllByAriabusy(busy)[0];
 }
+
+describe('StatCard inside AdminEmbed (broker panel)', () => {
+  it('renders the broker stat card with the admin colours mapped onto the broker palette', async () => {
+    const { AdminEmbed } = await import('./AdminEmbedContext');
+    render(
+      <AdminEmbed>
+        <StatCard label="Pending Review" value={3} icon={Users} color="primary" to="/x" linkAriaLabel="Open pending" />
+        <StatCard label="Rejected" value={4} icon={Users} color="secondary" />
+        <StatCard label="Auto flagged" value={5} icon={Users} color="default" />
+        <StatCard label="Flagged" value={6} icon={Users} color="danger" trend={12} trendLabel="vs last week" />
+      </AdminEmbed>,
+    );
+    const cards = screen.getAllByTestId('broker-stat-card');
+    expect(cards).toHaveLength(4);
+    expect(cards[0]).toHaveAttribute('data-color', 'accent');
+    expect(cards[0]).toHaveAttribute('data-to', '/x');
+    expect(cards[0]).toHaveAttribute('data-link-aria-label', 'Open pending');
+    expect(cards[0]).toHaveTextContent('Pending Review');
+    expect(cards[1]).toHaveAttribute('data-color', 'neutral');
+    expect(cards[2]).toHaveAttribute('data-color', 'neutral');
+    expect(cards[3]).toHaveAttribute('data-color', 'danger');
+    // The admin "trend" is a percentage delta, so it lands on the broker card's delta.
+    expect(cards[3]).toHaveAttribute('data-delta', '12');
+    expect(cards[3]).toHaveAttribute('data-delta-label', 'vs last week');
+  });
+
+  it('passes loading and the title fallback through', async () => {
+    const { AdminEmbed } = await import('./AdminEmbedContext');
+    render(
+      <AdminEmbed>
+        <StatCard title="Members" value={0} icon={Users} loading />
+      </AdminEmbed>,
+    );
+    const card = screen.getByTestId('broker-stat-card');
+    expect(card).toHaveAttribute('data-loading', 'true');
+    expect(card).toHaveTextContent('Members');
+  });
+
+  it('does not use the broker card outside the embed', () => {
+    render(<StatCard label="Members" value={3} icon={Users} />);
+    expect(screen.queryByTestId('broker-stat-card')).not.toBeInTheDocument();
+    expect(screen.getByText('Members')).toBeInTheDocument();
+  });
+});

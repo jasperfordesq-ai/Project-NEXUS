@@ -60,13 +60,12 @@ import {
   useCountUp,
   type BrokerStatColor,
 } from '../components';
-import type { BrokerDashboardStats } from '@/admin/api/types';
 import type {
-  BrokerDashboardPayload,
+  BrokerDashboardStats,
   BrokerMyWeek,
   BrokerTrendQueue,
-  MatchApprovalStatsWithReviewTime,
-} from '../dashboardTypes';
+  MatchApprovalStats,
+} from '@/admin/api/types';
 import { BrokerControlsHelp } from './BrokerHelpPage';
 import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
 import { BrokerInbox } from '../components/BrokerInbox';
@@ -207,7 +206,7 @@ export function BrokerDashboard() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [stats, setStats] = useState<BrokerDashboardPayload | null>(null);
+  const [stats, setStats] = useState<BrokerDashboardStats | null>(null);
   const [avgReviewHours, setAvgReviewHours] = useState<number | null>(null);
   const [inboxVisible, setInboxVisible] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -238,9 +237,7 @@ export function BrokerDashboard() {
         showExchanges ? adminMatching.getApprovalStats(7).catch(() => null) : Promise.resolve(null),
       ]);
       if (res.success && res.data) {
-        // The extras are declared beside the page until admin/api/types.ts is
-        // free to carry them (see dashboardTypes.ts).
-        setStats(res.data as BrokerDashboardPayload);
+        setStats(res.data);
         setLoadError(false);
       } else if (!quiet) {
         setLoadError(true);
@@ -252,8 +249,8 @@ export function BrokerDashboard() {
         const payload = matchRes.data as unknown;
         const matchStats =
           payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)
-            ? (payload as { data: MatchApprovalStatsWithReviewTime }).data
-            : (payload as MatchApprovalStatsWithReviewTime);
+            ? (payload as { data: MatchApprovalStats }).data
+            : (payload as MatchApprovalStats);
         const hours = Number(matchStats?.avg_review_hours);
         setAvgReviewHours(Number.isFinite(hours) ? hours : null);
       }

@@ -43,6 +43,15 @@ vi.mock('@/components/ui', async (importOriginal) => {
 vi.mock('@/contexts', () => createMockContexts());
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+// The broker empty state has its own tests; here only the hand-over matters.
+vi.mock('@/broker/components/BrokerEmptyState', () => ({
+  BrokerEmptyState: (props: { title: string; hint?: string; action?: React.ReactNode }) => (
+    <div data-testid="broker-empty-state" data-title={props.title} data-hint={props.hint}>
+      {props.action}
+    </div>
+  ),
+}));
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('EmptyState (admin)', () => {
   beforeEach(() => {
@@ -150,5 +159,41 @@ describe('EmptyState (admin)', () => {
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('No listings');
     expect(screen.getByText("You haven't created any listings yet.")).toBeInTheDocument();
     expect(screen.getByTestId('action-button')).toHaveTextContent('Create listing');
+  });
+});
+
+describe('EmptyState inside AdminEmbed (broker panel)', () => {
+  it('renders the broker empty state with the description as its hint', async () => {
+    const { EmptyState } = await import('./EmptyState');
+    const { AdminEmbed } = await import('./AdminEmbedContext');
+    render(
+      <AdminEmbed>
+        <EmptyState title="No incidents" description="Nothing has been reported." />
+      </AdminEmbed>,
+    );
+    const state = screen.getByTestId('broker-empty-state');
+    expect(state).toHaveAttribute('data-title', 'No incidents');
+    expect(state).toHaveAttribute('data-hint', 'Nothing has been reported.');
+    expect(screen.queryByTestId('card')).not.toBeInTheDocument();
+  });
+
+  it('keeps the action button when embedded', async () => {
+    const { EmptyState } = await import('./EmptyState');
+    const { AdminEmbed } = await import('./AdminEmbedContext');
+    const onAction = vi.fn();
+    render(
+      <AdminEmbed>
+        <EmptyState title="Empty" actionLabel="Add" onAction={onAction} />
+      </AdminEmbed>,
+    );
+    fireEvent.click(screen.getByTestId('action-button'));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not use the broker empty state outside the embed', async () => {
+    const { EmptyState } = await import('./EmptyState');
+    render(<EmptyState title="Plain" />);
+    expect(screen.queryByTestId('broker-empty-state')).not.toBeInTheDocument();
+    expect(screen.getByTestId('card')).toBeInTheDocument();
   });
 });

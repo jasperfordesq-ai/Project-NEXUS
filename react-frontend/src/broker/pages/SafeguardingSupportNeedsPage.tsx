@@ -10,21 +10,28 @@
  * told us they would like extra support, and their answers can change what
  * they can do on the platform. Until October 2026 this was the third tab of a
  * single Safeguarding page, and brokers said it was too hidden.
+ *
+ * Member names open the panel-wide member window (`?member=<id>`, see
+ * BrokerMemberWindow) rather than a modal of this page's own, so a member
+ * opened here looks and behaves exactly as one opened from any other broker
+ * page. A change made in that window (approve, suspend, edit) fires the
+ * platform's write event, which the embedded panel listens to, so the list
+ * below refreshes on its own — see AdminEmbedAutoRefresh.
  */
 
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import { MemberSupportNeedsPanel } from '@/admin/modules/safeguarding/MemberSupportNeedsPanel';
 import { SafeguardingHelp } from '@/admin/modules/safeguarding/SafeguardingHelp';
-import MemberDetailModal from '@/broker/components/MemberDetailModal';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { useMemberWindow } from '@/broker/BrokerMemberWindow';
 import { BrokerPageShell } from '../components';
 
 export default function SafeguardingSupportNeedsPage() {
   const { t } = useTranslation('broker');
   usePageTitle(t('safeguarding.support_needs_title'));
-  const [memberId, setMemberId] = useState<number | null>(null);
+  const { open: openMember } = useMemberWindow();
 
   return (
     <BrokerPageShell
@@ -35,10 +42,11 @@ export default function SafeguardingSupportNeedsPage() {
       color="danger"
     >
       <div className="space-y-6">
-        <MemberSupportNeedsPanel onOpenMember={setMemberId} />
+        <AdminEmbed>
+          <MemberSupportNeedsPanel onOpenMember={openMember} />
+        </AdminEmbed>
         <SafeguardingHelp />
       </div>
-      <MemberDetailModal userId={memberId} onClose={() => setMemberId(null)} onChanged={() => undefined} />
     </BrokerPageShell>
   );
 }

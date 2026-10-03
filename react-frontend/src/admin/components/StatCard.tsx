@@ -13,6 +13,10 @@
  * card's full width. The previous single-row layout left ~110px for the label
  * in a five-up grid, which broke words in half ("Pendin/g Review") and put the
  * big numbers at different heights across one row.
+ *
+ * Inside an AdminEmbed (the broker panel) the card hands over to
+ * BrokerStatCard, so an embedded admin module's tiles look like every other
+ * broker tile (count-up, same palette). The admin panel is unaffected.
  */
 
 
@@ -27,6 +31,8 @@ import { Card, CardBody } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { BrokerStatCard, type BrokerStatColor } from '@/broker/components/BrokerStatCard';
+import { useAdminEmbed } from './AdminEmbedContext';
 
 interface StatCardProps {
   label?: string;
@@ -43,6 +49,18 @@ interface StatCardProps {
   /** Accessible hint shown to screen readers when the card is a link. */
   linkAriaLabel?: string;
 }
+
+type StatColor = NonNullable<StatCardProps['color']>;
+
+/** Admin colour → broker palette (BrokerStatCard has no primary/secondary/default). */
+const brokerColor: Record<StatColor, BrokerStatColor> = {
+  primary: 'accent',
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
+  secondary: 'neutral',
+  default: 'neutral',
+};
 
 const colorMap = {
   primary: 'text-accent bg-accent/10',
@@ -67,7 +85,26 @@ export function StatCard({
   linkAriaLabel,
 }: StatCardProps) {
   const { t } = useTranslation('admin_nav');
+  const { embedded } = useAdminEmbed();
   const resolvedLabel = label ?? title ?? '';
+
+  if (embedded) {
+    return (
+      <BrokerStatCard
+        label={resolvedLabel}
+        value={value}
+        icon={Icon}
+        color={brokerColor[color]}
+        loading={loading}
+        to={to}
+        linkAriaLabel={linkAriaLabel}
+        description={description}
+        delta={trend}
+        deltaLabel={trendLabel}
+      />
+    );
+  }
+
   // Lucide icons are React.forwardRef objects (typeof === 'object'), not functions.
   // Discriminate via isValidElement: pre-rendered JSX passes through; component
   // references get instantiated with size={24}.

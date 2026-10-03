@@ -106,5 +106,40 @@ describe('PageHeader', () => {
       );
       expect(container).toBeEmptyDOMElement();
     });
+
+    // The broker page shell hands the embed an element inside its own page
+    // header; the module's buttons belong there, not in a toolbar card of
+    // their own in the content area.
+    it('moves the actions into the host page header when the embed provides one', () => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      try {
+        const { container } = render(
+          <AdminEmbed actionsHost={host}>
+            <PageHeader title="Safeguarding" description="Admin copy" actions={<button>Refresh</button>} />
+          </AdminEmbed>,
+        );
+        const button = screen.getByRole('button', { name: 'Refresh' });
+        expect(host.contains(button)).toBe(true);
+        expect(container).toBeEmptyDOMElement();
+      } finally {
+        host.remove();
+      }
+    });
+
+    it('renders nothing into the host when embedded without actions', () => {
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      try {
+        render(
+          <AdminEmbed actionsHost={host}>
+            <PageHeader title="Safeguarding" description="Admin copy" />
+          </AdminEmbed>,
+        );
+        expect(host).toBeEmptyDOMElement();
+      } finally {
+        host.remove();
+      }
+    });
   });
 });

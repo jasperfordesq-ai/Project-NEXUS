@@ -223,6 +223,7 @@
     "no_inactive_members_found": "Keine inaktiven Mitglieder gefunden",
     "no_inactive_members_run_detection": "Keine inaktiven Mitglieder gefunden. Führen Sie eine Erkennung aus, um sie zu identifizieren.",
     "no_items_in_queue": "Keine Artikel in der Warteschlange",
+    "no_items_in_queue_hint": "Nichts wartet auf Prüfung. Neue Einträge erscheinen hier, sobald Mitglieder etwas veröffentlichen.",
     "no_registration_data": "Keine Registrierungsdaten",
     "no_retention_data": "Keine Aufbewahrungsdaten",
     "not_yet": "Noch nicht",

@@ -27,6 +27,8 @@ import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { EmptyState } from '../../components/EmptyState';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '../../components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -114,6 +116,7 @@ interface VolunteerSafeguardingProps {
 export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguardingProps = {}) {
   const { t } = useTranslation('admin_volunteering');
   usePageTitle(t('volunteering.safeguarding_page_title'));
+  const { embedded } = useAdminEmbed();
   const toast = useToast();
 
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -137,8 +140,10 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
 
   // ── Data loading ───────────────────────────────────────────────────────────
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  // `quiet` keeps the current rows on screen while fresh ones load — used by
+  // the broker panel's auto-refresh so the table never flashes empty.
+  const loadData = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const res = await adminVolunteering.getIncidents();
       if (res.success && res.data) {
@@ -308,6 +313,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
 
   return (
     <div className="space-y-6">
+      <AdminEmbedAutoRefresh reload={() => void loadData(true)} />
       <PageHeader
         title={t('volunteering.safeguarding_title')}
         description={t('volunteering.safeguarding_desc')}
@@ -315,7 +321,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
           <Button
             variant="tertiary"
             startContent={<RefreshCw size={16} />}
-            onPress={loadData}
+            onPress={() => void loadData()}
             isLoading={loading}
           >
             {t('volunteering.refresh')}
@@ -355,15 +361,17 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
         />
       </div>
 
-      {/* Incidents Table */}
-      {!loading && incidents.length === 0 ? (
+      {/* Incidents Table — embedded, the first load is a shaped skeleton */}
+      {embedded && loading && incidents.length === 0 ? (
+        <BrokerSkeleton variant="table" />
+      ) : !loading && incidents.length === 0 ? (
         <EmptyState
           icon={ShieldAlert}
           title={t('volunteering.no_incidents')}
           description={t('volunteering.no_incidents_desc')}
         />
       ) : (
-        <DataTable columns={columns} data={incidents} isLoading={loading} onRefresh={loadData} />
+        <DataTable columns={columns} data={incidents} isLoading={loading && !embedded} onRefresh={() => void loadData()} />
       )}
 
       {/* DLP Assignments Section */}

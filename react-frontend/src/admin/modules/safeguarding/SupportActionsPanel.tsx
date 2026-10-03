@@ -26,6 +26,9 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { ModerationCards, useModerationCards } from '@/admin/components/ModerationCards';
+import { AdminEmbedActions, AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
+import { BrokerEmptyState } from '@/broker/components/BrokerEmptyState';
 import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import {
   ATTEST_CHANNELS,
@@ -46,6 +49,7 @@ const SUPPORT_ACTION_EXPIRY_DAYS = 14;
 export function SupportActionsPanel() {
   const { t } = useTranslation('admin_safeguarding');
   const toast = useToast();
+  const { embedded } = useAdminEmbed();
 
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -71,8 +75,10 @@ export function SupportActionsPanel() {
   const [revokeAuthorityTarget, setRevokeAuthorityTarget] = useState<AuthorityAttestation | null>(null);
   const [revokeAuthorityReason, setRevokeAuthorityReason] = useState<RevocationReason>('authority_ended');
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // `quiet` keeps the current rows on screen while fresh ones load — used by
+  // the broker panel's auto-refresh so the lists never flash.
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const [supportRes, authorityRes] = await Promise.all([
         api.get<{ actions: SupportActionRow[] }>('/v2/admin/safeguarding/support-actions'),
@@ -182,6 +188,7 @@ export function SupportActionsPanel() {
   }, [revokeAuthorityTarget, revokeAuthorityReason, revokeAuthorityModal, load, toast, t]);
 
   if (loading) {
+    if (embedded) return <BrokerSkeleton variant="table" count={4} />;
     return (
       <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-10">
         <Spinner size="lg" />
@@ -286,13 +293,32 @@ export function SupportActionsPanel() {
     </TableCell>,
   ];
 
+  const refreshButton = (
+    <Button variant="secondary" size="sm" startContent={<RefreshCw size={16} />} onPress={() => void load()}>
+      {t('safeguarding.refresh')}
+    </Button>
+  );
+
+  // Embedded, "nothing waiting" reads as the all-clear it is; the admin panel
+  // keeps its one-line table placeholder.
+  const nonePending = embedded ? (
+    <BrokerEmptyState
+      bare
+      icon={ClipboardCheck}
+      color="success"
+      title={t('safeguarding.support.none_pending')}
+      hint={t('safeguarding.support.none_pending_hint')}
+    />
+  ) : (
+    t('safeguarding.support.none_pending')
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button variant="secondary" size="sm" startContent={<RefreshCw size={16} />} onPress={() => void load()}>
-          {t('safeguarding.refresh')}
-        </Button>
-      </div>
+      <AdminEmbedAutoRefresh reload={() => void load(true)} />
+      {/* In the broker panel the Refresh button sits in the page header
+          beside the title; here it is the only thing in the row. */}
+      <AdminEmbedActions fallback={<div className="flex justify-end">{refreshButton}</div>}>{refreshButton}</AdminEmbedActions>
 
       {failed && (
         <div role="alert" className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
@@ -343,14 +369,14 @@ export function SupportActionsPanel() {
               items={supportActions}
               getKey={(action) => action.id}
               renderCells={renderSupportCells}
-              emptyContent={t('safeguarding.support.none_pending')}
+              emptyContent={nonePending}
             />
           ) : (
             <Table aria-label={t('safeguarding.support.title')} removeWrapper>
               <TableHeader>
                 {supportColumns.map((col) => <TableColumn key={col.key}>{col.label}</TableColumn>)}
               </TableHeader>
-              <TableBody emptyContent={t('safeguarding.support.none_pending')}>
+              <TableBody emptyContent={nonePending}>
                 {supportActions.map((action) => <TableRow key={action.id}>{renderSupportCells(action)}</TableRow>)}
               </TableBody>
             </Table>

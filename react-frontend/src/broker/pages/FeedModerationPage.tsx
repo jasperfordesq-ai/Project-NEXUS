@@ -18,23 +18,28 @@ import MessageSquare from 'lucide-react/icons/message-square';
 import { usePageTitle } from '@/hooks';
 import FeedModeration from '@/admin/modules/moderation/FeedModeration';
 import { BrokerPageShell } from '../components';
-import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 export default function FeedModerationPage() {
   const { t } = useTranslation('broker');
   // The embedded admin module sets its own title too; React runs a child's
   // effects before its parent's, so this wrapper's title wins the browser tab.
   usePageTitle(t('moderation_feed.title'));
+  // The embedded module's own action buttons (Refresh, Settings…) render
+  // into the broker page header, so the content area starts with the
+  // content — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <BrokerPageShell
+      actions={actionsSlot}
       help={{ sectionId: 'broker_moderation', articleId: 'broker_feed_posts' }}
       title={t('moderation_feed.title')}
       description={t('moderation_feed.description')}
       icon={MessageSquare}
       color="accent"
     >
-      <AdminEmbed>
+      <AdminEmbed actionsHost={actionsHost}>
         <FeedModeration />
       </AdminEmbed>
     </BrokerPageShell>

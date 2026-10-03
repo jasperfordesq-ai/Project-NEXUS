@@ -223,6 +223,7 @@
     "no_inactive_members_found": "No inactive members found",
     "no_inactive_members_run_detection": "No inactive members found. Run detection to identify them.",
     "no_items_in_queue": "No items in queue",
+    "no_items_in_queue_hint": "Nothing is waiting for review. New items appear here as members post.",
     "no_registration_data": "No registration data",
     "no_retention_data": "No retention data",
     "not_yet": "Not Yet",

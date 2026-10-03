@@ -30,6 +30,8 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import {
   PROTECTION_KEYS,
   SafeguardingFilterBar,
@@ -40,7 +42,12 @@ import {
 type ShowFilter = 'unseen' | 'all';
 
 interface MemberSupportNeedsPanelProps {
-  /** Open the member's record (the broker panel's member modal). */
+  /**
+   * Open the member's record. The broker panel passes its panel-wide member
+   * window (`useMemberWindow().open`), so names behave like every other
+   * member name in that panel; the admin panel passes nothing and names stay
+   * plain text.
+   */
   onOpenMember?: (userId: number) => void;
 }
 
@@ -56,6 +63,7 @@ function sortEntries(a: MemberSupportNeed, b: MemberSupportNeed): number {
 export function MemberSupportNeedsPanel({ onOpenMember }: MemberSupportNeedsPanelProps) {
   const { t } = useTranslation('admin_safeguarding');
   const toast = useToast();
+  const { embedded } = useAdminEmbed();
   const [searchParams, setSearchParams] = useSearchParams();
   const show: ShowFilter = searchParams.get('show') === 'all' ? 'all' : 'unseen';
   // Safeguarding alerts about one member link here with ?user=<id>; show
@@ -69,8 +77,11 @@ export function MemberSupportNeedsPanel({ onOpenMember }: MemberSupportNeedsPane
   const [search, setSearch] = useState('');
   const [markingId, setMarkingId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // `quiet` keeps the current list on screen while a fresh one loads — used
+  // by the broker panel's auto-refresh (after a change in the member window,
+  // after "Mark as seen", on tab focus) so the list never flashes.
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const res = await api.get<MemberSupportNeed[]>('/v2/admin/safeguarding/member-preferences');
       if (res.success) {
@@ -182,10 +193,15 @@ export function MemberSupportNeedsPanel({ onOpenMember }: MemberSupportNeedsPane
         </div>
       </CardHeader>
       <CardBody>
+        <AdminEmbedAutoRefresh reload={() => void load(true)} />
         {loading ? (
-          <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-10">
-            <Spinner size="lg" />
-          </div>
+          embedded ? (
+            <BrokerSkeleton variant="table" count={4} />
+          ) : (
+            <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-10">
+              <Spinner size="lg" />
+            </div>
+          )
         ) : failed ? (
           <div role="alert" className="py-8 text-center text-danger">
             <Shield size={40} className="mx-auto mb-2 opacity-40" aria-hidden="true" />
@@ -235,7 +251,7 @@ export function MemberSupportNeedsPanel({ onOpenMember }: MemberSupportNeedsPane
                         {onOpenMember ? (
                           <button
                             type="button"
-                            className="text-left font-semibold text-accent hover:underline focus-visible:underline"
+                            className="inline max-w-full truncate text-left font-semibold text-accent underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                             onClick={() => onOpenMember(entry.user_id)}
                           >
                             {entry.user_name}

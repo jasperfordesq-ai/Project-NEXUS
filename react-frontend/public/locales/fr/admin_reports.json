@@ -223,6 +223,7 @@
     "no_inactive_members_found": "Aucun membre inactif trouvé",
     "no_inactive_members_run_detection": "Aucun membre inactif trouvé. Exécutez la détection pour les identifier.",
     "no_items_in_queue": "Aucun élément dans la file d'attente",
+    "no_items_in_queue_hint": "Rien n'attend de vérification. Les nouveaux éléments apparaîtront ici au fur et à mesure des publications des membres.",
     "no_registration_data": "Aucune donnée d'enregistrement",
     "no_retention_data": "Aucune donnée de conservation",
     "not_yet": "Pas encore",

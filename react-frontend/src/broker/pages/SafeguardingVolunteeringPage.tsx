@@ -16,22 +16,27 @@ import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import { VolunteerSafeguarding } from '@/admin/modules/volunteering/VolunteerSafeguarding';
-import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 import { BrokerPageShell } from '../components';
 
 export default function SafeguardingVolunteeringPage() {
   const { t } = useTranslation('broker');
   usePageTitle(t('safeguarding.volunteering_incidents_title'));
+  // The embedded module's own action buttons (Refresh, Settings…) render
+  // into the broker page header, so the content area starts with the
+  // content — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <BrokerPageShell
+      actions={actionsSlot}
       help={{ sectionId: 'broker_safeguarding', articleId: 'broker_safeguarding_page' }}
       title={t('safeguarding.volunteering_incidents_title')}
       description={t('safeguarding.volunteering_incidents_description')}
       icon={HandHeart}
       color="danger"
     >
-      <AdminEmbed>
+      <AdminEmbed actionsHost={actionsHost}>
         <VolunteerSafeguarding canAssignDlp={false} />
       </AdminEmbed>
     </BrokerPageShell>

@@ -223,6 +223,7 @@
     "no_inactive_members_found": "Geen inactieve leden gevonden",
     "no_inactive_members_run_detection": "Geen inactieve leden gevonden. Voer detectie uit om ze te identificeren.",
     "no_items_in_queue": "Geen items in de wachtrij",
+    "no_items_in_queue_hint": "Er wacht niets op beoordeling. Nieuwe items verschijnen hier zodra leden iets plaatsen.",
     "no_registration_data": "Geen registratiegegevens",
     "no_retention_data": "Geen bewaargegevens",
     "not_yet": "Nog niet",

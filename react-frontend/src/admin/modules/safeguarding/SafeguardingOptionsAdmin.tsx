@@ -15,6 +15,9 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { PageHeader } from '../../components/PageHeader';
+import { AdminEmbedAutoRefresh, useAdminEmbed } from '../../components/AdminEmbedContext';
+import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
+import { BrokerEmptyState } from '@/broker/components/BrokerEmptyState';
 import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -114,6 +117,7 @@ const PRESET_I18N_KEYS: Record<string, string> = {
 export function SafeguardingOptionsAdmin() {
   const { t } = useTranslation('admin_safeguarding');
   usePageTitle(t('safeguarding.options_page_title'));
+  const { embedded } = useAdminEmbed();
   const toast = useToast();
 
   const [options, setOptions] = useState<SafeguardingOption[]>([]);
@@ -128,9 +132,11 @@ export function SafeguardingOptionsAdmin() {
 
   // ── Fetch options ────────────────────────────────────────────────────────
 
-  const fetchOptions = useCallback(async () => {
+  // `quiet` keeps the current list on screen while a fresh one loads — used
+  // by the broker panel's auto-refresh so the page never flashes.
+  const fetchOptions = useCallback(async (quiet = false) => {
     try {
-      setLoading(true);
+      if (!quiet) setLoading(true);
       const res = await api.get<SafeguardingOption[]>('/v2/admin/safeguarding/options');
       if (res.success && res.data) {
         setOptions(Array.isArray(res.data) ? res.data : []);
@@ -267,6 +273,7 @@ export function SafeguardingOptionsAdmin() {
   // ── Loading state ────────────────────────────────────────────────────────
 
   if (loading) {
+    if (embedded) return <BrokerSkeleton variant="cards" count={3} />;
     return (
       <div className="flex items-center justify-center py-20">
         <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner size="lg" /></div>
@@ -279,6 +286,7 @@ export function SafeguardingOptionsAdmin() {
 
   return (
     <div>
+      <AdminEmbedAutoRefresh reload={() => void fetchOptions(true)} />
       <PageHeader
         title={t('safeguarding.safeguarding_options')}
         description={t('safeguarding.safeguarding_options_desc')}
@@ -311,6 +319,13 @@ export function SafeguardingOptionsAdmin() {
                   />
                 ))}
               </div>
+            ) : embedded ? (
+              <BrokerEmptyState
+                bare
+                icon={Shield}
+                title={t('safeguarding.no_options_configured')}
+                hint={t('safeguarding.no_options_configured_desc')}
+              />
             ) : (
               <div className="text-center py-8 text-theme-muted">
                 <Shield className="w-10 h-10 mx-auto mb-2 opacity-40" />

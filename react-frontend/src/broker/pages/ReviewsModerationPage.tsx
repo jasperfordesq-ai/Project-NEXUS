@@ -14,23 +14,28 @@ import Star from 'lucide-react/icons/star';
 import { usePageTitle } from '@/hooks';
 import ReviewsModeration from '@/admin/modules/moderation/ReviewsModeration';
 import { BrokerPageShell } from '../components';
-import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 
 export default function ReviewsModerationPage() {
   const { t } = useTranslation('broker');
   // The embedded admin module sets its own title too; React runs a child's
   // effects before its parent's, so this wrapper's title wins the browser tab.
   usePageTitle(t('moderation_reviews.title'));
+  // The embedded module's own action buttons (Refresh, Settings…) render
+  // into the broker page header, so the content area starts with the
+  // content — see AdminEmbedContext.
+  const { actionsHost, actionsSlot } = useAdminEmbedActionsHost();
 
   return (
     <BrokerPageShell
+      actions={actionsSlot}
       help={{ sectionId: 'broker_moderation', articleId: 'broker_comments_reviews' }}
       title={t('moderation_reviews.title')}
       description={t('moderation_reviews.description')}
       icon={Star}
       color="warning"
     >
-      <AdminEmbed>
+      <AdminEmbed actionsHost={actionsHost}>
         <ReviewsModeration />
       </AdminEmbed>
     </BrokerPageShell>

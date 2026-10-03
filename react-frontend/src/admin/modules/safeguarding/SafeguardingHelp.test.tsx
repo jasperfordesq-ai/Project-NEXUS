@@ -5,20 +5,30 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
 vi.mock('@/contexts', () => createMockContexts());
 
-import { SafeguardingHelp } from './SafeguardingHelp';
+import { SafeguardingHelp, SAFEGUARDING_HELP_OPEN_KEY } from './SafeguardingHelp';
 
 // SafeguardingHelp is a static informational component — no API calls,
-// no loading states, no side effects. Tests verify structure and content.
+// no loading states. The whole guide sits behind one Disclosure that starts
+// closed; the content tests open it first.
+
+const TITLE = 'How safeguarding works here';
+
+async function renderOpen() {
+  render(<SafeguardingHelp />);
+  await userEvent.click(screen.getByRole('button', { name: new RegExp(TITLE) }));
+}
 
 describe('SafeguardingHelp', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it('renders without crashing', () => {
@@ -27,35 +37,57 @@ describe('SafeguardingHelp', () => {
     expect(document.querySelector('section')).toBeInTheDocument();
   });
 
-  it('renders the help panel card header title', () => {
+  it('shows the guide title as the one trigger, closed by default', () => {
     render(<SafeguardingHelp />);
-    // The h2 "How Safeguarding Works" (or i18n fallback key) is the top heading
-    const headings = screen.getAllByRole('heading');
-    expect(headings.length).toBeGreaterThan(0);
+    const trigger = screen.getByRole('button', { name: new RegExp(TITLE) });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    // The guide's body stays in the DOM (HeroUI renders it eagerly) but is
+    // hidden from readers and from the tab order while closed.
+    const body = screen.getByText('requires_broker_approval');
+    expect(body.closest('[hidden], [aria-hidden="true"]')).not.toBeNull();
   });
 
-  it('renders the accordion with multiple items', () => {
+  it('opens on request and remembers that it was left open', async () => {
+    await renderOpen();
+    expect(screen.getByRole('button', { name: new RegExp(TITLE) })).toHaveAttribute('aria-expanded', 'true');
+    expect(window.localStorage.getItem(SAFEGUARDING_HELP_OPEN_KEY)).toBe('1');
+  });
+
+  it('starts open when it was left open last time', () => {
+    window.localStorage.setItem(SAFEGUARDING_HELP_OPEN_KEY, '1');
     render(<SafeguardingHelp />);
-    // Accordion items render as buttons (collapsed) or expanded panels.
-    // There are 9 accordion items — each has an aria-label so they render buttons.
+    expect(screen.getByRole('button', { name: new RegExp(TITLE) })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('still renders, closed, when storage refuses (private browsing)', () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('denied');
+    });
+    try {
+      render(<SafeguardingHelp />);
+      expect(screen.getByRole('button', { name: new RegExp(TITLE) })).toHaveAttribute('aria-expanded', 'false');
+    } finally {
+      getItem.mockRestore();
+    }
+  });
+
+  it('renders the accordion with multiple items once open', async () => {
+    await renderOpen();
+    // 9 accordion sections, each with a trigger button, plus the guide's own trigger.
     const buttons = screen.getAllByRole('button');
-    // We expect at least 7 accordion trigger buttons
-    expect(buttons.length).toBeGreaterThanOrEqual(7);
+    expect(buttons.length).toBeGreaterThanOrEqual(8);
   });
 
-  it('renders the trigger table header columns', () => {
-    render(<SafeguardingHelp />);
-    // The triggers section table has two columns — "Trigger key" and "Effect"
-    // Even if accordion items are collapsed the Table is declared in the DOM
-    // because HeroUI Accordion renders content eagerly.
-    // Just check some readable text in the document.
+  it('renders the trigger table header columns', async () => {
+    await renderOpen();
+    // The triggers section table has two columns — "Trigger key" and "Effect".
+    // HeroUI Accordion renders content eagerly, so the Table is in the DOM.
     const cells = document.querySelectorAll('th, [role="columnheader"]');
     expect(cells.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('renders all 6 trigger row codes in the table', () => {
-    render(<SafeguardingHelp />);
-    // The 6 trigger keys are rendered as <code> elements
+  it('renders all 6 trigger row codes in the table', async () => {
+    await renderOpen();
     const codes = document.querySelectorAll('code');
     const triggerCodes = Array.from(codes).filter((c) =>
       [
@@ -70,41 +102,36 @@ describe('SafeguardingHelp', () => {
     expect(triggerCodes.length).toBe(6);
   });
 
-  it('renders autonomy principle section code snippet', () => {
-    render(<SafeguardingHelp />);
-    // The autonomy accordion contains `action = 'safeguarding_consent_revoked'`
+  it('renders autonomy principle section code snippet', async () => {
+    await renderOpen();
     const allCodes = Array.from(document.querySelectorAll('code'));
-    const consentCode = allCodes.find((c) =>
-      c.textContent?.includes('safeguarding_consent_revoked')
-    );
+    const consentCode = allCodes.find((c) => c.textContent?.includes('safeguarding_consent_revoked'));
     expect(consentCode).toBeInTheDocument();
   });
 
-  it('renders MessageService::send code reference in vetting section', () => {
-    render(<SafeguardingHelp />);
+  it('renders MessageService::send code reference in vetting section', async () => {
+    await renderOpen();
     const allCodes = Array.from(document.querySelectorAll('code'));
     const msgCode = allCodes.find((c) => c.textContent?.includes('MessageService::send'));
     expect(msgCode).toBeInTheDocument();
   });
 
-  it('renders safeguarding:review-flags cron reference', () => {
-    render(<SafeguardingHelp />);
+  it('renders safeguarding:review-flags cron reference', async () => {
+    await renderOpen();
     const allCodes = Array.from(document.querySelectorAll('code'));
     const cronCode = allCodes.find((c) => c.textContent?.includes('safeguarding:review-flags'));
     expect(cronCode).toBeInTheDocument();
   });
 
-  it('renders activity_log code reference in audit section', () => {
-    render(<SafeguardingHelp />);
+  it('renders activity_log code reference in audit section', async () => {
+    await renderOpen();
     const allCodes = Array.from(document.querySelectorAll('code'));
     const logCode = allCodes.find((c) => c.textContent?.includes('activity_log'));
     expect(logCode).toBeInTheDocument();
   });
 
   it('does not trigger any API calls (pure static component)', () => {
-    // No api mock needed — just ensure no unhandled fetch errors
     render(<SafeguardingHelp />);
-    // If any fetch was made, vitest would throw on unmocked modules
     expect(document.querySelector('section')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,3 @@
-import { Card, CardBody, Button } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -6,12 +5,18 @@ import { Card, CardBody, Button } from '@/components/ui';
 
 /**
  * Empty State Component
- * Shown when a list or page has no data
+ * Shown when a list or page has no data.
+ *
+ * Inside an AdminEmbed (the broker panel) it hands over to BrokerEmptyState
+ * so embedded admin modules share the broker pages' empty-state look. The
+ * admin panel is unaffected.
  */
 
-
+import { Card, CardBody, Button } from '@/components/ui';
 import Inbox from 'lucide-react/icons/inbox';
 import type { LucideIcon } from 'lucide-react';
+import { BrokerEmptyState } from '@/broker/components/BrokerEmptyState';
+import { useAdminEmbed } from './AdminEmbedContext';
 
 interface EmptyStateProps {
   icon?: LucideIcon;
@@ -28,6 +33,23 @@ export function EmptyState({
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const { embedded } = useAdminEmbed();
+
+  if (embedded) {
+    return (
+      <BrokerEmptyState
+        icon={Icon}
+        title={title}
+        hint={description}
+        action={
+          actionLabel && onAction ? (
+            <Button onPress={onAction}>{actionLabel}</Button>
+          ) : undefined
+        }
+      />
+    );
+  }
+
   return (
     <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
       <CardBody className="flex flex-col items-center justify-center px-6 py-16 text-center">

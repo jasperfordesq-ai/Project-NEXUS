@@ -223,6 +223,7 @@
     "no_inactive_members_found": "非アクティブなメンバーは見つかりませんでした",
     "no_inactive_members_run_detection": "非アクティブなメンバーは見つかりませんでした。検出を実行してそれらを特定します。",
     "no_items_in_queue": "キューにアイテムがありません",
+    "no_items_in_queue_hint": "確認待ちの項目はありません。メンバーが投稿すると、新しい項目がここに表示されます。",
     "no_registration_data": "登録データがありません",
     "no_retention_data": "保持データなし",
     "not_yet": "まだ",

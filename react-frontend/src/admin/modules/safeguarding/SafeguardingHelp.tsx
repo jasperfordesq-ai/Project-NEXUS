@@ -4,11 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * SafeguardingHelp — collapsible guidance panel for the Safeguarding dashboard.
+ * SafeguardingHelp — collapsible guidance panel for the Safeguarding pages.
  *
- * Rendered at the foot of each broker safeguarding page. Focused on the member
- * protection flow — how members are flagged, what activates, the adult-autonomy
- * principle, and audit access.
+ * Rendered once at the foot of each broker safeguarding page. Focused on the
+ * member protection flow — how members are flagged, what activates, the
+ * adult-autonomy principle, and audit access.
+ *
+ * The whole nine-section guide sits behind one Disclosure, closed by default:
+ * a broker who has read it once should not scroll past it on every visit.
+ * Whether it was left open is remembered in localStorage (best effort —
+ * private browsing may refuse, and the panel then simply starts closed).
  *
  * Companion to BrokerControlsHelp, which covers the broader operational flow
  * under /broker. Keep the two synchronised if the underlying
@@ -16,7 +21,7 @@
  */
 
 
-import { Separator } from '@/components/ui';
+import { useState } from 'react';
 import BookOpen from 'lucide-react/icons/book-open';
 import Clock from 'lucide-react/icons/clock';
 import Eye from 'lucide-react/icons/eye';
@@ -29,10 +34,50 @@ import Users from 'lucide-react/icons/users';
 import Zap from 'lucide-react/icons/zap';
 import { useTranslation } from 'react-i18next';
 
-import { Accordion, AccordionItem, Card, CardBody, CardHeader, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/ui';
+import {
+  Accordion,
+  AccordionItem,
+  Chip,
+  Disclosure,
+  DisclosureBody,
+  DisclosureContent,
+  DisclosureHeading,
+  DisclosureIndicator,
+  DisclosureTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from '@/components/ui';
+
+/** localStorage key remembering whether the guide was left open. */
+export const SAFEGUARDING_HELP_OPEN_KEY = 'nexus.broker.safeguarding-help.open';
+
+function readRememberedOpen(): boolean {
+  try {
+    return window.localStorage.getItem(SAFEGUARDING_HELP_OPEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function rememberOpen(open: boolean): void {
+  try {
+    window.localStorage.setItem(SAFEGUARDING_HELP_OPEN_KEY, open ? '1' : '0');
+  } catch {
+    // Storage refused (private mode, quota) — the guide just starts closed next time.
+  }
+}
 
 export function SafeguardingHelp() {
   const { t } = useTranslation('admin_safeguarding');
+  const [isExpanded, setIsExpanded] = useState(readRememberedOpen);
+  const onExpandedChange = (open: boolean) => {
+    setIsExpanded(open);
+    rememberOpen(open);
+  };
   const triggerRows = [
     {
       key: 'requires_broker_approval',
@@ -62,22 +107,25 @@ export function SafeguardingHelp() {
 
   return (
     <section className="mt-10">
-      <Card  className="border border-border">
-        <CardHeader className="flex items-center gap-3 pb-2">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <BookOpen className="w-5 h-5 text-accent" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              {t('safeguarding.help.title')}
-            </h2>
-            <p className="text-xs text-muted">
-              {t('safeguarding.help.subtitle')}
-            </p>
-          </div>
-        </CardHeader>
-        <Separator />
-        <CardBody className="pt-4">
+      <Disclosure
+        isExpanded={isExpanded}
+        onExpandedChange={onExpandedChange}
+        className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]"
+      >
+        <DisclosureHeading>
+          <DisclosureTrigger className="flex w-full items-center gap-3 rounded-2xl p-4 text-left sm:p-5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+              <BookOpen size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-lg font-semibold text-foreground">{t('safeguarding.help.title')}</span>
+              <span className="block text-xs text-muted">{t('safeguarding.help.subtitle')}</span>
+            </span>
+            <DisclosureIndicator className="shrink-0 text-muted" />
+          </DisclosureTrigger>
+        </DisclosureHeading>
+        <DisclosureContent>
+          <DisclosureBody className="border-t border-divider/70 p-4 sm:p-5">
           <Accordion variant="splitted" selectionMode="multiple">
             {/* ─────────────────────────────────────────────────────────────── */}
             <AccordionItem
@@ -399,8 +447,9 @@ export function SafeguardingHelp() {
               </div>
             </AccordionItem>
           </Accordion>
-        </CardBody>
-      </Card>
+          </DisclosureBody>
+        </DisclosureContent>
+      </Disclosure>
     </section>
   );
 }
