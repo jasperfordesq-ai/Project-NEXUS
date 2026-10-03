@@ -126,10 +126,13 @@ class AdminVettingController extends BaseApiController
     /** PUT /v2/admin/vetting/policy */
     public function updatePolicy(): JsonResponse
     {
-        // F-546: the broker panel's Vetting page is the only screen that sets
-        // the jurisdiction, so brokers must be able to save it (owner decision,
-        // 2 Oct 2026). Coordinators stay out, as for every vetting decision.
-        $adminId = $this->requireVettingDecisionMaker();
+        // Only an admin chooses the community's safeguarding jurisdiction
+        // (owner decision, 3 Oct 2026, reversing F-546's 2 Oct widening).
+        // Brokers and coordinators read it on the broker Vetting page, marked
+        // "Admin only", and every broker page shows a notice while it is unset.
+        // AdminTier, so a broker with a stray admin flag is refused too — the
+        // screen uses the same rule (isAdminTierUser in lib/access.ts).
+        $adminId = $this->requireAdmin();
         if (($error = $this->rejectProhibitedInput(['jurisdiction'])) !== null) {
             return $error;
         }

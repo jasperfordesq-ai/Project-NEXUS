@@ -2042,6 +2042,22 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Admin-only settings follow AdminTier, the platform's one definition of
+     * an admin: a broker stays a broker even with a stray admin flag. The
+     * broker Configuration page marks the same settings Admin only for them,
+     * so screen and server agree (E-083).
+     */
+    public function test_broker_with_a_stray_admin_flag_cannot_save_admin_only_keys(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']);
+        DB::table('users')->where('id', $broker->id)->update(['is_admin' => 1]);
+        Sanctum::actingAs(User::find($broker->id));
+
+        $this->apiPost('/v2/admin/broker/configuration', ['broker_messaging_enabled' => false])
+            ->assertStatus(403);
+    }
+
     public function test_broker_can_save_operational_configuration_without_clobbering_admin_policy(): void
     {
         $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']);

@@ -40,13 +40,15 @@ export function hasAdminPanelAccess(user: UserLike): boolean {
 
 /**
  * Admin tier for broker-panel settings that only an admin may change (the
- * "Admin only" settings and the safeguarding jurisdiction). Matches the
- * server's admin-tier check in AdminBrokerController::saveConfiguration():
- * an admin flag counts whatever the role string says, unlike
- * hasAdminPanelAccess(), which keeps flagged brokers out of the admin panel.
+ * "Admin only" settings and the safeguarding jurisdiction). Mirrors the
+ * server's canonical App\Support\Authorization\AdminTier::allows(), which
+ * those endpoints use: a broker or coordinator is operational staff, never an
+ * admin, even with a stray admin flag. Screen and server must agree, or a
+ * control looks usable and its save is refused (F-547, O-176).
  */
 export function isAdminTierUser(user: UserLike): boolean {
   const role = userRole(user);
+  if (role === 'broker' || role === 'coordinator') return false;
   return (
     role === 'admin' ||
     role === 'tenant_admin' ||

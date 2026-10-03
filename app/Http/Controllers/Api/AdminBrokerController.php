@@ -1983,13 +1983,11 @@ class AdminBrokerController extends BaseApiController
             'insurance_enabled', 'enforce_insurance_on_exchanges',
             'require_exchange_for_listings',
         ];
-        $callerUser = $this->resolveUserObject();
-        $callerRole = (string) ($callerUser->role ?? 'member');
-        $isAdminTier = in_array($callerRole, ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || ($callerUser->is_admin ?? false)
-            || ($callerUser->is_super_admin ?? false)
-            || ($callerUser->is_tenant_super_admin ?? false)
-            || ($callerUser->is_god ?? false);
+        // AdminTier is the platform's one definition of an admin: a broker or
+        // coordinator stays operational staff even with a stray admin flag.
+        // The broker Configuration page locks the same settings by the same
+        // rule (isAdminTierUser in lib/access.ts), so screen and server agree.
+        $isAdminTier = AdminTier::allows($this->resolveUserObject());
 
         $config = [];
         $rejectedAdminOnly = [];

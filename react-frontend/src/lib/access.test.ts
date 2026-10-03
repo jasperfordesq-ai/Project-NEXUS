@@ -341,9 +341,14 @@ describe('isAdminTierUser', () => {
     expect(isAdminTierUser({ role: 'coordinator' })).toBe(false);
   });
 
-  it('counts an admin flag whatever the role string says, as the server does', () => {
-    expect(isAdminTierUser({ role: 'broker', is_admin: true })).toBe(true);
+  it('counts an admin flag on a member account', () => {
+    expect(isAdminTierUser({ role: 'member', is_admin: true })).toBe(true);
     expect(isAdminTierUser({ role: 'member', is_tenant_super_admin: true })).toBe(true);
+  });
+
+  it('keeps a broker or coordinator out even with a stray admin flag, as AdminTier does', () => {
+    expect(isAdminTierUser({ role: 'broker', is_admin: true })).toBe(false);
+    expect(isAdminTierUser({ role: 'coordinator', is_super_admin: true })).toBe(false);
   });
 
   it('requires the flag to be strictly true and is null safe', () => {
