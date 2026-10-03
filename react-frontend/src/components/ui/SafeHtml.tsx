@@ -30,6 +30,7 @@ export function SafeHtml({ content, className, as: Tag = 'div' }: SafeHtmlProps)
     return (
       <Tag
         className={className}
+        // nosemgrep: react-dangerouslysetinnerhtml — the value is DOMPurify output (sanitizeMemberRichText); code-scanning alerts 1386, 1773
         dangerouslySetInnerHTML={{ __html: sanitizeMemberRichText(content) }}
       />
     );

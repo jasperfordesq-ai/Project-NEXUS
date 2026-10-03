@@ -124,6 +124,7 @@ export function FeedContentRenderer({
       <div>
         <div
           className="feed-content text-sm text-[var(--text-secondary)] leading-relaxed"
+          // nosemgrep: react-dangerouslysetinnerhtml — `sanitized` is DOMPurify output (sanitizeMemberRichText); code-scanning alert 1294
           dangerouslySetInnerHTML={{ __html: sanitized }}
         />
         {truncated && detailPath && (
