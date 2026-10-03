@@ -137,7 +137,24 @@ if [ -n "$STAGED_APP_PHP" ]; then
     # Relative path deliberately: an absolute /var/www/... argument gets mangled
     # by MSYS path conversion when the hook runs under Git Bash on Windows.
     PUSH_OUT=$(docker exec nexus-php-app php mobile/scripts/audit-native-push-producers.php --check 2>&1)
-    if [ $? -ne 0 ]; then
+    PUSH_STATUS=$?
+    # The scan reads the WORKING TREE, so another session's uncommitted edit
+    # to some other app/ file made this block a commit that never touched it
+    # (3 Oct 2026). Block only when a stale file is part of THIS commit, or
+    # when the script cannot say which files are stale.
+    if [ $PUSH_STATUS -ne 0 ]; then
+      STALE_FILES=$(echo "$PUSH_OUT" | sed -n 's/^STALE_FILE //p')
+      if [ -n "$STALE_FILES" ]; then
+        STALE_AND_STAGED=$(echo "$STALE_FILES" | while read -r f; do echo "$STAGED_APP_PHP" | grep -qxF "$f" && echo "$f"; done)
+        if [ -z "$STALE_AND_STAGED" ]; then
+          echo "pre-commit: push producer inventory differs only for files NOT in this commit:" >&2
+          echo "$STALE_FILES" | sed 's/^/    /' >&2
+          echo "  (uncommitted edits elsewhere — whoever commits those must regenerate it). Not blocking." >&2
+          PUSH_STATUS=0
+        fi
+      fi
+    fi
+    if [ $PUSH_STATUS -ne 0 ]; then
       echo "" >&2
       echo "$PUSH_OUT" | tail -3 >&2
       echo "" >&2

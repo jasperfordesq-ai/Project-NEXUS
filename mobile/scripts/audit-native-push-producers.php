@@ -131,6 +131,12 @@ if (in_array('--check', $argv, true)) {
     $existing = is_file($output) ? file_get_contents($output) : false;
     if ($existing !== $json) {
         fwrite(STDERR, "Native push producer inventory is stale. Run the script with --write.\n");
+        // One line per source file whose entries differ, so the pre-commit hook
+        // can tell drift in a file being committed from another session's
+        // uncommitted edit elsewhere in the working tree.
+        foreach (staleFiles($existing === false ? null : $existing, $rows) as $staleFile) {
+            fwrite(STDERR, 'STALE_FILE ' . $staleFile . "\n");
+        }
         exit(1);
     }
     fwrite(STDOUT, 'Native push producer inventory is current: ' . count($rows) . " calls.\n");
@@ -138,6 +144,38 @@ if (in_array('--check', $argv, true)) {
 }
 
 fwrite(STDOUT, $json);
+
+/**
+ * Source files whose inventory rows differ between the committed inventory and
+ * a fresh scan. An unreadable or old-format inventory makes every file stale.
+ *
+ * @param list<array<string, mixed>> $rows
+ * @return list<string>
+ */
+function staleFiles(?string $existing, array $rows): array
+{
+    $byFile = static function (array $producers): array {
+        $grouped = [];
+        foreach ($producers as $row) {
+            $grouped[(string) ($row['file'] ?? '')][] = $row;
+        }
+        return $grouped;
+    };
+
+    $decoded = $existing === null ? null : json_decode($existing, true);
+    $old = $byFile(is_array($decoded) && is_array($decoded['producers'] ?? null) ? $decoded['producers'] : []);
+    $new = $byFile($rows);
+
+    $stale = [];
+    foreach (array_unique([...array_keys($old), ...array_keys($new)]) as $file) {
+        if (($old[$file] ?? []) != ($new[$file] ?? [])) {
+            $stale[] = $file;
+        }
+    }
+    sort($stale);
+
+    return $stale;
+}
 
 function arrayValue(?Node $node, string $key): ?Node
 {
