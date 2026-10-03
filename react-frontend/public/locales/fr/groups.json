@@ -453,6 +453,8 @@
     "upload_title": "Télécharger le fichier",
     "upload_btn": "Télécharger",
     "upload_error": "Échec du téléchargement du fichier",
+    "upload_pdf_active_content": "Ce PDF contient des scripts ou d’autres contenus interactifs et ne peut donc pas être téléversé. Imprimez-le ou exportez-le dans un nouveau PDF, puis réessayez.",
+    "upload_pdf_not_inspectable": "La sécurité de ce PDF n’a pas pu être vérifiée (il est peut-être protégé par mot de passe ou endommagé) ; il ne peut donc pas être téléversé. Enregistrez une copie non protégée dans un nouveau PDF, puis réessayez.",
     "download_aria": "Télécharger {{name}}",
     "download_error": "Échec du téléchargement du fichier",
     "delete_success": "Fichier supprimé",

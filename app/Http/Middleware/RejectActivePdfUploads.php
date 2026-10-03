@@ -31,11 +31,21 @@ use Symfony\Component\HttpFoundation\Response;
  * named *.pdf, or when the PDF header appears in its first kilobyte (viewers
  * accept a header anywhere in that range, so a renamed file is still a PDF to
  * them).
+ *
+ * The check runs before any sign-in check (most upload routes authenticate
+ * inside the controller), so its cost is capped: REQUEST_TIME_BUDGET seconds
+ * across every file in the request, on top of the inspector's own per-file
+ * budget. A file not checked in time is refused as uninspectable.
  */
 final class RejectActivePdfUploads
 {
+    /** Seconds of inspection one request may cause, across all its files. */
+    public const REQUEST_TIME_BUDGET = 3.0;
+
     public function handle(Request $request, Closure $next): Response
     {
+        $deadline = microtime(true) + self::REQUEST_TIME_BUDGET;
+
         foreach ($this->uploadedFiles($request->allFiles()) as $field => $file) {
             if (! $this->looksLikePdf($file)) {
                 continue;
@@ -43,7 +53,7 @@ final class RejectActivePdfUploads
 
             $path = $file->getRealPath();
             $verdict = is_string($path) && $path !== ''
-                ? PdfActiveContentInspector::inspectFile($path)
+                ? PdfActiveContentInspector::inspectFile($path, $deadline)
                 : PdfActiveContentInspector::UNINSPECTABLE;
 
             if ($verdict === PdfActiveContentInspector::CLEAN) {

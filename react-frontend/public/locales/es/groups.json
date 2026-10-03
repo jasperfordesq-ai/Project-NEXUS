@@ -453,6 +453,8 @@
     "upload_title": "Subir archivo",
     "upload_btn": "Subir",
     "upload_error": "Error al subir el archivo",
+    "upload_pdf_active_content": "Este PDF contiene scripts u otro contenido interactivo, por lo que no se puede subir. Imprímalo o expórtelo a un PDF nuevo e inténtelo de nuevo.",
+    "upload_pdf_not_inspectable": "No se ha podido comprobar la seguridad de este PDF (puede estar protegido con contraseña o dañado), por lo que no se puede subir. Guarde una copia sin protección como un PDF nuevo e inténtelo de nuevo.",
     "download_aria": "Descargar {{name}}",
     "download_error": "Error al descargar el archivo",
     "delete_success": "Archivo eliminado",

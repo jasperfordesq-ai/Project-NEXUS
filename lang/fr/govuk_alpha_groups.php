@@ -144,6 +144,8 @@ return [
         'file-upload-failed' => 'Le fichier n\'a pas pu être téléversé. Veuillez réessayer.',
         'file-too-large' => 'Le fichier dépasse la limite de 25 Mo. Choisissez un fichier plus petit.',
         'file-type-invalid' => 'Ce type de fichier n\'est pas autorisé. Vérifiez les formats acceptés.',
+        'file-pdf-active'       => 'Ce PDF contient des scripts ou d’autres contenus interactifs et ne peut donc pas être téléversé. Imprimez-le ou exportez-le dans un nouveau PDF, puis réessayez.',
+        'file-pdf-unchecked'    => 'La sécurité de ce PDF n’a pas pu être vérifiée (il est peut-être protégé par mot de passe ou endommagé) ; il ne peut donc pas être téléversé. Enregistrez une copie non protégée dans un nouveau PDF, puis réessayez.',
         'file-missing' => 'Choisissez un fichier à téléverser.',
         'file-deleted' => 'Le fichier a été supprimé.',
         'file-delete-failed' => 'Le fichier n\'a pas pu être supprimé. Veuillez réessayer.',

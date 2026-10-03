@@ -144,6 +144,8 @@ return [
         'file-upload-failed' => 'Het bestand kon niet worden geüpload. Probeer het opnieuw.',
         'file-too-large' => 'Het bestand overschrijdt de limiet van 25 MB. Kies een kleiner bestand.',
         'file-type-invalid' => 'Dit bestandstype is niet toegestaan. Controleer de geaccepteerde formaten.',
+        'file-pdf-active'       => 'Deze pdf bevat scripts of andere interactieve inhoud en kan daarom niet worden geüpload. Druk hem af of exporteer hem naar een nieuwe pdf en probeer het opnieuw.',
+        'file-pdf-unchecked'    => 'Deze pdf kon niet op veiligheid worden gecontroleerd (mogelijk is hij met een wachtwoord beveiligd of beschadigd) en kan daarom niet worden geüpload. Sla een onbeveiligde kopie op als nieuwe pdf en probeer het opnieuw.',
         'file-missing' => 'Kies een bestand om te uploaden.',
         'file-deleted' => 'Het bestand is verwijderd.',
         'file-delete-failed' => 'Het bestand kon niet worden verwijderd. Probeer het opnieuw.',

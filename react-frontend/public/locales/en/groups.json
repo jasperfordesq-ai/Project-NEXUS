@@ -448,6 +448,8 @@
     "upload_title": "Upload File",
     "upload_btn": "Upload",
     "upload_error": "Failed to upload file",
+    "upload_pdf_active_content": "This PDF contains scripts or other interactive content, so it can’t be uploaded. Print or export it to a new PDF and try again.",
+    "upload_pdf_not_inspectable": "This PDF couldn’t be checked for safety (it may be password-protected or damaged), so it can’t be uploaded. Save an unprotected copy as a new PDF and try again.",
     "download_aria": "Download {{name}}",
     "download_error": "Failed to download file",
     "delete_success": "File deleted",

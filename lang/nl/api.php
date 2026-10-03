@@ -1911,7 +1911,7 @@ return [
     'group_files_upload_forbidden' => 'U heeft geen toestemming om groepsbestanden te uploaden',
     'group_file_size_exceeded' => 'Het bestand is te groot',
     'group_file_type_not_allowed' => 'Dit bestandstype is niet toegestaan',
-    'pdf_active_content_refused' => 'Deze pdf bevat scripts of andere interactieve inhoud en kan daarom niet worden geüpload. Druk of exporteer hem naar een nieuwe pdf en probeer het opnieuw.',
+    'pdf_active_content_refused' => 'Deze pdf bevat scripts of andere interactieve inhoud en kan daarom niet worden geüpload. Druk hem af of exporteer hem naar een nieuwe pdf en probeer het opnieuw.',
     'pdf_not_inspectable' => 'Deze pdf kon niet op veiligheid worden gecontroleerd (mogelijk is hij met een wachtwoord beveiligd of beschadigd) en kan daarom niet worden geüpload. Sla een onbeveiligde kopie op als nieuwe pdf en probeer het opnieuw.',
     'group_file_store_failed' => 'Kan bestand niet opslaan',
     'group_file_not_found' => 'Bestand niet gevonden',

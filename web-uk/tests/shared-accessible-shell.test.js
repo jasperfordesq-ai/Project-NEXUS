@@ -24058,6 +24058,30 @@ describe('shared accessible frontend shell', () => {
     expect(rejectedByBackend.status).toBe(302);
     expect(rejectedByBackend.headers.location).toBe('/acme/accessible/groups/42/files?status=file-type-invalid');
 
+    // F-551: a PDF refused for scripts, or because it could not be checked,
+    // gets its own explanation rather than the generic upload failure.
+    for (const [code, status] of [
+      ['PDF_ACTIVE_CONTENT', 'file-pdf-active'],
+      ['PDF_NOT_INSPECTABLE', 'file-pdf-unchecked']
+    ]) {
+      api.uploadGroupFile.mockRejectedValueOnce(new api.ApiError('Refused PDF', 422, {
+        success: false,
+        code,
+        errors: [{ code, message: 'Refused PDF', field: 'file' }]
+      }));
+      const refusedPdf = await agent
+        .post('/acme/accessible/groups/42/files')
+        .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+        .field('_csrf', csrfMatch[1])
+        .attach('file', Buffer.from('%PDF-1.7 refused', 'utf8'), {
+          filename: 'minutes.pdf',
+          contentType: 'application/pdf'
+        });
+
+      expect(refusedPdf.status).toBe(302);
+      expect(refusedPdf.headers.location).toBe(`/acme/accessible/groups/42/files?status=${status}`);
+    }
+
     api.uploadGroupFile.mockResolvedValueOnce({ data: { id: 99 } });
     const acceptedSize = 10 * 1024 * 1024 + 1024;
     const accepted = await agent
@@ -24094,7 +24118,8 @@ describe('shared accessible frontend shell', () => {
 
     expect(oversized.status).toBe(302);
     expect(oversized.headers.location).toBe('/acme/accessible/groups/42/files?status=file-too-large');
-    expect(api.uploadGroupFile).toHaveBeenCalledTimes(2);
+    // Backend-rejected spoof, the two refused PDFs (F-551) and the accepted handbook; the oversized file never reaches the API.
+    expect(api.uploadGroupFile).toHaveBeenCalledTimes(4);
   });
 
   it('submits Laravel jobs action aliases and redirects signed-out visitors', async () => {

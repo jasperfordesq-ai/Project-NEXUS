@@ -448,6 +448,8 @@
     "upload_title": "Datei hochladen",
     "upload_btn": "Hochladen",
     "upload_error": "Datei konnte nicht hochgeladen werden",
+    "upload_pdf_active_content": "Diese PDF-Datei enthält Skripte oder andere interaktive Inhalte und kann daher nicht hochgeladen werden. Drucken oder exportieren Sie sie als neue PDF-Datei und versuchen Sie es erneut.",
+    "upload_pdf_not_inspectable": "Diese PDF-Datei konnte nicht auf Sicherheit geprüft werden (sie ist möglicherweise passwortgeschützt oder beschädigt) und kann daher nicht hochgeladen werden. Speichern Sie eine ungeschützte Kopie als neue PDF-Datei und versuchen Sie es erneut.",
     "download_aria": "Herunterladen {{name}}",
     "download_error": "Datei konnte nicht heruntergeladen werden",
     "delete_success": "Datei gelöscht",

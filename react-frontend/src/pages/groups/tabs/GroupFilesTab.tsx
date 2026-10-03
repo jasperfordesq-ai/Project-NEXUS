@@ -226,7 +226,13 @@ export function GroupFilesTab({ groupId, isMember = true }: GroupFilesTabProps) 
     } catch (err) {
       if (err instanceof GroupApiError && err.isCancellation) return;
       logError('GroupFilesTab.upload', err);
-      toast.error(t('files.upload_error'));
+      // F-551: tell the member why a PDF was refused and what to do about it.
+      const sourceCode = err instanceof GroupApiError ? err.sourceCode : '';
+      toast.error(
+        sourceCode === 'PDF_ACTIVE_CONTENT' ? t('files.upload_pdf_active_content')
+          : sourceCode === 'PDF_NOT_INSPECTABLE' ? t('files.upload_pdf_not_inspectable')
+            : t('files.upload_error'),
+      );
     } finally {
       setUploading(false);
     }

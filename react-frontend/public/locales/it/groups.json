@@ -453,6 +453,8 @@
     "upload_title": "Carica file",
     "upload_btn": "Carica",
     "upload_error": "Caricamento file fallito",
+    "upload_pdf_active_content": "Questo PDF contiene script o altri contenuti interattivi, quindi non può essere caricato. Stampalo o esportalo in un nuovo PDF e riprova.",
+    "upload_pdf_not_inspectable": "Non è stato possibile verificare la sicurezza di questo PDF (potrebbe essere protetto da password o danneggiato), quindi non può essere caricato. Salva una copia non protetta come nuovo PDF e riprova.",
     "download_aria": "Scarica {{name}}",
     "download_error": "Download file fallito",
     "delete_success": "File eliminato",

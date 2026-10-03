@@ -144,6 +144,8 @@ return [
         'file-upload-failed' => 'Níorbh fhéidir an comhad a uaslódáil. Bain triail eile as.',
         'file-too-large' => 'Tá an comhad níos mó ná 25 MB. Roghnaigh comhad níos lú.',
         'file-type-invalid' => 'Ní ceadaítear an cineál comhaid sin. Seiceáil na formáidí inghlactha.',
+        'file-pdf-active'       => 'Tá scripteanna nó ábhar idirghníomhach eile sa PDF seo, mar sin ní féidir é a uaslódáil. Priontáil nó easpórtáil é chuig PDF nua agus bain triail eile as.',
+        'file-pdf-unchecked'    => 'Níorbh fhéidir sábháilteacht an PDF seo a sheiceáil (d’fhéadfadh sé a bheith cosanta le pasfhocal nó damáistithe), mar sin ní féidir é a uaslódáil. Sábháil cóip gan chosaint mar PDF nua agus bain triail eile as.',
         'file-missing' => 'Roghnaigh comhad le uaslódáil.',
         'file-deleted' => 'Scriosadh an comhad.',
         'file-delete-failed' => 'Níorbh fhéidir an comhad a scriosadh. Bain triail eile as.',

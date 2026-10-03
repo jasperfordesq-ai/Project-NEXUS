@@ -79,10 +79,12 @@ const GROUP_DISCUSSION_ERROR_MESSAGES = {
 const GROUP_FILE_SUCCESS_STATES = new Set(['file-uploaded', 'file-deleted']);
 const GROUP_FILE_ERROR_STATES = new Set([
   'file-upload-failed', 'file-too-large', 'file-type-invalid', 'file-missing',
+  'file-pdf-active', 'file-pdf-unchecked',
   'file-delete-failed', 'file-forbidden', 'file-not-found'
 ]);
 const GROUP_FILE_FIELD_ERROR_STATES = new Set([
-  'file-upload-failed', 'file-too-large', 'file-type-invalid', 'file-missing'
+  'file-upload-failed', 'file-too-large', 'file-type-invalid', 'file-missing',
+  'file-pdf-active', 'file-pdf-unchecked'
 ]);
 const GROUP_FILE_MAX_SIZE = 25 * 1024 * 1024;
 const GROUP_FILE_ALLOWED_MIME_TYPES = new Set([
@@ -593,6 +595,9 @@ function groupFileUploadErrorStatus(error) {
   if (code === 'FILE_TOO_LARGE') return 'file-too-large';
   if (code === 'INVALID_TYPE') return 'file-type-invalid';
   if (code === 'INVALID_FILE') return 'file-missing';
+  // F-551: a PDF refused for scripts, or because it could not be checked.
+  if (code === 'PDF_ACTIVE_CONTENT') return 'file-pdf-active';
+  if (code === 'PDF_NOT_INSPECTABLE') return 'file-pdf-unchecked';
 
   const message = trimmed(error.message).toLowerCase();
   if (message.includes('25 mb') || message.includes('25mb') || message.includes('too large') || message.includes('size')) {

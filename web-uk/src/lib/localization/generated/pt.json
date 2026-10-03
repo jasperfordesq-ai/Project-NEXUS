@@ -8497,6 +8497,8 @@
                 "file-upload-failed": "O ficheiro não pôde ser carregado. Por favor, tente novamente.",
                 "file-too-large": "O ficheiro excede o limite de 25 MB. Escolha um ficheiro mais pequeno.",
                 "file-type-invalid": "Este tipo de ficheiro não é permitido. Verifique os formatos aceites.",
+                "file-pdf-active": "Este PDF contém scripts ou outro conteúdo interativo, por isso não pode ser carregado. Imprima-o ou exporte-o para um novo PDF e tente novamente.",
+                "file-pdf-unchecked": "Não foi possível verificar a segurança deste PDF (pode estar protegido por palavra-passe ou danificado), por isso não pode ser carregado. Guarde uma cópia sem proteção como um novo PDF e tente novamente.",
                 "file-missing": "Escolha um ficheiro para carregar.",
                 "file-deleted": "O ficheiro foi eliminado.",
                 "file-delete-failed": "O ficheiro não pôde ser eliminado. Por favor, tente novamente.",

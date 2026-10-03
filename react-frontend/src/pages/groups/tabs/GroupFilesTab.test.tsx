@@ -309,6 +309,26 @@ describe('GroupFilesTab', () => {
     expect(mockToast.success).toHaveBeenCalled();
   });
 
+  it.each([
+    ['PDF_ACTIVE_CONTENT', 'This PDF contains scripts or other interactive content, so it can’t be uploaded. Print or export it to a new PDF and try again.'],
+    ['PDF_NOT_INSPECTABLE', 'This PDF couldn’t be checked for safety (it may be password-protected or damaged), so it can’t be uploaded. Save an unprotected copy as a new PDF and try again.'],
+    ['INVALID_TYPE', 'Failed to upload file'],
+  ])('explains a refused upload (%s) instead of a generic failure', async (code, expectedMessage) => {
+    mockApi.upload.mockResolvedValue({ success: false, error: 'refused', code });
+    const { GroupFilesTab } = await import('./GroupFilesTab');
+    render(<GroupFilesTab groupId={10} isAdmin={false} isMember={true} />);
+    await screen.findByTestId('empty-state');
+
+    fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
+      target: { files: [new File(['%PDF-1.7'], 'minutes.pdf', { type: 'application/pdf' })] },
+    });
+    await screen.findByRole('dialog');
+    await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expectedMessage));
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
   it('supports removing a selected file and cancelling the upload modal', async () => {
     const { GroupFilesTab } = await import('./GroupFilesTab');
     render(<GroupFilesTab groupId={10} isAdmin={false} isMember={true} />);

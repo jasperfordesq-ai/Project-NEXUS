@@ -111,6 +111,26 @@ final class F551ActivePdfUploadRefusedTest extends TestCase
         self::assertSame(200, $response->getStatusCode());
     }
 
+    public function test_one_request_cannot_buy_more_than_the_request_budget_of_inspection(): void
+    {
+        $body = (string) gzcompress('1 0 ' . str_repeat('/a', 15 * 1024 * 512), 9);
+        $flood = F551Pdf::build([
+            5 => ['<< /Type /ObjStm /N 1 /First 4 /Filter /FlateDecode /Length ' . strlen($body) . ' >>', $body],
+        ]);
+        $files = [];
+        for ($i = 0; $i < 5; ++$i) {
+            $files[] = UploadedFile::fake()->createWithContent("flood{$i}.pdf", $flood);
+        }
+        $request = Request::create('/api/v2/messages', 'POST', [], [], ['attachments' => $files]);
+
+        $started = microtime(true);
+        $response = (new RejectActivePdfUploads())->handle($request, static fn (): Response => response()->json(['passed' => true]));
+        $elapsed = microtime(true) - $started;
+
+        self::assertSame(422, $response->getStatusCode());
+        self::assertLessThan(RejectActivePdfUploads::REQUEST_TIME_BUDGET + 1.0, $elapsed, "took {$elapsed}s");
+    }
+
     public function test_group_file_service_refuses_it_without_the_middleware(): void
     {
         Storage::fake('local');

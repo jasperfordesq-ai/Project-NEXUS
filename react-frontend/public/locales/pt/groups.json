@@ -453,6 +453,8 @@
     "upload_title": "Carregar Arquivo",
     "upload_btn": "Carregar",
     "upload_error": "Falha ao carregar arquivo",
+    "upload_pdf_active_content": "Este PDF contém scripts ou outro conteúdo interativo, por isso não pode ser carregado. Imprima-o ou exporte-o para um novo PDF e tente novamente.",
+    "upload_pdf_not_inspectable": "Não foi possível verificar a segurança deste PDF (pode estar protegido por palavra-passe ou danificado), por isso não pode ser carregado. Guarde uma cópia sem proteção como um novo PDF e tente novamente.",
     "download_aria": "Transferir {{name}}",
     "download_error": "Falha ao transferir arquivo",
     "delete_success": "Arquivo eliminado",

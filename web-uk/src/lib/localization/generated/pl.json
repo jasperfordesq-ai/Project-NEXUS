@@ -8497,6 +8497,8 @@
                 "file-upload-failed": "Nie udało się przesłać pliku. Spróbuj ponownie.",
                 "file-too-large": "Plik przekracza limit 25 MB. Wybierz mniejszy plik.",
                 "file-type-invalid": "Ten typ pliku nie jest dozwolony. Sprawdź akceptowane formaty.",
+                "file-pdf-active": "Ten plik PDF zawiera skrypty lub inne treści interaktywne, dlatego nie można go przesłać. Wydrukuj go lub wyeksportuj do nowego pliku PDF i spróbuj ponownie.",
+                "file-pdf-unchecked": "Nie udało się sprawdzić bezpieczeństwa tego pliku PDF (może być chroniony hasłem lub uszkodzony), dlatego nie można go przesłać. Zapisz niechronioną kopię jako nowy plik PDF i spróbuj ponownie.",
                 "file-missing": "Wybierz plik do przesłania.",
                 "file-deleted": "Plik został usunięty.",
                 "file-delete-failed": "Nie udało się usunąć pliku. Spróbuj ponownie.",

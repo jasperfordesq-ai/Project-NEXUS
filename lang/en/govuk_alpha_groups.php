@@ -190,6 +190,8 @@ return [
         'file-upload-failed'    => 'The file could not be uploaded. Please try again.',
         'file-too-large'        => 'The file exceeds the 25 MB limit. Choose a smaller file.',
         'file-type-invalid'     => 'That file type is not allowed. Check the accepted formats and try again.',
+        'file-pdf-active'       => 'This PDF contains scripts or other interactive content, so it can’t be uploaded. Print or export it to a new PDF and try again.',
+        'file-pdf-unchecked'    => 'This PDF couldn’t be checked for safety (it may be password-protected or damaged), so it can’t be uploaded. Save an unprotected copy as a new PDF and try again.',
         'file-missing'          => 'Choose a file to upload.',
         'file-deleted'          => 'The file has been deleted.',
         'file-delete-failed'    => 'The file could not be deleted. Please try again.',

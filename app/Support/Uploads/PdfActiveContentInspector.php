@@ -9,20 +9,28 @@ declare(strict_types=1);
 namespace App\Support\Uploads;
 
 /**
- * Decides whether an uploaded PDF carries active content (F-552's sibling,
- * F-551: a group file whose embedded JavaScript ran when a member opened it in a
- * browser PDF viewer).
+ * Decides whether an uploaded PDF carries active content (F-551, reported by
+ * Cyphere: a group file whose embedded JavaScript ran when a member opened it in
+ * a browser PDF viewer).
  *
  * There is no PDF tool on the servers, so this is a small structural reader, not
- * a renderer. It walks the file's objects the way a viewer's parser does:
+ * a renderer. Viewers do not read a PDF top to bottom: they jump to objects
+ * through the cross-reference table, and rebuild it by searching for
+ * "N G obj" when it is broken. So this reader looks at the file two ways:
  *
- * - literal and hex strings are skipped as strings, so text such as
- *   "(>> stream ... endstream)" can never hide a dictionary from the scan;
- * - stream data is skipped up to the FIRST `endstream` (never further, so a
- *   lying /Length cannot make the reader jump over real objects);
- * - object streams (PDF 1.5 compressed objects, where /JS can hide) are decoded
- *   and walked too;
- * - names are compared after #xx unescaping, so /J#53 is /JS.
+ * - a top-to-bottom walk, in which literal and hex strings are skipped as
+ *   strings (text such as "(>> stream ... endstream)" cannot hide a
+ *   dictionary) and stream data is skipped to the first `endstream`;
+ * - then EVERY "N G obj" header anywhere in the file, including inside other
+ *   streams' data, is parsed as an object. An object smuggled into another
+ *   stream's data (found in review, 3 Oct 2026: invisible to the walk, loaded
+ *   by pdf.js through the xref table) is therefore still read.
+ *
+ * Object streams (PDF 1.5 compressed objects, where /JS can hide) are decoded
+ * and walked too. Their data counts as decoded only when the decode is
+ * provably complete (deflate reached its end marker, the ASCII filters their
+ * terminator), so a literal "endstream" inside the data cannot cut the scan
+ * short. Names are compared after #xx unescaping, so /J#53 is /JS.
  *
  * Every name anywhere in the structure is checked against ACTIVE_NAMES. The
  * check fails closed: a file that cannot be fully read (unsupported or
@@ -39,21 +47,40 @@ final class PdfActiveContentInspector
      * Names whose presence means the document can run code, launch something,
      * or send data when opened or interacted with. Ordinary links (/URI, /GoTo)
      * and a plain /OpenAction (commonly "open at page 1, fit width") are not here.
+     * Keyed for an isset() lookup: this runs for every name in the file.
+     *
+     * @var array<string, true>
      */
     private const ACTIVE_NAMES = [
-        'JS',
-        'JavaScript',
-        'Launch',
-        'SubmitForm',
-        'ImportData',
-        'RichMedia',
-        'XFA',
+        'JS' => true,
+        'JavaScript' => true,
+        'Launch' => true,
+        'SubmitForm' => true,
+        'ImportData' => true,
+        'RichMedia' => true,
+        'XFA' => true,
     ];
 
     private const MAX_DEPTH = 100;
 
-    /** Ceiling on decoded object-stream bytes per file, against inflate bombs. */
-    private const MAX_DECODED_BYTES = 64 * 1024 * 1024;
+    /**
+     * Ceiling on decoded object-stream bytes per file, against inflate bombs.
+     * Object streams hold dictionaries, not images; real files stay far below.
+     */
+    private const MAX_DECODED_BYTES = 16 * 1024 * 1024;
+
+    /**
+     * Seconds one file may take. The slowest of 400 real PDFs took 0.34 s; a
+     * crafted 59 KB file once took 26 s (review, 3 Oct 2026). Running out of
+     * time means UNINSPECTABLE, never CLEAN.
+     */
+    public const DEFAULT_TIME_BUDGET = 2.0;
+
+    /** parseValue() calls between clock reads. */
+    private const CLOCK_INTERVAL = 4096;
+
+    private float $deadline = INF;
+    private int $ticks = 0;
 
     private string $data = '';
     private int $length = 0;
@@ -63,25 +90,42 @@ final class PdfActiveContentInspector
     private bool $sawObjectStream = false;
     private ?string $verdict = null;
 
+    /** How many `endstream` occurrences are tried as the end of an object stream's data. */
+    private const MAX_STREAM_END_CANDIDATES = 64;
+
     /** @var list<string> object-stream bodies queued for a second pass */
     private array $objectStreams = [];
 
-    public static function inspectFile(string $path): string
+    /** @var array<int, true> stream-data offsets already handled, so both passes decode each object stream once */
+    private array $seenStreams = [];
+
+    /**
+     * @param float|null $deadline absolute microtime(true) by which to give up;
+     *                             the earlier of it and the per-file budget applies
+     */
+    public static function inspectFile(string $path, ?float $deadline = null): string
     {
         $contents = @file_get_contents($path);
 
-        return is_string($contents) ? (new self())->inspect($contents) : self::UNINSPECTABLE;
+        return is_string($contents) ? (new self())->inspect($contents, $deadline) : self::UNINSPECTABLE;
     }
 
-    public function inspect(string $contents): string
+    public function inspect(string $contents, ?float $deadline = null): string
     {
+        $this->deadline = min(microtime(true) + self::DEFAULT_TIME_BUDGET, $deadline ?? INF);
+        $this->ticks = 0;
+        if (microtime(true) >= $this->deadline) {
+            return self::UNINSPECTABLE;
+        }
         $this->decodedBytes = 0;
         $this->encrypted = false;
         $this->sawObjectStream = false;
         $this->verdict = null;
         $this->objectStreams = [];
+        $this->seenStreams = [];
 
         $this->walk($contents, true);
+        $this->readEveryObjectHeader($contents);
 
         // Object streams can nest object streams only through their own
         // dictionaries; walking them may queue more, so drain the queue.
@@ -100,6 +144,34 @@ final class PdfActiveContentInspector
         }
 
         return self::CLEAN;
+    }
+
+    /**
+     * Parse the object after every "N G obj" header in the file, wherever it
+     * sits — including inside another stream's data, where the top-to-bottom
+     * walk skipped it but a viewer following the xref table would load it.
+     */
+    private function readEveryObjectHeader(string $contents): void
+    {
+        if ($this->verdict !== null
+            || preg_match_all('/\d+[\x00\t\n\f\r ]+\d+[\x00\t\n\f\r ]+obj/', $contents, $matches, PREG_OFFSET_CAPTURE) === false) {
+            return;
+        }
+
+        $this->data = $contents;
+        $this->length = strlen($contents);
+        foreach ($matches[0] as [$header, $offset]) {
+            if ($this->verdict !== null) {
+                return;
+            }
+            $this->pos = $offset + strlen($header);
+            $value = $this->parseValue(0);
+            $this->skipWhitespaceAndComments();
+            if (substr($this->data, $this->pos, 6) === 'stream') {
+                $this->pos += 6;
+                $this->consumeStream(is_array($value) && ($value['type'] ?? null) === 'dict' ? $value : null);
+            }
+        }
     }
 
     private function walk(string $data, bool $allowStreams): void
@@ -152,6 +224,10 @@ final class PdfActiveContentInspector
             $this->verdict = self::UNINSPECTABLE;
             return null;
         }
+        if (++$this->ticks % self::CLOCK_INTERVAL === 0 && microtime(true) >= $this->deadline) {
+            $this->verdict = self::UNINSPECTABLE;
+            return null;
+        }
 
         $this->skipWhitespaceAndComments();
         if ($this->pos >= $this->length || $this->verdict !== null) {
@@ -163,7 +239,7 @@ final class PdfActiveContentInspector
         if ($char === '/') {
             ++$this->pos;
             $name = $this->decodeName($this->readRegularToken());
-            if (in_array($name, self::ACTIVE_NAMES, true)) {
+            if (isset(self::ACTIVE_NAMES[$name])) {
                 $this->verdict = self::ACTIVE;
             }
             if ($name === 'Encrypt') {
@@ -270,15 +346,17 @@ final class PdfActiveContentInspector
         }
 
         $start = $this->pos;
-        $end = strpos($this->data, 'endstream', $start);
-        $end = $end === false ? $this->length : $end;
-        $this->pos = min($this->length, $end + strlen('endstream'));
+        $firstEnd = strpos($this->data, 'endstream', $start);
+        // The walk resumes after the first `endstream`; whatever a misleading
+        // framing hides beyond it is read by readEveryObjectHeader().
+        $this->pos = $firstEnd === false ? $this->length : $firstEnd + strlen('endstream');
 
         $entries = $dictionary['entries'] ?? [];
         $isObjectStream = $this->isName($entries['Type'] ?? null, 'ObjStm') || array_key_exists('First', $entries);
-        if (! $isObjectStream) {
+        if (! $isObjectStream || isset($this->seenStreams[$start])) {
             return;
         }
+        $this->seenStreams[$start] = true;
 
         $this->sawObjectStream = true;
         if ($this->encrypted) {
@@ -286,7 +364,7 @@ final class PdfActiveContentInspector
             return;
         }
 
-        $decoded = $this->decodeStream(substr($this->data, $start, $end - $start), $entries);
+        $decoded = $this->decodeObjectStream($start, $entries);
         if ($decoded === null) {
             $this->verdict = self::UNINSPECTABLE;
             return;
@@ -295,8 +373,16 @@ final class PdfActiveContentInspector
         $this->objectStreams[] = $decoded;
     }
 
-    /** @param array<string, mixed> $entries */
-    private function decodeStream(string $raw, array $entries): ?string
+    /**
+     * Find where an object stream's data really ends, and decode it. A plain
+     * numeric /Length is tried first, then each `endstream` in turn, because
+     * the data may itself contain that word. The first candidate whose decode
+     * is complete wins; if none is, the data cannot be read and the caller
+     * fails closed.
+     *
+     * @param array<string, mixed> $entries
+     */
+    private function decodeObjectStream(int $start, array $entries): ?string
     {
         $filters = $this->filterNames($entries['Filter'] ?? null);
         if ($filters === null) {
@@ -308,7 +394,40 @@ final class PdfActiveContentInspector
             return null;
         }
 
-        $data = rtrim($raw, "\r\n");
+        $ends = [];
+        $length = $entries['Length'] ?? null;
+        if (is_string($length) && ctype_digit($length) && $start + (int) $length <= $this->length) {
+            $ends[] = $start + (int) $length;
+        }
+        $offset = $start;
+        while (count($ends) < self::MAX_STREAM_END_CANDIDATES
+            && ($found = strpos($this->data, 'endstream', $offset)) !== false) {
+            $ends[] = $found;
+            $offset = $found + 1;
+        }
+        if ($ends === []) {
+            $ends[] = $this->length;
+        }
+
+        if ($filters === []) {
+            // Unencoded: completeness cannot be proven, so read the widest
+            // candidate. Reading too much only risks a false alarm.
+            return $this->account(substr($this->data, $start, max($ends) - $start));
+        }
+
+        foreach (array_unique($ends) as $end) {
+            $data = $this->decodeComplete(rtrim(substr($this->data, $start, $end - $start), "\r\n"), $filters);
+            if ($data !== null) {
+                return $this->account($data);
+            }
+        }
+
+        return null;
+    }
+
+    /** @param list<string> $filters */
+    private function decodeComplete(string $data, array $filters): ?string
+    {
         foreach ($filters as $filter) {
             $data = match ($filter) {
                 'FlateDecode', 'Fl' => $this->inflate($data),
@@ -321,6 +440,11 @@ final class PdfActiveContentInspector
             }
         }
 
+        return $data;
+    }
+
+    private function account(string $data): ?string
+    {
         $this->decodedBytes += strlen($data);
 
         return $this->decodedBytes > self::MAX_DECODED_BYTES ? null : $data;
@@ -394,6 +518,9 @@ final class PdfActiveContentInspector
         $output = '';
         $budget = self::MAX_DECODED_BYTES - $this->decodedBytes;
         foreach (str_split($data, 65536) as $chunk) {
+            if (microtime(true) >= $this->deadline) {
+                return null;
+            }
             $piece = @inflate_add($context, $chunk, ZLIB_SYNC_FLUSH);
             if ($piece === false) {
                 return null;
@@ -403,17 +530,22 @@ final class PdfActiveContentInspector
                 return null;
             }
             if (inflate_get_status($context) === ZLIB_STREAM_END) {
-                break;
+                return $output;
             }
         }
 
-        return $output;
+        // The data ran out before deflate's end marker: truncated, or cut
+        // short by a literal "endstream" inside it. Never treat as complete.
+        return null;
     }
 
     private function asciiHex(string $data): ?string
     {
         $end = strpos($data, '>');
-        $hex = preg_replace('/\s+/', '', $end === false ? $data : substr($data, 0, $end));
+        if ($end === false) {
+            return null;
+        }
+        $hex = preg_replace('/\s+/', '', substr($data, 0, $end));
         if (! is_string($hex) || preg_match('/[^0-9A-Fa-f]/', $hex) === 1) {
             return null;
         }
@@ -433,9 +565,10 @@ final class PdfActiveContentInspector
             $data = substr($data, 2);
         }
         $end = strpos($data, '~>');
-        if ($end !== false) {
-            $data = substr($data, 0, $end);
+        if ($end === false) {
+            return null;
         }
+        $data = substr($data, 0, $end);
 
         $output = '';
         $group = [];
@@ -480,6 +613,10 @@ final class PdfActiveContentInspector
 
     private function decodeName(string $raw): string
     {
+        if (! str_contains($raw, '#')) {
+            return $raw;
+        }
+
         return (string) preg_replace_callback(
             '/#([0-9A-Fa-f]{2})/',
             static fn (array $match): string => chr((int) hexdec($match[1])),

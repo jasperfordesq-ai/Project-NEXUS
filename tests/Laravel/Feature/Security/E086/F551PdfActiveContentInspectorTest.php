@@ -134,6 +134,41 @@ final class F551PdfActiveContentInspectorTest extends TestCase
         self::assertSame(Inspector::UNINSPECTABLE, $this->inspect($pdf));
     }
 
+    /**
+     * Review finding (3 Oct): a 59 KB file whose object stream unpacked to
+     * millions of tiny names took 26 s of CPU, and the check runs before any
+     * sign-in. Both a name flood under the size ceiling and one over it must
+     * be refused within the time budget.
+     *
+     * @return iterable<string, array{int}>
+     */
+    public static function nameFloods(): iterable
+    {
+        yield 'under the decoded-size ceiling' => [15];
+        yield 'over the decoded-size ceiling' => [60];
+    }
+
+    /** @dataProvider nameFloods */
+    public function test_a_flood_of_names_is_refused_within_the_time_budget(int $megabytes): void
+    {
+        $body = (string) gzcompress('1 0 ' . str_repeat('/a', $megabytes * 1024 * 512), 9);
+        $pdf = F551Pdf::build([
+            5 => ['<< /Type /ObjStm /N 1 /First 4 /Filter /FlateDecode /Length ' . strlen($body) . ' >>', $body],
+        ]);
+
+        $started = microtime(true);
+        $verdict = $this->inspect($pdf);
+        $elapsed = microtime(true) - $started;
+
+        self::assertSame(Inspector::UNINSPECTABLE, $verdict);
+        self::assertLessThan(Inspector::DEFAULT_TIME_BUDGET + 1.0, $elapsed, "took {$elapsed}s");
+    }
+
+    public function test_a_caller_deadline_already_spent_means_uninspectable(): void
+    {
+        self::assertSame(Inspector::UNINSPECTABLE, (new Inspector())->inspect(F551Pdf::plain(), microtime(true) - 1));
+    }
+
     public function test_an_encrypted_file_with_object_streams_cannot_be_passed_as_clean(): void
     {
         $pdf = F551Pdf::build([
@@ -172,6 +207,69 @@ final class F551PdfActiveContentInspectorTest extends TestCase
         ]);
 
         self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
+    }
+
+    /**
+     * Review bypass (3 Oct): a complete object placed inside another object's
+     * stream data. A top-to-bottom reader skips it as data; a viewer seeks to it
+     * through the cross-reference table and runs the action. Confirmed against
+     * pdf.js (getJSActions returned the OpenAction script) before the fix.
+     *
+     * @return iterable<string, array{string}>
+     */
+    public static function objectsSmuggledInsideStreamData(): iterable
+    {
+        yield 'javascript open action' => ['<< /S /JavaScript /JS (app.alert\(document.domain\)) >>'];
+        yield 'launch action' => ['<< /S /Launch /F (calc.exe) >>'];
+    }
+
+    /** @dataProvider objectsSmuggledInsideStreamData */
+    public function test_an_object_hidden_inside_another_streams_data_is_still_read(string $action): void
+    {
+        $pdf = F551Pdf::build([
+            1 => '<< /Type /Catalog /Pages 2 0 R /OpenAction 6 0 R >>',
+            2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>',
+            5 => ['<< /Length 10 >>', "6 0 obj\n{$action}\nendobj"],
+        ]);
+
+        self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
+    }
+
+    public function test_a_literal_endstream_inside_compressed_object_stream_data_does_not_cut_the_scan_short(): void
+    {
+        // Level 0 deflate stores bytes verbatim, so the word "endstream" sits in
+        // the compressed data before the script. Stopping at the first
+        // `endstream` would inflate only the harmless half.
+        $inner = '5 0 << /Title (endstream) /Padding (' . str_repeat('x', 64) . ') >> 6 0 << /S /JavaScript /JS (app.alert(1)) >>';
+        $body = (string) gzcompress($inner, 0);
+        self::assertStringContainsString('endstream', $body);
+
+        $pdf = F551Pdf::build([
+            4 => ['<< /Type /ObjStm /N 2 /First 8 /Filter /FlateDecode /Length ' . strlen($body) . ' >>', $body],
+        ]);
+
+        self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
+    }
+
+    public function test_a_literal_endstream_inside_an_unencoded_object_stream_does_not_cut_the_scan_short(): void
+    {
+        $inner = '5 0 << /Title (endstream) >> 6 0 << /S /JavaScript /JS (app.alert(1)) >>';
+        $pdf = F551Pdf::build([
+            4 => ['<< /Type /ObjStm /N 2 /First 8 /Length ' . strlen($inner) . ' >>', $inner],
+        ]);
+
+        self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
+    }
+
+    public function test_a_truncated_compressed_object_stream_cannot_be_passed_as_clean(): void
+    {
+        $body = substr((string) gzcompress(str_repeat('5 0 << /Producer (x) >> ', 400)), 0, 60);
+        $pdf = F551Pdf::build([
+            4 => ['<< /Type /ObjStm /N 1 /First 4 /Filter /FlateDecode /Length ' . strlen($body) . ' >>', $body],
+        ]);
+
+        self::assertSame(Inspector::UNINSPECTABLE, $this->inspect($pdf));
     }
 
     public function test_bytes_that_spell_a_name_inside_ordinary_stream_data_are_not_a_false_alarm(): void

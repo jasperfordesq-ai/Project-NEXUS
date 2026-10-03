@@ -458,6 +458,8 @@
     "upload_title": "Prześlij plik",
     "upload_btn": "Prześlij",
     "upload_error": "Nie udało się przesłać pliku",
+    "upload_pdf_active_content": "Ten plik PDF zawiera skrypty lub inne treści interaktywne, dlatego nie można go przesłać. Wydrukuj go lub wyeksportuj do nowego pliku PDF i spróbuj ponownie.",
+    "upload_pdf_not_inspectable": "Nie udało się sprawdzić bezpieczeństwa tego pliku PDF (może być chroniony hasłem lub uszkodzony), dlatego nie można go przesłać. Zapisz niechronioną kopię jako nowy plik PDF i spróbuj ponownie.",
     "download_aria": "Pobierz {{name}}",
     "download_error": "Nie udało się pobrać pliku",
     "delete_success": "Plik usunięty",

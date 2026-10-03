@@ -8497,6 +8497,8 @@
                 "file-upload-failed": "Die Datei konnte nicht hochgeladen werden. Bitte versuche es erneut.",
                 "file-too-large": "Die Datei überschreitet das Limit von 25 MB. Wähle eine kleinere Datei.",
                 "file-type-invalid": "Dieser Dateityp ist nicht erlaubt. Überprüfe die akzeptierten Formate.",
+                "file-pdf-active": "Diese PDF-Datei enthält Skripte oder andere interaktive Inhalte und kann daher nicht hochgeladen werden. Drucken oder exportieren Sie sie als neue PDF-Datei und versuchen Sie es erneut.",
+                "file-pdf-unchecked": "Diese PDF-Datei konnte nicht auf Sicherheit geprüft werden (sie ist möglicherweise passwortgeschützt oder beschädigt) und kann daher nicht hochgeladen werden. Speichern Sie eine ungeschützte Kopie als neue PDF-Datei und versuchen Sie es erneut.",
                 "file-missing": "Wähle eine Datei zum Hochladen aus.",
                 "file-deleted": "Die Datei wurde gelöscht.",
                 "file-delete-failed": "Die Datei konnte nicht gelöscht werden. Bitte versuche es erneut.",

@@ -144,6 +144,8 @@ return [
         'file-upload-failed' => 'No se pudo subir el archivo. Por favor, inténtalo de nuevo.',
         'file-too-large' => 'El archivo supera el límite de 25 MB. Elige un archivo más pequeño.',
         'file-type-invalid' => 'Este tipo de archivo no está permitido. Comprueba los formatos aceptados.',
+        'file-pdf-active'       => 'Este PDF contiene scripts u otro contenido interactivo, por lo que no se puede subir. Imprímalo o expórtelo a un PDF nuevo e inténtelo de nuevo.',
+        'file-pdf-unchecked'    => 'No se ha podido comprobar la seguridad de este PDF (puede estar protegido con contraseña o dañado), por lo que no se puede subir. Guarde una copia sin protección como un PDF nuevo e inténtelo de nuevo.',
         'file-missing' => 'Elige un archivo para subir.',
         'file-deleted' => 'El archivo ha sido eliminado.',
         'file-delete-failed' => 'No se pudo eliminar el archivo. Por favor, inténtalo de nuevo.',
