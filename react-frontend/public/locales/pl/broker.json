@@ -1559,5 +1559,14 @@
   "safeguarding_options": {
     "title": "Opcje ochrony",
     "description": "Skonfiguruj opcje deklaracji zabezpieczającej, które mogą wybierać członkowie."
+  },
+  "queue": {
+    "more_waiting_one": "Czeka jeszcze {{count}}",
+    "more_waiting_few": "Czekają jeszcze {{count}}",
+    "more_waiting_many": "Czeka jeszcze {{count}}",
+    "more_waiting_other": "Czeka jeszcze {{count}}",
+    "next": "Dalej",
+    "next_aria": "Otwórz następną oczekującą pozycję",
+    "all_done": "To była ostatnia pozycja. Nic więcej nie czeka."
   }
 }

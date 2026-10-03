@@ -1545,5 +1545,12 @@
   "safeguarding_options": {
     "title": "Opções de proteção",
     "description": "Configure as opções de declaração de proteção que os membros podem selecionar."
+  },
+  "queue": {
+    "more_waiting_one": "Mais {{count}} em espera",
+    "more_waiting_other": "Mais {{count}} em espera",
+    "next": "Seguinte",
+    "next_aria": "Abrir o seguinte em espera",
+    "all_done": "Era o último. Não há mais nada em espera."
   }
 }

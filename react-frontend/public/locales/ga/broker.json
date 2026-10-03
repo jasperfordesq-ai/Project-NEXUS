@@ -1572,5 +1572,15 @@
   "safeguarding_options": {
     "title": "Roghanna cosanta",
     "description": "Cumraigh na roghanna dearbhaithe cosanta is féidir le baill a roghnú."
+  },
+  "queue": {
+    "more_waiting_one": "{{count}} eile ag fanacht",
+    "more_waiting_two": "{{count}} eile ag fanacht",
+    "more_waiting_few": "{{count}} eile ag fanacht",
+    "more_waiting_many": "{{count}} eile ag fanacht",
+    "more_waiting_other": "{{count}} eile ag fanacht",
+    "next": "Ar aghaidh",
+    "next_aria": "Oscail an chéad cheann eile atá ag fanacht",
+    "all_done": "B'shin an ceann deireanach. Níl aon rud eile ag fanacht."
   }
 }

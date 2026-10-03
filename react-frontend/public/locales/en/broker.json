@@ -1533,5 +1533,12 @@
   "safeguarding_options": {
     "title": "Safeguarding Options",
     "description": "Configure the safeguarding declaration options members can select."
+  },
+  "queue": {
+    "more_waiting_one": "{{count}} more waiting",
+    "more_waiting_other": "{{count}} more waiting",
+    "next": "Next",
+    "next_aria": "Open the next one waiting",
+    "all_done": "That was the last one. Nothing else is waiting."
   }
 }

@@ -1532,5 +1532,11 @@
   "safeguarding_options": {
     "title": "セーフガーディング設定",
     "description": "メンバーが選択できる保護宣言オプションを構成します。"
+  },
+  "queue": {
+    "more_waiting_other": "あと{{count}}件が待機中",
+    "next": "次へ",
+    "next_aria": "次の待機中の項目を開く",
+    "all_done": "これが最後でした。待機中の項目はもうありません。"
   }
 }

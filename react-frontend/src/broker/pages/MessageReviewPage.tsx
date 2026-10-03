@@ -361,6 +361,12 @@ export function MessageReview() {
 
   const emptyMeta = EMPTY_META[filter];
 
+  // Carry the tab into the message, so its "Next" stays in the same queue.
+  const detailPath = (messageId: number) =>
+    ['unreviewed', 'urgent', 'flagged'].includes(filter)
+      ? `/broker/messages/${messageId}?queue=${filter}`
+      : `/broker/messages/${messageId}`;
+
   const columns: Column<BrokerMessage>[] = [
     {
       key: 'sender_name',
@@ -370,7 +376,7 @@ export function MessageReview() {
         <div className="flex min-w-0 items-center gap-2">
           <Avatar name={item.sender_name} size="sm" className="shrink-0" />
           <Link
-            to={tenantPath(`/broker/messages/${item.id}`)}
+            to={tenantPath(detailPath(item.id))}
             className="min-w-0 truncate text-sm font-medium text-accent hover:underline"
           >
             {item.sender_name}
@@ -386,10 +392,15 @@ export function MessageReview() {
     {
       key: 'message_body',
       label: t('messages.col_preview'),
+      // The preview opens the message too; until Oct 2026 only the sender's
+      // name did, and brokers clicked the text and nothing happened.
       render: (item) => (
-        <span className="line-clamp-1 min-w-0 max-w-[240px] text-sm text-muted">
+        <Link
+          to={tenantPath(detailPath(item.id))}
+          className="line-clamp-1 min-w-0 max-w-[240px] text-sm text-muted hover:text-foreground hover:underline"
+        >
           {item.message_body ? item.message_body.substring(0, 80) + (item.message_body.length > 80 ? '…' : '') : '—'}
-        </span>
+        </Link>
       ),
     },
     {

@@ -63,6 +63,8 @@ import {
   ReversedNotice,
   canReverse,
 } from '../components/ExchangeResolution';
+import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { useBrokerQueue } from '../useBrokerQueue';
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
@@ -152,6 +154,20 @@ export default function ExchangeDetail() {
   const [loading, setLoading] = useState(true);
   const [errorKind, setErrorKind] = useState<LoadErrorKind | null>(null);
 
+  // The "needs action" queue (awaiting approval + disputed) — the list the
+  // dashboard's Pending Exchanges card opens. After a decision, the next one
+  // opens straight away.
+  const queue = useBrokerQueue({
+    currentId: id ? parseInt(id, 10) : null,
+    fetchQueue: async () => {
+      const res = await adminBroker.getExchanges({ status: 'needs_action' });
+      if (!res.success || !Array.isArray(res.data)) return null;
+      return { ids: res.data.map((e) => e.id), total: res.meta?.total ?? res.data.length };
+    },
+    itemPath: (next) => `/broker/exchanges/${next}`,
+    listPath: '/broker/exchanges?status=needs_action',
+  });
+
   // Approve / reject actions — available on the detail page for pending_broker
   // exchanges so brokers don't have to return to the list to act.
   const [actionModal, setActionModal] = useState<'approve' | 'reject' | null>(null);
@@ -202,7 +218,7 @@ export default function ExchangeDetail() {
         toast.success(t('exchanges.action_succeeded'));
         setActionModal(null);
         setActionText('');
-        loadExchange(data.exchange.id);
+        void queue.goNext();
       } else {
         toast.error(res?.error || t('exchanges.action_failed'));
       }
@@ -308,13 +324,14 @@ export default function ExchangeDetail() {
               </Button>
             </>
           )}
+          <BrokerQueueNav queue={queue} />
           {canReverse(exchange) && <ReverseExchangeButton exchange={exchange} onDone={reload} />}
           {backButton}
         </>
       }
     >
       {exchange.status === 'disputed' && disputeWindow && (
-        <DisputeSettlePanel exchange={exchange} window={disputeWindow} onDone={reload} />
+        <DisputeSettlePanel exchange={exchange} window={disputeWindow} onDone={() => void queue.goNext()} />
       )}
       {exchange.reversal_transaction_id ? <ReversedNotice /> : null}
 

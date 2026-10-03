@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import ArrowLeft from 'lucide-react/icons/arrow-left';
@@ -59,6 +59,12 @@ import {
   BrokerEmptyState,
   BrokerStatusChip,
 } from '../components';
+import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { useBrokerQueue } from '../useBrokerQueue';
+
+/** The message queues a broker works through; history tabs have no "next". */
+const MESSAGE_QUEUES = ['unreviewed', 'urgent', 'flagged'] as const;
+type MessageQueue = (typeof MESSAGE_QUEUES)[number];
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
@@ -134,6 +140,23 @@ export function MessageDetail() {
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [approveNotes, setApproveNotes] = useState('');
 
+  // The queue this message was opened from (?queue=), so "next" stays in it.
+  const [searchParams] = useSearchParams();
+  const queueParam = searchParams.get('queue');
+  const queueName: MessageQueue = (MESSAGE_QUEUES as readonly string[]).includes(queueParam ?? '')
+    ? (queueParam as MessageQueue)
+    : 'unreviewed';
+  const queue = useBrokerQueue({
+    currentId: id ? Number(id) : null,
+    fetchQueue: async () => {
+      const res = await adminBroker.getMessages({ filter: queueName });
+      if (!res.success || !Array.isArray(res.data)) return null;
+      return { ids: res.data.map((m) => m.id), total: res.meta?.total ?? res.data.length };
+    },
+    itemPath: (next) => `/broker/messages/${next}?queue=${queueName}`,
+    listPath: `/broker/messages?status=${queueName}`,
+  });
+
   // ── Load data ─────────────────────────────────────────────────────────────
 
   const loadDetail = useCallback(async () => {
@@ -175,7 +198,8 @@ export function MessageDetail() {
       const res = await adminBroker.reviewMessage(Number(id));
       if (res?.success) {
         toast.success(t('messages.reviewed_success'));
-        loadDetail();
+        // Straight on to the next message waiting, or back to the list if none.
+        void queue.goNext();
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -219,7 +243,7 @@ export function MessageDetail() {
       if (res?.success) {
         toast.success(t('messages.detail_approve_success'));
         setApproveModalOpen(false);
-        navigate(tenantPath('/broker/messages'));
+        void queue.goNext();
       } else {
         toast.error(res?.error || t('messages.detail_approve_failed'));
       }
@@ -315,7 +339,12 @@ export function MessageDetail() {
       description={t('messages.detail_page_description')}
       icon={MessageSquareWarning}
       color="warning"
-      actions={backButton}
+      actions={
+        <>
+          <BrokerQueueNav queue={queue} />
+          {backButton}
+        </>
+      }
     >
       {/* ── Flag severity banner ───────────────────────────────────────────── */}
       {isFlagged && (

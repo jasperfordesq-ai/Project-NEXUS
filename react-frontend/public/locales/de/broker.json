@@ -1533,5 +1533,12 @@
   "safeguarding_options": {
     "title": "Schutzoptionen",
     "description": "Konfigurieren Sie die Optionen für die Schutzerklärung, die Mitglieder auswählen können."
+  },
+  "queue": {
+    "more_waiting_one": "{{count}} weiterer wartet",
+    "more_waiting_other": "{{count}} weitere warten",
+    "next": "Weiter",
+    "next_aria": "Den nächsten wartenden Eintrag öffnen",
+    "all_done": "Das war der letzte. Es wartet nichts mehr."
   }
 }

@@ -31,7 +31,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { adminMatching } from '@/admin/api/adminApi';
-import type { MatchApprovalDetail } from '@/admin/api/types';
+import type { MatchApproval, MatchApprovalDetail } from '@/admin/api/types';
 import {
   Card,
   CardBody,
@@ -54,6 +54,8 @@ import {
   BrokerEmptyState,
   BrokerStatusChip,
 } from '../components';
+import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { useBrokerQueue } from '../useBrokerQueue';
 
 function scoreColor(score: number): 'danger' | 'warning' | 'success' {
   if (score < 50) return 'danger';
@@ -83,6 +85,25 @@ export function MatchApprovalDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [approveLoading, setApproveLoading] = useState(false);
+
+  // Matches waiting for a decision; after one, the next opens straight away.
+  const queue = useBrokerQueue({
+    currentId: id ? Number(id) : null,
+    fetchQueue: async () => {
+      const res = await adminMatching.getApprovals({ status: 'pending' });
+      if (!res.success || !res.data) return null;
+      // Same two shapes the list page accepts.
+      const raw = res.data as unknown;
+      const rows = Array.isArray(raw)
+        ? (raw as MatchApproval[])
+        : ((raw as { data?: MatchApproval[] }).data ?? []);
+      const nested = Array.isArray(raw) ? undefined : (raw as { meta?: { total?: number } }).meta?.total;
+      const total = nested ?? (res.meta as { total?: number } | undefined)?.total ?? rows.length;
+      return { ids: rows.map((r) => r.id), total };
+    },
+    itemPath: (next) => `/broker/match-approvals/${next}`,
+    listPath: '/broker/match-approvals?status=pending',
+  });
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectLoading, setRejectLoading] = useState(false);
@@ -117,7 +138,7 @@ export function MatchApprovalDetailPage() {
     const res = await adminMatching.approveMatch(item.id);
     if (res.success) {
       toast.success(t('matching.approved_toast'));
-      loadItem();
+      void queue.goNext();
     } else {
       toast.error(res.error || t('matching.approve_failed'));
     }
@@ -136,7 +157,7 @@ export function MatchApprovalDetailPage() {
       toast.success(t('matching.rejected_toast'));
       setRejectModal(false);
       setRejectReason('');
-      loadItem();
+      void queue.goNext();
     } else {
       toast.error(res.error || t('matching.reject_failed'));
     }
@@ -187,7 +208,12 @@ export function MatchApprovalDetailPage() {
       title={t('matching.detail_title')}
       icon={UserCheck}
       color="accent"
-      actions={backButton}
+      actions={
+        <>
+          <BrokerQueueNav queue={queue} />
+          {backButton}
+        </>
+      }
     >
       {/* Match score hero */}
       <Card className={`${cardClass} mb-6`}>

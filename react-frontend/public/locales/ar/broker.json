@@ -1585,5 +1585,16 @@
   "safeguarding_options": {
     "title": "خيارات الحماية",
     "description": "تكوين خيارات إعلان الحماية التي يمكن للأعضاء تحديدها."
+  },
+  "queue": {
+    "more_waiting_zero": "{{count}} بالانتظار",
+    "more_waiting_one": "{{count}} آخر بالانتظار",
+    "more_waiting_two": "{{count}} آخران بالانتظار",
+    "more_waiting_few": "{{count}} أخرى بالانتظار",
+    "more_waiting_many": "{{count}} أخرى بالانتظار",
+    "more_waiting_other": "{{count}} أخرى بالانتظار",
+    "next": "التالي",
+    "next_aria": "فتح العنصر التالي بالانتظار",
+    "all_done": "كان هذا الأخير. لا يوجد شيء آخر بالانتظار."
   }
 }

@@ -1533,5 +1533,12 @@
   "safeguarding_options": {
     "title": "Beschermingsopties",
     "description": "Configureer de opties voor het veiligstellen van aangiften die leden kunnen selecteren."
+  },
+  "queue": {
+    "more_waiting_one": "Nog {{count}} wachtend",
+    "more_waiting_other": "Nog {{count}} wachtend",
+    "next": "Volgende",
+    "next_aria": "Open de volgende die wacht",
+    "all_done": "Dat was de laatste. Er wacht verder niets."
   }
 }

@@ -34427,6 +34427,13 @@ export default interface Resources {
       "placeholder": "Jump to… (members, vetting, messages)",
       "results_label": "Broker destinations"
     },
+    "queue": {
+      "all_done": "That was the last one. Nothing else is waiting.",
+      "more_waiting_one": "{{count}} more waiting",
+      "more_waiting_other": "{{count}} more waiting",
+      "next": "Next",
+      "next_aria": "Open the next one waiting"
+    },
     "risk_tags": {
       "back": "Back",
       "cancel": "Cancel",
