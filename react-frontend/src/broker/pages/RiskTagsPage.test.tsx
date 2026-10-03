@@ -223,6 +223,24 @@ describe('RiskTagsPage', () => {
     expect(screen.queryByTestId('datatable-loading')).not.toBeInTheDocument();
   });
 
+  // The broker dashboard's "High-risk listings" tile counts high AND critical
+  // tags and links here with ?level=elevated. It used to link to ?level=high,
+  // which hid every critical tag behind a number that included them.
+  it('keeps ?level=elevated and asks the API for high and critical together', async () => {
+    window.history.pushState({}, '', '/broker/risk-tags?level=elevated');
+    try {
+      const { RiskTagsPage } = await import('./RiskTagsPage');
+      render(<RiskTagsPage />);
+
+      await waitFor(() => {
+        expect(mockAdminBroker.getRiskTags).toHaveBeenCalledWith({ risk_level: 'elevated' });
+      });
+      expect(screen.getByRole('tab', { name: /High and critical/ })).toBeInTheDocument();
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('renders listing title after data loads', async () => {
     const { RiskTagsPage } = await import('./RiskTagsPage');
     render(<RiskTagsPage />);

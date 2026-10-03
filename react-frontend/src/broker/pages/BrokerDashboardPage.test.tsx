@@ -149,6 +149,21 @@ describe('BrokerDashboard', () => {
     expect(hrefs.some((h) => h.endsWith('/broker/exchanges?status=pending_broker'))).toBe(false);
   });
 
+  // high_risk_listings counts high AND critical tags; ?level=high hid the
+  // critical ones from the list behind the tile.
+  it('links the high-risk count to the high-and-critical view of the risk register', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('High Risk Listings').length).toBeGreaterThan(0);
+    });
+
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '');
+    expect(hrefs.some((h) => h.endsWith('/broker/risk-tags?level=elevated'))).toBe(true);
+    expect(hrefs.some((h) => h.endsWith('/broker/risk-tags?level=high'))).toBe(false);
+  });
+
   it('renders the triage hero with the total of open items', async () => {
     mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);

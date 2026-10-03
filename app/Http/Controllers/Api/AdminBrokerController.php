@@ -163,7 +163,7 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/dashboard */
     public function dashboard(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
         $isSuperAdmin = $this->isSuperAdmin();
         $tenantId = TenantContext::getId();
         $effectiveTenantId = $this->resolveEffectiveTenantId($isSuperAdmin, $tenantId);
@@ -204,9 +204,15 @@ class AdminBrokerController extends BaseApiController
 
         $unreviewedMessages = 0;
         try {
+            // F-436: the Messages queue this tile links to withholds the
+            // viewer's own conversations, so the count must too, or a broker
+            // who is a party to a copied message sees a number the list never
+            // reaches.
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM broker_message_copies WHERE {$tenantWhere} AND reviewed_at IS NULL",
-                $tenantParams
+                "SELECT COUNT(*) as cnt FROM broker_message_copies
+                 WHERE {$tenantWhere} AND reviewed_at IS NULL
+                   AND sender_id <> ? AND receiver_id <> ?",
+                array_merge($tenantParams, [$viewerId, $viewerId])
             );
             $unreviewedMessages = (int) ($row->cnt ?? 0);
         } catch (\Exception $e) {
@@ -240,13 +246,24 @@ class AdminBrokerController extends BaseApiController
 
         $vettingReviewRequests = 0;
         try {
-            $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt
-                 FROM safeguarding_vetting_review_requests
-                 WHERE {$tenantWhere} AND status = 'pending'",
-                $tenantParams
-            );
-            $vettingReviewRequests = (int) ($row->cnt ?? 0);
+            if ($effectiveTenantId !== null) {
+                // The tile links to the Vetting page's "review requested"
+                // filter; count with the service that filter uses, so requests
+                // made under a previous jurisdiction policy or by a deleted
+                // member are neither counted nor listed.
+                $vettingReviewRequests = app(\App\Services\MemberVettingAttestationService::class)
+                    ->countPendingReviewRequests($effectiveTenantId);
+            } else {
+                // All-tenant aggregate (super admin, ?tenant_id=all): no single
+                // page lists this, so the raw cross-tenant count is kept.
+                $row = DB::selectOne(
+                    "SELECT COUNT(*) as cnt
+                     FROM safeguarding_vetting_review_requests
+                     WHERE {$tenantWhere} AND status = 'pending'",
+                    $tenantParams
+                );
+                $vettingReviewRequests = (int) ($row->cnt ?? 0);
+            }
         } catch (\Exception $e) {
             $failedMetrics[] = 'vetting_review_requests';
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard vetting review queue failed: ' . $e->getMessage());
@@ -254,22 +271,24 @@ class AdminBrokerController extends BaseApiController
 
         $safeguardingAlerts = 0;
         try {
-            // abuse_alerts.status enum is ('new','reviewing','resolved','dismissed')
-            // — there is NO 'open' value (the previous query was silently
-            // returning zero forever). Match the canonical "open alert"
-            // semantics used by AbuseDetectionService::getAlertCounts and
-            // the auto-dismiss cron in CronJobRunner: anything not
-            // resolved/dismissed is open. The dashboard tile is tagged
-            // 'critical' in its deep-link so we further restrict to
-            // high+critical severity, which matches CronJobRunner's
-            // notify-on-new criteria and the user expectation that the
-            // tile reflects ESCALATION-WORTHY alerts, not noise.
+            // The tile links to the safeguarding page's "critical" drill-down,
+            // which lists flagged message copies nobody has reviewed yet, so
+            // count exactly those. Like that list (F-455), the viewer's own
+            // conversations are left out.
+            //
+            // Until October 2026 this counted abuse_alerts (the transfer
+            // fraud detector: large / rapid / circular transfers, dormant
+            // balances). Brokers have no page that shows those — they live in
+            // the admin panel's Fraud alerts — so the tile showed a number no
+            // broker could open. Owner decision, 3 Oct 2026: the tile counts
+            // what it opens; fraud alerts stay with administrators.
             $row = DB::selectOne(
-                "SELECT COUNT(*) as cnt FROM abuse_alerts
+                "SELECT COUNT(*) as cnt FROM broker_message_copies
                  WHERE {$tenantWhere}
-                   AND status IN ('new', 'reviewing')
-                   AND severity IN ('high', 'critical')",
-                $tenantParams
+                   AND flagged = 1
+                   AND reviewed_at IS NULL
+                   AND sender_id <> ? AND receiver_id <> ?",
+                array_merge($tenantParams, [$viewerId, $viewerId])
             );
             $safeguardingAlerts = (int) ($row->cnt ?? 0);
         } catch (\Exception $e) {
@@ -896,7 +915,11 @@ class AdminBrokerController extends BaseApiController
                 $params[] = $effectiveTenantId;
             }
 
-            if ($riskLevel && $riskLevel !== 'all') {
+            if ($riskLevel === 'elevated') {
+                // The list-side twin of the dashboard's high_risk_listings
+                // tile, which counts high AND critical and links here.
+                $conditions[] = "rt.risk_level IN ('high', 'critical')";
+            } elseif ($riskLevel && $riskLevel !== 'all') {
                 $conditions[] = 'rt.risk_level = ?';
                 $params[] = $riskLevel;
             }
@@ -2064,9 +2087,11 @@ class AdminBrokerController extends BaseApiController
     /** GET /api/v2/admin/broker/unreviewed-count */
     public function unreviewedCount(): JsonResponse
     {
-        $this->requireBrokerOrAdmin();
+        $viewerId = $this->requireBrokerOrAdmin();
 
-        $count = $this->brokerMessageVisibilityService->countUnreviewed();
+        // Shown beside the Messages queue, which withholds the viewer's own
+        // conversations (F-436); exclude them here too so the two agree.
+        $count = $this->brokerMessageVisibilityService->countUnreviewed($viewerId);
 
         return $this->respondWithData(['count' => $count]);
     }

@@ -74,6 +74,147 @@ class AdminBrokerControllerTest extends TestCase
             ->assertJsonPath('data.onboarding_safeguarding_flags', $baselineCount);
     }
 
+    // ----------------------------------------------------------------
+    // Every dashboard tile must count what the page it links to lists.
+    // Each test seeds a row the OLD count got wrong, then compares the
+    // tile with the linked list read through its own endpoint.
+    // ----------------------------------------------------------------
+
+    public function test_unreviewed_messages_tile_matches_the_unreviewed_queue(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        // A conversation the broker is a party to: withheld from their queue
+        // (F-436), and until now still counted on their tile.
+        $this->insertMessageCopy($broker->id, $a->id);
+        $this->insertMessageCopy($a->id, $b->id);
+        Sanctum::actingAs($broker);
+
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.unreviewed_messages');
+        $list = $this->apiGet('/v2/admin/broker/messages?filter=unreviewed&per_page=100')->assertOk();
+        $badge = $this->apiGet('/v2/admin/broker/messages/unreviewed-count')->assertOk()->json('data.count');
+
+        $this->assertSame((int) $list->json('meta.total'), $tile);
+        $this->assertSame($tile, $badge, 'The Messages page header must agree with its own queue.');
+    }
+
+    public function test_high_risk_tile_matches_the_elevated_risk_tag_list(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $levels = ['critical', 'high', 'medium'];
+        $ids = [];
+        foreach ($levels as $level) {
+            $listingId = $this->makeListingId($this->testTenantId, $owner->id);
+            $ids[$level] = $listingId;
+            DB::table('listing_risk_tags')->insert([
+                'tenant_id' => $this->testTenantId,
+                'listing_id' => $listingId,
+                'risk_level' => $level,
+                'risk_category' => 'other',
+                'tagged_by' => $admin->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        Sanctum::actingAs($admin);
+
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.high_risk_listings');
+        $rows = $this->apiGet('/v2/admin/broker/risk-tags?risk_level=elevated')->assertOk()->json('data');
+        $listed = array_map('intval', array_column($rows, 'listing_id'));
+
+        // The tile used to link to `level=high`, which hid every critical tag.
+        $this->assertContains($ids['critical'], $listed);
+        $this->assertContains($ids['high'], $listed);
+        $this->assertNotContains($ids['medium'], $listed);
+        $this->assertSame(count($rows), $tile);
+    }
+
+    public function test_safeguarding_alerts_tile_counts_the_unreviewed_flagged_messages_it_opens(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        // Two unreviewed flagged messages against one fraud alert, so the old
+        // count (fraud alerts) and the new one (flagged messages) differ.
+        $this->insertMessageCopy($a->id, $b->id, ['flagged' => true]);
+        $this->insertMessageCopy($b->id, $a->id, ['flagged' => true]);
+        $this->insertMessageCopy($b->id, $a->id, ['flagged' => true, 'reviewed_at' => now(), 'reviewed_by' => $admin->id]);
+        $this->insertMessageCopy($a->id, $b->id, ['flagged' => false]);
+        // A transfer-fraud alert: the tile used to count these, but no broker
+        // page shows them (they are in the admin panel's Fraud alerts).
+        DB::table('abuse_alerts')->insert([
+            'tenant_id' => $this->testTenantId,
+            'alert_type' => 'large_transfer',
+            'severity' => 'critical',
+            'status' => 'new',
+            'user_id' => $a->id,
+            'created_at' => now(),
+        ]);
+        Sanctum::actingAs($admin);
+
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.safeguarding_alerts');
+        $messages = $this->apiGet('/v2/admin/safeguarding/flagged-messages?limit=200')->assertOk()->json('data');
+        // The safeguarding page's `?filter=critical` drill-down, as the
+        // dashboard component applies it.
+        $critical = array_filter(
+            $messages,
+            static fn (array $m): bool => !$m['is_reviewed'] && in_array($m['severity'], ['high', 'critical'], true),
+        );
+
+        $this->assertSame(count($critical), $tile);
+    }
+
+    public function test_vetting_tile_matches_the_review_requested_filter(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $policy = app(\App\Services\SafeguardingJurisdictionService::class)->getPolicy($this->testTenantId);
+
+        $insert = function (array $codes) use ($member, $admin): void {
+            DB::table('safeguarding_vetting_review_requests')->insert(array_merge([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $member->id,
+                'jurisdiction' => 'IE',
+                'purpose_code' => 'safeguarded_member_contact',
+                'scope_type' => 'tenant',
+                'scope_identifier' => '',
+                'status' => 'pending',
+                'request_source' => 'policy_rotation',
+                'requested_by' => $admin->id,
+                'requested_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], $codes));
+        };
+        // A request raised under a policy that is no longer the tenant's: the
+        // Vetting page never lists it, and the tile used to count it.
+        $insert([
+            'scheme_code' => 'retired_scheme',
+            'attestation_code' => 'retired_attestation',
+            'policy_version' => 'retired:' . uniqid(),
+        ]);
+        if ($policy['scheme_code'] !== null && $policy['attestation_code'] !== null && $policy['policy_version'] !== null) {
+            $insert([
+                'jurisdiction' => $policy['jurisdiction'],
+                'scheme_code' => $policy['scheme_code'],
+                'attestation_code' => $policy['attestation_code'],
+                'purpose_code' => $policy['purpose_code'],
+                'scope_type' => $policy['scope_type'],
+                'scope_identifier' => $policy['scope_identifier'],
+                'policy_version' => $policy['policy_version'],
+            ]);
+        }
+        Sanctum::actingAs($admin);
+
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.vetting_review_requests');
+        $list = $this->apiGet('/v2/admin/vetting?status=review_requested&per_page=100')->assertOk();
+        $listed = $list->json('meta.pagination.total') ?? $list->json('meta.total');
+
+        $this->assertSame((int) $listed, $tile);
+    }
+
     public function test_dashboard_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();

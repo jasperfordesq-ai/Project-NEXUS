@@ -838,6 +838,7 @@
     "yes": "Yes",
     "no": "No",
     "tab_all": "All",
+    "tab_elevated": "High and critical",
     "tag_listing": "Tag Listing",
     "create_tag": "Create Tag",
     "update_tag": "Update Tag",

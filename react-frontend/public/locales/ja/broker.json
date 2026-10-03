@@ -838,6 +838,7 @@
     "yes": "はい",
     "no": "いいえ",
     "tab_all": "すべて",
+    "tab_elevated": "高および重大",
     "tag_listing": "リスティングにタグ付け",
     "create_tag": "タグを作成",
     "update_tag": "タグを更新",

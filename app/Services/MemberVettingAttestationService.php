@@ -606,19 +606,7 @@ class MemberVettingAttestationService
             $revoked = (clone $base)->where('decision', MemberVettingAttestation::DECISION_REVOKED)->count();
         }
 
-        $reviewRequested = 0;
-        if ($policy['scheme_code'] !== null && $policy['attestation_code'] !== null && $policy['policy_version'] !== null) {
-            $reviewRequested = DB::table('safeguarding_vetting_review_requests')
-                ->where('tenant_id', $tenantId)
-                ->where('scheme_code', $policy['scheme_code'])
-                ->where('attestation_code', $policy['attestation_code'])
-                ->where('purpose_code', $policy['purpose_code'])
-                ->where('scope_type', $policy['scope_type'])
-                ->where('scope_identifier', $policy['scope_identifier'])
-                ->where('policy_version', $policy['policy_version'])
-                ->where('status', SafeguardingVettingReviewRequest::STATUS_PENDING)
-                ->count();
-        }
+        $reviewRequested = $this->countPendingReviewRequests($tenantId, $policy);
 
         return [
             'total_members' => $totalMembers,
@@ -629,6 +617,40 @@ class MemberVettingAttestationService
             'review_requested' => $reviewRequested,
             'policy' => $policy,
         ];
+    }
+
+    /**
+     * Pending re-check requests, counted exactly as listMembers()'s
+     * `review_requested` filter selects them: under the tenant's CURRENT
+     * policy, for members who are not deleted or deactivated. The broker
+     * dashboard tile and the Vetting page header both use this, and both link
+     * to that filter, so the number and the list cannot disagree. A request
+     * made under a previous jurisdiction policy is not in the list, so it is
+     * not counted either.
+     *
+     * @param array<string, mixed>|null $policy the tenant's policy, when the caller already has it
+     */
+    public function countPendingReviewRequests(int $tenantId, ?array $policy = null): int
+    {
+        $policy ??= $this->jurisdictions->getPolicy($tenantId);
+        if ($policy['scheme_code'] === null || $policy['attestation_code'] === null || $policy['policy_version'] === null) {
+            return 0;
+        }
+
+        return DB::table('safeguarding_vetting_review_requests as r')
+            ->join('users as u', function ($join) use ($tenantId): void {
+                $join->on('u.id', '=', 'r.user_id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->whereNotIn('u.status', ['deleted', 'deactivated'])
+            ->where('r.tenant_id', $tenantId)
+            ->where('r.scheme_code', $policy['scheme_code'])
+            ->where('r.attestation_code', $policy['attestation_code'])
+            ->where('r.purpose_code', $policy['purpose_code'])
+            ->where('r.scope_type', $policy['scope_type'])
+            ->where('r.scope_identifier', $policy['scope_identifier'])
+            ->where('r.policy_version', $policy['policy_version'])
+            ->where('r.status', SafeguardingVettingReviewRequest::STATUS_PENDING)
+            ->count();
     }
 
     /** @return list<array<string, mixed>> */

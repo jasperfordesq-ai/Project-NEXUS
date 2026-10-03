@@ -489,9 +489,20 @@ class BrokerMessageVisibilityService
      *
      * @return int
      */
-    public function countUnreviewed(): int
+    /**
+     * @param int|null $excludePartyId leave out copies this user sent or
+     *                                 received — the review queue withholds a
+     *                                 viewer's own conversations (F-436)
+     */
+    public function countUnreviewed(?int $excludePartyId = null): int
     {
-        return BrokerMessageCopy::whereNull('reviewed_at')->count();
+        $query = BrokerMessageCopy::whereNull('reviewed_at');
+        if ($excludePartyId !== null) {
+            $query->where('sender_id', '<>', $excludePartyId)
+                ->where('receiver_id', '<>', $excludePartyId);
+        }
+
+        return $query->count();
     }
 
     // =========================================================================

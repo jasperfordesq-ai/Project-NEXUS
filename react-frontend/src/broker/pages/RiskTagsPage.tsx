@@ -84,7 +84,10 @@ const RISK_CATEGORY_KEYS = [
 ] as const;
 
 // Risk level filter is mirrored to `?level=` so stat-card deep-links work.
-const RISK_LEVELS = ['all', 'critical', 'high', 'medium', 'low'] as const;
+// `elevated` is not a stored level: the API expands it to high + critical,
+// the same set the broker dashboard's "High-risk listings" tile counts and
+// links here with.
+const RISK_LEVELS = ['all', 'elevated', 'critical', 'high', 'medium', 'low'] as const;
 
 // Category → decorative icon. Unknown categories fall back to a neutral tag.
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -100,6 +103,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 // Level → icon used in tabs and the KPI header (severity-coded).
 const LEVEL_ICONS: Record<(typeof RISK_LEVELS)[number], LucideIcon> = {
   all: Shield,
+  elevated: ShieldAlert,
   critical: ShieldAlert,
   high: TriangleAlert,
   medium: ShieldHalf,
@@ -533,7 +537,11 @@ export function RiskTagsPage() {
                   <div className="flex items-center gap-2">
                     <TabIcon size={14} aria-hidden="true" />
                     <span>
-                      {level === 'all' ? t('risk_tags.tab_all') : t(`risk_tags.level_${level}`)}
+                      {level === 'all'
+                        ? t('risk_tags.tab_all')
+                        : level === 'elevated'
+                          ? t('risk_tags.tab_elevated')
+                          : t(`risk_tags.level_${level}`)}
                     </span>
                   </div>
                 }
