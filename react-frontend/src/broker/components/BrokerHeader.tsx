@@ -5,35 +5,55 @@
 
 /**
  * Broker Header Bar
- * Simplified header with back-to-site, tenant name, and user menu.
+ * Back-to-site, tenant name, search, help, notifications (count + drawer),
+ * theme toggle and the user menu.
  */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth, useTenant } from '@/contexts';
+import { useAuth, useNotifications, useTenant, useTheme } from '@/contexts';
+import { hasAdminPanelAccess } from '@/lib/access';
 
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Bell from 'lucide-react/icons/bell';
 import HelpCircle from 'lucide-react/icons/circle-help';
+import Keyboard from 'lucide-react/icons/keyboard';
+import Moon from 'lucide-react/icons/moon';
 import Search from 'lucide-react/icons/search';
+import Settings from 'lucide-react/icons/settings';
 import LogOut from 'lucide-react/icons/log-out';
 import Menu from 'lucide-react/icons/menu';
+import Sun from 'lucide-react/icons/sun';
 import User from 'lucide-react/icons/user';
 import { resolveAvatarUrl } from '@/lib/helpers';
 
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Avatar, Kbd } from '@/components/ui';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Avatar, Badge } from '@/components/ui';
+import { BrokerNotificationsDrawer } from './BrokerNotificationsDrawer';
+import { SearchShortcutKeys } from './BrokerShortcutsModal';
+
 interface BrokerHeaderProps {
   sidebarCollapsed: boolean;
   onSidebarToggle?: () => void;
-  /** Opens the ⌘K command palette. */
+  /** Opens the ⌘K / Ctrl+K command palette. */
   onOpenSearch?: () => void;
+  /** Opens the keyboard shortcuts list (BrokerLayout owns the modal). */
+  onOpenShortcuts?: () => void;
 }
 
-export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }: BrokerHeaderProps) {
+export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch, onOpenShortcuts }: BrokerHeaderProps) {
   const { t } = useTranslation('broker');
   const { user, logout } = useAuth();
   const { tenantPath, tenant, hasModule } = useTenant();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const showNotifications = hasModule('notifications');
+  const canOpenAdmin = hasAdminPanelAccess(user);
+  const isDark = resolvedTheme === 'dark';
+  const unreadLabel = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
     <header
@@ -71,7 +91,7 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
         )}
       </div>
 
-      {/* Right: Search + help + notifications + user menu */}
+      {/* Right: Search + help + notifications + theme + user menu */}
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {onOpenSearch && (
           <>
@@ -83,7 +103,7 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
             >
               <Search size={14} aria-hidden="true" />
               <span>{t('header.search')}</span>
-              <Kbd className="ml-1">{t('header.search_shortcut')}</Kbd>
+              <span className="ml-1"><SearchShortcutKeys /></span>
             </button>
             {/* …small screens get an icon button. */}
             <Button
@@ -108,15 +128,39 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
         >
           <HelpCircle size={18} />
         </Button>
-        {hasModule('notifications') && <Button
+        {showNotifications && (
+          <Badge
+            content={unreadCount > 0 ? unreadLabel : undefined}
+            color="danger"
+            size="sm"
+            placement="top-right"
+            isInvisible={unreadCount === 0}
+            className="min-w-5 font-semibold tabular-nums"
+          >
+            <Button
+              isIconOnly
+              variant="tertiary"
+              size="sm"
+              onPress={() => setNotificationsOpen(true)}
+              aria-label={
+                unreadCount > 0
+                  ? t('header.notifications_with_count', { count: unreadCount })
+                  : t('header.notifications')
+              }
+            >
+              <Bell size={18} />
+            </Button>
+          </Badge>
+        )}
+        <Button
           isIconOnly
           variant="tertiary"
           size="sm"
-          onPress={() => navigate(tenantPath('/notifications'))}
-          aria-label={t('header.notifications')}
+          onPress={() => void toggleTheme()}
+          aria-label={isDark ? t('header.switch_to_light') : t('header.switch_to_dark')}
         >
-          <Bell size={18} />
-        </Button>}
+          {isDark ? <Sun size={18} className="text-warning" /> : <Moon size={18} />}
+        </Button>
 
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -136,11 +180,19 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
             aria-label={t('header.user_menu')}
             onAction={(key) => {
               if (key === 'profile') navigate(tenantPath('/profile'));
+              if (key === 'admin') navigate(tenantPath('/admin'));
+              if (key === 'shortcuts') onOpenShortcuts?.();
               if (key === 'logout') logout();
             }}
           >
             {hasModule('profile') ? <DropdownItem key="profile" id="profile" startContent={<User size={16} />}>
               {t('header.my_profile')}
+            </DropdownItem> : null}
+            {canOpenAdmin ? <DropdownItem key="admin" id="admin" startContent={<Settings size={16} />}>
+              {t('header.admin_panel')}
+            </DropdownItem> : null}
+            {onOpenShortcuts ? <DropdownItem key="shortcuts" id="shortcuts" startContent={<Keyboard size={16} />}>
+              {t('header.keyboard_shortcuts')}
             </DropdownItem> : null}
             <DropdownItem
               key="logout" id="logout"
@@ -153,6 +205,10 @@ export function BrokerHeader({ sidebarCollapsed, onSidebarToggle, onOpenSearch }
           </DropdownMenu>
         </Dropdown>
       </div>
+
+      {showNotifications && (
+        <BrokerNotificationsDrawer isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+      )}
     </header>
   );
 }

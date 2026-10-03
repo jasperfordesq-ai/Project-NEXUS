@@ -16,6 +16,21 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 const mockLogout = vi.fn();
+const mockToggleTheme = vi.hoisted(() => vi.fn());
+const mockResolvedTheme = vi.hoisted(() => ({ value: 'light' as 'light' | 'dark' }));
+const mockUnread = vi.hoisted(() => ({ value: 0 }));
+const mockMarkAllAsRead = vi.hoisted(() => vi.fn(async () => true));
+const mockApiGet = vi.hoisted(() => vi.fn());
+const mockAdminAccess = vi.hoisted(() => ({ value: false }));
+
+vi.mock('@/lib/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api')>();
+  return { ...actual, api: { ...actual.api, get: mockApiGet } };
+});
+vi.mock('@/lib/access', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/access')>()),
+  hasAdminPanelAccess: vi.fn(() => mockAdminAccess.value),
+}));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -42,6 +57,24 @@ vi.mock('@/contexts', () =>
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn((module: string) => !disabledModules.has(module)),
     }),
+    useTheme: () => ({
+      // The shared helper types this as the literal 'light'; the tests flip it to 'dark' at runtime.
+      resolvedTheme: mockResolvedTheme.value as 'light',
+      theme: 'system' as const,
+      toggleTheme: mockToggleTheme,
+      setTheme: vi.fn(),
+    }),
+    useNotifications: () => ({
+      unreadCount: mockUnread.value,
+      counts: {},
+      notifications: [],
+      markAsRead: vi.fn(),
+      markAllAsRead: mockMarkAllAsRead,
+      hasMore: false,
+      loadMore: vi.fn(),
+      isLoading: false,
+      refresh: vi.fn(),
+    }),
   })
 );
 
@@ -62,6 +95,12 @@ describe('BrokerHeader', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     disabledModules.clear();
+    mockUnread.value = 0;
+    mockResolvedTheme.value = 'light';
+    mockAdminAccess.value = false;
+    mockApiGet.mockResolvedValue({ success: true, data: [] });
+    Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true });
+    Object.defineProperty(window.navigator, 'userAgentData', { value: undefined, configurable: true });
   });
 
   it('renders a <header> element', () => {
@@ -118,11 +157,115 @@ describe('BrokerHeader', () => {
     expect(screen.queryByRole('button', { name: /toggle.*(sidebar|menu)/i })).not.toBeInTheDocument();
   });
 
-  it('navigates to notifications when notifications button is pressed', async () => {
-    const user = userEvent.setup();
-    render(<BrokerHeader sidebarCollapsed={false} />);
-    await user.click(screen.getByRole('button', { name: /notifications/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/notifications');
+  describe('notifications bell', () => {
+    const NOTIFICATIONS = [
+      { id: 11, type: 'message', title: 'New message from Bob', body: 'Hello there', read_at: null, link: '/messages/4', created_at: new Date(Date.now() - 5 * 60_000).toISOString() },
+      { id: 12, type: 'system', title: 'Vetting confirmation due', body: 'Carol needs vetting', read_at: '2026-10-01T10:00:00Z', link: null, created_at: new Date(Date.now() - 3 * 3_600_000).toISOString() },
+    ];
+
+    it('shows the unread count on the bell', () => {
+      mockUnread.value = 3;
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /notifications, 3 unread/i })).toBeInTheDocument();
+    });
+
+    it('shows no count when nothing is unread', () => {
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      expect(screen.queryByText('0')).not.toBeInTheDocument();
+    });
+
+    it('opens a drawer inside the panel instead of leaving it, listing the latest notifications', async () => {
+      mockApiGet.mockResolvedValue({ success: true, data: NOTIFICATIONS });
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+
+      await user.click(screen.getByRole('button', { name: /notifications/i }));
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(await screen.findByText('New message from Bob')).toBeInTheDocument();
+      expect(screen.getByText('Vetting confirmation due')).toBeInTheDocument();
+      expect(mockApiGet).toHaveBeenCalledWith(expect.stringContaining('/v2/notifications/grouped?per_page=15'));
+    });
+
+    it('marks everything read from the drawer and links to the full notifications page', async () => {
+      mockUnread.value = 2;
+      mockApiGet.mockResolvedValue({ success: true, data: NOTIFICATIONS });
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+
+      await user.click(screen.getByRole('button', { name: /notifications/i }));
+      await user.click(await screen.findByRole('button', { name: /mark all as read/i }));
+      expect(mockMarkAllAsRead).toHaveBeenCalledTimes(1);
+
+      expect(screen.getByRole('link', { name: /open all notifications/i })).toHaveAttribute('href', '/hour-timebank/notifications');
+    });
+
+    it('says so when there is nothing to show', async () => {
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      await user.click(screen.getByRole('button', { name: /notifications/i }));
+      expect(await screen.findByText(/all caught up/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('theme toggle', () => {
+    it('offers dark mode in light mode and calls toggleTheme', async () => {
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      await user.click(screen.getByRole('button', { name: /switch to dark theme/i }));
+      expect(mockToggleTheme).toHaveBeenCalledTimes(1);
+    });
+
+    it('offers light mode in dark mode', () => {
+      mockResolvedTheme.value = 'dark';
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      expect(screen.getByRole('button', { name: /switch to light theme/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('shortcut hint', () => {
+    it('shows ⌘K on Apple platforms', () => {
+      render(<BrokerHeader sidebarCollapsed={false} onOpenSearch={vi.fn()} />);
+      expect(screen.getByText('⌘K')).toBeInTheDocument();
+      expect(screen.queryByText('Ctrl')).not.toBeInTheDocument();
+    });
+
+    it('shows Ctrl K everywhere else', () => {
+      Object.defineProperty(window.navigator, 'platform', { value: 'Win32', configurable: true });
+      render(<BrokerHeader sidebarCollapsed={false} onOpenSearch={vi.fn()} />);
+      expect(screen.getByText('Ctrl')).toBeInTheDocument();
+      expect(screen.getByText('K')).toBeInTheDocument();
+      expect(screen.queryByText('⌘K')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('user menu', () => {
+    it('offers the admin panel only to a user who may open it', async () => {
+      mockAdminAccess.value = true;
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      await user.click(screen.getByText('Alice Smith').closest('button')!);
+      await user.click(await screen.findByText(/^admin panel$/i));
+      expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/admin');
+    });
+
+    it('hides the admin panel from a broker', async () => {
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} />);
+      await user.click(screen.getByText('Alice Smith').closest('button')!);
+      expect(await screen.findByText(/sign.?out/i)).toBeInTheDocument();
+      expect(screen.queryByText(/^admin panel$/i)).not.toBeInTheDocument();
+    });
+
+    it('opens the keyboard shortcuts list', async () => {
+      const onOpenShortcuts = vi.fn();
+      const user = userEvent.setup();
+      render(<BrokerHeader sidebarCollapsed={false} onOpenShortcuts={onOpenShortcuts} />);
+      await user.click(screen.getByText('Alice Smith').closest('button')!);
+      await user.click(await screen.findByText(/keyboard shortcuts/i));
+      expect(onOpenShortcuts).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('calls logout when the sign-out dropdown item is activated', async () => {

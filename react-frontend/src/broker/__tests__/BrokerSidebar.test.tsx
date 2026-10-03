@@ -86,6 +86,7 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
   support_needs_unseen: 0,
   pending_support_actions: 0,
   open_reports: 0,
+  insurance_attention: 0,
 };
 
 describe('BrokerSidebar', () => {

@@ -13,15 +13,28 @@ import userEvent from '@testing-library/user-event';
 // ---------------------------------------------------------------------------
 const mockGetDashboard = vi.hoisted(() => vi.fn());
 const mockApprovalStats = vi.hoisted(() => vi.fn());
+const mockInsuranceStats = vi.hoisted(() => vi.fn());
 const mockRole = vi.hoisted(() => ({ value: 'broker' as 'broker' | 'admin' }));
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminBroker: {
     getDashboard: mockGetDashboard,
+    getMessages: vi.fn(async () => ({ success: true, data: [] })),
   },
   adminMatching: {
     getApprovalStats: mockApprovalStats,
   },
+  adminInsurance: {
+    stats: mockInsuranceStats,
+  },
+  adminUsers: {
+    list: vi.fn(async () => ({ success: true, data: [] })),
+  },
+}));
+
+// The palette's help search reads the guide catalogue; the shell tests do not.
+vi.mock('@/pages/help/guides/useHelpGuides', () => ({
+  useHelpGuides: () => ({ search: () => [] }),
 }));
 
 vi.mock('@/contexts', () =>
@@ -64,7 +77,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router-dom')>();
   return {
     ...actual,
-    Outlet: () => <div data-testid="outlet-sentinel">outlet content</div>,
+    Outlet: () => <div data-testid="outlet-sentinel">outlet content<input aria-label="Field" /></div>,
   };
 });
 
@@ -87,7 +100,10 @@ const BROKER_DASHBOARD = {
 describe('BrokerLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
+    window.history.replaceState({}, '', '/');
     mockRole.value = 'broker';
+    mockInsuranceStats.mockResolvedValue({ success: true, data: { total: 9, pending: 1, verified: 4, expired: 0, expiring_soon: 2, pending_review: 3 } });
     mockGetDashboard.mockResolvedValue({ success: true, data: BROKER_DASHBOARD });
     mockApprovalStats.mockResolvedValue({
       success: true,
@@ -158,6 +174,82 @@ describe('BrokerLayout', () => {
     // After opening the drawer, inert is removed
     await waitFor(() => {
       expect(screen.getByRole('dialog')).not.toHaveAttribute('inert');
+    });
+  });
+
+  describe('sidebar collapse memory', () => {
+    it('starts collapsed when the broker left it collapsed last time', () => {
+      window.localStorage.setItem('nexus_broker_sidebar_collapsed', 'true');
+      render(<BrokerLayout />);
+      expect(screen.getByRole('button', { name: /expand sidebar/i })).toBeInTheDocument();
+    });
+
+    it('starts expanded by default and remembers a collapse', async () => {
+      const user = userEvent.setup();
+      render(<BrokerLayout />);
+      expect(screen.queryByRole('button', { name: /expand sidebar/i })).not.toBeInTheDocument();
+
+      // Two sidebars mount (desktop + mobile drawer); the desktop one is first.
+      await user.click(screen.getAllByRole('button', { name: /collapse sidebar/i })[0]!);
+      expect(window.localStorage.getItem('nexus_broker_sidebar_collapsed')).toBe('true');
+      expect(screen.getByRole('button', { name: /expand sidebar/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('insurance badge', () => {
+    it('counts certificates expiring soon plus those awaiting review on the Insurance link', async () => {
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockInsuranceStats).toHaveBeenCalledTimes(1));
+      const [insurance] = screen.getAllByRole('link', { name: /^Insurance/i });
+      await waitFor(() => expect(insurance).toHaveTextContent('5'));
+    });
+
+    it('shows no insurance count when the stats cannot be read', async () => {
+      mockInsuranceStats.mockRejectedValue(new Error('403'));
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalledTimes(1));
+      // The other badges still arrive…
+      const [members] = screen.getAllByRole('link', { name: /^Members/i });
+      await waitFor(() => expect(members).toHaveTextContent('4'));
+      // …and Insurance stays plain.
+      const [insurance] = screen.getAllByRole('link', { name: /^Insurance/i });
+      expect(insurance).not.toHaveTextContent(/\d/);
+    });
+  });
+
+  describe('recent pages', () => {
+    it('records a visited broker page for the command palette, without the tenant slug', async () => {
+      window.history.replaceState({}, '', '/test/broker/members');
+      render(<BrokerLayout />);
+      await waitFor(() => {
+        expect(JSON.parse(window.localStorage.getItem('nexus_broker_recent') ?? '[]')).toEqual(['/broker/members']);
+      });
+    });
+
+    it('does not record the dashboard', async () => {
+      window.history.replaceState({}, '', '/test/broker');
+      render(<BrokerLayout />);
+      await waitFor(() => expect(mockGetDashboard).toHaveBeenCalled());
+      expect(window.localStorage.getItem('nexus_broker_recent')).toBeNull();
+    });
+  });
+
+  describe('keyboard shortcuts', () => {
+    it('opens the shortcuts list on ? when focus is not in a field', async () => {
+      const user = userEvent.setup();
+      render(<BrokerLayout />);
+      await user.keyboard('?');
+      expect(await screen.findByRole('heading', { name: /keyboard shortcuts/i })).toBeInTheDocument();
+      expect(screen.getByText(/open search/i)).toBeInTheDocument();
+    });
+
+    it('leaves ? alone while typing in a field', async () => {
+      const user = userEvent.setup();
+      render(<BrokerLayout />);
+      await user.click(screen.getByRole('textbox', { name: 'Field' }));
+      await user.keyboard('?');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(screen.queryByRole('heading', { name: /keyboard shortcuts/i })).not.toBeInTheDocument();
     });
   });
 

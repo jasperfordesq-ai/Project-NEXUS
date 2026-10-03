@@ -15,17 +15,46 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { adminBroker, adminMatching } from '@/admin/api/adminApi';
+import { adminBroker, adminInsurance, adminMatching } from '@/admin/api/adminApi';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { isAdminTierUser } from '@/lib/access';
-import type { MatchApprovalStats } from '@/admin/api/types';
+import type { InsuranceStats, MatchApprovalStats } from '@/admin/api/types';
 import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSidebar';
 import { BrokerHeader } from './components/BrokerHeader';
 import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
 import { BrokerCommandPalette } from './components/BrokerCommandPalette';
+import { BrokerShortcutsModal } from './components/BrokerShortcutsModal';
+import { BrokerBreadcrumbProvider } from './BrokerBreadcrumbContext';
 import { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
 import { useBrokerAutoRefresh } from './useBrokerAutoRefresh';
+import { recordBrokerVisit } from './useBrokerRecentPages';
+
+/** localStorage key for the desktop sidebar's collapsed state (per browser). */
+const SIDEBAR_COLLAPSED_KEY = 'nexus_broker_sidebar_collapsed';
+
+function readSidebarCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function writeSidebarCollapsed(collapsed: boolean): void {
+  try {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? 'true' : 'false');
+  } catch {
+    // Storage blocked (private mode, quota): the state still applies for this visit.
+  }
+}
+
+/** True when the key event happened inside something the broker is typing in. */
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+}
 
 const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_members: 0,
@@ -39,15 +68,19 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
   support_needs_unseen: 0,
   pending_support_actions: 0,
   open_reports: 0,
+  insurance_attention: 0,
 };
 
 export function BrokerLayout() {
   const { t } = useTranslation('broker');
-  const { hasFeature } = useTenant();
+  const { hasFeature, tenant } = useTenant();
   const showMatches = hasFeature('exchange_workflow');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // Remembered per browser: a broker who works with the sidebar tucked away
+  // should not have to tuck it away again after every reload.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [badges, setBadges] = useState<BrokerBadgeCounts>(EMPTY_BADGES);
   // From the dashboard read the badges already make, so the "jurisdiction not
   // set" notice costs no extra request. Only an explicit `false` shows it —
@@ -66,7 +99,7 @@ export function BrokerLayout() {
 
   const fetchBadges = useCallback(async () => {
     try {
-      const [dashRes, matchRes, safeguardingRes] = await Promise.all([
+      const [dashRes, matchRes, safeguardingRes, insuranceRes] = await Promise.all([
         // Carries every queue count, each computed by the rule its page lists
         // with (pending members and open reports included since October 2026).
         adminBroker.getDashboard(),
@@ -80,9 +113,20 @@ export function BrokerLayout() {
         api
           .get<{ support_needs_unseen?: number; pending_support_actions?: number }>('/v2/admin/safeguarding/dashboard')
           .catch(() => null),
+        // Insurance certificates expiring soon or awaiting review, from the
+        // endpoint the Insurance page's own stat cards read.
+        adminInsurance.stats().catch(() => null),
       ]);
 
       const safeguarding = safeguardingRes?.success && safeguardingRes.data ? safeguardingRes.data : null;
+
+      // expiring_soon + pending_review (the latter falls back to the legacy
+      // `pending` field on an older API). Errors read as 0, like the others.
+      let insuranceAttention = 0;
+      if (insuranceRes?.success && insuranceRes.data) {
+        const stats = insuranceRes.data as Partial<InsuranceStats>;
+        insuranceAttention = Number(stats.expiring_soon ?? 0) + Number(stats.pending_review ?? stats.pending ?? 0);
+      }
 
       let pendingMatches = 0;
       if (matchRes?.success && matchRes.data) {
@@ -108,6 +152,7 @@ export function BrokerLayout() {
           support_needs_unseen: Number(safeguarding?.support_needs_unseen ?? 0),
           pending_support_actions: Number(safeguarding?.pending_support_actions ?? 0),
           open_reports: Number(d.open_reports ?? 0),
+          insurance_attention: insuranceAttention,
         });
         const configured = d.safeguarding_jurisdiction_configured;
         setJurisdictionConfigured(typeof configured === 'boolean' ? configured : null);
@@ -134,17 +179,29 @@ export function BrokerLayout() {
     return () => root.removeAttribute('data-panel');
   }, []);
 
-  // ⌘K / Ctrl+K opens the command palette from anywhere in the panel.
+  // ⌘K / Ctrl+K opens the command palette from anywhere in the panel;
+  // `?` opens the shortcuts list unless the broker is typing in a field.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setPaletteOpen((prev) => !prev);
+        return;
+      }
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        setShortcutsOpen(true);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  // Remember the pages visited so the command palette can offer them under
+  // "Recent" (tenant slug stripped, dashboard excluded).
+  useEffect(() => {
+    recordBrokerVisit(pathname, tenant?.slug);
+  }, [pathname, tenant?.slug]);
 
   // Focus management for mobile drawer
   const openMobileDrawer = useCallback(() => {
@@ -208,7 +265,12 @@ export function BrokerLayout() {
       <div className="hidden md:block">
         <BrokerSidebar
           collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed((prev) => !prev)}
+          onToggle={() =>
+            setSidebarCollapsed((prev) => {
+              writeSidebarCollapsed(!prev);
+              return !prev;
+            })
+          }
           badges={badges}
         />
       </div>
@@ -217,9 +279,11 @@ export function BrokerLayout() {
         sidebarCollapsed={sidebarCollapsed}
         onSidebarToggle={() => mobileDrawerOpen ? closeMobileDrawer() : openMobileDrawer()}
         onOpenSearch={() => setPaletteOpen(true)}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
       />
 
       <BrokerCommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <BrokerShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       {mobileDrawerOpen && (
         <button
@@ -254,9 +318,12 @@ export function BrokerLayout() {
         }`}
       >
         <div className="p-3 sm:p-4 md:p-6">
-          <BrokerBreadcrumbs />
-          {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
-          <Outlet />
+          {/* A detail page names its record for the current crumb through this provider. */}
+          <BrokerBreadcrumbProvider>
+            <BrokerBreadcrumbs />
+            {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
+            <Outlet />
+          </BrokerBreadcrumbProvider>
         </div>
       </main>
     </div>

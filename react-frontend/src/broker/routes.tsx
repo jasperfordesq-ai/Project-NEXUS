@@ -10,8 +10,8 @@
 
 import { Suspense, lazy } from 'react';
 import { Route, Navigate, useLocation } from 'react-router-dom';
-import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
+import { BrokerSkeleton } from './components';
 import { flaggedMessagesTarget, safeguardingRedirectTarget } from './safeguardingRedirect';
 
 /**
@@ -135,8 +135,13 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const BrokerConfigurationPage = lazy(() => import('./pages/BrokerConfigurationPage'));
 const BrokerHelpPage = lazy(() => import('./pages/BrokerHelpPage'));
 
+/**
+ * Page-shaped placeholder while a broker page's chunk loads. The full-screen
+ * LoadingScreen flashed over the whole shell on every page change; a skeleton
+ * inside the content area keeps the sidebar and header still.
+ */
 function Lazy({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<LoadingScreen />}>{children}</Suspense>;
+  return <Suspense fallback={<BrokerSkeleton variant="cards" count={3} />}>{children}</Suspense>;
 }
 
 export function BrokerRoutes() {

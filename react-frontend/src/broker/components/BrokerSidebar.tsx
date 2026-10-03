@@ -18,6 +18,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { hasAdminPanelAccess } from '@/lib/access';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Users from 'lucide-react/icons/users';
+import UserRoundCheck from 'lucide-react/icons/user-round-check';
 import UserPlus from 'lucide-react/icons/user-plus';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import HandHeart from 'lucide-react/icons/hand-heart';
@@ -36,12 +37,12 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import FileText from 'lucide-react/icons/file-text';
 import Archive from 'lucide-react/icons/archive';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
+import Settings2 from 'lucide-react/icons/settings-2';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import Settings from 'lucide-react/icons/settings';
-import { Chip } from '@/components/ui';
-import { Button, Tooltip } from '@/components/ui';
+import { Badge, Button, Chip, Tooltip } from '@/components/ui';
 
 export interface BrokerBadgeCounts {
   pending_members: number;
@@ -58,7 +59,23 @@ export interface BrokerBadgeCounts {
   pending_support_actions: number;
   /** Member reports still open that this broker may handle (F-454/F-549). */
   open_reports: number;
+  /** Insurance certificates expiring soon plus those awaiting review (Oct 2026). */
+  insurance_attention: number;
 }
+
+/**
+ * What a badge's colour should say about its number.
+ * - `queue`: work that should fall to zero (red, as every badge was before Oct 2026).
+ * - `attention`: worth a look soon, not a failure (amber).
+ * - `inventory`: a standing count that never falls — monitored members, risk tags (neutral).
+ */
+export type BadgeTone = 'queue' | 'attention' | 'inventory';
+
+const TONE_COLOR: Record<BadgeTone, 'danger' | 'warning' | 'default'> = {
+  queue: 'danger',
+  attention: 'warning',
+  inventory: 'default',
+};
 
 interface BrokerSidebarProps {
   collapsed: boolean;
@@ -72,6 +89,8 @@ interface NavItem {
   icon: React.ElementType;
   path: string;
   badgeKey?: keyof BrokerBadgeCounts;
+  /** Defaults to `queue` — the red badge every count had before Oct 2026. */
+  badgeTone?: BadgeTone;
 }
 
 interface NavSection {
@@ -129,7 +148,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       title: t('sidebar.section_safeguarding'),
       items: [
         { key: 'safeguarding-support-needs', label: t('nav.safeguarding_support_needs'), icon: HeartHandshake, path: '/broker/safeguarding/support-needs', badgeKey: 'support_needs_unseen' },
-        { key: 'safeguarding-guardians', label: t('nav.safeguarding_guardians'), icon: Users, path: '/broker/safeguarding/guardians' },
+        { key: 'safeguarding-guardians', label: t('nav.safeguarding_guardians'), icon: UserRoundCheck, path: '/broker/safeguarding/guardians' },
         { key: 'safeguarding-support-actions', label: t('nav.safeguarding_support_actions'), icon: ClipboardCheck, path: '/broker/safeguarding/support-actions', badgeKey: 'pending_support_actions' },
         ...(showVolunteering
           ? ([{ key: 'safeguarding-volunteering', label: t('nav.safeguarding_volunteering'), icon: HandHeart, path: '/broker/safeguarding/volunteering' }] as NavItem[])
@@ -157,9 +176,9 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       title: t('sidebar.section_compliance'),
       items: [
         { key: 'vetting', label: t('nav.vetting'), icon: ShieldCheck, path: '/broker/vetting', badgeKey: 'vetting_review_requests' },
-        { key: 'monitoring', label: t('nav.monitoring'), icon: Eye, path: '/broker/monitoring', badgeKey: 'monitored_users' },
-        { key: 'risk-tags', label: t('nav.risk_tags'), icon: AlertTriangle, path: '/broker/risk-tags', badgeKey: 'high_risk_listings' },
-        { key: 'insurance', label: t('nav.insurance'), icon: FileText, path: '/broker/insurance' },
+        { key: 'monitoring', label: t('nav.monitoring'), icon: Eye, path: '/broker/monitoring', badgeKey: 'monitored_users', badgeTone: 'inventory' },
+        { key: 'risk-tags', label: t('nav.risk_tags'), icon: AlertTriangle, path: '/broker/risk-tags', badgeKey: 'high_risk_listings', badgeTone: 'inventory' },
+        { key: 'insurance', label: t('nav.insurance'), icon: FileText, path: '/broker/insurance', badgeKey: 'insurance_attention', badgeTone: 'attention' },
       ],
     },
     {
@@ -173,7 +192,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       key: 'settings',
       title: t('sidebar.section_settings'),
       items: [
-        { key: 'configuration', label: t('nav.configuration'), icon: SlidersHorizontal, path: '/broker/configuration' },
+        { key: 'configuration', label: t('nav.configuration'), icon: Settings2, path: '/broker/configuration' },
         { key: 'help', label: t('nav.help'), icon: HelpCircle, path: '/broker/help' },
       ],
     },
@@ -194,6 +213,9 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
   const renderItem = (item: NavItem) => {
     const active = isActive(item.path);
     const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+    const badgeLabel = badgeCount > 99 ? '99+' : String(badgeCount);
+    const tone: BadgeTone = item.badgeTone ?? 'queue';
+    const toneColor = active ? 'accent' : TONE_COLOR[tone];
     const Icon = item.icon;
 
     const link = (
@@ -214,22 +236,43 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
               className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-accent"
             />
           )}
-          <Icon
-            size={20}
-            className={`shrink-0 transition-transform group-hover:scale-105 motion-reduce:transition-none ${active ? 'text-accent' : 'text-muted group-hover:text-foreground'}`}
-          />
+          {collapsed && badgeCount > 0 ? (
+            // Collapsed: the number sits on the icon (a bare dot said nothing
+            // about how much was waiting), coloured by the same tone.
+            <Badge
+              content={badgeLabel}
+              color={toneColor}
+              size="sm"
+              placement="top-right"
+              data-tone={tone}
+              className="min-w-4 px-1 text-[10px] font-semibold tabular-nums"
+            >
+              <Icon
+                size={20}
+                className={`shrink-0 transition-transform group-hover:scale-105 motion-reduce:transition-none ${active ? 'text-accent' : 'text-muted group-hover:text-foreground'}`}
+              />
+            </Badge>
+          ) : (
+            <Icon
+              size={20}
+              className={`shrink-0 transition-transform group-hover:scale-105 motion-reduce:transition-none ${active ? 'text-accent' : 'text-muted group-hover:text-foreground'}`}
+            />
+          )}
           {!collapsed && (
             <>
               <span className="flex-1 truncate">{item.label}</span>
               {badgeCount > 0 && (
-                <Chip size="sm" color={active ? 'accent' : 'danger'} variant="tertiary" className="min-w-[24px] h-5 text-xs tabular-nums">
-                  {badgeCount > 99 ? '99+' : badgeCount}
+                <Chip
+                  size="sm"
+                  color={toneColor}
+                  variant="tertiary"
+                  data-tone={tone}
+                  className="min-w-[24px] h-5 text-xs tabular-nums"
+                >
+                  {badgeLabel}
                 </Chip>
               )}
             </>
-          )}
-          {collapsed && badgeCount > 0 && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-danger" />
           )}
         </Link>
       </li>
