@@ -345,7 +345,22 @@
       "signIn": "Accedi",
       "unsavedTitle": "Scartare la richiesta?",
       "unsavedMessage": "Quello che hai scritto non è stato inviato e andrà perso.",
-      "discard": "Scarta"
+      "discard": "Scarta",
+      "screenshots": {
+        "label": "Schermate (facoltativo)",
+        "hint": "Aggiungi fino a {{max}} immagini dal telefono, fino a {{size}} MB ciascuna. Aiutano il team di assistenza a vedere quello che vedi tu.",
+        "privacy": "Verifica che non mostrino dati privati di altre persone.",
+        "add": "Aggiungi una schermata",
+        "remove": "Rimuovi la schermata {{number}}",
+        "removeLabel": "Rimuovi",
+        "thumbnail": "Schermata {{number}}",
+        "listLabel": "Schermate da inviare",
+        "full": "Hai aggiunto {{max}} schermate, il massimo per una richiesta.",
+        "tooMany": "Puoi allegare fino a {{max}} schermate, quindi sono state aggiunte solo le prime.",
+        "tooLarge": "Un’immagine più grande di {{size}} MB non è stata aggiunta.",
+        "unsupported": "Non è stato possibile preparare un’immagine per l’invio, quindi non è stata aggiunta. Prova con un’altra.",
+        "failed": "Non è stato possibile aggiungere le immagini. Riprova."
+      }
     },
     "requestCard": {
       "title": "Aiuto e assistenza",

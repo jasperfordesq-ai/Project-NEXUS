@@ -345,7 +345,22 @@
       "signIn": "Iniciar sessão",
       "unsavedTitle": "Descartar o seu pedido?",
       "unsavedMessage": "O que escreveu ainda não foi enviado e será perdido.",
-      "discard": "Descartar"
+      "discard": "Descartar",
+      "screenshots": {
+        "label": "Capturas de ecrã (opcional)",
+        "hint": "Adicione até {{max}} imagens do seu telemóvel, com até {{size}} MB cada. Ajudam a equipa de suporte a ver o que está a ver.",
+        "privacy": "Confirme que não mostram dados privados de outras pessoas.",
+        "add": "Adicionar uma captura de ecrã",
+        "remove": "Remover a captura de ecrã {{number}}",
+        "removeLabel": "Remover",
+        "thumbnail": "Captura de ecrã {{number}}",
+        "listLabel": "Capturas de ecrã a enviar",
+        "full": "Adicionou {{max}} capturas de ecrã, o máximo que um pedido pode levar.",
+        "tooMany": "Pode anexar até {{max}} capturas de ecrã, por isso só as primeiras foram adicionadas.",
+        "tooLarge": "Uma imagem com mais de {{size}} MB não foi adicionada.",
+        "unsupported": "Não foi possível preparar uma imagem para envio, por isso não foi adicionada. Experimente outra.",
+        "failed": "Não foi possível adicionar as imagens. Tente novamente."
+      }
     },
     "requestCard": {
       "title": "Ajuda e suporte",

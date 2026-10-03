@@ -345,7 +345,22 @@
       "signIn": "Anmelden",
       "unsavedTitle": "Anfrage verwerfen?",
       "unsavedMessage": "Dein Text wurde noch nicht gesendet und geht verloren.",
-      "discard": "Verwerfen"
+      "discard": "Verwerfen",
+      "screenshots": {
+        "label": "Bildschirmfotos (optional)",
+        "hint": "Füg bis zu {{max}} Bilder von deinem Handy hinzu, jeweils bis zu {{size}} MB. So sieht das Support-Team, was du siehst.",
+        "privacy": "Achte darauf, dass keine privaten Daten anderer Personen zu sehen sind.",
+        "add": "Bildschirmfoto hinzufügen",
+        "remove": "Bildschirmfoto {{number}} entfernen",
+        "removeLabel": "Entfernen",
+        "thumbnail": "Bildschirmfoto {{number}}",
+        "listLabel": "Zu sendende Bildschirmfotos",
+        "full": "Du hast {{max}} Bildschirmfotos hinzugefügt – mehr passen nicht in eine Anfrage.",
+        "tooMany": "Du kannst bis zu {{max}} Bildschirmfotos anhängen, deshalb wurden nur die ersten hinzugefügt.",
+        "tooLarge": "Ein Bild, das größer als {{size}} MB ist, wurde nicht hinzugefügt.",
+        "unsupported": "Ein Bild konnte nicht zum Senden vorbereitet werden und wurde nicht hinzugefügt. Versuch es mit einem anderen.",
+        "failed": "Die Bilder konnten nicht hinzugefügt werden. Versuch es bitte noch einmal."
+      }
     },
     "requestCard": {
       "title": "Hilfe & Support",

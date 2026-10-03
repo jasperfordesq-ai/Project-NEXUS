@@ -102,4 +102,54 @@ describe('prepareImageForUpload', () => {
 
     expect(mockManipulate).toHaveBeenCalled();
   });
+
+  describe('convertUnsupportedFormats (Help & support screenshots)', () => {
+    /*
+      The support endpoint accepts only PNG, JPEG and WebP and checks the CONTENT. A small
+      iPhone HEIC would otherwise leave the phone untouched and be refused by the server.
+    */
+    it('re-encodes a small HEIC as JPEG without resizing it', async () => {
+      const result = await prepareImageForUpload(
+        { uri: 'file:///dcim/IMG_0001.HEIC', width: 800, height: 600, mimeType: 'image/heic' },
+        { convertUnsupportedFormats: true },
+      );
+
+      expect(mockManipulate).toHaveBeenCalledWith('file:///dcim/IMG_0001.HEIC');
+      expect(mockResize).not.toHaveBeenCalled();
+      expect(mockSaveAsync).toHaveBeenCalledWith({ format: 'jpeg', compress: 0.8 });
+      expect(result).toEqual(expect.objectContaining({ uri: 'file:///cache/resized.jpg', mimeType: 'image/jpeg' }));
+    });
+
+    it('recognises HEIC by its extension when the picker reported no type', async () => {
+      await prepareImageForUpload({ uri: 'file:///dcim/photo.heic', width: 800, height: 600 }, { convertUnsupportedFormats: true });
+
+      expect(mockSaveAsync).toHaveBeenCalledWith({ format: 'jpeg', compress: 0.8 });
+    });
+
+    it('leaves a small PNG, JPEG or WebP alone', async () => {
+      for (const mimeType of ['image/png', 'image/jpeg', 'image/webp']) {
+        const asset = { uri: 'content://media/42', width: 800, height: 600, mimeType };
+        await expect(prepareImageForUpload(asset, { convertUnsupportedFormats: true })).resolves.toBe(asset);
+      }
+      expect(mockManipulate).not.toHaveBeenCalled();
+    });
+
+    it('keeps a large PNG screenshot a PNG even when its address has no extension', async () => {
+      const result = await prepareImageForUpload(
+        { uri: 'content://media/42', width: 1290, height: 2796, mimeType: 'image/png' },
+        { convertUnsupportedFormats: true, maxEdge: 2048 },
+      );
+
+      expect(mockResize).toHaveBeenCalledWith({ height: 2048 });
+      expect(mockSaveAsync).toHaveBeenCalledWith({ format: 'png' });
+      expect(result.mimeType).toBe('image/png');
+    });
+
+    it('without the option, a small HEIC is still left alone, as before', async () => {
+      const asset = { uri: 'file:///dcim/IMG_0001.HEIC', width: 800, height: 600, mimeType: 'image/heic' };
+
+      await expect(prepareImageForUpload(asset)).resolves.toBe(asset);
+      expect(mockManipulate).not.toHaveBeenCalled();
+    });
+  });
 });

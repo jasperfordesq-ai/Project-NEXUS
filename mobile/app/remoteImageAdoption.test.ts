@@ -44,6 +44,7 @@ const RAW_IMAGE_ALLOWED: Record<string, string> = {
   'app/(modals)/new-marketplace-listing.tsx': 'Local previews of photos the member just picked.',
   'app/(modals)/marketplace-merchant-onboarding.tsx': 'Local preview of the logo just picked.',
   'app/(modals)/onboarding.tsx': 'Local preview of the avatar just picked.',
+  'components/support/SupportScreenshotPicker.tsx': 'Local previews of the Help & support screenshots just picked, before upload.',
   'app/(modals)/thread.tsx':
     'Two cases, neither a plain server url: a local preview of an attachment being sent, and a message image fetched as a source OBJECT with auth headers, which RemoteImage (uri-only) cannot express.',
 };

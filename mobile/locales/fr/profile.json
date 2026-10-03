@@ -345,7 +345,22 @@
       "signIn": "Se connecter",
       "unsavedTitle": "Abandonner votre demande ?",
       "unsavedMessage": "Ce que vous avez saisi n’a pas été envoyé et sera perdu.",
-      "discard": "Abandonner"
+      "discard": "Abandonner",
+      "screenshots": {
+        "label": "Captures d’écran (facultatif)",
+        "hint": "Ajoutez jusqu’à {{max}} images depuis votre téléphone, de {{size}} Mo maximum chacune. Elles aident l’équipe d’assistance à voir ce que vous voyez.",
+        "privacy": "Vérifiez qu’elles ne montrent pas les informations privées d’autres personnes.",
+        "add": "Ajouter une capture d’écran",
+        "remove": "Retirer la capture d’écran {{number}}",
+        "removeLabel": "Retirer",
+        "thumbnail": "Capture d’écran {{number}}",
+        "listLabel": "Captures d’écran à envoyer",
+        "full": "Vous avez ajouté {{max}} captures d’écran, le maximum pour une demande.",
+        "tooMany": "Vous pouvez joindre jusqu’à {{max}} captures d’écran : seules les premières ont été ajoutées.",
+        "tooLarge": "Une image de plus de {{size}} Mo n’a pas été ajoutée.",
+        "unsupported": "Une image n’a pas pu être préparée pour l’envoi et n’a pas été ajoutée. Essayez-en une autre.",
+        "failed": "Les images n’ont pas pu être ajoutées. Veuillez réessayer."
+      }
     },
     "requestCard": {
       "title": "Aide et assistance",

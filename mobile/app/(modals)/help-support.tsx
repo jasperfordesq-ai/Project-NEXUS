@@ -16,6 +16,8 @@
  *  - only "Something isn't working" asks how badly it affects them, and only it
  *    may carry technical details — which the member can untick, and which are
  *    shown to them, value by value, before they send (`lib/supportDiagnostics.ts`);
+ *  - up to three screenshots may go with any type (HELP-11); only then is the
+ *    request sent as multipart (`components/support/SupportScreenshotPicker.tsx`);
  *  - the server answers with a reference (`NXR-…`) and emails a receipt, so the
  *    success state shows the reference and says the email is on its way.
  *
@@ -48,6 +50,7 @@ import NativePressable from '@/components/ui/NativePressable';
 import TextArea from '@/components/ui/TextArea';
 import { useConfirm } from '@/components/ui/useConfirm';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SupportScreenshotPicker, { type PickedSupportScreenshot } from '@/components/support/SupportScreenshotPicker';
 import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
@@ -118,13 +121,16 @@ function HelpSupportScreen() {
   const [failure, setFailure] = useState<Failure | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [screenshots, setScreenshots] = useState<PickedSupportScreenshot[]>([]);
+  // The server's own words when it refused a screenshot (`screenshots.N`).
+  const [screenshotError, setScreenshotError] = useState<string | undefined>(undefined);
 
   const diagnostics = useMemo(() => getSupportDiagnostics(), []);
   const isBroken = requestType === 'broken';
 
   const { confirm, confirmDialog } = useConfirm();
   useUnsavedChangesGuard({
-    isDirty: summary.trim() !== '' || description.trim() !== '',
+    isDirty: summary.trim() !== '' || description.trim() !== '' || screenshots.length > 0,
     isSaving: isSending,
     hasSaved: reference !== null,
     confirm,
@@ -137,7 +143,12 @@ function HelpSupportScreen() {
   // An old failure no longer describes the request once the member changes it.
   useEffect(() => {
     setFailure((current) => (current?.kind === 'dailyLimit' ? current : null));
-  }, [requestType, summary, description]);
+  }, [requestType, summary, description, screenshots]);
+
+  // A refusal of one screenshot no longer applies once the set has changed.
+  useEffect(() => {
+    setScreenshotError(undefined);
+  }, [screenshots]);
 
   // State alone cannot stop two presses in the same frame; each would send a request.
   const sendingRef = useRef(false);
@@ -167,6 +178,10 @@ function HelpSupportScreen() {
         description: trimmedDescription,
         ...(isBroken ? { impact } : {}),
         diagnostics: isBroken && includeDiagnostics ? { ...diagnostics } : null,
+        // Only when there is one: without screenshots the request stays plain JSON.
+        ...(screenshots.length > 0
+          ? { screenshots: screenshots.map(({ uri, name, mimeType }) => ({ uri, name, mimeType })) }
+          : {}),
       });
       setReference(receipt.reference);
     } catch (caught) {
@@ -176,6 +191,8 @@ function HelpSupportScreen() {
         const field = caught.field as keyof FieldErrors;
         if (field === 'summary' || field === 'description' || field === 'impact') {
           setErrors((current) => ({ ...current, [field]: caught.message }));
+        } else if (caught.field === 'screenshots' || caught.field.startsWith('screenshots.')) {
+          setScreenshotError(caught.message);
         }
       }
     } finally {
@@ -193,6 +210,8 @@ function HelpSupportScreen() {
     setErrors({});
     setFailure(null);
     setReference(null);
+    setScreenshots([]);
+    setScreenshotError(undefined);
   }
 
   let body;
@@ -378,6 +397,13 @@ function HelpSupportScreen() {
                   </View>
                 </>
               ) : null}
+
+              <SupportScreenshotPicker
+                screenshots={screenshots}
+                onChange={setScreenshots}
+                disabled={isSending}
+                serverError={screenshotError}
+              />
 
               {failure ? <FailureNotice failure={failure} /> : null}
 

@@ -345,7 +345,22 @@
       "signIn": "Sign in",
       "unsavedTitle": "Discard your request?",
       "unsavedMessage": "What you have typed has not been sent and will be lost.",
-      "discard": "Discard"
+      "discard": "Discard",
+      "screenshots": {
+        "label": "Screenshots (optional)",
+        "hint": "Add up to {{max}} pictures from your phone, up to {{size}} MB each. They help the support team see what you see.",
+        "privacy": "Check they don’t show anyone else’s private details.",
+        "add": "Add a screenshot",
+        "remove": "Remove screenshot {{number}}",
+        "removeLabel": "Remove",
+        "thumbnail": "Screenshot {{number}}",
+        "listLabel": "Screenshots to send",
+        "full": "You have added {{max}} screenshots, the most one request can carry.",
+        "tooMany": "You can attach up to {{max}} screenshots, so only the first ones were added.",
+        "tooLarge": "A picture larger than {{size}} MB was not added.",
+        "unsupported": "A picture could not be prepared for sending, so it was not added. Try a different one.",
+        "failed": "The pictures could not be added. Please try again."
+      }
     },
     "requestCard": {
       "title": "Help & support",

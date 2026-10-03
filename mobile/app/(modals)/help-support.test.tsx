@@ -14,6 +14,8 @@ import { submitSupportRequest } from '@/lib/api/support';
 import HelpSupportRoute from './help-support';
 
 let mockSearchParams: Record<string, string> = {};
+const mockLaunchImageLibraryAsync = jest.fn();
+const mockPrepareImageForUpload = jest.fn();
 let mockAuth = { isAuthenticated: true, isLoading: false };
 const mockGuard = jest.fn();
 
@@ -22,6 +24,15 @@ jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
   router: { push: jest.fn(), back: jest.fn(), replace: jest.fn(), canGoBack: jest.fn(() => true) },
   useLocalSearchParams: () => mockSearchParams,
+}));
+
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: (...args: unknown[]) => mockLaunchImageLibraryAsync(...args),
+}));
+
+// The resize/convert itself is covered by lib/media/prepareImageForUpload.test.ts.
+jest.mock('@/lib/media/prepareImageForUpload', () => ({
+  prepareImageForUpload: (...args: unknown[]) => mockPrepareImageForUpload(...args),
 }));
 
 jest.mock('@/lib/api/support', () => ({
@@ -67,6 +78,21 @@ const RECEIPT = {
   summary: 'Wallet will not open',
 };
 
+function photo(n: number, extra: Record<string, unknown> = {}) {
+  return { uri: `file:///picked/photo-${n}.jpg`, width: 1080, height: 2400, mimeType: 'image/jpeg', fileSize: 400_000, ...extra };
+}
+
+/** The member picks these from the photo library. */
+function picks(...assets: ReturnType<typeof photo>[]) {
+  mockLaunchImageLibraryAsync.mockResolvedValueOnce({ canceled: false, assets });
+}
+
+async function addScreenshots(view: ReturnType<typeof render>) {
+  await act(async () => {
+    fireEvent.press(view.getByTestId('help-support-screenshots-add'));
+  });
+}
+
 function lastGuard(): { isDirty: boolean; hasSaved: boolean; isSaving: boolean } {
   return mockGuard.mock.calls[mockGuard.mock.calls.length - 1][0];
 }
@@ -87,6 +113,8 @@ describe('Help & support form', () => {
     mockSearchParams = {};
     mockAuth = { isAuthenticated: true, isLoading: false };
     jest.clearAllMocks();
+    // Default: the picked image needs nothing doing to it.
+    mockPrepareImageForUpload.mockImplementation(async (asset: unknown) => asset);
   });
 
   it('asks what kind of help is needed before showing any fields', () => {
@@ -178,6 +206,8 @@ describe('Help & support form', () => {
       impact: 'blocked',
       diagnostics: { client: 'native_app', platform: 'android', os_version: '34', app_version: '1.8.1', language: 'en' },
     });
+    // No screenshot, so nothing that would turn the request into multipart.
+    expect(mockSubmit.mock.calls[0][0]).not.toHaveProperty('screenshots');
     expect(view.getByTestId('help-support-sent')).toBeTruthy();
     expect(view.getByText('Request sent')).toBeTruthy();
     expect(view.getByTestId('help-support-reference').props.children).toBe('NXR-261003-K7Q2ZP');
@@ -340,5 +370,173 @@ describe('Help & support form', () => {
     expect(code).not.toMatch(/openURL/);
     expect(code).not.toMatch(/buildWebUrl/);
     expect(code).not.toMatch(/https?:\/\//);
+  });
+
+  describe('screenshots', () => {
+    it('offers screenshots for every kind of request, with nothing attached to begin with', () => {
+      const view = render(<HelpSupportRoute />);
+
+      for (const type of ['broken', 'how_to', 'account', 'suggestion']) {
+        fireEvent.press(view.getByTestId(`help-support-type-${type}`));
+        expect(view.getByText('Screenshots (optional)')).toBeTruthy();
+        expect(view.getByLabelText('Add a screenshot')).toBeTruthy();
+      }
+      expect(view.queryByTestId('help-support-screenshot-0')).toBeNull();
+    });
+
+    it('opens the photo library for several pictures, without asking permission, and shrinks and converts each', async () => {
+      picks(photo(1), photo(2));
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+
+      await addScreenshots(view);
+
+      expect(mockLaunchImageLibraryAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ mediaTypes: ['images'], allowsMultipleSelection: true, selectionLimit: 3 }),
+      );
+      expect(mockPrepareImageForUpload).toHaveBeenCalledWith(
+        expect.objectContaining({ uri: 'file:///picked/photo-1.jpg' }),
+        { maxEdge: 2048, convertUnsupportedFormats: true },
+      );
+      expect(view.getByLabelText('Screenshot 1')).toBeTruthy();
+      expect(view.getByLabelText('Screenshot 2')).toBeTruthy();
+      expect(view.getByLabelText('Remove screenshot 1')).toBeTruthy();
+      expect(view.getByText(/anyone else’s private details/)).toBeTruthy();
+      // A screenshot alone is work the member would lose by leaving.
+      expect(lastGuard().isDirty).toBe(true);
+    });
+
+    it('sends the attached screenshots with the request', async () => {
+      // A HEIC the helper converted: the screen must send the converted file and its type.
+      mockPrepareImageForUpload.mockImplementationOnce(async () => ({ uri: 'file:///cache/converted.jpg', mimeType: 'image/jpeg' }));
+      picks(photo(1, { uri: 'file:///picked/IMG_0001.HEIC', mimeType: 'image/heic' }));
+      mockSubmit.mockResolvedValue(RECEIPT);
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+      await fill(view, 'Wallet will not open', 'The wallet screen closes as soon as I open it.');
+      await addScreenshots(view);
+
+      await send(view);
+
+      expect(mockSubmit).toHaveBeenCalledWith(expect.objectContaining({
+        screenshots: [{ uri: 'file:///cache/converted.jpg', name: 'screenshot-1.jpg', mimeType: 'image/jpeg' }],
+      }));
+      expect(view.getByTestId('help-support-sent')).toBeTruthy();
+    });
+
+    it('caps a request at three screenshots and says why the rest were left out', async () => {
+      // Not every Android photo picker honours selectionLimit.
+      picks(photo(1), photo(2), photo(3), photo(4));
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-suggestion'));
+
+      await addScreenshots(view);
+
+      expect(view.getByTestId('help-support-screenshot-2')).toBeTruthy();
+      expect(view.queryByTestId('help-support-screenshot-3')).toBeNull();
+      expect(view.getByText('You can attach up to 3 screenshots, so only the first ones were added.')).toBeTruthy();
+      // Full: the add button gives way to an explanation.
+      expect(view.queryByTestId('help-support-screenshots-add')).toBeNull();
+      expect(view.getByTestId('help-support-screenshots-full')).toBeTruthy();
+    });
+
+    it('asks the picker only for the slots that are left', async () => {
+      picks(photo(1), photo(2));
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-how_to'));
+      await addScreenshots(view);
+
+      picks(photo(3));
+      await addScreenshots(view);
+
+      expect(mockLaunchImageLibraryAsync).toHaveBeenLastCalledWith(expect.objectContaining({ selectionLimit: 1 }));
+      expect(view.getByTestId('help-support-screenshot-2')).toBeTruthy();
+    });
+
+    it('removes a screenshot, and sends only the ones that are left', async () => {
+      picks(photo(1), photo(2));
+      mockSubmit.mockResolvedValue(RECEIPT);
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+      await fill(view, 'Wallet will not open', 'The wallet screen closes as soon as I open it.');
+      await addScreenshots(view);
+
+      fireEvent.press(view.getByLabelText('Remove screenshot 1'));
+
+      expect(view.queryByTestId('help-support-screenshot-1')).toBeNull();
+      expect(view.getByTestId('help-support-screenshot-0')).toBeTruthy();
+      await send(view);
+      const sent = mockSubmit.mock.calls[0][0].screenshots ?? [];
+      expect(sent.map((shot) => shot.uri)).toEqual(['file:///picked/photo-2.jpg']);
+    });
+
+    it('sends plain JSON again once every screenshot is removed', async () => {
+      picks(photo(1));
+      mockSubmit.mockResolvedValue(RECEIPT);
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+      await fill(view, 'Wallet will not open', 'The wallet screen closes as soon as I open it.');
+      await addScreenshots(view);
+      fireEvent.press(view.getByLabelText('Remove screenshot 1'));
+
+      await send(view);
+
+      expect(mockSubmit.mock.calls[0][0]).not.toHaveProperty('screenshots');
+    });
+
+    it('refuses a picture over 10 MB, and one that could not be converted, with a reason', async () => {
+      // The second asset stands for a failed conversion: the helper hands back the original HEIC.
+      picks(photo(1, { fileSize: 11 * 1024 * 1024 }), photo(2, { uri: 'file:///picked/IMG_2.HEIC', mimeType: 'image/heic' }));
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+
+      await addScreenshots(view);
+
+      expect(view.queryByTestId('help-support-screenshot-0')).toBeNull();
+      expect(view.getByText('A picture larger than 10 MB was not added.')).toBeTruthy();
+      expect(view.getByText(/could not be prepared for sending/)).toBeTruthy();
+    });
+
+    it('puts the server’s refusal of a screenshot beside the screenshots', async () => {
+      picks(photo(1));
+      mockSubmit.mockRejectedValue(
+        new ApiResponseError(422, 'That screenshot could not be read as an image.', undefined, 'VALIDATION_FAILED', 'screenshots.0'),
+      );
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+      await fill(view, 'Wallet will not open', 'The wallet screen closes as soon as I open it.');
+      await addScreenshots(view);
+
+      await send(view);
+
+      expect(view.getByTestId('help-support-screenshots-notice')).toBeTruthy();
+      expect(view.getAllByText('That screenshot could not be read as an image.').length).toBeGreaterThan(0);
+    });
+
+    it('does nothing when the member closes the picker without choosing', async () => {
+      mockLaunchImageLibraryAsync.mockResolvedValueOnce({ canceled: true, assets: null });
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+
+      await addScreenshots(view);
+
+      expect(view.queryByTestId('help-support-screenshot-0')).toBeNull();
+      expect(view.queryByTestId('help-support-screenshots-notice')).toBeNull();
+    });
+
+    it('starts the next request without the last one’s screenshots', async () => {
+      picks(photo(1));
+      mockSubmit.mockResolvedValue(RECEIPT);
+      const view = render(<HelpSupportRoute />);
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+      await fill(view, 'Wallet will not open', 'The wallet screen closes as soon as I open it.');
+      await addScreenshots(view);
+      await send(view);
+
+      fireEvent.press(view.getByTestId('help-support-send-another'));
+      fireEvent.press(view.getByTestId('help-support-type-broken'));
+
+      expect(view.queryByTestId('help-support-screenshot-0')).toBeNull();
+    });
   });
 });

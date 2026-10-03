@@ -345,7 +345,22 @@
       "signIn": "Iniciar sesión",
       "unsavedTitle": "¿Descartar tu solicitud?",
       "unsavedMessage": "Lo que has escrito no se ha enviado y se perderá.",
-      "discard": "Descartar"
+      "discard": "Descartar",
+      "screenshots": {
+        "label": "Capturas de pantalla (opcional)",
+        "hint": "Añade hasta {{max}} imágenes de tu móvil, de hasta {{size}} MB cada una. Ayudan al equipo de soporte a ver lo que tú ves.",
+        "privacy": "Comprueba que no muestren datos privados de otras personas.",
+        "add": "Añadir una captura de pantalla",
+        "remove": "Quitar la captura de pantalla {{number}}",
+        "removeLabel": "Quitar",
+        "thumbnail": "Captura de pantalla {{number}}",
+        "listLabel": "Capturas de pantalla que se enviarán",
+        "full": "Has añadido {{max}} capturas de pantalla, el máximo para una solicitud.",
+        "tooMany": "Puedes adjuntar hasta {{max}} capturas de pantalla, así que solo se han añadido las primeras.",
+        "tooLarge": "No se ha añadido una imagen de más de {{size}} MB.",
+        "unsupported": "No se ha podido preparar una imagen para enviarla, así que no se ha añadido. Prueba con otra.",
+        "failed": "No se han podido añadir las imágenes. Vuelve a intentarlo."
+      }
     },
     "requestCard": {
       "title": "Ayuda y soporte",

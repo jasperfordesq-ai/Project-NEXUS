@@ -345,7 +345,22 @@
       "signIn": "Sínigh isteach",
       "unsavedTitle": "An bhfuil fonn ort d’iarratas a chaitheamh i leataobh?",
       "unsavedMessage": "Níor seoladh an méid atá scríofa agat agus caillfear é.",
-      "discard": "Caith i leataobh"
+      "discard": "Caith i leataobh",
+      "screenshots": {
+        "label": "Gabhálacha scáileáin (roghnach)",
+        "hint": "Cuir suas le {{max}} pictiúr ó do ghuthán leis, suas le {{size}} MB an ceann. Cabhraíonn siad leis an bhfoireann tacaíochta an rud a fheiceann tusa a fheiceáil.",
+        "privacy": "Déan cinnte nach dtaispeánann siad sonraí príobháideacha aon duine eile.",
+        "add": "Cuir gabháil scáileáin leis",
+        "remove": "Bain gabháil scáileáin {{number}}",
+        "removeLabel": "Bain",
+        "thumbnail": "Gabháil scáileáin {{number}}",
+        "listLabel": "Gabhálacha scáileáin le seoladh",
+        "full": "Tá an líon is mó gabhálacha scáileáin ({{max}}) curtha leis agat. Ní féidir le hiarratas amháin níos mó a iompar.",
+        "tooMany": "Is féidir leat suas le {{max}} gabháil scáileáin a cheangal, mar sin níor cuireadh leis ach na cinn tosaigh.",
+        "tooLarge": "Níor cuireadh pictiúr leis toisc go bhfuil sé níos mó ná {{size}} MB.",
+        "unsupported": "Níorbh fhéidir pictiúr a ullmhú le seoladh, mar sin níor cuireadh leis é. Bain triail as ceann eile.",
+        "failed": "Níorbh fhéidir na pictiúir a chur leis. Bain triail eile as."
+      }
     },
     "requestCard": {
       "title": "Cabhair agus tacaíocht",
