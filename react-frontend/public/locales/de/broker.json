@@ -88,7 +88,7 @@
     "description": "Was heute Ihre Aufmerksamkeit braucht – auf einen Blick.",
     "refresh": "Aktualisieren",
     "load_failed": "Broker-Dashboard konnte nicht geladen werden",
-    "pending_members": "Ausstehende Mitglieder",
+    "pending_members": "Neue Mitglieder zur Freigabe",
     "safeguarding_alerts": "Schutzwarnungen",
     "unreviewed_messages": "Nicht überprüfte Nachrichten",
     "pending_exchanges": "Ausstehende Tauschgeschäfte",
@@ -188,7 +188,8 @@
     "time_hours_ago_one": "vor {{count}} Std.",
     "time_hours_ago_other": "vor {{count}} Std.",
     "time_days_ago_one": "vor {{count}} Tg.",
-    "time_days_ago_other": "vor {{count}} Tg."
+    "time_days_ago_other": "vor {{count}} Tg.",
+    "open_reports": "Meldungen von Mitgliedern zur Prüfung"
   },
   "members": {
     "title": "Mitglieder",
@@ -543,7 +544,8 @@
     "timeline_title": "Mitgliedschaftsverlauf",
     "timeline_registered": "Registriert",
     "timeline_email_verified": "E-Mail verifiziert",
-    "timeline_approved": "Genehmigt"
+    "timeline_approved": "Genehmigt",
+    "reset_2fa_reason_label": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -623,7 +625,9 @@
       "provider_confirmed": "Anbieter hat Stunden bestätigt",
       "request_created": "Anfrage erstellt",
       "requester_confirmed": "Anfragender hat Stunden bestätigt",
-      "status_changed": "Status geändert"
+      "status_changed": "Status geändert",
+      "dispute_resolved": "Streitfall geklärt",
+      "reversed": "Austausch rückgängig gemacht"
     },
     "detail_no_history": "Kein Verlauf verfügbar.",
     "tabs_aria": "Exchange-Statusfilter",
@@ -644,7 +648,45 @@
     "detail_approved_label": "Broker-genehmigt",
     "detail_load_failed": "Dieser Austausch konnte nicht geladen werden",
     "detail_error_hint": "Es könnte ein vorübergehendes Problem sein, oder der Austausch existiert nicht mehr.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "settle_title": "Dieser Austausch muss von Ihnen geklärt werden",
+    "settle_intro": "Die beiden Mitglieder haben unterschiedliche Stunden bestätigt, daher wurden noch keine Zeitguthaben übertragen. Sprechen Sie mit beiden und wählen Sie dann die zu zahlenden Stunden.",
+    "settle_agreed_label": "Bei der Anfrage vereinbart",
+    "settle_claim_label": "Angabe von {{name}}",
+    "settle_not_confirmed": "Nicht bestätigt",
+    "settle_button": "Streitfall klären",
+    "settle_modal_title": "Diesen Streitfall klären",
+    "settle_hours_label": "Zu zahlende Stunden",
+    "settle_hours_range": "Wählen Sie zwischen {{min}} und {{max}} Stunden. Der Bereich wird in der Konfiguration festgelegt.",
+    "settle_picks_label": "Einen Wert aus dem Austausch übernehmen",
+    "settle_pick": "{{who}}: {{hours}} Std.",
+    "settle_pick_agreed": "Vereinbart",
+    "settle_notes_label": "Was Sie entschieden haben und warum",
+    "settle_notes_hint": "Beide Mitglieder können diese Notiz sehen.",
+    "settle_confirm": "Klären und {{amount}} zahlen",
+    "settle_success": "Streitfall geklärt. {{amount}} gezahlt.",
+    "settle_failed": "Der Streitfall konnte nicht geklärt werden. Es wurde nichts geändert.",
+    "resolution_rank_refused": "Das ist nicht möglich, weil eines dieser Mitglieder zum Personal auf Ihrer Ebene oder darüber gehört. Bitten Sie einen Administrator darum.",
+    "reverse_button": "Austausch rückgängig machen",
+    "reverse_modal_title": "Diesen Austausch rückgängig machen?",
+    "reverse_explain": "Damit werden die Zeitguthaben zurückgebucht: Die Kontostände beider Mitglieder kehren auf den Stand vor diesem Austausch zurück. Der ursprüngliche Austausch bleibt in den Unterlagen, mit einer Korrekturbuchung daneben.",
+    "reverse_negative_note": "Wenn ein Mitglied die Guthaben bereits ausgegeben hat, kann sein Kontostand unter null fallen.",
+    "reverse_reason_label": "Warum machen Sie ihn rückgängig?",
+    "reverse_reason_hint": "Beide Mitglieder können diesen Grund sehen.",
+    "reverse_confirm": "Austausch rückgängig machen",
+    "reverse_success": "Austausch rückgängig gemacht. Die Guthaben sind wieder dort, wo sie vorher waren.",
+    "reverse_failed": "Der Austausch konnte nicht rückgängig gemacht werden. Es wurde nichts geändert.",
+    "reversed_title": "Dieser Austausch wurde rückgängig gemacht",
+    "reversed_chip": "Rückgängig gemacht",
+    "reversed_body": "Ein Broker hat die Guthaben zurückgebucht. Den Grund finden Sie im Verlauf unten.",
+    "settle_cancel_button": "Ohne Stunden schließen",
+    "settle_cancel_title": "Diesen Streitfall ohne gezahlte Stunden schließen?",
+    "settle_cancel_explain": "Verwenden Sie dies, wenn die Arbeit nicht stattgefunden hat, zum Beispiel weil ein Mitglied nicht erschienen ist. Der Austausch wird storniert, es werden keine Zeitguthaben übertragen und beide Mitglieder werden informiert.",
+    "settle_cancel_confirm": "Ohne Stunden schließen",
+    "settle_cancel_success": "Streitfall geschlossen. Es wurden keine Stunden gezahlt.",
+    "settle_cancel_failed": "Der Streitfall konnte nicht geschlossen werden. Es wurde nichts geändert.",
+    "settle_hours_value_one": "{{count}} Stunde",
+    "settle_hours_value_other": "{{count}} Stunden"
   },
   "messages": {
     "title": "Nachrichtenüberprüfung",
@@ -784,7 +826,11 @@
     "empty_urgent_hint": "Keine markierte Nachricht wartet auf Prüfung.",
     "search_placeholder": "Nachrichten oder Namen suchen",
     "empty_search_title": "Keine Nachrichten entsprechen Ihrer Suche",
-    "empty_search_hint": "Versuchen Sie ein anderes Wort oder einen anderen Namen."
+    "empty_search_hint": "Versuchen Sie ein anderes Wort oder einen anderen Namen.",
+    "detail_voice_message": "Sprachnachricht",
+    "detail_voice_message_length": "Sprachnachricht ({{seconds}} s)",
+    "detail_voice_transcript": "Abschrift: {{text}}",
+    "detail_voice_no_transcript": "Es ist keine Abschrift verfügbar. Nur die beiden Mitglieder können die Aufnahme abspielen."
   },
   "monitoring": {
     "title": "Nutzerüberwachung",

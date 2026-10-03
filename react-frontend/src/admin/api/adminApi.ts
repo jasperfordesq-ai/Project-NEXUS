@@ -983,6 +983,24 @@ export const adminBroker = {
   rejectExchange: (id: number, reason: string) =>
     api.post<{ success: boolean }>(`/v2/admin/broker/exchanges/${id}/reject`, { reason }),
 
+  /** Settle a disputed exchange: the server clamps the hours to the dispute window. */
+  resolveDispute: (id: number, finalHours: number, notes: string) =>
+    api.post<{ id: number; status: string; final_hours: number }>(
+      `/v2/admin/broker/exchanges/${id}/resolve-dispute`,
+      { final_hours: finalHours, notes }
+    ),
+
+  /** Close a disputed exchange with no hours paid (the work never happened). */
+  cancelDispute: (id: number, reason: string) =>
+    api.post<{ id: number; status: string }>(`/v2/admin/broker/exchanges/${id}/cancel-dispute`, { reason }),
+
+  /** Put both members' credits back on a completed exchange (a correcting entry). */
+  reverseExchange: (id: number, reason: string) =>
+    api.post<{ id: number; reversal_transaction_id: number | null; amount: number | null; already_reversed: boolean }>(
+      `/v2/admin/broker/exchanges/${id}/reverse`,
+      { reason }
+    ),
+
   getRiskTags: (params: { risk_level?: string } = {}) =>
     api.get<RiskTag[]>(`/v2/admin/broker/risk-tags${buildQuery(params)}`),
 

@@ -243,7 +243,7 @@
     "save_settings": "Enregistrer les paramètres",
     "settings": "Paramètres",
     "settings_description": "Configurer les règles de signalement automatique et les préférences de modération",
-    "showing_count": "Affichage",
+    "showing_count": "{{shown}} sur {{total}} affichés",
     "status_dismissed": "Rejeté",
     "status_pending": "En attente",
     "status_resolved": "Résolu",

@@ -47,6 +47,7 @@ const ZERO_BADGES = {
   pending_matches: 0,
   support_needs_unseen: 0,
   pending_support_actions: 0,
+  open_reports: 0,
 };
 
 const WITH_BADGES = {
@@ -60,6 +61,7 @@ const WITH_BADGES = {
   pending_matches: 0,
   support_needs_unseen: 0,
   pending_support_actions: 0,
+  open_reports: 0,
 };
 
 import { BrokerSidebar } from './BrokerSidebar';

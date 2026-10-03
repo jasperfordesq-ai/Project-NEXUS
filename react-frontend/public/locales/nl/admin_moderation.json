@@ -243,7 +243,7 @@
     "save_settings": "Instellingen opslaan",
     "settings": "Instellingen",
     "settings_description": "Configureer regels voor automatisch markeren en moderatievoorkeuren",
-    "showing_count": "Tonen",
+    "showing_count": "{{shown}} van {{total}} getoond",
     "status_dismissed": "Afgewezen",
     "status_pending": "In behandeling",
     "status_resolved": "Opgelost",

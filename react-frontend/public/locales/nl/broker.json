@@ -88,7 +88,7 @@
     "description": "Wat vandaag uw aandacht nodig heeft, in één oogopslag.",
     "refresh": "Vernieuwen",
     "load_failed": "Kon het makelaardashboard niet laden",
-    "pending_members": "Lopende Leden",
+    "pending_members": "Nieuwe leden om goed te keuren",
     "safeguarding_alerts": "Waarschuwingen voor Bescherming",
     "unreviewed_messages": "Onbeoordeelde Berichten",
     "pending_exchanges": "Lopende Uitwisselingen",
@@ -188,7 +188,8 @@
     "time_hours_ago_one": "{{count}}u geleden",
     "time_hours_ago_other": "{{count}}u geleden",
     "time_days_ago_one": "{{count}}d geleden",
-    "time_days_ago_other": "{{count}}d geleden"
+    "time_days_ago_other": "{{count}}d geleden",
+    "open_reports": "Meldingen van leden om te bekijken"
   },
   "members": {
     "title": "Leden",
@@ -543,7 +544,8 @@
     "timeline_title": "Lidmaatschapstraject",
     "timeline_registered": "Geregistreerd",
     "timeline_email_verified": "E-mail geverifieerd",
-    "timeline_approved": "Goedgekeurd"
+    "timeline_approved": "Goedgekeurd",
+    "reset_2fa_reason_label": "Incidentreferentie en hoe u de identiteit van de accounthouder hebt gecontroleerd (10–500 tekens)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -623,7 +625,9 @@
       "provider_confirmed": "Aanbieder heeft uren bevestigd",
       "request_created": "Verzoek aangemaakt",
       "requester_confirmed": "Aanvrager heeft uren bevestigd",
-      "status_changed": "Status gewijzigd"
+      "status_changed": "Status gewijzigd",
+      "dispute_resolved": "Geschil opgelost",
+      "reversed": "Uitwisseling teruggedraaid"
     },
     "detail_no_history": "Geen geschiedenis beschikbaar.",
     "tabs_aria": "Uitwisselingsstatusfilter",
@@ -644,7 +648,45 @@
     "detail_approved_label": "Door broker goedgekeurd",
     "detail_load_failed": "Laden van deze uitwisseling mislukt",
     "detail_error_hint": "Het kan een tijdelijk probleem zijn, of de uitwisseling bestaat mogelijk niet meer.",
-    "retry": "Opnieuw proberen"
+    "retry": "Opnieuw proberen",
+    "settle_title": "Deze uitwisseling moet door jou worden opgelost",
+    "settle_intro": "De twee leden hebben verschillende uren bevestigd, dus er zijn nog geen tijdcredits overgemaakt. Praat met allebei en kies dan de uren die worden betaald.",
+    "settle_agreed_label": "Afgesproken bij de aanvraag",
+    "settle_claim_label": "Volgens {{name}}",
+    "settle_not_confirmed": "Niet bevestigd",
+    "settle_button": "Geschil oplossen",
+    "settle_modal_title": "Dit geschil oplossen",
+    "settle_hours_label": "Te betalen uren",
+    "settle_hours_range": "Kies tussen {{min}} en {{max}} uur. Dit bereik stel je in bij Configuratie.",
+    "settle_picks_label": "Een getal uit de uitwisseling gebruiken",
+    "settle_pick": "{{who}}: {{hours}} u",
+    "settle_pick_agreed": "Afgesproken",
+    "settle_notes_label": "Wat je hebt besloten, en waarom",
+    "settle_notes_hint": "Beide leden kunnen deze notitie zien.",
+    "settle_confirm": "Oplossen en {{amount}} betalen",
+    "settle_success": "Geschil opgelost. {{amount}} betaald.",
+    "settle_failed": "Het geschil kon niet worden opgelost. Er is niets veranderd.",
+    "resolution_rank_refused": "Dat kan niet, omdat een van deze leden personeel is op jouw niveau of hoger. Vraag het aan een beheerder.",
+    "reverse_button": "Uitwisseling terugdraaien",
+    "reverse_modal_title": "Deze uitwisseling terugdraaien?",
+    "reverse_explain": "Hiermee gaan de tijdcredits terug: de saldi van beide leden worden weer zoals ze vóór deze uitwisseling waren. De oorspronkelijke uitwisseling blijft in de administratie staan, met een correctieboeking ernaast.",
+    "reverse_negative_note": "Als een lid de credits al heeft uitgegeven, kan het saldo onder nul komen.",
+    "reverse_reason_label": "Waarom draai je haar terug?",
+    "reverse_reason_hint": "Beide leden kunnen deze reden zien.",
+    "reverse_confirm": "Uitwisseling terugdraaien",
+    "reverse_success": "Uitwisseling teruggedraaid. De credits staan weer waar ze begonnen.",
+    "reverse_failed": "De uitwisseling kon niet worden teruggedraaid. Er is niets veranderd.",
+    "reversed_title": "Deze uitwisseling is teruggedraaid",
+    "reversed_chip": "Teruggedraaid",
+    "reversed_body": "Een broker heeft de credits teruggegeven. De reden staat in de geschiedenis hieronder.",
+    "settle_cancel_button": "Sluiten zonder uren",
+    "settle_cancel_title": "Dit geschil sluiten zonder uren te betalen?",
+    "settle_cancel_explain": "Gebruik dit als het werk niet is gedaan, bijvoorbeeld omdat een lid niet kwam opdagen. De uitwisseling wordt geannuleerd, er worden geen tijdcredits overgemaakt en beide leden krijgen bericht.",
+    "settle_cancel_confirm": "Sluiten zonder uren",
+    "settle_cancel_success": "Geschil gesloten. Er zijn geen uren betaald.",
+    "settle_cancel_failed": "Het geschil kon niet worden gesloten. Er is niets veranderd.",
+    "settle_hours_value_one": "{{count}} uur",
+    "settle_hours_value_other": "{{count}} uur"
   },
   "messages": {
     "title": "Bericht Beoordeling",
@@ -784,7 +826,11 @@
     "empty_urgent_hint": "Er wacht geen gemarkeerd bericht op beoordeling.",
     "search_placeholder": "Berichten of namen zoeken",
     "empty_search_title": "Geen berichten gevonden voor uw zoekopdracht",
-    "empty_search_hint": "Probeer een ander woord of een andere naam."
+    "empty_search_hint": "Probeer een ander woord of een andere naam.",
+    "detail_voice_message": "Spraakbericht",
+    "detail_voice_message_length": "Spraakbericht ({{seconds}} s)",
+    "detail_voice_transcript": "Uitgeschreven tekst: {{text}}",
+    "detail_voice_no_transcript": "Er is geen uitgeschreven tekst beschikbaar. Alleen de twee leden kunnen de opname afspelen."
   },
   "monitoring": {
     "title": "Gebruikersbewaking",

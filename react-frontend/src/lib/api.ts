@@ -95,6 +95,24 @@ export interface SessionReplacedDetail {
 }
 export const API_ERROR_EVENT = 'nexus:api_error';
 
+/**
+ * Fired after any successful write (POST/PUT/PATCH/DELETE) through `request()`.
+ * Lets a shell that shows counts — the broker panel's sidebar badges — refresh
+ * after an action anywhere on the page, instead of every button having to
+ * remember to ask. Carries only the method and endpoint path, never a body.
+ */
+export const API_WRITE_EVENT = 'nexus:api_write';
+export interface ApiWriteDetail {
+  method: string;
+  endpoint: string;
+}
+
+function announceApiWrite(method: string, endpoint: string, status: number): void {
+  if (method === 'GET' || method === 'HEAD' || status < 200 || status >= 300) return;
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent<ApiWriteDetail>(API_WRITE_EVENT, { detail: { method, endpoint } }));
+}
+
 function captureTelemetryApiCall(
   method: string,
   endpoint: string,
@@ -1636,6 +1654,7 @@ export class ApiClient {
       // Triggers the soft-update path on first mismatch and force-redirects
       // to /api/sw-reset if the mismatch persists past the grace window.
       checkStaleBuild(response);
+      announceApiWrite(method, endpoint, response.status);
 
       // Handle 401 Unauthorized with exactly one token refresh and retry.
       if (response.status === 401 && !options.skipAuth) {

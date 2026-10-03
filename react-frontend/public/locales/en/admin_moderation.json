@@ -245,7 +245,7 @@
     "save_settings": "Save Settings",
     "settings": "Settings",
     "settings_description": "Configure auto-flagging rules and moderation preferences",
-    "showing_count": "Showing",
+    "showing_count": "Showing {{shown}} of {{total}}",
     "status_dismissed": "Dismissed",
     "status_pending": "Pending",
     "status_resolved": "Resolved",

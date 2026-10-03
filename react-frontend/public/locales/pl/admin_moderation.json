@@ -243,7 +243,7 @@
     "save_settings": "Zapisz ustawienia",
     "settings": "Ustawienia",
     "settings_description": "Skonfiguruj reguły automatycznego oznaczania i preferencje moderacji",
-    "showing_count": "Pokaz",
+    "showing_count": "Wyświetlono {{shown}} z {{total}}",
     "status_dismissed": "Zwolniony",
     "status_pending": "Oczekujące",
     "status_resolved": "Rozwiązano",

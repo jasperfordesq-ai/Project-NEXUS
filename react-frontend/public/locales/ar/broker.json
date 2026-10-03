@@ -88,7 +88,7 @@
     "description": "ما يحتاج إلى انتباهك اليوم، في لمحة.",
     "refresh": "تحديث",
     "load_failed": "فشل تحميل لوحة تحكم الوسيط",
-    "pending_members": "الأعضاء المعلقون",
+    "pending_members": "أعضاء جدد بانتظار الموافقة",
     "safeguarding_alerts": "تنبيهات الحماية",
     "unreviewed_messages": "رسائل غير مراجعة",
     "pending_exchanges": "المبادلات المعلقة",
@@ -208,7 +208,8 @@
     "time_days_ago_few": "منذ {{count}} ي",
     "time_days_ago_many": "منذ {{count}} ي",
     "time_days_ago_two": "منذ {{count}} ي",
-    "time_days_ago_zero": "منذ {{count}} ي"
+    "time_days_ago_zero": "منذ {{count}} ي",
+    "open_reports": "بلاغات أعضاء بانتظار المراجعة"
   },
   "members": {
     "title": "الأعضاء",
@@ -579,7 +580,8 @@
     "timeline_title": "مسار العضوية",
     "timeline_registered": "مسجَّل",
     "timeline_email_verified": "تم التحقق من البريد الإلكتروني",
-    "timeline_approved": "تمت الموافقة"
+    "timeline_approved": "تمت الموافقة",
+    "reset_2fa_reason_label": "مرجع الحادث وكيف تحققت من هوية صاحب الحساب (10–500 حرف)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -659,7 +661,9 @@
       "provider_confirmed": "أكد مقدم الخدمة الساعات",
       "request_created": "تم إنشاء الطلب",
       "requester_confirmed": "أكد مقدم الطلب الساعات",
-      "status_changed": "تم تغيير الحالة"
+      "status_changed": "تم تغيير الحالة",
+      "dispute_resolved": "حُسم النزاع",
+      "reversed": "عُكس التبادل"
     },
     "detail_no_history": "لا يوجد سجل متاح.",
     "tabs_aria": "مرشح حالة الصرف",
@@ -680,7 +684,49 @@
     "detail_approved_label": "موافقة الوسيط",
     "detail_load_failed": "فشل تحميل هذا التبادل",
     "detail_error_hint": "قد تكون مشكلة مؤقتة، أو ربما لم يعد التبادل موجودًا.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "settle_title": "هذا التبادل يحتاج منك إلى حسمه",
+    "settle_intro": "أكّد العضوان عددًا مختلفًا من الساعات، لذلك لم تُنقل أي أرصدة وقت بعد. تحدّث مع كليهما، ثم اختر الساعات التي ستُدفع.",
+    "settle_agreed_label": "المتفق عليه عند الطلب",
+    "settle_claim_label": "بحسب {{name}}",
+    "settle_not_confirmed": "غير مؤكَّد",
+    "settle_button": "حسم النزاع",
+    "settle_modal_title": "حسم هذا النزاع",
+    "settle_hours_label": "الساعات المراد دفعها",
+    "settle_hours_range": "اختر بين {{min}} و{{max}} ساعة. يُضبط هذا النطاق في الإعدادات.",
+    "settle_picks_label": "استخدام رقم من التبادل",
+    "settle_pick": "{{who}}: {{hours}} س",
+    "settle_pick_agreed": "المتفق عليه",
+    "settle_notes_label": "ما قررته ولماذا",
+    "settle_notes_hint": "يمكن للعضوين رؤية هذه الملاحظة.",
+    "settle_confirm": "احسم وادفع {{amount}}",
+    "settle_success": "حُسم النزاع. دُفع {{amount}}.",
+    "settle_failed": "تعذّر حسم النزاع. لم يتغيّر شيء.",
+    "resolution_rank_refused": "لا يمكنك فعل ذلك لأن أحد هذين العضوين من الطاقم في مستواك أو أعلى. اطلب ذلك من مسؤول.",
+    "reverse_button": "عكس التبادل",
+    "reverse_modal_title": "هل تريد عكس هذا التبادل؟",
+    "reverse_explain": "يُعيد هذا أرصدة الوقت: تعود أرصدة العضوين إلى ما كانت عليه قبل هذا التبادل. يبقى التبادل الأصلي في السجلات، مع قيد تصحيحي بجانبه.",
+    "reverse_negative_note": "إذا كان أحد العضوين قد أنفق الأرصدة بالفعل، فقد يصبح رصيده دون الصفر.",
+    "reverse_reason_label": "لماذا تعكسه؟",
+    "reverse_reason_hint": "يمكن للعضوين رؤية هذا السبب.",
+    "reverse_confirm": "عكس التبادل",
+    "reverse_success": "عُكس التبادل. عادت الأرصدة إلى حيث بدأت.",
+    "reverse_failed": "تعذّر عكس التبادل. لم يتغيّر شيء.",
+    "reversed_title": "عُكس هذا التبادل",
+    "reversed_chip": "معكوس",
+    "reversed_body": "أعاد وسيط الأرصدة. السبب مذكور في السجل أدناه.",
+    "settle_cancel_button": "إغلاق دون ساعات",
+    "settle_cancel_title": "هل تريد إغلاق هذا النزاع دون دفع أي ساعات؟",
+    "settle_cancel_explain": "استخدم هذا عندما لا يكون العمل قد تمّ، مثلًا لأن أحد العضوين لم يحضر. يُلغى التبادل، ولا تُنقل أي أرصدة وقت، ويُبلَّغ العضوان.",
+    "settle_cancel_confirm": "إغلاق دون ساعات",
+    "settle_cancel_success": "أُغلق النزاع. لم تُدفع أي ساعات.",
+    "settle_cancel_failed": "تعذّر إغلاق النزاع. لم يتغيّر شيء.",
+    "settle_hours_value_zero": "{{count}} ساعة",
+    "settle_hours_value_one": "{{count}} ساعة",
+    "settle_hours_value_two": "{{count}} ساعتان",
+    "settle_hours_value_few": "{{count}} ساعات",
+    "settle_hours_value_many": "{{count}} ساعة",
+    "settle_hours_value_other": "{{count}} ساعة"
   },
   "messages": {
     "title": "مراجعة الرسالة",
@@ -824,7 +870,11 @@
     "empty_urgent_hint": "لا توجد رسالة مُعلَّمة بانتظار المراجعة.",
     "search_placeholder": "ابحث في الرسائل أو الأسماء",
     "empty_search_title": "لا توجد رسائل تطابق بحثك",
-    "empty_search_hint": "جرّب كلمة أو اسمًا آخر."
+    "empty_search_hint": "جرّب كلمة أو اسمًا آخر.",
+    "detail_voice_message": "رسالة صوتية",
+    "detail_voice_message_length": "رسالة صوتية ({{seconds}} ث)",
+    "detail_voice_transcript": "النص المكتوب: {{text}}",
+    "detail_voice_no_transcript": "لا يتوفر نص مكتوب. لا يمكن تشغيل التسجيل إلا للعضوين."
   },
   "monitoring": {
     "title": "مراقبة المستخدمين",

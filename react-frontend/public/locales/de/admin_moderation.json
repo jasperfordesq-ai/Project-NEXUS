@@ -243,7 +243,7 @@
     "save_settings": "Einstellungen speichern",
     "settings": "Einstellungen",
     "settings_description": "Konfigurieren Sie Regeln für die automatische Kennzeichnung und Moderationseinstellungen",
-    "showing_count": "Zeigt",
+    "showing_count": "{{shown}} von {{total}} angezeigt",
     "status_dismissed": "Verworfen",
     "status_pending": "Ausstehend",
     "status_resolved": "Gelöst",

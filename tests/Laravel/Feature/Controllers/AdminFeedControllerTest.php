@@ -74,6 +74,31 @@ class AdminFeedControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * A poll or goal has a title but often no body. The moderation list must
+     * carry the title, or those rows show an empty content cell and the
+     * moderator cannot tell what they are hiding or deleting.
+     */
+    public function test_index_returns_the_title_so_untitled_bodies_are_not_blank(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $sourceId = random_int(100000, 999999);
+        DB::table('feed_activity')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $admin->id,
+            'source_type' => 'poll', 'source_id' => $sourceId,
+            'title' => 'Which day suits the garden club?', 'content' => null,
+            'is_hidden' => 0, 'is_visible' => 1, 'created_at' => now(),
+        ]);
+
+        $row = collect($this->apiGet('/v2/admin/feed/posts?type=poll')->assertStatus(200)->json('data'))
+            ->firstWhere('id', $sourceId);
+
+        $this->assertNotNull($row);
+        $this->assertSame('Which day suits the garden club?', $row['title'] ?? null);
+    }
+
     public function test_index_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();
@@ -100,18 +125,16 @@ class AdminFeedControllerTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
-        // Create a feed_posts row to match the source_id in feed_activity
-        DB::table('feed_posts')->insertGetId([
+        // Create a feed_posts row to match the source_id in feed_activity. Use
+        // the id just created: reading "the first post in the tenant" picked up
+        // rows left in the shared test database and collided on uq_tenant_source.
+        $postId = DB::table('feed_posts')->insertGetId([
             'tenant_id' => $this->testTenantId,
             'user_id' => $admin->id,
             'content' => 'Test feed post',
             'is_hidden' => 0,
             'created_at' => now(),
         ]);
-
-        $postId = DB::table('feed_posts')
-            ->where('tenant_id', $this->testTenantId)
-            ->value('id');
 
         DB::table('feed_activity')->insert([
             'tenant_id' => $this->testTenantId,

@@ -110,6 +110,23 @@ describe('FeedModeration', () => {
     expect(screen.getByText('Carol')).toBeInTheDocument();
   });
 
+  it('shows posts written in the web composer as text, and a poll by its title', () => {
+    mockUseApi.mockReturnValue(makeUseApiResult({
+      data: [
+        { ...POSTS[0], id: 20, content: '<p class="mb-1 leading-relaxed"><span>Meeting at 10am</span></p>' },
+        { ...POSTS[1], id: 21, type: 'poll', title: 'Which day suits the garden club?', content: null },
+      ],
+      meta: { total_pages: 1, total: 2 },
+    }));
+    render(<FeedModeration />);
+
+    expect(screen.getByText('Meeting at 10am')).toBeInTheDocument();
+    expect(screen.queryByText(/<p class=/)).not.toBeInTheDocument();
+    expect(screen.getByText('Which day suits the garden club?')).toBeInTheDocument();
+    // The count line names the numbers again (it said only "Showing").
+    expect(screen.getByText('Showing 2 of 2')).toBeInTheDocument();
+  });
+
   it('shows loading spinner while isLoading is true', () => {
     mockUseApi.mockReturnValue(makeUseApiResult({ data: null, isLoading: true }));
     render(<FeedModeration />);

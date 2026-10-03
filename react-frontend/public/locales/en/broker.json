@@ -88,7 +88,7 @@
     "description": "What needs your attention today, at a glance.",
     "refresh": "Refresh",
     "load_failed": "Failed to load broker dashboard",
-    "pending_members": "Pending Members",
+    "pending_members": "New members to approve",
     "safeguarding_alerts": "Safeguarding Alerts",
     "unreviewed_messages": "Unreviewed Messages",
     "pending_exchanges": "Pending Exchanges",
@@ -188,7 +188,8 @@
     "time_hours_ago_one": "{{count}}h ago",
     "time_hours_ago_other": "{{count}}h ago",
     "time_days_ago_one": "{{count}}d ago",
-    "time_days_ago_other": "{{count}}d ago"
+    "time_days_ago_other": "{{count}}d ago",
+    "open_reports": "Member reports to check"
   },
   "members": {
     "title": "Members",
@@ -543,7 +544,8 @@
     "timeline_title": "Membership journey",
     "timeline_registered": "Registered",
     "timeline_email_verified": "Email verified",
-    "timeline_approved": "Approved"
+    "timeline_approved": "Approved",
+    "reset_2fa_reason_label": "Incident reference and how you verified the account holder’s identity (10–500 characters)"
   },
   "exchanges": {
     "title": "Exchange Management",
@@ -623,7 +625,9 @@
       "provider_confirmed": "Provider confirmed hours",
       "request_created": "Request created",
       "requester_confirmed": "Requester confirmed hours",
-      "status_changed": "Status changed"
+      "status_changed": "Status changed",
+      "dispute_resolved": "Dispute settled",
+      "reversed": "Exchange reversed"
     },
     "detail_no_history": "No history available.",
     "tabs_aria": "Exchange status filter",
@@ -644,7 +648,45 @@
     "detail_approved_label": "Broker approved",
     "detail_load_failed": "Failed to load this exchange",
     "detail_error_hint": "It might be a temporary problem, or the exchange may no longer exist.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "settle_title": "This exchange needs you to settle it",
+    "settle_intro": "The two members confirmed different hours, so no time credits have moved yet. Talk to both of them, then choose the hours to pay.",
+    "settle_agreed_label": "Agreed when requested",
+    "settle_claim_label": "{{name}} says",
+    "settle_not_confirmed": "Not confirmed",
+    "settle_button": "Settle dispute",
+    "settle_modal_title": "Settle this dispute",
+    "settle_hours_label": "Hours to pay",
+    "settle_hours_range": "Choose between {{min}} and {{max}} hours. The range is set in Configuration.",
+    "settle_picks_label": "Use a figure from the exchange",
+    "settle_pick": "{{who}}: {{hours}} h",
+    "settle_pick_agreed": "Agreed",
+    "settle_notes_label": "What you decided, and why",
+    "settle_notes_hint": "Both members can see this note.",
+    "settle_confirm": "Settle and pay {{amount}}",
+    "settle_success": "Dispute settled. {{amount}} paid.",
+    "settle_failed": "The dispute could not be settled. Nothing has changed.",
+    "resolution_rank_refused": "You can't do this, because one of these members is staff at or above your level. Ask an admin.",
+    "reverse_button": "Reverse exchange",
+    "reverse_modal_title": "Reverse this exchange?",
+    "reverse_explain": "This gives the time credits back: both members' balances return to where they were before this exchange. The original exchange stays in the records, with a correcting entry beside it.",
+    "reverse_negative_note": "If a member has already spent the credits, their balance can go below zero.",
+    "reverse_reason_label": "Why are you reversing it?",
+    "reverse_reason_hint": "Both members can see this reason.",
+    "reverse_confirm": "Reverse exchange",
+    "reverse_success": "Exchange reversed. The credits are back where they started.",
+    "reverse_failed": "The exchange could not be reversed. Nothing has changed.",
+    "reversed_title": "This exchange was reversed",
+    "reversed_chip": "Reversed",
+    "reversed_body": "A broker gave the credits back. The reason is in the history below.",
+    "settle_cancel_button": "Close with no hours",
+    "settle_cancel_title": "Close this dispute with no hours paid?",
+    "settle_cancel_explain": "Use this when the work did not happen, for example because a member did not turn up. The exchange is cancelled, no time credits move, and both members are told.",
+    "settle_cancel_confirm": "Close with no hours",
+    "settle_cancel_success": "Dispute closed. No hours were paid.",
+    "settle_cancel_failed": "The dispute could not be closed. Nothing has changed.",
+    "settle_hours_value_one": "{{count}} hour",
+    "settle_hours_value_other": "{{count}} hours"
   },
   "messages": {
     "title": "Message Review",
@@ -784,7 +826,11 @@
     "empty_urgent_hint": "No flagged message is waiting for review.",
     "search_placeholder": "Search messages or names",
     "empty_search_title": "No messages match your search",
-    "empty_search_hint": "Try a different word or name."
+    "empty_search_hint": "Try a different word or name.",
+    "detail_voice_message": "Voice message",
+    "detail_voice_message_length": "Voice message ({{seconds}} s)",
+    "detail_voice_transcript": "Transcript: {{text}}",
+    "detail_voice_no_transcript": "No transcript is available. Only the two members can play the recording."
   },
   "monitoring": {
     "title": "User Monitoring",

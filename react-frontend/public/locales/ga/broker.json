@@ -88,7 +88,7 @@
     "description": "An méid a dteastaíonn d'aird uaidh inniu, ar aon amharc amháin.",
     "refresh": "Athnuaigh",
     "load_failed": "Níorbh fhéidir deais an bhróicéara a luchtú",
-    "pending_members": "Baill ar feitheamh",
+    "pending_members": "Baill nua le faomhadh",
     "safeguarding_alerts": "Foláirimh chosanta",
     "unreviewed_messages": "Teachtaireachtaí gan athbhreithniú",
     "pending_exchanges": "Malartuithe ar feitheamh",
@@ -203,7 +203,8 @@
     "time_hours_ago_two": "{{count}} uair ó shin",
     "time_days_ago_few": "{{count}} lá ó shin",
     "time_days_ago_many": "{{count}} lá ó shin",
-    "time_days_ago_two": "{{count}} lá ó shin"
+    "time_days_ago_two": "{{count}} lá ó shin",
+    "open_reports": "Tuairiscí ó bhaill le seiceáil"
   },
   "members": {
     "title": "Baill",
@@ -570,7 +571,8 @@
     "timeline_title": "Aistear na ballraíochta",
     "timeline_registered": "Cláraithe",
     "timeline_email_verified": "Ríomhphost deimhnithe",
-    "timeline_approved": "Ceadaithe"
+    "timeline_approved": "Ceadaithe",
+    "reset_2fa_reason_label": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)"
   },
   "exchanges": {
     "title": "Bainistíocht malartuithe",
@@ -650,7 +652,9 @@
       "provider_confirmed": "Dhearbhaigh an soláthraí na huaireanta",
       "request_created": "Iarratas cruthaithe",
       "requester_confirmed": "Dhearbhaigh an t-iarrthóir na huaireanta",
-      "status_changed": "Athraíodh an stádas"
+      "status_changed": "Athraíodh an stádas",
+      "dispute_resolved": "Aighneas réitithe",
+      "reversed": "Malartú cealaithe"
     },
     "detail_no_history": "Níl aon stair ar fáil.",
     "tabs_aria": "Scagaire stádais malartaithe",
@@ -671,7 +675,48 @@
     "detail_approved_label": "Ceadaithe ag bróicéir",
     "detail_load_failed": "Níorbh fhéidir an malartú seo a luchtú",
     "detail_error_hint": "D'fhéadfadh sé gur fadhb shealadach í, nó b'fhéidir nach ann don mhalartú a thuilleadh.",
-    "retry": "Bain triail eile as"
+    "retry": "Bain triail eile as",
+    "settle_title": "Ní mór duit an malartú seo a réiteach",
+    "settle_intro": "Dheimhnigh an dá bhall uaireanta difriúla, mar sin níor aistríodh aon chreidmheas ama fós. Labhair leis an mbeirt acu, ansin roghnaigh na huaireanta atá le híoc.",
+    "settle_agreed_label": "Comhaontaithe san iarratas",
+    "settle_claim_label": "Dar le {{name}}",
+    "settle_not_confirmed": "Gan deimhniú",
+    "settle_button": "Réitigh an t-aighneas",
+    "settle_modal_title": "Réitigh an t-aighneas seo",
+    "settle_hours_label": "Uaireanta le híoc",
+    "settle_hours_range": "Roghnaigh idir {{min}} agus {{max}} uair an chloig. Socraítear an raon seo sa Chumraíocht.",
+    "settle_picks_label": "Úsáid figiúr ón malartú",
+    "settle_pick": "{{who}}: {{hours}} u",
+    "settle_pick_agreed": "Comhaontaithe",
+    "settle_notes_label": "Cad a chinn tú, agus cén fáth",
+    "settle_notes_hint": "Is féidir leis an dá bhall an nóta seo a fheiceáil.",
+    "settle_confirm": "Réitigh agus íoc {{amount}}",
+    "settle_success": "Réitíodh an t-aighneas. Íocadh {{amount}}.",
+    "settle_failed": "Níorbh fhéidir an t-aighneas a réiteach. Níor athraíodh aon rud.",
+    "resolution_rank_refused": "Ní féidir leat é seo a dhéanamh, mar tá duine de na baill seo ar an bhfoireann ag do leibhéal féin nó os a chionn. Iarr ar riarthóir.",
+    "reverse_button": "Cealaigh an malartú",
+    "reverse_modal_title": "An malartú seo a chealú?",
+    "reverse_explain": "Tugann sé seo na creidmheasanna ama ar ais: filleann iarmhéideanna an dá bhall ar an staid a bhí acu roimh an malartú seo. Fanann an malartú bunaidh sna taifid, le hiontráil cheartaithe in aice leis.",
+    "reverse_negative_note": "Má tá na creidmheasanna caite ag ball cheana, féadfaidh a iarmhéid dul faoi bhun náid.",
+    "reverse_reason_label": "Cén fáth a bhfuil tú á chealú?",
+    "reverse_reason_hint": "Is féidir leis an dá bhall an chúis seo a fheiceáil.",
+    "reverse_confirm": "Cealaigh an malartú",
+    "reverse_success": "Cealaíodh an malartú. Tá na creidmheasanna ar ais san áit ar thosaigh siad.",
+    "reverse_failed": "Níorbh fhéidir an malartú a chealú. Níor athraíodh aon rud.",
+    "reversed_title": "Cealaíodh an malartú seo",
+    "reversed_chip": "Cealaithe",
+    "reversed_body": "Thug bróicéir na creidmheasanna ar ais. Tá an chúis sa stair thíos.",
+    "settle_cancel_button": "Dún gan uaireanta",
+    "settle_cancel_title": "An t-aighneas seo a dhúnadh gan aon uaireanta a íoc?",
+    "settle_cancel_explain": "Úsáid é seo nuair nár tharla an obair, mar shampla toisc nár tháinig ball. Cealaítear an malartú, ní aistrítear aon chreidmheas ama, agus cuirtear an dá bhall ar an eolas.",
+    "settle_cancel_confirm": "Dún gan uaireanta",
+    "settle_cancel_success": "Dúnadh an t-aighneas. Níor íocadh aon uaireanta.",
+    "settle_cancel_failed": "Níorbh fhéidir an t-aighneas a dhúnadh. Níor athraíodh aon rud.",
+    "settle_hours_value_one": "{{count}} uair an chloig",
+    "settle_hours_value_two": "{{count}} uair an chloig",
+    "settle_hours_value_few": "{{count}} uair an chloig",
+    "settle_hours_value_many": "{{count}} uair an chloig",
+    "settle_hours_value_other": "{{count}} uair an chloig"
   },
   "messages": {
     "title": "Athbhreithniú teachtaireachtaí",
@@ -814,7 +859,11 @@
     "empty_urgent_hint": "Níl aon teachtaireacht bhrataithe ag fanacht le hathbhreithniú.",
     "search_placeholder": "Cuardaigh teachtaireachtaí nó ainmneacha",
     "empty_search_title": "Níl aon teachtaireacht a mheaitseálann do chuardach",
-    "empty_search_hint": "Bain triail as focal nó ainm eile."
+    "empty_search_hint": "Bain triail as focal nó ainm eile.",
+    "detail_voice_message": "Teachtaireacht ghutha",
+    "detail_voice_message_length": "Teachtaireacht ghutha ({{seconds}} s)",
+    "detail_voice_transcript": "Tras-scríbhinn: {{text}}",
+    "detail_voice_no_transcript": "Níl tras-scríbhinn ar fáil. Ní féidir ach leis an dá bhall an taifeadadh a sheinm."
   },
   "monitoring": {
     "title": "Monatóireacht úsáideoirí",

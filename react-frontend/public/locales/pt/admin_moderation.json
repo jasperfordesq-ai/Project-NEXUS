@@ -244,7 +244,7 @@
     "save_settings": "Salvar configurações",
     "settings": "Configurações",
     "settings_description": "Configure regras de sinalização automática e preferências de moderação",
-    "showing_count": "Mostrando",
+    "showing_count": "A mostrar {{shown}} de {{total}}",
     "status_dismissed": "Dispensado",
     "status_pending": "Pendente",
     "status_resolved": "Resolvido",

@@ -88,7 +88,7 @@
     "description": "O que precisa da sua atenção hoje, num relance.",
     "refresh": "Atualizar",
     "load_failed": "Falha ao carregar o painel do mediador",
-    "pending_members": "Membros Pendentes",
+    "pending_members": "Novos membros por aprovar",
     "safeguarding_alerts": "Alertas de Proteção",
     "unreviewed_messages": "Mensagens Não Revisadas",
     "pending_exchanges": "Trocas Pendentes",
@@ -193,7 +193,8 @@
     "open_items_many": "itens à espera da sua revisão",
     "time_minutes_ago_many": "há {{count}} min",
     "time_hours_ago_many": "há {{count}} h",
-    "time_days_ago_many": "há {{count}} d"
+    "time_days_ago_many": "há {{count}} d",
+    "open_reports": "Denúncias de membros por verificar"
   },
   "members": {
     "title": "Membros",
@@ -552,7 +553,8 @@
     "timeline_title": "Percurso de adesão",
     "timeline_registered": "Registrado",
     "timeline_email_verified": "E-mail verificado",
-    "timeline_approved": "Aprovado"
+    "timeline_approved": "Aprovado",
+    "reset_2fa_reason_label": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -632,7 +634,9 @@
       "provider_confirmed": "O prestador confirmou as horas",
       "request_created": "Pedido criado",
       "requester_confirmed": "O solicitante confirmou as horas",
-      "status_changed": "Estado alterado"
+      "status_changed": "Estado alterado",
+      "dispute_resolved": "Contestação resolvida",
+      "reversed": "Troca revertida"
     },
     "detail_no_history": "Sem histórico disponível.",
     "tabs_aria": "Filtro de status do Exchange",
@@ -653,7 +657,45 @@
     "detail_approved_label": "Aprovada pelo corretor",
     "detail_load_failed": "Falha ao carregar esta troca",
     "detail_error_hint": "Pode ser um problema temporário, ou a troca pode já não existir.",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "settle_title": "Esta troca precisa de ser resolvida por ti",
+    "settle_intro": "Os dois membros confirmaram horas diferentes, por isso ainda não foram transferidos créditos de tempo. Fala com os dois e depois escolhe as horas a pagar.",
+    "settle_agreed_label": "Acordado no pedido",
+    "settle_claim_label": "Segundo {{name}}",
+    "settle_not_confirmed": "Não confirmado",
+    "settle_button": "Resolver a contestação",
+    "settle_modal_title": "Resolver esta contestação",
+    "settle_hours_label": "Horas a pagar",
+    "settle_hours_range": "Escolhe entre {{min}} e {{max}} horas. O intervalo é definido em Configuração.",
+    "settle_picks_label": "Usar um valor da troca",
+    "settle_pick": "{{who}}: {{hours}} h",
+    "settle_pick_agreed": "Acordado",
+    "settle_notes_label": "O que decidiste, e porquê",
+    "settle_notes_hint": "Os dois membros podem ver esta nota.",
+    "settle_confirm": "Resolver e pagar {{amount}}",
+    "settle_success": "Contestação resolvida. Pago: {{amount}}.",
+    "settle_failed": "Não foi possível resolver a contestação. Nada mudou.",
+    "resolution_rank_refused": "Não podes fazer isto, porque um destes membros faz parte da equipa do teu nível ou superior. Pede a um administrador.",
+    "reverse_button": "Reverter a troca",
+    "reverse_modal_title": "Reverter esta troca?",
+    "reverse_explain": "Os créditos de tempo são devolvidos: os saldos dos dois membros voltam ao que eram antes desta troca. A troca original fica nos registos, com um lançamento de correção ao lado.",
+    "reverse_negative_note": "Se um membro já gastou os créditos, o saldo pode ficar abaixo de zero.",
+    "reverse_reason_label": "Porque estás a revertê-la?",
+    "reverse_reason_hint": "Os dois membros podem ver este motivo.",
+    "reverse_confirm": "Reverter a troca",
+    "reverse_success": "Troca revertida. Os créditos voltaram ao ponto de partida.",
+    "reverse_failed": "Não foi possível reverter a troca. Nada mudou.",
+    "reversed_title": "Esta troca foi revertida",
+    "reversed_chip": "Revertida",
+    "reversed_body": "Um corretor devolveu os créditos. O motivo está no histórico abaixo.",
+    "settle_cancel_button": "Fechar sem horas",
+    "settle_cancel_title": "Fechar esta contestação sem pagar horas?",
+    "settle_cancel_explain": "Usa isto quando o trabalho não aconteceu, por exemplo porque um membro não apareceu. A troca é cancelada, nenhum crédito de tempo é transferido e os dois membros são avisados.",
+    "settle_cancel_confirm": "Fechar sem horas",
+    "settle_cancel_success": "Contestação fechada. Não foram pagas horas.",
+    "settle_cancel_failed": "Não foi possível fechar a contestação. Nada mudou.",
+    "settle_hours_value_one": "{{count}} hora",
+    "settle_hours_value_other": "{{count}} horas"
   },
   "messages": {
     "title": "Revisão de Mensagem",
@@ -794,7 +836,11 @@
     "empty_urgent_hint": "Nenhuma mensagem sinalizada aguarda revisão.",
     "search_placeholder": "Pesquisar mensagens ou nomes",
     "empty_search_title": "Nenhuma mensagem corresponde à sua pesquisa",
-    "empty_search_hint": "Experimente outra palavra ou nome."
+    "empty_search_hint": "Experimente outra palavra ou nome.",
+    "detail_voice_message": "Mensagem de voz",
+    "detail_voice_message_length": "Mensagem de voz ({{seconds}} s)",
+    "detail_voice_transcript": "Transcrição: {{text}}",
+    "detail_voice_no_transcript": "Não há transcrição disponível. Só os dois membros podem ouvir a gravação."
   },
   "monitoring": {
     "title": "Monitorização de usuários",

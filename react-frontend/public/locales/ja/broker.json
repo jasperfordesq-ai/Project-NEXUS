@@ -88,7 +88,7 @@
     "description": "今日注意が必要なことを一目で確認できます。",
     "refresh": "更新",
     "load_failed": "ブローカーダッシュボードを読み込めませんでした",
-    "pending_members": "保留中のメンバー",
+    "pending_members": "承認待ちの新しいメンバー",
     "safeguarding_alerts": "セーフガーディング警告",
     "unreviewed_messages": "未レビューメッセージ",
     "pending_exchanges": "保留中の交換",
@@ -188,7 +188,8 @@
     "time_days_ago_other": "{{count}}日前",
     "time_minutes_ago_one": "{{count}} 分前",
     "time_hours_ago_one": "{{count}}前",
-    "time_days_ago_one": "{{count}}日前"
+    "time_days_ago_one": "{{count}}日前",
+    "open_reports": "確認待ちのメンバーからの報告"
   },
   "members": {
     "title": "メンバー",
@@ -543,7 +544,8 @@
     "timeline_title": "メンバーシップの経緯",
     "timeline_registered": "登録済み",
     "timeline_email_verified": "メール確認済み",
-    "timeline_approved": "承認済み"
+    "timeline_approved": "承認済み",
+    "reset_2fa_reason_label": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）"
   },
   "exchanges": {
     "title": "交換",
@@ -623,7 +625,9 @@
       "provider_confirmed": "提供者が時間を確認しました",
       "request_created": "リクエストが作成されました",
       "requester_confirmed": "依頼者が時間を確認しました",
-      "status_changed": "ステータスが変更されました"
+      "status_changed": "ステータスが変更されました",
+      "dispute_resolved": "異議を解決",
+      "reversed": "交換を取り消し"
     },
     "detail_no_history": "履歴はありません。",
     "tabs_aria": "交換ステータスフィルター",
@@ -644,7 +648,44 @@
     "detail_approved_label": "ブローカー承認済み",
     "detail_load_failed": "この交換を読み込めませんでした",
     "detail_error_hint": "一時的な問題であるか、交換がすでに存在しない可能性があります。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "settle_title": "この交換はあなたによる解決が必要です",
+    "settle_intro": "2人のメンバーが異なる時間を確認したため、時間クレジットはまだ移動していません。双方と話してから、支払う時間を選んでください。",
+    "settle_agreed_label": "依頼時に合意した時間",
+    "settle_claim_label": "{{name}}さんの申告",
+    "settle_not_confirmed": "未確認",
+    "settle_button": "異議を解決",
+    "settle_modal_title": "この異議を解決",
+    "settle_hours_label": "支払う時間",
+    "settle_hours_range": "{{min}}〜{{max}}時間の範囲で選んでください。この範囲は「設定」で決められます。",
+    "settle_picks_label": "交換の数値を使う",
+    "settle_pick": "{{who}}: {{hours}}時間",
+    "settle_pick_agreed": "合意",
+    "settle_notes_label": "決定した内容とその理由",
+    "settle_notes_hint": "このメモは両方のメンバーに表示されます。",
+    "settle_confirm": "解決して{{amount}}を支払う",
+    "settle_success": "異議を解決しました。{{amount}}が支払われました。",
+    "settle_failed": "異議を解決できませんでした。何も変更されていません。",
+    "resolution_rank_refused": "これらのメンバーの中に、あなたと同じかそれ以上の権限を持つスタッフがいるため、この操作はできません。管理者に依頼してください。",
+    "reverse_button": "交換を取り消す",
+    "reverse_modal_title": "この交換を取り消しますか?",
+    "reverse_explain": "時間クレジットを元に戻します。両方のメンバーの残高が、この交換の前の状態に戻ります。元の交換は記録に残り、その横に訂正の記録が追加されます。",
+    "reverse_negative_note": "メンバーがすでにクレジットを使っている場合、残高がマイナスになることがあります。",
+    "reverse_reason_label": "取り消す理由",
+    "reverse_reason_hint": "この理由は両方のメンバーに表示されます。",
+    "reverse_confirm": "交換を取り消す",
+    "reverse_success": "交換を取り消しました。クレジットは元の状態に戻りました。",
+    "reverse_failed": "交換を取り消せませんでした。何も変更されていません。",
+    "reversed_title": "この交換は取り消されました",
+    "reversed_chip": "取り消し済み",
+    "reversed_body": "ブローカーがクレジットを元に戻しました。理由は下の履歴にあります。",
+    "settle_cancel_button": "時間を支払わずに終了",
+    "settle_cancel_title": "時間を支払わずにこの異議を終了しますか?",
+    "settle_cancel_explain": "メンバーが来なかったなど、作業が行われなかった場合に使います。交換はキャンセルされ、時間クレジットは移動せず、両方のメンバーに通知されます。",
+    "settle_cancel_confirm": "時間を支払わずに終了",
+    "settle_cancel_success": "異議を終了しました。時間は支払われていません。",
+    "settle_cancel_failed": "異議を終了できませんでした。何も変更されていません。",
+    "settle_hours_value_other": "{{count}}時間"
   },
   "messages": {
     "title": "メッセージレビュー",
@@ -784,7 +825,11 @@
     "empty_urgent_hint": "レビュー待ちのフラグ付きメッセージはありません。",
     "search_placeholder": "メッセージまたは名前を検索",
     "empty_search_title": "検索に一致するメッセージはありません",
-    "empty_search_hint": "別の言葉や名前で試してください。"
+    "empty_search_hint": "別の言葉や名前で試してください。",
+    "detail_voice_message": "ボイスメッセージ",
+    "detail_voice_message_length": "ボイスメッセージ（{{seconds}}秒）",
+    "detail_voice_transcript": "文字起こし: {{text}}",
+    "detail_voice_no_transcript": "文字起こしはありません。録音を再生できるのは2人のメンバーだけです。"
   },
   "monitoring": {
     "title": "ユーザー監視",

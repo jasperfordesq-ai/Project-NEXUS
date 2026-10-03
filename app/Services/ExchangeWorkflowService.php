@@ -591,11 +591,17 @@ class ExchangeWorkflowService
                     'listing_title' => $exchange->listing->title ?? '',
                     'reason' => $safeReason,
                 ];
-                // Notify the other party (not the one who cancelled)
-                $otherPartyId = $isRequester
-                    ? (int) $exchange->provider_id
-                    : (int) $exchange->requester_id;
-                NotificationDispatcher::send($otherPartyId, 'exchange_cancelled', $notificationData);
+                // Notify the other party (not the one who cancelled). When staff
+                // cancel — a broker closing a dispute — neither member did it,
+                // so both are told.
+                if ($role === 'broker') {
+                    $recipients = [(int) $exchange->requester_id, (int) $exchange->provider_id];
+                } else {
+                    $recipients = [$isRequester ? (int) $exchange->provider_id : (int) $exchange->requester_id];
+                }
+                foreach ($recipients as $recipientId) {
+                    NotificationDispatcher::send($recipientId, 'exchange_cancelled', $notificationData);
+                }
             } catch (\Throwable $e) {
                 Log::warning("Exchange #{$exchangeId}: notification failed after cancelExchange", [
                     'error' => $e->getMessage(),
@@ -1588,13 +1594,8 @@ class ExchangeWorkflowService
             return ['ok' => false, 'error' => 'INVALID_HOURS'];
         }
 
-        $config = BrokerControlConfigService::getConfig('exchange_workflow');
-        $variancePercent = (int) ($config['max_hour_variance_percent'] ?? 25);
-        $varianceFactor = $variancePercent / 100;
-        $proposed = (float) $exchange->proposed_hours;
-        $minHours = $proposed * (1 - $varianceFactor);
-        $maxHours = $proposed * (1 + $varianceFactor);
-        $clamped = round(max($minHours, min($maxHours, $finalHours)), 2);
+        $window = self::disputeHoursWindow((float) $exchange->proposed_hours);
+        $clamped = round(max($window['min_hours'], min($window['max_hours'], $finalHours)), 2);
 
         // completeExchange() moves the credits, flips the status and — because it
         // sees the pre-existing `disputed` status — sends the dispute-resolved
@@ -1633,6 +1634,25 @@ class ExchangeWorkflowService
         );
 
         return ['ok' => true, 'final_hours' => $clamped];
+    }
+
+    /**
+     * The hours a dispute may be settled at: the proposed figure ± the community's
+     * configured variance. resolveDispute() clamps to this, and the broker panel
+     * shows it on the settle form — one calculation, so the form can never offer a
+     * figure the server would then quietly change.
+     *
+     * @return array{min_hours: float, max_hours: float}
+     */
+    public static function disputeHoursWindow(float $proposedHours): array
+    {
+        $config = BrokerControlConfigService::getConfig('exchange_workflow');
+        $varianceFactor = ((int) ($config['max_hour_variance_percent'] ?? 25)) / 100;
+
+        return [
+            'min_hours' => round($proposedHours * (1 - $varianceFactor), 2),
+            'max_hours' => round($proposedHours * (1 + $varianceFactor), 2),
+        ];
     }
 
     /**

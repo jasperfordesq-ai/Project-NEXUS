@@ -9,7 +9,8 @@
  * design language: lifecycle pipeline strip, avatar party cards, risk-tag
  * surfacing, and a proper history timeline. Approve / reject actions are
  * available on pending_broker exchanges so brokers don't have to return
- * to the list to act.
+ * to the list to act; a disputed exchange can be settled and a completed one
+ * reversed (see ../components/ExchangeResolution).
  * Parity: PHP BrokerControlsController::showExchange()
  */
 
@@ -56,6 +57,12 @@ import {
   BrokerEmptyState,
   BrokerStatusChip,
 } from '../components';
+import {
+  DisputeSettlePanel,
+  ReverseExchangeButton,
+  ReversedNotice,
+  canReverse,
+} from '../components/ExchangeResolution';
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
@@ -269,7 +276,8 @@ export default function ExchangeDetail() {
     );
   }
 
-  const { exchange, history, risk_tag } = data;
+  const { exchange, history, risk_tag, dispute_window: disputeWindow } = data;
+  const reload = () => loadExchange(exchange.id);
   const riskIsSevere = risk_tag ? risk_tag.risk_level === 'critical' || risk_tag.risk_level === 'high' : false;
 
   return (
@@ -300,10 +308,16 @@ export default function ExchangeDetail() {
               </Button>
             </>
           )}
+          {canReverse(exchange) && <ReverseExchangeButton exchange={exchange} onDone={reload} />}
           {backButton}
         </>
       }
     >
+      {exchange.status === 'disputed' && disputeWindow && (
+        <DisputeSettlePanel exchange={exchange} window={disputeWindow} onDone={reload} />
+      )}
+      {exchange.reversal_transaction_id ? <ReversedNotice /> : null}
+
       {/* Lifecycle pipeline + key facts */}
       <Card className={`${cardClass} mb-6`}>
         <CardHeader className="flex items-center gap-3 pb-0">

@@ -28,6 +28,7 @@ import Calendar from 'lucide-react/icons/calendar';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import FileText from 'lucide-react/icons/file-text';
+import Mic from 'lucide-react/icons/mic';
 
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
@@ -476,7 +477,7 @@ export function MessageDetail() {
                               <Chip.Label>{t('messages.detail_copied')}</Chip.Label>
                             </Chip>
                           )}
-                          {msg.is_edited && (
+                          {!!msg.is_edited && (
                             <span className="text-xs italic text-muted">{t('messages.detail_edited')}</span>
                           )}
                         </div>
@@ -494,6 +495,22 @@ export function MessageDetail() {
                           )}
                           {msg.is_deleted ? (
                             <p className="text-sm italic text-muted">{t('messages.detail_message_deleted')}</p>
+                          ) : msg.is_voice ? (
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                <Mic size={14} aria-hidden="true" />
+                                {msg.audio_duration
+                                  ? t('messages.detail_voice_message_length', { seconds: msg.audio_duration })
+                                  : t('messages.detail_voice_message')}
+                              </p>
+                              {msg.transcript ? (
+                                <p className="whitespace-pre-wrap break-words text-sm text-foreground">
+                                  {t('messages.detail_voice_transcript', { text: msg.transcript })}
+                                </p>
+                              ) : (
+                                <p className="text-xs text-muted">{t('messages.detail_voice_no_transcript')}</p>
+                              )}
+                            </div>
                           ) : (
                             <p className="whitespace-pre-wrap break-words text-sm text-foreground">{msg.body}</p>
                           )}

@@ -244,7 +244,7 @@
     "save_settings": "Guardar configuración",
     "settings": "Configuración",
     "settings_description": "Configurar reglas de marcado automático y preferencias de moderación",
-    "showing_count": "Mostrando",
+    "showing_count": "Mostrando {{shown}} de {{total}}",
     "status_dismissed": "Descartado",
     "status_pending": "Pendiente",
     "status_resolved": "Resuelto",

@@ -30,9 +30,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1631:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1743:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1631,
+            "line": 1743,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -43,9 +43,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1670:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1782:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1670,
+            "line": 1782,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -160,9 +160,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFeedController.php:350:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFeedController.php:352:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFeedController.php",
-            "line": 350,
+            "line": 352,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $feedItem->user_id",
@@ -173,9 +173,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminFeedController.php:435:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminFeedController.php:437:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminFeedController.php",
-            "line": 435,
+            "line": 437,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $creatorUserId",
@@ -1746,12 +1746,12 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:598:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:603:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 598,
+            "line": 603,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
-            "recipient_expression": "$otherPartyId",
+            "recipient_expression": "$recipientId",
             "title_expression": null,
             "body_expression": null,
             "type_expression": "exchange_cancelled",
@@ -1759,9 +1759,9 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1102:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:1108:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1102,
+            "line": 1108,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "$requesterId",
@@ -1772,9 +1772,9 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1103:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:1109:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1103,
+            "line": 1109,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "$providerId",
@@ -1785,9 +1785,9 @@
             "data_expression": "$notificationData"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1503:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeWorkflowService.php:1509:NotificationDispatcher::send",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1503,
+            "line": 1509,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "$counterpartyId",
@@ -1798,9 +1798,9 @@
             "data_expression": "$data"
         },
         {
-            "id": "app/Services/ExchangeWorkflowService.php:1520:NotificationDispatcher::notifyAdmins",
+            "id": "app/Services/ExchangeWorkflowService.php:1526:NotificationDispatcher::notifyAdmins",
             "file": "app/Services/ExchangeWorkflowService.php",
-            "line": 1520,
+            "line": 1526,
             "transport": "NotificationDispatcher::notifyAdmins",
             "role": "producer",
             "recipient_expression": null,

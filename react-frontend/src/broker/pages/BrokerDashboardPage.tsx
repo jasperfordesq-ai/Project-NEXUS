@@ -34,6 +34,8 @@ import CheckCircle2 from 'lucide-react/icons/circle-check-big';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Zap from 'lucide-react/icons/zap';
 import UserCheck from 'lucide-react/icons/user-check';
+import UserPlus from 'lucide-react/icons/user-plus';
+import Flag from 'lucide-react/icons/flag';
 import type { LucideIcon } from 'lucide-react';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
@@ -49,6 +51,7 @@ import {
 import type { BrokerDashboardStats, BrokerActivityEntry } from '@/admin/api/types';
 import { parseServerTimestamp } from '@/lib/serverTime';
 import { BrokerControlsHelp } from './BrokerHelpPage';
+import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Triage queues — severity-weighted so the hero always surfaces the most
@@ -70,6 +73,8 @@ const QUEUES: QueueDef[] = [
   { key: 'high_risk_listings', labelKey: 'dashboard.high_risk_listings', icon: ShieldAlert, color: 'danger', path: '/broker/risk-tags?level=elevated', weight: 5 },
   { key: 'unreviewed_messages', labelKey: 'dashboard.unreviewed_messages', icon: MessageSquareWarning, color: 'warning', path: '/broker/messages?status=unreviewed', weight: 4 },
   { key: 'pending_exchanges', labelKey: 'dashboard.pending_exchanges', icon: ArrowLeftRight, color: 'accent', path: '/broker/exchanges?status=needs_action', weight: 4 },
+  { key: 'open_reports', labelKey: 'dashboard.open_reports', icon: Flag, color: 'warning', path: '/broker/moderation/reports?status=pending', weight: 4 },
+  { key: 'pending_members', labelKey: 'dashboard.pending_members', icon: UserPlus, color: 'accent', path: '/broker/members?status=pending', weight: 3 },
   { key: 'onboarding_safeguarding_flags', labelKey: 'dashboard.safeguarding_flags', icon: ShieldAlert, color: 'warning', path: '/broker/safeguarding/support-needs', weight: 3 },
   { key: 'vetting_review_requests', labelKey: 'dashboard.vetting_review_requests', icon: ShieldCheck, color: 'warning', path: '/broker/vetting?status=review_requested', weight: 3 },
 ];
@@ -127,28 +132,36 @@ export function BrokerDashboard() {
   tRef.current = t;
   toastRef.current = toast;
 
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
-    setLoadError(false);
+  // `quiet` is the automatic refresh: numbers change in place, with no
+  // skeleton flash and no error toast if one background attempt fails.
+  const loadDashboard = useCallback(async (quiet = false) => {
+    if (!quiet) {
+      setLoading(true);
+      setLoadError(false);
+    }
     try {
       const res = await adminBroker.getDashboard();
       if (res.success && res.data) {
         setStats(res.data);
-      } else {
+        setLoadError(false);
+      } else if (!quiet) {
         setLoadError(true);
         toastRef.current.error(tRef.current('dashboard.load_failed'));
       }
     } catch {
-      setLoadError(true);
-      toastRef.current.error(tRef.current('dashboard.load_failed'));
+      if (!quiet) {
+        setLoadError(true);
+        toastRef.current.error(tRef.current('dashboard.load_failed'));
+      }
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+  useBrokerAutoRefresh(() => void loadDashboard(true));
 
   const showExchanges = hasFeature('exchange_workflow');
 
@@ -177,7 +190,7 @@ export function BrokerDashboard() {
         <Button
           variant="tertiary"
           startContent={<RefreshCw size={16} />}
-          onPress={loadDashboard}
+          onPress={() => loadDashboard()}
           isLoading={loading}
           size="sm"
         >
@@ -206,7 +219,7 @@ export function BrokerDashboard() {
           title={t('dashboard.partial_title')}
           description={t('dashboard.partial_body')}
           endContent={(
-            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadDashboard}>
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => loadDashboard()}>
               <RefreshCw size={14} aria-hidden="true" />
               {t('dashboard.refresh')}
             </Button>
@@ -228,7 +241,7 @@ export function BrokerDashboard() {
           title={t('dashboard.load_error_title')}
           hint={t('dashboard.load_error_hint')}
           action={
-            <Button size="sm" variant="danger-soft" onPress={loadDashboard}>
+            <Button size="sm" variant="danger-soft" onPress={() => loadDashboard()}>
               {t('dashboard.refresh')}
             </Button>
           }
@@ -260,7 +273,8 @@ export function BrokerDashboard() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-4">
+                  {/* shrink-0: with several queues the chips wrap, not the heading. */}
+                  <div className="flex shrink-0 items-center gap-4">
                     <span
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset ring-current/20 ${
                         hasDanger ? 'bg-danger/15 text-danger' : 'bg-accent/15 text-accent'
@@ -280,8 +294,8 @@ export function BrokerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {activeQueues.slice(0, 4).map((q) => {
+                  <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+                    {activeQueues.map((q) => {
                       const QIcon = q.icon;
                       return (
                         <Link
@@ -304,7 +318,23 @@ export function BrokerDashboard() {
           </Card>
 
           {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <BrokerStatCard
+              label={t('dashboard.pending_members')}
+              value={stats?.pending_members ?? null}
+              icon={UserPlus}
+              color="accent"
+              loading={loading}
+              to={tenantPath('/broker/members?status=pending')}
+            />
+            <BrokerStatCard
+              label={t('dashboard.open_reports')}
+              value={stats?.open_reports ?? null}
+              icon={Flag}
+              color="warning"
+              loading={loading}
+              to={tenantPath('/broker/moderation/reports?status=pending')}
+            />
             {showExchanges && (
               <BrokerStatCard
                 label={t('dashboard.pending_exchanges')}

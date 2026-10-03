@@ -316,6 +316,45 @@ class AdminBrokerController extends BaseApiController
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard onboarding_safeguarding_flags failed: ' . $e->getMessage());
         }
 
+        $pendingMembers = 0;
+        try {
+            // The tile opens Members → Pending. Same rule as that list
+            // (AdminUsersController::index, status=pending): not yet approved.
+            $row = DB::selectOne(
+                "SELECT COUNT(*) as cnt FROM users WHERE {$tenantWhere} AND is_approved = 0",
+                $tenantParams
+            );
+            $pendingMembers = (int) ($row->cnt ?? 0);
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'pending_members';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard pending_members failed: ' . $e->getMessage());
+        }
+
+        $openReports = 0;
+        try {
+            // The tile opens Reports → Pending. Same rule as that list
+            // (AdminReportsController::index, status=pending), which treats the
+            // legacy 'pending' value and 'open' as one state, and — below admin
+            // tier — leaves out reports the caller is a party to (F-454, F-549).
+            if ($this->callerIsAdminTier()) {
+                $row = DB::selectOne(
+                    "SELECT COUNT(*) as cnt FROM reports WHERE {$tenantWhere} AND status IN ('open', 'pending')",
+                    $tenantParams
+                );
+                $openReports = (int) ($row->cnt ?? 0);
+            } else {
+                $candidates = DB::select(
+                    "SELECT id, tenant_id, reporter_id, target_type, target_id FROM reports
+                     WHERE {$tenantWhere} AND status IN ('open', 'pending')",
+                    $tenantParams
+                );
+                $openReports = count(app(\App\Services\ReportQueueVisibility::class)->filterForBroker($candidates, $viewerId));
+            }
+        } catch (\Exception $e) {
+            $failedMetrics[] = 'open_reports';
+            \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard open_reports failed: ' . $e->getMessage());
+        }
+
         // Every broker-panel page shows a notice while the community has no
         // safeguarding jurisdiction: brokers cannot record vetting decisions,
         // and members who asked for vetted-only contact cannot be reached. Read
@@ -417,6 +456,8 @@ class AdminBrokerController extends BaseApiController
             'vetting_review_requests' => in_array('vetting_review_requests', $failedMetrics, true) ? null : $vettingReviewRequests,
             'safeguarding_alerts' => in_array('safeguarding_alerts', $failedMetrics, true) ? null : $safeguardingAlerts,
             'onboarding_safeguarding_flags' => in_array('onboarding_safeguarding_flags', $failedMetrics, true) ? null : $onboardingSafeguardingFlags,
+            'pending_members' => in_array('pending_members', $failedMetrics, true) ? null : $pendingMembers,
+            'open_reports' => in_array('open_reports', $failedMetrics, true) ? null : $openReports,
             'safeguarding_jurisdiction_configured' => $jurisdictionConfigured,
             'recent_activity' => $recentActivity,
             // Frontend uses this to render a banner when one or more
@@ -588,10 +629,17 @@ class AdminBrokerController extends BaseApiController
                 } catch (\Exception $e) { \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard query failed: ' . $e->getMessage()); }
             }
 
+            // The settle form's allowed range — the same calculation resolve-dispute
+            // clamps to, so the screen never offers a figure the server changes.
+            $disputeWindow = ($exchange['status'] ?? null) === 'disputed'
+                ? $this->exchangeWorkflowService::disputeHoursWindow((float) ($exchange['proposed_hours'] ?? 0))
+                : null;
+
             return $this->respondWithData([
                 'exchange' => $exchange,
                 'history' => $history,
                 'risk_tag' => $riskTag,
+                'dispute_window' => $disputeWindow,
             ]);
         } catch (\Exception $e) {
             return $this->respondWithError('SERVER_ERROR', __('api.fetch_failed', ['resource' => 'exchange']), null, 500);
@@ -783,6 +831,66 @@ class AdminBrokerController extends BaseApiController
             }
 
             return $this->respondWithError('SERVER_ERROR', __('api.exchange_complete_failed'), null, 500);
+        }
+    }
+
+    /**
+     * POST /api/v2/admin/broker/exchanges/{id}/cancel-dispute
+     *
+     * Close a DISPUTED exchange with no hours paid — for a dispute where the
+     * work never happened (the other member did not turn up). resolve-dispute
+     * cannot express that: it always pays at least proposed − variance. A
+     * reason is mandatory and is written to the exchange history both members
+     * can see; both members are notified.
+     */
+    public function cancelExchangeDispute(int $id): JsonResponse
+    {
+        $adminId = $this->requireBrokerOrAdmin();
+        $tenantId = TenantContext::getId();
+
+        $reason = trim((string) $this->input('reason', ''));
+        if ($reason === '') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.reason_required'), 'reason');
+        }
+
+        try {
+            $exchange = DB::selectOne(
+                "SELECT id, status, tenant_id, requester_id, provider_id FROM exchange_requests WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
+
+            if (!$exchange) {
+                return $this->respondWithError('NOT_FOUND', __('api.exchange_not_found'), null, 404);
+            }
+            if ($exchange->status !== 'disputed') {
+                return $this->respondWithError('INVALID_STATUS', __('api.invalid_status'));
+            }
+            // Same conflict-of-interest rule as resolve-dispute: closing your own
+            // dispute decides whether you are paid.
+            if ((int) $exchange->requester_id === (int) $adminId
+                || (int) $exchange->provider_id === (int) $adminId) {
+                return $this->respondWithError('FORBIDDEN', __('api.cannot_broker_own_exchange'), null, 403);
+            }
+
+            if (!$this->exchangeWorkflowService::cancelExchange($id, $adminId, $reason)) {
+                return $this->respondWithError('INVALID_STATUS', __('api.invalid_status'));
+            }
+
+            $this->auditLogService->log('exchange_dispute_cancelled', null, $adminId, [
+                'exchange_id' => $id,
+                'reason' => $reason,
+                'actor_role' => $this->resolveActorRole(),
+            ]);
+
+            return $this->respondWithData(['id' => $id, 'status' => 'cancelled']);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exchange dispute cancellation failed', [
+                'exchange_id' => $id,
+                'error' => $e->getMessage(),
+                'exception' => $e::class,
+            ]);
+
+            return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'exchange']), null, 500);
         }
     }
 
@@ -1294,10 +1402,14 @@ class AdminBrokerController extends BaseApiController
                         ->orWhere(fn ($pair) => $pair->where('m.sender_id', $original->receiver_id)->where('m.receiver_id', $original->sender_id));
                 });
         }
+        // Voice messages have an empty body, so say what they are and carry the
+        // transcript when one exists. The recording (audio_url) is deliberately
+        // NOT selected: it stays private media for the two members.
         $rows = $query->where(function ($q) use ($original) {
             $q->where('m.created_at', '<', $original->created_at)
                 ->orWhere(fn ($sameTime) => $sameTime->where('m.created_at', $original->created_at)->where('m.id', '<=', $original->id));
-        })->select('m.id', 'm.sender_id', 'm.receiver_id', 'm.body', 'm.created_at', 'm.is_deleted', 'm.is_edited', 'm.edited_at')
+        })->select('m.id', 'm.sender_id', 'm.receiver_id', 'm.body', 'm.created_at', 'm.is_deleted', 'm.is_edited', 'm.edited_at',
+            'm.is_voice', 'm.audio_duration', 'm.transcript')
             ->selectRaw(UserDisplayName::sql('u', 'sender_name'))
             ->orderByDesc('m.created_at')->orderByDesc('m.id')->limit(50)->get();
         return $rows->reverse()->map(function ($row) {

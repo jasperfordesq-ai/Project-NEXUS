@@ -88,7 +88,7 @@
     "description": "Ce qui demande votre attention aujourd'hui, en un coup d'œil.",
     "refresh": "Actualiser",
     "load_failed": "Échec du chargement du tableau de bord du courtier",
-    "pending_members": "Membres en attente",
+    "pending_members": "Nouveaux membres à approuver",
     "safeguarding_alerts": "Alertes de protection",
     "unreviewed_messages": "Messages non examinés",
     "pending_exchanges": "Échanges en attente",
@@ -193,7 +193,8 @@
     "open_items_many": "éléments en attente de votre examen",
     "time_minutes_ago_many": "il y a {{count}} min",
     "time_hours_ago_many": "il y a {{count}} h",
-    "time_days_ago_many": "il y a {{count}} j"
+    "time_days_ago_many": "il y a {{count}} j",
+    "open_reports": "Signalements de membres à examiner"
   },
   "members": {
     "title": "Membres",
@@ -552,7 +553,8 @@
     "timeline_title": "Parcours d'adhésion",
     "timeline_registered": "Inscrit",
     "timeline_email_verified": "E-mail vérifié",
-    "timeline_approved": "Approuvé"
+    "timeline_approved": "Approuvé",
+    "reset_2fa_reason_label": "Référence de l’incident et méthode de vérification de l’identité du titulaire (10–500 caractères)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -632,7 +634,9 @@
       "provider_confirmed": "Le prestataire a confirmé les heures",
       "request_created": "Demande créée",
       "requester_confirmed": "Le demandeur a confirmé les heures",
-      "status_changed": "Statut modifié"
+      "status_changed": "Statut modifié",
+      "dispute_resolved": "Litige réglé",
+      "reversed": "Échange annulé"
     },
     "detail_no_history": "Aucun historique disponible.",
     "tabs_aria": "Filtre de statut d'échange",
@@ -653,7 +657,45 @@
     "detail_approved_label": "Approuvé par le courtier",
     "detail_load_failed": "Échec du chargement de cet échange",
     "detail_error_hint": "Il peut s'agir d'un problème temporaire, ou l'échange n'existe peut-être plus.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "settle_title": "Cet échange attend votre arbitrage",
+    "settle_intro": "Les deux membres ont confirmé des heures différentes, donc aucun crédit temps n'a encore été transféré. Parlez avec chacun d'eux, puis choisissez les heures à payer.",
+    "settle_agreed_label": "Convenu lors de la demande",
+    "settle_claim_label": "Selon {{name}}",
+    "settle_not_confirmed": "Non confirmé",
+    "settle_button": "Régler le litige",
+    "settle_modal_title": "Régler ce litige",
+    "settle_hours_label": "Heures à payer",
+    "settle_hours_range": "Choisissez entre {{min}} et {{max}} heures. Cette plage se règle dans la Configuration.",
+    "settle_picks_label": "Reprendre un chiffre de l'échange",
+    "settle_pick": "{{who}} : {{hours}} h",
+    "settle_pick_agreed": "Convenu",
+    "settle_notes_label": "Ce que vous avez décidé, et pourquoi",
+    "settle_notes_hint": "Les deux membres peuvent voir cette note.",
+    "settle_confirm": "Régler et payer {{amount}}",
+    "settle_success": "Litige réglé. Payé : {{amount}}.",
+    "settle_failed": "Le litige n'a pas pu être réglé. Rien n'a changé.",
+    "resolution_rank_refused": "Vous ne pouvez pas le faire, car l'un de ces membres fait partie du personnel de votre niveau ou d'un niveau supérieur. Demandez à un administrateur.",
+    "reverse_button": "Annuler l'échange",
+    "reverse_modal_title": "Annuler cet échange ?",
+    "reverse_explain": "Les crédits temps sont alors rendus : les soldes des deux membres reviennent à leur état d'avant cet échange. L'échange d'origine reste dans les registres, accompagné d'une écriture de correction.",
+    "reverse_negative_note": "Si un membre a déjà dépensé les crédits, son solde peut devenir négatif.",
+    "reverse_reason_label": "Pourquoi l'annulez-vous ?",
+    "reverse_reason_hint": "Les deux membres peuvent voir ce motif.",
+    "reverse_confirm": "Annuler l'échange",
+    "reverse_success": "Échange annulé. Les crédits sont revenus à leur point de départ.",
+    "reverse_failed": "L'échange n'a pas pu être annulé. Rien n'a changé.",
+    "reversed_title": "Cet échange a été annulé",
+    "reversed_chip": "Annulé",
+    "reversed_body": "Un courtier a rendu les crédits. Le motif figure dans l'historique ci-dessous.",
+    "settle_cancel_button": "Clore sans heures",
+    "settle_cancel_title": "Clore ce litige sans payer d'heures ?",
+    "settle_cancel_explain": "À utiliser quand le travail n'a pas eu lieu, par exemple parce qu'un membre ne s'est pas présenté. L'échange est annulé, aucun crédit temps n'est transféré et les deux membres sont prévenus.",
+    "settle_cancel_confirm": "Clore sans heures",
+    "settle_cancel_success": "Litige clos. Aucune heure n'a été payée.",
+    "settle_cancel_failed": "Le litige n'a pas pu être clos. Rien n'a changé.",
+    "settle_hours_value_one": "{{count}} heure",
+    "settle_hours_value_other": "{{count}} heures"
   },
   "messages": {
     "title": "Examen des messages",
@@ -794,7 +836,11 @@
     "empty_urgent_hint": "Aucun message signalé n’attend de révision.",
     "search_placeholder": "Rechercher des messages ou des noms",
     "empty_search_title": "Aucun message ne correspond à votre recherche",
-    "empty_search_hint": "Essayez un autre mot ou un autre nom."
+    "empty_search_hint": "Essayez un autre mot ou un autre nom.",
+    "detail_voice_message": "Message vocal",
+    "detail_voice_message_length": "Message vocal ({{seconds}} s)",
+    "detail_voice_transcript": "Transcription : {{text}}",
+    "detail_voice_no_transcript": "Aucune transcription n'est disponible. Seuls les deux membres peuvent écouter l'enregistrement."
   },
   "monitoring": {
     "title": "Surveillance des utilisateurs",

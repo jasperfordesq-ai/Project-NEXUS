@@ -12,16 +12,12 @@ import userEvent from '@testing-library/user-event';
 // Hoist mock fns
 // ---------------------------------------------------------------------------
 const mockGetDashboard = vi.hoisted(() => vi.fn());
-const mockUsersList = vi.hoisted(() => vi.fn());
 const mockApprovalStats = vi.hoisted(() => vi.fn());
 const mockRole = vi.hoisted(() => ({ value: 'broker' as 'broker' | 'admin' }));
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminBroker: {
     getDashboard: mockGetDashboard,
-  },
-  adminUsers: {
-    list: mockUsersList,
   },
   adminMatching: {
     getApprovalStats: mockApprovalStats,
@@ -73,6 +69,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 import { BrokerLayout } from './BrokerLayout';
+import { API_WRITE_EVENT } from '@/lib/api';
 
 const BROKER_DASHBOARD = {
   safeguarding_alerts: 2,
@@ -81,6 +78,10 @@ const BROKER_DASHBOARD = {
   unreviewed_messages: 3,
   monitored_users: 0,
   high_risk_listings: 0,
+  // The members and reports badges come from the dashboard, counted by the
+  // rule their pages list with (since Oct 2026).
+  pending_members: 4,
+  open_reports: 1,
 };
 
 describe('BrokerLayout', () => {
@@ -88,14 +89,6 @@ describe('BrokerLayout', () => {
     vi.clearAllMocks();
     mockRole.value = 'broker';
     mockGetDashboard.mockResolvedValue({ success: true, data: BROKER_DASHBOARD });
-    // Mirrors what the shared api client (src/lib/api.ts) really resolves with for
-    // paginated endpoints: `data` is the bare row array and pagination lives on the
-    // sibling `meta`. Earlier fixtures nested `meta` inside `data`, a shape the
-    // client never produces for these endpoints.
-    mockUsersList.mockResolvedValue({
-      success: true,
-      data: [], meta: { current_page: 1, per_page: 1, total: 4, total_pages: 4, has_more: true },
-    });
     mockApprovalStats.mockResolvedValue({
       success: true,
       data: { pending_count: 2, approved_count: 1, rejected_count: 0, avg_approval_time: 0, approval_rate: 100 },
@@ -123,9 +116,25 @@ describe('BrokerLayout', () => {
     render(<BrokerLayout />);
     await waitFor(() => {
       expect(mockGetDashboard).toHaveBeenCalledTimes(1);
-      expect(mockUsersList).toHaveBeenCalledTimes(1);
       expect(mockApprovalStats).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('refreshes the badges once after a burst of broker actions, but not after a presence ping', async () => {
+    render(<BrokerLayout />);
+    await waitFor(() => expect(mockGetDashboard).toHaveBeenCalledTimes(1));
+
+    const write = (endpoint: string) =>
+      window.dispatchEvent(new CustomEvent(API_WRITE_EVENT, { detail: { method: 'POST', endpoint } }));
+
+    write('/v2/presence/heartbeat');
+    write('/v2/admin/broker/messages/7/review');
+    write('/v2/admin/broker/messages/8/review');
+
+    await waitFor(() => expect(mockGetDashboard).toHaveBeenCalledTimes(2), { timeout: 3000 });
+    // The burst folded into one refresh, and the heartbeat added none.
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    expect(mockGetDashboard).toHaveBeenCalledTimes(2);
   });
 
   it('renders mobile drawer with role=dialog', () => {
@@ -154,7 +163,6 @@ describe('BrokerLayout', () => {
 
   it('handles badge fetch failure silently without crashing', async () => {
     mockGetDashboard.mockRejectedValue(new Error('403'));
-    mockUsersList.mockRejectedValue(new Error('403'));
     render(<BrokerLayout />);
 
     // Should still render layout without throwing

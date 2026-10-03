@@ -243,7 +243,7 @@
     "save_settings": "Salva impostazioni",
     "settings": "Impostazioni",
     "settings_description": "Configura le regole di segnalazione automatica e le preferenze di moderazione",
-    "showing_count": "Mostrare",
+    "showing_count": "{{shown}} di {{total}} mostrati",
     "status_dismissed": "Respinto",
     "status_pending": "In sospeso",
     "status_resolved": "Risolto",

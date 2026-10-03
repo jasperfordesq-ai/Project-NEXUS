@@ -197,6 +197,8 @@ class AdminFeedController extends BaseApiController
                 'user_name' => $row->user_name ?? 'Unknown',
                 'user_avatar' => $row->user_avatar,
                 'type' => $row->source_type ?? 'post',
+                // Polls and goals often have a title and no body.
+                'title' => $row->title ?? null,
                 'content' => $row->content,
                 'image_url' => $row->image_url ?? null,
                 'likes_count' => (int) ($row->likes_count ?? 0),

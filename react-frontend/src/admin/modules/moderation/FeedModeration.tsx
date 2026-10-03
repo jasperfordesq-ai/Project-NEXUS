@@ -21,6 +21,7 @@ import ConfirmModal from '@/admin/components/ConfirmModal';
 import { adminModeration } from '@/admin/api/adminApi';
 import { adminSuper } from '@/admin/api/adminApi';
 import { canModerateContent } from '@/lib/roles';
+import { htmlToPlainText } from '@/lib/sanitize';
 import type { AdminFeedPost } from '@/admin/api/types';
 
 export default function FeedModeration() {
@@ -188,7 +189,8 @@ export default function FeedModeration() {
     cells.push(
       <TableCell key="content">
         <div className="max-w-md">
-          <p className="text-sm line-clamp-2">{post.content}</p>
+          {post.title && <p className="text-sm font-medium line-clamp-1">{post.title}</p>}
+          {post.content && <p className="text-sm line-clamp-2">{htmlToPlainText(post.content)}</p>}
           {post.is_flagged && (
             <Chip size="sm" color="warning" variant="soft" className="mt-1">
               {t('moderation.flagged')}
@@ -331,7 +333,7 @@ export default function FeedModeration() {
       {/* Stats */}
       {meta && (
         <div className="text-sm text-muted">
-          {t('moderation.showing_count')}
+          {t('moderation.showing_count', { shown: data?.length ?? 0, total: meta.total ?? meta.total_items ?? data?.length ?? 0 })}
           {isSuperAdmin && !activeTenant && ` (${t('moderation.filter_all_tenants')})`}
         </div>
       )}

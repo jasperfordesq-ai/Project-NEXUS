@@ -244,7 +244,7 @@
     "save_settings": "حفظ الإعدادات",
     "settings": "إعدادات",
     "settings_description": "قم بتكوين قواعد وضع العلامات التلقائي وتفضيلات الإشراف",
-    "showing_count": "عرض",
+    "showing_count": "عرض {{shown}} من {{total}}",
     "status_dismissed": "مرفوض",
     "status_pending": "قيد الانتظار",
     "status_resolved": "تم الحل",

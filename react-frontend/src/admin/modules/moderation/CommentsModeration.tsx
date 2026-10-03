@@ -297,7 +297,7 @@ export default function CommentsModeration() {
       {/* Stats */}
       {meta && (
         <div className="text-sm text-muted">
-          {t('moderation.showing_count')}
+          {t('moderation.showing_count', { shown: data?.length ?? 0, total: meta.total ?? meta.total_items ?? data?.length ?? 0 })}
           {isSuperAdmin && !activeTenant && ` (${t('moderation.all_tenants')})`}
         </div>
       )}

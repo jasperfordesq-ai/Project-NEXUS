@@ -88,7 +88,7 @@
     "description": "Cosa richiede la tua attenzione oggi, a colpo d'occhio.",
     "refresh": "Aggiorna",
     "load_failed": "Impossibile caricare il pannello del broker",
-    "pending_members": "Membri in attesa",
+    "pending_members": "Nuovi membri da approvare",
     "safeguarding_alerts": "Avvisi di protezione",
     "unreviewed_messages": "Messaggi non esaminati",
     "pending_exchanges": "Scambi in attesa",
@@ -193,7 +193,8 @@
     "open_items_many": "elementi in attesa della tua revisione",
     "time_minutes_ago_many": "{{count}} min fa",
     "time_hours_ago_many": "{{count}} h fa",
-    "time_days_ago_many": "{{count}} g fa"
+    "time_days_ago_many": "{{count}} g fa",
+    "open_reports": "Segnalazioni dei membri da controllare"
   },
   "members": {
     "title": "Membri",
@@ -552,7 +553,8 @@
     "timeline_title": "Percorso di iscrizione",
     "timeline_registered": "Registrato",
     "timeline_email_verified": "Email verificata",
-    "timeline_approved": "Approvato"
+    "timeline_approved": "Approvato",
+    "reset_2fa_reason_label": "Riferimento dell’incidente e modalità di verifica dell’identità del titolare (10–500 caratteri)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -632,7 +634,9 @@
       "provider_confirmed": "Il fornitore ha confermato le ore",
       "request_created": "Richiesta creata",
       "requester_confirmed": "Il richiedente ha confermato le ore",
-      "status_changed": "Stato modificato"
+      "status_changed": "Stato modificato",
+      "dispute_resolved": "Contestazione risolta",
+      "reversed": "Scambio annullato"
     },
     "detail_no_history": "Nessuna cronologia disponibile.",
     "tabs_aria": "Filtro sullo stato dello scambio",
@@ -653,7 +657,45 @@
     "detail_approved_label": "Approvato dal broker",
     "detail_load_failed": "Impossibile caricare questo scambio",
     "detail_error_hint": "Potrebbe essere un problema temporaneo, oppure lo scambio potrebbe non esistere più.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "settle_title": "Questo scambio deve essere risolto da te",
+    "settle_intro": "I due membri hanno confermato ore diverse, quindi nessun credito di tempo è stato ancora trasferito. Parla con entrambi, poi scegli le ore da pagare.",
+    "settle_agreed_label": "Concordato nella richiesta",
+    "settle_claim_label": "Secondo {{name}}",
+    "settle_not_confirmed": "Non confermato",
+    "settle_button": "Risolvi la contestazione",
+    "settle_modal_title": "Risolvi questa contestazione",
+    "settle_hours_label": "Ore da pagare",
+    "settle_hours_range": "Scegli tra {{min}} e {{max}} ore. L'intervallo si imposta in Configurazione.",
+    "settle_picks_label": "Usa un valore dello scambio",
+    "settle_pick": "{{who}}: {{hours}} h",
+    "settle_pick_agreed": "Concordato",
+    "settle_notes_label": "Cosa hai deciso, e perché",
+    "settle_notes_hint": "Entrambi i membri possono vedere questa nota.",
+    "settle_confirm": "Risolvi e paga {{amount}}",
+    "settle_success": "Contestazione risolta. Pagato: {{amount}}.",
+    "settle_failed": "Non è stato possibile risolvere la contestazione. Non è cambiato nulla.",
+    "resolution_rank_refused": "Non puoi farlo, perché uno di questi membri fa parte dello staff del tuo livello o superiore. Chiedi a un amministratore.",
+    "reverse_button": "Annulla lo scambio",
+    "reverse_modal_title": "Annullare questo scambio?",
+    "reverse_explain": "I crediti di tempo vengono restituiti: i saldi di entrambi i membri tornano a com'erano prima di questo scambio. Lo scambio originale resta nei registri, con una registrazione di rettifica accanto.",
+    "reverse_negative_note": "Se un membro ha già speso i crediti, il suo saldo può scendere sotto zero.",
+    "reverse_reason_label": "Perché lo annulli?",
+    "reverse_reason_hint": "Entrambi i membri possono vedere questo motivo.",
+    "reverse_confirm": "Annulla lo scambio",
+    "reverse_success": "Scambio annullato. I crediti sono tornati al punto di partenza.",
+    "reverse_failed": "Non è stato possibile annullare lo scambio. Non è cambiato nulla.",
+    "reversed_title": "Questo scambio è stato annullato",
+    "reversed_chip": "Annullato",
+    "reversed_body": "Un broker ha restituito i crediti. Il motivo è nella cronologia qui sotto.",
+    "settle_cancel_button": "Chiudi senza ore",
+    "settle_cancel_title": "Chiudere questa contestazione senza pagare ore?",
+    "settle_cancel_explain": "Usalo quando il lavoro non è stato svolto, ad esempio perché un membro non si è presentato. Lo scambio viene annullato, nessun credito di tempo viene trasferito ed entrambi i membri vengono avvisati.",
+    "settle_cancel_confirm": "Chiudi senza ore",
+    "settle_cancel_success": "Contestazione chiusa. Non è stata pagata nessuna ora.",
+    "settle_cancel_failed": "Non è stato possibile chiudere la contestazione. Non è cambiato nulla.",
+    "settle_hours_value_one": "{{count}} ora",
+    "settle_hours_value_other": "{{count}} ore"
   },
   "messages": {
     "title": "Revisione Messaggi",
@@ -794,7 +836,11 @@
     "empty_urgent_hint": "Nessun messaggio segnalato è in attesa di revisione.",
     "search_placeholder": "Cerca messaggi o nomi",
     "empty_search_title": "Nessun messaggio corrisponde alla ricerca",
-    "empty_search_hint": "Prova con un’altra parola o un altro nome."
+    "empty_search_hint": "Prova con un’altra parola o un altro nome.",
+    "detail_voice_message": "Messaggio vocale",
+    "detail_voice_message_length": "Messaggio vocale ({{seconds}} s)",
+    "detail_voice_transcript": "Trascrizione: {{text}}",
+    "detail_voice_no_transcript": "Nessuna trascrizione disponibile. Solo i due membri possono ascoltare la registrazione."
   },
   "monitoring": {
     "title": "Monitoraggio utenti",

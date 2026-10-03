@@ -1297,6 +1297,10 @@ export interface BrokerDashboardStats {
   vetting_review_requests: number | null;
   safeguarding_alerts: number | null;
   onboarding_safeguarding_flags: number | null;
+  /** New members not yet approved — the Members page's Pending list. */
+  pending_members?: number | null;
+  /** Open member reports this caller may handle — the Reports page's Pending list. */
+  open_reports?: number | null;
   /** Whether the community has chosen its safeguarding jurisdiction; null = unknown (all-tenants view or lookup failed). */
   safeguarding_jurisdiction_configured?: boolean | null;
   recent_activity: BrokerActivityEntry[];
@@ -1336,6 +1340,15 @@ export interface ExchangeRequest {
   broker_conditions?: string;
   broker_approved_at?: string;
   final_hours?: number;
+  /** Hours agreed when the exchange was requested. */
+  proposed_hours?: number | string | null;
+  /** Hours each member confirmed; they differ on a disputed exchange. */
+  requester_confirmed_hours?: number | string | null;
+  provider_confirmed_hours?: number | string | null;
+  /** Ledger row the completed exchange moved; null when nothing moved. */
+  transaction_id?: number | null;
+  /** Set once a broker has reversed the completed exchange. */
+  reversal_transaction_id?: number | null;
   created_at: string;
 }
 
@@ -1387,8 +1400,13 @@ export interface ConversationMessage {
   subject?: string;
   listing_id?: number;
   created_at: string;
-  is_edited?: boolean;
-  is_deleted?: boolean;
+  /** MySQL tinyint: arrives as 0/1, so never render it with `&&` directly. */
+  is_edited?: boolean | number;
+  is_deleted?: boolean | number;
+  /** Voice message: the body is empty; length in seconds, transcript if any. */
+  is_voice?: boolean | number;
+  audio_duration?: number | null;
+  transcript?: string | null;
 }
 
 export interface BrokerMessageDetail {
@@ -1505,6 +1523,8 @@ export interface ExchangeDetail {
   };
   history: ExchangeHistoryEntry[];
   risk_tag?: RiskTag | null;
+  /** Hours a disputed exchange may be settled at; null unless disputed. */
+  dispute_window?: { min_hours: number; max_hours: number } | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2250,6 +2270,9 @@ export interface AdminFeedPost {
   tenant_name: string;
   user_name: string;
   user_avatar?: string | null;
+  /** Polls and goals often have a title and no body. */
+  title?: string | null;
+  /** Stored rich text (HTML) for posts written in the web composer. */
   content: string;
   type: string;
   image_url?: string | null;
@@ -2285,9 +2308,9 @@ export interface AdminReview {
   tenant_name: string;
   reviewer_name: string;
   reviewer_avatar?: string | null;
-  reviewee_id: number;
-  reviewee_name: string;
-  reviewee_avatar?: string | null;
+  receiver_id: number;
+  receiver_name: string;
+  receiver_avatar?: string | null;
   rating: number;
   content: string;
   is_hidden: boolean;

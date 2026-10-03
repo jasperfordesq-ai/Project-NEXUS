@@ -2645,6 +2645,11 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     // check alarmed on them ageing. Controller enforces broker-or-admin plus a
     // self-dealing guard; the service clamps the hours and requires a note.
     Route::post('/v2/admin/broker/exchanges/{id}/resolve-dispute', [\App\Http\Controllers\Api\AdminBrokerController::class, 'resolveExchangeDispute'])->middleware('throttle:nexus-route-60-per-1m');
+    // The other half of arbitration: close a dispute with NO hours paid (the
+    // other member never turned up). resolve-dispute always pays at least the
+    // bottom of the variance window. Party guard and mandatory reason in the
+    // controller; the workflow has always allowed disputed → cancelled.
+    Route::post('/v2/admin/broker/exchanges/{id}/cancel-dispute', [\App\Http\Controllers\Api\AdminBrokerController::class, 'cancelExchangeDispute'])->middleware('throttle:nexus-route-60-per-1m');
     // Reverse a COMPLETED exchange, restoring both members' credits. Before this
     // existed a mis-recorded exchange could not be corrected at all: `completed` is
     // terminal, and the only tool was the single-member balance adjustment applied

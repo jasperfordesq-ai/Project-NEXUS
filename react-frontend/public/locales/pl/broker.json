@@ -88,7 +88,7 @@
     "description": "Co wymaga dziś Twojej uwagi, w skrócie.",
     "refresh": "Odśwież",
     "load_failed": "Nie udało się załadować pulpitu brokera",
-    "pending_members": "Członkowie oczekujący",
+    "pending_members": "Nowi członkowie do zatwierdzenia",
     "safeguarding_alerts": "Alerty ochrony",
     "unreviewed_messages": "Nieprzejrzane wiadomości",
     "pending_exchanges": "Oczekujące wymiany",
@@ -198,7 +198,8 @@
     "time_hours_ago_few": "{{count}} godz temu",
     "time_hours_ago_many": "{{count}} godz temu",
     "time_days_ago_few": "{{count}} dn temu",
-    "time_days_ago_many": "{{count}} dn temu"
+    "time_days_ago_many": "{{count}} dn temu",
+    "open_reports": "Zgłoszenia członków do sprawdzenia"
   },
   "members": {
     "title": "Członkowie",
@@ -561,7 +562,8 @@
     "timeline_title": "Historia członkostwa",
     "timeline_registered": "Zarejestrowano",
     "timeline_email_verified": "E-mail zweryfikowany",
-    "timeline_approved": "Zatwierdzono"
+    "timeline_approved": "Zatwierdzono",
+    "reset_2fa_reason_label": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)"
   },
   "exchanges": {
     "title": "Wymiany",
@@ -641,7 +643,9 @@
       "provider_confirmed": "Dostawca potwierdził godziny",
       "request_created": "Utworzono prośbę",
       "requester_confirmed": "Wnioskujący potwierdził godziny",
-      "status_changed": "Zmieniono status"
+      "status_changed": "Zmieniono status",
+      "dispute_resolved": "Spór rozstrzygnięty",
+      "reversed": "Wymiana cofnięta"
     },
     "detail_no_history": "Brak dostępnej historii.",
     "tabs_aria": "Filtr stanu wymiany",
@@ -662,7 +666,47 @@
     "detail_approved_label": "Zatwierdzone przez brokera",
     "detail_load_failed": "Nie udało się załadować tej wymiany",
     "detail_error_hint": "To może być tymczasowy problem lub wymiana mogła już nie istnieć.",
-    "retry": "Spróbuj ponownie"
+    "retry": "Spróbuj ponownie",
+    "settle_title": "Ta wymiana wymaga Twojego rozstrzygnięcia",
+    "settle_intro": "Dwoje członków potwierdziło różną liczbę godzin, więc żadne kredyty czasu jeszcze nie zostały przekazane. Porozmawiaj z obojgiem, a potem wybierz liczbę godzin do zapłaty.",
+    "settle_agreed_label": "Uzgodnione przy zgłoszeniu",
+    "settle_claim_label": "Według: {{name}}",
+    "settle_not_confirmed": "Niepotwierdzone",
+    "settle_button": "Rozstrzygnij spór",
+    "settle_modal_title": "Rozstrzygnij ten spór",
+    "settle_hours_label": "Godziny do zapłaty",
+    "settle_hours_range": "Wybierz od {{min}} do {{max}} godz. Zakres ustawia się w Konfiguracji.",
+    "settle_picks_label": "Użyj wartości z wymiany",
+    "settle_pick": "{{who}}: {{hours}} godz.",
+    "settle_pick_agreed": "Uzgodnione",
+    "settle_notes_label": "Co postanowiłeś(-aś) i dlaczego",
+    "settle_notes_hint": "Oboje członkowie widzą tę notatkę.",
+    "settle_confirm": "Rozstrzygnij i zapłać: {{amount}}",
+    "settle_success": "Spór rozstrzygnięty. Zapłacono: {{amount}}.",
+    "settle_failed": "Nie udało się rozstrzygnąć sporu. Nic się nie zmieniło.",
+    "resolution_rank_refused": "Nie możesz tego zrobić, ponieważ jedna z tych osób należy do personelu na Twoim poziomie lub wyższym. Poproś administratora.",
+    "reverse_button": "Cofnij wymianę",
+    "reverse_modal_title": "Cofnąć tę wymianę?",
+    "reverse_explain": "Kredyty czasu wracają: salda obojga członków wracają do stanu sprzed tej wymiany. Pierwotna wymiana zostaje w rejestrach, a obok niej pojawia się zapis korygujący.",
+    "reverse_negative_note": "Jeśli członek wydał już te kredyty, jego saldo może spaść poniżej zera.",
+    "reverse_reason_label": "Dlaczego ją cofasz?",
+    "reverse_reason_hint": "Oboje członkowie widzą ten powód.",
+    "reverse_confirm": "Cofnij wymianę",
+    "reverse_success": "Wymiana cofnięta. Kredyty wróciły tam, gdzie były.",
+    "reverse_failed": "Nie udało się cofnąć wymiany. Nic się nie zmieniło.",
+    "reversed_title": "Ta wymiana została cofnięta",
+    "reversed_chip": "Cofnięta",
+    "reversed_body": "Broker zwrócił kredyty. Powód znajdziesz w historii poniżej.",
+    "settle_cancel_button": "Zamknij bez godzin",
+    "settle_cancel_title": "Zamknąć ten spór bez płacenia godzin?",
+    "settle_cancel_explain": "Użyj tego, gdy praca się nie odbyła, na przykład dlatego, że członek się nie pojawił. Wymiana zostaje anulowana, żadne kredyty czasu nie są przekazywane, a oboje członkowie dostają powiadomienie.",
+    "settle_cancel_confirm": "Zamknij bez godzin",
+    "settle_cancel_success": "Spór zamknięty. Nie zapłacono żadnych godzin.",
+    "settle_cancel_failed": "Nie udało się zamknąć sporu. Nic się nie zmieniło.",
+    "settle_hours_value_one": "{{count}} godzina",
+    "settle_hours_value_few": "{{count}} godziny",
+    "settle_hours_value_many": "{{count}} godzin",
+    "settle_hours_value_other": "{{count}} godziny"
   },
   "messages": {
     "title": "Przegląd wiadomości",
@@ -804,7 +848,11 @@
     "empty_urgent_hint": "Żadna oznaczona wiadomość nie czeka na sprawdzenie.",
     "search_placeholder": "Szukaj wiadomości lub nazwisk",
     "empty_search_title": "Brak wiadomości pasujących do wyszukiwania",
-    "empty_search_hint": "Spróbuj innego słowa lub nazwiska."
+    "empty_search_hint": "Spróbuj innego słowa lub nazwiska.",
+    "detail_voice_message": "Wiadomość głosowa",
+    "detail_voice_message_length": "Wiadomość głosowa ({{seconds}} s)",
+    "detail_voice_transcript": "Transkrypcja: {{text}}",
+    "detail_voice_no_transcript": "Transkrypcja nie jest dostępna. Nagranie mogą odtworzyć tylko te dwie osoby."
   },
   "monitoring": {
     "title": "Monitorowanie użytkowników",

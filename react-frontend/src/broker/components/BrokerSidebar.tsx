@@ -56,6 +56,8 @@ export interface BrokerBadgeCounts {
   support_needs_unseen: number;
   /** Prepared actions waiting for the supported member's answer. */
   pending_support_actions: number;
+  /** Member reports still open that this broker may handle (F-454/F-549). */
+  open_reports: number;
 }
 
 interface BrokerSidebarProps {
@@ -147,7 +149,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
         ...(showReviewsModeration
           ? ([{ key: 'moderation-reviews', label: t('nav.moderation_reviews'), icon: Star, path: '/broker/moderation/reviews' }] as NavItem[])
           : []),
-        { key: 'moderation-reports', label: t('nav.moderation_reports'), icon: Flag, path: '/broker/moderation/reports' },
+        { key: 'moderation-reports', label: t('nav.moderation_reports'), icon: Flag, path: '/broker/moderation/reports', badgeKey: 'open_reports' },
       ],
     },
     {

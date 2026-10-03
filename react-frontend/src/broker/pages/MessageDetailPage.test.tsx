@@ -364,4 +364,33 @@ describe('MessageDetail (broker)', () => {
       expect(mockNavigate).toHaveBeenCalled();
     });
   });
+
+  // The server sends MySQL tinyints (0/1), not booleans. `{msg.is_edited && …}`
+  // with is_edited = 0 printed a stray "0" beside every message.
+  it('prints nothing for a not-edited message when the server sends is_edited as 0', async () => {
+    mockAdminBroker.showMessage.mockResolvedValue(makeSuccess(makeDetail({
+      thread: [{ id: 100, sender_name: 'Alice Sender', body: 'Hello there', created_at: '2025-01-01T09:00:00Z', is_deleted: 0, is_edited: 0, subject: null }],
+    })));
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+
+    await waitFor(() => expect(screen.getByText('Hello there')).toBeInTheDocument());
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('shows a voice message as one, with its length and transcript, instead of an empty bubble', async () => {
+    mockAdminBroker.showMessage.mockResolvedValue(makeSuccess(makeDetail({
+      thread: makeThread([
+        { id: 101, sender_name: 'Alice Sender', body: '', created_at: '2025-01-01T09:05:00Z', is_deleted: 0, is_edited: 0, is_voice: 1, audio_duration: 12, transcript: 'Can you come on Saturday?' },
+        { id: 102, sender_name: 'Alice Sender', body: '', created_at: '2025-01-01T09:06:00Z', is_deleted: 0, is_edited: 0, is_voice: 1, audio_duration: null, transcript: null },
+      ]),
+    })));
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+
+    await waitFor(() => expect(screen.getByText('Voice message (12 s)')).toBeInTheDocument());
+    expect(screen.getByText('Transcript: Can you come on Saturday?')).toBeInTheDocument();
+    expect(screen.getByText('Voice message')).toBeInTheDocument();
+    expect(screen.getByText(/No transcript is available/)).toBeInTheDocument();
+  });
 });

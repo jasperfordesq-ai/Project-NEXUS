@@ -161,6 +161,66 @@ class AdminBrokerControllerTest extends TestCase
         $this->assertSame($listUnseen(), $after);
     }
 
+    /**
+     * "What needs you now" left out new members waiting for approval although
+     * approving them is a broker's daily job. The tile opens Members → Pending,
+     * so it must equal that list's total, read through the list's own endpoint.
+     */
+    public function test_pending_members_tile_matches_the_pending_members_list(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        Sanctum::actingAs($broker);
+
+        User::factory()->forTenant($this->testTenantId)->create(['is_approved' => 0, 'status' => 'pending']);
+        User::factory()->forTenant($this->testTenantId)->create(['is_approved' => 0, 'status' => 'pending']);
+        // Approved and another community's pending member: neither is listed.
+        User::factory()->forTenant($this->testTenantId)->create(['is_approved' => 1, 'status' => 'active']);
+        User::factory()->forTenant(999)->create(['is_approved' => 0, 'status' => 'pending']);
+
+        $listed = $this->apiGet('/v2/admin/users?status=pending&limit=1')->assertOk()->json('meta.total');
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.pending_members');
+
+        $this->assertNotNull($tile, 'The dashboard must report members waiting for approval.');
+        $this->assertGreaterThanOrEqual(2, $listed);
+        $this->assertSame($listed, $tile);
+    }
+
+    /**
+     * Open member reports were not on the broker dashboard at all. The tile
+     * opens Reports → Pending, whose filter treats legacy 'open' and 'pending'
+     * as the same state and withholds reports the broker is a party to, so the
+     * count must equal that list's total.
+     */
+    public function test_open_reports_tile_matches_the_pending_reports_list(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $reporter = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($broker);
+
+        $subject = User::factory()->forTenant($this->testTenantId)->create();
+        $report = fn (string $status, int $tenantId, int $about) => DB::table('reports')->insert([
+            'tenant_id' => $tenantId, 'reporter_id' => $reporter->id,
+            'target_type' => 'user', 'target_id' => $about,
+            'reason' => 'safety_concern', 'status' => $status,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $report('open', $this->testTenantId, $subject->id);
+        $report('open', $this->testTenantId, $subject->id);
+        $report('resolved', $this->testTenantId, $subject->id);
+        $report('dismissed', $this->testTenantId, $subject->id);
+        $report('open', 999, $subject->id);
+        // A complaint about the broker: withheld from their queue (F-454), so
+        // it must not reach their count either (F-549).
+        $report('open', $this->testTenantId, $broker->id);
+
+        $listed = $this->apiGet('/v2/admin/reports?status=pending&limit=1')->assertOk()->json('meta.total');
+        $tile = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.open_reports');
+
+        $this->assertNotNull($tile, 'The dashboard must report open member reports.');
+        $this->assertGreaterThanOrEqual(2, $listed);
+        $this->assertSame($listed, $tile);
+    }
+
     public function test_unreviewed_messages_tile_matches_the_unreviewed_queue(): void
     {
         $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
@@ -854,6 +914,159 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertStatus(200);
         // 4.0 + 25% = 5.0 — the absurd 99.0 must be clamped, not accepted.
         $this->assertEquals(5.0, $response->json('data.final_hours'));
+    }
+
+    /**
+     * The broker panel's "Settle this dispute" form shows the hours a broker may
+     * choose. That range must be the one resolve-dispute actually enforces, read
+     * from the same place — otherwise the form offers a figure the server then
+     * silently changes. Both ends are proved against the endpoint itself.
+     */
+    public function test_show_exchange_gives_a_disputed_exchange_the_range_resolve_dispute_enforces(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $requester = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $provider = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $makeDispute = fn () => DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 4.0, 'requester_confirmed_hours' => 3.0,
+            'provider_confirmed_hours' => 5.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $high = $makeDispute();
+        $low = $makeDispute();
+
+        Sanctum::actingAs($broker);
+
+        $shown = $this->apiGet("/v2/admin/broker/exchanges/{$high}");
+        $shown->assertStatus(200);
+        $min = $shown->json('data.dispute_window.min_hours');
+        $max = $shown->json('data.dispute_window.max_hours');
+        $this->assertNotNull($min, 'A disputed exchange must carry the hours range a broker may settle at.');
+        $this->assertNotNull($max);
+
+        $this->assertEquals($max, $this->apiPost("/v2/admin/broker/exchanges/{$high}/resolve-dispute", [
+            'final_hours' => 999, 'notes' => 'Above the range',
+        ])->assertStatus(200)->json('data.final_hours'));
+
+        $this->assertEquals($min, $this->apiPost("/v2/admin/broker/exchanges/{$low}/resolve-dispute", [
+            'final_hours' => 0.01, 'notes' => 'Below the range',
+        ])->assertStatus(200)->json('data.final_hours'));
+    }
+
+    /**
+     * A dispute raised because the other member never turned up must be
+     * closable with NO hours paid: resolve-dispute always pays at least the
+     * bottom of the variance window. The workflow has always allowed
+     * disputed → cancelled for a broker; this is the route that reaches it.
+     */
+    public function test_cancel_dispute_closes_a_disputed_exchange_without_moving_credits(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $requester = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $provider = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/cancel-dispute", [
+            'reason' => 'The provider did not turn up; nothing to pay.',
+        ])->assertStatus(200)->assertJsonPath('data.status', 'cancelled');
+
+        $this->assertSame('cancelled', DB::table('exchange_requests')->where('id', $exchangeId)->value('status'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $requester->id)->value('balance'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $provider->id)->value('balance'));
+        $this->assertTrue(
+            DB::table('exchange_history')->where('exchange_id', $exchangeId)
+                ->where('actor_id', $broker->id)->where('new_status', 'cancelled')->exists(),
+            'The cancellation must be recorded in the history both members can see.'
+        );
+
+        // Both members must hear the dispute is closed, not only one of them.
+        foreach ([$requester->id, $provider->id] as $memberId) {
+            $this->assertTrue(
+                DB::table('notifications')->where('user_id', $memberId)->where('type', 'exchange_cancelled')->exists(),
+                "Member {$memberId} was not told the disputed exchange was cancelled."
+            );
+        }
+    }
+
+    public function test_cancel_dispute_requires_a_reason_and_a_disputed_exchange(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $make = fn (string $status) => DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => $status,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $disputed = $make('disputed');
+        $accepted = $make('accepted');
+
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$disputed}/cancel-dispute", ['reason' => '  '])->assertStatus(400);
+        $this->apiPost("/v2/admin/broker/exchanges/{$accepted}/cancel-dispute", ['reason' => 'Not a dispute'])->assertStatus(400);
+
+        $this->assertSame('disputed', DB::table('exchange_requests')->where('id', $disputed)->value('status'));
+        $this->assertSame('accepted', DB::table('exchange_requests')->where('id', $accepted)->value('status'));
+    }
+
+    public function test_cancel_dispute_blocks_a_broker_who_is_a_party(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $broker->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/cancel-dispute", [
+            'reason' => 'Closing my own dispute',
+        ])->assertStatus(403);
+
+        $this->assertSame('disputed', DB::table('exchange_requests')->where('id', $exchangeId)->value('status'));
+    }
+
+    public function test_show_exchange_gives_no_dispute_range_when_not_disputed(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 4.0, 'status' => 'accepted',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($broker);
+
+        $this->apiGet("/v2/admin/broker/exchanges/{$exchangeId}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.dispute_window', null);
     }
 
     // ------------------------------------------------------------------
@@ -1907,6 +2120,40 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertJsonPath('data.copy.id', $copyId);
     }
 
+    /**
+     * A voice message has an empty text body. The broker's copy of the
+     * conversation must still say it is a voice message (and carry its
+     * transcript when there is one); without these fields the broker saw an
+     * empty bubble and could not tell that anything had been said.
+     */
+    public function test_show_message_thread_marks_voice_messages(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $sender = User::factory()->forTenant($this->testTenantId)->create();
+        $receiver = User::factory()->forTenant($this->testTenantId)->create();
+
+        $voiceId = DB::table('messages')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'sender_id' => $sender->id, 'receiver_id' => $receiver->id,
+            'body' => '', 'is_voice' => 1, 'audio_url' => 'message-media/test/voice_x',
+            'audio_duration' => 12, 'transcript' => 'Can you come on Saturday?',
+            'is_read' => false, 'created_at' => now()->subHours(2),
+        ]);
+        $copyId = $this->insertMessageCopy($sender->id, $receiver->id);
+
+        Sanctum::actingAs($admin);
+
+        $thread = collect($this->apiGet("/v2/admin/broker/messages/{$copyId}")
+            ->assertStatus(200)->json('data.thread'));
+        $voice = $thread->firstWhere('id', $voiceId);
+
+        $this->assertNotNull($voice, 'The earlier voice message must be in the conversation context.');
+        $this->assertEquals(1, $voice['is_voice']);
+        $this->assertEquals(12, $voice['audio_duration']);
+        $this->assertSame('Can you come on Saturday?', $voice['transcript']);
+        // The recording itself stays private to the two members.
+        $this->assertArrayNotHasKey('audio_url', $voice);
+    }
+
     public function test_show_message_returns_404_for_wrong_tenant(): void
     {
         $adminB = User::factory()->forTenant(999)->admin()->create();
@@ -2030,7 +2277,7 @@ class AdminBrokerControllerTest extends TestCase
     public function test_save_configuration_returns_403_when_broker_submits_admin_only_keys(): void
     {
         // Create a user with broker role
-        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']);
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
         Sanctum::actingAs($broker);
 
         // Platform-wide message and high-risk approval policy keys are admin-only.
@@ -2050,7 +2297,7 @@ class AdminBrokerControllerTest extends TestCase
      */
     public function test_broker_with_a_stray_admin_flag_cannot_save_admin_only_keys(): void
     {
-        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']);
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
         DB::table('users')->where('id', $broker->id)->update(['is_admin' => 1]);
         Sanctum::actingAs(User::find($broker->id));
 
@@ -2060,7 +2307,7 @@ class AdminBrokerControllerTest extends TestCase
 
     public function test_broker_can_save_operational_configuration_without_clobbering_admin_policy(): void
     {
-        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker']);
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
         Sanctum::actingAs($broker);
 
         DB::table('tenant_settings')->updateOrInsert(

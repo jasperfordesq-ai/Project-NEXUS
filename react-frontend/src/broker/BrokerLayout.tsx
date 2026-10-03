@@ -15,17 +15,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { adminBroker, adminUsers, adminMatching } from '@/admin/api/adminApi';
+import { adminBroker, adminMatching } from '@/admin/api/adminApi';
 import { useAuth, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { isAdminTierUser } from '@/lib/access';
 import type { MatchApprovalStats } from '@/admin/api/types';
-import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSidebar';
 import { BrokerHeader } from './components/BrokerHeader';
 import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
 import { BrokerCommandPalette } from './components/BrokerCommandPalette';
 import { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
+import { useBrokerAutoRefresh } from './useBrokerAutoRefresh';
 
 const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_members: 0,
@@ -38,6 +38,7 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_matches: 0,
   support_needs_unseen: 0,
   pending_support_actions: 0,
+  open_reports: 0,
 };
 
 export function BrokerLayout() {
@@ -65,9 +66,10 @@ export function BrokerLayout() {
 
   const fetchBadges = useCallback(async () => {
     try {
-      const [dashRes, usersRes, matchRes, safeguardingRes] = await Promise.all([
+      const [dashRes, matchRes, safeguardingRes] = await Promise.all([
+        // Carries every queue count, each computed by the rule its page lists
+        // with (pending members and open reports included since October 2026).
         adminBroker.getDashboard(),
-        adminUsers.list({ status: 'pending', limit: 1 }),
         // Match approvals only exist on exchange_workflow tenants; a null
         // placeholder keeps Promise.all's shape stable without the request.
         showMatches
@@ -82,24 +84,6 @@ export function BrokerLayout() {
 
       const safeguarding = safeguardingRes?.success && safeguardingRes.data ? safeguardingRes.data : null;
 
-      let pendingMembers = 0;
-      if (usersRes.success) {
-        // api client unwrap: the row array is usersRes.data and the pagination
-        // meta is usersRes.meta — the request uses limit=1 as a cheap count, so
-        // counting rows here would cap the badge at 1.
-        if (typeof usersRes.meta?.total === 'number') {
-          pendingMembers = usersRes.meta.total;
-        } else if (usersRes.data) {
-          const payload = usersRes.data as unknown;
-          if (Array.isArray(payload)) {
-            pendingMembers = payload.length;
-          } else if (payload && typeof payload === 'object') {
-            const paged = payload as { data?: unknown[]; meta?: { total?: number } };
-            pendingMembers = paged.meta?.total ?? paged.data?.length ?? 0;
-          }
-        }
-      }
-
       let pendingMatches = 0;
       if (matchRes?.success && matchRes.data) {
         const payload = matchRes.data as unknown;
@@ -113,7 +97,7 @@ export function BrokerLayout() {
       if (dashRes.success && dashRes.data) {
         const d = dashRes.data as unknown as Record<string, unknown>;
         setBadges({
-          pending_members: pendingMembers,
+          pending_members: Number(d.pending_members ?? 0),
           safeguarding_alerts: Number(d.safeguarding_alerts ?? 0),
           vetting_review_requests: Number(d.vetting_review_requests ?? 0),
           pending_exchanges: Number(d.pending_exchanges ?? 0),
@@ -123,6 +107,7 @@ export function BrokerLayout() {
           pending_matches: pendingMatches,
           support_needs_unseen: Number(safeguarding?.support_needs_unseen ?? 0),
           pending_support_actions: Number(safeguarding?.pending_support_actions ?? 0),
+          open_reports: Number(d.open_reports ?? 0),
         });
         const configured = d.safeguarding_jurisdiction_configured;
         setJurisdictionConfigured(typeof configured === 'boolean' ? configured : null);
@@ -134,16 +119,10 @@ export function BrokerLayout() {
 
   useEffect(() => {
     void fetchBadges();
-    const interval = setInterval(() => void fetchBadges(), 60_000);
-    // Pages fire this after an action that changes a count (e.g. "Mark as
-    // seen"), so the badge moves at once instead of up to a minute later.
-    const onRefresh = () => void fetchBadges();
-    window.addEventListener(BROKER_BADGES_REFRESH_EVENT, onRefresh);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener(BROKER_BADGES_REFRESH_EVENT, onRefresh);
-    };
   }, [fetchBadges]);
+  // After any broker action, on return to the tab, and once a minute — so a
+  // badge moves when the work it counts is done, not up to a minute later.
+  useBrokerAutoRefresh(() => void fetchBadges());
 
   // Scopes the broker panel's text-contrast tokens (tokens.css, "BROKER
   // PANEL — TEXT CONTRAST"). Set on <html>, not on this layout's own element,

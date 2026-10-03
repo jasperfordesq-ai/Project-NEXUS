@@ -88,7 +88,7 @@
     "description": "Lo que necesita tu atención hoy, de un vistazo.",
     "refresh": "Actualizar",
     "load_failed": "No se pudo cargar el panel del intermediario",
-    "pending_members": "Miembros Pendientes",
+    "pending_members": "Nuevos miembros por aprobar",
     "safeguarding_alerts": "Alertas de Protección",
     "unreviewed_messages": "Mensajes No Revisados",
     "pending_exchanges": "Intercambios Pendientes",
@@ -193,7 +193,8 @@
     "open_items_many": "elementos esperando tu revisión",
     "time_minutes_ago_many": "hace {{count}} min",
     "time_hours_ago_many": "hace {{count}} h",
-    "time_days_ago_many": "hace {{count}} d"
+    "time_days_ago_many": "hace {{count}} d",
+    "open_reports": "Denuncias de miembros por revisar"
   },
   "members": {
     "title": "Miembros",
@@ -552,7 +553,8 @@
     "timeline_title": "Trayectoria de membresía",
     "timeline_registered": "Registrado",
     "timeline_email_verified": "Correo electrónico verificado",
-    "timeline_approved": "Aprobado"
+    "timeline_approved": "Aprobado",
+    "reset_2fa_reason_label": "Referencia del incidente y cómo verificaste la identidad del titular (10–500 caracteres)"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -632,7 +634,9 @@
       "provider_confirmed": "El proveedor confirmó las horas",
       "request_created": "Solicitud creada",
       "requester_confirmed": "El solicitante confirmó las horas",
-      "status_changed": "Estado cambiado"
+      "status_changed": "Estado cambiado",
+      "dispute_resolved": "Disputa resuelta",
+      "reversed": "Intercambio revertido"
     },
     "detail_no_history": "No hay historial disponible.",
     "tabs_aria": "Filtro de estado de intercambio",
@@ -653,7 +657,45 @@
     "detail_approved_label": "Aprobado por el intermediario",
     "detail_load_failed": "No se pudo cargar este intercambio",
     "detail_error_hint": "Puede ser un problema temporal, o el intercambio ya no existe.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "settle_title": "Tienes que resolver este intercambio",
+    "settle_intro": "Los dos miembros confirmaron horas distintas, así que todavía no se ha movido ningún crédito de tiempo. Habla con los dos y luego elige las horas que se pagan.",
+    "settle_agreed_label": "Acordado en la solicitud",
+    "settle_claim_label": "Según {{name}}",
+    "settle_not_confirmed": "Sin confirmar",
+    "settle_button": "Resolver la disputa",
+    "settle_modal_title": "Resolver esta disputa",
+    "settle_hours_label": "Horas a pagar",
+    "settle_hours_range": "Elige entre {{min}} y {{max}} horas. El margen se define en Configuración.",
+    "settle_picks_label": "Usar una cifra del intercambio",
+    "settle_pick": "{{who}}: {{hours}} h",
+    "settle_pick_agreed": "Acordado",
+    "settle_notes_label": "Qué has decidido y por qué",
+    "settle_notes_hint": "Los dos miembros pueden ver esta nota.",
+    "settle_confirm": "Resolver y pagar {{amount}}",
+    "settle_success": "Disputa resuelta. Pagado: {{amount}}.",
+    "settle_failed": "No se ha podido resolver la disputa. No ha cambiado nada.",
+    "resolution_rank_refused": "No puedes hacerlo porque uno de estos miembros forma parte del personal de tu nivel o superior. Pídeselo a un administrador.",
+    "reverse_button": "Revertir el intercambio",
+    "reverse_modal_title": "¿Revertir este intercambio?",
+    "reverse_explain": "Así se devuelven los créditos de tiempo: los saldos de los dos miembros vuelven a como estaban antes de este intercambio. El intercambio original se conserva en los registros, con un asiento de corrección al lado.",
+    "reverse_negative_note": "Si un miembro ya ha gastado los créditos, su saldo puede quedar por debajo de cero.",
+    "reverse_reason_label": "¿Por qué lo reviertes?",
+    "reverse_reason_hint": "Los dos miembros pueden ver este motivo.",
+    "reverse_confirm": "Revertir el intercambio",
+    "reverse_success": "Intercambio revertido. Los créditos han vuelto a donde estaban.",
+    "reverse_failed": "No se ha podido revertir el intercambio. No ha cambiado nada.",
+    "reversed_title": "Este intercambio se revirtió",
+    "reversed_chip": "Revertido",
+    "reversed_body": "Un intermediario devolvió los créditos. El motivo aparece en el historial de abajo.",
+    "settle_cancel_button": "Cerrar sin horas",
+    "settle_cancel_title": "¿Cerrar esta disputa sin pagar horas?",
+    "settle_cancel_explain": "Úsalo cuando el trabajo no se hizo, por ejemplo porque un miembro no se presentó. El intercambio se cancela, no se mueve ningún crédito de tiempo y se avisa a los dos miembros.",
+    "settle_cancel_confirm": "Cerrar sin horas",
+    "settle_cancel_success": "Disputa cerrada. No se ha pagado ninguna hora.",
+    "settle_cancel_failed": "No se ha podido cerrar la disputa. No ha cambiado nada.",
+    "settle_hours_value_one": "{{count}} hora",
+    "settle_hours_value_other": "{{count}} horas"
   },
   "messages": {
     "title": "Revisión de Mensajes",
@@ -794,7 +836,11 @@
     "empty_urgent_hint": "Ningún mensaje marcado está pendiente de revisión.",
     "search_placeholder": "Buscar mensajes o nombres",
     "empty_search_title": "Ningún mensaje coincide con su búsqueda",
-    "empty_search_hint": "Pruebe con otra palabra o nombre."
+    "empty_search_hint": "Pruebe con otra palabra o nombre.",
+    "detail_voice_message": "Mensaje de voz",
+    "detail_voice_message_length": "Mensaje de voz ({{seconds}} s)",
+    "detail_voice_transcript": "Transcripción: {{text}}",
+    "detail_voice_no_transcript": "No hay transcripción disponible. Solo los dos miembros pueden reproducir la grabación."
   },
   "monitoring": {
     "title": "Monitorización de usuarios",

@@ -678,7 +678,7 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
                             {t('member_detail.action_send_password_reset')}
                           </Button>
                           <TextField value={resetReason} onChange={setResetReason}>
-                            <Label>{t('users.reset_2fa_identity_reason', { ns: 'admin_users' })}</Label>
+                            <Label>{t('member_detail.reset_2fa_reason_label')}</Label>
                             <HeroInput minLength={10} maxLength={500} />
                           </TextField>
                           <Button size="sm" variant="tertiary" startContent={<ShieldOff size={14} />} isLoading={busy === '2fa'} isDisabled={resetReason.trim().length < 10}

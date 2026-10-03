@@ -7,7 +7,7 @@ import { Button, Input, Chip, Spinner, Card, CardBody, Select, SelectItem, Avata
 
 import React, { useState, useEffect } from 'react';
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import Search from 'lucide-react/icons/search';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
@@ -67,11 +67,17 @@ export default function ReportsManagement() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // ?status= opens the queue pre-filtered — the broker dashboard's
+  // open-reports tile links to ?status=pending, the number it counts.
+  const [searchParams] = useSearchParams();
+  const initialStatus = ['pending', 'resolved', 'dismissed'].includes(searchParams.get('status') ?? '')
+    ? (searchParams.get('status') as string)
+    : '';
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [tenantFilter, setTenantFilter] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [activeType, setActiveType] = useState('');
-  const [activeStatus, setActiveStatus] = useState('');
+  const [activeStatus, setActiveStatus] = useState(initialStatus);
   const [activeTenant, setActiveTenant] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [detailReport, setDetailReport] = useState<AdminReport | null>(null);
@@ -490,7 +496,7 @@ export default function ReportsManagement() {
       {/* Results Count */}
       {meta && (
         <div className="text-sm text-muted">
-          {t('moderation.showing_count')}
+          {t('moderation.showing_count', { shown: data?.length ?? 0, total: meta.total ?? meta.total_items ?? data?.length ?? 0 })}
           {isSuperAdmin && !activeTenant && ` (${t('moderation.all_tenants')})`}
         </div>
       )}

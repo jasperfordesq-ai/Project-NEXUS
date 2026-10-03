@@ -179,12 +179,12 @@ export default function ReviewsModeration() {
       <TableCell key="reviewee">
         <div className="flex items-center gap-3">
           <Avatar
-            src={review.reviewee_avatar || undefined}
-            name={review.reviewee_name}
+            src={review.receiver_avatar || undefined}
+            name={review.receiver_name}
             size="sm"
             className="flex-shrink-0"
           />
-          <span className="text-sm font-medium">{review.reviewee_name}</span>
+          <span className="text-sm font-medium">{review.receiver_name}</span>
         </div>
       </TableCell>,
     ];
@@ -352,7 +352,7 @@ export default function ReviewsModeration() {
       {/* Stats */}
       {meta && (
         <div className="text-sm text-muted">
-          {t('moderation.showing_count')}
+          {t('moderation.showing_count', { shown: data?.length ?? 0, total: meta.total ?? meta.total_items ?? data?.length ?? 0 })}
           {isSuperAdmin && !activeTenant && ` (${t('moderation.filter_all_tenants')})`}
         </div>
       )}

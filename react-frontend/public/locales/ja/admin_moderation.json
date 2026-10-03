@@ -244,7 +244,7 @@
     "save_settings": "設定の保存",
     "settings": "設定",
     "settings_description": "自動フラグルールとモデレーション設定を構成する",
-    "showing_count": "表示中",
+    "showing_count": "{{total}}件中{{shown}}件を表示",
     "status_dismissed": "却下済み",
     "status_pending": "保留中",
     "status_resolved": "解決済み",

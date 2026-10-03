@@ -242,7 +242,7 @@
     "save_settings": "Sábháil Socruithe",
     "settings": "Socruithe",
     "settings_description": "Cumraigh rialacha uath-bhrataithe agus roghanna modhnóireachta",
-    "showing_count": "Ag taispeáint",
+    "showing_count": "{{shown}} as {{total}} á dtaispeáint",
     "status_dismissed": "Curtha ar leataobh",
     "status_pending": "Ar feitheamh",
     "status_resolved": "Réitíodh",

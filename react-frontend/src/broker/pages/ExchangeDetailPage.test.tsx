@@ -15,6 +15,9 @@ const { mockAdminBroker } = vi.hoisted(() => ({
     showExchange: vi.fn(),
     approveExchange: vi.fn(),
     rejectExchange: vi.fn(),
+    resolveDispute: vi.fn(),
+    cancelDispute: vi.fn(),
+    reverseExchange: vi.fn(),
   },
 }));
 
@@ -277,5 +280,83 @@ describe('ExchangeDetailPage (ExchangeDetail)', () => {
     await waitFor(() => {
       expect(screen.getByText('No history available.')).toBeInTheDocument();
     });
+  });
+
+  // ── Settling a dispute and reversing a completed exchange ───────────────
+  const disputed = () => ({
+    ...makeDetail({
+      status: 'disputed',
+      proposed_hours: '4.00',
+      requester_confirmed_hours: '3.00',
+      provider_confirmed_hours: '5.00',
+    }),
+    dispute_window: { min_hours: 3, max_hours: 5 },
+  });
+
+  it('shows what each member says on a disputed exchange', async () => {
+    mockAdminBroker.showExchange.mockResolvedValue({ success: true, data: disputed() });
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+
+    await waitFor(() => expect(screen.getByText('This exchange needs you to settle it')).toBeInTheDocument());
+    expect(screen.getByText('Alice Requester says')).toBeInTheDocument();
+    expect(screen.getByText('Bob Provider says')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Settle dispute' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close with no hours' })).toBeInTheDocument();
+  });
+
+  it('settles a dispute at the chosen hours with the broker note', async () => {
+    mockAdminBroker.showExchange.mockResolvedValue({ success: true, data: disputed() });
+    mockAdminBroker.resolveDispute.mockResolvedValue({ success: true, data: { id: 42, status: 'completed', final_hours: 4 } });
+    const user = userEvent.setup();
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+
+    await user.click(await screen.findByRole('button', { name: 'Settle dispute' }));
+    await user.type(await screen.findByLabelText(/What you decided, and why/), 'Spoke to both; four hours is fair.');
+    await user.click(screen.getByRole('button', { name: 'Settle and pay 4 hours' }));
+
+    await waitFor(() => {
+      expect(mockAdminBroker.resolveDispute).toHaveBeenCalledWith(42, 4, 'Spoke to both; four hours is fair.');
+    });
+  });
+
+  it('closes a dispute with no hours when the work did not happen', async () => {
+    mockAdminBroker.showExchange.mockResolvedValue({ success: true, data: disputed() });
+    mockAdminBroker.cancelDispute.mockResolvedValue({ success: true, data: { id: 42, status: 'cancelled' } });
+    const user = userEvent.setup();
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    render(<ExchangeDetail />);
+
+    await user.click(await screen.findByRole('button', { name: 'Close with no hours' }));
+    await user.type(await screen.findByLabelText(/What you decided, and why/), 'The provider did not turn up.');
+    // The panel's button and the dialog's confirm share a label; the dialog's is last.
+    const matches = screen.getAllByRole('button', { name: 'Close with no hours' });
+    const confirm = matches[matches.length - 1] as HTMLElement | undefined;
+    expect(confirm).toBeDefined();
+    await user.click(confirm as HTMLElement);
+
+    await waitFor(() => {
+      expect(mockAdminBroker.cancelDispute).toHaveBeenCalledWith(42, 'The provider did not turn up.');
+    });
+  });
+
+  it('offers Reverse only on a completed exchange whose credits moved and were not yet put back', async () => {
+    mockAdminBroker.showExchange.mockResolvedValue({
+      success: true,
+      data: makeDetail({ status: 'completed', transaction_id: 9, reversal_transaction_id: null }),
+    });
+    const { default: ExchangeDetail } = await import('./ExchangeDetailPage');
+    const { unmount } = render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Reverse exchange' })).toBeInTheDocument());
+    unmount();
+
+    mockAdminBroker.showExchange.mockResolvedValue({
+      success: true,
+      data: makeDetail({ status: 'completed', transaction_id: 9, reversal_transaction_id: 10 }),
+    });
+    render(<ExchangeDetail />);
+    await waitFor(() => expect(screen.getByText('This exchange was reversed')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Reverse exchange' })).not.toBeInTheDocument();
   });
 });
