@@ -325,7 +325,9 @@
   },
   "report_problem": {
     "trigger": "Aiuto e assistenza",
+    "launcher_hint": "Fai una domanda o dicci cosa non va",
     "title": "Aiuto e assistenza",
+    "intro": "Scegli di cosa hai bisogno e raccontaci i dettagli. Il tuo messaggio arriva direttamente al team di assistenza.",
     "auth_title": "Accesso richiesto",
     "auth_description": "Accedi prima di chiedere aiuto.",
     "summary_label": "Breve riepilogo",
@@ -337,7 +339,8 @@
     "submit_success": "Grazie. Il tuo messaggio è stato inviato.",
     "submit_failed": "Non è stato possibile inviare il messaggio. Riprova.",
     "success_title": "Inviato",
-    "success_description": "Il riferimento {{reference}} è stato creato.",
+    "reference_label": "Il tuo riferimento",
+    "success_body": "Conserva questo riferimento nel caso tu voglia chiedere della tua richiesta in seguito. Ti invieremo anche una ricevuta via email.",
     "impact": {
       "blocked": "Non posso continuare",
       "major": "Un'attività principale non funziona",

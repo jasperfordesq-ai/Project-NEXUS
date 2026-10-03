@@ -988,6 +988,20 @@
     transform: translateY(calc(100% + 12px));
     pointer-events: none;
   }
+
+  /* The small-screen "Help & support" launcher docks just above the tab bar
+     (FloatingReportProblemButton). Hide it with the bar while the on-screen
+     keyboard is up — on Android the fixed button would otherwise ride up over
+     the field being typed into — and while a bottom sheet or the cookie banner
+     takes the bar's place. Modals need no rule: their backdrop sits above it. */
+  body:has(input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus) [data-support-launcher],
+  body:has([data-mobile-tabbar-cover]) [data-support-launcher],
+  body:has(.nexus-responsive-dropdown-popover) [data-support-launcher],
+  body:has(.nexus-responsive-select-popover) [data-support-launcher],
+  body:has(.nexus-responsive-datepicker-popover) [data-support-launcher],
+  body:has(.nexus-responsive-popover) [data-support-launcher] {
+    visibility: hidden;
+  }
 }
 
 /* ─────────────────────────────────────────────

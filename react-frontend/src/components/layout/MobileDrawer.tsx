@@ -25,8 +25,10 @@ import Fingerprint from 'lucide-react/icons/fingerprint';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Download from 'lucide-react/icons/download';
+import LifeBuoy from 'lucide-react/icons/life-buoy';
+import ChevronRight from 'lucide-react/icons/chevron-right';
 import { InstallAppButton } from '@/components/pwa/InstallAppButton';
-import { ReportProblemButton } from '@/components/feedback/ReportProblemButton';
+import { ReportProblemDialog } from '@/components/feedback/ReportProblemButton';
 import { TenantLogo } from '@/components/branding';
 import { VerificationBadgeRow } from '@/components/verification/VerificationBadge';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
@@ -138,6 +140,14 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
   // Use mobile-specific menus if available, fall back to header menus
   const apiMenus = mobileMenus.length > 0 ? mobileMenus : headerMenus;
 
+  // "Help & support" opens its dialog AFTER the sheet has slid away, so the two
+  // overlays never stack on a small screen.
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const openSupport = () => {
+    onClose();
+    setTimeout(() => setIsSupportOpen(true), DRAWER_CLOSE_MS);
+  };
+
   // Track which accordion sections are expanded
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set(['main']));
 
@@ -212,6 +222,7 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
   const sectionTitleClass = 'text-sm font-semibold uppercase tracking-wider text-theme-muted';
 
   return (
+    <>
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
@@ -339,6 +350,31 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
                   )}
                 </Button>
               </div>
+
+              {/* Help & support — near the top of the menu, not in the small
+                  utility row at the bottom, so a member who opens Menu looking
+                  for help sees it without scrolling. */}
+              <Button
+                variant="flat"
+                fullWidth
+                data-testid="mobile-help-support"
+                onPress={openSupport}
+                className="mt-3 h-auto min-h-[56px] min-w-0 justify-start gap-3 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-theme-primary hover:bg-accent/15"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-dropdown)] text-[var(--color-primary)]"
+                >
+                  <LifeBuoy className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1 text-start">
+                  <span className="block truncate text-base font-semibold">{t('report_problem.trigger')}</span>
+                  <span className="block whitespace-normal text-sm font-normal leading-snug text-theme-secondary">
+                    {t('report_problem.launcher_hint')}
+                  </span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-theme-muted rtl:rotate-180" aria-hidden="true" />
+              </Button>
             </div>
           )}
 
@@ -462,9 +498,6 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
                       <HelpCircle className="w-4 h-4" aria-hidden="true" />
                       {t('user_menu.help_center')}
                     </Button>
-                  )}
-                  {isAuthenticated && (
-                    <ReportProblemButton className="h-11 min-h-[44px] min-w-0 px-3 gap-2 text-sm" />
                   )}
                   {accessibleFrontendUrl && (
                     <a
@@ -620,6 +653,11 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
         </DrawerBody>
       </DrawerContent>
     </Drawer>
+
+    {isAuthenticated && (
+      <ReportProblemDialog isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
+    )}
+    </>
   );
 }
 

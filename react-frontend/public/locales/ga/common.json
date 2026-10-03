@@ -327,7 +327,9 @@
   },
   "report_problem": {
     "trigger": "Cabhair agus tacaíocht",
+    "launcher_hint": "Cuir ceist nó inis dúinn cad atá cearr",
     "title": "Cabhair agus tacaíocht",
+    "intro": "Roghnaigh an rud atá uait agus inis dúinn faoi. Téann do theachtaireacht díreach chuig an bhfoireann tacaíochta.",
     "auth_title": "Ní mór duit síniú isteach",
     "auth_description": "Sínigh isteach sula n-iarrann tú cabhair.",
     "summary_label": "Achoimre ghearr",
@@ -339,7 +341,8 @@
     "submit_success": "Go raibh maith agat. Seoladh do theachtaireacht.",
     "submit_failed": "Níorbh fhéidir linn do theachtaireacht a sheoladh. Bain triail eile as.",
     "success_title": "Seolta",
-    "success_description": "Cruthaíodh an uimhir thagartha {{reference}}.",
+    "reference_label": "Do thagairt",
+    "success_body": "Coinnigh an tagairt seo ar eagla go mbeidh tú ag iarraidh fiafraí faoi d’iarratas níos déanaí. Seolfaimid admháil chugat i ríomhphost freisin.",
     "impact": {
       "blocked": "Ní féidir liom leanúint ar aghaidh",
       "major": "Ní oibríonn ceann de na príomhthascanna",

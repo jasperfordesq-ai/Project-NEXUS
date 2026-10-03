@@ -6,6 +6,11 @@
 /**
  * BackToTop - Floating scroll-to-top button
  * Appears after scrolling 400px, smooth scrolls to top on click
+ *
+ * Below `lg` it stacks above the round "Help & support" launcher, which docks
+ * just above the mobile tab bar (FloatingReportProblemButton). The switch to the
+ * desktop position is `lg`, not `md`, because the tab bar — and the launcher's
+ * small-screen slot — run up to 1023px; at `md` the two buttons overlapped.
  */
 
 import { useState, useEffect } from 'react';
@@ -41,7 +46,7 @@ export function BackToTop() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-[calc(var(--safe-area-bottom)+8.75rem+var(--miniplayer-offset,0rem))] right-3 z-40 md:bottom-[calc(6rem+var(--miniplayer-offset,0rem))] md:right-6"
+          className="fixed bottom-[calc(var(--safe-area-bottom)+8.75rem+var(--miniplayer-offset,0rem))] right-[calc(var(--safe-area-right)+0.75rem)] z-40 lg:bottom-[calc(6rem+var(--miniplayer-offset,0rem))] lg:right-6"
         >
           <Button
             isIconOnly

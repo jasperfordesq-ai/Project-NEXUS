@@ -325,7 +325,9 @@
   },
   "report_problem": {
     "trigger": "Aide et assistance",
+    "launcher_hint": "Posez une question ou signalez-nous un problème",
     "title": "Aide et assistance",
+    "intro": "Choisissez ce dont vous avez besoin et expliquez-nous la situation. Votre message est transmis directement à l'équipe d'assistance.",
     "auth_title": "Connexion requise",
     "auth_description": "Veuillez vous connecter avant de demander de l'aide.",
     "summary_label": "Court résumé",
@@ -337,7 +339,8 @@
     "submit_success": "Merci. Votre message a été envoyé.",
     "submit_failed": "Nous n'avons pas pu envoyer votre message. Veuillez réessayer.",
     "success_title": "Envoyé",
-    "success_description": "La référence {{reference}} a été créée.",
+    "reference_label": "Votre référence",
+    "success_body": "Conservez cette référence au cas où vous voudriez vous renseigner plus tard sur votre demande. Nous vous enverrons aussi un accusé de réception par e-mail.",
     "impact": {
       "blocked": "Je ne peux pas continuer",
       "major": "Une tâche essentielle est bloquée",

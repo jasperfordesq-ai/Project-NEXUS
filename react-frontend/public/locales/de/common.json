@@ -324,7 +324,9 @@
   },
   "report_problem": {
     "trigger": "Hilfe & Support",
+    "launcher_hint": "Stellen Sie eine Frage oder sagen Sie uns, was nicht funktioniert",
     "title": "Hilfe & Support",
+    "intro": "Wählen Sie aus, was Sie brauchen, und beschreiben Sie es kurz. Ihre Nachricht geht direkt an das Support-Team.",
     "auth_title": "Anmeldung erforderlich",
     "auth_description": "Bitte melden Sie sich an, bevor Sie um Hilfe bitten.",
     "summary_label": "Kurze Zusammenfassung",
@@ -336,7 +338,8 @@
     "submit_success": "Vielen Dank. Ihre Nachricht wurde gesendet.",
     "submit_failed": "Ihre Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
     "success_title": "Gesendet",
-    "success_description": "Referenz {{reference}} wurde erstellt.",
+    "reference_label": "Ihre Referenz",
+    "success_body": "Bewahren Sie diese Referenz auf, falls Sie später zu Ihrer Anfrage nachfragen möchten. Wir senden Ihnen außerdem eine Bestätigung per E-Mail.",
     "impact": {
       "blocked": "Ich kann nicht fortfahren",
       "major": "Eine Kernaufgabe funktioniert nicht",

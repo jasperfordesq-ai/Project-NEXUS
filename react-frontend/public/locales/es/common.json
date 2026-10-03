@@ -325,7 +325,9 @@
   },
   "report_problem": {
     "trigger": "Ayuda y soporte",
+    "launcher_hint": "Haga una pregunta o díganos qué no funciona",
     "title": "Ayuda y soporte",
+    "intro": "Elija lo que necesita y cuéntenos los detalles. Su mensaje llega directamente al equipo de soporte.",
     "auth_title": "Inicio de sesión requerido",
     "auth_description": "Inicie sesión antes de pedir ayuda.",
     "summary_label": "Resumen breve",
@@ -337,7 +339,8 @@
     "submit_success": "Gracias. Su mensaje se ha enviado.",
     "submit_failed": "No pudimos enviar su mensaje. Inténtelo de nuevo.",
     "success_title": "Enviado",
-    "success_description": "Se ha creado la referencia {{reference}}.",
+    "reference_label": "Su referencia",
+    "success_body": "Guarde esta referencia por si quiere preguntar más adelante por su solicitud. También le enviaremos un acuse de recibo por correo electrónico.",
     "impact": {
       "blocked": "No puedo continuar",
       "major": "Una tarea principal no funciona",

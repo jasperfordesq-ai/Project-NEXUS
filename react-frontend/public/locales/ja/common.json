@@ -324,7 +324,9 @@
   },
   "report_problem": {
     "trigger": "ヘルプとサポート",
+    "launcher_hint": "質問する、または問題を知らせる",
     "title": "ヘルプとサポート",
+    "intro": "ご用件を選んで、内容をお知らせください。メッセージはサポートチームに直接届きます。",
     "auth_title": "サインインが必要です",
     "auth_description": "サポートを依頼する前にサインインしてください。",
     "summary_label": "簡単な概要",
@@ -336,7 +338,8 @@
     "submit_success": "ありがとうございます。メッセージを送信しました。",
     "submit_failed": "メッセージを送信できませんでした。もう一度お試しください。",
     "success_title": "送信しました",
-    "success_description": "参照番号 {{reference}} が作成されました。",
+    "reference_label": "参照番号",
+    "success_body": "後でお問い合わせの状況を確認する場合に備えて、この参照番号を控えておいてください。受付確認のメールもお送りします。",
     "impact": {
       "blocked": "続行できません",
       "major": "主要なタスクが機能していません",

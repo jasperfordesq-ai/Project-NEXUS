@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@/test/test-utils';
+import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
 
 // --- Mocks ---
 
@@ -91,7 +91,8 @@ const i18nMap: Record<string, string> = {
   'nav.federated_events': 'Federated Events',
   'auth.log_in': 'Log In', 'auth.sign_up': 'Sign Up',
   'account.settings': 'Settings', 'account.log_out': 'Log Out',
-  'report_problem.trigger': 'Report a problem',
+  'report_problem.trigger': 'Help & support',
+  'report_problem.launcher_hint': "Ask a question or tell us what's wrong",
   // Admin tool keys used by MobileDrawer (user_menu namespace)
   'user_menu.admin_panel': 'Admin Panel',
   'broker:sidebar.title': 'Broker Panel',
@@ -165,8 +166,8 @@ vi.mock('@/components/navigation', () => ({
 }));
 
 vi.mock('@/components/feedback/ReportProblemButton', () => ({
-  ReportProblemButton: ({ className }: { className?: string }) => (
-    <button type="button" className={className}>Report a problem</button>
+  ReportProblemDialog: ({ isOpen }: { isOpen: boolean; onClose: () => void }) => (
+    isOpen ? <div role="dialog" aria-label="Help & support dialog" /> : null
   ),
 }));
 
@@ -451,9 +452,34 @@ describe('MobileDrawer', () => {
       expect(screen.getByText('Log Out')).toBeInTheDocument();
     });
 
-    it('shows a report problem action in mobile support navigation', () => {
+    it('shows Help & support near the top of the menu, with a one-line explanation', () => {
       render(<MobileDrawer {...defaultProps} />);
-      expect(screen.getByRole('button', { name: 'Report a problem' })).toBeInTheDocument();
+      const entry = screen.getByTestId('mobile-help-support');
+      expect(entry).toHaveTextContent('Help & support');
+      expect(entry).toHaveTextContent("Ask a question or tell us what's wrong");
+      // A full-width row, comfortably over the 44px minimum touch target.
+      expect(entry).toHaveClass('min-h-[56px]');
+      // Placed with the account summary, not in the small utility row at the bottom.
+      expect(entry.compareDocumentPosition(screen.getByText('Dashboard')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('closes the menu first, then opens the Help & support dialog', async () => {
+      const onClose = vi.fn();
+      render(<MobileDrawer {...defaultProps} onClose={onClose} />);
+
+      expect(screen.queryByLabelText('Help & support dialog')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('mobile-help-support'));
+
+      expect(onClose).toHaveBeenCalled();
+      // The test keeps the drawer mounted open, and its modal hides everything
+      // outside it from the accessibility tree, so look the dialog up by label.
+      expect(await screen.findByLabelText('Help & support dialog')).toBeInTheDocument();
+    });
+
+    it('does not offer Help & support to guests', () => {
+      setupDefaultMocks({ auth: { user: null, isAuthenticated: false } });
+      render(<MobileDrawer {...defaultProps} />);
+      expect(screen.queryByTestId('mobile-help-support')).not.toBeInTheDocument();
     });
 
     it('shows Dashboard link when authenticated and module enabled', () => {

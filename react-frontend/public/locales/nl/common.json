@@ -324,7 +324,9 @@
   },
   "report_problem": {
     "trigger": "Hulp en ondersteuning",
+    "launcher_hint": "Stel een vraag of laat ons weten wat er mis is",
     "title": "Hulp en ondersteuning",
+    "intro": "Kies waarmee u hulp nodig heeft en vertel ons erover. Uw bericht gaat rechtstreeks naar het ondersteuningsteam.",
     "auth_title": "Inloggen vereist",
     "auth_description": "Meld u aan voordat u om hulp vraagt.",
     "summary_label": "Korte samenvatting",
@@ -336,7 +338,8 @@
     "submit_success": "Bedankt. Uw bericht is verstuurd.",
     "submit_failed": "We konden uw bericht niet versturen. Probeer het opnieuw.",
     "success_title": "Verstuurd",
-    "success_description": "Referentie {{reference}} is aangemaakt.",
+    "reference_label": "Uw referentie",
+    "success_body": "Bewaar deze referentie voor het geval u later naar uw verzoek wilt vragen. We sturen u ook een ontvangstbevestiging per e-mail.",
     "impact": {
       "blocked": "Ik kan niet doorgaan",
       "major": "Een kerntaak werkt niet",

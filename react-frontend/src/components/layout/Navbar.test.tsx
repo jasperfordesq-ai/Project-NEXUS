@@ -101,6 +101,9 @@ vi.mock('@/components/feedback/ReportProblemButton', () => ({
   ReportProblemButton: ({ className }: { className?: string }) => (
     <button type="button" className={className}>Report a problem</button>
   ),
+  ReportProblemDialog: ({ isOpen }: { isOpen: boolean; onClose: () => void }) => (
+    isOpen ? <div role="dialog" aria-label="Help & support dialog" /> : null
+  ),
 }));
 
 const i18nMap: Record<string, string> = {
@@ -337,6 +340,29 @@ describe('Navbar', () => {
       render(<Navbar />);
 
       expect(screen.queryByRole('button', { name: 'Report a problem' })).not.toBeInTheDocument();
+    });
+
+    it('offers Help & support in the user menu, which opens the support dialog', async () => {
+      setupDefaultMocks({
+        auth: {
+          user: {
+            id: 42,
+            first_name: 'Ada',
+            last_name: 'Lovelace',
+            email: 'ada@example.test',
+            role: 'member',
+          },
+          isAuthenticated: true,
+        },
+      });
+      const user = userEvent.setup();
+      render(<Navbar />);
+
+      await user.click(screen.getByRole('button', { name: 'Open user menu' }));
+      const item = await screen.findByRole('menuitem', { name: /Report a problem/ });
+      await user.click(item);
+
+      expect(await screen.findByRole('dialog', { name: 'Help & support dialog' })).toBeInTheDocument();
     });
   });
 

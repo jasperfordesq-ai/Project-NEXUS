@@ -34,6 +34,7 @@ import ShieldCheck from 'lucide-react/icons/shield-check';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Download from 'lucide-react/icons/download';
+import LifeBuoy from 'lucide-react/icons/life-buoy';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -86,6 +87,11 @@ const PresenceIndicator = lazy(() =>
 const StatusSelector = lazy(() =>
   import('@/components/social/StatusSelector').then((module) => ({
     default: module.StatusSelector,
+  })),
+);
+const ReportProblemDialog = lazy(() =>
+  import('@/components/feedback/ReportProblemButton').then((module) => ({
+    default: module.ReportProblemDialog,
   })),
 );
 
@@ -187,6 +193,10 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const [createOpen, setCreateOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [tenantSwitcherOpen, setTenantSwitcherOpen] = useState(false);
+  // "Help & support" from the user menu. The dialog is loaded on first use and
+  // then stays mounted so its close animation can run.
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [hasOpenedSupport, setHasOpenedSupport] = useState(false);
 
   /**
    * What the "+" offers, in sections. Empty sections are dropped, and if a
@@ -935,6 +945,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           const k = String(key);
                           if (k === 'theme') { toggleTheme(); closeAllDropdowns(); return; }
                           if (k === 'logout') { handleLogout(); return; }
+                          if (k === 'help-support') {
+                            closeAllDropdowns();
+                            setHasOpenedSupport(true);
+                            setIsSupportOpen(true);
+                            return;
+                          }
                           if (k === 'profile-header') return;
                           dropdownNavigate(k);
                         }}
@@ -979,6 +995,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         >
                           {t('user_menu.settings')}
                         </DropdownItem> : null}
+                        <DropdownItem
+                          key="help-support" id="help-support"
+                          startContent={<LifeBuoy className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />}
+                        >
+                          {t('report_problem.trigger')}
+                        </DropdownItem>
                       </DropdownSection>
 
                       <DropdownSection showDivider>
@@ -1050,6 +1072,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
           onClose={() => setIsSearchOpen(false)}
         />}
       </header>
+
+      {isAuthenticated && hasOpenedSupport && (
+        <Suspense fallback={null}>
+          <ReportProblemDialog isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
+        </Suspense>
+      )}
 
     </>
   );

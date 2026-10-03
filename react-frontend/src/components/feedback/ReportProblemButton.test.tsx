@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, userEvent } from '@/test/test-utils';
-import { ReportProblemButton } from './ReportProblemButton';
+import { render, screen, waitFor, userEvent, within } from '@/test/test-utils';
+import { ReportProblemButton, ReportProblemDialog } from './ReportProblemButton';
 
 const mocks = vi.hoisted(() => ({
   apiPost: vi.fn(),
@@ -98,7 +98,7 @@ describe('ReportProblemButton', () => {
         impact: 'minor',
       }),
     }));
-    expect(await screen.findByText('Reference NXR-260527-ABC123 has been created.')).toBeInTheDocument();
+    expect(await screen.findByTestId('report-problem-success')).toHaveTextContent('NXR-260527-ABC123');
     // Once sent, only the confirmation is left: no form, no second Send.
     expect(screen.queryByLabelText('Short summary')).not.toBeInTheDocument();
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
@@ -184,7 +184,7 @@ describe('ReportProblemButton', () => {
     expect(payload.diagnostics).toBeUndefined();
     expect(mocks.captureSentryMessage).not.toHaveBeenCalled();
     expect(mocks.captureSentryFeedback).not.toHaveBeenCalled();
-    expect(await screen.findByText('Reference NXR-260527-ABC123 has been created.')).toBeInTheDocument();
+    expect(await screen.findByTestId('report-problem-success')).toHaveTextContent('NXR-260527-ABC123');
   });
 
   it('warns members never to send their password with an account problem', async () => {
@@ -220,5 +220,58 @@ describe('ReportProblemButton', () => {
     expect(screen.getByTestId('report-problem-form')).toHaveClass('max-h-full', 'min-h-0', 'flex-col');
     expect(screen.getByTestId('report-problem-body')).toHaveClass('min-h-0', 'overflow-y-auto');
     expect(screen.getByTestId('report-problem-footer')).toHaveClass('shrink-0', 'items-stretch');
+  });
+
+  it('shows the four request types as cards with a short introduction', async () => {
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+
+    expect(screen.getByRole('heading', { name: 'Help & support' })).toBeInTheDocument();
+    expect(screen.getByText(/Your message goes straight to the support team/)).toBeInTheDocument();
+    const cards = screen.getByTestId('report-problem-types');
+    expect(cards).toHaveClass('grid', 'sm:grid-cols-2');
+    expect(within(cards).getAllByRole('radio')).toHaveLength(4);
+  });
+
+  it('confirms a sent request with the reference on its own and the receipt note', async () => {
+    const user = userEvent.setup();
+    render(<ReportProblemButton />);
+
+    await user.click(screen.getByRole('button', { name: 'Help & support' }));
+    await user.click(screen.getByRole('radio', { name: /How do I/ }));
+    await user.type(screen.getByLabelText('Your question in a few words'), 'Joining a group');
+    await user.type(screen.getByLabelText('Tell us a bit more'), 'Where do I ask to join a group on my phone?');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    const success = await screen.findByTestId('report-problem-success');
+    expect(success).toHaveAttribute('role', 'status');
+    expect(within(success).getByText('Sent')).toBeInTheDocument();
+    expect(within(success).getByText('Your reference')).toBeInTheDocument();
+    expect(within(success).getByText('NXR-260527-ABC123')).toBeInTheDocument();
+    expect(within(success).getByText(/We will also email you a receipt/)).toBeInTheDocument();
+    // The "choose what you need" introduction no longer applies once sent.
+    expect(screen.queryByText(/Your message goes straight to the support team/)).not.toBeInTheDocument();
+  });
+});
+
+describe('ReportProblemDialog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('is controlled by its caller and reports closing through onClose', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { rerender } = render(<ReportProblemDialog isOpen={false} onClose={onClose} />);
+
+    expect(screen.queryByTestId('report-problem-form')).not.toBeInTheDocument();
+
+    rerender(<ReportProblemDialog isOpen onClose={onClose} />);
+    expect(await screen.findByTestId('report-problem-form')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

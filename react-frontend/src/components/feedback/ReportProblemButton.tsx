@@ -3,9 +3,14 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { type FormEvent, useMemo, useState } from 'react';
+import { type ComponentType, type FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Bug from 'lucide-react/icons/bug';
+import CircleCheckBig from 'lucide-react/icons/circle-check-big';
+import CircleHelp from 'lucide-react/icons/circle-help';
+import KeyRound from 'lucide-react/icons/key-round';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
+import Lightbulb from 'lucide-react/icons/lightbulb';
 import Send from 'lucide-react/icons/send';
 
 import {
@@ -18,6 +23,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  ModalHeading,
   Radio,
   RadioGroup,
   Select,
@@ -54,18 +60,47 @@ interface ReportProblemButtonProps {
   mode?: 'button' | 'footer-link';
 }
 
+export interface ReportProblemDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 const IMPACT_OPTIONS: Impact[] = ['blocked', 'major', 'minor', 'cosmetic'];
 const REQUEST_TYPES: RequestType[] = ['broken', 'how_to', 'account', 'suggestion'];
 
-export function ReportProblemButton({ className, mode = 'button' }: ReportProblemButtonProps) {
+const REQUEST_TYPE_ICONS: Record<RequestType, ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' }>> = {
+  broken: Bug,
+  how_to: CircleHelp,
+  account: KeyRound,
+  suggestion: Lightbulb,
+};
+
+/**
+ * Card-style option for the request-type picker. The HeroUI Radio root is the
+ * <label>, so the whole card is the hit target (well over 44px tall), and the
+ * focus ring is drawn on the card as well as on the radio control.
+ */
+const TYPE_CARD_CLASS = [
+  'mt-0 h-full rounded-xl border border-[var(--border-default)] bg-[var(--surface-dropdown)] p-3',
+  'motion-safe:transition-colors motion-safe:duration-150',
+  'hover:border-[var(--text-muted)] hover:bg-theme-hover',
+  'data-[selected=true]:border-accent data-[selected=true]:bg-accent/10',
+  'data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-offset-2 data-[focus-visible=true]:outline-accent',
+].join(' ');
+
+/**
+ * The "Help & support" form on its own, so every entry point (the floating
+ * launcher, the phone menu, the user menu, the error screen) can open the same
+ * dialog from its own control without duplicating the form.
+ */
+export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProps) {
   const { t } = useTranslation('common');
   const toast = useToast();
-  // Non-throwing: this button renders inside the top-level ErrorBoundary
+  // Non-throwing: this dialog renders inside the top-level ErrorBoundary
   // fallback, which sits ABOVE AuthProvider (provided per-route in TenantShell).
   // A throwing useAuth() there re-crashes the fallback and escalates to the bare
   // root boundary. No provider ⇒ treat as unauthenticated (already handled below).
   const isAuthenticated = useAuthOptional()?.isAuthenticated ?? false;
-  const [isOpen, setIsOpen] = useState(false);
   const [requestType, setRequestType] = useState<RequestType | null>(null);
   const [summary, setSummary] = useState('');
   const [description, setDescription] = useState('');
@@ -95,7 +130,7 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
   };
 
   const close = () => {
-    setIsOpen(false);
+    onClose();
     resetForm();
   };
 
@@ -165,6 +200,183 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
   };
 
   return (
+    <Modal
+      isOpen={isOpen}
+      onClose={close}
+      size="lg"
+      placement="center"
+      scrollBehavior="inside"
+      classNames={{
+        wrapper: 'items-stretch p-3 sm:items-center sm:p-6',
+        base: 'max-h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl p-0 sm:max-h-[min(780px,calc(100dvh-3rem))] sm:max-w-[40rem]',
+        header: 'shrink-0 border-b border-[var(--border-default)] px-4 py-4 pr-12 sm:px-6',
+        body: 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6',
+        footer: 'shrink-0 flex-col-reverse items-stretch gap-2 border-t border-[var(--border-default)] px-4 py-3 sm:flex-row sm:items-center sm:justify-end sm:px-6',
+      }}
+    >
+      <ModalContent>
+        <form data-testid="report-problem-form" className="flex max-h-full min-h-0 flex-col" onSubmit={submit}>
+          <ModalHeader className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-0.5">
+            <span
+              aria-hidden="true"
+              className="row-span-2 flex size-10 items-center justify-center rounded-full bg-accent/10 text-[var(--color-primary)]"
+            >
+              <LifeBuoy className="size-5" />
+            </span>
+            <ModalHeading className="text-lg font-semibold leading-tight text-theme-primary">
+              {t('report_problem.title')}
+            </ModalHeading>
+            {reference ? null : (
+              <p className="text-sm font-normal leading-snug text-theme-secondary">
+                {t('report_problem.intro')}
+              </p>
+            )}
+          </ModalHeader>
+          <ModalBody data-testid="report-problem-body" className="space-y-4">
+            {!isAuthenticated ? (
+              <Alert color="warning" title={t('report_problem.auth_title')} description={t('report_problem.auth_description')} />
+            ) : null}
+
+            {reference ? (
+              <div
+                role="status"
+                data-testid="report-problem-success"
+                className="flex flex-col items-center gap-3 px-2 py-6 text-center"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex size-14 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success-soft-foreground)]"
+                >
+                  <CircleCheckBig className="size-7" />
+                </span>
+                <h3 className="text-xl font-semibold text-theme-primary">{t('report_problem.success_title')}</h3>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-sm text-theme-secondary">{t('report_problem.reference_label')}</span>
+                  <span className="select-all rounded-lg border border-[var(--border-default)] bg-theme-elevated px-3 py-1.5 font-mono text-base font-semibold tracking-wide text-theme-primary">
+                    {reference}
+                  </span>
+                </div>
+                <p className="max-w-sm text-sm leading-relaxed text-theme-secondary">
+                  {t('report_problem.success_body')}
+                </p>
+              </div>
+            ) : (
+              <RadioGroup
+                label={t('report_problem.type_label')}
+                value={requestType ?? ''}
+                classNames={{ label: 'text-sm font-semibold text-theme-primary' }}
+                onValueChange={(value) => {
+                  if (REQUEST_TYPES.includes(value as RequestType)) {
+                    setRequestType(value as RequestType);
+                  }
+                }}
+              >
+                <div className="grid gap-2 sm:grid-cols-2" data-testid="report-problem-types">
+                  {REQUEST_TYPES.map((type) => {
+                    const Icon = REQUEST_TYPE_ICONS[type];
+                    return (
+                      <Radio
+                        key={type}
+                        value={type}
+                        className={TYPE_CARD_CLASS}
+                        classNames={{
+                          label: 'font-medium text-theme-primary',
+                          description: 'text-sm text-theme-secondary',
+                        }}
+                        description={t(`report_problem.types.${type}.description`)}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Icon className="size-4 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />
+                          {t(`report_problem.types.${type}.label`)}
+                        </span>
+                      </Radio>
+                    );
+                  })}
+                </div>
+              </RadioGroup>
+            )}
+
+            {requestType && !reference ? (
+              <div className="space-y-4">
+                <Input
+                  isRequired
+                  label={t(`report_problem.fields.${requestType}.summary`)}
+                  value={summary}
+                  maxLength={180}
+                  onValueChange={setSummary}
+                />
+
+                <Textarea
+                  isRequired
+                  label={t(`report_problem.fields.${requestType}.description`)}
+                  value={description}
+                  minRows={5}
+                  maxLength={5000}
+                  onValueChange={setDescription}
+                />
+
+                {isBroken ? (
+                  <>
+                    <Select
+                      label={t('report_problem.impact_label')}
+                      value={impact}
+                      onValueChange={(value) => {
+                        if (IMPACT_OPTIONS.includes(value as Impact)) {
+                          setImpact(value as Impact);
+                        }
+                      }}
+                    >
+                      {IMPACT_OPTIONS.map((option) => (
+                        <SelectItem key={option} id={option}>
+                          {t(`report_problem.impact.${option}`)}
+                        </SelectItem>
+                      ))}
+                    </Select>
+
+                    <Checkbox isSelected={includeDiagnostics} onValueChange={setIncludeDiagnostics}>
+                      {t('report_problem.include_diagnostics')}
+                    </Checkbox>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+          </ModalBody>
+          <ModalFooter data-testid="report-problem-footer">
+            {reference ? (
+              // Once sent, only the confirmation (with its reference) is left on screen.
+              // Footer buttons are full width on phones (a thumb-sized target), inline from `sm`.
+              <Button type="button" onPress={close} className="min-h-11 w-full sm:w-auto">
+                {t('report_problem.close')}
+              </Button>
+            ) : (
+              <>
+                <Button type="button" variant="tertiary" onPress={close} className="min-h-11 w-full sm:w-auto">
+                  {t('report_problem.cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  isDisabled={!canSubmit}
+                  isLoading={isSubmitting}
+                  className="min-h-11 w-full sm:w-auto"
+                  startContent={!isSubmitting ? <Send className="h-4 w-4" aria-hidden="true" /> : undefined}
+                >
+                  {t('report_problem.submit')}
+                </Button>
+              </>
+            )}
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+}
+
+/** A labelled "Help & support" button that opens the dialog — used on the error screen. */
+export function ReportProblemButton({ className, mode = 'button' }: ReportProblemButtonProps) {
+  const { t } = useTranslation('common');
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
     <>
       <Button
         type="button"
@@ -177,124 +389,7 @@ export function ReportProblemButton({ className, mode = 'button' }: ReportProble
         {t('report_problem.trigger')}
       </Button>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={close}
-        size="lg"
-        placement="center"
-        scrollBehavior="inside"
-        classNames={{
-          wrapper: 'items-stretch p-3 sm:items-center sm:p-6',
-          base: 'max-h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg p-0 sm:max-h-[min(760px,calc(100dvh-3rem))]',
-          header: 'shrink-0 px-4 py-4 pr-12 sm:px-6',
-          body: 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-6',
-          footer: 'shrink-0 flex-col-reverse items-stretch gap-2 px-4 py-4 sm:flex-row sm:items-center sm:px-6',
-        }}
-      >
-        <ModalContent>
-          <form data-testid="report-problem-form" className="flex max-h-full min-h-0 flex-col" onSubmit={submit}>
-            <ModalHeader>{t('report_problem.title')}</ModalHeader>
-            <ModalBody data-testid="report-problem-body" className="space-y-4">
-              {!isAuthenticated ? (
-                <Alert color="warning" title={t('report_problem.auth_title')} description={t('report_problem.auth_description')} />
-              ) : null}
-
-              {reference ? (
-                <Alert
-                  color="success"
-                  title={t('report_problem.success_title')}
-                  description={t('report_problem.success_description', { reference })}
-                />
-              ) : null}
-
-              {reference ? null : (
-                <RadioGroup
-                  label={t('report_problem.type_label')}
-                  value={requestType ?? ''}
-                  onValueChange={(value) => {
-                    if (REQUEST_TYPES.includes(value as RequestType)) {
-                      setRequestType(value as RequestType);
-                    }
-                  }}
-                >
-                  {REQUEST_TYPES.map((type) => (
-                    <Radio key={type} value={type} description={t(`report_problem.types.${type}.description`)}>
-                      {t(`report_problem.types.${type}.label`)}
-                    </Radio>
-                  ))}
-                </RadioGroup>
-              )}
-
-              {requestType && !reference ? (
-                <>
-                  <Input
-                    isRequired
-                    label={t(`report_problem.fields.${requestType}.summary`)}
-                    value={summary}
-                    maxLength={180}
-                    onValueChange={setSummary}
-                  />
-
-                  <Textarea
-                    isRequired
-                    label={t(`report_problem.fields.${requestType}.description`)}
-                    value={description}
-                    minRows={5}
-                    maxLength={5000}
-                    onValueChange={setDescription}
-                  />
-
-                  {isBroken ? (
-                    <>
-                      <Select
-                        label={t('report_problem.impact_label')}
-                        value={impact}
-                        onValueChange={(value) => {
-                          if (IMPACT_OPTIONS.includes(value as Impact)) {
-                            setImpact(value as Impact);
-                          }
-                        }}
-                      >
-                        {IMPACT_OPTIONS.map((option) => (
-                          <SelectItem key={option} id={option}>
-                            {t(`report_problem.impact.${option}`)}
-                          </SelectItem>
-                        ))}
-                      </Select>
-
-                      <Checkbox isSelected={includeDiagnostics} onValueChange={setIncludeDiagnostics}>
-                        {t('report_problem.include_diagnostics')}
-                      </Checkbox>
-                    </>
-                  ) : null}
-                </>
-              ) : null}
-            </ModalBody>
-            <ModalFooter data-testid="report-problem-footer">
-              {reference ? (
-                // Once sent, only the confirmation (with its reference) is left on screen.
-                <Button type="button" onPress={close}>
-                  {t('report_problem.close')}
-                </Button>
-              ) : (
-                <>
-                  <Button type="button" variant="tertiary" onPress={close}>
-                    {t('report_problem.cancel')}
-                  </Button>
-                  <Button
-                    type="submit"
-                    isDisabled={!canSubmit}
-                    isLoading={isSubmitting}
-                    startContent={!isSubmitting ? <Send className="h-4 w-4" aria-hidden="true" /> : undefined}
-                  >
-                    {t('report_problem.submit')}
-                  </Button>
-                </>
-              )}
-            </ModalFooter>
-          </form>
-        </ModalContent>
-      </Modal>
+      <ReportProblemDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 }

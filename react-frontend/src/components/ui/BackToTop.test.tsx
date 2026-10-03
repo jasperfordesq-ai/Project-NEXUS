@@ -72,7 +72,7 @@ describe('BackToTop', () => {
       'bottom-[calc(var(--safe-area-bottom)+8.75rem+var(--miniplayer-offset,0rem))]'
     );
     expect(wrapper?.className).toContain(
-      'md:bottom-[calc(6rem+var(--miniplayer-offset,0rem))]'
+      'lg:bottom-[calc(6rem+var(--miniplayer-offset,0rem))]'
     );
   });
 });

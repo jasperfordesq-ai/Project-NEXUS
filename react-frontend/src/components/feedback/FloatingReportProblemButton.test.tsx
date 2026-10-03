@@ -62,6 +62,14 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ isAuthenticated: authState.isAuthenticated }),
 }));
 
+// The launcher follows the mobile tab bar's own visibility rule; drive it here
+// so the test does not need the router, tenant and notification providers the
+// real tab bar reads.
+const { tabBarState } = vi.hoisted(() => ({ tabBarState: { visible: true as boolean } }));
+vi.mock('@/components/layout/MobileTabBar', () => ({
+  useMobileTabBarVisible: () => tabBarState.visible,
+}));
+
 // ─── Stub heavy HeroUI overlays + form controls ───────────────────────────────
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
@@ -173,6 +181,7 @@ describe('FloatingReportProblemButton', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     authState.isAuthenticated = true;
+    tabBarState.visible = true;
     mockApi.post.mockResolvedValue({
       success: true,
       data: { report: { id: 1, reference: 'RPT-001', status: 'open', impact: 'minor', summary: 'Test' } },
@@ -303,5 +312,38 @@ describe('FloatingReportProblemButton', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
+  });
+
+  it('is announced as "Help & support" at every width (label is sr-only below lg, visible from lg)', async () => {
+    const { FloatingReportProblemButton } = await import('./FloatingReportProblemButton');
+    render(<FloatingReportProblemButton />);
+
+    const trigger = screen.getByRole('button', { name: 'Help & support' });
+    expect(trigger).toHaveAttribute('data-testid', 'floating-report-problem-trigger');
+    expect(screen.getByText('Help & support')).toHaveClass('sr-only', 'lg:not-sr-only');
+    // A 48px round target on phones, a labelled pill from lg.
+    expect(trigger).toHaveClass('h-12', 'w-12', 'rounded-full', 'lg:w-auto');
+  });
+
+  it('docks above the mobile tab bar, clearing the mini-player and the home indicator', async () => {
+    const { FloatingReportProblemButton } = await import('./FloatingReportProblemButton');
+    render(<FloatingReportProblemButton />);
+
+    const wrapper = screen.getByTestId('floating-report-problem');
+    expect(wrapper).toHaveAttribute('data-support-launcher');
+    expect(wrapper.className).toContain('bottom-[calc(var(--safe-area-bottom)+5.25rem+var(--miniplayer-offset,0rem))]');
+    expect(wrapper.className).toContain('lg:bottom-[calc(1.5rem+var(--miniplayer-offset,0rem))]');
+    // Shown on small screens. The regression this guards was "hidden md:block":
+    // invisible on phones, and behind the tab bar from 768px to 1023px.
+    expect(wrapper).not.toHaveClass('hidden');
+    expect(wrapper.className).not.toContain('md:block');
+  });
+
+  it('keeps out of the way on small screens where the tab bar is hidden (e.g. a message thread)', async () => {
+    tabBarState.visible = false;
+    const { FloatingReportProblemButton } = await import('./FloatingReportProblemButton');
+    render(<FloatingReportProblemButton />);
+
+    expect(screen.getByTestId('floating-report-problem')).toHaveClass('hidden', 'lg:block');
   });
 });

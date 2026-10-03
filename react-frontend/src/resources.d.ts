@@ -38595,10 +38595,13 @@ export default interface Resources {
       },
       "impact_label": "How much is this affecting you?",
       "include_diagnostics": "Include technical diagnostics from this page",
+      "intro": "Choose what you need and tell us about it. Your message goes straight to the support team.",
+      "launcher_hint": "Ask a question or tell us what's wrong",
+      "reference_label": "Your reference",
       "submit": "Send",
       "submit_failed": "We could not send your message. Please try again.",
       "submit_success": "Thank you. Your message has been sent.",
-      "success_description": "Reference {{reference}} has been created.",
+      "success_body": "Keep this reference in case you want to ask about your request later. We will also email you a receipt.",
       "success_title": "Sent",
       "summary_label": "Short summary",
       "title": "Help & support",
@@ -49287,7 +49290,7 @@ export default interface Resources {
             "title": "I'm not receiving emails"
           },
           "report_a_problem": {
-            "body": "If something on the site is broken, or does not work as it should, you can send a report from the page where it happened.\n\n1. Stay on the page with the problem.\n2. Press **Help & support**. On a computer, it is a button in the bottom right corner of the screen. On a phone, press **Menu** and find it near the bottom. Then choose **Something isn't working**.\n3. In **Short summary**, write a few words, for example \"Save button does nothing\".\n4. In **What happened?**, describe what you did, what you expected, and what happened instead.\n5. Under **How much is this affecting you?**, choose how much it affects you, from **I cannot continue** to **Visual or wording issue**.\n6. Leave **Include technical diagnostics from this page** ticked. It helps the team find the fault.\n7. Press **Send**.\n\nYou then see **Sent**, with a reference. Keep the reference, in case you want to ask about your report later.\n\nFor a question, an account or sign-in problem, or an idea, choose **How do I…?**, **Account or sign-in problem** or **Suggest an improvement** instead. You are not asked about impact or technical details for those.\n\nYou need to be signed in to send a report. If a page fails to load, the error screen may also show a **Help & support** button.\n\n> To report a member, a listing or a safety worry, do not use **Help & support**. See the **Privacy and safety** section.",
+            "body": "If something on the site is broken, or does not work as it should, you can send a report from the page where it happened.\n\n1. Stay on the page with the problem.\n2. Press **Help & support**. On a computer, it is a button in the bottom right corner of the screen. On a phone or tablet, it is the round button with a life-ring icon, just above the menu bar at the bottom of the screen. It is also near the top of **Menu**, and in your profile menu. Then choose **Something isn't working**.\n3. In **Short summary**, write a few words, for example \"Save button does nothing\".\n4. In **What happened?**, describe what you did, what you expected, and what happened instead.\n5. Under **How much is this affecting you?**, choose how much it affects you, from **I cannot continue** to **Visual or wording issue**.\n6. Leave **Include technical diagnostics from this page** ticked. It helps the team find the fault.\n7. Press **Send**.\n\nYou then see **Sent**, with a reference. Keep the reference, in case you want to ask about your report later.\n\nFor a question, an account or sign-in problem, or an idea, choose **How do I…?**, **Account or sign-in problem** or **Suggest an improvement** instead. You are not asked about impact or technical details for those.\n\nYou need to be signed in to send a report. If a page fails to load, the error screen may also show a **Help & support** button.\n\n> To report a member, a listing or a safety worry, do not use **Help & support**. See the **Privacy and safety** section.",
             "summary": "Use Help & support to tell the support team about something that is broken. You get a reference number.",
             "title": "How do I report a problem?"
           },

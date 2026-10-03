@@ -324,7 +324,9 @@
   },
   "report_problem": {
     "trigger": "Help & support",
+    "launcher_hint": "Ask a question or tell us what's wrong",
     "title": "Help & support",
+    "intro": "Choose what you need and tell us about it. Your message goes straight to the support team.",
     "auth_title": "Sign in required",
     "auth_description": "Please sign in before asking for help.",
     "summary_label": "Short summary",
@@ -336,7 +338,8 @@
     "submit_success": "Thank you. Your message has been sent.",
     "submit_failed": "We could not send your message. Please try again.",
     "success_title": "Sent",
-    "success_description": "Reference {{reference}} has been created.",
+    "reference_label": "Your reference",
+    "success_body": "Keep this reference in case you want to ask about your request later. We will also email you a receipt.",
     "impact": {
       "blocked": "I cannot continue",
       "major": "A core task is broken",

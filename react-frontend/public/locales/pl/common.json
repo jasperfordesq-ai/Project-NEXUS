@@ -326,7 +326,9 @@
   },
   "report_problem": {
     "trigger": "Pomoc i wsparcie",
+    "launcher_hint": "Zadaj pytanie lub powiedz nam, co nie działa",
     "title": "Pomoc i wsparcie",
+    "intro": "Wybierz, czego potrzebujesz, i opisz sprawę. Twoja wiadomość trafi bezpośrednio do zespołu wsparcia.",
     "auth_title": "Wymagane logowanie",
     "auth_description": "Zaloguj się, zanim poprosisz o pomoc.",
     "summary_label": "Krótki opis",
@@ -338,7 +340,8 @@
     "submit_success": "Dziękujemy. Twoja wiadomość została wysłana.",
     "submit_failed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
     "success_title": "Wysłano",
-    "success_description": "Utworzono numer referencyjny {{reference}}.",
+    "reference_label": "Twój numer referencyjny",
+    "success_body": "Zachowaj ten numer referencyjny na wypadek, gdybyś chciał później zapytać o swoje zgłoszenie. Wyślemy Ci też potwierdzenie e-mailem.",
     "impact": {
       "blocked": "Nie mogę kontynuować",
       "major": "Podstawowe zadanie nie działa",
