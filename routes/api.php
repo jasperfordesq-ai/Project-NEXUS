@@ -2672,6 +2672,8 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/broker/configuration', [\App\Http\Controllers\Api\AdminBrokerController::class, 'saveConfiguration'])->middleware('throttle:nexus-route-30-per-1m');
     Route::get('/v2/admin/broker/exchanges/{id}', [\App\Http\Controllers\Api\AdminBrokerController::class, 'showExchange']);
     Route::get('/v2/admin/broker/messages/{id}', [\App\Http\Controllers\Api\AdminBrokerController::class, 'showMessage']);
+    // Owner decision 3 Oct 2026: brokers can hear voice messages they are reviewing (audit-logged).
+    Route::get('/v2/admin/broker/messages/{id}/voice/{messageId}', [\App\Http\Controllers\Api\AdminBrokerController::class, 'messageVoice'])->whereNumber(['id', 'messageId'])->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/admin/broker/messages/{id}/approve', [\App\Http\Controllers\Api\AdminBrokerController::class, 'approveMessage'])->middleware('throttle:nexus-route-60-per-1m');
     Route::get('/v2/admin/broker/archives', [\App\Http\Controllers\Api\AdminBrokerController::class, 'archives']);
     Route::get('/v2/admin/broker/archives/{id}', [\App\Http\Controllers\Api\AdminBrokerController::class, 'showArchive']);

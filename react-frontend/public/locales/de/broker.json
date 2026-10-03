@@ -831,7 +831,7 @@
     "detail_voice_message": "Sprachnachricht",
     "detail_voice_message_length": "Sprachnachricht ({{seconds}} s)",
     "detail_voice_transcript": "Abschrift: {{text}}",
-    "detail_voice_no_transcript": "Es ist keine Abschrift verfügbar. Nur die beiden Mitglieder können die Aufnahme abspielen.",
+    "detail_voice_no_transcript": "Es ist keine Abschrift verfügbar.",
     "bulk_selected_one": "{{count}} ausgewählt",
     "bulk_selected_other": "{{count}} ausgewählt",
     "bulk_hint": "Markierte Nachrichten werden übersprungen: Öffnen und lesen Sie diese einzeln.",
@@ -842,7 +842,11 @@
     "bulk_skipped_flagged_one": "{{count}} markierte Nachricht wurde übersprungen. Öffnen Sie sie, um sie zu prüfen.",
     "bulk_skipped_flagged_other": "{{count}} markierte Nachrichten wurden übersprungen. Öffnen Sie sie, um sie zu prüfen.",
     "bulk_skipped_other_one": "{{count}} Nachricht wurde übersprungen (bereits geprüft oder ein Gespräch, an dem Sie beteiligt sind).",
-    "bulk_skipped_other_other": "{{count}} Nachrichten wurden übersprungen (bereits geprüft oder Gespräche, an denen Sie beteiligt sind)."
+    "bulk_skipped_other_other": "{{count}} Nachrichten wurden übersprungen (bereits geprüft oder Gespräche, an denen Sie beteiligt sind).",
+    "detail_voice_play": "Aufnahme abspielen",
+    "detail_voice_player_label": "Aufnahme der Sprachnachricht",
+    "detail_voice_play_failed": "Die Aufnahme konnte nicht geladen werden.",
+    "detail_voice_logged": "Jedes Abspielen einer Aufnahme wird protokolliert."
   },
   "monitoring": {
     "title": "Nutzerüberwachung",

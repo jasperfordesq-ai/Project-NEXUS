@@ -864,7 +864,7 @@
     "detail_voice_message": "Teachtaireacht ghutha",
     "detail_voice_message_length": "Teachtaireacht ghutha ({{seconds}} s)",
     "detail_voice_transcript": "Tras-scríbhinn: {{text}}",
-    "detail_voice_no_transcript": "Níl tras-scríbhinn ar fáil. Ní féidir ach leis an dá bhall an taifeadadh a sheinm.",
+    "detail_voice_no_transcript": "Níl tras-scríbhinn ar fáil.",
     "bulk_selected_one": "{{count}} roghnaithe",
     "bulk_selected_two": "{{count}} roghnaithe",
     "bulk_selected_few": "{{count}} roghnaithe",
@@ -887,7 +887,11 @@
     "bulk_skipped_other_two": "Fágadh {{count}} theachtaireacht ar lár (athbhreithnithe cheana, nó comhráite a bhfuil tú páirteach iontu).",
     "bulk_skipped_other_few": "Fágadh {{count}} theachtaireacht ar lár (athbhreithnithe cheana, nó comhráite a bhfuil tú páirteach iontu).",
     "bulk_skipped_other_many": "Fágadh {{count}} dteachtaireacht ar lár (athbhreithnithe cheana, nó comhráite a bhfuil tú páirteach iontu).",
-    "bulk_skipped_other_other": "Fágadh {{count}} teachtaireacht ar lár (athbhreithnithe cheana, nó comhráite a bhfuil tú páirteach iontu)."
+    "bulk_skipped_other_other": "Fágadh {{count}} teachtaireacht ar lár (athbhreithnithe cheana, nó comhráite a bhfuil tú páirteach iontu).",
+    "detail_voice_play": "Seinn an taifeadadh",
+    "detail_voice_player_label": "Taifeadadh na teachtaireachta gutha",
+    "detail_voice_play_failed": "Níorbh fhéidir an taifeadadh a lódáil.",
+    "detail_voice_logged": "Gach uair a sheinneann tú taifeadadh, déantar é a logáil."
   },
   "monitoring": {
     "title": "Monatóireacht úsáideoirí",

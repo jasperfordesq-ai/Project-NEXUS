@@ -875,7 +875,7 @@
     "detail_voice_message": "رسالة صوتية",
     "detail_voice_message_length": "رسالة صوتية ({{seconds}} ث)",
     "detail_voice_transcript": "النص المكتوب: {{text}}",
-    "detail_voice_no_transcript": "لا يتوفر نص مكتوب. لا يمكن تشغيل التسجيل إلا للعضوين.",
+    "detail_voice_no_transcript": "لا يتوفر نص مكتوب.",
     "bulk_selected_zero": "تم تحديد {{count}}",
     "bulk_selected_one": "تم تحديد {{count}}",
     "bulk_selected_two": "تم تحديد {{count}}",
@@ -902,7 +902,11 @@
     "bulk_skipped_other_two": "تم تخطّي {{count}} رسالتين (تمت مراجعتهما أو من محادثات أنت طرف فيها).",
     "bulk_skipped_other_few": "تم تخطّي {{count}} رسائل (تمت مراجعتها أو من محادثات أنت طرف فيها).",
     "bulk_skipped_other_many": "تم تخطّي {{count}} رسالة (تمت مراجعتها أو من محادثات أنت طرف فيها).",
-    "bulk_skipped_other_other": "تم تخطّي {{count}} رسالة (تمت مراجعتها أو من محادثات أنت طرف فيها)."
+    "bulk_skipped_other_other": "تم تخطّي {{count}} رسالة (تمت مراجعتها أو من محادثات أنت طرف فيها).",
+    "detail_voice_play": "تشغيل التسجيل",
+    "detail_voice_player_label": "تسجيل الرسالة الصوتية",
+    "detail_voice_play_failed": "تعذّر تحميل التسجيل.",
+    "detail_voice_logged": "يُسجَّل كل تشغيل لتسجيل صوتي."
   },
   "monitoring": {
     "title": "مراقبة المستخدمين",

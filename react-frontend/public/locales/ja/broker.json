@@ -830,14 +830,18 @@
     "detail_voice_message": "ボイスメッセージ",
     "detail_voice_message_length": "ボイスメッセージ（{{seconds}}秒）",
     "detail_voice_transcript": "文字起こし: {{text}}",
-    "detail_voice_no_transcript": "文字起こしはありません。録音を再生できるのは2人のメンバーだけです。",
+    "detail_voice_no_transcript": "文字起こしはありません。",
     "bulk_selected_other": "{{count}}件を選択中",
     "bulk_hint": "フラグ付きのメッセージは対象外です。1件ずつ開いて読んでください。",
     "bulk_review": "確認済みにする",
     "bulk_clear": "選択を解除",
     "bulk_reviewed_other": "{{count}}件のメッセージを確認済みにしました。",
     "bulk_skipped_flagged_other": "フラグ付きのメッセージ{{count}}件を対象外にしました。開いて確認してください。",
-    "bulk_skipped_other_other": "{{count}}件のメッセージを対象外にしました(確認済み、またはあなたが参加している会話)。"
+    "bulk_skipped_other_other": "{{count}}件のメッセージを対象外にしました(確認済み、またはあなたが参加している会話)。",
+    "detail_voice_play": "録音を再生",
+    "detail_voice_player_label": "ボイスメッセージの録音",
+    "detail_voice_play_failed": "録音を読み込めませんでした。",
+    "detail_voice_logged": "録音を再生するたびに記録されます。"
   },
   "monitoring": {
     "title": "ユーザー監視",

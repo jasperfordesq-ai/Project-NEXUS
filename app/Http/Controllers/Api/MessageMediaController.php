@@ -30,7 +30,7 @@ class MessageMediaController extends BaseApiController
         $path = MessageAttachmentUploader::resolveForTenant($storagePath, (int) $record->tenant_id);
         abort_if($path === null, 404);
 
-        return response()->file($path, $this->privateHeaders((string) $media->mime_type));
+        return response()->file($path, self::privateHeaders((string) $media->mime_type));
     }
 
     public function voice(int $message): BinaryFileResponse
@@ -44,7 +44,7 @@ class MessageMediaController extends BaseApiController
         abort_if($path === null, 404);
 
         $mime = (string) (mime_content_type($path) ?: 'application/octet-stream');
-        return response()->file($path, $this->privateHeaders($mime));
+        return response()->file($path, self::privateHeaders($mime));
     }
 
     private function authorizedMessage(int $messageId, int $userId): Message
@@ -74,8 +74,12 @@ class MessageMediaController extends BaseApiController
         return $message;
     }
 
-    /** @return array<string,string> */
-    private function privateHeaders(string $mime): array
+    /**
+     * Headers for private message media — also used by the broker voice route.
+     *
+     * @return array<string,string>
+     */
+    public static function privateHeaders(string $mime): array
     {
         return [
             'Content-Type' => $mime,

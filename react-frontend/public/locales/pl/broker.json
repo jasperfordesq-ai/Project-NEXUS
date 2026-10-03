@@ -853,7 +853,7 @@
     "detail_voice_message": "Wiadomość głosowa",
     "detail_voice_message_length": "Wiadomość głosowa ({{seconds}} s)",
     "detail_voice_transcript": "Transkrypcja: {{text}}",
-    "detail_voice_no_transcript": "Transkrypcja nie jest dostępna. Nagranie mogą odtworzyć tylko te dwie osoby.",
+    "detail_voice_no_transcript": "Brak transkrypcji.",
     "bulk_selected_one": "Wybrano {{count}}",
     "bulk_selected_few": "Wybrano {{count}}",
     "bulk_selected_many": "Wybrano {{count}}",
@@ -872,7 +872,11 @@
     "bulk_skipped_other_one": "Pominięto {{count}} wiadomość (już sprawdzoną lub z rozmowy, w której uczestniczysz).",
     "bulk_skipped_other_few": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz).",
     "bulk_skipped_other_many": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz).",
-    "bulk_skipped_other_other": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz)."
+    "bulk_skipped_other_other": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz).",
+    "detail_voice_play": "Odtwórz nagranie",
+    "detail_voice_player_label": "Nagranie wiadomości głosowej",
+    "detail_voice_play_failed": "Nie udało się wczytać nagrania.",
+    "detail_voice_logged": "Każde odtworzenie nagrania jest rejestrowane."
   },
   "monitoring": {
     "title": "Monitorowanie użytkowników",

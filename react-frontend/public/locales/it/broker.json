@@ -841,7 +841,7 @@
     "detail_voice_message": "Messaggio vocale",
     "detail_voice_message_length": "Messaggio vocale ({{seconds}} s)",
     "detail_voice_transcript": "Trascrizione: {{text}}",
-    "detail_voice_no_transcript": "Nessuna trascrizione disponibile. Solo i due membri possono ascoltare la registrazione.",
+    "detail_voice_no_transcript": "Nessuna trascrizione disponibile.",
     "bulk_selected_one": "{{count}} selezionato",
     "bulk_selected_other": "{{count}} selezionati",
     "bulk_hint": "I messaggi segnalati vengono saltati: aprili e leggili uno alla volta.",
@@ -852,7 +852,11 @@
     "bulk_skipped_flagged_one": "{{count}} messaggio segnalato è stato saltato. Aprilo per revisionarlo.",
     "bulk_skipped_flagged_other": "{{count}} messaggi segnalati sono stati saltati. Aprili per revisionarli.",
     "bulk_skipped_other_one": "{{count}} messaggio è stato saltato (già revisionato o una conversazione di cui fai parte).",
-    "bulk_skipped_other_other": "{{count}} messaggi sono stati saltati (già revisionati o conversazioni di cui fai parte)."
+    "bulk_skipped_other_other": "{{count}} messaggi sono stati saltati (già revisionati o conversazioni di cui fai parte).",
+    "detail_voice_play": "Ascolta la registrazione",
+    "detail_voice_player_label": "Registrazione del messaggio vocale",
+    "detail_voice_play_failed": "Impossibile caricare la registrazione.",
+    "detail_voice_logged": "Ogni ascolto di una registrazione viene registrato."
   },
   "monitoring": {
     "title": "Monitoraggio utenti",

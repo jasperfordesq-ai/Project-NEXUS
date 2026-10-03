@@ -8,6 +8,8 @@ namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Core\AudioUploader;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -1383,6 +1385,69 @@ class AdminBrokerController extends BaseApiController
         }
     }
 
+    /**
+     * GET /api/v2/admin/broker/messages/{id}/voice/{messageId}
+     *
+     * Plays one voice message from the conversation a broker is reviewing.
+     * Owner decision, 3 Oct 2026: brokers must be able to hear voice messages
+     * — it is a safety feature (a transcript often does not exist, so without
+     * the recording a voice message could not be reviewed at all).
+     *
+     * Bounded exactly like showMessage(): same tenant scope, the F-436 party
+     * guard, and only a message inside this copy's review thread
+     * (reviewContext). A message deleted for everyone is not served — the
+     * thread shows it as deleted, the same as a deleted text. Every play is
+     * audit-logged, like reading the thread (F-212).
+     */
+    public function messageVoice(int $id, int $messageId): JsonResponse|BinaryFileResponse
+    {
+        $viewerId = $this->requireBrokerOrAdmin();
+        $tenantId = TenantContext::getId();
+
+        $copyQuery = DB::table('broker_message_copies')->where('id', $id);
+        if (!$this->isSuperAdmin()) {
+            $copyQuery->where('tenant_id', $tenantId);
+        }
+        $copy = $copyQuery->first();
+        if (!$copy) {
+            return $this->respondWithError('NOT_FOUND', __('api.broker_message_not_found'), null, 404);
+        }
+        $copy = (array) $copy;
+
+        if ($refusal = $this->guardNotMessageParty((int) $copy['sender_id'], (int) $copy['receiver_id'], $viewerId)) {
+            return $refusal;
+        }
+
+        $inThread = null;
+        foreach ($this->reviewContext($copy) as $row) {
+            if ((int) $row['id'] === $messageId) {
+                $inThread = $row;
+                break;
+            }
+        }
+        if ($inThread === null || empty($inThread['is_voice']) || !empty($inThread['is_deleted'])) {
+            return $this->respondWithError('NOT_FOUND', __('api.broker_message_not_found'), null, 404);
+        }
+
+        $audioUrl = (string) DB::table('messages')
+            ->where('tenant_id', (int) $copy['tenant_id'])
+            ->where('id', $messageId)
+            ->value('audio_url');
+        $path = AudioUploader::resolveTenantVoiceFilePath($audioUrl, (int) $copy['tenant_id']);
+        if ($path === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.broker_message_not_found'), null, 404);
+        }
+
+        $this->auditLogService->log('broker_voice_message_played', null, $viewerId, [
+            'copy_id' => $id,
+            'message_id' => $messageId,
+            'actor_role' => $this->resolveActorRole(),
+        ]);
+
+        $mime = (string) (mime_content_type($path) ?: 'application/octet-stream');
+        return response()->file($path, MessageMediaController::privateHeaders($mime));
+    }
+
     /** The same bounded conversation is used for live review and archival. */
     private function reviewContext(array $copy): array
     {
@@ -1403,8 +1468,8 @@ class AdminBrokerController extends BaseApiController
                 });
         }
         // Voice messages have an empty body, so say what they are and carry the
-        // transcript when one exists. The recording (audio_url) is deliberately
-        // NOT selected: it stays private media for the two members.
+        // transcript when one exists. The recording itself (audio_url) is not
+        // returned here; messageVoice() serves it on request, audit-logged.
         $rows = $query->where(function ($q) use ($original) {
             $q->where('m.created_at', '<', $original->created_at)
                 ->orWhere(fn ($sameTime) => $sameTime->where('m.created_at', $original->created_at)->where('m.id', '<=', $original->id));

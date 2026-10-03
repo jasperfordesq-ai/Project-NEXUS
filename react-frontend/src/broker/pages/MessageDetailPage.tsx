@@ -60,6 +60,7 @@ import {
   BrokerStatusChip,
 } from '../components';
 import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { BrokerVoicePlayer } from '../components/BrokerVoicePlayer';
 import { useBrokerQueue } from '../useBrokerQueue';
 
 /** The message queues a broker works through; history tabs have no "next". */
@@ -532,6 +533,7 @@ export function MessageDetail() {
                                   ? t('messages.detail_voice_message_length', { seconds: msg.audio_duration })
                                   : t('messages.detail_voice_message')}
                               </p>
+                              {id && <BrokerVoicePlayer copyId={id} messageId={msg.id} />}
                               {msg.transcript ? (
                                 <p className="whitespace-pre-wrap break-words text-sm text-foreground">
                                   {t('messages.detail_voice_transcript', { text: msg.transcript })}

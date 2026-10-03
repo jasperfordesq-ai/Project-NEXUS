@@ -41,6 +41,7 @@ Routes are defined in [`routes/api.php`](../../routes/api.php). Do not reproduce
 | Group conversations | `/v2/conversations/{id}/messages` | `app/Http/Controllers/Api/GroupConversationController.php` |
 | Federation messages | `/v2/federation/messages/*` | `app/Http/Controllers/Api/FederationV2Controller.php` |
 | Broker review queue | `/v2/admin/broker/messages/*` | `app/Http/Controllers/Api/AdminBrokerController.php` |
+| Broker voice playback | `/v2/admin/broker/messages/{id}/voice/{messageId}` | `AdminBrokerController::messageVoice()` — owner decision 3 Oct 2026 (a safety feature). Serves only a voice message inside that copy's review thread, never one deleted for everyone, refuses a party to the conversation (F-436), and audit-logs every play as `broker_voice_message_played`. The broker page fetches it only when Play is pressed. |
 | Pusher auth / config | `/pusher/auth`, `/v2/pusher/config` | `app/Http/Controllers/Api/PusherController.php` |
 
 Services:

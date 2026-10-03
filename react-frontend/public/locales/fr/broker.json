@@ -841,7 +841,7 @@
     "detail_voice_message": "Message vocal",
     "detail_voice_message_length": "Message vocal ({{seconds}} s)",
     "detail_voice_transcript": "Transcription : {{text}}",
-    "detail_voice_no_transcript": "Aucune transcription n'est disponible. Seuls les deux membres peuvent écouter l'enregistrement.",
+    "detail_voice_no_transcript": "Aucune transcription n’est disponible.",
     "bulk_selected_one": "{{count}} sélectionné",
     "bulk_selected_other": "{{count}} sélectionnés",
     "bulk_hint": "Les messages signalés sont ignorés : ouvrez-les et lisez-les un par un.",
@@ -852,7 +852,11 @@
     "bulk_skipped_flagged_one": "{{count}} message signalé a été ignoré. Ouvrez-le pour l'examiner.",
     "bulk_skipped_flagged_other": "{{count}} messages signalés ont été ignorés. Ouvrez-les pour les examiner.",
     "bulk_skipped_other_one": "{{count}} message a été ignoré (déjà examiné, ou une conversation à laquelle vous participez).",
-    "bulk_skipped_other_other": "{{count}} messages ont été ignorés (déjà examinés, ou des conversations auxquelles vous participez)."
+    "bulk_skipped_other_other": "{{count}} messages ont été ignorés (déjà examinés, ou des conversations auxquelles vous participez).",
+    "detail_voice_play": "Écouter l’enregistrement",
+    "detail_voice_player_label": "Enregistrement du message vocal",
+    "detail_voice_play_failed": "Impossible de charger l’enregistrement.",
+    "detail_voice_logged": "Chaque écoute d’un enregistrement est consignée."
   },
   "monitoring": {
     "title": "Surveillance des utilisateurs",

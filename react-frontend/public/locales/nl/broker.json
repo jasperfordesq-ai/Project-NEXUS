@@ -831,7 +831,7 @@
     "detail_voice_message": "Spraakbericht",
     "detail_voice_message_length": "Spraakbericht ({{seconds}} s)",
     "detail_voice_transcript": "Uitgeschreven tekst: {{text}}",
-    "detail_voice_no_transcript": "Er is geen uitgeschreven tekst beschikbaar. Alleen de twee leden kunnen de opname afspelen.",
+    "detail_voice_no_transcript": "Er is geen transcriptie beschikbaar.",
     "bulk_selected_one": "{{count}} geselecteerd",
     "bulk_selected_other": "{{count}} geselecteerd",
     "bulk_hint": "Gemarkeerde berichten worden overgeslagen: open en lees die één voor één.",
@@ -842,7 +842,11 @@
     "bulk_skipped_flagged_one": "{{count}} gemarkeerd bericht is overgeslagen. Open het om het te bekijken.",
     "bulk_skipped_flagged_other": "{{count}} gemarkeerde berichten zijn overgeslagen. Open ze om ze te bekijken.",
     "bulk_skipped_other_one": "{{count}} bericht is overgeslagen (al bekeken, of een gesprek waar je zelf bij betrokken bent).",
-    "bulk_skipped_other_other": "{{count}} berichten zijn overgeslagen (al bekeken, of gesprekken waar je zelf bij betrokken bent)."
+    "bulk_skipped_other_other": "{{count}} berichten zijn overgeslagen (al bekeken, of gesprekken waar je zelf bij betrokken bent).",
+    "detail_voice_play": "Opname afspelen",
+    "detail_voice_player_label": "Opname van het spraakbericht",
+    "detail_voice_play_failed": "De opname kon niet worden geladen.",
+    "detail_voice_logged": "Elke keer dat u een opname afspeelt, wordt dat vastgelegd."
   },
   "monitoring": {
     "title": "Gebruikersbewaking",

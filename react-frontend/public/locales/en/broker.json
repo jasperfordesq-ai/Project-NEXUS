@@ -831,7 +831,7 @@
     "detail_voice_message": "Voice message",
     "detail_voice_message_length": "Voice message ({{seconds}} s)",
     "detail_voice_transcript": "Transcript: {{text}}",
-    "detail_voice_no_transcript": "No transcript is available. Only the two members can play the recording.",
+    "detail_voice_no_transcript": "No transcript is available.",
     "bulk_selected_one": "{{count}} selected",
     "bulk_selected_other": "{{count}} selected",
     "bulk_hint": "Flagged messages are skipped: open and read those one at a time.",
@@ -842,7 +842,11 @@
     "bulk_skipped_flagged_one": "{{count}} flagged message was skipped. Open it to review it.",
     "bulk_skipped_flagged_other": "{{count}} flagged messages were skipped. Open them to review them.",
     "bulk_skipped_other_one": "{{count}} message was skipped (already reviewed, or a conversation you are part of).",
-    "bulk_skipped_other_other": "{{count}} messages were skipped (already reviewed, or conversations you are part of)."
+    "bulk_skipped_other_other": "{{count}} messages were skipped (already reviewed, or conversations you are part of).",
+    "detail_voice_play": "Play recording",
+    "detail_voice_player_label": "Voice message recording",
+    "detail_voice_play_failed": "The recording could not be loaded.",
+    "detail_voice_logged": "Each time you play a recording, it is logged."
   },
   "monitoring": {
     "title": "User Monitoring",

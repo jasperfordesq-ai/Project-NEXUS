@@ -841,7 +841,7 @@
     "detail_voice_message": "Mensaje de voz",
     "detail_voice_message_length": "Mensaje de voz ({{seconds}} s)",
     "detail_voice_transcript": "Transcripción: {{text}}",
-    "detail_voice_no_transcript": "No hay transcripción disponible. Solo los dos miembros pueden reproducir la grabación.",
+    "detail_voice_no_transcript": "No hay transcripción disponible.",
     "bulk_selected_one": "{{count}} seleccionado",
     "bulk_selected_other": "{{count}} seleccionados",
     "bulk_hint": "Los mensajes marcados se omiten: ábrelos y léelos de uno en uno.",
@@ -852,7 +852,11 @@
     "bulk_skipped_flagged_one": "Se omitió {{count}} mensaje marcado. Ábrelo para revisarlo.",
     "bulk_skipped_flagged_other": "Se omitieron {{count}} mensajes marcados. Ábrelos para revisarlos.",
     "bulk_skipped_other_one": "Se omitió {{count}} mensaje (ya revisado o una conversación en la que participas).",
-    "bulk_skipped_other_other": "Se omitieron {{count}} mensajes (ya revisados o conversaciones en las que participas)."
+    "bulk_skipped_other_other": "Se omitieron {{count}} mensajes (ya revisados o conversaciones en las que participas).",
+    "detail_voice_play": "Reproducir grabación",
+    "detail_voice_player_label": "Grabación del mensaje de voz",
+    "detail_voice_play_failed": "No se pudo cargar la grabación.",
+    "detail_voice_logged": "Cada vez que reproduce una grabación, queda registrado."
   },
   "monitoring": {
     "title": "Monitorización de usuarios",
