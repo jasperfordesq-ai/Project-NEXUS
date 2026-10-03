@@ -333,6 +333,18 @@
     "description_label": "What happened?",
     "impact_label": "How much is this affecting you?",
     "include_diagnostics": "Include technical diagnostics from this page",
+    "screenshots": {
+      "label": "Screenshots (optional)",
+      "hint": "Add up to {{count}} images: PNG, JPEG or WebP, up to {{size}} MB each. You can also paste a screenshot into this form.",
+      "privacy": "Check they don't show anyone else's private details.",
+      "add": "Add a screenshot",
+      "remove": "Remove {{name}}",
+      "list_label": "Screenshots to send",
+      "pasted": "The pasted image",
+      "error_type": "{{name}} is not a PNG, JPEG or WebP image.",
+      "error_size": "{{name}} is larger than {{size}} MB.",
+      "error_count": "You can attach up to {{count}} screenshots."
+    },
     "cancel": "Cancel",
     "submit": "Send",
     "submit_success": "Thank you. Your message has been sent.",

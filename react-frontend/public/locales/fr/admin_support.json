@@ -136,7 +136,13 @@
       "created": "Créé",
       "title": "Rapport {{reference}}",
       "diagnostics": "Diagnostics",
-      "request_type": "Type de demande"
+      "request_type": "Type de demande",
+      "screenshots": "Captures d'écran ({{count}})",
+      "screenshot_label": "Capture d'écran {{number}}",
+      "screenshot_open": "Ouvrir {{label}} en taille réelle",
+      "screenshot_loading": "Chargement de la capture d'écran",
+      "screenshot_failed": "Cette capture d'écran n'a pas pu être chargée.",
+      "screenshot_in_jira": "Dans Jira"
     },
     "fields": {
       "sentry_issue_url": "URL du problème de sentinelle",

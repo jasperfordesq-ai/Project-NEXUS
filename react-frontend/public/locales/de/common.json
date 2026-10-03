@@ -333,6 +333,18 @@
     "description_label": "Was ist passiert?",
     "impact_label": "Wie stark beeinträchtigt Sie das?",
     "include_diagnostics": "Technische Diagnosedaten von dieser Seite einschließen",
+    "screenshots": {
+      "label": "Bildschirmfotos (optional)",
+      "hint": "Fügen Sie bis zu {{count}} Bilder hinzu: PNG, JPEG oder WebP, jeweils bis zu {{size}} MB. Sie können einen Screenshot auch in dieses Formular einfügen.",
+      "privacy": "Achten Sie darauf, dass keine privaten Daten anderer Personen zu sehen sind.",
+      "add": "Screenshot hinzufügen",
+      "remove": "{{name}} entfernen",
+      "list_label": "Zu sendende Screenshots",
+      "pasted": "Das eingefügte Bild",
+      "error_type": "{{name}} ist kein PNG-, JPEG- oder WebP-Bild.",
+      "error_size": "{{name}} ist größer als {{size}} MB.",
+      "error_count": "Sie können bis zu {{count}} Screenshots anhängen."
+    },
     "cancel": "Abbrechen",
     "submit": "Senden",
     "submit_success": "Vielen Dank. Ihre Nachricht wurde gesendet.",

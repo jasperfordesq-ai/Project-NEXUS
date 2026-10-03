@@ -52,6 +52,7 @@ import {
 import { useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { openSafeUrl } from '@/lib/safeHref';
+import { SupportReportScreenshots } from './SupportReportScreenshots';
 
 type StatusFilter = 'all' | AdminSupportReportStatus;
 type ImpactFilter = 'all' | AdminSupportReportImpact;
@@ -591,6 +592,10 @@ export default function SupportReportsPage() {
                     {t('support_reports.actions.copy_handoff')}
                   </Button>
                 </div>
+
+                {selectedReport.screenshots && selectedReport.screenshots.length > 0 ? (
+                  <SupportReportScreenshots reportId={selectedReport.id} screenshots={selectedReport.screenshots} />
+                ) : null}
 
                 {selectedReport.diagnostics ? (
                   <section>

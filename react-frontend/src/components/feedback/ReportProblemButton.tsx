@@ -33,6 +33,7 @@ import {
 import { useAuthOptional, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { getSupportDiagnosticsSnapshot, getSupportReportLocation } from '@/lib/supportDiagnostics';
+import { SupportScreenshotPicker } from './SupportScreenshotPicker';
 
 type Impact = 'blocked' | 'major' | 'minor' | 'cosmetic';
 
@@ -108,6 +109,8 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
   const [includeDiagnostics, setIncludeDiagnostics] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
+  const [screenshots, setScreenshots] = useState<File[]>([]);
+  const [formElement, setFormElement] = useState<HTMLFormElement | null>(null);
 
   const isBroken = requestType === 'broken';
 
@@ -127,6 +130,7 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
     setImpact('minor');
     setIncludeDiagnostics(true);
     setReference(null);
+    setScreenshots([]);
   };
 
   const close = () => {
@@ -162,7 +166,7 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
       }) ?? undefined;
     }
 
-    const response = await api.post<ReportProblemResponse>('/v2/support/reports', {
+    const fields = {
       request_type: requestType,
       summary: summary.trim(),
       description: description.trim(),
@@ -172,7 +176,11 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
       sentry_event_id: sentryEventId,
       include_diagnostics: sendDiagnostics,
       diagnostics,
-    });
+    };
+    // Screenshots need a multipart form; without any, the JSON request is unchanged.
+    const response = screenshots.length > 0
+      ? await api.upload<ReportProblemResponse>('/v2/support/reports', toFormData(fields, screenshots))
+      : await api.post<ReportProblemResponse>('/v2/support/reports', fields);
     setIsSubmitting(false);
 
     if (!response.success || !response.data?.report) {
@@ -215,7 +223,7 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
       }}
     >
       <ModalContent>
-        <form data-testid="report-problem-form" className="flex max-h-full min-h-0 flex-col" onSubmit={submit}>
+        <form ref={setFormElement} data-testid="report-problem-form" className="flex max-h-full min-h-0 flex-col" onSubmit={submit}>
           <ModalHeader className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-0.5">
             <span
               aria-hidden="true"
@@ -315,6 +323,8 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
                   onValueChange={setDescription}
                 />
 
+                <SupportScreenshotPicker files={screenshots} onChange={setScreenshots} pasteTarget={formElement} />
+
                 {isBroken ? (
                   <>
                     <Select
@@ -369,6 +379,27 @@ export function ReportProblemDialog({ isOpen, onClose }: ReportProblemDialogProp
       </ModalContent>
     </Modal>
   );
+}
+
+/**
+ * A multipart body for a report with screenshots. Nested diagnostics travel as
+ * a JSON string and booleans as "1"/"0"; the server decodes both
+ * (SupportReportController::normaliseMultipartInput).
+ */
+function toFormData(fields: Record<string, unknown>, screenshots: File[]): FormData {
+  const form = new FormData();
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (typeof value === 'boolean') {
+      form.append(key, value ? '1' : '0');
+    } else if (typeof value === 'object') {
+      form.append(key, JSON.stringify(value));
+    } else {
+      form.append(key, String(value));
+    }
+  });
+  screenshots.forEach((file, index) => form.append(`screenshots[${index}]`, file, file.name));
+  return form;
 }
 
 /** A labelled "Help & support" button that opens the dialog — used on the error screen. */

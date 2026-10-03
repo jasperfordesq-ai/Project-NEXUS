@@ -136,7 +136,13 @@
       "created": "Utworzono",
       "diagnostics": "Diagnostyka",
       "title": "Raport {{reference}}",
-      "request_type": "Rodzaj zgłoszenia"
+      "request_type": "Rodzaj zgłoszenia",
+      "screenshots": "Zrzuty ekranu ({{count}})",
+      "screenshot_label": "Zrzut ekranu {{number}}",
+      "screenshot_open": "Otwórz {{label}} w pełnym rozmiarze",
+      "screenshot_loading": "Wczytywanie zrzutu ekranu",
+      "screenshot_failed": "Nie udało się wczytać tego zrzutu ekranu.",
+      "screenshot_in_jira": "W Jira"
     },
     "fields": {
       "sentry_issue_url": "Adres URL problemu z funkcją Sentry",

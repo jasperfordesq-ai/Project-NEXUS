@@ -18202,6 +18202,28 @@ CREATE TABLE `support_pending_actions` (
   CONSTRAINT `fk_spa_supporter_user` FOREIGN KEY (`supporter_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `support_report_attachments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `support_report_attachments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint(20) unsigned NOT NULL,
+  `support_report_id` bigint(20) unsigned NOT NULL,
+  `path` varchar(255) NOT NULL,
+  `mime` varchar(32) NOT NULL,
+  `size_bytes` int(10) unsigned NOT NULL,
+  `width` int(10) unsigned NOT NULL,
+  `height` int(10) unsigned NOT NULL,
+  `original_name` varchar(255) DEFAULT NULL,
+  `jira_attached_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `support_report_attachments_support_report_id_foreign` (`support_report_id`),
+  KEY `idx_support_report_attachments_report` (`tenant_id`,`support_report_id`),
+  CONSTRAINT `support_report_attachments_support_report_id_foreign` FOREIGN KEY (`support_report_id`) REFERENCES `support_reports` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `support_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21635,7 +21657,8 @@ INSERT INTO `laravel_migrations` VALUES
 (457,'2026_09_27_210000_repair_legacy_views_for_restore',139),
 (458,'2026_10_02_120000_add_jira_sync_to_support_reports',140),
 (459,'2026_10_02_130000_add_jira_status_to_support_reports',141),
-(460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142);
+(460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142),
+(461,'2026_10_03_200000_create_support_report_attachments_table',143);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

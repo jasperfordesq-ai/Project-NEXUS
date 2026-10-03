@@ -136,7 +136,13 @@
       "created": "Creato",
       "diagnostics": "Diagnostica",
       "title": "Rapporto {{reference}}",
-      "request_type": "Tipo di richiesta"
+      "request_type": "Tipo di richiesta",
+      "screenshots": "Schermate ({{count}})",
+      "screenshot_label": "Schermata {{number}}",
+      "screenshot_open": "Apri {{label}} a grandezza intera",
+      "screenshot_loading": "Caricamento dello screenshot",
+      "screenshot_failed": "Impossibile caricare questo screenshot.",
+      "screenshot_in_jira": "Già in Jira"
     },
     "fields": {
       "sentry_issue_url": "URL del problema della sentinella",

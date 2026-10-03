@@ -136,7 +136,13 @@
       "created": "Criado",
       "diagnostics": "Diagnósticos",
       "title": "Relatório {{reference}}",
-      "request_type": "Tipo de pedido"
+      "request_type": "Tipo de pedido",
+      "screenshots": "Capturas de ecrã ({{count}})",
+      "screenshot_label": "Captura de ecrã {{number}}",
+      "screenshot_open": "Abrir {{label}} em tamanho real",
+      "screenshot_loading": "A carregar a captura de ecrã",
+      "screenshot_failed": "Não foi possível carregar esta captura de ecrã.",
+      "screenshot_in_jira": "No Jira"
     },
     "fields": {
       "sentry_issue_url": "URL do problema de sentinela",

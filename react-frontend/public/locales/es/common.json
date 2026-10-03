@@ -334,6 +334,18 @@
     "description_label": "¿Qué ocurrió?",
     "impact_label": "¿Cuánto le está afectando?",
     "include_diagnostics": "Incluir diagnósticos técnicos de esta página",
+    "screenshots": {
+      "label": "Capturas de pantalla (opcional)",
+      "hint": "Añada hasta {{count}} imágenes: PNG, JPEG o WebP, de hasta {{size}} MB cada una. También puede pegar una captura de pantalla en este formulario.",
+      "privacy": "Compruebe que no muestren datos privados de otras personas.",
+      "add": "Añadir una captura de pantalla",
+      "remove": "Quitar {{name}}",
+      "list_label": "Capturas de pantalla que se enviarán",
+      "pasted": "La imagen pegada",
+      "error_type": "{{name}} no es una imagen PNG, JPEG o WebP.",
+      "error_size": "{{name}} ocupa más de {{size}} MB.",
+      "error_count": "Puede adjuntar hasta {{count}} capturas de pantalla."
+    },
     "cancel": "Cancelar",
     "submit": "Enviar",
     "submit_success": "Gracias. Su mensaje se ha enviado.",

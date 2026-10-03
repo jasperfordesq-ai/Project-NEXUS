@@ -139,7 +139,13 @@
       "user_agent": "User agent",
       "sentry_event": "Sentry event",
       "diagnostics": "Diagnostics",
-      "request_type": "Type of request"
+      "request_type": "Type of request",
+      "screenshots": "Screenshots ({{count}})",
+      "screenshot_label": "Screenshot {{number}}",
+      "screenshot_open": "Open {{label}} full size",
+      "screenshot_loading": "Loading screenshot",
+      "screenshot_failed": "This screenshot could not be loaded.",
+      "screenshot_in_jira": "In Jira"
     },
     "fields": {
       "status": "Status",

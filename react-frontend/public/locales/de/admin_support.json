@@ -136,7 +136,13 @@
       "created": "Erstellt",
       "diagnostics": "Diagnose",
       "title": "Melden {{reference}}",
-      "request_type": "Art der Anfrage"
+      "request_type": "Art der Anfrage",
+      "screenshots": "Bildschirmfotos ({{count}})",
+      "screenshot_label": "Bildschirmfoto {{number}}",
+      "screenshot_open": "{{label}} in voller Größe öffnen",
+      "screenshot_loading": "Screenshot wird geladen",
+      "screenshot_failed": "Dieser Screenshot konnte nicht geladen werden.",
+      "screenshot_in_jira": "Bereits in Jira"
     },
     "fields": {
       "sentry_issue_url": "URL des Sentry-Problems",

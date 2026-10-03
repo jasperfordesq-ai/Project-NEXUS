@@ -2021,6 +2021,7 @@ Route::get('/v2/admin/support-reports', [\App\Http\Controllers\Api\AdminSupportR
 Route::get('/v2/admin/support-reports/stats', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'stats']);
 Route::get('/v2/admin/support-reports/assignees', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'assignees']);
 Route::get('/v2/admin/support-reports/{id}', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'show'])->whereNumber('id');
+Route::get('/v2/admin/support-reports/{id}/screenshots/{screenshotId}', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'screenshot'])->whereNumber(['id', 'screenshotId']);
 Route::put('/v2/admin/support-reports/{id}', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'update'])->whereNumber('id');
 Route::patch('/v2/admin/support-reports/{id}', [\App\Http\Controllers\Api\AdminSupportReportController::class, 'update'])->whereNumber('id');
 

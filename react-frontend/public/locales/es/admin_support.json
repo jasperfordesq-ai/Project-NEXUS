@@ -136,7 +136,13 @@
       "created": "Creado",
       "diagnostics": "Diagnósticos",
       "title": "Reportar {{reference}}",
-      "request_type": "Tipo de solicitud"
+      "request_type": "Tipo de solicitud",
+      "screenshots": "Capturas de pantalla ({{count}})",
+      "screenshot_label": "Captura de pantalla {{number}}",
+      "screenshot_open": "Abrir {{label}} a tamaño completo",
+      "screenshot_loading": "Cargando la captura de pantalla",
+      "screenshot_failed": "No se pudo cargar esta captura de pantalla.",
+      "screenshot_in_jira": "En Jira"
     },
     "fields": {
       "sentry_issue_url": "URL del problema centinela",

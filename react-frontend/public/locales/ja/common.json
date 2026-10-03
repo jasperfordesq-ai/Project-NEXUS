@@ -333,6 +333,18 @@
     "description_label": "何が起きましたか?",
     "impact_label": "どの程度困っていますか？",
     "include_diagnostics": "このページの技術診断情報を含める",
+    "screenshots": {
+      "label": "スクリーンショット（任意）",
+      "hint": "PNG、JPEG、WebP形式の画像を最大{{count}}枚まで追加できます（1枚あたり{{size}} MBまで）。このフォームにスクリーンショットを貼り付けることもできます。",
+      "privacy": "他の人の個人情報が写っていないか確認してください。",
+      "add": "スクリーンショットを追加",
+      "remove": "{{name}}を削除",
+      "list_label": "送信するスクリーンショット",
+      "pasted": "貼り付けた画像",
+      "error_type": "{{name}}はPNG、JPEG、WebP形式の画像ではありません。",
+      "error_size": "{{name}}は{{size}} MBを超えています。",
+      "error_count": "スクリーンショットは最大{{count}}枚まで添付できます。"
+    },
     "cancel": "キャンセル",
     "submit": "送信",
     "submit_success": "ありがとうございます。メッセージを送信しました。",

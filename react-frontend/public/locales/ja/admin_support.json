@@ -136,7 +136,13 @@
       "created": "作成済み",
       "diagnostics": "診断",
       "title": "レポート {{reference}}",
-      "request_type": "リクエストの種類"
+      "request_type": "リクエストの種類",
+      "screenshots": "スクリーンショット（{{count}}）",
+      "screenshot_label": "スクリーンショット{{number}}",
+      "screenshot_open": "{{label}}を原寸で開く",
+      "screenshot_loading": "スクリーンショットを読み込み中",
+      "screenshot_failed": "このスクリーンショットを読み込めませんでした。",
+      "screenshot_in_jira": "Jira登録済み"
     },
     "fields": {
       "sentry_issue_url": "セントリー問題の URL",

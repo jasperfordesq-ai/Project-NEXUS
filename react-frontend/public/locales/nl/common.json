@@ -333,6 +333,18 @@
     "description_label": "Wat is er gebeurd?",
     "impact_label": "Hoeveel last heeft u hiervan?",
     "include_diagnostics": "Technische diagnostiek van deze pagina toevoegen",
+    "screenshots": {
+      "label": "Schermafbeeldingen (optioneel)",
+      "hint": "Voeg maximaal {{count}} afbeeldingen toe: PNG, JPEG of WebP, elk maximaal {{size}} MB. U kunt ook een schermafbeelding in dit formulier plakken.",
+      "privacy": "Controleer dat er geen privégegevens van anderen op staan.",
+      "add": "Schermafbeelding toevoegen",
+      "remove": "{{name}} verwijderen",
+      "list_label": "Te versturen schermafbeeldingen",
+      "pasted": "De geplakte afbeelding",
+      "error_type": "{{name}} is geen PNG-, JPEG- of WebP-afbeelding.",
+      "error_size": "{{name}} is groter dan {{size}} MB.",
+      "error_count": "U kunt maximaal {{count}} schermafbeeldingen toevoegen."
+    },
     "cancel": "Annuleren",
     "submit": "Versturen",
     "submit_success": "Bedankt. Uw bericht is verstuurd.",

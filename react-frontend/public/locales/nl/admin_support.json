@@ -136,7 +136,13 @@
       "created": "Gemaakt",
       "diagnostics": "Diagnostiek",
       "title": "Rapporteer {{reference}}",
-      "request_type": "Soort verzoek"
+      "request_type": "Soort verzoek",
+      "screenshots": "Schermafbeeldingen ({{count}})",
+      "screenshot_label": "Schermafbeelding {{number}}",
+      "screenshot_open": "{{label}} op volledige grootte openen",
+      "screenshot_loading": "Schermafbeelding laden",
+      "screenshot_failed": "Deze schermafbeelding kon niet worden geladen.",
+      "screenshot_in_jira": "Al in Jira"
     },
     "fields": {
       "sentry_issue_url": "URL van Sentry-probleem",

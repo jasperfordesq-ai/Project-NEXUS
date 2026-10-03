@@ -11,6 +11,7 @@ use App\Models\SupportReport;
 use App\Models\User;
 use App\Services\SupportJiraTicketService;
 use App\Services\SupportReportNotificationService;
+use App\Services\SupportReportScreenshotService;
 use App\Services\SupportReportSentryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -71,7 +72,9 @@ class SupportReportController extends BaseApiController
             ]], 429);
         }
 
-        $validator = Validator::make($request->all(), [
+        $input = $this->normaliseMultipartInput($request->all());
+
+        $validator = Validator::make($input, [
             'request_type' => ['nullable', 'string', 'in:' . implode(',', self::REQUEST_TYPES)],
             'summary' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['required', 'string', 'min:10', 'max:5000'],
@@ -83,7 +86,15 @@ class SupportReportController extends BaseApiController
             'sentry_issue_url' => ['nullable', 'string', 'max:2048'],
             'include_diagnostics' => ['sometimes', 'boolean'],
             'diagnostics' => ['nullable', 'array'],
+            // HELP-11: up to three screenshots, any request type. The service
+            // re-checks every file by its content and re-encodes it.
+            'screenshots' => ['sometimes', 'array', 'max:' . SupportReportScreenshotService::MAX_FILES],
+            'screenshots.*' => ['file', 'max:' . (SupportReportScreenshotService::MAX_BYTES / 1024), 'mimetypes:image/png,image/jpeg,image/webp'],
         ], [
+            'screenshots.max' => __('api.support_reports_screenshots_max', ['count' => SupportReportScreenshotService::MAX_FILES]),
+            'screenshots.*.file' => __('api.support_reports_screenshot_invalid'),
+            'screenshots.*.mimetypes' => __('api.support_reports_screenshot_invalid'),
+            'screenshots.*.max' => __('api.support_reports_screenshot_too_large', ['size' => SupportReportScreenshotService::MAX_BYTES / 1024 / 1024]),
             'summary.required' => __('api.support_reports_summary_required'),
             'summary.max' => __('api.support_reports_summary_max'),
             'description.required' => __('api.support_reports_description_required'),
@@ -108,6 +119,22 @@ class SupportReportController extends BaseApiController
         }
 
         $validated = $validator->validated();
+
+        // Checked and re-encoded before the report exists, so a file that is
+        // not really an image refuses the request rather than being dropped.
+        $screenshotService = app(SupportReportScreenshotService::class);
+        $screenshots = [];
+        foreach (array_values((array) ($validated['screenshots'] ?? [])) as $index => $file) {
+            try {
+                $screenshots[] = $screenshotService->prepare($file);
+            } catch (\InvalidArgumentException $e) {
+                return $this->respondWithErrors([[
+                    'code' => 'VALIDATION_FAILED',
+                    'message' => $e->getMessage(),
+                    'field' => 'screenshots.' . $index,
+                ]], 422);
+            }
+        }
         $requestType = (string) ($validated['request_type'] ?? 'broken');
         // Diagnostics are collected only for something that is not working.
         $includeDiagnostics = $requestType === 'broken' && (bool) ($validated['include_diagnostics'] ?? false);
@@ -136,6 +163,20 @@ class SupportReportController extends BaseApiController
             'user_agent' => $this->nullableString($request->userAgent(), 512),
             'ip_hash' => $this->hashIpAddress($request->ip()),
         ]);
+
+        $savedScreenshots = 0;
+        foreach ($screenshots as $prepared) {
+            try {
+                $screenshotService->store($report, $prepared);
+                $savedScreenshots++;
+            } catch (\Throwable $e) {
+                Log::error('[SupportReportController] could not save a support report screenshot', [
+                    'report_id' => $report->id,
+                    'tenant_id' => $tenantId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         try {
             $sentryEventId = app(SupportReportSentryService::class)->captureCreated(
@@ -198,9 +239,34 @@ class SupportReportController extends BaseApiController
                 'status' => $report->status,
                 'impact' => $report->impact,
                 'summary' => $report->summary,
+                'screenshots' => $savedScreenshots,
                 'created_at' => $report->created_at?->toIso8601String(),
             ],
         ], null, 201);
+    }
+
+    /**
+     * A form that carries screenshots is sent as multipart, where a nested
+     * value cannot be expressed: the client sends `diagnostics` as a JSON
+     * string, and booleans arrive as "1"/"0" or "true"/"false".
+     *
+     * @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
+    private function normaliseMultipartInput(array $input): array
+    {
+        if (isset($input['diagnostics']) && is_string($input['diagnostics'])) {
+            $decoded = json_decode($input['diagnostics'], true);
+            $input['diagnostics'] = is_array($decoded) ? $decoded : null;
+        }
+        if (isset($input['include_diagnostics']) && is_string($input['include_diagnostics'])) {
+            $flag = filter_var($input['include_diagnostics'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($flag !== null) {
+                $input['include_diagnostics'] = $flag;
+            }
+        }
+
+        return $input;
     }
 
     private function generateReference(): string

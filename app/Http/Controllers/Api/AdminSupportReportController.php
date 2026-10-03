@@ -12,7 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Models\SupportReportAttachment;
 use App\Services\SupportJiraTicketService;
+use App\Services\SupportReportScreenshotService;
 use App\Support\UserDisplayName;
 
 class AdminSupportReportController extends BaseApiController
@@ -403,9 +405,68 @@ class AdminSupportReportController extends BaseApiController
 
         if ($includeDiagnostics) {
             $formatted['diagnostics'] = $this->decodeDiagnostics($report->diagnostics ?? null);
+            $formatted['screenshots'] = $this->screenshotsFor($report);
         }
 
         return $formatted;
+    }
+
+    /**
+     * GET /v2/admin/support-reports/{id}/screenshots/{screenshotId}
+     *
+     * Streams one screenshot to staff. The file lives on the private disk, so
+     * this is the only way to see it; the report lookup applies the same
+     * tenant scope as show(), and the screenshot must belong to that report.
+     */
+    public function screenshot(int $id, int $screenshotId)
+    {
+        $this->requireAdmin();
+
+        $report = $this->findReport($id);
+        if (!$report) {
+            return $this->respondNotFound(__('api.support_report_not_found'));
+        }
+
+        $attachment = SupportReportAttachment::withoutGlobalScopes()
+            ->where('tenant_id', (int) $report->tenant_id)
+            ->where('support_report_id', (int) $report->id)
+            ->find($screenshotId);
+        $contents = $attachment ? app(SupportReportScreenshotService::class)->contents($attachment) : null;
+        if ($attachment === null || $contents === null) {
+            return $this->respondNotFound(__('api.support_report_not_found'));
+        }
+
+        return response($contents, 200, [
+            'Content-Type' => (string) $attachment->mime,
+            'Content-Length' => (string) strlen($contents),
+            'Content-Disposition' => 'inline; filename="screenshot-' . (int) $attachment->id . '"',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'",
+        ]);
+    }
+
+    /**
+     * @return list<array{id:int, mime:string, size_bytes:int, width:int, height:int, original_name:?string, in_jira:bool}>
+     */
+    private function screenshotsFor(object $report): array
+    {
+        return SupportReportAttachment::withoutGlobalScopes()
+            ->where('tenant_id', (int) $report->tenant_id)
+            ->where('support_report_id', (int) $report->id)
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (SupportReportAttachment $attachment): array => [
+                'id' => (int) $attachment->id,
+                'mime' => (string) $attachment->mime,
+                'size_bytes' => (int) $attachment->size_bytes,
+                'width' => (int) $attachment->width,
+                'height' => (int) $attachment->height,
+                'original_name' => $attachment->original_name,
+                'in_jira' => $attachment->jira_attached_at !== null,
+            ])
+            ->values()
+            ->all();
     }
 
     private function formatRelatedUser(object $row, string $prefix): array

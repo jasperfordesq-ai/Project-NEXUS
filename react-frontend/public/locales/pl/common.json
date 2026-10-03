@@ -335,6 +335,18 @@
     "description_label": "Co się stało?",
     "impact_label": "Jak bardzo Ci to przeszkadza?",
     "include_diagnostics": "Dołącz diagnostykę techniczną z tej strony",
+    "screenshots": {
+      "label": "Zrzuty ekranu (opcjonalnie)",
+      "hint": "Dodaj maksymalnie {{count}} obrazy: PNG, JPEG lub WebP, każdy do {{size}} MB. Zrzut ekranu możesz też wkleić do tego formularza.",
+      "privacy": "Upewnij się, że nie widać na nich prywatnych danych innych osób.",
+      "add": "Dodaj zrzut ekranu",
+      "remove": "Usuń {{name}}",
+      "list_label": "Zrzuty ekranu do wysłania",
+      "pasted": "Wklejony obraz",
+      "error_type": "{{name}} nie jest obrazem PNG, JPEG ani WebP.",
+      "error_size": "{{name}} ma więcej niż {{size}} MB.",
+      "error_count": "Możesz dołączyć maksymalnie {{count}} zrzuty ekranu."
+    },
     "cancel": "Anuluj",
     "submit": "Wyślij",
     "submit_success": "Dziękujemy. Twoja wiadomość została wysłana.",

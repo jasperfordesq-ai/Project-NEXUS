@@ -7,9 +7,11 @@
 namespace App\Services;
 
 use App\Models\SupportReport;
+use App\Models\SupportReportAttachment;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +74,22 @@ class SupportJiraTicketService
      */
     public function sync(SupportReport $report): void
     {
-        if (!self::isEnabled() || $report->jira_issue_key) {
+        if (!self::isEnabled()) {
+            return;
+        }
+
+        // The ticket already exists: a retry only finishes attaching any
+        // screenshots that did not make it the first time.
+        if ($report->jira_issue_key) {
+            if ($this->missingSettings() === [] && $this->pendingScreenshots($report)->isNotEmpty()) {
+                $warning = $this->attachScreenshots((string) config('support_jira.service_desk_id'), (string) $report->jira_issue_key, $report);
+                if ($warning !== null) {
+                    $this->recordError($report, $warning);
+
+                    throw new \RuntimeException($warning);
+                }
+            }
+
             return;
         }
 
@@ -145,15 +162,23 @@ class SupportJiraTicketService
         $report->jira_last_error = null;
         $report->save();
 
+        $screenshotWarning = $this->attachScreenshots($serviceDeskId, $issueKey, $report);
         $warnings = array_filter([
             $fallbackNote,
             $this->setPriorityAndLabels($issueKey, $report, $requestType, $tenant),
             $this->assignIssue($issueKey, $report),
             $this->attachDiagnostics($serviceDeskId, $issueKey, $report),
+            $screenshotWarning,
         ]);
 
         if ($warnings !== []) {
             $this->recordError($report, implode(' | ', $warnings));
+        }
+
+        // Screenshots are what the member most wanted us to see, so a failed
+        // attach makes the job retry; the retry skips straight to them.
+        if ($screenshotWarning !== null) {
+            throw new \RuntimeException($screenshotWarning);
         }
     }
 
@@ -420,12 +445,11 @@ class SupportJiraTicketService
         ]);
         $result['steps'][] = ['step' => 'set priority and labels', 'ok' => $edit === null, 'detail' => $edit];
 
-        $attach = $this->attachJsonFile(
-            $serviceDeskId,
-            $issueKey,
-            (string) json_encode(['test' => true, 'note' => 'Connection check; no member data.'], JSON_PRETTY_PRINT),
-            'diagnostics-TEST.json',
-        );
+        $attach = $this->attachFiles($serviceDeskId, $issueKey, [[
+            'content' => (string) json_encode(['test' => true, 'note' => 'Connection check; no member data.'], JSON_PRETTY_PRINT),
+            'filename' => 'diagnostics-TEST.json',
+            'mime' => 'application/json',
+        ]], public: false);
         $result['steps'][] = ['step' => 'attach a technical-details file', 'ok' => $attach === null, 'detail' => $attach];
 
         $result['ok'] = $edit === null && $attach === null;
@@ -497,6 +521,10 @@ class SupportJiraTicketService
         }
         if (!empty($report->diagnostics)) {
             $lines[] = 'Technical details: attached as ' . $this->diagnosticsFilename($report);
+        }
+        $screenshots = $this->screenshots($report)->count();
+        if ($screenshots > 0) {
+            $lines[] = 'Screenshots from the member: ' . $screenshots . ' attached';
         }
 
         return implode("\n", $lines);
@@ -581,23 +609,106 @@ class SupportJiraTicketService
             return $this->warn($report, 'attach technical details', $e->getMessage());
         }
 
-        $error = $this->attachJsonFile($serviceDeskId, $issueKey, $json, $this->diagnosticsFilename($report));
+        // Internal to agents: the member already has their own report.
+        $error = $this->attachFiles($serviceDeskId, $issueKey, [[
+            'content' => $json,
+            'filename' => $this->diagnosticsFilename($report),
+            'mime' => 'application/json',
+        ]], public: false);
 
         return $error === null ? null : $this->warn($report, 'attach technical details', $error);
     }
 
     /**
-     * Uploads a JSON file and attaches it to the request, internal to agents
-     * (the member already has their own report). Returns an error detail on
-     * failure, null on success.
+     * Attaches the member's screenshots that are not on the ticket yet. They
+     * are PUBLIC on the request: the member sent them and sees them on their
+     * own help desk request. Returns a warning string on failure, null on
+     * success or when there is nothing to attach.
      */
-    private function attachJsonFile(string $serviceDeskId, string $issueKey, string $json, string $filename): ?string
+    private function attachScreenshots(string $serviceDeskId, string $issueKey, SupportReport $report): ?string
+    {
+        $all = $this->screenshots($report);
+        $pending = $all->whereNull('jira_attached_at');
+        if ($pending->isEmpty()) {
+            return null;
+        }
+
+        $service = app(SupportReportScreenshotService::class);
+        $positions = $all->pluck('id')->flip();
+        $files = [];
+        $missing = 0;
+        foreach ($pending as $attachment) {
+            $contents = $service->contents($attachment);
+            if ($contents === null) {
+                $missing++;
+                continue;
+            }
+            $files[] = [
+                'content' => $contents,
+                'filename' => $service->exportFilename($report, $attachment, (int) $positions[$attachment->id] + 1),
+                'mime' => (string) $attachment->mime,
+            ];
+        }
+
+        if ($missing > 0) {
+            Log::error('[SupportJiraTicketService] screenshot file missing from storage', [
+                'report_id' => $report->id,
+                'tenant_id' => $report->tenant_id,
+                'missing' => $missing,
+            ]);
+        }
+        if ($files === []) {
+            return null;
+        }
+
+        $error = $this->attachFiles($serviceDeskId, $issueKey, $files, public: true);
+        if ($error !== null) {
+            return $this->warn($report, 'attach screenshots', $error);
+        }
+
+        SupportReportAttachment::withoutGlobalScopes()
+            ->where('tenant_id', $report->tenant_id)
+            ->whereIn('id', $pending->pluck('id')->all())
+            ->update(['jira_attached_at' => now()]);
+
+        return null;
+    }
+
+    /**
+     * @return Collection<int, SupportReportAttachment>
+     */
+    private function screenshots(SupportReport $report): Collection
+    {
+        return SupportReportAttachment::withoutGlobalScopes()
+            ->where('tenant_id', $report->tenant_id)
+            ->where('support_report_id', $report->id)
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, SupportReportAttachment>
+     */
+    private function pendingScreenshots(SupportReport $report): Collection
+    {
+        return $this->screenshots($report)->whereNull('jira_attached_at');
+    }
+
+    /**
+     * Uploads files as temporary attachments, then attaches them all to the
+     * request in one call. Returns an error detail on failure, null on success.
+     *
+     * @param list<array{content:string, filename:string, mime:string}> $files
+     */
+    private function attachFiles(string $serviceDeskId, string $issueKey, array $files, bool $public): ?string
     {
         try {
-            $upload = $this->client(json: false)
-                ->withHeaders(['X-Atlassian-Token' => 'no-check', 'X-ExperimentalApi' => 'opt-in'])
-                ->attach('file', $json, $filename, ['Content-Type' => 'application/json'])
-                ->post('/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/attachTemporaryFile');
+            $request = $this->client(json: false)
+                ->withHeaders(['X-Atlassian-Token' => 'no-check', 'X-ExperimentalApi' => 'opt-in']);
+            foreach ($files as $file) {
+                $request = $request->attach('file', $file['content'], $file['filename'], ['Content-Type' => $file['mime']]);
+            }
+            $upload = $request->post('/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/attachTemporaryFile');
             if (!$upload->successful()) {
                 return 'upload refused (HTTP ' . $upload->status() . ')';
             }
@@ -612,7 +723,7 @@ class SupportJiraTicketService
 
             $attach = $this->client()->post('/rest/servicedeskapi/request/' . rawurlencode($issueKey) . '/attachment', [
                 'temporaryAttachmentIds' => $temporaryIds,
-                'public' => false,
+                'public' => $public,
             ]);
         } catch (\Throwable $e) {
             return $this->scrub($e->getMessage());

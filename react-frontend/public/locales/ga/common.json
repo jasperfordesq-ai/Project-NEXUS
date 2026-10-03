@@ -336,6 +336,18 @@
     "description_label": "Cad a tharla?",
     "impact_label": "Cé chomh mór is atá sé seo ag cur isteach ort?",
     "include_diagnostics": "Cuir faisnéis dhiagnóiseach theicniúil ón leathanach seo san áireamh",
+    "screenshots": {
+      "label": "Gabhálacha scáileáin (roghnach)",
+      "hint": "Cuir suas le {{count}} íomhá leis: PNG, JPEG nó WebP, suas le {{size}} MB an ceann. Is féidir leat gabháil scáileáin a ghreamú san fhoirm seo freisin.",
+      "privacy": "Déan cinnte nach dtaispeánann siad sonraí príobháideacha aon duine eile.",
+      "add": "Cuir gabháil scáileáin leis",
+      "remove": "Bain {{name}}",
+      "list_label": "Gabhálacha scáileáin le seoladh",
+      "pasted": "An íomhá a greamaíodh",
+      "error_type": "Ní íomhá PNG, JPEG ná WebP é {{name}}.",
+      "error_size": "Tá {{name}} níos mó ná {{size}} MB.",
+      "error_count": "Is féidir leat suas le {{count}} gabháil scáileáin a cheangal."
+    },
     "cancel": "Cealaigh",
     "submit": "Seol",
     "submit_success": "Go raibh maith agat. Seoladh do theachtaireacht.",

@@ -136,7 +136,13 @@
       "created": "تم الإنشاء",
       "diagnostics": "التشخيص",
       "title": "تقرير {{reference}}",
-      "request_type": "نوع الطلب"
+      "request_type": "نوع الطلب",
+      "screenshots": "لقطات الشاشة ({{count}})",
+      "screenshot_label": "لقطة الشاشة {{number}}",
+      "screenshot_open": "فتح {{label}} بالحجم الكامل",
+      "screenshot_loading": "جارٍ تحميل لقطة الشاشة",
+      "screenshot_failed": "تعذّر تحميل لقطة الشاشة هذه.",
+      "screenshot_in_jira": "في Jira"
     },
     "fields": {
       "sentry_issue_url": "عنوان URL لمشكلة الحارس",

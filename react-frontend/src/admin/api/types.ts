@@ -2379,6 +2379,17 @@ export interface AdminSupportReportUser {
   role?: string | null;
 }
 
+export interface AdminSupportReportScreenshot {
+  id: number;
+  mime: string;
+  size_bytes: number;
+  width: number;
+  height: number;
+  original_name?: string | null;
+  /** Already copied to the Jira ticket. */
+  in_jira: boolean;
+}
+
 export interface AdminSupportReport {
   id: number;
   tenant_id: number;
@@ -2397,6 +2408,8 @@ export interface AdminSupportReport {
   sentry_event_id?: string | null;
   sentry_issue_url?: string | null;
   diagnostics?: Record<string, unknown> | null;
+  /** Screenshots the member attached (detail view only). */
+  screenshots?: AdminSupportReportScreenshot[];
   user_agent?: string | null;
   triage_notes?: string | null;
   triaged_at?: string | null;

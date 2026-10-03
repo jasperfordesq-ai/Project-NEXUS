@@ -136,7 +136,13 @@
       "created": "Cruthaíodh",
       "diagnostics": "Ionstraimí Diagnóise",
       "title": "Tuarascáil {{reference}}",
-      "request_type": "Cineál iarratais"
+      "request_type": "Cineál iarratais",
+      "screenshots": "Gabhálacha scáileáin ({{count}})",
+      "screenshot_label": "Gabháil scáileáin {{number}}",
+      "screenshot_open": "Oscail {{label}} ina mhéid iomlán",
+      "screenshot_loading": "Gabháil scáileáin á lódáil",
+      "screenshot_failed": "Níorbh fhéidir an ghabháil scáileáin seo a lódáil.",
+      "screenshot_in_jira": "I Jira cheana féin"
     },
     "fields": {
       "sentry_issue_url": "URL na heisiúna seolta",

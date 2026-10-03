@@ -334,6 +334,18 @@
     "description_label": "Che cosa è successo?",
     "impact_label": "Quanto ti sta creando problemi?",
     "include_diagnostics": "Includi la diagnostica tecnica di questa pagina",
+    "screenshots": {
+      "label": "Screenshot (facoltativo)",
+      "hint": "Aggiungi fino a {{count}} immagini: PNG, JPEG o WebP, fino a {{size}} MB ciascuna. Puoi anche incollare uno screenshot in questo modulo.",
+      "privacy": "Verifica che non mostrino dati privati di altre persone.",
+      "add": "Aggiungi uno screenshot",
+      "remove": "Rimuovi {{name}}",
+      "list_label": "Screenshot da inviare",
+      "pasted": "L'immagine incollata",
+      "error_type": "{{name}} non è un'immagine PNG, JPEG o WebP.",
+      "error_size": "{{name}} supera {{size}} MB.",
+      "error_count": "Puoi allegare fino a {{count}} screenshot."
+    },
     "cancel": "Annulla",
     "submit": "Invia",
     "submit_success": "Grazie. Il tuo messaggio è stato inviato.",
