@@ -182,6 +182,22 @@ CVE-2026-97689
 CVE-2025-71329
 CVE-2025-71330
 
+# ── braces 3.0.3 stack-overflow DoS (HIGH) — no fixed release exists ─────────
+# CVE-2026-93687: deeply nested brace patterns overflow the stack. First
+# reported by the Security Scan on 2026-10-03 (run on e54426966); Trivy lists
+# NO fixed version, and 3.0.3 is the latest braces release.
+#
+# Reachability: development tooling only, and only ever fed the repo's own
+# glob patterns, never untrusted input.
+#   - web-uk/package-lock.json: nodemon (devDependency, the local auto-reload
+#     dev server) → chokidar 3.6.0 → braces. Not in the production image.
+#   - mobile/package-lock.json: lint-staged (devDependency, pre-commit file
+#     matching) → micromatch 4.0.8 → braces. Not in the APK/IPA.
+#
+# Remove this entry when a fixed braces is published and the lockfiles pick it
+# up. (added 2026-10-03)
+CVE-2026-93687
+
 # ── node-forge 1.4.0 RSA PKCS#1 v1.5 signature forgery (HIGH) — no fix exists ─
 # CVE-2026-85393 / GHSA-86w9-cpqp-85rv: verification accepts extra nested
 # DigestAlgorithm elements. GitHub Advisory Database records the affected range

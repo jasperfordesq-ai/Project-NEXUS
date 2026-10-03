@@ -177,11 +177,11 @@ const SEVERITY_COLORS: Record<string, 'default' | 'warning' | 'danger'> = {
 export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: SafeguardingDashboardProps = {}) {
   const { t } = useTranslation('admin_safeguarding');
   // Flag reasons arrive as the broker-copy reason CODE (random_sample,
-  // first_contact, …). Show the translated label; an unknown code is at least
-  // shown as words rather than snake_case.
+  // first_contact, …). Show the translated label; a code with no label falls
+  // back to the translated "unknown" reason rather than untranslated text.
   const flagReasonLabel = (code: string | null | undefined): string => {
     const key = (code ?? 'unknown').trim();
-    return t(`safeguarding.flag_reason_${key}`, { defaultValue: key.replace(/_/g, ' ') });
+    return t(`safeguarding.flag_reason_${key}`, { defaultValue: t('safeguarding.flag_reason_unknown') });
   };
   usePageTitle(t('safeguarding.page_title'));
   const toast = useToast();
