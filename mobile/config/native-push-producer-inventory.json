@@ -30,9 +30,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1579:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1583:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1579,
+            "line": 1583,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -43,9 +43,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1618:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminBrokerController.php:1622:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminBrokerController.php",
-            "line": 1618,
+            "line": 1622,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

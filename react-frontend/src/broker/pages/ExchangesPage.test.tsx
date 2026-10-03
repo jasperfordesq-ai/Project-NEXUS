@@ -119,6 +119,34 @@ describe('ExchangeManagement — empty state', () => {
       expect(screen.getByText('No exchanges waiting')).toBeInTheDocument();
     });
   });
+
+  it('shows its own empty state on the needs-action queue', async () => {
+    renderAt('/broker/exchanges?status=needs_action');
+    await waitFor(() => {
+      expect(screen.getByText('Nothing needs your action')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('ExchangeManagement — needs-action deep link', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAdminBroker.getExchanges.mockResolvedValue(POPULATED_RESPONSE);
+  });
+
+  // The broker dashboard's "Pending Exchanges" card counts exchanges awaiting
+  // approval AND disputed ones, and links here with ?status=needs_action. The
+  // page must keep that filter (not fall back to "all") and send it to the API,
+  // which expands it to the same two statuses.
+  it('keeps ?status=needs_action and requests it from the API', async () => {
+    renderAt('/broker/exchanges?status=needs_action');
+    await waitFor(() => {
+      expect(mockAdminBroker.getExchanges).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 1, status: 'needs_action' })
+      );
+    });
+    expect(screen.getByRole('tab', { name: /Needs action/ })).toHaveAttribute('aria-selected', 'true');
+  });
 });
 
 describe('ExchangeManagement — populated state', () => {

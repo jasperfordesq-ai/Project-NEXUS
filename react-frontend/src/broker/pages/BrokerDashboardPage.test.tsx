@@ -133,6 +133,22 @@ describe('BrokerDashboard', () => {
     expect(reviewLinks.length).toBeGreaterThan(0);
   });
 
+  // pending_exchanges counts exchanges awaiting approval AND disputed ones. It
+  // linked to ?status=pending_broker, so a queue of disputes showed a count on
+  // the card and an empty list behind it.
+  it('links the pending-exchange count to the needs-action queue, not the approval-only one', async () => {
+    mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
+    render(<BrokerDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Pending Exchanges').length).toBeGreaterThan(0);
+    });
+
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '');
+    expect(hrefs.some((h) => h.endsWith('/broker/exchanges?status=needs_action'))).toBe(true);
+    expect(hrefs.some((h) => h.endsWith('/broker/exchanges?status=pending_broker'))).toBe(false);
+  });
+
   it('renders the triage hero with the total of open items', async () => {
     mockGetDashboard.mockResolvedValueOnce({ success: true, data: MOCK_STATS });
     render(<BrokerDashboard />);

@@ -60,9 +60,11 @@ import {
 type ActionType = 'approve' | 'reject';
 
 // Status filter is mirrored to `?status=` so stat-card deep-links and
-// browser back/forward work as expected.
+// browser back/forward work as expected. `needs_action` is not a real status:
+// the API expands it to pending_broker + disputed, the same set the broker
+// dashboard's "Pending Exchanges" card counts and links here with.
 const EXCHANGE_STATUSES = [
-  'all', 'pending_broker', 'accepted', 'in_progress', 'completed', 'cancelled', 'disputed',
+  'all', 'needs_action', 'pending_broker', 'accepted', 'in_progress', 'completed', 'cancelled', 'disputed',
 ] as const;
 
 /** Reads the paginated total out of a getExchanges response (same meta shape the list load uses). */
@@ -111,11 +113,16 @@ export function ExchangeManagement() {
 
   // KPI header state. There is no dedicated exchange-stats endpoint, so the
   // header reuses the page's own list endpoint: one unfiltered probe for the
-  // grand total and one pending_broker probe for the review queue, reading
-  // only meta.total from each.
-  const [stats, setStats] = useState<{ total: number | null; pending: number | null }>({
+  // grand total, one pending_broker probe for the review queue and one
+  // needs_action probe for the tab badge, reading only meta.total from each.
+  const [stats, setStats] = useState<{
+    total: number | null;
+    pending: number | null;
+    needsAction: number | null;
+  }>({
     total: null,
     pending: null,
+    needsAction: null,
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -162,11 +169,16 @@ export function ExchangeManagement() {
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
     try {
-      const [allRes, pendingRes] = await Promise.all([
+      const [allRes, pendingRes, needsActionRes] = await Promise.all([
         adminBroker.getExchanges({ page: 1 }),
         adminBroker.getExchanges({ page: 1, status: 'pending_broker' }),
+        adminBroker.getExchanges({ page: 1, status: 'needs_action' }),
       ]);
-      setStats({ total: readTotal(allRes), pending: readTotal(pendingRes) });
+      setStats({
+        total: readTotal(allRes),
+        pending: readTotal(pendingRes),
+        needsAction: readTotal(needsActionRes),
+      });
     } catch {
       // KPI header degrades to em-dashes; the list load owns error messaging.
     } finally {
@@ -383,6 +395,20 @@ export function ExchangeManagement() {
             }
           />
           <Tab
+            key="needs_action"
+            title={
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} aria-hidden="true" />
+                <span>{t('exchanges.tab_needs_action')}</span>
+                {stats.needsAction != null && stats.needsAction > 0 && (
+                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
+                    {stats.needsAction}
+                  </Chip>
+                )}
+              </div>
+            }
+          />
+          <Tab
             key="pending_broker"
             title={
               <div className="flex items-center gap-2">
@@ -474,17 +500,21 @@ export function ExchangeManagement() {
           emptyContent={
             <BrokerEmptyState
               bare
-              icon={status === 'pending_broker' ? Sparkles : Inbox}
-              color={status === 'pending_broker' ? 'success' : 'neutral'}
+              icon={status === 'pending_broker' || status === 'needs_action' ? Sparkles : Inbox}
+              color={status === 'pending_broker' || status === 'needs_action' ? 'success' : 'neutral'}
               title={
-                status === 'pending_broker'
-                  ? t('exchanges.empty_pending_title')
-                  : t('exchanges.no_exchanges')
+                status === 'needs_action'
+                  ? t('exchanges.empty_needs_action_title')
+                  : status === 'pending_broker'
+                    ? t('exchanges.empty_pending_title')
+                    : t('exchanges.no_exchanges')
               }
               hint={
-                status === 'pending_broker'
-                  ? t('exchanges.empty_pending_hint')
-                  : t('exchanges.empty_hint')
+                status === 'needs_action'
+                  ? t('exchanges.empty_needs_action_hint')
+                  : status === 'pending_broker'
+                    ? t('exchanges.empty_pending_hint')
+                    : t('exchanges.empty_hint')
               }
             />
           }

@@ -434,7 +434,11 @@ class AdminBrokerController extends BaseApiController
                 $params[] = $effectiveTenantId;
             }
 
-            if ($status && $status !== 'all') {
+            if ($status === 'needs_action') {
+                // The list-side twin of the dashboard's pending_exchanges count:
+                // the dashboard card links here, so both must use the same set.
+                $conditions[] = "er.status IN ('pending_broker', 'disputed')";
+            } elseif ($status && $status !== 'all') {
                 $conditions[] = 'er.status = ?';
                 $params[] = $status;
             }

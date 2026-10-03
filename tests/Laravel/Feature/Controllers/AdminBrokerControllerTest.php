@@ -116,6 +116,54 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * The dashboard's "Pending Exchanges" card counts exchanges awaiting broker
+     * approval AND disputed exchanges, and links to the list. The list used to be
+     * filterable by one status only, so the card linked to `pending_broker` and a
+     * tenant whose queue held only disputes saw "4" on the card and an empty list.
+     * `needs_action` is the list-side twin of that count; the two must agree.
+     */
+    public function test_exchanges_needs_action_filter_matches_the_dashboard_count(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $ids = [];
+        foreach (['pending_broker', 'disputed', 'completed', 'accepted'] as $status) {
+            $ids[$status] = (int) DB::table('exchange_requests')->insertGetId([
+                'tenant_id'      => $this->testTenantId,
+                'listing_id'     => $listingId,
+                'requester_id'   => $requester->id,
+                'provider_id'    => $provider->id,
+                'proposed_hours' => 1.0,
+                'status'         => $status,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+        }
+
+        Sanctum::actingAs($admin);
+
+        $list = $this->apiGet('/v2/admin/broker/exchanges?status=needs_action&per_page=100');
+        $list->assertOk();
+        $returned = array_map('intval', array_column($list->json('data'), 'id'));
+
+        $this->assertContains($ids['pending_broker'], $returned);
+        $this->assertContains($ids['disputed'], $returned);
+        $this->assertNotContains($ids['completed'], $returned);
+        $this->assertNotContains($ids['accepted'], $returned);
+
+        $dashboard = $this->apiGet('/v2/admin/broker/dashboard');
+        $dashboard->assertOk();
+        $this->assertSame(
+            $dashboard->json('data.pending_exchanges'),
+            (int) $list->json('meta.total'),
+            'The dashboard card and the list it links to must count the same exchanges.'
+        );
+    }
+
     // ================================================================
     // RISK TAGS — GET /v2/admin/broker/risk-tags
     // ================================================================

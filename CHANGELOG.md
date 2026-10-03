@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The broker dashboard's "Pending Exchanges" card counts exchanges waiting for a broker's approval and exchanges in dispute, but clicking it opened a list of the first kind only. A community whose queue held only disputes saw a number on the card and an empty page behind it. The card now opens a new "Needs action" tab on the Exchanges page that shows both, so the number and the list always match. The tab shows its own count and is translated into all eleven languages.
 - The broker Help Centre guide on revoking a vetting decision now names the counter by its current label ("Re-checks requested"), in all eleven languages. The broker panel renamed it but the guide still said "Review requests".
 - The safeguarding dashboard showed an untranslated, machine-made label for a flag reason it had no wording for; it now shows the translated "not recorded" reason.
 - The mobile app's record of the platform's API routes is refreshed to include the routes the broker-panel work added, so the mobile checks can verify every endpoint the app calls again.
