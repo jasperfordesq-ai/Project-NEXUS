@@ -85,11 +85,35 @@ class SupportJiraTicketService
             ],
         ];
 
-        if ($this->sendMemberEmail() && $member && $member->email) {
-            $payload['raiseOnBehalfOf'] = $this->customerAccountId($serviceDeskId, $member);
+        // Raised directly in the member's email address: Jira creates the
+        // help-desk customer itself. (The separate "create customer" API needs
+        // a Jira ADMINISTRATOR, which the service account deliberately is not.)
+        $raiseFor = ($this->sendMemberEmail() && $member && $member->email) ? (string) $member->email : null;
+        if ($raiseFor !== null) {
+            $payload['raiseOnBehalfOf'] = $raiseFor;
         }
 
         $response = $this->client()->post('/rest/servicedeskapi/request', $payload);
+
+        // If Jira will not raise it in the member's name (site customer
+        // settings, an address it rejects), raise it under the platform
+        // account instead rather than lose the ticket. The member then gets
+        // the platform's own receipt, since Jira will not email them.
+        $fallbackNote = null;
+        if ($raiseFor !== null && !$response->successful() && in_array($response->status(), [400, 403, 404], true)) {
+            $detail = $this->jiraErrorDetail($response);
+            $fallbackNote = 'Raised by the platform account, NOT in the member’s name — Jira refused (HTTP '
+                . $response->status() . ($detail !== '' ? ': ' . $detail : '') . '). The member was sent the platform receipt instead.';
+            Log::warning('[SupportJiraTicketService] Jira refused to raise the ticket in the member’s name; raising under the platform account', [
+                'report_id' => $report->id,
+                'tenant_id' => $report->tenant_id,
+                'status' => $response->status(),
+                'detail' => $detail,
+            ]);
+            unset($payload['raiseOnBehalfOf']);
+            $response = $this->client()->post('/rest/servicedeskapi/request', $payload);
+        }
+
         if (!$response->successful()) {
             $this->fail($report, 'create the ticket', $response);
         }
@@ -106,6 +130,7 @@ class SupportJiraTicketService
         $report->save();
 
         $warnings = array_filter([
+            $fallbackNote,
             $this->setPriorityAndLabels($issueKey, $report, $requestType, $tenant),
             $this->assignIssue($issueKey, $report),
             $this->attachDiagnostics($serviceDeskId, $issueKey, $report),
@@ -113,6 +138,10 @@ class SupportJiraTicketService
 
         if ($warnings !== []) {
             $this->recordError($report, implode(' | ', $warnings));
+        }
+
+        if ($fallbackNote !== null) {
+            SupportReportNotificationService::sendReceipt($report);
         }
     }
 
@@ -578,60 +607,6 @@ class SupportJiraTicketService
         }
 
         return $attach->successful() ? null : 'HTTP ' . $attach->status();
-    }
-
-    /**
-     * Finds or creates the member as a help-desk customer and makes sure they
-     * belong to this service desk (channel access is Restricted).
-     *
-     * @throws \RuntimeException
-     */
-    private function customerAccountId(string $serviceDeskId, User $member): string
-    {
-        $email = (string) $member->email;
-        $created = $this->client()->post('/rest/servicedeskapi/customer', [
-            'email' => $email,
-            'displayName' => trim((string) $member->name) !== '' ? (string) $member->name : $email,
-        ]);
-
-        $accountId = $created->successful() ? (string) ($created->json('accountId') ?? '') : '';
-        if ($accountId === '' && $created->status() === 400) {
-            // Already an Atlassian account. Look in this help desk's own
-            // customers first (portal-only customers are not Jira users, so
-            // the user search may not see them), then the user search.
-            try {
-                $inDesk = $this->client()->get(
-                    '/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/customer',
-                    ['query' => $email, 'limit' => 1],
-                );
-                if ($inDesk->successful()) {
-                    $accountId = (string) ($inDesk->json('values.0.accountId') ?? '');
-                }
-            } catch (\Throwable $e) {
-                // Fall through to the user search below; the outcome is
-                // still decided by whether an account id is found.
-                Log::warning('[SupportJiraTicketService] help-desk customer lookup failed', ['error' => $this->scrub($e->getMessage())]);
-            }
-            if ($accountId === '') {
-                $found = $this->client()->get('/rest/api/3/user/search', ['query' => $email]);
-                if ($found->successful()) {
-                    $accountId = (string) ($found->json('0.accountId') ?? '');
-                }
-            }
-        }
-
-        if ($accountId === '') {
-            throw new \RuntimeException('Jira: could not find or create the help-desk customer (HTTP ' . $created->status() . ')');
-        }
-
-        $added = $this->client()->post('/rest/servicedeskapi/servicedesk/' . rawurlencode($serviceDeskId) . '/customer', [
-            'accountIds' => [$accountId],
-        ]);
-        if (!$added->successful()) {
-            throw new \RuntimeException('Jira: could not add the customer to the help desk (HTTP ' . $added->status() . ')');
-        }
-
-        return $accountId;
     }
 
     private function tenantLabel(?object $tenant, int $tenantId): string

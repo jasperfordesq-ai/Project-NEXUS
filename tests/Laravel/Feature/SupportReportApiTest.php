@@ -176,7 +176,7 @@ class SupportReportApiTest extends TestCase
         ]);
     }
 
-    public function test_low_priority_support_reports_create_bell_notification_without_immediate_email(): void
+    public function test_low_priority_support_reports_also_email_admins_and_create_a_bell_notification(): void
     {
         $tenantId = $this->useIsolatedTenant();
         $admin = User::factory()->admin()->forTenant($tenantId)->create([
@@ -197,9 +197,12 @@ class SupportReportApiTest extends TestCase
         $response->assertCreated();
         $reportId = (int) $response->json('data.report.id');
 
-        // No immediate admin email for a cosmetic report (the member's own
-        // receipt is not an admin email).
-        $this->assertCount(0, array_filter($mailer->calls, fn (array $c) => $c['to'] === $admin->email));
+        // Since 3 Oct 2026 every report emails the admins, whatever its impact
+        // (the owner found the bell alone was missed). The member's own receipt
+        // is not an admin email.
+        $adminCalls = array_values(array_filter($mailer->calls, fn (array $c) => $c['to'] === $admin->email));
+        $this->assertCount(1, $adminCalls);
+        $this->assertStringContainsString('NXR-', $adminCalls[0]['subject']);
         $this->assertDatabaseHas('notifications', [
             'tenant_id' => $tenantId,
             'user_id' => $admin->id,

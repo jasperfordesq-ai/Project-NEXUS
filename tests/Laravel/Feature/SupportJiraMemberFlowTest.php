@@ -95,7 +95,7 @@ class SupportJiraMemberFlowTest extends TestCase
 
         $create = Http::recorded(fn (Request $r) => $r->method() === 'POST'
             && parse_url($r->url(), PHP_URL_PATH) === '/rest/servicedeskapi/request')->first()[0];
-        $this->assertSame('acct-member', $create->data()['raiseOnBehalfOf']);
+        $this->assertSame($member->email, $create->data()['raiseOnBehalfOf']);
         $description = $create->data()['requestFieldValues']['description'];
         $this->assertStringContainsString('Aoife Byrne', $description);
         $this->assertStringContainsString($member->email, $description);
@@ -113,21 +113,6 @@ class SupportJiraMemberFlowTest extends TestCase
         $everything = Http::recorded()->map(fn ($pair) => $pair[0]->body())->implode("\n");
         $this->assertStringNotContainsString('Aoife', $everything);
         $this->assertStringNotContainsString($member->email, $everything);
-    }
-
-    public function test_an_existing_help_desk_customer_is_found_in_the_desk_first(): void
-    {
-        $member = $this->member();
-        $reportId = $this->insertReport($member);
-        $this->fakeJira(customerExists: true);
-
-        $this->runJob($reportId);
-
-        Http::assertSent(fn (Request $r) => $r->method() === 'GET'
-            && parse_url($r->url(), PHP_URL_PATH) === '/rest/servicedeskapi/servicedesk/2/customer');
-        $create = Http::recorded(fn (Request $r) => $r->method() === 'POST'
-            && parse_url($r->url(), PHP_URL_PATH) === '/rest/servicedeskapi/request')->first()[0];
-        $this->assertSame('acct-in-desk', $create->data()['raiseOnBehalfOf']);
     }
 
     public function test_when_jira_will_email_the_member_the_platform_receipt_is_held_back(): void

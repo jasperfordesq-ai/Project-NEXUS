@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature;
 
 use App\Jobs\CreateSupportJiraTicket;
 use App\Models\User;
+use App\Services\EmailDispatchService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
@@ -139,26 +140,44 @@ class SupportReportJiraTicketTest extends TestCase
 
         $this->runJob($reportId);
 
-        $customer = $this->recorded('/rest/servicedeskapi/customer', 'POST');
-        $this->assertNotNull($customer);
-        $this->assertSame($member->email, $customer->data()['email']);
-        $added = $this->recorded('/rest/servicedeskapi/servicedesk/2/customer', 'POST');
-        $this->assertSame(['acct-member'], $added->data()['accountIds']);
-        $this->assertSame('acct-member', $this->recorded('/rest/servicedeskapi/request', 'POST')->data()['raiseOnBehalfOf']);
+        // Raised directly in the member's email address: Jira creates the
+        // customer. The separate "create customer" API needs a Jira admin.
+        $this->assertSame($member->email, $this->recorded('/rest/servicedeskapi/request', 'POST')->data()['raiseOnBehalfOf']);
+        $this->assertNull($this->recorded('/rest/servicedeskapi/customer', 'POST'));
+        $this->assertNull($this->recorded('/rest/servicedeskapi/servicedesk/2/customer', 'POST'));
     }
 
-    public function test_an_existing_customer_is_looked_up_rather_than_created_twice(): void
+    public function test_if_jira_refuses_the_members_name_the_ticket_is_raised_by_the_platform_and_the_member_gets_the_receipt(): void
     {
         config(['support_jira.send_member_email' => true]);
+        $mailer = new SupportReportJiraTicketRecordingMailer();
+        app()->instance(EmailDispatchService::class, $mailer);
         $member = User::factory()->forTenant($this->testTenantId)->create([
-            'email' => 'already-known-' . uniqid('', true) . '@example.test',
+            'email' => 'refused-' . uniqid('', true) . '@example.test',
         ]);
         $reportId = $this->insertReport($member);
-        $this->fakeJira(customerExists: true);
+        Http::fake([
+            self::BASE . '/rest/servicedeskapi/request' => Http::sequence()
+                ->push(['errorMessage' => 'Cannot add customer accounts to Jira Service Management'], 400)
+                ->push(['issueKey' => 'HELP-43'], 201),
+            self::BASE . '/rest/api/3/issue/HELP-43' => Http::response(null, 204),
+        ]);
 
         $this->runJob($reportId);
 
-        $this->assertSame('acct-existing', $this->recorded('/rest/servicedeskapi/request', 'POST')->data()['raiseOnBehalfOf']);
+        $creates = Http::recorded(fn (Request $r) => $r->method() === 'POST' && parse_url($r->url(), PHP_URL_PATH) === '/rest/servicedeskapi/request');
+        $this->assertCount(2, $creates);
+        $this->assertSame($member->email, $creates->first()[0]->data()['raiseOnBehalfOf']);
+        $this->assertArrayNotHasKey('raiseOnBehalfOf', $creates->last()[0]->data());
+
+        $row = DB::table('support_reports')->where('id', $reportId)->first();
+        $this->assertSame('HELP-43', $row->jira_issue_key);
+        $this->assertStringContainsString('NOT in the member', (string) $row->jira_last_error);
+        $this->assertStringContainsString('Cannot add customer accounts', (string) $row->jira_last_error);
+
+        $receipts = array_values(array_filter($mailer->calls, fn (array $c) => $c['to'] === $member->email));
+        $this->assertCount(1, $receipts, 'Jira will not email the member, so the platform must');
+        $this->assertStringContainsString('NXR-T-JIRA01', $receipts[0]['subject']);
     }
 
     public function test_a_jira_outage_records_the_error_and_rethrows_so_the_queue_retries(): void
@@ -299,5 +318,17 @@ class SupportReportJiraTicketTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
+    }
+}
+
+class SupportReportJiraTicketRecordingMailer extends EmailDispatchService
+{
+    public array $calls = [];
+
+    public function send(string $to, string $subject, string $body, array $options = []): bool
+    {
+        $this->calls[] = compact('to', 'subject', 'body', 'options');
+
+        return true;
     }
 }

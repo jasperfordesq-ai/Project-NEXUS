@@ -18,6 +18,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Copies a saved support report to the Jira help desk.
@@ -37,8 +38,9 @@ final class CreateSupportJiraTicket implements ShouldQueue
 
     public int $tries = 5;
 
-    /** @var list<int> */
-    public array $backoff = [60, 300, 900, 3600];
+    /** @var list<int> Retries span about 17 minutes, so a member whose
+     *  ticket cannot be raised gets the fallback receipt the same hour. */
+    public array $backoff = [30, 120, 300, 600];
 
     public int $timeout = 60;
 
@@ -76,6 +78,17 @@ final class CreateSupportJiraTicket implements ShouldQueue
                     'attempt' => $this->job?->attempts(),
                     'error' => $e->getMessage(),
                 ]);
+
+                // Every failure is visible on the report in the admin console,
+                // not only the ones Jira answered with an HTTP status.
+                if (!$report->jira_issue_key) {
+                    $report->jira_last_error = Str::limit(
+                        'Attempt ' . (int) ($this->job?->attempts() ?? 1) . ': ' . $e->getMessage(),
+                        500,
+                        '',
+                    );
+                    $report->save();
+                }
 
                 throw $e;
             }
