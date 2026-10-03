@@ -27,6 +27,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import HelpSupportPrompt from '@/components/support/HelpSupportPrompt';
 import { getMembersGuide, parseHelpBody, parseInline, visibleSections, type HelpBlock } from '@/lib/help/guides';
 import { useApi } from '@/lib/hooks/useApi';
 import { useHelpGateContext } from '@/lib/help/useHelpGateContext';
@@ -161,6 +162,9 @@ function HelpGuideScreen() {
             {t('profile:support.guides.websiteNote')}
           </Text>
         ) : null}
+        {isLoading && !guide ? null : (
+          <HelpSupportPrompt variant="followUp" testID="help-guide-still-need-help" />
+        )}
       </ScrollView>
     </SafeAreaView>
   );

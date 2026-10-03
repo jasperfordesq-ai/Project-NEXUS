@@ -87,6 +87,16 @@ describe('HelpGuideRoute', () => {
     expect(openURL).not.toHaveBeenCalled();
   });
 
+  it('ends an article with "Still need help?", which opens the native form', async () => {
+    mockParams = { section: 'getting_started', article: 'what_is_timebanking' };
+    const { findByText, getByTestId } = render(<HelpGuideRoute />);
+    await findByText('How it works');
+
+    fireEvent.press(getByTestId('help-guide-still-need-help-open'));
+
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/help-support');
+  });
+
   it('says so plainly when a guide is switched off or missing', async () => {
     mockParams = { section: 'getting_started', article: 'how_time_credits_work' };
     const { findByTestId } = render(<HelpGuideRoute />);

@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Activity",
     "matches": "Matches",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "helpSupport": "Hilfe & Support"
   },
   "matches": {
     "title": "Matches",
@@ -268,6 +269,93 @@
       "detailsEmail": "E-Mail-Adresse",
       "detailsPhone": "Telefonnummer",
       "detailsAddress": "Postanschrift"
+    },
+    "request": {
+      "title": "Hilfe & Support",
+      "heading": "Wie können wir helfen?",
+      "intro": "Sag uns, was du brauchst. Das Support-Team deiner Gemeinschaft antwortet dir per E-Mail.",
+      "typeLabel": "Wobei brauchst du Hilfe?",
+      "types": {
+        "broken": {
+          "label": "Etwas funktioniert nicht",
+          "description": "Ein Bildschirm, eine Schaltfläche oder eine Funktion tut nicht, was sie soll."
+        },
+        "how_to": {
+          "label": "Wie kann ich …?",
+          "description": "Eine Frage zur Nutzung der App."
+        },
+        "account": {
+          "label": "Problem mit Konto oder Anmeldung",
+          "description": "Probleme bei der Anmeldung oder mit deinem Konto. Gib niemals dein Passwort an."
+        },
+        "suggestion": {
+          "label": "Verbesserung vorschlagen",
+          "description": "Eine Idee, die die App besser machen würde."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Kurze Zusammenfassung",
+          "description": "Was ist passiert?",
+          "placeholder": "Was hast du gemacht, was hast du erwartet und was ist stattdessen passiert?"
+        },
+        "how_to": {
+          "summary": "Deine Frage in wenigen Worten",
+          "description": "Erzähl uns etwas mehr",
+          "placeholder": "Was möchtest du tun?"
+        },
+        "account": {
+          "summary": "Was ist los, in wenigen Worten",
+          "description": "Erzähl uns etwas mehr",
+          "placeholder": "Beschreib das Problem. Gib niemals dein Passwort an."
+        },
+        "suggestion": {
+          "summary": "Deine Idee in wenigen Worten",
+          "description": "Erzähl uns mehr über deine Idee",
+          "placeholder": "Was würdest du ändern, und wie würde das helfen?"
+        }
+      },
+      "impactLabel": "Wie stark beeinträchtigt dich das?",
+      "impact": {
+        "blocked": "Ich komme nicht weiter",
+        "major": "Eine wichtige Aufgabe funktioniert nicht",
+        "minor": "Etwas stimmt nicht, aber ich komme weiter",
+        "cosmetic": "Ein Darstellungs- oder Textproblem"
+      },
+      "includeDiagnostics": "Technische Angaben zur App mitsenden",
+      "diagnosticsDetail": "Gesendet wird nur: {{system}}, App-Version {{version}}, Sprache {{language}}. Nichts, was dich oder dein Telefon identifiziert.",
+      "summaryTooShort": "Schreib eine Zusammenfassung mit mindestens {{min}} Zeichen.",
+      "descriptionTooShort": "Erzähl uns etwas mehr: mindestens {{min}} Zeichen.",
+      "submit": "Anfrage senden",
+      "sending": "Deine Anfrage wird gesendet …",
+      "successTitle": "Anfrage gesendet",
+      "referenceLabel": "Deine Referenz",
+      "successEmail": "Wir haben dir eine Bestätigung mit dieser Referenz per E-Mail geschickt. Antworte auf diese E-Mail, wenn du etwas ergänzen möchtest.",
+      "done": "Fertig",
+      "sendAnother": "Weitere Anfrage senden",
+      "dailyLimitTitle": "Du hast das heutige Limit erreicht",
+      "dailyLimitBody": "Du hast heute so viele Anfragen gesendet, wie an einem Tag möglich sind. Versuch es morgen wieder oder antworte auf die Bestätigungs-E-Mail einer bereits gesendeten Anfrage.",
+      "tooFastTitle": "Bitte warte einen Moment",
+      "tooFastBody": "Du hast sehr schnell mehrere Anfragen gesendet. Warte eine Minute und versuch es dann noch einmal.",
+      "errorTitle": "Anfrage nicht gesendet",
+      "errorBody": "Wir konnten deine Anfrage nicht senden. Bitte versuch es noch einmal.",
+      "networkBody": "Wir konnten den Server nicht erreichen. Prüf deine Verbindung und versuch es noch einmal. Dein Text ist noch da.",
+      "signInTitle": "Melde dich an, um Hilfe zu erhalten",
+      "signInBody": "Anfragen sind mit deinem Konto verknüpft, damit dir das Support-Team antworten kann.",
+      "signIn": "Anmelden",
+      "unsavedTitle": "Anfrage verwerfen?",
+      "unsavedMessage": "Dein Text wurde noch nicht gesendet und geht verloren.",
+      "discard": "Verwerfen"
+    },
+    "requestCard": {
+      "title": "Hilfe & Support",
+      "description": "Funktioniert etwas nicht, hast du eine Frage, ein Problem mit deinem Konto oder eine Idee? Schick sie an das Support-Team deiner Gemeinschaft – es antwortet dir per E-Mail.",
+      "action": "Hilfe holen"
+    },
+    "stillNeedHelp": {
+      "title": "Brauchst du noch Hilfe?",
+      "description": "Schick eine Anfrage an das Support-Team deiner Gemeinschaft – es antwortet dir per E-Mail.",
+      "action": "Support kontaktieren"
     }
   },
   "skills": "Fähigkeiten und Empfehlungen",
@@ -351,7 +439,8 @@
     "federationGroups": "Erkunden Sie von Partner-Communities geteilte Gruppen.",
     "federationEvents": "Entdecken Sie Ereignisse aus verbundenen Communities.",
     "federationSettings": "Überprüfen Sie die Sichtbarkeit und Freigabeeinstellungen des Verbunds.",
-    "settings": "Sicherheit, Benachrichtigungen, Einstellungen und Kontokontrollen."
+    "settings": "Sicherheit, Benachrichtigungen, Einstellungen und Kontokontrollen.",
+    "helpSupport": "Stell eine Frage, melde ein Problem oder teile eine Idee mit dem Support-Team deiner Gemeinschaft."
   },
   "matchPreferences": {
     "heading": "Matching-Einstellungen",

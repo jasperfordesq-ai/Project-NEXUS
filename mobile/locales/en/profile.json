@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Activity",
     "matches": "Matches",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "helpSupport": "Help & support"
   },
   "matches": {
     "title": "Matches",
@@ -268,6 +269,93 @@
       "detailsEmail": "Email address",
       "detailsPhone": "Phone number",
       "detailsAddress": "Postal address"
+    },
+    "request": {
+      "title": "Help & support",
+      "heading": "How can we help?",
+      "intro": "Tell us what you need. Your community’s support team will reply by email.",
+      "typeLabel": "What do you need help with?",
+      "types": {
+        "broken": {
+          "label": "Something isn’t working",
+          "description": "A screen, button or feature isn’t doing what it should."
+        },
+        "how_to": {
+          "label": "How do I…?",
+          "description": "A question about using the app."
+        },
+        "account": {
+          "label": "Account or sign-in problem",
+          "description": "Trouble signing in, or a problem with your account. Never include your password."
+        },
+        "suggestion": {
+          "label": "Suggest an improvement",
+          "description": "An idea that would make the app better."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Short summary",
+          "description": "What happened?",
+          "placeholder": "What were you doing, what did you expect, and what happened instead?"
+        },
+        "how_to": {
+          "summary": "Your question in a few words",
+          "description": "Tell us a bit more",
+          "placeholder": "What are you trying to do?"
+        },
+        "account": {
+          "summary": "What’s wrong, in a few words",
+          "description": "Tell us a bit more",
+          "placeholder": "Describe the problem. Never include your password."
+        },
+        "suggestion": {
+          "summary": "Your idea in a few words",
+          "description": "Tell us a bit more about your idea",
+          "placeholder": "What would you change, and how would it help?"
+        }
+      },
+      "impactLabel": "How much is this affecting you?",
+      "impact": {
+        "blocked": "I can’t continue",
+        "major": "A main task is broken",
+        "minor": "Something is wrong but I can continue",
+        "cosmetic": "A visual or wording problem"
+      },
+      "includeDiagnostics": "Include technical details about the app",
+      "diagnosticsDetail": "Only these are sent: {{system}}, app version {{version}}, language {{language}}. Nothing that identifies you or your phone.",
+      "summaryTooShort": "Write a summary of at least {{min}} characters.",
+      "descriptionTooShort": "Tell us a little more: at least {{min}} characters.",
+      "submit": "Send request",
+      "sending": "Sending your request…",
+      "successTitle": "Request sent",
+      "referenceLabel": "Your reference",
+      "successEmail": "We have emailed you a receipt with this reference. Reply to that email if you want to add anything.",
+      "done": "Done",
+      "sendAnother": "Send another request",
+      "dailyLimitTitle": "You have reached today’s limit",
+      "dailyLimitBody": "You have sent as many requests as you can in one day. Please try again tomorrow, or reply to the receipt email of a request you have already sent.",
+      "tooFastTitle": "Please wait a moment",
+      "tooFastBody": "You have sent several requests very quickly. Wait a minute, then try again.",
+      "errorTitle": "Request not sent",
+      "errorBody": "We could not send your request. Please try again.",
+      "networkBody": "We could not reach the server. Check your connection and try again. What you typed is still here.",
+      "signInTitle": "Sign in to ask for help",
+      "signInBody": "Requests are linked to your account so the support team can reply to you.",
+      "signIn": "Sign in",
+      "unsavedTitle": "Discard your request?",
+      "unsavedMessage": "What you have typed has not been sent and will be lost.",
+      "discard": "Discard"
+    },
+    "requestCard": {
+      "title": "Help & support",
+      "description": "Something not working, a question, an account problem or an idea? Send it to your community’s support team and they will reply by email.",
+      "action": "Get help"
+    },
+    "stillNeedHelp": {
+      "title": "Still need help?",
+      "description": "Send a request to your community’s support team and they will reply by email.",
+      "action": "Contact support"
     }
   },
   "skills": "Skills & Endorsements",
@@ -351,7 +439,8 @@
     "federationGroups": "Explore groups shared by partner communities.",
     "federationEvents": "Discover events from connected communities.",
     "federationSettings": "Review federation visibility and sharing preferences.",
-    "settings": "Security, notifications, preferences, and account controls."
+    "settings": "Security, notifications, preferences, and account controls.",
+    "helpSupport": "Ask a question, report a problem or share an idea with your community’s support team."
   },
   "matchPreferences": {
     "heading": "Match Preferences",

@@ -72,6 +72,7 @@
   "errors": {
     "accountUnderMinimumAge": "Is do dhaoine fásta 18 mbliana d'aois agus níos sine an aip seo. Má cheapann tú gur botún é seo, déan teagmháil le heagraithe do phobail.",
     "boundaryTitle": "Chuaigh rud éigin mícheart",
+    "boundaryReport": "Tuairiscigh an fhadhb seo",
     "generic": "Chuaigh rud éigin mícheart. Déan iarracht arís.",
     "loadFailedTitle": "Níorbh fhéidir é a lódáil",
     "loadFailedSubtitle": "Chuaigh rud éigin amú agus é á lódáil. Bain triail eile as.",

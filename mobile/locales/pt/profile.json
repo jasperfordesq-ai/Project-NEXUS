@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Activity",
     "matches": "Matches",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "helpSupport": "Ajuda e suporte"
   },
   "matches": {
     "title": "Matches",
@@ -268,6 +269,93 @@
       "detailsEmail": "Endereço de e-mail",
       "detailsPhone": "Número de telefone",
       "detailsAddress": "Morada postal"
+    },
+    "request": {
+      "title": "Ajuda e suporte",
+      "heading": "Como podemos ajudar?",
+      "intro": "Diga-nos do que precisa. A equipa de suporte da sua comunidade responderá por e-mail.",
+      "typeLabel": "Com o que precisa de ajuda?",
+      "types": {
+        "broken": {
+          "label": "Algo não está a funcionar",
+          "description": "Um ecrã, um botão ou uma funcionalidade não faz o que deveria."
+        },
+        "how_to": {
+          "label": "Como faço para…?",
+          "description": "Uma pergunta sobre a utilização da aplicação."
+        },
+        "account": {
+          "label": "Problema de conta ou de início de sessão",
+          "description": "Dificuldade em iniciar sessão ou um problema com a sua conta. Nunca inclua a sua palavra-passe."
+        },
+        "suggestion": {
+          "label": "Sugerir uma melhoria",
+          "description": "Uma ideia que tornaria a aplicação melhor."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Resumo breve",
+          "description": "O que aconteceu?",
+          "placeholder": "O que estava a fazer, o que esperava e o que aconteceu em vez disso?"
+        },
+        "how_to": {
+          "summary": "A sua pergunta em poucas palavras",
+          "description": "Conte-nos um pouco mais",
+          "placeholder": "O que está a tentar fazer?"
+        },
+        "account": {
+          "summary": "O que se passa, em poucas palavras",
+          "description": "Conte-nos um pouco mais",
+          "placeholder": "Descreva o problema. Nunca inclua a sua palavra-passe."
+        },
+        "suggestion": {
+          "summary": "A sua ideia em poucas palavras",
+          "description": "Conte-nos um pouco mais sobre a sua ideia",
+          "placeholder": "O que mudaria e como é que isso ajudaria?"
+        }
+      },
+      "impactLabel": "Quanto é que isto o está a afetar?",
+      "impact": {
+        "blocked": "Não consigo continuar",
+        "major": "Uma tarefa principal não funciona",
+        "minor": "Algo está errado, mas consigo continuar",
+        "cosmetic": "Um problema visual ou de texto"
+      },
+      "includeDiagnostics": "Incluir detalhes técnicos sobre a aplicação",
+      "diagnosticsDetail": "Só é enviado o seguinte: {{system}}, versão da aplicação {{version}}, idioma {{language}}. Nada que o identifique a si ou ao seu telemóvel.",
+      "summaryTooShort": "Escreva um resumo com pelo menos {{min}} caracteres.",
+      "descriptionTooShort": "Conte-nos um pouco mais: pelo menos {{min}} caracteres.",
+      "submit": "Enviar pedido",
+      "sending": "A enviar o seu pedido…",
+      "successTitle": "Pedido enviado",
+      "referenceLabel": "A sua referência",
+      "successEmail": "Enviámos-lhe um recibo por e-mail com esta referência. Responda a esse e-mail se quiser acrescentar alguma coisa.",
+      "done": "Concluído",
+      "sendAnother": "Enviar outro pedido",
+      "dailyLimitTitle": "Atingiu o limite de hoje",
+      "dailyLimitBody": "Já enviou o número máximo de pedidos permitido num dia. Tente novamente amanhã ou responda ao e-mail de recibo de um pedido que já enviou.",
+      "tooFastTitle": "Aguarde um momento",
+      "tooFastBody": "Enviou vários pedidos muito depressa. Aguarde um minuto e tente novamente.",
+      "errorTitle": "Pedido não enviado",
+      "errorBody": "Não foi possível enviar o seu pedido. Tente novamente.",
+      "networkBody": "Não foi possível contactar o servidor. Verifique a sua ligação e tente novamente. O que escreveu continua aqui.",
+      "signInTitle": "Inicie sessão para pedir ajuda",
+      "signInBody": "Os pedidos estão associados à sua conta para que a equipa de suporte lhe possa responder.",
+      "signIn": "Iniciar sessão",
+      "unsavedTitle": "Descartar o seu pedido?",
+      "unsavedMessage": "O que escreveu ainda não foi enviado e será perdido.",
+      "discard": "Descartar"
+    },
+    "requestCard": {
+      "title": "Ajuda e suporte",
+      "description": "Algo não está a funcionar, tem uma pergunta, um problema de conta ou uma ideia? Envie-a à equipa de suporte da sua comunidade, que lhe responderá por e-mail.",
+      "action": "Obter ajuda"
+    },
+    "stillNeedHelp": {
+      "title": "Ainda precisa de ajuda?",
+      "description": "Envie um pedido à equipa de suporte da sua comunidade, que lhe responderá por e-mail.",
+      "action": "Contactar o suporte"
     }
   },
   "skills": "Competências e recomendações",
@@ -351,7 +439,8 @@
     "federationGroups": "Explore grupos compartilhados por comunidades parceiras.",
     "federationEvents": "Descubra eventos de comunidades conectadas.",
     "federationSettings": "Revise a visibilidade da federação e preferências de compartilhamento.",
-    "settings": "Segurança, notificações, preferências e controles de conta."
+    "settings": "Segurança, notificações, preferências e controles de conta.",
+    "helpSupport": "Faça uma pergunta, comunique um problema ou partilhe uma ideia com a equipa de suporte da sua comunidade."
   },
   "matchPreferences": {
     "heading": "Preferências de correspondência",

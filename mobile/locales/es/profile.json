@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Activity",
     "matches": "Matches",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "helpSupport": "Ayuda y soporte"
   },
   "matches": {
     "title": "Matches",
@@ -268,6 +269,93 @@
       "detailsEmail": "Dirección de correo electrónico",
       "detailsPhone": "Número de teléfono",
       "detailsAddress": "Dirección postal"
+    },
+    "request": {
+      "title": "Ayuda y soporte",
+      "heading": "¿Cómo podemos ayudarte?",
+      "intro": "Cuéntanos qué necesitas. El equipo de soporte de tu comunidad te responderá por correo electrónico.",
+      "typeLabel": "¿Con qué necesitas ayuda?",
+      "types": {
+        "broken": {
+          "label": "Algo no funciona",
+          "description": "Una pantalla, un botón o una función no hace lo que debería."
+        },
+        "how_to": {
+          "label": "¿Cómo puedo…?",
+          "description": "Una pregunta sobre cómo usar la aplicación."
+        },
+        "account": {
+          "label": "Problema con la cuenta o el acceso",
+          "description": "Problemas para iniciar sesión o con tu cuenta. Nunca incluyas tu contraseña."
+        },
+        "suggestion": {
+          "label": "Sugerir una mejora",
+          "description": "Una idea que mejoraría la aplicación."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Resumen breve",
+          "description": "¿Qué ha pasado?",
+          "placeholder": "¿Qué estabas haciendo, qué esperabas y qué pasó en su lugar?"
+        },
+        "how_to": {
+          "summary": "Tu pregunta en pocas palabras",
+          "description": "Cuéntanos un poco más",
+          "placeholder": "¿Qué intentas hacer?"
+        },
+        "account": {
+          "summary": "Qué ocurre, en pocas palabras",
+          "description": "Cuéntanos un poco más",
+          "placeholder": "Describe el problema. Nunca incluyas tu contraseña."
+        },
+        "suggestion": {
+          "summary": "Tu idea en pocas palabras",
+          "description": "Cuéntanos un poco más sobre tu idea",
+          "placeholder": "¿Qué cambiarías y cómo ayudaría?"
+        }
+      },
+      "impactLabel": "¿Cuánto te está afectando?",
+      "impact": {
+        "blocked": "No puedo continuar",
+        "major": "Una tarea principal no funciona",
+        "minor": "Algo va mal, pero puedo continuar",
+        "cosmetic": "Un problema visual o de texto"
+      },
+      "includeDiagnostics": "Incluir detalles técnicos sobre la aplicación",
+      "diagnosticsDetail": "Solo se envía lo siguiente: {{system}}, versión de la aplicación {{version}}, idioma {{language}}. Nada que te identifique a ti ni a tu teléfono.",
+      "summaryTooShort": "Escribe un resumen de al menos {{min}} caracteres.",
+      "descriptionTooShort": "Cuéntanos un poco más: al menos {{min}} caracteres.",
+      "submit": "Enviar solicitud",
+      "sending": "Enviando tu solicitud…",
+      "successTitle": "Solicitud enviada",
+      "referenceLabel": "Tu referencia",
+      "successEmail": "Te hemos enviado un recibo por correo electrónico con esta referencia. Responde a ese correo si quieres añadir algo.",
+      "done": "Listo",
+      "sendAnother": "Enviar otra solicitud",
+      "dailyLimitTitle": "Has alcanzado el límite de hoy",
+      "dailyLimitBody": "Has enviado el número máximo de solicitudes permitido en un día. Vuelve a intentarlo mañana o responde al correo de recibo de una solicitud que ya hayas enviado.",
+      "tooFastTitle": "Espera un momento",
+      "tooFastBody": "Has enviado varias solicitudes muy rápido. Espera un minuto y vuelve a intentarlo.",
+      "errorTitle": "Solicitud no enviada",
+      "errorBody": "No hemos podido enviar tu solicitud. Vuelve a intentarlo.",
+      "networkBody": "No hemos podido conectar con el servidor. Comprueba tu conexión y vuelve a intentarlo. Lo que has escrito sigue aquí.",
+      "signInTitle": "Inicia sesión para pedir ayuda",
+      "signInBody": "Las solicitudes están vinculadas a tu cuenta para que el equipo de soporte pueda responderte.",
+      "signIn": "Iniciar sesión",
+      "unsavedTitle": "¿Descartar tu solicitud?",
+      "unsavedMessage": "Lo que has escrito no se ha enviado y se perderá.",
+      "discard": "Descartar"
+    },
+    "requestCard": {
+      "title": "Ayuda y soporte",
+      "description": "¿Algo no funciona, tienes una pregunta, un problema con tu cuenta o una idea? Envíalo al equipo de soporte de tu comunidad y te responderá por correo electrónico.",
+      "action": "Obtener ayuda"
+    },
+    "stillNeedHelp": {
+      "title": "¿Todavía necesitas ayuda?",
+      "description": "Envía una solicitud al equipo de soporte de tu comunidad y te responderá por correo electrónico.",
+      "action": "Contactar con soporte"
     }
   },
   "skills": "Habilidades y recomendaciones",
@@ -351,7 +439,8 @@
     "federationGroups": "Explorar grupos compartidos por comunidades asociadas.",
     "federationEvents": "Descubrir eventos de comunidades conectadas.",
     "federationSettings": "Revisar la visibilidad de la federación y las preferencias de uso compartido.",
-    "settings": "Seguridad, notificaciones, preferencias y controles de cuenta."
+    "settings": "Seguridad, notificaciones, preferencias y controles de cuenta.",
+    "helpSupport": "Haz una pregunta, informa de un problema o comparte una idea con el equipo de soporte de tu comunidad."
   },
   "matchPreferences": {
     "heading": "Preferencias de coincidencias",

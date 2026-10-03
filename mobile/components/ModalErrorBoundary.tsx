@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Appearance, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { t as translate } from 'i18next';
 import Button from '@/components/ui/Button';
 import { reportException } from '@/lib/observability/report';
@@ -34,7 +34,13 @@ function getErrorColors() {
 /**
  * Lightweight error boundary for modal screens.
  * Uses Appearance API for dark mode support since class components cannot use hooks.
- * On error, shows a translated recovery message with a translated back action.
+ * On error, shows a translated recovery message with a translated back action,
+ * and a way to tell the support team about it.
+ *
+ * 'Report this problem' opens the native Help & support form already set to
+ * 'Something isn't working' — the moment a member has just watched a screen fail
+ * is the moment they can best describe it. The crash itself is reported to Sentry
+ * regardless; the form adds what the member was trying to do.
  */
 export default class ModalErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -59,6 +65,7 @@ export default class ModalErrorBoundary extends React.Component<Props, State> {
       const colors = getErrorColors();
       const title = translate('errors.boundaryTitle', { ns: 'common' });
       const goBack = translate('buttons.back', { ns: 'common' });
+      const report = translate('errors.boundaryReport', { ns: 'common' });
       return (
         <View
           style={{
@@ -87,6 +94,16 @@ export default class ModalErrorBoundary extends React.Component<Props, State> {
             style={{ minWidth: 120 }}
           >
             {goBack}
+          </Button>
+          <Button
+            size="md"
+            variant="ghost"
+            testID="modal-error-report"
+            onPress={() => router.push({ pathname: '/(modals)/help-support', params: { type: 'broken' } } as Href)}
+            accessibilityLabel={report}
+            style={{ minWidth: 120, marginTop: 8 }}
+          >
+            {report}
           </Button>
         </View>
       );

@@ -150,6 +150,22 @@ describe('SupportRoute', () => {
     expect(router.push).toHaveBeenCalledTimes(1);
   });
 
+  /*
+    Added October 2026. The Support screen could show a member every policy their
+    community had published and give them no way at all to ask a person for help.
+    Sending a request now heads the list, and it opens the native form.
+  */
+  it('leads with a way to ask the support team for help, opened natively', () => {
+    const { router } = require('expo-router');
+    const { getByTestId, getByText } = render(<SupportRoute />);
+
+    expect(getByText('Help & support')).toBeTruthy();
+    fireEvent.press(getByTestId('support-request-help-open'));
+
+    expect(router.push).toHaveBeenCalledWith('/(modals)/help-support');
+    expect(Linking.openURL).not.toHaveBeenCalled();
+  });
+
   it('ignores a ?doc value it has no destination for', () => {
     const { router } = require('expo-router');
     mockSearchParams = { doc: 'community_guidelines' };

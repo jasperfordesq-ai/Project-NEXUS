@@ -72,6 +72,7 @@
   "errors": {
     "accountUnderMinimumAge": "Diese App ist für Erwachsene ab 18 Jahren. Wenn du glaubst, dass hier ein Fehler vorliegt, wende dich an die Organisatoren deiner Community.",
     "boundaryTitle": "Etwas ist schiefgelaufen",
+    "boundaryReport": "Dieses Problem melden",
     "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "loadFailedTitle": "Konnte nicht geladen werden",
     "loadFailedSubtitle": "Beim Laden ist etwas schiefgegangen. Bitte versuche es erneut.",

@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Activity",
     "matches": "Matches",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "helpSupport": "Aide et assistance"
   },
   "matches": {
     "title": "Matches",
@@ -268,6 +269,93 @@
       "detailsEmail": "Adresse e-mail",
       "detailsPhone": "Numéro de téléphone",
       "detailsAddress": "Adresse postale"
+    },
+    "request": {
+      "title": "Aide et assistance",
+      "heading": "Comment pouvons-nous vous aider ?",
+      "intro": "Dites-nous ce dont vous avez besoin. L’équipe d’assistance de votre communauté vous répondra par e-mail.",
+      "typeLabel": "De quelle aide avez-vous besoin ?",
+      "types": {
+        "broken": {
+          "label": "Quelque chose ne fonctionne pas",
+          "description": "Un écran, un bouton ou une fonction ne fait pas ce qu’il devrait."
+        },
+        "how_to": {
+          "label": "Comment faire pour… ?",
+          "description": "Une question sur l’utilisation de l’application."
+        },
+        "account": {
+          "label": "Problème de compte ou de connexion",
+          "description": "Difficulté à vous connecter ou problème avec votre compte. N’indiquez jamais votre mot de passe."
+        },
+        "suggestion": {
+          "label": "Suggérer une amélioration",
+          "description": "Une idée pour améliorer l’application."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Résumé court",
+          "description": "Que s’est-il passé ?",
+          "placeholder": "Que faisiez-vous, à quoi vous attendiez-vous et que s’est-il passé à la place ?"
+        },
+        "how_to": {
+          "summary": "Votre question en quelques mots",
+          "description": "Dites-nous-en un peu plus",
+          "placeholder": "Qu’essayez-vous de faire ?"
+        },
+        "account": {
+          "summary": "Le problème, en quelques mots",
+          "description": "Dites-nous-en un peu plus",
+          "placeholder": "Décrivez le problème. N’indiquez jamais votre mot de passe."
+        },
+        "suggestion": {
+          "summary": "Votre idée en quelques mots",
+          "description": "Dites-nous-en un peu plus sur votre idée",
+          "placeholder": "Que changeriez-vous, et en quoi cela aiderait-il ?"
+        }
+      },
+      "impactLabel": "Dans quelle mesure cela vous gêne-t-il ?",
+      "impact": {
+        "blocked": "Je ne peux pas continuer",
+        "major": "Une tâche essentielle est bloquée",
+        "minor": "Quelque chose ne va pas, mais je peux continuer",
+        "cosmetic": "Un problème d’affichage ou de texte"
+      },
+      "includeDiagnostics": "Inclure des informations techniques sur l’application",
+      "diagnosticsDetail": "Seules ces informations sont envoyées : {{system}}, version de l’application {{version}}, langue {{language}}. Rien qui permette de vous identifier, ni votre téléphone.",
+      "summaryTooShort": "Rédigez un résumé d’au moins {{min}} caractères.",
+      "descriptionTooShort": "Dites-nous-en un peu plus : au moins {{min}} caractères.",
+      "submit": "Envoyer la demande",
+      "sending": "Envoi de votre demande…",
+      "successTitle": "Demande envoyée",
+      "referenceLabel": "Votre référence",
+      "successEmail": "Nous vous avons envoyé un accusé de réception par e-mail avec cette référence. Répondez à cet e-mail si vous souhaitez ajouter quelque chose.",
+      "done": "Terminé",
+      "sendAnother": "Envoyer une autre demande",
+      "dailyLimitTitle": "Vous avez atteint la limite du jour",
+      "dailyLimitBody": "Vous avez envoyé le nombre maximal de demandes autorisé en une journée. Réessayez demain, ou répondez à l’accusé de réception d’une demande déjà envoyée.",
+      "tooFastTitle": "Veuillez patienter un instant",
+      "tooFastBody": "Vous avez envoyé plusieurs demandes très rapidement. Attendez une minute, puis réessayez.",
+      "errorTitle": "Demande non envoyée",
+      "errorBody": "Nous n’avons pas pu envoyer votre demande. Veuillez réessayer.",
+      "networkBody": "Nous n’avons pas pu joindre le serveur. Vérifiez votre connexion et réessayez. Ce que vous avez saisi est toujours là.",
+      "signInTitle": "Connectez-vous pour demander de l’aide",
+      "signInBody": "Les demandes sont liées à votre compte afin que l’équipe d’assistance puisse vous répondre.",
+      "signIn": "Se connecter",
+      "unsavedTitle": "Abandonner votre demande ?",
+      "unsavedMessage": "Ce que vous avez saisi n’a pas été envoyé et sera perdu.",
+      "discard": "Abandonner"
+    },
+    "requestCard": {
+      "title": "Aide et assistance",
+      "description": "Quelque chose ne fonctionne pas, une question, un problème de compte ou une idée ? Envoyez-le à l’équipe d’assistance de votre communauté, qui vous répondra par e-mail.",
+      "action": "Obtenir de l’aide"
+    },
+    "stillNeedHelp": {
+      "title": "Besoin d’aide supplémentaire ?",
+      "description": "Envoyez une demande à l’équipe d’assistance de votre communauté, qui vous répondra par e-mail.",
+      "action": "Contacter l’assistance"
     }
   },
   "skills": "Compétences et recommandations",
@@ -351,7 +439,8 @@
     "federationGroups": "Explorez les groupes partagés par les communautés partenaires.",
     "federationEvents": "Découvrez les événements des communautés connectées.",
     "federationSettings": "Vérifiez la visibilité de la fédération et les préférences de partage.",
-    "settings": "Sécurité, notifications, préférences et contrôles de compte."
+    "settings": "Sécurité, notifications, préférences et contrôles de compte.",
+    "helpSupport": "Posez une question, signalez un problème ou partagez une idée avec l’équipe d’assistance de votre communauté."
   },
   "matchPreferences": {
     "heading": "Préférences de mise en relation",

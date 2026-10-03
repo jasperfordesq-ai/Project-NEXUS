@@ -34,6 +34,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import HelpSupportPrompt from '@/components/support/HelpSupportPrompt';
 import SearchInput from '@/components/ui/SearchInput';
 
 export default function HelpFaqsRoute() {
@@ -206,6 +207,13 @@ function HelpFaqsScreen() {
               })}
             </View>
           ))
+        )}
+
+        {/* For the member who has read the answers and is still stuck. */}
+        {isLoading && groups.length === 0 ? null : (
+          <View className="pt-2">
+            <HelpSupportPrompt variant="followUp" testID="help-faqs-still-need-help" />
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>

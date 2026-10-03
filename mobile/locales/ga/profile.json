@@ -15,7 +15,8 @@
   "menuLabels": {
     "activity": "Gníomhaíocht",
     "matches": "Meaitseálacha",
-    "reviews": "Léirmheasanna"
+    "reviews": "Léirmheasanna",
+    "helpSupport": "Cabhair agus tacaíocht"
   },
   "matches": {
     "title": "Meaitseálacha",
@@ -268,6 +269,93 @@
       "detailsEmail": "Seoladh ríomhphoist",
       "detailsPhone": "Uimhir theilefóin",
       "detailsAddress": "Seoladh poist"
+    },
+    "request": {
+      "title": "Cabhair agus tacaíocht",
+      "heading": "Conas is féidir linn cabhrú?",
+      "intro": "Inis dúinn cad atá uait. Freagróidh foireann tacaíochta do phobail tríd an ríomhphost.",
+      "typeLabel": "Cén chabhair atá uait?",
+      "types": {
+        "broken": {
+          "label": "Níl rud éigin ag obair",
+          "description": "Níl scáileán, cnaipe nó gné ag déanamh mar ba chóir."
+        },
+        "how_to": {
+          "label": "Conas a dhéanaim…?",
+          "description": "Ceist faoi conas an aip a úsáid."
+        },
+        "account": {
+          "label": "Fadhb cuntais nó síniú isteach",
+          "description": "Deacracht síniú isteach, nó fadhb le do chuntas. Ná cuir do phasfhocal isteach riamh."
+        },
+        "suggestion": {
+          "label": "Mol feabhsúchán",
+          "description": "Smaoineamh a chuirfeadh feabhas ar an aip."
+        }
+      },
+      "fields": {
+        "broken": {
+          "summary": "Achoimre ghearr",
+          "description": "Cad a tharla?",
+          "placeholder": "Cad a bhí á dhéanamh agat, cad a bhí tú ag súil leis, agus cad a tharla ina ionad sin?"
+        },
+        "how_to": {
+          "summary": "Do cheist i gcúpla focal",
+          "description": "Inis beagán eile dúinn",
+          "placeholder": "Cad atá tú ag iarraidh a dhéanamh?"
+        },
+        "account": {
+          "summary": "Cad atá cearr, i gcúpla focal",
+          "description": "Inis beagán eile dúinn",
+          "placeholder": "Déan cur síos ar an bhfadhb. Ná cuir do phasfhocal isteach riamh."
+        },
+        "suggestion": {
+          "summary": "Do smaoineamh i gcúpla focal",
+          "description": "Inis beagán eile dúinn faoi do smaoineamh",
+          "placeholder": "Cad a d’athrófá, agus conas a chabhródh sé?"
+        }
+      },
+      "impactLabel": "Cé chomh mór is atá sé seo ag cur isteach ort?",
+      "impact": {
+        "blocked": "Ní féidir liom leanúint ar aghaidh",
+        "major": "Ní oibríonn ceann de na príomhthascanna",
+        "minor": "Tá rud éigin mícheart ach is féidir liom leanúint ar aghaidh",
+        "cosmetic": "Fadhb leis an gcuma nó leis an bhfoclaíocht"
+      },
+      "includeDiagnostics": "Cuir sonraí teicniúla faoin aip san áireamh",
+      "diagnosticsDetail": "Ní sheoltar ach iad seo: {{system}}, leagan na haipe {{version}}, teanga {{language}}. Níl aon rud ann a d’aithneodh tú féin nó do ghuthán.",
+      "summaryTooShort": "Scríobh achoimre {{min}} carachtar ar a laghad.",
+      "descriptionTooShort": "Inis beagán eile dúinn: {{min}} carachtar ar a laghad.",
+      "submit": "Seol an t-iarratas",
+      "sending": "D’iarratas á sheoladh…",
+      "successTitle": "Iarratas seolta",
+      "referenceLabel": "Do thagairt",
+      "successEmail": "Sheolamar admháil chugat sa ríomhphost leis an tagairt seo. Freagair an ríomhphost sin más mian leat aon rud a chur leis.",
+      "done": "Críochnaithe",
+      "sendAnother": "Seol iarratas eile",
+      "dailyLimitTitle": "Tá teorainn an lae inniu sroichte agat",
+      "dailyLimitBody": "Sheol tú an líon is mó iarratas is féidir in aon lá amháin. Bain triail eile as amárach, nó freagair ríomhphost admhála iarratais a sheol tú cheana.",
+      "tooFastTitle": "Fan nóiméad, le do thoil",
+      "tooFastBody": "Sheol tú roinnt iarratas an-tapa. Fan nóiméad, ansin bain triail eile as.",
+      "errorTitle": "Níor seoladh an t-iarratas",
+      "errorBody": "Níorbh fhéidir linn d’iarratas a sheoladh. Bain triail eile as.",
+      "networkBody": "Níorbh fhéidir linn an freastalaí a shroicheadh. Seiceáil do cheangal agus bain triail eile as. Tá an méid a scríobh tú fós anseo.",
+      "signInTitle": "Sínigh isteach chun cabhair a iarraidh",
+      "signInBody": "Tá iarratais nasctha le do chuntas ionas gur féidir leis an bhfoireann tacaíochta freagra a thabhairt ort.",
+      "signIn": "Sínigh isteach",
+      "unsavedTitle": "An bhfuil fonn ort d’iarratas a chaitheamh i leataobh?",
+      "unsavedMessage": "Níor seoladh an méid atá scríofa agat agus caillfear é.",
+      "discard": "Caith i leataobh"
+    },
+    "requestCard": {
+      "title": "Cabhair agus tacaíocht",
+      "description": "Rud éigin nach bhfuil ag obair, ceist, fadhb cuntais nó smaoineamh? Seol chuig foireann tacaíochta do phobail é agus freagróidh siad tríd an ríomhphost.",
+      "action": "Faigh cabhair"
+    },
+    "stillNeedHelp": {
+      "title": "Cabhair fós de dhíth ort?",
+      "description": "Seol iarratas chuig foireann tacaíochta do phobail agus freagróidh siad tríd an ríomhphost.",
+      "action": "Déan teagmháil leis an tacaíocht"
     }
   },
   "skills": "Scileanna agus formhuinithe",
@@ -351,7 +439,8 @@
     "federationGroups": "Féach ar ghrúpaí atá roinnte ag pobail chomhpháirtíochta.",
     "federationEvents": "Faigh imeachtaí ó phobail nasctha.",
     "federationSettings": "Déan athbhreithniú ar infheictheacht an chónaidhm agus ar roghanna comhroinnte.",
-    "settings": "Slándáil, fógraí, sainroghanna agus rialuithe cuntais."
+    "settings": "Slándáil, fógraí, sainroghanna agus rialuithe cuntais.",
+    "helpSupport": "Cuir ceist, tuairiscigh fadhb nó roinn smaoineamh le foireann tacaíochta do phobail."
   },
   "matchPreferences": {
     "heading": "Sainroghanna meaitseála",

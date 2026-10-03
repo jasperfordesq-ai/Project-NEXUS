@@ -14,7 +14,7 @@
 
 import React from 'react';
 import { Text } from 'react-native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 const mockReportException = jest.fn();
 jest.mock('@/lib/observability/report', () => ({
@@ -26,7 +26,7 @@ jest.mock('i18next', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), replace: jest.fn() },
+  router: { back: jest.fn(), replace: jest.fn(), push: jest.fn() },
 }));
 
 import ModalErrorBoundary from './ModalErrorBoundary';
@@ -60,6 +60,20 @@ describe('ModalErrorBoundary', () => {
     expect((error as Error).message).toBe('render exploded');
     // The component stack is what makes the report actionable.
     expect(context).toHaveProperty('componentStack');
+  });
+
+  it('lets the member report the crash, opening the help form on "Something isn’t working"', () => {
+    const { router } = require('expo-router');
+    const { getByTestId, getByText } = render(
+      <ModalErrorBoundary>
+        <Exploding />
+      </ModalErrorBoundary>,
+    );
+
+    expect(getByText('errors.boundaryReport')).toBeTruthy();
+    fireEvent.press(getByTestId('modal-error-report'));
+
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/(modals)/help-support', params: { type: 'broken' } });
   });
 
   it('leaves a healthy screen alone', () => {

@@ -41,6 +41,7 @@ import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Ionicons } from '@/components/ui/Icon';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import HelpSupportPrompt from '@/components/support/HelpSupportPrompt';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { contrastText, withAlpha } from '@/lib/utils/color';
 
@@ -142,6 +143,15 @@ function SupportScreen() {
             </View>
           </HeroCard.Body>
         </HeroCard>
+
+        {/*
+          Sending a request heads the list: it is the one thing here that puts a
+          person on the member's problem, and until October 2026 the app had no
+          way to do it at all. It opens the native form, never a browser.
+        */}
+        <View className="mb-4">
+          <HelpSupportPrompt variant="featured" testID="support-request-help" />
+        </View>
 
         <View className="gap-3">
           {SUPPORT_ITEMS.map((item) => (

@@ -192,6 +192,24 @@ describe('HelpFaqsRoute', () => {
     expect(mockGetHelpFaqs).toHaveBeenCalledTimes(2);
   });
 
+  it('offers "Still need help?" to a member the answers did not help, opening the native form', async () => {
+    const { findByTestId, getByTestId } = await renderScreen();
+    await findByTestId('help-faq-1');
+
+    expect(getByTestId('help-faqs-still-need-help')).toBeTruthy();
+    fireEvent.press(getByTestId('help-faqs-still-need-help-open'));
+
+    expect(mockPush).toHaveBeenCalledWith('/(modals)/help-support');
+  });
+
+  it('still offers a way to ask for help when the community has published no answers', async () => {
+    mockGetHelpFaqs.mockResolvedValue([]);
+    const { findByTestId, getByTestId } = await renderScreen();
+    await findByTestId('help-faqs-empty');
+
+    expect(getByTestId('help-faqs-still-need-help')).toBeTruthy();
+  });
+
   describe('step-by-step guides', () => {
     it('lists the guide topics this community has switched on, above the community answers', async () => {
       mockGetMembersGuide.mockResolvedValue(GUIDE);

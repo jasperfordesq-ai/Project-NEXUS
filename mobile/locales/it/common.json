@@ -72,6 +72,7 @@
   "errors": {
     "accountUnderMinimumAge": "Questa app è riservata agli adulti dai 18 anni in su. Se pensi che si tratti di un errore, contatta gli organizzatori della tua comunità.",
     "boundaryTitle": "Qualcosa è andato storto",
+    "boundaryReport": "Segnala questo problema",
     "generic": "Qualcosa è andato storto. Riprova.",
     "loadFailedTitle": "Caricamento non riuscito",
     "loadFailedSubtitle": "Si è verificato un problema durante il caricamento. Riprova.",

@@ -259,6 +259,7 @@ export const UNGATED_ROUTES: Readonly<Record<string, string>> = {
   'help-faqs': 'Support content must stay reachable regardless of modules.',
   'help-guide': 'Help Centre guides; each topic and article hides itself when its feature is off.',
   support: 'Support hub must stay reachable regardless of modules.',
+  'help-support': 'Asking for help must work whatever is switched on — it is how a member reports that something is not.',
   'static-page': 'About/contact pages — public content.',
   'legal-acceptance': 'A legal refusal must be resolvable whatever is switched on.',
   'legal-document': 'Legal documents must always be readable.',

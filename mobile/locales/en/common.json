@@ -72,6 +72,7 @@
   "errors": {
     "accountUnderMinimumAge": "This app is for adults aged 18 and over. If you think this is a mistake, contact your community's organisers.",
     "boundaryTitle": "Something went wrong",
+    "boundaryReport": "Report this problem",
     "generic": "Something went wrong. Please try again.",
     "loadFailedTitle": "Couldn't load this",
     "loadFailedSubtitle": "Something went wrong while loading. Please try again.",

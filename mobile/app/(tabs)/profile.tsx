@@ -88,6 +88,8 @@ const FEDERATION: MenuItem[] = [
 ];
 
 const ACCOUNT: MenuItem[] = [
+  // Ungated on purpose: asking for help must work whatever the community has switched off.
+  { labelKey: 'menuLabels.helpSupport', descriptionKey: 'navDescriptions.helpSupport', icon: 'help-buoy-outline', route: '/(modals)/help-support' as Href, tone: '#0ea5e9' },
   { labelKey: 'settings', descriptionKey: 'navDescriptions.settings', icon: 'settings-outline', route: '/(modals)/settings', tone: '#64748b', moduleGate: 'settings' },
 ];
 

@@ -50,6 +50,7 @@ const MUST_GUARD = [
   'app/(modals)/match-preferences.tsx',
   'app/(modals)/podcast-studio.tsx',
   'app/(modals)/marketplace-merchant-onboarding.tsx',
+  'app/(modals)/help-support.tsx',
 ];
 
 /** Form-ish screens that deliberately do NOT guard, and why. */

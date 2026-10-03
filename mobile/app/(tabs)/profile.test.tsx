@@ -30,6 +30,8 @@ jest.mock('react-i18next', () => ({
         'editProfile': 'Edit profile',
         'browseMembers': 'Browse Members',
         'settings': 'Settings',
+        'menuLabels.helpSupport': 'Help & support',
+        'navDescriptions.helpSupport': 'Ask a question, report a problem or share an idea with your community’s support team.',
         'wallet': 'Wallet',
         'messages': 'Messages',
         'notifications': 'Notifications',
@@ -384,6 +386,24 @@ describe('MoreScreen (More tab)', () => {
     const { getAllByText, getByText } = render(<MoreScreen />);
     expect(getAllByText('Account').length).toBeGreaterThanOrEqual(1);
     expect(getByText('Settings')).toBeTruthy();
+  });
+
+  it('offers Help & support in the Account section, opening the native form', () => {
+    const { getByLabelText } = render(<MoreScreen />);
+
+    fireEvent.press(getByLabelText('Help & support'));
+
+    expect(router.push).toHaveBeenCalledWith('/(modals)/help-support');
+  });
+
+  it('keeps Help & support reachable even when every module is switched off', () => {
+    // Asking for help is how a member reports that something is NOT working.
+    mockHasModule.mockImplementation(() => false);
+    mockHasFeature.mockImplementation(() => false);
+
+    const { getByText } = render(<MoreScreen />);
+
+    expect(getByText('Help & support')).toBeTruthy();
   });
 
   it('makes the newly completed member modules reachable from ordinary navigation', () => {
