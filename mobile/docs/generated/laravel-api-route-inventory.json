@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2751,
-  "api_route_rows": 2716,
-  "distinct_api_paths": 2261,
+  "total_registered_routes": 2753,
+  "api_route_rows": 2718,
+  "distinct_api_paths": 2263,
   "route_source_fingerprint": {
-    "digest": "650984bb51547828f9ace36b68a385f67d8dceab74b3eedb1c7adcce9a9d6462",
+    "digest": "95347addea7340580e50dfbd32f836abe527f293547c482e8f0259091b4604a0",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "4cfdab26d3cfc879896ec345768a1b674d45c892aedaf0d15e8d99b2ce911e33"
+        "sha256": "19d277764d2820ed0d454e4545aa28201e336e34cc4f8c3aab6878a08f792a46"
       },
       {
         "file": "routes/channels.php",
@@ -662,6 +662,9 @@
     "/api/v2/admin/broker/exchanges/{id}/approve": [
       "POST"
     ],
+    "/api/v2/admin/broker/exchanges/{id}/cancel-dispute": [
+      "POST"
+    ],
     "/api/v2/admin/broker/exchanges/{id}/reject": [
       "POST"
     ],
@@ -673,6 +676,9 @@
     ],
     "/api/v2/admin/broker/messages": [
       "GET"
+    ],
+    "/api/v2/admin/broker/messages/review-bulk": [
+      "POST"
     ],
     "/api/v2/admin/broker/messages/unreviewed-count": [
       "GET"

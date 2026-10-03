@@ -1067,6 +1067,7 @@
                 "description_label": "Vertel ons iets meer",
                 "description_hint": "Vertel wat u probeerde te doen. Als er iets misging, vertel dan wat u verwachtte en wat er in plaats daarvan gebeurde.",
                 "impact_legend": "Hoeveel last had u hiervan?",
+                "impact_hint": "Beantwoord dit alleen als iets niet werkt.",
                 "submit": "Versturen",
                 "success_title": "Bedankt. Uw bericht is verstuurd.",
                 "success_body": "Uw referentienummer is :ref. We sturen u ook een ontvangstbevestiging per e-mail.",

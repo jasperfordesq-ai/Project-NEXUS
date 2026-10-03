@@ -1067,6 +1067,7 @@
                 "description_label": "Tell us a bit more",
                 "description_hint": "Say what you were trying to do. If something went wrong, say what you expected and what happened instead.",
                 "impact_legend": "How much did this affect you?",
+                "impact_hint": "Only answer this if something isn't working.",
                 "impacts": {
                     "blocked": "I could not complete what I was doing",
                     "major": "It caused a major problem",

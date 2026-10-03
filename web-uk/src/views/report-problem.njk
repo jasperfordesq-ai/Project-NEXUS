@@ -81,7 +81,7 @@
                 {% for type in requestTypes %}
                   {% set inputId = "request_type" if loop.first else "request_type-" + loop.index %}
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="{{ inputId }}" name="request_type" type="radio" value="{{ type }}" aria-describedby="{{ inputId }}-item-hint"{% if type == 'broken' %} data-aria-controls="conditional-request_type-impact"{% endif %}{% if values.request_type == type %} checked{% endif %}>
+                    <input class="govuk-radios__input" id="{{ inputId }}" name="request_type" type="radio" value="{{ type }}" aria-describedby="{{ inputId }}-item-hint"{% if values.request_type == type %} checked{% endif %}>
                     <label class="govuk-label govuk-radios__label" for="{{ inputId }}">
                       {{ t("report_problem.types." + type + ".label") }}
                     </label>
@@ -89,28 +89,31 @@
                       {{ t("report_problem.types." + type + ".hint") }}
                     </div>
                   </div>
-                  {% if type == 'broken' %}
-                    <div class="govuk-radios__conditional{% if values.request_type != 'broken' %} govuk-radios__conditional--hidden{% endif %}" id="conditional-request_type-impact">
-                      <div class="govuk-form-group{% if errors.impact %} govuk-form-group--error{% endif %}">
-                        <fieldset class="govuk-fieldset"{% if errors.impact %} aria-describedby="impact-error"{% endif %}>
-                          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("report_problem.impact_legend") }}</legend>
-                          {% if errors.impact %}
-                            <p id="impact-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.impact }}</p>
-                          {% endif %}
-                          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-                            {% for impact in impacts %}
-                              <div class="govuk-radios__item">
-                                <input class="govuk-radios__input" id="{{ 'impact' if loop.first else 'impact-' + impact }}" name="impact" type="radio" value="{{ impact }}" {% if values.impact == impact %}checked{% endif %}>
-                                <label class="govuk-label govuk-radios__label" for="{{ 'impact' if loop.first else 'impact-' + impact }}">
-                                  {{ t("report_problem.impacts." + impact) }}
-                                </label>
-                              </div>
-                            {% endfor %}
-                          </div>
-                        </fieldset>
-                      </div>
-                    </div>
-                  {% endif %}
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          {# Always shown, not revealed by the "Something isn't working" radio: the GOV.UK
+             conditional reveal puts aria-expanded on a radio, which ARIA does not allow
+             (axe aria-allowed-attr, critical). Only required for that type. #}
+          <div class="govuk-form-group{% if errors.impact %} govuk-form-group--error{% endif %}">
+            <fieldset class="govuk-fieldset" aria-describedby="impact-hint{% if errors.impact %} impact-error{% endif %}">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t("report_problem.impact_legend") }}</h2>
+              </legend>
+              <div id="impact-hint" class="govuk-hint">{{ t("report_problem.impact_hint") }}</div>
+              {% if errors.impact %}
+                <p id="impact-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.impact }}</p>
+              {% endif %}
+              <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                {% for impact in impacts %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="{{ 'impact' if loop.first else 'impact-' + impact }}" name="impact" type="radio" value="{{ impact }}" {% if values.impact == impact %}checked{% endif %}>
+                    <label class="govuk-label govuk-radios__label" for="{{ 'impact' if loop.first else 'impact-' + impact }}">
+                      {{ t("report_problem.impacts." + impact) }}
+                    </label>
+                  </div>
                 {% endfor %}
               </div>
             </fieldset>

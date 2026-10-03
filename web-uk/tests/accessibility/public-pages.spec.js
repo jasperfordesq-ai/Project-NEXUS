@@ -922,10 +922,11 @@ test.describe('representative authenticated-page accessibility gate', () => {
       expect(response.headers()['content-language']).toBe('ar');
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).toHaveText(translate('ar', 'report_problem.title'));
-      // Impact is revealed only once "Something isn't working" is chosen.
-      await expect(page.getByText(translate('ar', 'report_problem.impacts.blocked'), { exact: true })).toBeHidden();
-      await page.locator('#request_type').check();
+      // Impact is always visible (no conditional reveal: that would put aria-expanded on a
+      // radio), with a hint that it is only needed for "Something isn't working".
       await expect(page.getByText(translate('ar', 'report_problem.impacts.blocked'), { exact: true })).toBeVisible();
+      await expect(page.locator('#impact-hint')).toHaveText(translate('ar', 'report_problem.impact_hint'));
+      await page.locator('#request_type').check();
 
       await page.locator('#summary').fill('No');
       await page.locator('#description').fill('Short');

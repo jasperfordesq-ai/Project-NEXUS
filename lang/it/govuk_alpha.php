@@ -75,6 +75,7 @@ return [
         'description_label' => 'Raccontaci qualcosa in più',
         'description_hint' => 'Dicci cosa stavi cercando di fare. Se qualcosa è andato storto, dicci cosa ti aspettavi e cosa è successo invece.',
         'impact_legend' => 'Quanto ti ha influenzato?',
+        'impact_hint' => 'Rispondi solo se qualcosa non funziona.',
         'submit' => 'Invia',
         'success_title' => 'Grazie. Il tuo messaggio è stato inviato.',
         'success_body' => 'Il tuo numero di riferimento è :ref. Ti invieremo anche una ricevuta via email.',

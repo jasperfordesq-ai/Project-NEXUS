@@ -1067,6 +1067,7 @@
                 "description_label": "Erzählen Sie uns etwas mehr",
                 "description_hint": "Sagen Sie, was Sie tun wollten. Wenn etwas schiefgelaufen ist, sagen Sie, was Sie erwartet haben und was stattdessen passiert ist.",
                 "impact_legend": "Wie stark hat Sie das beeinträchtigt?",
+                "impact_hint": "Beantworten Sie dies nur, wenn etwas nicht funktioniert.",
                 "submit": "Senden",
                 "success_title": "Vielen Dank. Ihre Nachricht wurde gesendet.",
                 "success_body": "Ihre Referenznummer lautet :ref. Wir senden Ihnen außerdem eine Bestätigung per E-Mail.",

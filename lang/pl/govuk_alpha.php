@@ -75,6 +75,7 @@ return [
         'description_label' => 'Napisz nam trochę więcej',
         'description_hint' => 'Napisz, co próbowałeś zrobić. Jeśli coś poszło nie tak, napisz, czego się spodziewałeś i co stało się zamiast tego.',
         'impact_legend' => 'W jakim stopniu Cię to dotknęło?',
+        'impact_hint' => 'Odpowiedz tylko wtedy, gdy coś nie działa.',
         'submit' => 'Wyślij',
         'success_title' => 'Dziękujemy. Twoja wiadomość została wysłana.',
         'success_body' => 'Twój numer referencyjny to :ref. Wyślemy Ci też potwierdzenie e-mailem.',

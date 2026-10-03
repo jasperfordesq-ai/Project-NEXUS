@@ -1067,6 +1067,7 @@
                 "description_label": "Cuéntenos un poco más",
                 "description_hint": "Cuéntenos qué intentaba hacer. Si algo falló, díganos qué esperaba y qué ocurrió en su lugar.",
                 "impact_legend": "¿Cuánto le afectó esto?",
+                "impact_hint": "Responda solo si algo no funciona.",
                 "submit": "Enviar",
                 "success_title": "Gracias. Su mensaje se ha enviado.",
                 "success_body": "Su número de referencia es :ref. También le enviaremos un acuse de recibo por correo electrónico.",

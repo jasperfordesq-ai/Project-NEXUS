@@ -6688,11 +6688,12 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="request_type" name="request_type" type="radio" value="broken"');
     expect(response.text).toContain('id="request_type-2" name="request_type" type="radio" value="how_to"');
     expect(response.text).toContain('id="request_type-4" name="request_type" type="radio" value="suggestion"');
-    // Impact is a conditionally revealed question under "Something isn't working" only,
-    // hidden (with JavaScript) until that is chosen.
-    expect(response.text).toContain('data-aria-controls="conditional-request_type-impact"');
-    expect(response.text).toContain('class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-request_type-impact"');
-    expect(response.text.match(/data-aria-controls=/g)).toHaveLength(1);
+    // Impact is its own always-visible question, hinted as only needed for "Something
+    // isn't working". Not a conditional reveal: GOV.UK's reveal script puts aria-expanded
+    // on the radio, which ARIA does not allow (axe aria-allowed-attr, critical).
+    expect(response.text).not.toContain('data-aria-controls=');
+    expect(response.text).not.toContain('govuk-radios__conditional');
+    expect(response.text).toContain('id="impact-hint" class="govuk-hint">Only answer this if something isn&#39;t working.</div>');
     expect(response.text).toContain('How much did this affect you?');
     expect(response.text).toContain('id="impact" name="impact" type="radio" value="blocked"');
     expect(response.text).toContain('Short summary');
@@ -6815,9 +6816,9 @@ describe('shared accessible frontend shell', () => {
     expect(follow.text).toContain('Tell us more (10 to 5000 characters)');
     expect(follow.text).toContain('Select how much this affected you');
     expect(follow.text).not.toContain('Select what you need help with');
-    // The chosen type survives, so the impact question stays open.
-    expect(follow.text).toContain('value="broken" aria-describedby="request_type-item-hint" data-aria-controls="conditional-request_type-impact" checked');
-    expect(follow.text).toContain('class="govuk-radios__conditional" id="conditional-request_type-impact"');
+    // The chosen type survives.
+    expect(follow.text).toContain('value="broken" aria-describedby="request_type-item-hint" checked');
+    expect(follow.text).toContain('aria-describedby="impact-hint impact-error"');
     expect(follow.text).toContain('<a href="#impact">');
   });
 

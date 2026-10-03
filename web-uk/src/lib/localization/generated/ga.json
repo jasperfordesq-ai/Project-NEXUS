@@ -1067,6 +1067,7 @@
                 "description_label": "Inis beagán eile dúinn",
                 "description_hint": "Inis dúinn cad a bhí tú ag iarraidh a dhéanamh. Má chuaigh rud éigin mícheart, inis dúinn cad a bhí tú ag súil leis agus cad a tharla ina ionad.",
                 "impact_legend": "Cé mhéad a chuir sé seo isteach ort?",
+                "impact_hint": "Freagair é seo amháin mura bhfuil rud éigin ag obair.",
                 "submit": "Seol",
                 "success_title": "Go raibh maith agat. Seoladh do theachtaireacht.",
                 "success_body": "Is é :ref d’uimhir thagartha. Seolfaimid admháil chugat i ríomhphost freisin.",

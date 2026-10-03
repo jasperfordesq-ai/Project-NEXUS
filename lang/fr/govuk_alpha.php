@@ -75,6 +75,7 @@ return [
         'description_label' => 'Dites-nous-en un peu plus',
         'description_hint' => 'Dites-nous ce que vous essayiez de faire. Si quelque chose n\'a pas fonctionné, dites-nous ce que vous attendiez et ce qui s\'est passé à la place.',
         'impact_legend' => 'Dans quelle mesure cela vous a-t-il affecté ?',
+        'impact_hint' => 'Répondez uniquement si quelque chose ne fonctionne pas.',
         'submit' => 'Envoyer',
         'success_title' => 'Merci. Votre message a été envoyé.',
         'success_body' => 'Votre numéro de référence est :ref. Nous vous enverrons aussi un accusé de réception par e-mail.',
