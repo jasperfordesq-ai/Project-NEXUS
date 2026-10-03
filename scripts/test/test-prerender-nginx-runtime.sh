@@ -46,7 +46,7 @@ docker run -d --rm \
     -v "$CONF:/etc/nginx/templates/default.conf.template:ro" \
     -v "$HTML:/usr/share/nginx/html" \
     -v "$TEST_ROOT/nginx/trusted-bots.list:/etc/nginx/prerender-trusted-bot-ips.list:ro" \
-    nginx:alpine3.21 >/dev/null
+    nginx:1.30-alpine >/dev/null
 
 PORT="$(docker inspect --format '{{(index (index .NetworkSettings.Ports "80/tcp") 0).HostPort}}' "$CONTAINER")"
 BASE="http://127.0.0.1:$PORT"

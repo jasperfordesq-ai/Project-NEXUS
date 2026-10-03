@@ -157,7 +157,7 @@ grep -Fq 'could not create and verify the crawler/snapshot maintenance gate' "$M
 "$REAL_DOCKER" run --rm \
     --tmpfs /state:rw,nosuid,nodev,size=2m \
     -v "$AUTH_HELPER:/usr/local/bin/nexus-maintenance-render-auth:ro" \
-    nginx:alpine3.21 sh -ceu '
+    nginx:1.30-alpine sh -ceu '
         apk add --no-cache acl apache2-utils >/dev/null
         cat > /tmp/fake-nginx <<"EOF"
 #!/bin/sh

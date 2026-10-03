@@ -51,7 +51,7 @@ ENV NEXUS_SKIP_PRERENDER=1
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine3.21 AS production
+FROM nginx:1.30-alpine AS production
 
 # `flock` serializes every mutation of the shared prerender volume across the
 # host publisher and authenticated Laravel invalidation/purge requests.
