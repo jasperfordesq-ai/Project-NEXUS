@@ -525,6 +525,18 @@ class SupportPendingActionService
             ->all();
     }
 
+    /**
+     * How many live actions are waiting for an answer in the current tenant —
+     * the same rows listPendingForTenant() lists (without its display cap).
+     */
+    public function pendingCountForTenant(): int
+    {
+        return $this->pendingAction->newQuery()
+            ->where('status', SupportPendingAction::STATUS_PENDING)
+            ->where('expires_at', '>', now())
+            ->count();
+    }
+
     public function pendingCountForSupported(int $supportedUserId): int
     {
         return $this->pendingAction->newQuery()

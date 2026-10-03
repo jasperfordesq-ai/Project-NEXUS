@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "高リスクのリスティング",
     "flag_reason_flagged_user": "フラグ付きメンバー",
     "flag_reason_manual_monitoring": "モニタリング中",
-    "flag_reason_unknown": "記録なし"
+    "flag_reason_unknown": "記録なし",
+    "support_needs": {
+      "intro": "メンバーは、登録時またはその後の設定で、追加のサポートを希望することを伝えられます。回答によっては、プラットフォームでできることが変わります。新しい回答をそれぞれ読み、確認済みにしてください。",
+      "filter_label": "表示",
+      "filter_unseen": "未確認",
+      "filter_all": "全員",
+      "search_label": "名前でメンバーを検索",
+      "search_placeholder": "名前で検索",
+      "no_search_results": "その名前に一致するメンバーはいません。",
+      "all_seen": "すべて確認済みです。全メンバーの回答が確認されています。",
+      "show_everyone": "全員を表示",
+      "list_label": "メンバーのサポートニーズ",
+      "answered": "回答日時: {{when}}",
+      "what_they_told_us": "メンバーからの回答",
+      "what_this_changes": "これによって変わること",
+      "nothing_changes": "自動的に変わることはありません。参考情報です。",
+      "status_unseen": "未確認",
+      "mark_seen": "確認済みにする",
+      "mark_seen_aria": "{{name}} さんのサポートニーズを確認済みにする",
+      "marked_seen_toast": "{{name}} さんを確認済みにしました。",
+      "mark_seen_failed": "確認済みにできませんでした。もう一度お試しください。",
+      "seen_by": "{{name}} さんが確認済み（{{when}}）",
+      "seen": "確認済み（{{when}}）"
+    },
+    "flagged_page": {
+      "intro": "セーフガーディング確認のために取得されたメッセージのコピーです。それぞれを読み、レビュー済みにしてください。これらは「メッセージ」ページと同じコピーです。",
+      "filter_label": "表示",
+      "filter_unreviewed": "レビュー待ち",
+      "filter_critical": "高・重大",
+      "filter_reviewed": "レビュー済み",
+      "filter_all": "すべて"
+    },
+    "guardians_page": {
+      "intro": "追加のサポートを希望するメンバーのためにスタッフが記録したガーディアンの取り決めと、メンバーが同意したかどうかです。",
+      "filter_label": "表示",
+      "filter_active": "有効",
+      "filter_consented": "メンバーが同意済み",
+      "filter_all": "すべて",
+      "consent_yes": "メンバーが同意済み",
+      "consent_no": "メンバーは未同意"
+    }
   }
 }

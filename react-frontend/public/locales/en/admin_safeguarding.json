@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "High-risk listing",
     "flag_reason_flagged_user": "Flagged member",
     "flag_reason_manual_monitoring": "Under monitoring",
-    "flag_reason_unknown": "Not recorded"
+    "flag_reason_unknown": "Not recorded",
+    "support_needs": {
+      "intro": "Members can tell us, when they join or later in their settings, that they would like extra support. Some answers change what they can do on the platform. Read each new answer, then mark it as seen.",
+      "filter_label": "Show",
+      "filter_unseen": "Not yet seen",
+      "filter_all": "Everyone",
+      "search_label": "Search members by name",
+      "search_placeholder": "Search by name",
+      "no_search_results": "No members match that name.",
+      "all_seen": "You're up to date. Every member's answers have been seen.",
+      "show_everyone": "Show everyone",
+      "list_label": "Members' support needs",
+      "answered": "Answered {{when}}",
+      "what_they_told_us": "What they told us",
+      "what_this_changes": "What this changes",
+      "nothing_changes": "Nothing changes automatically. This is for your information.",
+      "status_unseen": "Not yet seen",
+      "mark_seen": "Mark as seen",
+      "mark_seen_aria": "Mark {{name}}'s support needs as seen",
+      "marked_seen_toast": "{{name}} marked as seen.",
+      "mark_seen_failed": "Could not mark as seen. Please try again.",
+      "seen_by": "Seen by {{name}} {{when}}",
+      "seen": "Seen {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Copies of messages taken for a safeguarding check. Read each one and mark it as reviewed. These are the same message copies as on the Messages page.",
+      "filter_label": "Show",
+      "filter_unreviewed": "Waiting for review",
+      "filter_critical": "High and critical",
+      "filter_reviewed": "Reviewed",
+      "filter_all": "All"
+    },
+    "guardians_page": {
+      "intro": "Guardian arrangements staff have recorded for members who want extra support, and whether the member has agreed.",
+      "filter_label": "Show",
+      "filter_active": "Active",
+      "filter_consented": "Member has agreed",
+      "filter_all": "All",
+      "consent_yes": "Member has agreed",
+      "consent_no": "Member has not agreed"
+    }
   }
 }

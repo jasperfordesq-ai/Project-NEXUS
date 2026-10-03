@@ -6,7 +6,7 @@
 /**
  * SafeguardingHelp — collapsible guidance panel for the Safeguarding dashboard.
  *
- * Rendered at the bottom of SafeguardingDashboard. Focused on the member
+ * Rendered at the foot of each broker safeguarding page. Focused on the member
  * protection flow — how members are flagged, what activates, the adult-autonomy
  * principle, and audit access.
  *

@@ -19,7 +19,9 @@ import { hasAdminPanelAccess } from '@/lib/access';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Users from 'lucide-react/icons/users';
 import UserPlus from 'lucide-react/icons/user-plus';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
+import HandHeart from 'lucide-react/icons/hand-heart';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import UserCheck from 'lucide-react/icons/user-check';
@@ -50,6 +52,10 @@ export interface BrokerBadgeCounts {
   monitored_users: number;
   high_risk_listings: number;
   pending_matches: number;
+  /** Members who told us they need support and no broker has seen since. */
+  support_needs_unseen: number;
+  /** Prepared actions waiting for the supported member's answer. */
+  pending_support_actions: number;
 }
 
 interface BrokerSidebarProps {
@@ -84,6 +90,7 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
   const showExchanges = hasFeature('exchange_workflow');
   const showFeedModeration = hasModule('feed');
   const showReviewsModeration = hasFeature('reviews');
+  const showVolunteering = hasFeature('volunteering');
 
   // Check if user also has admin access for the "Full Admin" link.
   const hasAdminAccess = hasAdminPanelAccess(user);
@@ -112,6 +119,25 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       ],
     },
     {
+      // One page per safeguarding job (Oct 2026). These were four tabs on a
+      // single page and brokers said things were hidden; Members' support
+      // needs leads because those answers change what a member can do.
+      key: 'safeguarding',
+      title: t('sidebar.section_safeguarding'),
+      items: [
+        { key: 'safeguarding-support-needs', label: t('nav.safeguarding_support_needs'), icon: HeartHandshake, path: '/broker/safeguarding/support-needs', badgeKey: 'support_needs_unseen' },
+        // No badge: these are the same message copies the Messages item above
+        // already counts, and showing the number twice would double it.
+        { key: 'safeguarding-flagged', label: t('nav.safeguarding_flagged'), icon: Flag, path: '/broker/safeguarding/flagged-messages' },
+        { key: 'safeguarding-guardians', label: t('nav.safeguarding_guardians'), icon: Users, path: '/broker/safeguarding/guardians' },
+        { key: 'safeguarding-support-actions', label: t('nav.safeguarding_support_actions'), icon: ClipboardCheck, path: '/broker/safeguarding/support-actions', badgeKey: 'pending_support_actions' },
+        ...(showVolunteering
+          ? ([{ key: 'safeguarding-volunteering', label: t('nav.safeguarding_volunteering'), icon: HandHeart, path: '/broker/safeguarding/volunteering' }] as NavItem[])
+          : []),
+        { key: 'safeguarding-options', label: t('nav.safeguarding_options'), icon: SlidersHorizontal, path: '/broker/safeguarding-options' },
+      ],
+    },
+    {
       key: 'moderation',
       title: t('sidebar.section_moderation'),
       items: [
@@ -130,8 +156,6 @@ export function BrokerSidebar({ collapsed, onToggle, badges }: BrokerSidebarProp
       key: 'compliance',
       title: t('sidebar.section_compliance'),
       items: [
-        { key: 'safeguarding', label: t('nav.safeguarding'), icon: ShieldAlert, path: '/broker/safeguarding', badgeKey: 'safeguarding_alerts' },
-        { key: 'safeguarding-options', label: t('nav.safeguarding_options'), icon: SlidersHorizontal, path: '/broker/safeguarding-options' },
         { key: 'vetting', label: t('nav.vetting'), icon: ShieldCheck, path: '/broker/vetting', badgeKey: 'vetting_review_requests' },
         { key: 'monitoring', label: t('nav.monitoring'), icon: Eye, path: '/broker/monitoring', badgeKey: 'monitored_users' },
         { key: 'risk-tags', label: t('nav.risk_tags'), icon: AlertTriangle, path: '/broker/risk-tags', badgeKey: 'high_risk_listings' },

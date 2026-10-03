@@ -83,6 +83,8 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
   monitored_users: 0,
   high_risk_listings: 0,
   pending_matches: 0,
+  support_needs_unseen: 0,
+  pending_support_actions: 0,
 };
 
 describe('BrokerSidebar', () => {
@@ -120,6 +122,29 @@ describe('BrokerSidebar', () => {
     expect(screen.queryByText('Feed Posts')).not.toBeInTheDocument();
     // Non-feed moderation items remain.
     expect(screen.getByText('Content Queue')).toBeInTheDocument();
+  });
+
+  it('gives safeguarding its own section, support needs first, and hides volunteering incidents without the feature', () => {
+    mockUseAuth.mockReturnValue({ user: { id: 1, role: 'broker' } });
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 2, slug: 'test-tenant', name: 'Test Tenant' },
+      tenantPath: (path: string) => path,
+      hasFeature: (f: string) => f !== 'volunteering',
+      hasModule: () => true,
+    });
+
+    render(<BrokerSidebar collapsed={false} onToggle={vi.fn()} badges={EMPTY_BADGES} />);
+
+    const links = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    const safeguarding = links.filter((href) => href?.startsWith('/broker/safeguarding'));
+    expect(safeguarding).toEqual([
+      '/broker/safeguarding/support-needs',
+      '/broker/safeguarding/flagged-messages',
+      '/broker/safeguarding/guardians',
+      '/broker/safeguarding/support-actions',
+      '/broker/safeguarding-options',
+    ]);
+    expect(screen.queryByText('Volunteering incidents')).not.toBeInTheDocument();
   });
 
   it('hides Reviews moderation when the reviews feature is off', () => {

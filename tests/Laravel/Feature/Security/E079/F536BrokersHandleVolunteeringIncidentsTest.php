@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
@@ -63,6 +64,32 @@ final class F536BrokersHandleVolunteeringIncidentsTest extends TestCase
             'action_taken' => 'F536-BROKER-ACTION',
         ])->assertStatus(200);
         $this->assertSame('investigating', DB::table('vol_safeguarding_incidents')->where('id', $this->incidentId)->value('status'));
+    }
+
+    public function test_the_incident_alert_opens_the_volunteering_incidents_page(): void
+    {
+        // Since October 2026 /broker/safeguarding is four pages, and its bare
+        // address opens Members' support needs. The incident alert must open
+        // the page that lists incidents.
+        Mail::fake();
+        $broker = $this->user('broker');
+        $reporter = $this->user('member');
+
+        $result = app(\App\Services\SafeguardingService::class)->reportIncident((int) $reporter->id, [
+            'title' => 'F536-ALERT-LINK',
+            'description' => 'F536 alert link narrative',
+            'severity' => 'high',
+            'incident_type' => 'concern',
+        ], $this->testTenantId);
+        $this->assertIsArray($result);
+
+        $link = DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $broker->id)
+            ->where('type', 'safeguarding_flag')
+            ->orderByDesc('id')
+            ->value('link');
+        $this->assertSame('/broker/safeguarding/volunteering', $link);
     }
 
     public function test_a_coordinator_can_list_and_update_volunteering_incidents(): void

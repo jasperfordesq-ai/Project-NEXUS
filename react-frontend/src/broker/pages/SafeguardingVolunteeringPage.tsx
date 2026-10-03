@@ -1,0 +1,39 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+/**
+ * Broker › Safeguarding › Volunteering incidents (F-536).
+ *
+ * Volunteering incidents alert brokers and coordinators and link here, so
+ * they are handled here. Assigning an organisation's designated liaison person
+ * stays admin-only. Only reachable when the tenant has the volunteering
+ * feature — the route and the sidebar item are both gated.
+ */
+
+import { useTranslation } from 'react-i18next';
+import { usePageTitle } from '@/hooks';
+import HandHeart from 'lucide-react/icons/hand-heart';
+import { VolunteerSafeguarding } from '@/admin/modules/volunteering/VolunteerSafeguarding';
+import { AdminEmbed } from '@/admin/components/AdminEmbedContext';
+import { BrokerPageShell } from '../components';
+
+export default function SafeguardingVolunteeringPage() {
+  const { t } = useTranslation('broker');
+  usePageTitle(t('safeguarding.volunteering_incidents_title'));
+
+  return (
+    <BrokerPageShell
+      help={{ sectionId: 'broker_safeguarding', articleId: 'broker_safeguarding_page' }}
+      title={t('safeguarding.volunteering_incidents_title')}
+      description={t('safeguarding.volunteering_incidents_description')}
+      icon={HandHeart}
+      color="danger"
+    >
+      <AdminEmbed>
+        <VolunteerSafeguarding canAssignDlp={false} />
+      </AdminEmbed>
+    </BrokerPageShell>
+  );
+}

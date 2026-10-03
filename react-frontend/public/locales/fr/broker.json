@@ -11,7 +11,8 @@
     "section_records": "Dossiers",
     "section_settings": "Paramètres",
     "nav_label": "Navigation des courtiers",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Protection"
   },
   "header": {
     "toggle_sidebar": "Basculer la barre latérale",
@@ -52,7 +53,12 @@
     "moderation_comments": "Commentaires",
     "moderation_reviews": "Avis",
     "moderation_reports": "Signalements",
-    "safeguarding_options": "Options de protection"
+    "safeguarding_options": "Options de protection",
+    "safeguarding_support_needs": "Besoins d’accompagnement des membres",
+    "safeguarding_flagged": "Messages signalés",
+    "safeguarding_guardians": "Tuteurs",
+    "safeguarding_support_actions": "Actions d’accompagnement",
+    "safeguarding_volunteering": "Incidents liés au bénévolat"
   },
   "breadcrumbs": {
     "aria_label": "Navigation par fil d'Ariane",
@@ -91,7 +97,7 @@
     "monitored_users": "Utilisateurs surveillés",
     "high_risk_listings": "Annonces à haut risque",
     "new_signups_today": "Nouvelles inscriptions aujourd'hui",
-    "safeguarding_flags": "Drapeaux de protection",
+    "safeguarding_flags": "Besoins d’accompagnement pas encore vus",
     "quick_actions": "Actions rapides",
     "quick_access": "Accès rapide",
     "recent_activity": "Activité récente",
@@ -376,7 +382,15 @@
     "no_preferences": "Aucune préférence de protection des membres enregistrée.",
     "load_error_title": "Certaines données de protection n'ont pas pu être chargées",
     "load_error_body": "Une ou plusieurs sections ci-dessus n'ont pas pu être chargées. Réessayez — si l'échec persiste, consultez les journaux du broker.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "support_needs_title": "Besoins d’accompagnement des membres",
+    "support_needs_description": "Les membres qui nous ont dit souhaiter un accompagnement supplémentaire, et ce que cela change pour eux.",
+    "flagged_title": "Messages signalés",
+    "flagged_description": "Copies de messages en attente d’une vérification de protection.",
+    "guardians_title": "Tuteurs",
+    "guardians_description": "Dispositifs de tutelle pour les membres qui souhaitent un accompagnement supplémentaire.",
+    "support_actions_title": "Actions d’accompagnement",
+    "support_actions_description": "Actions préparées pour un membre et en attente de sa réponse."
   },
   "vetting": {
     "title": "Confirmations de vérification",

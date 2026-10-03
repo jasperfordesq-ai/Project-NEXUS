@@ -11,7 +11,8 @@
     "section_records": "Record",
     "section_settings": "Impostazioni",
     "nav_label": "Navigazione del broker",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Tutela"
   },
   "header": {
     "toggle_sidebar": "Attiva/disattiva barra laterale",
@@ -52,7 +53,12 @@
     "moderation_comments": "Commenti",
     "moderation_reviews": "Recensioni",
     "moderation_reports": "Segnalazioni",
-    "safeguarding_options": "Opzioni di tutela"
+    "safeguarding_options": "Opzioni di tutela",
+    "safeguarding_support_needs": "Bisogni di supporto dei membri",
+    "safeguarding_flagged": "Messaggi segnalati",
+    "safeguarding_guardians": "Tutori",
+    "safeguarding_support_actions": "Azioni di supporto",
+    "safeguarding_volunteering": "Incidenti nel volontariato"
   },
   "breadcrumbs": {
     "aria_label": "Navigazione a briciole",
@@ -91,7 +97,7 @@
     "monitored_users": "Utenti monitorati",
     "high_risk_listings": "Annunci ad alto rischio",
     "new_signups_today": "Nuove iscrizioni oggi",
-    "safeguarding_flags": "Segnalazioni dall'onboarding",
+    "safeguarding_flags": "Bisogni di supporto non ancora visti",
     "quick_actions": "Azioni rapide",
     "quick_access": "Accesso rapido",
     "recent_activity": "Attività recente",
@@ -376,7 +382,15 @@
     "no_preferences": "Nessuna preferenza di protezione dei membri registrata.",
     "load_error_title": "Non è stato possibile caricare alcuni dati di tutela",
     "load_error_body": "Una o più sezioni sopra non è stato possibile caricare. Riprova — se l'errore persiste, controlla i log del broker.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "support_needs_title": "Bisogni di supporto dei membri",
+    "support_needs_description": "I membri che ci hanno detto di desiderare un supporto aggiuntivo, e cosa cambia per loro.",
+    "flagged_title": "Messaggi segnalati",
+    "flagged_description": "Copie di messaggi in attesa di un controllo di tutela.",
+    "guardians_title": "Tutori",
+    "guardians_description": "Accordi di tutela per i membri che desiderano un supporto aggiuntivo.",
+    "support_actions_title": "Azioni di supporto",
+    "support_actions_description": "Azioni preparate per un membro in attesa della sua risposta."
   },
   "vetting": {
     "title": "Conferme di controllo",

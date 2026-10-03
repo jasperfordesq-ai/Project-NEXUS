@@ -11,7 +11,8 @@
     "section_records": "Rekordy",
     "section_settings": "Ustawienia",
     "nav_label": "Nawigacja brokera",
-    "section_moderation": "Moderacja"
+    "section_moderation": "Moderacja",
+    "section_safeguarding": "Ochrona"
   },
   "header": {
     "toggle_sidebar": "Przełącz pasek boczny",
@@ -52,7 +53,12 @@
     "moderation_comments": "Komentarze",
     "moderation_reviews": "Recenzje",
     "moderation_reports": "Zgłoszenia",
-    "safeguarding_options": "Opcje ochrony"
+    "safeguarding_options": "Opcje ochrony",
+    "safeguarding_support_needs": "Potrzeby wsparcia członków",
+    "safeguarding_flagged": "Oznaczone wiadomości",
+    "safeguarding_guardians": "Opiekunowie",
+    "safeguarding_support_actions": "Działania wspierające",
+    "safeguarding_volunteering": "Incydenty w wolontariacie"
   },
   "breadcrumbs": {
     "aria_label": "Nawigacja okruszkowa",
@@ -91,7 +97,7 @@
     "monitored_users": "Monitorowani użytkownicy",
     "high_risk_listings": "Ogłoszenia wysokiego ryzyka",
     "new_signups_today": "Nowe rejestracje dzisiaj",
-    "safeguarding_flags": "Oznaczenia ochrony",
+    "safeguarding_flags": "Niezobaczone potrzeby wsparcia",
     "quick_actions": "Szybkie działania",
     "quick_access": "Szybki dostęp",
     "recent_activity": "Ostatnia aktywność",
@@ -385,7 +391,15 @@
     "no_preferences": "Brak zarejestrowanych preferencji ochrony członków.",
     "load_error_title": "Nie udało się załadować niektórych danych ochrony",
     "load_error_body": "Nie udało się załadować jednej lub więcej powyższych sekcji. Spróbuj ponownie — jeśli błąd nadal występuje, sprawdź dzienniki brokera.",
-    "retry": "Spróbuj ponownie"
+    "retry": "Spróbuj ponownie",
+    "support_needs_title": "Potrzeby wsparcia członków",
+    "support_needs_description": "Członkowie, którzy powiedzieli nam, że chcieliby dodatkowego wsparcia, i co to dla nich zmienia.",
+    "flagged_title": "Oznaczone wiadomości",
+    "flagged_description": "Kopie wiadomości czekające na kontrolę bezpieczeństwa.",
+    "guardians_title": "Opiekunowie",
+    "guardians_description": "Ustalenia dotyczące opiekunów dla członków, którzy chcą dodatkowego wsparcia.",
+    "support_actions_title": "Działania wspierające",
+    "support_actions_description": "Działania przygotowane dla członka, które czekają na jego odpowiedź."
   },
   "vetting": {
     "title": "Potwierdzenia weryfikacji",

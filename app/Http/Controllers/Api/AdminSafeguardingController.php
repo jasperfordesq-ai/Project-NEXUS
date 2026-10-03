@@ -9,10 +9,9 @@ namespace App\Http\Controllers\Api;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
-use App\Models\TenantSafeguardingOption;
-use App\Models\UserSafeguardingPreference;
 use App\Services\EmailDispatchService;
 use App\Services\GuardianArrangementService;
+use App\Services\SafeguardingSupportNeedsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -128,12 +127,35 @@ class AdminSafeguardingController extends BaseApiController
             // Table may not exist yet
         }
 
+        // The broker panel's sidebar badges for the Members' support needs and
+        // Support actions pages — counted by the same code those pages list
+        // from, so a badge always matches the list beside it.
+        $supportNeedsUnseen = 0;
+        try {
+            $supportNeedsUnseen = app(SafeguardingSupportNeedsService::class)->unseenCount($tenantId);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (!$this->isTableNotFound($e)) {
+                throw $e;
+            }
+        }
+
+        $pendingSupportActions = 0;
+        try {
+            $pendingSupportActions = app(\App\Services\SupportPendingActionService::class)->pendingCountForTenant();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (!$this->isTableNotFound($e)) {
+                throw $e;
+            }
+        }
+
         return $this->respondWithData([
             'active_assignments' => $activeAssignments,
             'unreviewed_flags' => $unreviewedFlags,
             'consented_wards' => $consentedWards,
             'total_flags_this_month' => $totalFlagsThisMonth,
             'critical_flags' => $criticalFlags,
+            'support_needs_unseen' => $supportNeedsUnseen,
+            'pending_support_actions' => $pendingSupportActions,
         ]);
     }
 
@@ -687,8 +709,12 @@ class AdminSafeguardingController extends BaseApiController
     /**
      * GET /v2/admin/safeguarding/member-preferences
      *
-     * Returns all members who have selected safeguarding options during onboarding.
-     * Grouped by user, with their selected options and trigger status.
+     * Members' support needs: every member with a live safeguarding answer,
+     * grouped per member, with the protections their answers switch on
+     * (`protections`, trigger keys in display order) and whether staff have
+     * seen them since they last answered (`seen_at`, `seen_by_name`,
+     * `needs_review`). Logic lives in SafeguardingSupportNeedsService so this
+     * list, the sidebar badge and the broker dashboard tile agree.
      * Access is audit-logged.
      */
     public function memberPreferences(): JsonResponse
@@ -697,68 +723,7 @@ class AdminSafeguardingController extends BaseApiController
         $tenantId = TenantContext::getId();
 
         try {
-            $rows = DB::select(
-                "SELECT
-                    u.id as user_id,
-                    CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as user_name,
-                    u.avatar_url as user_avatar,
-                    usp.consent_given_at,
-                    usp.selected_value,
-                    tso.option_key,
-                    tso.option_type,
-                    tso.preset_source,
-                    tso.label as option_label,
-                    tso.triggers
-                 FROM user_safeguarding_preferences usp
-                 JOIN users u ON u.id = usp.user_id AND u.tenant_id = usp.tenant_id
-                 JOIN tenant_safeguarding_options tso ON tso.id = usp.option_id AND tso.tenant_id = usp.tenant_id
-                 WHERE usp.tenant_id = ? AND usp.revoked_at IS NULL AND tso.is_active = 1
-                 ORDER BY usp.consent_given_at DESC, u.id, tso.sort_order",
-                [$tenantId]
-            );
-
-            // Group by user
-            $grouped = [];
-            foreach ($rows as $row) {
-                if (! UserSafeguardingPreference::isEffectivelySelected(
-                    $row->option_type ?? null,
-                    $row->selected_value ?? null,
-                )) {
-                    continue;
-                }
-
-                $uid = (int) $row->user_id;
-                if (!isset($grouped[$uid])) {
-                    $grouped[$uid] = [
-                        'user_id' => $uid,
-                        'user_name' => trim($row->user_name),
-                        'user_avatar' => $row->user_avatar,
-                        'consent_given_at' => $row->consent_given_at,
-                        'options' => [],
-                        'has_triggers' => false,
-                        'is_declination_only' => true, // flipped to false the moment any real option is present
-                    ];
-                }
-                $triggers = json_decode($row->triggers ?? '{}', true) ?: [];
-                $hasTriggers = !empty(array_filter($triggers, fn ($v) => $v === true));
-                $isDeclination = $row->option_key === 'none_apply';
-                $grouped[$uid]['options'][] = [
-                    'option_key' => $row->option_key,
-                    'label' => TenantSafeguardingOption::localizeOptionText(
-                        $row->preset_source,
-                        $row->option_key,
-                        'label',
-                        $row->option_label,
-                    ),
-                    'is_declination' => $isDeclination,
-                ];
-                if ($hasTriggers) {
-                    $grouped[$uid]['has_triggers'] = true;
-                }
-                if (!$isDeclination) {
-                    $grouped[$uid]['is_declination_only'] = false;
-                }
-            }
+            $entries = app(SafeguardingSupportNeedsService::class)->listForTenant($tenantId);
 
             // Audit log this access
             DB::table('activity_log')->insert([
@@ -768,18 +733,64 @@ class AdminSafeguardingController extends BaseApiController
                 'action_type' => 'safeguarding',
                 'entity_type' => 'tenant',
                 'entity_id' => $tenantId,
-                'details' => json_encode(['members_count' => count($grouped)]),
+                'details' => json_encode(['members_count' => count($entries)]),
                 'ip_address' => request()?->ip(),
                 'created_at' => now(),
             ]);
 
-            return $this->respondWithData(array_values($grouped));
+            // tenant_id is internal to the service's all-tenants mode.
+            return $this->respondWithData(array_map(static function (array $entry): array {
+                unset($entry['tenant_id']);
+                return $entry;
+            }, $entries));
         } catch (\Illuminate\Database\QueryException $e) {
             if ($this->isTableNotFound($e)) {
                 return $this->respondWithData([]);
             }
             throw $e;
         }
+    }
+
+    /**
+     * POST /v2/admin/safeguarding/member-preferences/{userId}/seen
+     *
+     * Records that a member of staff has looked at a member's support needs.
+     * Clears them from the "not yet seen" list, the sidebar badge and the
+     * broker dashboard tile until the member next changes their answers.
+     */
+    public function markMemberPreferencesSeen(int $userId): JsonResponse
+    {
+        $staffUserId = $this->requireSafeguardingStaff('manage');
+        $tenantId = TenantContext::getId();
+
+        // Self-interest guard (as F-404/F-455/F-456): nobody closes the
+        // safeguarding record that is about themselves.
+        if ($userId === $staffUserId) {
+            return $this->respondWithError(
+                'AUTH_INSUFFICIENT_PERMISSIONS',
+                __('api.broker_cannot_moderate_own_content'),
+                null,
+                403
+            );
+        }
+
+        $service = app(SafeguardingSupportNeedsService::class);
+
+        // Tenant-scoped lookup: a member of another community, or one with no
+        // live answer, has nothing here to have seen.
+        if ($service->findForMember($tenantId, $userId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.member_not_found'), null, 404);
+        }
+
+        $service->markSeen($tenantId, $staffUserId, $userId, request()?->ip());
+
+        $entry = $service->findForMember($tenantId, $userId);
+
+        return $this->respondWithData([
+            'user_id' => $userId,
+            'seen_at' => $entry['seen_at'] ?? null,
+            'seen_by_name' => $entry['seen_by_name'] ?? null,
+        ]);
     }
 
     // ============================================

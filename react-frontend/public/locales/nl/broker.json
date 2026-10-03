@@ -11,7 +11,8 @@
     "section_records": "Dossiers",
     "section_settings": "Instellingen",
     "nav_label": "Makelaar navigatie",
-    "section_moderation": "Moderatie"
+    "section_moderation": "Moderatie",
+    "section_safeguarding": "Bescherming"
   },
   "header": {
     "toggle_sidebar": "Zijbalk in- of uitschakelen",
@@ -52,7 +53,12 @@
     "moderation_comments": "Reacties",
     "moderation_reviews": "Beoordelingen",
     "moderation_reports": "Meldingen",
-    "safeguarding_options": "Beschermingsopties"
+    "safeguarding_options": "Beschermingsopties",
+    "safeguarding_support_needs": "Ondersteuningsbehoeften van leden",
+    "safeguarding_flagged": "Gemarkeerde berichten",
+    "safeguarding_guardians": "Voogden",
+    "safeguarding_support_actions": "Ondersteuningsacties",
+    "safeguarding_volunteering": "Incidenten bij vrijwilligerswerk"
   },
   "breadcrumbs": {
     "aria_label": "Broodkruimelnavigatie",
@@ -91,7 +97,7 @@
     "monitored_users": "Gemonitorde Gebruikers",
     "high_risk_listings": "Hoge Risico Lijsten",
     "new_signups_today": "Nieuwe Aanmeldingen Vandaag",
-    "safeguarding_flags": "Vlaggen voor Bescherming",
+    "safeguarding_flags": "Nog niet geziene ondersteuningsbehoeften",
     "quick_actions": "Snelle Acties",
     "quick_access": "Snelle toegang",
     "recent_activity": "Recente Activiteit",
@@ -367,7 +373,15 @@
     "no_preferences": "Geen voorkeuren voor ledenbescherming geregistreerd.",
     "load_error_title": "Sommige beschermingsgegevens konden niet worden geladen",
     "load_error_body": "Een of meer secties hierboven konden niet worden geladen. Probeer het opnieuw — als de fout aanhoudt, controleer de brokerlogboeken.",
-    "retry": "Opnieuw proberen"
+    "retry": "Opnieuw proberen",
+    "support_needs_title": "Ondersteuningsbehoeften van leden",
+    "support_needs_description": "Leden die ons vertelden dat ze extra ondersteuning willen, en wat dat voor hen verandert.",
+    "flagged_title": "Gemarkeerde berichten",
+    "flagged_description": "Berichtkopieën die wachten op een beschermingscontrole.",
+    "guardians_title": "Voogden",
+    "guardians_description": "Voogdijafspraken voor leden die extra ondersteuning willen.",
+    "support_actions_title": "Ondersteuningsacties",
+    "support_actions_description": "Acties die voor een lid zijn voorbereid en wachten op zijn of haar antwoord."
   },
   "vetting": {
     "title": "Bevestigingen doorlichten",

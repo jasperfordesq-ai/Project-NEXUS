@@ -11,7 +11,8 @@
     "section_records": "السجلات",
     "section_settings": "الإعدادات",
     "nav_label": "الملاحة وسيط",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "الحماية"
   },
   "header": {
     "toggle_sidebar": "تبديل الشريط الجانبي",
@@ -52,7 +53,12 @@
     "moderation_comments": "التعليقات",
     "moderation_reviews": "المراجعات",
     "moderation_reports": "البلاغات",
-    "safeguarding_options": "خيارات الحماية"
+    "safeguarding_options": "خيارات الحماية",
+    "safeguarding_support_needs": "احتياجات الدعم لدى الأعضاء",
+    "safeguarding_flagged": "الرسائل المُعلَّمة",
+    "safeguarding_guardians": "الأوصياء",
+    "safeguarding_support_actions": "إجراءات الدعم",
+    "safeguarding_volunteering": "حوادث التطوع"
   },
   "breadcrumbs": {
     "aria_label": "تنقل فتات الخبز",
@@ -91,7 +97,7 @@
     "monitored_users": "المستخدمون المراقبون",
     "high_risk_listings": "قوائم عالية المخاطر",
     "new_signups_today": "التسجيلات الجديدة اليوم",
-    "safeguarding_flags": "علامات الانضمام",
+    "safeguarding_flags": "احتياجات دعم لم تُشاهد بعد",
     "quick_actions": "إجراءات سريعة",
     "quick_access": "وصول سريع",
     "recent_activity": "النشاط الأخير",
@@ -403,7 +409,15 @@
     "no_preferences": "لا توجد تفضيلات حماية الأعضاء مسجلة.",
     "load_error_title": "تعذر تحميل بعض بيانات الحماية",
     "load_error_body": "فشل تحميل قسم أو أكثر مما سبق. أعد المحاولة — إذا استمر الفشل، راجع سجلات الوسيط.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "support_needs_title": "احتياجات الدعم لدى الأعضاء",
+    "support_needs_description": "الأعضاء الذين أخبرونا بأنهم يرغبون في دعم إضافي، وما يغيّره ذلك بالنسبة لهم.",
+    "flagged_title": "الرسائل المُعلَّمة",
+    "flagged_description": "نسخ رسائل بانتظار فحص الحماية.",
+    "guardians_title": "الأوصياء",
+    "guardians_description": "ترتيبات الوصاية للأعضاء الذين يرغبون في دعم إضافي.",
+    "support_actions_title": "إجراءات الدعم",
+    "support_actions_description": "إجراءات أُعدّت لعضو وتنتظر رده."
   },
   "vetting": {
     "title": "تأكيدات الفحص",

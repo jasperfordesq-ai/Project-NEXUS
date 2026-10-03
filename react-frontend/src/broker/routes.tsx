@@ -9,9 +9,10 @@
  */
 
 import { Suspense, lazy } from 'react';
-import { Route, Navigate } from 'react-router-dom';
+import { Route, Navigate, useLocation } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
+import { safeguardingRedirectTarget } from './safeguardingRedirect';
 
 /**
  * Tenant-aware fallback for unmatched /broker/* paths. Without using
@@ -22,6 +23,22 @@ import { useTenant } from '@/contexts';
 function BrokerNotFoundRedirect() {
   const { tenantPath } = useTenant();
   return <Navigate to={tenantPath('/broker')} replace />;
+}
+
+/** Bare /broker/safeguarding → the page an old `?tab=` link meant (see safeguardingRedirect.ts). */
+function BrokerSafeguardingIndexRedirect() {
+  const { tenantPath } = useTenant();
+  const location = useLocation();
+  return <Navigate to={tenantPath(safeguardingRedirectTarget(location.search))} replace />;
+}
+
+/** Volunteering incidents depend on the tenant's `volunteering` feature. */
+function VolunteeringFeatureRoute({ children }: { children: React.ReactNode }) {
+  const { tenantPath, hasFeature } = useTenant();
+  if (!hasFeature('volunteering')) {
+    return <Navigate to={tenantPath('/broker/safeguarding')} replace />;
+  }
+  return <>{children}</>;
 }
 
 /** Bare /broker/moderation → the Content Queue (its landing page). */
@@ -70,7 +87,6 @@ function ModuleRoute({ module, children }: { module: 'feed'; children: React.Rea
 const BrokerDashboardPage = lazy(() => import('./pages/BrokerDashboardPage'));
 const MembersPage = lazy(() => import('./pages/MembersPage'));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
-const SafeguardingPage = lazy(() => import('./pages/SafeguardingPage'));
 const VettingPage = lazy(() => import('./pages/VettingPage'));
 const ExchangesPage = lazy(() => import('./pages/ExchangesPage'));
 const MessageReviewPage = lazy(() => import('./pages/MessageReviewPage'));
@@ -83,6 +99,13 @@ const MatchApprovalDetailPage = lazy(() => import('./pages/MatchApprovalDetailPa
 const ExchangeDetailPage = lazy(() => import('./pages/ExchangeDetailPage'));
 const MessageDetailPage = lazy(() => import('./pages/MessageDetailPage'));
 const ArchiveDetailPage = lazy(() => import('./pages/ArchiveDetailPage'));
+
+// Safeguarding — one page per job (was one page with four tabs until Oct 2026)
+const SafeguardingSupportNeedsPage = lazy(() => import('./pages/SafeguardingSupportNeedsPage'));
+const SafeguardingFlaggedMessagesPage = lazy(() => import('./pages/SafeguardingFlaggedMessagesPage'));
+const SafeguardingGuardiansPage = lazy(() => import('./pages/SafeguardingGuardiansPage'));
+const SafeguardingSupportActionsPage = lazy(() => import('./pages/SafeguardingSupportActionsPage'));
+const SafeguardingVolunteeringPage = lazy(() => import('./pages/SafeguardingVolunteeringPage'));
 
 // Compliance & oversight pages (ported from admin/broker-controls)
 const RiskTagsPage = lazy(() => import('./pages/RiskTagsPage'));
@@ -114,7 +137,14 @@ export function BrokerRoutes() {
       {/* Daily workflow */}
       <Route path="members" element={<Lazy><MembersPage /></Lazy>} />
       <Route path="onboarding" element={<Lazy><OnboardingPage /></Lazy>} />
-      <Route path="safeguarding" element={<Lazy><SafeguardingPage /></Lazy>} />
+
+      {/* Safeguarding — the bare path maps old ?tab= links onto the pages */}
+      <Route path="safeguarding" element={<BrokerSafeguardingIndexRedirect />} />
+      <Route path="safeguarding/support-needs" element={<Lazy><SafeguardingSupportNeedsPage /></Lazy>} />
+      <Route path="safeguarding/flagged-messages" element={<Lazy><SafeguardingFlaggedMessagesPage /></Lazy>} />
+      <Route path="safeguarding/guardians" element={<Lazy><SafeguardingGuardiansPage /></Lazy>} />
+      <Route path="safeguarding/support-actions" element={<Lazy><SafeguardingSupportActionsPage /></Lazy>} />
+      <Route path="safeguarding/volunteering" element={<VolunteeringFeatureRoute><Lazy><SafeguardingVolunteeringPage /></Lazy></VolunteeringFeatureRoute>} />
 
       {/* Exchanges — gated on the exchange_workflow feature */}
       <Route path="exchanges" element={<ExchangeFeatureRoute><Lazy><ExchangesPage /></Lazy></ExchangeFeatureRoute>} />

@@ -80,6 +80,51 @@ class AdminBrokerControllerTest extends TestCase
     // tile with the linked list read through its own endpoint.
     // ----------------------------------------------------------------
 
+    public function test_safeguarding_flags_tile_matches_members_not_yet_seen_and_drops_when_seen(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        Sanctum::actingAs($broker);
+
+        // An option whose triggers column is set but switches nothing on. The
+        // old count included it (`triggers IS NOT NULL`); the page lists the
+        // member, so it now counts as a support need to look at.
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $optionId = DB::table('tenant_safeguarding_options')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'option_key' => 'tile_need_' . uniqid(),
+            'option_type' => 'checkbox',
+            'label' => 'Tile need',
+            'is_active' => 1,
+            'sort_order' => 0,
+            'triggers' => json_encode(['restricts_messaging' => true]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('user_safeguarding_preferences')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $member->id,
+            'option_id' => $optionId,
+            'selected_value' => '1',
+            'consent_given_at' => now()->subMinute(),
+            'created_at' => now(),
+        ]);
+
+        $listUnseen = fn () => count(array_filter(
+            $this->apiGet('/v2/admin/safeguarding/member-preferences')->assertOk()->json('data'),
+            fn (array $entry) => $entry['needs_review'] === true,
+        ));
+
+        $before = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.onboarding_safeguarding_flags');
+        $this->assertSame($listUnseen(), $before);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$member->id}/seen")->assertOk();
+
+        // Until October 2026 nothing could make this number go down.
+        $after = $this->apiGet('/v2/admin/broker/dashboard')->assertOk()->json('data.onboarding_safeguarding_flags');
+        $this->assertSame($before - 1, $after);
+        $this->assertSame($listUnseen(), $after);
+    }
+
     public function test_unreviewed_messages_tile_matches_the_unreviewed_queue(): void
     {
         $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);

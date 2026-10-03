@@ -344,4 +344,159 @@ class AdminSafeguardingControllerTest extends TestCase
         $this->assertEquals('tenant', $log->entity_type);
         $this->assertNotNull($log->created_at);
     }
+
+    // ================================================================
+    // MEMBERS' SUPPORT NEEDS — protections, seen state, mark as seen
+    // ================================================================
+
+    /**
+     * A member with one live answer whose option carries the given triggers.
+     */
+    private function memberWithSupportNeed(array $triggers, ?string $consentAt = null, ?int $tenantId = null): User
+    {
+        $tenantId ??= $this->testTenantId;
+        $member = User::factory()->forTenant($tenantId)->create(['status' => 'active']);
+
+        $optionId = DB::table('tenant_safeguarding_options')->insertGetId([
+            'tenant_id' => $tenantId,
+            'option_key' => 'support_need_' . uniqid(),
+            'option_type' => 'checkbox',
+            'label' => 'Support need option',
+            'is_active' => 1,
+            'sort_order' => 0,
+            'triggers' => json_encode($triggers),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('user_safeguarding_preferences')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => $member->id,
+            'option_id' => $optionId,
+            'selected_value' => '1',
+            'consent_given_at' => $consentAt ?? now()->subMinute()->format('Y-m-d H:i:s'),
+            'created_at' => now(),
+        ]);
+
+        return $member;
+    }
+
+    public function test_member_preferences_names_the_protections_in_display_order(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $member = $this->memberWithSupportNeed([
+            'restricts_matching' => true,
+            'requires_vetted_interaction' => true,
+            'notify_admin_on_selection' => true,
+            'restricts_messaging' => false,
+        ]);
+        Sanctum::actingAs($broker);
+
+        $entry = collect($this->apiGet('/v2/admin/safeguarding/member-preferences')->assertOk()->json('data'))
+            ->firstWhere('user_id', $member->id);
+
+        $this->assertNotNull($entry);
+        // notify_admin_on_selection informs staff; it does not protect the member.
+        $this->assertSame(['requires_vetted_interaction', 'restricts_matching'], $entry['protections']);
+        $this->assertNull($entry['seen_at']);
+        $this->assertTrue($entry['needs_review']);
+    }
+
+    public function test_broker_can_mark_a_members_support_needs_as_seen(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create([
+            'role' => 'broker', 'status' => 'active', 'first_name' => 'Bea', 'last_name' => 'Broker',
+        ]);
+        $member = $this->memberWithSupportNeed(['requires_broker_approval' => true]);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$member->id}/seen")->assertOk();
+
+        $this->assertTrue(DB::table('activity_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $broker->id)
+            ->where('action', 'safeguarding_flag_reviewed')
+            ->where('entity_type', 'user')
+            ->where('entity_id', $member->id)
+            ->exists());
+
+        $entry = collect($this->apiGet('/v2/admin/safeguarding/member-preferences')->json('data'))
+            ->firstWhere('user_id', $member->id);
+        $this->assertNotNull($entry['seen_at']);
+        // Zone-marked, so a browser does not read UTC as its own local time.
+        $this->assertMatchesRegularExpression('/(Z|[+-]\d{2}:\d{2})$/', $entry['seen_at']);
+        $this->assertMatchesRegularExpression('/(Z|[+-]\d{2}:\d{2})$/', $entry['consent_given_at']);
+        $this->assertSame('Bea Broker', $entry['seen_by_name']);
+        $this->assertFalse($entry['needs_review']);
+    }
+
+    public function test_mark_seen_is_refused_for_a_regular_member(): void
+    {
+        $actor = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $member = $this->memberWithSupportNeed(['requires_broker_approval' => true]);
+        Sanctum::actingAs($actor);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$member->id}/seen")->assertStatus(403);
+        $this->assertFalse(DB::table('activity_log')
+            ->where('action', 'safeguarding_flag_reviewed')->where('entity_id', $member->id)->exists());
+    }
+
+    public function test_mark_seen_cannot_reach_another_tenants_member(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $foreign = $this->memberWithSupportNeed(['requires_broker_approval' => true], null, 999);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$foreign->id}/seen")->assertStatus(404);
+        $this->assertFalse(DB::table('activity_log')
+            ->where('action', 'safeguarding_flag_reviewed')->where('entity_id', $foreign->id)->exists());
+    }
+
+    public function test_staff_cannot_mark_their_own_support_needs_as_seen(): void
+    {
+        // Self-interest guard (same rule as F-404/F-455/F-456): the person a
+        // safeguarding record is about never closes it themselves.
+        $broker = $this->memberWithSupportNeed(['requires_vetted_interaction' => true]);
+        DB::table('users')->where('id', $broker->id)->update(['role' => 'broker']);
+        Sanctum::actingAs($broker->fresh());
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$broker->id}/seen")->assertStatus(403);
+        $this->assertFalse(DB::table('activity_log')
+            ->where('action', 'safeguarding_flag_reviewed')->where('entity_id', $broker->id)->exists());
+    }
+
+    public function test_changing_answers_after_being_seen_makes_the_member_unseen_again(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $member = $this->memberWithSupportNeed(['restricts_messaging' => true]);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$member->id}/seen")->assertOk();
+
+        // The member saves their preferences again later — consent_given_at refreshes.
+        DB::table('user_safeguarding_preferences')
+            ->where('user_id', $member->id)
+            ->update(['consent_given_at' => now()->addMinutes(5)->format('Y-m-d H:i:s')]);
+
+        $entry = collect($this->apiGet('/v2/admin/safeguarding/member-preferences')->json('data'))
+            ->firstWhere('user_id', $member->id);
+        $this->assertNull($entry['seen_at']);
+        $this->assertTrue($entry['needs_review']);
+    }
+
+    public function test_dashboard_counts_unseen_support_needs_and_the_count_drops_when_seen(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $member = $this->memberWithSupportNeed(['requires_vetted_interaction' => true]);
+        Sanctum::actingAs($broker);
+
+        $before = $this->apiGet('/v2/admin/safeguarding/dashboard')->assertOk()->json('data');
+        $this->assertArrayHasKey('support_needs_unseen', $before);
+        $this->assertArrayHasKey('pending_support_actions', $before);
+        $this->assertGreaterThanOrEqual(1, $before['support_needs_unseen']);
+
+        $this->apiPost("/v2/admin/safeguarding/member-preferences/{$member->id}/seen")->assertOk();
+
+        $after = $this->apiGet('/v2/admin/safeguarding/dashboard')->json('data');
+        $this->assertSame($before['support_needs_unseen'] - 1, $after['support_needs_unseen']);
+    }
 }

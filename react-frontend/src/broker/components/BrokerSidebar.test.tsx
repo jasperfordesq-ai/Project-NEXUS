@@ -44,6 +44,9 @@ const ZERO_BADGES = {
   unreviewed_messages: 0,
   monitored_users: 0,
   high_risk_listings: 0,
+  pending_matches: 0,
+  support_needs_unseen: 0,
+  pending_support_actions: 0,
 };
 
 const WITH_BADGES = {
@@ -54,6 +57,9 @@ const WITH_BADGES = {
   unreviewed_messages: 2,
   monitored_users: 0,
   high_risk_listings: 0,
+  pending_matches: 0,
+  support_needs_unseen: 0,
+  pending_support_actions: 0,
 };
 
 import { BrokerSidebar } from './BrokerSidebar';
@@ -80,11 +86,28 @@ describe('BrokerSidebar — expanded', () => {
   it('renders nav links for key routes', () => {
     render(<BrokerSidebar collapsed={false} onToggle={mockOnToggle} badges={ZERO_BADGES} />);
     // i18n: broker.nav.members → "Members"
-    expect(screen.getByRole('link', { name: /Members/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Members$/i })).toBeInTheDocument();
     // i18n: broker.nav.exchanges → "Exchanges"
     expect(screen.getByRole('link', { name: /Exchanges/i })).toBeInTheDocument();
-    // i18n: broker.nav.safeguarding → "Safeguarding"
-    expect(screen.getByRole('link', { name: /^Safeguarding$/i })).toBeInTheDocument();
+    // Safeguarding is a section of its own pages (was one page with four tabs).
+    expect(screen.getByText('Safeguarding')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Members' support needs/i })).toHaveAttribute('href', '/test/broker/safeguarding/support-needs');
+    expect(screen.getByRole('link', { name: /Flagged messages/i })).toHaveAttribute('href', '/test/broker/safeguarding/flagged-messages');
+    expect(screen.getByRole('link', { name: /^Guardians$/i })).toHaveAttribute('href', '/test/broker/safeguarding/guardians');
+    expect(screen.getByRole('link', { name: /Support actions/i })).toHaveAttribute('href', '/test/broker/safeguarding/support-actions');
+    expect(screen.getByRole('link', { name: /Volunteering incidents/i })).toHaveAttribute('href', '/test/broker/safeguarding/volunteering');
+  });
+
+  it('counts unseen support needs and waiting support actions on their own links', () => {
+    render(
+      <BrokerSidebar
+        collapsed={false}
+        onToggle={mockOnToggle}
+        badges={{ ...ZERO_BADGES, support_needs_unseen: 4, pending_support_actions: 6 }}
+      />,
+    );
+    expect(screen.getByRole('link', { name: /Members' support needs/i })).toHaveTextContent('4');
+    expect(screen.getByRole('link', { name: /Support actions/i })).toHaveTextContent('6');
   });
 
   it('renders the Full Admin link for admin users', () => {

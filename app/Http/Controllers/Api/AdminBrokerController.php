@@ -298,35 +298,19 @@ class AdminBrokerController extends BaseApiController
 
         $onboardingSafeguardingFlags = 0;
         try {
-            // Match the other dashboard counts: when super-admin views
-            // all-tenants, drop the tenant filter; otherwise scope to caller.
-            $uspWhere  = $effectiveTenantId !== null ? 'usp.tenant_id = ?' : '1=1';
-            $uspParams = $effectiveTenantId !== null ? [$effectiveTenantId] : [];
-            // The "already reviewed" subquery now also constrains tenant
-            // — without that, a `safeguarding_flag_reviewed` action_log row
-            // in tenant A could suppress the count in tenant B if user_ids
-            // ever overlap (federation, identity merges, future schema
-            // changes). Defensive correctness.
-            $row = DB::selectOne(
-                "SELECT COUNT(DISTINCT usp.user_id) as cnt
-                 FROM user_safeguarding_preferences usp
-                 JOIN tenant_safeguarding_options tso ON tso.id = usp.option_id
-                 WHERE {$uspWhere} AND usp.revoked_at IS NULL AND tso.is_active = 1
-                 AND (
-                     (tso.option_type = 'checkbox' AND LOWER(TRIM(COALESCE(usp.selected_value, ''))) IN ('1', 'true', 'yes', 'on'))
-                     OR (tso.option_type = 'select' AND TRIM(COALESCE(usp.selected_value, '')) <> '')
-                 )
-                 AND tso.triggers IS NOT NULL
-                 AND NOT EXISTS (
-                     SELECT 1 FROM activity_log al
-                     WHERE al.entity_type = 'user'
-                       AND al.entity_id = usp.user_id
-                       AND al.tenant_id = usp.tenant_id
-                       AND al.action = 'safeguarding_flag_reviewed'
-                 )",
-                $uspParams
-            );
-            $onboardingSafeguardingFlags = (int) ($row->cnt ?? 0);
+            // The tile opens Members' support needs, whose default view is
+            // "Not yet seen": members with a live support-need answer that no
+            // broker has marked as seen since they last answered. Counted by
+            // the service that page lists from, so the two always agree
+            // (null tenant = super admin's all-tenants view).
+            //
+            // Until October 2026 this was a separate query that excluded any
+            // member with a `safeguarding_flag_reviewed` row — but nothing
+            // wrote that row, so the number could only ever go up. It also
+            // counted any option with a non-NULL triggers column, including
+            // `{}` and all-false triggers, which matched nothing on the page.
+            $onboardingSafeguardingFlags = app(\App\Services\SafeguardingSupportNeedsService::class)
+                ->unseenCount($effectiveTenantId);
         } catch (\Exception $e) {
             $failedMetrics[] = 'onboarding_safeguarding_flags';
             \Illuminate\Support\Facades\Log::warning('[AdminBroker] Dashboard onboarding_safeguarding_flags failed: ' . $e->getMessage());

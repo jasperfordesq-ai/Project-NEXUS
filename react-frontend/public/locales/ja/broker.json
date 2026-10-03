@@ -11,7 +11,8 @@
     "section_records": "記録",
     "section_settings": "設定",
     "nav_label": "ブローカーのナビゲーション",
-    "section_moderation": "モデレーション"
+    "section_moderation": "モデレーション",
+    "section_safeguarding": "セーフガーディング"
   },
   "header": {
     "toggle_sidebar": "サイドバーを切り替え",
@@ -52,7 +53,12 @@
     "moderation_comments": "コメント",
     "moderation_reviews": "レビュー",
     "moderation_reports": "報告",
-    "safeguarding_options": "セーフガーディング設定"
+    "safeguarding_options": "セーフガーディング設定",
+    "safeguarding_support_needs": "メンバーのサポートニーズ",
+    "safeguarding_flagged": "フラグ付きメッセージ",
+    "safeguarding_guardians": "ガーディアン",
+    "safeguarding_support_actions": "支援アクション",
+    "safeguarding_volunteering": "ボランティア活動のインシデント"
   },
   "breadcrumbs": {
     "aria_label": "パンくずナビゲーション",
@@ -91,7 +97,7 @@
     "monitored_users": "監視中のユーザー",
     "high_risk_listings": "高リスクリスティング",
     "new_signups_today": "本日の新規登録",
-    "safeguarding_flags": "セーフガーディングフラグ",
+    "safeguarding_flags": "未確認のサポートニーズ",
     "quick_actions": "クイックアクション",
     "quick_access": "クイックアクセス",
     "recent_activity": "最近のアクティビティ",
@@ -367,7 +373,15 @@
     "no_preferences": "メンバーのセーフガーディング設定は記録されていません。",
     "load_error_title": "一部のセーフガーディングデータを読み込めませんでした",
     "load_error_body": "上記のセクションの1つ以上の読み込みに失敗しました。再試行してください — 失敗が続く場合は、ブローカーのログを確認してください。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "support_needs_title": "メンバーのサポートニーズ",
+    "support_needs_description": "追加のサポートを希望すると伝えてくれたメンバーと、それによって変わること。",
+    "flagged_title": "フラグ付きメッセージ",
+    "flagged_description": "セーフガーディング確認を待っているメッセージのコピー。",
+    "guardians_title": "ガーディアン",
+    "guardians_description": "追加のサポートを希望するメンバーのためのガーディアンの取り決め。",
+    "support_actions_title": "支援アクション",
+    "support_actions_description": "メンバーのために準備され、本人の回答を待っているアクション。"
   },
   "vetting": {
     "title": "審査確認",

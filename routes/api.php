@@ -3059,6 +3059,8 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/safeguarding/assignments', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'createAssignment']);
     Route::delete('/v2/admin/safeguarding/assignments/{id}', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'deleteAssignment']);
     Route::get('/v2/admin/safeguarding/member-preferences', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'memberPreferences']);
+    // "Mark as seen" on the broker panel's Members' support needs page.
+    Route::post('/v2/admin/safeguarding/member-preferences/{userId}/seen', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'markMemberPreferencesSeen'])->whereNumber('userId')->middleware('throttle:nexus-route-10-per-1m');
     // Co-decide support actions: the tenant's pending queue, and offline
     // attestation for members who confirmed by phone / in person / on paper.
     Route::get('/v2/admin/safeguarding/support-actions', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'supportActions']);

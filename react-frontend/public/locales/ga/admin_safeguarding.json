@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Liostú ardriosca",
     "flag_reason_flagged_user": "Ball a bhfuil bratach air",
     "flag_reason_manual_monitoring": "Faoi mhonatóireacht",
-    "flag_reason_unknown": "Gan taifeadadh"
+    "flag_reason_unknown": "Gan taifeadadh",
+    "support_needs": {
+      "intro": "Is féidir le baill a insint dúinn, nuair a chláraíonn siad nó níos déanaí ina socruithe, gur mhaith leo tacaíocht bhreise. Athraíonn roinnt freagraí an méid is féidir leo a dhéanamh ar an ardán. Léigh gach freagra nua, ansin marcáil é mar feicthe.",
+      "filter_label": "Taispeáin",
+      "filter_unseen": "Nach bhfacthas fós",
+      "filter_all": "Gach duine",
+      "search_label": "Cuardaigh baill de réir ainm",
+      "search_placeholder": "Cuardaigh de réir ainm",
+      "no_search_results": "Níl aon bhall ann a mheaitseálann an t-ainm sin.",
+      "all_seen": "Tá tú cothrom le dáta. Chonacthas freagraí gach ball.",
+      "show_everyone": "Taispeáin gach duine",
+      "list_label": "Riachtanais tacaíochta na mball",
+      "answered": "Freagraíodh {{when}}",
+      "what_they_told_us": "An méid a d’inis siad dúinn",
+      "what_this_changes": "An méid a athraíonn sé seo",
+      "nothing_changes": "Ní athraíonn aon rud go huathoibríoch. Is mar eolas duit é seo.",
+      "status_unseen": "Nach bhfacthas fós",
+      "mark_seen": "Marcáil mar feicthe",
+      "mark_seen_aria": "Marcáil riachtanais tacaíochta {{name}} mar feicthe",
+      "marked_seen_toast": "Marcáladh {{name}} mar feicthe.",
+      "mark_seen_failed": "Níorbh fhéidir é a mharcáil mar feicthe. Bain triail eile as.",
+      "seen_by": "Chonaic {{name}} é {{when}}",
+      "seen": "Feicthe {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Cóipeanna de theachtaireachtaí a tógadh le haghaidh seiceáil cosanta. Léigh gach ceann agus marcáil mar athbhreithnithe é. Is iad seo na cóipeanna céanna atá ar an leathanach Teachtaireachtaí.",
+      "filter_label": "Taispeáin",
+      "filter_unreviewed": "Ag fanacht le hathbhreithniú",
+      "filter_critical": "Ard agus criticiúil",
+      "filter_reviewed": "Athbhreithnithe",
+      "filter_all": "Gach ceann"
+    },
+    "guardians_page": {
+      "intro": "Socruithe caomhnóra a thaifead an fhoireann do bhaill ar mian leo tacaíocht bhreise, agus cé acu ar aontaigh an ball nó nár aontaigh.",
+      "filter_label": "Taispeáin",
+      "filter_active": "Gníomhach",
+      "filter_consented": "D’aontaigh an ball",
+      "filter_all": "Gach ceann",
+      "consent_yes": "D’aontaigh an ball",
+      "consent_no": "Níor aontaigh an ball"
+    }
   }
 }

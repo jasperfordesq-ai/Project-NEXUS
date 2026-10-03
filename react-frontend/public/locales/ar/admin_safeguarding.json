@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "إعلان عالي الخطورة",
     "flag_reason_flagged_user": "عضو مُعلَّم",
     "flag_reason_manual_monitoring": "تحت المراقبة",
-    "flag_reason_unknown": "غير مسجَّل"
+    "flag_reason_unknown": "غير مسجَّل",
+    "support_needs": {
+      "intro": "يمكن للأعضاء إخبارنا، عند الانضمام أو لاحقًا في إعداداتهم، بأنهم يرغبون في دعم إضافي. بعض الإجابات تغيّر ما يمكنهم فعله على المنصة. اقرأ كل إجابة جديدة، ثم ضع عليها علامة \"تمت المشاهدة\".",
+      "filter_label": "عرض",
+      "filter_unseen": "لم تُشاهد بعد",
+      "filter_all": "الجميع",
+      "search_label": "ابحث عن الأعضاء بالاسم",
+      "search_placeholder": "ابحث بالاسم",
+      "no_search_results": "لا يوجد عضو يطابق هذا الاسم.",
+      "all_seen": "أنت على اطلاع. تمت مشاهدة إجابات جميع الأعضاء.",
+      "show_everyone": "عرض الجميع",
+      "list_label": "احتياجات الدعم لدى الأعضاء",
+      "answered": "أجاب {{when}}",
+      "what_they_told_us": "ما أخبرونا به",
+      "what_this_changes": "ما الذي يغيّره هذا",
+      "nothing_changes": "لا يتغير شيء تلقائيًا. هذا للعلم فقط.",
+      "status_unseen": "لم تُشاهد بعد",
+      "mark_seen": "وضع علامة تمت المشاهدة",
+      "mark_seen_aria": "وضع علامة تمت المشاهدة على احتياجات الدعم لدى {{name}}",
+      "marked_seen_toast": "تم وضع علامة تمت المشاهدة على {{name}}.",
+      "mark_seen_failed": "تعذّر وضع علامة تمت المشاهدة. يرجى المحاولة مرة أخرى.",
+      "seen_by": "شاهده {{name}} {{when}}",
+      "seen": "تمت المشاهدة {{when}}"
+    },
+    "flagged_page": {
+      "intro": "نسخ من رسائل أُخذت لفحص الحماية. اقرأ كل واحدة وضع عليها علامة \"تمت المراجعة\". هذه هي نفس نسخ الرسائل الموجودة في صفحة الرسائل.",
+      "filter_label": "عرض",
+      "filter_unreviewed": "بانتظار المراجعة",
+      "filter_critical": "مرتفعة وحرجة",
+      "filter_reviewed": "تمت المراجعة",
+      "filter_all": "الكل"
+    },
+    "guardians_page": {
+      "intro": "ترتيبات الوصاية التي سجّلها الفريق للأعضاء الذين يرغبون في دعم إضافي، وما إذا كان العضو قد وافق.",
+      "filter_label": "عرض",
+      "filter_active": "نشطة",
+      "filter_consented": "وافق العضو",
+      "filter_all": "الكل",
+      "consent_yes": "وافق العضو",
+      "consent_no": "لم يوافق العضو"
+    }
   }
 }

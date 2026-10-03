@@ -11,7 +11,8 @@
     "section_records": "Registros",
     "section_settings": "Configurações",
     "nav_label": "Navegação do corretor",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Proteção"
   },
   "header": {
     "toggle_sidebar": "Alternar barra lateral",
@@ -52,7 +53,12 @@
     "moderation_comments": "Comentários",
     "moderation_reviews": "Avaliações",
     "moderation_reports": "Denúncias",
-    "safeguarding_options": "Opções de proteção"
+    "safeguarding_options": "Opções de proteção",
+    "safeguarding_support_needs": "Necessidades de apoio dos membros",
+    "safeguarding_flagged": "Mensagens sinalizadas",
+    "safeguarding_guardians": "Tutores",
+    "safeguarding_support_actions": "Ações de apoio",
+    "safeguarding_volunteering": "Incidentes de voluntariado"
   },
   "breadcrumbs": {
     "aria_label": "Navegação por Breadcrumb",
@@ -91,7 +97,7 @@
     "monitored_users": "Usuários Monitorados",
     "high_risk_listings": "Listagens de Alto Risco",
     "new_signups_today": "Novos Cadastros Hoje",
-    "safeguarding_flags": "Sinalizações de integração",
+    "safeguarding_flags": "Necessidades de apoio ainda não vistas",
     "quick_actions": "Ações Rápidas",
     "quick_access": "Acesso rápido",
     "recent_activity": "Atividade Recente",
@@ -376,7 +382,15 @@
     "no_preferences": "Nenhuma preferência de proteção de membro registrada.",
     "load_error_title": "Não foi possível carregar alguns dados de proteção",
     "load_error_body": "Não foi possível carregar uma ou mais secções acima. Tente novamente — se a falha persistir, verifique os registros do broker.",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "support_needs_title": "Necessidades de apoio dos membros",
+    "support_needs_description": "Membros que nos disseram que gostariam de apoio adicional, e o que isso muda para eles.",
+    "flagged_title": "Mensagens sinalizadas",
+    "flagged_description": "Cópias de mensagens a aguardar uma verificação de proteção.",
+    "guardians_title": "Tutores",
+    "guardians_description": "Acordos de tutela para membros que querem apoio adicional.",
+    "support_actions_title": "Ações de apoio",
+    "support_actions_description": "Ações preparadas para um membro que aguardam a sua resposta."
   },
   "vetting": {
     "title": "Confirmações de verificação",

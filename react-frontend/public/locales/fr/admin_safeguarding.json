@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Annonce à haut risque",
     "flag_reason_flagged_user": "Membre signalé",
     "flag_reason_manual_monitoring": "Sous surveillance",
-    "flag_reason_unknown": "Non renseigné"
+    "flag_reason_unknown": "Non renseigné",
+    "support_needs": {
+      "intro": "Les membres peuvent nous indiquer, à leur inscription ou plus tard dans leurs paramètres, qu’ils souhaitent un accompagnement supplémentaire. Certaines réponses modifient ce qu’ils peuvent faire sur la plateforme. Lisez chaque nouvelle réponse, puis marquez-la comme vue.",
+      "filter_label": "Afficher",
+      "filter_unseen": "Pas encore vus",
+      "filter_all": "Tout le monde",
+      "search_label": "Rechercher des membres par nom",
+      "search_placeholder": "Rechercher par nom",
+      "no_search_results": "Aucun membre ne correspond à ce nom.",
+      "all_seen": "Vous êtes à jour. Les réponses de tous les membres ont été vues.",
+      "show_everyone": "Afficher tout le monde",
+      "list_label": "Besoins d’accompagnement des membres",
+      "answered": "A répondu {{when}}",
+      "what_they_told_us": "Ce qu’ils nous ont dit",
+      "what_this_changes": "Ce que cela change",
+      "nothing_changes": "Rien ne change automatiquement. C’est pour votre information.",
+      "status_unseen": "Pas encore vu",
+      "mark_seen": "Marquer comme vu",
+      "mark_seen_aria": "Marquer comme vus les besoins d’accompagnement de {{name}}",
+      "marked_seen_toast": "{{name}} marqué comme vu.",
+      "mark_seen_failed": "Impossible de marquer comme vu. Veuillez réessayer.",
+      "seen_by": "Vu par {{name}} {{when}}",
+      "seen": "Vu {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Copies de messages prises pour une vérification de protection. Lisez chacune et marquez-la comme révisée. Ce sont les mêmes copies que sur la page Messages.",
+      "filter_label": "Afficher",
+      "filter_unreviewed": "En attente de révision",
+      "filter_critical": "Élevés et critiques",
+      "filter_reviewed": "Révisé",
+      "filter_all": "Tous"
+    },
+    "guardians_page": {
+      "intro": "Dispositifs de tutelle enregistrés par l’équipe pour les membres qui souhaitent un accompagnement supplémentaire, et si le membre a donné son accord.",
+      "filter_label": "Afficher",
+      "filter_active": "Actifs",
+      "filter_consented": "Le membre a donné son accord",
+      "filter_all": "Tous",
+      "consent_yes": "Le membre a donné son accord",
+      "consent_no": "Le membre n’a pas donné son accord"
+    }
   }
 }

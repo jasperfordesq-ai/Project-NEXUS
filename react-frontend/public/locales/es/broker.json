@@ -11,7 +11,8 @@
     "section_records": "Registros",
     "section_settings": "Ajustes",
     "nav_label": "Navegación del intermediario",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Protección"
   },
   "header": {
     "toggle_sidebar": "Alternar barra lateral",
@@ -52,7 +53,12 @@
     "moderation_comments": "Comentarios",
     "moderation_reviews": "Reseñas",
     "moderation_reports": "Denuncias",
-    "safeguarding_options": "Opciones de protección"
+    "safeguarding_options": "Opciones de protección",
+    "safeguarding_support_needs": "Necesidades de apoyo de los miembros",
+    "safeguarding_flagged": "Mensajes marcados",
+    "safeguarding_guardians": "Tutores",
+    "safeguarding_support_actions": "Acciones de apoyo",
+    "safeguarding_volunteering": "Incidentes de voluntariado"
   },
   "breadcrumbs": {
     "aria_label": "Navegación de migas de pan",
@@ -91,7 +97,7 @@
     "monitored_users": "Usuarios Monitoreados",
     "high_risk_listings": "Listados de Alto Riesgo",
     "new_signups_today": "Nuevas Inscripciones Hoy",
-    "safeguarding_flags": "Indicadores de incorporación",
+    "safeguarding_flags": "Necesidades de apoyo aún no vistas",
     "quick_actions": "Acciones Rápidas",
     "quick_access": "Acceso rápido",
     "recent_activity": "Actividad Reciente",
@@ -376,7 +382,15 @@
     "no_preferences": "No se han registrado preferencias de protección de miembros.",
     "load_error_title": "Algunos datos de protección no se pudieron cargar",
     "load_error_body": "Una o más secciones anteriores no se pudieron cargar. Reintenta — si el error persiste, revisa los registros del intermediario.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "support_needs_title": "Necesidades de apoyo de los miembros",
+    "support_needs_description": "Miembros que nos dijeron que les gustaría recibir apoyo adicional, y lo que eso cambia para ellos.",
+    "flagged_title": "Mensajes marcados",
+    "flagged_description": "Copias de mensajes pendientes de una revisión de protección.",
+    "guardians_title": "Tutores",
+    "guardians_description": "Acuerdos de tutela para miembros que desean apoyo adicional.",
+    "support_actions_title": "Acciones de apoyo",
+    "support_actions_description": "Acciones preparadas para un miembro que esperan su respuesta."
   },
   "vetting": {
     "title": "Confirmaciones de verificación",

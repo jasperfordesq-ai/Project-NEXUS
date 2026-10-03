@@ -518,9 +518,6 @@
     "src/admin/modules/resources/ResourcesAdmin.test.tsx": {
       "TS18048": 1
     },
-    "src/admin/modules/safeguarding/SafeguardingDashboard.test.tsx": {
-      "TS18046": 1
-    },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
       "TS2339": 1
     },
@@ -626,9 +623,6 @@
     },
     "src/broker/components/BrokerHeader.test.tsx": {
       "TS2345": 1
-    },
-    "src/broker/components/BrokerSidebar.test.tsx": {
-      "TS2741": 14
     },
     "src/broker/pages/BrokerConfigurationPage.test.tsx": {
       "TS2322": 1,
@@ -1913,7 +1907,7 @@
     }
   },
   "totals": {
-    "fileCount": 565,
-    "errorCount": 1727
+    "fileCount": 563,
+    "errorCount": 1712
   }
 }

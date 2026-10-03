@@ -4,9 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Batch render tests for Report, Resource, and Safeguarding admin modules:
+ * Batch render tests for Report and Resource admin modules:
  * - HoursReportsPage, InactiveMembersPage, MemberReportsPage,
- *   ModerationQueuePage, SocialValuePage, ResourcesAdmin, SafeguardingDashboard
+ *   ModerationQueuePage, SocialValuePage, ResourcesAdmin
  *
  * Smoke tests only — verify each component renders without crashing.
  */
@@ -124,7 +124,7 @@ vi.mock('@/lib/tenant-routing', () => ({
   tenantPath: vi.fn((p: string) => `/test${p}`),
 }));
 
-// Mock logger used by SafeguardingDashboard
+// Mock logger
 vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
   logWarn: vi.fn(),
@@ -225,13 +225,5 @@ describe('ResourcesAdmin', () => {
   });
 });
 
-// ─── SafeguardingDashboard ───────────────────────────────────────────────────
-
-import SafeguardingDashboard from '../safeguarding/SafeguardingDashboard';
-
-describe('SafeguardingDashboard', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<W><SafeguardingDashboard /></W>);
-    expect(container.querySelector('div')).toBeTruthy();
-  });
-});
+// The safeguarding dashboard became four broker pages in October 2026; its
+// panels are covered by safeguarding/safeguardingPanels.test.tsx.

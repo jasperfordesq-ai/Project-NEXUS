@@ -50,7 +50,7 @@ class SafeguardingService
 
     /**
      * F-467 — constrain a user query to the BROKER TIER: everyone who can act
-     * on a safeguarding assignment. The bell points at /broker/safeguarding,
+     * on a safeguarding assignment. The bell points at /broker/safeguarding/volunteering,
      * which BrokerRoute gates for admins, brokers and coordinators alike, so
      * brokers and coordinators are deliberately eligible here and this is NOT
      * AdminTier::allows().
@@ -1058,7 +1058,7 @@ class SafeguardingService
         try {
             // Validate the DLP user exists in this tenant AND has a role that
             // can actually act on the assignment. The bell points at
-            // /broker/safeguarding which is gated by BrokerRoute (admin /
+            // /broker/safeguarding/volunteering which is gated by BrokerRoute (admin /
             // tenant_admin / super_admin / broker / coordinator). Assigning a
             // regular member as DLP would send them a bell that bounces back
             // to /dashboard.
@@ -1110,7 +1110,7 @@ class SafeguardingService
                         'user_id' => $dlpUserId,
                         'type' => 'safeguarding_assignment',
                         'message' => __('emails_misc.safeguarding.dlp_assigned_bell', ['incident_id' => $incidentId]),
-                        'link' => '/broker/safeguarding',
+                        'link' => '/broker/safeguarding/volunteering',
                         'is_read' => false,
                     ]);
                 } catch (\Throwable $notifError) {
@@ -1145,7 +1145,7 @@ class SafeguardingService
                             ], __('emails_misc.safeguarding.info_card_incident_details'))
                             ->paragraph(__('emails_misc.safeguarding.dlp_assigned_body'))
                             ->paragraph(__('emails_misc.safeguarding.dlp_assigned_audit_note'))
-                            ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding'))
+                            ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
                             ->render();
 
                         $subject = __('emails_misc.safeguarding.dlp_assigned_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId]);
@@ -1205,7 +1205,7 @@ class SafeguardingService
                         'user_id' => $staff->id,
                         'type' => 'safeguarding_flag',
                         'message' => $message,
-                        'link' => '/broker/safeguarding',
+                        'link' => '/broker/safeguarding/volunteering',
                         'is_read' => false,
                     ]);
 
@@ -1231,7 +1231,7 @@ class SafeguardingService
                                 ], __('emails_misc.safeguarding.info_card_incident_details'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_review'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_auto_note'))
-                                ->button(__('emails_misc.safeguarding.incident_reported_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding'))
+                                ->button(__('emails_misc.safeguarding.incident_reported_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
                                 ->render();
 
                             $sent = EmailDispatchService::sendRaw(
@@ -1308,7 +1308,7 @@ class SafeguardingService
                         'user_id' => $dlpUserId,
                         'type' => 'safeguarding_assignment',
                         'message' => __('emails_misc.safeguarding.incident_status_dlp_bell', ['incident_id' => $incidentId, 'status' => $label]),
-                        'link' => '/broker/safeguarding',
+                        'link' => '/broker/safeguarding/volunteering',
                         'is_read' => false,
                     ]);
                 });
@@ -1376,7 +1376,7 @@ class SafeguardingService
                         ], __('emails_misc.safeguarding.info_card_status_update'))
                         ->paragraph(__('emails_misc.safeguarding.incident_updated_review'))
                         ->paragraph(__('emails_misc.safeguarding.incident_reported_auto_note'))
-                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding'))
+                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
                         ->render();
 
                     $emailSubject = __('emails_misc.safeguarding.incident_updated_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId, 'status' => $label]);

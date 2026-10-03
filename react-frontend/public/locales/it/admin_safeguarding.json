@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Annuncio ad alto rischio",
     "flag_reason_flagged_user": "Membro segnalato",
     "flag_reason_manual_monitoring": "Sotto monitoraggio",
-    "flag_reason_unknown": "Non registrato"
+    "flag_reason_unknown": "Non registrato",
+    "support_needs": {
+      "intro": "I membri possono dirci, al momento dell’iscrizione o più tardi nelle impostazioni, che desiderano un supporto aggiuntivo. Alcune risposte cambiano ciò che possono fare sulla piattaforma. Leggi ogni nuova risposta, poi segnala come vista.",
+      "filter_label": "Mostra",
+      "filter_unseen": "Non ancora visti",
+      "filter_all": "Tutti",
+      "search_label": "Cerca membri per nome",
+      "search_placeholder": "Cerca per nome",
+      "no_search_results": "Nessun membro corrisponde a quel nome.",
+      "all_seen": "Sei in pari. Le risposte di tutti i membri sono state viste.",
+      "show_everyone": "Mostra tutti",
+      "list_label": "Bisogni di supporto dei membri",
+      "answered": "Ha risposto {{when}}",
+      "what_they_told_us": "Cosa ci hanno detto",
+      "what_this_changes": "Cosa cambia",
+      "nothing_changes": "Non cambia nulla automaticamente. È solo per tua informazione.",
+      "status_unseen": "Non ancora visto",
+      "mark_seen": "Segna come visto",
+      "mark_seen_aria": "Segna come visti i bisogni di supporto di {{name}}",
+      "marked_seen_toast": "{{name}} segnato come visto.",
+      "mark_seen_failed": "Impossibile segnare come visto. Riprova.",
+      "seen_by": "Visto da {{name}} {{when}}",
+      "seen": "Visto {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Copie di messaggi prese per un controllo di tutela. Leggi ciascuna e segnala come revisionata. Sono le stesse copie della pagina Messaggi.",
+      "filter_label": "Mostra",
+      "filter_unreviewed": "In attesa di revisione",
+      "filter_critical": "Alti e critici",
+      "filter_reviewed": "Recensito",
+      "filter_all": "Tutti"
+    },
+    "guardians_page": {
+      "intro": "Accordi di tutela registrati dallo staff per i membri che desiderano un supporto aggiuntivo, e se il membro ha dato il suo consenso.",
+      "filter_label": "Mostra",
+      "filter_active": "Attivi",
+      "filter_consented": "Il membro ha acconsentito",
+      "filter_all": "Tutti",
+      "consent_yes": "Il membro ha acconsentito",
+      "consent_no": "Il membro non ha acconsentito"
+    }
   }
 }

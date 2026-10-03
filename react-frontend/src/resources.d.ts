@@ -27382,10 +27382,27 @@ export default interface Resources {
       "flag_reason_random_sample": "Random sample",
       "flag_reason_unknown": "Not recorded",
       "flagged_messages": "Flagged Messages",
+      "flagged_page": {
+        "filter_all": "All",
+        "filter_critical": "High and critical",
+        "filter_label": "Show",
+        "filter_reviewed": "Reviewed",
+        "filter_unreviewed": "Waiting for review",
+        "intro": "Copies of messages taken for a safeguarding check. Read each one and mark it as reviewed. These are the same message copies as on the Messages page."
+      },
       "from": "From",
       "guardian": "Guardian",
       "guardian_assignment_created": "Guardian assignment created",
       "guardian_assignments": "Guardian Assignments",
+      "guardians_page": {
+        "consent_no": "Member has not agreed",
+        "consent_yes": "Member has agreed",
+        "filter_active": "Active",
+        "filter_all": "All",
+        "filter_consented": "Member has agreed",
+        "filter_label": "Show",
+        "intro": "Guardian arrangements staff have recorded for members who want extra support, and whether the member has agreed."
+      },
       "help": {
         "about": {
           "aria": "About this dashboard",
@@ -27626,6 +27643,29 @@ export default interface Resources {
         "type_listing_create": "A new listing",
         "witness_hint": "Who else heard or saw the approval, if anyone.",
         "witness_label": "Witness (optional)"
+      },
+      "support_needs": {
+        "all_seen": "You're up to date. Every member's answers have been seen.",
+        "answered": "Answered {{when}}",
+        "filter_all": "Everyone",
+        "filter_label": "Show",
+        "filter_unseen": "Not yet seen",
+        "intro": "Members can tell us, when they join or later in their settings, that they would like extra support. Some answers change what they can do on the platform. Read each new answer, then mark it as seen.",
+        "list_label": "Members' support needs",
+        "mark_seen": "Mark as seen",
+        "mark_seen_aria": "Mark {{name}}'s support needs as seen",
+        "mark_seen_failed": "Could not mark as seen. Please try again.",
+        "marked_seen_toast": "{{name}} marked as seen.",
+        "no_search_results": "No members match that name.",
+        "nothing_changes": "Nothing changes automatically. This is for your information.",
+        "search_label": "Search members by name",
+        "search_placeholder": "Search by name",
+        "seen": "Seen {{when}}",
+        "seen_by": "Seen by {{name}} {{when}}",
+        "show_everyone": "Show everyone",
+        "status_unseen": "Not yet seen",
+        "what_they_told_us": "What they told us",
+        "what_this_changes": "What this changes"
       },
       "tab_flagged_messages": "Flagged Messages",
       "tab_guardian_assignments": "Guardian Assignments",
@@ -33454,7 +33494,7 @@ export default interface Resources {
       "recent_activity": "Recent Activity",
       "refresh": "Refresh",
       "safeguarding_alerts": "Safeguarding Alerts",
-      "safeguarding_flags": "Onboarding Flags",
+      "safeguarding_flags": "Support needs not yet seen",
       "time_days_ago": "{{count}}d ago",
       "time_days_ago_one": "{{count}}d ago",
       "time_days_ago_other": "{{count}}d ago",
@@ -33530,6 +33570,8 @@ export default interface Resources {
       "detail_title": "Exchange Details",
       "detail_title_with_id": "Exchange #{{id}}",
       "empty_hint": "Exchanges will appear here as soon as they match this filter.",
+      "empty_needs_action_hint": "No exchanges are waiting for approval or in dispute.",
+      "empty_needs_action_title": "Nothing needs your action",
       "empty_pending_hint": "Every exchange that needed broker review has been handled.",
       "empty_pending_title": "No exchanges waiting",
       "exchange_actions_aria": "Exchange actions",
@@ -33562,6 +33604,7 @@ export default interface Resources {
       "tab_completed": "Completed",
       "tab_disputed": "Disputed",
       "tab_in_progress": "In Progress",
+      "tab_needs_action": "Needs action",
       "tab_pending": "Pending",
       "tab_pending_broker": "Pending",
       "tabs_aria": "Exchange status filter",
@@ -34282,7 +34325,12 @@ export default interface Resources {
       "onboarding": "Onboarding",
       "risk_tags": "Risk Tags",
       "safeguarding": "Safeguarding",
+      "safeguarding_flagged": "Flagged messages",
+      "safeguarding_guardians": "Guardians",
       "safeguarding_options": "Safeguarding Options",
+      "safeguarding_support_actions": "Support actions",
+      "safeguarding_support_needs": "Members' support needs",
+      "safeguarding_volunteering": "Volunteering incidents",
       "vetting": "Vetting confirmations"
     },
     "onboarding": {
@@ -34400,6 +34448,7 @@ export default interface Resources {
       "stat_low": "Low risk",
       "stat_medium": "Medium risk",
       "tab_all": "All",
+      "tab_elevated": "High and critical",
       "tabs_aria": "Risk level filter",
       "tag_listing": "Tag Listing",
       "title": "Risk Tags",
@@ -34423,6 +34472,10 @@ export default interface Resources {
       "col_status": "Status",
       "col_ward": "Supported member",
       "description": "Monitor safeguarding alerts, guardian assignments, and member preferences.",
+      "flagged_description": "Message copies waiting for a safeguarding check.",
+      "flagged_title": "Flagged messages",
+      "guardians_description": "Guardian arrangements for members who want extra support.",
+      "guardians_title": "Guardians",
       "load_error_body": "One or more sections above failed to load. Retry — if the failure persists, check the broker logs.",
       "load_error_title": "Some safeguarding data couldn't be loaded",
       "mark_reviewed": "Mark Reviewed",
@@ -34440,6 +34493,10 @@ export default interface Resources {
       "stat_critical": "Critical Flags",
       "stat_flags_month": "Flags This Month",
       "stat_unreviewed": "Unreviewed",
+      "support_actions_description": "Actions prepared for a member that are waiting for their answer.",
+      "support_actions_title": "Support actions",
+      "support_needs_description": "Members who told us they would like extra support, and what that changes for them.",
+      "support_needs_title": "Members' support needs",
       "tab_flagged": "Flagged Messages",
       "tab_guardians": "Guardian Assignments",
       "tab_preferences": "Member Preferences",
@@ -34463,6 +34520,7 @@ export default interface Resources {
       "section_moderation": "Moderation",
       "section_overview": "Overview",
       "section_records": "Records",
+      "section_safeguarding": "Safeguarding",
       "section_settings": "Settings",
       "title": "Broker Panel"
     },
@@ -47986,7 +48044,7 @@ export default interface Resources {
             "title": "Changing the Broker Panel settings"
           },
           "broker_dashboard": {
-            "body": "The **Broker Dashboard** is the first page you see. It tells you what needs you now.\n\n## What needs you now\n\nAt the top, a box lists the kinds of work waiting for review, with the most urgent first. Press any line to go straight to that list. When nothing is waiting you see **All clear**.\n\n## The counters\n\nBelow that are counters. Each one opens the matching list, already filtered:\n\n- **Pending Exchanges**: exchanges waiting for broker approval\n- **Unreviewed Messages**: message copies nobody has reviewed yet\n- **High Risk Listings**: listings tagged high risk\n- **Monitored Users**: members under monitoring\n- **Vetting review requests**: members who asked for a vetting review\n- **Safeguarding Alerts**: urgent safeguarding items\n- **Onboarding Flags**: members whose safeguarding choices switch on protections\n\nIf a counter shows a dash, it could not load. Press **Refresh** to try again.\n\n## Quick Access and Recent Activity\n\n**Quick Access** has shortcuts to the main tools.\n\n**Recent Activity** lists the latest broker actions of some kinds only: exchange approvals and rejections, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records. It shows who did what and when.\n\nIt does not show member approvals or suspensions, balance changes, notes, content moderation, reports or vetting decisions. To check whether someone else has already dealt with one of these, look at the item itself, such as the member's record or notes.",
+            "body": "The **Broker Dashboard** is the first page you see. It tells you what needs you now.\n\n## What needs you now\n\nAt the top, a box lists the kinds of work waiting for review, with the most urgent first. Press any line to go straight to that list. When nothing is waiting you see **All clear**.\n\n## The counters\n\nBelow that are counters. Each one opens the matching list, already filtered:\n\n- **Pending Exchanges**: exchanges waiting for broker approval\n- **Unreviewed Messages**: message copies nobody has reviewed yet\n- **High Risk Listings**: listings tagged high risk\n- **Monitored Users**: members under monitoring\n- **Vetting review requests**: members who asked for a vetting review\n- **Safeguarding Alerts**: urgent safeguarding items\n- **Support needs not yet seen**: members who told us they would like extra support and whom no broker has marked as seen yet\n\nIf a counter shows a dash, it could not load. Press **Refresh** to try again.\n\n## Quick Access and Recent Activity\n\n**Quick Access** has shortcuts to the main tools.\n\n**Recent Activity** lists the latest broker actions of some kinds only: exchange approvals and rejections, message reviews, risk tags, monitoring changes, Broker Panel setting changes and insurance records. It shows who did what and when.\n\nIt does not show member approvals or suspensions, balance changes, notes, content moderation, reports or vetting decisions. To check whether someone else has already dealt with one of these, look at the item itself, such as the member's record or notes.",
             "summary": "The dashboard shows what is waiting for you, key counts and some recent broker actions.",
             "title": "Using the Broker Dashboard"
           },
@@ -48012,7 +48070,7 @@ export default interface Resources {
             "title": "When a member asks for coordinator help"
           },
           "broker_member_safeguarding_choices": {
-            "body": "When members join, your community can ask if they need extra support. They tick options such as needing a coordinator to arrange their exchanges. Each option can switch on one or more protections, called triggers.\n\n## What each trigger does\n\n- **Monitor messaging**: other members cannot message this member directly. Anyone who tries is offered **Request coordinator help** instead. The member is also left out of suggested matches. Their messages are not copied to brokers.\n- **Require coordinator approval**: any ordinary exchange this member takes part in waits for a broker's approval. Group exchanges have no approval step. Their suggested matches also wait in Match Approvals.\n- **Vetted members only**: only members with a confirmed vetting decision can contact this member. Until an admin has chosen your community's safeguarding policy package, nobody can contact a member with this protection.\n- **Restrict matching**: suggested matches involving this member wait in Match Approvals until a broker approves them. Neither member is told about a match before that.\n- **Notify safeguarding staff**: brokers and admins get a notification when a member ticks the option while joining.\n\nIf a member ticks several options, all their triggers apply together.\n\n## Changing their mind\n\nMembers can see and revoke their choices from the **Safeguarding & support** tab in their **Settings**. When they revoke a choice, brokers and admins are notified. Its protections stop unless another option they chose still applies them.\n\n## Seeing members' choices\n\nThe **Onboarding Flags** counter on the [Broker Dashboard](/broker) shows how many members have active safeguarding choices that switch on protections.\n\n> Treat these choices as private. Only other brokers and admins should know about them. Never mention them to other members.",
+            "body": "When members join, your community can ask if they need extra support. They tick options such as needing a coordinator to arrange their exchanges. Each option can switch on one or more protections, called triggers.\n\n## What each trigger does\n\n- **Monitor messaging**: other members cannot message this member directly. Anyone who tries is offered **Request coordinator help** instead. The member is also left out of suggested matches. Their messages are not copied to brokers.\n- **Require coordinator approval**: any ordinary exchange this member takes part in waits for a broker's approval. Group exchanges have no approval step. Their suggested matches also wait in Match Approvals.\n- **Vetted members only**: only members with a confirmed vetting decision can contact this member. Until an admin has chosen your community's safeguarding policy package, nobody can contact a member with this protection.\n- **Restrict matching**: suggested matches involving this member wait in Match Approvals until a broker approves them. Neither member is told about a match before that.\n- **Notify safeguarding staff**: brokers and admins get a notification when a member ticks the option while joining.\n\nIf a member ticks several options, all their triggers apply together.\n\n## Changing their mind\n\nMembers can see and revoke their choices from the **Safeguarding & support** tab in their **Settings**. When they revoke a choice, brokers and admins are notified. Its protections stop unless another option they chose still applies them.\n\n## Seeing members' choices\n\nThe **Support needs not yet seen** counter on the [Broker Dashboard](/broker) shows how many members told us they would like extra support and have not been marked as seen since they last answered. Press it to open [Members' support needs](/broker/safeguarding/support-needs), where you can read each member's answers and mark them as seen.\n\n> Treat these choices as private. Only other brokers and admins should know about them. Never mention them to other members.",
             "summary": "Each safeguarding option can switch on protections. Here is what each one does.",
             "title": "What happens when a member chooses a safeguarding option?"
           },
@@ -48042,7 +48100,7 @@ export default interface Resources {
             "title": "How safeguarding works in the Broker Panel"
           },
           "broker_safeguarding_page": {
-            "body": "The [Safeguarding](/broker/safeguarding) page brings together safeguarding records in one place. Its tabs are:\n\n- **Flagged Messages**: message copies for safeguarding review\n- **Guardian Assignments**: records of guardian arrangements staff have made for members who want extra support\n- **Member Preferences**: the safeguarding choices members have made\n- **Support Actions**: actions prepared on a member's behalf that are waiting for their approval\n\n## Access\n\nThis page needs special safeguarding access, on top of the broker role. Without it the page looks empty, even when there are records. If you need this page for your work, ask your admin.\n\nEven with access, some actions on this page are only for admins or named safeguarding staff. These include creating guardian arrangements and recording approvals.\n\n## Where brokers do most of the work\n\nMost day-to-day safeguarding tasks happen on other pages that every broker can use:\n\n- [Messages](/broker/messages) for reviewing copied messages\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
+            "body": "Safeguarding has its own section in the sidebar. Each page does one job:\n\n- **Members' support needs**: members who told us they would like extra support, what that changes for them, and whether a broker has seen it. Start here. Read each new answer, then press **Mark as seen**.\n- **Flagged messages**: copies of messages taken for a safeguarding check. These are the same copies as on the [Messages](/broker/messages) page.\n- **Guardians**: guardian arrangements staff have recorded, and whether the member has agreed.\n- **Support actions**: actions prepared on a member's behalf that are waiting for their answer.\n\n## When a member changes their answers\n\nIf a member changes their answers after you marked them as seen, they show as **Not yet seen** again. That way you never miss a change.\n\n## Other safeguarding pages\n\n- [User Monitoring](/broker/monitoring) for monitoring members and turning off messaging\n- [Vetting confirmations](/broker/vetting) for vetting decisions\n- [Safeguarding Options](/broker/safeguarding-options) for the choices members see",
             "summary": "The Safeguarding page gathers flagged messages, guardian arrangements and members' choices. It needs extra access.",
             "title": "What is on the Safeguarding page?"
           },
@@ -48057,7 +48115,7 @@ export default interface Resources {
             "title": "How do I record a vetting decision?"
           },
           "broker_vetting_revoke_review": {
-            "body": "## Revoking a confirmation\n\nRevoke a confirmation when it should no longer count, for example after a concern.\n\n1. Open [Vetting confirmations](/broker/vetting) and find the member.\n2. Press **Revoke attestation**.\n3. Choose a **Revocation reason**: **Community decision withdrawn**, **Member requested a correction**, **Safeguarding policy changed** or **Recorded in error**.\n4. Press **Revoke confirmation**.\n\nThe change applies straight away. The member can no longer contact protected members who only accept vetted contact.\n\n## Review requests\n\nA member can ask for a vetting review from the **Safeguarding & support** tab in their **Settings**. This often happens when they are blocked from contacting someone.\n\n1. Press the **Review requests** counter, or choose **Review requested** in the **Confirmation status** filter.\n2. If your community has completed its checks, press **Confirm attestation** and record the decision.\n3. If not, press **Resolve request**. Choose a **Review outcome**: **No change**, **Duplicate request** or **Member contacted**. Then press **Resolve request** again to confirm.\n\n## Viewing details\n\nPress **View details** to see the schemes, scope, private notes and dates for a member's current decision.\n\n> Every decision is recorded with your name and the reason. Take care, because these decisions control who can contact protected members.",
+            "body": "## Revoking a confirmation\n\nRevoke a confirmation when it should no longer count, for example after a concern.\n\n1. Open [Vetting confirmations](/broker/vetting) and find the member.\n2. Press **Revoke attestation**.\n3. Choose a **Revocation reason**: **Community decision withdrawn**, **Member requested a correction**, **Safeguarding policy changed** or **Recorded in error**.\n4. Press **Revoke confirmation**.\n\nThe change applies straight away. The member can no longer contact protected members who only accept vetted contact.\n\n## Review requests\n\nA member can ask for a vetting review from the **Safeguarding & support** tab in their **Settings**. This often happens when they are blocked from contacting someone.\n\n1. Press the **Re-checks requested** counter, or choose **Review requested** in the **Confirmation status** filter.\n2. If your community has completed its checks, press **Confirm attestation** and record the decision.\n3. If not, press **Resolve request**. Choose a **Review outcome**: **No change**, **Duplicate request** or **Member contacted**. Then press **Resolve request** again to confirm.\n\n## Viewing details\n\nPress **View details** to see the schemes, scope, private notes and dates for a member's current decision.\n\n> Every decision is recorded with your name and the reason. Take care, because these decisions control who can contact protected members.",
             "summary": "Withdraw a vetting confirmation, or close a member's request for a vetting review.",
             "title": "Revoking a vetting decision or answering a review request"
           },

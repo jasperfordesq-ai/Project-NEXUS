@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Anuncio de alto riesgo",
     "flag_reason_flagged_user": "Miembro marcado",
     "flag_reason_manual_monitoring": "Bajo supervisión",
-    "flag_reason_unknown": "No registrado"
+    "flag_reason_unknown": "No registrado",
+    "support_needs": {
+      "intro": "Los miembros pueden indicarnos, al unirse o más tarde en su configuración, que les gustaría recibir apoyo adicional. Algunas respuestas cambian lo que pueden hacer en la plataforma. Lea cada respuesta nueva y márquela como vista.",
+      "filter_label": "Mostrar",
+      "filter_unseen": "Aún no vistos",
+      "filter_all": "Todos",
+      "search_label": "Buscar miembros por nombre",
+      "search_placeholder": "Buscar por nombre",
+      "no_search_results": "Ningún miembro coincide con ese nombre.",
+      "all_seen": "Está al día. Se han visto las respuestas de todos los miembros.",
+      "show_everyone": "Mostrar a todos",
+      "list_label": "Necesidades de apoyo de los miembros",
+      "answered": "Respondió {{when}}",
+      "what_they_told_us": "Lo que nos dijeron",
+      "what_this_changes": "Lo que esto cambia",
+      "nothing_changes": "No cambia nada automáticamente. Es solo para su información.",
+      "status_unseen": "Aún no visto",
+      "mark_seen": "Marcar como visto",
+      "mark_seen_aria": "Marcar como vistas las necesidades de apoyo de {{name}}",
+      "marked_seen_toast": "{{name}} marcado como visto.",
+      "mark_seen_failed": "No se pudo marcar como visto. Inténtelo de nuevo.",
+      "seen_by": "Visto por {{name}} {{when}}",
+      "seen": "Visto {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Copias de mensajes tomadas para una revisión de protección. Lea cada una y márquela como revisada. Son las mismas copias de mensajes que en la página Mensajes.",
+      "filter_label": "Mostrar",
+      "filter_unreviewed": "Pendientes de revisión",
+      "filter_critical": "Altos y críticos",
+      "filter_reviewed": "Revisado",
+      "filter_all": "Todos"
+    },
+    "guardians_page": {
+      "intro": "Acuerdos de tutela que el personal ha registrado para miembros que desean apoyo adicional, y si el miembro ha dado su acuerdo.",
+      "filter_label": "Mostrar",
+      "filter_active": "Activos",
+      "filter_consented": "El miembro ha aceptado",
+      "filter_all": "Todos",
+      "consent_yes": "El miembro ha aceptado",
+      "consent_no": "El miembro no ha aceptado"
+    }
   }
 }

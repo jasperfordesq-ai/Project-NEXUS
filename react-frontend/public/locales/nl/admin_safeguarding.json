@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Advertentie met hoog risico",
     "flag_reason_flagged_user": "Gemarkeerd lid",
     "flag_reason_manual_monitoring": "Onder toezicht",
-    "flag_reason_unknown": "Niet vastgelegd"
+    "flag_reason_unknown": "Niet vastgelegd",
+    "support_needs": {
+      "intro": "Leden kunnen ons bij aanmelding of later in hun instellingen laten weten dat ze extra ondersteuning willen. Sommige antwoorden veranderen wat ze op het platform kunnen doen. Lees elk nieuw antwoord en markeer het daarna als gezien.",
+      "filter_label": "Toon",
+      "filter_unseen": "Nog niet gezien",
+      "filter_all": "Iedereen",
+      "search_label": "Leden zoeken op naam",
+      "search_placeholder": "Zoeken op naam",
+      "no_search_results": "Geen leden met die naam.",
+      "all_seen": "U bent bij. De antwoorden van alle leden zijn gezien.",
+      "show_everyone": "Iedereen tonen",
+      "list_label": "Ondersteuningsbehoeften van leden",
+      "answered": "Beantwoord {{when}}",
+      "what_they_told_us": "Wat ze ons vertelden",
+      "what_this_changes": "Wat dit verandert",
+      "nothing_changes": "Er verandert niets automatisch. Dit is ter informatie.",
+      "status_unseen": "Nog niet gezien",
+      "mark_seen": "Markeer als gezien",
+      "mark_seen_aria": "Markeer de ondersteuningsbehoeften van {{name}} als gezien",
+      "marked_seen_toast": "{{name}} gemarkeerd als gezien.",
+      "mark_seen_failed": "Kon niet als gezien markeren. Probeer het opnieuw.",
+      "seen_by": "Gezien door {{name}} {{when}}",
+      "seen": "Gezien {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Kopieën van berichten die zijn gemaakt voor een beschermingscontrole. Lees ze een voor een en markeer ze als beoordeeld. Dit zijn dezelfde kopieën als op de pagina Berichten.",
+      "filter_label": "Toon",
+      "filter_unreviewed": "Wacht op beoordeling",
+      "filter_critical": "Hoog en kritiek",
+      "filter_reviewed": "Beoordeeld",
+      "filter_all": "Alle"
+    },
+    "guardians_page": {
+      "intro": "Voogdijafspraken die medewerkers hebben vastgelegd voor leden die extra ondersteuning willen, en of het lid heeft ingestemd.",
+      "filter_label": "Toon",
+      "filter_active": "Actief",
+      "filter_consented": "Lid heeft ingestemd",
+      "filter_all": "Alle",
+      "consent_yes": "Lid heeft ingestemd",
+      "consent_no": "Lid heeft niet ingestemd"
+    }
   }
 }

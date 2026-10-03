@@ -24,7 +24,9 @@ import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import Users from 'lucide-react/icons/users';
 import UserPlus from 'lucide-react/icons/user-plus';
 import UserCheck from 'lucide-react/icons/user-check';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
+import HandHeart from 'lucide-react/icons/hand-heart';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
@@ -51,7 +53,7 @@ export interface BrokerDestination {
   icon: LucideIcon;
   path: string;
   /** Tenant feature that must be enabled for this destination. */
-  feature?: 'exchange_workflow' | 'reviews';
+  feature?: 'exchange_workflow' | 'reviews' | 'volunteering';
   /** Tenant module that must be enabled for this destination. */
   module?: 'feed';
 }
@@ -68,7 +70,11 @@ export const BROKER_DESTINATIONS: BrokerDestination[] = [
   { key: 'moderation-comments', labelKey: 'nav.moderation_comments', icon: MessageCircle, path: '/broker/moderation/comments' },
   { key: 'moderation-reviews', labelKey: 'nav.moderation_reviews', icon: Star, path: '/broker/moderation/reviews', feature: 'reviews' },
   { key: 'moderation-reports', labelKey: 'nav.moderation_reports', icon: Flag, path: '/broker/moderation/reports' },
-  { key: 'safeguarding', labelKey: 'nav.safeguarding', icon: ShieldAlert, path: '/broker/safeguarding' },
+  { key: 'safeguarding-support-needs', labelKey: 'nav.safeguarding_support_needs', icon: HeartHandshake, path: '/broker/safeguarding/support-needs' },
+  { key: 'safeguarding-flagged', labelKey: 'nav.safeguarding_flagged', icon: Flag, path: '/broker/safeguarding/flagged-messages' },
+  { key: 'safeguarding-guardians', labelKey: 'nav.safeguarding_guardians', icon: Users, path: '/broker/safeguarding/guardians' },
+  { key: 'safeguarding-support-actions', labelKey: 'nav.safeguarding_support_actions', icon: ClipboardCheck, path: '/broker/safeguarding/support-actions' },
+  { key: 'safeguarding-volunteering', labelKey: 'nav.safeguarding_volunteering', icon: HandHeart, path: '/broker/safeguarding/volunteering', feature: 'volunteering' },
   { key: 'safeguarding-options', labelKey: 'nav.safeguarding_options', icon: SlidersHorizontal, path: '/broker/safeguarding-options' },
   { key: 'vetting', labelKey: 'nav.vetting', icon: ShieldCheck, path: '/broker/vetting' },
   { key: 'monitoring', labelKey: 'nav.monitoring', icon: Eye, path: '/broker/monitoring' },

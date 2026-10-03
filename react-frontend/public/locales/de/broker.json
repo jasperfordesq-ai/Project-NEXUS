@@ -11,7 +11,8 @@
     "section_records": "Datensätze",
     "section_settings": "Einstellungen",
     "nav_label": "Broker-Navigation",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Schutzmaßnahmen"
   },
   "header": {
     "toggle_sidebar": "Seitenleiste umschalten",
@@ -52,7 +53,12 @@
     "moderation_comments": "Kommentare",
     "moderation_reviews": "Bewertungen",
     "moderation_reports": "Meldungen",
-    "safeguarding_options": "Schutzoptionen"
+    "safeguarding_options": "Schutzoptionen",
+    "safeguarding_support_needs": "Unterstützungsbedarf der Mitglieder",
+    "safeguarding_flagged": "Markierte Nachrichten",
+    "safeguarding_guardians": "Betreuungspersonen",
+    "safeguarding_support_actions": "Unterstützungsaktionen",
+    "safeguarding_volunteering": "Vorfälle im Ehrenamt"
   },
   "breadcrumbs": {
     "aria_label": "Breadcrumb-Navigation",
@@ -91,7 +97,7 @@
     "monitored_users": "Überwachte Benutzer",
     "high_risk_listings": "Hochrisiko-Listen",
     "new_signups_today": "Neue Anmeldungen heute",
-    "safeguarding_flags": "Schutzflaggen",
+    "safeguarding_flags": "Noch nicht gesehener Unterstützungsbedarf",
     "quick_actions": "Schnellaktionen",
     "quick_access": "Schnellzugriff",
     "recent_activity": "Aktuelle Aktivitäten",
@@ -367,7 +373,15 @@
     "no_preferences": "Keine Präferenzen zum Schutz der Mitglieder aufgezeichnet.",
     "load_error_title": "Einige Schutzdaten konnten nicht geladen werden",
     "load_error_body": "Einer oder mehrere Abschnitte oben konnten nicht geladen werden. Erneut versuchen – wenn der Fehler weiterhin auftritt, prüfen Sie die Broker-Logs.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "support_needs_title": "Unterstützungsbedarf der Mitglieder",
+    "support_needs_description": "Mitglieder, die uns mitgeteilt haben, dass sie zusätzliche Unterstützung wünschen, und was sich dadurch für sie ändert.",
+    "flagged_title": "Markierte Nachrichten",
+    "flagged_description": "Nachrichtenkopien, die auf eine Schutzprüfung warten.",
+    "guardians_title": "Betreuungspersonen",
+    "guardians_description": "Betreuungsvereinbarungen für Mitglieder, die zusätzliche Unterstützung wünschen.",
+    "support_actions_title": "Unterstützungsaktionen",
+    "support_actions_description": "Für ein Mitglied vorbereitete Aktionen, die auf seine Antwort warten."
   },
   "vetting": {
     "title": "Bestätigungen prüfen",

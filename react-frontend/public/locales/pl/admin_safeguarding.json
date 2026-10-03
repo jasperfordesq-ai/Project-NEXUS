@@ -446,6 +446,46 @@
     "flag_reason_high_risk_listing": "Ogłoszenie wysokiego ryzyka",
     "flag_reason_flagged_user": "Oznaczony członek",
     "flag_reason_manual_monitoring": "Pod obserwacją",
-    "flag_reason_unknown": "Nie odnotowano"
+    "flag_reason_unknown": "Nie odnotowano",
+    "support_needs": {
+      "intro": "Członkowie mogą nam powiedzieć przy dołączaniu lub później w ustawieniach, że chcieliby dodatkowego wsparcia. Niektóre odpowiedzi zmieniają to, co mogą robić na platformie. Przeczytaj każdą nową odpowiedź, a następnie oznacz ją jako zobaczoną.",
+      "filter_label": "Pokaż",
+      "filter_unseen": "Jeszcze niezobaczone",
+      "filter_all": "Wszyscy",
+      "search_label": "Szukaj członków po nazwisku",
+      "search_placeholder": "Szukaj po nazwisku",
+      "no_search_results": "Żaden członek nie pasuje do tego nazwiska.",
+      "all_seen": "Wszystko na bieżąco. Odpowiedzi wszystkich członków zostały zobaczone.",
+      "show_everyone": "Pokaż wszystkich",
+      "list_label": "Potrzeby wsparcia członków",
+      "answered": "Odpowiedź: {{when}}",
+      "what_they_told_us": "Co nam powiedzieli",
+      "what_this_changes": "Co to zmienia",
+      "nothing_changes": "Nic nie zmienia się automatycznie. To informacja dla Ciebie.",
+      "status_unseen": "Jeszcze niezobaczone",
+      "mark_seen": "Oznacz jako zobaczone",
+      "mark_seen_aria": "Oznacz potrzeby wsparcia osoby {{name}} jako zobaczone",
+      "marked_seen_toast": "Oznaczono {{name}} jako zobaczone.",
+      "mark_seen_failed": "Nie udało się oznaczyć jako zobaczone. Spróbuj ponownie.",
+      "seen_by": "Zobaczone przez {{name}} {{when}}",
+      "seen": "Zobaczone {{when}}"
+    },
+    "flagged_page": {
+      "intro": "Kopie wiadomości pobrane do kontroli bezpieczeństwa. Przeczytaj każdą i oznacz jako sprawdzoną. To te same kopie, co na stronie Wiadomości.",
+      "filter_label": "Pokaż",
+      "filter_unreviewed": "Czeka na sprawdzenie",
+      "filter_critical": "Wysokie i krytyczne",
+      "filter_reviewed": "Sprawdzone",
+      "filter_all": "Wszystkie"
+    },
+    "guardians_page": {
+      "intro": "Ustalenia dotyczące opiekunów zapisane przez zespół dla członków, którzy chcą dodatkowego wsparcia, oraz informacja, czy członek się zgodził.",
+      "filter_label": "Pokaż",
+      "filter_active": "Aktywne",
+      "filter_consented": "Członek się zgodził",
+      "filter_all": "Wszystkie",
+      "consent_yes": "Członek się zgodził",
+      "consent_no": "Członek się nie zgodził"
+    }
   }
 }

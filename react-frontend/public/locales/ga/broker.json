@@ -11,7 +11,8 @@
     "section_records": "Taifid",
     "section_settings": "Socruithe",
     "nav_label": "Nascleanúint bróicéir",
-    "section_moderation": "Modhnóireacht"
+    "section_moderation": "Modhnóireacht",
+    "section_safeguarding": "Cosaint"
   },
   "header": {
     "toggle_sidebar": "Scoránaigh an barra taoibh",
@@ -52,7 +53,12 @@
     "moderation_comments": "Tráchtanna",
     "moderation_reviews": "Léirmheasanna",
     "moderation_reports": "Tuairiscí",
-    "safeguarding_options": "Roghanna cosanta"
+    "safeguarding_options": "Roghanna cosanta",
+    "safeguarding_support_needs": "Riachtanais tacaíochta na mball",
+    "safeguarding_flagged": "Teachtaireachtaí brataithe",
+    "safeguarding_guardians": "Caomhnóirí",
+    "safeguarding_support_actions": "Gníomhartha tacaíochta",
+    "safeguarding_volunteering": "Teagmhais oibre dheonaigh"
   },
   "breadcrumbs": {
     "aria_label": "Nascleanúint grabhróige",
@@ -91,7 +97,7 @@
     "monitored_users": "Úsáideoirí faoi mhonatóireacht",
     "high_risk_listings": "Liostuithe ardriosca",
     "new_signups_today": "Clárúcháin nua inniu",
-    "safeguarding_flags": "Bratacha ionduchtaithe",
+    "safeguarding_flags": "Riachtanais tacaíochta nach bhfacthas fós",
     "quick_actions": "Gníomhartha tapa",
     "quick_access": "Rochtain thapa",
     "recent_activity": "Gníomhaíocht le déanaí",
@@ -394,7 +400,15 @@
     "no_preferences": "Níl aon sainrogha cosanta taifeadta d'aon bhall.",
     "load_error_title": "Níorbh fhéidir roinnt sonraí cosanta a luchtú",
     "load_error_body": "Níorbh fhéidir ceann amháin nó níos mó de na rannáin thuas a luchtú. Bain triail eile as — má leanann an teip ar aghaidh, seiceáil logaí an bhróicéara.",
-    "retry": "Bain triail eile as"
+    "retry": "Bain triail eile as",
+    "support_needs_title": "Riachtanais tacaíochta na mball",
+    "support_needs_description": "Baill a d’inis dúinn gur mhaith leo tacaíocht bhreise, agus an méid a athraíonn sé sin dóibh.",
+    "flagged_title": "Teachtaireachtaí brataithe",
+    "flagged_description": "Cóipeanna de theachtaireachtaí ag fanacht le seiceáil cosanta.",
+    "guardians_title": "Caomhnóirí",
+    "guardians_description": "Socruithe caomhnóra do bhaill ar mian leo tacaíocht bhreise.",
+    "support_actions_title": "Gníomhartha tacaíochta",
+    "support_actions_description": "Gníomhartha a ullmhaíodh do bhall atá ag fanacht lena fhreagra."
   },
   "vetting": {
     "title": "Deimhnithe grinnfhiosrúcháin",

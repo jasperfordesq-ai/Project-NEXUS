@@ -11,7 +11,8 @@
     "section_records": "Records",
     "section_settings": "Settings",
     "nav_label": "Broker navigation",
-    "section_moderation": "Moderation"
+    "section_moderation": "Moderation",
+    "section_safeguarding": "Safeguarding"
   },
   "header": {
     "toggle_sidebar": "Toggle sidebar",
@@ -52,7 +53,12 @@
     "moderation_comments": "Comments",
     "moderation_reviews": "Reviews",
     "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "safeguarding_options": "Safeguarding Options",
+    "safeguarding_support_needs": "Members' support needs",
+    "safeguarding_flagged": "Flagged messages",
+    "safeguarding_guardians": "Guardians",
+    "safeguarding_support_actions": "Support actions",
+    "safeguarding_volunteering": "Volunteering incidents"
   },
   "breadcrumbs": {
     "aria_label": "Breadcrumb navigation",
@@ -91,7 +97,7 @@
     "monitored_users": "Monitored Users",
     "high_risk_listings": "High Risk Listings",
     "new_signups_today": "New Signups Today",
-    "safeguarding_flags": "Onboarding Flags",
+    "safeguarding_flags": "Support needs not yet seen",
     "quick_actions": "Quick Actions",
     "quick_access": "Quick Access",
     "recent_activity": "Recent Activity",
@@ -367,7 +373,15 @@
     "no_preferences": "No member safeguarding preferences recorded.",
     "load_error_title": "Some safeguarding data couldn't be loaded",
     "load_error_body": "One or more sections above failed to load. Retry — if the failure persists, check the broker logs.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "support_needs_title": "Members' support needs",
+    "support_needs_description": "Members who told us they would like extra support, and what that changes for them.",
+    "flagged_title": "Flagged messages",
+    "flagged_description": "Message copies waiting for a safeguarding check.",
+    "guardians_title": "Guardians",
+    "guardians_description": "Guardian arrangements for members who want extra support.",
+    "support_actions_title": "Support actions",
+    "support_actions_description": "Actions prepared for a member that are waiting for their answer."
   },
   "vetting": {
     "title": "Vetting confirmations",

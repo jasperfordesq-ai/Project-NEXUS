@@ -66,11 +66,11 @@ interface QueueDef {
 }
 
 const QUEUES: QueueDef[] = [
-  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/safeguarding?filter=critical', weight: 6 },
+  { key: 'safeguarding_alerts', labelKey: 'dashboard.safeguarding_alerts', icon: AlertTriangle, color: 'danger', path: '/broker/safeguarding/flagged-messages?filter=critical', weight: 6 },
   { key: 'high_risk_listings', labelKey: 'dashboard.high_risk_listings', icon: ShieldAlert, color: 'danger', path: '/broker/risk-tags?level=elevated', weight: 5 },
   { key: 'unreviewed_messages', labelKey: 'dashboard.unreviewed_messages', icon: MessageSquareWarning, color: 'warning', path: '/broker/messages?status=unreviewed', weight: 4 },
   { key: 'pending_exchanges', labelKey: 'dashboard.pending_exchanges', icon: ArrowLeftRight, color: 'accent', path: '/broker/exchanges?status=needs_action', weight: 4 },
-  { key: 'onboarding_safeguarding_flags', labelKey: 'dashboard.safeguarding_flags', icon: ShieldAlert, color: 'warning', path: '/broker/safeguarding?tab=preferences', weight: 3 },
+  { key: 'onboarding_safeguarding_flags', labelKey: 'dashboard.safeguarding_flags', icon: ShieldAlert, color: 'warning', path: '/broker/safeguarding/support-needs', weight: 3 },
   { key: 'vetting_review_requests', labelKey: 'dashboard.vetting_review_requests', icon: ShieldCheck, color: 'warning', path: '/broker/vetting?status=review_requested', weight: 3 },
 ];
 
@@ -343,7 +343,7 @@ export function BrokerDashboard() {
               icon={AlertTriangle}
               color="danger"
               loading={loading}
-              to={tenantPath('/broker/safeguarding?filter=critical')}
+              to={tenantPath('/broker/safeguarding/flagged-messages?filter=critical')}
             />
             <BrokerStatCard
               label={t('dashboard.safeguarding_flags')}
@@ -351,7 +351,7 @@ export function BrokerDashboard() {
               icon={ShieldAlert}
               color="warning"
               loading={loading}
-              to={tenantPath('/broker/safeguarding?tab=preferences')}
+              to={tenantPath('/broker/safeguarding/support-needs')}
             />
           </div>
 

@@ -17,7 +17,9 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminBroker, adminUsers, adminMatching } from '@/admin/api/adminApi';
 import { useTenant } from '@/contexts';
+import { api } from '@/lib/api';
 import type { MatchApprovalStats } from '@/admin/api/types';
+import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSidebar';
 import { BrokerHeader } from './components/BrokerHeader';
 import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
@@ -32,6 +34,8 @@ const EMPTY_BADGES: BrokerBadgeCounts = {
   monitored_users: 0,
   high_risk_listings: 0,
   pending_matches: 0,
+  support_needs_unseen: 0,
+  pending_support_actions: 0,
 };
 
 export function BrokerLayout() {
@@ -54,7 +58,7 @@ export function BrokerLayout() {
 
   const fetchBadges = useCallback(async () => {
     try {
-      const [dashRes, usersRes, matchRes] = await Promise.all([
+      const [dashRes, usersRes, matchRes, safeguardingRes] = await Promise.all([
         adminBroker.getDashboard(),
         adminUsers.list({ status: 'pending', limit: 1 }),
         // Match approvals only exist on exchange_workflow tenants; a null
@@ -62,7 +66,14 @@ export function BrokerLayout() {
         showMatches
           ? adminMatching.getApprovalStats(30).catch(() => null)
           : Promise.resolve(null),
+        // The safeguarding pages' own counts, from the endpoint those pages
+        // read, so a badge always matches the list it sits beside.
+        api
+          .get<{ support_needs_unseen?: number; pending_support_actions?: number }>('/v2/admin/safeguarding/dashboard')
+          .catch(() => null),
       ]);
+
+      const safeguarding = safeguardingRes?.success && safeguardingRes.data ? safeguardingRes.data : null;
 
       let pendingMembers = 0;
       if (usersRes.success) {
@@ -103,6 +114,8 @@ export function BrokerLayout() {
           monitored_users: Number(d.monitored_users ?? 0),
           high_risk_listings: Number(d.high_risk_listings ?? 0),
           pending_matches: pendingMatches,
+          support_needs_unseen: Number(safeguarding?.support_needs_unseen ?? 0),
+          pending_support_actions: Number(safeguarding?.pending_support_actions ?? 0),
         });
       }
     } catch {
@@ -113,7 +126,14 @@ export function BrokerLayout() {
   useEffect(() => {
     void fetchBadges();
     const interval = setInterval(() => void fetchBadges(), 60_000);
-    return () => clearInterval(interval);
+    // Pages fire this after an action that changes a count (e.g. "Mark as
+    // seen"), so the badge moves at once instead of up to a minute later.
+    const onRefresh = () => void fetchBadges();
+    window.addEventListener(BROKER_BADGES_REFRESH_EVENT, onRefresh);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener(BROKER_BADGES_REFRESH_EVENT, onRefresh);
+    };
   }, [fetchBadges]);
 
   // ⌘K / Ctrl+K opens the command palette from anywhere in the panel.
