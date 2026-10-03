@@ -42,6 +42,10 @@ vi.mock('@/admin/api/adminApi', () => ({
   },
 }));
 
+// "Waiting for you" has its own tests (BrokerInbox.test.tsx) and needs the
+// app-level confirm dialog; the dashboard's tests are about the counts.
+vi.mock('../components/BrokerInbox', () => ({ BrokerInbox: () => null }));
+
 // ── contexts ──────────────────────────────────────────────────────────────────
 
 const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }));
@@ -162,6 +166,17 @@ describe('BrokerDashboard', () => {
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href') ?? '');
     expect(hrefs.some((h) => h.endsWith('/broker/risk-tags?level=elevated'))).toBe(true);
     expect(hrefs.some((h) => h.endsWith('/broker/risk-tags?level=high'))).toBe(false);
+  });
+
+  it('counts a flagged unreviewed message once in the hero total, not under both chips', async () => {
+    // Safeguarding alerts are a subset of unreviewed messages.
+    mockGetDashboard.mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_STATS, unreviewed_messages: 3, safeguarding_alerts: 1, pending_exchanges: 0, high_risk_listings: 0, vetting_review_requests: 0, onboarding_safeguarding_flags: 0, pending_members: 0, open_reports: 0 },
+    });
+    render(<BrokerDashboard />);
+    await waitFor(() => expect(screen.getByText('What needs you now')).toBeInTheDocument());
+    expect(screen.getByText('items waiting on your review', { exact: false }).textContent).toMatch(/^\s*3\s/);
   });
 
   it('renders the triage hero with the total of open items', async () => {

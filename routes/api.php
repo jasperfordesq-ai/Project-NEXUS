@@ -2660,6 +2660,9 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::get('/v2/admin/broker/messages', [\App\Http\Controllers\Api\AdminBrokerController::class, 'messages']);
     Route::get('/v2/admin/broker/messages/unreviewed-count', [\App\Http\Controllers\Api\AdminBrokerController::class, 'unreviewedCount']);
     Route::post('/v2/admin/broker/messages/{id}/review', [\App\Http\Controllers\Api\AdminBrokerController::class, 'reviewMessage'])->middleware('throttle:nexus-route-60-per-1m');
+    // Several routine copies at once; flagged copies and the caller's own
+    // conversations are skipped per copy (see the controller).
+    Route::post('/v2/admin/broker/messages/review-bulk', [\App\Http\Controllers\Api\AdminBrokerController::class, 'reviewMessagesBulk'])->middleware('throttle:nexus-route-30-per-1m');
     Route::get('/v2/admin/broker/monitoring', [\App\Http\Controllers\Api\AdminBrokerController::class, 'monitoring']);
     Route::post('/v2/admin/broker/messages/{id}/flag', [\App\Http\Controllers\Api\AdminBrokerController::class, 'flagMessage'])->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/admin/broker/monitoring/{userId}', [\App\Http\Controllers\Api\AdminBrokerController::class, 'setMonitoring'])->middleware('throttle:nexus-route-60-per-1m');

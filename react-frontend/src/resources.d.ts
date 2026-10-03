@@ -33776,6 +33776,24 @@ export default interface Resources {
         "title": "Your daily workflow"
       }
     },
+    "inbox": {
+      "approve_confirm_body": "They become an active member of the community. If you are unsure, open the Members page and check their details first.",
+      "approve_confirm_title": "Approve {{name}}?",
+      "approved": "{{name}} approved.",
+      "exchange_between": "{{requester}} and {{provider}}",
+      "joined": "joined {{date}}",
+      "mark_reviewed": "Mark reviewed",
+      "message_between": "{{sender}} → {{receiver}}",
+      "open": "Open",
+      "open_exchange": "Open exchange {{id}}",
+      "open_message": "Open the message from {{sender}}",
+      "open_reports": "Open member reports",
+      "report_by": "by {{name}}",
+      "report_fallback": "Report {{id}}",
+      "review_named": "Mark the message from {{sender}} as reviewed",
+      "see_all": "See all",
+      "title": "Waiting for you"
+    },
     "insurance": {
       "add_certificate": "Add Certificate",
       "back": "Back",
@@ -34140,6 +34158,17 @@ export default interface Resources {
     },
     "messages": {
       "back": "Back",
+      "bulk_clear": "Clear selection",
+      "bulk_hint": "Flagged messages are skipped: open and read those one at a time.",
+      "bulk_review": "Mark reviewed",
+      "bulk_reviewed_one": "{{count}} message marked reviewed.",
+      "bulk_reviewed_other": "{{count}} messages marked reviewed.",
+      "bulk_selected_one": "{{count}} selected",
+      "bulk_selected_other": "{{count}} selected",
+      "bulk_skipped_flagged_one": "{{count}} flagged message was skipped. Open it to review it.",
+      "bulk_skipped_flagged_other": "{{count}} flagged messages were skipped. Open them to review them.",
+      "bulk_skipped_other_one": "{{count}} message was skipped (already reviewed, or a conversation you are part of).",
+      "bulk_skipped_other_other": "{{count}} messages were skipped (already reviewed, or conversations you are part of).",
       "cancel": "Cancel",
       "col_actions": "Actions",
       "col_date": "Date",

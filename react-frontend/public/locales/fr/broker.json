@@ -841,7 +841,18 @@
     "detail_voice_message": "Message vocal",
     "detail_voice_message_length": "Message vocal ({{seconds}} s)",
     "detail_voice_transcript": "Transcription : {{text}}",
-    "detail_voice_no_transcript": "Aucune transcription n'est disponible. Seuls les deux membres peuvent écouter l'enregistrement."
+    "detail_voice_no_transcript": "Aucune transcription n'est disponible. Seuls les deux membres peuvent écouter l'enregistrement.",
+    "bulk_selected_one": "{{count}} sélectionné",
+    "bulk_selected_other": "{{count}} sélectionnés",
+    "bulk_hint": "Les messages signalés sont ignorés : ouvrez-les et lisez-les un par un.",
+    "bulk_review": "Marquer comme examinés",
+    "bulk_clear": "Effacer la sélection",
+    "bulk_reviewed_one": "{{count}} message marqué comme examiné.",
+    "bulk_reviewed_other": "{{count}} messages marqués comme examinés.",
+    "bulk_skipped_flagged_one": "{{count}} message signalé a été ignoré. Ouvrez-le pour l'examiner.",
+    "bulk_skipped_flagged_other": "{{count}} messages signalés ont été ignorés. Ouvrez-les pour les examiner.",
+    "bulk_skipped_other_one": "{{count}} message a été ignoré (déjà examiné, ou une conversation à laquelle vous participez).",
+    "bulk_skipped_other_other": "{{count}} messages ont été ignorés (déjà examinés, ou des conversations auxquelles vous participez)."
   },
   "monitoring": {
     "title": "Surveillance des utilisateurs",
@@ -1552,5 +1563,23 @@
     "next": "Suivant",
     "next_aria": "Ouvrir le suivant en attente",
     "all_done": "C'était le dernier. Plus rien n'attend."
+  },
+  "inbox": {
+    "title": "En attente pour vous",
+    "see_all": "Tout voir",
+    "open": "Ouvrir",
+    "joined": "inscrit le {{date}}",
+    "approve_confirm_title": "Approuver {{name}} ?",
+    "approve_confirm_body": "Cette personne devient membre actif de la communauté. En cas de doute, ouvrez d'abord la page Membres et vérifiez ses informations.",
+    "approved": "{{name}} approuvé.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Marquer comme examiné",
+    "review_named": "Marquer comme examiné le message de {{sender}}",
+    "open_message": "Ouvrir le message de {{sender}}",
+    "exchange_between": "{{requester}} et {{provider}}",
+    "open_exchange": "Ouvrir l'échange {{id}}",
+    "report_fallback": "Signalement {{id}}",
+    "report_by": "par {{name}}",
+    "open_reports": "Ouvrir les signalements de membres"
   }
 }

@@ -853,7 +853,26 @@
     "detail_voice_message": "Wiadomość głosowa",
     "detail_voice_message_length": "Wiadomość głosowa ({{seconds}} s)",
     "detail_voice_transcript": "Transkrypcja: {{text}}",
-    "detail_voice_no_transcript": "Transkrypcja nie jest dostępna. Nagranie mogą odtworzyć tylko te dwie osoby."
+    "detail_voice_no_transcript": "Transkrypcja nie jest dostępna. Nagranie mogą odtworzyć tylko te dwie osoby.",
+    "bulk_selected_one": "Wybrano {{count}}",
+    "bulk_selected_few": "Wybrano {{count}}",
+    "bulk_selected_many": "Wybrano {{count}}",
+    "bulk_selected_other": "Wybrano {{count}}",
+    "bulk_hint": "Oznaczone wiadomości są pomijane: otwieraj je i czytaj pojedynczo.",
+    "bulk_review": "Oznacz jako sprawdzone",
+    "bulk_clear": "Wyczyść zaznaczenie",
+    "bulk_reviewed_one": "Oznaczono {{count}} wiadomość jako sprawdzoną.",
+    "bulk_reviewed_few": "Oznaczono {{count}} wiadomości jako sprawdzone.",
+    "bulk_reviewed_many": "Oznaczono {{count}} wiadomości jako sprawdzone.",
+    "bulk_reviewed_other": "Oznaczono {{count}} wiadomości jako sprawdzone.",
+    "bulk_skipped_flagged_one": "Pominięto {{count}} oznaczoną wiadomość. Otwórz ją, aby ją sprawdzić.",
+    "bulk_skipped_flagged_few": "Pominięto {{count}} oznaczone wiadomości. Otwórz je, aby je sprawdzić.",
+    "bulk_skipped_flagged_many": "Pominięto {{count}} oznaczonych wiadomości. Otwórz je, aby je sprawdzić.",
+    "bulk_skipped_flagged_other": "Pominięto {{count}} oznaczonej wiadomości. Otwórz je, aby je sprawdzić.",
+    "bulk_skipped_other_one": "Pominięto {{count}} wiadomość (już sprawdzoną lub z rozmowy, w której uczestniczysz).",
+    "bulk_skipped_other_few": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz).",
+    "bulk_skipped_other_many": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz).",
+    "bulk_skipped_other_other": "Pominięto {{count}} wiadomości (już sprawdzone lub z rozmów, w których uczestniczysz)."
   },
   "monitoring": {
     "title": "Monitorowanie użytkowników",
@@ -1568,5 +1587,23 @@
     "next": "Dalej",
     "next_aria": "Otwórz następną oczekującą pozycję",
     "all_done": "To była ostatnia pozycja. Nic więcej nie czeka."
+  },
+  "inbox": {
+    "title": "Czeka na Ciebie",
+    "see_all": "Zobacz wszystko",
+    "open": "Otwórz",
+    "joined": "dołączył(a) {{date}}",
+    "approve_confirm_title": "Zatwierdzić: {{name}}?",
+    "approve_confirm_body": "Ta osoba stanie się aktywnym członkiem społeczności. Jeśli masz wątpliwości, najpierw otwórz stronę Członkowie i sprawdź jej dane.",
+    "approved": "Zatwierdzono: {{name}}.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Oznacz jako sprawdzone",
+    "review_named": "Oznacz wiadomość od {{sender}} jako sprawdzoną",
+    "open_message": "Otwórz wiadomość od {{sender}}",
+    "exchange_between": "{{requester}} i {{provider}}",
+    "open_exchange": "Otwórz wymianę {{id}}",
+    "report_fallback": "Zgłoszenie {{id}}",
+    "report_by": "autor: {{name}}",
+    "open_reports": "Otwórz zgłoszenia członków"
   }
 }

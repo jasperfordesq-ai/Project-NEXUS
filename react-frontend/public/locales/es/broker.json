@@ -841,7 +841,18 @@
     "detail_voice_message": "Mensaje de voz",
     "detail_voice_message_length": "Mensaje de voz ({{seconds}} s)",
     "detail_voice_transcript": "Transcripción: {{text}}",
-    "detail_voice_no_transcript": "No hay transcripción disponible. Solo los dos miembros pueden reproducir la grabación."
+    "detail_voice_no_transcript": "No hay transcripción disponible. Solo los dos miembros pueden reproducir la grabación.",
+    "bulk_selected_one": "{{count}} seleccionado",
+    "bulk_selected_other": "{{count}} seleccionados",
+    "bulk_hint": "Los mensajes marcados se omiten: ábrelos y léelos de uno en uno.",
+    "bulk_review": "Marcar como revisados",
+    "bulk_clear": "Quitar la selección",
+    "bulk_reviewed_one": "{{count}} mensaje marcado como revisado.",
+    "bulk_reviewed_other": "{{count}} mensajes marcados como revisados.",
+    "bulk_skipped_flagged_one": "Se omitió {{count}} mensaje marcado. Ábrelo para revisarlo.",
+    "bulk_skipped_flagged_other": "Se omitieron {{count}} mensajes marcados. Ábrelos para revisarlos.",
+    "bulk_skipped_other_one": "Se omitió {{count}} mensaje (ya revisado o una conversación en la que participas).",
+    "bulk_skipped_other_other": "Se omitieron {{count}} mensajes (ya revisados o conversaciones en las que participas)."
   },
   "monitoring": {
     "title": "Monitorización de usuarios",
@@ -1552,5 +1563,23 @@
     "next": "Siguiente",
     "next_aria": "Abrir el siguiente en espera",
     "all_done": "Era el último. No queda nada pendiente."
+  },
+  "inbox": {
+    "title": "Te espera",
+    "see_all": "Ver todo",
+    "open": "Abrir",
+    "joined": "se unió el {{date}}",
+    "approve_confirm_title": "¿Aprobar a {{name}}?",
+    "approve_confirm_body": "Pasará a ser miembro activo de la comunidad. Si tienes dudas, abre la página de Miembros y revisa sus datos primero.",
+    "approved": "{{name}} aprobado.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Marcar como revisado",
+    "review_named": "Marcar como revisado el mensaje de {{sender}}",
+    "open_message": "Abrir el mensaje de {{sender}}",
+    "exchange_between": "{{requester}} y {{provider}}",
+    "open_exchange": "Abrir el intercambio {{id}}",
+    "report_fallback": "Denuncia {{id}}",
+    "report_by": "de {{name}}",
+    "open_reports": "Abrir las denuncias de miembros"
   }
 }

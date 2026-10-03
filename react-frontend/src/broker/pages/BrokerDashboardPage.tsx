@@ -52,6 +52,7 @@ import type { BrokerDashboardStats, BrokerActivityEntry } from '@/admin/api/type
 import { parseServerTimestamp } from '@/lib/serverTime';
 import { BrokerControlsHelp } from './BrokerHelpPage';
 import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
+import { BrokerInbox } from '../components/BrokerInbox';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Triage queues — severity-weighted so the hero always surfaces the most
@@ -174,7 +175,13 @@ export function BrokerDashboard() {
     .filter((q) => Number.isFinite(q.count) && q.count > 0)
     .sort((a, b) => b.weight - a.weight || b.count - a.count);
 
-  const totalOpen = activeQueues.reduce((sum, q) => sum + q.count, 0);
+  // Safeguarding alerts are flagged messages nobody has reviewed — a subset of
+  // Unreviewed Messages. Both chips stay (the urgent one is the point), but
+  // the total counts each message once.
+  const overlap = activeQueues.some((q) => q.key === 'unreviewed_messages')
+    ? Number(activeQueues.find((q) => q.key === 'safeguarding_alerts')?.count ?? 0)
+    : 0;
+  const totalOpen = activeQueues.reduce((sum, q) => sum + q.count, 0) - overlap;
   const hasDanger = activeQueues.some((q) => q.color === 'danger');
 
   const quickLinks = QUICK_LINKS.filter((l) => !l.feature || hasFeature(l.feature));
@@ -316,6 +323,11 @@ export function BrokerDashboard() {
               )}
             </CardBody>
           </Card>
+
+          {/* ── Waiting for you — the first items of each queue, with the
+              quick decisions (approve a member, mark a routine message
+              reviewed) available right here ─────────────────────────────── */}
+          <BrokerInbox showExchanges={showExchanges} />
 
           {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
           <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">

@@ -831,7 +831,18 @@
     "detail_voice_message": "Voice message",
     "detail_voice_message_length": "Voice message ({{seconds}} s)",
     "detail_voice_transcript": "Transcript: {{text}}",
-    "detail_voice_no_transcript": "No transcript is available. Only the two members can play the recording."
+    "detail_voice_no_transcript": "No transcript is available. Only the two members can play the recording.",
+    "bulk_selected_one": "{{count}} selected",
+    "bulk_selected_other": "{{count}} selected",
+    "bulk_hint": "Flagged messages are skipped: open and read those one at a time.",
+    "bulk_review": "Mark reviewed",
+    "bulk_clear": "Clear selection",
+    "bulk_reviewed_one": "{{count}} message marked reviewed.",
+    "bulk_reviewed_other": "{{count}} messages marked reviewed.",
+    "bulk_skipped_flagged_one": "{{count}} flagged message was skipped. Open it to review it.",
+    "bulk_skipped_flagged_other": "{{count}} flagged messages were skipped. Open them to review them.",
+    "bulk_skipped_other_one": "{{count}} message was skipped (already reviewed, or a conversation you are part of).",
+    "bulk_skipped_other_other": "{{count}} messages were skipped (already reviewed, or conversations you are part of)."
   },
   "monitoring": {
     "title": "User Monitoring",
@@ -1540,5 +1551,23 @@
     "next": "Next",
     "next_aria": "Open the next one waiting",
     "all_done": "That was the last one. Nothing else is waiting."
+  },
+  "inbox": {
+    "title": "Waiting for you",
+    "see_all": "See all",
+    "open": "Open",
+    "joined": "joined {{date}}",
+    "approve_confirm_title": "Approve {{name}}?",
+    "approve_confirm_body": "They become an active member of the community. If you are unsure, open the Members page and check their details first.",
+    "approved": "{{name}} approved.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Mark reviewed",
+    "review_named": "Mark the message from {{sender}} as reviewed",
+    "open_message": "Open the message from {{sender}}",
+    "exchange_between": "{{requester}} and {{provider}}",
+    "open_exchange": "Open exchange {{id}}",
+    "report_fallback": "Report {{id}}",
+    "report_by": "by {{name}}",
+    "open_reports": "Open member reports"
   }
 }

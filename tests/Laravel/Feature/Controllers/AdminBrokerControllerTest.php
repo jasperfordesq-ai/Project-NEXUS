@@ -2081,6 +2081,89 @@ class AdminBrokerControllerTest extends TestCase
         ]);
     }
 
+    // ================================================================
+    // BULK REVIEW — POST /v2/admin/broker/messages/review-bulk
+    // ================================================================
+
+    /**
+     * "Mark these reviewed" for several routine copies at once. Each copy
+     * keeps the single-review guards: another community's copy is not found,
+     * the broker's own conversation is refused (F-403/F-436). Flagged copies
+     * are never bulk-reviewed — a concern is read one at a time — and each
+     * reviewed copy is audited as a bulk review.
+     */
+    public function test_bulk_review_marks_routine_copies_and_skips_what_needs_individual_attention(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+
+        $routine1 = $this->insertMessageCopy($a->id, $b->id);
+        $routine2 = $this->insertMessageCopy($b->id, $a->id);
+        $flagged = $this->insertMessageCopy($a->id, $b->id, ['flagged' => true, 'flag_reason' => 'Asked for cash']);
+        $own = $this->insertMessageCopy($broker->id, $a->id);
+        $alreadyAt = now()->subDay();
+        $already = $this->insertMessageCopy($a->id, $b->id, ['reviewed_at' => $alreadyAt, 'reviewed_by' => $a->id]);
+        $otherMessage = DB::table('messages')->insertGetId([
+            'tenant_id' => 999, 'sender_id' => $a->id, 'receiver_id' => $b->id,
+            'body' => 'Another community', 'is_read' => false, 'created_at' => now(),
+        ]);
+        $otherTenant = DB::table('broker_message_copies')->insertGetId([
+            'tenant_id' => 999, 'original_message_id' => $otherMessage, 'sender_id' => $a->id, 'receiver_id' => $b->id,
+            'message_body' => 'x', 'sent_at' => now(), 'copy_reason' => 'first_contact', 'flagged' => false,
+            'conversation_key' => 'k-' . uniqid(), 'created_at' => now(),
+        ]);
+
+        Sanctum::actingAs($broker);
+
+        $res = $this->apiPost('/v2/admin/broker/messages/review-bulk', [
+            'ids' => [$routine1, $routine2, $flagged, $own, $already, $otherTenant],
+        ])->assertStatus(200);
+
+        $this->assertEqualsCanonicalizing([$routine1, $routine2], $res->json('data.reviewed'));
+        $skipped = collect($res->json('data.skipped'))->pluck('reason', 'id')->all();
+        $this->assertSame('flagged', $skipped[$flagged] ?? null);
+        $this->assertSame('own_conversation', $skipped[$own] ?? null);
+        $this->assertSame('already_reviewed', $skipped[$already] ?? null);
+        $this->assertSame('not_found', $skipped[$otherTenant] ?? null);
+
+        foreach ([$routine1, $routine2] as $id) {
+            $this->assertDatabaseHas('broker_message_copies', ['id' => $id, 'reviewed_by' => $broker->id]);
+            $this->assertTrue(DB::table('org_audit_log')
+                ->where('action', 'broker_message_reviewed')
+                ->where('user_id', $broker->id)
+                ->where('details', 'like', '%"message_id":' . $id . ',%')
+                ->where('details', 'like', '%"bulk":true%')
+                ->exists(), "Copy {$id} must be audited as a bulk review.");
+        }
+        foreach ([$flagged, $own] as $id) {
+            $this->assertNull(DB::table('broker_message_copies')->where('id', $id)->value('reviewed_at'));
+        }
+        // An earlier review is left exactly as it was.
+        $this->assertEquals($a->id, (int) DB::table('broker_message_copies')->where('id', $already)->value('reviewed_by'));
+    }
+
+    public function test_bulk_review_rejects_an_empty_or_oversized_request(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        Sanctum::actingAs($broker);
+
+        $this->apiPost('/v2/admin/broker/messages/review-bulk', ['ids' => []])->assertStatus(400);
+        $this->apiPost('/v2/admin/broker/messages/review-bulk', ['ids' => range(1, 51)])->assertStatus(400);
+        $this->apiPost('/v2/admin/broker/messages/review-bulk', ['ids' => ['1; DROP']])->assertStatus(400);
+    }
+
+    public function test_bulk_review_is_refused_to_a_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $copy = $this->insertMessageCopy($a->id, $member->id);
+        Sanctum::actingAs($member);
+
+        $this->apiPost('/v2/admin/broker/messages/review-bulk', ['ids' => [$copy]])->assertStatus(403);
+        $this->assertNull(DB::table('broker_message_copies')->where('id', $copy)->value('reviewed_at'));
+    }
+
     public function test_review_message_returns_404_for_wrong_tenant(): void
     {
         $adminB = User::factory()->forTenant(999)->admin()->create();

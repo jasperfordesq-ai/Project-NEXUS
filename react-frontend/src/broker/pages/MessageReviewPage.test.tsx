@@ -14,6 +14,7 @@ const { mockAdminBroker } = vi.hoisted(() => ({
     getMessages: vi.fn(),
     getUnreviewedCount: vi.fn(),
     reviewMessage: vi.fn(),
+    reviewMessagesBulk: vi.fn(),
     flagMessage: vi.fn(),
     showMessage: vi.fn(),
   },
@@ -73,6 +74,9 @@ vi.mock('@/admin/components', () => ({
     searchable,
     searchPlaceholder,
     onSearch,
+    selectable,
+    selectedKeys,
+    onSelectionChange,
   }: {
     columns: { key: string; label: string; render?: (item: unknown) => React.ReactNode }[];
     data: unknown[];
@@ -81,6 +85,9 @@ vi.mock('@/admin/components', () => ({
     searchable?: boolean;
     searchPlaceholder?: string;
     onSearch?: (q: string) => void;
+    selectable?: boolean;
+    selectedKeys?: Set<string>;
+    onSelectionChange?: (keys: Set<string>) => void;
     [key: string]: unknown;
   }) => (
     <div data-testid="data-table">
@@ -94,6 +101,19 @@ vi.mock('@/admin/components', () => ({
       {!isLoading &&
         data.map((row) => (
           <div key={String((row as Record<string, unknown>).id)} data-testid="table-row">
+            {selectable && (
+              <input
+                type="checkbox"
+                aria-label={`Select row ${String((row as Record<string, unknown>).id)}`}
+                checked={selectedKeys?.has(String((row as Record<string, unknown>).id)) ?? false}
+                onChange={(e) => {
+                  const id = String((row as Record<string, unknown>).id);
+                  const next = new Set(selectedKeys);
+                  if (e.target.checked) next.add(id); else next.delete(id);
+                  onSelectionChange?.(next);
+                }}
+              />
+            )}
             {columns.map((col) => (
               <div key={col.key}>
                 {col.render ? col.render(row) : null}
@@ -418,5 +438,38 @@ describe('MessageReview (broker)', () => {
     // quick-view action remains available.
     expect(screen.queryByRole('button', { name: 'Mark message as reviewed' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Quick view message' })).toBeInTheDocument();
+  });
+
+  it('marks several selected messages reviewed at once and says which were skipped', async () => {
+    routerState.params = new URLSearchParams('status=unreviewed');
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([
+      makeMessage({ id: 1, sender_name: 'Alice' }),
+      makeMessage({ id: 2, sender_name: 'Cara', flagged: true }),
+    ], 2));
+    mockAdminBroker.reviewMessagesBulk.mockResolvedValue({
+      success: true,
+      data: { reviewed: [1], skipped: [{ id: 2, reason: 'flagged' }] },
+    });
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await screen.findAllByText('Alice');
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Select row 1' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 2' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Mark reviewed' }));
+
+    await waitFor(() => expect(mockAdminBroker.reviewMessagesBulk).toHaveBeenCalledWith([1, 2]));
+    expect(mockToast.success).toHaveBeenCalledWith('1 message marked reviewed.');
+    expect(mockToast.info).toHaveBeenCalledWith('1 flagged message was skipped. Open it to review it.');
+  });
+
+  it('offers no selection on the history tabs', async () => {
+    routerState.params = new URLSearchParams('status=reviewed');
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ id: 1, reviewed_at: '2026-01-02' })], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await waitFor(() => expect(screen.getAllByText('Alice').length).toBeGreaterThan(0));
+    expect(screen.queryByRole('checkbox', { name: 'Select row 1' })).not.toBeInTheDocument();
   });
 });

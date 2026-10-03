@@ -831,7 +831,18 @@
     "detail_voice_message": "Spraakbericht",
     "detail_voice_message_length": "Spraakbericht ({{seconds}} s)",
     "detail_voice_transcript": "Uitgeschreven tekst: {{text}}",
-    "detail_voice_no_transcript": "Er is geen uitgeschreven tekst beschikbaar. Alleen de twee leden kunnen de opname afspelen."
+    "detail_voice_no_transcript": "Er is geen uitgeschreven tekst beschikbaar. Alleen de twee leden kunnen de opname afspelen.",
+    "bulk_selected_one": "{{count}} geselecteerd",
+    "bulk_selected_other": "{{count}} geselecteerd",
+    "bulk_hint": "Gemarkeerde berichten worden overgeslagen: open en lees die één voor één.",
+    "bulk_review": "Markeren als bekeken",
+    "bulk_clear": "Selectie wissen",
+    "bulk_reviewed_one": "{{count}} bericht gemarkeerd als bekeken.",
+    "bulk_reviewed_other": "{{count}} berichten gemarkeerd als bekeken.",
+    "bulk_skipped_flagged_one": "{{count}} gemarkeerd bericht is overgeslagen. Open het om het te bekijken.",
+    "bulk_skipped_flagged_other": "{{count}} gemarkeerde berichten zijn overgeslagen. Open ze om ze te bekijken.",
+    "bulk_skipped_other_one": "{{count}} bericht is overgeslagen (al bekeken, of een gesprek waar je zelf bij betrokken bent).",
+    "bulk_skipped_other_other": "{{count}} berichten zijn overgeslagen (al bekeken, of gesprekken waar je zelf bij betrokken bent)."
   },
   "monitoring": {
     "title": "Gebruikersbewaking",
@@ -1540,5 +1551,23 @@
     "next": "Volgende",
     "next_aria": "Open de volgende die wacht",
     "all_done": "Dat was de laatste. Er wacht verder niets."
+  },
+  "inbox": {
+    "title": "Wacht op jou",
+    "see_all": "Alles bekijken",
+    "open": "Openen",
+    "joined": "lid sinds {{date}}",
+    "approve_confirm_title": "{{name}} goedkeuren?",
+    "approve_confirm_body": "Deze persoon wordt een actief lid van de gemeenschap. Twijfel je, open dan eerst de pagina Leden en controleer de gegevens.",
+    "approved": "{{name}} goedgekeurd.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Markeren als bekeken",
+    "review_named": "Het bericht van {{sender}} markeren als bekeken",
+    "open_message": "Het bericht van {{sender}} openen",
+    "exchange_between": "{{requester}} en {{provider}}",
+    "open_exchange": "Uitwisseling {{id}} openen",
+    "report_fallback": "Melding {{id}}",
+    "report_by": "door {{name}}",
+    "open_reports": "Meldingen van leden openen"
   }
 }

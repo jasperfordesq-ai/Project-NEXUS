@@ -1477,6 +1477,94 @@ class AdminBrokerController extends BaseApiController
         }
     }
 
+    /** Most copies one bulk review may mark at once. */
+    private const BULK_REVIEW_MAX = 50;
+
+    /**
+     * POST /api/v2/admin/broker/messages/review-bulk  { ids: int[] }
+     *
+     * Mark several routine message copies reviewed at once. Every copy goes
+     * through the single-review rules (this tenant only; never the caller's own
+     * conversation — F-403/F-436) and is audited on its own, marked as bulk.
+     * Two deliberate limits: a FLAGGED copy is never bulk-reviewed — a concern
+     * is read and decided one at a time — and a copy someone already reviewed
+     * is left exactly as it was.
+     */
+    public function reviewMessagesBulk(): JsonResponse
+    {
+        $adminId = $this->requireBrokerOrAdmin();
+        $tenantId = TenantContext::getId();
+
+        $raw = $this->input('ids', []);
+        $ids = is_array($raw) ? array_values(array_unique(array_map(
+            static fn ($v) => is_int($v) || (is_string($v) && ctype_digit($v)) ? (int) $v : 0,
+            $raw
+        ))) : [];
+        if ($ids === [] || count($ids) > self::BULK_REVIEW_MAX || in_array(0, $ids, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_input'), 'ids');
+        }
+
+        try {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $rows = DB::select(
+                "SELECT id, sender_id, receiver_id, flagged, reviewed_at FROM broker_message_copies
+                 WHERE tenant_id = ? AND id IN ({$placeholders})",
+                array_merge([$tenantId], $ids)
+            );
+            $byId = [];
+            foreach ($rows as $row) {
+                $byId[(int) $row->id] = $row;
+            }
+
+            $reviewed = [];
+            $skipped = [];
+            foreach ($ids as $id) {
+                $copy = $byId[$id] ?? null;
+                if ($copy === null) {
+                    $skipped[] = ['id' => $id, 'reason' => 'not_found'];
+                    continue;
+                }
+                if ((int) $copy->sender_id === $adminId || (int) $copy->receiver_id === $adminId) {
+                    $skipped[] = ['id' => $id, 'reason' => 'own_conversation'];
+                    continue;
+                }
+                if ((bool) $copy->flagged) {
+                    $skipped[] = ['id' => $id, 'reason' => 'flagged'];
+                    continue;
+                }
+                if ($copy->reviewed_at !== null) {
+                    $skipped[] = ['id' => $id, 'reason' => 'already_reviewed'];
+                    continue;
+                }
+
+                // reviewed_at IS NULL in the WHERE: a review that landed in
+                // between is not overwritten.
+                $updated = DB::update(
+                    "UPDATE broker_message_copies SET reviewed_by = ?, reviewed_at = NOW()
+                     WHERE id = ? AND tenant_id = ? AND reviewed_at IS NULL AND flagged = 0",
+                    [$adminId, $id, $tenantId]
+                );
+                if ($updated !== 1) {
+                    $skipped[] = ['id' => $id, 'reason' => 'already_reviewed'];
+                    continue;
+                }
+
+                $this->auditLogService->log('broker_message_reviewed', null, $adminId, [
+                    'message_id' => $id,
+                    'has_notes' => false,
+                    'bulk' => true,
+                    'actor_role' => $this->resolveActorRole(),
+                ]);
+                $reviewed[] = $id;
+            }
+
+            return $this->respondWithData(['reviewed' => $reviewed, 'skipped' => $skipped]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Bulk message review failed', ['error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'message review']), null, 500);
+        }
+    }
+
     /** POST /api/v2/admin/broker/messages/{id}/approve */
     public function approveMessage(int $id): JsonResponse
     {

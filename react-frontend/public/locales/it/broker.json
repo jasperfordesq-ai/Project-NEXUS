@@ -841,7 +841,18 @@
     "detail_voice_message": "Messaggio vocale",
     "detail_voice_message_length": "Messaggio vocale ({{seconds}} s)",
     "detail_voice_transcript": "Trascrizione: {{text}}",
-    "detail_voice_no_transcript": "Nessuna trascrizione disponibile. Solo i due membri possono ascoltare la registrazione."
+    "detail_voice_no_transcript": "Nessuna trascrizione disponibile. Solo i due membri possono ascoltare la registrazione.",
+    "bulk_selected_one": "{{count}} selezionato",
+    "bulk_selected_other": "{{count}} selezionati",
+    "bulk_hint": "I messaggi segnalati vengono saltati: aprili e leggili uno alla volta.",
+    "bulk_review": "Segna come revisionati",
+    "bulk_clear": "Annulla la selezione",
+    "bulk_reviewed_one": "{{count}} messaggio segnato come revisionato.",
+    "bulk_reviewed_other": "{{count}} messaggi segnati come revisionati.",
+    "bulk_skipped_flagged_one": "{{count}} messaggio segnalato è stato saltato. Aprilo per revisionarlo.",
+    "bulk_skipped_flagged_other": "{{count}} messaggi segnalati sono stati saltati. Aprili per revisionarli.",
+    "bulk_skipped_other_one": "{{count}} messaggio è stato saltato (già revisionato o una conversazione di cui fai parte).",
+    "bulk_skipped_other_other": "{{count}} messaggi sono stati saltati (già revisionati o conversazioni di cui fai parte)."
   },
   "monitoring": {
     "title": "Monitoraggio utenti",
@@ -1552,5 +1563,23 @@
     "next": "Avanti",
     "next_aria": "Apri il prossimo in attesa",
     "all_done": "Era l'ultimo. Non c'è nient'altro in attesa."
+  },
+  "inbox": {
+    "title": "In attesa per te",
+    "see_all": "Vedi tutto",
+    "open": "Apri",
+    "joined": "iscritto il {{date}}",
+    "approve_confirm_title": "Approvare {{name}}?",
+    "approve_confirm_body": "Diventerà un membro attivo della comunità. Se hai dubbi, apri prima la pagina Membri e controlla i suoi dati.",
+    "approved": "{{name}} approvato.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Segna come revisionato",
+    "review_named": "Segna come revisionato il messaggio di {{sender}}",
+    "open_message": "Apri il messaggio di {{sender}}",
+    "exchange_between": "{{requester}} e {{provider}}",
+    "open_exchange": "Apri lo scambio {{id}}",
+    "report_fallback": "Segnalazione {{id}}",
+    "report_by": "di {{name}}",
+    "open_reports": "Apri le segnalazioni dei membri"
   }
 }

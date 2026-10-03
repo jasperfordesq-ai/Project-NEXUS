@@ -1012,6 +1012,13 @@ export const adminBroker = {
   getUnreviewedCount: () =>
     api.get<{ count: number }>('/v2/admin/broker/messages/unreviewed-count'),
 
+  /** Mark several routine copies reviewed; flagged and own-conversation copies are skipped per copy. */
+  reviewMessagesBulk: (ids: number[]) =>
+    api.post<{ reviewed: number[]; skipped: { id: number; reason: string }[] }>(
+      '/v2/admin/broker/messages/review-bulk',
+      { ids }
+    ),
+
   reviewMessage: (id: number, notes?: string) =>
     api.post<{ success: boolean }>(`/v2/admin/broker/messages/${id}/review`, notes ? { notes } : {}),
 

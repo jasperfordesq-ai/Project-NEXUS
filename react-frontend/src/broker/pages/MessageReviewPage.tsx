@@ -36,6 +36,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import SearchX from 'lucide-react/icons/search-x';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Sparkles from 'lucide-react/icons/sparkles';
+import X from 'lucide-react/icons/x';
 import type { LucideIcon } from 'lucide-react';
 
 import { usePageTitle } from '@/hooks';
@@ -239,6 +240,41 @@ export function MessageReview() {
   const refreshAll = () => {
     loadItems();
     loadUnreviewedCount();
+  };
+
+  // Bulk review — Unreviewed tab only. The server skips flagged copies (a
+  // concern is read one at a time) and the broker's own conversations.
+  const canBulkReview = filter === 'unreviewed';
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [filter, page]);
+
+  const handleBulkReview = async () => {
+    const ids = Array.from(selectedIds).map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    if (ids.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const res = await adminBroker.reviewMessagesBulk(ids);
+      if (res?.success && res.data) {
+        const done = res.data.reviewed.length;
+        const flagged = res.data.skipped.filter((s) => s.reason === 'flagged').length;
+        const other = res.data.skipped.length - flagged;
+        toast.success(t('messages.bulk_reviewed', { count: done }));
+        if (flagged > 0) toast.info(t('messages.bulk_skipped_flagged', { count: flagged }));
+        if (other > 0) toast.info(t('messages.bulk_skipped_other', { count: other }));
+        setSelectedIds(new Set());
+        loadItems();
+        loadUnreviewedCount();
+      } else {
+        toast.error(res?.error || t('messages.review_failed'));
+      }
+    } catch {
+      toast.error(t('messages.review_failed'));
+    } finally {
+      setBulkLoading(false);
+    }
   };
 
   const handleReview = async (id: number) => {
@@ -627,9 +663,41 @@ export function MessageReview() {
           }
         />
       ) : (
+        <>
+        {canBulkReview && selectedIds.size > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-2.5 shadow-sm shadow-black/[0.03]">
+            <span className="text-sm font-medium tabular-nums text-foreground">
+              {t('messages.bulk_selected', { count: selectedIds.size })}
+            </span>
+            <span className="text-xs text-muted">{t('messages.bulk_hint')}</span>
+            <div className="flex-1" />
+            <Button
+              size="sm"
+              color="success"
+              variant="flat"
+              startContent={<CheckCircle size={14} aria-hidden="true" />}
+              onPress={handleBulkReview}
+              isLoading={bulkLoading}
+            >
+              {t('messages.bulk_review')}
+            </Button>
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              onPress={() => setSelectedIds(new Set())}
+              aria-label={t('messages.bulk_clear')}
+            >
+              <X size={16} />
+            </Button>
+          </div>
+        )}
         <DataTable
           stickyActions
           mobileCards
+          selectable={canBulkReview}
+          selectedKeys={canBulkReview ? selectedIds : undefined}
+          onSelectionChange={canBulkReview ? setSelectedIds : undefined}
           columns={columns}
           data={items}
           isLoading={loading}
@@ -661,6 +729,7 @@ export function MessageReview() {
             )
           }
         />
+        </>
       )}
 
       {/* Flag Message Modal */}

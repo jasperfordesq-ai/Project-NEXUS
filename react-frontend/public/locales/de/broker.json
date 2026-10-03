@@ -831,7 +831,18 @@
     "detail_voice_message": "Sprachnachricht",
     "detail_voice_message_length": "Sprachnachricht ({{seconds}} s)",
     "detail_voice_transcript": "Abschrift: {{text}}",
-    "detail_voice_no_transcript": "Es ist keine Abschrift verfügbar. Nur die beiden Mitglieder können die Aufnahme abspielen."
+    "detail_voice_no_transcript": "Es ist keine Abschrift verfügbar. Nur die beiden Mitglieder können die Aufnahme abspielen.",
+    "bulk_selected_one": "{{count}} ausgewählt",
+    "bulk_selected_other": "{{count}} ausgewählt",
+    "bulk_hint": "Markierte Nachrichten werden übersprungen: Öffnen und lesen Sie diese einzeln.",
+    "bulk_review": "Als geprüft markieren",
+    "bulk_clear": "Auswahl aufheben",
+    "bulk_reviewed_one": "{{count}} Nachricht als geprüft markiert.",
+    "bulk_reviewed_other": "{{count}} Nachrichten als geprüft markiert.",
+    "bulk_skipped_flagged_one": "{{count}} markierte Nachricht wurde übersprungen. Öffnen Sie sie, um sie zu prüfen.",
+    "bulk_skipped_flagged_other": "{{count}} markierte Nachrichten wurden übersprungen. Öffnen Sie sie, um sie zu prüfen.",
+    "bulk_skipped_other_one": "{{count}} Nachricht wurde übersprungen (bereits geprüft oder ein Gespräch, an dem Sie beteiligt sind).",
+    "bulk_skipped_other_other": "{{count}} Nachrichten wurden übersprungen (bereits geprüft oder Gespräche, an denen Sie beteiligt sind)."
   },
   "monitoring": {
     "title": "Nutzerüberwachung",
@@ -1540,5 +1551,23 @@
     "next": "Weiter",
     "next_aria": "Den nächsten wartenden Eintrag öffnen",
     "all_done": "Das war der letzte. Es wartet nichts mehr."
+  },
+  "inbox": {
+    "title": "Wartet auf Sie",
+    "see_all": "Alle anzeigen",
+    "open": "Öffnen",
+    "joined": "beigetreten am {{date}}",
+    "approve_confirm_title": "{{name}} genehmigen?",
+    "approve_confirm_body": "Die Person wird aktives Mitglied der Gemeinschaft. Wenn Sie unsicher sind, öffnen Sie zuerst die Mitgliederseite und prüfen Sie die Angaben.",
+    "approved": "{{name}} genehmigt.",
+    "message_between": "{{sender}} → {{receiver}}",
+    "mark_reviewed": "Als geprüft markieren",
+    "review_named": "Die Nachricht von {{sender}} als geprüft markieren",
+    "open_message": "Die Nachricht von {{sender}} öffnen",
+    "exchange_between": "{{requester}} und {{provider}}",
+    "open_exchange": "Austausch {{id}} öffnen",
+    "report_fallback": "Meldung {{id}}",
+    "report_by": "von {{name}}",
+    "open_reports": "Meldungen von Mitgliedern öffnen"
   }
 }
