@@ -9329,12 +9329,16 @@ export default interface Resources {
       "option_tab_tasks_label": "Tasks Tab",
       "option_tab_wiki_desc": "Show the wiki pages tab",
       "option_tab_wiki_label": "Wiki Tab",
+      "option_two_factor_allow_staff_trusted_devices_desc": "Administrators, brokers and coordinators can skip the authenticator code on a device they choose to remember. They are still asked for a code before high-risk actions such as changing roles, banning members or adjusting balances.",
+      "option_two_factor_allow_staff_trusted_devices_label": "Let staff remember a device",
       "option_two_factor_allow_trusted_devices_desc": "Let members skip the second factor on a device they explicitly trust. Turning this off revokes active trusted-device sessions.",
       "option_two_factor_allow_trusted_devices_label": "Allow trusted devices",
       "option_two_factor_backup_code_count_desc": "Number of one-time recovery codes generated for future 2FA enrolments.",
       "option_two_factor_backup_code_count_label": "Backup code count",
       "option_two_factor_require_members_desc": "When on, members must complete two-factor authentication before using their account. Existing sessions without verification must sign in again. Turning this off does not remove enrolled authenticators.",
       "option_two_factor_require_members_label": "Require two-factor authentication for all members",
+      "option_two_factor_staff_trusted_device_days_desc": "How long staff can skip the code on a remembered device. At most 30 days.",
+      "option_two_factor_staff_trusted_device_days_label": "Staff remembered device duration (days)",
       "option_two_factor_trusted_device_days_desc": "How long a newly trusted device can skip the second factor.",
       "option_two_factor_trusted_device_days_label": "Trusted device duration (days)",
       "option_vetting_enabled_desc": "Enable member vetting requirements",
@@ -9483,7 +9487,7 @@ export default interface Resources {
       "translation_target_language": "Target language",
       "translation_target_term": "Target term",
       "translation_target_term_placeholder": "Preferred translation",
-      "two_factor_admin_requirement": "Two-factor authentication is required for all administrators across the platform. Communities cannot turn this requirement off. Required accounts must verify at sign-in; remembered devices do not bypass enforcement.",
+      "two_factor_admin_requirement": "Two-factor authentication is required for all administrators across the platform. Communities cannot turn this requirement off. Staff may remember a device for up to 30 days if allowed below, but are always asked for a fresh code before high-risk actions.",
       "two_factor_enforcement_hint": "This switch controls optional enrollment. Administrators always require MFA. Use Configure to require it for all members.",
       "two_factor_optional_enrollment": "Allow optional two-factor enrollment"
     },
@@ -48055,7 +48059,7 @@ export default interface Resources {
       "broker_members": {
         "articles": {
           "broker_account_help": {
-            "body": "Many requests for help are about signing in. You can fix most of them from the member's record.\n\n1. Open [Members](/broker/members).\n2. Press the three-dot menu on the member's row and choose **View details**.\n3. Open the **Actions** tab.\n\n## \"I never got the email to confirm my address\"\n\nPress **Resend verification**. Ask the member to check their spam or junk folder too.\n\n## \"I forgot my password\"\n\nPress **Send password reset**. The member gets an email with a link to choose a new password. You never see or set their password.\n\n## \"I lost the phone I use for two-factor sign-in\"\n\nTwo-factor sign-in asks for a code from a phone app as well as a password.\n\n1. First, make sure the person asking really is the account holder. Follow your community's process for this.\n2. In the box above the button, write an incident reference and how you checked their identity. You need at least 10 characters.\n3. Press **Reset 2FA**.\n\nThe member is signed out everywhere and told by email and notification. They can then sign in with their password and set up two-factor again.\n\n> To reset two-factor sign-in, you must have signed in with two-factor yourself within the last few minutes. If you see an error, sign out, sign in again and retry straight away.",
+            "body": "Many requests for help are about signing in. You can fix most of them from the member's record.\n\n1. Open [Members](/broker/members).\n2. Press the three-dot menu on the member's row and choose **View details**.\n3. Open the **Actions** tab.\n\n## \"I never got the email to confirm my address\"\n\nPress **Resend verification**. Ask the member to check their spam or junk folder too.\n\n## \"I forgot my password\"\n\nPress **Send password reset**. The member gets an email with a link to choose a new password. You never see or set their password.\n\n## \"I lost the phone I use for two-factor sign-in\"\n\nTwo-factor sign-in asks for a code from a phone app as well as a password.\n\n1. First, make sure the person asking really is the account holder. Follow your community's process for this.\n2. In the box above the button, write an incident reference and how you checked their identity. You need at least 10 characters.\n3. Press **Reset 2FA**.\n\nThe member is signed out everywhere and told by email and notification. They can then sign in with their password and set up two-factor again.\n\n> Before a reset, the app asks you for a code from your own authenticator app, unless you entered one in the last few minutes.",
             "summary": "Resend a verification email, send a password reset, or reset two-factor sign-in for a member.",
             "title": "Helping a member who cannot get into their account"
           },
@@ -57052,6 +57056,8 @@ export default interface Resources {
       "loading": "Loading skills...",
       "title": "Your Skills"
     },
+    "step_up_description": "This is a high-risk action. Enter a code from your authenticator app to confirm it is you.",
+    "step_up_no_method": "Your account has no authenticator app to confirm with. Sign out and sign in again, then try this action once more.",
     "sub_accounts": {
       "active_support_chosen_by": "Active account support chosen by {{name}}",
       "add_button": "Add someone",

@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Confirmar",
   "passkey_security_confirm_failed": "No pudimos confirmar su identidad. Revise los datos e inténtelo de nuevo.",
   "passkey_security_confirm_no_method": "Cierre la sesión y vuelva a iniciarla con su clave de acceso antes de realizar este cambio, o añada otro método de confirmación.",
+  "step_up_description": "Esta es una acción de alto riesgo. Introduce un código de tu aplicación de autenticación para confirmar que eres tú.",
+  "step_up_no_method": "Tu cuenta no tiene una aplicación de autenticación con la que confirmar. Cierra sesión, vuelve a iniciarla e intenta de nuevo esta acción.",
   "passkey_sessions_revoked": "Sus claves de acceso cambiaron. Vuelva a iniciar sesión en cada dispositivo.",
   "passkey_remove_failed": "No se pudo eliminar el passkey",
   "passkey_remove_all_failed": "No se pudieron eliminar los passkeys",

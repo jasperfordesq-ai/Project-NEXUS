@@ -277,12 +277,17 @@ class AuthController extends BaseApiController
             // The users.totp_enabled column can drift (e.g. initializeSetup resets
             // the settings row to is_enabled=0 but leaves users.totp_enabled=1),
             // which would gate login on 2FA the verify endpoint can't satisfy.
-            $isTrustedDevice = !$mfaRequired && $has2faEnabled
-                && $this->totpService->isTrustedDevice((int)$user['id'], null, $userTenantId);
+            // A remembered device skips the code, staff included (E-085). Its
+            // claims carry the time the code was really entered, so step-up
+            // checks still ask again before high-risk staff actions.
+            $trustedAssurance = $has2faEnabled
+                ? $this->totpService->trustedDeviceAssurance((int) $user['id'], $userTenantId)
+                : null;
 
-            if ($has2faEnabled && !$isTrustedDevice) {
+            if ($has2faEnabled && $trustedAssurance === null) {
                 $authenticationConfig = app(AuthenticationConfigurationService::class)
                     ->getAll($userTenantId);
+                $rememberDays = $this->totpService->rememberDeviceDays((int) $user['id'], $userTenantId);
                 // 2FA required - create challenge token
                 $twoFactorToken = $this->twoFactorChallengeManager->create(
                     (int)$user['id'],
@@ -308,8 +313,8 @@ class AuthController extends BaseApiController
                     'requires_2fa' => true,
                     'two_factor_token' => $twoFactorToken,
                     'methods' => ['totp', 'backup_code'],
-                    'allow_trusted_device' => !$mfaRequired && (bool) ($authenticationConfig['two_factor.allow_trusted_devices'] ?? true),
-                    'trusted_device_days' => (int) ($authenticationConfig['two_factor.trusted_device_days'] ?? 30),
+                    'allow_trusted_device' => $rememberDays !== null,
+                    'trusted_device_days' => $rememberDays ?? (int) ($authenticationConfig['two_factor.trusted_device_days'] ?? 30),
                     'code' => ApiErrorCodes::AUTH_2FA_REQUIRED,
                     'message' => __('api_controllers_1.auth.two_factor_required'),
                     'user' => [
@@ -330,7 +335,8 @@ class AuthController extends BaseApiController
                 $user,
                 $password,
                 $isMobile,
-                $authenticationStartedAt
+                $authenticationStartedAt,
+                $trustedAssurance
             ): array {
                 $lockedRow = DB::table('users')
                     ->where('id', (int) $user['id'])
@@ -365,6 +371,7 @@ class AuthController extends BaseApiController
                     (int) $lockedUser['id'],
                     (int) $lockedUser['tenant_id'],
                     [
+                        ...($trustedAssurance ?? []),
                         'role' => $lockedUser['role'],
                         'email' => $lockedUser['email'],
                         'is_super_admin' => !empty($lockedUser['is_super_admin']),
@@ -376,7 +383,8 @@ class AuthController extends BaseApiController
                 $refreshToken = $this->tokenService->generateRefreshToken(
                     (int) $lockedUser['id'],
                     (int) $lockedUser['tenant_id'],
-                    $isMobile
+                    $isMobile,
+                    $trustedAssurance ?? []
                 );
 
                 DB::table('users')

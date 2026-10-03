@@ -24,6 +24,10 @@ class AuthenticationConfigurationService
     public const CONFIG_TWO_FACTOR_REQUIRE_MEMBERS = 'two_factor.require_members';
     public const CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES = 'two_factor.allow_trusted_devices';
     public const CONFIG_TWO_FACTOR_TRUSTED_DEVICE_DAYS = 'two_factor.trusted_device_days';
+    // Staff (anyone whose second factor is mandatory because of their role)
+    // have their own switch and a shorter ceiling (security register E-085).
+    public const CONFIG_TWO_FACTOR_ALLOW_STAFF_TRUSTED_DEVICES = 'two_factor.allow_staff_trusted_devices';
+    public const CONFIG_TWO_FACTOR_STAFF_TRUSTED_DEVICE_DAYS = 'two_factor.staff_trusted_device_days';
     public const CONFIG_TWO_FACTOR_BACKUP_CODE_COUNT = 'two_factor.backup_code_count';
     public const CONFIG_PASSKEYS_CONDITIONAL_AUTOFILL = 'passkeys.conditional_autofill';
     public const CONFIG_PASSKEYS_ENROLLMENT_ENABLED = 'passkeys.enrollment_enabled';
@@ -31,6 +35,7 @@ class AuthenticationConfigurationService
 
     public const TRUSTED_DEVICE_DAYS_MIN = 1;
     public const TRUSTED_DEVICE_DAYS_MAX = 365;
+    public const STAFF_TRUSTED_DEVICE_DAYS_MAX = 30;
     public const BACKUP_CODE_COUNT_MIN = 1;
     public const BACKUP_CODE_COUNT_MAX = 100;
     public const PASSKEY_CREDENTIALS_MIN = 1;
@@ -40,6 +45,8 @@ class AuthenticationConfigurationService
         self::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS => false,
         self::CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES => true,
         self::CONFIG_TWO_FACTOR_TRUSTED_DEVICE_DAYS => 30,
+        self::CONFIG_TWO_FACTOR_ALLOW_STAFF_TRUSTED_DEVICES => true,
+        self::CONFIG_TWO_FACTOR_STAFF_TRUSTED_DEVICE_DAYS => 30,
         self::CONFIG_TWO_FACTOR_BACKUP_CODE_COUNT => 10,
         self::CONFIG_PASSKEYS_CONDITIONAL_AUTOFILL => true,
         self::CONFIG_PASSKEYS_ENROLLMENT_ENABLED => true,
@@ -121,11 +128,15 @@ class AuthenticationConfigurationService
         return match ($key) {
             self::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS,
             self::CONFIG_TWO_FACTOR_ALLOW_TRUSTED_DEVICES,
+            self::CONFIG_TWO_FACTOR_ALLOW_STAFF_TRUSTED_DEVICES,
             self::CONFIG_PASSKEYS_CONDITIONAL_AUTOFILL,
             self::CONFIG_PASSKEYS_ENROLLMENT_ENABLED => is_bool($value),
             self::CONFIG_TWO_FACTOR_TRUSTED_DEVICE_DAYS => is_int($value)
                 && $value >= self::TRUSTED_DEVICE_DAYS_MIN
                 && $value <= self::TRUSTED_DEVICE_DAYS_MAX,
+            self::CONFIG_TWO_FACTOR_STAFF_TRUSTED_DEVICE_DAYS => is_int($value)
+                && $value >= self::TRUSTED_DEVICE_DAYS_MIN
+                && $value <= self::STAFF_TRUSTED_DEVICE_DAYS_MAX,
             self::CONFIG_TWO_FACTOR_BACKUP_CODE_COUNT => is_int($value)
                 && $value >= self::BACKUP_CODE_COUNT_MIN
                 && $value <= self::BACKUP_CODE_COUNT_MAX,

@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'Tá fíordheimhniú dhá fhachtóir riachtanach do do chuntas agus ní féidir é a dhíchumasú.',
     'disable_code_invalid' => 'Níor glacadh leis an gcód fíordheimhnithe sin. Cuir isteach an cód atá ar d’aip anois agus bain triail eile as.',
     'impersonation_read_only' => 'Seisiún tacaíochta inléite amháin. Fill ar do chuntas féin chun athruithe a dhéanamh.',
+    'step_up_required' => 'Deimhnigh gur tusa atá ann sula ndéanann tú é seo: cuir isteach cód ó d’aip fíordheimhnithe.',
 ];

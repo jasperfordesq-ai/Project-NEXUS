@@ -367,6 +367,23 @@ class AdminUsersController extends BaseApiController
             }
         }
 
+        // E-085: changing an account's role or sign-in email is a high-risk
+        // action that needs a recently entered second factor. Forms resend the
+        // unchanged values on every save, so only a real change asks.
+        $changesRole = isset($input['role']) && is_string($input['role'])
+            && strtolower(trim($input['role'])) !== strtolower((string) ($user['role'] ?? ''));
+        $changesEmail = isset($input['email']) && is_string($input['email'])
+            && strtolower(trim($input['email'])) !== strtolower((string) ($user['email'] ?? ''));
+        if (($changesRole || $changesEmail)
+            && !\App\Http\Middleware\RequireRecentSecondFactor::passes(request())) {
+            return $this->respondWithError(
+                \App\Http\Middleware\RequireRecentSecondFactor::ERROR_CODE,
+                __('mfa.step_up_required'),
+                'security_confirmation',
+                403
+            );
+        }
+
         $updates = [];
         $params = [];
         $statusForNotification = null;
@@ -1324,10 +1341,15 @@ class AdminUsersController extends BaseApiController
         if (!is_string($reason) || mb_strlen(trim($reason)) < 10 || mb_strlen($reason) > 500) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), 'reason', 422);
         }
-        $claims = request()->attributes->get('verified_auth_claims', []);
-        if (!app(\App\Services\TwoFactorPolicy::class)->satisfied($claims)
-            || (int) $claims['mfa_verified_at'] < time() - 300 || !empty($claims['impersonated_by'])) {
-            return $this->respondWithError('MFA_REQUIRED', __('mfa.sign_in_required'), null, 403);
+        // The route's step-up middleware already asked for a fresh second
+        // factor (E-085); re-checked here and again under the target lock.
+        if (!\App\Http\Middleware\RequireRecentSecondFactor::passes(request(), 300)) {
+            return $this->respondWithError(
+                \App\Http\Middleware\RequireRecentSecondFactor::ERROR_CODE,
+                __('mfa.step_up_required'),
+                'security_confirmation',
+                403
+            );
         }
 
         try {
@@ -1339,7 +1361,7 @@ class AdminUsersController extends BaseApiController
                 if (!$proof || (int) ($proof['user_id'] ?? 0) !== $adminId
                     || !empty($proof['impersonated_by'])
                     || !app(\App\Services\TwoFactorPolicy::class)->satisfied($proof)
-                    || (int) $proof['mfa_verified_at'] < time() - 300) {
+                    || !\App\Http\Middleware\RequireRecentSecondFactor::passes(request(), 300)) {
                     return false;
                 }
                 DB::table('totp_admin_overrides')->insert([

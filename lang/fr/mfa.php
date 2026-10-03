@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'L’authentification à deux facteurs est obligatoire pour votre compte et ne peut pas être désactivée.',
     'disable_code_invalid' => 'Ce code d’authentification n’a pas été accepté. Saisissez le code actuel affiché dans votre application et réessayez.',
     'impersonation_read_only' => 'Session d’assistance en lecture seule. Revenez à votre compte pour effectuer des modifications.',
+    'step_up_required' => 'Confirmez qu’il s’agit bien de vous avant cette action : saisissez un code de votre application d’authentification.',
 ];

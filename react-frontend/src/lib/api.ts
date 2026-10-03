@@ -332,6 +332,40 @@ interface PendingRefreshWaiter {
   timeoutId: ReturnType<typeof setTimeout>;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Step-up: a fresh second factor before high-risk staff actions (E-085)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The server refuses a high-risk staff action (role change, ban, balance
+ * adjustment, security settings…) with this code when the session's second
+ * factor was not entered recently — for example after a sign-in on a
+ * remembered device. The client asks for a code once, then retries.
+ */
+export const AUTH_STEP_UP_REQUIRED = 'AUTH_STEP_UP_REQUIRED';
+
+/**
+ * Asks the person for a fresh second factor and resolves with a
+ * security-confirmation token, or null when they cancel. Registered by
+ * `StepUpPrompt`, which is mounted once at the root of the app.
+ */
+export type StepUpHandler = () => Promise<{ token: string; expiresIn: number } | null>;
+
+let stepUpHandler: StepUpHandler | null = null;
+let pendingStepUp: Promise<{ token: string; expiresIn: number } | null> | null = null;
+let cachedStepUp: { token: string; expiresAt: number; sessionGeneration: string | null } | null = null;
+
+export function setStepUpHandler(handler: StepUpHandler | null): void {
+  stepUpHandler = handler;
+}
+
+/** Forget any confirmation held for step-up retries (sign-out, tests). */
+export function clearStepUpConfirmation(): void {
+  cachedStepUp = null;
+}
+
+type StepUpStage = 'none' | 'cached' | 'prompted';
+
 function isAbortError(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError';
 }
@@ -1590,6 +1624,7 @@ export class ApiClient {
     options: RequestOptions = {},
     retryOnUnauthorized = true,
     expectedAuthContext?: AuthContextSnapshot,
+    stepUpStage: StepUpStage = 'none',
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     const authContextAtRequestStart = expectedAuthContext ?? this.captureAuthContext();
@@ -1830,6 +1865,55 @@ export class ApiClient {
         const message = serverMessageFor(errors, ACCOUNT_UNDER_MINIMUM_AGE);
         this.expireSession('under_minimum_age', authContextAtRequestStart.sessionGeneration, message);
         return this.minimumAgeRefusalResponse<T>(message);
+      }
+
+      // E-085: a high-risk staff action needs a second factor entered
+      // recently. Reuse a confirmation still in date, otherwise ask once, then
+      // replay the same request with the proof. Cancelling returns the refusal
+      // to the caller unchanged, so its own error handling still applies.
+      if (
+        response.status === 403
+        && !options.skipAuth
+        && stepUpStage !== 'prompted'
+        && (errorCode === AUTH_STEP_UP_REQUIRED || hasApiErrorCode(data, AUTH_STEP_UP_REQUIRED))
+      ) {
+        const generation = authContextAtRequestStart.sessionGeneration;
+        if (stepUpStage === 'cached') {
+          cachedStepUp = null;
+        }
+        const reusable = cachedStepUp !== null
+          && cachedStepUp.sessionGeneration === generation
+          && cachedStepUp.expiresAt > Date.now();
+        let proof: string | null = reusable && cachedStepUp ? cachedStepUp.token : null;
+        let nextStage: StepUpStage = 'cached';
+        if (proof === null && stepUpHandler) {
+          pendingStepUp ??= stepUpHandler().finally(() => { pendingStepUp = null; });
+          const confirmed = await pendingStepUp;
+          if (confirmed) {
+            proof = confirmed.token;
+            // Keep a safety margin under the server's lifetime.
+            cachedStepUp = {
+              token: confirmed.token,
+              expiresAt: Date.now() + Math.max(0, confirmed.expiresIn - 20) * 1000,
+              sessionGeneration: generation,
+            };
+          }
+          nextStage = 'prompted';
+        }
+        if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+          return this.changedContextResponse<T>(authContextAtRequestStart);
+        }
+        if (proof !== null) {
+          const retryHeaders = new Headers(options.headers);
+          retryHeaders.set('X-Security-Confirmation', proof);
+          return this.request<T>(
+            endpoint,
+            { ...options, headers: retryHeaders },
+            retryOnUnauthorized,
+            authContextAtRequestStart,
+            nextStage,
+          );
+        }
       }
 
       // Dispatch global error for server errors (5xx) so useApiErrorHandler can show toasts.

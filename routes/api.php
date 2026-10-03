@@ -1760,9 +1760,9 @@ Route::get('/v2/admin/audit-log/export.csv', [\App\Http\Controllers\Api\AdminAud
 // SSO provider management (IT-Sec-05)
 Route::get('/v2/admin/sso/providers', [\App\Http\Controllers\Api\AdminSsoProvidersController::class, 'index']);
 Route::put('/v2/admin/sso/providers/{providerKey}', [\App\Http\Controllers\Api\AdminSsoProvidersController::class, 'upsert'])
-    ->where('providerKey', '[a-z0-9_-]{2,20}');
+    ->where('providerKey', '[a-z0-9_-]{2,20}')->middleware('step-up');
 Route::delete('/v2/admin/sso/providers/{providerKey}', [\App\Http\Controllers\Api\AdminSsoProvidersController::class, 'destroy'])
-    ->where('providerKey', '[a-z0-9_-]{2,20}');
+    ->where('providerKey', '[a-z0-9_-]{2,20}')->middleware('step-up');
 Route::post('/v2/admin/sso/providers/{providerKey}/test', [\App\Http\Controllers\Api\AdminSsoProvidersController::class, 'test'])
     ->where('providerKey', '[a-z0-9_-]{2,20}');
 
@@ -1800,7 +1800,7 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::put('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'update'])->whereNumber('id');
     Route::post('/v2/admin/users/bulk-approve', [\App\Http\Controllers\Api\AdminUsersController::class, 'bulkApprove']);
     Route::post('/v2/admin/users/bulk-suspend', [\App\Http\Controllers\Api\AdminUsersController::class, 'bulkSuspend']);
-    Route::post('/v2/admin/users/{id}/reset-2fa', [\App\Http\Controllers\Api\AdminUsersController::class, 'reset2fa'])->whereNumber('id');
+    Route::post('/v2/admin/users/{id}/reset-2fa', [\App\Http\Controllers\Api\AdminUsersController::class, 'reset2fa'])->whereNumber('id')->middleware('step-up:300');
     Route::get('/v2/admin/users/{id}/consents', [\App\Http\Controllers\Api\AdminUsersController::class, 'getConsents'])->whereNumber('id');
     Route::post('/v2/admin/users/{id}/send-password-reset', [\App\Http\Controllers\Api\AdminUsersController::class, 'sendPasswordReset'])->whereNumber('id');
     Route::post('/v2/admin/users/{id}/send-verification-email', [\App\Http\Controllers\Api\EmailVerificationController::class, 'adminResendVerification'])->whereNumber('id');
@@ -1809,15 +1809,15 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
 Route::post('/v2/admin/users', [\App\Http\Controllers\Api\AdminUsersController::class, 'store']);
 Route::post('/v2/admin/users/import', [\App\Http\Controllers\Api\AdminUsersController::class, 'import']);
 Route::get('/v2/admin/users/import/template', [\App\Http\Controllers\Api\AdminUsersController::class, 'importTemplate']);
-Route::delete('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'destroy']);
-Route::post('/v2/admin/users/{id}/ban', [\App\Http\Controllers\Api\AdminUsersController::class, 'ban']);
+Route::delete('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'destroy'])->middleware('step-up');
+Route::post('/v2/admin/users/{id}/ban', [\App\Http\Controllers\Api\AdminUsersController::class, 'ban'])->middleware('step-up');
 Route::post('/v2/admin/users/badges/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll'])
     ->middleware('feature:gamification');
 Route::post('/v2/admin/users/{id}/badges', [\App\Http\Controllers\Api\AdminUsersController::class, 'addBadge']);
 Route::delete('/v2/admin/users/{id}/badges/{badgeId}', [\App\Http\Controllers\Api\AdminUsersController::class, 'removeBadge']);
 // impersonate, super-admin promotion — moved to super-admin middleware group (see below)
 Route::post('/v2/admin/users/{id}/badges/recheck', [\App\Http\Controllers\Api\AdminUsersController::class, 'recheckBadges'])->whereNumber('id');
-Route::post('/v2/admin/users/{id}/password', [\App\Http\Controllers\Api\AdminUsersController::class, 'setPassword'])->whereNumber('id');
+Route::post('/v2/admin/users/{id}/password', [\App\Http\Controllers\Api\AdminUsersController::class, 'setPassword'])->whereNumber('id')->middleware('step-up');
 // Listings index is used by the broker panel's Risk Tags create-modal
 // autocomplete. Other listing-management endpoints stay admin-only.
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
@@ -1864,8 +1864,8 @@ Route::post('/v2/admin/identity/sessions/{id}/approve', [\App\Http\Controllers\A
 Route::post('/v2/admin/identity/sessions/{id}/reject', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'adminRejectVerification']);
 Route::get('/v2/admin/identity/provider-health', [\App\Http\Controllers\Api\IdentityProviderHealthController::class, 'getProviderHealth']);
 Route::get('/v2/admin/identity/provider-credentials', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'listProviderCredentials']);
-Route::put('/v2/admin/identity/provider-credentials/{slug}', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'saveProviderCredentials']);
-Route::delete('/v2/admin/identity/provider-credentials/{slug}', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'deleteProviderCredentials']);
+Route::put('/v2/admin/identity/provider-credentials/{slug}', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'saveProviderCredentials'])->middleware('step-up');
+Route::delete('/v2/admin/identity/provider-credentials/{slug}', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'deleteProviderCredentials'])->middleware('step-up');
 Route::get('/v2/admin/invite-codes', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'listInviteCodes']);
 Route::post('/v2/admin/invite-codes', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'generateInviteCodes']);
 Route::delete('/v2/admin/invite-codes/{id}', [\App\Http\Controllers\Api\RegistrationPolicyController::class, 'deactivateInviteCode']);
@@ -1888,7 +1888,7 @@ Route::put('/v2/admin/config/jobs/bulk', [\App\Http\Controllers\Api\AdminConfigC
 Route::get('/v2/admin/config/podcasts', [\App\Http\Controllers\Api\AdminConfigController::class, 'getPodcastConfig']);
 Route::put('/v2/admin/config/podcasts/bulk', [\App\Http\Controllers\Api\AdminConfigController::class, 'updatePodcastConfigBulk']);
 Route::get('/v2/admin/config/authentication', [\App\Http\Controllers\Api\AdminConfigController::class, 'getAuthenticationConfig']);
-Route::put('/v2/admin/config/authentication/bulk', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateAuthenticationConfigBulk']);
+Route::put('/v2/admin/config/authentication/bulk', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateAuthenticationConfigBulk'])->middleware('step-up');
 Route::get('/v2/admin/config/identity', [\App\Http\Controllers\Api\AdminConfigController::class, 'getIdentityConfig']);
 Route::put('/v2/admin/config/identity/bulk', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateIdentityConfigBulk']);
 Route::get('/v2/admin/config/translation', [\App\Http\Controllers\Api\AdminConfigController::class, 'getTranslationConfig']);
@@ -1958,7 +1958,7 @@ Route::get('/v2/admin/email/status', [\App\Http\Controllers\Api\AdminEmailContro
 Route::post('/v2/admin/email/test', [\App\Http\Controllers\Api\AdminEmailController::class, 'test']);
 Route::post('/v2/admin/email/test-gmail', [\App\Http\Controllers\Api\AdminEmailController::class, 'testGmail']);
 Route::get('/v2/admin/email/config', [\App\Http\Controllers\Api\AdminEmailController::class, 'getConfig']);
-Route::put('/v2/admin/email/config', [\App\Http\Controllers\Api\AdminEmailController::class, 'updateConfig']);
+Route::put('/v2/admin/email/config', [\App\Http\Controllers\Api\AdminEmailController::class, 'updateConfig'])->middleware('step-up');
 Route::post('/v2/admin/email/test-provider', [\App\Http\Controllers\Api\AdminEmailController::class, 'testProvider']);
 Route::get('/v2/admin/matching/config', [\App\Http\Controllers\Api\AdminMatchingController::class, 'getConfig']);
 Route::put('/v2/admin/matching/config', [\App\Http\Controllers\Api\AdminMatchingController::class, 'updateConfig']);
@@ -2540,23 +2540,23 @@ Route::put('/v2/admin/timebanking/alerts/{id}', [\App\Http\Controllers\Api\Admin
 // mandatory reason). Audited to org_audit_log as `member_balance_adjusted` with
 // before/after balances, inside the same transaction as the balance change.
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
-    Route::post('/v2/admin/timebanking/adjust-balance', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'adjustBalance']);
+    Route::post('/v2/admin/timebanking/adjust-balance', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'adjustBalance'])->middleware('step-up');
 });
 Route::get('/v2/admin/timebanking/org-wallets', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'orgWallets']);
 Route::get('/v2/admin/timebanking/user-report', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'userReport']);
 Route::get('/v2/admin/timebanking/user-statement', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'userStatement']);
 Route::get('/v2/admin/wallet/grants', [\App\Http\Controllers\Api\AdminWalletGrantController::class, 'index']);
-Route::post('/v2/admin/wallet/grant', [\App\Http\Controllers\Api\AdminWalletGrantController::class, 'store']);
+Route::post('/v2/admin/wallet/grant', [\App\Http\Controllers\Api\AdminWalletGrantController::class, 'store'])->middleware('step-up');
 Route::get('/v2/admin/enterprise/dashboard', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'dashboard']);
 Route::get('/v2/admin/enterprise/roles', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'roles']);
-Route::post('/v2/admin/enterprise/roles', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'createRole']);
+Route::post('/v2/admin/enterprise/roles', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'createRole'])->middleware('step-up');
 Route::get('/v2/admin/enterprise/roles/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'showRole']);
-Route::put('/v2/admin/enterprise/roles/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateRole']);
-Route::delete('/v2/admin/enterprise/roles/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteRole']);
+Route::put('/v2/admin/enterprise/roles/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateRole'])->middleware('step-up');
+Route::delete('/v2/admin/enterprise/roles/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteRole'])->middleware('step-up');
 Route::get('/v2/admin/enterprise/permissions', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'permissions']);
 Route::get('/v2/admin/enterprise/gdpr/dashboard', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'gdprDashboard']);
 Route::get('/v2/admin/enterprise/gdpr/requests', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'gdprRequests']);
-Route::put('/v2/admin/enterprise/gdpr/requests/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateGdprRequest']);
+Route::put('/v2/admin/enterprise/gdpr/requests/{id}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateGdprRequest'])->middleware('step-up');
 Route::get('/v2/admin/enterprise/gdpr/consents', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'gdprConsents']);
 Route::get('/v2/admin/enterprise/gdpr/breaches', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'gdprBreaches']);
 Route::post('/v2/admin/enterprise/gdpr/breaches', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'createBreach']);
@@ -2602,8 +2602,8 @@ Route::get('/v2/admin/enterprise/monitoring/health-history', [\App\Http\Controll
 // Enterprise config — feature flags & secrets management
 Route::get('/v2/admin/enterprise/config/features', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'featureFlags']);
 Route::patch('/v2/admin/enterprise/config/features', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'updateFeatureFlag']);
-Route::post('/v2/admin/enterprise/config/secrets/{key}/rotate', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'rotateSecret']);
-Route::delete('/v2/admin/enterprise/config/secrets/{key}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteSecret']);
+Route::post('/v2/admin/enterprise/config/secrets/{key}/rotate', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'rotateSecret'])->middleware('step-up');
+Route::delete('/v2/admin/enterprise/config/secrets/{key}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'deleteSecret'])->middleware('step-up');
 Route::post('/v2/admin/enterprise/config/secrets/test-vault', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'testVaultConnection']);
 
 Route::get('/v2/admin/legal-documents', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'legalDocs']);
@@ -2655,7 +2655,7 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     // terminal, and the only tool was the single-member balance adjustment applied
     // twice by hand with no link to the exchange. Throttled harder than the others
     // because it moves credits in both directions.
-    Route::post('/v2/admin/broker/exchanges/{id}/reverse', [\App\Http\Controllers\Api\AdminBrokerController::class, 'reverseExchange'])->middleware('throttle:nexus-route-30-per-1m');
+    Route::post('/v2/admin/broker/exchanges/{id}/reverse', [\App\Http\Controllers\Api\AdminBrokerController::class, 'reverseExchange'])->middleware('throttle:nexus-route-30-per-1m')->middleware('step-up');
     Route::get('/v2/admin/broker/risk-tags', [\App\Http\Controllers\Api\AdminBrokerController::class, 'riskTags']);
     Route::get('/v2/admin/broker/messages', [\App\Http\Controllers\Api\AdminBrokerController::class, 'messages']);
     Route::get('/v2/admin/broker/messages/unreviewed-count', [\App\Http\Controllers\Api\AdminBrokerController::class, 'unreviewedCount']);
@@ -2920,8 +2920,8 @@ Route::put('/v2/admin/federation/topics/mine', [\App\Http\Controllers\Api\AdminF
 Route::get('/v2/admin/federation/analytics', [\App\Http\Controllers\Api\AdminFederationController::class, 'analytics']);
 Route::get('/v2/admin/federation/activity', [\App\Http\Controllers\Api\AdminFederationController::class, 'activityFeed']);
 Route::get('/v2/admin/federation/api-keys', [\App\Http\Controllers\Api\AdminFederationController::class, 'apiKeys']);
-Route::post('/v2/admin/federation/api-keys', [\App\Http\Controllers\Api\AdminFederationController::class, 'createApiKey']);
-Route::post('/v2/admin/federation/api-keys/{id}/revoke', [\App\Http\Controllers\Api\AdminFederationController::class, 'revokeApiKey']);
+Route::post('/v2/admin/federation/api-keys', [\App\Http\Controllers\Api\AdminFederationController::class, 'createApiKey'])->middleware('step-up');
+Route::post('/v2/admin/federation/api-keys/{id}/revoke', [\App\Http\Controllers\Api\AdminFederationController::class, 'revokeApiKey'])->middleware('step-up');
 Route::get('/v2/admin/federation/data', [\App\Http\Controllers\Api\AdminFederationController::class, 'dataManagement']);
 Route::get('/v2/admin/federation/export/{type}', [\App\Http\Controllers\Api\AdminFederationController::class, 'exportData']);
 // Federation cross-node aggregate consent (R1+R2 — Caring Community federation)
@@ -3185,16 +3185,16 @@ Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\Admi
 Route::get('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperController::class, 'userList']);
 Route::post('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperController::class, 'userCreate']);
 Route::get('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userShow']);
-Route::put('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userUpdate']);
+Route::put('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userUpdate'])->middleware('step-up');
 
 // Grants/revokes the TENANT super-admin flag — scoped by canAccessTenant.
 // The GLOBAL equivalents are platform-level and stay in tier B.
-Route::post('/v2/admin/super/users/{id}/grant-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantSuperAdmin']);
-Route::post('/v2/admin/super/users/{id}/revoke-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeSuperAdmin']);
-Route::post('/v2/admin/super/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminSuperController::class, 'userImpersonate']);
-Route::post('/v2/admin/super/users/{id}/move-tenant', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveTenant']);
-Route::post('/v2/admin/super/users/{id}/move-and-promote', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveAndPromote']);
-Route::post('/v2/admin/super/bulk/move-users', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkMoveUsers']);
+Route::post('/v2/admin/super/users/{id}/grant-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantSuperAdmin'])->middleware('step-up');
+Route::post('/v2/admin/super/users/{id}/revoke-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeSuperAdmin'])->middleware('step-up');
+Route::post('/v2/admin/super/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminSuperController::class, 'userImpersonate'])->middleware('step-up');
+Route::post('/v2/admin/super/users/{id}/move-tenant', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveTenant'])->middleware('step-up');
+Route::post('/v2/admin/super/users/{id}/move-and-promote', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveAndPromote'])->middleware('step-up');
+Route::post('/v2/admin/super/bulk/move-users', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkMoveUsers'])->middleware('step-up');
 Route::post('/v2/admin/super/bulk/update-tenants', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkUpdateTenants']);
 
 /*
@@ -3212,7 +3212,7 @@ Route::post('/v2/admin/super/bulk/update-tenants', [\App\Http\Controllers\Api\Ad
  * The irreversible PURGE stays in tier B and is god-only. Deactivation can be
  * undone; deletion of the data cannot.
  */
-Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete']);
+Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete'])->middleware('step-up');
 
 Route::get('/v2/admin/super/audit', [\App\Http\Controllers\Api\AdminSuperController::class, 'audit']);
 
@@ -3259,7 +3259,7 @@ Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
 
 // Irreversible tenant destruction — god-only, and staying that way.
 Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
-Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge']);
+Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge'])->middleware('step-up');
 
 // Platform rollout switches. Platform super-admin only — these set the ceiling
 // every community own settings sit under, so they are not tenant-admin
@@ -3268,8 +3268,8 @@ Route::get('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\S
 Route::put('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'update']);
 
 // PLATFORM super-admin grants. Never branch-level: this is the escape hatch.
-Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantGlobalSuperAdmin']);
-Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeGlobalSuperAdmin']);
+Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantGlobalSuperAdmin'])->middleware('step-up');
+Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeGlobalSuperAdmin'])->middleware('step-up');
 
 // Installation-wide federation control, including the external kill switches.
 Route::get('/v2/admin/super/federation', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationOverview']);
@@ -3290,8 +3290,8 @@ Route::post('/v2/admin/super/federation/partnerships/{id}/terminate', [\App\Http
 // Super-admin promotion stays platform-only: minting a super-admin is how a
 // single community's compromise becomes the installation's.
 // 🔴 Impersonation moved OUT of this group on 2026-08-06 — see below.
-Route::put('/v2/admin/users/{id}/super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setSuperAdmin']);
-Route::put('/v2/admin/users/{id}/global-super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setGlobalSuperAdmin']);
+Route::put('/v2/admin/users/{id}/super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setSuperAdmin'])->middleware('step-up');
+Route::put('/v2/admin/users/{id}/global-super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setGlobalSuperAdmin'])->middleware('step-up');
 
 // Identity verification fee configuration (super admin only)
 Route::put('/v2/admin/super/identity/fee', [\App\Http\Controllers\Api\AdminSuperController::class, 'setIdentityVerificationFee']);
@@ -3346,7 +3346,7 @@ Route::post('/v2/super-admin/provisioning-requests/{id}/retry', [\App\Http\Contr
 */
 Route::middleware(['auth:sanctum', 'tenant-super-admin'])->group(function () {
 
-Route::post('/v2/admin/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminUsersController::class, 'impersonate']);
+Route::post('/v2/admin/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminUsersController::class, 'impersonate'])->middleware('step-up');
 
 }); // End Route::middleware(['auth:sanctum', 'tenant-super-admin'])
 
@@ -4441,12 +4441,12 @@ Route::middleware(['auth:sanctum', 'super-admin'])->prefix('super-admin/regional
 // Admin: Partner CRUD + credential rotation + call log
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/v2/admin/api-partners', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'index']);
-    Route::post('/v2/admin/api-partners', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'store']);
+    Route::post('/v2/admin/api-partners', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'store'])->middleware('step-up');
     Route::get('/v2/admin/api-partners/{id}', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'show'])->whereNumber('id');
     Route::put('/v2/admin/api-partners/{id}', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'update'])->whereNumber('id');
     Route::post('/v2/admin/api-partners/{id}/activate', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'activate'])->whereNumber('id');
     Route::post('/v2/admin/api-partners/{id}/suspend', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'suspend'])->whereNumber('id');
-    Route::post('/v2/admin/api-partners/{id}/regenerate-credentials', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'regenerateCredentials'])->whereNumber('id');
+    Route::post('/v2/admin/api-partners/{id}/regenerate-credentials', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'regenerateCredentials'])->whereNumber('id')->middleware('step-up');
     Route::get('/v2/admin/api-partners/{id}/call-log', [\App\Http\Controllers\Api\Admin\ApiPartnerAdminController::class, 'callLog'])->whereNumber('id');
 });
 

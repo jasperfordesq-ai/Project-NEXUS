@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Bestätigen",
   "passkey_security_confirm_failed": "Ihre Identität konnte nicht bestätigt werden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.",
   "passkey_security_confirm_no_method": "Melden Sie sich ab und erneut mit Ihrem Passkey an, bevor Sie diese Änderung vornehmen, oder fügen Sie eine andere Bestätigungsmethode hinzu.",
+  "step_up_description": "Dies ist eine risikoreiche Aktion. Geben Sie einen Code aus Ihrer Authentifizierungs-App ein, um zu bestätigen, dass Sie es sind.",
+  "step_up_no_method": "Für Ihr Konto ist keine Authentifizierungs-App zur Bestätigung eingerichtet. Melden Sie sich ab und wieder an und versuchen Sie diese Aktion dann erneut.",
   "passkey_sessions_revoked": "Ihre Passkeys wurden geändert. Melden Sie sich auf jedem Gerät erneut an.",
   "passkey_remove_failed": "Passkey konnte nicht entfernt werden",
   "passkey_remove_all_failed": "Passkeys konnten nicht entfernt werden",

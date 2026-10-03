@@ -813,15 +813,26 @@ class SocialAuthService
             $assurance = $upstreamMfaVerified
                 ? ['mfa_method' => 'sso', 'mfa_verified_at' => $upstreamMfaVerifiedAt] : [];
             $enabled = $this->totp->isEnabled($userId, $tenantId);
-            if (!$upstreamMfaVerified && ($required || ($enabled && !$this->totp->isTrustedDevice($userId, null, $tenantId)))) {
+            // A remembered device skips the code for staff too (E-085); a
+            // required factor that was never set up still has to be set up.
+            $trustedAssurance = !$upstreamMfaVerified && $enabled
+                ? $this->totp->trustedDeviceAssurance($userId, $tenantId)
+                : null;
+            if ($trustedAssurance !== null) {
+                $assurance = $trustedAssurance;
+            }
+            if (!$upstreamMfaVerified && (($required && !$enabled) || ($enabled && $trustedAssurance === null))) {
                 $methods = $enabled ? ['totp', 'backup_code'] : ['totp_setup'];
                 $challenge = app(\App\Services\TwoFactorChallengeManager::class)->create(
                     $userId, $methods, $tenantId, $authenticationStartedAt, $identityLink, $ssoProviderContext
                 );
+                $rememberDays = $this->totp->rememberDeviceDays($userId, $tenantId);
                 return ['status' => 'mfa_challenge', 'mfa' => [
                     'requires_2fa' => $enabled, 'requires_2fa_setup' => !$enabled,
                     'two_factor_token' => $challenge, 'methods' => $methods,
-                    'allow_trusted_device' => !$required, 'tenant_id' => $tenantId,
+                    'allow_trusted_device' => $rememberDays !== null,
+                    'trusted_device_days' => $rememberDays ?? 30,
+                    'tenant_id' => $tenantId,
                 ]];
             }
 

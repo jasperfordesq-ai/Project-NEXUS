@@ -19632,6 +19632,7 @@ CREATE TABLE `user_trusted_devices` (
   `revoked_reason` varchar(100) DEFAULT NULL COMMENT 'user_action, password_change, admin_reset, etc.',
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `role_fingerprint` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_device_token` (`device_token_hash`),
   KEY `idx_user_active` (`user_id`,`is_revoked`,`expires_at`),
@@ -21633,7 +21634,8 @@ INSERT INTO `laravel_migrations` VALUES
 (456,'2026_09_26_170000_create_goal_buddy_requests',138),
 (457,'2026_09_27_210000_repair_legacy_views_for_restore',139),
 (458,'2026_10_02_120000_add_jira_sync_to_support_reports',140),
-(459,'2026_10_02_130000_add_jira_status_to_support_reports',141);
+(459,'2026_10_02_130000_add_jira_status_to_support_reports',141),
+(460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

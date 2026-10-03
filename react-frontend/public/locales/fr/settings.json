@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Confirmer",
   "passkey_security_confirm_failed": "Nous n’avons pas pu confirmer votre identité. Vérifiez vos informations et réessayez.",
   "passkey_security_confirm_no_method": "Déconnectez-vous, puis reconnectez-vous avec votre clé d’accès avant cette modification, ou ajoutez une autre méthode de confirmation.",
+  "step_up_description": "Il s’agit d’une action à haut risque. Saisissez un code de votre application d’authentification pour confirmer qu’il s’agit bien de vous.",
+  "step_up_no_method": "Votre compte ne dispose d’aucune application d’authentification pour confirmer. Déconnectez-vous, reconnectez-vous, puis réessayez cette action.",
   "passkey_sessions_revoked": "Vos clés d’accès ont changé. Reconnectez-vous sur chaque appareil.",
   "passkey_remove_failed": "Impossible de supprimer la clé d’accès",
   "passkey_remove_all_failed": "Impossible de supprimer les passkeys",

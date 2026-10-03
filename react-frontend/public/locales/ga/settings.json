@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Deimhnigh",
   "passkey_security_confirm_failed": "Níorbh fhéidir d’aitheantas a dheimhniú. Seiceáil na sonraí agus bain triail eile as.",
   "passkey_security_confirm_no_method": "Sínigh amach agus sínigh isteach arís le do phas-eochair sula ndéanann tú an t-athrú seo, nó cuir modh deimhnithe eile leis.",
+  "step_up_description": "Is gníomh ardriosca é seo. Cuir isteach cód ó d’aip fíordheimhnithe chun a dheimhniú gur tusa atá ann.",
+  "step_up_no_method": "Níl aon aip fíordheimhnithe ar do chuntas chun é a dheimhniú. Sínigh amach agus sínigh isteach arís, ansin bain triail as an ngníomh seo arís.",
   "passkey_sessions_revoked": "Athraíodh do phas-eochracha. Sínigh isteach arís ar gach gléas.",
   "passkey_remove_failed": "Níorbh fhéidir an pas-eochair a bhaint",
   "passkey_remove_all_failed": "Níorbh fhéidir na pas-eochracha a bhaint",

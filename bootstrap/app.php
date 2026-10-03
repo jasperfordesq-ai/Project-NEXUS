@@ -696,6 +696,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // community to have children, because the routes behind it act within a
             // single community. Admission only: the route must still scope its target.
             'tenant-super-admin' => \App\Http\Middleware\EnsureIsTenantSuperAdmin::class,
+            // A second factor entered recently, before high-risk staff actions
+            // (E-085). Attach PER ROUTE, after the route's admission gate.
+            'step-up' => \App\Http\Middleware\RequireRecentSecondFactor::class,
             'federation.api' => \App\Http\Middleware\FederationApiAuth::class,
             'federation.external' => \App\Http\Middleware\EnsureExternalFederationEnabled::class,
             'partner.api' => \App\Http\Middleware\PartnerApiAuth::class,

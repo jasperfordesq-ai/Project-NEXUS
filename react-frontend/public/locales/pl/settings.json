@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Potwierdź",
   "passkey_security_confirm_failed": "Nie udało się potwierdzić Twojej tożsamości. Sprawdź dane i spróbuj ponownie.",
   "passkey_security_confirm_no_method": "Wyloguj się i zaloguj ponownie kluczem dostępu przed dokonaniem tej zmiany albo dodaj inną metodę potwierdzenia.",
+  "step_up_description": "To działanie wysokiego ryzyka. Wpisz kod z aplikacji uwierzytelniającej, aby potwierdzić, że to Ty.",
+  "step_up_no_method": "Twoje konto nie ma aplikacji uwierzytelniającej do potwierdzenia. Wyloguj się, zaloguj ponownie, a następnie spróbuj wykonać to działanie jeszcze raz.",
   "passkey_sessions_revoked": "Twoje klucze dostępu zostały zmienione. Zaloguj się ponownie na każdym urządzeniu.",
   "passkey_remove_failed": "Nie udało się usunąć poświadczenia",
   "passkey_remove_all_failed": "Nie udało się usunąć poświadczeń",

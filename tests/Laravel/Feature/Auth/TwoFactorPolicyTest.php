@@ -179,17 +179,41 @@ class TwoFactorPolicyTest extends TestCase
         $this->assertTrue(app(TwoFactorPolicy::class)->satisfied($tokens->validateRefreshToken($rotation['refresh_token'])));
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('enrollmentRoles')]
-    public function test_remembered_device_cannot_bypass_required_mfa(string $role): void
+    public function test_remembered_device_cannot_bypass_a_community_wide_member_mandate(): void
     {
-        $user = $this->member(['role' => $role]);
-        if ($role === 'member') Settings::set(Settings::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS, true, $this->testTenantId);
+        $user = $this->member(['role' => 'member']);
+        $setup = \App\Services\TotpService::initializeSetup($user->id);
+        $this->assertTrue(\App\Services\TotpService::completeSetup($user->id, TOTP::createFromSecret($setup['secret'])->now())['success']);
+        // Remembered while 2FA was optional for members ...
+        $trusted = \App\Services\TotpService::trustDevice($user->id);
+        $this->assertNotEmpty($trusted);
+        // ... it stops counting once the community requires 2FA of every member,
+        // and no new device can be remembered under the mandate (E-085 keeps this).
+        Settings::set(Settings::CONFIG_TWO_FACTOR_REQUIRE_MEMBERS, true, $this->testTenantId);
+        $this->assertNull(\App\Services\TotpService::trustDevice($user->id));
+        $this->apiPost('/auth/login', ['email' => $user->email, 'password' => 'test-password'], [
+            'X-Stateless-Auth' => '1', 'X-Trusted-Device' => $trusted,
+        ])->assertOk()->assertJsonPath('requires_2fa', true)->assertJsonPath('allow_trusted_device', false);
+    }
+
+    /**
+     * E-085 (owner decision, 3 Oct 2026): staff may remember a device. The
+     * remembered sign-in still satisfies mandatory MFA, carrying the time the
+     * code was really entered so step-up checks ask again before risky actions.
+     */
+    public function test_admin_remembered_device_satisfies_mandatory_mfa(): void
+    {
+        $user = $this->member(['role' => 'admin']);
         $setup = \App\Services\TotpService::initializeSetup($user->id);
         $this->assertTrue(\App\Services\TotpService::completeSetup($user->id, TOTP::createFromSecret($setup['secret'])->now())['success']);
         $trusted = \App\Services\TotpService::trustDevice($user->id);
         $this->assertNotEmpty($trusted);
-        $this->apiPost('/auth/login', ['email' => $user->email, 'password' => 'test-password'], [
+        $login = $this->apiPost('/auth/login', ['email' => $user->email, 'password' => 'test-password'], [
             'X-Stateless-Auth' => '1', 'X-Trusted-Device' => $trusted,
-        ])->assertOk()->assertJsonPath('requires_2fa', true)->assertJsonPath('allow_trusted_device', false);
+        ])->assertOk()->assertJsonPath('success', true)->assertJsonMissingPath('requires_2fa');
+        $claims = app(TokenService::class)->validateToken((string) $login->json('access_token'));
+        $this->assertTrue(app(TwoFactorPolicy::class)->satisfied($claims));
+        $this->assertSame('trusted_device', $claims['mfa_method']);
+        $this->assertFalse(app(TwoFactorPolicy::class)->recentlyVerified($claims, 900));
     }
 }

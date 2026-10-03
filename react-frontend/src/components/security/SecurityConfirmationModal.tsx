@@ -58,6 +58,8 @@ export interface SecurityConfirmationModalProps {
   onCancel: () => void;
   /** Overrides the default (passkey-specific) explanation. */
   description?: string;
+  /** Overrides the default (passkey-specific) text shown when no method is available. */
+  noMethodMessage?: string;
 }
 
 export function SecurityConfirmationModal({
@@ -74,6 +76,7 @@ export function SecurityConfirmationModal({
   onSubmit,
   onCancel,
   description,
+  noMethodMessage,
 }: SecurityConfirmationModalProps) {
   const { t } = useTranslation('settings');
   const hasMethod = methods.password || methods.totp;
@@ -93,7 +96,7 @@ export function SecurityConfirmationModal({
 
               {!hasMethod ? (
                 <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-theme-subtle" role="alert">
-                  {t('passkey_security_confirm_no_method')}
+                  {noMethodMessage ?? t('passkey_security_confirm_no_method')}
                 </div>
               ) : (
                 <>

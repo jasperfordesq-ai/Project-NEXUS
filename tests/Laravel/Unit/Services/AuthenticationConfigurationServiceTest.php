@@ -38,6 +38,9 @@ class AuthenticationConfigurationServiceTest extends TestCase
             'two_factor.require_members' => false,
             'two_factor.allow_trusted_devices' => true,
             'two_factor.trusted_device_days' => 30,
+            // E-085: staff may remember a device; own switch, 30-day ceiling.
+            'two_factor.allow_staff_trusted_devices' => true,
+            'two_factor.staff_trusted_device_days' => 30,
             'two_factor.backup_code_count' => 10,
             'passkeys.conditional_autofill' => true,
             'passkeys.enrollment_enabled' => true,

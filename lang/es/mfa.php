@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'La autenticación de dos factores es obligatoria para tu cuenta y no se puede desactivar.',
     'disable_code_invalid' => 'Ese código de autenticación no se ha aceptado. Introduce el código actual de tu aplicación e inténtalo de nuevo.',
     'impersonation_read_only' => 'Sesión de soporte de solo lectura. Vuelve a tu cuenta para realizar cambios.',
+    'step_up_required' => 'Confirma que eres tú antes de hacer esto: introduce un código de tu aplicación de autenticación.',
 ];

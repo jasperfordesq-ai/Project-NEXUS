@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "確認",
   "passkey_security_confirm_failed": "本人確認ができませんでした。入力内容を確認して、もう一度お試しください。",
   "passkey_security_confirm_no_method": "この変更を行う前にサインアウトし、パスキーで再度サインインするか、別の確認方法を追加してください。",
+  "step_up_description": "これはリスクの高い操作です。本人確認のため、認証アプリのコードを入力してください。",
+  "step_up_no_method": "このアカウントには確認に使える認証アプリがありません。一度サインアウトして再度サインインしてから、この操作をもう一度お試しください。",
   "passkey_sessions_revoked": "パスキーが変更されました。すべてのデバイスで再度サインインしてください。",
   "passkey_remove_failed": "資格情報の削除に失敗しました",
   "passkey_remove_all_failed": "資格情報の削除に失敗しました",

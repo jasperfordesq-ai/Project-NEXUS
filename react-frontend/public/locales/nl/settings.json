@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Bevestigen",
   "passkey_security_confirm_failed": "We konden je identiteit niet bevestigen. Controleer je gegevens en probeer het opnieuw.",
   "passkey_security_confirm_no_method": "Log uit en log opnieuw in met je passkey voordat je deze wijziging uitvoert, of voeg een andere bevestigingsmethode toe.",
+  "step_up_description": "Dit is een risicovolle actie. Voer een code uit uw authenticator-app in om te bevestigen dat u het bent.",
+  "step_up_no_method": "Uw account heeft geen authenticator-app om mee te bevestigen. Meld u af, meld u opnieuw aan en probeer deze actie daarna nog eens.",
   "passkey_sessions_revoked": "Je passkeys zijn gewijzigd. Log op elk apparaat opnieuw in.",
   "passkey_remove_failed": "Passkey verwijderen mislukt",
   "passkey_remove_all_failed": "Passkeys verwijderen mislukt",

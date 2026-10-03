@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'Für Ihr Konto ist Zwei-Faktor-Authentifizierung vorgeschrieben und kann nicht deaktiviert werden.',
     'disable_code_invalid' => 'Dieser Authentifizierungscode wurde nicht akzeptiert. Geben Sie den aktuellen Code aus Ihrer App ein und versuchen Sie es erneut.',
     'impersonation_read_only' => 'Schreibgeschützte Support-Sitzung. Kehren Sie zu Ihrem eigenen Konto zurück, um Änderungen vorzunehmen.',
+    'step_up_required' => 'Bestätigen Sie vor dieser Aktion, dass Sie es sind: Geben Sie einen Code aus Ihrer Authentifizierungs-App ein.',
 ];

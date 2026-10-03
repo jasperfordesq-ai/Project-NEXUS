@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Confirm",
   "passkey_security_confirm_failed": "We could not confirm your identity. Check your details and try again.",
   "passkey_security_confirm_no_method": "Sign out and sign in again with your passkey before making this change, or add another confirmation method.",
+  "step_up_description": "This is a high-risk action. Enter a code from your authenticator app to confirm it is you.",
+  "step_up_no_method": "Your account has no authenticator app to confirm with. Sign out and sign in again, then try this action once more.",
   "passkey_sessions_revoked": "Your passkeys changed. Sign in again on every device.",
   "passkey_remove_failed": "Failed to remove passkey",
   "passkey_remove_all_failed": "Failed to remove credentials",

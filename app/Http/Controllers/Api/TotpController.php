@@ -319,7 +319,9 @@ class TotpController extends BaseApiController
 
         // Return the plain trusted-device token for the frontend only after
         // every account-policy gate has passed.
-        $trustedDeviceToken = $trustDevice && !app(\App\Services\TwoFactorPolicy::class)->required($user)
+        // trustDevice() applies the account's own rule: the staff setting for
+        // staff, the member setting otherwise, never for a member mandate (E-085).
+        $trustedDeviceToken = $trustDevice
             ? $this->totpService->trustDevice($userId, null, $tenantId)
             : null;
 
@@ -415,7 +417,7 @@ class TotpController extends BaseApiController
             $jsonResponse->withCookie(cookie(
                 TotpService::trustedDeviceCookieName(),
                 $trustedDeviceToken,
-                TotpService::trustedDeviceLifetimeMinutes($tenantId),
+                TotpService::trustedDeviceLifetimeMinutes($tenantId, $userId),
                 '/',
                 null,
                 $secure,

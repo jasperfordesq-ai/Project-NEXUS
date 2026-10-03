@@ -34,6 +34,7 @@ import { ScrollToTop } from '@/components/routing/ScrollToTop';
 import { TenantShell } from '@/components/routing/TenantShell';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { StepUpPrompt } from '@/components/security/StepUpPrompt';
 /**
  * Give date-entry widgets the same locale the rest of the app formats with.
  *
@@ -61,6 +62,7 @@ function App() {
             <ToastProvider>
               <ErrorBoundary>
                 <ConfirmDialogProvider>
+                <StepUpPrompt />
                 <Suspense fallback={<LoadingScreen />}>
                   <Routes>
                     {/* Single catch-all route â€” TenantShell detects tenant slug from

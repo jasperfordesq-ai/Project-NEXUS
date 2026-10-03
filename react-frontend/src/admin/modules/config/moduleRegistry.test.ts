@@ -138,8 +138,12 @@ describe('module registry authentication modules', () => {
       'two_factor.require_members',
       'two_factor.allow_trusted_devices',
       'two_factor.trusted_device_days',
+      'two_factor.allow_staff_trusted_devices',
+      'two_factor.staff_trusted_device_days',
       'two_factor.backup_code_count',
     ]);
+    // E-085: staff remembering is capped at 30 days, matching the server.
+    expect(twoFactor?.configOptions.find(option => option.key === 'two_factor.staff_trusted_device_days')?.max).toBe(30);
     expect(passkeys?.configOptions.map(option => option.key)).toEqual([
       'passkeys.enrollment_enabled',
       'passkeys.conditional_autofill',

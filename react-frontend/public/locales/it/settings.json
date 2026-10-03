@@ -188,6 +188,8 @@
   "passkey_security_confirm_action": "Conferma",
   "passkey_security_confirm_failed": "Non è stato possibile confermare la tua identità. Controlla i dati e riprova.",
   "passkey_security_confirm_no_method": "Esci e accedi di nuovo con la passkey prima di apportare questa modifica, oppure aggiungi un altro metodo di conferma.",
+  "step_up_description": "Questa è un’azione ad alto rischio. Inserisci un codice dalla tua app di autenticazione per confermare che sei tu.",
+  "step_up_no_method": "Il tuo account non ha un’app di autenticazione con cui confermare. Esci, accedi di nuovo e riprova questa azione.",
   "passkey_sessions_revoked": "Le tue passkey sono cambiate. Accedi di nuovo su ogni dispositivo.",
   "passkey_remove_failed": "Impossibile rimuovere il passkey",
   "passkey_remove_all_failed": "Impossibile rimuovere i passkey",

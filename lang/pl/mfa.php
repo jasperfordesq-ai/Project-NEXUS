@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'Uwierzytelnianie dwuskładnikowe jest wymagane dla Twojego konta i nie można go wyłączyć.',
     'disable_code_invalid' => 'Ten kod uwierzytelniający nie został zaakceptowany. Wprowadź aktualny kod z aplikacji i spróbuj ponownie.',
     'impersonation_read_only' => 'Sesja pomocy tylko do odczytu. Wróć do swojego konta, aby wprowadzić zmiany.',
+    'step_up_required' => 'Zanim to zrobisz, potwierdź, że to Ty: wpisz kod z aplikacji uwierzytelniającej.',
 ];

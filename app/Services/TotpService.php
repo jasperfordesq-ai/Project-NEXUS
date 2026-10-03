@@ -161,10 +161,34 @@ class TotpService
      */
     public static function isTrustedDevice(int $userId, ?string $deviceHash = null, ?int $tenantId = null): bool
     {
+        return self::trustedDeviceAssurance($userId, $tenantId) !== null;
+    }
+
+    /**
+     * The second-factor claims a remembered device earns, or null when the
+     * device does not count for this account now.
+     *
+     * `mfa_verified_at` is when the code was actually entered on this device,
+     * so a remembered sign-in never looks fresh to a step-up check (E-085).
+     * A device remembered under different authority (role or admin flag since
+     * changed) is revoked here rather than honoured.
+     *
+     * @return array{mfa_method: string, mfa_verified_at: int}|null
+     */
+    public static function trustedDeviceAssurance(int $userId, ?int $tenantId = null): ?array
+    {
         $tenantId = self::resolveTenantId($tenantId);
-        $config = app(AuthenticationConfigurationService::class)->getAll($tenantId);
-        if (empty($config['two_factor.allow_trusted_devices'])) {
-            return false;
+        $authority = self::authorityRow($userId, $tenantId);
+        if ($authority === null) {
+            return null;
+        }
+        $policy = app(TwoFactorPolicy::class);
+        $days = $policy->rememberDeviceDays(
+            $authority,
+            app(AuthenticationConfigurationService::class)->getAll($tenantId)
+        );
+        if ($days === null) {
+            return null;
         }
 
         // Browsers use the HttpOnly cookie. Stateless native clients cannot
@@ -173,28 +197,62 @@ class TotpService
         if (! $token && (request()->hasHeader('X-Nexus-Mobile') || request()->hasHeader('X-Stateless-Auth'))) {
             $token = request()->header('X-Trusted-Device');
         }
-        if (!$token) {
-            return false;
+        if (!is_string($token) || $token === '') {
+            return null;
         }
 
-        $tokenHash = hash('sha256', $token);
-
+        // The current day limit applies to devices remembered under a longer
+        // one, so shortening the setting takes effect at once.
         $device = DB::selectOne(
-            "SELECT id FROM user_trusted_devices
+            "SELECT id, role_fingerprint, UNIX_TIMESTAMP(trusted_at) AS trusted_ts
+             FROM user_trusted_devices
              WHERE user_id = ? AND tenant_id = ? AND device_token_hash = ?
-             AND is_revoked = 0 AND expires_at > NOW()",
-            [$userId, $tenantId, $tokenHash]
+             AND is_revoked = 0 AND expires_at > NOW()
+             AND trusted_at > NOW() - INTERVAL ? DAY",
+            [$userId, $tenantId, hash('sha256', $token), $days]
+        );
+        if (!$device) {
+            return null;
+        }
+
+        // Rows remembered before fingerprints existed carry none; they are
+        // honoured only for accounts with no staff authority.
+        $stored = $device->role_fingerprint ?? null;
+        $sameAuthority = $stored === null
+            ? !$policy->requiredByRole($authority)
+            : hash_equals((string) $stored, $policy->roleFingerprint($authority));
+        if (!$sameAuthority) {
+            DB::update(
+                "UPDATE user_trusted_devices
+                 SET is_revoked = 1, revoked_at = NOW(), revoked_reason = 'role_changed'
+                 WHERE id = ? AND user_id = ? AND tenant_id = ?",
+                [$device->id, $userId, $tenantId]
+            );
+            return null;
+        }
+
+        $trustedAt = (int) $device->trusted_ts;
+        if ($trustedAt <= 0) {
+            return null;
+        }
+
+        DB::update(
+            "UPDATE user_trusted_devices SET last_used_at = NOW() WHERE id = ?",
+            [$device->id]
         );
 
-        if ($device) {
-            DB::update(
-                "UPDATE user_trusted_devices SET last_used_at = NOW() WHERE id = ?",
-                [$device->id]
-            );
-            return true;
-        }
+        return ['mfa_method' => 'trusted_device', 'mfa_verified_at' => min($trustedAt, time())];
+    }
 
-        return false;
+    /** Days this account may remember a device for now, or null if it may not. */
+    public static function rememberDeviceDays(int $userId, ?int $tenantId = null): ?int
+    {
+        $tenantId = self::resolveTenantId($tenantId);
+        $authority = self::authorityRow($userId, $tenantId);
+        return $authority === null ? null : app(TwoFactorPolicy::class)->rememberDeviceDays(
+            $authority,
+            app(AuthenticationConfigurationService::class)->getAll($tenantId)
+        );
     }
 
     /**
@@ -206,8 +264,16 @@ class TotpService
     public static function trustDevice(int $userId, ?string $deviceHash = null, ?int $tenantId = null): ?string
     {
         $tenantId = self::resolveTenantId($tenantId);
-        $config = app(AuthenticationConfigurationService::class)->getAll($tenantId);
-        if (empty($config['two_factor.allow_trusted_devices'])) {
+        $authority = self::authorityRow($userId, $tenantId);
+        if ($authority === null) {
+            return null;
+        }
+        $policy = app(TwoFactorPolicy::class);
+        $days = $policy->rememberDeviceDays(
+            $authority,
+            app(AuthenticationConfigurationService::class)->getAll($tenantId)
+        );
+        if ($days === null) {
             return null;
         }
 
@@ -217,15 +283,14 @@ class TotpService
         $ip = request()->ip();
         $userAgent = request()->userAgent();
         $deviceName = self::parseDeviceName($userAgent);
-        $trustedDeviceDays = (int) ($config['two_factor.trusted_device_days'] ?? 30);
-        $expiresAt = date('Y-m-d H:i:s', time() + ($trustedDeviceDays * 24 * 60 * 60));
+        $expiresAt = date('Y-m-d H:i:s', time() + ($days * 24 * 60 * 60));
 
         try {
             DB::insert(
                 "INSERT INTO user_trusted_devices
-                 (user_id, tenant_id, device_token_hash, device_name, ip_address, user_agent, expires_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [$userId, $tenantId, $tokenHash, $deviceName, $ip, $userAgent, $expiresAt]
+                 (user_id, tenant_id, device_token_hash, device_name, ip_address, user_agent, expires_at, role_fingerprint)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                [$userId, $tenantId, $tokenHash, $deviceName, $ip, $userAgent, $expiresAt, $policy->roleFingerprint($authority)]
             );
 
             return $token;
@@ -233,6 +298,15 @@ class TotpService
             Log::error("Failed to trust device for user $userId: " . $e->getMessage());
             return null;
         }
+    }
+
+    /** The columns that decide staff authority, read fresh for this tenant. */
+    private static function authorityRow(int $userId, int $tenantId): ?object
+    {
+        return DB::table('users')
+            ->where('id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->first(['id', 'tenant_id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
     }
 
     /**
@@ -639,8 +713,11 @@ class TotpService
         return self::TRUSTED_DEVICE_COOKIE;
     }
 
-    public static function trustedDeviceLifetimeMinutes(int $tenantId): int
+    public static function trustedDeviceLifetimeMinutes(int $tenantId, ?int $userId = null): int
     {
+        if ($userId !== null) {
+            return max(1, self::rememberDeviceDays($userId, $tenantId) ?? 1) * 1440;
+        }
         $config = app(AuthenticationConfigurationService::class)->getAll($tenantId);
         return max(1, (int) ($config['two_factor.trusted_device_days'] ?? 30)) * 1440;
     }

@@ -9,4 +9,5 @@ return [
     'disable_forbidden' => 'Two-factor authentication is required for your account and cannot be disabled.',
     'disable_code_invalid' => 'That authenticator code was not accepted. Enter the current code from your app and try again.',
     'impersonation_read_only' => 'Read-only support session. Return to your own account to make changes.',
+    'step_up_required' => 'Confirm that it is you before doing this: enter a code from your authenticator app.',
 ];
