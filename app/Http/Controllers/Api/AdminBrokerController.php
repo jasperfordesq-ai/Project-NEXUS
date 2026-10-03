@@ -813,6 +813,30 @@ class AdminBrokerController extends BaseApiController
         $order = $this->query('sort') === 'oldest' ? 'ASC' : 'DESC';
         $offset = ($page - 1) * $perPage;
 
+        // Optional created_at bounds (Y-m-d, inclusive whole days) for the
+        // list's date-range filter and the CSV export. A malformed date is
+        // refused, as the archives list does, rather than silently ignored.
+        $from = $this->query('from');
+        $to = $this->query('to');
+        foreach (['from' => $from, 'to' => $to] as $field => $value) {
+            if (!$value) {
+                continue;
+            }
+            try {
+                $parsed = Carbon::createFromFormat('Y-m-d', $value);
+            } catch (\Exception $e) {
+                $parsed = null;
+            }
+            if ($parsed === null || $parsed->format('Y-m-d') !== $value) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.invalid_date_format', ['field' => $field, 'format' => 'Y-m-d']),
+                    $field,
+                    422,
+                );
+            }
+        }
+
         try {
             $conditions = [];
             $params = [];
@@ -824,6 +848,15 @@ class AdminBrokerController extends BaseApiController
             if ($effectiveTenantId !== null) {
                 $conditions[] = 'er.tenant_id = ?';
                 $params[] = $effectiveTenantId;
+            }
+
+            if ($from) {
+                $conditions[] = 'er.created_at >= ?';
+                $params[] = $from . ' 00:00:00';
+            }
+            if ($to) {
+                $conditions[] = 'er.created_at <= ?';
+                $params[] = $to . ' 23:59:59';
             }
 
             if ($status === 'needs_action') {
@@ -843,16 +876,23 @@ class AdminBrokerController extends BaseApiController
             );
             $total = (int) ($countRow->cnt ?? 0);
 
+            // `broker_name` / `broker_decided_at` are for the CSV export: the
+            // workflow never writes broker_approved_at, so the decision time is
+            // the broker's status change in exchange_history (null until then).
             $queryParams = array_merge($params, [$perPage, $offset]);
             $items = DB::select(
                 "SELECT er.*,
                     " . UserDisplayName::sql('req', 'requester_name') . ",
                     " . UserDisplayName::sql('prov', 'provider_name') . ",
+                    CASE WHEN br.id IS NULL THEN NULL ELSE " . UserDisplayName::sql('br', '') . " END as broker_name,
+                    (SELECT MAX(eh.created_at) FROM exchange_history eh
+                        WHERE eh.exchange_id = er.id AND eh.actor_role = 'broker' AND eh.action = 'status_changed') as broker_decided_at,
                     l.title as listing_title,
                     t.name as tenant_name
                 FROM exchange_requests er
                 JOIN users req ON er.requester_id = req.id
                 JOIN users prov ON er.provider_id = prov.id
+                LEFT JOIN users br ON er.broker_id = br.id
                 LEFT JOIN listings l ON er.listing_id = l.id
                 LEFT JOIN tenants t ON er.tenant_id = t.id
                 WHERE {$where}
@@ -1367,7 +1407,7 @@ class AdminBrokerController extends BaseApiController
             $where = !empty($conditions) ? implode(' AND ', $conditions) : '1=1';
 
             $items = DB::select(
-                "SELECT rt.*, l.title as listing_title, u.name as owner_name,
+                "SELECT rt.*, l.title as listing_title, u.name as owner_name, l.user_id as owner_id,
                     tagger.name as tagged_by_name, t.name as tenant_name
                 FROM listing_risk_tags rt
                 LEFT JOIN listings l ON rt.listing_id = l.id
@@ -1558,6 +1598,28 @@ class AdminBrokerController extends BaseApiController
         $order = $this->query('sort') === 'oldest' ? 'ASC' : 'DESC';
         $offset = ($page - 1) * $perPage;
 
+        // Date range (October 2026): bounds on the copy's created_at, the date
+        // the list shows, inclusive at both ends — the same contract as the
+        // Review Archive's from/to on decided_at. A malformed date is refused
+        // rather than silently ignored, so the page never shows an unfiltered
+        // list under a filter it believes is applied.
+        $from = $this->query('from');
+        $to = $this->query('to');
+        foreach (['from' => $from, 'to' => $to] as $field => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $parsed = \DateTime::createFromFormat('!Y-m-d', (string) $value);
+            if ($parsed === false || $parsed->format('Y-m-d') !== (string) $value) {
+                return $this->respondWithError(
+                    'VALIDATION_ERROR',
+                    __('api.invalid_date_format', ['field' => $field, 'format' => 'Y-m-d']),
+                    $field,
+                    422,
+                );
+            }
+        }
+
         try {
             $conditions = [];
             $params = [];
@@ -1575,6 +1637,15 @@ class AdminBrokerController extends BaseApiController
             $conditions[] = 'bmc.sender_id <> ? AND bmc.receiver_id <> ?';
             $params[] = $viewerId;
             $params[] = $viewerId;
+
+            if ($from) {
+                $conditions[] = 'bmc.created_at >= ?';
+                $params[] = $from . ' 00:00:00';
+            }
+            if ($to) {
+                $conditions[] = 'bmc.created_at <= ?';
+                $params[] = $to . ' 23:59:59';
+            }
 
             if ($filter === 'unreviewed') {
                 $conditions[] = 'bmc.reviewed_at IS NULL';

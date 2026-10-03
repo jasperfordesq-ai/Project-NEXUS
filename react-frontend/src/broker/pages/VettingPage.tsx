@@ -8,6 +8,7 @@
  *
  * Brokers record controlled certification schemes, encrypted operational scope
  * and private notes, and the dates needed to renew the community decision.
+ * The policy card and the four modals live in ../components/vetting/.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +18,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Check from 'lucide-react/icons/check';
 import CircleSlash from 'lucide-react/icons/circle-slash';
+import Download from 'lucide-react/icons/download';
 import FileText from 'lucide-react/icons/file-text';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldCheck from 'lucide-react/icons/shield-check';
@@ -24,31 +26,14 @@ import UserCheck from 'lucide-react/icons/user-check';
 import Users from 'lucide-react/icons/users';
 import Info from 'lucide-react/icons/info';
 
-import {
-  Alert,
-  Avatar,
-  Button,
-  Card,
-  CardBody,
-  Checkbox,
-  Chip,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Select,
-  SelectItem,
-  Textarea,
-} from '@/components/ui';
+import { Alert, Avatar, Button, Chip, Tab, Tabs } from '@/components/ui';
 import { DataTable, type Column } from '@/admin/components';
 import { adminUsers, adminVetting } from '@/admin/api/adminApi';
 import type {
+  SafeguardingVettingPolicy,
   VettingPolicyResponse,
   VettingRecord,
   VettingStats,
-  VettingAttestation,
 } from '@/admin/api/types';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -57,22 +42,28 @@ import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { isAdminTierUser } from '@/lib/access';
 import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import {
-  AdminOnlyBadge,
   BrokerEmptyState,
   BrokerPageShell,
-  BrokerSkeleton,
   BrokerStatCard,
   BrokerStatusChip,
 } from '../components';
+import { VettingPolicyCard } from '../components/vetting/VettingPolicyCard';
+import { VettingConfirmModal } from '../components/vetting/VettingConfirmModal';
+import { VettingDetailModal } from '../components/vetting/VettingDetailModal';
+import { VettingRevokeModal } from '../components/vetting/VettingRevokeModal';
+import {
+  VettingResolveModal,
+  SAFE_REVIEW_RESOLUTION_CODES,
+  type ReviewResolutionCode,
+} from '../components/vetting/VettingResolveModal';
+import { MemberName } from '../BrokerMemberWindow';
+import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
+import { useCsvExport } from '../useCsvExport';
 
 const PAGE_SIZE = 25;
 const SEARCH_DEBOUNCE_MS = 300;
-const SAFE_REVIEW_RESOLUTION_CODES: VettingPolicyResponse['review_resolution_codes'] = [
-  'no_change',
-  'duplicate_request',
-  'member_contacted',
-];
-type ReviewResolutionCode = VettingPolicyResponse['review_resolution_codes'][number];
+/** Rows per page while exporting — the endpoint's maximum. */
+const EXPORT_PAGE_SIZE = 100;
 
 const FILTERS = [
   'all',
@@ -88,12 +79,30 @@ type VettingFilter = (typeof FILTERS)[number];
 interface VettingListMeta {
   total?: number;
   total_items?: number;
+  has_more?: boolean;
   pagination?: {
     total?: number;
     current_page?: number;
     last_page?: number;
     per_page?: number;
   };
+}
+
+function readMeta(response: Awaited<ReturnType<typeof adminVetting.list>>): VettingListMeta | undefined {
+  return response.meta as unknown as VettingListMeta | undefined;
+}
+
+function readTotal(meta: VettingListMeta | undefined, fallback: number): number {
+  return meta?.pagination?.total ?? meta?.total ?? meta?.total_items ?? fallback;
+}
+
+/** True when a further page exists behind `page`. */
+function readHasMore(meta: VettingListMeta | undefined, page: number, pageRows: number): boolean {
+  if (typeof meta?.has_more === 'boolean') return meta.has_more;
+  const lastPage = meta?.pagination?.last_page;
+  if (typeof lastPage === 'number') return page < lastPage;
+  const total = readTotal(meta, 0);
+  return total > 0 ? page * EXPORT_PAGE_SIZE < total : pageRows === EXPORT_PAGE_SIZE;
 }
 
 function memberName(item: VettingRecord): string {
@@ -126,6 +135,7 @@ export function VettingRecords() {
   const { tenantPath } = useTenant();
   const { user } = useAuth();
   const toast = useToast();
+  const csv = useCsvExport();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tRef = useRef(t);
@@ -163,23 +173,11 @@ export function VettingRecords() {
   const [selectedJurisdiction, setSelectedJurisdiction] = useState('');
   const [savingPolicy, setSavingPolicy] = useState(false);
 
+  // One modal at a time; each is mounted fresh per member so its form starts clean.
   const [confirmItem, setConfirmItem] = useState<VettingRecord | null>(null);
-  const [acknowledged, setAcknowledged] = useState(false);
-  const [certificationCodes, setCertificationCodes] = useState<Set<string>>(new Set());
-  const [scopeSummary, setScopeSummary] = useState('');
-  const [privateNotes, setPrivateNotes] = useState('');
-  const [reviewDueAt, setReviewDueAt] = useState('');
-  const [authorityExpiresAt, setAuthorityExpiresAt] = useState('');
-  const [confirming, setConfirming] = useState(false);
   const [detailItem, setDetailItem] = useState<VettingRecord | null>(null);
-  const [detailRecord, setDetailRecord] = useState<VettingAttestation | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [revokeItem, setRevokeItem] = useState<VettingRecord | null>(null);
-  const [revocationReason, setRevocationReason] = useState('');
-  const [revoking, setRevoking] = useState(false);
   const [resolveItem, setResolveItem] = useState<VettingRecord | null>(null);
-  const [resolutionCode, setResolutionCode] = useState<ReviewResolutionCode | ''>('');
-  const [resolving, setResolving] = useState(false);
 
   // Only an admin may choose the safeguarding jurisdiction (owner decision,
   // 3 Oct 2026). Everyone else sees it, read-only, marked Admin only.
@@ -191,19 +189,20 @@ export function VettingRecords() {
   // them: requireVettingDecisionMaker), so they get no decision buttons.
   const isCoordinator = String(user?.role ?? '') === 'coordinator';
   const reviewPending = stats?.review_pending ?? stats?.review_requested ?? 0;
-  const certificationLabel = useCallback((code: string, recordPolicy = policy) =>
+  const certificationLabel = useCallback((code: string, recordPolicy: SafeguardingVettingPolicy | null | undefined = policy) =>
     recordPolicy?.certification_options.find((option) => option.code === code)?.label
       ?? t(`vetting.attestation_${code}`, { defaultValue: code }), [policy, t]);
-  const authorityExpiryRequired = Array.from(certificationCodes).some((code) =>
-    confirmItem?.policy.certification_options.some((option) =>
-      option.code === code && option.authority_expiry_required,
-    ),
-  );
-  const confirmFormValid = acknowledged
-    && certificationCodes.size > 0
-    && scopeSummary.trim().length > 0
-    && reviewDueAt !== ''
-    && (!authorityExpiryRequired || authorityExpiresAt !== '');
+
+  // Tab badges read the same stats the KPI cards read, so a tab can never
+  // disagree with its card. Null while unknown (no badge).
+  const tabCounts: Record<VettingFilter, number | null> = {
+    all: stats?.total_members ?? null,
+    review_requested: stats ? reviewPending : null,
+    confirmed: stats?.confirmed ?? null,
+    expired: stats?.expired ?? null,
+    revoked: stats?.revoked ?? null,
+    not_confirmed: stats?.not_confirmed ?? null,
+  };
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setDebouncedSearch(search.trim()), SEARCH_DEBOUNCE_MS);
@@ -258,8 +257,8 @@ export function VettingRecords() {
     return () => { cancelled = true; };
   }, [memberFilterId]);
 
-  const loadPolicy = useCallback(async () => {
-    setPolicyLoading(true);
+  const loadPolicy = useCallback(async (quiet = false) => {
+    if (!quiet) setPolicyLoading(true);
     setPolicyError(false);
     try {
       const response = await adminVetting.policy();
@@ -273,8 +272,6 @@ export function VettingRecords() {
       );
       setPolicyData({ ...data, review_resolution_codes: reviewResolutionCodes });
       setSelectedJurisdiction(data.policy.jurisdiction);
-      setRevocationReason(data.revocation_reason_codes[0] ?? '');
-      setResolutionCode(reviewResolutionCodes.includes('no_change') ? 'no_change' : '');
     } catch {
       setPolicyError(true);
     } finally {
@@ -282,8 +279,8 @@ export function VettingRecords() {
     }
   }, []);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
+  const loadStats = useCallback(async (quiet = false) => {
+    if (!quiet) setStatsLoading(true);
     setStatsError(false);
     try {
       const response = await adminVetting.stats();
@@ -299,18 +296,20 @@ export function VettingRecords() {
   // With a member filter, wait until that member is resolved so the request
   // can carry their email as the search term.
   const memberFilterPending = memberFilterId !== null && filteredMember?.id !== memberFilterId;
+  const searchTerm = memberFilterId ? (filteredMember?.email ?? '') : debouncedSearch;
 
-  const loadItems = useCallback(async () => {
+  // `quiet` loads (auto-refresh after a write, tab focus, interval) keep the
+  // current rows on screen instead of flashing a loading state.
+  const loadItems = useCallback(async (quiet = false) => {
     if (memberFilterPending) return;
-    setLoading(true);
+    if (!quiet) setLoading(true);
     setListError(false);
     try {
-      const search = memberFilterId ? (filteredMember?.email ?? '') : debouncedSearch;
       const response = await adminVetting.list({
         status: filter,
         page,
         per_page: PAGE_SIZE,
-        ...(search ? { search } : {}),
+        ...(searchTerm ? { search: searchTerm } : {}),
       });
       if (!response.success || !Array.isArray(response.data)) {
         setListError(true);
@@ -322,17 +321,14 @@ export function VettingRecords() {
         ? response.data.filter((row) => row.user_id === memberFilterId)
         : response.data;
       setItems(rows);
-      const meta = response.meta as unknown as VettingListMeta | undefined;
-      setTotal(memberFilterId
-        ? rows.length
-        : (meta?.pagination?.total ?? meta?.total ?? meta?.total_items ?? response.data.length));
+      setTotal(memberFilterId ? rows.length : readTotal(readMeta(response), response.data.length));
     } catch {
       setListError(true);
-      toastRef.current.error(tRef.current('vetting.toast_load_failed'));
+      if (!quiet) toastRef.current.error(tRef.current('vetting.toast_load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filter, page, memberFilterId, memberFilterPending, filteredMember?.email]);
+  }, [filter, page, memberFilterId, memberFilterPending, searchTerm]);
 
   const refreshAll = useCallback(() => {
     void Promise.all([loadItems(), loadStats(), loadPolicy()]);
@@ -346,6 +342,11 @@ export function VettingRecords() {
     void loadStats();
     void loadPolicy();
   }, [loadPolicy, loadStats]);
+
+  useBrokerAutoRefresh(() => {
+    void loadItems(true);
+    void loadStats(true);
+  });
 
   const handleSavePolicy = async () => {
     if (!selectedJurisdiction || !canConfigurePolicy) return;
@@ -367,105 +368,31 @@ export function VettingRecords() {
     }
   };
 
-  const openConfirm = useCallback((item: VettingRecord) => {
-    const available = item.policy.certification_options ?? [];
-    const existingCodes = item.certification_codes.filter((code) =>
-      available.some((option) => option.code === code),
-    );
-    setCertificationCodes(new Set(existingCodes.length > 0
-      ? existingCodes
-      : available.length === 1 && available[0] ? [available[0].code] : []));
-    setScopeSummary('');
-    setPrivateNotes('');
-    setReviewDueAt('');
-    setAuthorityExpiresAt('');
-    setAcknowledged(false);
-    setConfirmItem(item);
-  }, []);
-
-  const openDetails = useCallback(async (item: VettingRecord) => {
-    if (!item.attestation_id) return;
-    setDetailItem(item);
-    setDetailRecord(null);
-    setDetailLoading(true);
-    try {
-      const response = await adminVetting.show(item.attestation_id);
-      if (response.success && response.data) setDetailRecord(response.data);
-      else toastRef.current.error(response.error || tRef.current('vetting.toast_details_failed'));
-    } catch {
-      toastRef.current.error(tRef.current('vetting.toast_details_failed'));
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
-
-  const handleConfirm = async () => {
-    if (!confirmItem || !acknowledged || !canRecordDecision || certificationCodes.size === 0 || !scopeSummary.trim() || !reviewDueAt) return;
-    setConfirming(true);
-    try {
-      const response = await adminVetting.confirm(confirmItem.user_id, {
-        certification_codes: Array.from(certificationCodes),
-        scope_summary: scopeSummary.trim(),
-        ...(privateNotes.trim() ? { private_notes: privateNotes.trim() } : {}),
-        review_due_at: reviewDueAt,
-        ...(authorityExpiresAt ? { authority_expires_at: authorityExpiresAt } : {}),
-      }, confirmItem.review_request_id);
-      if (!response.success) {
-        toast.error(response.error || t('vetting.toast_confirm_failed'));
-        return;
-      }
-      toast.success(t('vetting.toast_confirmed'));
-      setConfirmItem(null);
-      setAcknowledged(false);
-      refreshAll();
-    } catch {
-      toast.error(t('vetting.toast_confirm_failed'));
-    } finally {
-      setConfirming(false);
-    }
-  };
-
-  const handleRevoke = async () => {
-    if (!revokeItem || !revocationReason || !canRecordDecision) return;
-    setRevoking(true);
-    try {
-      const response = await adminVetting.revoke(
-        revokeItem.user_id,
-        revocationReason,
-        revokeItem.review_request_id,
-      );
-      if (!response.success) {
-        toast.error(response.error || t('vetting.toast_revoke_failed'));
-        return;
-      }
-      toast.success(t('vetting.toast_revoked'));
-      setRevokeItem(null);
-      refreshAll();
-    } catch {
-      toast.error(t('vetting.toast_revoke_failed'));
-    } finally {
-      setRevoking(false);
-    }
-  };
-
-  const handleResolve = async () => {
-    if (!resolveItem?.review_request_id || !resolutionCode) return;
-    setResolving(true);
-    try {
-      const response = await adminVetting.resolveReview(resolveItem.review_request_id, resolutionCode);
-      if (!response.success) {
-        toast.error(response.error || t('vetting.toast_resolve_failed'));
-        return;
-      }
-      toast.success(t('vetting.toast_resolved'));
-      setResolveItem(null);
-      refreshAll();
-    } catch {
-      toast.error(t('vetting.toast_resolve_failed'));
-    } finally {
-      setResolving(false);
-    }
-  };
+  const exportCsv = () =>
+    csv.run<VettingRecord>({
+      filename: ['vetting', filter, memberFilterId ? `member-${memberFilterId}` : null].filter(Boolean).join('_'),
+      columns: [
+        { label: t('vetting.col_member'), value: memberName },
+        { label: t('vetting.col_status'), value: (row) => t(`status.${rowStatus(row)}`, { defaultValue: rowStatus(row) }) },
+        { label: t('vetting.export_col_confirmed_at'), value: (row) => (row.confirmed_at ? formatServerDateTime(row.confirmed_at) : '') },
+        { label: t('vetting.review_due_label'), value: (row) => (row.review_due_at ? formatServerDate(row.review_due_at) : '') },
+        // The list carries the handler's id only (no name); the header says so.
+        { label: t('vetting.export_col_handled_by'), value: (row) => row.confirmed_by ?? row.revoked_by ?? '' },
+      ],
+      fetchPage: async (exportPage) => {
+        const response = await adminVetting.list({
+          status: filter,
+          page: exportPage,
+          per_page: EXPORT_PAGE_SIZE,
+          ...(searchTerm ? { search: searchTerm } : {}),
+        });
+        if (!response.success || !Array.isArray(response.data)) throw new Error('export page failed');
+        const rows = memberFilterId
+          ? response.data.filter((row) => row.user_id === memberFilterId)
+          : response.data;
+        return { rows, hasMore: readHasMore(readMeta(response), exportPage, response.data.length) };
+      },
+    });
 
   const columns = useMemo<Column<VettingRecord>[]>(() => [
     {
@@ -480,7 +407,9 @@ export function VettingRecords() {
             size="sm"
           />
           <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">{memberName(item)}</p>
+            <p className="truncate font-medium text-foreground">
+              <MemberName userId={item.user_id} name={memberName(item)} />
+            </p>
             <p className="truncate text-xs text-muted">{item.email}</p>
           </div>
         </div>
@@ -527,7 +456,7 @@ export function VettingRecords() {
               size="sm"
               variant="secondary"
               isDisabled={!canRecordDecision}
-              onPress={() => openConfirm(item)}
+              onPress={() => setConfirmItem(item)}
             >
               <Check size={14} aria-hidden="true" />
               {item.is_expired ? t('vetting.action_renew') : t('vetting.action_confirm')}
@@ -544,27 +473,20 @@ export function VettingRecords() {
             </Button>
           )}
           {item.attestation_id && (
-            <Button size="sm" variant="tertiary" onPress={() => { void openDetails(item); }}>
+            <Button size="sm" variant="tertiary" onPress={() => setDetailItem(item)}>
               <FileText size={14} aria-hidden="true" />
               {t('vetting.action_details')}
             </Button>
           )}
           {!isCoordinator && item.review_status === 'pending' && item.review_request_id && (
-            <Button
-              size="sm"
-              variant="tertiary"
-              onPress={() => {
-                setResolutionCode(policyData?.review_resolution_codes.includes('no_change') ? 'no_change' : '');
-                setResolveItem(item);
-              }}
-            >
+            <Button size="sm" variant="tertiary" onPress={() => setResolveItem(item)}>
               {t('vetting.action_resolve')}
             </Button>
           )}
         </div>
       ),
     },
-  ], [canRecordDecision, certificationLabel, isCoordinator, openConfirm, openDetails, policyData?.review_resolution_codes, t]);
+  ], [canRecordDecision, certificationLabel, isCoordinator, t]);
 
   const emptyContent = (
     <BrokerEmptyState
@@ -585,108 +507,69 @@ export function VettingRecords() {
       color="success"
       actions={(
         <>
+          <Button
+            variant="tertiary"
+            size="sm"
+            startContent={<Download size={16} aria-hidden="true" />}
+            onPress={() => void exportCsv()}
+            isLoading={csv.exporting}
+            isDisabled={memberFilterPending}
+          >
+            {csv.exporting ? t('common.exporting') : t('common.export_csv')}
+          </Button>
           <Button isIconOnly variant="tertiary" size="sm" onPress={refreshAll} aria-label={t('vetting.refresh')}>
             <RefreshCw size={16} aria-hidden="true" />
           </Button>
         </>
       )}
+      toolbar={(
+        <Tabs
+          aria-label={t('vetting.tabs_aria')}
+          selectedKey={filter}
+          onSelectionChange={(key) => setFilter(key as VettingFilter)}
+          variant="underlined"
+          size="sm"
+        >
+          {FILTERS.map((value) => {
+            const count = tabCounts[value];
+            return (
+              <Tab
+                key={value}
+                title={(
+                  <div className="flex items-center gap-2">
+                    <span>{t(`vetting.filter_${value}`)}</span>
+                    {count != null && (
+                      <Chip
+                        size="sm"
+                        variant="soft"
+                        color={value === 'review_requested' && count > 0 ? 'warning' : 'default'}
+                        className="tabular-nums"
+                      >
+                        {count}
+                      </Chip>
+                    )}
+                  </div>
+                )}
+              />
+            );
+          })}
+        </Tabs>
+      )}
     >
       <div className="space-y-5">
-        <Card className="rounded-2xl border border-divider/70 bg-surface">
-          <CardBody className="space-y-4 p-4 sm:p-5">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="mt-0.5 shrink-0 text-success" size={20} aria-hidden="true" />
-              <div className="min-w-0 flex-1">
-                <h2 className="font-semibold text-foreground">{t('vetting.policy_title')}</h2>
-                {policyLoading ? (
-                  <BrokerSkeleton variant="cards" count={1} className="mt-2" />
-                ) : policyError || !policy ? (
-                  <p className="mt-1 text-sm text-danger">{t('vetting.policy_load_error')}</p>
-                ) : (
-                  <div className="mt-2 grid gap-2 text-sm text-muted sm:grid-cols-3">
-                    <p><span className="font-medium text-foreground">{t('vetting.policy_jurisdiction')}:</span> {policy.label}</p>
-                    <p><span className="font-medium text-foreground">{t('vetting.policy_attestation')}:</span> {policy.attestation_label || t('vetting.scheme_unavailable')}</p>
-                    <p><span className="font-medium text-foreground">{t('vetting.policy_purpose')}:</span> {t('vetting.purpose_safeguarded_contact')}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {isCoordinator && (
-              <div className="flex items-start gap-2 rounded-xl border border-divider/70 bg-surface-secondary p-3 text-sm text-foreground">
-                <Info size={17} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
-                <p>{t('vetting.coordinator_view_only')}</p>
-              </div>
-            )}
-
-            {/* "Not set" is announced by the panel-wide JurisdictionNotice
-                above every broker page; this covers a jurisdiction that is set
-                but has no supported contact-vetting policy. */}
-            {!policyLoading && policy && policy.configured && !canRecordDecision && (
-              <div className="flex items-start gap-2 rounded-xl border border-warning/40 bg-surface p-3 text-sm text-foreground">
-                <AlertTriangle size={17} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
-                <p>{t('vetting.policy_not_available')}</p>
-              </div>
-            )}
-
-            {policyData && (
-              <div className="border-t border-divider/70 pt-4">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span id="jurisdiction-label" className="text-sm font-medium text-foreground">
-                    {t('vetting.jurisdiction_label')}
-                  </span>
-                  {!canConfigurePolicy && <AdminOnlyBadge />}
-                </div>
-                {canConfigurePolicy ? (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Select
-                      className="sm:max-w-md"
-                      aria-labelledby="jurisdiction-label"
-                      placeholder={t('vetting.jurisdiction_placeholder')}
-                      selectedKeys={selectedJurisdiction ? new Set([selectedJurisdiction]) : new Set()}
-                      onSelectionChange={(keys) => setSelectedJurisdiction(String(Array.from(keys)[0] ?? ''))}
-                    >
-                      {policyData.jurisdictions.map((jurisdiction) => (
-                        <SelectItem key={jurisdiction.code} id={jurisdiction.code} textValue={jurisdiction.label}>
-                          {jurisdiction.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      isPending={savingPolicy}
-                      isDisabled={!selectedJurisdiction || selectedJurisdiction === policyData.policy.jurisdiction}
-                      onPress={handleSavePolicy}
-                    >
-                      {t('vetting.save_jurisdiction')}
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Plain full-contrast text, not a disabled dropdown: a
-                        disabled control is drawn faded, and the broker needs to
-                        read the current value. */}
-                    <div
-                      role="textbox"
-                      aria-readonly="true"
-                      aria-labelledby="jurisdiction-label"
-                      className="rounded-xl border border-divider bg-surface-secondary px-3 py-2 text-sm font-medium text-foreground sm:max-w-md"
-                    >
-                      {policyData.policy.configured ? policyData.policy.label : t('vetting.jurisdiction_placeholder')}
-                    </div>
-                    <p className="mt-2 text-sm text-foreground">{t('vetting.jurisdiction_admin_only_hint')}</p>
-                  </>
-                )}
-              </div>
-            )}
-
-            <div className="rounded-xl border border-accent/20 bg-accent/5 p-3">
-              <p className="text-sm font-semibold text-foreground">{t('vetting.privacy_title')}</p>
-              <p className="mt-1 text-sm leading-6 text-muted">{t('vetting.privacy_body')}</p>
-            </div>
-          </CardBody>
-        </Card>
+        <VettingPolicyCard
+          policyLoading={policyLoading}
+          policyError={policyError}
+          policy={policy}
+          policyData={policyData}
+          isCoordinator={isCoordinator}
+          canRecordDecision={canRecordDecision}
+          canConfigurePolicy={canConfigurePolicy}
+          selectedJurisdiction={selectedJurisdiction}
+          onJurisdictionChange={setSelectedJurisdiction}
+          savingPolicy={savingPolicy}
+          onSavePolicy={handleSavePolicy}
+        />
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
           <BrokerStatCard label={t('vetting.stat_total_members')} value={stats?.total_members} icon={Users} color="neutral" loading={statsLoading} />
@@ -712,7 +595,7 @@ export function VettingRecords() {
             title={t('vetting.stats_error_title')}
             description={t('vetting.list_error_body')}
             endContent={(
-              <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadStats}>
+              <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => void loadStats()}>
                 <RefreshCw size={14} aria-hidden="true" />
                 {t('vetting.retry')}
               </Button>
@@ -737,25 +620,13 @@ export function VettingRecords() {
           </div>
         )}
 
-        <div className="flex max-w-sm">
-          <Select
-            label={t('vetting.filter_label')}
-            selectedKeys={new Set([filter])}
-            onSelectionChange={(keys) => setFilter(String(Array.from(keys)[0] ?? 'all') as VettingFilter)}
-          >
-            {FILTERS.map((value) => (
-              <SelectItem key={value} id={value}>{t(`vetting.filter_${value}`)}</SelectItem>
-            ))}
-          </Select>
-        </div>
-
         {listError ? (
           <BrokerEmptyState
             icon={AlertTriangle}
             color="danger"
             title={t('vetting.list_error_title')}
             hint={t('vetting.list_error_body')}
-            action={<Button size="sm" variant="secondary" onPress={loadItems}>{t('vetting.retry')}</Button>}
+            action={<Button size="sm" variant="secondary" onPress={() => void loadItems()}>{t('vetting.retry')}</Button>}
           />
         ) : (
           <DataTable
@@ -774,179 +645,51 @@ export function VettingRecords() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             onSearch={setSearch}
-            onRefresh={loadItems}
+            onRefresh={() => void loadItems()}
             emptyContent={emptyContent}
           />
         )}
       </div>
 
-      <Modal isOpen={Boolean(confirmItem)} onOpenChange={(open) => { if (!open) setConfirmItem(null); }}>
-        <ModalContent>
-          <ModalHeader>{t('vetting.confirm_title')}</ModalHeader>
-          <ModalBody className="space-y-4">
-            <p>{t('vetting.confirm_body', { name: confirmItem ? memberName(confirmItem) : '' })}</p>
-            <Select
-              label={t('vetting.certification_codes_label')}
-              description={t('vetting.certification_codes_help')}
-              selectionMode="multiple"
-              selectedKeys={certificationCodes}
-              onSelectionChange={(keys) => setCertificationCodes(keys === 'all'
-                ? new Set((confirmItem?.policy.certification_options ?? []).map((option) => option.code))
-                : new Set(Array.from(keys).map(String)))}
-              isRequired
-            >
-              {(confirmItem?.policy.certification_options ?? []).map((option) => (
-                <SelectItem key={option.code} id={option.code} textValue={option.label}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </Select>
-            <Textarea
-              label={t('vetting.scope_summary_label')}
-              description={t('vetting.scope_summary_help')}
-              value={scopeSummary}
-              onValueChange={setScopeSummary}
-              maxLength={500}
-              minRows={2}
-              maxRows={5}
-              isRequired
-            />
-            <Textarea
-              label={t('vetting.private_notes_label')}
-              description={t('vetting.private_notes_help')}
-              value={privateNotes}
-              onValueChange={setPrivateNotes}
-              maxLength={2000}
-              minRows={3}
-              maxRows={8}
-            />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input
-                type="date"
-                label={t('vetting.review_due_label')}
-                description={t('vetting.review_due_help')}
-                value={reviewDueAt}
-                onValueChange={setReviewDueAt}
-                isRequired
-              />
-              <Input
-                type="date"
-                label={t('vetting.authority_expiry_label')}
-                description={authorityExpiryRequired
-                  ? t('vetting.authority_expiry_required_help')
-                  : t('vetting.authority_expiry_help')}
-                value={authorityExpiresAt}
-                onValueChange={setAuthorityExpiresAt}
-                isRequired={authorityExpiryRequired}
-              />
-            </div>
-            <div className="rounded-xl border border-accent/20 bg-accent/5 p-3 text-sm text-muted">
-              {t('vetting.privacy_body')}
-            </div>
-            <Checkbox isSelected={acknowledged} onChange={setAcknowledged}>
-              {t('vetting.confirm_acknowledgement', { name: confirmItem ? memberName(confirmItem) : '' })}
-            </Checkbox>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={() => setConfirmItem(null)}>{t('vetting.cancel')}</Button>
-            <Button isPending={confirming} isDisabled={!confirmFormValid} onPress={handleConfirm}>
-              {t('vetting.confirm_button')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {confirmItem && (
+        <VettingConfirmModal
+          key={`confirm-${confirmItem.user_id}`}
+          item={confirmItem}
+          canRecordDecision={canRecordDecision}
+          onClose={() => setConfirmItem(null)}
+          onConfirmed={refreshAll}
+        />
+      )}
 
-      <Modal isOpen={Boolean(detailItem)} onOpenChange={(open) => { if (!open) { setDetailItem(null); setDetailRecord(null); } }}>
-        <ModalContent>
-          <ModalHeader>{t('vetting.details_title', { name: detailItem ? memberName(detailItem) : '' })}</ModalHeader>
-          <ModalBody className="space-y-4">
-            {detailLoading ? (
-              <BrokerSkeleton variant="detail" count={3} />
-            ) : detailRecord ? (
-              <>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{t('vetting.certification_codes_label')}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {detailRecord.certification_codes.map((code) => (
-                      <Chip key={code} size="sm" variant="soft" color="accent">{certificationLabel(code, detailItem?.policy)}</Chip>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{t('vetting.scope_summary_label')}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{detailRecord.scope_summary || t('vetting.not_recorded')}</p>
-                </div>
-                <div className="rounded-xl border border-divider/70 bg-surface-secondary p-3">
-                  <p className="text-sm font-medium text-foreground">{t('vetting.private_notes_label')}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{detailRecord.private_notes || t('vetting.no_private_notes')}</p>
-                </div>
-                <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                  <div><dt className="font-medium text-foreground">{t('vetting.review_due_label')}</dt><dd className="text-muted">{detailRecord.review_due_at ? formatServerDate(detailRecord.review_due_at) : t('vetting.not_recorded')}</dd></div>
-                  <div><dt className="font-medium text-foreground">{t('vetting.authority_expiry_label')}</dt><dd className="text-muted">{detailRecord.authority_expires_at ? formatServerDate(detailRecord.authority_expires_at) : t('vetting.not_applicable')}</dd></div>
-                </dl>
-              </>
-            ) : null}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={() => { setDetailItem(null); setDetailRecord(null); }}>{t('vetting.close')}</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {detailItem && (
+        <VettingDetailModal
+          key={`detail-${detailItem.user_id}`}
+          item={detailItem}
+          certificationLabel={certificationLabel}
+          onClose={() => setDetailItem(null)}
+        />
+      )}
 
-      <Modal isOpen={Boolean(revokeItem)} onOpenChange={(open) => { if (!open) setRevokeItem(null); }}>
-        <ModalContent>
-          <ModalHeader>{t('vetting.revoke_title')}</ModalHeader>
-          <ModalBody className="space-y-4">
-            <p>{t('vetting.revoke_body', { name: revokeItem ? memberName(revokeItem) : '' })}</p>
-            <Select
-              label={t('vetting.reason_label')}
-              selectedKeys={revocationReason ? new Set([revocationReason]) : new Set()}
-              onSelectionChange={(keys) => setRevocationReason(String(Array.from(keys)[0] ?? ''))}
-            >
-              {(policyData?.revocation_reason_codes ?? []).map((code) => (
-                <SelectItem key={code} id={code}>{t(`vetting.reason_${code}`)}</SelectItem>
-              ))}
-            </Select>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={() => setRevokeItem(null)}>{t('vetting.cancel')}</Button>
-            <Button variant="danger" isPending={revoking} isDisabled={!revocationReason} onPress={handleRevoke}>
-              {t('vetting.revoke_button')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {revokeItem && (
+        <VettingRevokeModal
+          key={`revoke-${revokeItem.user_id}`}
+          item={revokeItem}
+          reasonCodes={policyData?.revocation_reason_codes ?? []}
+          canRecordDecision={canRecordDecision}
+          onClose={() => setRevokeItem(null)}
+          onRevoked={refreshAll}
+        />
+      )}
 
-      <Modal isOpen={Boolean(resolveItem)} onOpenChange={(open) => { if (!open) setResolveItem(null); }}>
-        <ModalContent>
-          <ModalHeader>{t('vetting.resolve_title')}</ModalHeader>
-          <ModalBody className="space-y-4">
-            <p>{t('vetting.resolve_body', { name: resolveItem ? memberName(resolveItem) : '' })}</p>
-            <Select
-              label={t('vetting.resolution_label')}
-              selectedKeys={resolutionCode ? new Set([resolutionCode]) : new Set()}
-              onSelectionChange={(keys) => {
-                const value = String(Array.from(keys)[0] ?? '');
-                setResolutionCode(
-                  SAFE_REVIEW_RESOLUTION_CODES.includes(value as ReviewResolutionCode)
-                    ? value as ReviewResolutionCode
-                    : '',
-                );
-              }}
-            >
-              {(policyData?.review_resolution_codes ?? []).map((code) => (
-                <SelectItem key={code} id={code}>{t(`vetting.resolution_${code}`)}</SelectItem>
-              ))}
-            </Select>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={() => setResolveItem(null)}>{t('vetting.cancel')}</Button>
-            <Button isPending={resolving} isDisabled={!resolutionCode} onPress={handleResolve}>
-              {t('vetting.resolve_button')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {resolveItem && (
+        <VettingResolveModal
+          key={`resolve-${resolveItem.user_id}`}
+          item={resolveItem}
+          resolutionCodes={(policyData?.review_resolution_codes ?? []) as ReviewResolutionCode[]}
+          onClose={() => setResolveItem(null)}
+          onResolved={refreshAll}
+        />
+      )}
     </BrokerPageShell>
   );
 }

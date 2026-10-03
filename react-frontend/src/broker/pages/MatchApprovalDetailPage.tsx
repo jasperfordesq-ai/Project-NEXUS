@@ -39,13 +39,7 @@ import {
   CardHeader,
   Button,
   Chip,
-  Textarea,
   Progress,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Avatar,
   Separator,
 } from '@/components/ui';
@@ -56,7 +50,17 @@ import {
   BrokerStatusChip,
 } from '../components';
 import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { MatchRejectModal } from '../components/exchanges/MatchRejectModal';
+import { MemberName } from '../BrokerMemberWindow';
+import { useBrokerBreadcrumbLabel } from '../BrokerBreadcrumbContext';
 import { useBrokerQueue } from '../useBrokerQueue';
+
+/** Short breadcrumb label: "Alice ↔ Bob · Gardening" (null while loading). */
+export function matchCrumbLabel(item: MatchApprovalDetail | null): string | null {
+  if (!item) return null;
+  const parties = `${item.user_1_name} ↔ ${item.user_2_name}`;
+  return item.listing_title ? `${parties} · ${item.listing_title}` : parties;
+}
 
 function scoreColor(score: number): 'danger' | 'warning' | 'success' {
   if (score < 50) return 'danger';
@@ -90,6 +94,7 @@ export function MatchApprovalDetailPage() {
   const { id } = useParams<{ id: string }>();
 
   const [item, setItem] = useState<MatchApprovalDetail | null>(null);
+  useBrokerBreadcrumbLabel(matchCrumbLabel(item));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ kind: LoadErrorKind; message: string | null } | null>(null);
 
@@ -113,9 +118,8 @@ export function MatchApprovalDetailPage() {
     itemPath: (next) => `/broker/match-approvals/${next}`,
     listPath: '/broker/match-approvals?status=pending',
   });
-  const [rejectModal, setRejectModal] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
-  const [rejectLoading, setRejectLoading] = useState(false);
+  // The reject modal is shared with the list page (../components/exchanges/MatchRejectModal).
+  const [rejectOpen, setRejectOpen] = useState(false);
 
   // Every request is wrapped: a thrown request used to escape this loader and
   // leave the skeleton up for ever.
@@ -161,31 +165,6 @@ export function MatchApprovalDetailPage() {
       toast.error(t('matching.approve_failed'));
     } finally {
       setApproveLoading(false);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!item) return;
-    if (!rejectReason.trim()) {
-      toast.error(t('matching.reject_reason_required'));
-      return;
-    }
-    setRejectLoading(true);
-    try {
-      const res = await adminMatching.rejectMatch(item.id, rejectReason.trim());
-      if (res.success) {
-        toast.success(t('matching.rejected_toast'));
-        // Close only on success; a failed request keeps the typed reason.
-        setRejectModal(false);
-        setRejectReason('');
-        void queue.goNext();
-      } else {
-        toast.error(res.error || t('matching.reject_failed'));
-      }
-    } catch {
-      toast.error(t('matching.reject_failed'));
-    } finally {
-      setRejectLoading(false);
     }
   };
 
@@ -355,7 +334,9 @@ export function MatchApprovalDetailPage() {
             <div className="flex items-start gap-4">
               <Avatar src={item.user_1_avatar || undefined} name={item.user_1_name} size="lg" className="shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-lg font-semibold text-foreground">{item.user_1_name}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  <MemberName userId={item.user_1_id} name={item.user_1_name} />
+                </p>
                 {item.user_1_email && <p className="text-sm text-muted">{item.user_1_email}</p>}
                 {item.user_1_location && (
                   <p className="mt-1 flex items-center gap-1 text-sm text-muted">
@@ -378,7 +359,9 @@ export function MatchApprovalDetailPage() {
             <div className="flex items-start gap-4">
               <Avatar src={item.user_2_avatar || undefined} name={item.user_2_name} size="lg" className="shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-lg font-semibold text-foreground">{item.user_2_name}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  <MemberName userId={item.user_2_id} name={item.user_2_name} />
+                </p>
                 {item.user_2_email && <p className="text-sm text-muted">{item.user_2_email}</p>}
                 {item.user_2_location && (
                   <p className="mt-1 flex items-center gap-1 text-sm text-muted">
@@ -465,10 +448,7 @@ export function MatchApprovalDetailPage() {
             <Button
               variant="danger-soft"
               startContent={<XCircle size={16} />}
-              onPress={() => {
-                setRejectModal(true);
-                setRejectReason('');
-              }}
+              onPress={() => setRejectOpen(true)}
             >
               {t('matching.reject')}
             </Button>
@@ -484,59 +464,15 @@ export function MatchApprovalDetailPage() {
         </Card>
       )}
 
-      {/* Reject modal */}
-      <Modal
-        isOpen={rejectModal}
-        onClose={() => {
-          setRejectModal(false);
-          setRejectReason('');
-        }}
-        size="md"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <XCircle size={20} className="text-danger" />
-            {t('matching.reject')}
-          </ModalHeader>
-          <ModalBody>
-            <p className="mb-3 text-sm text-muted">
-              {t('matching.rejecting_between', {
-                user1: item.user_1_name,
-                user2: item.user_2_name,
-              })}
-            </p>
-            <Textarea
-              label={t('matching.reject_reason_label')}
-              placeholder={t('matching.reject_reason_placeholder')}
-              value={rejectReason}
-              onValueChange={setRejectReason}
-              variant="secondary"
-              minRows={3}
-              isRequired
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="tertiary"
-              onPress={() => {
-                setRejectModal(false);
-                setRejectReason('');
-              }}
-              isDisabled={rejectLoading}
-            >
-              {t('matching.cancel')}
-            </Button>
-            <Button
-              variant="danger"
-              onPress={handleReject}
-              isLoading={rejectLoading}
-              isDisabled={!rejectReason.trim()}
-            >
-              {t('matching.reject')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Reject modal — shared with the list page; after a decision the next
+          waiting match opens. */}
+      {rejectOpen && (
+        <MatchRejectModal
+          match={item}
+          onClose={() => setRejectOpen(false)}
+          onRejected={() => void queue.goNext()}
+        />
+      )}
     </BrokerPageShell>
   );
 }

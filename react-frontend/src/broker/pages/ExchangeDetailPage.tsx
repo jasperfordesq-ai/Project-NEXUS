@@ -24,12 +24,6 @@ import {
   Button,
   Chip,
   Separator,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Avatar,
 } from '@/components/ui';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
@@ -46,10 +40,11 @@ import Hourglass from 'lucide-react/icons/hourglass';
 import Calendar from 'lucide-react/icons/calendar';
 import FileText from 'lucide-react/icons/file-text';
 import ClipboardList from 'lucide-react/icons/clipboard-list';
+import MessageSquare from 'lucide-react/icons/message-square';
 import { usePageTitle } from '@/hooks';
 import { adminBroker } from '@/admin/api/adminApi';
 import type { ExchangeDetail as ExchangeDetailType } from '@/admin/api/types';
-import { useTenant, useToast } from '@/contexts';
+import { useTenant } from '@/contexts';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { formatServerDateTime } from '@/lib/serverTime';
 import {
@@ -64,8 +59,19 @@ import {
   ReversedNotice,
   canReverse,
 } from '../components/ExchangeResolution';
+import { ExchangeDecisionModal, type ExchangeDecisionType } from '../components/exchanges/ExchangeDecisionModal';
 import { BrokerQueueNav } from '../components/BrokerQueueNav';
+import { MemberName } from '../BrokerMemberWindow';
+import { useBrokerBreadcrumbLabel } from '../BrokerBreadcrumbContext';
 import { useBrokerQueue } from '../useBrokerQueue';
+
+/** Short breadcrumb label: "Alice → Bob · Gardening" (null while loading). */
+export function exchangeCrumbLabel(data: ExchangeDetailType | null): string | null {
+  if (!data) return null;
+  const { requester_name: requester, provider_name: provider, listing_title: listing } = data.exchange;
+  const parties = `${requester} → ${provider}`;
+  return listing ? `${parties} · ${listing}` : parties;
+}
 
 const cardClass = 'rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]';
 
@@ -165,8 +171,8 @@ export default function ExchangeDetail() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { tenantPath } = useTenant();
-  const toast = useToast();
   const [data, setData] = useState<ExchangeDetailType | null>(null);
+  useBrokerBreadcrumbLabel(exchangeCrumbLabel(data));
 
   // Where Back goes: the list tab this exchange was opened from (`?queue=`),
   // or the plain list when none is known or the value is not a tab we have.
@@ -193,10 +199,9 @@ export default function ExchangeDetail() {
   });
 
   // Approve / reject actions — available on the detail page for pending_broker
-  // exchanges so brokers don't have to return to the list to act.
-  const [actionModal, setActionModal] = useState<'approve' | 'reject' | null>(null);
-  const [actionText, setActionText] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
+  // exchanges so brokers don't have to return to the list to act. The modal
+  // itself is shared with the list (../components/exchanges/ExchangeDecisionModal).
+  const [decision, setDecision] = useState<ExchangeDecisionType | null>(null);
 
   // Stable fetch (no t/toast in deps) — the effect below keys on the route id.
   const loadExchange = useCallback(async (exchangeId: number) => {
@@ -226,32 +231,6 @@ export default function ExchangeDetail() {
     }
     loadExchange(numericId);
   }, [id, loadExchange]);
-
-  const handleAction = async () => {
-    if (!data || actionModal === null) return;
-    if (actionModal === 'reject' && !actionText.trim()) {
-      toast.error(t('exchanges.reason_required_error'));
-      return;
-    }
-    setActionLoading(true);
-    try {
-      const res = actionModal === 'approve'
-        ? await adminBroker.approveExchange(data.exchange.id, actionText || undefined)
-        : await adminBroker.rejectExchange(data.exchange.id, actionText);
-      if (res?.success) {
-        toast.success(t('exchanges.action_succeeded'));
-        setActionModal(null);
-        setActionText('');
-        void queue.goNext();
-      } else {
-        toast.error(res?.error || t('exchanges.action_failed'));
-      }
-    } catch {
-      toast.error(t('exchanges.action_failed'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const backButton = (
     <Button
@@ -334,7 +313,7 @@ export default function ExchangeDetail() {
                 color="success"
                 size="sm"
                 startContent={<CheckCircle size={16} aria-hidden="true" />}
-                onPress={() => { setActionModal('approve'); setActionText(''); }}
+                onPress={() => setDecision('approve')}
               >
                 {t('exchanges.approve')}
               </Button>
@@ -342,7 +321,7 @@ export default function ExchangeDetail() {
                 variant="danger-soft"
                 size="sm"
                 startContent={<XCircle size={16} aria-hidden="true" />}
-                onPress={() => { setActionModal('reject'); setActionText(''); }}
+                onPress={() => setDecision('reject')}
               >
                 {t('exchanges.reject')}
               </Button>
@@ -350,6 +329,18 @@ export default function ExchangeDetail() {
           )}
           <BrokerQueueNav queue={queue} />
           {canReverse(exchange) && <ReverseExchangeButton exchange={exchange} onDone={reload} />}
+          {/* The broker Messages queue searches by name (server param `q`),
+              so this opens that queue narrowed to the requester — the closest
+              thing to "this pair's conversation" the panel offers today. */}
+          <Button
+            as={Link}
+            to={tenantPath(`/broker/messages?q=${encodeURIComponent(exchange.requester_name)}`)}
+            variant="tertiary"
+            size="sm"
+            startContent={<MessageSquare size={16} aria-hidden="true" />}
+          >
+            {t('exchanges.detail_view_messages')}
+          </Button>
           {backButton}
         </>
       }
@@ -417,7 +408,9 @@ export default function ExchangeDetail() {
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-lg font-semibold text-foreground">{exchange.requester_name}</p>
+                <p className="truncate text-lg font-semibold text-foreground">
+                  <MemberName userId={exchange.requester_id} name={exchange.requester_name} />
+                </p>
                 {exchange.requester_email && (
                   <p className="truncate text-sm text-muted">{exchange.requester_email}</p>
                 )}
@@ -439,7 +432,9 @@ export default function ExchangeDetail() {
                 className="shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-lg font-semibold text-foreground">{exchange.provider_name}</p>
+                <p className="truncate text-lg font-semibold text-foreground">
+                  <MemberName userId={exchange.provider_id} name={exchange.provider_name} />
+                </p>
                 {exchange.provider_email && (
                   <p className="truncate text-sm text-muted">{exchange.provider_email}</p>
                 )}
@@ -567,55 +562,15 @@ export default function ExchangeDetail() {
         </CardBody>
       </Card>
 
-      {/* Approve/Reject Modal — mirrors the list page's action modal */}
-      {actionModal && (
-        <Modal isOpen={!!actionModal} onClose={() => { setActionModal(null); setActionText(''); }} size="md">
-          <ModalContent>
-            <ModalHeader className="flex items-center gap-2">
-              {actionModal === 'approve' ? (
-                <>
-                  <CheckCircle size={20} className="text-success" aria-hidden="true" />
-                  {t('exchanges.approve_modal_title')}
-                </>
-              ) : (
-                <>
-                  <XCircle size={20} className="text-danger" aria-hidden="true" />
-                  {t('exchanges.reject_modal_title')}
-                </>
-              )}
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-foreground/70 mb-3">
-                {actionModal === 'approve'
-                  ? t('exchanges.approve_confirm_text')
-                  : t('exchanges.reject_confirm_text')}
-              </p>
-              <Textarea
-                label={actionModal === 'approve' ? t('exchanges.notes_optional_label') : t('exchanges.reason_required_label')}
-                placeholder={actionModal === 'approve'
-                  ? t('exchanges.approval_notes_placeholder')
-                  : t('exchanges.rejection_reason_placeholder')}
-                value={actionText}
-                onValueChange={setActionText}
-                minRows={3}
-                variant="bordered"
-                isRequired={actionModal === 'reject'}
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={() => { setActionModal(null); setActionText(''); }} isDisabled={actionLoading}>
-                {t('common.cancel')}
-              </Button>
-              <Button
-                color={actionModal === 'approve' ? 'success' : 'danger'}
-                onPress={handleAction}
-                isLoading={actionLoading}
-              >
-                {actionModal === 'approve' ? t('exchanges.approve') : t('exchanges.reject')}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      {/* Approve/Reject — the same modal the list page uses; after a
+          decision the next item in the needs-action queue opens. */}
+      {decision && (
+        <ExchangeDecisionModal
+          exchangeId={exchange.id}
+          type={decision}
+          onClose={() => setDecision(null)}
+          onDecided={() => void queue.goNext()}
+        />
       )}
     </BrokerPageShell>
   );

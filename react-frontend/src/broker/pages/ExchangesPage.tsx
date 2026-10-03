@@ -7,7 +7,8 @@
  * Exchange Management
  * List and manage exchange requests with approve/reject actions,
  * restyled to the broker design language: KPI header, deep-linkable
- * status tabs, party avatars, BrokerStatusChip statuses.
+ * status tabs and date range, party names that open the member window,
+ * BrokerStatusChip statuses, CSV export, quiet auto-refresh.
  * Parity: PHP BrokerControlsController::exchanges()
  */
 
@@ -18,37 +19,22 @@ import { useTranslation } from 'react-i18next';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
-import CheckCheck from 'lucide-react/icons/check-check';
 import XCircle from 'lucide-react/icons/circle-x';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
-import Ban from 'lucide-react/icons/ban';
 import Clock from 'lucide-react/icons/clock';
+import Download from 'lucide-react/icons/download';
 import Eye from 'lucide-react/icons/eye';
-import Hourglass from 'lucide-react/icons/hourglass';
 import Inbox from 'lucide-react/icons/inbox';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Sparkles from 'lucide-react/icons/sparkles';
-import Users from 'lucide-react/icons/users';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { formatServerDate } from '@/lib/serverTime';
+import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { adminBroker } from '@/admin/api/adminApi';
 import { DataTable, type Column } from '@/admin/components';
 import type { ExchangeRequest } from '@/admin/api/types';
-import {
-  Button,
-  Chip,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Tabs,
-  Tab,
-  Avatar,
-} from '@/components/ui';
+import { Button, Avatar } from '@/components/ui';
 import {
   BrokerPageShell,
   BrokerStatCard,
@@ -56,16 +42,28 @@ import {
   BrokerSkeleton,
   BrokerStatusChip,
 } from '../components';
+import { ExchangeDecisionModal, type ExchangeDecisionType } from '../components/exchanges/ExchangeDecisionModal';
+import { ExchangeStatusTabs, EXCHANGE_STATUSES, type ExchangeStatus } from '../components/exchanges/ExchangeStatusTabs';
+import { ExchangeDateRangeFilter } from '../components/exchanges/ExchangeDateRangeFilter';
+import { MemberName } from '../BrokerMemberWindow';
+import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
+import { useCsvExport } from '../useCsvExport';
 
-type ActionType = 'approve' | 'reject';
+type ExchangeListParams = Parameters<typeof adminBroker.getExchanges>[0];
 
-// Status filter is mirrored to `?status=` so stat-card deep-links and
-// browser back/forward work as expected. `needs_action` is not a real status:
-// the API expands it to pending_broker + disputed, the same set the broker
-// dashboard's "Pending Exchanges" card counts and links here with.
-const EXCHANGE_STATUSES = [
-  'all', 'needs_action', 'pending_broker', 'accepted', 'in_progress', 'completed', 'cancelled', 'disputed',
-] as const;
+/**
+ * The list endpoint also returns who decided and when (for the export);
+ * `adminApi.ts` does not carry these two fields yet.
+ */
+type ExchangeRow = ExchangeRequest & { broker_name?: string | null; broker_decided_at?: string | null };
+
+/** Rows per page while exporting — the endpoint's maximum. */
+const EXPORT_PAGE_SIZE = 100;
+
+/** A Y-m-d string from the URL, or null for anything else. */
+function readDate(value: string | null): string | null {
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
 
 /** Reads the paginated total out of a getExchanges response (same meta shape the list load uses). */
 function readTotal(res: Awaited<ReturnType<typeof adminBroker.getExchanges>>): number | null {
@@ -75,86 +73,100 @@ function readTotal(res: Awaited<ReturnType<typeof adminBroker.getExchanges>>): n
   return Number.isFinite(value) ? value : null;
 }
 
+/** True when a page of results has a further page behind it. */
+function readHasMore(res: Awaited<ReturnType<typeof adminBroker.getExchanges>>, page: number): boolean {
+  const meta = res.meta as Record<string, unknown> | undefined;
+  if (typeof meta?.has_more === 'boolean') return meta.has_more;
+  const totalPages = Number(meta?.total_pages);
+  return Number.isFinite(totalPages) ? page < totalPages : false;
+}
+
 export function ExchangeManagement() {
   const { t } = useTranslation('broker');
   usePageTitle(t('exchanges.title'));
   const { tenantPath } = useTenant();
   const toast = useToast();
+  const csv = useCsvExport();
 
-  type ExchangeStatus = (typeof EXCHANGE_STATUSES)[number];
+  // Status and date range are mirrored to the URL so stat-card deep-links and
+  // browser back/forward work as expected.
   const [searchParams, setSearchParams] = useSearchParams();
   const urlStatus = searchParams.get('status') as ExchangeStatus | null;
   const status: ExchangeStatus =
     urlStatus && EXCHANGE_STATUSES.includes(urlStatus) ? urlStatus : 'all';
-  const setStatus = useCallback(
-    (next: ExchangeStatus) => {
+  const from = readDate(searchParams.get('from'));
+  const to = readDate(searchParams.get('to'));
+  const [page, setPage] = useState(1);
+
+  const setParams = useCallback(
+    (changes: Record<string, string | null>) => {
+      setPage(1);
       setSearchParams(
         (prev) => {
           const params = new URLSearchParams(prev);
-          if (next === 'all') {
-            params.delete('status');
-          } else {
-            params.set('status', next);
+          for (const [key, value] of Object.entries(changes)) {
+            if (value === null) params.delete(key);
+            else params.set(key, value);
           }
           return params;
         },
-        { replace: true }
+        { replace: true },
       );
     },
-    [setSearchParams]
+    [setSearchParams],
   );
+  const setStatus = (next: ExchangeStatus) => setParams({ status: next === 'all' ? null : next });
+  const setDates = (nextFrom: string | null, nextTo: string | null) => setParams({ from: nextFrom, to: nextTo });
 
-  const [items, setItems] = useState<ExchangeRequest[]>([]);
+  const [items, setItems] = useState<ExchangeRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [page, setPage] = useState(1);
 
   // KPI header state. There is no dedicated exchange-stats endpoint, so the
-  // header reuses the page's own list endpoint: one unfiltered probe for the
-  // grand total plus one probe each for pending_broker, needs_action and
-  // disputed, reading only meta.total from each. The cards and the tab badges
-  // read the same numbers, so a card can never disagree with its list.
+  // header reuses the page's own list endpoint: one probe per card reading
+  // only meta.total (per_page 1 keeps the probes cheap). The cards and the
+  // tab badges read the same numbers, so a card can never disagree with its list.
   const [stats, setStats] = useState<{
     total: number | null;
     pending: number | null;
     needsAction: number | null;
     disputed: number | null;
-  }>({
-    total: null,
-    pending: null,
-    needsAction: null,
-    disputed: null,
-  });
+  }>({ total: null, pending: null, needsAction: null, disputed: null });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Action modal state
-  const [actionModal, setActionModal] = useState<{
-    type: ActionType;
-    item: ExchangeRequest;
-  } | null>(null);
-  const [actionText, setActionText] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
+  const [decision, setDecision] = useState<{ type: ExchangeDecisionType; item: ExchangeRow } | null>(null);
 
   // Stash the latest `t`/`toast` in refs so the fetch callbacks key on the
-  // page/status params only — otherwise a language switch (or an unstable
+  // page/filter params only — otherwise a language switch (or an unstable
   // toast identity) would refetch the whole list for no reason.
   const tRef = useRef(t);
   const toastRef = useRef(toast);
   tRef.current = t;
   toastRef.current = toast;
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
+  // The current filter as request params; `from`/`to` are accepted by the
+  // endpoint but not yet declared on adminApi's type, hence the cast.
+  const filterParams = useCallback(
+    (extra: ExchangeListParams): ExchangeListParams => ({
+      ...extra,
+      status: status === 'all' ? undefined : status,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    } as ExchangeListParams),
+    [status, from, to],
+  );
+
+  // `quiet` refreshes (auto-refresh after a write, tab focus, interval) keep
+  // the current rows on screen instead of flashing a loading state.
+  const loadItems = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     setLoadError(false);
     try {
-      const res = await adminBroker.getExchanges({
-        page,
-        status: status === 'all' ? undefined : status,
-      });
+      const res = await adminBroker.getExchanges(filterParams({ page }));
       if (res.success && Array.isArray(res.data)) {
-        setItems(res.data as ExchangeRequest[]);
+        setItems(res.data as ExchangeRow[]);
         const meta = res.meta as Record<string, unknown> | undefined;
         setTotal(Number(meta?.total ?? meta?.total_items ?? res.data.length));
       } else {
@@ -162,21 +174,21 @@ export function ExchangeManagement() {
       }
     } catch {
       setLoadError(true);
-      toastRef.current.error(tRef.current('exchanges.load_failed'));
+      if (!quiet) toastRef.current.error(tRef.current('exchanges.load_failed'));
     } finally {
       setLoading(false);
       setInitialLoad(false);
     }
-  }, [page, status]);
+  }, [page, filterParams]);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
+  const loadStats = useCallback(async (quiet = false) => {
+    if (!quiet) setStatsLoading(true);
     try {
       const [allRes, pendingRes, needsActionRes, disputedRes] = await Promise.all([
-        adminBroker.getExchanges({ page: 1 }),
-        adminBroker.getExchanges({ page: 1, status: 'pending_broker' }),
-        adminBroker.getExchanges({ page: 1, status: 'needs_action' }),
-        adminBroker.getExchanges({ page: 1, status: 'disputed' }),
+        adminBroker.getExchanges({ page: 1, per_page: 1 }),
+        adminBroker.getExchanges({ page: 1, per_page: 1, status: 'pending_broker' }),
+        adminBroker.getExchanges({ page: 1, per_page: 1, status: 'needs_action' }),
+        adminBroker.getExchanges({ page: 1, per_page: 1, status: 'disputed' }),
       ]);
       setStats({
         total: readTotal(allRes),
@@ -192,61 +204,51 @@ export function ExchangeManagement() {
   }, []);
 
   useEffect(() => {
-    loadItems();
+    void loadItems();
   }, [loadItems]);
 
   useEffect(() => {
-    loadStats();
+    void loadStats();
   }, [loadStats]);
 
   const refreshAll = () => {
-    loadItems();
-    loadStats();
+    void loadItems();
+    void loadStats();
   };
+  useBrokerAutoRefresh(() => {
+    void loadItems(true);
+    void loadStats(true);
+  });
 
-  const handleAction = async () => {
-    if (!actionModal) return;
-    const { type, item } = actionModal;
-
-    if (type === 'reject' && !actionText.trim()) {
-      toast.error(t('exchanges.reason_required_error'));
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      const res = type === 'approve'
-        ? await adminBroker.approveExchange(item.id, actionText || undefined)
-        : await adminBroker.rejectExchange(item.id, actionText);
-
-      if (res?.success) {
-        toast.success(t('exchanges.action_succeeded'));
-        // Close only on success. A failed request keeps the modal and the
-        // typed reason on screen, so the broker can retry or copy it out.
-        setActionModal(null);
-        setActionText('');
-        refreshAll();
-      } else {
-        toast.error(res?.error || t('exchanges.action_failed'));
-      }
-    } catch {
-      toast.error(t('exchanges.action_failed'));
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  const exportCsv = () =>
+    csv.run<ExchangeRow>({
+      filename: ['exchanges', status, from && to ? `${from}_${to}` : null].filter(Boolean).join('_'),
+      columns: [
+        { label: t('exchanges.detail_created_label'), value: (row) => formatServerDateTime(row.created_at) },
+        { label: t('exchanges.col_status'), value: (row) => t(`status.${row.status}`, { defaultValue: row.status }) },
+        { label: t('exchanges.col_requester'), value: (row) => row.requester_name },
+        { label: t('exchanges.col_provider'), value: (row) => row.provider_name },
+        { label: t('exchanges.col_listing'), value: (row) => row.listing_title ?? '' },
+        { label: t('exchanges.col_hours'), value: (row) => row.final_hours ?? '' },
+        { label: t('exchanges.col_broker'), value: (row) => row.broker_name ?? '' },
+        {
+          label: t('exchanges.col_decided_at'),
+          value: (row) => (row.broker_decided_at ? formatServerDateTime(row.broker_decided_at) : ''),
+        },
+      ],
+      fetchPage: async (exportPage) => {
+        const res = await adminBroker.getExchanges(filterParams({ page: exportPage, per_page: EXPORT_PAGE_SIZE }));
+        if (!res.success || !Array.isArray(res.data)) throw new Error('export page failed');
+        return { rows: res.data as ExchangeRow[], hasMore: readHasMore(res, exportPage) };
+      },
+    });
 
   // Carry the current tab into the detail link so its Back button can return
   // to the same tab instead of the unfiltered list.
   const detailPath = (exchangeId: number) =>
     status === 'all' ? `/broker/exchanges/${exchangeId}` : `/broker/exchanges/${exchangeId}?queue=${status}`;
 
-  const openActionModal = (type: ActionType, item: ExchangeRequest) => {
-    setActionModal({ type, item });
-    setActionText('');
-  };
-
-  const columns: Column<ExchangeRequest>[] = [
+  const columns: Column<ExchangeRow>[] = [
     {
       key: 'parties',
       label: t('exchanges.col_parties'),
@@ -254,13 +256,17 @@ export function ExchangeManagement() {
         <div className="flex min-w-0 items-center gap-2">
           <Avatar name={item.requester_name} size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{item.requester_name}</p>
+            <p className="truncate text-sm font-medium text-foreground">
+              <MemberName userId={item.requester_id} name={item.requester_name} />
+            </p>
             <p className="truncate text-xs text-muted">{t('exchanges.col_requester')}</p>
           </div>
           <ArrowRight size={14} className="shrink-0 text-muted" aria-hidden="true" />
           <Avatar name={item.provider_name} size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{item.provider_name}</p>
+            <p className="truncate text-sm font-medium text-foreground">
+              <MemberName userId={item.provider_id} name={item.provider_name} />
+            </p>
             <p className="truncate text-xs text-muted">{t('exchanges.col_provider')}</p>
           </div>
         </div>
@@ -326,7 +332,7 @@ export function ExchangeManagement() {
                 size="sm"
                 variant="tertiary"
                 color="success"
-                onPress={() => openActionModal('approve', item)}
+                onPress={() => setDecision({ type: 'approve', item })}
                 aria-label={t('exchanges.approve_aria')}
               >
                 <CheckCircle size={14} />
@@ -335,7 +341,7 @@ export function ExchangeManagement() {
                 isIconOnly
                 size="sm"
                 variant="danger-soft"
-                onPress={() => openActionModal('reject', item)}
+                onPress={() => setDecision({ type: 'reject', item })}
                 aria-label={t('exchanges.reject_aria')}
               >
                 <XCircle size={14} />
@@ -346,6 +352,8 @@ export function ExchangeManagement() {
       ),
     },
   ];
+
+  const isActionQueue = status === 'pending_broker' || status === 'needs_action';
 
   return (
     <BrokerPageShell
@@ -359,6 +367,16 @@ export function ExchangeManagement() {
           <Button
             variant="tertiary"
             size="sm"
+            startContent={<Download size={16} aria-hidden="true" />}
+            onPress={() => void exportCsv()}
+            isLoading={csv.exporting}
+            isDisabled={initialLoad}
+          >
+            {csv.exporting ? t('common.exporting') : t('common.export_csv')}
+          </Button>
+          <Button
+            variant="tertiary"
+            size="sm"
             startContent={<RefreshCw size={16} />}
             onPress={refreshAll}
             isLoading={loading && statsLoading}
@@ -366,6 +384,18 @@ export function ExchangeManagement() {
             {t('common.refresh')}
           </Button>
         </>
+      }
+      toolbar={
+        <div className="flex flex-col gap-2">
+          <ExchangeStatusTabs
+            status={status}
+            onChange={setStatus}
+            counts={{ needsAction: stats.needsAction, pending: stats.pending }}
+          />
+          <div className="px-1 pb-1">
+            <ExchangeDateRangeFilter from={from} to={to} onChange={setDates} />
+          </div>
+        </div>
       }
     >
       {/* KPI header — deep-links into the matching filtered view */}
@@ -408,100 +438,6 @@ export function ExchangeManagement() {
         />
       </div>
 
-      {/* Status tabs — deep-linkable via ?status= */}
-      <div className="mb-4 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
-        <Tabs
-          aria-label={t('exchanges.tabs_aria')}
-          selectedKey={status}
-          onSelectionChange={(key) => { setStatus(key as ExchangeStatus); setPage(1); }}
-          variant="underlined"
-          size="sm"
-        >
-          <Tab
-            key="all"
-            title={
-              <div className="flex items-center gap-2">
-                <Users size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_all')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="needs_action"
-            title={
-              <div className="flex items-center gap-2">
-                <AlertCircle size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_needs_action')}</span>
-                {stats.needsAction != null && stats.needsAction > 0 && (
-                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                    {stats.needsAction}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="pending_broker"
-            title={
-              <div className="flex items-center gap-2">
-                <Clock size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_pending_broker')}</span>
-                {stats.pending != null && stats.pending > 0 && (
-                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                    {stats.pending}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="accepted"
-            title={
-              <div className="flex items-center gap-2">
-                <CheckCircle size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_accepted')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="in_progress"
-            title={
-              <div className="flex items-center gap-2">
-                <Hourglass size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_in_progress')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="completed"
-            title={
-              <div className="flex items-center gap-2">
-                <CheckCheck size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_completed')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="cancelled"
-            title={
-              <div className="flex items-center gap-2">
-                <Ban size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_cancelled')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="disputed"
-            title={
-              <div className="flex items-center gap-2">
-                <AlertTriangle size={14} aria-hidden="true" />
-                <span>{t('exchanges.tab_disputed')}</span>
-              </div>
-            }
-          />
-        </Tabs>
-      </div>
-
       {initialLoad ? (
         <BrokerSkeleton variant="table" />
       ) : loadError && items.length === 0 ? (
@@ -534,8 +470,8 @@ export function ExchangeManagement() {
           emptyContent={
             <BrokerEmptyState
               bare
-              icon={status === 'pending_broker' || status === 'needs_action' ? Sparkles : Inbox}
-              color={status === 'pending_broker' || status === 'needs_action' ? 'success' : 'neutral'}
+              icon={isActionQueue ? Sparkles : Inbox}
+              color={isActionQueue ? 'success' : 'neutral'}
               title={
                 status === 'needs_action'
                   ? t('exchanges.empty_needs_action_title')
@@ -555,63 +491,13 @@ export function ExchangeManagement() {
         />
       )}
 
-      {/* Approve/Reject Modal */}
-      {actionModal && (
-        <Modal isOpen={!!actionModal} onClose={() => { setActionModal(null); setActionText(''); }} size="md">
-          <ModalContent>
-            <ModalHeader className="flex items-center gap-2">
-              {actionModal.type === 'approve' ? (
-                <>
-                  <CheckCircle size={20} className="text-success" aria-hidden="true" />
-                  {t('exchanges.approve_modal_title')}
-                </>
-              ) : (
-                <>
-                  <XCircle size={20} className="text-danger" aria-hidden="true" />
-                  {t('exchanges.reject_modal_title')}
-                </>
-              )}
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-foreground/70 mb-3">
-                {actionModal.type === 'approve'
-                  ? t('exchanges.approve_confirm_text')
-                  : t('exchanges.reject_confirm_text')
-                }
-              </p>
-              <Textarea
-                label={actionModal.type === 'approve' ? t('exchanges.notes_optional_label') : t('exchanges.reason_required_label')}
-                placeholder={actionModal.type === 'approve'
-                  ? t('exchanges.approval_notes_placeholder')
-                  : t('exchanges.rejection_reason_placeholder')
-                }
-                value={actionText}
-                onValueChange={setActionText}
-                minRows={3}
-                variant="secondary"
-                isRequired={actionModal.type === 'reject'}
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="tertiary"
-                onPress={() => { setActionModal(null); setActionText(''); }}
-                isDisabled={actionLoading}
-              >
-                {t('common.cancel')}
-              </Button>
-              {actionModal.type === 'approve' ? (
-                <Button color="success" onPress={handleAction} isLoading={actionLoading}>
-                  {t('exchanges.approve')}
-                </Button>
-              ) : (
-                <Button variant="danger" onPress={handleAction} isLoading={actionLoading}>
-                  {t('exchanges.reject')}
-                </Button>
-              )}
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      {decision && (
+        <ExchangeDecisionModal
+          exchangeId={decision.item.id}
+          type={decision.type}
+          onClose={() => setDecision(null)}
+          onDecided={refreshAll}
+        />
       )}
     </BrokerPageShell>
   );

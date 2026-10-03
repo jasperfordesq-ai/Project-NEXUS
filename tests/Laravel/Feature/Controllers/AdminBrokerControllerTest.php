@@ -331,6 +331,54 @@ class AdminBrokerControllerTest extends TestCase
         $this->assertSame([], $ids('%%%zz-no-such-thing'));
     }
 
+    /**
+     * The Messages page has a date-range filter (October 2026). `from` / `to`
+     * bound the copy's created_at — the date the list shows — inclusive at
+     * both ends, the same way the Review Archive already bounds decided_at.
+     */
+    public function test_messages_queue_filters_by_created_date_range(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $old = $this->insertMessageCopy($a->id, $b->id, ['created_at' => '2026-03-01 09:00:00']);
+        $inRangeStart = $this->insertMessageCopy($a->id, $b->id, ['created_at' => '2026-03-10 00:30:00']);
+        $inRangeEnd = $this->insertMessageCopy($a->id, $b->id, ['created_at' => '2026-03-12 23:30:00']);
+        $new = $this->insertMessageCopy($a->id, $b->id, ['created_at' => '2026-03-13 00:10:00']);
+        Sanctum::actingAs($broker);
+
+        $ids = fn (string $query) => array_map('intval', array_column(
+            $this->apiGet('/v2/admin/broker/messages?per_page=100&' . $query)->assertOk()->json('data'),
+            'id',
+        ));
+
+        $both = $ids('from=2026-03-10&to=2026-03-12');
+        $this->assertContains($inRangeStart, $both);
+        $this->assertContains($inRangeEnd, $both);
+        $this->assertNotContains($old, $both);
+        $this->assertNotContains($new, $both);
+
+        $fromOnly = $ids('from=2026-03-13');
+        $this->assertContains($new, $fromOnly);
+        $this->assertNotContains($inRangeEnd, $fromOnly);
+
+        $toOnly = $ids('to=2026-03-01');
+        $this->assertContains($old, $toOnly);
+        $this->assertNotContains($inRangeStart, $toOnly);
+
+        // meta.total follows the same bounds, so the KPI card agrees with the rows.
+        $this->assertSame(2, $this->apiGet('/v2/admin/broker/messages?from=2026-03-10&to=2026-03-12')->json('meta.total'));
+    }
+
+    public function test_messages_queue_rejects_a_malformed_date_bound(): void
+    {
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        Sanctum::actingAs($broker);
+
+        $this->apiGet('/v2/admin/broker/messages?from=yesterday')->assertStatus(422);
+        $this->apiGet('/v2/admin/broker/messages?to=2026-13-45')->assertStatus(422);
+    }
+
     public function test_vetting_tile_matches_the_review_requested_filter(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -731,6 +779,89 @@ class AdminBrokerControllerTest extends TestCase
         $this->assertSame($newerExchange, $firstId('/v2/admin/broker/exchanges?status=needs_action&per_page=1'));
         $this->assertSame($olderMessage, $firstId('/v2/admin/broker/messages?filter=unreviewed&sort=oldest&per_page=1'));
         $this->assertSame($newerMessage, $firstId('/v2/admin/broker/messages?filter=unreviewed&per_page=1'));
+    }
+
+    /**
+     * The exchanges list takes `from` / `to` (Y-m-d) bounds on created_at so the
+     * broker's date-range filter and the CSV export can narrow the list
+     * server-side. Both bounds are inclusive whole days; a malformed date is
+     * refused (422) rather than silently ignored, as the archives list does.
+     */
+    public function test_exchanges_can_be_bounded_by_created_date(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $b->id);
+        $exchange = fn (string $when) => (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+            'proposed_hours' => 1.0, 'status' => 'completed', 'created_at' => $when, 'updated_at' => $when,
+        ]);
+        $before = $exchange('2031-03-09 23:59:59');
+        $firstDay = $exchange('2031-03-10 00:00:00');
+        $lastDay = $exchange('2031-03-12 23:59:59');
+        $after = $exchange('2031-03-13 00:00:00');
+        Sanctum::actingAs($admin);
+
+        $ids = fn (string $uri) => array_map('intval', array_column($this->apiGet($uri)->assertOk()->json('data'), 'id'));
+
+        $bounded = $ids('/v2/admin/broker/exchanges?from=2031-03-10&to=2031-03-12&per_page=100');
+        $this->assertContains($firstDay, $bounded, 'The from day is included in full.');
+        $this->assertContains($lastDay, $bounded, 'The to day is included in full.');
+        $this->assertNotContains($before, $bounded);
+        $this->assertNotContains($after, $bounded);
+        $this->assertSame(2, (int) $this->apiGet('/v2/admin/broker/exchanges?from=2031-03-10&to=2031-03-12')->json('meta.total'));
+
+        $fromOnly = $ids('/v2/admin/broker/exchanges?from=2031-03-13&per_page=100');
+        $this->assertContains($after, $fromOnly);
+        $this->assertNotContains($lastDay, $fromOnly);
+
+        $toOnly = $ids('/v2/admin/broker/exchanges?to=2031-03-09&per_page=100');
+        $this->assertContains($before, $toOnly);
+        $this->assertNotContains($firstDay, $toOnly);
+
+        $this->apiGet('/v2/admin/broker/exchanges?from=10-03-2031')->assertStatus(422);
+        $this->apiGet('/v2/admin/broker/exchanges?to=next-week')->assertStatus(422);
+    }
+
+    /**
+     * The CSV export needs who decided and when. `broker_approved_at` is never
+     * written by the workflow, so the list names the broker from `broker_id` and
+     * reads the decision time from the broker's status change in
+     * exchange_history; an undecided exchange carries null for both.
+     */
+    public function test_exchanges_name_the_broker_and_the_decision_time(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create([
+            'first_name' => 'Brenda', 'last_name' => 'Broker',
+        ]);
+        $a = User::factory()->forTenant($this->testTenantId)->create();
+        $b = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $b->id);
+        $decided = (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+            'proposed_hours' => 1.0, 'status' => 'accepted', 'broker_id' => $admin->id,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $undecided = (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId, 'requester_id' => $a->id, 'provider_id' => $b->id,
+            'proposed_hours' => 1.0, 'status' => 'pending_broker', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        // The requester's own earlier action must not count as the decision.
+        DB::table('exchange_history')->insert([
+            ['tenant_id' => $this->testTenantId, 'exchange_id' => $decided, 'action' => 'request_created', 'actor_id' => $a->id,
+             'actor_role' => 'requester', 'old_status' => null, 'new_status' => 'pending_broker', 'created_at' => '2031-05-01 08:00:00'],
+            ['tenant_id' => $this->testTenantId, 'exchange_id' => $decided, 'action' => 'status_changed', 'actor_id' => $admin->id,
+             'actor_role' => 'broker', 'old_status' => 'pending_broker', 'new_status' => 'accepted', 'created_at' => '2031-05-02 09:30:00'],
+        ]);
+        Sanctum::actingAs($admin);
+
+        $rows = collect($this->apiGet('/v2/admin/broker/exchanges?per_page=100')->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame('Brenda Broker', $rows[$decided]['broker_name']);
+        $this->assertStringStartsWith('2031-05-02 09:30:00', (string) $rows[$decided]['broker_decided_at']);
+        $this->assertNull($rows[$undecided]['broker_name']);
+        $this->assertNull($rows[$undecided]['broker_decided_at']);
     }
 
     // RISK TAGS — GET /v2/admin/broker/risk-tags

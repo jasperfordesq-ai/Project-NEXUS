@@ -44,12 +44,6 @@ import {
   Progress,
   Button,
   Chip,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Avatar,
   Tabs,
   Tab,
@@ -61,6 +55,9 @@ import {
   BrokerSkeleton,
   BrokerStatusChip,
 } from '../components';
+import { MatchRejectModal } from '../components/exchanges/MatchRejectModal';
+import { MemberName } from '../BrokerMemberWindow';
+import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
 
 // Score color helper — mirrors the semantic scale used platform-wide.
 function scoreColor(score: number): 'danger' | 'warning' | 'success' {
@@ -94,17 +91,17 @@ export function MatchApprovalsPage() {
   const [stats, setStats] = useState<MatchApprovalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Action state
+  // Action state. The reject modal is shared with the detail page
+  // (../components/exchanges/MatchRejectModal).
   const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [rejectModal, setRejectModal] = useState<{ item: MatchApproval } | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
-  const [rejectLoading, setRejectLoading] = useState(false);
+  const [rejecting, setRejecting] = useState<MatchApproval | null>(null);
 
   // Every request is wrapped: until Oct 2026 a thrown request escaped these
   // loaders and left the spinner on for ever, and a failed stats call left the
-  // cards reading "0" as if the queue were empty.
-  const loadItems = useCallback(async () => {
-    setLoading(true);
+  // cards reading "0" as if the queue were empty. A `quiet` load (auto-refresh
+  // after a write, tab focus, interval) keeps the rows on screen.
+  const loadItems = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     setLoadError(false);
     try {
       const res = await adminMatching.getApprovals({
@@ -135,8 +132,8 @@ export function MatchApprovalsPage() {
     }
   }, [page, status]);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
+  const loadStats = useCallback(async (quiet = false) => {
+    if (!quiet) setStatsLoading(true);
     try {
       const res = await adminMatching.getApprovalStats(30);
       if (res.success && res.data) {
@@ -158,11 +155,11 @@ export function MatchApprovalsPage() {
   }, []);
 
   useEffect(() => {
-    loadItems();
+    void loadItems();
   }, [loadItems]);
 
   useEffect(() => {
-    loadStats();
+    void loadStats();
   }, [loadStats]);
 
   const setStatus = (next: string) => {
@@ -171,9 +168,13 @@ export function MatchApprovalsPage() {
   };
 
   const refreshAll = () => {
-    loadItems();
-    loadStats();
+    void loadItems();
+    void loadStats();
   };
+  useBrokerAutoRefresh(() => {
+    void loadItems(true);
+    void loadStats(true);
+  });
 
   const handleApprove = async (item: MatchApproval) => {
     setActionLoading(item.id);
@@ -192,33 +193,6 @@ export function MatchApprovalsPage() {
     }
   };
 
-  const handleReject = async () => {
-    if (!rejectModal) return;
-    if (!rejectReason.trim()) {
-      toast.error(t('matching.reject_reason_required'));
-      return;
-    }
-
-    setRejectLoading(true);
-    try {
-      const res = await adminMatching.rejectMatch(rejectModal.item.id, rejectReason.trim());
-      if (res.success) {
-        toast.success(t('matching.rejected_toast'));
-        // Close only on success — a failed request keeps the modal and the
-        // typed reason on screen so the broker can retry.
-        setRejectModal(null);
-        setRejectReason('');
-        refreshAll();
-      } else {
-        toast.error(res.error || t('matching.reject_failed'));
-      }
-    } catch {
-      toast.error(t('matching.reject_failed'));
-    } finally {
-      setRejectLoading(false);
-    }
-  };
-
   const columns: Column<MatchApproval>[] = [
     {
       key: 'match',
@@ -227,12 +201,16 @@ export function MatchApprovalsPage() {
         <div className="flex items-center gap-2">
           <Avatar src={item.user_1_avatar || undefined} name={item.user_1_name} size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{item.user_1_name}</p>
+            <p className="truncate text-sm font-medium text-foreground">
+              <MemberName userId={item.user_1_id} name={item.user_1_name} />
+            </p>
           </div>
           <ArrowLeftRight size={14} className="shrink-0 text-muted" aria-hidden="true" />
           <Avatar src={item.user_2_avatar || undefined} name={item.user_2_name} size="sm" className="shrink-0" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{item.user_2_name}</p>
+            <p className="truncate text-sm font-medium text-foreground">
+              <MemberName userId={item.user_2_id} name={item.user_2_name} />
+            </p>
           </div>
         </div>
       ),
@@ -304,10 +282,7 @@ export function MatchApprovalsPage() {
                 isIconOnly
                 size="sm"
                 variant="danger"
-                onPress={() => {
-                  setRejectModal({ item });
-                  setRejectReason('');
-                }}
+                onPress={() => setRejecting(item)}
                 aria-label={t('matching.reject')}
               >
                 <XCircle size={14} />
@@ -346,41 +321,7 @@ export function MatchApprovalsPage() {
           {t('matching.refresh')}
         </Button>
       }
-    >
-      {/* Stats row */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <BrokerStatCard
-          label={t('matching.stat_pending')}
-          value={stats ? stats.pending_count : null}
-          icon={Clock}
-          color="warning"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_approved')}
-          value={stats ? stats.approved_count : null}
-          icon={CheckCircle}
-          color="success"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_rejected')}
-          value={stats ? stats.rejected_count : null}
-          icon={XCircle}
-          color="danger"
-          loading={statsLoading}
-        />
-        <BrokerStatCard
-          label={t('matching.stat_approval_rate')}
-          value={stats ? `${stats.approval_rate}%` : null}
-          icon={TrendingUp}
-          color="accent"
-          loading={statsLoading}
-        />
-      </div>
-
-      {/* Status tabs — deep-linkable */}
-      <div className="mb-4 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
+      toolbar={
         <Tabs
           aria-label={t('matching.tabs_aria')}
           selectedKey={status}
@@ -430,6 +371,38 @@ export function MatchApprovalsPage() {
             }
           />
         </Tabs>
+      }
+    >
+      {/* Stats row */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <BrokerStatCard
+          label={t('matching.stat_pending')}
+          value={stats ? stats.pending_count : null}
+          icon={Clock}
+          color="warning"
+          loading={statsLoading}
+        />
+        <BrokerStatCard
+          label={t('matching.stat_approved')}
+          value={stats ? stats.approved_count : null}
+          icon={CheckCircle}
+          color="success"
+          loading={statsLoading}
+        />
+        <BrokerStatCard
+          label={t('matching.stat_rejected')}
+          value={stats ? stats.rejected_count : null}
+          icon={XCircle}
+          color="danger"
+          loading={statsLoading}
+        />
+        <BrokerStatCard
+          label={t('matching.stat_approval_rate')}
+          value={stats ? `${stats.approval_rate}%` : null}
+          icon={TrendingUp}
+          color="accent"
+          loading={statsLoading}
+        />
       </div>
 
       {initialLoad ? (
@@ -473,63 +446,10 @@ export function MatchApprovalsPage() {
         />
       )}
 
-      {/* Reject modal with reason */}
-      <Modal
-        isOpen={!!rejectModal}
-        onClose={() => {
-          setRejectModal(null);
-          setRejectReason('');
-        }}
-        size="md"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <XCircle size={20} className="text-danger" />
-            {t('matching.reject')}
-          </ModalHeader>
-          <ModalBody>
-            {rejectModal && (
-              <div className="mb-3">
-                <p className="text-sm text-muted">
-                  {t('matching.rejecting_between', {
-                    user1: rejectModal.item.user_1_name,
-                    user2: rejectModal.item.user_2_name,
-                  })}
-                </p>
-              </div>
-            )}
-            <Textarea
-              label={t('matching.reject_reason_label')}
-              placeholder={t('matching.reject_reason_placeholder')}
-              value={rejectReason}
-              onValueChange={setRejectReason}
-              variant="secondary"
-              minRows={3}
-              isRequired
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="tertiary"
-              onPress={() => {
-                setRejectModal(null);
-                setRejectReason('');
-              }}
-              isDisabled={rejectLoading}
-            >
-              {t('matching.cancel')}
-            </Button>
-            <Button
-              variant="danger"
-              onPress={handleReject}
-              isLoading={rejectLoading}
-              isDisabled={!rejectReason.trim()}
-            >
-              {t('matching.reject')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Reject modal with reason — shared with the detail page */}
+      {rejecting && (
+        <MatchRejectModal match={rejecting} onClose={() => setRejecting(null)} onRejected={refreshAll} />
+      )}
     </BrokerPageShell>
   );
 }
