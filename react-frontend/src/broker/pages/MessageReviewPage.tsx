@@ -8,94 +8,75 @@
  * Review broker message copies with flagged/unreviewed filtering.
  * Parity: PHP BrokerControlsController::messages()
  *
- * Broker port retains the row-level "Quick view" detail modal that lets
- * brokers triage messages without leaving the list page, on top of the
- * admin's Review / Flag actions and navigation to the detail page.
+ * The list a broker works through most. KPI header (whole-queue totals, each
+ * the same number its tab shows), deep-linkable status tabs (?status=), a
+ * date range, keyboard triage (j / k / Enter / r / f), bulk "Mark reviewed"
+ * for routine copies only, CSV export of the current filter, a quick view
+ * that reviews without leaving the page, and a quiet auto-refresh so the
+ * list never disagrees with the sidebar badge.
  *
- * Restyled to the broker design language: BrokerPageShell frame, KPI header
- * (global unreviewed count from the existing unreviewed-count endpoint plus
- * in-view flagged/reviewed tallies), deep-linkable status tabs (?status=),
- * avatar sender → recipient cells, severity chips, shaped skeleton loading,
- * per-filter empty states and an honest error state with retry.
+ * The flag dialog, quick view, columns, tabs, KPI cards and date filter live
+ * in `../components/messages` (shared with the message page and the archive).
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import ArrowRight from 'lucide-react/icons/arrow-right';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
-import Clock from 'lucide-react/icons/clock';
-import Eye from 'lucide-react/icons/eye';
-import Flag from 'lucide-react/icons/flag';
-import Inbox from 'lucide-react/icons/inbox';
+import Download from 'lucide-react/icons/download';
 import MessageSquare from 'lucide-react/icons/message-square';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import SearchX from 'lucide-react/icons/search-x';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Sparkles from 'lucide-react/icons/sparkles';
-import X from 'lucide-react/icons/x';
 import type { LucideIcon } from 'lucide-react';
 
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { adminBroker } from '@/admin/api/adminApi';
-import { DataTable, type Column } from '@/admin/components';
-import type { BrokerMessage, BrokerMessageDetail } from '@/admin/api/types';
+import { BulkActionToolbar, DataTable } from '@/admin/components';
+import type { BrokerMessage } from '@/admin/api/types';
+import { Button } from '@/components/ui';
+import { useBrokerAutoRefresh } from '@/broker/useBrokerAutoRefresh';
+import { useCsvExport } from '@/broker/useCsvExport';
+import { useHotkey } from '@/broker/useHotkey';
+import { BrokerPageShell, BrokerEmptyState, BrokerSkeleton, type BrokerStatColor } from '../components';
 import {
-  Avatar,
-  Button,
-  Chip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Select,
-  SelectItem,
-  Separator,
-  Tabs,
-  Tab,
-  Textarea,
-} from '@/components/ui';
-import {
-  BrokerPageShell,
-  BrokerStatCard,
-  BrokerEmptyState,
-  BrokerSkeleton,
-  BrokerStatusChip,
-  type BrokerStatColor,
-} from '../components';
+  BrokerDateRangeFilter,
+  FlagMessageModal,
+  HIGHLIGHT_ATTR,
+  MESSAGE_FILTERS,
+  MESSAGE_QUEUE_FILTERS,
+  MessageHotkeyHints,
+  MessageKpiCards,
+  MessageQuickView,
+  MessageStatusTabs,
+  buildMessageColumns,
+  buildMessageExportColumns,
+  type DateRangeValue,
+  type MessageFilter,
+  type MessageQueueTotals,
+} from '../components/messages';
 
-// Flag severities (info / warning / concern / urgent, and the older
-// low…critical scale) all render through BrokerStatusChip, whose one colour
-// map the Message detail and Archive pages read too.
+type MessagesParams = Parameters<typeof adminBroker.getMessages>[0];
+type MessagesResponse = Awaited<ReturnType<typeof adminBroker.getMessages>>;
 
 /** Reads the paginated total out of a getMessages response. */
-function readTotal(res: Awaited<ReturnType<typeof adminBroker.getMessages>>): number | null {
+function readTotal(res: MessagesResponse): number | null {
   if (!res.success || !Array.isArray(res.data)) return null;
   const meta = res.meta as Record<string, unknown> | undefined;
   const value = Number(meta?.total ?? meta?.total_items ?? res.data.length);
   return Number.isFinite(value) ? value : null;
 }
 
-// The active tab is driven by the URL so deep-links from the broker
-// dashboard stat cards land on the right filter.
-// `urgent` = flagged and not yet reviewed: what the dashboard's Safeguarding
-// Alerts card counts. It replaced the safeguarding "Flagged messages" page
-// (October 2026), which listed these same copies a second time.
-const ALLOWED_FILTERS = ['unreviewed', 'urgent', 'flagged', 'reviewed', 'all'] as const;
-type MessageFilter = (typeof ALLOWED_FILTERS)[number];
+const EXPORT_PAGE_SIZE = 100;
 
 // Per-filter empty states — an empty review queue is good news (success),
 // an empty history filter is just neutral.
-const EMPTY_META: Record<
-  MessageFilter,
-  { icon: LucideIcon; color: BrokerStatColor; titleKey: string; hintKey: string }
-> = {
+const EMPTY_META: Record<MessageFilter, { icon: LucideIcon; color: BrokerStatColor; titleKey: string; hintKey: string }> = {
   unreviewed: { icon: Sparkles, color: 'success', titleKey: 'messages.empty_unreviewed_title', hintKey: 'messages.empty_unreviewed_hint' },
   urgent: { icon: ShieldCheck, color: 'success', titleKey: 'messages.empty_urgent_title', hintKey: 'messages.empty_urgent_hint' },
   flagged: { icon: ShieldCheck, color: 'success', titleKey: 'messages.empty_flagged_title', hintKey: 'messages.empty_flagged_hint' },
@@ -108,28 +89,26 @@ export function MessageReview() {
   usePageTitle(t('messages.title'));
   const { tenantPath } = useTenant();
   const toast = useToast();
+  const navigate = useNavigate();
 
+  // The active tab is driven by the URL so deep-links from the broker
+  // dashboard stat cards land on the right filter.
   const [searchParams, setSearchParams] = useSearchParams();
-
   const urlStatus = searchParams.get('status') as MessageFilter | null;
-  const filter: MessageFilter =
-    urlStatus && ALLOWED_FILTERS.includes(urlStatus) ? urlStatus : 'unreviewed';
+  const filter: MessageFilter = urlStatus && MESSAGE_FILTERS.includes(urlStatus) ? urlStatus : 'unreviewed';
   const setFilter = useCallback(
     (next: MessageFilter) => {
       setSearchParams(
         (prev) => {
           const params = new URLSearchParams(prev);
-          if (next === 'unreviewed') {
-            params.delete('status');
-          } else {
-            params.set('status', next);
-          }
+          if (next === 'unreviewed') params.delete('status');
+          else params.set('status', next);
           return params;
         },
-        { replace: true }
+        { replace: true },
       );
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   const [items, setItems] = useState<BrokerMessage[]>([]);
@@ -139,11 +118,14 @@ export function MessageReview() {
   const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
   const [reviewingId, setReviewingId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: null, to: null });
 
   // Server-side search over the message text and both people's names.
-  // Debounced so typing doesn't fire a request on every keystroke.
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  // Debounced so typing doesn't fire a request on every keystroke. `?q=` seeds
+  // it so another page (an exchange, a member) can link straight to a search.
+  const initialSearch = (searchParams.get('q') ?? '').trim();
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   useEffect(() => {
     const handle = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(handle);
@@ -152,35 +134,29 @@ export function MessageReview() {
     setSearch(value);
     setPage(1);
   }, []);
+  const handleDateRange = useCallback((next: DateRangeValue) => {
+    setDateRange(next);
+    setPage(1);
+  }, []);
 
   // Global unreviewed KPI — from the existing broker messages stats endpoint.
   const [unreviewedCount, setUnreviewedCount] = useState<number | null>(null);
   const [countLoading, setCountLoading] = useState(true);
 
   // Whole-queue totals for the Flagged / Reviewed cards and the Urgent tab
-  // badge. There is no stats endpoint for these, so each is a one-page probe
+  // badge. There is no stats endpoint for these, so each is a one-row probe
   // of the list endpoint read for meta.total only — the same number its tab
   // shows, so a card can never disagree with its list.
-  const [queueTotals, setQueueTotals] = useState<{
-    flagged: number | null;
-    reviewed: number | null;
-    urgent: number | null;
-  }>({ flagged: null, reviewed: null, urgent: null });
+  const [queueTotals, setQueueTotals] = useState<MessageQueueTotals>({ flagged: null, reviewed: null, urgent: null });
   const [totalsLoading, setTotalsLoading] = useState(true);
 
-  // Flag modal state
+  // Dialogs
+  const [flagTargetId, setFlagTargetId] = useState<number | null>(null);
   const [flagModalOpen, setFlagModalOpen] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
-  const [flagReason, setFlagReason] = useState('');
-  const [flagSeverity, setFlagSeverity] = useState<'info' | 'warning' | 'concern' | 'urgent'>('concern');
-  const [flagLoading, setFlagLoading] = useState(false);
+  const [quickViewItem, setQuickViewItem] = useState<BrokerMessage | null>(null);
 
-  // Detail modal state (broker-only quick-view UX)
-  const [detailItem, setDetailItem] = useState<BrokerMessage | null>(null);
-  const [detail, setDetail] = useState<BrokerMessageDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailReviewNotes, setDetailReviewNotes] = useState('');
-  const [detailReviewLoading, setDetailReviewLoading] = useState(false);
+  // Keyboard: the row j / k have landed on, by id so a reload keeps it.
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
 
   // Stash the latest `t`/`toast` in refs so the fetch effect is keyed on the
   // page/filter params only — keeping them in the dep array re-fetches on
@@ -190,45 +166,56 @@ export function MessageReview() {
   tRef.current = t;
   toastRef.current = toast;
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const res = await adminBroker.getMessages({
+  // The current filter as the list endpoint takes it. `from`/`to` were added
+  // to messages() in October 2026; the client type does not know them yet.
+  const listParams = useCallback(
+    (overrides: Partial<MessagesParams> = {}): MessagesParams =>
+      ({
         page,
         filter: filter === 'all' ? undefined : filter,
         q: debouncedSearch || undefined,
-      });
-      if (res.success && Array.isArray(res.data)) {
-        setItems(res.data as BrokerMessage[]);
-        const meta = res.meta as Record<string, unknown> | undefined;
-        setTotal(Number(meta?.total ?? meta?.total_items ?? res.data.length));
-      } else {
-        // A success:false answer is a failure, not an empty queue.
-        setLoadError(true);
-      }
-    } catch {
-      setLoadError(true);
-      toastRef.current.error(tRef.current('messages.load_failed'));
-    } finally {
-      setLoading(false);
-      setHasLoaded(true);
-    }
-  }, [page, filter, debouncedSearch]);
+        from: dateRange.from ?? undefined,
+        to: dateRange.to ?? undefined,
+        ...overrides,
+      }) as MessagesParams,
+    [page, filter, debouncedSearch, dateRange.from, dateRange.to],
+  );
 
-  const loadQueueTotals = useCallback(async () => {
-    setTotalsLoading(true);
+  // `quiet` keeps the rows on screen while new ones load (auto-refresh): no
+  // skeleton, no spinner, the page stays where the broker left it.
+  const loadItems = useCallback(
+    async (quiet = false) => {
+      if (!quiet) setLoading(true);
+      setLoadError(false);
+      try {
+        const res = await adminBroker.getMessages(listParams());
+        if (res.success && Array.isArray(res.data)) {
+          setItems(res.data as BrokerMessage[]);
+          setTotal(readTotal(res) ?? res.data.length);
+        } else {
+          // A success:false answer is a failure, not an empty queue.
+          setLoadError(true);
+        }
+      } catch {
+        setLoadError(true);
+        if (!quiet) toastRef.current.error(tRef.current('messages.load_failed'));
+      } finally {
+        setLoading(false);
+        setHasLoaded(true);
+      }
+    },
+    [listParams],
+  );
+
+  const loadQueueTotals = useCallback(async (quiet = false) => {
+    if (!quiet) setTotalsLoading(true);
     try {
       const [flaggedRes, reviewedRes, urgentRes] = await Promise.all([
-        adminBroker.getMessages({ page: 1, filter: 'flagged' }),
-        adminBroker.getMessages({ page: 1, filter: 'reviewed' }),
-        adminBroker.getMessages({ page: 1, filter: 'urgent' }),
+        adminBroker.getMessages({ page: 1, per_page: 1, filter: 'flagged' }),
+        adminBroker.getMessages({ page: 1, per_page: 1, filter: 'reviewed' }),
+        adminBroker.getMessages({ page: 1, per_page: 1, filter: 'urgent' }),
       ]);
-      setQueueTotals({
-        flagged: readTotal(flaggedRes),
-        reviewed: readTotal(reviewedRes),
-        urgent: readTotal(urgentRes),
-      });
+      setQueueTotals({ flagged: readTotal(flaggedRes), reviewed: readTotal(reviewedRes), urgent: readTotal(urgentRes) });
     } catch {
       // KPI header degrades to em-dashes; the list load owns error messaging.
     } finally {
@@ -236,8 +223,8 @@ export function MessageReview() {
     }
   }, []);
 
-  const loadUnreviewedCount = useCallback(async () => {
-    setCountLoading(true);
+  const loadUnreviewedCount = useCallback(async (quiet = false) => {
+    if (!quiet) setCountLoading(true);
     try {
       const res = await adminBroker.getUnreviewedCount();
       if (res.success && res.data) {
@@ -252,49 +239,62 @@ export function MessageReview() {
   }, []);
 
   useEffect(() => {
-    loadItems();
+    void loadItems();
   }, [loadItems]);
-
   useEffect(() => {
-    loadUnreviewedCount();
+    void loadUnreviewedCount();
   }, [loadUnreviewedCount]);
-
   useEffect(() => {
-    loadQueueTotals();
+    void loadQueueTotals();
   }, [loadQueueTotals]);
 
-  const refreshAll = () => {
-    loadItems();
-    loadUnreviewedCount();
-    loadQueueTotals();
-  };
+  const refreshAll = useCallback(
+    (quiet = false) => {
+      void loadItems(quiet);
+      void loadUnreviewedCount(quiet);
+      void loadQueueTotals(quiet);
+    },
+    [loadItems, loadUnreviewedCount, loadQueueTotals],
+  );
 
-  // Bulk review — Unreviewed tab only. The server skips flagged copies (a
-  // concern is read one at a time) and the broker's own conversations.
+  // After any broker write, on return to the tab, and once a minute: refresh
+  // quietly, so the list and the sidebar badge never disagree.
+  useBrokerAutoRefresh(() => refreshAll(true));
+
+  // ── Selection + bulk review (Unreviewed tab only) ─────────────────────────
+  // A concern is read, never ticked off: flagged copies are dropped from the
+  // selection client-side (and the server skips them too, belt and braces).
   const canBulkReview = filter === 'unreviewed';
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   useEffect(() => {
     setSelectedIds(new Set());
+    setHighlightedId(null);
   }, [filter, page]);
 
+  const selectedRows = items.filter((item) => selectedIds.has(String(item.id)));
+  const routineSelected = selectedRows.filter((item) => !item.flagged);
+
   const handleBulkReview = async () => {
-    const ids = Array.from(selectedIds).map(Number).filter((n) => Number.isFinite(n) && n > 0);
-    if (ids.length === 0) return;
+    const flaggedCount = selectedRows.length - routineSelected.length;
+    if (flaggedCount > 0) toast.info(t('messages.bulk_skipped_flagged', { count: flaggedCount }));
+    const ids = routineSelected.map((item) => item.id);
+    if (ids.length === 0) {
+      if (flaggedCount === 0) toast.info(t('messages.bulk_none_routine'));
+      setSelectedIds(new Set());
+      return;
+    }
     setBulkLoading(true);
     try {
       const res = await adminBroker.reviewMessagesBulk(ids);
       if (res?.success && res.data) {
-        const done = res.data.reviewed.length;
-        const flagged = res.data.skipped.filter((s) => s.reason === 'flagged').length;
-        const other = res.data.skipped.length - flagged;
-        toast.success(t('messages.bulk_reviewed', { count: done }));
-        if (flagged > 0) toast.info(t('messages.bulk_skipped_flagged', { count: flagged }));
+        const skippedFlagged = res.data.skipped.filter((s) => s.reason === 'flagged').length;
+        const other = res.data.skipped.length - skippedFlagged;
+        toast.success(t('messages.bulk_reviewed', { count: res.data.reviewed.length }));
+        if (skippedFlagged > 0) toast.info(t('messages.bulk_skipped_flagged', { count: skippedFlagged }));
         if (other > 0) toast.info(t('messages.bulk_skipped_other', { count: other }));
         setSelectedIds(new Set());
-        loadItems();
-        loadUnreviewedCount();
-        loadQueueTotals();
+        refreshAll(true);
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -305,15 +305,15 @@ export function MessageReview() {
     }
   };
 
+  // ── Row actions ───────────────────────────────────────────────────────────
+
   const handleReview = async (id: number) => {
     setReviewingId(id);
     try {
       const res = await adminBroker.reviewMessage(id);
       if (res?.success) {
         toast.success(t('messages.reviewed_success'));
-        loadItems();
-        loadUnreviewedCount();
-        loadQueueTotals();
+        refreshAll(true);
       } else {
         toast.error(res?.error || t('messages.review_failed'));
       }
@@ -325,218 +325,83 @@ export function MessageReview() {
   };
 
   const openFlagModal = (id: number) => {
-    setSelectedMessageId(id);
-    setFlagReason('');
-    setFlagSeverity('concern');
+    setFlagTargetId(id);
     setFlagModalOpen(true);
   };
 
-  const handleFlag = async () => {
-    if (!selectedMessageId) return;
-    if (!flagReason.trim()) {
-      toast.error(t('messages.flag_reason_required'));
-      return;
-    }
-    setFlagLoading(true);
-    try {
-      const res = await adminBroker.flagMessage(selectedMessageId, flagReason, flagSeverity);
-      if (res?.success) {
-        toast.success(t('messages.flag_success'));
-        setFlagModalOpen(false);
-        loadItems();
-        loadQueueTotals();
-      } else {
-        toast.error(res?.error || t('messages.flag_failed'));
-      }
-    } catch {
-      toast.error(t('messages.flag_failed'));
-    } finally {
-      setFlagLoading(false);
-    }
-  };
-
-  // ── Quick-view detail modal (broker enhancement) ──────────────────────────
-
-  const openDetail = useCallback(async (item: BrokerMessage) => {
-    setDetailItem(item);
-    setDetail(null);
-    setDetailReviewNotes('');
-    setDetailLoading(true);
-    try {
-      const res = await adminBroker.showMessage(item.id);
-      if (res.success && res.data) {
-        setDetail(res.data as BrokerMessageDetail);
-      }
-    } catch {
-      // Fall back to list-row info if detail fetch fails
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
-
-  const closeDetail = useCallback(() => {
-    setDetailItem(null);
-    setDetail(null);
-    setDetailReviewNotes('');
-  }, []);
-
-  const handleDetailReview = useCallback(async () => {
-    if (!detailItem) return;
-    setDetailReviewLoading(true);
-    try {
-      const res = await adminBroker.reviewMessage(detailItem.id, detailReviewNotes || undefined);
-      if (res?.success) {
-        toast.success(t('messages.reviewed_success'));
-        closeDetail();
-        loadItems();
-        loadUnreviewedCount();
-        loadQueueTotals();
-      } else {
-        toast.error(res?.error || t('messages.review_failed'));
-      }
-    } catch {
-      toast.error(t('messages.review_failed'));
-    } finally {
-      setDetailReviewLoading(false);
-    }
-  }, [detailItem, detailReviewNotes, closeDetail, loadItems, loadUnreviewedCount, loadQueueTotals, toast, t]);
-
-  const isDetailReviewed = !!(detailItem?.reviewed_at);
-
-  // Severity chip — one shared map for every broker page (see BrokerStatusChip).
-  const renderSeverity = (severityRaw: string) => <BrokerStatusChip status={severityRaw} />;
-
-  // Copy reasons are slugs (first_contact, random_sample…); the table column
-  // and the quick view show the same translated label.
-  const copyReasonLabel = (reason: string) =>
-    t(`messages.copy_reason_${reason}`, { defaultValue: reason.replace(/_/g, ' ') });
-
-  const emptyMeta = EMPTY_META[filter];
-
   // Carry the tab into the message, so its "Next" stays in the same queue.
   const detailPath = (messageId: number) =>
-    ['unreviewed', 'urgent', 'flagged'].includes(filter)
-      ? `/broker/messages/${messageId}?queue=${filter}`
-      : `/broker/messages/${messageId}`;
+    MESSAGE_QUEUE_FILTERS.includes(filter) ? `/broker/messages/${messageId}?queue=${filter}` : `/broker/messages/${messageId}`;
 
-  const columns: Column<BrokerMessage>[] = [
+  // ── Keyboard triage ───────────────────────────────────────────────────────
+  // j / k move the highlight, Enter opens, r reviews a routine copy, f flags.
+  // A flagged copy is never reviewed from the keyboard: it is read first.
+
+  const highlighted = items.find((item) => item.id === highlightedId) ?? null;
+  const moveHighlight = (step: 1 | -1) => {
+    if (items.length === 0) return;
+    const index = items.findIndex((item) => item.id === highlightedId);
+    const next = index === -1 ? (step === 1 ? 0 : items.length - 1) : Math.min(items.length - 1, Math.max(0, index + step));
+    setHighlightedId(items[next]?.id ?? null);
+  };
+  useHotkey(
     {
-      key: 'sender_name',
-      label: t('messages.col_participants'),
-      sortable: true,
-      render: (item) => (
-        <div className="flex min-w-0 items-center gap-2">
-          <Avatar name={item.sender_name} size="sm" className="shrink-0" />
-          <Link
-            to={tenantPath(detailPath(item.id))}
-            className="min-w-0 truncate text-sm font-medium text-accent hover:underline"
-          >
-            {item.sender_name}
-          </Link>
-          <ArrowRight size={14} className="shrink-0 text-muted" aria-hidden="true" />
-          <Avatar name={item.receiver_name} size="sm" className="shrink-0" />
-          <span className="min-w-0 truncate text-sm font-medium text-foreground">
-            {item.receiver_name}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: 'message_body',
-      label: t('messages.col_preview'),
-      // The preview opens the message too; until Oct 2026 only the sender's
-      // name did, and brokers clicked the text and nothing happened.
-      render: (item) => (
-        <Link
-          to={tenantPath(detailPath(item.id))}
-          className="line-clamp-1 min-w-0 max-w-[240px] text-sm text-muted hover:text-foreground hover:underline"
-        >
-          {item.message_body ? item.message_body.substring(0, 80) + (item.message_body.length > 80 ? '…' : '') : '—'}
-        </Link>
-      ),
-    },
-    {
-      key: 'copy_reason',
-      label: t('messages.col_reason'),
-      render: (item) => (
-        item.copy_reason ? (
-          <Chip size="sm" variant="tertiary" color="default">
-            {copyReasonLabel(item.copy_reason)}
-          </Chip>
-        ) : <span className="text-sm text-muted">—</span>
-      ),
-    },
-    {
-      key: 'flagged',
-      hideBelow: '2xl',
-      label: t('messages.col_flagged'),
-      render: (item) => {
-        if (!item.flagged) {
-          return <span className="text-sm text-muted">{t('messages.flagged_no')}</span>;
+      j: () => moveHighlight(1),
+      k: () => moveHighlight(-1),
+      Enter: () => {
+        if (highlighted) navigate(tenantPath(detailPath(highlighted.id)));
+      },
+      r: () => {
+        if (!highlighted || highlighted.reviewed_at) return;
+        if (highlighted.flagged) {
+          toast.info(t('messages.hotkey_flagged_blocked'));
+          return;
         }
-        return renderSeverity(item.flag_severity || 'concern');
+        void handleReview(highlighted.id);
+      },
+      f: () => {
+        if (highlighted && !highlighted.flagged) openFlagModal(highlighted.id);
       },
     },
-    {
-      key: 'reviewed_at',
-      label: t('messages.col_status'),
-      render: (item) => (
-        <BrokerStatusChip status={item.reviewed_at ? 'reviewed' : 'unreviewed'} />
-      ),
-    },
-    {
-      key: 'created_at',
-      label: t('messages.col_date'),
-      sortable: true,
-      render: (item) => (
-        <span className="text-sm tabular-nums text-muted">
-          {formatServerDate(item.created_at)}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      label: t('messages.col_actions'),
-      render: (item) => (
-        <div className="flex gap-1">
-          {!item.reviewed_at && (
-            <Button
-              size="sm"
-              variant="tertiary"
-              color="success"
-              startContent={<CheckCircle size={14} />}
-              onPress={() => handleReview(item.id)}
-              isLoading={reviewingId === item.id}
-              aria-label={t('messages.mark_reviewed_aria')}
-            >
-              {t('messages.review_action')}
-            </Button>
-          )}
-          <Button
-            isIconOnly
-            size="sm"
-            variant="tertiary"
-            onPress={() => openDetail(item)}
-            aria-label={t('messages.quick_view_aria')}
-          >
-            <Eye size={14} />
-          </Button>
-          {!item.flagged && (
-            <Button
-              size="sm"
-              variant="tertiary"
-              color="warning"
-              startContent={<Flag size={14} />}
-              onPress={() => openFlagModal(item.id)}
-              aria-label={t('messages.flag_message_aria')}
-            >
-              {t('messages.flag_action')}
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
+    { enabled: hasLoaded && !loadError },
+  );
+  useEffect(() => {
+    if (highlightedId === null) return;
+    const row = document.querySelector(`[${HIGHLIGHT_ATTR}="true"]`);
+    if (row && typeof row.scrollIntoView === 'function') row.scrollIntoView({ block: 'nearest' });
+  }, [highlightedId]);
+
+  // ── Export (current filter, paged through the same endpoint) ─────────────
+
+  const csv = useCsvExport();
+  const exportCsv = () => {
+    const parts = ['broker-messages', filter];
+    if (debouncedSearch) parts.push('search');
+    if (dateRange.from && dateRange.to) parts.push(`${dateRange.from}_${dateRange.to}`);
+    void csv.run<BrokerMessage>({
+      filename: parts.join('_'),
+      columns: buildMessageExportColumns(t),
+      fetchPage: async (exportPage) => {
+        const res = await adminBroker.getMessages(listParams({ page: exportPage, per_page: EXPORT_PAGE_SIZE }));
+        if (!res.success || !Array.isArray(res.data)) throw new Error('export');
+        const pageTotal = readTotal(res) ?? 0;
+        return { rows: res.data as BrokerMessage[], hasMore: exportPage * EXPORT_PAGE_SIZE < pageTotal };
+      },
+    });
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const emptyMeta = EMPTY_META[filter];
+  const columns = buildMessageColumns({
+    t,
+    detailHref: (id) => tenantPath(detailPath(id)),
+    highlightedId,
+    reviewingId,
+    onReview: (id) => void handleReview(id),
+    onQuickView: setQuickViewItem,
+    onFlag: openFlagModal,
+  });
 
   return (
     <BrokerPageShell
@@ -550,120 +415,62 @@ export function MessageReview() {
           <Button
             variant="tertiary"
             size="sm"
-            startContent={<RefreshCw size={16} />}
-            onPress={refreshAll}
+            startContent={<Download size={16} aria-hidden="true" />}
+            onPress={exportCsv}
+            isLoading={csv.exporting}
+            isDisabled={!hasLoaded || loadError}
+          >
+            {csv.exporting ? t('common.exporting') : t('common.export_csv')}
+          </Button>
+          <Button
+            variant="tertiary"
+            size="sm"
+            startContent={<RefreshCw size={16} aria-hidden="true" />}
+            onPress={() => refreshAll()}
             isLoading={loading || countLoading || totalsLoading}
           >
             {t('common.refresh')}
           </Button>
         </>
       }
+      toolbar={
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+          <MessageStatusTabs
+            filter={filter}
+            onChange={(next) => {
+              setFilter(next);
+              setPage(1);
+            }}
+            unreviewedCount={unreviewedCount}
+            urgentCount={queueTotals.urgent}
+          />
+          <div className="flex flex-wrap items-center gap-3 px-1">
+            <MessageHotkeyHints
+              hints={[
+                { keys: ['j', 'k'], label: t('messages.hotkey_move') },
+                { keys: ['↵'], label: t('messages.hotkey_open') },
+                { keys: ['r'], label: t('messages.review_action') },
+                { keys: ['f'], label: t('messages.flag_action') },
+              ]}
+            />
+            <BrokerDateRangeFilter
+              value={dateRange}
+              onChange={handleDateRange}
+              label={t('messages.date_range_label')}
+              clearLabel={t('messages.date_range_clear')}
+            />
+          </div>
+        </div>
+      }
     >
-      {/* KPI header — whole-queue totals, each the same number its tab shows */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <BrokerStatCard
-          label={t('messages.stat_unreviewed')}
-          value={unreviewedCount}
-          icon={MessageSquareWarning}
-          color="warning"
-          loading={countLoading}
-          to={tenantPath('/broker/messages?status=unreviewed')}
-          description={t('messages.stat_unreviewed_hint')}
-        />
-        <BrokerStatCard
-          label={t('messages.stat_flagged_total')}
-          value={queueTotals.flagged}
-          icon={Flag}
-          color="danger"
-          loading={totalsLoading}
-          to={tenantPath('/broker/messages?status=flagged')}
-          description={t('messages.stat_flagged_total_hint')}
-        />
-        <BrokerStatCard
-          label={t('messages.stat_reviewed_total')}
-          value={queueTotals.reviewed}
-          icon={CheckCircle}
-          color="success"
-          loading={totalsLoading}
-          to={tenantPath('/broker/messages?status=reviewed')}
-          description={t('messages.stat_reviewed_total_hint')}
-        />
-        <BrokerStatCard
-          label={t('messages.stat_filtered')}
-          value={total}
-          icon={Inbox}
-          color="accent"
-          loading={!hasLoaded}
-          description={t('messages.stat_filtered_hint')}
-        />
-      </div>
-
-      {/* Status tabs — deep-linkable via ?status= */}
-      <div className="mb-4 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
-        <Tabs
-          aria-label={t('messages.review_tabs_aria')}
-          selectedKey={filter}
-          onSelectionChange={(key) => { setFilter(key as MessageFilter); setPage(1); }}
-          variant="underlined"
-          size="sm"
-        >
-          <Tab
-            key="unreviewed"
-            title={
-              <div className="flex items-center gap-2">
-                <Clock size={14} />
-                <span>{t('messages.tab_unreviewed')}</span>
-                {unreviewedCount !== null && unreviewedCount > 0 && (
-                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                    {unreviewedCount}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="urgent"
-            title={
-              <div className="flex items-center gap-2">
-                <AlertCircle size={14} />
-                <span>{t('messages.tab_urgent')}</span>
-                {queueTotals.urgent !== null && queueTotals.urgent > 0 && (
-                  <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
-                    {queueTotals.urgent}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="flagged"
-            title={
-              <div className="flex items-center gap-2">
-                <Flag size={14} />
-                <span>{t('messages.tab_flagged')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="reviewed"
-            title={
-              <div className="flex items-center gap-2">
-                <CheckCircle size={14} />
-                <span>{t('messages.tab_reviewed')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="all"
-            title={
-              <div className="flex items-center gap-2">
-                <MessageSquare size={14} />
-                <span>{t('messages.tab_all')}</span>
-              </div>
-            }
-          />
-        </Tabs>
-      </div>
+      <MessageKpiCards
+        unreviewedCount={unreviewedCount}
+        countLoading={countLoading}
+        queueTotals={queueTotals}
+        totalsLoading={totalsLoading}
+        filteredTotal={total}
+        hasLoaded={hasLoaded}
+      />
 
       {!hasLoaded ? (
         <BrokerSkeleton variant="table" />
@@ -676,275 +483,67 @@ export function MessageReview() {
           title={t('messages.error_title')}
           hint={t('messages.error_hint')}
           action={
-            <Button size="sm" variant="danger-soft" onPress={refreshAll}>
+            <Button size="sm" variant="danger-soft" onPress={() => refreshAll()}>
               {t('messages.retry')}
             </Button>
           }
         />
       ) : (
         <>
-        {canBulkReview && selectedIds.size > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-2.5 shadow-sm shadow-black/[0.03]">
-            <span className="text-sm font-medium tabular-nums text-foreground">
-              {t('messages.bulk_selected', { count: selectedIds.size })}
-            </span>
-            <span className="text-xs text-muted">{t('messages.bulk_hint')}</span>
-            <div className="flex-1" />
-            <Button
-              size="sm"
-              color="success"
-              variant="flat"
-              startContent={<CheckCircle size={14} aria-hidden="true" />}
-              onPress={handleBulkReview}
+          {canBulkReview && (
+            <BulkActionToolbar
+              selectedCount={selectedIds.size}
               isLoading={bulkLoading}
-            >
-              {t('messages.bulk_review')}
-            </Button>
-            <Button
-              size="sm"
-              variant="light"
-              isIconOnly
-              onPress={() => setSelectedIds(new Set())}
-              aria-label={t('messages.bulk_clear')}
-            >
-              <X size={16} />
-            </Button>
-          </div>
-        )}
-        <DataTable
-          stickyActions
-          mobileCards
-          selectable={canBulkReview}
-          selectedKeys={canBulkReview ? selectedIds : undefined}
-          onSelectionChange={canBulkReview ? setSelectedIds : undefined}
-          columns={columns}
-          data={items}
-          isLoading={loading}
-          searchable
-          searchPlaceholder={t('messages.search_placeholder')}
-          onSearch={handleSearch}
-          onRefresh={refreshAll}
-          totalItems={total}
-          page={page}
-          pageSize={20}
-          onPageChange={setPage}
-          emptyContent={
-            debouncedSearch ? (
-              <BrokerEmptyState
-                bare
-                icon={SearchX}
-                color="neutral"
-                title={t('messages.empty_search_title')}
-                hint={t('messages.empty_search_hint')}
-              />
-            ) : (
-              <BrokerEmptyState
-                bare
-                icon={emptyMeta.icon}
-                color={emptyMeta.color}
-                title={t(emptyMeta.titleKey)}
-                hint={t(emptyMeta.hintKey)}
-              />
-            )
-          }
-        />
+              onClearSelection={() => setSelectedIds(new Set())}
+              actions={[
+                {
+                  key: 'review',
+                  label: t('messages.bulk_review'),
+                  color: 'success',
+                  icon: <CheckCircle size={14} aria-hidden="true" />,
+                  confirmTitle: t('messages.bulk_review'),
+                  confirmMessage: t('messages.bulk_confirm_message', { count: routineSelected.length }),
+                  onConfirm: handleBulkReview,
+                },
+              ]}
+            />
+          )}
+          <DataTable
+            stickyActions
+            mobileCards
+            selectable={canBulkReview}
+            selectedKeys={canBulkReview ? selectedIds : undefined}
+            onSelectionChange={canBulkReview ? setSelectedIds : undefined}
+            columns={columns}
+            data={items}
+            isLoading={loading}
+            searchable
+            searchPlaceholder={t('messages.search_placeholder')}
+            onSearch={handleSearch}
+            onRefresh={() => refreshAll()}
+            totalItems={total}
+            page={page}
+            pageSize={20}
+            onPageChange={setPage}
+            emptyContent={
+              debouncedSearch || dateRange.from ? (
+                <BrokerEmptyState bare icon={SearchX} color="neutral" title={t('messages.empty_search_title')} hint={t('messages.empty_search_hint')} />
+              ) : (
+                <BrokerEmptyState bare icon={emptyMeta.icon} color={emptyMeta.color} title={t(emptyMeta.titleKey)} hint={t(emptyMeta.hintKey)} />
+              )
+            }
+          />
         </>
       )}
 
-      {/* Flag Message Modal */}
-      <Modal
+      <FlagMessageModal
+        messageId={flagTargetId}
         isOpen={flagModalOpen}
         onClose={() => setFlagModalOpen(false)}
-        size="md"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <Flag size={20} className="text-warning" aria-hidden="true" />
-            {t('messages.flag_modal_title')}
-          </ModalHeader>
-          <ModalBody>
-            <Textarea
-              label={t('messages.flag_reason_label')}
-              placeholder={t('messages.flag_reason_placeholder')}
-              value={flagReason}
-              onValueChange={setFlagReason}
-              minRows={3}
-              variant="bordered"
-              isRequired
-            />
-            <Select
-              label={t('messages.severity_label')}
-              selectedKeys={[flagSeverity]}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as 'info' | 'warning' | 'concern' | 'urgent';
-                if (val) setFlagSeverity(val);
-              }}
-              variant="bordered"
-            >
-              <SelectItem key="info" id="info">{t('messages.severity_info')}</SelectItem>
-              <SelectItem key="warning" id="warning">{t('messages.severity_warning')}</SelectItem>
-              <SelectItem key="concern" id="concern">{t('messages.severity_concern')}</SelectItem>
-              <SelectItem key="urgent" id="urgent">{t('messages.severity_urgent')}</SelectItem>
-            </Select>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="tertiary"
-              onPress={() => setFlagModalOpen(false)}
-              isDisabled={flagLoading}
-            >
-              {t('messages.cancel')}
-            </Button>
-            <Button
-              color="warning"
-              onPress={handleFlag}
-              isLoading={flagLoading}
-              isDisabled={!flagReason.trim()}
-              startContent={!flagLoading && <Flag size={14} />}
-            >
-              {t('messages.flag_action')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        onFlagged={() => refreshAll(true)}
+      />
 
-      {/* Quick-view Message Detail Modal (broker UX enhancement) */}
-      <Modal
-        isOpen={!!detailItem}
-        onClose={closeDetail}
-        size="2xl"
-        scrollBehavior="inside"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <MessageSquare size={18} className="shrink-0 text-accent" aria-hidden="true" />
-            <span>{t('messages.quick_view_title')}</span>
-          </ModalHeader>
-
-          <ModalBody className="gap-4">
-            {detailLoading && (
-              <p className="py-8 text-center text-sm text-muted">{t('messages.loading')}</p>
-            )}
-
-            {!detailLoading && detailItem && (
-              <>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="min-w-0">
-                    <p className="mb-1 text-xs font-medium uppercase text-muted">{t('messages.detail_from')}</p>
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Avatar name={detailItem.sender_name} size="sm" className="shrink-0" />
-                      <p className="truncate font-medium text-foreground">{detailItem.sender_name}</p>
-                    </div>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="mb-1 text-xs font-medium uppercase text-muted">{t('messages.detail_to')}</p>
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Avatar name={detailItem.receiver_name} size="sm" className="shrink-0" />
-                      <p className="truncate font-medium text-foreground">{detailItem.receiver_name}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-0.5 text-xs font-medium uppercase text-muted">{t('messages.detail_date')}</p>
-                    <p className="tabular-nums text-foreground">
-                      {formatServerDateTime(detailItem.sent_at ?? detailItem.created_at)}
-                    </p>
-                  </div>
-                  {(detailItem.flag_reason || detailItem.copy_reason) && (
-                    <div>
-                      <p className="mb-0.5 text-xs font-medium uppercase text-muted">{t('messages.detail_reason')}</p>
-                      <p className="text-foreground">
-                        {detailItem.flag_reason ||
-                          (detailItem.copy_reason ? copyReasonLabel(detailItem.copy_reason) : '—')}
-                      </p>
-                    </div>
-                  )}
-                  {detailItem.flag_severity && (
-                    <div>
-                      <p className="mb-0.5 text-xs font-medium uppercase text-muted">{t('messages.detail_severity')}</p>
-                      {renderSeverity(detailItem.flag_severity)}
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div>
-                  <p className="mb-2 text-xs font-medium uppercase text-muted">{t('messages.content_label')}</p>
-                  <div className="min-h-[80px] whitespace-pre-wrap rounded-lg bg-surface-secondary p-4 text-sm leading-relaxed text-foreground">
-                    {detail?.copy?.message_body || detailItem.message_body || '--'}
-                  </div>
-                </div>
-
-                {detail?.thread && detail.thread.length > 0 && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="mb-2 text-xs font-medium uppercase text-muted">
-                        {t('messages.conversation_label')} ({detail.thread.length})
-                      </p>
-                      <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
-                        {detail.thread.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className="rounded-md bg-surface-secondary px-3 py-2 text-sm"
-                          >
-                            <span className="mr-2 font-medium text-foreground">{msg.sender_name}</span>
-                            <span className="text-xs tabular-nums text-muted">
-                              {formatServerDateTime(msg.created_at)}
-                            </span>
-                            <p className="mt-1 whitespace-pre-wrap text-foreground">{msg.body}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {isDetailReviewed ? (
-                  <>
-                    <Separator />
-                    <div className="flex items-center gap-2 text-sm">
-                      <BrokerStatusChip status="reviewed" />
-                      <span className="tabular-nums text-muted">
-                        {formatServerDateTime(detailItem.reviewed_at!)}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Separator />
-                    <Textarea
-                      label={t('messages.review_notes_label')}
-                      placeholder={t('messages.review_notes_placeholder')}
-                      value={detailReviewNotes}
-                      onValueChange={setDetailReviewNotes}
-                      minRows={2}
-                      variant="bordered"
-                    />
-                  </>
-                )}
-              </>
-            )}
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="tertiary" onPress={closeDetail} isDisabled={detailReviewLoading}>
-              {t('messages.close')}
-            </Button>
-            {!isDetailReviewed && detailItem && (
-              <Button
-                color="primary"
-                startContent={<CheckCircle size={16} />}
-                isLoading={detailReviewLoading}
-                isDisabled={detailReviewLoading}
-                onPress={handleDetailReview}
-              >
-                {t('messages.mark_as_reviewed')}
-              </Button>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <MessageQuickView item={quickViewItem} onClose={() => setQuickViewItem(null)} onReviewed={() => refreshAll(true)} />
     </BrokerPageShell>
   );
 }

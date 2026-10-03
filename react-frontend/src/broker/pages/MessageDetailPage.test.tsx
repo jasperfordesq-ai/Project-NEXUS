@@ -15,6 +15,9 @@ const { mockAdminBroker } = vi.hoisted(() => ({
     reviewMessage: vi.fn(),
     flagMessage: vi.fn(),
     approveMessage: vi.fn(),
+    getMonitoring: vi.fn(),
+    setMonitoring: vi.fn(),
+    getMessages: vi.fn(),
   },
 }));
 
@@ -23,6 +26,8 @@ vi.mock('@/admin/api/adminApi', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+const mockBreadcrumb = vi.hoisted(() => vi.fn());
+vi.mock('@/broker/BrokerBreadcrumbContext', () => ({ useBrokerBreadcrumbLabel: mockBreadcrumb }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
@@ -76,6 +81,8 @@ const makeThread = (overrides: object[] = []) => [
 const makeCopy = (overrides = {}) => ({
   id: 7,
   original_message_id: 100,
+  sender_id: 11,
+  receiver_id: 12,
   sender_name: 'Alice Sender',
   receiver_name: 'Bob Receiver',
   listing_title: 'Vintage Lamp',
@@ -103,6 +110,70 @@ describe('MessageDetail (broker)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockAdminBroker.showMessage.mockResolvedValue(makeSuccess(makeDetail()));
+    mockAdminBroker.getMonitoring.mockResolvedValue({ success: true, data: [] });
+    mockAdminBroker.setMonitoring.mockResolvedValue({ success: true });
+    mockAdminBroker.getMessages.mockResolvedValue({ success: true, data: [], meta: { total: 0 } });
+  });
+
+  // D: names open the member window; quick actions sit in the header.
+  it('names the record in the breadcrumb and opens the member window from both names', async () => {
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    expect(mockBreadcrumb).toHaveBeenCalledWith(null);
+    await waitFor(() => expect(mockBreadcrumb).toHaveBeenCalledWith('Alice Sender → Bob Receiver'));
+    expect(await screen.findByRole('button', { name: "Open Bob Receiver's record" })).toBeInTheDocument();
+    // The sender appears in the metadata card and on each thread bubble.
+    expect(screen.getAllByRole('button', { name: "Open Alice Sender's record" }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('adds the sender to monitoring after a confirm, and links to tagging the listing', async () => {
+    mockAdminBroker.showMessage.mockResolvedValue(makeSuccess(makeDetail({ copy: makeCopy({ sender_id: 31, related_listing_id: 77 }) })));
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
+
+    expect(screen.getByRole('link', { name: 'Tag the listing' })).toHaveAttribute('href', '/test/broker/risk-tags?listing=77');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add sender to monitoring' }));
+    await waitFor(() => document.querySelector('[role="dialog"]'));
+    expect(mockAdminBroker.setMonitoring).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Add to monitoring' }));
+    await waitFor(() => expect(mockAdminBroker.setMonitoring).toHaveBeenCalledWith(31, {
+      under_monitoring: true,
+      reason: 'Added while reviewing message copy #7',
+    }));
+    expect(mockToast.success).toHaveBeenCalledWith('Sender added to monitoring.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add sender to monitoring' })).toBeDisabled());
+  });
+
+  it('disables the monitoring action when the sender is already monitored', async () => {
+    mockAdminBroker.getMonitoring.mockResolvedValue({ success: true, data: [{ id: 1, user_id: 31, under_monitoring: true }] });
+    mockAdminBroker.showMessage.mockResolvedValue(makeSuccess(makeDetail({ copy: makeCopy({ sender_id: 31 }) })));
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Add sender to monitoring' })).toBeDisabled());
+  });
+
+  // E: keyboard — r reviews, a opens approve & archive, n goes to the next one.
+  it('reviews with r, opens approve with a, and goes to the next in the queue with n', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue({ success: true, data: [{ id: 7 }, { id: 9 }], meta: { total: 2 } });
+    const { MessageDetail } = await import('./MessageDetailPage');
+    render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Open the next one waiting' })).toBeInTheDocument());
+
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages/9?queue=unreviewed'));
+
+    fireEvent.keyDown(document.body, { key: 'a' });
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+    expect(screen.getAllByText('Approve & Archive').length).toBeGreaterThan(1);
+
+    // Keys do nothing while a dialog is open; close it first.
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
+    fireEvent.keyDown(document.body, { key: 'r' });
+    await waitFor(() => expect(mockAdminBroker.reviewMessage).toHaveBeenCalledWith(7));
   });
 
   it('shows a shaped skeleton loading state initially', async () => {
@@ -251,29 +322,17 @@ describe('MessageDetail (broker)', () => {
     });
   });
 
-  it('shows flag_reason_required toast when flag submitted without reason', async () => {
+  it('cannot submit a flag without a reason: the shared dialog keeps the confirm disabled', async () => {
     const { MessageDetail } = await import('./MessageDetailPage');
     render(<MessageDetail />);
+    await waitFor(() => expect(screen.getByText('Bob Receiver')).toBeInTheDocument());
 
-    await waitFor(() => screen.getAllByRole('button'));
-
-    const flagBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('flag')
-    );
-    if (flagBtn) fireEvent.click(flagBtn);
-
+    fireEvent.click(screen.getByRole('button', { name: 'Flag' }));
     await waitFor(() => document.querySelector('[role="dialog"]'));
-
-    // Click flag confirm inside modal without entering a reason
-    const confirmFlagBtn = screen
-      .getAllByRole('button')
-      .filter((b) => b.closest('[role="dialog"]'))
-      .find((b) => b.textContent?.toLowerCase().includes('flag'));
-    if (confirmFlagBtn) fireEvent.click(confirmFlagBtn);
-
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
-    });
+    const confirm = Array.from(document.querySelectorAll('[role="dialog"] button')).find((b) => b.textContent?.trim() === 'Flag')!;
+    expect(confirm).toBeDisabled();
+    fireEvent.click(confirm);
+    expect(mockAdminBroker.flagMessage).not.toHaveBeenCalled();
   });
 
   it('opens approve-and-archive modal', async () => {

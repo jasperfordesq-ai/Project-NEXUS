@@ -33,6 +33,8 @@ vi.mock('@/admin/api/adminApi', () => ({
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));
+const mockBreadcrumb = vi.hoisted(() => vi.fn());
+vi.mock('@/broker/BrokerBreadcrumbContext', () => ({ useBrokerBreadcrumbLabel: mockBreadcrumb }));
 
 vi.mock('@/lib/serverTime', () => ({
   formatServerDateTime: (dt: string) => dt,
@@ -58,6 +60,9 @@ const mockArchive = {
   decision_notes: 'Looks fine',
   flag_reason: null,
   flag_severity: null,
+  sender_id: 11,
+  receiver_id: 12,
+  decided_by: 5,
   sender_name: 'Alice',
   receiver_name: 'Bob',
   target_message_body: 'Hello there!',
@@ -88,6 +93,16 @@ describe('ArchiveDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockId = '1';
+  });
+
+  // D: every member name opens the member window; the breadcrumb names the record.
+  it('opens the member window from the sender, receiver and reviewer, and names the record in the breadcrumb', async () => {
+    mockAdminBroker.showArchive.mockResolvedValue({ success: true, data: mockArchive });
+    render(<ArchiveDetail />);
+    expect(await screen.findByRole('button', { name: "Open Bob's record" })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: "Open Alice's record" }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('button', { name: "Open Admin User's record" })).toBeInTheDocument();
+    expect(mockBreadcrumb).toHaveBeenCalledWith('Alice → Bob');
   });
 
   it('shows a shaped skeleton while fetching', () => {

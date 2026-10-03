@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, act } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
@@ -29,6 +29,7 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Toast / Tenant / Router ─────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 // Mutable search params so individual tests can exercise ?status= deep links.
 const routerState = vi.hoisted(() => ({
@@ -40,7 +41,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   const orig = await importOriginal<typeof import('react-router-dom')>();
   return {
     ...orig,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => mockNavigate,
     useSearchParams: () => [routerState.params, routerState.setParams],
     Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
       <a href={to}>{children}</a>
@@ -63,9 +64,75 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
+// The shared CSV export: capture the request instead of downloading a file.
+const csvState = vi.hoisted(() => ({ run: vi.fn(), exporting: false }));
+vi.mock('@/broker/useCsvExport', () => ({
+  useCsvExport: () => ({ run: csvState.run, exporting: csvState.exporting }),
+}));
+
+// Auto-refresh: capture the callback so a test can fire a quiet refresh.
+const autoRefresh = vi.hoisted(() => ({ callback: null as null | (() => void) }));
+vi.mock('@/broker/useBrokerAutoRefresh', () => ({
+  useBrokerAutoRefresh: (cb: () => void) => {
+    autoRefresh.callback = cb;
+  },
+}));
+
+// The date range picker is HeroUI's compound component; a stub with two
+// inputs is enough to prove the page passes from/to through.
+vi.mock('@/broker/components/messages/BrokerDateRangeFilter', () => ({
+  BrokerDateRangeFilter: ({
+    value,
+    onChange,
+    label,
+    clearLabel,
+  }: {
+    value: { from: string | null; to: string | null };
+    onChange: (v: { from: string | null; to: string | null }) => void;
+    label: string;
+    clearLabel: string;
+  }) => (
+    <div>
+      <input
+        aria-label={label}
+        value={value.from && value.to ? `${value.from}..${value.to}` : ''}
+        onChange={(e) => {
+          const [from, to] = e.target.value.split('..');
+          onChange({ from: from || null, to: to || null });
+        }}
+      />
+      {value.from && (
+        <button type="button" onClick={() => onChange({ from: null, to: null })}>
+          {clearLabel}
+        </button>
+      )}
+    </div>
+  ),
+}));
+
 // Stub shared admin components
 vi.mock('@/admin/components', () => ({
   PageHeader: ({ title }: { title: string }) => <h1 data-testid="page-header">{title}</h1>,
+  BulkActionToolbar: ({
+    selectedCount,
+    actions,
+    onClearSelection,
+  }: {
+    selectedCount: number;
+    actions: { key: string; label: string; confirmMessage?: string; onConfirm: () => void }[];
+    onClearSelection: () => void;
+  }) =>
+    selectedCount === 0 ? null : (
+      <div data-testid="bulk-toolbar">
+        <span>{`${selectedCount} selected`}</span>
+        {actions.map((a) => (
+          <button key={a.key} type="button" onClick={() => a.onConfirm()} title={a.confirmMessage}>
+            {a.label}
+          </button>
+        ))}
+        <button type="button" onClick={onClearSelection}>clear selection</button>
+      </div>
+    ),
   DataTable: ({
     columns,
     data,
@@ -134,7 +201,9 @@ vi.mock('@/lib/serverTime', () => ({
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeMessage = (overrides = {}) => ({
   id: 1,
+  sender_id: 11,
   sender_name: 'Alice',
+  receiver_id: 12,
   receiver_name: 'Bob',
   message_body: 'Hello there, this is a test message',
   copy_reason: 'keyword_match',
@@ -153,12 +222,16 @@ const makeListRes = (items: unknown[] = [], total = 0) => ({
   meta: { total, total_items: total },
 });
 
+const press = (key: string) => fireEvent.keyDown(document.body, { key });
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('MessageReview (broker)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     routerState.params = new URLSearchParams();
     routerState.setParams = vi.fn();
+    autoRefresh.callback = null;
+    csvState.exporting = false;
     mockAdminBroker.getMessages.mockResolvedValue(makeListRes());
     mockAdminBroker.getUnreviewedCount.mockResolvedValue({ success: true, data: { count: 0 } });
     mockAdminBroker.reviewMessage.mockResolvedValue({ success: true });
@@ -212,8 +285,8 @@ describe('MessageReview (broker)', () => {
 
   // The Flagged / Reviewed cards used to count the rows on the current page
   // while being labelled like totals. They now read the paginated total of a
-  // one-page probe per tab, the same number the Urgent tab badge shows.
-  it('counts Flagged, Reviewed and Urgent across the whole queue, not just this page', async () => {
+  // one-row probe per tab, the same number the Urgent tab badge shows.
+  it('counts Flagged, Reviewed and Urgent across the whole queue with one-row probes', async () => {
     mockAdminBroker.getMessages.mockImplementation(async ({ filter }: { filter?: string }) => {
       const totals: Record<string, number> = { flagged: 7, reviewed: 12, urgent: 3 };
       if (filter && filter in totals) return makeListRes([], totals[filter]);
@@ -231,9 +304,9 @@ describe('MessageReview (broker)', () => {
     });
     expect(screen.getByText('Every flagged message, not just this page')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Urgent/ }).textContent).toContain('3');
-    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'flagged' });
-    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'reviewed' });
-    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'urgent' });
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, per_page: 1, filter: 'flagged' });
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, per_page: 1, filter: 'reviewed' });
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, per_page: 1, filter: 'urgent' });
   });
 
   it('treats a success:false list response as an error, not a silent empty queue', async () => {
@@ -318,24 +391,19 @@ describe('MessageReview (broker)', () => {
     });
   });
 
-  it('renders message rows when messages are returned', async () => {
+  // Names used to be plain text (the sender's was the link to the message).
+  // Both now open the member window; the preview is the link to the message.
+  it('opens the member window from both names and the message from the preview', async () => {
     mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-    });
-  });
-
-  it('renders receiver name in table', async () => {
-    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
-    const { MessageReview } = await import('./MessageReviewPage');
-    render(<MessageReview />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Bob')).toBeInTheDocument();
-    });
+    expect(await screen.findByRole('button', { name: "Open Alice's record" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "Open Bob's record" })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Hello there/ })).toHaveAttribute(
+      'href',
+      '/test/broker/messages/1?queue=unreviewed',
+    );
   });
 
   it('calls reviewMessage when Mark Reviewed button is clicked', async () => {
@@ -349,19 +417,7 @@ describe('MessageReview (broker)', () => {
     await waitFor(() => {
       expect(mockAdminBroker.reviewMessage).toHaveBeenCalledWith(1);
     });
-  });
-
-  it('shows success toast after marking reviewed', async () => {
-    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
-    const { MessageReview } = await import('./MessageReviewPage');
-    render(<MessageReview />);
-
-    await waitFor(() => screen.getByText('Alice'));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Mark message as reviewed' }));
-    await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalled();
-    });
+    expect(mockToast.success).toHaveBeenCalled();
   });
 
   it('shows error toast when reviewMessage fails', async () => {
@@ -378,19 +434,6 @@ describe('MessageReview (broker)', () => {
     });
   });
 
-  it('opens flag modal when Flag button is clicked', async () => {
-    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
-    const { MessageReview } = await import('./MessageReviewPage');
-    render(<MessageReview />);
-
-    await waitFor(() => screen.getByText('Alice'));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Flag message' }));
-    await waitFor(() => {
-      expect(document.querySelector('[role="dialog"]')).toBeTruthy();
-    });
-  });
-
   // The confirm is disabled while the reason is empty (Oct 2026), so an empty
   // submission can no longer reach the API at all.
   it('cannot submit a flag with an empty reason', async () => {
@@ -400,11 +443,9 @@ describe('MessageReview (broker)', () => {
 
     await waitFor(() => screen.getByText('Alice'));
 
-    // Open flag modal
     fireEvent.click(screen.getByRole('button', { name: 'Flag message' }));
     await waitFor(() => document.querySelector('[role="dialog"]'));
 
-    // The confirm button is disabled without a reason; clicking does nothing.
     const dialogBtns = document.querySelectorAll('[role="dialog"] button');
     const confirmBtn = Array.from(dialogBtns).find((b) => b.textContent?.trim() === 'Flag');
     expect(confirmBtn).toBeDefined();
@@ -423,26 +464,17 @@ describe('MessageReview (broker)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Flag message' }));
     await waitFor(() => document.querySelector('[role="dialog"]'));
 
-    // Fill in the reason textarea
-    const textareas = document.querySelectorAll('[role="dialog"] textarea');
-    if (textareas.length > 0) {
-      fireEvent.change(textareas[0], { target: { value: 'Suspicious content' } });
-    }
+    fireEvent.change(document.querySelector('[role="dialog"] textarea')!, { target: { value: 'Suspicious content' } });
+    const confirmBtn = Array.from(document.querySelectorAll('[role="dialog"] button')).find(
+      (b) => b.textContent?.trim() === 'Flag',
+    )!;
+    await waitFor(() => expect(confirmBtn).not.toBeDisabled());
+    fireEvent.click(confirmBtn);
 
-    const dialogBtns = document.querySelectorAll('[role="dialog"] button');
-    const confirmBtn = Array.from(dialogBtns).find((b) =>
-      b.textContent?.toLowerCase().includes('flag')
-    );
-    if (confirmBtn) {
-      fireEvent.click(confirmBtn);
-      await waitFor(() => {
-        expect(mockAdminBroker.flagMessage).toHaveBeenCalledWith(
-          1,
-          'Suspicious content',
-          expect.any(String)
-        );
-      });
-    }
+    await waitFor(() => {
+      expect(mockAdminBroker.flagMessage).toHaveBeenCalledWith(1, 'Suspicious content', 'concern');
+    });
+    expect(mockToast.success).toHaveBeenCalledWith('Message flagged.');
   });
 
   it('fetches the message detail when the quick-view button is clicked', async () => {
@@ -460,6 +492,7 @@ describe('MessageReview (broker)', () => {
     await waitFor(() => {
       expect(mockAdminBroker.showMessage).toHaveBeenCalledWith(1);
     });
+    expect(await screen.findByText('Full message body')).toBeInTheDocument();
   });
 
   it('shows error toast when getMessages fails', async () => {
@@ -476,8 +509,8 @@ describe('MessageReview (broker)', () => {
     // The KPI probes share the endpoint, so fail the LIST call (unreviewed
     // filter) once rather than whichever call happens to come first.
     let listFailed = false;
-    mockAdminBroker.getMessages.mockImplementation(async ({ filter }: { filter?: string }) => {
-      if (filter === 'unreviewed') {
+    mockAdminBroker.getMessages.mockImplementation(async ({ filter, per_page }: { filter?: string; per_page?: number }) => {
+      if (filter === 'unreviewed' && per_page === undefined) {
         if (!listFailed) {
           listFailed = true;
           throw new Error('network');
@@ -522,13 +555,46 @@ describe('MessageReview (broker)', () => {
     expect(await screen.findByText('No messages match your search')).toBeInTheDocument();
   });
 
-  it('renders filter tabs (unreviewed, flagged, reviewed, all)', async () => {
+  // Exchange detail links here with ?q=<name>; the search starts filled in.
+  it('seeds the search from ?q= in the address bar', async () => {
+    routerState.params = new URLSearchParams('q=Priya%20Nolan');
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await waitFor(() => {
+      expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'unreviewed', q: 'Priya Nolan' });
+    });
+  });
+
+  it('passes the chosen date range to the list as from/to and resets to page 1', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Date range' }), { target: { value: '2026-03-01..2026-03-31' } });
+
+    await waitFor(() => {
+      expect(mockAdminBroker.getMessages).toHaveBeenLastCalledWith({
+        page: 1,
+        filter: 'unreviewed',
+        from: '2026-03-01',
+        to: '2026-03-31',
+      });
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear dates' }));
+    await waitFor(() => {
+      expect(mockAdminBroker.getMessages).toHaveBeenLastCalledWith({ page: 1, filter: 'unreviewed' });
+    });
+  });
+
+  it('renders filter tabs (unreviewed, urgent, flagged, reviewed, all)', async () => {
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
 
     await waitFor(() => {
       const tabs = screen.getAllByRole('tab');
-      expect(tabs.length).toBeGreaterThanOrEqual(4);
+      expect(tabs.length).toBe(5);
     });
   });
 
@@ -540,21 +606,24 @@ describe('MessageReview (broker)', () => {
 
     await waitFor(() => screen.getByText('Alice'));
 
-    // reviewed_at is set → no "mark reviewed" action in the row, but the
-    // quick-view action remains available.
     expect(screen.queryByRole('button', { name: 'Mark message as reviewed' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Quick view message' })).toBeInTheDocument();
   });
 
-  it('marks several selected messages reviewed at once and says which were skipped', async () => {
+  // ── Bulk review ───────────────────────────────────────────────────────────
+
+  // A concern is read, never ticked off: a flagged copy in the selection is
+  // dropped before the request goes out, and the broker is told how many.
+  it('bulk-reviews only the routine copies and says how many flagged ones were left out', async () => {
     routerState.params = new URLSearchParams('status=unreviewed');
     mockAdminBroker.getMessages.mockResolvedValue(makeListRes([
       makeMessage({ id: 1, sender_name: 'Alice' }),
-      makeMessage({ id: 2, sender_name: 'Cara', flagged: true }),
-    ], 2));
+      makeMessage({ id: 2, sender_name: 'Cara', flagged: true, flag_severity: 'concern' }),
+      makeMessage({ id: 3, sender_name: 'Dev' }),
+    ], 3));
     mockAdminBroker.reviewMessagesBulk.mockResolvedValue({
       success: true,
-      data: { reviewed: [1], skipped: [{ id: 2, reason: 'flagged' }] },
+      data: { reviewed: [1, 3], skipped: [] },
     });
     const { MessageReview } = await import('./MessageReviewPage');
     render(<MessageReview />);
@@ -562,11 +631,31 @@ describe('MessageReview (broker)', () => {
     await screen.findAllByText('Alice');
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Select row 1' }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 2' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Mark reviewed' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select row 3' }));
+    // The confirm wording counts only the copies that will actually be reviewed.
+    expect(screen.getByRole('button', { name: 'Mark reviewed' })).toHaveAttribute('title', expect.stringContaining('2 selected messages'));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark reviewed' }));
 
-    await waitFor(() => expect(mockAdminBroker.reviewMessagesBulk).toHaveBeenCalledWith([1, 2]));
-    expect(mockToast.success).toHaveBeenCalledWith('1 message marked reviewed.');
+    await waitFor(() => expect(mockAdminBroker.reviewMessagesBulk).toHaveBeenCalledWith([1, 3]));
     expect(mockToast.info).toHaveBeenCalledWith('1 flagged message was skipped. Open it to review it.');
+    expect(mockToast.success).toHaveBeenCalledWith('2 messages marked reviewed.');
+  });
+
+  it('sends nothing when only flagged copies are selected', async () => {
+    routerState.params = new URLSearchParams('status=unreviewed');
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([
+      makeMessage({ id: 2, sender_name: 'Cara', flagged: true, flag_severity: 'concern' }),
+    ], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+
+    await screen.findAllByText('Cara');
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'Select row 2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark reviewed' }));
+
+    await waitFor(() => expect(mockToast.info).toHaveBeenCalledWith('1 flagged message was skipped. Open it to review it.'));
+    expect(mockAdminBroker.reviewMessagesBulk).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByTestId('bulk-toolbar')).not.toBeInTheDocument());
   });
 
   it('offers no selection on the history tabs', async () => {
@@ -577,5 +666,144 @@ describe('MessageReview (broker)', () => {
 
     await waitFor(() => expect(screen.getAllByText('Alice').length).toBeGreaterThan(0));
     expect(screen.queryByRole('checkbox', { name: 'Select row 1' })).not.toBeInTheDocument();
+  });
+
+  // ── Keyboard triage ───────────────────────────────────────────────────────
+
+  describe('keyboard', () => {
+    const rows = () => [
+      makeMessage({ id: 1, sender_name: 'Alice' }),
+      makeMessage({ id: 2, sender_name: 'Cara', flagged: true, flag_severity: 'concern' }),
+      makeMessage({ id: 3, sender_name: 'Dev' }),
+    ];
+
+    it('moves the highlight with j and k and opens the highlighted message with Enter', async () => {
+      mockAdminBroker.getMessages.mockResolvedValue(makeListRes(rows(), 3));
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByText('Dev');
+
+      expect(document.querySelector('[aria-current="true"]')).toBeNull();
+      press('j');
+      expect(document.querySelector('[aria-current="true"]')?.textContent).toContain('Alice');
+      press('j');
+      press('j');
+      press('j'); // stays on the last row
+      expect(document.querySelector('[aria-current="true"]')?.textContent).toContain('Dev');
+      press('k');
+      expect(document.querySelector('[aria-current="true"]')?.textContent).toContain('Cara');
+
+      press('Enter');
+      expect(mockNavigate).toHaveBeenCalledWith('/test/broker/messages/2?queue=unreviewed');
+    });
+
+    it('marks a highlighted routine copy reviewed with r, but never a flagged one', async () => {
+      mockAdminBroker.getMessages.mockResolvedValue(makeListRes(rows(), 3));
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByText('Dev');
+
+      press('r'); // nothing highlighted yet
+      expect(mockAdminBroker.reviewMessage).not.toHaveBeenCalled();
+
+      press('j');
+      press('j'); // Cara — flagged
+      press('r');
+      expect(mockAdminBroker.reviewMessage).not.toHaveBeenCalled();
+      expect(mockToast.info).toHaveBeenCalledWith('Flagged messages are reviewed one at a time. Open it to read it.');
+
+      press('j'); // Dev — routine
+      press('r');
+      await waitFor(() => expect(mockAdminBroker.reviewMessage).toHaveBeenCalledWith(3));
+    });
+
+    it('opens the flag dialog for the highlighted copy with f', async () => {
+      mockAdminBroker.getMessages.mockResolvedValue(makeListRes(rows(), 3));
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByText('Dev');
+
+      press('j');
+      press('f');
+      await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+      expect(screen.getByText('Flag Message')).toBeInTheDocument();
+    });
+
+    it('ignores shortcuts typed into the search box', async () => {
+      mockAdminBroker.getMessages.mockResolvedValue(makeListRes(rows(), 3));
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByText('Dev');
+
+      fireEvent.keyDown(screen.getByRole('searchbox', { name: 'Search messages or names' }), { key: 'j' });
+      expect(document.querySelector('[aria-current="true"]')).toBeNull();
+    });
+
+    it('shows the key legend in the toolbar', async () => {
+      const { MessageReview } = await import('./MessageReviewPage');
+      render(<MessageReview />);
+      await screen.findByTestId('data-table');
+      const legend = screen.getByRole('list', { name: 'Keyboard shortcuts' });
+      expect(legend.textContent).toContain('Move');
+      expect(legend.textContent).toContain('Open');
+      expect(legend.textContent).toContain('Review');
+      expect(legend.textContent).toContain('Flag');
+    });
+  });
+
+  // ── Export ────────────────────────────────────────────────────────────────
+
+  it('exports the current filter page by page through the same endpoint', async () => {
+    routerState.params = new URLSearchParams('status=flagged');
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ flagged: true, flag_severity: 'urgent' })], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(csvState.run).toHaveBeenCalledTimes(1);
+    const request = csvState.run.mock.calls[0][0] as {
+      filename: string;
+      columns: { label: string; value: (row: unknown) => unknown }[];
+      fetchPage: (page: number) => Promise<{ rows: unknown[]; hasMore: boolean }>;
+    };
+    expect(request.filename).toBe('broker-messages_flagged');
+    expect(request.columns.map((c) => c.label)).toEqual([
+      'Message ID', 'Sent', 'Sender', 'Receiver', 'Listing', 'Copy Reason', 'Flagged', 'Severity', 'Flag Reason', 'Status', 'Reviewed by', 'Reviewed at',
+    ]);
+
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage({ flagged: true, flag_severity: 'urgent' })], 250));
+    const first = await request.fetchPage(1);
+    expect(mockAdminBroker.getMessages).toHaveBeenLastCalledWith({ page: 1, per_page: 100, filter: 'flagged' });
+    expect(first.hasMore).toBe(true);
+    const row = first.rows[0];
+    const cell = (label: string) => request.columns.find((c) => c.label === label)!.value(row);
+    expect(cell('Sender')).toBe('Alice');
+    expect(cell('Flagged')).toBe('Yes');
+    expect(cell('Severity')).toBe('Urgent');
+    expect(cell('Status')).toBe('Unreviewed');
+
+    const third = await request.fetchPage(3);
+    expect(third.hasMore).toBe(false);
+  });
+
+  // ── Auto-refresh ──────────────────────────────────────────────────────────
+
+  it('refreshes quietly after a broker write: same page, rows stay on screen, no skeleton', async () => {
+    mockAdminBroker.getMessages.mockResolvedValue(makeListRes([makeMessage()], 1));
+    const { MessageReview } = await import('./MessageReviewPage');
+    render(<MessageReview />);
+    await screen.findByText('Alice');
+    const callsBefore = mockAdminBroker.getMessages.mock.calls.length;
+    expect(autoRefresh.callback).toBeTypeOf('function');
+
+    mockAdminBroker.getMessages.mockImplementation(() => new Promise(() => {}));
+    act(() => autoRefresh.callback!());
+
+    expect(mockAdminBroker.getMessages.mock.calls.length).toBeGreaterThan(callsBefore);
+    expect(mockAdminBroker.getMessages).toHaveBeenCalledWith({ page: 1, filter: 'unreviewed' });
+    // Quiet: the rows and the table stay; no loading status appears.
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.queryByRole('status', { busy: true })).toBeNull();
   });
 });

@@ -7,9 +7,10 @@
  * BrokerShortcutsModal — the panel's keyboard shortcuts, opened from the
  * user menu or by pressing `?` anywhere that is not a text field.
  *
- * Two shortcuts exist today (search and this list). The modifier shown for
- * search follows the broker's platform, so a Windows broker is not told to
- * press a key their keyboard does not have.
+ * Two groups: the panel-wide keys (search, this list) and the message-review
+ * keys (j / k / Enter / r / f on the list, r / f / a / n on a message). The
+ * modifier shown for search follows the broker's platform, so a Windows
+ * broker is not told to press a key their keyboard does not have.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -36,13 +37,49 @@ export function SearchShortcutKeys() {
   );
 }
 
+function Keys({ keys }: { keys: string[] }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      {keys.map((key) => (
+        <Kbd key={key}>{key}</Kbd>
+      ))}
+    </span>
+  );
+}
+
+interface ShortcutRow {
+  key: string;
+  keys: React.ReactNode;
+  label: string;
+}
+
 export function BrokerShortcutsModal({ isOpen, onClose }: BrokerShortcutsModalProps) {
   const { t } = useTranslation('broker');
 
-  const rows: { key: string; keys: React.ReactNode; label: string }[] = [
+  const general: ShortcutRow[] = [
     { key: 'search', keys: <SearchShortcutKeys />, label: t('header.shortcuts_search') },
     { key: 'help', keys: <Kbd>?</Kbd>, label: t('header.shortcuts_help') },
   ];
+
+  const messages: ShortcutRow[] = [
+    { key: 'move', keys: <Keys keys={['j', 'k']} />, label: t('messages.shortcut_move') },
+    { key: 'open', keys: <Keys keys={['↵']} />, label: t('messages.shortcut_open') },
+    { key: 'review', keys: <Keys keys={['r']} />, label: t('messages.shortcut_review') },
+    { key: 'flag', keys: <Keys keys={['f']} />, label: t('messages.shortcut_flag') },
+    { key: 'approve', keys: <Keys keys={['a']} />, label: t('messages.shortcut_approve') },
+    { key: 'next', keys: <Keys keys={['n']} />, label: t('messages.shortcut_next') },
+  ];
+
+  const renderRows = (rows: ShortcutRow[]) => (
+    <dl className="divide-y divide-divider">
+      {rows.map((row) => (
+        <div key={row.key} className="flex items-center justify-between gap-4 py-2.5">
+          <dt className="text-sm text-foreground">{row.label}</dt>
+          <dd className="shrink-0">{row.keys}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
@@ -52,14 +89,9 @@ export function BrokerShortcutsModal({ isOpen, onClose }: BrokerShortcutsModalPr
           <ModalHeading className="text-base font-semibold">{t('header.keyboard_shortcuts')}</ModalHeading>
         </ModalHeader>
         <ModalBody>
-          <dl className="divide-y divide-divider">
-            {rows.map((row) => (
-              <div key={row.key} className="flex items-center justify-between gap-4 py-2.5">
-                <dt className="text-sm text-foreground">{row.label}</dt>
-                <dd className="shrink-0">{row.keys}</dd>
-              </div>
-            ))}
-          </dl>
+          {renderRows(general)}
+          <h3 className="mt-3 text-xs font-semibold uppercase tracking-wide text-muted">{t('messages.shortcuts_section')}</h3>
+          {renderRows(messages)}
           <p className="mt-2 text-xs text-muted">{t('header.shortcuts_hint')}</p>
         </ModalBody>
         <ModalFooter>

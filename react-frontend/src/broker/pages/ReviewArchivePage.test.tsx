@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, act } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -40,6 +40,20 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
+}));
+
+const csvState = vi.hoisted(() => ({ run: vi.fn() }));
+vi.mock('@/broker/useCsvExport', () => ({ useCsvExport: () => ({ run: csvState.run, exporting: false }) }));
+const autoRefresh = vi.hoisted(() => ({ callback: null as null | (() => void) }));
+vi.mock('@/broker/useBrokerAutoRefresh', () => ({ useBrokerAutoRefresh: (cb: () => void) => { autoRefresh.callback = cb; } }));
+vi.mock('@/broker/components/messages/BrokerDateRangeFilter', () => ({
+  BrokerDateRangeFilter: ({ value, onChange, label }: { value: { from: string | null; to: string | null }; onChange: (v: { from: string | null; to: string | null }) => void; label: string }) => (
+    <input
+      aria-label={label}
+      value={value.from && value.to ? `${value.from}..${value.to}` : ''}
+      onChange={(e) => { const [from, to] = e.target.value.split('..'); onChange({ from: from || null, to: to || null }); }}
+    />
+  ),
 }));
 
 // ── serverTime stub ──────────────────────────────────────────────────────────
@@ -85,6 +99,9 @@ vi.mock('@/admin/components', () => ({
 const ARCHIVE_ROWS = [
   {
     id: 1,
+    sender_id: 11,
+    receiver_id: 12,
+    decided_by: 5,
     sender_name: 'Alice Smith',
     receiver_name: 'Bob Jones',
     listing_title: 'Tutoring',
@@ -185,8 +202,8 @@ describe('ReviewArchivePage — populated', () => {
       expect(screen.getByText('41')).toBeInTheDocument();
       expect(screen.getByText('9')).toBeInTheDocument();
     });
-    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, decision: 'approved' });
-    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, decision: 'flagged' });
+    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, per_page: 1, decision: 'approved' });
+    expect(mockGetArchives).toHaveBeenCalledWith({ page: 1, per_page: 1, decision: 'flagged' });
   });
 
   it('names an unexpected decision through the shared status chip, never a capitalised slug', async () => {
@@ -209,6 +226,51 @@ describe('ReviewArchivePage — populated', () => {
     // The chip text appears in the row plus the matching filter tab.
     expect(screen.getAllByText('Approved').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('Flagged').length).toBeGreaterThanOrEqual(2);
+  });
+
+  // D: names open the member window; the record opens from the Actions column.
+  it('opens the member window from every name and the record from the Actions column', async () => {
+    render(<ReviewArchive />);
+    expect(await screen.findByRole('button', { name: "Open Alice Smith's record" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "Open Bob Jones's record" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "Open Admin's record" })).toBeInTheDocument();
+    // A row without ids (older rows) still shows the name as text.
+    expect(screen.getByText('Carol White')).toBeInTheDocument();
+    const open = screen.getAllByRole('link', { name: 'Open record' });
+    expect(open[0]).toHaveAttribute('href', '/test/broker/archives/1');
+  });
+
+  // E: date range, export of every column, quiet auto-refresh.
+  it('passes the date range to the endpoint as from/to', async () => {
+    render(<ReviewArchive />);
+    await screen.findByText('Alice Smith');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Date range' }), { target: { value: '2026-05-01..2026-06-30' } });
+    await waitFor(() => expect(mockGetArchives).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, from: '2026-05-01', to: '2026-06-30' })));
+  });
+
+  it('exports every column of the record through the same endpoint, 100 rows a page', async () => {
+    window.history.replaceState({}, '', '/?decision=flagged');
+    render(<ReviewArchive />);
+    await screen.findByText('Alice Smith');
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    const request = csvState.run.mock.calls[0]?.[0] as { filename: string; columns: { label: string; value: (r: unknown) => unknown }[]; fetchPage: (p: number) => Promise<{ rows: unknown[]; hasMore: boolean }> };
+    expect(request.filename).toBe('broker-review-archive_flagged');
+    expect(request.columns.map((c) => c.label)).toEqual([
+      'Record ID', 'Archived at', 'Decision', 'Sender', 'Receiver', 'Decided By', 'Decision Notes', 'Listing', 'Copy Reason', 'Flag Reason', 'Severity', 'Created at',
+    ]);
+    const first = await request.fetchPage(1);
+    expect(mockGetArchives).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, per_page: 100, decision: 'flagged' }));
+    expect(first.rows).toHaveLength(2);
+    expect(request.columns[2]?.value(first.rows[1])).toBe('Flagged');
+  });
+
+  it('refreshes quietly after a broker write without a skeleton', async () => {
+    render(<ReviewArchive />);
+    await screen.findByText('Alice Smith');
+    mockGetArchives.mockImplementation(() => new Promise(() => {}));
+    await act(async () => { autoRefresh.callback!(); });
+    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+    expect(screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
   });
 
   it('renders reviewer and date cells', async () => {

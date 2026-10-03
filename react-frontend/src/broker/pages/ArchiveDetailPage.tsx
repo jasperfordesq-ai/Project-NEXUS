@@ -34,6 +34,8 @@ import { useTenant } from '@/contexts';
 import { formatServerDateTime } from '@/lib/serverTime';
 import { adminBroker } from '@/admin/api/adminApi';
 import type { BrokerArchiveDetail as BrokerArchiveDetailType } from '@/admin/api/types';
+import { MemberName } from '@/broker/BrokerMemberWindow';
+import { useBrokerBreadcrumbLabel } from '@/broker/BrokerBreadcrumbContext';
 import {
   Avatar,
   Button,
@@ -78,6 +80,9 @@ export function ArchiveDetail() {
   const [data, setData] = useState<BrokerArchiveDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // The breadcrumb names the record once loaded ("Alice → Bob").
+  useBrokerBreadcrumbLabel(data ? `${data.sender_name} → ${data.receiver_name}` : null);
 
   // Stash the latest `t` in a ref so the fetch effect stays keyed on the
   // record id only — a language switch should relabel, not refetch.
@@ -230,9 +235,7 @@ export function ArchiveDetail() {
                 <p className="text-xs text-muted">{t('archives.label_decided_by')}</p>
                 <div className="mt-1 flex min-w-0 items-center gap-2">
                   <Avatar name={data.decided_by_name} size="sm" className="shrink-0" />
-                  <p className="min-w-0 truncate text-sm font-medium text-foreground">
-                    {data.decided_by_name}
-                  </p>
+                  <MemberName userId={data.decided_by} name={data.decided_by_name} className="min-w-0 truncate text-sm" />
                 </div>
               </div>
               <div>
@@ -282,18 +285,14 @@ export function ArchiveDetail() {
                 <Avatar name={data.sender_name} size="sm" className="shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-muted">{t('archives.label_sender')}</p>
-                  <p className="min-w-0 truncate text-sm font-medium text-foreground">
-                    {data.sender_name}
-                  </p>
+                  <MemberName userId={data.sender_id} name={data.sender_name} className="min-w-0 truncate text-sm" />
                 </div>
               </div>
               <div className="flex min-w-0 items-center gap-2">
                 <Avatar name={data.receiver_name} size="sm" className="shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-muted">{t('archives.label_receiver')}</p>
-                  <p className="min-w-0 truncate text-sm font-medium text-foreground">
-                    {data.receiver_name}
-                  </p>
+                  <MemberName userId={data.receiver_id} name={data.receiver_name} className="min-w-0 truncate text-sm" />
                 </div>
               </div>
             </div>
@@ -360,9 +359,7 @@ export function ArchiveDetail() {
                         <Avatar name={msg.sender_name} size="sm" className="mt-0.5 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="mb-1 flex items-center justify-between gap-2">
-                            <span className="min-w-0 truncate text-sm font-semibold text-foreground">
-                              {msg.sender_name}
-                            </span>
+                            <MemberName userId={msg.sender_id} name={msg.sender_name} className="min-w-0 truncate text-sm font-semibold" />
                             <span className="shrink-0 text-xs tabular-nums text-muted">
                               {formatServerDateTime(msg.created_at)}
                             </span>
