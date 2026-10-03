@@ -34,6 +34,8 @@ export interface SupportDiagnosticsSnapshot {
     time: string | null;
   };
   entries: SupportDiagnosticEntry[];
+  /** Successful background checks left out of `entries` (see BACKGROUND_ENDPOINTS). */
+  background_requests_omitted: number;
 }
 
 const SENSITIVE_KEY_PATTERN = /(authorization|password|passcode|token|secret|cookie|csrf|session|email|phone|address|credit|card|cvv|iban|sort_code)/i;
@@ -50,11 +52,28 @@ const MAX_STRING_LENGTH = 1000;
 const MAX_DEPTH = 5;
 const FILTERED = '[filtered]';
 
+/**
+ * Requests the app repeats on a timer whatever the member is doing. A
+ * successful one says nothing about the problem, yet one burst a minute filled
+ * the 50-entry log within ten minutes and pushed out the member's own actions:
+ * on HELP-10 41 of 50 entries were these, and the poll the member had created
+ * half an hour earlier was gone. A FAILED one is still kept — that can be the
+ * problem.
+ */
+const BACKGROUND_ENDPOINTS = [
+  /^\/?v2\/presence\/heartbeat$/,
+  /^\/?v2\/presence\/online-count$/,
+  /^\/?v2\/notifications\/counts$/,
+  /^\/?v2\/messages\/unread-count$/,
+];
+
 const entries: SupportDiagnosticEntry[] = [];
+let backgroundRequestsOmitted = 0;
 let restoreConsole: (() => void) | null = null;
 
 export function clearSupportDiagnostics(): void {
   entries.length = 0;
+  backgroundRequestsOmitted = 0;
 }
 
 export function recordConsoleDiagnostic(level: ConsoleLevel, args: unknown[]): void {
@@ -83,6 +102,11 @@ export function recordApiDiagnostic(input: {
   status: number;
   durationMs: number;
 }): void {
+  if (input.status > 0 && input.status < 400 && isBackgroundEndpoint(input.endpoint)) {
+    backgroundRequestsOmitted++;
+    return;
+  }
+
   pushEntry({
     kind: 'api',
     timestamp: new Date().toISOString(),
@@ -127,7 +151,16 @@ export function getSupportDiagnosticsSnapshot(): SupportDiagnosticsSnapshot {
       time: typeof __BUILD_TIME__ === 'undefined' ? null : __BUILD_TIME__,
     },
     entries: entries.map((entry) => ({ ...entry })),
+    background_requests_omitted: backgroundRequestsOmitted,
   };
+}
+
+function isBackgroundEndpoint(endpoint: string): boolean {
+  let path = endpoint.split(/[?#]/, 1)[0] ?? '';
+  // Absolute addresses and an /api prefix both reduce to the v2 path.
+  path = path.replace(/^https?:\/\/[^/]+/i, '').replace(/^\/api(?=\/)/, '');
+
+  return BACKGROUND_ENDPOINTS.some((pattern) => pattern.test(path));
 }
 
 export function installSupportDiagnosticsCapture(): () => void {

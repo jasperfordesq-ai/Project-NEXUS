@@ -134,6 +134,33 @@ describe('supportDiagnostics', () => {
     expect(JSON.stringify(snapshot.entries.at(-1))).toContain(`message-${MAX_SUPPORT_DIAGNOSTIC_ENTRIES + 4}`);
   });
 
+  // HELP-10: the once-a-minute background checks filled the 50-entry log and
+  // pushed out the poll the member had created half an hour earlier.
+  it('leaves successful background checks out, so the member\'s own actions survive', () => {
+    recordApiDiagnostic({ method: 'POST', endpoint: '/v2/polls', status: 201, durationMs: 120 });
+    for (let minute = 0; minute < 30; minute++) {
+      recordApiDiagnostic({ method: 'POST', endpoint: '/v2/presence/heartbeat', status: 200, durationMs: 300 });
+      recordApiDiagnostic({ method: 'GET', endpoint: '/v2/presence/online-count', status: 200, durationMs: 300 });
+      recordApiDiagnostic({ method: 'GET', endpoint: '/v2/notifications/counts', status: 200, durationMs: 300 });
+      recordApiDiagnostic({ method: 'GET', endpoint: '/v2/messages/unread-count?x=1', status: 200, durationMs: 300 });
+    }
+
+    const snapshot = getSupportDiagnosticsSnapshot();
+
+    expect(snapshot.entries).toEqual([expect.objectContaining({ method: 'POST', endpoint: '/v2/polls', status: 201 })]);
+    expect(snapshot.background_requests_omitted).toBe(120);
+  });
+
+  it('still records a background check that failed', () => {
+    recordApiDiagnostic({ method: 'GET', endpoint: '/v2/notifications/counts', status: 500, durationMs: 300 });
+    recordApiDiagnostic({ method: 'POST', endpoint: '/api/v2/presence/heartbeat', status: 0, durationMs: 300 });
+
+    const snapshot = getSupportDiagnosticsSnapshot();
+
+    expect(snapshot.entries.map((entry) => entry.status)).toEqual([500, 0]);
+    expect(snapshot.background_requests_omitted).toBe(0);
+  });
+
   it('can install and remove console capture', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const restore = installSupportDiagnosticsCapture();
