@@ -7,9 +7,19 @@
  * Admin Data Table
  * Reusable table with sorting, filtering, pagination, and bulk actions.
  * Built on HeroUI Table component.
+ *
+ * Two opt-in layouts for narrow screens (used by the broker panel):
+ * - `stickyActions` pins the actions column to the right edge, so the buttons
+ *   stay visible while a wide table scrolls sideways.
+ * - `mobileCards` renders each row as a card below the `md` breakpoint (labels
+ *   beside values, actions at the bottom) instead of a table that needs
+ *   sideways scrolling on a phone.
+ * Columns can also `hideBelow` a breakpoint to drop the least useful detail
+ * on smaller screens.
  */
 
 import { useState, useMemo, useCallback, type ReactNode } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useTranslation } from 'react-i18next';
 import Search from 'lucide-react/icons/search';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
@@ -34,6 +44,8 @@ import {
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type ColumnBreakpoint = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+
 export interface Column<T> {
   key: string;
   label: ReactNode;
@@ -41,6 +53,27 @@ export interface Column<T> {
   isRowHeader?: boolean;
   render?: (item: T) => ReactNode;
   width?: number;
+  /** Table layout: hide this column on screens narrower than the breakpoint. */
+  hideBelow?: ColumnBreakpoint;
+  /** The row's buttons. Defaults to `key === 'actions'`. Pinned by `stickyActions`, placed last in cards. */
+  isActions?: boolean;
+  /** Card layout: leave this column out of the card. */
+  hideInCard?: boolean;
+}
+
+// Literal class names so Tailwind generates them.
+const HIDE_BELOW_CLASS: Record<ColumnBreakpoint, string> = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+  xl: 'hidden xl:table-cell',
+  '2xl': 'hidden 2xl:table-cell',
+};
+const STICKY_ACTIONS_CELL = 'sticky right-0 z-[1] bg-surface shadow-[-10px_0_10px_-10px_rgba(0,0,0,0.25)]';
+const STICKY_ACTIONS_HEAD = 'sticky right-0 z-[2] bg-surface-secondary shadow-[-10px_0_10px_-10px_rgba(0,0,0,0.25)]';
+
+function isActionsColumn<T>(col: Column<T>): boolean {
+  return col.isActions ?? col.key === 'actions';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,6 +102,10 @@ interface DataTableProps<T extends Record<string, any>> {
   selectedKeys?: Set<string>;
   topContent?: ReactNode;
   emptyContent?: ReactNode;
+  /** Pin the actions column to the right edge while the table scrolls sideways. */
+  stickyActions?: boolean;
+  /** Below the `md` breakpoint, show each row as a card instead of a table row. */
+  mobileCards?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,8 +131,12 @@ export function DataTable<T extends Record<string, any>>({
   selectedKeys,
   topContent,
   emptyContent,
+  stickyActions = false,
+  mobileCards = false,
 }: DataTableProps<T>) {
   const { t } = useTranslation('admin_nav');
+  const isPhone = useMediaQuery('(max-width: 767px)');
+  const showCards = mobileCards && isPhone;
   const [searchValue, setSearchValue] = useState('');
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | undefined>(undefined);
 
@@ -195,6 +236,88 @@ export function DataTable<T extends Record<string, any>>({
     );
   }, [onPageChange, totalPages, page, totalItems, t])
 
+  function columnClass(col: Column<T>, head: boolean): string | undefined {
+    const parts: string[] = [];
+    if (col.hideBelow) parts.push(HIDE_BELOW_CLASS[col.hideBelow]);
+    if (stickyActions && isActionsColumn(col)) parts.push(head ? STICKY_ACTIONS_HEAD : STICKY_ACTIONS_CELL);
+    return parts.length ? parts.join(' ') : undefined;
+  }
+
+  if (showCards) {
+    const titleColumn = columns.find((c) => c.isRowHeader) ?? columns[0];
+    const actionColumns = columns.filter((c) => isActionsColumn(c));
+    const detailColumns = columns.filter((c) => c !== titleColumn && !isActionsColumn(c) && !c.hideInCard);
+    const cell = (col: Column<T>, item: T): ReactNode =>
+      col.render ? col.render(item) : ((item[col.key] as ReactNode) ?? '—');
+    const selection = selectable && selectedKeys && onSelectionChange ? selectedKeys : null;
+    const toggle = (key: string, on: boolean) => {
+      const next = new Set(selection ?? []);
+      if (on) next.add(key);
+      else next.delete(key);
+      onSelectionChange?.(next);
+    };
+
+    return (
+      <div className="min-w-0 space-y-3" data-testid="data-table-cards">
+        {tableTopContent}
+        {isLoading ? (
+          <div role="status" aria-busy="true" aria-label={t('shared.loading')} className="flex justify-center py-10">
+            <Spinner size="lg" />
+          </div>
+        ) : sortedData.length === 0 ? (
+          <div className="rounded-2xl border border-divider/70 bg-surface p-6 text-center text-sm text-muted shadow-sm">
+            {emptyContent || t('shared.no_data')}
+          </div>
+        ) : (
+          <ul className="space-y-3" aria-label={t('shared.data_table')}>
+            {sortedData.map((item) => {
+              const key = String(item[keyField]);
+              return (
+                <li
+                  key={key}
+                  className="rounded-2xl border border-divider/70 bg-surface p-4 shadow-sm shadow-black/[0.03]"
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    {selection && (
+                      <Checkbox
+                        aria-label={t('shared.select_row', { id: key })}
+                        isSelected={selection.has(key)}
+                        onChange={(on) => toggle(key, on)}
+                        className="mt-0.5"
+                        // A visible edge: the default box is too faint on a white card (WCAG 1.4.11).
+                        classNames={{ wrapper: 'border border-foreground/60' }}
+                      />
+                    )}
+                    <div className="min-w-0 flex-1 text-sm">{titleColumn ? cell(titleColumn, item) : key}</div>
+                  </div>
+                  {detailColumns.length > 0 && (
+                    <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+                      {detailColumns.map((col) => (
+                        <div key={col.key} className="contents">
+                          <dt className="text-xs font-medium text-muted">{col.label}</dt>
+                          <dd className="min-w-0 break-words text-foreground">{cell(col, item)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  {actionColumns.map((col) => (
+                    <div
+                      key={col.key}
+                      className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-divider/60 pt-3"
+                    >
+                      {cell(col, item)}
+                    </div>
+                  ))}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {tableBottomContent}
+      </div>
+    );
+  }
+
   return (
     <Table
       aria-label={t('shared.data_table')}
@@ -228,6 +351,7 @@ export function DataTable<T extends Record<string, any>>({
             isRowHeader={col.isRowHeader ?? index === 0}
             width={col.width}
             scope="col"
+            className={columnClass(col, true)}
           >
             {col.label}
           </TableColumn>
@@ -261,7 +385,7 @@ export function DataTable<T extends Record<string, any>>({
               </TableCell>
             ) : null}
             {columns.map((col) => (
-              <TableCell key={col.key}>
+              <TableCell key={col.key} className={columnClass(col, false)}>
                 {col.render
                   ? col.render(item as T)
                   : (item[col.key] as ReactNode) ?? '—'}

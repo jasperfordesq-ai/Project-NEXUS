@@ -112,7 +112,7 @@ export function BrokerStatCard({
   const showTrendRow = !loading && (delta !== undefined || (trend && trend.length >= 2));
 
   const body = (
-    <div className="flex h-full w-full flex-col p-4 sm:p-5">
+    <div className="flex h-full w-full flex-col p-3.5 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${tileClass[color]}`}
@@ -138,7 +138,7 @@ export function BrokerStatCard({
           className="mt-1.5 h-8 w-20 rounded-md bg-surface-tertiary"
         />
       ) : (
-        <p className="mt-1 text-3xl font-semibold leading-none tracking-tight text-foreground tabular-nums">
+        <p className="mt-1 text-2xl font-semibold leading-none tracking-tight text-foreground tabular-nums sm:text-3xl">
           {typeof value === 'number' ? <AnimatedNumber value={value} /> : (value ?? '—')}
         </p>
       )}

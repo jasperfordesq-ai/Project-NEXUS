@@ -336,7 +336,8 @@
     "bulk_selected_few": "{{count}} محدد",
     "bulk_selected_many": "{{count}} محدد",
     "bulk_selected_two": "{{count}} محدد",
-    "bulk_selected_zero": "{{count}} محدد"
+    "bulk_selected_zero": "{{count}} محدد",
+    "approve_named": "الموافقة على {{name}}"
   },
   "onboarding": {
     "title": "الإلحاق",

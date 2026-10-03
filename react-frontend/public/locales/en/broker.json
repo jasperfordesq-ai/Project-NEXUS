@@ -300,7 +300,8 @@
     "time_days_ago_one": "{{count}}d ago",
     "time_days_ago_other": "{{count}}d ago",
     "bulk_selected_one": "{{count}} selected",
-    "bulk_selected_other": "{{count}} selected"
+    "bulk_selected_other": "{{count}} selected",
+    "approve_named": "Approve {{name}}"
   },
   "onboarding": {
     "title": "Onboarding",

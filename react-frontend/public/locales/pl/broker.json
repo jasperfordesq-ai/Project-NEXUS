@@ -318,7 +318,8 @@
     "time_days_ago_few": "{{count}} dni temu",
     "time_days_ago_many": "{{count}} dni temu",
     "bulk_selected_few": "Zaznaczono: {{count}}",
-    "bulk_selected_many": "Zaznaczono: {{count}}"
+    "bulk_selected_many": "Zaznaczono: {{count}}",
+    "approve_named": "Zatwierdź: {{name}}"
   },
   "onboarding": {
     "title": "Wdrożenie",

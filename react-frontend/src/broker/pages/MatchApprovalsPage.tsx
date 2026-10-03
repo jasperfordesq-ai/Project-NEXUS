@@ -308,7 +308,7 @@ export function MatchApprovalsPage() {
       }
     >
       {/* Stats row */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('matching.stat_pending')}
           value={stats?.pending_count ?? 0}
@@ -394,6 +394,8 @@ export function MatchApprovalsPage() {
 
       {/* Data table */}
       <DataTable
+        stickyActions
+        mobileCards
         columns={columns}
         data={items}
         isLoading={loading}

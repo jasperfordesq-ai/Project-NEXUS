@@ -268,7 +268,7 @@ export function ReviewArchive() {
       }
     >
       {/* KPI header — derived from the records currently in view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('archives.stat_records')}
           value={total}
@@ -376,6 +376,8 @@ export function ReviewArchive() {
         />
       ) : (
         <DataTable
+          stickyActions
+          mobileCards
           columns={columns}
           data={items}
           isLoading={loading}

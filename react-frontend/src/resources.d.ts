@@ -34029,6 +34029,7 @@ export default interface Resources {
     "members": {
       "action_failed": "Action failed. Please try again.",
       "approve": "Approve",
+      "approve_named": "Approve {{name}}",
       "approved_success": "Member approved successfully.",
       "bulk_approve": "Approve selected",
       "bulk_approved_success": "Approved {{count}} member(s).",

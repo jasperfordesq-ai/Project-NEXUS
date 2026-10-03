@@ -318,7 +318,7 @@ export function BrokerDashboard() {
           </Card>
 
           {/* ── KPI grid — each tile deep-links with the filter applied ──── */}
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
             <BrokerStatCard
               label={t('dashboard.pending_members')}
               value={stats?.pending_members ?? null}

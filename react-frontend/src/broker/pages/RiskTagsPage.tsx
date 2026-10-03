@@ -484,6 +484,7 @@ export function RiskTagsPage() {
     },
     {
       key: 'id',
+      isActions: true,
       label: t('risk_tags.col_actions'),
       render: (item) => (
         <div className="flex gap-1">
@@ -583,7 +584,7 @@ export function RiskTagsPage() {
       ) : (
         <>
           {/* KPI header — counts by level, deep-linked into the ?level= filter */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <BrokerStatCard
               label={t('risk_tags.stat_critical')}
               value={levelCounts.critical}
@@ -623,6 +624,8 @@ export function RiskTagsPage() {
           </div>
 
           <DataTable
+            stickyActions
+            mobileCards
             columns={columns}
             data={filteredItems}
             isLoading={loading}

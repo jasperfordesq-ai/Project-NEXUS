@@ -417,6 +417,8 @@ export function VettingRecords() {
     },
     {
       key: 'scheme',
+      hideBelow: '2xl',
+      hideInCard: true,
       label: t('vetting.col_scheme'),
       render: (item) => (
         <div className="flex flex-wrap gap-1">
@@ -608,7 +610,7 @@ export function VettingRecords() {
           </CardBody>
         </Card>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
           <BrokerStatCard label={t('vetting.stat_total_members')} value={stats?.total_members} icon={Users} color="neutral" loading={statsLoading} />
           <BrokerStatCard label={t('vetting.stat_review_requested')} value={reviewPending} icon={RefreshCw} color="warning" loading={statsLoading} to={tenantPath('/broker/vetting?status=review_requested')} />
           <BrokerStatCard label={t('vetting.stat_confirmed')} value={stats?.confirmed} icon={UserCheck} color="success" loading={statsLoading} to={tenantPath('/broker/vetting?status=confirmed')} />
@@ -645,6 +647,8 @@ export function VettingRecords() {
           />
         ) : (
           <DataTable
+            stickyActions
+            mobileCards
             columns={columns}
             data={items}
             keyField="user_id"

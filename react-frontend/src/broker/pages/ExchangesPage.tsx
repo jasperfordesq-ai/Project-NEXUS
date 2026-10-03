@@ -355,7 +355,7 @@ export function ExchangeManagement() {
       }
     >
       {/* KPI header — deep-links into the matching filtered view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('exchanges.stat_total')}
           value={stats.total}
@@ -488,6 +488,8 @@ export function ExchangeManagement() {
         />
       ) : (
         <DataTable
+          stickyActions
+          mobileCards
           columns={columns}
           data={items}
           isLoading={loading}

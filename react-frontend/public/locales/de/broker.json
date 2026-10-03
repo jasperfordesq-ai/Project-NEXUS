@@ -300,7 +300,8 @@
     "time_days_ago_one": "vor {{count}} Tg.",
     "time_days_ago_other": "vor {{count}} Tg.",
     "bulk_selected_one": "{{count}} ausgewählt",
-    "bulk_selected_other": "{{count}} ausgewählt"
+    "bulk_selected_other": "{{count}} ausgewählt",
+    "approve_named": "{{name}} genehmigen"
   },
   "onboarding": {
     "title": "Onboarding",

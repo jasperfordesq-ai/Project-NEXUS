@@ -609,6 +609,7 @@ export default function MembersPage() {
       },
       {
         key: 'role',
+        hideBelow: '2xl',
         label: t('members.col_role'),
         render: (user: AdminUser) => (
           <Chip
@@ -652,6 +653,7 @@ export default function MembersPage() {
       },
       {
         key: 'last_active_at',
+        hideBelow: '2xl',
         label: t('members.col_last_active'),
         render: (user: AdminUser) => (
           <Tooltip content={user.last_active_at ? formatServerDateTime(user.last_active_at) : t('members.time_never')}>
@@ -664,6 +666,7 @@ export default function MembersPage() {
       },
       {
         key: 'created_at',
+        hideBelow: '2xl',
         label: t('members.col_joined'),
         sortable: true,
         render: (user: AdminUser) => (
@@ -677,6 +680,20 @@ export default function MembersPage() {
         label: '',
         render: (user: AdminUser) => (
           <div className="flex items-center gap-1">
+            {/* Approving a new member is a broker's daily job: a visible button,
+                not only the last item of the menu. Same confirmation as the menu. */}
+            {user.status === 'pending' && (
+              <Button
+                size="sm"
+                color="success"
+                variant="flat"
+                startContent={<UserCheck size={14} aria-hidden="true" />}
+                onPress={() => setConfirmAction({ type: 'approve', user })}
+                aria-label={t('members.approve_named', { name: user.name })}
+              >
+                {t('members.approve')}
+              </Button>
+            )}
             {/* Quick note button */}
             <Tooltip content={t('members.notes')}>
               <Button
@@ -791,7 +808,7 @@ export default function MembersPage() {
       }
     >
       {/* ── KPI header — counts come from the same list endpoint, deep-linked ── */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('members.stat_total')}
           value={stats?.total ?? null}
@@ -971,6 +988,8 @@ export default function MembersPage() {
         <BrokerSkeleton variant="table" count={8} />
       ) : (
         <DataTable<AdminUser>
+          stickyActions
+          mobileCards
           columns={columns}
           data={members}
           keyField="id"

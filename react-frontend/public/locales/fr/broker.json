@@ -309,7 +309,8 @@
     "time_minutes_ago_many": "il y a {{count}} min",
     "time_hours_ago_many": "il y a {{count}} h",
     "time_days_ago_many": "il y a {{count}} j",
-    "bulk_selected_many": "{{count}} sélectionné(s)"
+    "bulk_selected_many": "{{count}} sélectionné(s)",
+    "approve_named": "Approuver {{name}}"
   },
   "onboarding": {
     "title": "Intégration",

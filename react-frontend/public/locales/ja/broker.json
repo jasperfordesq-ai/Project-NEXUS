@@ -300,7 +300,8 @@
     "time_minutes_ago_one": "{{count}} 分前",
     "time_hours_ago_one": "{{count}}前",
     "time_days_ago_one": "{{count}}日前",
-    "bulk_selected_one": "{{count}} 選択済み"
+    "bulk_selected_one": "{{count}} 選択済み",
+    "approve_named": "{{name}}さんを承認"
   },
   "onboarding": {
     "title": "オンボーディング",

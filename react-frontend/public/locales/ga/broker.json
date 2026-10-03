@@ -327,7 +327,8 @@
     "time_days_ago_two": "{{count}} lá ó shin",
     "bulk_selected_few": "{{count}} roghnaithe",
     "bulk_selected_many": "{{count}} roghnaithe",
-    "bulk_selected_two": "{{count}} roghnaithe"
+    "bulk_selected_two": "{{count}} roghnaithe",
+    "approve_named": "Faomh {{name}}"
   },
   "onboarding": {
     "title": "Ionduchtú",

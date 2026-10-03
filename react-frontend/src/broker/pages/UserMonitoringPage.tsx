@@ -483,7 +483,7 @@ export function UserMonitoring() {
       ) : (
         <>
           {/* KPI header — who is monitored, how tightly, and what lapses next */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             <BrokerStatCard
               label={t('monitoring.stat_total')}
               value={items.length}
@@ -528,6 +528,8 @@ export function UserMonitoring() {
             />
           ) : (
             <DataTable
+              stickyActions
+              mobileCards
               columns={columns}
               data={items}
               isLoading={loading}

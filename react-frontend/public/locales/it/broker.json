@@ -309,7 +309,8 @@
     "time_minutes_ago_many": "{{count}} min fa",
     "time_hours_ago_many": "{{count}} h fa",
     "time_days_ago_many": "{{count}} g fa",
-    "bulk_selected_many": "{{count}} selezionati"
+    "bulk_selected_many": "{{count}} selezionati",
+    "approve_named": "Approva {{name}}"
   },
   "onboarding": {
     "title": "Onboarding",

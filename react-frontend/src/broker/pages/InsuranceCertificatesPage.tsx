@@ -740,7 +740,7 @@ export function InsuranceCertificates() {
       )}
 
       {/* KPI header — cards deep-link into the matching filtered view */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('insurance.stat_total')}
           value={stats?.total ?? 0}
@@ -840,6 +840,8 @@ export function InsuranceCertificates() {
         />
       ) : (
         <DataTable
+          stickyActions
+          mobileCards
           columns={columns}
           data={items}
           isLoading={loading}

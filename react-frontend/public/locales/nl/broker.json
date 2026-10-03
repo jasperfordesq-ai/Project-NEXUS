@@ -300,7 +300,8 @@
     "time_days_ago_one": "{{count}} d geleden",
     "time_days_ago_other": "{{count}} d geleden",
     "bulk_selected_one": "{{count}} geselecteerd",
-    "bulk_selected_other": "{{count}} geselecteerd"
+    "bulk_selected_other": "{{count}} geselecteerd",
+    "approve_named": "{{name}} goedkeuren"
   },
   "onboarding": {
     "title": "Onboarding",

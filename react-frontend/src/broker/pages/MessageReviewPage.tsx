@@ -407,6 +407,7 @@ export function MessageReview() {
     },
     {
       key: 'flagged',
+      hideBelow: '2xl',
       label: t('messages.col_flagged'),
       render: (item) => {
         if (!item.flagged) {
@@ -498,7 +499,7 @@ export function MessageReview() {
       }
     >
       {/* KPI header — global unreviewed queue + in-view tallies */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <BrokerStatCard
           label={t('messages.stat_unreviewed')}
           value={unreviewedCount}
@@ -616,6 +617,8 @@ export function MessageReview() {
         />
       ) : (
         <DataTable
+          stickyActions
+          mobileCards
           columns={columns}
           data={items}
           isLoading={loading}
