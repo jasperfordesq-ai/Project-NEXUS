@@ -378,7 +378,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
         </CardHeader>
         <CardBody>
           {dlpAssignments.length === 0 ? (
-            <p className="text-muted/80 text-sm">
+            <p className="text-muted text-sm">
               {t('volunteering.no_dlp_assignments')}
             </p>
           ) : (
@@ -390,7 +390,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                 >
                   <div>
                     <p className="font-medium">{assignment.organization_name}</p>
-                    <p className="text-sm text-muted/80">
+                    <p className="text-sm text-muted">
                       {t('volunteering.dlp_label')}:{' '}
                       {assignment.dlp_user_name ? (
                         <span className="text-success font-medium">{assignment.dlp_user_name}</span>
@@ -483,11 +483,11 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                           {t('volunteering.reported_by', { name: incident.reporter_name })}
                         </p>
                         {incident.action_taken && (
-                          <p className="text-xs text-muted/80 mt-0.5 italic">
+                          <p className="text-xs text-muted mt-0.5 italic">
                             {incident.action_taken}
                           </p>
                         )}
-                        <p className="text-xs text-muted/80 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           {incident.date ? new Date(incident.date).toLocaleString(getFormattingLocale()) : '--'}
                         </p>
                       </div>
@@ -510,11 +510,11 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-muted/80">{t('volunteering.col_incident_type')}:</span>
+                    <span className="text-muted">{t('volunteering.col_incident_type')}:</span>
                     <p className="font-medium">{t(`volunteering.incident_type_${selectedIncident.type}`)}</p>
                   </div>
                   <div>
-                    <span className="text-muted/80">{t('volunteering.col_severity')}:</span>
+                    <span className="text-muted">{t('volunteering.col_severity')}:</span>
                     <p>
                       <Chip
                         size="sm"
@@ -527,18 +527,18 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                     </p>
                   </div>
                   <div>
-                    <span className="text-muted/80">{t('volunteering.col_reporter')}:</span>
+                    <span className="text-muted">{t('volunteering.col_reporter')}:</span>
                     <p className="font-medium">{selectedIncident.reporter_name}</p>
                   </div>
                   <div>
-                    <span className="text-muted/80">{t('volunteering.col_subject')}:</span>
+                    <span className="text-muted">{t('volunteering.col_subject')}:</span>
                     <p className="font-medium">{selectedIncident.subject_name}</p>
                   </div>
                 </div>
 
                 {selectedIncident.description && (
                   <div>
-                    <span className="text-muted/80 text-sm">{t('volunteering.description')}:</span>
+                    <span className="text-muted text-sm">{t('volunteering.description')}:</span>
                     <p className="text-sm mt-1">{selectedIncident.description}</p>
                   </div>
                 )}
@@ -607,7 +607,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                 onValueChange={setDlpUserId}
               />
               {selectedOrg?.dlp_user_name && (
-                <p className="text-sm text-muted/80">
+                <p className="text-sm text-muted">
                   {t('volunteering.current_dlp')}: <span className="font-medium text-foreground/80">{selectedOrg.dlp_user_name}</span>
                 </p>
               )}

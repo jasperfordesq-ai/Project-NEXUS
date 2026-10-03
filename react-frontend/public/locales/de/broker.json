@@ -105,8 +105,8 @@
     "load_error_title": "Aktivitätsfeed konnte nicht geladen werden",
     "load_error_hint": "Erneut versuchen — wenn es weiterhin fehlschlägt, ist die API möglicherweise nicht verfügbar.",
     "deleted_user": "Gelöschte/r Nutzer/in",
-    "partial_title": "Einige Metriken konnten nicht geladen werden",
-    "partial_body": "Einer oder mehrere Zähler oben zeigen einen Bindestrich, weil die zugrundeliegende Abfrage fehlgeschlagen ist. Aktualisieren Sie zur erneuten Versuch; bleibt der Bindestrich, prüfen Sie die Broker-Logs.",
+    "partial_title": "Einige Zahlen konnten nicht geladen werden",
+    "partial_body": "Karten mit einem Strich (–) konnten gerade nicht gezählt werden. Klicken Sie auf „Aktualisieren“, um es erneut zu versuchen. Wenn der Strich bleibt, sagen Sie einem Admin Bescheid.",
     "broker_actions_heading": "Broker-Aktionen",
     "no_activity": "Keine aktuellen Aktivitäten.",
     "view_all": "Alle anzeigen",
@@ -481,7 +481,7 @@
     "attestation_uk_safeguarding_clearance": "Sicherheitsfreigabe für das Vereinigte Königreich",
     "attestation_other": "Schutzbestätigung",
     "jurisdiction_placeholder": "Nicht festgelegt",
-    "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wende dich an einen Admin deiner Gemeinschaft."
+    "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft."
   },
   "member_detail": {
     "load_failed": "Mitglied konnte nicht geladen werden.",
@@ -1128,7 +1128,7 @@
     "save_failed": "Broker-Konfiguration konnte nicht gespeichert werden.",
     "save_success": "Broker-Konfiguration gespeichert.",
     "limited_access_title": "Manche Einstellungen kann nur ein Admin ändern",
-    "limited_access_body": "Einstellungen mit der Markierung „Nur Admin“ werden angezeigt, damit du siehst, wie deine Gemeinschaft eingerichtet ist. Wenn eine davon geändert werden muss, wende dich an einen Admin deiner Gemeinschaft.",
+    "limited_access_body": "Einstellungen mit der Markierung „Nur Admin“ werden angezeigt, damit Sie sehen, wie Ihre Gemeinschaft eingerichtet ist. Wenn eine davon geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft.",
     "section_messaging": "Nachrichten",
     "section_message_copy_rules": "Nachrichten-Kopierregeln",
     "section_broker_visibility": "Broker-Sichtbarkeit",
@@ -1223,15 +1223,15 @@
   },
   "admin_only": {
     "label": "Nur Admin",
-    "hint": "Nur ein Admin kann das ändern. Wenn es geändert werden muss, wende dich an einen Admin deiner Gemeinschaft."
+    "hint": "Nur ein Admin kann das ändern. Wenn es geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft."
   },
   "jurisdiction_notice": {
     "title": "Rechtsraum für den Schutz nicht festgelegt",
-    "intro": "Deine Gemeinschaft hat ihren Rechtsraum für den Schutz noch nicht gewählt. Bis er festgelegt ist:",
+    "intro": "Ihre Gemeinschaft hat ihren Rechtsraum für den Schutz noch nicht gewählt. Bis er festgelegt ist:",
     "effect_vetting": "Broker können keine Überprüfungsbestätigungen erfassen.",
     "effect_contact": "Mitglieder, die nur von überprüften Personen kontaktiert werden möchten, können weder kontaktiert noch vermittelt werden.",
-    "action_admin": "Nur ein Admin kann ihn festlegen. Als Admin kannst du das auf der Seite „Bestätigungen prüfen“ tun.",
-    "action_ask_admin": "Nur ein Admin kann ihn festlegen. Bitte einen Admin deiner Gemeinschaft, das zu tun.",
+    "action_admin": "Nur ein Admin kann ihn festlegen. Als Admin können Sie das auf der Seite „Bestätigungen prüfen“ tun.",
+    "action_ask_admin": "Nur ein Admin kann ihn festlegen. Bitten Sie einen Admin Ihrer Gemeinschaft, das zu tun.",
     "set_button": "Rechtsraum festlegen"
   },
   "matching": {

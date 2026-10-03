@@ -520,3 +520,54 @@ html[data-simplified-layout="true"] .backdrop-blur-3xl {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
+
+/* ─────────────────────────────────────────────
+   BROKER PANEL — TEXT CONTRAST (WCAG 2.2 AA, 1.4.3)
+   A page-by-page measurement of the broker panel on 3 Oct 2026 found the
+   shared status colours just under the 4.5:1 text minimum: accent links
+   4.47 (dark 4.18), muted text on secondary surfaces 4.36, soft-warning
+   chips 4.49, white on solid danger 3.48 (dark 4.35), small danger text
+   3.57 (dark 4.19), and amber "warning" text 1.95. The same tokens paint
+   both text and fills, and in dark mode they need to move in opposite
+   directions, so only *text* colours are adjusted here, and only while
+   the broker panel is open (BrokerLayout sets data-panel="broker" on <html>,
+   so portalled modals and toasts are covered too). Fills, the
+   runtime accent choice and every other surface are untouched.
+   ───────────────────────────────────────────── */
+:root[data-panel="broker"] {
+  --danger: oklch(0.54 0.205 27);
+  --warning-soft-foreground: oklch(0.46 0.115 62);
+  --broker-text-accent: color-mix(in oklab, var(--accent-color) 78%, black);
+  --broker-text-danger: oklch(0.52 0.2 27);
+  --broker-text-warning: oklch(0.5 0.12 62);
+}
+
+/* Secondary text, light theme only: #64748b measured 4.36:1 on the table
+   header and search surfaces. Dark already passes, and the high-contrast
+   profile sets its own darker value, so both are left alone. */
+:root[data-panel="broker"][data-theme="light"]:not([data-high-contrast="true"]) {
+  --text-muted: #4f5d70;
+  --muted: #4f5d70;
+}
+
+:root.dark[data-panel="broker"] {
+  --danger: oklch(0.53 0.19 25);
+  --warning-soft-foreground: oklch(0.84 0.12 78);
+  --broker-text-accent: color-mix(in oklab, var(--accent-color) 62%, white);
+  --broker-text-danger: oklch(0.74 0.15 22);
+  --broker-text-warning: oklch(0.82 0.14 78);
+}
+
+:root[data-panel="broker"] .text-accent,
+:root[data-panel="broker"] .hover\:text-accent:hover,
+:root[data-panel="broker"] .group:hover .group-hover\:text-accent {
+  color: var(--broker-text-accent);
+}
+
+:root[data-panel="broker"] .text-danger {
+  color: var(--broker-text-danger);
+}
+
+:root[data-panel="broker"] .text-warning {
+  color: var(--broker-text-warning);
+}

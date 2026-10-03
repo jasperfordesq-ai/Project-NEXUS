@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Shown on every broker-panel page while the community has no safeguarding
- * jurisdiction. Until one is chosen, brokers cannot record vetting decisions
+ * Shown on every broker-panel page (BrokerLayout) and every admin-panel page
+ * (AdminLayout) while the community has no safeguarding jurisdiction. Until one is chosen, brokers cannot record vetting decisions
  * and members who asked to be contacted only by vetted people cannot be
  * reached (the contact gate fails closed — docs/SAFEGUARDING-AND-CONSENT.md).
  * Only an admin can choose it (owner decision, 3 Oct 2026), so an admin gets

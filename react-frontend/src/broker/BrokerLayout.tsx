@@ -25,7 +25,7 @@ import { BrokerSidebar, type BrokerBadgeCounts } from './components/BrokerSideba
 import { BrokerHeader } from './components/BrokerHeader';
 import { BrokerBreadcrumbs } from './components/BrokerBreadcrumbs';
 import { BrokerCommandPalette } from './components/BrokerCommandPalette';
-import { JurisdictionNotice } from './components/JurisdictionNotice';
+import { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
 
 const EMPTY_BADGES: BrokerBadgeCounts = {
   pending_members: 0,
@@ -144,6 +144,16 @@ export function BrokerLayout() {
       window.removeEventListener(BROKER_BADGES_REFRESH_EVENT, onRefresh);
     };
   }, [fetchBadges]);
+
+  // Scopes the broker panel's text-contrast tokens (tokens.css, "BROKER
+  // PANEL — TEXT CONTRAST"). Set on <html>, not on this layout's own element,
+  // so modals, popovers and toasts — rendered in portals outside it — get
+  // the same readable colours.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-panel', 'broker');
+    return () => root.removeAttribute('data-panel');
+  }, []);
 
   // ⌘K / Ctrl+K opens the command palette from anywhere in the panel.
   useEffect(() => {

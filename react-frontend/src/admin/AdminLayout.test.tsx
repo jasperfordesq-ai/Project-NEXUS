@@ -275,4 +275,46 @@ describe('AdminLayout', () => {
     const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
     expect(dialog).toBeInTheDocument();
   });
+  // Owner decision, 3 Oct 2026: admins see the same "jurisdiction not set"
+  // notice in the admin panel, because only they can set it.
+  describe('safeguarding jurisdiction notice', () => {
+    const NOTICE = 'Safeguarding jurisdiction not set';
+    const policyIs = (configured: boolean | 'fail') => {
+      mockApi.get.mockImplementation((url: string) => {
+        if (url === '/v2/admin/vetting/policy') {
+          return configured === 'fail'
+            ? Promise.resolve({ success: false, error: 'Forbidden' })
+            : Promise.resolve({ success: true, data: { policy: { configured }, jurisdictions: [] } });
+        }
+        return Promise.resolve({ success: true, data: [] });
+      });
+    };
+
+    it('shows the notice with a button to the setting when it is not set', async () => {
+      policyIs(false);
+      const { AdminLayout } = await import('./AdminLayout');
+      render(<AdminLayout />);
+
+      expect(await screen.findByText(NOTICE)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Set the jurisdiction/ })).toBeInTheDocument();
+    });
+
+    it('shows nothing once it is set', async () => {
+      policyIs(true);
+      const { AdminLayout } = await import('./AdminLayout');
+      render(<AdminLayout />);
+
+      await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/vetting/policy'));
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+
+    it('shows nothing when the policy cannot be read', async () => {
+      policyIs('fail');
+      const { AdminLayout } = await import('./AdminLayout');
+      render(<AdminLayout />);
+
+      await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith('/v2/admin/vetting/policy'));
+      expect(screen.queryByText(NOTICE)).toBeNull();
+    });
+  });
 });

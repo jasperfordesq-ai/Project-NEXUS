@@ -18,7 +18,7 @@ import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardBody, Button, Chip } from '@/components/ui';
+import { Alert, Card, CardBody, Button, Chip } from '@/components/ui';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import MessageSquareWarning from 'lucide-react/icons/message-square-warning';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
@@ -190,18 +190,28 @@ export function BrokerDashboard() {
           a DB hiccup as a clean dashboard, exactly the wrong direction
           for a risk-surfacing UI. */}
       {stats?._partial && (
-        <Card className="mb-4 rounded-2xl border border-warning/30 bg-warning/10">
-          <CardBody className="flex flex-row items-start gap-3 py-3">
-            <AlertCircle size={20} className="text-warning shrink-0 mt-0.5" />
-            <div className="flex-1 text-sm">
-              <p className="font-medium text-warning">{t('dashboard.partial_title')}</p>
-              <p className="text-muted">{t('dashboard.partial_body')}</p>
-            </div>
-            <Button size="sm" variant="tertiary" onPress={loadDashboard}>
+        // Same treatment as the panel's other notices: foreground text on the
+        // card surface with an amber edge (the amber-on-amber card it replaces
+        // was hard to read).
+        <Alert
+          role="status"
+          color="warning"
+          className="mb-4 rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+          classNames={{
+            title: 'text-sm font-semibold text-foreground',
+            description: 'text-sm leading-6 text-foreground',
+            icon: 'text-warning',
+          }}
+          icon={<AlertCircle size={20} aria-hidden="true" />}
+          title={t('dashboard.partial_title')}
+          description={t('dashboard.partial_body')}
+          endContent={(
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadDashboard}>
+              <RefreshCw size={14} aria-hidden="true" />
               {t('dashboard.refresh')}
             </Button>
-          </CardBody>
-        </Card>
+          )}
+        />
       )}
 
       {loading && !stats ? (

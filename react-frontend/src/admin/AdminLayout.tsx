@@ -16,6 +16,10 @@ import { AdminSidebar } from './components/AdminSidebar';
 import { AdminHeader } from './components/AdminHeader';
 import { AdminBreadcrumbs } from './components/AdminBreadcrumbs';
 import { AdminMetaProvider, AdminMetaTags } from './AdminMetaContext';
+import { adminVetting } from './api/adminApi';
+import { useAuth } from '@/contexts';
+import { isAdminTierUser } from '@/lib/access';
+import { JurisdictionNotice } from '@/components/safeguarding/JurisdictionNotice';
 export function AdminLayout() {
   const { t } = useTranslation('admin_nav');
   const defaultMeta = useMemo(() => ({
@@ -44,6 +48,24 @@ function AdminLayoutShell() {
   }
 
   const { t } = useTranslation('admin_nav');
+  const { user } = useAuth();
+
+  // The same "safeguarding jurisdiction not set" notice the broker panel
+  // shows on every page (owner decision, 3 Oct 2026): admins are the only
+  // people who can set it, and some never open the broker panel. Read once
+  // per visit to the admin panel; only an explicit "not configured" shows
+  // it, so a failed read never cries wolf.
+  const [jurisdictionConfigured, setJurisdictionConfigured] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    adminVetting.policy()
+      .then((res) => {
+        if (cancelled || !res.success || !res.data?.policy) return;
+        setJurisdictionConfigured(res.data.policy.configured === true);
+      })
+      .catch(() => { /* unknown — show nothing */ });
+    return () => { cancelled = true; };
+  }, []);
 
   const openMobileDrawer = useCallback(() => {
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -147,6 +169,7 @@ function AdminLayoutShell() {
       >
         <div className="mx-auto w-full max-w-[1600px] p-3 sm:p-4 md:p-6">
           <AdminBreadcrumbs />
+          {jurisdictionConfigured === false && <JurisdictionNotice canSet={isAdminTierUser(user)} />}
           <Outlet />
         </div>
       </main>
