@@ -16,7 +16,7 @@
 {% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
-  {% set hasErrors = errors and (errors.request_type or errors.summary or errors.description or errors.impact) %}
+  {% set hasErrors = errors and (errors.request_type or errors.summary or errors.description or errors.impact or errors.screenshots) %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-xl">{{ t("report_problem.caption", { service: tenantName }) }}</span>
@@ -43,6 +43,7 @@
                   {% if errors.impact %}<li><a href="#impact">{{ errors.impact }}</a></li>{% endif %}
                   {% if errors.summary %}<li><a href="#summary">{{ errors.summary }}</a></li>{% endif %}
                   {% if errors.description %}<li><a href="#description">{{ errors.description }}</a></li>{% endif %}
+                  {% if errors.screenshots %}<li><a href="#screenshots">{{ errors.screenshots }}</a></li>{% endif %}
                 </ul>
               </div>
             </div>
@@ -60,7 +61,7 @@
 
         <p class="govuk-body-l">{{ t("report_problem.intro") }}</p>
 
-        <form method="post" action="{{ urlFor('/report-a-problem') }}" novalidate>
+        <form method="post" action="{{ urlFor('/report-a-problem') }}" enctype="multipart/form-data" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="page_url" value="{{ pageUrl }}">
 
@@ -138,6 +139,31 @@
             <textarea class="govuk-textarea{% if errors.description %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="5000" aria-describedby="description-hint{% if errors.description %} description-error{% endif %} description-info">{{ values.description or '' }}</textarea>
           </div>
           {% endcall %}
+
+          {# Official GOV.UK file upload (govuk-frontend 6.x). The wrapper's
+             data-module enables the enhanced "Choose files / or drop files" control
+             when JavaScript runs; without it this is a plain, working file input.
+             Its data-i18n attributes carry the component's translated strings.
+             The enhancement moves the "screenshots" id onto its button, so the
+             error summary link still lands on the control. #}
+          {% set screenshotsDescribedBy = "screenshots-hint" + (" screenshots-error" if errors.screenshots else "") %}
+          <div class="govuk-form-group{% if errors.screenshots %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--s" for="screenshots">{{ t("report_problem.screenshots.label") }}</label>
+            <div id="screenshots-hint" class="govuk-hint">{{ t("report_problem.screenshots.hint") }}</div>
+            {% if errors.screenshots %}
+              <p id="screenshots-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.screenshots }}</p>
+            {% endif %}
+            <div class="govuk-file-upload-wrapper" data-module="govuk-file-upload"
+              data-i18n.choose-files-button="{{ t('report_problem.screenshots.choose_files') }}"
+              data-i18n.no-file-chosen="{{ t('report_problem.screenshots.no_file_chosen') }}"
+              data-i18n.multiple-files-chosen.one="{{ t('report_problem.screenshots.files_chosen_one', { count: '%{count}' }) }}"
+              data-i18n.multiple-files-chosen.other="{{ t('report_problem.screenshots.files_chosen_other', { count: '%{count}' }) }}"
+              data-i18n.drop-instruction="{{ t('report_problem.screenshots.drop_instruction') }}"
+              data-i18n.entered-drop-zone="{{ t('report_problem.screenshots.entered_drop_zone') }}"
+              data-i18n.left-drop-zone="{{ t('report_problem.screenshots.left_drop_zone') }}">
+              <input class="govuk-file-upload{% if errors.screenshots %} govuk-file-upload--error{% endif %}" id="screenshots" name="screenshots" type="file" multiple accept="image/png,image/jpeg,image/webp" aria-describedby="{{ screenshotsDescribedBy }}">
+            </div>
+          </div>
 
           <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("report_problem.submit") }}</button>
         </form>

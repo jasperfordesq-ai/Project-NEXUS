@@ -83,6 +83,23 @@ return [
         'footer_link' => 'Ayuda y soporte',
         'contact_caption' => 'Informar de un problema',
         'contact_prefill' => 'He encontrado un problema en esta página: :url',
+        'screenshots' => [
+            'label' => 'Capturas de pantalla (opcional)',
+            'hint' => 'Puede añadir hasta 3 imágenes en formato PNG, JPEG o WebP, de hasta 10 MB cada una. Compruebe que no muestran datos privados de otras personas.',
+            'choose_files' => 'Elegir archivos',
+            'drop_instruction' => 'o suelte los archivos aquí',
+            'no_file_chosen' => 'No se ha elegido ningún archivo',
+            'files_chosen_one' => ':count archivo elegido',
+            'files_chosen_other' => ':count archivos elegidos',
+            'entered_drop_zone' => 'Ha entrado en la zona para soltar archivos',
+            'left_drop_zone' => 'Ha salido de la zona para soltar archivos',
+            'errors' => [
+                'too_many' => 'Seleccione 3 archivos como máximo',
+                'too_large' => 'Cada archivo seleccionado debe ocupar menos de 10 MB',
+                'invalid_type' => 'Cada archivo seleccionado debe ser una imagen PNG, JPEG o WebP',
+                'failed' => 'No se han podido subir los archivos seleccionados. Inténtelo de nuevo o envíe su solicitud sin ellos.',
+            ],
+        ],
         'impacts' => [
             'blocked' => 'No pude completar lo que estaba haciendo',
             'major' => 'Causó un problema importante',

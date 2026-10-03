@@ -64,6 +64,10 @@ function parseMultipartForm(options = {}) {
     const form = formidable({
       multiples: options.multiples === true,
       maxFileSize: options.maxFileSize || 10 * 1024 * 1024,
+      // Optional per-route caps. Left unset, Formidable keeps its own defaults
+      // (no file-count limit; total file data capped at maxFileSize).
+      ...(Number.isFinite(options.maxFiles) ? { maxFiles: options.maxFiles } : {}),
+      ...(Number.isFinite(options.maxTotalFileSize) ? { maxTotalFileSize: options.maxTotalFileSize } : {}),
       allowEmptyFiles: false,
       // Browsers submit an empty file part for optional file controls on an
       // otherwise valid multipart form. Ignore that placeholder before

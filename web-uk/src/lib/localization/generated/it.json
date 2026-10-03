@@ -1075,6 +1075,23 @@
                 "footer_link": "Aiuto e assistenza",
                 "contact_caption": "Segnala un problema",
                 "contact_prefill": "Ho trovato un problema su questa pagina: :url",
+                "screenshots": {
+                    "label": "Screenshot (facoltativi)",
+                    "hint": "Puoi aggiungere fino a 3 immagini in formato PNG, JPEG o WebP, fino a 10 MB ciascuna. Controlla che non mostrino i dati personali di altre persone.",
+                    "choose_files": "Scegli i file",
+                    "drop_instruction": "oppure trascina qui i file",
+                    "no_file_chosen": "Nessun file scelto",
+                    "files_chosen_one": ":count file scelto",
+                    "files_chosen_other": ":count file scelti",
+                    "entered_drop_zone": "Nell’area di rilascio",
+                    "left_drop_zone": "Fuori dall’area di rilascio",
+                    "errors": {
+                        "too_many": "Seleziona al massimo 3 file",
+                        "too_large": "Ogni file selezionato deve essere inferiore a 10 MB",
+                        "invalid_type": "Ogni file selezionato deve essere un’immagine PNG, JPEG o WebP",
+                        "failed": "Non è stato possibile caricare i file selezionati. Riprova oppure invia la richiesta senza di essi."
+                    }
+                },
                 "impacts": {
                     "blocked": "Non sono riuscito a completare ciò che stavo facendo",
                     "major": "Ha causato un problema grave",

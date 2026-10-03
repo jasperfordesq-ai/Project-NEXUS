@@ -8,6 +8,12 @@ const { submitContact, submitSupportReport, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { validateReturnUrl } = require('../lib/urlValidator');
 const { isValidEmail } = require('../lib/inputValidator');
+const {
+  prepareScreenshots,
+  removeScreenshotFiles,
+  screenshotErrorMessage,
+  uploadedScreenshots
+} = require('../lib/support-screenshots');
 
 const router = express.Router();
 
@@ -212,7 +218,37 @@ router.get('/report-a-problem', (req, res) => {
   });
 });
 
+// A Laravel 422 names the field that failed (`screenshots.0`, `screenshots`,
+// `summary` …) with a message already translated for the member's language.
+// Map the ones this form shows so the message lands next to the right field.
+const SUPPORT_API_FIELDS = ['request_type', 'summary', 'description', 'impact'];
+
+function supportApiFieldErrors(error) {
+  if (!(error instanceof ApiError) || error.status !== 422) return {};
+  const list = Array.isArray(error.data?.errors) ? error.data.errors : [];
+  const errors = {};
+  for (const item of list) {
+    const field = asString(item?.field);
+    const message = asString(item?.message);
+    if (!field || !message) continue;
+    const key = field === 'screenshots' || field.startsWith('screenshots.') ? 'screenshots' : field;
+    if ((key === 'screenshots' || SUPPORT_API_FIELDS.includes(key)) && !errors[key]) {
+      errors[key] = message;
+    }
+  }
+  return errors;
+}
+
 router.post('/report-a-problem', asyncRoute(async (req, res) => {
+  const files = uploadedScreenshots(req);
+  try {
+    return await submitReportProblem(req, res, files);
+  } finally {
+    await removeScreenshotFiles(files);
+  }
+}));
+
+async function submitReportProblem(req, res, files) {
   const token = req.signedCookies.token;
   if (!token) {
     return redirectTo(res, LOGIN_AUTH_REQUIRED_PATH);
@@ -242,6 +278,11 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
     errors.impact = validationErrors.impact;
   }
 
+  const prepared = await prepareScreenshots(files);
+  if (prepared.error) {
+    errors.screenshots = screenshotErrorMessage(res.locals.t, prepared.error);
+  }
+
   if (Object.keys(errors).length > 0) {
     if (req.session) {
       req.session.reportProblemForm = { values, errors };
@@ -253,7 +294,7 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
   }
 
   try {
-    const result = await submitSupportReport(token, {
+    const report = {
       request_type: values.request_type,
       summary: values.summary,
       description: values.description,
@@ -262,7 +303,12 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
       source: 'accessible',
       page_url: pageUrl,
       route: '/report-a-problem'
-    });
+    };
+    // Screenshots switch the request to multipart; without them the call is
+    // exactly the JSON request it was before screenshots existed.
+    const result = prepared.screenshots.length > 0
+      ? await submitSupportReport(token, report, prepared.screenshots)
+      : await submitSupportReport(token, report);
     const reference = asString(result?.data?.report?.reference || result?.report?.reference);
     return redirectTo(res, buildQuery(REPORT_PROBLEM_PATH, {
       return: pageUrl,
@@ -274,6 +320,17 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
       throw error;
     }
 
+    const apiErrors = supportApiFieldErrors(error);
+    if (Object.keys(apiErrors).length > 0) {
+      if (req.session) {
+        req.session.reportProblemForm = { values, errors: apiErrors };
+      }
+      return redirectTo(res, buildQuery(REPORT_PROBLEM_PATH, {
+        return: pageUrl,
+        status: 'invalid'
+      }));
+    }
+
     if (req.session) {
       req.session.reportProblemForm = { values };
     }
@@ -282,6 +339,6 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
       status: 'failed'
     }));
   }
-}));
+}
 
 module.exports = router;

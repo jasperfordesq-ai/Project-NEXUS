@@ -1075,6 +1075,23 @@
                 "footer_link": "Hulp en ondersteuning",
                 "contact_caption": "Een probleem melden",
                 "contact_prefill": "Ik heb een probleem op deze pagina gevonden: :url",
+                "screenshots": {
+                    "label": "Schermafbeeldingen (optioneel)",
+                    "hint": "U kunt maximaal 3 afbeeldingen toevoegen in PNG-, JPEG- of WebP-formaat, elk maximaal 10 MB. Controleer of er geen privégegevens van anderen op staan.",
+                    "choose_files": "Bestanden kiezen",
+                    "drop_instruction": "of sleep bestanden hierheen",
+                    "no_file_chosen": "Geen bestand gekozen",
+                    "files_chosen_one": ":count bestand gekozen",
+                    "files_chosen_other": ":count bestanden gekozen",
+                    "entered_drop_zone": "Neerzetgebied binnengegaan",
+                    "left_drop_zone": "Neerzetgebied verlaten",
+                    "errors": {
+                        "too_many": "Selecteer maximaal 3 bestanden",
+                        "too_large": "Elk geselecteerd bestand moet kleiner zijn dan 10 MB",
+                        "invalid_type": "Elk geselecteerd bestand moet een PNG-, JPEG- of WebP-afbeelding zijn",
+                        "failed": "De geselecteerde bestanden konden niet worden geüpload. Probeer het opnieuw of verstuur uw verzoek zonder bestanden."
+                    }
+                },
                 "impacts": {
                     "blocked": "Ik kon niet afmaken waar ik mee bezig was",
                     "major": "Het veroorzaakte een groot probleem",

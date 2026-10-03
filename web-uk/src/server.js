@@ -102,6 +102,7 @@ const { getRequestIntlLocale } = require('./lib/request-intl-locale');
 const { nl2br } = require('./lib/nl2br');
 const { humanizeLabel } = require('./lib/humanize-label');
 const { parseMultipartForm } = require('./middleware/multipart');
+const { reportProblemUploadMiddleware } = require('./lib/support-screenshots');
 const { buildAccountLinks } = require('./lib/account-links');
 const { localization } = require('./middleware/localization');
 const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
@@ -2145,6 +2146,11 @@ app.use(/^\/jobs\/\d+\/apply$/, parseMultipartForm({ maxFileSize: 6 * 1024 * 102
 // Invisible to the test suite by construction: `createLimiter` sets
 // `skip: () => isDevelopment`, so the limiter is a no-op under Jest.
 app.use(['/contact', '/report-a-problem'], postOnly(formLimiter));
+// Help & support screenshots: up to 3 images, 10 MB each. Parsed AFTER the rate
+// limiter (so a flood is refused before any file is written to disk) and BEFORE
+// the CSRF check, so the token in the multipart body is readable. Limits and the
+// parser-refusal redirect live in src/lib/support-screenshots.js.
+app.use('/report-a-problem', ...reportProblemUploadMiddleware);
 app.use(doubleCsrfProtection, contactSupportRoutes);
 app.use('/jobs', doubleCsrfProtection, postOnly(formLimiter), jobsRoutes);
 app.use('/podcasts', doubleCsrfProtection, podcastRoutes);

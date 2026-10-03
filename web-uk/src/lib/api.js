@@ -3558,11 +3558,40 @@ async function submitReport(token, data) {
   });
 }
 
-async function submitSupportReport(token, data) {
+// Without screenshots this stays the plain JSON request it has always been.
+// With them it becomes multipart: every text field as a string (objects such as
+// `diagnostics` JSON-encoded, as Laravel expects in multipart) and each image as
+// `screenshots[0..2]`. `request()` leaves the Content-Type unset for FormData so
+// fetch supplies the multipart boundary.
+async function submitSupportReport(token, data, screenshots = []) {
+  const files = Array.isArray(screenshots)
+    ? screenshots.filter(file => file && file.buffer)
+    : [];
+
+  if (files.length === 0) {
+    return request('/api/v2/support/reports', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data)
+    });
+  }
+
+  const form = new globalThis.FormData();
+  for (const [key, value] of Object.entries(data || {})) {
+    if (value === undefined || value === null) continue;
+    form.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+  }
+  files.forEach((file, index) => {
+    const blob = new globalThis.Blob([file.buffer], {
+      type: file.contentType || 'application/octet-stream'
+    });
+    form.append(`screenshots[${index}]`, blob, file.filename || `screenshot-${index + 1}`);
+  });
+
   return request('/api/v2/support/reports', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data)
+    body: form
   });
 }
 

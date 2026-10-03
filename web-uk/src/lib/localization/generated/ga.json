@@ -1075,6 +1075,23 @@
                 "footer_link": "Cabhair agus tacaíocht",
                 "contact_caption": "Tuairiscigh fadhb",
                 "contact_prefill": "Fuair mé fadhb ar an leathanach seo: :url",
+                "screenshots": {
+                    "label": "Gabhálacha scáileáin (roghnach)",
+                    "hint": "Is féidir leat suas le 3 íomhá a chur leis i bhformáid PNG, JPEG nó WebP, suas le 10 MB an ceann. Seiceáil nach léiríonn siad sonraí príobháideacha aon duine eile.",
+                    "choose_files": "Roghnaigh comhaid",
+                    "drop_instruction": "nó scaoil comhaid anseo",
+                    "no_file_chosen": "Níor roghnaíodh aon chomhad",
+                    "files_chosen_one": "Comhaid roghnaithe: :count",
+                    "files_chosen_other": "Comhaid roghnaithe: :count",
+                    "entered_drop_zone": "Isteach sa limistéar scaoilte",
+                    "left_drop_zone": "Amach as an limistéar scaoilte",
+                    "errors": {
+                        "too_many": "Roghnaigh 3 chomhad ar a mhéad",
+                        "too_large": "Caithfidh gach comhad roghnaithe a bheith níos lú ná 10 MB",
+                        "invalid_type": "Caithfidh gach comhad roghnaithe a bheith ina íomhá PNG, JPEG nó WebP",
+                        "failed": "Níorbh fhéidir na comhaid roghnaithe a uaslódáil. Bain triail eile as, nó seol d’iarratas gan iad."
+                    }
+                },
                 "impacts": {
                     "blocked": "Ní raibh mé in ann an méid a bhí á dhéanamh agam a chríochnú",
                     "major": "Ba chúis le fadhb mhór é",

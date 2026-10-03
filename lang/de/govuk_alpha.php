@@ -83,6 +83,23 @@ return [
         'footer_link' => 'Hilfe & Support',
         'contact_caption' => 'Ein Problem melden',
         'contact_prefill' => 'Ich habe ein Problem auf dieser Seite gefunden: :url',
+        'screenshots' => [
+            'label' => 'Bildschirmfotos (optional)',
+            'hint' => 'Sie können bis zu 3 Bilder im Format PNG, JPEG oder WebP hinzufügen, jeweils bis zu 10 MB. Prüfen Sie, dass darauf keine privaten Angaben anderer Personen zu sehen sind.',
+            'choose_files' => 'Dateien auswählen',
+            'drop_instruction' => 'oder Dateien hier ablegen',
+            'no_file_chosen' => 'Keine Datei ausgewählt',
+            'files_chosen_one' => ':count Datei ausgewählt',
+            'files_chosen_other' => ':count Dateien ausgewählt',
+            'entered_drop_zone' => 'Ablagebereich betreten',
+            'left_drop_zone' => 'Ablagebereich verlassen',
+            'errors' => [
+                'too_many' => 'Wählen Sie höchstens 3 Dateien aus',
+                'too_large' => 'Jede ausgewählte Datei muss kleiner als 10 MB sein',
+                'invalid_type' => 'Jede ausgewählte Datei muss ein PNG-, JPEG- oder WebP-Bild sein',
+                'failed' => 'Die ausgewählten Dateien konnten nicht hochgeladen werden. Versuchen Sie es erneut oder senden Sie Ihre Anfrage ohne sie.',
+            ],
+        ],
         'impacts' => [
             'blocked' => 'Ich konnte nicht abschließen, was ich tun wollte',
             'major' => 'Es hat ein großes Problem verursacht',

@@ -90,6 +90,23 @@ return [
         'footer_link' => 'Help & support',
         'contact_caption' => 'Report a problem',
         'contact_prefill' => 'I found a problem on this page: :url',
+        'screenshots' => [
+            'label' => 'Screenshots (optional)',
+            'hint' => 'You can add up to 3 images in PNG, JPEG or WebP format, up to 10 MB each. Check they do not show anyone else\'s private details.',
+            'choose_files' => 'Choose files',
+            'drop_instruction' => 'or drop files',
+            'no_file_chosen' => 'No file chosen',
+            'files_chosen_one' => ':count file chosen',
+            'files_chosen_other' => ':count files chosen',
+            'entered_drop_zone' => 'Entered drop zone',
+            'left_drop_zone' => 'Left drop zone',
+            'errors' => [
+                'too_many' => 'Select no more than 3 files',
+                'too_large' => 'Each selected file must be smaller than 10 MB',
+                'invalid_type' => 'Each selected file must be a PNG, JPEG or WebP image',
+                'failed' => 'The selected files could not be uploaded. Try again, or send your request without them.',
+            ],
+        ],
         'errors' => [
             'type' => 'Select what you need help with',
             'summary' => 'Enter a short summary (3 to 180 characters)',

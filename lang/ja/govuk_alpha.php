@@ -83,6 +83,23 @@ return [
         'footer_link' => 'ヘルプとサポート',
         'contact_caption' => '問題を報告する',
         'contact_prefill' => 'このページで問題を見つけました: :url',
+        'screenshots' => [
+            'label' => 'スクリーンショット（任意）',
+            'hint' => 'PNG、JPEG、WebP 形式の画像を最大 3 枚まで追加できます（1 枚あたり最大 10 MB）。他の人の個人情報が写っていないことを確認してください。',
+            'choose_files' => 'ファイルを選択',
+            'drop_instruction' => 'またはここにファイルをドロップ',
+            'no_file_chosen' => 'ファイルが選択されていません',
+            'files_chosen_one' => ':count 件のファイルを選択済み',
+            'files_chosen_other' => ':count 件のファイルを選択済み',
+            'entered_drop_zone' => 'ドロップ領域に入りました',
+            'left_drop_zone' => 'ドロップ領域から出ました',
+            'errors' => [
+                'too_many' => '選択できるファイルは 3 件までです',
+                'too_large' => '選択する各ファイルは 10 MB 未満にしてください',
+                'invalid_type' => '選択する各ファイルは PNG、JPEG、WebP 形式の画像にしてください',
+                'failed' => '選択したファイルをアップロードできませんでした。もう一度お試しいただくか、ファイルなしでお問い合わせを送信してください。',
+            ],
+        ],
         'impacts' => [
             'blocked' => 'やろうとしていたことを完了できなかった',
             'major' => '大きな問題が発生した',
