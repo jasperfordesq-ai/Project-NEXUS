@@ -19,14 +19,34 @@ const mocks = vi.hoisted(() => ({
     revoke: vi.fn(),
     resolveReview: vi.fn(),
   },
+  adminUsers: { get: vi.fn() },
   setSearchParams: vi.fn(),
+  // Holder so a test can deep-link (?user_id=…) before render.
+  searchParams: new URLSearchParams(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
   user: { id: 1, role: 'admin', is_admin: true } as Record<string, unknown>,
 }));
 
-vi.mock('@/admin/api/adminApi', () => ({ adminVetting: mocks.adminVetting }));
+vi.mock('@/admin/api/adminApi', () => ({ adminVetting: mocks.adminVetting, adminUsers: mocks.adminUsers }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// The generic ui stub drops `endContent`, which is where the shared Alert
+// carries its Retry button — give Alert a stub that renders all of its slots.
+vi.mock('@/components/ui', async () => {
+  const { uiMock } = await import('@/test/uiMock');
+  const ReactLib = await import('react');
+  const AlertStub = ({ title, description, endContent, role }: {
+    title?: React.ReactNode; description?: React.ReactNode; endContent?: React.ReactNode; role?: string;
+  }) => ReactLib.createElement('div', { role, 'data-testid': 'shared-alert' }, title, description, endContent);
+  return new Proxy({}, {
+    get: (_target, prop) => (prop === 'Alert' ? AlertStub : (uiMock as Record<string | symbol, unknown>)[prop]),
+    has: (_target, prop) => prop !== 'then',
+  });
+});
+// Prefixed so a test can tell a date-only render from a date-time render.
+vi.mock('@/lib/serverTime', () => ({
+  formatServerDate: (s: string | null) => (s ? `date:${s}` : ''),
+  formatServerDateTime: (s: string | null) => (s ? `datetime:${s}` : ''),
+}));
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: vi.fn() },
@@ -38,7 +58,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-    useSearchParams: () => [new URLSearchParams(), mocks.setSearchParams],
+    useSearchParams: () => [mocks.searchParams, mocks.setSearchParams],
   };
 });
 
@@ -136,6 +156,11 @@ describe('VettingRecords', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.user = { id: 1, role: 'admin', is_admin: true };
+    mocks.searchParams = new URLSearchParams();
+    mocks.adminUsers.get.mockResolvedValue({
+      success: true,
+      data: { id: 100, name: 'Alice Smith', first_name: 'Alice', last_name: 'Smith', email: 'alice@example.test' },
+    });
     mocks.adminVetting.list.mockResolvedValue({
       success: true,
       data: [makeMember()],
@@ -248,7 +273,68 @@ describe('VettingRecords', () => {
     await waitFor(() => expect(mocks.adminVetting.show).toHaveBeenCalledWith(44));
     expect(screen.getByText('Adult workforce befriending.')).toBeInTheDocument();
     expect(screen.getByText('Scope checked with safeguarding lead.')).toBeInTheDocument();
-    expect(screen.getByText('2027-07-14')).toBeInTheDocument();
+    // Dates go through the shared formatter (date-only), never the raw string.
+    expect(screen.getByText('date:2027-07-14')).toBeInTheDocument();
+    expect(screen.queryByText('2027-07-14')).toBeNull();
+  });
+
+  // ─── ?user_id= deep link (from Members → "Check Vetting") ──────────────────
+
+  it('honours ?user_id=: loads that member, filters the list and shows a clearable banner', async () => {
+    mocks.searchParams = new URLSearchParams('user_id=100');
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    await waitFor(() => expect(mocks.adminUsers.get).toHaveBeenCalledWith(100));
+    // The list endpoint has no user_id filter, so the member's email drives
+    // the server-side search and the rows are narrowed to that member.
+    await waitFor(() => expect(mocks.adminVetting.list).toHaveBeenCalledWith(
+      expect.objectContaining({ search: 'alice@example.test' }),
+    ));
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.getByText('vetting.member_filter_banner')).toBeInTheDocument();
+    // The stat cards still show tenant totals.
+    expect(mocks.adminVetting.stats).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'vetting.member_filter_clear' }));
+    expect(mocks.setSearchParams).toHaveBeenCalled();
+  });
+
+  it('drops rows that belong to other members when ?user_id= is set', async () => {
+    mocks.searchParams = new URLSearchParams('user_id=100');
+    mocks.adminVetting.list.mockResolvedValue({
+      success: true,
+      data: [makeMember(), makeMember({ user_id: 200, first_name: 'Bob', last_name: 'Jones', email: 'bob@example.test' })],
+      meta: { pagination: { total: 2 } },
+    });
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(screen.queryByText('Bob Jones')).toBeNull();
+  });
+
+  it('shows no banner and sends no search when there is no ?user_id=', async () => {
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    await waitFor(() => expect(screen.getByText('Alice Smith')).toBeInTheDocument());
+    expect(mocks.adminUsers.get).not.toHaveBeenCalled();
+    expect(screen.queryByText('vetting.member_filter_banner')).toBeNull();
+  });
+
+  // ─── Stats failure ─────────────────────────────────────────────────────────
+
+  it('shows a warning alert with Retry when the stats fail, and retries on press', async () => {
+    mocks.adminVetting.stats.mockRejectedValueOnce(new Error('boom'));
+    const { VettingRecords } = await import('./VettingPage');
+    render(<VettingRecords />);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveAttribute('data-testid', 'shared-alert');
+    expect(alert.textContent).toContain('vetting.stats_error_title');
+    fireEvent.click(screen.getByRole('button', { name: 'vetting.retry' }));
+    await waitFor(() => expect(mocks.adminVetting.stats).toHaveBeenCalledTimes(2));
   });
 
   it('revokes with a controlled reason code', async () => {

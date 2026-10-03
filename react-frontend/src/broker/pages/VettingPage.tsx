@@ -25,6 +25,7 @@ import Users from 'lucide-react/icons/users';
 import Info from 'lucide-react/icons/info';
 
 import {
+  Alert,
   Avatar,
   Button,
   Card,
@@ -42,7 +43,7 @@ import {
   Textarea,
 } from '@/components/ui';
 import { DataTable, type Column } from '@/admin/components';
-import { adminVetting } from '@/admin/api/adminApi';
+import { adminUsers, adminVetting } from '@/admin/api/adminApi';
 import type {
   VettingPolicyResponse,
   VettingRecord,
@@ -52,7 +53,7 @@ import type {
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
-import { formatServerDateTime } from '@/lib/serverTime';
+import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { isAdminTierUser } from '@/lib/access';
 import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import {
@@ -111,6 +112,14 @@ function rowTimestamp(item: VettingRecord): string | null {
   return null;
 }
 
+/** The member a `?user_id=` deep link (Members → "Check Vetting") points at. */
+interface FilteredMember {
+  id: number;
+  name: string;
+  /** Drives the server-side search — the list endpoint has no user_id filter. */
+  email: string | null;
+}
+
 export function VettingRecords() {
   const { t } = useTranslation('broker');
   usePageTitle(t('vetting.title'));
@@ -128,6 +137,13 @@ export function VettingRecords() {
   const filter: VettingFilter = requestedFilter && FILTERS.includes(requestedFilter)
     ? requestedFilter
     : 'all';
+  // `?user_id=` narrows the list to one member (set by Members → "Check
+  // Vetting"). Anything that is not a positive integer is ignored.
+  const memberFilterId = (() => {
+    const raw = Number(searchParams.get('user_id'));
+    return Number.isInteger(raw) && raw > 0 ? raw : null;
+  })();
+  const [filteredMember, setFilteredMember] = useState<FilteredMember | null>(null);
 
   const [items, setItems] = useState<VettingRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -204,6 +220,44 @@ export function VettingRecords() {
     }, { replace: true });
   }, [setSearchParams]);
 
+  const clearMemberFilter = useCallback(() => {
+    setPage(1);
+    setSearchParams((previous) => {
+      const nextParams = new URLSearchParams(previous);
+      nextParams.delete('user_id');
+      return nextParams;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Resolve the deep-linked member's name and email. The name feeds the
+  // banner; the email feeds the list search. A failed lookup still filters
+  // (client-side, by id) and names the member by number.
+  useEffect(() => {
+    if (!memberFilterId) {
+      setFilteredMember(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      let next: FilteredMember = { id: memberFilterId, name: '', email: null };
+      try {
+        const response = await adminUsers.get(memberFilterId);
+        if (response.success && response.data) {
+          const member = response.data as { name?: string; first_name?: string; last_name?: string; email?: string };
+          next = {
+            id: memberFilterId,
+            name: resolveUserDisplayName(member) || member.name || '',
+            email: member.email?.trim() || null,
+          };
+        }
+      } catch {
+        // Fall through to the id-only filter.
+      }
+      if (!cancelled) setFilteredMember(next);
+    })();
+    return () => { cancelled = true; };
+  }, [memberFilterId]);
+
   const loadPolicy = useCallback(async () => {
     setPolicyLoading(true);
     setPolicyError(false);
@@ -242,30 +296,43 @@ export function VettingRecords() {
     }
   }, []);
 
+  // With a member filter, wait until that member is resolved so the request
+  // can carry their email as the search term.
+  const memberFilterPending = memberFilterId !== null && filteredMember?.id !== memberFilterId;
+
   const loadItems = useCallback(async () => {
+    if (memberFilterPending) return;
     setLoading(true);
     setListError(false);
     try {
+      const search = memberFilterId ? (filteredMember?.email ?? '') : debouncedSearch;
       const response = await adminVetting.list({
         status: filter,
         page,
         per_page: PAGE_SIZE,
-        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(search ? { search } : {}),
       });
       if (!response.success || !Array.isArray(response.data)) {
         setListError(true);
         return;
       }
-      setItems(response.data);
+      // The email search can match more than one member (a shared domain),
+      // so the deep link narrows the page to the member it names.
+      const rows = memberFilterId
+        ? response.data.filter((row) => row.user_id === memberFilterId)
+        : response.data;
+      setItems(rows);
       const meta = response.meta as unknown as VettingListMeta | undefined;
-      setTotal(meta?.pagination?.total ?? meta?.total ?? meta?.total_items ?? response.data.length);
+      setTotal(memberFilterId
+        ? rows.length
+        : (meta?.pagination?.total ?? meta?.total ?? meta?.total_items ?? response.data.length));
     } catch {
       setListError(true);
       toastRef.current.error(tRef.current('vetting.toast_load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filter, page]);
+  }, [debouncedSearch, filter, page, memberFilterId, memberFilterPending, filteredMember?.email]);
 
   const refreshAll = useCallback(() => {
     void Promise.all([loadItems(), loadStats(), loadPolicy()]);
@@ -630,9 +697,43 @@ export function VettingRecords() {
         </div>
 
         {statsError && (
-          <div className="rounded-xl border border-danger/30 bg-danger/10 p-4" role="alert">
-            <p className="font-medium text-danger">{t('vetting.stats_error_title')}</p>
-            <Button className="mt-2" size="sm" variant="tertiary" onPress={loadStats}>{t('vetting.retry')}</Button>
+          // Same treatment as the dashboard's partial-data notice: foreground
+          // text on the card surface with an amber edge.
+          <Alert
+            role="alert"
+            color="warning"
+            className="rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+            classNames={{
+              title: 'text-sm font-semibold text-foreground',
+              description: 'text-sm leading-6 text-foreground',
+              icon: 'text-warning',
+            }}
+            icon={<AlertTriangle size={20} aria-hidden="true" />}
+            title={t('vetting.stats_error_title')}
+            description={t('vetting.list_error_body')}
+            endContent={(
+              <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadStats}>
+                <RefreshCw size={14} aria-hidden="true" />
+                {t('vetting.retry')}
+              </Button>
+            )}
+          />
+        )}
+
+        {memberFilterId !== null && (
+          <div
+            role="status"
+            className="flex flex-wrap items-center gap-3 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-foreground"
+          >
+            <Info size={17} className="shrink-0 text-accent" aria-hidden="true" />
+            <p className="min-w-0 flex-1">
+              {t('vetting.member_filter_banner', {
+                name: filteredMember?.name || t('vetting.member_filter_fallback_name', { id: memberFilterId }),
+              })}
+            </p>
+            <Button size="sm" variant="tertiary" onPress={clearMemberFilter}>
+              {t('vetting.member_filter_clear')}
+            </Button>
           </div>
         )}
 
@@ -663,8 +764,10 @@ export function VettingRecords() {
             columns={columns}
             data={items}
             keyField="user_id"
-            isLoading={loading}
-            searchable
+            isLoading={loading || memberFilterPending}
+            // The member filter owns the search term; hide the box so a typed
+            // term cannot silently fight it.
+            searchable={memberFilterId === null}
             searchPlaceholder={t('vetting.search_placeholder')}
             totalItems={total}
             page={page}
@@ -778,8 +881,8 @@ export function VettingRecords() {
                   <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{detailRecord.private_notes || t('vetting.no_private_notes')}</p>
                 </div>
                 <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                  <div><dt className="font-medium text-foreground">{t('vetting.review_due_label')}</dt><dd className="text-muted">{detailRecord.review_due_at || t('vetting.not_recorded')}</dd></div>
-                  <div><dt className="font-medium text-foreground">{t('vetting.authority_expiry_label')}</dt><dd className="text-muted">{detailRecord.authority_expires_at || t('vetting.not_applicable')}</dd></div>
+                  <div><dt className="font-medium text-foreground">{t('vetting.review_due_label')}</dt><dd className="text-muted">{detailRecord.review_due_at ? formatServerDate(detailRecord.review_due_at) : t('vetting.not_recorded')}</dd></div>
+                  <div><dt className="font-medium text-foreground">{t('vetting.authority_expiry_label')}</dt><dd className="text-muted">{detailRecord.authority_expires_at ? formatServerDate(detailRecord.authority_expires_at) : t('vetting.not_applicable')}</dd></div>
                 </dl>
               </>
             ) : null}

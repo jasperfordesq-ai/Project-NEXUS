@@ -20,16 +20,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ConfirmDialogProvider } from '@/components/ui';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
-const mockApi = {
+// Hoisted: the static `@/components/ui` import above pulls in `@/lib/api`, so
+// the mock factory below runs before an ordinary `const` would be initialised.
+const mockApi = vi.hoisted(() => ({
   get: vi.fn(),
   post: vi.fn().mockResolvedValue({ success: true }),
   put: vi.fn().mockResolvedValue({ success: true }),
   delete: vi.fn().mockResolvedValue({ success: true }),
   upload: vi.fn().mockResolvedValue({ success: true }),
-};
+}));
 
 vi.mock('@/lib/api', () => ({
   api: mockApi,
@@ -154,13 +157,20 @@ describe('Broker MembersPage pagination & KPI totals', () => {
     mockUsersEndpoint();
   });
 
-  it('reads KPI totals from meta.total, not the limit=1 row count', async () => {
-    const { default: MembersPage } = await import('../MembersPage');
+  // The page confirms bulk / reactivate / note-delete through the shared
+  // confirm dialog, which needs its provider — exactly as the app shell has.
+  const renderPage = (MembersPage: React.ComponentType) =>
     render(
       <MemoryRouter>
-        <MembersPage />
+        <ConfirmDialogProvider>
+          <MembersPage />
+        </ConfirmDialogProvider>
       </MemoryRouter>
     );
+
+  it('reads KPI totals from meta.total, not the limit=1 row count', async () => {
+    const { default: MembersPage } = await import('../MembersPage');
+    renderPage(MembersPage);
 
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalled();
@@ -179,11 +189,7 @@ describe('Broker MembersPage pagination & KPI totals', () => {
 
   it('drives pagination from meta.total so page controls render', async () => {
     const { default: MembersPage } = await import('../MembersPage');
-    render(
-      <MemoryRouter>
-        <MembersPage />
-      </MemoryRouter>
-    );
+    renderPage(MembersPage);
 
     // DataTable's footer only renders when totalPages > 1 — "256 total"
     // proves the table total came from meta.total, not the 20 visible rows.

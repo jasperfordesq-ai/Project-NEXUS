@@ -20,14 +20,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Input as HeroInput } from '@heroui/react/input';
-import { Label } from '@heroui/react/label';
-import { TextField } from '@heroui/react/textfield';
 import {
   Avatar, Button, Chip, Separator, Input, Textarea,
   Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter,
-  Tabs, Tab, Tooltip, Select, SelectItem,
+  Tabs, Tab, Tooltip, Select, SelectItem, useConfirm,
 } from '@/components/ui';
+import AlertCircle from 'lucide-react/icons/circle-alert';
 import UserCheck from 'lucide-react/icons/user-check';
 import UserX from 'lucide-react/icons/user-x';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
@@ -53,6 +51,7 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { BrokerStatusChip } from './BrokerStatusChip';
 import { BrokerSkeleton } from './BrokerSkeleton';
+import { BrokerEmptyState } from './BrokerEmptyState';
 
 type MemberDetail = AdminUserDetail;
 
@@ -97,9 +96,13 @@ interface MemberDetailModalProps {
 export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailModalProps) {
   const { t } = useTranslation('broker');
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [detail, setDetail] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  // A failed load used to leave the skeleton up for ever; this drives the
+  // honest error state with a Retry button instead.
+  const [loadError, setLoadError] = useState(false);
   const [vetting, setVetting] = useState<VettingAttestation[]>([]);
   const [insurance, setInsurance] = useState<InsuranceCertificate[]>([]);
   const [consents, setConsents] = useState<ConsentRow[]>([]);
@@ -150,6 +153,7 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
 
   const load = useCallback(async (id: number) => {
     setLoading(true);
+    setLoadError(false);
     setEditing(false);
     setDetail(null);
     setVetting([]);
@@ -173,9 +177,11 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
           location: d.location ?? '',
         });
       } else {
+        setLoadError(true);
         toast.error(t('member_detail.load_failed'));
       }
     } catch {
+      setLoadError(true);
       toast.error(t('member_detail.load_failed'));
     } finally {
       setLoading(false);
@@ -348,6 +354,13 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
 
   const handleDeleteNote = useCallback(async (noteId: number) => {
     if (!detail) return;
+    const ok = await confirm({
+      title: t('members.confirm_note_delete_title'),
+      body: t('members.confirm_note_delete_message'),
+      confirmLabel: t('members.note_delete'),
+      status: 'danger',
+    });
+    if (!ok) return;
     setNoteBusyId(noteId);
     try {
       const res = await adminCrm.deleteNote(noteId);
@@ -362,7 +375,33 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
     } finally {
       setNoteBusyId(null);
     }
-  }, [detail, toast, t, loadNotes]);
+  }, [detail, confirm, toast, t, loadNotes]);
+
+  // Suspend and reactivate change the member's access (and reactivation emails
+  // them), so both ask first — the same wording the Members list uses.
+  const handleSuspend = useCallback(async () => {
+    if (!detail) return;
+    const ok = await confirm({
+      title: t('members.confirm_suspend_title'),
+      body: t('members.confirm_suspend_message'),
+      confirmLabel: t('members.suspend'),
+      status: 'danger',
+    });
+    if (!ok) return;
+    await run('suspend', () => adminUsers.suspend(detail.id), 'member_detail.suspend_success');
+  }, [detail, confirm, t, run]);
+
+  const handleReactivate = useCallback(async () => {
+    if (!detail) return;
+    const ok = await confirm({
+      title: t('members.confirm_reactivate_title'),
+      body: t('members.confirm_reactivate_message', { name: detail.name }),
+      confirmLabel: t('members.reactivate'),
+      status: 'accent',
+    });
+    if (!ok) return;
+    await run('reactivate', () => adminUsers.reactivate(detail.id), 'member_detail.reactivate_success');
+  }, [detail, confirm, t, run]);
 
   const handleTogglePin = useCallback(async (note: MemberNote) => {
     if (!detail) return;
@@ -388,10 +427,30 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
     <>
       <Modal isOpen={userId != null} onClose={onClose} size="2xl" scrollBehavior="inside">
         <ModalContent>
-          {loading || !detail ? (
+          {loading || (!detail && !loadError) ? (
             <ModalBody>
               <BrokerSkeleton variant="detail" className="py-2" />
             </ModalBody>
+          ) : !detail ? (
+            <>
+              <ModalBody>
+                <BrokerEmptyState
+                  bare
+                  icon={AlertCircle}
+                  color="danger"
+                  title={t('member_detail.load_error_title')}
+                  hint={t('member_detail.load_error_hint')}
+                  action={
+                    <Button size="sm" variant="secondary" onPress={() => { if (userId != null) void load(userId); }}>
+                      {t('member_detail.retry')}
+                    </Button>
+                  }
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="flat" onPress={onClose}>{t('member_detail.close')}</Button>
+              </ModalFooter>
+            </>
           ) : (
             <>
               <ModalHeader className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3">
@@ -659,13 +718,13 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
                           )}
                           {detail.status === 'active' && (
                             <Button size="sm" color="danger" variant="flat" startContent={<UserX size={14} />} isLoading={busy === 'suspend'}
-                              onPress={() => run('suspend', () => adminUsers.suspend(detail.id), 'member_detail.suspend_success')}>
+                              onPress={handleSuspend}>
                               {t('members.suspend')}
                             </Button>
                           )}
                           {detail.status === 'suspended' && (
                             <Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isLoading={busy === 'reactivate'}
-                              onPress={() => run('reactivate', () => adminUsers.reactivate(detail.id), 'member_detail.reactivate_success')}>
+                              onPress={handleReactivate}>
                               {t('members.reactivate')}
                             </Button>
                           )}
@@ -677,10 +736,15 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
                             onPress={() => run('pwd', () => adminUsers.sendPasswordReset(detail.id), 'member_detail.password_reset_sent', false)}>
                             {t('member_detail.action_send_password_reset')}
                           </Button>
-                          <TextField value={resetReason} onChange={setResetReason}>
-                            <Label>{t('member_detail.reset_2fa_reason_label')}</Label>
-                            <HeroInput minLength={10} maxLength={500} />
-                          </TextField>
+                          <Input
+                            size="sm"
+                            variant="bordered"
+                            label={t('member_detail.reset_2fa_reason_label')}
+                            value={resetReason}
+                            onValueChange={setResetReason}
+                            minLength={10}
+                            maxLength={500}
+                          />
                           <Button size="sm" variant="tertiary" startContent={<ShieldOff size={14} />} isLoading={busy === '2fa'} isDisabled={resetReason.trim().length < 10}
                             onPress={() => run('2fa', () => adminUsers.reset2fa(detail.id, resetReason.trim()), 'member_detail.reset_2fa_success', false)}>
                             {t('member_detail.action_reset_2fa')}
@@ -708,7 +772,7 @@ export function MemberDetailModal({ userId, onClose, onChanged }: MemberDetailMo
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Input size="sm" variant="bordered" label={t('member_detail.edit_first_name')} value={form.first_name} onValueChange={(v) => setForm((f) => ({ ...f, first_name: v }))} />
                             <Input size="sm" variant="bordered" label={t('member_detail.edit_last_name')} value={form.last_name} onValueChange={(v) => setForm((f) => ({ ...f, last_name: v }))} />
-                            <Input size="sm" variant="bordered" label={t('member_detail.edit_phone')} value={form.phone} onValueChange={(v) => setForm((f) => ({ ...f, phone: v }))} placeholder="+1 555 123 4567" />
+                            <Input size="sm" variant="bordered" label={t('member_detail.edit_phone')} value={form.phone} onValueChange={(v) => setForm((f) => ({ ...f, phone: v }))} placeholder={t('member_detail.edit_phone_placeholder')} />
                             <Input size="sm" variant="bordered" label={t('member_detail.edit_location')} value={form.location} onValueChange={(v) => setForm((f) => ({ ...f, location: v }))} />
                             <Input size="sm" variant="bordered" label={t('member_detail.edit_tagline')} value={form.tagline} onValueChange={(v) => setForm((f) => ({ ...f, tagline: v }))} className="sm:col-span-2" />
                             <Textarea size="sm" variant="bordered" label={t('member_detail.edit_bio')} value={form.bio} onValueChange={(v) => setForm((f) => ({ ...f, bio: v }))} minRows={2} className="sm:col-span-2" />
@@ -843,7 +907,8 @@ function ComplianceList({ title, empty, items }: { title: string; empty: string;
               <span className="truncate">{it.label}</span>
               <span className="flex items-center gap-2">
                 {it.status && <BrokerStatusChip status={it.status} />}
-                {it.expiry && <span className="text-xs tabular-nums text-muted">{formatServerDateTime(it.expiry)}</span>}
+                {/* An expiry is a day, not a moment — never render a time of day. */}
+                {it.expiry && <span className="text-xs tabular-nums text-muted">{formatServerDate(it.expiry)}</span>}
               </span>
             </div>
           ))}

@@ -52,6 +52,8 @@ const MOCK_MEMBERS = vi.hoisted(() => [
     role: 'member',
     status: 'pending',
     created_at: '2026-01-15T00:00:00Z',
+    // A relative upload path — it must be resolved before reaching <Avatar>.
+    avatar_url: 'uploads/avatars/john.png',
     is_super_admin: false,
     is_tenant_super_admin: false,
   },
@@ -96,7 +98,18 @@ vi.mock('@/lib/serverTime', () => ({
   formatServerDate: (d: string) => new Date(d).toLocaleDateString(),
 }));
 
+// ── mock @/lib/helpers (spy on avatar resolution) ─────────────────────────────
+
+const mockResolveAvatarUrl = vi.hoisted(() => vi.fn((url: string | null | undefined) => (url ? `https://cdn.test/${url}` : '')));
+vi.mock('@/lib/helpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/helpers')>();
+  return { ...actual, resolveAvatarUrl: mockResolveAvatarUrl };
+});
+
 // ── mock recharts (jsdom has no layout — standard project pattern) ────────────
+
+// Captures the Tooltip's props so the test can inspect `contentStyle`.
+const tooltipProps = vi.hoisted(() => ({ current: null as Record<string, unknown> | null }));
 
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -105,7 +118,7 @@ vi.mock('recharts', () => ({
   XAxis: () => null,
   YAxis: () => null,
   CartesianGrid: () => null,
-  Tooltip: () => null,
+  Tooltip: (props: Record<string, unknown>) => { tooltipProps.current = props; return null; },
 }));
 
 // ── component import (after mocks) ────────────────────────────────────────────
@@ -344,5 +357,44 @@ describe('OnboardingPage', () => {
     await waitFor(() => {
       expect(adminCrm.getFunnel).toHaveBeenCalledTimes(2);
     });
+  });
+
+  // ─── Package B1 polish ─────────────────────────────────────────────────────
+
+  it('links the Pending approvals card to the pending members list', async () => {
+    render(<OnboardingPage />);
+
+    const card = await screen.findByRole('link', { name: 'Pending approvals' });
+    expect(card.getAttribute('href')).toBe('/test/broker/members?status=pending');
+  });
+
+  it('resolves avatar paths before rendering them', async () => {
+    render(<OnboardingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    expect(mockResolveAvatarUrl).toHaveBeenCalledWith('uploads/avatars/john.png');
+  });
+
+  it('styles the chart tooltip with theme tokens only — no raw colours', async () => {
+    render(<OnboardingPage />);
+
+    expect(await screen.findByText('Registrations Trend')).toBeInTheDocument();
+    const style = tooltipProps.current?.contentStyle as Record<string, string> | undefined;
+    expect(style).toBeDefined();
+    expect(style?.boxShadow).toBe('var(--shadow-md)');
+    for (const value of Object.values(style ?? {})) {
+      expect(value).not.toMatch(/rgba?\(|#[0-9a-f]{3,8}\b/i);
+    }
+  });
+
+  it('offers no client-side column sorting (the table only sorts the visible page)', async () => {
+    render(<OnboardingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    expect(document.querySelectorAll('[aria-sort]')).toHaveLength(0);
   });
 });

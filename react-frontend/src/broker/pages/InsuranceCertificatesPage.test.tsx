@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Hoisted mocks ───────────────────────────────────────────────────────────
-const { mockAdminInsurance, mockAdminUsers, mockAdminBroker } = vi.hoisted(() => ({
+const { mockAdminInsurance, mockAdminUsers, mockAdminBroker, capturedColumns } = vi.hoisted(() => ({
   mockAdminInsurance: {
     list: vi.fn(),
     stats: vi.fn(),
@@ -20,8 +20,9 @@ const { mockAdminInsurance, mockAdminUsers, mockAdminBroker } = vi.hoisted(() =>
     create: vi.fn(),
     update: vi.fn(),
   },
-  mockAdminUsers: { list: vi.fn() },
+  mockAdminUsers: { list: vi.fn(), get: vi.fn() },
   mockAdminBroker: { getConfiguration: vi.fn() },
+  capturedColumns: { current: [] as Array<{ key: string; sortable?: boolean }> },
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -69,7 +70,8 @@ vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
     useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
+      // The tenant's payment currency (ISO 4217) — the page must not hard-code €.
+      tenant: { id: 2, name: 'Test', slug: 'test', currency: 'GBP' },
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
@@ -83,7 +85,7 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 // DataTable stub renders each column's cell so status / expiry-countdown chips
 // are assertable, plus the row-count marker the older tests relied on and the
 // emptyContent slot when there are no rows.
-type StubColumn = { key: string; render?: (item: never) => React.ReactNode };
+type StubColumn = { key: string; sortable?: boolean; render?: (item: never) => React.ReactNode };
 
 const makeAdminComponentMocks = () => ({
   DataTable: ({
@@ -97,6 +99,7 @@ const makeAdminComponentMocks = () => ({
     isLoading?: boolean;
     emptyContent?: React.ReactNode;
   }) => (
+    capturedColumns.current = columns ?? [],
     <div data-testid="data-table" aria-busy={isLoading ? 'true' : undefined}>
       {isLoading ? <div role="status" aria-busy="true" /> : null}
       <span>{`${(data ?? []).length} rows`}</span>
@@ -190,6 +193,10 @@ describe('InsuranceCertificatesPage', () => {
     mockAdminInsurance.destroy.mockResolvedValue({ success: true });
     mockAdminInsurance.create.mockResolvedValue({ success: true, data: makeCertificate() });
     mockAdminUsers.list.mockResolvedValue({ success: true, data: [] });
+    mockAdminUsers.get.mockResolvedValue({
+      success: true,
+      data: { id: 10, name: 'Carol Cert', first_name: 'Carol', last_name: 'Cert', email: 'carol@example.com' },
+    });
     mockAdminBroker.getConfiguration.mockResolvedValue({ success: true, data: makeConfig() });
   });
 
@@ -319,6 +326,103 @@ describe('InsuranceCertificatesPage', () => {
       expect(screen.getByText("Insurance stats couldn't be loaded")).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
     });
+    // Announced as an alert (the shared Alert), not a silent box.
+    expect(screen.getByRole('alert').textContent).toContain("Insurance stats couldn't be loaded");
+  });
+
+  // ─── Reject keeps the typed reason on failure ───────────────────────────────
+
+  it('a failed Reject keeps the modal open with the typed reason; success closes it', async () => {
+    mockAdminInsurance.reject.mockResolvedValueOnce({ success: false, error: 'Server said no' });
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    await user.click(screen.getByRole('button', { name: 'Reject certificate' }));
+
+    const dialog = await screen.findByRole('dialog');
+    const reason = within(dialog).getByPlaceholderText('Reason for rejection...');
+    await user.type(reason, 'Blurry scan');
+    await user.click(within(dialog).getByRole('button', { name: 'Reject' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Server said no'));
+    // Still open, reason still there — the broker can fix and retry.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).getByPlaceholderText('Reason for rejection...')).toHaveValue('Blurry scan');
+
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Reject' }));
+    await waitFor(() => expect(mockAdminInsurance.reject).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(mockToast.success).toHaveBeenCalled();
+  });
+
+  // ─── Tenant currency ───────────────────────────────────────────────────────
+
+  it('formats the coverage amount in the tenant currency, not a hard-coded €', async () => {
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    await user.click(screen.getByRole('button', { name: 'View certificate details' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('£1,000,000.00')).toBeInTheDocument();
+    expect(within(dialog).queryByText(/€/)).toBeNull();
+  });
+
+  it('prefixes the coverage field with the tenant currency symbol', async () => {
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    const [addButton] = screen.getAllByRole('button', { name: 'Add Certificate' });
+    if (!addButton) throw new Error('No Add Certificate button rendered');
+    await user.click(addButton);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('£')).toBeInTheDocument();
+    expect(within(dialog).queryByText('€')).toBeNull();
+  });
+
+  // ─── Columns ───────────────────────────────────────────────────────────────
+
+  it('does not offer sorting on the Member column (it sorted nothing)', async () => {
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    const member = capturedColumns.current.find((c) => c.key === 'member');
+    expect(member).toBeDefined();
+    expect(member?.sortable).toBeFalsy();
+  });
+
+  // ─── ?user_id= deep link ───────────────────────────────────────────────────
+
+  it('shows a clearable banner naming the member when ?user_id= is set', async () => {
+    searchParamsHolder.current = new URLSearchParams('user_id=10');
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    expect(await screen.findByText('Showing certificates for Carol Cert')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ user_id: '10' }));
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Clear filter' }));
+    expect(mockSetSearchParams).toHaveBeenCalled();
+  });
+
+  it('names the member by number when their record cannot be loaded', async () => {
+    searchParamsHolder.current = new URLSearchParams('user_id=10');
+    mockAdminUsers.get.mockRejectedValueOnce(new Error('boom'));
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    expect(await screen.findByText('Showing certificates for member #10')).toBeInTheDocument();
   });
 
   it('shows an honest error state with a retry button when the list fails', async () => {

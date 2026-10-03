@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
 import { Chip } from '@/components/ui';
@@ -58,7 +58,7 @@ import { parseServerTimestamp,
   formatServerDate,
   formatServerDateTime } from '@/lib/serverTime';
 
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Textarea, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Tabs, Tab, Tooltip, Select, SelectItem } from '@/components/ui';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Textarea, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Tabs, Tab, Tooltip, Select, SelectItem, Spinner, useConfirm } from '@/components/ui';
 import {
   BrokerPageShell,
   BrokerStatCard,
@@ -175,6 +175,8 @@ export default function MembersPage() {
   const { t } = useTranslation('broker');
   const timeAgo = useTimeAgo();
   const toast = useToast();
+  const confirm = useConfirm();
+  const navigate = useNavigate();
   const { tenantPath } = useTenant();
   usePageTitle(t('members.page_title'));
 
@@ -197,21 +199,44 @@ export default function MembersPage() {
   const [stats, setStats] = useState<MemberStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Filter / pagination state — the status tab lives in the URL (?status=…)
-  // so dashboard tiles and stat cards can deep-link into a filtered view.
+  // Filter / pagination state — every filter lives in the URL (?status=…,
+  // ?search=…, ?role=…) so dashboard tiles, stat cards and the command palette
+  // can deep-link into a filtered view, and the view survives a reload.
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get('status') ?? 'all';
   const activeTab: StatusTab = (VALID_TABS.has(statusParam) ? statusParam : 'all') as StatusTab;
+  const roleParam = searchParams.get('role') ?? 'all';
+  const roleFilter: string = (ROLE_FILTERS as readonly string[]).includes(roleParam) ? roleParam : 'all';
+  // The URL holds the *settled* search term, so it is also the debounced value
+  // the fetch is keyed on. The input's own text is local until the debounce.
+  const debouncedSearch = (searchParams.get('search') ?? '').trim();
 
-  const [search, setSearch] = useState('');
-  // Debounce search so typing doesn't fire a network request on every keystroke.
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  /** Change one or more URL filters without disturbing the others. */
+  const updateFilters = useCallback((changes: Record<string, string | null>) => {
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value === null || value === '') next.delete(key);
+        else next.set(key, value);
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const [search, setSearch] = useState(debouncedSearch);
+  // Debounce search so typing doesn't fire a network request on every
+  // keystroke — the settled text is written to ?search=.
   useEffect(() => {
-    const handle = setTimeout(() => setDebouncedSearch(search), 300);
+    const handle = setTimeout(() => {
+      if (search.trim() !== debouncedSearch) updateFilters({ search: search.trim() });
+    }, 300);
     return () => clearTimeout(handle);
-  }, [search]);
+  }, [search, debouncedSearch, updateFilters]);
+  // A link or the palette can change ?search= while the page is open — adopt it.
+  useEffect(() => {
+    setSearch((current) => (current.trim() === debouncedSearch ? current : debouncedSearch));
+  }, [debouncedSearch]);
   const [page, setPage] = useState(1);
-  const [roleFilter, setRoleFilter] = useState<string>('all');
 
   // Stat cards and dashboard tiles deep-link into ?status=… without going
   // through handleTabChange — reset paging + selection when the tab changes
@@ -242,6 +267,7 @@ export default function MembersPage() {
   const [notesUser, setNotesUser] = useState<AdminUser | null>(null);
   const [notes, setNotes] = useState<MemberNote[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
+  const [notesError, setNotesError] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [noteCategory, setNoteCategory] = useState('general');
   const [addingNote, setAddingNote] = useState(false);
@@ -318,6 +344,7 @@ export default function MembersPage() {
   const openNotes = useCallback(async (user: AdminUser) => {
     setNotesUser(user);
     setNotesLoading(true);
+    setNotesError(false);
     setNotes([]);
     setNewNote('');
     try {
@@ -330,9 +357,12 @@ export default function MembersPage() {
           const paged = payload as { data: MemberNote[] };
           setNotes(paged.data || []);
         }
+      } else {
+        setNotesError(true);
       }
     } catch {
-      // silently fail
+      // An empty list would read as "no notes yet" — say that it failed instead.
+      setNotesError(true);
     } finally {
       setNotesLoading(false);
     }
@@ -396,6 +426,13 @@ export default function MembersPage() {
 
   const handleDeleteNote = useCallback(async (noteId: number) => {
     if (!notesUser) return;
+    const ok = await confirm({
+      title: t('members.confirm_note_delete_title'),
+      body: t('members.confirm_note_delete_message'),
+      confirmLabel: t('members.note_delete'),
+      status: 'danger',
+    });
+    if (!ok) return;
     setNoteBusyId(noteId);
     try {
       const res = await adminCrm.deleteNote(noteId);
@@ -410,7 +447,7 @@ export default function MembersPage() {
     } finally {
       setNoteBusyId(null);
     }
-  }, [notesUser, toast, t, openNotes]);
+  }, [notesUser, confirm, toast, t, openNotes]);
 
   const handleTogglePin = useCallback(async (note: MemberNote) => {
     if (!notesUser) return;
@@ -435,15 +472,22 @@ export default function MembersPage() {
     const next = String(key);
     setPage(1);
     setSelectedIds(new Set());
-    // Deep-linkable filter: ?status=<tab>, omitted for the default tab.
-    setSearchParams(next === 'all' ? {} : { status: next }, { replace: true });
-  }, [setSearchParams]);
+    // Deep-linkable filter: ?status=<tab>, omitted for the default tab. The
+    // search and role filters are kept.
+    updateFilters({ status: next === 'all' ? null : next });
+  }, [updateFilters]);
 
   const handleSearch = useCallback((query: string) => {
     setSearch(query);
     setPage(1);
     setSelectedIds(new Set());
   }, []);
+
+  const handleRoleChange = useCallback((next: string) => {
+    setPage(1);
+    setSelectedIds(new Set());
+    updateFilters({ role: next === 'all' ? null : next });
+  }, [updateFilters]);
 
   // ─── Bulk actions ───────────────────────────────────────────────────────────
 
@@ -475,14 +519,30 @@ export default function MembersPage() {
     [selectedIds, toast, t, clearSelection, refreshAll],
   );
 
-  const handleBulkApprove = useCallback(
-    () => runBulk((ids) => adminUsers.bulkApprove(ids), 'members.bulk_approved_success'),
-    [runBulk],
-  );
-  const handleBulkSuspend = useCallback(
-    () => runBulk((ids) => adminUsers.bulkSuspend(ids), 'members.bulk_suspended_success'),
-    [runBulk],
-  );
+  // Both bulk actions change access for several people at once and email each
+  // of them — a mis-click must be stoppable, so each asks first.
+  const handleBulkApprove = useCallback(async () => {
+    const count = selectedIds.size;
+    const ok = await confirm({
+      title: t('members.bulk_approve_confirm_title'),
+      body: t('members.bulk_approve_confirm_body', { count }),
+      confirmLabel: t('members.bulk_approve'),
+      status: 'success',
+    });
+    if (!ok) return;
+    await runBulk((ids) => adminUsers.bulkApprove(ids), 'members.bulk_approved_success');
+  }, [selectedIds, confirm, t, runBulk]);
+  const handleBulkSuspend = useCallback(async () => {
+    const count = selectedIds.size;
+    const ok = await confirm({
+      title: t('members.bulk_suspend_confirm_title'),
+      body: t('members.bulk_suspend_confirm_body', { count }),
+      confirmLabel: t('members.bulk_suspend'),
+      status: 'danger',
+    });
+    if (!ok) return;
+    await runBulk((ids) => adminUsers.bulkSuspend(ids), 'members.bulk_suspended_success');
+  }, [selectedIds, confirm, t, runBulk]);
 
   // ─── Actions ──────────────────────────────────────────────────────────────
 
@@ -531,6 +591,14 @@ export default function MembersPage() {
   const handleReactivate = useCallback(
     async (user: AdminUser) => {
       if (reactivatingId !== null) return;
+      // Reactivation emails the member, so it is confirmed like suspend is.
+      const ok = await confirm({
+        title: t('members.confirm_reactivate_title'),
+        body: t('members.confirm_reactivate_message', { name: user.name }),
+        confirmLabel: t('members.reactivate'),
+        status: 'accent',
+      });
+      if (!ok) return;
       setReactivatingId(user.id);
       try {
         const res = await adminUsers.reactivate(user.id);
@@ -546,7 +614,7 @@ export default function MembersPage() {
         setReactivatingId(null);
       }
     },
-    [reactivatingId, toast, t, refreshAll],
+    [reactivatingId, confirm, toast, t, refreshAll],
   );
 
   // ─── Columns ──────────────────────────────────────────────────────────────
@@ -665,10 +733,11 @@ export default function MembersPage() {
         ),
       },
       {
+        // Not `sortable`: the shared DataTable sorts the visible page only,
+        // which would silently misorder a 256-member community.
         key: 'created_at',
         hideBelow: '2xl',
         label: t('members.col_joined'),
-        sortable: true,
         render: (user: AdminUser) => (
           <span className="text-sm tabular-nums text-muted">
             {formatServerDate(user.created_at)}
@@ -746,7 +815,7 @@ export default function MembersPage() {
                 <DropdownItem
                   key="vetting" id="vetting"
                   startContent={<ShieldCheck size={14} />}
-                  onPress={() => window.open(tenantPath(`/broker/vetting?user_id=${user.id}`), '_self')}
+                  onPress={() => navigate(tenantPath(`/broker/vetting?user_id=${user.id}`))}
                 >
                   {t('members.check_vetting')}
                 </DropdownItem>
@@ -781,7 +850,7 @@ export default function MembersPage() {
         ),
       },
     ],
-    [t, tenantPath, timeAgo, handleReactivate, openNotes],
+    [t, tenantPath, navigate, timeAgo, handleReactivate, openNotes],
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -926,10 +995,7 @@ export default function MembersPage() {
             variant="bordered"
             selectedKeys={[roleFilter]}
             onSelectionChange={(keys) => {
-              const next = (Array.from(keys)[0] as string) ?? 'all';
-              setRoleFilter(next);
-              setPage(1);
-              setSelectedIds(new Set());
+              handleRoleChange((Array.from(keys)[0] as string) ?? 'all');
             }}
             className="w-[190px]"
           >
@@ -1115,7 +1181,16 @@ export default function MembersPage() {
 
                 {/* Notes list — pinned first */}
                 {notesLoading ? (
-                  <div className="py-8 text-center text-muted">{t('common.loading')}</div>
+                  <div className="flex justify-center py-8">
+                    <Spinner size="sm" aria-label={t('common.loading')} />
+                  </div>
+                ) : notesError ? (
+                  <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                    <span>{t('members.notes_load_failed')}</span>
+                    <Button size="sm" variant="tertiary" onPress={() => openNotes(notesUser)}>
+                      {t('members.retry')}
+                    </Button>
+                  </div>
                 ) : notes.length === 0 ? (
                   <BrokerEmptyState
                     bare
@@ -1190,7 +1265,7 @@ export default function MembersPage() {
               </ModalBody>
               <ModalFooter>
                 <Button variant="flat" onPress={() => setNotesUser(null)}>
-                  {t('common.cancel')}
+                  {t('members.close')}
                 </Button>
               </ModalFooter>
             </>

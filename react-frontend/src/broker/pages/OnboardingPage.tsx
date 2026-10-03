@@ -13,7 +13,7 @@
  * pending-members approval queue.
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -311,16 +311,17 @@ export default function OnboardingPage() {
 
   // ─── Table columns ────────────────────────────────────────────────────────
 
+  // No column is `sortable`: the shared DataTable sorts the visible page only,
+  // which would silently misorder a queue longer than one page.
   const columns: Column<AdminUser>[] = useMemo(
     () => [
       {
         key: 'name',
         label: t('members.col_name'),
-        sortable: true,
         render: (user: AdminUser) => (
           <div className="flex min-w-0 items-center gap-3">
             <Avatar
-              src={user.avatar_url || user.avatar || undefined}
+              src={resolveAvatarUrl(user.avatar_url || user.avatar) || undefined}
               name={user.name}
               size="sm"
               className="shrink-0"
@@ -332,7 +333,6 @@ export default function OnboardingPage() {
       {
         key: 'email',
         label: t('members.col_email'),
-        sortable: true,
         render: (user: AdminUser) => (
           <span className="truncate text-sm text-muted">{user.email}</span>
         ),
@@ -340,7 +340,6 @@ export default function OnboardingPage() {
       {
         key: 'created_at',
         label: t('members.col_joined'),
-        sortable: true,
         render: (user: AdminUser) => (
           <span className="text-sm tabular-nums text-muted">
             {formatServerDate(user.created_at)}
@@ -428,6 +427,7 @@ export default function OnboardingPage() {
           icon={Clock}
           color="warning"
           loading={membersLoading}
+          to={tenantPath('/broker/members?status=pending')}
         />
         <BrokerStatCard
           label={t('onboarding.kpi_dropoff')}
@@ -627,12 +627,15 @@ export default function OnboardingPage() {
                         t('onboarding.trend_registrations'),
                       ] as [string, string]
                     }
+                    // Recharts renders the tooltip itself, so this is a prop,
+                    // not an inline style on our markup — theme tokens only,
+                    // so it follows light/dark like everything else.
                     contentStyle={{
                       borderRadius: '16px',
                       border: '1px solid var(--border)',
                       backgroundColor: 'var(--overlay)',
                       color: 'var(--overlay-foreground)',
-                      boxShadow: '0 18px 50px rgba(15, 23, 42, 0.12)',
+                      boxShadow: 'var(--shadow-md)',
                     }}
                   />
                   <Area

@@ -4,21 +4,30 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Hoisted mocks ────────────────────────────────────────────────────────────
-const { mockAdminUsers, mockAdminCrm } = vi.hoisted(() => ({
+const { mockAdminUsers, mockAdminCrm, mockConfirm, mockNavigate, capturedColumns } = vi.hoisted(() => ({
   mockAdminUsers: {
     list: vi.fn(),
     approve: vi.fn(),
     suspend: vi.fn(),
     reactivate: vi.fn(),
+    bulkApprove: vi.fn(),
+    bulkSuspend: vi.fn(),
   },
   mockAdminCrm: {
     getNotes: vi.fn(),
     createNote: vi.fn(),
+    updateNote: vi.fn(),
+    deleteNote: vi.fn(),
   },
+  // The shared confirm dialog, controllable per test: resolve true = "Yes".
+  mockConfirm: vi.fn(),
+  mockNavigate: vi.fn(),
+  capturedColumns: { current: [] as Array<{ key: string; sortable?: boolean }> },
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -28,6 +37,18 @@ vi.mock('@/admin/api/adminApi', () => ({
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
+
+// Keep the real UI kit (Dropdown, Modal, Tooltip…) but make the confirm dialog
+// answer deterministically so each test can say yes or no.
+vi.mock('@/components/ui', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/components/ui')>();
+  return { ...orig, useConfirm: () => mockConfirm };
+});
+
+vi.mock('react-router-dom', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('react-router-dom')>();
+  return { ...orig, useNavigate: () => mockNavigate };
+});
 
 vi.mock('@/lib/serverTime', () => ({
   formatServerDateTime: (s: string) => s ?? '',
@@ -43,20 +64,28 @@ vi.mock('@/lib/helpers', async (importOriginal) => {
   };
 });
 
-// Stub DataTable — renders simple rows by user.name plus the emptyContent slot
+// Stub DataTable — renders every column cell for every row (so the real action
+// buttons / dropdown are reachable), a per-row "select" toggle that drives the
+// bulk-action bar, the search input, and the emptyContent slot.
+type StubColumn = { key: string; sortable?: boolean; render?: (item: never) => React.ReactNode };
 vi.mock('@/admin/components', () => ({
   DataTable: ({
     data,
+    columns,
     isLoading,
     onSearch,
+    onSelectionChange,
     emptyContent,
   }: {
     data: { id: number; name: string; email: string; status: string }[];
+    columns: StubColumn[];
     isLoading?: boolean;
     onSearch?: (q: string) => void;
+    onSelectionChange?: (keys: Set<string>) => void;
     emptyContent?: React.ReactNode;
-  }) =>
-    isLoading ? (
+  }) => {
+    capturedColumns.current = columns;
+    return isLoading ? (
       <div role="status" aria-busy="true" aria-label="loading" />
     ) : (
       <div>
@@ -69,12 +98,18 @@ vi.mock('@/admin/components', () => ({
         )}
         {data.map((u) => (
           <div key={u.id} data-testid={`member-row-${u.id}`}>
-            {u.name} — {u.email} — {u.status}
+            <button type="button" onClick={() => onSelectionChange?.(new Set([String(u.id)]))}>
+              {`select-${u.id}`}
+            </button>
+            {columns.map((col) => (
+              <span key={col.key}>{col.render ? col.render(u as never) : null}</span>
+            ))}
           </div>
         ))}
         {data.length === 0 && <div data-testid="no-data">{emptyContent ?? 'No members'}</div>}
       </div>
-    ),
+    );
+  },
   PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
   ConfirmModal: ({
     isOpen,
@@ -115,6 +150,7 @@ const makeMember = (overrides = {}) => ({
   id: 1,
   name: 'Alice Member',
   email: 'alice@example.com',
+  role: 'member',
   status: 'active',
   avatar_url: null,
   avatar: null,
@@ -148,6 +184,15 @@ const makeNote = (overrides = {}) => ({
 // table fetches use limit=20. This helper tells the two apart in assertions.
 const TABLE_LIMIT = 20;
 
+/** Open the row's "Actions" dropdown and click one of its items by label. */
+async function chooseRowAction(user: ReturnType<typeof userEvent.setup>, label: string) {
+  const [firstActions] = screen.getAllByRole('button', { name: 'Actions' });
+  if (!firstActions) throw new Error('No row Actions button rendered');
+  await user.click(firstActions);
+  await screen.findByRole('menu', {}, { timeout: 5000 });
+  await user.click(await screen.findByRole('menuitem', { name: label }, { timeout: 5000 }));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('MembersPage (broker)', () => {
   beforeEach(() => {
@@ -157,6 +202,7 @@ describe('MembersPage (broker)', () => {
     window.history.replaceState({}, '', '/');
     mockAdminUsers.list.mockResolvedValue(makeListResponse([]));
     mockAdminCrm.getNotes.mockResolvedValue({ success: true, data: [] });
+    mockConfirm.mockResolvedValue(true);
   });
 
   it('shows a loading skeleton initially', async () => {
@@ -177,7 +223,7 @@ describe('MembersPage (broker)', () => {
     await waitFor(() => {
       expect(screen.getByTestId('member-row-1')).toBeInTheDocument();
     });
-    expect(screen.getByText(/Alice Member/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Alice Member/).length).toBeGreaterThan(0);
   });
 
   it('shows no-data state when no members returned', async () => {
@@ -207,24 +253,6 @@ describe('MembersPage (broker)', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
-  });
-
-  it('calls approve and shows success toast', async () => {
-    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember({ status: 'pending' })]));
-    mockAdminUsers.approve.mockResolvedValue({ success: true });
-    // Second list call after approve
-    mockAdminUsers.list.mockResolvedValueOnce(makeListResponse([makeMember({ status: 'pending' })]));
-    mockAdminUsers.list.mockResolvedValueOnce(makeListResponse([]));
-
-    const MembersPage = (await import('./MembersPage')).default;
-    render(<MembersPage />);
-
-    await waitFor(() => screen.getByTestId('member-row-1'));
-
-    // Simulate the ConfirmModal for approve being open (set via internal state)
-    // We test the handler directly by verifying it's called correctly via mock
-    // Since DataTable stub doesn't expose the dropdown, we verify API is called
-    expect(mockAdminUsers.list).toHaveBeenCalled();
   });
 
   it('renders status tabs including never-logged-in and onboarding-incomplete', async () => {
@@ -262,22 +290,6 @@ describe('MembersPage (broker)', () => {
       expect(screen.getByText('40')).toBeInTheDocument();
       expect(screen.getByText('30')).toBeInTheDocument();
     });
-  });
-
-  it('opens notes modal when notes button is pressed on a member', async () => {
-    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
-    mockAdminCrm.getNotes.mockResolvedValue({ success: true, data: [makeNote()] });
-
-    // Expose an "Open notes" button via DataTable stub — extend stub for this test
-    // The DataTable stub renders rows without action buttons, but we can trigger
-    // openNotes directly by checking the modal isn't visible at start
-    const MembersPage = (await import('./MembersPage')).default;
-    render(<MembersPage />);
-
-    await waitFor(() => screen.getByTestId('member-row-1'));
-
-    // Modal is not open initially
-    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('calls adminUsers.list with status param and updates the URL when tab changes to pending', async () => {
@@ -350,21 +362,202 @@ describe('MembersPage (broker)', () => {
     });
   });
 
-  it('approve confirm modal calls approve API and shows success toast', async () => {
-    // Simulate approve confirmation by rendering ConfirmModal in open state
-    // We verify the approve handler is properly connected
-    mockAdminUsers.approve.mockResolvedValue({ success: true });
-    mockAdminUsers.list
-      .mockResolvedValueOnce(makeListResponse([makeMember({ status: 'pending' })]))
-      .mockResolvedValueOnce(makeListResponse([]));
+  // ─── Filters live in the URL (search + role, alongside status) ─────────────
 
+  it('opens pre-filtered from ?search= and ?role= in the URL', async () => {
+    window.history.replaceState({}, '', '/?search=jane&role=broker');
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenCalledWith(
+        expect.objectContaining({ limit: TABLE_LIMIT, search: 'jane', role: 'broker' })
+      );
+    });
+  });
+
+  it('writes the search text to the URL so the view can be linked', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('search-input'));
+    fireEvent.change(screen.getByTestId('search-input'), { target: { value: 'jane' } });
+
+    await waitFor(() => {
+      expect(window.location.search).toContain('search=jane');
+    });
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenCalledWith(
+        expect.objectContaining({ limit: TABLE_LIMIT, search: 'jane' })
+      );
+    });
+  });
+
+  it('keeps the search when the status tab changes', async () => {
+    window.history.replaceState({}, '', '/?search=jane');
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getAllByRole('tab'));
+    const pendingTab = screen.getAllByRole('tab').find((el) =>
+      el.textContent?.toLowerCase().includes('pending')
+    );
+    if (pendingTab) fireEvent.click(pendingTab);
+
+    await waitFor(() => {
+      expect(window.location.search).toContain('status=pending');
+      expect(window.location.search).toContain('search=jane');
+    });
+  });
+
+  // ─── Confirmations ─────────────────────────────────────────────────────────
+
+  it('bulk approve asks for confirmation and only runs after a yes', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember({ status: 'pending' })]));
+    mockAdminUsers.bulkApprove.mockResolvedValue({ success: true });
     const MembersPage = (await import('./MembersPage')).default;
     render(<MembersPage />);
 
     await waitFor(() => screen.getByTestId('member-row-1'));
+    fireEvent.click(screen.getByText('select-1'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Approve selected' }));
 
-    // The ConfirmModal is rendered by the component — but only opens via the Dropdown
-    // action in DataTable (which is stubbed). Verify the component renders without errors.
-    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Approve selected members', status: 'success' })
+      );
+    });
+    expect(String(mockConfirm.mock.calls[0]?.[0]?.body)).toContain('1');
+    await waitFor(() => expect(mockAdminUsers.bulkApprove).toHaveBeenCalledWith([1]));
+  });
+
+  it('bulk suspend is a danger confirmation and does nothing when cancelled', async () => {
+    mockConfirm.mockResolvedValue(false);
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    fireEvent.click(screen.getByText('select-1'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Suspend selected' }));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Suspend selected members', status: 'danger' })
+      );
+    });
+    // Give any (wrong) request a chance to fire, then prove it did not.
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockAdminUsers.bulkSuspend).not.toHaveBeenCalled();
+  });
+
+  it('reactivating a suspended member asks for confirmation first', async () => {
+    mockConfirm.mockResolvedValue(false);
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember({ status: 'suspended' })]));
+    const user = userEvent.setup();
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    await chooseRowAction(user, 'Reactivate');
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Reactivate member' })
+      );
+    });
+    expect(String(mockConfirm.mock.calls[0]?.[0]?.body)).toContain('Alice Member');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockAdminUsers.reactivate).not.toHaveBeenCalled();
+  });
+
+  it('"Check Vetting" navigates inside the app instead of reloading the page', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const user = userEvent.setup();
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    await chooseRowAction(user, 'Check Vetting');
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/test/broker/vetting?user_id=1');
+    });
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  // ─── Notes modal ───────────────────────────────────────────────────────────
+
+  it('deleting a note asks for a danger confirmation first', async () => {
+    mockConfirm.mockResolvedValue(false);
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    mockAdminCrm.getNotes.mockResolvedValue({ success: true, data: [makeNote()] });
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    fireEvent.click(screen.getByRole('button', { name: 'Open notes for Alice Member' }));
+
+    const dialog = await screen.findByRole('dialog');
+    await within(dialog).findByText('This is a broker note');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete note' }));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Delete note', status: 'danger' })
+      );
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(mockAdminCrm.deleteNote).not.toHaveBeenCalled();
+  });
+
+  it('notes modal closes with "Close", not "Cancel"', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    mockAdminCrm.getNotes.mockResolvedValue({ success: true, data: [makeNote()] });
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    fireEvent.click(screen.getByRole('button', { name: 'Open notes for Alice Member' }));
+
+    const dialog = await screen.findByRole('dialog');
+    await within(dialog).findByText('This is a broker note');
+    // The footer button is the one with visible text (the modal's X carries
+    // "Close" only as an aria-label).
+    expect(within(dialog).getByText('Close')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Cancel' })).toBeNull();
+  });
+
+  it('shows an inline error with Retry when the notes fail to load', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    mockAdminCrm.getNotes.mockRejectedValueOnce(new Error('boom'));
+    mockAdminCrm.getNotes.mockResolvedValue({ success: true, data: [makeNote()] });
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    fireEvent.click(screen.getByRole('button', { name: 'Open notes for Alice Member' }));
+
+    const dialog = await screen.findByRole('dialog');
+    await within(dialog).findByText("Notes couldn't be loaded.");
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Retry' }));
+
+    await within(dialog).findByText('This is a broker note');
+    expect(mockAdminCrm.getNotes).toHaveBeenCalledTimes(2);
+  });
+
+  // ─── Columns ───────────────────────────────────────────────────────────────
+
+  it('marks no column as sortable (the shared table only sorts the visible page)', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    expect(capturedColumns.current.length).toBeGreaterThan(0);
+    expect(capturedColumns.current.filter((c) => c.sortable)).toEqual([]);
   });
 });

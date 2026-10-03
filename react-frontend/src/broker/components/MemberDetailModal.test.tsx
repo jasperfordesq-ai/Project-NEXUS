@@ -7,7 +7,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 // ─── Hoisted API mocks ────────────────────────────────────────────────────────
-const { api } = vi.hoisted(() => ({
+const { api, mockConfirm } = vi.hoisted(() => ({
+  // The shared confirm dialog, controllable per test: resolve true = "Yes".
+  mockConfirm: vi.fn(),
   api: {
     get: vi.fn(),
     approve: vi.fn(),
@@ -54,13 +56,20 @@ vi.mock('@/admin/api/adminApi', () => ({
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 vi.mock('@/contexts', () => ({ useToast: () => mockToast }));
 
+// Keep the real UI kit but make the confirm dialog answer deterministically.
+vi.mock('@/components/ui', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/components/ui')>();
+  return { ...orig, useConfirm: () => mockConfirm };
+});
+
 vi.mock('@/lib/helpers', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/helpers')>();
   return { ...actual, resolveAvatarUrl: (u: string | null) => u ?? null };
 });
+// Prefixed so a test can tell a date-only render from a date-time render.
 vi.mock('@/lib/serverTime', () => ({
-  formatServerDate: (s: string) => s ?? '',
-  formatServerDateTime: (s: string) => s ?? '',
+  formatServerDate: (s: string) => (s ? `date:${s}` : ''),
+  formatServerDateTime: (s: string) => (s ? `datetime:${s}` : ''),
 }));
 
 // Passthrough i18n: return a readable label from the key's last segment so we
@@ -112,6 +121,10 @@ describe('MemberDetailModal', () => {
     api.adjustBalance.mockResolvedValue({ success: true });
     api.sendVerificationEmail.mockResolvedValue({ success: true });
     api.createNote.mockResolvedValue({ success: true });
+    api.suspend.mockResolvedValue({ success: true });
+    api.reactivate.mockResolvedValue({ success: true });
+    api.deleteNote.mockResolvedValue({ success: true });
+    mockConfirm.mockResolvedValue(true);
   });
 
   it('does not fetch when userId is null (modal closed)', () => {
@@ -253,5 +266,114 @@ describe('MemberDetailModal', () => {
     fireEvent.click(screen.getByText('member_detail.balance_submit'));
 
     await waitFor(() => expect(api.adjustBalance).toHaveBeenCalledWith(5, 5, 'Manual correction'));
+  });
+
+  // ─── Confirmations ─────────────────────────────────────────────────────────
+
+  it('suspend asks for a danger confirmation and does nothing when cancelled', async () => {
+    mockConfirm.mockResolvedValue(false);
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab('member_detail.section_actions');
+    fireEvent.click(await screen.findByText('members.suspend'));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'members.confirm_suspend_title', status: 'danger' })
+      );
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(api.suspend).not.toHaveBeenCalled();
+  });
+
+  it('suspend runs after the broker confirms', async () => {
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab('member_detail.section_actions');
+    fireEvent.click(await screen.findByText('members.suspend'));
+
+    await waitFor(() => expect(api.suspend).toHaveBeenCalledWith(5));
+  });
+
+  it('reactivate asks for confirmation first (it emails the member)', async () => {
+    mockConfirm.mockResolvedValue(false);
+    api.get.mockResolvedValue({ success: true, data: { ...activeMember, status: 'suspended' } });
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab('member_detail.section_actions');
+    fireEvent.click(await screen.findByText('members.reactivate'));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'members.confirm_reactivate_title' })
+      );
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(api.reactivate).not.toHaveBeenCalled();
+  });
+
+  it('deleting a note asks for a danger confirmation first', async () => {
+    mockConfirm.mockResolvedValue(false);
+    api.getNotes.mockResolvedValue({
+      success: true,
+      data: [{ id: 9, content: 'Existing broker note', category: 'general', is_pinned: false, created_at: '2025-05-01T09:00:00Z', author_name: 'Broker One' }],
+    });
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab(/members\.notes/);
+    await screen.findByText('Existing broker note');
+    fireEvent.click(screen.getByRole('button', { name: 'members.note_delete' }));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'members.confirm_note_delete_title', status: 'danger' })
+      );
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    expect(api.deleteNote).not.toHaveBeenCalled();
+  });
+
+  // ─── Load failure ──────────────────────────────────────────────────────────
+
+  it('shows an error with Retry when the member cannot be loaded, instead of a skeleton forever', async () => {
+    api.get.mockRejectedValueOnce(new Error('boom'));
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+
+    expect(await screen.findByText('member_detail.load_error_title')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'member_detail.retry' }));
+
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  // ─── Display details ───────────────────────────────────────────────────────
+
+  it('uses a translated phone placeholder in the edit form', async () => {
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab('member_detail.section_actions');
+    fireEvent.click(await screen.findByText('member_detail.edit_toggle'));
+
+    expect(await screen.findByPlaceholderText('member_detail.edit_phone_placeholder')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('+1 555 123 4567')).toBeNull();
+  });
+
+  it('shows insurance expiry as a date, not a date-time', async () => {
+    api.getUserCertificates.mockResolvedValue({
+      success: true,
+      data: [{ id: 3, user_id: 5, insurance_type: 'public_liability', status: 'verified', expiry_date: '2027-03-01' }],
+    });
+    render(<MemberDetailModal userId={5} onClose={vi.fn()} onChanged={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Dana Member')).toBeInTheDocument());
+
+    await openTab('member_detail.tab_compliance');
+
+    expect(await screen.findByText('date:2027-03-01')).toBeInTheDocument();
+    expect(screen.queryByText('datetime:2027-03-01')).toBeNull();
   });
 });

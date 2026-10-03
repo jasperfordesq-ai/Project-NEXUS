@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
 import {
+  Alert,
   Select,
   SelectItem,
   Button,
@@ -50,9 +51,11 @@ import Eye from 'lucide-react/icons/eye';
 import FileCheck from 'lucide-react/icons/file-check';
 import Pencil from 'lucide-react/icons/pencil';
 import ExternalLink from 'lucide-react/icons/external-link';
+import Info from 'lucide-react/icons/info';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, resolveUserDisplayNameFromPrefix } from '@/lib/helpers';
+import { formatCurrency, getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, resolveUserDisplayNameFromPrefix } from '@/lib/helpers';
 import { parseServerTimestamp, formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { adminInsurance, adminUsers, adminBroker } from '@/admin/api/adminApi';
 import { DataTable, ConfirmModal, type Column } from '@/admin/components';
@@ -109,11 +112,45 @@ interface UserSearchResult {
   email: string;
 }
 
+/** The member a `?user_id=` deep link (User Edit → "Manage Insurance") points at. */
+interface FilteredMember {
+  id: number;
+  name: string;
+}
+
+// The tenant's payment currency is an ISO 4217 code resolved by the tenant
+// bootstrap; the platform default (and the page's old hard-coded symbol) is EUR.
+const DEFAULT_CURRENCY = 'EUR';
+
+/** "£" for GBP, "€" for EUR, … — falls back to the code itself for an unknown one. */
+function currencySymbol(currency: string): string {
+  try {
+    const part = new Intl.NumberFormat(getFormattingLocale(), { style: 'currency', currency })
+      .formatToParts(0)
+      .find((p) => p.type === 'currency');
+    return part?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
 export function InsuranceCertificates() {
   const { t } = useTranslation('broker');
   usePageTitle(t('insurance.title'));
-  const { tenantPath } = useTenant();
+  const { tenant, tenantPath } = useTenant();
   const toast = useToast();
+
+  const currency = (tenant?.currency || DEFAULT_CURRENCY).toUpperCase();
+  const symbol = currencySymbol(currency);
+  const formatCoverage = (amount: number | string | null | undefined): string => {
+    const value = Number(amount);
+    if (!Number.isFinite(value)) return '—';
+    try {
+      return formatCurrency(value, currency);
+    } catch {
+      return `${symbol}${value.toLocaleString(getFormattingLocale())}`;
+    }
+  };
 
   // Stash the latest `t`/`toast` in refs so the fetch callbacks don't churn
   // identity on language switches (which would refetch for no reason) — same
@@ -155,6 +192,43 @@ export function InsuranceCertificates() {
   // `?user_id=` is set by the "Manage Insurance" link from User Edit so the
   // page lands pre-filtered to that member's certificates.
   const userIdFilter = searchParams.get('user_id');
+  const memberFilterId = (() => {
+    const raw = Number(userIdFilter);
+    return userIdFilter && Number.isInteger(raw) && raw > 0 ? raw : null;
+  })();
+  const [filteredMember, setFilteredMember] = useState<FilteredMember | null>(null);
+  const clearMemberFilter = useCallback(() => {
+    setPage(1);
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete('user_id');
+      return params;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Name the deep-linked member in the banner. A failed lookup still filters
+  // (the API does that by id) and names the member by number.
+  useEffect(() => {
+    if (!memberFilterId) {
+      setFilteredMember(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      let name = '';
+      try {
+        const res = await adminUsers.get(memberFilterId);
+        if (res.success && res.data) {
+          const member = res.data as { name?: string; first_name?: string; last_name?: string };
+          name = resolveUserDisplayName(member) || member.name || '';
+        }
+      } catch {
+        // Fall through to the numbered fallback.
+      }
+      if (!cancelled) setFilteredMember({ id: memberFilterId, name });
+    })();
+    return () => { cancelled = true; };
+  }, [memberFilterId]);
 
   const [items, setItems] = useState<InsuranceCertificate[]>([]);
   const [total, setTotal] = useState(0);
@@ -377,6 +451,10 @@ export function InsuranceCertificates() {
       const res = await adminInsurance.reject(rejectModal.id, rejectReason);
       if (res?.success) {
         toast.success(t('insurance.reject_success'));
+        // Only a success closes the modal — a failure keeps the typed reason
+        // so the broker can fix the problem and try again.
+        setRejectModal(null);
+        setRejectReason('');
         loadItems();
         loadStats();
       } else {
@@ -386,8 +464,6 @@ export function InsuranceCertificates() {
       toast.error(t('insurance.reject_failed'));
     } finally {
       setRejectLoading(false);
-      setRejectModal(null);
-      setRejectReason('');
     }
   };
 
@@ -544,9 +620,10 @@ export function InsuranceCertificates() {
 
   const columns: Column<InsuranceCertificate>[] = [
     {
+      // Not sortable: the row has no `member` field, so the shared table's
+      // client-side sort had nothing to compare and silently did nothing.
       key: 'member',
       label: t('insurance.col_member'),
-      sortable: true,
       render: (item) => (
         <div className="flex items-center gap-2">
           <Avatar
@@ -727,14 +804,42 @@ export function InsuranceCertificates() {
       }
     >
       {statsError && (
-        <div className="mb-4 flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning/10 p-4">
-          <ShieldAlert size={20} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
-          <div className="flex-1 text-sm">
-            <p className="font-medium text-foreground">{t('insurance.stats_error_title')}</p>
-            <p className="text-muted">{t('insurance.stats_error_body')}</p>
-          </div>
-          <Button size="sm" variant="tertiary" onPress={loadStats}>
-            {t('insurance.retry')}
+        // Same treatment as the dashboard's partial-data notice: foreground
+        // text on the card surface with an amber edge.
+        <Alert
+          role="alert"
+          color="warning"
+          className="mb-4 rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+          classNames={{
+            title: 'text-sm font-semibold text-foreground',
+            description: 'text-sm leading-6 text-foreground',
+            icon: 'text-warning',
+          }}
+          icon={<ShieldAlert size={20} aria-hidden="true" />}
+          title={t('insurance.stats_error_title')}
+          description={t('insurance.stats_error_body')}
+          endContent={(
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadStats}>
+              <RefreshCw size={14} aria-hidden="true" />
+              {t('insurance.retry')}
+            </Button>
+          )}
+        />
+      )}
+
+      {memberFilterId !== null && (
+        <div
+          role="status"
+          className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-foreground"
+        >
+          <Info size={17} className="shrink-0 text-accent" aria-hidden="true" />
+          <p className="min-w-0 flex-1">
+            {t('insurance.member_filter_banner', {
+              name: filteredMember?.name || t('insurance.member_filter_fallback_name', { id: memberFilterId }),
+            })}
+          </p>
+          <Button size="sm" variant="tertiary" onPress={clearMemberFilter}>
+            {t('insurance.member_filter_clear')}
           </Button>
         </div>
       )}
@@ -958,7 +1063,8 @@ export function InsuranceCertificates() {
               onValueChange={(val) => setCreateForm(prev => ({ ...prev, policy_number: val }))}
               variant="secondary"
             />
-            {/* #11: EUR instead of GBP */}
+            {/* The tenant's own currency — hard-coding a symbol was wrong for
+                every community outside the eurozone. */}
             <Input
               label={t('insurance.field_coverage_amount')}
               placeholder={t('insurance.field_coverage_amount_placeholder')}
@@ -966,7 +1072,7 @@ export function InsuranceCertificates() {
               onValueChange={(val) => setCreateForm(prev => ({ ...prev, coverage_amount: val }))}
               variant="secondary"
               type="number"
-              startContent={<span className="text-sm text-muted">&euro;</span>}
+              startContent={<span className="text-sm text-muted">{symbol}</span>}
             />
             <div className="grid grid-cols-2 gap-4">
               <Input
@@ -1072,7 +1178,7 @@ export function InsuranceCertificates() {
                 onValueChange={(val) => setEditForm(prev => ({ ...prev, coverage_amount: val }))}
                 variant="secondary"
                 type="number"
-                startContent={<span className="text-sm text-muted">&euro;</span>}
+                startContent={<span className="text-sm text-muted">{symbol}</span>}
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
@@ -1208,8 +1314,7 @@ export function InsuranceCertificates() {
                 </div>
                 <div>
                   <p className="text-muted">{t('insurance.label_coverage_amount')}</p>
-                  {/* #11: EUR instead of GBP */}
-                  <p className="font-medium tabular-nums">{viewItem.coverage_amount ? `€${Number(viewItem.coverage_amount).toLocaleString(getFormattingLocale())}` : '—'}</p>
+                  <p className="font-medium tabular-nums">{viewItem.coverage_amount ? formatCoverage(viewItem.coverage_amount) : '—'}</p>
                 </div>
                 <div>
                   <p className="text-muted">{t('insurance.label_start_date')}</p>
