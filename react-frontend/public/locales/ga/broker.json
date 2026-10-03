@@ -24,14 +24,43 @@
     "user_fallback": "Bróicéir",
     "help": "Lárionad Cabhrach",
     "search": "Cuardaigh",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Ctrl",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "Fógraí, {{count}} gan léamh",
+    "switch_to_dark": "Athraigh go dtí an téama dorcha",
+    "switch_to_light": "Athraigh go dtí an téama geal",
+    "admin_panel": "Painéal riaracháin",
+    "keyboard_shortcuts": "Aicearraí méarchláir",
+    "shortcuts_search": "Oscail an cuardach",
+    "shortcuts_help": "Taispeáin an liosta aicearraí seo",
+    "shortcuts_hint": "Oibríonn aicearraí in aon áit sa phainéal bróicéara, ach amháin agus tú ag clóscríobh i réimse.",
+    "shortcuts_close": "Dún",
+    "drawer_close": "Dún na fógraí",
+    "drawer_mark_all_read": "Marcáil gach ceann mar léite",
+    "drawer_open_all": "Oscail gach fógra",
+    "drawer_empty": "Tá tú suas chun dáta",
+    "drawer_error": "Níorbh fhéidir na fógraí a lódáil",
+    "drawer_retry": "Bain triail eile as",
+    "drawer_loading": "Fógraí á lódáil"
   },
   "palette": {
     "aria_label": "Léim chuig leathanach bróicéara",
     "placeholder": "Léim chuig… (baill, vetáil, teachtaireachtaí)",
     "results_label": "Cinn scríbe bróicéara",
     "no_results": "Níl aon rud ag meaitseáil le \"{{query}}\"",
-    "close_key": "esc"
+    "close_key": "esc",
+    "section_pages": "Leathanaigh",
+    "section_recent": "Le déanaí",
+    "section_members": "Baill",
+    "section_help": "Ailt chabhrach",
+    "section_actions": "Gníomhartha",
+    "members_loading": "Baill á gcuardach…",
+    "member_hint": "Oscail i mBaill",
+    "action_next_unreviewed": "An chéad teachtaireacht eile gan athbhreithniú",
+    "action_pending_members": "Baill ar feitheamh",
+    "action_switch_theme": "Athraigh an téama",
+    "nothing_waiting": "Níl aon rud ag fanacht"
   },
   "nav": {
     "dashboard": "Deais",
@@ -180,7 +209,44 @@
       "detail_listing": "Liostú #{{id}}",
       "detail_risk_level": "Riosca {{level}}",
       "detail_was_risk_level": "riosca {{level}} roimhe seo",
-      "detail_member": "Ball #{{id}}"
+      "detail_member": "Ball #{{id}}",
+      "detail_match": "Meaitseáil #{{id}}",
+      "detail_final_hours": "socraithe ar {{hours}} uair an chloig",
+      "detail_adjustment": "athraíodh an t-iarmhéid {{amount}} uair an chloig",
+      "chip_dispute_resolved": "Díospóid socraithe",
+      "chip_dispute_cancelled": "Díospóid dúnta",
+      "chip_exchange_reversed": "Aisiompaithe",
+      "chip_balance_adjusted": "Iarmhéid coigeartaithe",
+      "chip_member_approved": "Ball faofa",
+      "chip_member_rejected": "Ball diúltaithe",
+      "chip_member_suspended": "Ar fionraí",
+      "chip_member_reactivated": "Athghníomhachtaithe",
+      "chip_report_resolved": "Tuairisc réitithe",
+      "chip_report_dismissed": "Tuairisc díbhe",
+      "chip_comment_hidden": "Nóta tráchta folaithe",
+      "chip_comment_deleted": "Nóta tráchta scriosta",
+      "chip_review_flagged": "Bratach ar léirmheas",
+      "chip_review_hidden": "Léirmheas folaithe",
+      "chip_review_deleted": "Léirmheas scriosta",
+      "chip_post_hidden": "Postáil fholaithe",
+      "chip_post_deleted": "Postáil scriosta",
+      "verb_dispute_resolved": "shocraigh sé/sí malartú faoi dhíospóid",
+      "verb_dispute_cancelled": "dhún sé/sí malartú faoi dhíospóid gan íocaíocht",
+      "verb_exchange_reversed": "d'aisiompaigh sé/sí malartú críochnaithe",
+      "verb_balance_adjusted": "choigeartaigh sé/sí iarmhéid baill",
+      "verb_member_approved": "d'fhaomh sé/sí ball nua",
+      "verb_member_rejected": "dhiúltaigh sé/sí iarratas ballraíochta",
+      "verb_member_suspended": "chuir sé/sí ball ar fionraí",
+      "verb_member_reactivated": "d'athghníomhachtaigh sé/sí ball",
+      "verb_report_resolved": "réitigh sé/sí tuairisc ó bhall",
+      "verb_report_dismissed": "dhíbh sé/sí tuairisc ó bhall",
+      "verb_comment_hidden": "d'fholaigh sé/sí nóta tráchta",
+      "verb_comment_deleted": "scrios sé/sí nóta tráchta",
+      "verb_review_flagged": "chuir sé/sí bratach ar léirmheas",
+      "verb_review_hidden": "d'fholaigh sé/sí léirmheas",
+      "verb_review_deleted": "scrios sé/sí léirmheas",
+      "verb_post_hidden": "d'fholaigh sé/sí postáil fotha",
+      "verb_post_deleted": "scrios sé/sí postáil fotha"
     },
     "time_just_now": "Anois díreach",
     "time_minutes_ago": "{{count}} nóim ó shin",
@@ -204,7 +270,30 @@
     "time_days_ago_few": "{{count}} lá ó shin",
     "time_days_ago_many": "{{count}} lá ó shin",
     "time_days_ago_two": "{{count}} lá ó shin",
-    "open_reports": "Tuairiscí ó bhaill le seiceáil"
+    "open_reports": "Tuairiscí ó bhaill le seiceáil",
+    "see_all": "Féach ar gach ceann",
+    "vs_previous_fortnight": "i gcomparáid leis an gcoicís roimhe",
+    "oldest_waiting_today": "Tháinig an ceann is sine inniu",
+    "oldest_waiting_days": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "oldest_waiting_days_one": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "oldest_waiting_days_two": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "oldest_waiting_days_few": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "oldest_waiting_days_many": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "oldest_waiting_days_other": "Tá an ceann is sine ag fanacht {{count}} lá",
+    "could_not_load": "Níorbh fhéidir é a lódáil",
+    "activity_drawer_title": "An ghníomhaíocht ar fad le déanaí",
+    "activity_drawer_hint": "Na {{count}} gníomh bróicéara is déanaí sa phobal seo, an ceann is nuaí ar dtús.",
+    "my_week": {
+      "title": "Mo sheachtain",
+      "description": "An méid a shocraigh tú le 7 lá anuas",
+      "exchanges_decided": "Malartuithe socraithe",
+      "messages_reviewed": "Teachtaireachtaí athbhreithnithe",
+      "matches_decided": "Meaitseálacha socraithe",
+      "vetting_handled": "Athsheiceálacha grinnfhiosrúcháin láimhseáilte",
+      "avg_review_hours": "Meán-am chun meaitseáil a athbhreithniú",
+      "avg_review_value": "{{hours}} u",
+      "empty": "Níor socraíodh aon rud an tseachtain seo go fóill. Déanfar do chinntí a chomhaireamh anseo de réir mar a dhéanann tú iad."
+    }
   },
   "members": {
     "title": "Baill",
@@ -328,7 +417,28 @@
     "bulk_selected_few": "{{count}} roghnaithe",
     "bulk_selected_many": "{{count}} roghnaithe",
     "bulk_selected_two": "{{count}} roghnaithe",
-    "approve_named": "Faomh {{name}}"
+    "approve_named": "Faomh {{name}}",
+    "bulk_approve_confirm_title": "Ceadaigh na baill roghnaithe",
+    "bulk_approve_confirm_body": "An bhfuil fonn ort {{count}} bhall roghnaithe a cheadú? Gheobhaidh siad rochtain iomlán ar an ardán.",
+    "bulk_approve_confirm_body_one": "An bhfuil fonn ort {{count}} bhall roghnaithe a cheadú? Gheobhaidh an ball rochtain iomlán ar an ardán.",
+    "bulk_approve_confirm_body_two": "An bhfuil fonn ort {{count}} bhall roghnaithe a cheadú? Gheobhaidh siad rochtain iomlán ar an ardán.",
+    "bulk_approve_confirm_body_few": "An bhfuil fonn ort {{count}} bhall roghnaithe a cheadú? Gheobhaidh siad rochtain iomlán ar an ardán.",
+    "bulk_approve_confirm_body_many": "An bhfuil fonn ort {{count}} mball roghnaithe a cheadú? Gheobhaidh siad rochtain iomlán ar an ardán.",
+    "bulk_approve_confirm_body_other": "An bhfuil fonn ort {{count}} ball roghnaithe a cheadú? Gheobhaidh siad rochtain iomlán ar an ardán.",
+    "bulk_suspend_confirm_title": "Cuir na baill roghnaithe ar fionraí",
+    "bulk_suspend_confirm_body": "An bhfuil fonn ort {{count}} bhall roghnaithe a chur ar fionraí? Caillfidh siad rochtain ar an ardán.",
+    "bulk_suspend_confirm_body_one": "An bhfuil fonn ort {{count}} bhall roghnaithe a chur ar fionraí? Caillfidh an ball rochtain ar an ardán.",
+    "bulk_suspend_confirm_body_two": "An bhfuil fonn ort {{count}} bhall roghnaithe a chur ar fionraí? Caillfidh siad rochtain ar an ardán.",
+    "bulk_suspend_confirm_body_few": "An bhfuil fonn ort {{count}} bhall roghnaithe a chur ar fionraí? Caillfidh siad rochtain ar an ardán.",
+    "bulk_suspend_confirm_body_many": "An bhfuil fonn ort {{count}} mball roghnaithe a chur ar fionraí? Caillfidh siad rochtain ar an ardán.",
+    "bulk_suspend_confirm_body_other": "An bhfuil fonn ort {{count}} ball roghnaithe a chur ar fionraí? Caillfidh siad rochtain ar an ardán.",
+    "confirm_reactivate_title": "Athghníomhachtaigh an ball",
+    "confirm_reactivate_message": "An bhfuil fonn ort {{name}} a athghníomhachtú? Gheobhaidh an ball rochtain ar an ardán arís agus seolfar ríomhphost fáilte ar ais chuige.",
+    "confirm_note_delete_title": "Scrios an nóta",
+    "confirm_note_delete_message": "An bhfuil fonn ort an nóta seo a scriosadh? Ní féidir é seo a chealú.",
+    "close": "Dún",
+    "notes_load_failed": "Níorbh fhéidir na nótaí a luchtú.",
+    "retry": "Bain triail eile as"
   },
   "onboarding": {
     "title": "Ionduchtú",
@@ -511,7 +621,10 @@
     "attestation_other": "Deimhniú cosanta",
     "jurisdiction_placeholder": "Gan socrú",
     "jurisdiction_admin_only_hint": "Ní féidir ach le riarthóir an dlínse cosanta a athrú. Más gá í a athrú, iarr ar riarthóir i do phobal.",
-    "coordinator_view_only": "Mar chomhordaitheoir is féidir leat taifid ghrinnfhiosrúcháin a fheiceáil anseo, ach ní féidir ach le bróicéir nó le riarthóir iad a dheimhniú, a athnuachan, a chúlghairm nó a réiteach."
+    "coordinator_view_only": "Mar chomhordaitheoir is féidir leat taifid ghrinnfhiosrúcháin a fheiceáil anseo, ach ní féidir ach le bróicéir nó le riarthóir iad a dheimhniú, a athnuachan, a chúlghairm nó a réiteach.",
+    "member_filter_banner": "Taifid ghrinnfhiosrúcháin {{name}} á dtaispeáint",
+    "member_filter_clear": "Glan an scagaire",
+    "member_filter_fallback_name": "ball uimh. {{id}}"
   },
   "member_detail": {
     "load_failed": "Níorbh fhéidir an ball a luchtú.",
@@ -574,7 +687,11 @@
     "timeline_registered": "Cláraithe",
     "timeline_email_verified": "Ríomhphost deimhnithe",
     "timeline_approved": "Ceadaithe",
-    "reset_2fa_reason_label": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)"
+    "reset_2fa_reason_label": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)",
+    "load_error_title": "Níorbh fhéidir an ball seo a luchtú",
+    "load_error_hint": "Seiceáil do nasc agus bain triail eile as.",
+    "retry": "Bain triail eile as",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "Bainistíocht malartuithe",
@@ -718,7 +835,11 @@
     "settle_hours_value_two": "{{count}} uair an chloig",
     "settle_hours_value_few": "{{count}} uair an chloig",
     "settle_hours_value_many": "{{count}} uair an chloig",
-    "settle_hours_value_other": "{{count}} uair an chloig"
+    "settle_hours_value_other": "{{count}} uair an chloig",
+    "stat_needs_action": "Gníomh ag teastáil",
+    "stat_needs_action_hint": "Ag fanacht le do cheadú nó faoi aighneas",
+    "stat_disputed": "Faoi aighneas",
+    "stat_disputed_hint": "Ní aontaíonn na baill faoi na huaireanta"
   },
   "messages": {
     "title": "Athbhreithniú teachtaireachtaí",
@@ -892,7 +1013,12 @@
     "detail_voice_play": "Seinn an taifeadadh",
     "detail_voice_player_label": "Taifeadadh na teachtaireachta gutha",
     "detail_voice_play_failed": "Níorbh fhéidir an taifeadadh a lódáil.",
-    "detail_voice_logged": "Gach uair a sheinneann tú taifeadadh, déantar é a logáil."
+    "detail_voice_logged": "Gach uair a sheinneann tú taifeadadh, déantar é a logáil.",
+    "stat_flagged_total": "Teachtaireachtaí brataithe",
+    "stat_flagged_total_hint": "Gach teachtaireacht bhrataithe, ní an leathanach seo amháin",
+    "stat_reviewed_total": "Teachtaireachtaí athbhreithnithe",
+    "stat_reviewed_total_hint": "Gach teachtaireacht athbhreithnithe, ní an leathanach seo amháin",
+    "close": "Dún"
   },
   "monitoring": {
     "title": "Monatóireacht úsáideoirí",
@@ -1148,7 +1274,10 @@
     "expiry_days_left": "{{days}} lá fágtha",
     "empty_queue_title": "Gach rud déanta",
     "empty_queue_hint": "Níl aon teastais ag fanacht le hathbhreithniú.",
-    "load_error_hint": "Bain triail eile as — má leanann an teip ar aghaidh, b'fhéidir nach bhfuil an API ar fáil."
+    "load_error_hint": "Bain triail eile as — má leanann an teip ar aghaidh, b'fhéidir nach bhfuil an API ar fáil.",
+    "member_filter_banner": "Teastais {{name}} á dtaispeáint",
+    "member_filter_clear": "Glan an scagaire",
+    "member_filter_fallback_name": "ball uimh. {{id}}"
   },
   "archives": {
     "title": "Cartlann athbhreithnithe",
@@ -1228,6 +1357,10 @@
     "record_unavailable": "Taifead nach bhfuil ar fáil",
     "messages_count_one": "{{count}} teachtaireacht",
     "messages_count_other": "{{count}} teachtaireacht",
+    "stat_approved_total": "Taifid cheadaithe",
+    "stat_approved_total_hint": "Ar fud na cartlainne iomláine",
+    "stat_flagged_total": "Taifid bhrataithe",
+    "stat_flagged_total_hint": "Ar fud na cartlainne iomláine",
     "messages_count_few": "{{count}} teachtaireacht",
     "messages_count_many": "{{count}} teachtaireacht",
     "messages_count_two": "{{count}} teachtaireacht"
@@ -1411,7 +1544,13 @@
     "notes_label": "Nótaí",
     "unknown": "Anaithnid",
     "not_found_title": "Níor aimsíodh an mheaitseáil",
-    "not_found_hint": "D'fhéadfadh sé gur baineadh an faomhadh meaitseála seo, nó go bhfuil an nasc mícheart."
+    "not_found_hint": "D'fhéadfadh sé gur baineadh an faomhadh meaitseála seo, nó go bhfuil an nasc mícheart.",
+    "load_error_title": "Níorbh fhéidir faomhaidh mheaitseála a luchtú",
+    "load_error_hint": "Chuaigh rud éigin mícheart agus an scuaine faofa á fáil. Seiceáil do nasc agus bain triail eile as.",
+    "retry": "Bain triail eile as",
+    "detail_description": "Féach cén fáth ar meaitseáladh an bheirt seo, ansin ceadaigh nó diúltaigh sula gcuirtear in iúl don bhall.",
+    "listing_type_offer": "Tairiscint",
+    "listing_type_request": "Iarratas"
   },
   "status": {
     "active": "Gníomhach",
@@ -1442,6 +1581,11 @@
     "confirmed": "Deimhnithe",
     "review_requested": "Athbhreithniú iarrtha",
     "not_confirmed": "Gan daingniú",
+    "info": "Eolas",
+    "warning": "Rabhadh",
+    "concern": "Imní",
+    "urgent": "Práinneach",
+    "flagged": "Bratach curtha",
     "unknown": "Anaithnid"
   },
   "common": {
@@ -1627,6 +1771,14 @@
     "open_exchange": "Oscail malartú {{id}}",
     "report_fallback": "Tuairisc {{id}}",
     "report_by": "le {{name}}",
-    "open_reports": "Oscail tuairiscí ó bhaill"
+    "open_reports": "Oscail tuairiscí ó bhaill",
+    "support_need_answered": "freagartha {{date}}",
+    "open_support_need": "Oscail riachtanais tacaíochta {{name}}",
+    "vetting_requested": "athsheiceáil iarrtha {{date}}",
+    "open_vetting": "Oscail an athsheiceáil ghrinnfhiosrúcháin do {{name}}",
+    "pending_matches": "Meaitseálacha le faomhadh",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "meaitseáil {{score}}%",
+    "open_match": "Oscail meaitseáil {{id}}"
   }
 }

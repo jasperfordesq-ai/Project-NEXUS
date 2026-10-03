@@ -24,14 +24,43 @@
     "user_fallback": "Mediador",
     "help": "Central de Ajuda",
     "search": "Pesquisar",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Ctrl",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "Notificações, {{count}} não lidas",
+    "switch_to_dark": "Mudar para o tema escuro",
+    "switch_to_light": "Mudar para o tema claro",
+    "admin_panel": "Painel de administração",
+    "keyboard_shortcuts": "Atalhos de teclado",
+    "shortcuts_search": "Abrir a pesquisa",
+    "shortcuts_help": "Mostrar esta lista de atalhos",
+    "shortcuts_hint": "Os atalhos funcionam em todo o painel do mediador, exceto enquanto você digita em um campo.",
+    "shortcuts_close": "Fechar",
+    "drawer_close": "Fechar as notificações",
+    "drawer_mark_all_read": "Marcar todas como lidas",
+    "drawer_open_all": "Abrir todas as notificações",
+    "drawer_empty": "Você está em dia",
+    "drawer_error": "Não foi possível carregar as notificações",
+    "drawer_retry": "Tentar novamente",
+    "drawer_loading": "Carregando notificações"
   },
   "palette": {
     "aria_label": "Ir para uma página do corretor",
     "placeholder": "Ir para… (membros, verificação, mensagens)",
     "results_label": "Destinos do corretor",
     "no_results": "Nada corresponde a \"{{query}}\"",
-    "close_key": "esc"
+    "close_key": "esc",
+    "section_pages": "Páginas",
+    "section_recent": "Recentes",
+    "section_members": "Membros",
+    "section_help": "Artigos de ajuda",
+    "section_actions": "Ações",
+    "members_loading": "Pesquisando membros…",
+    "member_hint": "Abrir em Membros",
+    "action_next_unreviewed": "Próxima mensagem não revisada",
+    "action_pending_members": "Membros pendentes",
+    "action_switch_theme": "Mudar tema",
+    "nothing_waiting": "Nada aguardando"
   },
   "nav": {
     "dashboard": "Painel",
@@ -178,7 +207,44 @@
       "detail_listing": "Anúncio #{{id}}",
       "detail_risk_level": "Risco {{level}}",
       "detail_was_risk_level": "Risco {{level}} anteriormente",
-      "detail_member": "Membro #{{id}}"
+      "detail_member": "Membro #{{id}}",
+      "detail_match": "Correspondência #{{id}}",
+      "detail_final_hours": "resolvido com {{hours}} horas",
+      "detail_adjustment": "saldo alterado em {{amount}} horas",
+      "chip_dispute_resolved": "Disputa resolvida",
+      "chip_dispute_cancelled": "Disputa encerrada",
+      "chip_exchange_reversed": "Revertido",
+      "chip_balance_adjusted": "Saldo ajustado",
+      "chip_member_approved": "Membro aprovado",
+      "chip_member_rejected": "Membro rejeitado",
+      "chip_member_suspended": "Suspenso",
+      "chip_member_reactivated": "Reativado",
+      "chip_report_resolved": "Denúncia resolvida",
+      "chip_report_dismissed": "Denúncia arquivada",
+      "chip_comment_hidden": "Comentário ocultado",
+      "chip_comment_deleted": "Comentário eliminado",
+      "chip_review_flagged": "Avaliação sinalizada",
+      "chip_review_hidden": "Avaliação ocultada",
+      "chip_review_deleted": "Avaliação eliminada",
+      "chip_post_hidden": "Publicação ocultada",
+      "chip_post_deleted": "Publicação eliminada",
+      "verb_dispute_resolved": "resolveu uma troca em disputa",
+      "verb_dispute_cancelled": "encerrou uma troca em disputa sem pagamento",
+      "verb_exchange_reversed": "reverteu uma troca concluída",
+      "verb_balance_adjusted": "ajustou o saldo de um membro",
+      "verb_member_approved": "aprovou um novo membro",
+      "verb_member_rejected": "rejeitou um pedido de adesão",
+      "verb_member_suspended": "suspendeu um membro",
+      "verb_member_reactivated": "reativou um membro",
+      "verb_report_resolved": "resolveu uma denúncia de membro",
+      "verb_report_dismissed": "arquivou uma denúncia de membro",
+      "verb_comment_hidden": "ocultou um comentário",
+      "verb_comment_deleted": "eliminou um comentário",
+      "verb_review_flagged": "sinalizou uma avaliação",
+      "verb_review_hidden": "ocultou uma avaliação",
+      "verb_review_deleted": "eliminou uma avaliação",
+      "verb_post_hidden": "ocultou uma publicação do feed",
+      "verb_post_deleted": "eliminou uma publicação do feed"
     },
     "time_just_now": "Agora mesmo",
     "time_minutes_ago": "há {{count}} min",
@@ -194,7 +260,28 @@
     "time_minutes_ago_many": "há {{count}} min",
     "time_hours_ago_many": "há {{count}} h",
     "time_days_ago_many": "há {{count}} d",
-    "open_reports": "Denúncias de membros por verificar"
+    "open_reports": "Denúncias de membros por verificar",
+    "see_all": "Ver tudo",
+    "vs_previous_fortnight": "face à quinzena anterior",
+    "oldest_waiting_today": "O mais antigo chegou hoje",
+    "oldest_waiting_days": "O mais antigo espera há {{count}} dias",
+    "oldest_waiting_days_one": "O mais antigo espera há {{count}} dia",
+    "oldest_waiting_days_many": "O mais antigo espera há {{count}} dias",
+    "oldest_waiting_days_other": "O mais antigo espera há {{count}} dias",
+    "could_not_load": "Não foi possível carregar",
+    "activity_drawer_title": "Toda a atividade recente",
+    "activity_drawer_hint": "As últimas {{count}} ações de broker nesta comunidade, da mais recente para a mais antiga.",
+    "my_week": {
+      "title": "A minha semana",
+      "description": "O que decidiste nos últimos 7 dias",
+      "exchanges_decided": "Trocas decididas",
+      "messages_reviewed": "Mensagens revistas",
+      "matches_decided": "Correspondências decididas",
+      "vetting_handled": "Reverificações tratadas",
+      "avg_review_hours": "Tempo médio para rever uma correspondência",
+      "avg_review_value": "{{hours}} h",
+      "empty": "Ainda não decidiste nada esta semana. As tuas decisões serão contadas aqui à medida que as tomares."
+    }
   },
   "members": {
     "title": "Membros",
@@ -310,7 +397,24 @@
     "time_hours_ago_many": "há {{count}} h",
     "time_days_ago_many": "há {{count}} d",
     "bulk_selected_many": "{{count}} selecionados",
-    "approve_named": "Aprovar {{name}}"
+    "approve_named": "Aprovar {{name}}",
+    "bulk_approve_confirm_title": "Aprovar os membros selecionados",
+    "bulk_approve_confirm_body": "Aprovar {{count}} membro(s) selecionado(s)? Terão acesso total à plataforma.",
+    "bulk_approve_confirm_body_one": "Aprovar {{count}} membro selecionado? Terá acesso total à plataforma.",
+    "bulk_approve_confirm_body_many": "Aprovar {{count}} membros selecionados? Terão acesso total à plataforma.",
+    "bulk_approve_confirm_body_other": "Aprovar {{count}} membros selecionados? Terão acesso total à plataforma.",
+    "bulk_suspend_confirm_title": "Suspender os membros selecionados",
+    "bulk_suspend_confirm_body": "Suspender {{count}} membro(s) selecionado(s)? Perderão o acesso à plataforma.",
+    "bulk_suspend_confirm_body_one": "Suspender {{count}} membro selecionado? Perderá o acesso à plataforma.",
+    "bulk_suspend_confirm_body_many": "Suspender {{count}} membros selecionados? Perderão o acesso à plataforma.",
+    "bulk_suspend_confirm_body_other": "Suspender {{count}} membros selecionados? Perderão o acesso à plataforma.",
+    "confirm_reactivate_title": "Reativar membro",
+    "confirm_reactivate_message": "Reativar {{name}}? Voltará a ter acesso à plataforma e receberá um e-mail de boas-vindas.",
+    "confirm_note_delete_title": "Eliminar nota",
+    "confirm_note_delete_message": "Eliminar esta nota? Esta ação não pode ser anulada.",
+    "close": "Fechar",
+    "notes_load_failed": "Não foi possível carregar as notas.",
+    "retry": "Tentar novamente"
   },
   "onboarding": {
     "title": "Integração",
@@ -493,7 +597,10 @@
     "attestation_other": "Salvaguardando a confirmação",
     "jurisdiction_placeholder": "Não definida",
     "jurisdiction_admin_only_hint": "Só um administrador pode alterar a jurisdição de salvaguarda. Se for preciso alterá-la, peça a um administrador da sua comunidade.",
-    "coordinator_view_only": "Como coordenador pode ver aqui os registos de verificação, mas só um intermediário ou um administrador os pode confirmar, renovar, revogar ou resolver."
+    "coordinator_view_only": "Como coordenador pode ver aqui os registos de verificação, mas só um intermediário ou um administrador os pode confirmar, renovar, revogar ou resolver.",
+    "member_filter_banner": "A mostrar os registos de verificação de {{name}}",
+    "member_filter_clear": "Limpar filtro",
+    "member_filter_fallback_name": "membro n.º {{id}}"
   },
   "member_detail": {
     "load_failed": "Falha ao carregar o membro.",
@@ -556,7 +663,11 @@
     "timeline_registered": "Registrado",
     "timeline_email_verified": "E-mail verificado",
     "timeline_approved": "Aprovado",
-    "reset_2fa_reason_label": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)"
+    "reset_2fa_reason_label": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)",
+    "load_error_title": "Não foi possível carregar este membro",
+    "load_error_hint": "Verifique a sua ligação e tente novamente.",
+    "retry": "Tentar novamente",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -697,7 +808,11 @@
     "settle_cancel_success": "Contestação fechada. Não foram pagas horas.",
     "settle_cancel_failed": "Não foi possível fechar a contestação. Nada mudou.",
     "settle_hours_value_one": "{{count}} hora",
-    "settle_hours_value_other": "{{count}} horas"
+    "settle_hours_value_other": "{{count}} horas",
+    "stat_needs_action": "Requer ação",
+    "stat_needs_action_hint": "A aguardar a sua aprovação ou em disputa",
+    "stat_disputed": "Em disputa",
+    "stat_disputed_hint": "Os membros não concordam quanto às horas"
   },
   "messages": {
     "title": "Revisão de Mensagem",
@@ -857,7 +972,12 @@
     "detail_voice_play": "Reproduzir gravação",
     "detail_voice_player_label": "Gravação da mensagem de voz",
     "detail_voice_play_failed": "Não foi possível carregar a gravação.",
-    "detail_voice_logged": "Cada vez que reproduz uma gravação, isso fica registado."
+    "detail_voice_logged": "Cada vez que reproduz uma gravação, isso fica registado.",
+    "stat_flagged_total": "Mensagens sinalizadas",
+    "stat_flagged_total_hint": "Todas as mensagens sinalizadas, não apenas esta página",
+    "stat_reviewed_total": "Mensagens revistas",
+    "stat_reviewed_total_hint": "Todas as mensagens revistas, não apenas esta página",
+    "close": "Fechar"
   },
   "monitoring": {
     "title": "Monitorização de usuários",
@@ -1111,7 +1231,10 @@
     "expiry_days_left": "{{days}}d restantes",
     "empty_queue_title": "Tudo em dia",
     "empty_queue_hint": "Não há certificados à espera de revisão.",
-    "load_error_hint": "Tente novamente — se continuar a falhar, a API pode estar indisponível."
+    "load_error_hint": "Tente novamente — se continuar a falhar, a API pode estar indisponível.",
+    "member_filter_banner": "A mostrar os certificados de {{name}}",
+    "member_filter_clear": "Limpar filtro",
+    "member_filter_fallback_name": "membro n.º {{id}}"
   },
   "archives": {
     "title": "Arquivo de revisão",
@@ -1191,6 +1314,10 @@
     "record_unavailable": "Registro indisponível",
     "messages_count_one": "{{count}} mensagens",
     "messages_count_other": "{{count}} mensagens",
+    "stat_approved_total": "Registos aprovados",
+    "stat_approved_total_hint": "Em todo o arquivo",
+    "stat_flagged_total": "Registos sinalizados",
+    "stat_flagged_total_hint": "Em todo o arquivo",
     "messages_count_many": "{{count}} mensagens"
   },
   "configuration": {
@@ -1372,7 +1499,13 @@
     "notes_label": "Notas",
     "unknown": "Desconhecido",
     "not_found_title": "Correspondência não encontrada",
-    "not_found_hint": "Esta aprovação de correspondência pode ter sido removida, ou a ligação está errada."
+    "not_found_hint": "Esta aprovação de correspondência pode ter sido removida, ou a ligação está errada.",
+    "load_error_title": "Não foi possível carregar as aprovações de correspondências",
+    "load_error_hint": "Algo correu mal ao obter a fila de aprovações. Verifique a sua ligação e tente novamente.",
+    "retry": "Tentar novamente",
+    "detail_description": "Veja porque é que estas duas pessoas foram correspondidas e aprove ou rejeite antes de o membro ser avisado.",
+    "listing_type_offer": "Oferta",
+    "listing_type_request": "Pedido"
   },
   "status": {
     "active": "Ativo",
@@ -1403,6 +1536,11 @@
     "confirmed": "Confirmado",
     "review_requested": "Revisão solicitada",
     "not_confirmed": "Não confirmado",
+    "info": "Informações",
+    "warning": "Aviso",
+    "concern": "Preocupação",
+    "urgent": "Urgente",
+    "flagged": "Sinalizado",
     "unknown": "Desconhecido"
   },
   "common": {
@@ -1585,6 +1723,14 @@
     "open_exchange": "Abrir a troca {{id}}",
     "report_fallback": "Denúncia {{id}}",
     "report_by": "de {{name}}",
-    "open_reports": "Abrir as denúncias de membros"
+    "open_reports": "Abrir as denúncias de membros",
+    "support_need_answered": "respondeu em {{date}}",
+    "open_support_need": "Abrir as necessidades de apoio de {{name}}",
+    "vetting_requested": "reverificação pedida em {{date}}",
+    "open_vetting": "Abrir a reverificação de {{name}}",
+    "pending_matches": "Correspondências por aprovar",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "{{score}}% de correspondência",
+    "open_match": "Abrir a correspondência {{id}}"
   }
 }

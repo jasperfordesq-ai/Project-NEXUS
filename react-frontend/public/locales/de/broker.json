@@ -24,14 +24,43 @@
     "user_fallback": "Makler",
     "help": "Hilfezentrum",
     "search": "Suche",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Strg",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "Benachrichtigungen, {{count}} ungelesen",
+    "switch_to_dark": "Zum dunklen Design wechseln",
+    "switch_to_light": "Zum hellen Design wechseln",
+    "admin_panel": "Admin-Bereich",
+    "keyboard_shortcuts": "Tastenkürzel",
+    "shortcuts_search": "Suche öffnen",
+    "shortcuts_help": "Diese Liste der Tastenkürzel anzeigen",
+    "shortcuts_hint": "Tastenkürzel funktionieren überall im Broker-Bereich, außer während Sie in ein Feld tippen.",
+    "shortcuts_close": "Schließen",
+    "drawer_close": "Benachrichtigungen schließen",
+    "drawer_mark_all_read": "Alle als gelesen markieren",
+    "drawer_open_all": "Alle Benachrichtigungen öffnen",
+    "drawer_empty": "Sie sind auf dem neuesten Stand",
+    "drawer_error": "Benachrichtigungen konnten nicht geladen werden",
+    "drawer_retry": "Erneut versuchen",
+    "drawer_loading": "Benachrichtigungen werden geladen"
   },
   "palette": {
     "aria_label": "Zu einer Broker-Seite springen",
     "placeholder": "Springen zu… (Mitglieder, Überprüfung, Nachrichten)",
     "results_label": "Broker-Ziele",
     "no_results": "Keine Treffer für \"{{query}}\"",
-    "close_key": "esc"
+    "close_key": "esc",
+    "section_pages": "Seiten",
+    "section_recent": "Zuletzt besucht",
+    "section_members": "Mitglieder",
+    "section_help": "Hilfeartikel",
+    "section_actions": "Aktionen",
+    "members_loading": "Mitglieder werden gesucht…",
+    "member_hint": "In Mitglieder öffnen",
+    "action_next_unreviewed": "Nächste ungeprüfte Nachricht",
+    "action_pending_members": "Ausstehende Mitglieder",
+    "action_switch_theme": "Design wechseln",
+    "nothing_waiting": "Nichts wartet"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -177,7 +206,44 @@
       "detail_listing": "Inserat #{{id}}",
       "detail_risk_level": "Risiko: {{level}}",
       "detail_was_risk_level": "zuvor Risiko: {{level}}",
-      "detail_member": "Mitglied #{{id}}"
+      "detail_member": "Mitglied #{{id}}",
+      "detail_match": "Match Nr. {{id}}",
+      "detail_final_hours": "auf {{hours}} Stunden festgesetzt",
+      "detail_adjustment": "Guthaben um {{amount}} Stunden geändert",
+      "chip_dispute_resolved": "Streitfall beigelegt",
+      "chip_dispute_cancelled": "Streitfall geschlossen",
+      "chip_exchange_reversed": "Rückgängig gemacht",
+      "chip_balance_adjusted": "Guthaben angepasst",
+      "chip_member_approved": "Mitglied genehmigt",
+      "chip_member_rejected": "Mitglied abgelehnt",
+      "chip_member_suspended": "Gesperrt",
+      "chip_member_reactivated": "Reaktiviert",
+      "chip_report_resolved": "Meldung erledigt",
+      "chip_report_dismissed": "Meldung verworfen",
+      "chip_comment_hidden": "Kommentar ausgeblendet",
+      "chip_comment_deleted": "Kommentar gelöscht",
+      "chip_review_flagged": "Bewertung markiert",
+      "chip_review_hidden": "Bewertung ausgeblendet",
+      "chip_review_deleted": "Bewertung gelöscht",
+      "chip_post_hidden": "Beitrag ausgeblendet",
+      "chip_post_deleted": "Beitrag gelöscht",
+      "verb_dispute_resolved": "hat einen strittigen Austausch beigelegt",
+      "verb_dispute_cancelled": "hat einen strittigen Austausch ohne Zahlung geschlossen",
+      "verb_exchange_reversed": "hat einen abgeschlossenen Austausch rückgängig gemacht",
+      "verb_balance_adjusted": "hat das Guthaben eines Mitglieds angepasst",
+      "verb_member_approved": "hat ein neues Mitglied genehmigt",
+      "verb_member_rejected": "hat einen Mitgliedsantrag abgelehnt",
+      "verb_member_suspended": "hat ein Mitglied gesperrt",
+      "verb_member_reactivated": "hat ein Mitglied reaktiviert",
+      "verb_report_resolved": "hat eine Mitgliedermeldung erledigt",
+      "verb_report_dismissed": "hat eine Mitgliedermeldung verworfen",
+      "verb_comment_hidden": "hat einen Kommentar ausgeblendet",
+      "verb_comment_deleted": "hat einen Kommentar gelöscht",
+      "verb_review_flagged": "hat eine Bewertung markiert",
+      "verb_review_hidden": "hat eine Bewertung ausgeblendet",
+      "verb_review_deleted": "hat eine Bewertung gelöscht",
+      "verb_post_hidden": "hat einen Feed-Beitrag ausgeblendet",
+      "verb_post_deleted": "hat einen Feed-Beitrag gelöscht"
     },
     "time_just_now": "Gerade eben",
     "time_minutes_ago": "vor {{count}} Min.",
@@ -189,7 +255,27 @@
     "time_hours_ago_other": "vor {{count}} Std.",
     "time_days_ago_one": "vor {{count}} Tg.",
     "time_days_ago_other": "vor {{count}} Tg.",
-    "open_reports": "Meldungen von Mitgliedern zur Prüfung"
+    "open_reports": "Meldungen von Mitgliedern zur Prüfung",
+    "see_all": "Alle anzeigen",
+    "vs_previous_fortnight": "ggü. den 14 Tagen davor",
+    "oldest_waiting_today": "Ältestes heute eingegangen",
+    "oldest_waiting_days": "Ältestes wartet seit {{count}} Tagen",
+    "oldest_waiting_days_one": "Ältestes wartet seit {{count}} Tag",
+    "oldest_waiting_days_other": "Ältestes wartet seit {{count}} Tagen",
+    "could_not_load": "Konnte nicht geladen werden",
+    "activity_drawer_title": "Alle letzten Aktivitäten",
+    "activity_drawer_hint": "Die letzten {{count}} Broker-Aktionen in dieser Gemeinschaft, neueste zuerst.",
+    "my_week": {
+      "title": "Meine Woche",
+      "description": "Was Sie in den letzten 7 Tagen entschieden haben",
+      "exchanges_decided": "Austausche entschieden",
+      "messages_reviewed": "Nachrichten geprüft",
+      "matches_decided": "Matches entschieden",
+      "vetting_handled": "Überprüfungs-Nachkontrollen bearbeitet",
+      "avg_review_hours": "Durchschnittliche Zeit bis zur Prüfung eines Matches",
+      "avg_review_value": "{{hours}} Std.",
+      "empty": "Diese Woche wurde noch nichts entschieden. Ihre Entscheidungen werden hier gezählt, sobald Sie sie treffen."
+    }
   },
   "members": {
     "title": "Mitglieder",
@@ -301,7 +387,22 @@
     "time_days_ago_other": "vor {{count}} Tg.",
     "bulk_selected_one": "{{count}} ausgewählt",
     "bulk_selected_other": "{{count}} ausgewählt",
-    "approve_named": "{{name}} genehmigen"
+    "approve_named": "{{name}} genehmigen",
+    "bulk_approve_confirm_title": "Ausgewählte Mitglieder genehmigen",
+    "bulk_approve_confirm_body": "{{count}} ausgewählte(s) Mitglied(er) genehmigen? Sie erhalten vollen Zugang zur Plattform.",
+    "bulk_approve_confirm_body_one": "{{count}} ausgewähltes Mitglied genehmigen? Es erhält vollen Zugang zur Plattform.",
+    "bulk_approve_confirm_body_other": "{{count}} ausgewählte Mitglieder genehmigen? Sie erhalten vollen Zugang zur Plattform.",
+    "bulk_suspend_confirm_title": "Ausgewählte Mitglieder sperren",
+    "bulk_suspend_confirm_body": "{{count}} ausgewählte(s) Mitglied(er) sperren? Sie verlieren den Zugang zur Plattform.",
+    "bulk_suspend_confirm_body_one": "{{count}} ausgewähltes Mitglied sperren? Es verliert den Zugang zur Plattform.",
+    "bulk_suspend_confirm_body_other": "{{count}} ausgewählte Mitglieder sperren? Sie verlieren den Zugang zur Plattform.",
+    "confirm_reactivate_title": "Mitglied reaktivieren",
+    "confirm_reactivate_message": "{{name}} reaktivieren? Das Mitglied erhält wieder Zugang zur Plattform und bekommt eine Willkommen-zurück-E-Mail.",
+    "confirm_note_delete_title": "Notiz löschen",
+    "confirm_note_delete_message": "Diese Notiz löschen? Das kann nicht rückgängig gemacht werden.",
+    "close": "Schließen",
+    "notes_load_failed": "Die Notizen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -484,7 +585,10 @@
     "attestation_other": "Schutzbestätigung",
     "jurisdiction_placeholder": "Nicht festgelegt",
     "jurisdiction_admin_only_hint": "Nur ein Admin kann den Rechtsraum für den Schutz ändern. Wenn er geändert werden muss, wenden Sie sich an einen Admin Ihrer Gemeinschaft.",
-    "coordinator_view_only": "Als Koordinator:in können Sie Überprüfungsnachweise hier einsehen, aber nur ein Broker oder eine Administratorin kann sie bestätigen, erneuern, widerrufen oder abschließen."
+    "coordinator_view_only": "Als Koordinator:in können Sie Überprüfungsnachweise hier einsehen, aber nur ein Broker oder eine Administratorin kann sie bestätigen, erneuern, widerrufen oder abschließen.",
+    "member_filter_banner": "Überprüfungseinträge für {{name}} werden angezeigt",
+    "member_filter_clear": "Filter aufheben",
+    "member_filter_fallback_name": "Mitglied Nr. {{id}}"
   },
   "member_detail": {
     "load_failed": "Mitglied konnte nicht geladen werden.",
@@ -547,7 +651,11 @@
     "timeline_registered": "Registriert",
     "timeline_email_verified": "E-Mail verifiziert",
     "timeline_approved": "Genehmigt",
-    "reset_2fa_reason_label": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)"
+    "reset_2fa_reason_label": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)",
+    "load_error_title": "Dieses Mitglied konnte nicht geladen werden",
+    "load_error_hint": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -688,7 +796,11 @@
     "settle_cancel_success": "Streitfall geschlossen. Es wurden keine Stunden gezahlt.",
     "settle_cancel_failed": "Der Streitfall konnte nicht geschlossen werden. Es wurde nichts geändert.",
     "settle_hours_value_one": "{{count}} Stunde",
-    "settle_hours_value_other": "{{count}} Stunden"
+    "settle_hours_value_other": "{{count}} Stunden",
+    "stat_needs_action": "Handlungsbedarf",
+    "stat_needs_action_hint": "Warten auf Ihre Genehmigung oder bestritten",
+    "stat_disputed": "Bestritten",
+    "stat_disputed_hint": "Die Mitglieder sind sich über die Stunden uneinig"
   },
   "messages": {
     "title": "Nachrichtenüberprüfung",
@@ -847,7 +959,12 @@
     "detail_voice_play": "Aufnahme abspielen",
     "detail_voice_player_label": "Aufnahme der Sprachnachricht",
     "detail_voice_play_failed": "Die Aufnahme konnte nicht geladen werden.",
-    "detail_voice_logged": "Jedes Abspielen einer Aufnahme wird protokolliert."
+    "detail_voice_logged": "Jedes Abspielen einer Aufnahme wird protokolliert.",
+    "stat_flagged_total": "Markierte Nachrichten",
+    "stat_flagged_total_hint": "Jede markierte Nachricht, nicht nur diese Seite",
+    "stat_reviewed_total": "Geprüfte Nachrichten",
+    "stat_reviewed_total_hint": "Jede geprüfte Nachricht, nicht nur diese Seite",
+    "close": "Schließen"
   },
   "monitoring": {
     "title": "Nutzerüberwachung",
@@ -1100,7 +1217,10 @@
     "expiry_days_left": "noch {{days}} Tg.",
     "empty_queue_title": "Alles erledigt",
     "empty_queue_hint": "Es warten keine Zertifikate zur Prüfung.",
-    "load_error_hint": "Versuchen Sie es erneut — bleibt der Fehler bestehen, ist die API möglicherweise nicht verfügbar."
+    "load_error_hint": "Versuchen Sie es erneut — bleibt der Fehler bestehen, ist die API möglicherweise nicht verfügbar.",
+    "member_filter_banner": "Zertifikate für {{name}} werden angezeigt",
+    "member_filter_clear": "Filter aufheben",
+    "member_filter_fallback_name": "Mitglied Nr. {{id}}"
   },
   "archives": {
     "title": "Prüfungsarchiv",
@@ -1179,7 +1299,11 @@
     "record_id": "Datensatz #{{id}}",
     "record_unavailable": "Datensatz nicht verfügbar",
     "messages_count_one": "{{count}} Nachrichten",
-    "messages_count_other": "{{count}} Nachrichten"
+    "messages_count_other": "{{count}} Nachrichten",
+    "stat_approved_total": "Genehmigte Datensätze",
+    "stat_approved_total_hint": "Im gesamten Archiv",
+    "stat_flagged_total": "Markierte Datensätze",
+    "stat_flagged_total_hint": "Im gesamten Archiv"
   },
   "configuration": {
     "title": "Broker-Konfiguration",
@@ -1360,7 +1484,13 @@
     "notes_label": "Notizen",
     "unknown": "Unbekannt",
     "not_found_title": "Match nicht gefunden",
-    "not_found_hint": "Diese Match-Genehmigung wurde möglicherweise entfernt, oder der Link ist falsch."
+    "not_found_hint": "Diese Match-Genehmigung wurde möglicherweise entfernt, oder der Link ist falsch.",
+    "load_error_title": "Match-Genehmigungen konnten nicht geladen werden",
+    "load_error_hint": "Beim Abrufen der Genehmigungswarteschlange ist ein Fehler aufgetreten. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "detail_description": "Prüfen Sie, warum diese beiden zusammengeführt wurden, und genehmigen oder lehnen Sie ab, bevor das Mitglied benachrichtigt wird.",
+    "listing_type_offer": "Angebot",
+    "listing_type_request": "Gesuch"
   },
   "status": {
     "active": "Aktiv",
@@ -1391,6 +1521,11 @@
     "confirmed": "Bestätigt",
     "review_requested": "Rezension angefordert",
     "not_confirmed": "Nicht bestätigt",
+    "info": "Info",
+    "warning": "Warnung",
+    "concern": "Bedenken",
+    "urgent": "Dringend",
+    "flagged": "Markiert",
     "unknown": "Unbekannt"
   },
   "common": {
@@ -1573,6 +1708,14 @@
     "open_exchange": "Austausch {{id}} öffnen",
     "report_fallback": "Meldung {{id}}",
     "report_by": "von {{name}}",
-    "open_reports": "Meldungen von Mitgliedern öffnen"
+    "open_reports": "Meldungen von Mitgliedern öffnen",
+    "support_need_answered": "beantwortet am {{date}}",
+    "open_support_need": "Unterstützungsbedarf von {{name}} öffnen",
+    "vetting_requested": "Nachkontrolle angefragt am {{date}}",
+    "open_vetting": "Überprüfungs-Nachkontrolle für {{name}} öffnen",
+    "pending_matches": "Matches zur Genehmigung",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "{{score}} % Übereinstimmung",
+    "open_match": "Match {{id}} öffnen"
   }
 }

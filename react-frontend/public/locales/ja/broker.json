@@ -24,14 +24,43 @@
     "user_fallback": "ブローカー",
     "help": "ヘルプセンター",
     "search": "検索",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Ctrl",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "通知、未読 {{count}} 件",
+    "switch_to_dark": "ダークテーマに切り替え",
+    "switch_to_light": "ライトテーマに切り替え",
+    "admin_panel": "管理パネル",
+    "keyboard_shortcuts": "キーボードショートカット",
+    "shortcuts_search": "検索を開く",
+    "shortcuts_help": "このショートカット一覧を表示",
+    "shortcuts_hint": "ショートカットは、入力欄に入力中を除き、ブローカーパネルのどこでも使えます。",
+    "shortcuts_close": "閉じる",
+    "drawer_close": "通知を閉じる",
+    "drawer_mark_all_read": "すべて既読にする",
+    "drawer_open_all": "すべての通知を開く",
+    "drawer_empty": "未読の通知はありません",
+    "drawer_error": "通知を読み込めませんでした",
+    "drawer_retry": "再試行",
+    "drawer_loading": "通知を読み込んでいます"
   },
   "palette": {
     "aria_label": "ブローカーページへ移動",
     "placeholder": "移動先… (メンバー、審査、メッセージ)",
     "results_label": "ブローカーの移動先",
     "no_results": "「{{query}}」に一致するものはありません",
-    "close_key": "ESC"
+    "close_key": "ESC",
+    "section_pages": "ページ",
+    "section_recent": "最近",
+    "section_members": "メンバー",
+    "section_help": "ヘルプ記事",
+    "section_actions": "操作",
+    "members_loading": "メンバーを検索しています…",
+    "member_hint": "メンバーで開く",
+    "action_next_unreviewed": "次の未確認メッセージ",
+    "action_pending_members": "承認待ちのメンバー",
+    "action_switch_theme": "テーマを切り替え",
+    "nothing_waiting": "待機中のものはありません"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -177,7 +206,44 @@
       "detail_listing": "リスティング #{{id}}",
       "detail_risk_level": "{{level}}リスク",
       "detail_was_risk_level": "以前は{{level}}リスク",
-      "detail_member": "メンバー #{{id}}"
+      "detail_member": "メンバー #{{id}}",
+      "detail_match": "マッチ #{{id}}",
+      "detail_final_hours": "{{hours}}時間で確定",
+      "detail_adjustment": "残高を{{amount}}時間分変更",
+      "chip_dispute_resolved": "紛争を解決",
+      "chip_dispute_cancelled": "紛争を終了",
+      "chip_exchange_reversed": "取り消し済み",
+      "chip_balance_adjusted": "残高調整済み",
+      "chip_member_approved": "メンバー承認済み",
+      "chip_member_rejected": "メンバー却下済み",
+      "chip_member_suspended": "停止済み",
+      "chip_member_reactivated": "再有効化済み",
+      "chip_report_resolved": "報告を解決",
+      "chip_report_dismissed": "報告を却下",
+      "chip_comment_hidden": "コメント非表示",
+      "chip_comment_deleted": "コメント削除済み",
+      "chip_review_flagged": "レビューにフラグ",
+      "chip_review_hidden": "レビュー非表示",
+      "chip_review_deleted": "レビュー削除済み",
+      "chip_post_hidden": "投稿非表示",
+      "chip_post_deleted": "投稿削除済み",
+      "verb_dispute_resolved": "が紛争中の交換を解決しました",
+      "verb_dispute_cancelled": "が紛争中の交換を支払いなしで終了しました",
+      "verb_exchange_reversed": "が完了済みの交換を取り消しました",
+      "verb_balance_adjusted": "がメンバーの残高を調整しました",
+      "verb_member_approved": "が新しいメンバーを承認しました",
+      "verb_member_rejected": "が入会申請を却下しました",
+      "verb_member_suspended": "がメンバーを停止しました",
+      "verb_member_reactivated": "がメンバーを再有効化しました",
+      "verb_report_resolved": "がメンバーからの報告を解決しました",
+      "verb_report_dismissed": "がメンバーからの報告を却下しました",
+      "verb_comment_hidden": "がコメントを非表示にしました",
+      "verb_comment_deleted": "がコメントを削除しました",
+      "verb_review_flagged": "がレビューにフラグを付けました",
+      "verb_review_hidden": "がレビューを非表示にしました",
+      "verb_review_deleted": "がレビューを削除しました",
+      "verb_post_hidden": "がフィードの投稿を非表示にしました",
+      "verb_post_deleted": "がフィードの投稿を削除しました"
     },
     "time_just_now": "たった今",
     "time_minutes_ago": "{{count}}分前",
@@ -189,7 +255,27 @@
     "time_minutes_ago_one": "{{count}} 分前",
     "time_hours_ago_one": "{{count}}前",
     "time_days_ago_one": "{{count}}日前",
-    "open_reports": "確認待ちのメンバーからの報告"
+    "open_reports": "確認待ちのメンバーからの報告",
+    "see_all": "すべて表示",
+    "vs_previous_fortnight": "前の2週間比",
+    "oldest_waiting_today": "最も古いものは今日届きました",
+    "oldest_waiting_days": "最も古いものは{{count}}日待っています",
+    "oldest_waiting_days_one": "最も古いものは{{count}}日待っています",
+    "oldest_waiting_days_other": "最も古いものは{{count}}日待っています",
+    "could_not_load": "読み込めませんでした",
+    "activity_drawer_title": "最近のアクティビティすべて",
+    "activity_drawer_hint": "このコミュニティでの直近{{count}}件のブローカー操作（新しい順）。",
+    "my_week": {
+      "title": "今週の対応",
+      "description": "過去7日間にあなたが決定した内容",
+      "exchanges_decided": "決定した交換",
+      "messages_reviewed": "確認したメッセージ",
+      "matches_decided": "決定したマッチ",
+      "vetting_handled": "対応した審査の再確認",
+      "avg_review_hours": "マッチの確認にかかる平均時間",
+      "avg_review_value": "{{hours}} 時間",
+      "empty": "今週はまだ何も決定していません。決定するとここに集計されます。"
+    }
   },
   "members": {
     "title": "メンバー",
@@ -301,7 +387,22 @@
     "time_hours_ago_one": "{{count}}前",
     "time_days_ago_one": "{{count}}日前",
     "bulk_selected_one": "{{count}} 選択済み",
-    "approve_named": "{{name}}さんを承認"
+    "approve_named": "{{name}}さんを承認",
+    "bulk_approve_confirm_title": "選択したメンバーを承認",
+    "bulk_approve_confirm_body": "選択した{{count}}名のメンバーを承認しますか？プラットフォームへのフルアクセスが付与されます。",
+    "bulk_approve_confirm_body_one": "選択した{{count}}名のメンバーを承認しますか？プラットフォームへのフルアクセスが付与されます。",
+    "bulk_approve_confirm_body_other": "選択した{{count}}名のメンバーを承認しますか？プラットフォームへのフルアクセスが付与されます。",
+    "bulk_suspend_confirm_title": "選択したメンバーを停止",
+    "bulk_suspend_confirm_body": "選択した{{count}}名のメンバーを停止しますか？プラットフォームへのアクセスができなくなります。",
+    "bulk_suspend_confirm_body_one": "選択した{{count}}名のメンバーを停止しますか？プラットフォームへのアクセスができなくなります。",
+    "bulk_suspend_confirm_body_other": "選択した{{count}}名のメンバーを停止しますか？プラットフォームへのアクセスができなくなります。",
+    "confirm_reactivate_title": "メンバーを再有効化",
+    "confirm_reactivate_message": "{{name}}さんを再有効化しますか？プラットフォームへのアクセスが復元され、おかえりなさいメールが送信されます。",
+    "confirm_note_delete_title": "メモを削除",
+    "confirm_note_delete_message": "このメモを削除しますか？この操作は取り消せません。",
+    "close": "閉じる",
+    "notes_load_failed": "メモを読み込めませんでした。",
+    "retry": "再試行"
   },
   "onboarding": {
     "title": "オンボーディング",
@@ -484,7 +585,10 @@
     "attestation_other": "安全確保の確認",
     "jurisdiction_placeholder": "未設定",
     "jurisdiction_admin_only_hint": "保護の管轄を変更できるのは管理者だけです。変更が必要な場合は、コミュニティの管理者に依頼してください。",
-    "coordinator_view_only": "コーディネーターはここで審査記録を閲覧できますが、確認・更新・取り消し・解決ができるのはブローカーまたは管理者のみです。"
+    "coordinator_view_only": "コーディネーターはここで審査記録を閲覧できますが、確認・更新・取り消し・解決ができるのはブローカーまたは管理者のみです。",
+    "member_filter_banner": "{{name}}さんの審査記録を表示中",
+    "member_filter_clear": "フィルターを解除",
+    "member_filter_fallback_name": "メンバー #{{id}}"
   },
   "member_detail": {
     "load_failed": "メンバーの読み込みに失敗しました。",
@@ -547,7 +651,11 @@
     "timeline_registered": "登録済み",
     "timeline_email_verified": "メール確認済み",
     "timeline_approved": "承認済み",
-    "reset_2fa_reason_label": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）"
+    "reset_2fa_reason_label": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）",
+    "load_error_title": "このメンバーを読み込めませんでした",
+    "load_error_hint": "接続を確認して、もう一度お試しください。",
+    "retry": "再試行",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "交換",
@@ -687,7 +795,11 @@
     "settle_cancel_confirm": "時間を支払わずに終了",
     "settle_cancel_success": "異議を終了しました。時間は支払われていません。",
     "settle_cancel_failed": "異議を終了できませんでした。何も変更されていません。",
-    "settle_hours_value_other": "{{count}}時間"
+    "settle_hours_value_other": "{{count}}時間",
+    "stat_needs_action": "要対応",
+    "stat_needs_action_hint": "承認待ちまたは異議あり",
+    "stat_disputed": "異議あり",
+    "stat_disputed_hint": "メンバー間で時間について意見が一致していません"
   },
   "messages": {
     "title": "メッセージレビュー",
@@ -842,7 +954,12 @@
     "detail_voice_play": "録音を再生",
     "detail_voice_player_label": "ボイスメッセージの録音",
     "detail_voice_play_failed": "録音を読み込めませんでした。",
-    "detail_voice_logged": "録音を再生するたびに記録されます。"
+    "detail_voice_logged": "録音を再生するたびに記録されます。",
+    "stat_flagged_total": "フラグ付きメッセージ",
+    "stat_flagged_total_hint": "このページだけでなく、フラグ付きメッセージすべて",
+    "stat_reviewed_total": "確認済みメッセージ",
+    "stat_reviewed_total_hint": "このページだけでなく、確認済みメッセージすべて",
+    "close": "閉じる"
   },
   "monitoring": {
     "title": "ユーザー監視",
@@ -1095,7 +1212,10 @@
     "expiry_days_left": "残り{{days}}日",
     "empty_queue_title": "すべて対応済み",
     "empty_queue_hint": "レビュー待ちの証明書はありません。",
-    "load_error_hint": "もう一度お試しください — 失敗が続く場合、APIが利用できない可能性があります。"
+    "load_error_hint": "もう一度お試しください — 失敗が続く場合、APIが利用できない可能性があります。",
+    "member_filter_banner": "{{name}}さんの証明書を表示中",
+    "member_filter_clear": "フィルターを解除",
+    "member_filter_fallback_name": "メンバー #{{id}}"
   },
   "archives": {
     "title": "レビューアーカイブ",
@@ -1174,6 +1294,10 @@
     "record_id": "記録 #{{id}}",
     "record_unavailable": "記録は利用できません",
     "messages_count_other": "{{count}}件のメッセージ",
+    "stat_approved_total": "承認済みレコード",
+    "stat_approved_total_hint": "アーカイブ全体",
+    "stat_flagged_total": "フラグ付きレコード",
+    "stat_flagged_total_hint": "アーカイブ全体",
     "messages_count_one": "{{count}} メッセージ"
   },
   "configuration": {
@@ -1355,7 +1479,13 @@
     "notes_label": "メモ",
     "unknown": "不明",
     "not_found_title": "マッチが見つかりません",
-    "not_found_hint": "このマッチ承認は削除されたか、リンクが間違っている可能性があります。"
+    "not_found_hint": "このマッチ承認は削除されたか、リンクが間違っている可能性があります。",
+    "load_error_title": "マッチ承認を読み込めませんでした",
+    "load_error_hint": "承認キューの取得中に問題が発生しました。接続を確認してもう一度お試しください。",
+    "retry": "もう一度試す",
+    "detail_description": "この2人がマッチした理由を確認し、メンバーに通知される前に承認または却下してください。",
+    "listing_type_offer": "提供",
+    "listing_type_request": "依頼"
   },
   "status": {
     "active": "有効",
@@ -1386,6 +1516,11 @@
     "confirmed": "確認済み",
     "review_requested": "レビューが要求されました",
     "not_confirmed": "未確認",
+    "info": "情報",
+    "warning": "警告",
+    "concern": "懸念",
+    "urgent": "緊急",
+    "flagged": "フラグ付き",
     "unknown": "不明"
   },
   "common": {
@@ -1567,6 +1702,14 @@
     "open_exchange": "交換{{id}}を開く",
     "report_fallback": "報告{{id}}",
     "report_by": "{{name}}さん",
-    "open_reports": "メンバーからの報告を開く"
+    "open_reports": "メンバーからの報告を開く",
+    "support_need_answered": "{{date}}に回答",
+    "open_support_need": "{{name}}さんのサポートニーズを開く",
+    "vetting_requested": "{{date}}に再確認を依頼",
+    "open_vetting": "{{name}}さんの審査の再確認を開く",
+    "pending_matches": "承認待ちのマッチ",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "一致度 {{score}}%",
+    "open_match": "マッチ {{id}} を開く"
   }
 }

@@ -24,14 +24,43 @@
     "user_fallback": "Makelaar",
     "help": "Helpcentrum",
     "search": "Zoeken",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Ctrl",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "Meldingen, {{count}} ongelezen",
+    "switch_to_dark": "Overschakelen naar donker thema",
+    "switch_to_light": "Overschakelen naar licht thema",
+    "admin_panel": "Beheerpaneel",
+    "keyboard_shortcuts": "Sneltoetsen",
+    "shortcuts_search": "Zoeken openen",
+    "shortcuts_help": "Deze lijst met sneltoetsen tonen",
+    "shortcuts_hint": "Sneltoetsen werken overal in het makelaarspaneel, behalve terwijl u in een veld typt.",
+    "shortcuts_close": "Sluiten",
+    "drawer_close": "Meldingen sluiten",
+    "drawer_mark_all_read": "Alles als gelezen markeren",
+    "drawer_open_all": "Alle meldingen openen",
+    "drawer_empty": "U bent helemaal bij",
+    "drawer_error": "Meldingen konden niet worden geladen",
+    "drawer_retry": "Opnieuw proberen",
+    "drawer_loading": "Meldingen laden"
   },
   "palette": {
     "aria_label": "Ga naar een makelaarpagina",
     "placeholder": "Ga naar… (leden, screening, berichten)",
     "results_label": "Makelaarbestemmingen",
     "no_results": "Niets komt overeen met \"{{query}}\"",
-    "close_key": "esc"
+    "close_key": "esc",
+    "section_pages": "Pagina's",
+    "section_recent": "Recent",
+    "section_members": "Leden",
+    "section_help": "Helpartikelen",
+    "section_actions": "Acties",
+    "members_loading": "Leden zoeken…",
+    "member_hint": "Openen in Leden",
+    "action_next_unreviewed": "Volgend ongecontroleerd bericht",
+    "action_pending_members": "Leden in afwachting",
+    "action_switch_theme": "Thema wisselen",
+    "nothing_waiting": "Niets in de wacht"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -177,7 +206,44 @@
       "detail_listing": "Advertentie #{{id}}",
       "detail_risk_level": "{{level}} risico",
       "detail_was_risk_level": "was {{level}} risico",
-      "detail_member": "Lid #{{id}}"
+      "detail_member": "Lid #{{id}}",
+      "detail_match": "Match nr. {{id}}",
+      "detail_final_hours": "vastgesteld op {{hours}} uur",
+      "detail_adjustment": "saldo gewijzigd met {{amount}} uur",
+      "chip_dispute_resolved": "Geschil beslecht",
+      "chip_dispute_cancelled": "Geschil gesloten",
+      "chip_exchange_reversed": "Teruggedraaid",
+      "chip_balance_adjusted": "Saldo aangepast",
+      "chip_member_approved": "Lid goedgekeurd",
+      "chip_member_rejected": "Lid afgewezen",
+      "chip_member_suspended": "Geschorst",
+      "chip_member_reactivated": "Heractiveerd",
+      "chip_report_resolved": "Melding afgehandeld",
+      "chip_report_dismissed": "Melding afgewezen",
+      "chip_comment_hidden": "Reactie verborgen",
+      "chip_comment_deleted": "Reactie verwijderd",
+      "chip_review_flagged": "Beoordeling gemarkeerd",
+      "chip_review_hidden": "Beoordeling verborgen",
+      "chip_review_deleted": "Beoordeling verwijderd",
+      "chip_post_hidden": "Bericht verborgen",
+      "chip_post_deleted": "Bericht verwijderd",
+      "verb_dispute_resolved": "heeft een betwiste uitwisseling beslecht",
+      "verb_dispute_cancelled": "heeft een betwiste uitwisseling zonder betaling gesloten",
+      "verb_exchange_reversed": "heeft een afgeronde uitwisseling teruggedraaid",
+      "verb_balance_adjusted": "heeft het saldo van een lid aangepast",
+      "verb_member_approved": "heeft een nieuw lid goedgekeurd",
+      "verb_member_rejected": "heeft een lidmaatschapsaanvraag afgewezen",
+      "verb_member_suspended": "heeft een lid geschorst",
+      "verb_member_reactivated": "heeft een lid geheractiveerd",
+      "verb_report_resolved": "heeft een melding van een lid afgehandeld",
+      "verb_report_dismissed": "heeft een melding van een lid afgewezen",
+      "verb_comment_hidden": "heeft een reactie verborgen",
+      "verb_comment_deleted": "heeft een reactie verwijderd",
+      "verb_review_flagged": "heeft een beoordeling gemarkeerd",
+      "verb_review_hidden": "heeft een beoordeling verborgen",
+      "verb_review_deleted": "heeft een beoordeling verwijderd",
+      "verb_post_hidden": "heeft een feedbericht verborgen",
+      "verb_post_deleted": "heeft een feedbericht verwijderd"
     },
     "time_just_now": "Zojuist",
     "time_minutes_ago": "{{count}}m geleden",
@@ -189,7 +255,27 @@
     "time_hours_ago_other": "{{count}}u geleden",
     "time_days_ago_one": "{{count}}d geleden",
     "time_days_ago_other": "{{count}}d geleden",
-    "open_reports": "Meldingen van leden om te bekijken"
+    "open_reports": "Meldingen van leden om te bekijken",
+    "see_all": "Alles bekijken",
+    "vs_previous_fortnight": "t.o.v. de 14 dagen ervoor",
+    "oldest_waiting_today": "Oudste is vandaag binnengekomen",
+    "oldest_waiting_days": "Oudste wacht al {{count}} dagen",
+    "oldest_waiting_days_one": "Oudste wacht al {{count}} dag",
+    "oldest_waiting_days_other": "Oudste wacht al {{count}} dagen",
+    "could_not_load": "Kon niet worden geladen",
+    "activity_drawer_title": "Alle recente activiteit",
+    "activity_drawer_hint": "De laatste {{count}} brokeracties in deze gemeenschap, nieuwste eerst.",
+    "my_week": {
+      "title": "Mijn week",
+      "description": "Wat je de afgelopen 7 dagen hebt besloten",
+      "exchanges_decided": "Uitwisselingen beslist",
+      "messages_reviewed": "Berichten beoordeeld",
+      "matches_decided": "Matches beslist",
+      "vetting_handled": "Hercontroles van screening afgehandeld",
+      "avg_review_hours": "Gemiddelde tijd om een match te beoordelen",
+      "avg_review_value": "{{hours}} u",
+      "empty": "Deze week is nog niets besloten. Je beslissingen worden hier geteld zodra je ze neemt."
+    }
   },
   "members": {
     "title": "Leden",
@@ -301,7 +387,22 @@
     "time_days_ago_other": "{{count}} d geleden",
     "bulk_selected_one": "{{count}} geselecteerd",
     "bulk_selected_other": "{{count}} geselecteerd",
-    "approve_named": "{{name}} goedkeuren"
+    "approve_named": "{{name}} goedkeuren",
+    "bulk_approve_confirm_title": "Geselecteerde leden goedkeuren",
+    "bulk_approve_confirm_body": "{{count}} geselecteerd(e) lid/leden goedkeuren? Ze krijgen volledige toegang tot het platform.",
+    "bulk_approve_confirm_body_one": "{{count}} geselecteerd lid goedkeuren? Dit lid krijgt volledige toegang tot het platform.",
+    "bulk_approve_confirm_body_other": "{{count}} geselecteerde leden goedkeuren? Ze krijgen volledige toegang tot het platform.",
+    "bulk_suspend_confirm_title": "Geselecteerde leden schorsen",
+    "bulk_suspend_confirm_body": "{{count}} geselecteerd(e) lid/leden schorsen? Ze verliezen de toegang tot het platform.",
+    "bulk_suspend_confirm_body_one": "{{count}} geselecteerd lid schorsen? Dit lid verliest de toegang tot het platform.",
+    "bulk_suspend_confirm_body_other": "{{count}} geselecteerde leden schorsen? Ze verliezen de toegang tot het platform.",
+    "confirm_reactivate_title": "Lid reactiveren",
+    "confirm_reactivate_message": "{{name}} reactiveren? Dit lid krijgt weer toegang tot het platform en ontvangt een welkom-terug-e-mail.",
+    "confirm_note_delete_title": "Notitie verwijderen",
+    "confirm_note_delete_message": "Deze notitie verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "close": "Sluiten",
+    "notes_load_failed": "De notities konden niet worden geladen.",
+    "retry": "Opnieuw proberen"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -484,7 +585,10 @@
     "attestation_other": "Bevestiging veiligstellen",
     "jurisdiction_placeholder": "Niet ingesteld",
     "jurisdiction_admin_only_hint": "Alleen een admin kan het rechtsgebied voor bescherming wijzigen. Moet het anders, vraag het dan aan een admin van je gemeenschap.",
-    "coordinator_view_only": "Als coördinator kunt u hier screeningsgegevens bekijken, maar alleen een makelaar of beheerder kan ze bevestigen, verlengen, intrekken of afhandelen."
+    "coordinator_view_only": "Als coördinator kunt u hier screeningsgegevens bekijken, maar alleen een makelaar of beheerder kan ze bevestigen, verlengen, intrekken of afhandelen.",
+    "member_filter_banner": "Screeningsgegevens van {{name}} worden getoond",
+    "member_filter_clear": "Filter wissen",
+    "member_filter_fallback_name": "lid nr. {{id}}"
   },
   "member_detail": {
     "load_failed": "Laden van lid mislukt.",
@@ -547,7 +651,11 @@
     "timeline_registered": "Geregistreerd",
     "timeline_email_verified": "E-mail geverifieerd",
     "timeline_approved": "Goedgekeurd",
-    "reset_2fa_reason_label": "Incidentreferentie en hoe u de identiteit van de accounthouder hebt gecontroleerd (10–500 tekens)"
+    "reset_2fa_reason_label": "Incidentreferentie en hoe u de identiteit van de accounthouder hebt gecontroleerd (10–500 tekens)",
+    "load_error_title": "Dit lid kon niet worden geladen",
+    "load_error_hint": "Controleer je verbinding en probeer het opnieuw.",
+    "retry": "Opnieuw proberen",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "Exchanges",
@@ -688,7 +796,11 @@
     "settle_cancel_success": "Geschil gesloten. Er zijn geen uren betaald.",
     "settle_cancel_failed": "Het geschil kon niet worden gesloten. Er is niets veranderd.",
     "settle_hours_value_one": "{{count}} uur",
-    "settle_hours_value_other": "{{count}} uur"
+    "settle_hours_value_other": "{{count}} uur",
+    "stat_needs_action": "Actie vereist",
+    "stat_needs_action_hint": "Wacht op uw goedkeuring of betwist",
+    "stat_disputed": "Betwist",
+    "stat_disputed_hint": "De leden zijn het niet eens over de uren"
   },
   "messages": {
     "title": "Bericht Beoordeling",
@@ -847,7 +959,12 @@
     "detail_voice_play": "Opname afspelen",
     "detail_voice_player_label": "Opname van het spraakbericht",
     "detail_voice_play_failed": "De opname kon niet worden geladen.",
-    "detail_voice_logged": "Elke keer dat u een opname afspeelt, wordt dat vastgelegd."
+    "detail_voice_logged": "Elke keer dat u een opname afspeelt, wordt dat vastgelegd.",
+    "stat_flagged_total": "Gemarkeerde berichten",
+    "stat_flagged_total_hint": "Elk gemarkeerd bericht, niet alleen deze pagina",
+    "stat_reviewed_total": "Beoordeelde berichten",
+    "stat_reviewed_total_hint": "Elk beoordeeld bericht, niet alleen deze pagina",
+    "close": "Sluiten"
   },
   "monitoring": {
     "title": "Gebruikersbewaking",
@@ -1100,7 +1217,10 @@
     "expiry_days_left": "nog {{days}}d",
     "empty_queue_title": "Alles is bijgewerkt",
     "empty_queue_hint": "Er wachten geen certificaten op beoordeling.",
-    "load_error_hint": "Probeer het opnieuw — als het probleem aanhoudt, is de API mogelijk niet beschikbaar."
+    "load_error_hint": "Probeer het opnieuw — als het probleem aanhoudt, is de API mogelijk niet beschikbaar.",
+    "member_filter_banner": "Certificaten van {{name}} worden getoond",
+    "member_filter_clear": "Filter wissen",
+    "member_filter_fallback_name": "lid nr. {{id}}"
   },
   "archives": {
     "title": "Beoordelingsarchief",
@@ -1179,7 +1299,11 @@
     "record_id": "Recordnr. {{id}}",
     "record_unavailable": "Record niet beschikbaar",
     "messages_count_one": "{{count}} berichten",
-    "messages_count_other": "{{count}} berichten"
+    "messages_count_other": "{{count}} berichten",
+    "stat_approved_total": "Goedgekeurde records",
+    "stat_approved_total_hint": "In het hele archief",
+    "stat_flagged_total": "Gemarkeerde records",
+    "stat_flagged_total_hint": "In het hele archief"
   },
   "configuration": {
     "title": "Makelaarconfiguratie",
@@ -1360,7 +1484,13 @@
     "notes_label": "Notities",
     "unknown": "Onbekend",
     "not_found_title": "Match niet gevonden",
-    "not_found_hint": "Deze matchgoedkeuring is mogelijk verwijderd, of de link is onjuist."
+    "not_found_hint": "Deze matchgoedkeuring is mogelijk verwijderd, of de link is onjuist.",
+    "load_error_title": "Kon matchgoedkeuringen niet laden",
+    "load_error_hint": "Er ging iets mis bij het ophalen van de goedkeuringswachtrij. Controleer uw verbinding en probeer het opnieuw.",
+    "retry": "Opnieuw proberen",
+    "detail_description": "Bekijk waarom deze twee zijn gematcht en keur goed of af voordat het lid wordt geïnformeerd.",
+    "listing_type_offer": "Aanbod",
+    "listing_type_request": "Verzoek"
   },
   "status": {
     "active": "Actief",
@@ -1391,6 +1521,11 @@
     "confirmed": "Bevestigd",
     "review_requested": "Beoordeling aangevraagd",
     "not_confirmed": "Niet bevestigd",
+    "info": "Info",
+    "warning": "Waarschuwing",
+    "concern": "Zorg",
+    "urgent": "Dringend",
+    "flagged": "Gemarkeerd",
     "unknown": "Onbekend"
   },
   "common": {
@@ -1573,6 +1708,14 @@
     "open_exchange": "Uitwisseling {{id}} openen",
     "report_fallback": "Melding {{id}}",
     "report_by": "door {{name}}",
-    "open_reports": "Meldingen van leden openen"
+    "open_reports": "Meldingen van leden openen",
+    "support_need_answered": "beantwoord op {{date}}",
+    "open_support_need": "Ondersteuningsbehoeften van {{name}} openen",
+    "vetting_requested": "hercontrole aangevraagd op {{date}}",
+    "open_vetting": "Screeningshercontrole voor {{name}} openen",
+    "pending_matches": "Matches om goed te keuren",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "{{score}}% overeenkomst",
+    "open_match": "Match {{id}} openen"
   }
 }

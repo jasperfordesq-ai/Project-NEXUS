@@ -24,14 +24,43 @@
     "user_fallback": "Broker",
     "help": "Help Center",
     "search": "Search",
-    "search_shortcut": "⌘K"
+    "search_shortcut": "⌘K",
+    "search_shortcut_ctrl": "Ctrl",
+    "search_shortcut_key": "K",
+    "notifications_with_count": "Notifications, {{count}} unread",
+    "switch_to_dark": "Switch to dark theme",
+    "switch_to_light": "Switch to light theme",
+    "admin_panel": "Admin panel",
+    "keyboard_shortcuts": "Keyboard shortcuts",
+    "shortcuts_search": "Open search",
+    "shortcuts_help": "Show this list of shortcuts",
+    "shortcuts_hint": "Shortcuts work anywhere in the broker panel except while you are typing in a field.",
+    "shortcuts_close": "Close",
+    "drawer_close": "Close notifications",
+    "drawer_mark_all_read": "Mark all as read",
+    "drawer_open_all": "Open all notifications",
+    "drawer_empty": "You're all caught up",
+    "drawer_error": "Notifications could not be loaded",
+    "drawer_retry": "Try again",
+    "drawer_loading": "Loading notifications"
   },
   "palette": {
     "aria_label": "Jump to a broker page",
     "placeholder": "Jump to… (members, vetting, messages)",
     "results_label": "Broker destinations",
     "no_results": "Nothing matches \"{{query}}\"",
-    "close_key": "esc"
+    "close_key": "esc",
+    "section_pages": "Pages",
+    "section_recent": "Recent",
+    "section_members": "Members",
+    "section_help": "Help articles",
+    "section_actions": "Actions",
+    "members_loading": "Searching members…",
+    "member_hint": "Open in Members",
+    "action_next_unreviewed": "Next unreviewed message",
+    "action_pending_members": "Pending members",
+    "action_switch_theme": "Switch theme",
+    "nothing_waiting": "Nothing waiting"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -177,7 +206,44 @@
       "detail_listing": "Listing #{{id}}",
       "detail_risk_level": "{{level}} risk",
       "detail_was_risk_level": "was {{level}} risk",
-      "detail_member": "Member #{{id}}"
+      "detail_member": "Member #{{id}}",
+      "detail_match": "Match #{{id}}",
+      "detail_final_hours": "settled at {{hours}} hours",
+      "detail_adjustment": "balance changed by {{amount}} hours",
+      "chip_dispute_resolved": "Dispute settled",
+      "chip_dispute_cancelled": "Dispute closed",
+      "chip_exchange_reversed": "Reversed",
+      "chip_balance_adjusted": "Balance adjusted",
+      "chip_member_approved": "Member approved",
+      "chip_member_rejected": "Member rejected",
+      "chip_member_suspended": "Suspended",
+      "chip_member_reactivated": "Reactivated",
+      "chip_report_resolved": "Report resolved",
+      "chip_report_dismissed": "Report dismissed",
+      "chip_comment_hidden": "Comment hidden",
+      "chip_comment_deleted": "Comment deleted",
+      "chip_review_flagged": "Review flagged",
+      "chip_review_hidden": "Review hidden",
+      "chip_review_deleted": "Review deleted",
+      "chip_post_hidden": "Post hidden",
+      "chip_post_deleted": "Post deleted",
+      "verb_dispute_resolved": "settled a disputed exchange",
+      "verb_dispute_cancelled": "closed a disputed exchange without payment",
+      "verb_exchange_reversed": "reversed a completed exchange",
+      "verb_balance_adjusted": "adjusted a member's balance",
+      "verb_member_approved": "approved a new member",
+      "verb_member_rejected": "rejected a membership request",
+      "verb_member_suspended": "suspended a member",
+      "verb_member_reactivated": "reactivated a member",
+      "verb_report_resolved": "resolved a member report",
+      "verb_report_dismissed": "dismissed a member report",
+      "verb_comment_hidden": "hid a comment",
+      "verb_comment_deleted": "deleted a comment",
+      "verb_review_flagged": "flagged a review",
+      "verb_review_hidden": "hid a review",
+      "verb_review_deleted": "deleted a review",
+      "verb_post_hidden": "hid a feed post",
+      "verb_post_deleted": "deleted a feed post"
     },
     "time_just_now": "Just now",
     "time_minutes_ago": "{{count}}m ago",
@@ -189,7 +255,27 @@
     "time_hours_ago_other": "{{count}}h ago",
     "time_days_ago_one": "{{count}}d ago",
     "time_days_ago_other": "{{count}}d ago",
-    "open_reports": "Member reports to check"
+    "open_reports": "Member reports to check",
+    "see_all": "See all",
+    "vs_previous_fortnight": "vs previous fortnight",
+    "oldest_waiting_today": "Oldest arrived today",
+    "oldest_waiting_days": "Oldest waiting {{count}} days",
+    "oldest_waiting_days_one": "Oldest waiting {{count}} day",
+    "oldest_waiting_days_other": "Oldest waiting {{count}} days",
+    "could_not_load": "Could not load",
+    "activity_drawer_title": "All recent activity",
+    "activity_drawer_hint": "The last {{count}} broker actions in this community, newest first.",
+    "my_week": {
+      "title": "My week",
+      "description": "What you decided in the last 7 days",
+      "exchanges_decided": "Exchanges decided",
+      "messages_reviewed": "Messages reviewed",
+      "matches_decided": "Matches decided",
+      "vetting_handled": "Vetting re-checks handled",
+      "avg_review_hours": "Average time to review a match",
+      "avg_review_value": "{{hours}} h",
+      "empty": "Nothing decided yet this week. Your decisions will be counted here as you make them."
+    }
   },
   "members": {
     "title": "Members",
@@ -301,7 +387,22 @@
     "time_days_ago_other": "{{count}}d ago",
     "bulk_selected_one": "{{count}} selected",
     "bulk_selected_other": "{{count}} selected",
-    "approve_named": "Approve {{name}}"
+    "approve_named": "Approve {{name}}",
+    "bulk_approve_confirm_title": "Approve selected members",
+    "bulk_approve_confirm_body": "Approve {{count}} selected member(s)? They will gain full access to the platform.",
+    "bulk_approve_confirm_body_one": "Approve {{count}} selected member? They will gain full access to the platform.",
+    "bulk_approve_confirm_body_other": "Approve {{count}} selected members? They will gain full access to the platform.",
+    "bulk_suspend_confirm_title": "Suspend selected members",
+    "bulk_suspend_confirm_body": "Suspend {{count}} selected member(s)? They will lose access to the platform.",
+    "bulk_suspend_confirm_body_one": "Suspend {{count}} selected member? They will lose access to the platform.",
+    "bulk_suspend_confirm_body_other": "Suspend {{count}} selected members? They will lose access to the platform.",
+    "confirm_reactivate_title": "Reactivate member",
+    "confirm_reactivate_message": "Reactivate {{name}}? They will regain access to the platform and receive a welcome-back email.",
+    "confirm_note_delete_title": "Delete note",
+    "confirm_note_delete_message": "Delete this note? This cannot be undone.",
+    "close": "Close",
+    "notes_load_failed": "Notes couldn't be loaded.",
+    "retry": "Retry"
   },
   "onboarding": {
     "title": "Onboarding",
@@ -484,7 +585,10 @@
     "attestation_other": "Safeguarding confirmation",
     "jurisdiction_placeholder": "Not set",
     "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community.",
-    "coordinator_view_only": "As a coordinator you can see vetting records here, but only a broker or an administrator can confirm, renew, revoke or resolve them."
+    "coordinator_view_only": "As a coordinator you can see vetting records here, but only a broker or an administrator can confirm, renew, revoke or resolve them.",
+    "member_filter_banner": "Showing vetting records for {{name}}",
+    "member_filter_clear": "Clear filter",
+    "member_filter_fallback_name": "member #{{id}}"
   },
   "member_detail": {
     "load_failed": "Failed to load member.",
@@ -547,7 +651,11 @@
     "timeline_registered": "Registered",
     "timeline_email_verified": "Email verified",
     "timeline_approved": "Approved",
-    "reset_2fa_reason_label": "Incident reference and how you verified the account holder’s identity (10–500 characters)"
+    "reset_2fa_reason_label": "Incident reference and how you verified the account holder’s identity (10–500 characters)",
+    "load_error_title": "This member couldn't be loaded",
+    "load_error_hint": "Check your connection and try again.",
+    "retry": "Retry",
+    "edit_phone_placeholder": "+1 555 123 4567"
   },
   "exchanges": {
     "title": "Exchange Management",
@@ -688,7 +796,11 @@
     "settle_cancel_success": "Dispute closed. No hours were paid.",
     "settle_cancel_failed": "The dispute could not be closed. Nothing has changed.",
     "settle_hours_value_one": "{{count}} hour",
-    "settle_hours_value_other": "{{count}} hours"
+    "settle_hours_value_other": "{{count}} hours",
+    "stat_needs_action": "Needs action",
+    "stat_needs_action_hint": "Awaiting your approval or in dispute",
+    "stat_disputed": "Disputed",
+    "stat_disputed_hint": "Members disagree about the hours"
   },
   "messages": {
     "title": "Message Review",
@@ -847,7 +959,12 @@
     "detail_voice_play": "Play recording",
     "detail_voice_player_label": "Voice message recording",
     "detail_voice_play_failed": "The recording could not be loaded.",
-    "detail_voice_logged": "Each time you play a recording, it is logged."
+    "detail_voice_logged": "Each time you play a recording, it is logged.",
+    "stat_flagged_total": "Flagged messages",
+    "stat_flagged_total_hint": "Every flagged message, not just this page",
+    "stat_reviewed_total": "Reviewed messages",
+    "stat_reviewed_total_hint": "Every reviewed message, not just this page",
+    "close": "Close"
   },
   "monitoring": {
     "title": "User Monitoring",
@@ -1100,7 +1217,10 @@
     "expiry_days_left": "{{days}}d left",
     "empty_queue_title": "All caught up",
     "empty_queue_hint": "No certificates are waiting for review.",
-    "load_error_hint": "Try again — if it keeps failing, the API may be unavailable."
+    "load_error_hint": "Try again — if it keeps failing, the API may be unavailable.",
+    "member_filter_banner": "Showing certificates for {{name}}",
+    "member_filter_clear": "Clear filter",
+    "member_filter_fallback_name": "member #{{id}}"
   },
   "archives": {
     "title": "Review Archive",
@@ -1179,7 +1299,11 @@
     "record_id": "Record #{{id}}",
     "record_unavailable": "Record unavailable",
     "messages_count_one": "{{count}} messages",
-    "messages_count_other": "{{count}} messages"
+    "messages_count_other": "{{count}} messages",
+    "stat_approved_total": "Approved records",
+    "stat_approved_total_hint": "Across the whole archive",
+    "stat_flagged_total": "Flagged records",
+    "stat_flagged_total_hint": "Across the whole archive"
   },
   "configuration": {
     "title": "Broker Configuration",
@@ -1360,7 +1484,13 @@
     "notes_label": "Notes",
     "unknown": "Unknown",
     "not_found_title": "Match not found",
-    "not_found_hint": "This match approval may have been removed, or the link is wrong."
+    "not_found_hint": "This match approval may have been removed, or the link is wrong.",
+    "load_error_title": "Couldn't load match approvals",
+    "load_error_hint": "Something went wrong while fetching the approval queue. Check your connection and try again.",
+    "retry": "Try again",
+    "detail_description": "Check why these two were matched, then approve or reject before the member is told.",
+    "listing_type_offer": "Offer",
+    "listing_type_request": "Request"
   },
   "status": {
     "unknown": "Unknown",
@@ -1391,7 +1521,12 @@
     "pending_confirmation": "Pending Confirmation",
     "confirmed": "Confirmed",
     "review_requested": "Review requested",
-    "not_confirmed": "Not confirmed"
+    "not_confirmed": "Not confirmed",
+    "info": "Info",
+    "warning": "Warning",
+    "concern": "Concern",
+    "urgent": "Urgent",
+    "flagged": "Flagged"
   },
   "common": {
     "loading": "Loading...",
@@ -1573,6 +1708,14 @@
     "open_exchange": "Open exchange {{id}}",
     "report_fallback": "Report {{id}}",
     "report_by": "by {{name}}",
-    "open_reports": "Open member reports"
+    "open_reports": "Open member reports",
+    "support_need_answered": "answered {{date}}",
+    "open_support_need": "Open {{name}}'s support needs",
+    "vetting_requested": "re-check requested {{date}}",
+    "open_vetting": "Open the vetting re-check for {{name}}",
+    "pending_matches": "Matches to approve",
+    "match_between": "{{a}} ↔ {{b}}",
+    "match_score": "{{score}}% match",
+    "open_match": "Open match {{id}}"
   }
 }
