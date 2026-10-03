@@ -1579,6 +1579,7 @@ return [
             'recurrence_option_unavailable' => 'That recurrence option is not currently available for this community.',
             'recurrence_end_date_label' => 'End date',
             'recurrence_end_date_hint' => 'The series will end on or before this date.',
+            'recurrence_used_when' => 'Only used if you chose “:option”.',
             'recurrence_hint' => 'Creates copies of this event at the selected frequency.',
             // Check-in panel (organiser)
             'checkin_heading' => 'Attendance check-in',

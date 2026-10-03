@@ -1544,6 +1544,7 @@ return [
             'recurrence_option_unavailable' => 'Cette option de récurrence n’est pas disponible actuellement pour cette communauté.',
             'recurrence_end_date_label' => 'Date de fin',
             'recurrence_end_date_hint' => 'La série se terminera à cette date ou avant.',
+            'recurrence_used_when' => 'Utilisé uniquement si vous avez choisi « :option ».',
             'recurrence_hint' => 'Crée des copies de cet événement à la fréquence sélectionnée.',
             'checkin_heading' => 'Enregistrement des présences',
             'checkin_intro' => 'Marquez les personnes présentes à cet événement.',

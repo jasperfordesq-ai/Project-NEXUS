@@ -1544,6 +1544,7 @@ return [
             'recurrence_option_unavailable' => 'Diese Wiederholungsoption ist für diese Community derzeit nicht verfügbar.',
             'recurrence_end_date_label' => 'Enddatum',
             'recurrence_end_date_hint' => 'Die Reihe endet an oder vor diesem Datum.',
+            'recurrence_used_when' => 'Wird nur verwendet, wenn Sie „:option“ gewählt haben.',
             'recurrence_hint' => 'Erstellt Kopien dieser Veranstaltung in der ausgewählten Häufigkeit.',
             'checkin_heading' => 'Anwesenheitsprüfung',
             'checkin_intro' => 'Markieren Sie, wer an dieser Veranstaltung teilgenommen hat.',

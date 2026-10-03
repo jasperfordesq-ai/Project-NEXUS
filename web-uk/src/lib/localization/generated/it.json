@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "Questa opzione di ricorrenza non è attualmente disponibile per questa comunità.",
                     "recurrence_end_date_label": "Data di fine",
                     "recurrence_end_date_hint": "La serie terminerà entro questa data.",
+                    "recurrence_used_when": "Usato solo se hai scelto «:option».",
                     "recurrence_hint": "Crea copie di questo evento alla frequenza selezionata.",
                     "checkin_heading": "Check-in presenze",
                     "checkin_intro": "Indica chi ha partecipato a questo evento.",

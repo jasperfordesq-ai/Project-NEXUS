@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "Ta opcja cykliczności nie jest obecnie dostępna dla tej społeczności.",
                     "recurrence_end_date_label": "Data zakończenia",
                     "recurrence_end_date_hint": "Seria zakończy się w tym dniu lub przed nim.",
+                    "recurrence_used_when": "Używane tylko wtedy, gdy wybrano „:option”.",
                     "recurrence_hint": "Tworzy kopie tego wydarzenia z wybraną częstotliwością.",
                     "checkin_heading": "Rejestracja obecności",
                     "checkin_intro": "Zaznacz, kto uczestniczył w tym wydarzeniu.",

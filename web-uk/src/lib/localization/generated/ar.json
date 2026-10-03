@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "خيار التكرار هذا غير متاح حاليا لهذا المجتمع.",
                     "recurrence_end_date_label": "تاريخ الانتهاء",
                     "recurrence_end_date_hint": "ستنتهي السلسلة في هذا التاريخ أو قبله.",
+                    "recurrence_used_when": "يُستخدم فقط إذا اخترت «:option».",
                     "recurrence_hint": "ينشئ نسخًا من هذا الحدث بالتكرار المحدد.",
                     "checkin_heading": "تسجيل حضور الفعالية",
                     "checkin_intro": "سجّل من حضر هذا الحدث.",

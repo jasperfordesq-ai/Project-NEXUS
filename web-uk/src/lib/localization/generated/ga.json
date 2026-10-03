@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "Níl an rogha atarlaithe sin ar fáil don phobal seo faoi láthair.",
                     "recurrence_end_date_label": "Dáta deiridh",
                     "recurrence_end_date_hint": "Críochnóidh an tsraith ar an dáta seo nó roimhe.",
+                    "recurrence_used_when": "Ní úsáidtear é ach amháin má roghnaigh tú “:option”.",
                     "recurrence_hint": "Cruthaíonn cóipeanna den ócáid seo ag an minicíocht roghnaithe.",
                     "checkin_heading": "Seiceáil isteach ar láithreacht",
                     "checkin_intro": "Marcáil cé a d'fhreastail ar an ócáid seo.",

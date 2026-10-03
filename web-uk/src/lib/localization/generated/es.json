@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "Esa opción de recurrencia no está disponible actualmente para esta comunidad.",
                     "recurrence_end_date_label": "Fecha de finalización",
                     "recurrence_end_date_hint": "La serie terminará en esta fecha o antes.",
+                    "recurrence_used_when": "Solo se usa si eligió «:option».",
                     "recurrence_hint": "Crea copias de este evento con la frecuencia seleccionada.",
                     "checkin_heading": "Registro de asistencia",
                     "checkin_intro": "Marque quién asistió a este evento.",

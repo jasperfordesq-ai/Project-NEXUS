@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "その繰り返しオプションは現在このコミュニティでは利用できません。",
                     "recurrence_end_date_label": "終了日",
                     "recurrence_end_date_hint": "シリーズはこの日付以前に終了します。",
+                    "recurrence_used_when": "「:option」を選んだ場合のみ使用されます。",
                     "recurrence_hint": "選択した頻度でこのイベントのコピーを作成します。",
                     "checkin_heading": "出席チェックイン",
                     "checkin_intro": "このイベントの出席者を記録します。",

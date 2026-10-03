@@ -27284,6 +27284,12 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('name="recurrence_ends_on_date-day"');
     expect(page.text).toContain('name="recurrence_ends_on_date-month"');
     expect(page.text).toContain('name="recurrence_ends_on_date-year"');
+    // No radio on the page carries a GOV.UK conditional reveal: its script sets
+    // aria-expanded on the radio, which ARIA does not allow (axe aria-allowed-attr).
+    // The two "ends" fields are always shown, each saying which choice it belongs to.
+    expect(page.text).not.toMatch(/type="radio"[^>]*data-aria-controls/);
+    expect(page.text).toContain('Only used if you chose “After a number of occurrences”.');
+    expect(page.text).toContain('Only used if you chose “On a specific date”.');
     expect(csrfMatch).not.toBeNull();
 
     const response = await agent

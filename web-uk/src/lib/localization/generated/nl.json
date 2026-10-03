@@ -2536,6 +2536,7 @@
                     "recurrence_option_unavailable": "Die herhalingsoptie is momenteel niet beschikbaar voor deze community.",
                     "recurrence_end_date_label": "Einddatum",
                     "recurrence_end_date_hint": "De reeks eindigt op of voor deze datum.",
+                    "recurrence_used_when": "Alleen gebruikt als u ‘:option’ hebt gekozen.",
                     "recurrence_hint": "Maakt kopieën van dit evenement op de geselecteerde frequentie.",
                     "checkin_heading": "Aanwezigheidsregistratie",
                     "checkin_intro": "Markeer wie aanwezig was bij dit evenement.",
