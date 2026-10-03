@@ -5,15 +5,17 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Mock adminApi (default+named same object via vi.hoisted) ─────────────────
-const { mockAdminBroker } = vi.hoisted(() => ({
+const { mockAdminBroker, mockConfirm } = vi.hoisted(() => ({
   mockAdminBroker: {
     getConfiguration: vi.fn(),
     saveConfiguration: vi.fn(),
   },
+  mockConfirm: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -23,7 +25,8 @@ vi.mock('@/admin/api/adminApi', () => ({
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ─── Stub HeroUI Switch/Tooltip to avoid potential jsdom infinite loops ───────
+// ─── Stub HeroUI Switch/Tooltip to avoid potential jsdom infinite loops; the
+// shared confirm dialog needs its provider, so the page gets the answer directly.
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
   return {
@@ -42,6 +45,7 @@ vi.mock('@/components/ui', async (importOriginal) => {
       />
     ),
     Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    useConfirm: () => mockConfirm,
   };
 });
 
@@ -125,10 +129,29 @@ const defaultConfig = {
   insurance_expiry_warning_days: 30,
 };
 
+const FIRST_CONTACT = 'Copy first contact between members';
+
 function findSaveButton() {
   return screen.getAllByRole('button').find((b) =>
     b.textContent?.toLowerCase().includes('save')
   );
+}
+
+function isButtonDisabled(button: HTMLElement | undefined): boolean {
+  if (!button) return false;
+  return (
+    button.hasAttribute('disabled') ||
+    button.getAttribute('data-disabled') === 'true' ||
+    button.getAttribute('aria-disabled') === 'true'
+  );
+}
+
+async function renderLoaded() {
+  const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
+  render(<BrokerConfigurationPage />);
+  await waitFor(() => {
+    expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -138,6 +161,7 @@ describe('BrokerConfigurationPage', () => {
     mockRole = 'admin';
     mockAdminBroker.getConfiguration.mockResolvedValue({ success: true, data: { ...defaultConfig } });
     mockAdminBroker.saveConfiguration.mockResolvedValue({ success: true, data: { ...defaultConfig } });
+    mockConfirm.mockResolvedValue(true);
   });
 
   it('shows a skeleton loading state initially', async () => {
@@ -208,33 +232,35 @@ describe('BrokerConfigurationPage', () => {
     });
   });
 
-  it('calls saveConfiguration when Save Changes button is clicked', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
+  // ─── Save bar ──────────────────────────────────────────────────────────────
 
-    await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
-    });
+  it('Save and Discard are disabled while nothing has changed', async () => {
+    await renderLoaded();
 
+    expect(screen.getByText('All changes saved')).toBeInTheDocument();
+    expect(isButtonDisabled(findSaveButton())).toBe(true);
+    expect(isButtonDisabled(screen.getByRole('button', { name: 'Discard' }))).toBe(true);
+  });
+
+  it('calls saveConfiguration when Save Changes is clicked after an edit', async () => {
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     const saveBtn = findSaveButton();
-    expect(saveBtn).toBeDefined();
+    expect(isButtonDisabled(saveBtn)).toBe(false);
     if (saveBtn) fireEvent.click(saveBtn);
 
     await waitFor(() => {
       expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith(
-        expect.objectContaining({ broker_messaging_enabled: true })
+        expect.objectContaining({ broker_messaging_enabled: true, copy_first_contact: false })
       );
     });
   });
 
   it('shows success toast after save succeeds', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
+    await renderLoaded();
 
-    await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
-    });
-
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     const saveBtn = findSaveButton();
     if (saveBtn) fireEvent.click(saveBtn);
 
@@ -245,19 +271,40 @@ describe('BrokerConfigurationPage', () => {
 
   it('shows error toast when save fails', async () => {
     mockAdminBroker.saveConfiguration.mockResolvedValue({ success: false, error: 'Oops' });
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
+    await renderLoaded();
 
-    await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
-    });
-
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     const saveBtn = findSaveButton();
     if (saveBtn) fireEvent.click(saveBtn);
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
+  });
+
+  it('Discard puts the loaded values back and the page is clean again', async () => {
+    await renderLoaded();
+
+    const toggle = screen.getByRole('switch', { name: FIRST_CONTACT });
+    fireEvent.click(toggle);
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    expect(screen.getByRole('switch', { name: FIRST_CONTACT })).toBeChecked();
+    expect(screen.queryByText('Unsaved changes')).toBeNull();
+    expect(isButtonDisabled(findSaveButton())).toBe(true);
+    expect(mockAdminBroker.saveConfiguration).not.toHaveBeenCalled();
+  });
+
+  it('toggling a switch back makes the page clean again (dirty is a comparison, not a flag)', async () => {
+    await renderLoaded();
+
+    const toggle = screen.getByRole('switch', { name: FIRST_CONTACT });
+    fireEvent.click(toggle);
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    fireEvent.click(toggle);
+    expect(screen.queryByText('Unsaved changes')).toBeNull();
   });
 
   it('renders switch toggles for boolean settings', async () => {
@@ -271,15 +318,10 @@ describe('BrokerConfigurationPage', () => {
   });
 
   it('shows an unsaved-changes chip after editing and clears it on save', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
-    });
+    await renderLoaded();
     expect(screen.queryByText('Unsaved changes')).toBeNull();
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
 
     const saveBtn = findSaveButton();
@@ -291,13 +333,87 @@ describe('BrokerConfigurationPage', () => {
     });
   });
 
-  it('does not show limited access warning or admin-only chips for admin user', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
+  // ─── Number fields ─────────────────────────────────────────────────────────
+
+  it('renders number fields with their unit for time-based settings', async () => {
+    await renderLoaded();
+
+    const field = screen.getByRole('textbox', { name: 'New-member monitoring window in days' });
+    expect(field).toHaveValue('30 days');
+    expect(screen.getByRole('textbox', { name: 'Broker copy threshold in hours' })).toHaveValue('5 hours');
+    expect(screen.getByRole('textbox', { name: 'Random sample percentage' })).toHaveValue('0%');
+  });
+
+  it('keeps a cleared number empty instead of snapping to a default, and blocks the save until it is filled', async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+
+    const field = screen.getByRole('textbox', { name: 'New-member monitoring window in days' });
+    await user.clear(field);
+    await user.tab();
+    expect(field).toHaveValue('');
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+
+    const saveBtn = findSaveButton();
+    if (saveBtn) await user.click(saveBtn);
+    expect(mockToast.error).toHaveBeenCalledWith('Enter a number for New-member monitoring window (days).');
+    expect(mockAdminBroker.saveConfiguration).not.toHaveBeenCalled();
+
+    await user.type(field, '45');
+    await user.tab();
+    expect(field).toHaveValue('45 days');
+    if (saveBtn) await user.click(saveBtn);
+    await waitFor(() => {
+      expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith(
+        expect.objectContaining({ new_member_monitoring_days: 45 })
+      );
+    });
+  });
+
+  // ─── Leaving with unsaved changes ──────────────────────────────────────────
+
+  it('asks before following a link while there are unsaved changes, and navigates when agreed', async () => {
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
+    const helpLink = screen.getByRole('link', { name: /How this page works/ });
+    fireEvent.click(helpLink);
 
     await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Leave without saving?' }));
     });
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/test/broker/help/broker_role/broker_configuration');
+    });
+  });
+
+  it('stays put when the broker declines to leave', async () => {
+    mockConfirm.mockResolvedValue(false);
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
+    fireEvent.click(screen.getByRole('link', { name: /How this page works/ }));
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  // ─── Jump links ────────────────────────────────────────────────────────────
+
+  it('offers section jump links that target the section cards', async () => {
+    await renderLoaded();
+
+    const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+    const link = within(nav).getByRole('link', { name: 'Messaging' });
+    expect(link).toHaveAttribute('href', '#config-section-messaging');
+    expect(document.getElementById('config-section-messaging')).not.toBeNull();
+    expect(within(nav).getByRole('link', { name: 'Exchange Workflow' })).toBeInTheDocument();
+  });
+
+  // ─── Access ────────────────────────────────────────────────────────────────
+
+  it('does not show limited access warning or admin-only chips for admin user', async () => {
+    await renderLoaded();
 
     expect(screen.queryByText('Some settings can only be changed by an admin')).toBeNull();
     expect(screen.queryByText('Admin only')).toBeNull();
@@ -312,13 +428,13 @@ describe('BrokerConfigurationPage', () => {
       expect(screen.getByText('Some settings can only be changed by an admin')).toBeInTheDocument();
     });
 
-    // Every admin-only row carries the lock chip…
-    expect(screen.getAllByText('Admin only').length).toBeGreaterThan(0);
+    // Every admin-only row carries the lock chip — twelve of them, the F-547 set…
+    expect(screen.getAllByText('Admin only')).toHaveLength(12);
     // …and its control is disabled.
     expect(screen.getByRole('switch', { name: 'Broker messaging enabled' })).toBeDisabled();
     // Broker-editable settings stay enabled.
     expect(
-      screen.getByRole('switch', { name: 'Copy first contact between members' })
+      screen.getByRole('switch', { name: FIRST_CONTACT })
     ).not.toBeDisabled();
   });
 
@@ -349,7 +465,7 @@ describe('BrokerConfigurationPage', () => {
 
   it('sends a broker only the settings they changed', async () => {
     const payload = await brokerSaveAfter({ ...defaultConfig }, () => {
-      fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+      fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     });
 
     expect(payload).toEqual({ copy_first_contact: false });
@@ -359,7 +475,7 @@ describe('BrokerConfigurationPage', () => {
     const payload = await brokerSaveAfter(
       { ...defaultConfig, exchange_workflow_enabled: true, require_broker_approval: true },
       () => {
-        fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+        fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
       },
     );
 
@@ -372,34 +488,29 @@ describe('BrokerConfigurationPage', () => {
     // At 100 the server treats the rate as the admin-only "copy all" policy (F-242)
     // and refuses a broker's save that contains it.
     const payload = await brokerSaveAfter({ ...defaultConfig, random_sample_percentage: 100 }, () => {
-      fireEvent.click(screen.getByRole('switch', { name: 'Copy first contact between members' }));
+      fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     });
 
     expect(payload).not.toHaveProperty('random_sample_percentage');
   });
 
-  it('still sends an admin the whole configuration', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
+  it('still sends an admin the whole configuration, including keys the page does not show', async () => {
+    mockAdminBroker.getConfiguration.mockResolvedValue({
+      success: true,
+      data: { ...defaultConfig, exchange_workflow_enabled: true },
     });
+    await renderLoaded();
+
+    fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
     const saveBtn = findSaveButton();
     if (saveBtn) fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith(defaultConfig);
-    });
-  });
-
-  it('renders numeric input fields for time-based settings', async () => {
-    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
-    render(<BrokerConfigurationPage />);
-
-    await waitFor(() => {
-      const numberInputs = screen.getAllByRole('spinbutton');
-      expect(numberInputs.length).toBeGreaterThan(0);
+      expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith({
+        ...defaultConfig,
+        copy_first_contact: false,
+        exchange_workflow_enabled: true,
+      });
     });
   });
 

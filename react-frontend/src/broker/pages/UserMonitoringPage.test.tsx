@@ -4,19 +4,21 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
 // ─── Hoist mock objects so factory closures see them ─────────────────────────
-const { mockBroker, mockAdminUsers } = vi.hoisted(() => ({
+const { mockBroker, mockAdminUsers, mockConfirm } = vi.hoisted(() => ({
   mockBroker: {
     getMonitoring: vi.fn(),
     setMonitoring: vi.fn(),
   },
   mockAdminUsers: {
     list: vi.fn(),
+    get: vi.fn(),
   },
+  mockConfirm: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -27,6 +29,12 @@ vi.mock('@/admin/api/adminApi', () => ({
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
+
+// The shared confirm dialog needs its provider; the page only needs the answer.
+vi.mock('@/components/ui', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/components/ui')>();
+  return { ...orig, useConfirm: () => mockConfirm };
+});
 
 // ─── Toast + tenant mock ──────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
@@ -53,12 +61,15 @@ vi.mock('@/admin/components', () => ({
     data,
     columns,
     isLoading,
+    emptyContent,
   }: {
     data: Array<Record<string, unknown>>;
     columns: StubColumn[];
     isLoading: boolean;
+    emptyContent?: React.ReactNode;
   }) => (
     <div data-testid="data-table" data-loading={String(isLoading)}>
+      {data.length === 0 ? emptyContent : null}
       {data.map((item) => (
         <div key={String(item.user_id)} data-testid="data-table-row">
           {columns.map((col) => (
@@ -87,6 +98,14 @@ vi.mock('@/admin/components', () => ({
         <button onClick={onClose}>Cancel</button>
       </div>
     ) : null,
+  // The shared member picker has its own suite; a click picks member 7.
+  MemberSearchPicker: ({ label, value, onValueChange }: { label: string; value: string; onValueChange: (v: string) => void }) => (
+    <div>
+      <span>{label}</span>
+      <button type="button" onClick={() => onValueChange('7')}>pick member 7</button>
+      <span data-testid="picked-member">{value}</span>
+    </div>
+  ),
 }));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -116,13 +135,32 @@ const makeMonitoredUser = (overrides = {}) => ({
   ...overrides,
 });
 
+const threeMembers = () => [
+  makeMonitoredUser({ user_id: 1, user_name: 'User One' }),
+  makeMonitoredUser({ user_id: 2, user_name: 'User Two', messaging_disabled: true, monitoring_reason: 'Spam reports' }),
+  makeMonitoredUser({
+    user_id: 3,
+    user_name: 'User Three',
+    monitoring_expires_at: new Date(Date.now() + 3 * DAY_MS).toISOString(),
+  }),
+];
+
+/** Render at a URL (the page reads ?tab= from the real router). */
+async function renderAt(url: string) {
+  window.history.pushState({}, '', url);
+  const { UserMonitoring } = await import('./UserMonitoringPage');
+  return render(<UserMonitoring />);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('UserMonitoring', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    window.history.pushState({}, '', '/');
     mockBroker.getMonitoring.mockResolvedValue({ success: true, data: [] });
     mockBroker.setMonitoring.mockResolvedValue({ success: true });
     mockAdminUsers.list.mockResolvedValue({ success: true, data: [] });
+    mockConfirm.mockResolvedValue(true);
   });
 
   it('shows a loading skeleton while fetching monitored users', async () => {
@@ -201,23 +239,16 @@ describe('UserMonitoring', () => {
     expect(screen.getByText('Suspicious activity')).toBeInTheDocument();
   });
 
-  it('derives the KPI header from the loaded list', async () => {
-    mockBroker.getMonitoring.mockResolvedValue({
-      success: true,
-      data: [
-        makeMonitoredUser({ user_id: 1, user_name: 'User One' }),
-        makeMonitoredUser({
-          user_id: 2,
-          user_name: 'User Two',
-          messaging_disabled: true,
-        }),
-        makeMonitoredUser({
-          user_id: 3,
-          user_name: 'User Three',
-          monitoring_expires_at: new Date(Date.now() + 3 * DAY_MS).toISOString(),
-        }),
-      ],
-    });
+  it('member names open the panel-wide member window', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: [makeMonitoredUser()] });
+    const { UserMonitoring } = await import('./UserMonitoringPage');
+    render(<UserMonitoring />);
+
+    expect(await screen.findByRole('button', { name: "Open Bob Suspect's record" })).toBeInTheDocument();
+  });
+
+  it('derives the KPI header from the loaded list, and each card links to its tab', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: threeMembers() });
     const { UserMonitoring } = await import('./UserMonitoringPage');
     render(<UserMonitoring />);
 
@@ -235,6 +266,104 @@ describe('UserMonitoring', () => {
 
     const expiringLabel = screen.getByText('Expiring within 7 days');
     expect(expiringLabel.parentElement?.textContent).toContain('1');
+
+    expect(screen.getByRole('link', { name: 'Messaging disabled' })).toHaveAttribute('href', '/test/broker/monitoring?tab=messaging_off');
+    expect(screen.getByRole('link', { name: 'Expiring within 7 days' })).toHaveAttribute('href', '/test/broker/monitoring?tab=expiring_soon');
+    expect(screen.getByRole('link', { name: 'Under monitoring' })).toHaveAttribute('href', '/test/broker/monitoring');
+  });
+
+  // ─── Tabs and search over the loaded rows ──────────────────────────────────
+
+  it('?tab=messaging_off shows only members whose messaging is off', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: threeMembers() });
+    await renderAt('/broker/monitoring?tab=messaging_off');
+
+    await waitFor(() => {
+      expect(screen.getByText('User Two')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('User One')).toBeNull();
+    expect(screen.queryByText('User Three')).toBeNull();
+  });
+
+  it('?tab=expiring_soon shows only members whose monitoring lapses within 7 days', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: threeMembers() });
+    await renderAt('/broker/monitoring?tab=expiring_soon');
+
+    await waitFor(() => {
+      expect(screen.getByText('User Three')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('User One')).toBeNull();
+    expect(screen.getAllByTestId('data-table-row')).toHaveLength(1);
+  });
+
+  it('the search box filters the loaded rows by name or reason', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: threeMembers() });
+    const { UserMonitoring } = await import('./UserMonitoringPage');
+    render(<UserMonitoring />);
+
+    await screen.findByText('User One');
+    fireEvent.change(screen.getByLabelText('Search monitored members'), { target: { value: 'spam' } });
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId('data-table-row')).toHaveLength(1);
+    });
+    expect(screen.getByText('User Two')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Search monitored members'), { target: { value: 'nobody-matches' } });
+    await waitFor(() => {
+      expect(screen.getByText('No members match')).toBeInTheDocument();
+    });
+  });
+
+  // ─── Row actions ───────────────────────────────────────────────────────────
+
+  it('Extend asks first, then re-calls setMonitoring with a new 30-day expiry and the same reason', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({
+      success: true,
+      data: [makeMonitoredUser({ user_id: 42, messaging_disabled: true })],
+    });
+    const { UserMonitoring } = await import('./UserMonitoringPage');
+    render(<UserMonitoring />);
+
+    await screen.findByText('Bob Suspect');
+    fireEvent.click(screen.getByRole('button', { name: 'Extend monitoring' }));
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Extend monitoring' }));
+      expect(mockBroker.setMonitoring).toHaveBeenCalledWith(42, {
+        under_monitoring: true,
+        reason: 'Suspicious activity',
+        messaging_disabled: true,
+        expires_days: 30,
+      });
+    });
+    expect(mockToast.success).toHaveBeenCalledWith('Monitoring extended.');
+  });
+
+  it('Extend does nothing when the broker declines', async () => {
+    mockConfirm.mockResolvedValue(false);
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: [makeMonitoredUser({ user_id: 42 })] });
+    const { UserMonitoring } = await import('./UserMonitoringPage');
+    render(<UserMonitoring />);
+
+    await screen.findByText('Bob Suspect');
+    fireEvent.click(screen.getByRole('button', { name: 'Extend monitoring' }));
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
+    expect(mockBroker.setMonitoring).not.toHaveBeenCalled();
+  });
+
+  it('the Refresh button reloads the list', async () => {
+    mockBroker.getMonitoring.mockResolvedValue({ success: true, data: [makeMonitoredUser()] });
+    const { UserMonitoring } = await import('./UserMonitoringPage');
+    render(<UserMonitoring />);
+
+    await screen.findByText('Bob Suspect');
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+
+    await waitFor(() => {
+      expect(mockBroker.getMonitoring).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('renders expiry countdown chips: expired, days-left, and no expiry', async () => {
@@ -298,34 +427,40 @@ describe('UserMonitoring', () => {
     });
   });
 
-  it('confirm button is disabled when no user is selected in the modal', async () => {
+  it('confirm button is disabled until a member is picked, then adds them', async () => {
     const { UserMonitoring } = await import('./UserMonitoringPage');
     render(<UserMonitoring />);
 
     await waitFor(() => screen.getByText('Nobody is under monitoring'));
 
-    // Open modal
     const addBtn = screen.getAllByRole('button').find((b) =>
       b.textContent?.includes('Add User')
     );
     if (addBtn) fireEvent.click(addBtn);
 
-    await waitFor(() => document.querySelector('[role="dialog"]'));
-
-    // The modal confirm "Add User" button should be data-disabled when no user is selected
-    const modalAddBtns = screen.getAllByRole('button').filter((b) =>
-      b.textContent?.includes('Add User')
-    );
-    // There should be at least one Add User button in the modal
-    expect(modalAddBtns.length).toBeGreaterThan(0);
-    // The modal confirm (last) button is disabled when no user is selected
-    const modalConfirm = modalAddBtns[modalAddBtns.length - 1];
+    const dialog = await screen.findByRole('dialog');
+    const modalConfirm = within(dialog).getByRole('button', { name: 'Add User' });
     // HeroUI renders isDisabled as data-disabled attribute
-    const isDisabled =
+    const isDisabled = () =>
       modalConfirm.hasAttribute('disabled') ||
       modalConfirm.getAttribute('data-disabled') === 'true' ||
       modalConfirm.getAttribute('aria-disabled') === 'true';
-    expect(isDisabled).toBe(true);
+    expect(isDisabled()).toBe(true);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'pick member 7' }));
+    await waitFor(() => expect(isDisabled()).toBe(false));
+
+    fireEvent.change(within(dialog).getByPlaceholderText('Why is this user being monitored?'), {
+      target: { value: 'Follow-up on a report' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add User' }));
+
+    await waitFor(() => {
+      expect(mockBroker.setMonitoring).toHaveBeenCalledWith(7, expect.objectContaining({
+        under_monitoring: true,
+        reason: 'Follow-up on a report',
+      }));
+    });
   });
 
   it('opens the edit modal prefilled from the row action', async () => {

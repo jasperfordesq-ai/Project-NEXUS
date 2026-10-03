@@ -7,9 +7,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { CsvExportRequest } from '@/broker/useCsvExport';
 
 // ─── Mock adminApi ─────────────────────────────────────────────────────────────
-const { mockAdminBroker, mockAdminListings } = vi.hoisted(() => ({
+const { mockAdminBroker, mockAdminListings, mockCsvRun } = vi.hoisted(() => ({
   mockAdminBroker: {
     getRiskTags: vi.fn(),
     saveRiskTag: vi.fn(),
@@ -18,6 +19,7 @@ const { mockAdminBroker, mockAdminListings } = vi.hoisted(() => ({
   mockAdminListings: {
     list: vi.fn(),
   },
+  mockCsvRun: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -26,6 +28,11 @@ vi.mock('@/admin/api/adminApi', () => ({
 }));
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
+
+vi.mock('@/broker/useCsvExport', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/broker/useCsvExport')>();
+  return { ...orig, useCsvExport: () => ({ exporting: false, run: mockCsvRun }) };
+});
 
 // ─── Contexts ─────────────────────────────────────────────────────────────────
 const mockToast = {
@@ -200,10 +207,18 @@ const makeTag = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+/** Render at a URL (the page reads ?level= and ?listing= from the real router). */
+async function renderAt(url: string) {
+  window.history.pushState({}, '', url);
+  const { RiskTagsPage } = await import('./RiskTagsPage');
+  return render(<RiskTagsPage />);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('RiskTagsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    window.history.pushState({}, '', '/');
     mockAdminBroker.getRiskTags.mockResolvedValue({
       success: true,
       data: [makeTag()],
@@ -235,20 +250,14 @@ describe('RiskTagsPage', () => {
         makeTag({ id: 3, listing_id: 12, listing_title: 'Medium One', risk_level: 'medium' }),
       ],
     });
-    window.history.pushState({}, '', '/broker/risk-tags?level=elevated');
-    try {
-      const { RiskTagsPage } = await import('./RiskTagsPage');
-      render(<RiskTagsPage />);
+    await renderAt('/broker/risk-tags?level=elevated');
 
-      await waitFor(() => {
-        expect(screen.getByText('Critical One')).toBeInTheDocument();
-      });
-      expect(screen.getByText('High One')).toBeInTheDocument();
-      expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /High and critical/ })).toBeInTheDocument();
-    } finally {
-      window.history.pushState({}, '', '/');
-    }
+    await waitFor(() => {
+      expect(screen.getByText('Critical One')).toBeInTheDocument();
+    });
+    expect(screen.getByText('High One')).toBeInTheDocument();
+    expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /High and critical/ })).toBeInTheDocument();
   });
 
   // The count boxes above the table were counted from the FILTERED list, so
@@ -263,24 +272,111 @@ describe('RiskTagsPage', () => {
         makeTag({ id: 4, listing_id: 13, listing_title: 'Low Two', risk_level: 'low' }),
       ],
     });
-    window.history.pushState({}, '', '/broker/risk-tags?level=high');
-    try {
-      const { RiskTagsPage } = await import('./RiskTagsPage');
-      render(<RiskTagsPage />);
+    await renderAt('/broker/risk-tags?level=high');
 
-      await waitFor(() => {
-        expect(screen.getByText('High One')).toBeInTheDocument();
-      });
-      expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
-      // The whole register is loaded once; the tab never asks the server to filter.
-      expect(mockAdminBroker.getRiskTags).toHaveBeenCalledWith({});
+    await waitFor(() => {
+      expect(screen.getByText('High One')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Medium One')).not.toBeInTheDocument();
+    // The whole register is loaded once; the tab never asks the server to filter.
+    expect(mockAdminBroker.getRiskTags).toHaveBeenCalledWith({});
 
-      expect(within(screen.getByLabelText('View Medium risk tags')).getByText('1')).toBeInTheDocument();
-      expect(within(screen.getByLabelText('View Low risk tags')).getByText('2')).toBeInTheDocument();
-      expect(within(screen.getByLabelText('View High risk tags')).getByText('1')).toBeInTheDocument();
-    } finally {
-      window.history.pushState({}, '', '/');
-    }
+    expect(within(screen.getByLabelText('View Medium risk tags')).getByText('1')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('View Low risk tags')).getByText('2')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('View High risk tags')).getByText('1')).toBeInTheDocument();
+  });
+
+  it('puts the KPI boxes above the level tabs, like every other list page', async () => {
+    const { RiskTagsPage } = await import('./RiskTagsPage');
+    render(<RiskTagsPage />);
+
+    await waitFor(() => screen.getByText('Dog Walking Service'));
+    const kpi = screen.getByText('Critical tags');
+    const tablist = screen.getByRole('tablist', { name: 'Risk level filter' });
+    // DOCUMENT_POSITION_FOLLOWING: the tablist comes after the KPI label.
+    expect(kpi.compareDocumentPosition(tablist) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('links each listing title to the member-facing listing', async () => {
+    const { RiskTagsPage } = await import('./RiskTagsPage');
+    render(<RiskTagsPage />);
+
+    const link = await screen.findByRole('link', { name: 'Dog Walking Service' });
+    expect(link).toHaveAttribute('href', '/test/listings/10');
+  });
+
+  it('renders the owner as plain text until the API supplies an owner id, then as a member-window link', async () => {
+    mockAdminBroker.getRiskTags.mockResolvedValue({
+      success: true,
+      data: [
+        makeTag({ id: 1, listing_id: 10, owner_name: 'Alice' }),
+        makeTag({ id: 2, listing_id: 11, listing_title: 'Gardening', owner_name: 'Owen', owner_id: 77 }),
+      ],
+    });
+    const { RiskTagsPage } = await import('./RiskTagsPage');
+    render(<RiskTagsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: "Open Alice's record" })).toBeNull();
+    expect(screen.getByRole('button', { name: "Open Owen's record" })).toBeInTheDocument();
+  });
+
+  // ─── ?listing= deep link (a message copy's "Tag listing" action) ──────────
+
+  it('?listing= for an already-tagged listing opens that tag for editing and drops the parameter', async () => {
+    await renderAt('/broker/risk-tags?listing=10');
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Edit Risk Tag')).toBeInTheDocument();
+    expect(within(dialog).getByText('Dog Walking Service')).toBeInTheDocument();
+    expect(window.location.search).not.toContain('listing=');
+  });
+
+  it('?listing= for an untagged listing opens the tag form pre-filled with that listing', async () => {
+    await renderAt('/broker/risk-tags?listing=99');
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Listing #99')).toBeInTheDocument();
+    // The search field is replaced by the selection; no manual id box either.
+    expect(within(dialog).queryByLabelText('Listing ID (manual entry)')).toBeNull();
+
+    fireEvent.change(within(dialog).getByLabelText('Risk Category'), { target: { value: 'legal' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Create Tag' }));
+
+    await waitFor(() => {
+      expect(mockAdminBroker.saveRiskTag).toHaveBeenCalledWith(99, expect.objectContaining({ risk_category: 'legal' }));
+    });
+  });
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+
+  it('Export CSV exports the rows the table shows (the register is loaded in full)', async () => {
+    mockAdminBroker.getRiskTags.mockResolvedValue({
+      success: true,
+      data: [
+        makeTag({ id: 1, listing_id: 10, listing_title: 'High One', risk_level: 'high' }),
+        makeTag({ id: 2, listing_id: 11, listing_title: 'Medium One', risk_level: 'medium', requires_approval: false }),
+      ],
+    });
+    await renderAt('/broker/risk-tags?level=high');
+
+    await screen.findByText('High One');
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+    expect(mockCsvRun).toHaveBeenCalledTimes(1);
+    const request = mockCsvRun.mock.calls[0]![0] as CsvExportRequest<Record<string, unknown>>;
+    expect(request.filename).toBe('risk-tags_high');
+    expect(request.columns.map((c) => c.label)).toEqual([
+      'Listing', 'ID', 'Owner', 'Risk Level', 'Category', 'Internal Notes', 'Member-Visible Notes',
+      'Requirements', 'Tagged By', 'Date',
+    ]);
+    const page = await request.fetchPage(1);
+    expect(page.hasMore).toBe(false);
+    expect(page.rows.map((r) => r.listing_title)).toEqual(['High One']);
+    expect(request.columns[3]!.value(page.rows[0]!)).toBe('High');
+    expect(request.columns[7]!.value(page.rows[0]!)).toBe('Approval; Insurance');
   });
 
   it('renders listing title after data loads', async () => {

@@ -8,133 +8,43 @@
  * Configure broker controls, messaging oversight, and risk settings.
  * Parity: PHP BrokerControlsController::configuration()
  *
- * Restyled to the broker design language: BrokerPageShell frame, grouped
- * section cards (icon + title + one-line description), admin-only settings
- * surfaced with the shared AdminOnlyBadge instead of bare disabled inputs,
- * and an honest load-error state with retry. A non-admin's save sends only
- * the settings they changed (F-547).
+ * The page renders its rows from `components/configuration/configurationSchema.ts`:
+ * grouped section cards with jump links, admin-only settings surfaced with
+ * the shared AdminOnlyBadge, number fields with their unit, a sticky save
+ * bar (Save disabled when clean, Discard restores the loaded values), an
+ * unsaved-changes guard on leaving, and an honest load-error state. A
+ * non-admin's save sends only the settings they changed (F-547).
  */
 
-import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Save from 'lucide-react/icons/save';
 import Settings from 'lucide-react/icons/settings';
-import MessageSquare from 'lucide-react/icons/message-square';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
-import Eye from 'lucide-react/icons/eye';
-import Copy from 'lucide-react/icons/copy';
-import ShieldCheck from 'lucide-react/icons/shield-check';
 import Lock from 'lucide-react/icons/lock';
 import AlertCircle from 'lucide-react/icons/circle-alert';
-import type { LucideIcon } from 'lucide-react';
 
-import {
-  Card,
-  CardBody,
-  Button,
-  Input,
-  Switch,
-  Separator,
-  Chip,
-  Alert,
-} from '@/components/ui';
+import { Button, Alert } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
 import { adminBroker } from '@/admin/api/adminApi';
 import type { BrokerConfig } from '@/admin/api/types';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { isAdminTierUser } from '@/lib/access';
+import { BrokerPageShell, BrokerSkeleton, BrokerEmptyState } from '../components';
 import {
-  BrokerPageShell,
-  BrokerSkeleton,
-  BrokerEmptyState,
-  AdminOnlyBadge,
-  type BrokerStatColor,
-} from '../components';
-
-const ADMIN_ONLY_CONFIG_KEYS = [
-  'broker_messaging_enabled',
-  'broker_copy_all_messages',
-  'require_exchange_for_listings',
-  'risk_tagging_enabled',
-  'auto_flag_high_risk',
-  'require_approval_high_risk',
-  'notify_on_high_risk_match',
-  'broker_approval_required',
-  'auto_approve_low_risk',
-  'max_hours_without_approval',
-  'insurance_enabled',
-  'enforce_insurance_on_exchanges',
-] as const satisfies readonly (keyof BrokerConfig)[];
-
-// Tailwind JIT needs full class names at build time.
-const sectionTileClass: Record<BrokerStatColor, string> = {
-  accent: 'text-accent bg-accent/10',
-  success: 'text-success bg-success/10',
-  warning: 'text-warning bg-warning/10',
-  danger: 'text-danger bg-danger/10',
-  neutral: 'text-muted bg-surface-tertiary',
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Presentational helpers — one section card per settings domain, uniform
-// setting rows, and the admin-only lock chip.
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface SectionCardProps {
-  icon: LucideIcon;
-  color: BrokerStatColor;
-  title: string;
-  description: string;
-  children: ReactNode;
-}
-
-function SectionCard({ icon: Icon, color, title, description, children }: SectionCardProps) {
-  return (
-    <Card className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-      <div className="flex items-start gap-3 p-4 sm:p-5">
-        <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ring-current/10 ${sectionTileClass[color]}`}
-        >
-          <Icon size={20} aria-hidden="true" />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
-          <p className="text-sm text-muted">{description}</p>
-        </div>
-      </div>
-      <Separator />
-      <CardBody className="divide-y divide-divider p-0">{children}</CardBody>
-    </Card>
-  );
-}
-
-interface SettingRowProps {
-  label: string;
-  help: string;
-  /** Admin-only policy the current user cannot edit — renders the lock chip. */
-  locked?: boolean;
-  /** The control (Switch / Input) — rendered right-aligned. */
-  children: ReactNode;
-}
-
-function SettingRow({ label, help, locked = false, children }: SettingRowProps) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="font-medium text-foreground">{label}</p>
-          {locked && <AdminOnlyBadge />}
-        </div>
-        <p className="mt-0.5 text-sm leading-5 text-muted">{help}</p>
-      </div>
-      <div className="shrink-0">{children}</div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
+  ConfigurationSection,
+  ConfigurationSaveBar,
+  configSectionAnchor,
+  useUnsavedChangesGuard,
+  CONFIGURATION_SCHEMA,
+  ADMIN_ONLY_CONFIG_KEYS,
+  DEFAULT_BROKER_CONFIG,
+  toFormValues,
+  fromFormValues,
+  isConfigDirty,
+  changedConfigKeys,
+  validateConfigForm,
+  type ConfigFormValues,
+} from '../components/configuration';
 
 export default function BrokerConfiguration() {
   const { t } = useTranslation('broker');
@@ -145,49 +55,24 @@ export default function BrokerConfiguration() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [config, setConfig] = useState<BrokerConfig>({
-    broker_messaging_enabled: true,
-    broker_copy_all_messages: false,
-    broker_copy_threshold_hours: 5,
-    new_member_monitoring_days: 30,
-    require_exchange_for_listings: false,
-    risk_tagging_enabled: true,
-    auto_flag_high_risk: true,
-    require_approval_high_risk: false,
-    notify_on_high_risk_match: true,
-    broker_approval_required: true,
-    auto_approve_low_risk: false,
-    exchange_timeout_days: 7,
-    max_hours_without_approval: 5,
-    confirmation_deadline_hours: 48,
-    allow_hour_adjustment: false,
-    max_hour_variance_percent: 20,
-    expiry_hours: 168,
-    broker_visible_to_members: false,
-    show_broker_name: false,
-    broker_contact_email: '',
-    copy_first_contact: true,
-    copy_new_member_messages: true,
-    copy_high_risk_listing_messages: true,
-    random_sample_percentage: 0,
-    retention_days: 90,
-    insurance_enabled: false,
-    enforce_insurance_on_exchanges: false,
-    insurance_expiry_warning_days: 30,
-  });
+
+  // `saved` is the configuration as the server last returned it (the keys
+  // this page knows); `form` is what the broker is editing. Dirty is the
+  // difference between the two, so toggling a switch back makes the page
+  // clean again.
+  const [saved, setSaved] = useState<BrokerConfig>(DEFAULT_BROKER_CONFIG);
+  const [form, setForm] = useState<ConfigFormValues>(() => toFormValues(DEFAULT_BROKER_CONFIG));
+
+  // The raw server object, which carries admin-only keys this page never
+  // shows (e.g. exchange_workflow_enabled). An admin's save echoes them back
+  // unchanged; a broker's save must never include them (F-547).
+  const savedRawRef = useRef<Partial<BrokerConfig>>({});
 
   const isAdminTier = isAdminTierUser(user);
-
-  const canEditKey = (key: keyof BrokerConfig) =>
-    isAdminTier || !ADMIN_ONLY_CONFIG_KEYS.includes(key as (typeof ADMIN_ONLY_CONFIG_KEYS)[number]);
-
-  /** true when the row's control is an admin-only policy the current user can't change. */
-  const isLocked = (key: keyof BrokerConfig) => !canEditKey(key);
-
-  // The configuration as the server last returned it, so a broker's save can
-  // send only what the broker changed (F-547).
-  const savedConfigRef = useRef<Partial<BrokerConfig>>({});
+  const canEditKey = useCallback(
+    (key: keyof BrokerConfig) => isAdminTier || !ADMIN_ONLY_CONFIG_KEYS.has(key),
+    [isAdminTier],
+  );
 
   // Stash t/toast in refs so loadConfig's identity never churns (a t/toast
   // dependency would refetch on every language switch and can loop vitest).
@@ -202,8 +87,10 @@ export default function BrokerConfiguration() {
     try {
       const res = await adminBroker.getConfiguration();
       if (res.success && res.data) {
-        savedConfigRef.current = res.data;
-        setConfig(res.data);
+        savedRawRef.current = res.data;
+        const next = { ...DEFAULT_BROKER_CONFIG, ...res.data };
+        setSaved(next);
+        setForm(toFormValues(next));
       } else {
         setLoadError(true);
       }
@@ -219,30 +106,36 @@ export default function BrokerConfiguration() {
     loadConfig();
   }, [loadConfig]);
 
+  const dirty = useMemo(() => isConfigDirty(form, saved), [form, saved]);
+  useUnsavedChangesGuard(dirty && !loading && !loadError);
+
   async function handleSave() {
+    const problem = validateConfigForm(form, t);
+    if (problem) {
+      toast.error(problem);
+      return;
+    }
     setSaving(true);
     try {
+      const next = fromFormValues(form, saved);
       // F-547: a non-admin sends only the settings they changed. The server
       // refuses the whole save if it contains any admin-only key, even
-      // unchanged — and the loaded config carries admin-only keys this page
-      // never shows (e.g. exchange_workflow_enabled) or that an admin set to
-      // an admin-only value (random_sample_percentage at 100, F-242).
-      const saved = savedConfigRef.current;
-      const payload = isAdminTier
-        ? config
-        : (Object.fromEntries(
-            Object.entries(config).filter(([key, value]) =>
-              canEditKey(key as keyof BrokerConfig)
-              && value !== saved[key as keyof BrokerConfig])
-          ) as Partial<BrokerConfig>);
+      // unchanged — including ones an admin set to an admin-only value
+      // (random_sample_percentage at 100, F-242).
+      const payload: Partial<BrokerConfig> = isAdminTier
+        ? { ...savedRawRef.current, ...next }
+        : Object.fromEntries(
+            changedConfigKeys(form, saved)
+              .filter(canEditKey)
+              .map((key) => [key, next[key]]),
+          );
 
       const res = await adminBroker.saveConfiguration(payload);
       if (res.success) {
-        savedConfigRef.current = { ...saved, ...config, ...res.data };
-        if (res.data) {
-          setConfig(prev => ({ ...prev, ...res.data }));
-        }
-        setDirty(false);
+        savedRawRef.current = { ...savedRawRef.current, ...payload, ...res.data };
+        const confirmed = { ...next, ...res.data };
+        setSaved(confirmed);
+        setForm(toFormValues(confirmed));
         toast.success(t('configuration.save_success'));
       } else {
         toast.error(t('configuration.save_failed'));
@@ -254,10 +147,18 @@ export default function BrokerConfiguration() {
     }
   }
 
-  function updateConfig<K extends keyof BrokerConfig>(key: K, value: BrokerConfig[K]) {
-    setConfig(prev => ({ ...prev, [key]: value }));
-    setDirty(true);
+  function handleDiscard() {
+    setForm(toFormValues(saved));
   }
+
+  const updateField = useCallback(
+    <K extends keyof BrokerConfig>(key: K, value: ConfigFormValues[K]) => {
+      setForm((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
+
+  const visibleSections = CONFIGURATION_SCHEMA.filter((section) => !section.feature || hasFeature(section.feature));
 
   return (
     <BrokerPageShell
@@ -266,24 +167,6 @@ export default function BrokerConfiguration() {
       description={t('configuration.description')}
       icon={Settings}
       color="neutral"
-      actions={
-        <>
-          {dirty && !loading && !loadError && (
-            <Chip size="sm" variant="soft" color="warning" className="shrink-0">
-              {t('configuration.unsaved_changes')}
-            </Chip>
-          )}
-          <Button
-            startContent={<Save className="w-4 h-4" />}
-            onPress={handleSave}
-            isLoading={saving}
-            isDisabled={loading || loadError}
-            size="sm"
-          >
-            {t('configuration.save_changes')}
-          </Button>
-        </>
-      }
     >
       {loading ? (
         <BrokerSkeleton variant="cards" count={4} />
@@ -302,446 +185,51 @@ export default function BrokerConfiguration() {
           }
         />
       ) : (
-        <div className="space-y-6">
-          {!isAdminTier && (
-            // Dark text on the card surface with an amber edge: the amber-on-
-            // pale-amber card this replaces measured 3.6:1, below WCAG AA.
-            <Alert
-              color="warning"
-              className="rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
-              classNames={{
-                title: 'text-sm font-semibold text-foreground',
-                description: 'text-sm leading-6 text-foreground',
-                icon: 'text-warning',
-              }}
-              icon={<Lock size={18} aria-hidden="true" />}
-              title={t('configuration.limited_access_title')}
-              description={t('configuration.limited_access_body')}
-            />
-          )}
+        <>
+          <div className="space-y-6">
+            {!isAdminTier && (
+              // Dark text on the card surface with an amber edge: the amber-on-
+              // pale-amber card this replaces measured 3.6:1, below WCAG AA.
+              <Alert
+                color="warning"
+                className="rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+                classNames={{
+                  title: 'text-sm font-semibold text-foreground',
+                  description: 'text-sm leading-6 text-foreground',
+                  icon: 'text-warning',
+                }}
+                icon={<Lock size={18} aria-hidden="true" />}
+                title={t('configuration.limited_access_title')}
+                description={t('configuration.limited_access_body')}
+              />
+            )}
 
-          {/* ── Messaging ─────────────────────────────────────────────────── */}
-          <SectionCard
-            icon={MessageSquare}
-            color="warning"
-            title={t('configuration.section_messaging')}
-            description={t('configuration.section_messaging_desc')}
-          >
-            <SettingRow
-              label={t('configuration.field_broker_messaging_enabled_label')}
-              help={t('configuration.field_broker_messaging_enabled_help')}
-              locked={isLocked('broker_messaging_enabled')}
-            >
-              <Switch
-                aria-label={t('configuration.field_broker_messaging_enabled_label')}
-                isSelected={config.broker_messaging_enabled}
-                onValueChange={v => updateConfig('broker_messaging_enabled', v)}
-                isDisabled={!canEditKey('broker_messaging_enabled')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_broker_copy_all_messages_label')}
-              help={t('configuration.field_broker_copy_all_messages_help')}
-              locked={isLocked('broker_copy_all_messages')}
-            >
-              <Switch
-                aria-label={t('configuration.field_broker_copy_all_messages_label')}
-                isSelected={config.broker_copy_all_messages}
-                onValueChange={v => updateConfig('broker_copy_all_messages', v)}
-                isDisabled={!canEditKey('broker_copy_all_messages')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_broker_copy_threshold_hours_label')}
-              help={t('configuration.field_broker_copy_threshold_hours_help')}
-            >
-              <Input
-                type="number"
-                aria-label={t('configuration.field_broker_copy_threshold_hours_aria')}
-                value={String(config.broker_copy_threshold_hours)}
-                onValueChange={v => updateConfig('broker_copy_threshold_hours', parseInt(v) || 0)}
-                className="w-24 tabular-nums"
-                min={0}
-                max={100}
-                size="sm"
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_new_member_monitoring_days_label')}
-              help={t('configuration.field_new_member_monitoring_days_help')}
-            >
-              <Input
-                type="number"
-                aria-label={t('configuration.field_new_member_monitoring_days_aria')}
-                value={String(config.new_member_monitoring_days)}
-                onValueChange={v => updateConfig('new_member_monitoring_days', parseInt(v) || 0)}
-                className="w-24 tabular-nums"
-                min={0}
-                max={365}
-                size="sm"
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_require_exchange_for_listings_label')}
-              help={t('configuration.field_require_exchange_for_listings_help')}
-              locked={isLocked('require_exchange_for_listings')}
-            >
-              <Switch
-                aria-label={t('configuration.field_require_exchange_for_listings_label')}
-                isSelected={config.require_exchange_for_listings}
-                onValueChange={v => updateConfig('require_exchange_for_listings', v)}
-                isDisabled={!canEditKey('require_exchange_for_listings')}
-              />
-            </SettingRow>
-          </SectionCard>
-
-          {/* ── Risk Tagging ──────────────────────────────────────────────── */}
-          <SectionCard
-            icon={ShieldAlert}
-            color="danger"
-            title={t('configuration.section_risk_tagging')}
-            description={t('configuration.section_risk_tagging_desc')}
-          >
-            <SettingRow
-              label={t('configuration.field_risk_tagging_enabled_label')}
-              help={t('configuration.field_risk_tagging_enabled_help')}
-              locked={isLocked('risk_tagging_enabled')}
-            >
-              <Switch
-                aria-label={t('configuration.field_risk_tagging_enabled_label')}
-                isSelected={config.risk_tagging_enabled}
-                onValueChange={v => updateConfig('risk_tagging_enabled', v)}
-                isDisabled={!canEditKey('risk_tagging_enabled')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_auto_flag_high_risk_label')}
-              help={t('configuration.field_auto_flag_high_risk_help')}
-              locked={isLocked('auto_flag_high_risk')}
-            >
-              <Switch
-                aria-label={t('configuration.field_auto_flag_high_risk_label')}
-                isSelected={config.auto_flag_high_risk}
-                onValueChange={v => updateConfig('auto_flag_high_risk', v)}
-                isDisabled={!canEditKey('auto_flag_high_risk')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_require_approval_high_risk_label')}
-              help={t('configuration.field_require_approval_high_risk_help')}
-              locked={isLocked('require_approval_high_risk')}
-            >
-              <Switch
-                aria-label={t('configuration.field_require_approval_high_risk_label')}
-                isSelected={config.require_approval_high_risk}
-                onValueChange={v => updateConfig('require_approval_high_risk', v)}
-                isDisabled={!canEditKey('require_approval_high_risk')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_notify_on_high_risk_match_label')}
-              help={t('configuration.field_notify_on_high_risk_match_help')}
-              locked={isLocked('notify_on_high_risk_match')}
-            >
-              <Switch
-                aria-label={t('configuration.field_notify_on_high_risk_match_label')}
-                isSelected={config.notify_on_high_risk_match}
-                onValueChange={v => updateConfig('notify_on_high_risk_match', v)}
-                isDisabled={!canEditKey('notify_on_high_risk_match')}
-              />
-            </SettingRow>
-          </SectionCard>
-
-          {/* ── Exchange Workflow — only when the tenant has the feature ──── */}
-          {hasFeature('exchange_workflow') && (
-            <SectionCard
-              icon={ArrowLeftRight}
-              color="accent"
-              title={t('configuration.section_exchange_workflow')}
-              description={t('configuration.section_exchange_workflow_desc')}
-            >
-              <SettingRow
-                label={t('configuration.field_broker_approval_required_label')}
-                help={t('configuration.field_broker_approval_required_help')}
-                locked={isLocked('broker_approval_required')}
-              >
-                <Switch
-                  aria-label={t('configuration.field_broker_approval_required_label')}
-                  isSelected={config.broker_approval_required}
-                  onValueChange={v => updateConfig('broker_approval_required', v)}
-                  isDisabled={!canEditKey('broker_approval_required')}
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_auto_approve_low_risk_label')}
-                help={t('configuration.field_auto_approve_low_risk_help')}
-                locked={isLocked('auto_approve_low_risk')}
-              >
-                <Switch
-                  aria-label={t('configuration.field_auto_approve_low_risk_label')}
-                  isSelected={config.auto_approve_low_risk}
-                  onValueChange={v => updateConfig('auto_approve_low_risk', v)}
-                  isDisabled={!canEditKey('auto_approve_low_risk')}
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_exchange_timeout_days_label')}
-                help={t('configuration.field_exchange_timeout_days_help')}
-              >
-                <Input
-                  type="number"
-                  aria-label={t('configuration.field_exchange_timeout_days_aria')}
-                  value={String(config.exchange_timeout_days)}
-                  onValueChange={v => updateConfig('exchange_timeout_days', parseInt(v) || 7)}
-                  className="w-24 tabular-nums"
-                  min={1}
-                  max={90}
-                  size="sm"
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_max_hours_without_approval_label')}
-                help={t('configuration.field_max_hours_without_approval_help')}
-                locked={isLocked('max_hours_without_approval')}
-              >
-                <Input
-                  type="number"
-                  aria-label={t('configuration.field_max_hours_without_approval_aria')}
-                  value={String(config.max_hours_without_approval)}
-                  onValueChange={v =>
-                    updateConfig('max_hours_without_approval', v === '' ? 0 : parseFloat(v))
-                  }
-                  className="w-24 tabular-nums"
-                  min={0}
-                  max={24}
-                  step={0.5}
-                  size="sm"
-                  isDisabled={!canEditKey('max_hours_without_approval')}
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_confirmation_deadline_hours_label')}
-                help={t('configuration.field_confirmation_deadline_hours_help')}
-              >
-                <Input
-                  type="number"
-                  aria-label={t('configuration.field_confirmation_deadline_hours_aria')}
-                  value={String(config.confirmation_deadline_hours)}
-                  onValueChange={v => updateConfig('confirmation_deadline_hours', parseInt(v) || 48)}
-                  className="w-24 tabular-nums"
-                  min={1}
-                  max={720}
-                  size="sm"
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_expiry_hours_label')}
-                help={t('configuration.field_expiry_hours_help')}
-              >
-                <Input
-                  type="number"
-                  aria-label={t('configuration.field_expiry_hours_aria')}
-                  value={String(config.expiry_hours)}
-                  onValueChange={v => updateConfig('expiry_hours', parseInt(v) || 168)}
-                  className="w-24 tabular-nums"
-                  min={1}
-                  max={720}
-                  size="sm"
-                />
-              </SettingRow>
-              <SettingRow
-                label={t('configuration.field_allow_hour_adjustment_label')}
-                help={t('configuration.field_allow_hour_adjustment_help')}
-              >
-                <Switch
-                  aria-label={t('configuration.field_allow_hour_adjustment_label')}
-                  isSelected={config.allow_hour_adjustment}
-                  onValueChange={v => updateConfig('allow_hour_adjustment', v)}
-                />
-              </SettingRow>
-              {config.allow_hour_adjustment && (
-                <SettingRow
-                  label={t('configuration.field_max_hour_variance_percent_label')}
-                  help={t('configuration.field_max_hour_variance_percent_help')}
+            {/* Section jump links — a long page, one click to the right card */}
+            <nav aria-label={t('configuration.jump_to_section')} className="flex flex-wrap gap-2">
+              {visibleSections.map((section) => (
+                <a
+                  key={section.id}
+                  href={`#${configSectionAnchor(section.id)}`}
+                  className="rounded-full border border-divider bg-surface px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
-                  <Input
-                    type="number"
-                    aria-label={t('configuration.field_max_hour_variance_percent_aria')}
-                    value={String(config.max_hour_variance_percent)}
-                    onValueChange={v =>
-                      updateConfig('max_hour_variance_percent', parseInt(v) || 0)
-                    }
-                    className="w-24 tabular-nums"
-                    min={0}
-                    max={100}
-                    size="sm"
-                  />
-                </SettingRow>
-              )}
-            </SectionCard>
-          )}
+                  {t(`configuration.section_${section.id}`)}
+                </a>
+              ))}
+            </nav>
 
-          {/* ── Broker Visibility ─────────────────────────────────────────── */}
-          <SectionCard
-            icon={Eye}
-            color="neutral"
-            title={t('configuration.section_broker_visibility')}
-            description={t('configuration.section_broker_visibility_desc')}
-          >
-            <SettingRow
-              label={t('configuration.field_broker_visible_to_members_label')}
-              help={t('configuration.field_broker_visible_to_members_help')}
-            >
-              <Switch
-                aria-label={t('configuration.field_broker_visible_to_members_label')}
-                isSelected={config.broker_visible_to_members}
-                onValueChange={v => updateConfig('broker_visible_to_members', v)}
+            {visibleSections.map((section) => (
+              <ConfigurationSection
+                key={section.id}
+                section={section}
+                form={form}
+                canEditKey={canEditKey}
+                onChange={updateField}
               />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_show_broker_name_label')}
-              help={t('configuration.field_show_broker_name_help')}
-            >
-              <Switch
-                aria-label={t('configuration.field_show_broker_name_label')}
-                isSelected={config.show_broker_name}
-                onValueChange={v => updateConfig('show_broker_name', v)}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_broker_contact_email_label')}
-              help={t('configuration.field_broker_contact_email_help')}
-            >
-              <Input
-                type="email"
-                aria-label={t('configuration.field_broker_contact_email_aria')}
-                value={config.broker_contact_email}
-                onValueChange={v => updateConfig('broker_contact_email', v)}
-                placeholder={t('configuration.field_broker_contact_email_placeholder')}
-                className="w-48 sm:w-64"
-                size="sm"
-              />
-            </SettingRow>
-          </SectionCard>
+            ))}
+          </div>
 
-          {/* ── Message Copy Rules ────────────────────────────────────────── */}
-          <SectionCard
-            icon={Copy}
-            color="warning"
-            title={t('configuration.section_message_copy_rules')}
-            description={t('configuration.section_message_copy_rules_desc')}
-          >
-            <SettingRow
-              label={t('configuration.field_copy_first_contact_label')}
-              help={t('configuration.field_copy_first_contact_help')}
-            >
-              <Switch
-                aria-label={t('configuration.field_copy_first_contact_label')}
-                isSelected={config.copy_first_contact}
-                onValueChange={v => updateConfig('copy_first_contact', v)}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_copy_new_member_messages_label')}
-              help={t('configuration.field_copy_new_member_messages_help')}
-            >
-              <Switch
-                aria-label={t('configuration.field_copy_new_member_messages_label')}
-                isSelected={config.copy_new_member_messages}
-                onValueChange={v => updateConfig('copy_new_member_messages', v)}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_copy_high_risk_listing_messages_label')}
-              help={t('configuration.field_copy_high_risk_listing_messages_help')}
-            >
-              <Switch
-                aria-label={t('configuration.field_copy_high_risk_listing_messages_label')}
-                isSelected={config.copy_high_risk_listing_messages}
-                onValueChange={v => updateConfig('copy_high_risk_listing_messages', v)}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_random_sample_percentage_label')}
-              help={t('configuration.field_random_sample_percentage_help')}
-            >
-              <Input
-                type="number"
-                aria-label={t('configuration.field_random_sample_percentage_aria')}
-                value={String(config.random_sample_percentage)}
-                onValueChange={v => updateConfig('random_sample_percentage', parseInt(v) || 0)}
-                className="w-24 tabular-nums"
-                min={0}
-                max={100}
-                size="sm"
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_retention_days_label')}
-              help={t('configuration.field_retention_days_help')}
-            >
-              <Input
-                type="number"
-                aria-label={t('configuration.field_retention_days_aria')}
-                value={String(config.retention_days)}
-                onValueChange={v => updateConfig('retention_days', parseInt(v) || 90)}
-                className="w-24 tabular-nums"
-                min={1}
-                max={3650}
-                size="sm"
-              />
-            </SettingRow>
-          </SectionCard>
-
-          {/* ── Compliance & Safeguarding ─────────────────────────────────── */}
-          <SectionCard
-            icon={ShieldCheck}
-            color="success"
-            title={t('configuration.section_compliance_safeguarding')}
-            description={t('configuration.section_compliance_safeguarding_desc')}
-          >
-            <SettingRow
-              label={t('configuration.field_insurance_enabled_label')}
-              help={t('configuration.field_insurance_enabled_help')}
-              locked={isLocked('insurance_enabled')}
-            >
-              <Switch
-                aria-label={t('configuration.field_insurance_enabled_label')}
-                isSelected={config.insurance_enabled}
-                onValueChange={v => updateConfig('insurance_enabled', v)}
-                isDisabled={!canEditKey('insurance_enabled')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_enforce_insurance_on_exchanges_label')}
-              help={t('configuration.field_enforce_insurance_on_exchanges_help')}
-              locked={isLocked('enforce_insurance_on_exchanges')}
-            >
-              <Switch
-                aria-label={t('configuration.field_enforce_insurance_on_exchanges_label')}
-                isSelected={config.enforce_insurance_on_exchanges}
-                onValueChange={v => updateConfig('enforce_insurance_on_exchanges', v)}
-                isDisabled={!config.insurance_enabled || !canEditKey('enforce_insurance_on_exchanges')}
-              />
-            </SettingRow>
-            <SettingRow
-              label={t('configuration.field_insurance_expiry_warning_days_label')}
-              help={t('configuration.field_insurance_expiry_warning_days_help')}
-            >
-              <Input
-                type="number"
-                aria-label={t('configuration.field_insurance_expiry_warning_days_aria')}
-                value={String(config.insurance_expiry_warning_days)}
-                onValueChange={v => updateConfig('insurance_expiry_warning_days', parseInt(v) || 30)}
-                className="w-24 tabular-nums"
-                min={1}
-                max={365}
-                size="sm"
-                isDisabled={!config.insurance_enabled}
-              />
-            </SettingRow>
-          </SectionCard>
-        </div>
+          <ConfigurationSaveBar dirty={dirty} saving={saving} onSave={handleSave} onDiscard={handleDiscard} />
+        </>
       )}
     </BrokerPageShell>
   );

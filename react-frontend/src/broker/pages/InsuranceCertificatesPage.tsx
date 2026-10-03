@@ -14,30 +14,20 @@
  * panel-wide BrokerStatusChip statuses, BrokerSkeleton first load and
  * BrokerEmptyState empties. The `?status=` and `?user_id=` params are
  * preserved exactly so dashboard tiles and User Edit deep-links keep working.
+ *
+ * Five status tabs. "Pending Review" is the server's own union of pending +
+ * submitted. "Rejected / Revoked" has no server filter, so that tab loads
+ * both statuses in full and pages them in the browser. Older `?status=`
+ * values (pending, submitted, expired, rejected, revoked) still filter and
+ * are named in a chip under the tabs. The modals live in
+ * `components/insurance/`; member names open the panel-wide member window.
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 
-import {
-  Alert,
-  Select,
-  SelectItem,
-  Button,
-  Spinner,
-  Input,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Avatar,
-  Tabs,
-  Tab,
-  Chip,
-} from '@/components/ui';
+import { Alert, Button, Input, Tabs, Tab, Chip } from '@/components/ui';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Clock from 'lucide-react/icons/clock';
@@ -48,18 +38,21 @@ import Search from 'lucide-react/icons/search';
 import FileText from 'lucide-react/icons/file-text';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Eye from 'lucide-react/icons/eye';
-import FileCheck from 'lucide-react/icons/file-check';
 import Pencil from 'lucide-react/icons/pencil';
-import ExternalLink from 'lucide-react/icons/external-link';
 import Info from 'lucide-react/icons/info';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { formatCurrency, getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, resolveUserDisplayNameFromPrefix } from '@/lib/helpers';
-import { parseServerTimestamp, formatServerDate, formatServerDateTime } from '@/lib/serverTime';
+import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, resolveUserDisplayNameFromPrefix } from '@/lib/helpers';
+import { parseServerTimestamp } from '@/lib/serverTime';
 import { adminInsurance, adminUsers, adminBroker } from '@/admin/api/adminApi';
 import { DataTable, ConfirmModal, type Column } from '@/admin/components';
 import type { InsuranceCertificate, InsuranceStats, BrokerConfig } from '@/admin/api/types';
+import { Avatar } from '@/components/ui';
+import { MemberName } from '@/broker/BrokerMemberWindow';
+import { collectRows, useCsvExport } from '@/broker/useCsvExport';
+import { useBrokerAutoRefresh } from '@/broker/useBrokerAutoRefresh';
 import {
   BrokerPageShell,
   BrokerStatCard,
@@ -67,49 +60,67 @@ import {
   BrokerSkeleton,
   BrokerStatusChip,
 } from '../components';
-
-const INSURANCE_TYPE_KEYS = [
-  'public_liability',
-  'professional_indemnity',
-  'employers_liability',
-  'product_liability',
-  'personal_accident',
-  'other',
-] as const;
-
-const INSURANCE_TYPE_LABEL_KEYS: Record<(typeof INSURANCE_TYPE_KEYS)[number], string> = {
-  public_liability: 'insurance.type_public_liability',
-  professional_indemnity: 'insurance.type_professional_indemnity',
-  employers_liability: 'insurance.type_employers_liability',
-  product_liability: 'insurance.type_product_liability',
-  personal_accident: 'insurance.type_personal_accident',
-  other: 'insurance.type_other',
-};
+import {
+  InsuranceCertificateFormModal,
+  InsuranceCertificateViewModal,
+  InsuranceRejectModal,
+  fetchInsurancePage,
+  isoDateOnly,
+  useInsuranceFormatting,
+  type InsuranceListParams,
+} from '../components/insurance';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const PAGE_SIZE = 20;
+/** Rows loaded in full for a tab the server cannot filter (two statuses). */
+const MERGED_TAB_CAP = 1000;
 
-// Status filter is mirrored to `?status=` so stat-card deep-links and
-// browser back/forward work correctly.
-// 'pending_review' is the union of literal-pending + submitted — both
-// are pre-verification states the broker still owns. Mirrors the
-// Vetting page's filter shape so the UX is consistent across the
-// two compliance modules.
-const INSURANCE_STATUSES = [
-  'all', 'pending_review', 'pending', 'submitted', 'verified', 'expired', 'expiring_soon', 'rejected',
-] as const;
-type InsuranceStatus = (typeof INSURANCE_STATUSES)[number];
+// The five tabs. 'pending_review' is the server's union of pending +
+// submitted — both pre-verification states the broker still owns.
+const INSURANCE_TABS = ['all', 'pending_review', 'verified', 'expiring_soon', 'rejected_revoked'] as const;
+type InsuranceTab = (typeof INSURANCE_TABS)[number];
+
+// Older deep links. Each still filters the list (server-side, literally) and
+// is named in a chip because no tab says exactly that.
+const LEGACY_STATUSES = ['pending', 'submitted', 'expired', 'rejected', 'revoked'] as const;
+type LegacyStatus = (typeof LEGACY_STATUSES)[number];
+type InsuranceStatus = InsuranceTab | LegacyStatus;
+
+const INSURANCE_STATUSES: readonly string[] = [...INSURANCE_TABS, ...LEGACY_STATUSES];
+
+const LEGACY_LABEL_KEYS: Record<LegacyStatus, string> = {
+  pending: 'insurance.tab_pending',
+  submitted: 'insurance.tab_submitted',
+  expired: 'insurance.tab_expired',
+  rejected: 'insurance.tab_rejected',
+  revoked: 'insurance.tab_revoked',
+};
+
+// Tabs the server has no single filter for: load every status in the set.
+const MERGED_TAB_STATUSES: Partial<Record<InsuranceStatus, readonly string[]>> = {
+  rejected_revoked: ['rejected', 'revoked'],
+};
 
 // Pre-verification queues where "empty" means the broker is all caught up.
 const REVIEW_QUEUE_STATUSES: ReadonlySet<InsuranceStatus> = new Set([
   'pending_review', 'pending', 'submitted',
 ]);
 
-interface UserSearchResult {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
+/** The tab that best represents a status filter (legacy values included). */
+function tabForStatus(status: InsuranceStatus): InsuranceTab {
+  switch (status) {
+    case 'pending':
+    case 'submitted':
+      return 'pending_review';
+    case 'rejected':
+    case 'revoked':
+      return 'rejected_revoked';
+    case 'expired':
+      return 'all';
+    default:
+      return status;
+  }
 }
 
 /** The member a `?user_id=` deep link (User Edit → "Manage Insurance") points at. */
@@ -118,59 +129,31 @@ interface FilteredMember {
   name: string;
 }
 
-// The tenant's payment currency is an ISO 4217 code resolved by the tenant
-// bootstrap; the platform default (and the page's old hard-coded symbol) is EUR.
-const DEFAULT_CURRENCY = 'EUR';
-
-/** "£" for GBP, "€" for EUR, … — falls back to the code itself for an unknown one. */
-function currencySymbol(currency: string): string {
-  try {
-    const part = new Intl.NumberFormat(getFormattingLocale(), { style: 'currency', currency })
-      .formatToParts(0)
-      .find((p) => p.type === 'currency');
-    return part?.value ?? currency;
-  } catch {
-    return currency;
-  }
+function createdDesc(a: InsuranceCertificate, b: InsuranceCertificate): number {
+  return (parseServerTimestamp(b.created_at)?.getTime() ?? 0) - (parseServerTimestamp(a.created_at)?.getTime() ?? 0);
 }
 
 export function InsuranceCertificates() {
   const { t } = useTranslation('broker');
   usePageTitle(t('insurance.title'));
-  const { tenant, tenantPath } = useTenant();
+  const { tenantPath } = useTenant();
   const toast = useToast();
-
-  const currency = (tenant?.currency || DEFAULT_CURRENCY).toUpperCase();
-  const symbol = currencySymbol(currency);
-  const formatCoverage = (amount: number | string | null | undefined): string => {
-    const value = Number(amount);
-    if (!Number.isFinite(value)) return '—';
-    try {
-      return formatCurrency(value, currency);
-    } catch {
-      return `${symbol}${value.toLocaleString(getFormattingLocale())}`;
-    }
-  };
+  const { formatInsuranceType } = useInsuranceFormatting();
+  const csv = useCsvExport();
 
   // Stash the latest `t`/`toast` in refs so the fetch callbacks don't churn
-  // identity on language switches (which would refetch for no reason) — same
-  // pattern as BrokerDashboardPage.
+  // identity on language switches (which would refetch for no reason).
   const tRef = useRef(t);
   const toastRef = useRef(toast);
   tRef.current = t;
   toastRef.current = toast;
 
-  const formatInsuranceType = (type: string | null | undefined): string => {
-    if (!type) return '—';
-    const key = INSURANCE_TYPE_LABEL_KEYS[type as keyof typeof INSURANCE_TYPE_LABEL_KEYS];
-    return key ? t(key) : type;
-  };
-
-  // List state
+  // Status filter is mirrored to `?status=` so stat-card deep-links and
+  // browser back/forward work correctly.
   const [searchParams, setSearchParams] = useSearchParams();
-  const urlStatus = searchParams.get('status') as InsuranceStatus | null;
+  const urlStatus = searchParams.get('status');
   const statusFilter: InsuranceStatus =
-    urlStatus && INSURANCE_STATUSES.includes(urlStatus) ? urlStatus : 'all';
+    urlStatus && INSURANCE_STATUSES.includes(urlStatus) ? (urlStatus as InsuranceStatus) : 'all';
   const setStatusFilter = useCallback(
     (next: InsuranceStatus) => {
       setSearchParams(
@@ -232,6 +215,8 @@ export function InsuranceCertificates() {
 
   const [items, setItems] = useState<InsuranceCertificate[]>([]);
   const [total, setTotal] = useState(0);
+  /** True when `items` holds the whole filtered set and the table pages it locally. */
+  const [clientPaged, setClientPaged] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [listError, setListError] = useState(false);
@@ -240,7 +225,6 @@ export function InsuranceCertificates() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Stats
   const [stats, setStats] = useState<InsuranceStats | null>(null);
   const [statsError, setStatsError] = useState(false);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -248,56 +232,18 @@ export function InsuranceCertificates() {
   // Broker config (for expiry warning days)
   const [expiryWarningDays, setExpiryWarningDays] = useState(30);
 
-  // Create modal
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    user_id: '',
-    insurance_type: 'public_liability' as InsuranceCertificate['insurance_type'],
-    provider_name: '',
-    policy_number: '',
-    coverage_amount: '',
-    start_date: '',
-    expiry_date: '',
-    notes: '',
+  // Modals
+  const [formModal, setFormModal] = useState<{ open: boolean; certificate: InsuranceCertificate | null }>({
+    open: false,
+    certificate: null,
   });
-
-  // User search for create modal (#9)
-  const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState<UserSearchResult[]>([]);
-  const [userSearchLoading, setUserSearchLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
-  const userSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Edit modal (#10)
-  const [editItem, setEditItem] = useState<InsuranceCertificate | null>(null);
-  const [editLoading, setEditLoading] = useState(false);
-  const [editForm, setEditForm] = useState({
-    insurance_type: 'public_liability' as InsuranceCertificate['insurance_type'],
-    provider_name: '',
-    policy_number: '',
-    coverage_amount: '',
-    start_date: '',
-    expiry_date: '',
-    notes: '',
-  });
-
-  // Reject modal
-  const [rejectModal, setRejectModal] = useState<InsuranceCertificate | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
-  const [rejectLoading, setRejectLoading] = useState(false);
-
-  // View modal
+  const [rejectItem, setRejectItem] = useState<InsuranceCertificate | null>(null);
   const [viewItem, setViewItem] = useState<InsuranceCertificate | null>(null);
-
-  // Delete confirm
   const [deleteItem, setDeleteItem] = useState<InsuranceCertificate | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  // Verify loading tracker
   const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
-  // #6: Debounce search input
+  // Debounce search input
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -314,7 +260,7 @@ export function InsuranceCertificates() {
     };
   }, [searchQuery]);
 
-  // Load broker config for expiry warning days (#12)
+  // Load broker config for expiry warning days
   useEffect(() => {
     (async () => {
       try {
@@ -331,16 +277,34 @@ export function InsuranceCertificates() {
     })();
   }, []);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
+  // The list query for the active filter — the page and the CSV export use
+  // the same one, so an export is exactly what the screen shows.
+  const listParams = useMemo<InsuranceListParams>(() => {
+    const params: InsuranceListParams = {};
+    if (statusFilter === 'expiring_soon') {
+      params.expiring_soon = true;
+    } else if (statusFilter !== 'all' && !MERGED_TAB_STATUSES[statusFilter]) {
+      params.status = statusFilter;
+    }
+    if (debouncedSearch.trim()) {
+      params.search = debouncedSearch.trim();
+    }
+    if (userIdFilter) {
+      params.user_id = userIdFilter;
+    }
+    return params;
+  }, [statusFilter, debouncedSearch, userIdFilter]);
+  const mergedStatuses = MERGED_TAB_STATUSES[statusFilter];
+
+  const loadStats = useCallback(async (opts: { quiet?: boolean } = {}) => {
+    if (!opts.quiet) setStatsLoading(true);
     setStatsError(false);
     try {
       const res = await adminInsurance.stats();
       if (res.success && res.data) {
         setStats(res.data as InsuranceStats);
       } else {
-        // Same lesson as the dashboard / safeguarding / vetting fixes:
-        // a silently-zero "Pending" tile during a DB hiccup hides
+        // A silently-zero "Pending" tile during a DB hiccup hides
         // certificates that need attention. Surface the failure.
         setStatsError(true);
       }
@@ -351,77 +315,50 @@ export function InsuranceCertificates() {
     }
   }, []);
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
+  // `quiet` is the auto-refresh path: no spinner, no error toast — the table
+  // keeps its rows and the next visible refresh reports any failure.
+  const loadItems = useCallback(async (opts: { quiet?: boolean } = {}) => {
+    if (!opts.quiet) setLoading(true);
     setListError(false);
     try {
-      const params: Record<string, unknown> = { page };
-      if (statusFilter === 'expiring_soon') {
-        params.expiring_soon = true;
-      } else if (statusFilter !== 'all') {
-        params.status = statusFilter;
-      }
-      if (debouncedSearch.trim()) {
-        params.search = debouncedSearch.trim();
-      }
-      if (userIdFilter) {
-        params.user_id = userIdFilter;
-      }
-
-      const res = await adminInsurance.list(params as Parameters<typeof adminInsurance.list>[0]);
-      if (res.success && Array.isArray(res.data)) {
-        setItems(res.data as InsuranceCertificate[]);
-        const meta = res.meta as Record<string, unknown> | undefined;
-        setTotal(Number(meta?.total ?? meta?.total_items ?? res.data.length));
+      if (mergedStatuses) {
+        const results = await Promise.all(
+          mergedStatuses.map((status) =>
+            collectRows((p) => fetchInsurancePage({ ...listParams, status }, p), MERGED_TAB_CAP),
+          ),
+        );
+        const merged = results.flatMap((r) => r.rows).sort(createdDesc);
+        setItems(merged);
+        setTotal(merged.length);
+        setClientPaged(true);
       } else {
-        setListError(true);
+        const result = await fetchInsurancePage(listParams, page, PAGE_SIZE);
+        setItems(result.rows);
+        setTotal(result.total ?? result.rows.length);
+        setClientPaged(false);
       }
     } catch {
       setListError(true);
-      toastRef.current.error(tRef.current('insurance.load_failed'));
+      if (!opts.quiet) toastRef.current.error(tRef.current('insurance.load_failed'));
     } finally {
       setLoading(false);
       setHasLoadedOnce(true);
     }
-  }, [page, statusFilter, debouncedSearch, userIdFilter]);
+  }, [listParams, mergedStatuses, page]);
 
   useEffect(() => { loadStats(); }, [loadStats]);
   useEffect(() => { loadItems(); }, [loadItems]);
 
-  // #9: User search for create modal
-  useEffect(() => {
-    if (!userSearchQuery.trim() || userSearchQuery.trim().length < 2) {
-      setUserSearchResults([]);
-      return;
-    }
-    if (userSearchTimeoutRef.current) {
-      clearTimeout(userSearchTimeoutRef.current);
-    }
-    userSearchTimeoutRef.current = setTimeout(async () => {
-      setUserSearchLoading(true);
-      try {
-        const res = await adminUsers.list({ search: userSearchQuery.trim(), limit: 8 });
-        if (res.success && Array.isArray(res.data)) {
-          setUserSearchResults(res.data.map((u: Record<string, unknown>) => ({
-            id: u.id as number,
-            first_name: u.first_name as string,
-            last_name: u.last_name as string,
-            email: u.email as string,
-          })));
-        }
-      } catch {
-        // Non-critical
-      } finally {
-        setUserSearchLoading(false);
-      }
-    }, SEARCH_DEBOUNCE_MS);
+  // Quiet refresh after any broker/admin write, on tab return, and on an interval.
+  useBrokerAutoRefresh(() => {
+    loadItems({ quiet: true });
+    loadStats({ quiet: true });
+  });
 
-    return () => {
-      if (userSearchTimeoutRef.current) {
-        clearTimeout(userSearchTimeoutRef.current);
-      }
-    };
-  }, [userSearchQuery]);
+  const reload = () => {
+    loadItems();
+    loadStats();
+  };
 
   const handleVerify = async (item: InsuranceCertificate) => {
     setVerifyingId(item.id);
@@ -429,8 +366,7 @@ export function InsuranceCertificates() {
       const res = await adminInsurance.verify(item.id);
       if (res?.success) {
         toast.success(t('insurance.verify_success'));
-        loadItems();
-        loadStats();
+        reload();
       } else {
         toast.error(res?.error || t('insurance.verify_failed'));
       }
@@ -441,32 +377,6 @@ export function InsuranceCertificates() {
     }
   };
 
-  const handleReject = async () => {
-    if (!rejectModal || !rejectReason.trim()) {
-      toast.error(t('insurance.reject_reason_required'));
-      return;
-    }
-    setRejectLoading(true);
-    try {
-      const res = await adminInsurance.reject(rejectModal.id, rejectReason);
-      if (res?.success) {
-        toast.success(t('insurance.reject_success'));
-        // Only a success closes the modal — a failure keeps the typed reason
-        // so the broker can fix the problem and try again.
-        setRejectModal(null);
-        setRejectReason('');
-        loadItems();
-        loadStats();
-      } else {
-        toast.error(res?.error || t('insurance.reject_failed'));
-      }
-    } catch {
-      toast.error(t('insurance.reject_failed'));
-    } finally {
-      setRejectLoading(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!deleteItem) return;
     setDeleteLoading(true);
@@ -474,8 +384,7 @@ export function InsuranceCertificates() {
       const res = await adminInsurance.destroy(deleteItem.id);
       if (res?.success) {
         toast.success(t('insurance.delete_success'));
-        loadItems();
-        loadStats();
+        reload();
       } else {
         toast.error(res?.error || t('insurance.delete_failed'));
       }
@@ -487,109 +396,41 @@ export function InsuranceCertificates() {
     }
   };
 
-  const handleCreate = async () => {
-    if (!createForm.user_id) {
-      toast.error(t('insurance.select_member_required'));
-      return;
-    }
-    setCreateLoading(true);
-    try {
-      const payload: Record<string, unknown> = {
-        user_id: Number(createForm.user_id),
-        insurance_type: createForm.insurance_type,
-      };
-      if (createForm.provider_name) payload.provider_name = createForm.provider_name;
-      if (createForm.policy_number) payload.policy_number = createForm.policy_number;
-      if (createForm.coverage_amount) payload.coverage_amount = Number(createForm.coverage_amount);
-      if (createForm.start_date) payload.start_date = createForm.start_date;
-      if (createForm.expiry_date) payload.expiry_date = createForm.expiry_date;
-      if (createForm.notes) payload.notes = createForm.notes;
-
-      const res = await adminInsurance.create(payload as Partial<InsuranceCertificate>);
-      if (res?.success || res?.data) {
-        toast.success(t('insurance.create_success'));
-        setCreateOpen(false);
-        resetCreateForm();
-        loadItems();
-        loadStats();
-      } else {
-        toast.error(res?.error || t('insurance.create_failed'));
-      }
-    } catch {
-      toast.error(t('insurance.create_failed'));
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  // #10: Edit handler
-  const handleEdit = async () => {
-    if (!editItem) return;
-    setEditLoading(true);
-    try {
-      const payload: Record<string, unknown> = {
-        insurance_type: editForm.insurance_type,
-        provider_name: editForm.provider_name || null,
-        policy_number: editForm.policy_number || null,
-        coverage_amount: editForm.coverage_amount ? Number(editForm.coverage_amount) : null,
-        start_date: editForm.start_date || null,
-        expiry_date: editForm.expiry_date || null,
-        notes: editForm.notes || null,
-      };
-
-      const res = await adminInsurance.update(editItem.id, payload as Partial<InsuranceCertificate>);
-      if (res?.success) {
-        toast.success(t('insurance.update_success'));
-        setEditItem(null);
-        loadItems();
-        loadStats();
-      } else {
-        toast.error(res?.error || t('insurance.update_failed'));
-      }
-    } catch {
-      toast.error(t('insurance.update_failed'));
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const openEditModal = (item: InsuranceCertificate) => {
-    setEditForm({
-      insurance_type: item.insurance_type,
-      provider_name: item.provider_name || '',
-      policy_number: item.policy_number || '',
-      coverage_amount: item.coverage_amount ? String(item.coverage_amount) : '',
-      start_date: item.start_date || '',
-      expiry_date: item.expiry_date || '',
-      notes: item.notes || '',
+  const handleExport = () =>
+    csv.run<InsuranceCertificate>({
+      filename: `insurance-certificates_${statusFilter}`,
+      columns: [
+        { label: t('insurance.col_member'), value: (r) => resolveUserDisplayName(r) },
+        { label: t('insurance.csv_member_email'), value: (r) => r.email },
+        { label: t('insurance.col_provider'), value: (r) => r.provider_name },
+        { label: t('insurance.col_policy'), value: (r) => r.policy_number },
+        { label: t('insurance.label_coverage_amount'), value: (r) => r.coverage_amount },
+        { label: t('insurance.csv_valid_from'), value: (r) => isoDateOnly(r.start_date) },
+        { label: t('insurance.csv_valid_to'), value: (r) => isoDateOnly(r.expiry_date) },
+        { label: t('insurance.col_status'), value: (r) => r.status },
+        {
+          label: t('insurance.label_verified_by'),
+          value: (r) => (r.verifier_first_name
+            ? resolveUserDisplayNameFromPrefix(r as unknown as Record<string, unknown>, 'verifier_')
+            : ''),
+        },
+        { label: t('insurance.label_verified_at'), value: (r) => r.verified_at },
+      ],
+      fetchPage: async (p) => {
+        if (!mergedStatuses) return fetchInsurancePage(listParams, p);
+        const pages = await Promise.all(
+          mergedStatuses.map((status) => fetchInsurancePage({ ...listParams, status }, p)),
+        );
+        return { rows: pages.flatMap((x) => x.rows), hasMore: pages.some((x) => x.hasMore) };
+      },
     });
-    setEditItem(item);
-  };
-
-  const resetCreateForm = () => {
-    setCreateForm({
-      user_id: '',
-      insurance_type: 'public_liability',
-      provider_name: '',
-      policy_number: '',
-      coverage_amount: '',
-      start_date: '',
-      expiry_date: '',
-      notes: '',
-    });
-    setSelectedUser(null);
-    setUserSearchQuery('');
-    setUserSearchResults([]);
-  };
 
   // Expiry-urgency countdown chip — danger once expired, warning inside the
-  // configurable warning window. Rendered next to the raw date so the broker
-  // can scan the column without doing date arithmetic.
+  // configurable warning window.
   const renderExpiryCell = (item: InsuranceCertificate) => {
     const expiry = parseServerTimestamp(item.expiry_date);
     if (!expiry) return <span className="text-sm text-muted">{'—'}</span>;
     const daysUntilExpiry = Math.ceil((expiry.getTime() - Date.now()) / MS_PER_DAY);
-    // #12: Use configurable expiry warning days
     const isExpired = daysUntilExpiry <= 0;
     const isExpiringSoon = daysUntilExpiry > 0 && daysUntilExpiry <= expiryWarningDays;
 
@@ -633,9 +474,7 @@ export function InsuranceCertificates() {
             className="shrink-0"
           />
           <div className="min-w-0">
-            <p className="truncate font-medium text-foreground">
-              {item.first_name} {item.last_name}
-            </p>
+            <MemberName userId={item.user_id} name={resolveUserDisplayName(item)} className="block truncate" />
             <p className="truncate text-xs text-muted">{item.email}</p>
           </div>
         </div>
@@ -695,12 +534,11 @@ export function InsuranceCertificates() {
           >
             <Eye size={14} />
           </Button>
-          {/* #10: Edit button */}
           <Button
             isIconOnly
             size="sm"
             variant="tertiary"
-            onPress={() => openEditModal(item)}
+            onPress={() => setFormModal({ open: true, certificate: item })}
             aria-label={t('insurance.edit_certificate_aria')}
           >
             <Pencil size={14} />
@@ -722,7 +560,7 @@ export function InsuranceCertificates() {
                 isIconOnly
                 size="sm"
                 variant="danger-soft"
-                onPress={() => { setRejectModal(item); setRejectReason(''); }}
+                onPress={() => setRejectItem(item)}
                 aria-label={t('insurance.reject_certificate_aria')}
               >
                 <X size={14} />
@@ -746,6 +584,12 @@ export function InsuranceCertificates() {
   const isReviewQueue = REVIEW_QUEUE_STATUSES.has(statusFilter);
   const hasActiveNarrowing = Boolean(debouncedSearch.trim()) || statusFilter !== 'all' || Boolean(userIdFilter);
   const pendingReviewCount = stats?.pending_review ?? stats?.pending ?? 0;
+  const legacyStatus = (LEGACY_STATUSES as readonly string[]).includes(statusFilter)
+    ? (statusFilter as LegacyStatus)
+    : null;
+  const visibleItems = clientPaged ? items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : items;
+
+  const openCreate = () => setFormModal({ open: true, certificate: null });
 
   const emptyState = isReviewQueue && !debouncedSearch.trim() ? (
     <BrokerEmptyState
@@ -771,12 +615,7 @@ export function InsuranceCertificates() {
       title={t('insurance.empty_title')}
       hint={t('insurance.empty_add_to_start')}
       action={
-        <Button
-          size="sm"
-          variant="primary"
-          startContent={<Plus size={14} />}
-          onPress={() => { resetCreateForm(); setCreateOpen(true); }}
-        >
+        <Button size="sm" variant="primary" startContent={<Plus size={14} />} onPress={openCreate}>
           {t('insurance.add_certificate')}
         </Button>
       }
@@ -793,19 +632,73 @@ export function InsuranceCertificates() {
       actions={
         <>
           <Button
-            variant="primary"
-            startContent={<Plus size={16} />}
+            variant="secondary"
             size="sm"
-            onPress={() => { resetCreateForm(); setCreateOpen(true); }}
+            startContent={<Download size={16} aria-hidden="true" />}
+            onPress={handleExport}
+            isPending={csv.exporting}
+            isDisabled={!hasLoadedOnce}
           >
+            {csv.exporting ? t('common.exporting') : t('common.export_csv')}
+          </Button>
+          <Button variant="primary" startContent={<Plus size={16} />} size="sm" onPress={openCreate}>
             {t('insurance.add_certificate')}
           </Button>
         </>
       }
+      toolbar={
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder={t('insurance.search_placeholder')}
+            aria-label={t('insurance.search_aria')}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+            startContent={<Search size={16} className="text-muted" aria-hidden="true" />}
+            variant="secondary"
+            size="sm"
+            className="max-w-md"
+            isClearable
+            onClear={() => setSearchQuery('')}
+          />
+          <Tabs
+            aria-label={t('insurance.tabs_aria')}
+            selectedKey={tabForStatus(statusFilter)}
+            onSelectionChange={(key) => { setStatusFilter(key as InsuranceTab); setPage(1); }}
+            variant="underlined"
+            size="sm"
+          >
+            <Tab key="all" title={t('insurance.tab_all')} />
+            <Tab
+              key="pending_review"
+              title={
+                <div className="flex items-center gap-2">
+                  <span>{t('insurance.tab_pending_review')}</span>
+                  {!statsLoading && pendingReviewCount > 0 && (
+                    <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
+                      {pendingReviewCount}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+            <Tab key="verified" title={t('insurance.tab_verified')} />
+            <Tab key="expiring_soon" title={t('insurance.tab_expiring_soon')} />
+            <Tab key="rejected_revoked" title={t('insurance.tab_rejected_revoked')} />
+          </Tabs>
+          {legacyStatus && (
+            // An older link narrowed the list further than any tab says.
+            <div role="status" className="flex flex-wrap items-center gap-2 px-1 pb-1 text-xs text-muted">
+              <span>{t('insurance.legacy_filter_label')}</span>
+              <Chip size="sm" variant="soft" color="default">{t(LEGACY_LABEL_KEYS[legacyStatus])}</Chip>
+              <Button size="sm" variant="tertiary" onPress={() => { setStatusFilter('all'); setPage(1); }}>
+                {t('insurance.member_filter_clear')}
+              </Button>
+            </div>
+          )}
+        </div>
+      }
     >
       {statsError && (
-        // Same treatment as the dashboard's partial-data notice: foreground
-        // text on the card surface with an amber edge.
         <Alert
           role="alert"
           color="warning"
@@ -819,7 +712,7 @@ export function InsuranceCertificates() {
           title={t('insurance.stats_error_title')}
           description={t('insurance.stats_error_body')}
           endContent={(
-            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={loadStats}>
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => loadStats()}>
               <RefreshCw size={14} aria-hidden="true" />
               {t('insurance.retry')}
             </Button>
@@ -855,9 +748,6 @@ export function InsuranceCertificates() {
         />
         <BrokerStatCard
           label={t('insurance.stat_pending_review')}
-          // pending_review = pending + submitted (pre-verification states
-          // the broker still owns). Falls back to legacy `pending` for
-          // backwards compat with API responses that pre-date the field.
           value={pendingReviewCount}
           icon={Clock}
           color="warning"
@@ -882,52 +772,6 @@ export function InsuranceCertificates() {
         />
       </div>
 
-      {/* Search + status tabs — deep-linkable via ?status= */}
-      <div className="mb-4 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
-        <div className="flex flex-col gap-2">
-          <Input
-            placeholder={t('insurance.search_placeholder')}
-            aria-label={t('insurance.search_aria')}
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-            startContent={<Search size={16} className="text-muted" aria-hidden="true" />}
-            variant="secondary"
-            size="sm"
-            className="max-w-md"
-            isClearable
-            onClear={() => setSearchQuery('')}
-          />
-          <Tabs
-            aria-label={t('insurance.tabs_aria')}
-            selectedKey={statusFilter}
-            onSelectionChange={(key) => { setStatusFilter(key as InsuranceStatus); setPage(1); }}
-            variant="underlined"
-            size="sm"
-          >
-            <Tab key="all" title={t('insurance.tab_all')} />
-            <Tab
-              key="pending_review"
-              title={
-                <div className="flex items-center gap-2">
-                  <span>{t('insurance.tab_pending_review')}</span>
-                  {!statsLoading && pendingReviewCount > 0 && (
-                    <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                      {pendingReviewCount}
-                    </Chip>
-                  )}
-                </div>
-              }
-            />
-            <Tab key="pending" title={t('insurance.tab_pending')} />
-            <Tab key="submitted" title={t('insurance.tab_submitted')} />
-            <Tab key="verified" title={t('insurance.tab_verified')} />
-            <Tab key="expired" title={t('insurance.tab_expired')} />
-            <Tab key="expiring_soon" title={t('insurance.tab_expiring_soon')} />
-            <Tab key="rejected" title={t('insurance.tab_rejected')} />
-          </Tabs>
-        </div>
-      </div>
-
       {/* First load: shaped skeleton. Refreshes keep DataTable's own isLoading. */}
       {!hasLoadedOnce && loading ? (
         <BrokerSkeleton variant="table" />
@@ -938,7 +782,7 @@ export function InsuranceCertificates() {
           title={t('insurance.load_failed')}
           hint={t('insurance.load_error_hint')}
           action={
-            <Button size="sm" variant="tertiary" onPress={loadItems}>
+            <Button size="sm" variant="tertiary" onPress={() => loadItems()}>
               {t('insurance.retry')}
             </Button>
           }
@@ -948,443 +792,39 @@ export function InsuranceCertificates() {
           stickyActions
           mobileCards
           columns={columns}
-          data={items}
+          data={visibleItems}
           isLoading={loading}
           searchable={false}
-          onRefresh={loadItems}
+          onRefresh={() => loadItems()}
           totalItems={total}
           page={page}
-          pageSize={20}
+          pageSize={PAGE_SIZE}
           onPageChange={setPage}
           emptyContent={emptyState}
         />
       )}
 
-      {/* Create Modal — #9: User search instead of raw ID */}
-      <Modal
-        isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        size="lg"
-        scrollBehavior="inside"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <Plus size={20} className="text-accent" aria-hidden="true" />
-            {t('insurance.modal_create_title')}
-          </ModalHeader>
-          <ModalBody className="gap-4">
-            {/* #9: Member search autocomplete */}
-            {selectedUser ? (
-              <div className="flex items-center justify-between rounded-lg border border-border bg-surface-secondary p-3">
-                <div className="flex items-center gap-2">
-                  <Avatar name={resolveUserDisplayName(selectedUser)} size="sm" />
-                  <div>
-                    <p className="text-sm font-medium">{selectedUser.first_name} {selectedUser.last_name}</p>
-                    <p className="text-xs text-muted">{selectedUser.email}</p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => {
-                    setSelectedUser(null);
-                    setCreateForm(prev => ({ ...prev, user_id: '' }));
-                    setUserSearchQuery('');
-                  }}
-                >
-                  {t('insurance.change')}
-                </Button>
-              </div>
-            ) : (
-              <div>
-                <Input
-                  label={t('insurance.search_member_label')}
-                  placeholder={t('insurance.search_member_placeholder')}
-                  value={userSearchQuery}
-                  onValueChange={setUserSearchQuery}
-                  variant="secondary"
-                  isRequired
-                  startContent={<Search size={14} className="text-muted" aria-hidden="true" />}
-                  endContent={userSearchLoading ? <Spinner size="sm" /> : undefined}
-                />
-                {userSearchResults.length > 0 && (
-                  <div className="mt-1 max-h-48 overflow-hidden overflow-y-auto rounded-lg border border-border">
-                    {userSearchResults.map((u) => (
-                      <Button
-                        key={u.id}
-                        variant="tertiary"
-                        className="flex min-h-12 w-full items-center justify-start gap-2 rounded-none p-2"
-                        onPress={() => {
-                          setSelectedUser(u);
-                          setCreateForm(prev => ({ ...prev, user_id: String(u.id) }));
-                          setUserSearchQuery('');
-                          setUserSearchResults([]);
-                        }}
-                      >
-                        <Avatar name={resolveUserDisplayName(u)} size="sm" className="shrink-0" />
-                        <div className="min-w-0 text-left">
-                          <p className="truncate text-sm font-medium">{u.first_name} {u.last_name}</p>
-                          <p className="truncate text-xs text-muted">{u.email}</p>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                )}
-                {userSearchQuery.trim().length >= 2 && !userSearchLoading && userSearchResults.length === 0 && (
-                  <p className="mt-1 text-xs text-muted">{t('insurance.no_members_found')}</p>
-                )}
-              </div>
-            )}
-            <Select
-              label={t('insurance.field_insurance_type')}
-              selectedKeys={[createForm.insurance_type]}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as InsuranceCertificate['insurance_type'];
-                if (val) setCreateForm(prev => ({ ...prev, insurance_type: val }));
-              }}
-              variant="secondary"
-              isRequired
-            >
-              {INSURANCE_TYPE_KEYS.map((key) => (
-                <SelectItem key={key} id={key}>{t(INSURANCE_TYPE_LABEL_KEYS[key])}</SelectItem>
-              ))}
-            </Select>
-            <Input
-              label={t('insurance.field_provider_name')}
-              placeholder={t('insurance.field_provider_name_placeholder')}
-              value={createForm.provider_name}
-              onValueChange={(val) => setCreateForm(prev => ({ ...prev, provider_name: val }))}
-              variant="secondary"
-            />
-            <Input
-              label={t('insurance.field_policy_number')}
-              placeholder={t('insurance.field_policy_number_placeholder')}
-              value={createForm.policy_number}
-              onValueChange={(val) => setCreateForm(prev => ({ ...prev, policy_number: val }))}
-              variant="secondary"
-            />
-            {/* The tenant's own currency — hard-coding a symbol was wrong for
-                every community outside the eurozone. */}
-            <Input
-              label={t('insurance.field_coverage_amount')}
-              placeholder={t('insurance.field_coverage_amount_placeholder')}
-              value={createForm.coverage_amount}
-              onValueChange={(val) => setCreateForm(prev => ({ ...prev, coverage_amount: val }))}
-              variant="secondary"
-              type="number"
-              startContent={<span className="text-sm text-muted">{symbol}</span>}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label={t('insurance.field_start_date')}
-                type="date"
-                value={createForm.start_date}
-                onValueChange={(val) => setCreateForm(prev => ({ ...prev, start_date: val }))}
-                variant="secondary"
-              />
-              <Input
-                label={t('insurance.field_expiry_date')}
-                type="date"
-                value={createForm.expiry_date}
-                onValueChange={(val) => setCreateForm(prev => ({ ...prev, expiry_date: val }))}
-                variant="secondary"
-              />
-            </div>
-            <Textarea
-              label={t('insurance.field_notes')}
-              placeholder={t('insurance.field_notes_placeholder')}
-              value={createForm.notes}
-              onValueChange={(val) => setCreateForm(prev => ({ ...prev, notes: val }))}
-              variant="secondary"
-              minRows={3}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="tertiary"
-              onPress={() => setCreateOpen(false)}
-              isDisabled={createLoading}
-            >
-              {t('insurance.cancel')}
-            </Button>
-            <Button
-              variant="primary"
-              onPress={handleCreate}
-              isPending={createLoading}
-            >
-              {t('insurance.add_certificate')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <InsuranceCertificateFormModal
+        isOpen={formModal.open}
+        certificate={formModal.certificate}
+        onClose={() => setFormModal((prev) => ({ ...prev, open: false }))}
+        onSaved={reload}
+      />
 
-      {/* #10: Edit Modal */}
-      {editItem && (
-        <Modal
-          isOpen={!!editItem}
-          onClose={() => setEditItem(null)}
-          size="lg"
-          scrollBehavior="inside"
-        >
-          <ModalContent>
-            <ModalHeader className="flex items-center gap-2">
-              <Pencil size={20} className="text-accent" aria-hidden="true" />
-              {t('insurance.modal_edit_title')}
-            </ModalHeader>
-            <ModalBody className="gap-4">
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary p-3">
-                <Avatar
-                  src={resolveAvatarUrl(editItem.avatar_url) || undefined}
-                  name={resolveUserDisplayName(editItem)}
-                  size="sm"
-                />
-                <div>
-                  <p className="text-sm font-medium">{editItem.first_name} {editItem.last_name}</p>
-                  <p className="text-xs text-muted">{editItem.email}</p>
-                </div>
-              </div>
-              <Select
-                label={t('insurance.field_insurance_type')}
-                selectedKeys={[editForm.insurance_type]}
-                onSelectionChange={(keys) => {
-                  const val = Array.from(keys)[0] as InsuranceCertificate['insurance_type'];
-                  if (val) setEditForm(prev => ({ ...prev, insurance_type: val }));
-                }}
-                variant="secondary"
-                isRequired
-              >
-                {INSURANCE_TYPE_KEYS.map((key) => (
-                  <SelectItem key={key} id={key}>{t(INSURANCE_TYPE_LABEL_KEYS[key])}</SelectItem>
-                ))}
-              </Select>
-              <Input
-                label={t('insurance.field_provider_name')}
-                placeholder={t('insurance.field_provider_name_placeholder')}
-                value={editForm.provider_name}
-                onValueChange={(val) => setEditForm(prev => ({ ...prev, provider_name: val }))}
-                variant="secondary"
-              />
-              <Input
-                label={t('insurance.field_policy_number')}
-                placeholder={t('insurance.field_policy_number_placeholder')}
-                value={editForm.policy_number}
-                onValueChange={(val) => setEditForm(prev => ({ ...prev, policy_number: val }))}
-                variant="secondary"
-              />
-              <Input
-                label={t('insurance.field_coverage_amount')}
-                placeholder={t('insurance.field_coverage_amount_placeholder')}
-                value={editForm.coverage_amount}
-                onValueChange={(val) => setEditForm(prev => ({ ...prev, coverage_amount: val }))}
-                variant="secondary"
-                type="number"
-                startContent={<span className="text-sm text-muted">{symbol}</span>}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label={t('insurance.field_start_date')}
-                  type="date"
-                  value={editForm.start_date}
-                  onValueChange={(val) => setEditForm(prev => ({ ...prev, start_date: val }))}
-                  variant="secondary"
-                />
-                <Input
-                  label={t('insurance.field_expiry_date')}
-                  type="date"
-                  value={editForm.expiry_date}
-                  onValueChange={(val) => setEditForm(prev => ({ ...prev, expiry_date: val }))}
-                  variant="secondary"
-                />
-              </div>
-              <Textarea
-                label={t('insurance.field_notes')}
-                placeholder={t('insurance.field_notes_placeholder')}
-                value={editForm.notes}
-                onValueChange={(val) => setEditForm(prev => ({ ...prev, notes: val }))}
-                variant="secondary"
-                minRows={3}
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="tertiary"
-                onPress={() => setEditItem(null)}
-                isDisabled={editLoading}
-              >
-                {t('insurance.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                onPress={handleEdit}
-                isPending={editLoading}
-              >
-                {t('insurance.save_changes')}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
+      <InsuranceRejectModal
+        item={rejectItem}
+        onClose={() => setRejectItem(null)}
+        onRejected={reload}
+      />
 
-      {/* Reject Modal */}
-      {rejectModal && (
-        <Modal
-          isOpen={!!rejectModal}
-          onClose={() => { setRejectModal(null); setRejectReason(''); }}
-          size="md"
-        >
-          <ModalContent>
-            <ModalHeader className="flex items-center gap-2">
-              <X size={20} className="text-danger" aria-hidden="true" />
-              {t('insurance.modal_reject_title')}
-            </ModalHeader>
-            <ModalBody>
-              <p className="mb-3 text-muted">
-                {t('insurance.confirm_reject')}
-              </p>
-              <Textarea
-                label={t('insurance.field_reason')}
-                placeholder={t('insurance.field_reason_placeholder')}
-                value={rejectReason}
-                onValueChange={setRejectReason}
-                minRows={3}
-                variant="secondary"
-                isRequired
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="tertiary"
-                onPress={() => { setRejectModal(null); setRejectReason(''); }}
-                isDisabled={rejectLoading}
-              >
-                {t('insurance.cancel')}
-              </Button>
-              <Button
-                variant="danger"
-                onPress={handleReject}
-                isPending={rejectLoading}
-              >
-                {t('insurance.reject')}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
+      <InsuranceCertificateViewModal item={viewItem} onClose={() => setViewItem(null)} />
 
-      {/* View Detail Modal — #1: Added certificate file display */}
-      {viewItem && (
-        <Modal
-          isOpen={!!viewItem}
-          onClose={() => setViewItem(null)}
-          size="lg"
-        >
-          <ModalContent>
-            <ModalHeader className="flex items-center gap-2">
-              <FileCheck size={20} className="text-accent" aria-hidden="true" />
-              {t('insurance.modal_view_title')}
-            </ModalHeader>
-            <ModalBody>
-              <div className="mb-4 flex items-center gap-3">
-                <Avatar
-                  src={resolveAvatarUrl(viewItem.avatar_url) || undefined}
-                  name={resolveUserDisplayName(viewItem)}
-                  size="lg"
-                />
-                <div>
-                  <p className="text-lg font-semibold tracking-tight">{viewItem.first_name} {viewItem.last_name}</p>
-                  <p className="text-sm text-muted">{viewItem.email}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                <div>
-                  <p className="text-muted">{t('insurance.label_type')}</p>
-                  <p className="font-medium">{formatInsuranceType(viewItem.insurance_type)}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_status')}</p>
-                  <BrokerStatusChip status={viewItem.status} />
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_provider')}</p>
-                  <p className="font-medium">{viewItem.provider_name || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_policy_number')}</p>
-                  <p className="font-mono font-medium tabular-nums">{viewItem.policy_number || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_coverage_amount')}</p>
-                  <p className="font-medium tabular-nums">{viewItem.coverage_amount ? formatCoverage(viewItem.coverage_amount) : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_start_date')}</p>
-                  <p className="font-medium tabular-nums">{viewItem.start_date ? formatServerDate(viewItem.start_date) : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_expiry_date')}</p>
-                  <p className="font-medium tabular-nums">{viewItem.expiry_date ? formatServerDate(viewItem.expiry_date) : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_verified_by')}</p>
-                  <p className="font-medium">
-                    {viewItem.verifier_first_name
-                      ? resolveUserDisplayNameFromPrefix(
-                          viewItem as unknown as Record<string, unknown>,
-                          'verifier_',
-                        )
-                      : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_verified_at')}</p>
-                  <p className="font-medium tabular-nums">{viewItem.verified_at ? formatServerDateTime(viewItem.verified_at) : '—'}</p>
-                </div>
-                <div>
-                  <p className="text-muted">{t('insurance.label_created')}</p>
-                  <p className="font-medium tabular-nums">{formatServerDateTime(viewItem.created_at)}</p>
-                </div>
-              </div>
-              {/* #1: Certificate file display/download */}
-              {viewItem.certificate_file_path && (
-                <div className="mt-4">
-                  <p className="mb-1 text-sm text-muted">{t('insurance.label_certificate_file')}</p>
-                  <a
-                    href={resolveAssetUrl(viewItem.certificate_file_path)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent hover:underline dark:bg-accent-soft"
-                  >
-                    <FileText size={16} aria-hidden="true" />
-                    {t('insurance.view_certificate_file')}
-                    <ExternalLink size={14} aria-hidden="true" />
-                  </a>
-                </div>
-              )}
-              {viewItem.notes && (
-                <div className="mt-4">
-                  <p className="mb-1 text-sm text-muted">{t('insurance.label_notes')}</p>
-                  <p className="rounded-lg bg-surface-secondary p-3 text-sm">{viewItem.notes}</p>
-                </div>
-              )}
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="tertiary" onPress={() => setViewItem(null)}>
-                {t('insurance.close')}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
-
-      {/* Delete Confirmation */}
       <ConfirmModal
         isOpen={!!deleteItem}
         onClose={() => setDeleteItem(null)}
         onConfirm={handleDelete}
         title={t('insurance.confirm_delete_title')}
-        message={deleteItem
-          ? t('insurance.confirm_delete_message')
-          : ''}
+        message={deleteItem ? t('insurance.confirm_delete_message') : ''}
         confirmLabel={t('insurance.delete')}
         confirmColor="danger"
         isLoading={deleteLoading}

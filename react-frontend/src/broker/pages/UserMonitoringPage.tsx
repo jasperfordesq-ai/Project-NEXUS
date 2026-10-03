@@ -8,108 +8,92 @@
  * View users currently under messaging monitoring restrictions.
  * Parity: PHP BrokerControlsController::monitoring()
  *
- * Restyled to the broker design language: BrokerPageShell frame, KPI header
- * derived from the loaded list (total / messaging disabled / expiring soon),
- * avatar member cells, readable reason column, expiry countdown chips, and
- * honest skeleton / empty / error states. The add/edit/remove modals — and
- * the expiry-preservation logic on edit — are unchanged.
+ * Broker design language: BrokerPageShell frame, KPI header derived from
+ * the loaded list (total / messaging disabled / expiring soon) with each card
+ * linking to the matching tab, a search box and tabs over the loaded rows,
+ * member names that open the panel-wide member window, expiry countdown
+ * chips, an Extend action per row, and honest skeleton / empty / error
+ * states. The add/edit modal lives in `components/monitoring/`.
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
-import {
-  Select,
-  SelectItem,
-  Button,
-  Spinner,
-  Input,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Avatar,
-  Switch,
-  Chip,
-} from '@/components/ui';
+import { Button, Input, Avatar, Chip, Tabs, Tab, useConfirm } from '@/components/ui';
 import Eye from 'lucide-react/icons/eye';
 import MessageCircleOff from 'lucide-react/icons/message-circle-off';
 import UserPlus from 'lucide-react/icons/user-plus';
 import UserMinus from 'lucide-react/icons/user-minus';
 import Pencil from 'lucide-react/icons/pencil';
-import X from 'lucide-react/icons/x';
 import Search from 'lucide-react/icons/search';
+import SearchX from 'lucide-react/icons/search-x';
 import Clock from 'lucide-react/icons/clock';
+import CalendarPlus from 'lucide-react/icons/calendar-plus';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
-import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { useTenant, useToast } from '@/contexts';
+import { getFormattingLocale } from '@/lib/helpers';
 import { parseServerTimestamp, formatServerDate } from '@/lib/serverTime';
-import { adminBroker, adminUsers } from '@/admin/api/adminApi';
+import { adminBroker } from '@/admin/api/adminApi';
 import { DataTable, ConfirmModal, type Column } from '@/admin/components';
-import type { MonitoredUser, AdminUser } from '@/admin/api/types';
+import type { MonitoredUser } from '@/admin/api/types';
+import { MemberName } from '@/broker/BrokerMemberWindow';
+import { useBrokerAutoRefresh } from '@/broker/useBrokerAutoRefresh';
 import {
   BrokerPageShell,
   BrokerStatCard,
   BrokerEmptyState,
   BrokerSkeleton,
 } from '../components';
-
-// Duration options offered by the modal's Select (in days). Prefilling the
-// Select on edit only reflects a record whose remaining days match one of these.
-const DURATION_OPTIONS = ['7', '14', '30', '60', '90'];
-
-const DAY_MS = 86_400_000;
-const EXPIRING_SOON_DAYS = 7;
-
-// Countdown state for an expiry timestamp — one source of truth shared by the
-// KPI header and the row chips so "expiring soon" always means the same thing.
-function expiryState(expiresAt: Date): { days: number; state: 'expired' | 'soon' | 'ok' } {
-  if (expiresAt.getTime() <= Date.now()) {
-    return { days: 0, state: 'expired' };
-  }
-  const days = Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS);
-  return { days, state: days <= EXPIRING_SOON_DAYS ? 'soon' : 'ok' };
-}
+import {
+  MonitoringFormModal,
+  MONITORING_TABS,
+  EXTEND_DAYS,
+  EXPIRING_SOON_DAYS,
+  expiryState,
+  isExpiringSoon,
+  filterMonitoredUsers,
+  type MonitoringTab,
+} from '../components/monitoring';
 
 export function UserMonitoring() {
   const { t } = useTranslation('broker');
   usePageTitle(t('monitoring.title'));
+  const { tenantPath } = useTenant();
   const toast = useToast();
+  const confirm = useConfirm();
+
+  // The tab is mirrored to `?tab=` so the KPI cards can link to it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab') as MonitoringTab | null;
+  const tab: MonitoringTab = urlTab && MONITORING_TABS.includes(urlTab) ? urlTab : 'all';
+  const setTab = useCallback(
+    (next: MonitoringTab) => {
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev);
+          if (next === 'all') params.delete('tab');
+          else params.set('tab', next);
+          return params;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const [items, setItems] = useState<MonitoredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [search, setSearch] = useState('');
 
-  // Add to monitoring modal state
-  const [monitoringModalOpen, setMonitoringModalOpen] = useState(false);
-  const [monitoringReason, setMonitoringReason] = useState('');
-  const [messagingDisabled, setMessagingDisabled] = useState(false);
-  const [expiresDays, setExpiresDays] = useState('');
-  const [monitoringLoading, setMonitoringLoading] = useState(false);
+  const [modal, setModal] = useState<{ open: boolean; editing: MonitoredUser | null }>({ open: false, editing: null });
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [extendingId, setExtendingId] = useState<number | null>(null);
   const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<number | null>(null);
-
-  // Edit state — when set, the modal edits an existing monitoring record rather
-  // than adding a new one. `setMonitoring` upserts server-side, so an edit is
-  // the same call with the existing user_id. originalExpiresDays preserves the
-  // record's remaining expiry when the broker doesn't pick a new duration.
-  const [editingItem, setEditingItem] = useState<MonitoredUser | null>(null);
-  const [originalExpiresDays, setOriginalExpiresDays] = useState<number | null>(null);
-
-  // User search state
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState<AdminUser[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Stash the latest `t` and `toast` in refs so loadItems' identity is stable —
   // keying the fetch effect on them would refetch on every language switch.
@@ -118,8 +102,9 @@ export function UserMonitoring() {
   tRef.current = t;
   toastRef.current = toast;
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
+  // `quiet` is the auto-refresh path: no spinner, no toast.
+  const loadItems = useCallback(async (opts: { quiet?: boolean } = {}) => {
+    if (!opts.quiet) setLoading(true);
     setLoadError(false);
     try {
       const res = await adminBroker.getMonitoring();
@@ -131,7 +116,7 @@ export function UserMonitoring() {
       }
     } catch {
       setLoadError(true);
-      toastRef.current.error(tRef.current('monitoring.load_failed'));
+      if (!opts.quiet) toastRef.current.error(tRef.current('monitoring.load_failed'));
     } finally {
       setLoading(false);
     }
@@ -141,158 +126,7 @@ export function UserMonitoring() {
     loadItems();
   }, [loadItems]);
 
-  // Debounced user search
-  const handleUserSearch = useCallback((query: string) => {
-    setUserSearchQuery(query);
-    setHighlightedIndex(-1);
-
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (!query || query.length < 2) {
-      setUserSearchResults([]);
-      setShowDropdown(false);
-      return;
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const res = await adminUsers.list({ search: query, limit: 10 });
-        if (res.success && res.data) {
-          const results = Array.isArray(res.data) ? res.data : (res.data as { items?: AdminUser[] }).items ?? [];
-          setUserSearchResults(results);
-          setShowDropdown(results.length > 0);
-        }
-      } catch {
-        setUserSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-  }, []);
-
-  // Click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!showDropdown || userSearchResults.length === 0) return;
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightedIndex((prev) => Math.min(prev + 1, userSearchResults.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightedIndex((prev) => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-      e.preventDefault();
-      const user = userSearchResults[highlightedIndex];
-      if (user) {
-        setSelectedUser(user);
-        setShowDropdown(false);
-        setUserSearchQuery('');
-        setUserSearchResults([]);
-      }
-    } else if (e.key === 'Escape') {
-      setShowDropdown(false);
-    }
-  }, [showDropdown, userSearchResults, highlightedIndex]);
-
-  const selectUser = useCallback((user: AdminUser) => {
-    setSelectedUser(user);
-    setShowDropdown(false);
-    setUserSearchQuery('');
-    setUserSearchResults([]);
-  }, []);
-
-  const clearSelectedUser = useCallback(() => {
-    setSelectedUser(null);
-    setUserSearchQuery('');
-    setUserSearchResults([]);
-    // Focus the search input after clearing
-    requestAnimationFrame(() => inputRef.current?.focus());
-  }, []);
-
-  const resetModalState = useCallback(() => {
-    setMonitoringModalOpen(false);
-    setSelectedUser(null);
-    setEditingItem(null);
-    setOriginalExpiresDays(null);
-    setUserSearchQuery('');
-    setUserSearchResults([]);
-    setMonitoringReason('');
-    setMessagingDisabled(false);
-    setExpiresDays('');
-    setShowDropdown(false);
-    setHighlightedIndex(-1);
-  }, []);
-
-  const openEditModal = useCallback((item: MonitoredUser) => {
-    setEditingItem(item);
-    setMonitoringReason(item.monitoring_reason || '');
-    setMessagingDisabled(!!item.messaging_disabled);
-    const expiresAt = parseServerTimestamp(item.monitoring_expires_at);
-    if (expiresAt) {
-      const remaining = Math.max(1, Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000));
-      setOriginalExpiresDays(remaining);
-      // Only reflect it in the Select when it maps to a preset option.
-      setExpiresDays(DURATION_OPTIONS.includes(String(remaining)) ? String(remaining) : '');
-    } else {
-      setOriginalExpiresDays(null);
-      setExpiresDays('');
-    }
-    setMonitoringModalOpen(true);
-  }, []);
-
-  const handleSubmitMonitoring = async () => {
-    const targetUserId = editingItem ? editingItem.user_id : selectedUser?.id;
-    if (!targetUserId) {
-      toast.error(t('monitoring.select_user_required'));
-      return;
-    }
-    if (!monitoringReason.trim()) {
-      toast.error(t('monitoring.reason_required'));
-      return;
-    }
-    // On edit, if the broker didn't pick a preset duration, preserve the
-    // record's existing remaining expiry (or leave it open if it had none) so
-    // a reason-only edit never silently clears the expiry.
-    const effectiveExpiresDays = expiresDays
-      ? Number(expiresDays)
-      : editingItem
-        ? originalExpiresDays
-        : null;
-    setMonitoringLoading(true);
-    try {
-      const res = await adminBroker.setMonitoring(targetUserId, {
-        under_monitoring: true,
-        reason: monitoringReason,
-        messaging_disabled: messagingDisabled,
-        ...(effectiveExpiresDays ? { expires_days: effectiveExpiresDays } : {}),
-      });
-      if (res?.success) {
-        toast.success(editingItem ? t('monitoring.edit_success') : t('monitoring.add_success'));
-        resetModalState();
-        loadItems();
-      } else {
-        toast.error(res?.error || t('monitoring.add_failed'));
-      }
-    } catch {
-      toast.error(t('monitoring.add_failed'));
-    } finally {
-      setMonitoringLoading(false);
-    }
-  };
+  useBrokerAutoRefresh(() => loadItems({ quiet: true }));
 
   const handleRemoveMonitoring = async (userId: number) => {
     setRemovingId(userId);
@@ -311,13 +145,44 @@ export function UserMonitoring() {
     }
   };
 
+  // Extend pushes the expiry to EXTEND_DAYS from today, keeping the reason
+  // and the messaging setting. `setMonitoring` upserts, so this is the same
+  // call the edit modal makes with a new duration.
+  const handleExtend = async (item: MonitoredUser) => {
+    const ok = await confirm({
+      title: t('monitoring.extend_confirm_title'),
+      body: t('monitoring.extend_confirm_body', { name: item.user_name, days: EXTEND_DAYS }),
+      confirmLabel: t('monitoring.extend_confirm_confirm'),
+      status: 'warning',
+    });
+    if (!ok) return;
+    setExtendingId(item.user_id);
+    try {
+      const res = await adminBroker.setMonitoring(item.user_id, {
+        under_monitoring: true,
+        reason: item.monitoring_reason || undefined,
+        messaging_disabled: !!item.messaging_disabled,
+        expires_days: EXTEND_DAYS,
+      });
+      if (res?.success) {
+        toast.success(t('monitoring.extend_success'));
+        loadItems({ quiet: true });
+      } else {
+        toast.error(res?.error || t('monitoring.extend_failed'));
+      }
+    } catch {
+      toast.error(t('monitoring.extend_failed'));
+    } finally {
+      setExtendingId(null);
+    }
+  };
+
   // ── KPI header — derived entirely from the already-loaded list ─────────────
   const initialLoading = loading && items.length === 0;
   const messagingDisabledCount = items.filter((i) => !!i.messaging_disabled).length;
-  const expiringSoonCount = items.filter((i) => {
-    const expiresAt = parseServerTimestamp(i.monitoring_expires_at);
-    return !!expiresAt && expiryState(expiresAt).state === 'soon';
-  }).length;
+  const expiringSoonCount = items.filter(isExpiringSoon).length;
+
+  const visibleItems = useMemo(() => filterMonitoredUsers(items, tab, search), [items, tab, search]);
 
   const columns: Column<MonitoredUser>[] = [
     {
@@ -327,7 +192,7 @@ export function UserMonitoring() {
       render: (item) => (
         <div className="flex min-w-0 items-center gap-3">
           <Avatar name={item.user_name} size="sm" className="shrink-0" />
-          <p className="min-w-0 truncate text-sm font-medium text-foreground">{item.user_name}</p>
+          <MemberName userId={item.user_id} name={item.user_name} className="text-sm" />
         </div>
       ),
     },
@@ -336,20 +201,12 @@ export function UserMonitoring() {
       label: t('monitoring.col_status'),
       render: (item) => (
         <div className="flex flex-wrap gap-1">
-          <Chip
-            size="sm"
-            variant="soft"
-            color={item.under_monitoring ? 'warning' : 'default'}
-          >
+          <Chip size="sm" variant="soft" color={item.under_monitoring ? 'warning' : 'default'}>
             <Eye size={12} aria-hidden="true" />
             <Chip.Label>{t('monitoring.status_monitored')}</Chip.Label>
           </Chip>
           {item.messaging_disabled && (
-            <Chip
-              size="sm"
-              variant="soft"
-              color="danger"
-            >
+            <Chip size="sm" variant="soft" color="danger">
               <MessageCircleOff size={12} aria-hidden="true" />
               <Chip.Label>{t('monitoring.status_messaging_off')}</Chip.Label>
             </Chip>
@@ -378,10 +235,7 @@ export function UserMonitoring() {
       sortable: true,
       render: (item) => (
         <span className="text-sm tabular-nums text-muted">
-          {item.monitoring_started_at
-            ? formatServerDate(item.monitoring_started_at)
-            : '—'
-          }
+          {item.monitoring_started_at ? formatServerDate(item.monitoring_started_at) : '—'}
         </span>
       ),
     },
@@ -426,7 +280,7 @@ export function UserMonitoring() {
             isIconOnly
             size="sm"
             variant="tertiary"
-            onPress={() => openEditModal(item)}
+            onPress={() => setModal({ open: true, editing: item })}
             aria-label={t('monitoring.edit_aria')}
           >
             <Pencil size={14} />
@@ -434,9 +288,19 @@ export function UserMonitoring() {
           <Button
             isIconOnly
             size="sm"
+            variant="tertiary"
+            onPress={() => handleExtend(item)}
+            isPending={extendingId === item.user_id}
+            aria-label={t('monitoring.extend_aria')}
+          >
+            <CalendarPlus size={14} />
+          </Button>
+          <Button
+            isIconOnly
+            size="sm"
             variant="danger-soft"
             onPress={() => setConfirmRemoveUserId(item.user_id)}
-            isLoading={removingId === item.user_id}
+            isPending={removingId === item.user_id}
             aria-label={t('monitoring.remove_aria')}
           >
             <UserMinus size={14} />
@@ -445,6 +309,8 @@ export function UserMonitoring() {
       ),
     },
   ];
+
+  const openAdd = () => setModal({ open: true, editing: null });
 
   return (
     <BrokerPageShell
@@ -456,11 +322,15 @@ export function UserMonitoring() {
       actions={
         <>
           <Button
-            variant="primary"
-            startContent={<UserPlus size={16} />}
+            variant="secondary"
             size="sm"
-            onPress={() => setMonitoringModalOpen(true)}
+            startContent={<RefreshCw size={16} aria-hidden="true" />}
+            onPress={() => loadItems()}
+            isPending={loading && items.length > 0}
           >
+            {t('common.refresh')}
+          </Button>
+          <Button variant="primary" startContent={<UserPlus size={16} />} size="sm" onPress={openAdd}>
             {t('monitoring.add_button')}
           </Button>
         </>
@@ -475,7 +345,7 @@ export function UserMonitoring() {
           title={t('monitoring.load_error_title')}
           hint={t('monitoring.load_error_hint')}
           action={
-            <Button size="sm" variant="danger-soft" onPress={loadItems}>
+            <Button size="sm" variant="danger-soft" onPress={() => loadItems()}>
               {t('monitoring.retry_button')}
             </Button>
           }
@@ -490,6 +360,7 @@ export function UserMonitoring() {
               icon={Eye}
               color="warning"
               loading={initialLoading}
+              to={tenantPath('/broker/monitoring')}
             />
             <BrokerStatCard
               label={t('monitoring.status_messaging_off')}
@@ -497,6 +368,7 @@ export function UserMonitoring() {
               icon={MessageCircleOff}
               color="danger"
               loading={initialLoading}
+              to={tenantPath('/broker/monitoring?tab=messaging_off')}
             />
             <BrokerStatCard
               label={t('monitoring.stat_expiring_soon')}
@@ -504,6 +376,7 @@ export function UserMonitoring() {
               icon={Clock}
               color="warning"
               loading={initialLoading}
+              to={tenantPath('/broker/monitoring?tab=expiring_soon')}
             />
           </div>
 
@@ -516,198 +389,96 @@ export function UserMonitoring() {
               title={t('monitoring.empty_all_clear_title')}
               hint={t('monitoring.empty_all_clear_hint')}
               action={
-                <Button
-                  size="sm"
-                  variant="primary"
-                  startContent={<UserPlus size={14} />}
-                  onPress={() => setMonitoringModalOpen(true)}
-                >
+                <Button size="sm" variant="primary" startContent={<UserPlus size={14} />} onPress={openAdd}>
                   {t('monitoring.add_button')}
                 </Button>
               }
             />
           ) : (
-            <DataTable
-              stickyActions
-              mobileCards
-              columns={columns}
-              data={items}
-              isLoading={loading}
-              searchable={false}
-              onRefresh={loadItems}
-            />
+            <>
+              {/* Search + tabs over the loaded rows */}
+              <div className="mb-4 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
+                <div className="flex flex-col gap-2">
+                  <Input
+                    placeholder={t('monitoring.search_placeholder')}
+                    aria-label={t('monitoring.search_aria')}
+                    value={search}
+                    onValueChange={setSearch}
+                    startContent={<Search size={16} className="text-muted" aria-hidden="true" />}
+                    variant="secondary"
+                    size="sm"
+                    className="max-w-md"
+                    isClearable
+                    onClear={() => setSearch('')}
+                  />
+                  <Tabs
+                    aria-label={t('monitoring.tabs_aria')}
+                    selectedKey={tab}
+                    onSelectionChange={(key) => setTab(key as MonitoringTab)}
+                    variant="underlined"
+                    size="sm"
+                  >
+                    <Tab key="all" title={t('monitoring.tab_all')} />
+                    <Tab
+                      key="messaging_off"
+                      title={
+                        <div className="flex items-center gap-2">
+                          <span>{t('monitoring.tab_messaging_off')}</span>
+                          {messagingDisabledCount > 0 && (
+                            <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
+                              {messagingDisabledCount}
+                            </Chip>
+                          )}
+                        </div>
+                      }
+                    />
+                    <Tab
+                      key="expiring_soon"
+                      title={
+                        <div className="flex items-center gap-2">
+                          <span>{t('monitoring.tab_expiring_soon', { days: EXPIRING_SOON_DAYS })}</span>
+                          {expiringSoonCount > 0 && (
+                            <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
+                              {expiringSoonCount}
+                            </Chip>
+                          )}
+                        </div>
+                      }
+                    />
+                  </Tabs>
+                </div>
+              </div>
+
+              <DataTable
+                stickyActions
+                mobileCards
+                columns={columns}
+                data={visibleItems}
+                isLoading={loading}
+                searchable={false}
+                onRefresh={() => loadItems()}
+                emptyContent={
+                  <BrokerEmptyState
+                    bare
+                    icon={SearchX}
+                    color="neutral"
+                    title={t('monitoring.empty_filter_title')}
+                    hint={t('monitoring.empty_filter_hint')}
+                  />
+                }
+              />
+            </>
           )}
         </>
       )}
 
-      {/* Add to Monitoring Modal */}
-      <Modal
-        isOpen={monitoringModalOpen}
-        onClose={resetModalState}
-        size="md"
-      >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            {editingItem ? <Pencil size={20} className="text-accent" /> : <UserPlus size={20} className="text-accent" />}
-            {editingItem ? t('monitoring.modal_edit_title') : t('monitoring.modal_title')}
-          </ModalHeader>
-          <ModalBody>
-            {/* Member selection — locked when editing an existing record */}
-            {editingItem ? (
-              <div className="flex items-center gap-3 rounded-lg border border-divider bg-surface-secondary p-3">
-                <Eye size={18} className="shrink-0 text-warning" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">{editingItem.user_name}</p>
-                  <p className="text-xs text-muted">{t('monitoring.member_label')}</p>
-                </div>
-              </div>
-            ) : selectedUser ? (
-              <div className="flex items-center gap-3 rounded-lg border border-divider p-3">
-                <Avatar
-                  src={resolveAvatarUrl(selectedUser.avatar_url ?? selectedUser.avatar) || undefined}
-                  name={selectedUser.name}
-                  size="sm"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">{selectedUser.name}</p>
-                  <p className="text-xs text-muted truncate">{selectedUser.email}</p>
-                </div>
-                <Chip size="sm" variant="tertiary" color={selectedUser.status === 'active' ? 'success' : 'default'}>
-                  {t(`status.${selectedUser.status}`)}
-                </Chip>
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="light"
-                  onPress={clearSelectedUser}
-                  aria-label={t('monitoring.clear_selection_aria')}
-                >
-                  <X size={14} />
-                </Button>
-              </div>
-            ) : (
-              <div ref={dropdownRef} className="relative">
-                <Input
-                  ref={inputRef}
-                  label={t('monitoring.search_user_label')}
-                  placeholder={t('monitoring.search_user_placeholder')}
-                  variant="bordered"
-                  isRequired
-                  value={userSearchQuery}
-                  onValueChange={handleUserSearch}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => {
-                    if (userSearchResults.length > 0) setShowDropdown(true);
-                  }}
-                  startContent={<Search size={16} className="text-muted" />}
-                  endContent={isSearching ? <Spinner size="sm" /> : null}
-                  autoComplete="off"
-                />
-                {showDropdown && (
-                  <ul
-                    className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-divider bg-overlay shadow-lg"
-                    role="listbox"
-                  >
-                    {userSearchResults.map((user, index) => (
-                      <li
-                        key={user.id}
-                        role="option"
-                        aria-selected={index === highlightedIndex}
-                        className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors ${
-                          index === highlightedIndex
-                            ? 'bg-accent/10'
-                            : 'hover:bg-surface-secondary'
-                        }`}
-                        onMouseEnter={() => setHighlightedIndex(index)}
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // Prevent input blur
-                          selectUser(user);
-                        }}
-                      >
-                        <Avatar
-                          src={resolveAvatarUrl(user.avatar_url ?? user.avatar) || undefined}
-                          name={user.name}
-                          size="sm"
-                          className="shrink-0"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                          <p className="text-xs text-muted truncate">{user.email}</p>
-                        </div>
-                        <Chip size="sm" variant="tertiary" color={user.status === 'active' ? 'success' : 'default'}>
-                          {t(`status.${user.status}`)}
-                        </Chip>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {userSearchQuery.length >= 2 && !isSearching && userSearchResults.length === 0 && (
-                  <p className="mt-1 text-xs text-muted">{t('monitoring.no_users_found')}</p>
-                )}
-              </div>
-            )}
+      <MonitoringFormModal
+        isOpen={modal.open}
+        editingItem={modal.editing}
+        onClose={() => setModal((prev) => ({ ...prev, open: false }))}
+        onSaved={() => loadItems()}
+      />
 
-            <Textarea
-              label={t('monitoring.reason_label')}
-              placeholder={t('monitoring.reason_placeholder')}
-              value={monitoringReason}
-              onValueChange={setMonitoringReason}
-              minRows={3}
-              variant="bordered"
-              isRequired
-            />
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm text-foreground/70">{t('monitoring.disable_messaging')}</span>
-              <Switch
-                isSelected={messagingDisabled}
-                onValueChange={setMessagingDisabled}
-                size="sm"
-              />
-            </div>
-            <Select
-              label={t('monitoring.duration_label')}
-              placeholder={t('monitoring.duration_placeholder')}
-              variant="bordered"
-              selectedKeys={expiresDays ? [expiresDays] : []}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string | undefined;
-                setExpiresDays(val ?? '');
-              }}
-            >
-              <SelectItem key="7" id="7">{t('monitoring.duration_7_days')}</SelectItem>
-              <SelectItem key="14" id="14">{t('monitoring.duration_14_days')}</SelectItem>
-              <SelectItem key="30" id="30">{t('monitoring.duration_30_days')}</SelectItem>
-              <SelectItem key="60" id="60">{t('monitoring.duration_60_days')}</SelectItem>
-              <SelectItem key="90" id="90">{t('monitoring.duration_90_days')}</SelectItem>
-            </Select>
-            {editingItem && editingItem.monitoring_expires_at && (
-              <p className="text-xs text-muted">
-                {t('monitoring.current_expiry', { date: formatServerDate(editingItem.monitoring_expires_at) })}
-              </p>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="flat"
-              onPress={resetModalState}
-              isDisabled={monitoringLoading}
-            >
-              {t('monitoring.cancel_button')}
-            </Button>
-            <Button
-              color="primary"
-              onPress={handleSubmitMonitoring}
-              isLoading={monitoringLoading}
-              isDisabled={!editingItem && !selectedUser}
-              startContent={!monitoringLoading && (editingItem ? <Pencil size={14} /> : <UserPlus size={14} />)}
-            >
-              {editingItem ? t('monitoring.save_button') : t('monitoring.add_button')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      {/* Remove from monitoring confirmation modal */}
       <ConfirmModal
         isOpen={confirmRemoveUserId !== null}
         onClose={() => setConfirmRemoveUserId(null)}

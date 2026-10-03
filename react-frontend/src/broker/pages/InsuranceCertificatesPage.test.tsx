@@ -8,9 +8,10 @@ import React from 'react';
 import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { CsvExportRequest } from '@/broker/useCsvExport';
 
 // ─── Hoisted mocks ───────────────────────────────────────────────────────────
-const { mockAdminInsurance, mockAdminUsers, mockAdminBroker, capturedColumns } = vi.hoisted(() => ({
+const { mockAdminInsurance, mockAdminUsers, mockAdminBroker, capturedColumns, mockCsvRun } = vi.hoisted(() => ({
   mockAdminInsurance: {
     list: vi.fn(),
     stats: vi.fn(),
@@ -23,6 +24,7 @@ const { mockAdminInsurance, mockAdminUsers, mockAdminBroker, capturedColumns } =
   mockAdminUsers: { list: vi.fn(), get: vi.fn() },
   mockAdminBroker: { getConfiguration: vi.fn() },
   capturedColumns: { current: [] as Array<{ key: string; sortable?: boolean }> },
+  mockCsvRun: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -47,6 +49,13 @@ vi.mock('@/lib/serverTime', () => ({
   formatServerDate: vi.fn((d: string) => d),
   formatServerDateTime: vi.fn((d: string) => d),
 }));
+
+// The export helper is exercised in its own suite; here we only check the
+// page hands it the active filter and a pager over the list endpoint.
+vi.mock('@/broker/useCsvExport', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/broker/useCsvExport')>();
+  return { ...orig, useCsvExport: () => ({ exporting: false, run: mockCsvRun }) };
+});
 
 // ─── Router with useSearchParams stub ────────────────────────────────────────
 // Holder object so individual tests can deep-link (?status=…) before render.
@@ -125,6 +134,13 @@ const makeAdminComponentMocks = () => ({
   ),
   ConfirmModal: () => null,
   EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
+  // The shared member picker has its own suite; the form only needs a field.
+  MemberSearchPicker: ({ label, value }: { label: string; value: string }) => (
+    <label>
+      {label}
+      <input data-testid="member-picker" readOnly value={value} />
+    </label>
+  ),
 });
 
 vi.mock('@/admin/components', () => makeAdminComponentMocks());
@@ -253,6 +269,25 @@ describe('InsuranceCertificatesPage', () => {
     });
   });
 
+  it('asks the server for exactly one table page at a time', async () => {
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    // The table shows 20 rows a page; fetching the server's default 25 and
+    // paging by 20 silently skipped five certificates on every page.
+    await waitFor(() => {
+      expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, per_page: 20 }));
+    });
+  });
+
+  it('member names open the panel-wide member window', async () => {
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    const table = await screen.findByTestId('data-table');
+    expect(within(table).getByRole('button', { name: "Open Carol Cert's record" })).toBeInTheDocument();
+  });
+
   it('renders the panel-wide status chip and translated insurance type in rows', async () => {
     const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
     render(<InsuranceCertificates />);
@@ -299,20 +334,12 @@ describe('InsuranceCertificatesPage', () => {
     });
   });
 
-  it('calls adminInsurance.list on mount', async () => {
+  it('calls adminInsurance.list and adminInsurance.stats on mount', async () => {
     const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
     render(<InsuranceCertificates />);
 
     await waitFor(() => {
       expect(mockAdminInsurance.list).toHaveBeenCalled();
-    });
-  });
-
-  it('calls adminInsurance.stats on mount', async () => {
-    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
-    render(<InsuranceCertificates />);
-
-    await waitFor(() => {
       expect(mockAdminInsurance.stats).toHaveBeenCalled();
     });
   });
@@ -328,6 +355,86 @@ describe('InsuranceCertificatesPage', () => {
     });
     // Announced as an alert (the shared Alert), not a silent box.
     expect(screen.getByRole('alert').textContent).toContain("Insurance stats couldn't be loaded");
+  });
+
+  // ─── Tabs ──────────────────────────────────────────────────────────────────
+
+  it('offers five status tabs, with Rejected / Revoked merged and no separate Pending or Submitted', async () => {
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(5);
+    expect(screen.getByRole('tab', { name: /Rejected \/ Revoked/ })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Submitted' })).toBeNull();
+    expect(screen.queryByRole('tab', { name: 'Expired' })).toBeNull();
+  });
+
+  it('the Rejected / Revoked tab loads both statuses (the server filters one at a time) and pages them locally', async () => {
+    searchParamsHolder.current = new URLSearchParams('status=rejected_revoked');
+    mockAdminInsurance.list.mockImplementation(async (params: { status?: string }) => ({
+      success: true,
+      data: [makeCertificate({ id: params.status === 'rejected' ? 1 : 2, status: params.status, first_name: params.status === 'rejected' ? 'Rita' : 'Rex' })],
+      meta: { total: 1, last_page: 1 },
+    }));
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    const table = await screen.findByTestId('data-table');
+    await waitFor(() => {
+      expect(table.textContent).toContain('2 rows');
+    });
+    expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'rejected', per_page: 100 }));
+    expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'revoked', per_page: 100 }));
+    expect(within(table).getByText('Rita Cert')).toBeInTheDocument();
+    expect(within(table).getByText('Rex Cert')).toBeInTheDocument();
+  });
+
+  it('an older ?status=expired link still filters, and is named in a chip because no tab says that', async () => {
+    searchParamsHolder.current = new URLSearchParams('status=expired');
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await waitFor(() => {
+      expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'expired' }));
+    });
+    expect(screen.getByText('Filtered by status:')).toBeInTheDocument();
+    expect(screen.getByText('Expired')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Clear filter' }));
+    expect(mockSetSearchParams).toHaveBeenCalled();
+  });
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+
+  it('Export CSV pages the active filter through the list endpoint, 100 rows at a time', async () => {
+    searchParamsHolder.current = new URLSearchParams('status=verified');
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    await user.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+    expect(mockCsvRun).toHaveBeenCalledTimes(1);
+    const request = mockCsvRun.mock.calls[0]![0] as CsvExportRequest<Record<string, unknown>>;
+    expect(request.filename).toBe('insurance-certificates_verified');
+    expect(request.columns.map((c) => c.label)).toEqual([
+      'Member', 'Email', 'Provider', 'Policy Number', 'Coverage Amount',
+      'Valid from', 'Valid to', 'Status', 'Verified by', 'Verified at',
+    ]);
+
+    mockAdminInsurance.list.mockClear();
+    const page = await request.fetchPage(2);
+    expect(mockAdminInsurance.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'verified', page: 2, per_page: 100 }));
+    expect(page.rows).toHaveLength(1);
+    expect(page.hasMore).toBe(false);
+
+    const row = page.rows[0]!;
+    expect(request.columns[0]!.value(row)).toBe('Carol Cert');
+    expect(request.columns[5]!.value(row)).toBe('2025-01-01');
   });
 
   // ─── Reject keeps the typed reason on failure ───────────────────────────────
@@ -385,6 +492,33 @@ describe('InsuranceCertificatesPage', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('£')).toBeInTheDocument();
     expect(within(dialog).queryByText('€')).toBeNull();
+    // Create mode: the shared member picker, not a hand-built search.
+    expect(within(dialog).getByTestId('member-picker')).toBeInTheDocument();
+  });
+
+  it('the edit form shows the certificate holder read-only and saves through update', async () => {
+    mockAdminInsurance.update.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
+    render(<InsuranceCertificates />);
+
+    await screen.findByText('Carol Cert');
+    await user.click(screen.getByRole('button', { name: 'Edit certificate' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('carol@example.com')).toBeInTheDocument();
+    expect(within(dialog).queryByTestId('member-picker')).toBeNull();
+    expect(within(dialog).getByDisplayValue('POL-001')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Save Changes' }));
+    await waitFor(() => {
+      expect(mockAdminInsurance.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        policy_number: 'POL-001',
+        start_date: '2025-01-01',
+        notes: null,
+      }));
+    });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   // ─── Columns ───────────────────────────────────────────────────────────────
@@ -442,47 +576,11 @@ describe('InsuranceCertificatesPage', () => {
     });
   });
 
-  it('renders a search input', async () => {
+  it('renders a search input in the toolbar', async () => {
     const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
     render(<InsuranceCertificates />);
 
-    await waitFor(() => {
-      const searchInput = screen.queryByRole('searchbox') ||
-        screen.queryByPlaceholderText(/search/i) ||
-        screen.queryByRole('textbox');
-      expect(searchInput).toBeDefined();
-    });
-  });
-
-  it('renders a create certificate button', async () => {
-    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
-    render(<InsuranceCertificates />);
-
-    await waitFor(() => {
-      const buttons = screen.getAllByRole('button');
-      const createBtn = buttons.find(
-        (b) =>
-          b.textContent?.toLowerCase().includes('create') ||
-          b.textContent?.toLowerCase().includes('add') ||
-          b.textContent?.toLowerCase().includes('new')
-      );
-      expect(createBtn).toBeDefined();
-    });
-  });
-
-  it('shows status filter tabs', async () => {
-    const { InsuranceCertificates } = await import('./InsuranceCertificatesPage');
-    render(<InsuranceCertificates />);
-
-    await waitFor(() => {
-      const text = document.body.textContent?.toLowerCase() || '';
-      const hasFilters =
-        text.includes('pending') ||
-        text.includes('verified') ||
-        text.includes('rejected') ||
-        text.includes('all');
-      expect(hasFilters).toBe(true);
-    });
+    expect(await screen.findByLabelText('Search insurance certificates')).toBeInTheDocument();
   });
 
   it('shows the neutral empty state with an add CTA when there are no certificates at all', async () => {
