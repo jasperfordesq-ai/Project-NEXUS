@@ -27,14 +27,14 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Routes, useLocation } from 'react-router-dom';
+import { Routes, useLocation, UNSAFE_NavigationContext, parsePath, type To } from 'react-router-dom';
 import { TenantProvider, useTenant } from '@/contexts/TenantContext';
 import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { detectTenantFromUrl } from '@/lib/tenant-routing';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ContextType } from 'react';
 import { listenForImpersonationToken } from '@/lib/impersonate';
 import {
   loadRouteRegistry,
@@ -572,6 +572,11 @@ function TenantRoutes({
 }) {
   const location = useLocation();
   const nestedRouteContent = appRoutes();
+  const navigation = useContext(UNSAFE_NavigationContext);
+  const slugNavigation = useMemo(
+    () => (slugPrefix ? { ...navigation, navigator: withSlugPreservingNavigator(navigation.navigator, slugPrefix) } : navigation),
+    [navigation, slugPrefix],
+  );
 
   // If there's a slug prefix, render a nested Routes with the slug stripped
   // so child routes like "dashboard" match "/hour-timebank/dashboard" correctly
@@ -580,9 +585,13 @@ function TenantRoutes({
     return (
       <>
         <SlugUrlGuard slug={slugPrefix} />
-        <Routes location={{ ...location, pathname: strippedPath }}>
-          {nestedRouteContent}
-        </Routes>
+        {/* Navigation from inside the stripped Routes keeps the slug — see
+            withSlugPreservingNavigator. SlugUrlGuard stays as the safety net. */}
+        <UNSAFE_NavigationContext.Provider value={slugNavigation}>
+          <Routes location={{ ...location, pathname: strippedPath }}>
+            {nestedRouteContent}
+          </Routes>
+        </UNSAFE_NavigationContext.Provider>
       </>
     );
   }
@@ -609,6 +618,50 @@ function ImpersonationHandoffFailed() {
       {t('impersonation.handoff_failed')}
     </div>
   );
+}
+
+type RouterNavigator = ContextType<typeof UNSAFE_NavigationContext>['navigator'];
+
+/**
+ * Keeps the tenant slug in every navigation made from inside the
+ * slug-stripped nested <Routes>.
+ *
+ * Pages there resolve relative navigations (setSearchParams, navigate('?..'),
+ * <Link to="?..">) against the STRIPPED pathname, so a tab click on
+ * /hour-timebank/broker/members pushed /broker/members?status=pending. The
+ * router then held a slug-less location; SlugUrlGuard put the slug back in
+ * the browser bar ~130 ms later with history.replaceState, behind the
+ * router's back — the address visibly jumped and the router and browser
+ * disagreed. And SlugUrlGuard only runs on the shared hosts, so a
+ * sub-community on its parent's own domain (uk.timebank.global/stratford)
+ * lost its slug for good.
+ *
+ * Prefixing here fixes it before the router sees the path. It applies only
+ * while the slug is actually in the browser path, so a subdomain tenant
+ * (slug in the host name, not the path) is never given a path prefix.
+ * Paths that already carry the slug — tenantPath() links — are untouched.
+ */
+export function withSlugPreservingNavigator(navigator: RouterNavigator, slug: string): RouterNavigator {
+  const prefix = `/${slug}`.toLowerCase();
+  const hasPrefix = (pathname: string) => {
+    const lower = pathname.toLowerCase();
+    return lower === prefix || lower.startsWith(`${prefix}/`);
+  };
+  const fix = (to: To): To => {
+    if (!hasPrefix(window.location.pathname)) return to;
+    const path = typeof to === 'string' ? parsePath(to) : to;
+    if (!path.pathname || !path.pathname.startsWith('/') || hasPrefix(path.pathname)) return to;
+    return { ...path, pathname: `/${slug}${path.pathname === '/' ? '' : path.pathname}` };
+  };
+  return {
+    createHref: (to) => navigator.createHref(fix(to)),
+    // NOT prefixed: the router also calls encodeLocation while MATCHING routes
+    // (descendant <Routes> pathnameBase), where adding the slug breaks matching.
+    encodeLocation: navigator.encodeLocation?.bind(navigator),
+    go: (delta) => navigator.go(delta),
+    push: (to, state, opts) => navigator.push(fix(to), state, opts),
+    replace: (to, state, opts) => navigator.replace(fix(to), state, opts),
+  };
 }
 
 /**
