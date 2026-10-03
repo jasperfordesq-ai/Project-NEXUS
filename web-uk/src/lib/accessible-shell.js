@@ -92,7 +92,13 @@ const navItems = [
   // Members only — an anonymous visitor has no pass to show. Matches
   // AlphaController::alphaNavItems, which requires a signed-in user here.
   { key: 'venues', label: 'Partner venues', href: '/venues', authenticatedOnly: true, featureKey: 'partner_venues' },
-  { key: 'explore', label: 'Explore', href: '/explore', authenticatedOnly: true }
+  { key: 'explore', label: 'Explore', href: '/explore', authenticatedOnly: true },
+  // Help & support, for signed-in members (owner decision, 3 October 2026). The
+  // footer keeps its link too, in the same place on every page (WCAG 2.2 3.2.6
+  // Consistent Help). A visitor who is not signed in is sent to Contact by the
+  // route, so the header link would only be a detour for them. buildShellLocals
+  // adds ?return= so the request records the page the member came from.
+  { key: 'support', label: 'Help & support', href: '/report-a-problem', authenticatedOnly: true }
 ];
 
 const footerColumns = [
@@ -364,6 +370,7 @@ function activeNavForPath(pathname = '/') {
   if (pathname.startsWith('/explore')) return 'explore';
   if (pathname.startsWith('/login')) return 'login';
   if (pathname.startsWith('/register')) return 'register';
+  if (pathname.startsWith('/report-a-problem')) return 'support';
   return '';
 }
 
@@ -462,6 +469,17 @@ function prefixLocalPath(pathname, prefix = '') {
   }
   if (path === '/') return prefix;
   return `${prefix}${path}`;
+}
+
+// Point the Help & support link back at the page the member is on, exactly as
+// the footer's link does. On the Help & support page itself it keeps the page's
+// own address, so following it does not record the form as "the page you came from".
+function withSupportReturn(items, { req, urlFor, currentUrl }) {
+  return items.map((item) => {
+    if (item.key !== 'support') return item;
+    if (activeNavForPath(req.path) === 'support') return { ...item, href: currentUrl };
+    return { ...item, href: `${urlFor('/report-a-problem')}?return=${encodeURIComponent(currentUrl)}` };
+  });
 }
 
 function prefixNavItems(items, prefix) {
@@ -819,10 +837,10 @@ function buildShellLocals(req, isAuthenticated) {
     alphaLocaleOptions: localeOptions,
     alphaLanguageQueryParams: buildLanguageQueryParams(req.query),
     alphaTextDirection: currentLocale === 'ar' ? 'rtl' : 'ltr',
-    alphaNavItems: tenantSlug ? prefixNavItems(
+    alphaNavItems: tenantSlug ? withSupportReturn(prefixNavItems(
       localizeNavItems(buildNavItems({ isAuthenticated, tenant: routedTenant }), t),
       routePrefix
-    ) : [],
+    ), { req, urlFor, currentUrl }) : [],
     alphaActiveNav: activeNavForPath(req.path),
     // 🔴 WCAG 2.2 §3.2.6 Consistent Help: a help mechanism must appear in the same
     // relative place on EVERY page of the service. This returned [] for any render

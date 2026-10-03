@@ -96,7 +96,8 @@ describe('Laravel-first shared partial localization', () => {
     expect(footer).toContain(t('footer.meta_label'));
     expect(footer).toContain(t('footer.columns.platform.heading'));
     expect(footer).toContain(t('footer.columns.platform.listings'));
-    expect(footer).toContain(t('report_problem.footer_link'));
+    // Rendered through an autoescaping environment: "Hilfe & Support" arrives as "Hilfe &amp; Support".
+    expect(footer).toContain(t('report_problem.footer_link').replace(/&/g, '&amp;'));
     expect(footer).toContain(t('cookie_settings.title'));
     expect(footer).toContain(t('footer.sign_out'));
     // 🔴 footer.licence / footer.attribution / footer.source were asserted here

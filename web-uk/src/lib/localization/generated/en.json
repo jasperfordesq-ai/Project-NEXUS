@@ -1039,14 +1039,33 @@
                 "policy_link": "Read our full cookies policy"
             },
             "report_problem": {
-                "title": "Report a problem with this page",
-                "caption": "Help us improve :service",
-                "intro": "Use this form to tell us about a problem you found on this page. Do not include personal or financial information, like your password.",
-                "page_label": "Page you are reporting",
-                "summary_label": "What is the problem?",
-                "summary_hint": "Give a short summary, for example \"The Accept button does nothing\".",
-                "description_label": "Describe what happened",
-                "description_hint": "Tell us what you were trying to do, what you expected, and what went wrong.",
+                "title": "Help & support",
+                "caption": "Get help with :service",
+                "intro": "Tell us what you need and your message will go straight to the support team. Do not include your password or any financial information.",
+                "page_label": "Page you came from",
+                "type_legend": "What do you need help with?",
+                "types": {
+                    "broken": {
+                        "label": "Something isn't working",
+                        "hint": "A page, button or feature isn't doing what it should."
+                    },
+                    "how_to": {
+                        "label": "How do I…?",
+                        "hint": "A question about using the site."
+                    },
+                    "account": {
+                        "label": "Account or sign-in problem",
+                        "hint": "Trouble signing in, or a problem with your account. Never include your password."
+                    },
+                    "suggestion": {
+                        "label": "Suggest an improvement",
+                        "hint": "An idea that would make the site better."
+                    }
+                },
+                "summary_label": "Short summary",
+                "summary_hint": "For example, \"The Accept button does nothing\" or \"How do I join a group?\".",
+                "description_label": "Tell us a bit more",
+                "description_hint": "Say what you were trying to do. If something went wrong, say what you expected and what happened instead.",
                 "impact_legend": "How much did this affect you?",
                 "impacts": {
                     "blocked": "I could not complete what I was doing",
@@ -1054,16 +1073,17 @@
                     "minor": "It caused a minor problem",
                     "cosmetic": "It looked wrong but I could continue"
                 },
-                "submit": "Send report",
-                "success_title": "Thank you, your report has been sent",
-                "success_body": "Your reference number is :ref. Our team will review it.",
+                "submit": "Send",
+                "success_title": "Thank you. Your message has been sent.",
+                "success_body": "Your reference number is :ref. We will also email you a receipt.",
                 "back": "Return to the page",
-                "footer_link": "Report a problem with this page",
+                "footer_link": "Help & support",
                 "contact_caption": "Report a problem",
                 "contact_prefill": "I found a problem on this page: :url",
                 "errors": {
-                    "summary": "Enter a short summary of the problem (3 to 180 characters)",
-                    "description": "Describe what happened (10 to 5000 characters)",
+                    "type": "Select what you need help with",
+                    "summary": "Enter a short summary (3 to 180 characters)",
+                    "description": "Tell us more (10 to 5000 characters)",
                     "impact": "Select how much this affected you"
                 }
             },
@@ -1104,6 +1124,7 @@
                 "jobs": "Jobs",
                 "profile": "My Profile",
                 "contact": "Contact",
+                "support": "Help & support",
                 "login": "Sign in",
                 "register": "Register"
             },

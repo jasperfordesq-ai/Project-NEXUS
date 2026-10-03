@@ -1039,20 +1039,39 @@
                 "policy_link": "Lea nuestra política completa de cookies"
             },
             "report_problem": {
-                "title": "Informar de un problema con esta página",
-                "caption": "Ayúdenos a mejorar :service",
-                "intro": "Use este formulario para informarnos de un problema que haya encontrado en esta página. No incluya información personal o financiera, como su contraseña.",
-                "page_label": "Página que está informando",
-                "summary_label": "¿Cuál es el problema?",
-                "summary_hint": "Dé un breve resumen, por ejemplo: El botón Aceptar no hace nada.",
-                "description_label": "Describa qué ocurrió",
-                "description_hint": "Díganos qué intentaba hacer, qué esperaba y qué salió mal.",
+                "title": "Ayuda y soporte",
+                "caption": "Obtenga ayuda con :service",
+                "intro": "Díganos qué necesita y su mensaje llegará directamente al equipo de soporte. No incluya su contraseña ni ningún dato financiero.",
+                "page_label": "Página de la que viene",
+                "type_legend": "¿Con qué necesita ayuda?",
+                "types": {
+                    "broken": {
+                        "label": "Algo no funciona",
+                        "hint": "Una página, un botón o una función no hace lo que debería."
+                    },
+                    "how_to": {
+                        "label": "¿Cómo puedo…?",
+                        "hint": "Una pregunta sobre cómo usar el sitio."
+                    },
+                    "account": {
+                        "label": "Problema con la cuenta o el acceso",
+                        "hint": "Problemas para iniciar sesión o con su cuenta. Nunca incluya su contraseña."
+                    },
+                    "suggestion": {
+                        "label": "Sugerir una mejora",
+                        "hint": "Una idea que mejoraría el sitio."
+                    }
+                },
+                "summary_label": "Resumen breve",
+                "summary_hint": "Por ejemplo, «El botón Aceptar no hace nada» o «¿Cómo me uno a un grupo?».",
+                "description_label": "Cuéntenos un poco más",
+                "description_hint": "Cuéntenos qué intentaba hacer. Si algo falló, díganos qué esperaba y qué ocurrió en su lugar.",
                 "impact_legend": "¿Cuánto le afectó esto?",
-                "submit": "Enviar informe",
-                "success_title": "Gracias, su informe ha sido enviado",
-                "success_body": "Su número de referencia es :ref. Nuestro equipo lo revisará.",
+                "submit": "Enviar",
+                "success_title": "Gracias. Su mensaje se ha enviado.",
+                "success_body": "Su número de referencia es :ref. También le enviaremos un acuse de recibo por correo electrónico.",
                 "back": "Volver a la página",
-                "footer_link": "Informar de un problema con esta página",
+                "footer_link": "Ayuda y soporte",
                 "contact_caption": "Informar de un problema",
                 "contact_prefill": "He encontrado un problema en esta página: :url",
                 "impacts": {
@@ -1062,8 +1081,9 @@
                     "cosmetic": "Se veía mal, pero pude continuar"
                 },
                 "errors": {
-                    "summary": "Introduzca un breve resumen del problema (de 3 a 180 caracteres)",
-                    "description": "Describa qué ocurrió (de 10 a 5000 caracteres)",
+                    "type": "Seleccione con qué necesita ayuda",
+                    "summary": "Escriba un resumen breve (de 3 a 180 caracteres)",
+                    "description": "Cuéntenos más (de 10 a 5000 caracteres)",
                     "impact": "Seleccione cuánto le afectó esto"
                 }
             },
@@ -1104,6 +1124,7 @@
                 "jobs": "Empleos",
                 "profile": "Mi perfil",
                 "contact": "Contacto",
+                "support": "Ayuda y soporte",
                 "login": "Iniciar sesión",
                 "register": "Registrarse"
             },

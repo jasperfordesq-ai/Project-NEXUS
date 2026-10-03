@@ -142,9 +142,9 @@ test.describe('representative public-page accessibility gate', () => {
     await expect(page.getByRole('link', { name: 'Help centre' })).toHaveCount(1);
     await expect(page.getByRole('link', { name: 'Contact' })).toHaveCount(1);
 
-    // Page-level feedback stays absent: "Report a problem with this page" resolves a
-    // community-specific contact route, and there is no community in context here.
-    await expect(page.getByRole('link', { name: 'Report a problem with this page' })).toHaveCount(0);
+    // Page-level feedback stays absent: the footer's "Help & support" link resolves a
+    // community-specific route, and there is no community in context here.
+    await expect(page.getByRole('link', { name: 'Help & support' })).toHaveCount(0);
 
     const overflow = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
@@ -922,6 +922,9 @@ test.describe('representative authenticated-page accessibility gate', () => {
       expect(response.headers()['content-language']).toBe('ar');
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).toHaveText(translate('ar', 'report_problem.title'));
+      // Impact is revealed only once "Something isn't working" is chosen.
+      await expect(page.getByText(translate('ar', 'report_problem.impacts.blocked'), { exact: true })).toBeHidden();
+      await page.locator('#request_type').check();
       await expect(page.getByText(translate('ar', 'report_problem.impacts.blocked'), { exact: true })).toBeVisible();
 
       await page.locator('#summary').fill('No');

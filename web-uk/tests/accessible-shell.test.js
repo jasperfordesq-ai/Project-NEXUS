@@ -56,8 +56,44 @@ describe('accessible shell tenant gating', () => {
     expect(buildNavItems({ isAuthenticated: false, tenant }).map((item) => item.key))
       .toEqual(['home', 'listings', 'volunteering']);
 
+    // 'support' (Help & support) is web-uk's own addition for signed-in members
+    // (owner decision, 3 October 2026); Blade never had it.
     expect(buildNavItems({ isAuthenticated: true, tenant }).map((item) => item.key))
-      .toEqual(['listings', 'volunteering', 'explore']);
+      .toEqual(['listings', 'volunteering', 'explore', 'support']);
+  });
+
+  it('gives signed-in members a Help & support link that returns them to the page they were on', () => {
+    const locals = buildShellLocals({
+      query: {},
+      path: '/listings',
+      originalUrl: '/acme/accessible/listings?page=2',
+      accessibleRouting: { tenant, tenantSlug: 'acme', prefix: '/acme/accessible' }
+    }, true);
+
+    const support = locals.alphaNavItems.find((item) => item.key === 'support');
+    expect(support.label).toBe('Help & support');
+    expect(support.href).toBe('/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Flistings%3Fpage%3D2');
+
+    const onPage = buildShellLocals({
+      query: {},
+      path: '/report-a-problem',
+      originalUrl: '/acme/accessible/report-a-problem?return=%2Flistings',
+      accessibleRouting: { tenant, tenantSlug: 'acme', prefix: '/acme/accessible' }
+    }, true);
+    expect(onPage.alphaActiveNav).toBe('support');
+    expect(onPage.alphaNavItems.find((item) => item.key === 'support').href)
+      .toBe('/acme/accessible/report-a-problem?return=%2Flistings');
+  });
+
+  it('does not put Help & support in the header for visitors who are not signed in (the footer keeps it)', () => {
+    const locals = buildShellLocals({
+      query: {},
+      path: '/listings',
+      originalUrl: '/acme/accessible/listings',
+      accessibleRouting: { tenant, tenantSlug: 'acme', prefix: '/acme/accessible' }
+    }, false);
+    expect(locals.alphaNavItems.some((item) => item.key === 'support')).toBe(false);
+    expect(locals.reportProblemUrl).toBe('/acme/accessible/report-a-problem?return=%2Facme%2Faccessible%2Flistings');
   });
 
   it('matches Laravel Blade footer platform link gates', () => {

@@ -1039,20 +1039,39 @@
                 "policy_link": "Lire notre politique complète relative aux cookies"
             },
             "report_problem": {
-                "title": "Signaler un problème sur cette page",
-                "caption": "Aidez-nous à améliorer :service",
-                "intro": "Utilisez ce formulaire pour nous signaler un problème que vous avez rencontré sur cette page. N’incluez pas d’informations personnelles ou financières, comme votre mot de passe.",
-                "page_label": "Page que vous signalez",
-                "summary_label": "Quel est le problème ?",
-                "summary_hint": "Donnez un bref résumé, par exemple : Le bouton Accepter ne fait rien.",
-                "description_label": "Décrivez ce qui s’est passé",
-                "description_hint": "Dites-nous ce que vous essayiez de faire, ce que vous attendiez et ce qui n’a pas fonctionné.",
+                "title": "Aide et assistance",
+                "caption": "Obtenir de l'aide sur :service",
+                "intro": "Dites-nous ce dont vous avez besoin : votre message est transmis directement à l'équipe d'assistance. N'indiquez ni votre mot de passe ni aucune information financière.",
+                "page_label": "Page d'où vous venez",
+                "type_legend": "De quelle aide avez-vous besoin ?",
+                "types": {
+                    "broken": {
+                        "label": "Quelque chose ne fonctionne pas",
+                        "hint": "Une page, un bouton ou une fonction ne fait pas ce qu’il devrait."
+                    },
+                    "how_to": {
+                        "label": "Comment faire pour… ?",
+                        "hint": "Une question sur l'utilisation du site."
+                    },
+                    "account": {
+                        "label": "Problème de compte ou de connexion",
+                        "hint": "Difficulté à vous connecter ou problème avec votre compte. N’indiquez jamais votre mot de passe."
+                    },
+                    "suggestion": {
+                        "label": "Suggérer une amélioration",
+                        "hint": "Une idée pour améliorer le site."
+                    }
+                },
+                "summary_label": "Court résumé",
+                "summary_hint": "Par exemple, « Le bouton Accepter ne fait rien » ou « Comment rejoindre un groupe ? ».",
+                "description_label": "Dites-nous-en un peu plus",
+                "description_hint": "Dites-nous ce que vous essayiez de faire. Si quelque chose n'a pas fonctionné, dites-nous ce que vous attendiez et ce qui s'est passé à la place.",
                 "impact_legend": "Dans quelle mesure cela vous a-t-il affecté ?",
-                "submit": "Envoyer le signalement",
-                "success_title": "Merci, votre signalement a été envoyé",
-                "success_body": "Votre numéro de référence est :ref. Notre équipe l’examinera.",
+                "submit": "Envoyer",
+                "success_title": "Merci. Votre message a été envoyé.",
+                "success_body": "Votre numéro de référence est :ref. Nous vous enverrons aussi un accusé de réception par e-mail.",
                 "back": "Revenir à la page",
-                "footer_link": "Signaler un problème sur cette page",
+                "footer_link": "Aide et assistance",
                 "contact_caption": "Signaler un problème",
                 "contact_prefill": "J’ai trouvé un problème sur cette page : :url",
                 "impacts": {
@@ -1062,8 +1081,9 @@
                     "cosmetic": "Cela semblait incorrect, mais j’ai pu continuer"
                 },
                 "errors": {
-                    "summary": "Saisissez un bref résumé du problème (3 à 180 caractères)",
-                    "description": "Décrivez ce qui s’est passé (10 à 5000 caractères)",
+                    "type": "Sélectionnez ce pour quoi vous avez besoin d'aide",
+                    "summary": "Saisissez un court résumé (3 à 180 caractères)",
+                    "description": "Dites-nous-en plus (10 à 5000 caractères)",
                     "impact": "Sélectionnez dans quelle mesure cela vous a affecté"
                 }
             },
@@ -1104,6 +1124,7 @@
                 "jobs": "Offres",
                 "profile": "Mon profil",
                 "contact": "Contacter",
+                "support": "Aide et assistance",
                 "login": "Connectez-vous",
                 "register": "S'inscrire"
             },

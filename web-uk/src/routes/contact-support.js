@@ -16,6 +16,10 @@ const REPORT_PROBLEM_PATH = '/report-a-problem';
 const LOGIN_AUTH_REQUIRED_PATH = '/login?status=auth-required';
 
 const SUPPORT_IMPACTS = ['blocked', 'major', 'minor', 'cosmetic'];
+// The four kinds of "Help & support" request — the same list as the React form
+// and SupportReportController::REQUEST_TYPES. Only 'broken' asks how much the
+// problem affects the member; the API ignores impact for the other three.
+const SUPPORT_REQUEST_TYPES = ['broken', 'how_to', 'account', 'suggestion'];
 
 function asString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -83,6 +87,7 @@ function contactStatusMessages(t) {
 
 function supportValidationErrors(t) {
   return {
+    request_type: t('report_problem.errors.type'),
     summary: t('report_problem.errors.summary'),
     description: t('report_problem.errors.description'),
     impact: t('report_problem.errors.impact')
@@ -168,6 +173,21 @@ router.post('/contact', asyncRoute(async (req, res) => {
   return redirectTo(res, `${CONTACT_PATH}?status=contact-sent`);
 }));
 
+// The session normally carries exactly the fields that failed. If it has been
+// lost, fall back to the fields that are always required: impact is required
+// only for "Something isn't working", so it is not assumed.
+function invalidStatusErrors(t, storedErrors) {
+  if (storedErrors && Object.keys(storedErrors).length > 0) {
+    return storedErrors;
+  }
+  const generic = supportValidationErrors(t);
+  return {
+    request_type: generic.request_type,
+    summary: generic.summary,
+    description: generic.description
+  };
+}
+
 router.get('/report-a-problem', (req, res) => {
   const pageUrl = validateReturnUrl(req.query.return, '/');
   if (!req.signedCookies.token) {
@@ -182,11 +202,12 @@ router.get('/report-a-problem', (req, res) => {
     activeNav: '',
     pageUrl,
     impacts: SUPPORT_IMPACTS,
+    requestTypes: SUPPORT_REQUEST_TYPES,
     status,
     reference: asString(req.query.ref),
     values: stored.values || {},
     errors: status === 'invalid'
-      ? { ...supportValidationErrors(res.locals.t), ...(stored.errors || {}) }
+      ? invalidStatusErrors(res.locals.t, stored.errors)
       : (stored.errors || {})
   });
 });
@@ -199,20 +220,25 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
 
   const pageUrl = validateReturnUrl(req.body.page_url, '/');
   const values = {
+    request_type: asString(req.body.request_type),
     summary: asString(req.body.summary),
     description: asString(req.body.description),
     impact: asString(req.body.impact)
   };
+  const isBroken = values.request_type === 'broken';
 
   const errors = {};
   const validationErrors = supportValidationErrors(res.locals.t);
+  if (!SUPPORT_REQUEST_TYPES.includes(values.request_type)) {
+    errors.request_type = validationErrors.request_type;
+  }
   if (values.summary.length < 3 || values.summary.length > 180) {
     errors.summary = validationErrors.summary;
   }
   if (values.description.length < 10 || values.description.length > 5000) {
     errors.description = validationErrors.description;
   }
-  if (!SUPPORT_IMPACTS.includes(values.impact)) {
+  if (isBroken && !SUPPORT_IMPACTS.includes(values.impact)) {
     errors.impact = validationErrors.impact;
   }
 
@@ -228,7 +254,11 @@ router.post('/report-a-problem', asyncRoute(async (req, res) => {
 
   try {
     const result = await submitSupportReport(token, {
-      ...values,
+      request_type: values.request_type,
+      summary: values.summary,
+      description: values.description,
+      // Only "Something isn't working" carries an impact (the API excludes it otherwise).
+      ...(isBroken ? { impact: values.impact } : {}),
       source: 'accessible',
       page_url: pageUrl,
       route: '/report-a-problem'

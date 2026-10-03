@@ -1039,20 +1039,39 @@
                 "policy_link": "Przeczytaj naszą pełną politykę plików cookie"
             },
             "report_problem": {
-                "title": "Zgłoś problem z tą stroną",
-                "caption": "Pomóż nam ulepszyć :service",
-                "intro": "Użyj tego formularza, aby poinformować nas o problemie, który znalazłeś na tej stronie. Nie podawaj danych osobowych ani finansowych, takich jak hasło.",
-                "page_label": "Zgłaszana strona",
-                "summary_label": "Na czym polega problem?",
-                "summary_hint": "Podaj krótkie podsumowanie, na przykład: Przycisk Akceptuj nic nie robi.",
-                "description_label": "Opisz, co się stało",
-                "description_hint": "Powiedz nam, co próbowałeś zrobić, czego się spodziewałeś i co poszło nie tak.",
+                "title": "Pomoc i wsparcie",
+                "caption": "Pomoc dotycząca :service",
+                "intro": "Napisz, czego potrzebujesz, a Twoja wiadomość trafi bezpośrednio do zespołu wsparcia. Nie podawaj hasła ani żadnych danych finansowych.",
+                "page_label": "Strona, z której przechodzisz",
+                "type_legend": "W czym potrzebujesz pomocy?",
+                "types": {
+                    "broken": {
+                        "label": "Coś nie działa",
+                        "hint": "Strona, przycisk lub funkcja nie działa tak, jak powinna."
+                    },
+                    "how_to": {
+                        "label": "Jak mogę…?",
+                        "hint": "Pytanie o korzystanie z serwisu."
+                    },
+                    "account": {
+                        "label": "Problem z kontem lub logowaniem",
+                        "hint": "Kłopot z zalogowaniem się lub problem z kontem. Nigdy nie podawaj hasła."
+                    },
+                    "suggestion": {
+                        "label": "Zaproponuj ulepszenie",
+                        "hint": "Pomysł, dzięki któremu serwis będzie lepszy."
+                    }
+                },
+                "summary_label": "Krótki opis",
+                "summary_hint": "Na przykład: „Przycisk Akceptuj nic nie robi” albo „Jak dołączyć do grupy?”.",
+                "description_label": "Napisz nam trochę więcej",
+                "description_hint": "Napisz, co próbowałeś zrobić. Jeśli coś poszło nie tak, napisz, czego się spodziewałeś i co stało się zamiast tego.",
                 "impact_legend": "W jakim stopniu Cię to dotknęło?",
-                "submit": "Wyślij zgłoszenie",
-                "success_title": "Dziękujemy, Twoje zgłoszenie zostało wysłane",
-                "success_body": "Twój numer referencyjny to :ref. Nasz zespół go przejrzy.",
+                "submit": "Wyślij",
+                "success_title": "Dziękujemy. Twoja wiadomość została wysłana.",
+                "success_body": "Twój numer referencyjny to :ref. Wyślemy Ci też potwierdzenie e-mailem.",
                 "back": "Wróć do strony",
-                "footer_link": "Zgłoś problem z tą stroną",
+                "footer_link": "Pomoc i wsparcie",
                 "contact_caption": "Zgłoś problem",
                 "contact_prefill": "Znalazłem problem na tej stronie: :url",
                 "impacts": {
@@ -1062,8 +1081,9 @@
                     "cosmetic": "Wyglądało to źle, ale mogłem kontynuować"
                 },
                 "errors": {
-                    "summary": "Wprowadź krótkie podsumowanie problemu (od 3 do 180 znaków)",
-                    "description": "Opisz, co się stało (od 10 do 5000 znaków)",
+                    "type": "Wybierz, w czym potrzebujesz pomocy",
+                    "summary": "Wpisz krótki opis (od 3 do 180 znaków)",
+                    "description": "Napisz więcej (od 10 do 5000 znaków)",
                     "impact": "Wybierz, w jakim stopniu Cię to dotknęło"
                 }
             },
@@ -1104,6 +1124,7 @@
                 "jobs": "Oferty pracy",
                 "profile": "Mój profil",
                 "contact": "Kontakt",
+                "support": "Pomoc i wsparcie",
                 "login": "Zaloguj się",
                 "register": "Zarejestruj się"
             },

@@ -812,7 +812,8 @@ describe('shared accessible frontend shell', () => {
     expect(mountedLogin.text).toContain('class="govuk-service-navigation"');
     expect(mountedLogin.text).toContain('aria-current="page"><strong class="govuk-service-navigation__active-fallback">Sign in</strong>');
     expect(mountedLogin.text).toContain('class="govuk-footer__navigation"');
-    expect(mountedLogin.text).toContain('Report a problem with this page');
+    expect(mountedLogin.text).toContain('Help &amp; support');
+    expect(mountedLogin.text).toContain('href="/acme/accessible/report-a-problem?return=');
     expect(mountedLogin.text).toContain('href="/acme/accessible/legal/cookies"');
     expect(response.text).toContain('Beta');
     expect(response.text).toContain('Give feedback');
@@ -827,7 +828,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/help"');
     expect(response.text).toContain('href="/contact"');
     expect(response.text).not.toContain('>Platform<');
-    expect(response.text).not.toContain('Report a problem with this page');
+    expect(response.text).not.toContain('report-a-problem');
     expect(response.text).toContain('Supporting information and attribution');
     // 🔴 These two lines asserted the footer's old licence sentence and
     // 'View the source code on GitHub' link until 2026-09-18, when the bottom of
@@ -6666,7 +6667,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers.location).toBe('/acme/accessible/contact?problem_url=%2Fexplore');
   });
 
-  it('renders the signed-in Laravel-style report-problem form', async () => {
+  it('renders the signed-in Help & support form with the four request types', async () => {
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
 
@@ -6675,22 +6676,36 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', [`token=${encodeURIComponent(signedToken)}`]);
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('Report a problem with this page');
-    expect(response.text).toContain('Use this form to tell us about a problem you found on this page. Do not include personal or financial information, like your password.');
-    expect(response.text).toContain('Page you are reporting');
-    expect(response.text).toContain('What is the problem?');
-    expect(response.text).toContain('Describe what happened');
+    expect(response.text).toContain('<h1 class="govuk-heading-xl">Help &amp; support</h1>');
+    expect(response.text).toContain('Tell us what you need and your message will go straight to the support team. Do not include your password or any financial information.');
+    expect(response.text).toContain('Page you came from');
+    expect(response.text).toContain('What do you need help with?');
+    for (const label of ['Something isn&#39;t working', 'How do I…?', 'Account or sign-in problem', 'Suggest an improvement']) {
+      expect(response.text).toContain(label);
+    }
+    expect(response.text).toContain('Never include your password.');
+    // govukRadios ids: the first item takes the bare name, so the error summary links to it.
+    expect(response.text).toContain('id="request_type" name="request_type" type="radio" value="broken"');
+    expect(response.text).toContain('id="request_type-2" name="request_type" type="radio" value="how_to"');
+    expect(response.text).toContain('id="request_type-4" name="request_type" type="radio" value="suggestion"');
+    // Impact is a conditionally revealed question under "Something isn't working" only,
+    // hidden (with JavaScript) until that is chosen.
+    expect(response.text).toContain('data-aria-controls="conditional-request_type-impact"');
+    expect(response.text).toContain('class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-request_type-impact"');
+    expect(response.text.match(/data-aria-controls=/g)).toHaveLength(1);
     expect(response.text).toContain('How much did this affect you?');
-    expect(response.text).toContain('I could not complete what I was doing');
+    expect(response.text).toContain('id="impact" name="impact" type="radio" value="blocked"');
+    expect(response.text).toContain('Short summary');
+    expect(response.text).toContain('Tell us a bit more');
     expect(response.text).toContain('method="post" action="/report-a-problem"');
     expect(response.text).toContain('name="page_url" value="/explore"');
     expect(response.text).toContain('id="summary" name="summary"');
     expect(response.text).toContain('id="description" name="description"');
-    expect(response.text).toContain('id="impact-blocked" name="impact" type="radio" value="blocked"');
+    expect(response.text).toContain('>Send</button>');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
-  it('submits signed-in report-problem forms to the Laravel support report API contract', async () => {
+  it('submits a "Something isn\'t working" request with its impact to the Laravel support report API contract', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -6708,6 +6723,7 @@ describe('shared accessible frontend shell', () => {
       .send({
         _csrf: csrfMatch[1],
         page_url: '/explore',
+        request_type: 'broken',
         summary: 'Broken page',
         description: 'The accessible route returned an unexpected blank area.',
         impact: 'major'
@@ -6716,6 +6732,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/report-a-problem?return=%2Fexplore&status=sent&ref=NXR-260706-ABC123');
     expect(api.submitSupportReport).toHaveBeenCalledWith('test-token', {
+      request_type: 'broken',
       summary: 'Broken page',
       description: 'The accessible route returned an unexpected blank area.',
       impact: 'major',
@@ -6725,7 +6742,7 @@ describe('shared accessible frontend shell', () => {
     });
   });
 
-  it('validates signed-in report-problem forms before calling the Laravel API', async () => {
+  it('sends a question without asking for, or forwarding, an impact', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -6743,6 +6760,44 @@ describe('shared accessible frontend shell', () => {
       .send({
         _csrf: csrfMatch[1],
         page_url: '/explore',
+        request_type: 'how_to',
+        summary: 'Joining a group',
+        description: 'Where do I ask to join a group?',
+        // A stale value left in the hidden conditional question must not be sent.
+        impact: 'blocked'
+      });
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/report-a-problem?return=%2Fexplore&status=sent&ref=NXR-260706-ABC123');
+    expect(api.submitSupportReport).toHaveBeenCalledWith('test-token', {
+      request_type: 'how_to',
+      summary: 'Joining a group',
+      description: 'Where do I ask to join a group?',
+      source: 'accessible',
+      page_url: '/explore',
+      route: '/report-a-problem'
+    });
+  });
+
+  it('validates signed-in Help & support forms before calling the Laravel API', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+
+    const first = await agent
+      .get('/report-a-problem?return=/explore')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+
+    const response = await agent
+      .post('/report-a-problem')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({
+        _csrf: csrfMatch[1],
+        page_url: '/explore',
+        request_type: 'broken',
         summary: 'No',
         description: 'Short',
         impact: 'unknown'
@@ -6756,12 +6811,50 @@ describe('shared accessible frontend shell', () => {
       .get('/report-a-problem?return=/explore&status=invalid')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
     expect(follow.text).toContain('There is a problem');
-    expect(follow.text).toContain('Enter a short summary of the problem (3 to 180 characters)');
-    expect(follow.text).toContain('Describe what happened (10 to 5000 characters)');
+    expect(follow.text).toContain('Enter a short summary (3 to 180 characters)');
+    expect(follow.text).toContain('Tell us more (10 to 5000 characters)');
     expect(follow.text).toContain('Select how much this affected you');
+    expect(follow.text).not.toContain('Select what you need help with');
+    // The chosen type survives, so the impact question stays open.
+    expect(follow.text).toContain('value="broken" aria-describedby="request_type-item-hint" data-aria-controls="conditional-request_type-impact" checked');
+    expect(follow.text).toContain('class="govuk-radios__conditional" id="conditional-request_type-impact"');
+    expect(follow.text).toContain('<a href="#impact">');
   });
 
-  it('localizes the signed report-problem validation round trip from Laravel catalogs', async () => {
+  it('asks for a request type, and only asks for impact for "Something isn\'t working"', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+
+    const first = await agent
+      .get('/report-a-problem?return=/explore')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+
+    const noType = await agent
+      .post('/report-a-problem')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], page_url: '/explore', summary: 'A real summary', description: 'A description long enough.' });
+    expect(noType.headers.location).toBe('/report-a-problem?return=%2Fexplore&status=invalid');
+    const noTypeFollow = await agent
+      .get(noType.headers.location)
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(noTypeFollow.text).toContain('<a href="#request_type">Select what you need help with</a>');
+    expect(noTypeFollow.text).not.toContain('Select how much this affected you');
+
+    const suggestion = await agent
+      .post('/report-a-problem')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrfMatch[1], page_url: '/explore', request_type: 'suggestion', summary: 'Dark map tiles', description: 'The map is very bright at night.' });
+    expect(suggestion.headers.location).toBe('/report-a-problem?return=%2Fexplore&status=sent&ref=NXR-260706-ABC123');
+    expect(api.submitSupportReport).toHaveBeenCalledTimes(1);
+    expect(api.submitSupportReport.mock.calls[0][1]).not.toHaveProperty('impact');
+  });
+
+  it('localizes the signed Help & support validation round trip from Laravel catalogs', async () => {
     const cookieSignature = require('cookie-signature');
     const { translate } = require('../src/lib/localization');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -6774,6 +6867,8 @@ describe('shared accessible frontend shell', () => {
     expect(first.status).toBe(200);
     expect(first.headers['content-language']).toBe('ar');
     expect(first.text).toContain(translate('ar', 'report_problem.caption', { service: 'Project NEXUS Accessible' }));
+    expect(first.text).toContain(translate('ar', 'report_problem.type_legend'));
+    expect(first.text).toContain(translate('ar', 'report_problem.types.account.label'));
     expect(first.text).toContain(translate('ar', 'report_problem.impacts.blocked'));
     expect(first.text).toContain(translate('ar', 'report_problem.submit'));
 
@@ -6781,7 +6876,7 @@ describe('shared accessible frontend shell', () => {
       .post('/report-a-problem')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], page_url: '/explore', summary: 'No', description: 'Short', impact: 'unknown' });
+      .send({ _csrf: csrfMatch[1], page_url: '/explore', request_type: 'broken', summary: 'No', description: 'Short', impact: 'unknown' });
     expect(response.status).toBe(302);
     const follow = await agent
       .get(response.headers.location)
