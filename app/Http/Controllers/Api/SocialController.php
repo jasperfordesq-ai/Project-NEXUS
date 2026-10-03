@@ -898,8 +898,10 @@ class SocialController extends BaseApiController
         if (! $success) {
             $poll = $this->pollService->getById((int) $id, $userId);
             if ((int) ($poll['user_vote_option_id'] ?? 0) !== $optionId) {
-                $errors = $this->pollService->getErrors();
-                return $this->respondWithErrors($errors, 400);
+                // Same answer as PollsController::vote(). This was a 400 with an
+                // empty error list: PollService::vote() returns false for an
+                // existing vote and never records an error to report.
+                return $this->respondWithError('RESOURCE_CONFLICT', __('api.poll_already_voted'), null, 409);
             }
             $poll['idempotent_replay'] = true;
             return $this->respondWithData($poll);

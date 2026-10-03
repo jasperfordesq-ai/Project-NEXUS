@@ -19,6 +19,7 @@
   "votes_one": "票",
   "voted": "あなたは投票しました",
   "results": "結果",
+  "results_hidden_until_close": "投票終了時に結果を公開",
   "total_votes": "{{count}}票",
   "total_votes_one": "{{count}}票",
   "status": {
@@ -55,6 +56,7 @@
     "created": "投票が正常に作成されました！",
     "create_failed": "投票の作成に失敗しました。もう一度お試しください。",
     "voted": "投票が記録されました！",
+    "already_voted": "この投票にはすでに投票済みです。",
     "vote_failed": "投票の記録に失敗しました。もう一度お試しください。",
     "deleted": "投票が削除されました。",
     "delete_failed": "投票の削除に失敗しました。もう一度お試しください。",

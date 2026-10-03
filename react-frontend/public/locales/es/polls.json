@@ -19,6 +19,7 @@
   "votes_one": "voto",
   "voted": "Votaste",
   "results": "Resultados",
+  "results_hidden_until_close": "Resultados revelados cuando cierre la encuesta",
   "total_votes": "{{count}} votos",
   "total_votes_one": "{{count}} voto",
   "status": {
@@ -55,6 +56,7 @@
     "created": "¡Encuesta creada con éxito!",
     "create_failed": "Error al crear la encuesta. Por favor intenta de nuevo.",
     "voted": "¡Voto registrado!",
+    "already_voted": "Ya has votado en esta encuesta.",
     "vote_failed": "Error al registrar el voto. Por favor intenta de nuevo.",
     "deleted": "Encuesta eliminada.",
     "delete_failed": "Error al eliminar la encuesta. Por favor intenta de nuevo.",

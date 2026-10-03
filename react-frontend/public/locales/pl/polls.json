@@ -19,6 +19,7 @@
   "votes_one": "głos",
   "voted": "Oddałeś głos",
   "results": "Wyniki",
+  "results_hidden_until_close": "Wyniki ujawnione po zamknięciu ankiety",
   "total_votes": "{{count}} głosów",
   "total_votes_one": "{{count}} głos",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Ankieta została pomyślnie utworzona!",
     "create_failed": "Nie udało się utworzyć ankiety. Proszę spróbować ponownie.",
     "voted": "Głos został zarejestrowany!",
+    "already_voted": "Twój głos w tej ankiecie został już oddany.",
     "vote_failed": "Nie udało się zarejestrować głosu. Proszę spróbować ponownie.",
     "deleted": "Ankieta została usunięta.",
     "delete_failed": "Nie udało się usunąć ankiety. Proszę spróbować ponownie.",

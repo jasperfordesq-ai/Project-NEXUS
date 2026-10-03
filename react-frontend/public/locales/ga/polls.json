@@ -19,6 +19,7 @@
   "votes_one": "vóta",
   "voted": "Vótáil tú",
   "results": "Torthaí",
+  "results_hidden_until_close": "Nochtfar na torthaí nuair a dhúnfar an phobalbhreith",
   "total_votes": "{{count}} vóta",
   "total_votes_one": "{{count}} vóta",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Pobalbhreith cruthaithe go rathúil!",
     "create_failed": "Theip ar chruthú na pobalbhreithe. Bain triail eile as le do thoil.",
     "voted": "Vóta taifeadta!",
+    "already_voted": "Vótáil tú sa phobalbhreith seo cheana féin.",
     "vote_failed": "Theip ar thaifeadadh an vóta. Bain triail eile as le do thoil.",
     "deleted": "Pobalbhreith scriosta.",
     "delete_failed": "Theip ar scriosadh na pobalbhreithe. Bain triail eile as le do thoil.",

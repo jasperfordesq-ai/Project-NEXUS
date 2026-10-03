@@ -403,6 +403,29 @@ class PollsControllerTest extends TestCase
         $response->assertJsonPath('errors.0.code', 'RESOURCE_CONFLICT');
     }
 
+    /**
+     * The feed route answered a changed choice with 400 and an EMPTY error
+     * list (PollService::vote() never sets errors), so the member saw only the
+     * generic "failed to record vote". It now says what the polls route says.
+     */
+    public function test_feed_vote_as_a_different_choice_says_already_voted(): void
+    {
+        $this->enablePollsFeature();
+        $this->authenticatedUser();
+        [$pollId, $optionId] = $this->createPollWithOptions();
+        $otherOptionId = (int) DB::table('poll_options')
+            ->where('poll_id', $pollId)
+            ->where('id', '!=', $optionId)
+            ->value('id');
+
+        $this->apiPost("/v2/feed/polls/{$pollId}/vote", ['option_id' => $optionId])->assertOk();
+        $second = $this->apiPost("/v2/feed/polls/{$pollId}/vote", ['option_id' => $otherOptionId]);
+
+        $second->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'RESOURCE_CONFLICT')
+            ->assertJsonPath('errors.0.message', __('api.poll_already_voted'));
+    }
+
     public function test_feed_vote_replay_returns_the_committed_choice(): void
     {
         $this->enablePollsFeature();

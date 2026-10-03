@@ -19,6 +19,7 @@
   "votes_one": "voto",
   "voted": "Votou",
   "results": "Resultados",
+  "results_hidden_until_close": "Resultados revelados quando a sondagem fechar",
   "total_votes": "{{count}} votos",
   "total_votes_one": "{{count}} voto",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Sondagem criada com sucesso!",
     "create_failed": "Falha ao criar sondagem. Tente novamente.",
     "voted": "Voto registrado!",
+    "already_voted": "Já votou nesta sondagem.",
     "vote_failed": "Falha ao registrar voto. Tente novamente.",
     "deleted": "Sondagem eliminada.",
     "delete_failed": "Falha ao eliminar sondagem. Tente novamente.",

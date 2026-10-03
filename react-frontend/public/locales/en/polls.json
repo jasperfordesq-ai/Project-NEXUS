@@ -19,6 +19,7 @@
   "votes_one": "vote",
   "voted": "You voted",
   "results": "Results",
+  "results_hidden_until_close": "Results revealed when poll closes",
   "total_votes": "{{count}} votes",
   "total_votes_one": "{{count}} vote",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Poll created successfully!",
     "create_failed": "Failed to create poll. Please try again.",
     "voted": "Vote recorded!",
+    "already_voted": "You've already voted on this poll.",
     "vote_failed": "Failed to record vote. Please try again.",
     "deleted": "Poll deleted.",
     "delete_failed": "Failed to delete poll. Please try again.",

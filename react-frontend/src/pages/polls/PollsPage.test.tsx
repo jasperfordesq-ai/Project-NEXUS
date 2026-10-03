@@ -13,11 +13,12 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 const mockApiGet = vi.fn();
+const mockApiPost = vi.fn();
 
 vi.mock('@/lib/api', () => ({
   api: {
     get: (...args: unknown[]) => mockApiGet(...args),
-    post: vi.fn().mockResolvedValue({ success: true }),
+    post: (...args: unknown[]) => mockApiPost(...args),
     put: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),
   },
@@ -94,6 +95,7 @@ import { PollsPage } from './PollsPage';
 describe('PollsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockApiPost.mockResolvedValue({ success: true });
   });
 
   it('renders without crashing', () => {
@@ -194,6 +196,69 @@ describe('PollsPage', () => {
 
     expect(shown.textContent).toBe(description);
     expect(shown.className).toContain('whitespace-pre-wrap');
+  });
+
+  describe('a member who has already voted', () => {
+    // Open poll seen by a member who is not its creator: the server hides the
+    // counts (ballot integrity), so every percentage is null.
+    const openPoll = (overrides: Record<string, unknown> = {}) => ({
+      id: 4,
+      question: 'Is this platform awesome?',
+      description: null,
+      expires_at: null,
+      created_at: '2025-12-24T20:00:46Z',
+      total_votes: 0,
+      status: 'open',
+      has_voted: false,
+      voted_option_id: null,
+      options: [
+        { id: 7, label: 'Yes', vote_count: null, percentage: null },
+        { id: 8, label: 'No', vote_count: null, percentage: null },
+      ],
+      creator: { id: 14, name: 'Poll Creator', avatar_url: null },
+      ...overrides,
+    });
+    const serve = (poll: Record<string, unknown>) => mockApiGet.mockImplementation((url: string) => Promise.resolve(
+      url.startsWith('/v2/polls?') ? { success: true, data: [poll] } : { success: true, data: [] },
+    ));
+
+    // Regression: since April the card fell back to vote buttons whenever the
+    // counts were hidden, so a member who had voted was invited to vote again.
+    it('sees their choice and no vote buttons while the results are hidden', async () => {
+      serve(openPoll({ has_voted: true, voted_option_id: 7 }));
+      render(<PollsPage />);
+
+      expect(await screen.findByText('Results revealed when poll closes')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Vote for Yes/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Vote for No/ })).not.toBeInTheDocument();
+      expect(screen.getByText('Yes').closest('[data-voted-option]')).not.toBeNull();
+    });
+
+    // Since 12 Sept a repeat of the same choice is answered 200 with
+    // idempotent_replay; the page then said "Vote recorded!".
+    it('is told they have already voted when the server reports a repeat', async () => {
+      const user = userEvent.setup();
+      serve(openPoll());
+      mockApiPost.mockResolvedValue({ success: true, data: { ...openPoll({ has_voted: true, voted_option_id: 7 }), idempotent_replay: true } });
+      render(<PollsPage />);
+
+      await user.click(await screen.findByRole('button', { name: /Vote for Yes/ }));
+
+      await waitFor(() => expect(stableToast.info).toHaveBeenCalledWith("You've already voted on this poll."));
+      expect(stableToast.success).not.toHaveBeenCalled();
+    });
+
+    it('is told they have already voted when a different choice is refused', async () => {
+      const user = userEvent.setup();
+      serve(openPoll());
+      mockApiPost.mockResolvedValue({ success: false, code: 'RESOURCE_CONFLICT', error: 'Already voted on this poll' });
+      render(<PollsPage />);
+
+      await user.click(await screen.findByRole('button', { name: /Vote for No/ }));
+
+      await waitFor(() => expect(stableToast.info).toHaveBeenCalledWith("You've already voted on this poll."));
+      expect(stableToast.error).not.toHaveBeenCalled();
+    });
   });
 
   it('keeps an option input mounted and focused while typing', async () => {

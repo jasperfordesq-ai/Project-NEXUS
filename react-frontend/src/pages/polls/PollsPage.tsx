@@ -139,6 +139,9 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
   const hasVoted = poll.has_voted;
   const resultsVisible = poll.options.some((o) => o.percentage !== null);
   const showResults = (hasVoted || !isOpen) && resultsVisible;
+  // Open poll, member has voted, counts withheld until it closes: show their
+  // choice rather than falling back to vote buttons (which invited a re-vote).
+  const votedWhileHidden = hasVoted && !showResults && poll.poll_type !== 'ranked';
 
   const timeRemaining = poll.expires_at ? getTimeRemaining(poll.expires_at) : null;
   const isExpired = poll.expires_at ? new Date(poll.expires_at) <= new Date() : false;
@@ -296,6 +299,16 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
                       aria-label={`${option.label}: ${option.percentage !== null ? `${option.percentage}%` : '—'}`}
                     />
                   </div>
+                ) : votedWhileHidden ? (
+                  /* Voted, results withheld: their choice, no buttons */
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${isVotedOption ? 'font-semibold text-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'text-[var(--text-muted)]'}`}
+                    {...(isVotedOption ? { 'data-voted-option': '' } : {})}
+                  >
+                    {isVotedOption && <Check className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
+                    <span>{option.label}</span>
+                    {isVotedOption && <span className="sr-only">{t('voted')}</span>}
+                  </div>
                 ) : poll.poll_type === 'ranked' ? (
                   /* P1 - Ranked poll: show label only (voting done in modal) */
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface-hover)]/50">
@@ -318,6 +331,10 @@ const PollCard = memo(function PollCard({ poll, currentUserId, onVote, onDelete,
             );
           })}
         </div>
+
+        {votedWhileHidden && (
+          <p className="text-xs text-[var(--text-muted)] mb-3">{t('results_hidden_until_close')}</p>
+        )}
 
         {/* P1 - Ranked poll vote button */}
         {poll.poll_type === 'ranked' && isOpen && !hasVoted && (
@@ -394,6 +411,8 @@ export function PollsPage() {
 
   /* ── State ── */
   const [polls, setPolls] = useState<Poll[]>([]);
+  const pollsRef = useRef<Poll[]>(polls);
+  pollsRef.current = polls;
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -627,6 +646,13 @@ export function PollsPage() {
   };
 
   /* ── Vote ── */
+  // A 409 means "already voted" on an open poll and "closed" on a closed one.
+  const pollHasClosed = useCallback((pollId: number): boolean => {
+    const poll = pollsRef.current.find((p) => p.id === pollId);
+    if (!poll) return false;
+    return poll.status === 'closed' || (poll.expires_at !== null && new Date(poll.expires_at) <= new Date());
+  }, []);
+
   const handleVote = useCallback(async (pollId: number, optionId: number) => {
     // Optimistic update
     setPolls((prev) =>
@@ -662,9 +688,17 @@ export function PollsPage() {
     );
 
     try {
-      const response = await api.post(`/v2/polls/${pollId}/vote`, { option_id: optionId });
-      if (response.success) {
+      const response = await api.post<{ idempotent_replay?: boolean }>(`/v2/polls/${pollId}/vote`, { option_id: optionId });
+      if (response.success && response.data?.idempotent_replay) {
+        // The server already had this vote (a repeat is answered 200, not 409).
+        loadPolls();
+        toastRef.current.info(tRef.current('toast.already_voted'));
+      } else if (response.success) {
         toastRef.current.success(tRef.current('toast.voted'));
+      } else if (response.code === 'RESOURCE_CONFLICT' && !pollHasClosed(pollId)) {
+        // 409 on an open poll = a different choice is already recorded.
+        loadPolls();
+        toastRef.current.info(tRef.current('toast.already_voted'));
       } else {
         // Revert on failure
         loadPolls();
@@ -675,7 +709,7 @@ export function PollsPage() {
       loadPolls();
       toastRef.current.error(tRef.current('toast.vote_failed'));
     }
-  }, [loadPolls]);
+  }, [loadPolls, pollHasClosed]);
 
   /* ── Delete ── */
   const openDeleteModal = (poll: Poll) => {

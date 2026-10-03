@@ -875,9 +875,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/SocialController.php:965:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Http/Controllers/Api/SocialController.php:967:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Http/Controllers/Api/SocialController.php",
-            "line": 965,
+            "line": 967,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,

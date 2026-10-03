@@ -19,6 +19,7 @@
   "votes_one": "stem",
   "voted": "Je hebt gestemd",
   "results": "Resultaten",
+  "results_hidden_until_close": "Resultaten zichtbaar bij sluiting peiling",
   "total_votes": "{{count}} stemmen",
   "total_votes_one": "{{count}} stem",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Peiling succesvol aangemaakt!",
     "create_failed": "Peiling kon niet worden aangemaakt. Probeer het opnieuw.",
     "voted": "Stem geregistreerd!",
+    "already_voted": "Je hebt al gestemd op deze peiling.",
     "vote_failed": "Stem kon niet worden geregistreerd. Probeer het opnieuw.",
     "deleted": "Peiling verwijderd.",
     "delete_failed": "Peiling kon niet worden verwijderd. Probeer het opnieuw.",

@@ -19,6 +19,7 @@
   "votes_one": "Stimme",
   "voted": "Sie haben abgestimmt",
   "results": "Ergebnisse",
+  "results_hidden_until_close": "Ergebnisse erscheinen nach Ablauf der Umfrage",
   "total_votes": "{{count}} Stimmen",
   "total_votes_one": "{{count}} Stimme",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Umfrage erfolgreich erstellt!",
     "create_failed": "Umfrage konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     "voted": "Stimme registriert!",
+    "already_voted": "Sie haben bei dieser Umfrage bereits abgestimmt.",
     "vote_failed": "Stimme konnte nicht registriert werden. Bitte versuchen Sie es erneut.",
     "deleted": "Umfrage gelöscht.",
     "delete_failed": "Umfrage konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",

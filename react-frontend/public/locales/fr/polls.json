@@ -19,6 +19,7 @@
   "votes_one": "voter",
   "voted": "Vous avez vote",
   "results": "Resultats",
+  "results_hidden_until_close": "Résultats révélés à la clôture du sondage",
   "total_votes": "{{count}} votes",
   "total_votes_one": "{{count}} voter",
   "status": {
@@ -55,6 +56,7 @@
     "created": "Sondage cree avec succes !",
     "create_failed": "Echec de la creation du sondage. Veuillez reessayer.",
     "voted": "Vote enregistre !",
+    "already_voted": "Vous avez déjà voté dans ce sondage.",
     "vote_failed": "Echec de l'enregistrement du vote. Veuillez reessayer.",
     "deleted": "Sondage supprime.",
     "delete_failed": "Echec de la suppression du sondage. Veuillez reessayer.",
