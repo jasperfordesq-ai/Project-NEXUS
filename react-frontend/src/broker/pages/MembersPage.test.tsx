@@ -4,12 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within, act } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Hoisted mocks ────────────────────────────────────────────────────────────
-const { mockAdminUsers, mockAdminCrm, mockConfirm, mockNavigate, capturedColumns } = vi.hoisted(() => ({
+const { mockAdminUsers, mockAdminCrm, mockConfirm, mockNavigate, capturedColumns, mockOpenMember, csvRun, autoRefresh, capturedTable } = vi.hoisted(() => ({
+  mockOpenMember: vi.fn(),
+  csvRun: vi.fn(),
+  autoRefresh: { cb: null as null | (() => void) },
+  capturedTable: { current: {} as Record<string, unknown> },
   mockAdminUsers: {
     list: vi.fn(),
     approve: vi.fn(),
@@ -36,6 +40,14 @@ vi.mock('@/admin/api/adminApi', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+vi.mock('@/broker/BrokerMemberWindow', () => ({
+  useMemberWindow: () => ({ openId: null, open: mockOpenMember, close: vi.fn() }),
+  MemberName: ({ userId, name }: { userId: number; name: string }) => (
+    <button type="button" onClick={() => mockOpenMember(userId)}>{name}</button>
+  ),
+}));
+vi.mock('@/broker/useCsvExport', () => ({ useCsvExport: () => ({ exporting: false, run: csvRun }) }));
+vi.mock('@/broker/useBrokerAutoRefresh', () => ({ useBrokerAutoRefresh: (cb: () => void) => { autoRefresh.cb = cb; } }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // Keep the real UI kit (Dropdown, Modal, Tooltip…) but make the confirm dialog
@@ -76,6 +88,7 @@ vi.mock('@/admin/components', () => ({
     onSearch,
     onSelectionChange,
     emptyContent,
+    ...rest
   }: {
     data: { id: number; name: string; email: string; status: string }[];
     columns: StubColumn[];
@@ -83,8 +96,10 @@ vi.mock('@/admin/components', () => ({
     onSearch?: (q: string) => void;
     onSelectionChange?: (keys: Set<string>) => void;
     emptyContent?: React.ReactNode;
+    [key: string]: unknown;
   }) => {
     capturedColumns.current = columns;
+    capturedTable.current = rest;
     return isLoading ? (
       <div role="status" aria-busy="true" aria-label="loading" />
     ) : (
@@ -551,13 +566,86 @@ describe('MembersPage (broker)', () => {
 
   // ─── Columns ───────────────────────────────────────────────────────────────
 
-  it('marks no column as sortable (the shared table only sorts the visible page)', async () => {
+  it('sorts on the server: sortable columns are the endpoint whitelist and a header click re-fetches ordered', async () => {
     mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
     const MembersPage = (await import('./MembersPage')).default;
     render(<MembersPage />);
 
     await waitFor(() => screen.getByTestId('member-row-1'));
-    expect(capturedColumns.current.length).toBeGreaterThan(0);
-    expect(capturedColumns.current.filter((c) => c.sortable)).toEqual([]);
+    const sortable = capturedColumns.current.filter((c) => c.sortable).map((c) => c.key).sort();
+    expect(sortable).toEqual(['balance', 'created_at', 'name', 'role', 'status']);
+    // Default order: newest first, sent to the endpoint.
+    expect(mockAdminUsers.list).toHaveBeenCalledWith(expect.objectContaining({ limit: TABLE_LIMIT, sort: 'created_at', order: 'desc' }));
+
+    const onSortChange = capturedTable.current.onSortChange as (k: string, d: 'asc' | 'desc') => void;
+    act(() => onSortChange('balance', 'asc'));
+    await waitFor(() =>
+      expect(mockAdminUsers.list).toHaveBeenCalledWith(expect.objectContaining({ limit: TABLE_LIMIT, sort: 'balance', order: 'asc', page: 1 })),
+    );
+    expect(capturedTable.current.sortDescriptor).toEqual({ column: 'balance', direction: 'asc' });
+  });
+
+  it('a row click, the name, and "View details" all open the panel-wide member window', async () => {
+    const user = userEvent.setup();
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    (capturedTable.current.onRowClick as (row: { id: number }) => void)({ id: 1 });
+    expect(mockOpenMember).toHaveBeenCalledWith(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Alice Member' }));
+    expect(mockOpenMember).toHaveBeenCalledTimes(2);
+
+    await chooseRowAction(user, 'View details');
+    expect(mockOpenMember).toHaveBeenCalledTimes(3);
+    // No local copy of the member window is rendered by the page any more.
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('passes the URL search term into the table box so a deep link shows what it filters by', async () => {
+    window.history.replaceState({}, '', '/?search=alice');
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    expect(capturedTable.current.searchValue).toBe('alice');
+  });
+
+  it('Export CSV pages the same list endpoint with the current filters at 100 rows a page', async () => {
+    window.history.replaceState({}, '', '/?status=active&role=broker');
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()], 1));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+    await waitFor(() => screen.getByTestId('member-row-1'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(csvRun).toHaveBeenCalledTimes(1);
+    const request = csvRun.mock.calls[0]?.[0] as { filename: string; columns: { label: string }[]; fetchPage: (p: number) => Promise<{ rows: unknown[]; hasMore: boolean }> };
+    expect(request.filename).toBe('members_active_broker');
+    expect(request.columns.map((c) => c.label)).toEqual(['Member', 'Email', 'Status', 'Role', 'Balance', 'Last Active', 'Joined']);
+
+    mockAdminUsers.list.mockClear();
+    const page = await request.fetchPage(2);
+    expect(mockAdminUsers.list).toHaveBeenCalledWith(expect.objectContaining({ page: 2, limit: 100, status: 'active', role: 'broker' }));
+    expect(page.rows).toHaveLength(1);
+    expect(page.hasMore).toBe(false);
+  });
+
+  it('auto-refresh reloads quietly: same page, rows stay, no loading state', async () => {
+    mockAdminUsers.list.mockResolvedValue(makeListResponse([makeMember()]));
+    const MembersPage = (await import('./MembersPage')).default;
+    render(<MembersPage />);
+    await waitFor(() => screen.getByTestId('member-row-1'));
+    const before = mockAdminUsers.list.mock.calls.length;
+
+    act(() => autoRefresh.cb?.());
+    // The row never leaves the screen and no busy indicator appears.
+    expect(screen.getByTestId('member-row-1')).toBeInTheDocument();
+    expect(screen.queryAllByRole('status').filter((el) => el.getAttribute('aria-busy') === 'true')).toEqual([]);
+    await waitFor(() => expect(mockAdminUsers.list.mock.calls.length).toBeGreaterThan(before));
+    expect(mockAdminUsers.list).toHaveBeenLastCalledWith(expect.objectContaining({ limit: 1 }));
+    expect(mockAdminUsers.list.mock.calls.slice(before).some((c) => (c[0] as { limit: number }).limit === TABLE_LIMIT && (c[0] as { page: number }).page === 1)).toBe(true);
   });
 });

@@ -37,6 +37,8 @@ const mockApi = vi.hoisted(() => ({
 vi.mock('@/lib/api', () => ({
   api: mockApi,
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
+  // The page's auto-refresh listens for this event name.
+  API_WRITE_EVENT: 'nexus:api_write',
 }));
 
 vi.mock('@/contexts', () => ({

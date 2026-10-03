@@ -18,7 +18,7 @@
  * on smaller screens.
  */
 
-import { useState, useMemo, useCallback, type ReactNode } from 'react';
+import { useState, useMemo, useCallback, useRef, type ReactNode, type KeyboardEvent as ReactKeyboardEvent, type SyntheticEvent } from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useTranslation } from 'react-i18next';
 import Search from 'lucide-react/icons/search';
@@ -76,6 +76,40 @@ function isActionsColumn<T>(col: Column<T>): boolean {
   return col.isActions ?? col.key === 'actions';
 }
 
+/** Sort state a page keeps for server-side sorting. */
+export interface DataTableSort {
+  column: string;
+  direction: 'asc' | 'desc';
+}
+
+/**
+ * Anything inside a row that is itself clickable. A click on one of these
+ * must never also count as a click on the row.
+ */
+const INTERACTIVE_CHILD_SELECTOR =
+  'button, a, input, select, textarea, label, [role="menuitem"], [role="checkbox"], [role="button"], [role="menu"], [role="listbox"], [role="dialog"], [contenteditable="true"]';
+
+/** `boundary` is the clickable row/card itself, which must not count as its own child. */
+function isInteractiveTarget(target: EventTarget | null, boundary?: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  const hit = target.closest(INTERACTIVE_CHILD_SELECTOR);
+  return hit !== null && hit !== boundary;
+}
+
+function toHeroDirection(direction: DataTableSort['direction']): 'ascending' | 'descending' {
+  return direction === 'desc' ? 'descending' : 'ascending';
+}
+
+function fromHeroDirection(direction: 'ascending' | 'descending' | undefined): DataTableSort['direction'] {
+  return direction === 'descending' ? 'desc' : 'asc';
+}
+
+/** Row styling once a row can be clicked: a pointer and a hover tint. */
+const CLICKABLE_ROW_CLASS =
+  'cursor-pointer transition-colors hover:bg-surface-secondary/50 data-[hovered=true]:bg-surface-secondary/50 data-[focus-visible=true]:outline data-[focus-visible=true]:outline-2 data-[focus-visible=true]:-outline-offset-2 data-[focus-visible=true]:outline-accent';
+const CLICKABLE_CARD_CLASS =
+  'cursor-pointer transition-colors hover:bg-surface-secondary/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface DataTableProps<T extends Record<string, any>> {
   columns: Column<T>[];
@@ -106,6 +140,27 @@ interface DataTableProps<T extends Record<string, any>> {
   stickyActions?: boolean;
   /** Below the `md` breakpoint, show each row as a card instead of a table row. */
   mobileCards?: boolean;
+  /**
+   * Controlled search text. A page that keeps the search in the URL passes it
+   * here so the box shows the term a deep link arrived with. Typing still
+   * reports through `onSearch`.
+   */
+  searchValue?: string;
+  /**
+   * Makes every row clickable (pointer cursor, hover tint, Enter from the
+   * keyboard). A click on a button, link, input, checkbox or menu inside the
+   * row never also fires this. While rows are selected for a bulk action, a
+   * row click toggles that row's selection instead (React Aria's convention);
+   * the row's own buttons and links keep working either way.
+   */
+  onRowClick?: (row: T) => void;
+  /**
+   * Server-side sorting. When `onSortChange` is given the table reports header
+   * clicks as `(key, direction)` and does NOT sort the visible page itself;
+   * `sortDescriptor` tells it which header to mark.
+   */
+  sortDescriptor?: DataTableSort;
+  onSortChange?: (key: string, direction: DataTableSort['direction']) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -133,22 +188,62 @@ export function DataTable<T extends Record<string, any>>({
   emptyContent,
   stickyActions = false,
   mobileCards = false,
+  searchValue: controlledSearch,
+  onRowClick,
+  sortDescriptor: serverSort,
+  onSortChange,
 }: DataTableProps<T>) {
   const { t } = useTranslation('admin_nav');
   const isPhone = useMediaQuery('(max-width: 767px)');
   const showCards = mobileCards && isPhone;
-  const [searchValue, setSearchValue] = useState('');
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | undefined>(undefined);
+  const [internalSearch, setInternalSearch] = useState('');
+  // The page owns the text when it passes `searchValue`; otherwise it's local.
+  const searchValue = controlledSearch ?? internalSearch;
+  const [localSort, setLocalSort] = useState<SortDescriptor | undefined>(undefined);
+  const serverSorting = typeof onSortChange === 'function';
+  const sortDescriptor = useMemo<SortDescriptor | undefined>(() => {
+    if (!serverSorting) return localSort;
+    return serverSort ? { column: serverSort.column, direction: toHeroDirection(serverSort.direction) } : undefined;
+  }, [serverSorting, serverSort, localSort]);
 
   const totalPages = totalItems ? Math.ceil(totalItems / pageSize) : 1;
   const effectiveSearchPlaceholder = searchPlaceholder ?? t('shared.search');
 
   const handleSearchChange = useCallback(
     (value: string) => {
-      setSearchValue(value);
+      setInternalSearch(value);
       onSearch?.(value);
     },
     [onSearch]
+  );
+
+  const handleSortChange = useCallback(
+    (descriptor: SortDescriptor) => {
+      if (!descriptor) return;
+      if (serverSorting) {
+        onSortChange?.(String(descriptor.column), fromHeroDirection(descriptor.direction));
+      } else {
+        setLocalSort(descriptor);
+      }
+    },
+    [serverSorting, onSortChange]
+  );
+
+  // Row click. React Aria fires `onRowAction` for a press anywhere in the
+  // row — including on a plain <button> or <a> a cell renders — so the last
+  // pointer/keyboard interaction is checked in the capture phase and the row
+  // action is dropped when it began on an interactive child.
+  const lastInteractionOnChild = useRef(false);
+  const rememberInteractionTarget = useCallback((event: SyntheticEvent) => {
+    lastInteractionOnChild.current = isInteractiveTarget(event.target);
+  }, []);
+  const handleRowAction = useCallback(
+    (key: unknown) => {
+      if (!onRowClick || lastInteractionOnChild.current) return;
+      const row = data.find((item) => String(item[keyField]) === String(key));
+      if (row) onRowClick(row);
+    },
+    [onRowClick, data, keyField]
   );
 
   const handleSelectionChange = useCallback(
@@ -164,7 +259,7 @@ export function DataTable<T extends Record<string, any>>({
 
   // Sort data locally if no server-side sorting
   const sortedData = useMemo(() => {
-    if (!sortDescriptor?.column) return data;
+    if (serverSorting || !sortDescriptor?.column) return data;
     const { column, direction } = sortDescriptor;
     return [...data].sort((a, b) => {
       const aVal = a[column as string];
@@ -175,7 +270,7 @@ export function DataTable<T extends Record<string, any>>({
       const cmp = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
       return direction === 'ascending' ? cmp : -cmp;
     });
-  }, [data, sortDescriptor]);
+  }, [data, sortDescriptor, serverSorting]);
 
   // Top content (search + actions)
   const tableTopContent = useMemo(
@@ -256,6 +351,19 @@ export function DataTable<T extends Record<string, any>>({
       else next.delete(key);
       onSelectionChange?.(next);
     };
+    // Cards are plain elements, so the row click is wired directly: a click
+    // or Enter/Space anywhere on the card except on its own controls.
+    const cardClick = (item: T) => (event: SyntheticEvent) => {
+      if (!onRowClick || isInteractiveTarget(event.target, event.currentTarget)) return;
+      onRowClick(item);
+    };
+    const cardKey = (item: T) => (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (!onRowClick || event.target !== event.currentTarget) return;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onRowClick(item);
+      }
+    };
 
     return (
       <div className="min-w-0 space-y-3" data-testid="data-table-cards">
@@ -273,9 +381,14 @@ export function DataTable<T extends Record<string, any>>({
             {sortedData.map((item) => {
               const key = String(item[keyField]);
               return (
-                <li
-                  key={key}
-                  className="rounded-2xl border border-divider/70 bg-surface p-4 shadow-sm shadow-black/[0.03]"
+                <li key={key} className="rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+                {/* The card body is the clickable thing; the li stays a plain list item for screen readers. */}
+                <div
+                  role={onRowClick ? 'button' : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  onClick={onRowClick ? cardClick(item) : undefined}
+                  onKeyDown={onRowClick ? cardKey(item) : undefined}
+                  className={`rounded-2xl p-4 ${onRowClick ? CLICKABLE_CARD_CLASS : ''}`}
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     {selection && (
@@ -308,6 +421,7 @@ export function DataTable<T extends Record<string, any>>({
                       {cell(col, item)}
                     </div>
                   ))}
+                </div>
                 </li>
               );
             })}
@@ -319,13 +433,22 @@ export function DataTable<T extends Record<string, any>>({
   }
 
   return (
+    // The wrapper only observes where an interaction started (capture phase)
+    // so a row press that began on a nested button or link can be ignored.
+    <div
+      className="min-w-0"
+      onPointerDownCapture={onRowClick ? rememberInteractionTarget : undefined}
+      onMouseDownCapture={onRowClick ? rememberInteractionTarget : undefined}
+      onKeyDownCapture={onRowClick ? rememberInteractionTarget : undefined}
+    >
     <Table
       aria-label={t('shared.data_table')}
       selectionMode={selectable ? 'multiple' : 'none'}
       selectedKeys={selectable && selectedKeys ? (selectedKeys as unknown as Selection) : undefined}
       onSelectionChange={selectable ? handleSelectionChange : undefined}
       sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
+      onSortChange={handleSortChange}
+      onRowAction={onRowClick ? handleRowAction : undefined}
       topContent={tableTopContent}
       topContentPlacement="outside"
       bottomContent={tableBottomContent}
@@ -347,6 +470,9 @@ export function DataTable<T extends Record<string, any>>({
         {columns.map((col, index) => (
           <TableColumn
             key={col.key}
+            // React Aria keys the sort descriptor on `id`, not the React key —
+            // without it a header click reported `react-aria-N` and sorted nothing.
+            id={col.key}
             allowsSorting={col.sortable}
             isRowHeader={col.isRowHeader ?? index === 0}
             width={col.width}
@@ -374,7 +500,11 @@ export function DataTable<T extends Record<string, any>>({
         }
       >
         {sortedData.map((item) => (
-          <TableRow key={String(item[keyField])} id={String(item[keyField])}>
+          <TableRow
+            key={String(item[keyField])}
+            id={String(item[keyField])}
+            className={onRowClick ? CLICKABLE_ROW_CLASS : undefined}
+          >
             {selectable ? (
               <TableCell className="w-10 pr-0">
                 <Checkbox
@@ -395,6 +525,7 @@ export function DataTable<T extends Record<string, any>>({
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }
 

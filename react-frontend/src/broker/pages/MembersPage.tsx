@@ -32,10 +32,6 @@ import MailCheck from 'lucide-react/icons/mail-check';
 import MailX from 'lucide-react/icons/mail-x';
 import X from 'lucide-react/icons/x';
 import IdCard from 'lucide-react/icons/id-card';
-import Pin from 'lucide-react/icons/pin';
-import Pencil from 'lucide-react/icons/pencil';
-import Trash2 from 'lucide-react/icons/trash-2';
-import Check from 'lucide-react/icons/check';
 import Users from 'lucide-react/icons/users';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Moon from 'lucide-react/icons/moon';
@@ -43,12 +39,17 @@ import Hourglass from 'lucide-react/icons/hourglass';
 import Sparkles from 'lucide-react/icons/sparkles';
 import SearchX from 'lucide-react/icons/search-x';
 import BadgeCheck from 'lucide-react/icons/badge-check';
-import MemberDetailModal from '@/broker/components/MemberDetailModal';
+import { MemberName, useMemberWindow } from '@/broker/BrokerMemberWindow';
+import { useCsvExport } from '@/broker/useCsvExport';
+import { useBrokerAutoRefresh } from '@/broker/useBrokerAutoRefresh';
+import { useMemberNotes } from '@/broker/components/member/useMemberNotes';
+import { MemberNotesPanel } from '@/broker/components/member/MemberNotesPanel';
+import type { DataTableSort } from '@/admin/components/DataTable';
+import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useToast,
   useTenant } from '@/contexts';
-import { adminUsers,
-  adminCrm } from '@/admin/api/adminApi';
+import { adminUsers } from '@/admin/api/adminApi';
 import type { AdminUser } from '@/admin/api/types';
 import { DataTable,
   ConfirmModal } from '@/admin/components';
@@ -58,7 +59,7 @@ import { parseServerTimestamp,
   formatServerDate,
   formatServerDateTime } from '@/lib/serverTime';
 
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Textarea, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Tabs, Tab, Tooltip, Select, SelectItem, Spinner, useConfirm } from '@/components/ui';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Tabs, Tab, Tooltip, Select, SelectItem, useConfirm } from '@/components/ui';
 import {
   BrokerPageShell,
   BrokerStatCard,
@@ -73,16 +74,6 @@ import {
 
 type StatusTab = 'all' | 'pending' | 'active' | 'suspended' | 'never_logged_in' | 'onboarding_incomplete';
 
-interface MemberNote {
-  id: number;
-  content: string;
-  category?: string;
-  is_pinned?: boolean;
-  created_at: string;
-  author_name?: string;
-  author?: { name: string };
-}
-
 /** KPI counts derived from the list endpoint (meta.total with limit=1). */
 interface MemberStats {
   total: number | null;
@@ -93,8 +84,8 @@ interface MemberStats {
 
 const PAGE_SIZE = 20;
 
-// CRM note categories — mirrors the admin MemberNotes module.
-const NOTE_CATEGORIES = ['general', 'outreach', 'support', 'onboarding', 'concern', 'follow_up'] as const;
+// Columns the list endpoint can sort on (AdminUsersController@index whitelist).
+const SORTABLE_COLUMNS = new Set(['name', 'email', 'role', 'created_at', 'balance', 'status']);
 
 // Role filter options — matches the roles the list endpoint understands.
 const ROLE_FILTERS = ['all', 'member', 'broker', 'admin', 'tenant_admin', 'org_admin'] as const;
@@ -178,6 +169,8 @@ export default function MembersPage() {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
+  const { open: openMember } = useMemberWindow();
+  const csvExport = useCsvExport();
   usePageTitle(t('members.page_title'));
 
   // Stash the latest `t`/`toast` in refs so the fetch effect is keyed on the
@@ -237,6 +230,9 @@ export default function MembersPage() {
     setSearch((current) => (current.trim() === debouncedSearch ? current : debouncedSearch));
   }, [debouncedSearch]);
   const [page, setPage] = useState(1);
+  // Server-side sort — the list endpoint orders the whole collection, so
+  // sorting never misorders a page of a 256-member community.
+  const [sort, setSort] = useState<DataTableSort>({ column: 'created_at', direction: 'desc' });
 
   // Stat cards and dashboard tiles deep-link into ?status=… without going
   // through handleTabChange — reset paging + selection when the tab changes
@@ -260,32 +256,22 @@ export default function MembersPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  // Member detail modal state (holds the id of the member being viewed).
-  const [detailUserId, setDetailUserId] = useState<number | null>(null);
-
-  // Notes drawer state
+  // Notes modal: the member whose notes are open; data via the shared hook.
   const [notesUser, setNotesUser] = useState<AdminUser | null>(null);
-  const [notes, setNotes] = useState<MemberNote[]>([]);
-  const [notesLoading, setNotesLoading] = useState(false);
-  const [notesError, setNotesError] = useState(false);
-  const [newNote, setNewNote] = useState('');
-  const [noteCategory, setNoteCategory] = useState('general');
-  const [addingNote, setAddingNote] = useState(false);
-  // Inline note editing
-  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState('');
-  const [editingCategory, setEditingCategory] = useState('general');
-  const [savingNote, setSavingNote] = useState(false);
-  const [noteBusyId, setNoteBusyId] = useState<number | null>(null);
+  const notesState = useMemberNotes(notesUser?.id ?? null);
+  const openNotes = useCallback((user: AdminUser) => setNotesUser(user), []);
 
   // ─── Fetch members ────────────────────────────────────────────────────────
 
-  const fetchMembers = useCallback(async () => {
-    setLoading(true);
+  /** Load the current page. `quiet` keeps the rows on screen (no spinner) — used by auto-refresh. */
+  const fetchMembers = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       const params: Record<string, unknown> = {
         page,
         limit: PAGE_SIZE,
+        sort: sort.column,
+        order: sort.direction,
       };
       if (activeTab !== 'all') params.status = activeTab;
       if (roleFilter !== 'all') params.role = roleFilter;
@@ -312,14 +298,15 @@ export default function MembersPage() {
       setInitialLoaded(true);
     }
     // Fetch is keyed on the real query params only — t/toast live in refs.
-  }, [page, activeTab, roleFilter, debouncedSearch]);
+  }, [page, activeTab, roleFilter, debouncedSearch, sort]);
 
   useEffect(() => {
-    fetchMembers();
+    void fetchMembers();
   }, [fetchMembers]);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
+  /** Re-count the KPI cards. `quiet` keeps the current numbers up (no skeleton) — used by auto-refresh. */
+  const loadStats = useCallback(async (quiet = false) => {
+    if (!quiet) setStatsLoading(true);
     const [totalCount, pending, active, suspended] = await Promise.all([
       fetchStatusTotal(),
       fetchStatusTotal('pending'),
@@ -335,136 +322,51 @@ export default function MembersPage() {
   }, [loadStats]);
 
   const refreshAll = useCallback(() => {
-    fetchMembers();
-    loadStats();
+    void fetchMembers();
+    void loadStats();
   }, [fetchMembers, loadStats]);
 
-  // ─── Notes ────────────────────────────────────────────────────────────────
+  // Quiet refresh after any broker write / on an interval: same page, same
+  // filters, rows stay on screen while the new ones arrive.
+  useBrokerAutoRefresh(() => {
+    void fetchMembers(true);
+    void loadStats(true);
+  });
 
-  const openNotes = useCallback(async (user: AdminUser) => {
-    setNotesUser(user);
-    setNotesLoading(true);
-    setNotesError(false);
-    setNotes([]);
-    setNewNote('');
-    try {
-      const res = await adminCrm.getNotes({ user_id: user.id, limit: 20 });
-      if (res.success && res.data) {
-        const payload = res.data as unknown;
-        if (Array.isArray(payload)) {
-          setNotes(payload as MemberNote[]);
-        } else if (payload && typeof payload === 'object') {
-          const paged = payload as { data: MemberNote[] };
-          setNotes(paged.data || []);
-        }
-      } else {
-        setNotesError(true);
-      }
-    } catch {
-      // An empty list would read as "no notes yet" — say that it failed instead.
-      setNotesError(true);
-    } finally {
-      setNotesLoading(false);
-    }
+  const handleSortChange = useCallback((column: string, direction: DataTableSort['direction']) => {
+    if (!SORTABLE_COLUMNS.has(column)) return;
+    setPage(1);
+    setSort({ column, direction });
   }, []);
 
-  const handleAddNote = useCallback(async () => {
-    if (!notesUser || !newNote.trim()) return;
-    setAddingNote(true);
-    try {
-      const res = await adminCrm.createNote({
-        user_id: notesUser.id,
-        content: newNote.trim(),
-        category: noteCategory,
-      });
-      if (res.success) {
-        toast.success(t('members.note_added'));
-        setNewNote('');
-        setNoteCategory('general');
-        // Refresh notes
-        openNotes(notesUser);
-      }
-    } catch {
-      toast.error(t('members.action_failed'));
-    } finally {
-      setAddingNote(false);
-    }
-  }, [notesUser, newNote, noteCategory, toast, t, openNotes]);
+  // ─── Export ───────────────────────────────────────────────────────────────
 
-  const startEditNote = useCallback((note: MemberNote) => {
-    setEditingNoteId(note.id);
-    setEditingContent(note.content);
-    setEditingCategory(note.category || 'general');
-  }, []);
-
-  const cancelEditNote = useCallback(() => {
-    setEditingNoteId(null);
-    setEditingContent('');
-  }, []);
-
-  const handleUpdateNote = useCallback(async () => {
-    if (editingNoteId == null || !editingContent.trim() || !notesUser) return;
-    setSavingNote(true);
-    try {
-      const res = await adminCrm.updateNote(editingNoteId, {
-        content: editingContent.trim(),
-        category: editingCategory,
-      });
-      if (res.success) {
-        toast.success(t('members.note_updated'));
-        setEditingNoteId(null);
-        openNotes(notesUser);
-      } else {
-        toast.error(t('members.action_failed'));
-      }
-    } catch {
-      toast.error(t('members.action_failed'));
-    } finally {
-      setSavingNote(false);
-    }
-  }, [editingNoteId, editingContent, editingCategory, notesUser, toast, t, openNotes]);
-
-  const handleDeleteNote = useCallback(async (noteId: number) => {
-    if (!notesUser) return;
-    const ok = await confirm({
-      title: t('members.confirm_note_delete_title'),
-      body: t('members.confirm_note_delete_message'),
-      confirmLabel: t('members.note_delete'),
-      status: 'danger',
+  const handleExport = useCallback(() => {
+    const status = activeTab === 'all' ? undefined : activeTab;
+    const role = roleFilter === 'all' ? undefined : roleFilter;
+    const search = debouncedSearch.trim() || undefined;
+    const filename = ['members', status, role].filter(Boolean).join('_');
+    void csvExport.run<AdminUser>({
+      filename,
+      columns: [
+        { label: t('members.col_name'), value: (u) => u.name },
+        { label: t('members.col_email'), value: (u) => u.email },
+        { label: t('members.col_status'), value: (u) => u.status },
+        { label: t('members.col_role'), value: (u) => t(`members.role_${u.role}`, { defaultValue: u.role }) },
+        { label: t('members.col_balance'), value: (u) => u.balance },
+        { label: t('members.col_last_active'), value: (u) => (u.last_active_at ? formatServerDateTime(u.last_active_at) : '') },
+        { label: t('members.col_joined'), value: (u) => formatServerDate(u.created_at) },
+      ],
+      // Same endpoint, same filters as the screen, at the server's maximum page size (limit=100).
+      fetchPage: async (p) => {
+        const res = await adminUsers.list({ page: p, limit: 100, status, role, search, sort: sort.column, order: sort.direction } as Parameters<typeof adminUsers.list>[0]);
+        if (!res.success) throw new Error('export');
+        const rows = Array.isArray(res.data) ? (res.data as AdminUser[]) : [];
+        const hasMore = res.meta?.has_more ?? (typeof res.meta?.total === 'number' ? p * 100 < res.meta.total : rows.length === 100);
+        return { rows, hasMore };
+      },
     });
-    if (!ok) return;
-    setNoteBusyId(noteId);
-    try {
-      const res = await adminCrm.deleteNote(noteId);
-      if (res.success) {
-        toast.success(t('members.note_deleted'));
-        openNotes(notesUser);
-      } else {
-        toast.error(t('members.action_failed'));
-      }
-    } catch {
-      toast.error(t('members.action_failed'));
-    } finally {
-      setNoteBusyId(null);
-    }
-  }, [notesUser, confirm, toast, t, openNotes]);
-
-  const handleTogglePin = useCallback(async (note: MemberNote) => {
-    if (!notesUser) return;
-    setNoteBusyId(note.id);
-    try {
-      const res = await adminCrm.updateNote(note.id, { is_pinned: !note.is_pinned });
-      if (res.success) {
-        openNotes(notesUser);
-      } else {
-        toast.error(t('members.action_failed'));
-      }
-    } catch {
-      toast.error(t('members.action_failed'));
-    } finally {
-      setNoteBusyId(null);
-    }
-  }, [notesUser, toast, t, openNotes]);
+  }, [activeTab, roleFilter, debouncedSearch, sort, csvExport, t]);
 
   // ─── Tab change / search ──────────────────────────────────────────────────
 
@@ -622,7 +524,8 @@ export default function MembersPage() {
   const columns: Column<AdminUser>[] = useMemo(
     () => [
       {
-        key: 'member',
+        key: 'name',
+        sortable: true,
         label: t('members.col_name'),
         render: (user: AdminUser) => (
           <div className="flex min-w-0 items-center gap-3">
@@ -643,7 +546,7 @@ export default function MembersPage() {
             </Badge>
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-1.5">
-                <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
+                <MemberName userId={user.id} name={user.name} className="truncate text-sm" />
                 {user.email_verified_at && (
                   <Tooltip content={t('members.email_verified')}>
                     <BadgeCheck
@@ -662,6 +565,7 @@ export default function MembersPage() {
       },
       {
         key: 'status',
+        sortable: true,
         label: t('members.col_status'),
         render: (user: AdminUser) => (
           <div className="flex flex-col gap-1">
@@ -677,6 +581,7 @@ export default function MembersPage() {
       },
       {
         key: 'role',
+        sortable: true,
         hideBelow: '2xl',
         label: t('members.col_role'),
         render: (user: AdminUser) => (
@@ -708,6 +613,7 @@ export default function MembersPage() {
       },
       {
         key: 'balance',
+        sortable: true,
         label: t('members.col_balance'),
         render: (user: AdminUser) => (
           <div className="flex items-center gap-1.5">
@@ -733,9 +639,10 @@ export default function MembersPage() {
         ),
       },
       {
-        // Not `sortable`: the shared DataTable sorts the visible page only,
-        // which would silently misorder a 256-member community.
+        // Sorted on the server (see handleSortChange), so the whole
+        // collection is ordered, not the visible page.
         key: 'created_at',
+        sortable: true,
         hideBelow: '2xl',
         label: t('members.col_joined'),
         render: (user: AdminUser) => (
@@ -787,7 +694,7 @@ export default function MembersPage() {
                 <DropdownItem
                   key="details" id="details"
                   startContent={<IdCard size={14} />}
-                  onPress={() => setDetailUserId(user.id)}
+                  onPress={() => openMember(user.id)}
                 >
                   {t('members.view_details')}
                 </DropdownItem>
@@ -850,7 +757,7 @@ export default function MembersPage() {
         ),
       },
     ],
-    [t, tenantPath, navigate, timeAgo, handleReactivate, openNotes],
+    [t, tenantPath, navigate, timeAgo, handleReactivate, openNotes, openMember],
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -865,15 +772,125 @@ export default function MembersPage() {
       icon={Users}
       color="accent"
       actions={
-        <Button
-          variant="tertiary"
-          size="sm"
-          startContent={<RefreshCw size={16} />}
-          onPress={refreshAll}
-          isLoading={loading || statsLoading}
-        >
-          {t('common.refresh')}
-        </Button>
+        <>
+          <Button
+            variant="tertiary"
+            size="sm"
+            startContent={<Download size={16} />}
+            onPress={handleExport}
+            isLoading={csvExport.exporting}
+            isDisabled={!initialLoaded}
+          >
+            {csvExport.exporting ? t('common.exporting') : t('common.export_csv')}
+          </Button>
+          <Button
+            variant="tertiary"
+            size="sm"
+            startContent={<RefreshCw size={16} />}
+            onPress={refreshAll}
+            isLoading={loading || statsLoading}
+          >
+            {t('common.refresh')}
+          </Button>
+        </>
+      }
+      toolbar={
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs
+            aria-label={t('members.tabs_aria')}
+            selectedKey={activeTab}
+            onSelectionChange={handleTabChange}
+            variant="underlined"
+            size="sm"
+          >
+            <Tab
+              key="all"
+              title={
+                <div className="flex items-center gap-2">
+                  <Users size={14} aria-hidden="true" />
+                  <span>{t('members.tab_all')}</span>
+                </div>
+              }
+            />
+            <Tab
+              key="pending"
+              title={
+                <div className="flex items-center gap-2">
+                  <Clock size={14} aria-hidden="true" />
+                  <span>{t('members.tab_pending')}</span>
+                  {typeof stats?.pending === 'number' && stats.pending > 0 && (
+                    <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
+                      {stats.pending}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+            <Tab
+              key="active"
+              title={
+                <div className="flex items-center gap-2">
+                  <UserCheck size={14} aria-hidden="true" />
+                  <span>{t('members.tab_active')}</span>
+                </div>
+              }
+            />
+            <Tab
+              key="suspended"
+              title={
+                <div className="flex items-center gap-2">
+                  <UserX size={14} aria-hidden="true" />
+                  <span>{t('members.tab_suspended')}</span>
+                  {typeof stats?.suspended === 'number' && stats.suspended > 0 && (
+                    <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
+                      {stats.suspended}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+            <Tab
+              key="never_logged_in"
+              title={
+                <div className="flex items-center gap-2">
+                  <Moon size={14} aria-hidden="true" />
+                  <span>{t('members.tab_never_logged_in')}</span>
+                </div>
+              }
+            />
+            <Tab
+              key="onboarding_incomplete"
+              title={
+                <div className="flex items-center gap-2">
+                  <Hourglass size={14} aria-hidden="true" />
+                  <span>{t('members.tab_onboarding_incomplete')}</span>
+                </div>
+              }
+            />
+          </Tabs>
+          {/* Role filter — the list endpoint already supports ?role=…, this just
+              exposes it. Resets paging + selection like every other filter. */}
+          <div className="ms-auto">
+            <Select
+              aria-label={t('members.filter_role_label')}
+              size="sm"
+              variant="bordered"
+              selectedKeys={[roleFilter]}
+              onSelectionChange={(keys) => {
+                handleRoleChange((Array.from(keys)[0] as string) ?? 'all');
+              }}
+              className="w-[190px]"
+            >
+              {ROLE_FILTERS.map((r) => (
+                <SelectItem key={r} id={r}>
+                  {r === 'all'
+                    ? t('members.filter_role_all')
+                    : t(`members.role_${r}`, { defaultValue: r })}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
+        </div>
       }
     >
       {/* ── KPI header — counts come from the same list endpoint, deep-linked ── */}
@@ -910,104 +927,6 @@ export default function MembersPage() {
           loading={statsLoading}
           to={tenantPath('/broker/members?status=suspended')}
         />
-      </div>
-
-      {/* ── Status tabs — deep-linkable (?status=…) — plus role filter ───────── */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-divider/70 bg-surface p-2 shadow-sm shadow-black/[0.03]">
-        <Tabs
-          aria-label={t('members.tabs_aria')}
-          selectedKey={activeTab}
-          onSelectionChange={handleTabChange}
-          variant="underlined"
-          size="sm"
-        >
-          <Tab
-            key="all"
-            title={
-              <div className="flex items-center gap-2">
-                <Users size={14} aria-hidden="true" />
-                <span>{t('members.tab_all')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="pending"
-            title={
-              <div className="flex items-center gap-2">
-                <Clock size={14} aria-hidden="true" />
-                <span>{t('members.tab_pending')}</span>
-                {typeof stats?.pending === 'number' && stats.pending > 0 && (
-                  <Chip size="sm" variant="soft" color="warning" className="tabular-nums">
-                    {stats.pending}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="active"
-            title={
-              <div className="flex items-center gap-2">
-                <UserCheck size={14} aria-hidden="true" />
-                <span>{t('members.tab_active')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="suspended"
-            title={
-              <div className="flex items-center gap-2">
-                <UserX size={14} aria-hidden="true" />
-                <span>{t('members.tab_suspended')}</span>
-                {typeof stats?.suspended === 'number' && stats.suspended > 0 && (
-                  <Chip size="sm" variant="soft" color="danger" className="tabular-nums">
-                    {stats.suspended}
-                  </Chip>
-                )}
-              </div>
-            }
-          />
-          <Tab
-            key="never_logged_in"
-            title={
-              <div className="flex items-center gap-2">
-                <Moon size={14} aria-hidden="true" />
-                <span>{t('members.tab_never_logged_in')}</span>
-              </div>
-            }
-          />
-          <Tab
-            key="onboarding_incomplete"
-            title={
-              <div className="flex items-center gap-2">
-                <Hourglass size={14} aria-hidden="true" />
-                <span>{t('members.tab_onboarding_incomplete')}</span>
-              </div>
-            }
-          />
-        </Tabs>
-        {/* Role filter — the list endpoint already supports ?role=…, this just
-            exposes it. Resets paging + selection like every other filter. */}
-        <div className="ms-auto">
-          <Select
-            aria-label={t('members.filter_role_label')}
-            size="sm"
-            variant="bordered"
-            selectedKeys={[roleFilter]}
-            onSelectionChange={(keys) => {
-              handleRoleChange((Array.from(keys)[0] as string) ?? 'all');
-            }}
-            className="w-[190px]"
-          >
-            {ROLE_FILTERS.map((r) => (
-              <SelectItem key={r} id={r}>
-                {r === 'all'
-                  ? t('members.filter_role_all')
-                  : t(`members.role_${r}`, { defaultValue: r })}
-              </SelectItem>
-            ))}
-          </Select>
-        </div>
       </div>
 
       {/* ── Bulk-action bar ──────────────────────────────────────────────────── */}
@@ -1069,8 +988,12 @@ export default function MembersPage() {
           page={page}
           pageSize={PAGE_SIZE}
           onPageChange={setPage}
+          searchValue={search}
           onSearch={handleSearch}
           onRefresh={refreshAll}
+          onRowClick={(user) => openMember(user.id)}
+          sortDescriptor={sort}
+          onSortChange={handleSortChange}
           emptyContent={
             debouncedSearch.trim() ? (
               <BrokerEmptyState
@@ -1142,126 +1065,7 @@ export default function MembersPage() {
                 <p className="text-xs text-muted font-normal">{notesUser.email}</p>
               </ModalHeader>
               <ModalBody>
-                {/* Add note */}
-                <div className="space-y-2">
-                  <Select
-                    aria-label={t('members.note_category_label')}
-                    size="sm"
-                    variant="bordered"
-                    selectedKeys={[noteCategory]}
-                    onSelectionChange={(keys) => setNoteCategory((Array.from(keys)[0] as string) ?? 'general')}
-                    className="max-w-[220px]"
-                  >
-                    {NOTE_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} id={cat}>{t(`members.note_category_${cat}`)}</SelectItem>
-                    ))}
-                  </Select>
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder={t('members.note_placeholder')}
-                      value={newNote}
-                      onValueChange={setNewNote}
-                      minRows={2}
-                      maxRows={4}
-                      className="flex-1"
-                    />
-                    <Button
-                      color="primary"
-                      isIconOnly
-                      isLoading={addingNote}
-                      isDisabled={!newNote.trim()}
-                      onPress={handleAddNote}
-                      className="self-end"
-                      aria-label={t('members.send_note')}
-                    >
-                      <Send size={16} />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Notes list — pinned first */}
-                {notesLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Spinner size="sm" aria-label={t('common.loading')} />
-                  </div>
-                ) : notesError ? (
-                  <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-                    <span>{t('members.notes_load_failed')}</span>
-                    <Button size="sm" variant="tertiary" onPress={() => openNotes(notesUser)}>
-                      {t('members.retry')}
-                    </Button>
-                  </div>
-                ) : notes.length === 0 ? (
-                  <BrokerEmptyState
-                    bare
-                    icon={StickyNote}
-                    color="neutral"
-                    title={t('members.no_notes')}
-                  />
-                ) : (
-                  <div className="space-y-3 mt-2">
-                    {[...notes].sort((a, b) => Number(b.is_pinned ?? false) - Number(a.is_pinned ?? false)).map((note) => (
-                      <div key={note.id} className={`rounded-xl p-3 ${note.is_pinned ? 'border border-accent/20 bg-accent/10' : 'bg-surface-secondary'}`}>
-                        {editingNoteId === note.id ? (
-                          <div className="space-y-2">
-                            <Select
-                              aria-label={t('members.note_category_label')}
-                              size="sm"
-                              variant="bordered"
-                              selectedKeys={[editingCategory]}
-                              onSelectionChange={(keys) => setEditingCategory((Array.from(keys)[0] as string) ?? 'general')}
-                              className="max-w-[220px]"
-                            >
-                              {NOTE_CATEGORIES.map((cat) => (
-                                <SelectItem key={cat} id={cat}>{t(`members.note_category_${cat}`)}</SelectItem>
-                              ))}
-                            </Select>
-                            <Textarea value={editingContent} onValueChange={setEditingContent} minRows={2} maxRows={5} variant="bordered" />
-                            <div className="flex gap-2">
-                              <Button size="sm" color="primary" isLoading={savingNote} isDisabled={!editingContent.trim()} startContent={<Check size={14} />} onPress={handleUpdateNote}>
-                                {t('members.note_save')}
-                              </Button>
-                              <Button size="sm" variant="flat" isDisabled={savingNote} onPress={cancelEditNote}>
-                                {t('common.cancel')}
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="flex-1 whitespace-pre-wrap text-sm text-foreground">{note.content}</p>
-                              <div className="flex shrink-0 items-center gap-0.5">
-                                <Tooltip content={note.is_pinned ? t('members.note_unpin') : t('members.note_pin')}>
-                                  <Button isIconOnly size="sm" variant="light" isLoading={noteBusyId === note.id} onPress={() => handleTogglePin(note)} aria-label={note.is_pinned ? t('members.note_unpin') : t('members.note_pin')}>
-                                    <Pin size={13} className={note.is_pinned ? 'fill-current text-accent' : 'text-muted'} />
-                                  </Button>
-                                </Tooltip>
-                                <Tooltip content={t('members.note_edit')}>
-                                  <Button isIconOnly size="sm" variant="light" onPress={() => startEditNote(note)} aria-label={t('members.note_edit')}>
-                                    <Pencil size={13} className="text-muted" />
-                                  </Button>
-                                </Tooltip>
-                                <Tooltip content={t('members.note_delete')}>
-                                  <Button isIconOnly size="sm" variant="light" color="danger" isLoading={noteBusyId === note.id} onPress={() => handleDeleteNote(note.id)} aria-label={t('members.note_delete')}>
-                                    <Trash2 size={13} />
-                                  </Button>
-                                </Tooltip>
-                              </div>
-                            </div>
-                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
-                              <span>{note.author_name || note.author?.name || t('members.note_system_author')}</span>
-                              <span>&middot;</span>
-                              <span className="tabular-nums">{formatServerDateTime(note.created_at)}</span>
-                              {note.category && (
-                                <Chip size="sm" variant="tertiary" className="text-xs">{t(`members.note_category_${note.category}`, { defaultValue: note.category })}</Chip>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <MemberNotesPanel key={notesUser.id} state={notesState} />
               </ModalBody>
               <ModalFooter>
                 <Button variant="flat" onPress={() => setNotesUser(null)}>
@@ -1273,12 +1077,6 @@ export default function MembersPage() {
         </ModalContent>
       </Modal>
 
-      {/* Member detail modal — operational actions, safe edits, compliance view */}
-      <MemberDetailModal
-        userId={detailUserId}
-        onClose={() => setDetailUserId(null)}
-        onChanged={refreshAll}
-      />
     </BrokerPageShell>
   );
 }
