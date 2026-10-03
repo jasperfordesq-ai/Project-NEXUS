@@ -127,7 +127,7 @@
     "tab_support_actions": "Ações de apoio",
     "authority": {
       "title": "Prova de que uma pessoa de apoio pode agir sozinha",
-      "intro": "Alguns membros deixam uma pessoa de apoio agir por eles sem perguntar sempre (a opção do membro «Pode agir por conta própria»). Quando isso assenta num documento legal — uma decisão judicial, uma procuração ou um acordo de apoio registado — anote aqui que o viu. É apenas uma nota. Não dá poder a ninguém: só o membro decide o que a sua pessoa de apoio pode fazer.",
+      "intro": "Membros que definiram uma pessoa de apoio como «Pode agir por conta própria». Isso dá-lhe muito poder, por isso convém saber em que se baseia. Se se basear num documento legal — por exemplo, uma decisão judicial que nomeia quem decide, uma procuração, ou um acordo registado de codecisão ou de assistência — pode anotar aqui que viu o documento pessoalmente. É apenas uma nota. Não dá nem retira qualquer poder: só o membro decide o que a sua pessoa de apoio pode fazer.",
       "col_records": "Documento visto",
       "none": "Nenhum membro aqui deixou uma pessoa de apoio agir sozinha.",
       "none_recorded": "Ainda não anotado",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "À espera do sim de um membro",
-      "intro": "Uma pessoa de apoio preparou isto para um membro que ajuda, e o membro ainda não disse sim nem não. Nada acontece até o membro concordar. Se o membro lhe deu a resposta de outra forma — por telefone, pessoalmente ou em papel — pode registar o sim aqui. A ação é então realizada de imediato, guardada como registada por si (e não como um clique do membro), e o membro é avisado.",
+      "intro": "O que uma pessoa de apoio preparou em «Apenas preparar» e a que o membro ainda não respondeu. Normalmente os membros respondem na aplicação ou através de uma ligação num e-mail. Se o membro lhe der a resposta de outra forma — por telefone, pessoalmente ou em papel — carregue em «Registar o sim do membro». É então realizado de imediato. Fica guardado como registado por si, nunca como um clique do membro, e o membro é avisado de que foi feito em seu nome. Se o membro disser que não, não precisa de fazer nada: caduca ao fim de {{days}} dias.",
       "col_what": "O que foi preparado",
       "col_supported": "Para o membro",
       "col_prepared_by": "Preparado por",
@@ -180,7 +180,16 @@
       "attest_notice": "Fica guardado como um sim registado por si, não como um clique do próprio membro, e o membro é avisado de que foi registado em seu nome.",
       "attest_confirm_button": "Registar o sim e realizar",
       "attested_toast": "Feito. Foi realizado e o membro foi avisado.",
-      "attest_failed": "Não foi possível gravar. Nada foi alterado."
+      "attest_failed": "Não foi possível gravar. Nada foi alterado.",
+      "about_title": "Para que serve esta página",
+      "about_intro": "Alguns membros deixam um familiar, cuidador ou técnico de apoio ajudar a gerir a sua conta. Chama-se a isto uma conta ligada, e quem ajuda chama-se a sua pessoa de apoio. Nas suas próprias definições, o membro escolhe quanto a pessoa de apoio pode fazer, separadamente para os seus anúncios e para os seus créditos de tempo:",
+      "about_level_none_name": "Nada",
+      "about_level_none_desc": "a pessoa de apoio não pode fazer nada.",
+      "about_level_prepare_name": "Apenas preparar",
+      "about_level_prepare_desc": "a pessoa de apoio pode preparar algo, como um novo anúncio ou um pagamento em créditos de tempo, mas nada acontece até o membro dizer sim. Se o membro não responder em {{days}} dias, caduca.",
+      "about_level_alone_name": "Pode agir por conta própria",
+      "about_level_alone_desc": "o que a pessoa de apoio faz acontece de imediato e fica registado como feito por ela em nome do membro.",
+      "about_footer": "As duas listas abaixo seguem estes níveis. Na maior parte do tempo, ambas estão vazias. Só precisa desta página quando um membro lhe pede ajuda, ou quando quer verificar em que se baseia um acordo «Pode agir por conta própria»."
     },
     "help": {
       "title": "Como funciona a proteção aqui",

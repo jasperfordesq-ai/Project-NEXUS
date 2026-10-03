@@ -17,6 +17,7 @@ import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Shield from 'lucide-react/icons/shield';
+import Info from 'lucide-react/icons/info';
 import {
   Button, Card, CardBody, CardHeader, Checkbox, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader,
   Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea, useDisclosure,
@@ -38,6 +39,9 @@ import {
   type RevocationReason,
   type SupportActionRow,
 } from './safeguardingShared';
+
+/** Mirrors SupportPendingActionService::EXPIRY_DAYS — an unanswered prepared action lapses after this. */
+const SUPPORT_ACTION_EXPIRY_DAYS = 14;
 
 export function SupportActionsPanel() {
   const { t } = useTranslation('admin_safeguarding');
@@ -297,12 +301,39 @@ export function SupportActionsPanel() {
         </div>
       )}
 
+      {/* What linked accounts are and what the three levels mean — the two
+          lists below make no sense without it. */}
+      <Card>
+        <CardBody className="space-y-3 text-sm">
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <Info size={18} aria-hidden="true" className="text-accent" />
+            {t('safeguarding.support.about_title')}
+          </h2>
+          <p>{t('safeguarding.support.about_intro')}</p>
+          <ul className="list-disc space-y-1.5 ps-5">
+            <li>
+              <strong>{t('safeguarding.support.about_level_none_name')}</strong>
+              {' — '}{t('safeguarding.support.about_level_none_desc')}
+            </li>
+            <li>
+              <strong>{t('safeguarding.support.about_level_prepare_name')}</strong>
+              {' — '}{t('safeguarding.support.about_level_prepare_desc', { days: SUPPORT_ACTION_EXPIRY_DAYS })}
+            </li>
+            <li>
+              <strong>{t('safeguarding.support.about_level_alone_name')}</strong>
+              {' — '}{t('safeguarding.support.about_level_alone_desc')}
+            </li>
+          </ul>
+          <p className="text-muted">{t('safeguarding.support.about_footer')}</p>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-col items-start gap-1">
           <h2 className="text-lg font-semibold">{t('safeguarding.support.title')}</h2>
           {/* What this queue is, and the honesty rule for recording offline
               approvals, stated where staff will act on it. */}
-          <p className="text-sm text-muted">{t('safeguarding.support.intro')}</p>
+          <p className="text-sm text-muted">{t('safeguarding.support.intro', { days: SUPPORT_ACTION_EXPIRY_DAYS })}</p>
         </CardHeader>
         <CardBody>
           {showCards ? (

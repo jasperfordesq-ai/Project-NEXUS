@@ -127,7 +127,7 @@
     "tab_support_actions": "Actions d’accompagnement",
     "authority": {
       "title": "Preuve qu’une personne de soutien peut agir seule",
-      "intro": "Certains membres autorisent une personne de soutien à agir pour eux sans demander à chaque fois (l’option du membre « Peut agir seul »). Lorsque cela repose sur un document juridique — une décision de justice, une procuration ou un accord de soutien enregistré —, notez ici que vous l’avez vu. Ce n’est qu’une note. Elle ne donne aucun pouvoir à personne : seul le membre décide de ce que sa personne de soutien peut faire.",
+      "intro": "Les membres qui ont réglé une personne de soutien sur « Peut agir seul ». Cela lui donne beaucoup de pouvoir, il est donc utile de savoir sur quoi cela repose. Si cela repose sur un document juridique — par exemple une décision de justice désignant une personne qui décide, une procuration, ou un accord enregistré de codécision ou d’assistance —, vous pouvez noter ici que vous avez vu le document vous-même. Ce n’est qu’une note. Elle ne donne ni ne retire aucun pouvoir : seul le membre décide de ce que sa personne de soutien peut faire.",
       "col_records": "Document vu",
       "none": "Aucun membre ici n’a autorisé une personne de soutien à agir seule.",
       "none_recorded": "Pas encore noté",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "En attente du oui d’un membre",
-      "intro": "Une personne de soutien a préparé ceci pour un membre qu’elle aide, et le membre n’a pas encore dit oui ou non. Rien ne se passe tant que le membre n’a pas accepté. Si le membre vous a donné sa réponse autrement — par téléphone, en personne ou sur papier —, vous pouvez enregistrer son oui ici. L’action est alors effectuée immédiatement, enregistrée comme saisie par vous (et non comme un clic du membre), et le membre est prévenu.",
+      "intro": "Ce qu’une personne de soutien a préparé en « Préparer seulement » et auquel le membre n’a pas encore répondu. Les membres répondent normalement dans l’application ou via un lien dans un e-mail. Si le membre vous donne sa réponse autrement — par téléphone, en personne ou sur papier —, appuyez sur « Enregistrer le oui du membre ». L’action est alors effectuée immédiatement. Elle est enregistrée comme saisie par vous, jamais comme un clic du membre, et le membre est prévenu qu’elle a été faite en son nom. Si le membre dit non, vous n’avez rien à faire : cela expire au bout de {{days}} jours.",
       "col_what": "Ce qui a été préparé",
       "col_supported": "Pour le membre",
       "col_prepared_by": "Préparé par",
@@ -180,7 +180,16 @@
       "attest_notice": "Ce oui est enregistré comme saisi par vous, et non comme un clic du membre lui-même, et le membre est prévenu qu’il a été enregistré en son nom.",
       "attest_confirm_button": "Enregistrer le oui et effectuer l’action",
       "attested_toast": "C’est fait. L’action a été effectuée et le membre a été prévenu.",
-      "attest_failed": "Impossible de l'enregistrer. Rien n'a été changé."
+      "attest_failed": "Impossible de l'enregistrer. Rien n'a été changé.",
+      "about_title": "À quoi sert cette page",
+      "about_intro": "Certains membres laissent un proche, un aidant ou un intervenant les aider à gérer leur compte. C’est ce qu’on appelle un compte lié, et la personne qui aide s’appelle leur personne de soutien. Dans ses propres paramètres, le membre choisit ce que la personne de soutien peut faire, séparément pour ses annonces et pour ses crédits de temps :",
+      "about_level_none_name": "Rien",
+      "about_level_none_desc": "la personne de soutien ne peut rien en faire.",
+      "about_level_prepare_name": "Préparer seulement",
+      "about_level_prepare_desc": "la personne de soutien peut préparer quelque chose, comme une nouvelle annonce ou un paiement en crédits de temps, mais rien ne se passe tant que le membre n’a pas dit oui. Sans réponse du membre sous {{days}} jours, cela expire.",
+      "about_level_alone_name": "Peut agir seul",
+      "about_level_alone_desc": "ce que fait la personne de soutien s’applique tout de suite et est enregistré comme fait par elle au nom du membre.",
+      "about_footer": "Les deux listes ci-dessous suivent ces niveaux. La plupart du temps, elles sont vides. Vous n’avez besoin de cette page que lorsqu’un membre vous demande de l’aide, ou pour vérifier sur quoi repose un accord « Peut agir seul »."
     },
     "help": {
       "title": "Comment fonctionne la protection ici",

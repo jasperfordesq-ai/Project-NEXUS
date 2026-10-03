@@ -127,7 +127,7 @@
     "tab_support_actions": "Unterstützungsaktionen",
     "authority": {
       "title": "Nachweis, dass eine Unterstützungsperson allein handeln darf",
-      "intro": "Manche Mitglieder erlauben einer Unterstützungsperson, für sie zu handeln, ohne jedes Mal zu fragen (die Einstellung „Darf selbstständig handeln“ des Mitglieds). Beruht das auf einem rechtlichen Dokument – einem Gerichtsbeschluss, einer Vorsorgevollmacht oder einer eingetragenen Unterstützungsvereinbarung –, vermerken Sie hier, dass Sie es gesehen haben. Das ist nur ein Vermerk. Er verleiht niemandem Befugnisse: Nur das Mitglied entscheidet, was seine Unterstützungsperson tun darf.",
+      "intro": "Mitglieder, die eine Unterstützungsperson auf „Darf selbstständig handeln“ gesetzt haben. Das gibt der Unterstützungsperson viel Macht, deshalb ist es gut zu wissen, worauf es beruht. Beruht es auf einem rechtlichen Dokument – etwa einem Gerichtsbeschluss, der eine entscheidungsbefugte Person benennt, einer Vorsorgevollmacht oder einer eingetragenen Vereinbarung zur gemeinsamen oder unterstützten Entscheidungsfindung –, können Sie hier vermerken, dass Sie das Dokument selbst gesehen haben. Das ist nur ein Vermerk. Er gibt und nimmt keine Befugnisse: Nur das Mitglied entscheidet, was seine Unterstützungsperson tun darf.",
       "col_records": "Dokument gesehen",
       "none": "Kein Mitglied hier hat einer Unterstützungsperson erlaubt, allein zu handeln.",
       "none_recorded": "Noch nicht vermerkt",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "Wartet auf das Ja eines Mitglieds",
-      "intro": "Eine Unterstützungsperson hat dies für ein Mitglied vorbereitet, dem sie hilft, und das Mitglied hat noch nicht Ja oder Nein gesagt. Nichts passiert, bevor das Mitglied zustimmt. Hat Ihnen das Mitglied seine Antwort auf anderem Weg gegeben – telefonisch, persönlich oder auf Papier –, können Sie sein Ja hier erfassen. Es wird dann sofort ausgeführt, als von Ihnen erfasst gespeichert (nicht als Klick des Mitglieds), und das Mitglied wird benachrichtigt.",
+      "intro": "Was eine Unterstützungsperson unter „Nur vorbereiten“ vorbereitet hat und worauf das Mitglied noch nicht geantwortet hat. Mitglieder antworten normalerweise in der App oder über einen Link in einer E-Mail. Gibt Ihnen das Mitglied seine Antwort auf anderem Weg – telefonisch, persönlich oder auf Papier –, klicken Sie auf „Ja des Mitglieds erfassen“. Es wird dann sofort ausgeführt, als von Ihnen erfasst gespeichert (nie als Klick des Mitglieds), und das Mitglied erfährt, dass es in seinem Namen erledigt wurde. Sagt das Mitglied Nein, müssen Sie nichts tun: Es verfällt nach {{days}} Tagen.",
       "col_what": "Was vorbereitet wurde",
       "col_supported": "Für Mitglied",
       "col_prepared_by": "Vorbereitet von",
@@ -180,7 +180,16 @@
       "attest_notice": "Es wird als von Ihnen erfasstes Ja gespeichert, nicht als eigener Klick des Mitglieds, und das Mitglied erfährt, dass es in seinem Namen erfasst wurde.",
       "attest_confirm_button": "Ja erfassen und ausführen",
       "attested_toast": "Erledigt. Es wurde ausgeführt und das Mitglied wurde benachrichtigt.",
-      "attest_failed": "Konnte es nicht aufnehmen. Es wurde nichts geändert."
+      "attest_failed": "Konnte es nicht aufnehmen. Es wurde nichts geändert.",
+      "about_title": "Wofür diese Seite da ist",
+      "about_intro": "Manche Mitglieder lassen sich von einem Familienmitglied, einer Pflegeperson oder einer Assistenzkraft bei ihrem Konto helfen. Das nennt sich verknüpftes Konto, und die helfende Person heißt Unterstützungsperson. In seinen eigenen Einstellungen legt das Mitglied fest, wie viel die Unterstützungsperson tun darf – getrennt für seine Inserate und für seine Zeitguthaben:",
+      "about_level_none_name": "Nichts",
+      "about_level_none_desc": "die Unterstützungsperson kann damit nichts tun.",
+      "about_level_prepare_name": "Nur vorbereiten",
+      "about_level_prepare_desc": "die Unterstützungsperson kann etwas vorbereiten, etwa ein neues Inserat oder eine Zeitguthaben-Zahlung, aber nichts passiert, bis das Mitglied Ja sagt. Antwortet das Mitglied nicht innerhalb von {{days}} Tagen, verfällt es.",
+      "about_level_alone_name": "Darf selbstständig handeln",
+      "about_level_alone_desc": "was die Unterstützungsperson tut, wird sofort ausgeführt und als von ihr im Namen des Mitglieds erledigt gespeichert.",
+      "about_footer": "Die beiden Listen unten folgen diesen Stufen. Meistens sind beide leer. Sie brauchen diese Seite nur, wenn ein Mitglied Sie um Hilfe bittet oder wenn Sie prüfen möchten, worauf eine Regelung „Darf selbstständig handeln“ beruht."
     },
     "help": {
       "title": "So funktionieren Schutzmaßnahmen hier",

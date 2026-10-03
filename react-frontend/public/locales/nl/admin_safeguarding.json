@@ -127,7 +127,7 @@
     "tab_support_actions": "Ondersteuningsacties",
     "authority": {
       "title": "Bewijs dat een ondersteuner alleen mag handelen",
-      "intro": "Sommige leden laten een ondersteuner voor hen handelen zonder elke keer te vragen (de instelling van het lid ‘Mag zelfstandig handelen’). Als dat op een juridisch document berust — een rechterlijke beschikking, een volmacht of een geregistreerde ondersteuningsovereenkomst — noteer dan hier dat u het hebt gezien. Dit is alleen een notitie. Ze geeft niemand bevoegdheid: alleen het lid beslist wat de ondersteuner mag doen.",
+      "intro": "Leden die een ondersteuner op ‘Mag zelfstandig handelen’ hebben gezet. Dat geeft de ondersteuner veel macht, dus het is goed te weten waarop het berust. Berust het op een juridisch document — bijvoorbeeld een rechterlijke beschikking die iemand als beslisser aanwijst, een volmacht, of een geregistreerde overeenkomst voor gezamenlijke of ondersteunde besluitvorming — dan kunt u hier noteren dat u het document zelf hebt gezien. Dit is alleen een notitie. Ze geeft of ontneemt geen bevoegdheid: alleen het lid beslist wat de ondersteuner mag doen.",
       "col_records": "Document gezien",
       "none": "Geen enkel lid hier laat een ondersteuner alleen handelen.",
       "none_recorded": "Nog niet genoteerd",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "Wacht op het ja van een lid",
-      "intro": "Een ondersteuner heeft dit voorbereid voor een lid dat hij of zij helpt, en het lid heeft nog geen ja of nee gezegd. Er gebeurt niets tot het lid akkoord gaat. Heeft het lid u het antwoord op een andere manier gegeven — telefonisch, persoonlijk of op papier — dan kunt u het ja hier vastleggen. Het wordt dan meteen uitgevoerd, opgeslagen als door u vastgelegd (niet als een klik van het lid), en het lid krijgt bericht.",
+      "intro": "Wat een ondersteuner met ‘Alleen voorbereiden’ heeft voorbereid en waarop het lid nog niet heeft geantwoord. Leden antwoorden normaal in de app of via een link in een e-mail. Geeft het lid u het antwoord op een andere manier — telefonisch, persoonlijk of op papier — klik dan op ‘Ja van het lid vastleggen’. Het gaat dan meteen door. Het wordt opgeslagen als door u vastgelegd, nooit als een klik van het lid, en het lid krijgt bericht dat het namens hem of haar is gedaan. Zegt het lid nee, dan hoeft u niets te doen: het vervalt na {{days}} dagen.",
       "col_what": "Wat is voorbereid",
       "col_supported": "Voor lid",
       "col_prepared_by": "Voorbereid door",
@@ -180,7 +180,16 @@
       "attest_notice": "Het wordt opgeslagen als een ja dat u hebt vastgelegd, niet als een eigen klik van het lid, en het lid krijgt bericht dat het namens hem of haar is vastgelegd.",
       "attest_confirm_button": "Ja vastleggen en uitvoeren",
       "attested_toast": "Klaar. Het is uitgevoerd en het lid heeft bericht gekregen.",
-      "attest_failed": "Kon het niet opnemen. Er werd niets veranderd."
+      "attest_failed": "Kon het niet opnemen. Er werd niets veranderd.",
+      "about_title": "Waar deze pagina voor is",
+      "about_intro": "Sommige leden laten een familielid, mantelzorger of begeleider helpen met hun account. Dat heet een gekoppeld account, en wie helpt heet hun ondersteuner. In hun eigen instellingen kiest het lid hoeveel de ondersteuner mag doen, apart voor hun advertenties en voor hun tijdtegoed:",
+      "about_level_none_name": "Niets",
+      "about_level_none_desc": "de ondersteuner kan er niets mee doen.",
+      "about_level_prepare_name": "Alleen voorbereiden",
+      "about_level_prepare_desc": "de ondersteuner kan iets voorbereiden, zoals een nieuwe advertentie of een betaling in tijdtegoed, maar er gebeurt niets tot het lid ja zegt. Antwoordt het lid niet binnen {{days}} dagen, dan vervalt het.",
+      "about_level_alone_name": "Mag zelfstandig handelen",
+      "about_level_alone_desc": "wat de ondersteuner doet, gaat meteen door en wordt vastgelegd als door de ondersteuner namens het lid gedaan.",
+      "about_footer": "De twee lijsten hieronder volgen deze niveaus. Meestal zijn ze allebei leeg. U hebt deze pagina alleen nodig als een lid u om hulp vraagt, of als u wilt nagaan waarop een regeling ‘Mag zelfstandig handelen’ berust."
     },
     "help": {
       "title": "Hoe bescherming hier werkt",

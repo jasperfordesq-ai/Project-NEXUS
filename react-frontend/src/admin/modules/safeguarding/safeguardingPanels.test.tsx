@@ -249,6 +249,21 @@ describe('GuardiansPanel', () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('SupportActionsPanel', () => {
+  it('explains linked accounts and the three levels before the two lists', async () => {
+    mockApi.get.mockImplementation((url: string) =>
+      Promise.resolve(ok(url.includes('authority-attestations') ? { relationships: [] } : { actions: [] })));
+    const { SupportActionsPanel } = await import('./SupportActionsPanel');
+    render(<SupportActionsPanel />);
+
+    expect(await screen.findByRole('heading', { name: 'What this page is for' })).toBeInTheDocument();
+    expect(screen.getByText(/This is called a linked account/)).toBeInTheDocument();
+    expect(screen.getByText('Nothing')).toBeInTheDocument();
+    expect(screen.getByText('Prepare only')).toBeInTheDocument();
+    expect(screen.getAllByText('They can act on their own').length).toBeGreaterThan(0);
+    // The lapse period is stated, in days, in the explainer and the first list.
+    expect(screen.getAllByText(/14 days/).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('records an offline approval through the attest modal', async () => {
     mockApi.get.mockImplementation((url: string) => {
       if (url.includes('authority-attestations')) return Promise.resolve(ok({ relationships: [] }));

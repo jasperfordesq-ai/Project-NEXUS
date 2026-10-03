@@ -127,7 +127,7 @@
     "tab_support_actions": "Acciones de apoyo",
     "authority": {
       "title": "Prueba de que una persona de apoyo puede actuar sola",
-      "intro": "Algunos miembros permiten que una persona de apoyo actúe por ellos sin preguntar cada vez (la opción del miembro «Puede actuar por su cuenta»). Cuando eso se basa en un documento legal —una orden judicial, un poder notarial o un acuerdo de apoyo registrado—, anote aquí que lo ha visto. Es solo una nota. No da ningún poder a nadie: solo el miembro decide qué puede hacer su persona de apoyo.",
+      "intro": "Miembros que han puesto a una persona de apoyo en «Puede actuar por su cuenta». Eso le da mucho poder, así que conviene saber en qué se basa. Si se basa en un documento legal —por ejemplo, una orden judicial que nombra a quien decide, un poder notarial o un acuerdo registrado de codecisión o de asistencia—, puede anotar aquí que ha visto el documento usted mismo. Es solo una nota. No da ni quita ningún poder: solo el miembro decide qué puede hacer su persona de apoyo.",
       "col_records": "Documento visto",
       "none": "Ningún miembro aquí ha permitido que una persona de apoyo actúe sola.",
       "none_recorded": "Aún no anotado",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "Esperando el sí de un miembro",
-      "intro": "Una persona de apoyo preparó esto para un miembro al que ayuda, y el miembro aún no ha dicho sí ni no. No ocurre nada hasta que el miembro está de acuerdo. Si el miembro le dio su respuesta por otra vía —por teléfono, en persona o en papel—, puede registrar su sí aquí. Entonces se lleva a cabo de inmediato, se guarda como registrado por usted (no como un clic del miembro) y se avisa al miembro.",
+      "intro": "Lo que una persona de apoyo ha preparado con «Solo preparar» y el miembro aún no ha respondido. Los miembros suelen responder en la aplicación o desde un enlace en un correo. Si el miembro le da su respuesta por otra vía —por teléfono, en persona o en papel—, pulse «Registrar el sí del miembro». Entonces se lleva a cabo de inmediato. Se guarda como registrado por usted, nunca como un clic del propio miembro, y se avisa al miembro de que se hizo en su nombre. Si el miembro dice que no, no tiene que hacer nada: caduca a los {{days}} días.",
       "col_what": "Qué se preparó",
       "col_supported": "Para el miembro",
       "col_prepared_by": "Preparado por",
@@ -180,7 +180,16 @@
       "attest_notice": "Se guarda como un sí registrado por usted, no como un clic del propio miembro, y se avisa al miembro de que se registró en su nombre.",
       "attest_confirm_button": "Registrar el sí y llevarlo a cabo",
       "attested_toast": "Hecho. Se ha llevado a cabo y se ha avisado al miembro.",
-      "attest_failed": "No se pudo grabar. No se cambió nada."
+      "attest_failed": "No se pudo grabar. No se cambió nada.",
+      "about_title": "Para qué sirve esta página",
+      "about_intro": "Algunos miembros dejan que un familiar, cuidador o asistente les ayude a gestionar su cuenta. Esto se llama cuenta vinculada, y quien ayuda se llama persona de apoyo. En sus propios ajustes, el miembro elige cuánto puede hacer la persona de apoyo, por separado para sus anuncios y para sus créditos de tiempo:",
+      "about_level_none_name": "Nada",
+      "about_level_none_desc": "la persona de apoyo no puede hacer nada con ello.",
+      "about_level_prepare_name": "Solo preparar",
+      "about_level_prepare_desc": "la persona de apoyo puede preparar algo, como un anuncio nuevo o un pago de créditos de tiempo, pero no pasa nada hasta que el miembro dice que sí. Si el miembro no responde en {{days}} días, caduca.",
+      "about_level_alone_name": "Puede actuar por su cuenta",
+      "about_level_alone_desc": "lo que hace la persona de apoyo se lleva a cabo de inmediato y queda registrado como hecho por ella en nombre del miembro.",
+      "about_footer": "Las dos listas de abajo siguen estos niveles. La mayoría de las veces ambas están vacías. Solo necesita esta página cuando un miembro le pide ayuda o cuando quiere comprobar en qué se basa un acuerdo de «Puede actuar por su cuenta»."
     },
     "help": {
       "title": "Cómo funciona la protección aquí",

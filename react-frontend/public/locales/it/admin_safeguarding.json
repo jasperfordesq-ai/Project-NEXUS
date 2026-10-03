@@ -127,7 +127,7 @@
     "tab_support_actions": "Azioni di supporto",
     "authority": {
       "title": "Prova che una persona di supporto può agire da sola",
-      "intro": "Alcuni membri permettono a una persona di supporto di agire per loro senza chiedere ogni volta (l’opzione del membro «Può agire da sola»). Quando questo si basa su un documento legale — un provvedimento del tribunale, una procura o un accordo di supporto registrato — annota qui che lo hai visto. È solo una nota. Non dà alcun potere a nessuno: solo il membro decide cosa può fare la sua persona di supporto.",
+      "intro": "I membri che hanno impostato una persona di supporto su «Può agire da sola». Questo le dà molto potere, quindi è utile sapere su cosa si basa. Se si basa su un documento legale — per esempio un provvedimento del tribunale che nomina chi decide, una procura, o un accordo registrato di codecisione o di assistenza — puoi annotare qui di aver visto tu stesso il documento. È solo una nota. Non dà né toglie alcun potere: solo il membro decide cosa può fare la sua persona di supporto.",
       "col_records": "Documento visto",
       "none": "Nessun membro qui ha permesso a una persona di supporto di agire da sola.",
       "none_recorded": "Non ancora annotato",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "In attesa del sì di un membro",
-      "intro": "Una persona di supporto ha preparato queste azioni per un membro che aiuta, e il membro non ha ancora detto sì o no. Non succede nulla finché il membro non è d’accordo. Se il membro ti ha dato la sua risposta in un altro modo — al telefono, di persona o su carta — puoi registrare qui il suo sì. L’azione viene allora eseguita subito, salvata come registrata da te (non come un clic del membro), e il membro viene avvisato.",
+      "intro": "Ciò che una persona di supporto ha preparato con «Solo preparare» e a cui il membro non ha ancora risposto. Di solito i membri rispondono nell’app o da un link in un’e-mail. Se il membro ti dà la sua risposta in un altro modo — al telefono, di persona o su carta — premi «Registra il sì del membro». Viene allora eseguito subito. Viene salvato come registrato da te, mai come un clic del membro, e il membro viene avvisato che è stato fatto a suo nome. Se il membro dice no, non devi fare nulla: scade dopo {{days}} giorni.",
       "col_what": "Cosa è stato preparato",
       "col_supported": "Per il membro",
       "col_prepared_by": "Preparato da",
@@ -180,7 +180,16 @@
       "attest_notice": "Viene salvato come un sì registrato da te, non come un clic del membro stesso, e il membro viene avvisato che è stato registrato a suo nome.",
       "attest_confirm_button": "Registra il sì ed esegui",
       "attested_toast": "Fatto. È stato eseguito e il membro è stato avvisato.",
-      "attest_failed": "Impossibile registrarlo. Niente è stato cambiato."
+      "attest_failed": "Impossibile registrarlo. Niente è stato cambiato.",
+      "about_title": "A cosa serve questa pagina",
+      "about_intro": "Alcuni membri si fanno aiutare a gestire il proprio account da un familiare, un caregiver o un operatore di supporto. Si chiama account collegato, e chi aiuta si chiama persona di supporto. Nelle proprie impostazioni, il membro sceglie quanto può fare la persona di supporto, separatamente per i suoi annunci e per i suoi crediti di tempo:",
+      "about_level_none_name": "Niente",
+      "about_level_none_desc": "la persona di supporto non può farci nulla.",
+      "about_level_prepare_name": "Solo preparare",
+      "about_level_prepare_desc": "la persona di supporto può preparare qualcosa, come un nuovo annuncio o un pagamento in crediti di tempo, ma non succede nulla finché il membro non dice sì. Se il membro non risponde entro {{days}} giorni, scade.",
+      "about_level_alone_name": "Può agire da sola",
+      "about_level_alone_desc": "ciò che fa la persona di supporto avviene subito e viene registrato come fatto da lei per conto del membro.",
+      "about_footer": "Le due liste qui sotto seguono questi livelli. Il più delle volte sono entrambe vuote. Ti serve questa pagina solo quando un membro ti chiede aiuto, o quando vuoi verificare su cosa si basa un accordo «Può agire da sola»."
     },
     "help": {
       "title": "Come funziona la salvaguardia qui",

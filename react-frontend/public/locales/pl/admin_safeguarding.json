@@ -127,7 +127,7 @@
     "tab_support_actions": "Działania wspierające",
     "authority": {
       "title": "Dowód, że osoba wspierająca może działać samodzielnie",
-      "intro": "Niektórzy członkowie pozwalają osobie wspierającej działać w ich imieniu bez pytania za każdym razem (ustawienie członka „Może działać samodzielnie”). Jeśli opiera się to na dokumencie prawnym — postanowieniu sądu, pełnomocnictwie lub zarejestrowanej umowie o wsparciu — zanotuj tutaj, że ten dokument widziano. To tylko notatka. Nikomu nie daje żadnych uprawnień: tylko członek decyduje, co może robić jego osoba wspierająca.",
+      "intro": "Członkowie, którzy ustawili osobę wspierającą na „Może działać samodzielnie”. Daje jej to dużą władzę, więc warto wiedzieć, na czym się to opiera. Jeśli opiera się na dokumencie prawnym — na przykład postanowieniu sądu wyznaczającym osobę decydującą, pełnomocnictwie lub zarejestrowanej umowie o współdecydowaniu albo o wsparciu — możesz tu zanotować, że osobiście widziano ten dokument. To tylko notatka. Nie daje ani nie odbiera żadnych uprawnień: tylko członek decyduje, co może robić jego osoba wspierająca.",
       "col_records": "Widziany dokument",
       "none": "Żaden członek nie pozwolił tu osobie wspierającej działać samodzielnie.",
       "none_recorded": "Jeszcze nie zanotowano",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "Czeka na zgodę członka",
-      "intro": "Osoba wspierająca przygotowała to dla członka, któremu pomaga, a członek jeszcze nie powiedział tak ani nie. Nic się nie stanie, dopóki członek się nie zgodzi. Jeśli członek przekazał ci odpowiedź w inny sposób — telefonicznie, osobiście lub na papierze — możesz tutaj zapisać jego zgodę. Działanie zostanie wtedy od razu wykonane, zapisane jako wprowadzone przez ciebie (a nie jako kliknięcie członka), a członek zostanie powiadomiony.",
+      "intro": "To, co osoba wspierająca przygotowała w trybie „Tylko przygotowanie”, a na co członek jeszcze nie odpowiedział. Członkowie zwykle odpowiadają w aplikacji lub przez link w e-mailu. Jeśli członek przekaże ci odpowiedź inaczej — telefonicznie, osobiście lub na papierze — naciśnij „Zapisz zgodę członka”. Wtedy zostanie to od razu wykonane. Zostanie zapisane jako wprowadzone przez ciebie, nigdy jako kliknięcie członka, a członek dowie się, że zrobiono to w jego imieniu. Jeśli członek odmówi, nie musisz nic robić: sprawa wygaśnie po {{days}} dniach.",
       "col_what": "Co przygotowano",
       "col_supported": "Dla członka",
       "col_prepared_by": "Przygotowane przez",
@@ -180,7 +180,16 @@
       "attest_notice": "Zostanie to zapisane jako zgoda wprowadzona przez ciebie, a nie jako kliknięcie samego członka, a członek dowie się, że zapisano ją w jego imieniu.",
       "attest_confirm_button": "Zapisz zgodę i wykonaj",
       "attested_toast": "Gotowe. Wykonano, a członek został powiadomiony.",
-      "attest_failed": "Nie udało się tego nagrać. Nic nie zostało zmienione."
+      "attest_failed": "Nie udało się tego nagrać. Nic nie zostało zmienione.",
+      "about_title": "Do czego służy ta strona",
+      "about_intro": "Niektórzy członkowie pozwalają członkowi rodziny, opiekunowi lub asystentowi pomagać w prowadzeniu konta. Nazywa się to kontem połączonym, a osoba pomagająca to osoba wspierająca. We własnych ustawieniach członek wybiera, ile może zrobić osoba wspierająca — osobno dla ogłoszeń i dla kredytów czasu:",
+      "about_level_none_name": "Nic",
+      "about_level_none_desc": "osoba wspierająca nie może nic z tym zrobić.",
+      "about_level_prepare_name": "Tylko przygotowanie",
+      "about_level_prepare_desc": "osoba wspierająca może coś przygotować, na przykład nowe ogłoszenie lub płatność kredytami czasu, ale nic się nie dzieje, dopóki członek nie powie „tak”. Jeśli członek nie odpowie w ciągu {{days}} dni, sprawa wygasa.",
+      "about_level_alone_name": "Może działać samodzielnie",
+      "about_level_alone_desc": "to, co robi osoba wspierająca, wykonuje się od razu i jest zapisywane jako zrobione przez nią w imieniu członka.",
+      "about_footer": "Dwie listy poniżej odpowiadają tym poziomom. Zwykle obie są puste. Ta strona jest potrzebna tylko wtedy, gdy członek poprosi cię o pomoc, albo gdy chcesz sprawdzić, na czym opiera się ustawienie „Może działać samodzielnie”."
     },
     "help": {
       "title": "Jak tutaj działa ochrona",

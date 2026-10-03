@@ -127,7 +127,7 @@
     "tab_support_actions": "Gníomhartha Tacaíochta",
     "authority": {
       "title": "Cruthúnas gur féidir le cúntóir gníomhú leis féin",
-      "intro": "Ligeann roinnt ball do chúntóir gníomhú ar a son gan fiafraí gach uair (socrú an bhaill “Is féidir leo gníomhú leo féin”). Nuair a bhíonn doiciméad dlíthiúil taobh thiar de sin — ordú cúirte, cumhacht aturnae nó comhaontú tacaíochta cláraithe — déan nóta anseo go bhfaca tú é. Níl ann ach nóta. Ní thugann sé cumhacht d’aon duine: is é an ball amháin a chinneann cad is féidir lena chúntóir a dhéanamh.",
+      "intro": "Baill a shocraigh cúntóir ar “Is féidir leo gníomhú leo féin”. Tugann sé sin go leor cumhachta don chúntóir, mar sin is maith a fhios a bheith agat cad air a bhfuil sé bunaithe. Má tá sé bunaithe ar dhoiciméad dlíthiúil — mar shampla ordú cúirte a ainmníonn cinnteoir, cumhacht aturnae, nó comhaontú cláraithe comhchinnteoireachta nó cúnaimh — is féidir leat nóta a dhéanamh anseo go bhfaca tú féin an doiciméad. Níl ann ach nóta. Ní thugann sé ná ní bhaineann sé aon chumhacht: is é an ball amháin a chinneann cad is féidir lena chúntóir a dhéanamh.",
       "col_records": "Doiciméad feicthe",
       "none": "Níor lig aon bhall anseo do chúntóir gníomhú leis féin.",
       "none_recorded": "Gan nóta fós",
@@ -161,7 +161,7 @@
     },
     "support": {
       "title": "Ag fanacht le ‘tá’ ó bhall",
-      "intro": "D’ullmhaigh cúntóir iad seo do bhall a gcuidíonn sé nó sí leis, agus níor dúirt an ball tá ná níl fós. Ní tharlaíonn aon rud go dtí go n-aontaíonn an ball. Má thug an ball a fhreagra duit ar bhealach eile — ar an bhfón, go pearsanta nó ar pháipéar — is féidir leat a ‘tá’ a thaifeadadh anseo. Déantar é láithreach ansin, sábháiltear é mar rud a thaifead tusa (ní mar chliceáil de chuid an bhaill), agus cuirtear an ball ar an eolas.",
+      "intro": "Rudaí a d’ullmhaigh cúntóir faoi “Ullmhaigh amháin” nár fhreagair an ball fós. De ghnáth freagraíonn baill san aip nó ó nasc i ríomhphost. Má thugann an ball a fhreagra duit ar bhealach eile — ar an bhfón, go pearsanta nó ar pháipéar — brúigh “Taifead ‘tá’ an bhaill”. Déantar é láithreach ansin. Sábháiltear é mar rud a thaifead tusa, ní mar chliceáil de chuid an bhaill riamh, agus cuirtear in iúl don bhall go ndearnadh é ina ainm. Má deir an ball níl, ní gá duit aon rud a dhéanamh: rachaidh sé as feidhm tar éis {{days}} lá.",
       "col_what": "Cad a ullmhaíodh",
       "col_supported": "Don bhall",
       "col_prepared_by": "Ullmhaithe ag",
@@ -180,7 +180,16 @@
       "attest_notice": "Sábháiltear é mar ‘tá’ a thaifead tusa, ní mar chliceáil de chuid an bhaill féin, agus cuirtear in iúl don bhall gur taifeadadh é ina ainm.",
       "attest_confirm_button": "Taifead ‘tá’ agus déan é",
       "attested_toast": "Déanta. Rinneadh é agus cuireadh an ball ar an eolas.",
-      "attest_failed": "Níorbh fhéidir é a thaifeadadh. Níor athraíodh aon rud."
+      "attest_failed": "Níorbh fhéidir é a thaifeadadh. Níor athraíodh aon rud.",
+      "about_title": "Cad chuige an leathanach seo",
+      "about_intro": "Ligeann roinnt ball do bhall teaghlaigh, d’fheighlí nó d’oibrí tacaíochta cabhrú leo a gcuntas a reáchtáil. Cuntas nasctha a thugtar air seo, agus cúntóir a thugtar ar an duine a chabhraíonn. Ina socruithe féin, roghnaíonn an ball an méid is féidir leis an gcúntóir a dhéanamh — ar leith dá liostaí agus dá gcreidmheasanna ama:",
+      "about_level_none_name": "As",
+      "about_level_none_desc": "ní féidir leis an gcúntóir aon rud a dhéanamh leis.",
+      "about_level_prepare_name": "Ullmhaigh amháin",
+      "about_level_prepare_desc": "is féidir leis an gcúntóir rud éigin a ullmhú, mar liostú nua nó íocaíocht creidmheasa ama, ach ní tharlaíonn aon rud go dtí go ndeir an ball tá. Mura bhfreagraíonn an ball laistigh de {{days}} lá, rachaidh sé as feidhm.",
+      "about_level_alone_name": "Is féidir leo gníomhú leo féin",
+      "about_level_alone_desc": "déantar an rud a dhéanann an cúntóir láithreach, agus taifeadtar é mar rud a rinne an cúntóir thar ceann an bhaill.",
+      "about_footer": "Leanann an dá liosta thíos na leibhéil seo. Formhór an ama bíonn an dá cheann folamh. Ní bhíonn an leathanach seo ag teastáil uait ach nuair a iarrann ball cabhair ort, nó nuair is mian leat seiceáil ar cad air a bhfuil socrú “Is féidir leo gníomhú leo féin” bunaithe."
     },
     "help": {
       "title": "Conas a oibríonn cosaint anseo",
