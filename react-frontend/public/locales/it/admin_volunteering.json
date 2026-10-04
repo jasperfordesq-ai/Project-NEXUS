@@ -703,7 +703,7 @@
     "dlp_person_placeholder": "Cerca per nome o email",
     "dlp_person_no_results": "Nessun membro trovato",
     "dlp_person_clear": "Cambia",
-    "dlp_person_help": "Deve essere un broker, coordinatore o amministratore attivo di questa comunità.",
+    "dlp_person_help_any_member": "Chiunque in questa comunità abbia un account attivo, ad esempio qualcuno dell'organizzazione stessa.",
     "dlp_choose_person": "Scegli prima una persona dai risultati della ricerca",
     "expense_org_breakdown_title": "Spese per organizzazione",
     "expense_policies_title": "Politiche sulle spese",

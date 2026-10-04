@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'Impossibile trovare questa organizzazione',
     'vol_dlp_user_not_found' => 'Questa persona non è un membro di questa comunità',
     'vol_dlp_user_inactive' => 'Questo account non è attivo, quindi non può essere designato come DLP',
-    'vol_dlp_user_not_staff' => 'Il DLP deve essere un broker, un coordinatore o un amministratore. Assegna prima uno di questi ruoli a questa persona, poi riprova',
     'volunteer_organization_required' => 'È necessaria l\'organizzazione',
     'volunteer_org_manage_forbidden' => 'Non hai l\'autorizzazione per gestire questa organizzazione',
     'volunteer_org_not_active' => 'Questa organizzazione non è attiva e non può accettare nuove ore o depositi.',

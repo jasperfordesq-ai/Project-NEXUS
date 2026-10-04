@@ -720,7 +720,7 @@
     "dlp_person_placeholder": "Szukaj według imienia i nazwiska lub e-maila",
     "dlp_person_no_results": "Nie znaleziono członków",
     "dlp_person_clear": "Zmień",
-    "dlp_person_help": "Musi to być aktywny broker, koordynator lub administrator w tej społeczności.",
+    "dlp_person_help_any_member": "Każda osoba z tej społeczności z aktywnym kontem, na przykład ktoś z samej organizacji.",
     "dlp_choose_person": "Najpierw wybierz osobę z wyników wyszukiwania",
     "expense_org_breakdown_title": "Wydatki według organizacji",
     "expense_policies_title": "Zasady dotyczące wydatków",

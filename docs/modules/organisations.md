@@ -82,7 +82,7 @@ Every query is scoped by `TenantContext::getId()`:
 
 | Table | Purpose |
 |-------|---------|
-| `vol_organizations` | One row per organisation. Key columns: `tenant_id`, `user_id` (owner), `name`, `slug`, `description`, `contact_email`, `website`, `logo_url`, `status` (`pending`/`active`/`approved`/`suspended`), `balance` `decimal(10,2)`, `auto_pay_enabled`, `dlp_user_id`, `deputy_dlp_user_id`. |
+| `vol_organizations` | One row per organisation. Key columns: `tenant_id`, `user_id` (owner), `name`, `slug`, `description`, `contact_email`, `website`, `logo_url`, `status` (`pending`/`active`/`approved`/`suspended`), `balance` `decimal(10,2)`, `auto_pay_enabled`, `dlp_user_id`, `deputy_dlp_user_id`. `dlp_user_id` is the organisation's Designated Liaison Person: any active member of the community may be named (no broker or admin role — owner decision, 2026-10-04), because it is a record only and grants no access. Only an admin can set it. |
 | `org_members` | Membership with role (`owner`/`admin`/`member`) and status (`active`/`pending`/`invited`/`removed`). `org_type = 'volunteer'` scopes rows to this module. |
 | `vol_reviews` | Reviews for `target_type = 'organization'` (or `'user'`). Columns: `reviewer_id`, `target_type`, `target_id`, `rating` (1–5), `comment`, `approved`. |
 | `vol_opportunities` | Opportunities linked to an org via `organization_id`. |

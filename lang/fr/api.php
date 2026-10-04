@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'Cette organisation est introuvable',
     'vol_dlp_user_not_found' => 'Cette personne n\'est pas membre de cette communauté',
     'vol_dlp_user_inactive' => 'Ce compte n\'est pas actif et ne peut donc pas être désigné comme DLP',
-    'vol_dlp_user_not_staff' => 'Le DLP doit être courtier, coordinateur ou administrateur. Attribuez d\'abord l\'un de ces rôles à cette personne, puis réessayez',
     'volunteer_organization_required' => 'Une organisation est nécessaire',
     'volunteer_org_manage_forbidden' => 'Vous n\'êtes pas autorisé à gérer cette organisation',
     'volunteer_org_not_active' => 'Cette organisation n\'est pas active et ne peut pas accepter de nouvelles heures ou de nouveaux dépôts.',

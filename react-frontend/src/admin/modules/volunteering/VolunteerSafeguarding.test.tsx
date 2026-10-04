@@ -269,7 +269,7 @@ describe('VolunteerSafeguarding', () => {
   });
 
   it('shows the reason the server gives when the person cannot be made DLP', async () => {
-    const reason = 'The DLP must be a broker, coordinator or admin.';
+    const reason = 'That account is not active, so it cannot be made the DLP';
     mockAdminVolunteering.getIncidents.mockResolvedValue(
       makeGetIncidentsResponse({ dlp_assignments: [makeDlpAssignment()] })
     );

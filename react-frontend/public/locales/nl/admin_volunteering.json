@@ -684,7 +684,7 @@
     "dlp_person_placeholder": "Zoeken op naam of e-mail",
     "dlp_person_no_results": "Geen leden gevonden",
     "dlp_person_clear": "Wijzigen",
-    "dlp_person_help": "Moet een actieve makelaar, coördinator of beheerder in deze gemeenschap zijn.",
+    "dlp_person_help_any_member": "Iedereen in deze gemeenschap met een actief account, bijvoorbeeld iemand van de organisatie zelf.",
     "dlp_choose_person": "Kies eerst een persoon uit de zoekresultaten",
     "expense_org_breakdown_title": "Uitgaven per organisatie",
     "expense_policies_title": "Onkostenbeleid",

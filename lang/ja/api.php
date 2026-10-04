@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'その組織は見つかりませんでした',
     'vol_dlp_user_not_found' => 'その人物はこのコミュニティのメンバーではありません',
     'vol_dlp_user_inactive' => 'そのアカウントは有効ではないため、DLP に指定できません',
-    'vol_dlp_user_not_staff' => 'DLP はブローカー、コーディネーター、または管理者である必要があります。先にこの人物にいずれかの役割を付与してから、もう一度お試しください',
     'volunteer_organization_required' => '組織化が必要です',
     'volunteer_org_manage_forbidden' => 'この組織を管理する権限がありません',
     'volunteer_org_not_active' => 'この団体は有効ではないため、新しい時間や入金を受け付けられません。',

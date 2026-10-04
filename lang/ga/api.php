@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'Níorbh fhéidir an eagraíocht sin a aimsiú',
     'vol_dlp_user_not_found' => 'Níl an duine sin ina bhall den phobal seo',
     'vol_dlp_user_inactive' => 'Níl an cuntas sin gníomhach, mar sin ní féidir é a dhéanamh ina DCA',
-    'vol_dlp_user_not_staff' => 'Caithfidh an DCA a bheith ina bhróicéir, ina chomhordaitheoir nó ina riarthóir. Tabhair ceann de na róil sin don duine seo ar dtús, agus déan iarracht arís',
     'volunteer_organization_required' => 'Tá gá le heagrú',
     'volunteer_org_manage_forbidden' => 'Níl cead agat an eagraíocht seo a bhainistiú',
     'volunteer_org_not_active' => 'Níl an eagraíocht seo gníomhach agus ní féidir léi uaireanta nó taiscí nua a ghlacadh.',

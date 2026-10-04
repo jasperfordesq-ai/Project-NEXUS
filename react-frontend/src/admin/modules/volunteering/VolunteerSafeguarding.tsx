@@ -230,8 +230,8 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
         setDlpModal(false);
         loadData();
       } else {
-        // The server says which rule was broken (not a member, not active, not
-        // broker-level…) in the community's language, so show that.
+        // The server says which rule was broken (not a member of this
+        // community, account not active…) in the community's language.
         setDlpError(res.error || t('volunteering.failed_to_assign_dlp'));
       }
     } catch {
@@ -631,7 +631,9 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                 selectedMember={dlpMember}
                 onSelectedMemberChange={setDlpMember}
                 label={t('volunteering.dlp_person_label')}
-                description={t('volunteering.dlp_person_help')}
+                // Any active member may be an organisation's DLP — no broker or
+                // admin role needed (owner decision, 4 Oct 2026).
+                description={t('volunteering.dlp_person_help_any_member')}
                 placeholder={t('volunteering.dlp_person_placeholder')}
                 noResultsText={t('volunteering.dlp_person_no_results')}
                 clearText={t('volunteering.dlp_person_clear')}

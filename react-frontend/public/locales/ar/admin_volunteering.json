@@ -753,7 +753,7 @@
     "dlp_person_placeholder": "ابحث بالاسم أو البريد الإلكتروني",
     "dlp_person_no_results": "لم يتم العثور على أعضاء",
     "dlp_person_clear": "تغيير",
-    "dlp_person_help": "يجب أن يكون وسيطًا أو منسقًا أو مسؤولًا نشطًا في هذا المجتمع.",
+    "dlp_person_help_any_member": "أي شخص في هذا المجتمع لديه حساب نشط، مثل شخص من المؤسسة نفسها.",
     "dlp_choose_person": "اختر شخصًا من نتائج البحث أولًا",
     "expense_org_breakdown_title": "المصاريف حسب المنظمة",
     "expense_policies_title": "سياسات المصاريف",

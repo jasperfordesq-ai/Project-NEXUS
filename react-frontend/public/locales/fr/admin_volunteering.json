@@ -700,7 +700,7 @@
     "dlp_person_placeholder": "Rechercher par nom ou e-mail",
     "dlp_person_no_results": "Aucun membre trouvé",
     "dlp_person_clear": "Modifier",
-    "dlp_person_help": "Doit être un courtier, coordinateur ou administrateur actif de cette communauté.",
+    "dlp_person_help_any_member": "Toute personne de cette communauté disposant d'un compte actif, par exemple quelqu'un de l'organisation elle-même.",
     "dlp_choose_person": "Choisissez d'abord une personne dans les résultats de la recherche",
     "expense_org_breakdown_title": "Dépenses par organisation",
     "expense_policies_title": "Politiques de dépenses",

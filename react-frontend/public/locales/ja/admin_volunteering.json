@@ -689,7 +689,7 @@
     "dlp_person_placeholder": "名前またはメールアドレスで検索",
     "dlp_person_no_results": "メンバーが見つかりません",
     "dlp_person_clear": "変更",
-    "dlp_person_help": "このコミュニティで有効なブローカー、コーディネーター、または管理者である必要があります。",
+    "dlp_person_help_any_member": "このコミュニティで有効なアカウントを持つ人なら誰でも指定できます（例：その組織の人）。",
     "dlp_choose_person": "先に検索結果から担当者を選択してください",
     "expense_org_breakdown_title": "組織別の費用",
     "expense_policies_title": "費用ポリシー",

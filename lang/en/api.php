@@ -1868,7 +1868,6 @@ return [
     'vol_dlp_organization_not_found'       => 'That organisation could not be found',
     'vol_dlp_user_not_found'               => 'That person is not a member of this community',
     'vol_dlp_user_inactive'                => 'That account is not active, so it cannot be made the DLP',
-    'vol_dlp_user_not_staff'               => 'The DLP must be a broker, coordinator or admin. Give this person one of those roles first, then try again',
     'vol_training_not_found'               => 'Training record not found',
     'vol_training_reject_reason'           => 'A reason is required to reject a training record',
 

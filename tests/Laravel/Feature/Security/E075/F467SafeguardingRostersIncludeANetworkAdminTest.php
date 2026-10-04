@@ -174,7 +174,16 @@ final class F467SafeguardingRostersIncludeANetworkAdminTest extends TestCase
     }
 
     /**
-     * The organisation DLP is the third copy of the same roster.
+     * The organisation DLP was the third copy of the same roster.
+     *
+     * 🔴 4 Oct 2026, owner decision: the organisation DLP is no longer a roster.
+     * Any ACTIVE member of the community may be named, because it is a record
+     * that grants no access and sends no notifications (the incident-level DLP,
+     * tested above, still requires a broker-tier role). The original control —
+     * "an ordinary member must never be the organisation DLP" — was therefore
+     * replaced by the control that still matters: a suspended account is refused
+     * and leaves the existing DLP untouched. The F-467 property itself (a
+     * network administrator is accepted) is unchanged.
      */
     public function test_an_organisation_dlp_can_be_a_network_admin(): void
     {
@@ -210,15 +219,18 @@ final class F467SafeguardingRostersIncludeANetworkAdminTest extends TestCase
             'control: a role-string administrator is still accepted'
         );
 
-        // CONTROL (no widening) — an ordinary member is still refused.
+        // CONTROL — a suspended account is still refused (owner decision 4 Oct
+        // 2026 opened this to any ACTIVE member, not to every account).
+        $suspended = $this->plainMember();
+        DB::table('users')->where('id', $suspended->id)->update(['status' => 'suspended']);
         self::assertFalse(
             $service->assignOrganizationDlp(
                 $organizationId,
-                (int) $this->plainMember()->id,
+                (int) $suspended->id,
                 (int) $actor->id,
                 $this->testTenantId
             ),
-            'control: an ordinary member must never be the organisation DLP'
+            'control: a suspended account must never be the organisation DLP'
         );
         self::assertSame(
             (int) $roleAdmin->id,

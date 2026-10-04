@@ -31850,7 +31850,7 @@ export default interface Resources {
       "dlp_explanation": "The Designated Liaison Person is responsible for receiving and handling safeguarding concerns for this organisation.",
       "dlp_label": "DLP",
       "dlp_person_clear": "Change",
-      "dlp_person_help": "Must be an active broker, coordinator or admin in this community.",
+      "dlp_person_help_any_member": "Anyone in this community with an active account, for example someone from the organisation itself.",
       "dlp_person_label": "Person",
       "dlp_person_no_results": "No members found",
       "dlp_person_placeholder": "Search by name or email",

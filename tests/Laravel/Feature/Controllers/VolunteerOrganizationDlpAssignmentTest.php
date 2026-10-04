@@ -19,11 +19,14 @@ use Tests\Laravel\TestCase;
 /**
  * PUT /v2/admin/volunteering/organizations/{id}/dlp
  *
- * Assigning an organisation's Designated Liaison Person used to answer every
- * refusal with the same "Unable to assign the DLP" message, so an admin who
- * picked an ordinary member had no way to learn that the person simply needed a
- * broker role first. Each refusal now names its own reason; the control in every
- * case is that the stored DLP is left exactly as it was.
+ * 🔴 Any ACTIVE member of the community may be an organisation's Designated
+ * Liaison Person — no broker or admin role (owner decision, 4 Oct 2026). The
+ * organisation DLP is a record only: it grants no access and receives no
+ * notifications. If a test here fails because an ordinary member was refused,
+ * the eligibility rule has been put back; do not "fix" the test.
+ *
+ * Each refusal names its own reason rather than one generic "Unable to assign
+ * the DLP"; the control in every refusal is that the stored DLP is unchanged.
  */
 class VolunteerOrganizationDlpAssignmentTest extends TestCase
 {
@@ -51,7 +54,7 @@ class VolunteerOrganizationDlpAssignmentTest extends TestCase
         $this->assertSame($broker->id, (int) DB::table('vol_organizations')->where('id', $orgId)->value('dlp_user_id'));
     }
 
-    public function test_an_ordinary_member_is_refused_with_the_reason_and_nothing_changes(): void
+    public function test_an_ordinary_member_can_be_assigned_as_the_organisation_dlp(): void
     {
         $admin = $this->actingAdmin();
         $orgId = $this->organization($admin);
@@ -59,23 +62,52 @@ class VolunteerOrganizationDlpAssignmentTest extends TestCase
 
         $response = $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $member->id]);
 
+        $response->assertStatus(200);
+        $this->assertSame($member->id, (int) DB::table('vol_organizations')->where('id', $orgId)->value('dlp_user_id'));
+    }
+
+    public function test_an_ordinary_member_assigned_as_organisation_dlp_gains_no_staff_access(): void
+    {
+        $admin = $this->actingAdmin();
+        $orgId = $this->organization($admin);
+        $member = $this->account([]);
+        $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $member->id])->assertStatus(200);
+
+        // Being an organisation's DLP is a record, not a role: the member still
+        // cannot open the safeguarding incident list or reassign a DLP.
+        $this->app['auth']->forgetGuards();
+        Sanctum::actingAs($member, ['*']);
+        $this->apiGet('/v2/admin/volunteering/incidents')->assertStatus(403);
+        $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $member->id])->assertStatus(403);
+    }
+
+    public function test_a_suspended_member_is_refused_as_not_active(): void
+    {
+        $admin = $this->actingAdmin();
+        $orgId = $this->organization($admin);
+        $member = $this->account(['status' => 'suspended']);
+
+        $response = $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $member->id]);
+
         $response->assertStatus(422);
-        $this->assertSame(__('api.vol_dlp_user_not_staff'), $response->json('errors.0.message'));
+        $this->assertSame(__('api.vol_dlp_user_inactive'), $response->json('errors.0.message'));
         $this->assertNotSame(__('api.vol_dlp_assign_failed'), $response->json('errors.0.message'));
         $this->assertSame('dlp_user_id', $response->json('errors.0.field'));
         $this->assertNull(DB::table('vol_organizations')->where('id', $orgId)->value('dlp_user_id'));
     }
 
-    public function test_a_suspended_broker_is_refused_as_not_active(): void
+    public function test_a_member_of_another_community_is_refused(): void
     {
         $admin = $this->actingAdmin();
         $orgId = $this->organization($admin);
-        $broker = $this->account(['role' => 'broker', 'status' => 'suspended']);
+        $otherTenantId = (int) DB::table('tenants')->where('id', '!=', $this->testTenantId)->value('id');
+        $this->assertGreaterThan(0, $otherTenantId, 'precondition: a second community exists');
+        $outsider = User::factory()->forTenant($otherTenantId)->create(['status' => 'active', 'is_approved' => 1]);
 
-        $response = $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $broker->id]);
+        $response = $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $outsider->id]);
 
         $response->assertStatus(422);
-        $this->assertSame(__('api.vol_dlp_user_inactive'), $response->json('errors.0.message'));
+        $this->assertSame(__('api.vol_dlp_user_not_found'), $response->json('errors.0.message'));
         $this->assertNull(DB::table('vol_organizations')->where('id', $orgId)->value('dlp_user_id'));
     }
 
@@ -107,11 +139,10 @@ class VolunteerOrganizationDlpAssignmentTest extends TestCase
             __('api.vol_dlp_organization_not_found'),
             __('api.vol_dlp_user_not_found'),
             __('api.vol_dlp_user_inactive'),
-            __('api.vol_dlp_user_not_staff'),
             __('api.vol_dlp_assign_failed'),
         ];
 
-        $this->assertCount(5, array_unique($messages));
+        $this->assertCount(4, array_unique($messages));
         foreach ($messages as $message) {
             $this->assertStringNotContainsString('api.vol_dlp_', $message, 'a missing translation key leaked through');
         }

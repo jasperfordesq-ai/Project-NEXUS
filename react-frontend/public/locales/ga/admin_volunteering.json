@@ -735,7 +735,7 @@
     "dlp_person_placeholder": "Cuardaigh de réir ainm nó ríomhphoist",
     "dlp_person_no_results": "Níor aimsíodh aon bhall",
     "dlp_person_clear": "Athraigh",
-    "dlp_person_help": "Caithfidh sé a bheith ina bhróicéir, ina chomhordaitheoir nó ina riarthóir gníomhach sa phobal seo.",
+    "dlp_person_help_any_member": "Aon duine sa phobal seo a bhfuil cuntas gníomhach aige, mar shampla duine ón eagraíocht féin.",
     "dlp_choose_person": "Roghnaigh duine ó thorthaí an chuardaigh ar dtús",
     "expense_org_breakdown_title": "Costais de réir eagraíochta",
     "expense_policies_title": "Polasaithe costais",

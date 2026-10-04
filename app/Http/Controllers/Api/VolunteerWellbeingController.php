@@ -573,11 +573,11 @@ class VolunteerWellbeingController extends BaseApiController
 
         if ($refusal !== null) {
             // Say which rule the chosen person broke, so the admin knows what to
-            // fix (e.g. give them a broker role first) rather than just "failed".
+            // fix rather than just "failed". Any active member may be the
+            // organisation's DLP; no staff role is required.
             $message = match ($refusal) {
                 'user_not_found' => __('api.vol_dlp_user_not_found'),
                 'user_inactive' => __('api.vol_dlp_user_inactive'),
-                'not_staff' => __('api.vol_dlp_user_not_staff'),
                 default => __('api.vol_dlp_assign_failed'),
             };
             $field = $refusal === 'error' ? null : 'dlp_user_id';

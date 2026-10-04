@@ -264,7 +264,7 @@
     "dlp_person_placeholder": "Search by name or email",
     "dlp_person_no_results": "No members found",
     "dlp_person_clear": "Change",
-    "dlp_person_help": "Must be an active broker, coordinator or admin in this community.",
+    "dlp_person_help_any_member": "Anyone in this community with an active account, for example someone from the organisation itself.",
     "dlp_choose_person": "Choose a person from the search results first",
     "donation_trends": "Donation Trends",
     "donations_summary": "Donations Summary",

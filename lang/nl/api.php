@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'Die organisatie kon niet worden gevonden',
     'vol_dlp_user_not_found' => 'Die persoon is geen lid van deze gemeenschap',
     'vol_dlp_user_inactive' => 'Dat account is niet actief en kan dus niet als DLP worden aangewezen',
-    'vol_dlp_user_not_staff' => 'De DLP moet een makelaar, coördinator of beheerder zijn. Geef deze persoon eerst een van die rollen en probeer het daarna opnieuw',
     'volunteer_organization_required' => 'Organisatie is vereist',
     'volunteer_org_manage_forbidden' => 'U heeft geen toestemming om deze organisatie te beheren',
     'volunteer_org_not_active' => 'Deze organisatie is niet actief en kan geen nieuwe uren of stortingen accepteren.',

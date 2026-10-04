@@ -1017,13 +1017,19 @@ class SafeguardingService
     /**
      * Assign an organisation's DLP and say WHY if it was refused.
      *
+     * 🔴 Any ACTIVE member of this community may be an organisation's DLP — no
+     * broker or admin role is required (owner decision, 4 Oct 2026). The
+     * organisation's DLP is usually someone from the organisation itself, and
+     * every registering organisation must not need a platform staff role to have
+     * one. This is safe because `vol_organizations.dlp_user_id` is a record only:
+     * it grants no access to safeguarding data and receives no notifications.
+     * Do NOT restore a broker-tier check here. The INCIDENT-level assignment,
+     * assignDlp() below, is different and stays broker-tier: it sends the
+     * assignee incident details and a link into the broker panel.
+     *
      * Returns null on success, otherwise one reason code: `organization_not_found`,
-     * `user_not_found` (no such member in this community), `user_inactive`,
-     * `not_staff` (an ordinary member — the DLP must be broker-tier or above),
-     * or `error` (an unexpected failure, already logged). The boolean
-     * assignOrganizationDlp() could only say "no", which left an admin staring at a
-     * generic failure message with no way to know the person simply needed a
-     * broker role first.
+     * `user_not_found` (no such member in this community), `user_inactive`, or
+     * `error` (an unexpected failure, already logged).
      */
     public function tryAssignOrganizationDlp(int $organizationId, int $dlpUserId, int $adminId, int $tenantId): ?string
     {
@@ -1047,15 +1053,6 @@ class SafeguardingService
 
             if ($candidate->status !== 'active') {
                 return 'user_inactive';
-            }
-
-            $isStaff = User::where('id', $dlpUserId)
-                ->where('tenant_id', $tenantId)
-                ->where(fn ($q) => self::scopeToBrokerTier($q))
-                ->exists();
-
-            if (!$isStaff) {
-                return 'not_staff';
             }
 
             DB::table('vol_organizations')

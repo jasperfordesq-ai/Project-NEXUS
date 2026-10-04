@@ -705,7 +705,7 @@
     "dlp_person_placeholder": "Buscar por nombre o correo electrónico",
     "dlp_person_no_results": "No se encontraron miembros",
     "dlp_person_clear": "Cambiar",
-    "dlp_person_help": "Debe ser un corredor, coordinador o administrador activo de esta comunidad.",
+    "dlp_person_help_any_member": "Cualquier persona de esta comunidad con una cuenta activa, por ejemplo alguien de la propia organización.",
     "dlp_choose_person": "Elija primero una persona de los resultados de la búsqueda",
     "expense_org_breakdown_title": "Gastos por organización",
     "expense_policies_title": "Políticas de gastos",

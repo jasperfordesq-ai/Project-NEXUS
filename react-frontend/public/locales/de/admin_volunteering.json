@@ -683,7 +683,7 @@
     "dlp_person_placeholder": "Nach Name oder E-Mail suchen",
     "dlp_person_no_results": "Keine Mitglieder gefunden",
     "dlp_person_clear": "Ändern",
-    "dlp_person_help": "Muss ein aktiver Broker, Koordinator oder Administrator in dieser Gemeinschaft sein.",
+    "dlp_person_help_any_member": "Jede Person in dieser Gemeinschaft mit einem aktiven Konto, zum Beispiel jemand aus der Organisation selbst.",
     "dlp_choose_person": "Wählen Sie zuerst eine Person aus den Suchergebnissen aus",
     "expense_org_breakdown_title": "Ausgaben nach Organisation",
     "expense_policies_title": "Ausgabenrichtlinien",

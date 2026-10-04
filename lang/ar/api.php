@@ -1841,7 +1841,6 @@ return [
     'vol_dlp_organization_not_found' => 'تعذّر العثور على تلك المؤسسة',
     'vol_dlp_user_not_found' => 'هذا الشخص ليس عضوًا في هذا المجتمع',
     'vol_dlp_user_inactive' => 'هذا الحساب غير نشط، لذا لا يمكن تعيينه DLP',
-    'vol_dlp_user_not_staff' => 'يجب أن يكون DLP وسيطًا أو منسقًا أو مسؤولًا. امنح هذا الشخص أحد هذه الأدوار أولًا ثم حاول مرة أخرى',
     'volunteer_organization_required' => 'التنظيم مطلوب',
     'volunteer_org_manage_forbidden' => 'ليس لديك الإذن لإدارة هذه المؤسسة',
     'volunteer_org_not_active' => 'هذه المنظمة غير نشطة ولا يمكنها قبول ساعات أو إيداعات جديدة.',
