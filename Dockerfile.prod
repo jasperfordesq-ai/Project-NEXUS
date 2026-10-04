@@ -133,14 +133,10 @@ RUN echo 'PassEnv DB_HOST DB_PORT DB_NAME DB_USER DB_PASS DB_TYPE REDIS_HOST RED
 
 # Alias /storage/ to the actual storage volume so images are accessible
 # even though httpdocs/ is mounted read-only (symlinks can't be created).
-RUN printf '<Directory /var/www/html/storage/app/public>\n\
-    Options FollowSymLinks\n\
-    AllowOverride None\n\
-    Require all granted\n\
-</Directory>\n\
-Alias /storage /var/www/html/storage/app/public\n' \
-    > /etc/apache2/conf-available/storage-alias.conf \
-    && a2enconf storage-alias
+# The alias is outside the web root, so httpdocs/.htaccess never applies:
+# the config carries its own script refusal, nosniff and sandbox CSP (F-554).
+COPY docker/apache/storage-alias.conf /etc/apache2/conf-available/storage-alias.conf
+RUN a2enconf storage-alias
 
 # Security: Hide Apache version
 RUN echo 'ServerTokens Prod' >> /etc/apache2/conf-available/security.conf \

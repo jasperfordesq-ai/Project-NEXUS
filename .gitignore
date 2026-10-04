@@ -212,9 +212,12 @@ CLAUDE.md
 .deployignore
 
 # ─── Docker Config (local dev, contains credentials) ──────────────────────────
-/docker/
-!/docker/entrypoint-cache.sh
+# /docker/* (not /docker/): git cannot re-include a file whose parent directory
+# is excluded, so the exceptions below only work against the directory's contents.
+/docker/*
 !/docker/preload.php
+# Production Apache config installed by Dockerfile.prod + Dockerfile.bluegreen (F-554)
+!/docker/apache/
 
 # ─── Downloads & Binary Assets ─────────────────────────────────────────────────
 /httpdocs/downloads/

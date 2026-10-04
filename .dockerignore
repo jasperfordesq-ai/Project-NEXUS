@@ -90,6 +90,8 @@ firebase-service-account.json
 # Legacy docker folder (using root compose.yml now)
 docker/
 !docker/preload.php
+# /storage alias config, installed by Dockerfile.prod + Dockerfile.bluegreen (F-554)
+!docker/apache/storage-alias.conf
 
 # Temp files
 *.tmp

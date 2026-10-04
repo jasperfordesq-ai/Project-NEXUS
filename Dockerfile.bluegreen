@@ -107,14 +107,10 @@ RUN printf '<IfModule remoteip_module>\n\
 RUN echo 'PassEnv DB_HOST DB_PORT DB_NAME DB_USER DB_PASS DB_TYPE REDIS_HOST REDIS_PORT APP_ENV APP_DEBUG APP_URL APP_KEY JWT_SECRET PUSHER_APP_KEY PUSHER_APP_SECRET PUSHER_APP_ID PUSHER_APP_CLUSTER OPENAI_API_KEY SENTRY_DSN_PHP SENTRY_ENVIRONMENT SENTRY_TRACES_SAMPLE_RATE ADMIN_NOTIFICATION_EMAIL MEILISEARCH_HOST MEILISEARCH_KEY SENDGRID_API_KEY SENDGRID_FROM_EMAIL SENDGRID_FROM_NAME EMAIL_ENCRYPTION_KEY USE_GMAIL_API GMAIL_CLIENT_ID GMAIL_CLIENT_SECRET GMAIL_REFRESH_TOKEN GMAIL_SENDER_EMAIL GMAIL_SENDER_NAME SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_ENCRYPTION SMTP_FROM_EMAIL SMTP_FROM_NAME STRIPE_SECRET_KEY STRIPE_PUBLISHABLE_KEY STRIPE_WEBHOOK_SECRET STRIPE_IDENTITY_SECRET_KEY STRIPE_IDENTITY_WEBHOOK_SECRET VERIFF_API_KEY VERIFF_API_SECRET JUMIO_API_TOKEN JUMIO_API_SECRET ONFIDO_API_TOKEN ONFIDO_WEBHOOK_SECRET IDENFY_API_KEY IDENFY_API_SECRET REACT_FRONTEND_URL' >> /etc/apache2/conf-available/passenv.conf \
     && a2enconf passenv
 
-RUN printf '<Directory /var/www/html/storage/app/public>\n\
-    Options FollowSymLinks\n\
-    AllowOverride None\n\
-    Require all granted\n\
-</Directory>\n\
-Alias /storage /var/www/html/storage/app/public\n' \
-    > /etc/apache2/conf-available/storage-alias.conf \
-    && a2enconf storage-alias
+# /storage alias with its own script refusal, nosniff and sandbox CSP — the
+# alias is outside the web root, so httpdocs/.htaccess never applies (F-554).
+COPY docker/apache/storage-alias.conf /etc/apache2/conf-available/storage-alias.conf
+RUN a2enconf storage-alias
 
 RUN echo 'ServerTokens Prod' >> /etc/apache2/conf-available/security.conf \
     && echo 'ServerSignature Off' >> /etc/apache2/conf-available/security.conf \
