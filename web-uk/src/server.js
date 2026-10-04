@@ -327,6 +327,11 @@ nunjucksEnv.addFilter('humanizeLabel', humanizeLabel);
 
 app.set('view engine', 'njk');
 
+// F-553: Helmet strips Express's X-Powered-By, but an error rethrown out of
+// tenantRouting skips every later middleware, so error pages kept it. Turn it
+// off at the app level so no response path can send it.
+app.disable('x-powered-by');
+
 // Which proxies may say who the visitor is (F-167): loopback, the Docker
 // bridge ranges and Cloudflare's published ranges — so req.ip, every rate
 // limit and the address forwarded to Laravel are the VISITOR behind Cloudflare,

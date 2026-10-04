@@ -24007,6 +24007,27 @@ describe('shared accessible frontend shell', () => {
     expect(missingDelete.headers.location).toBe('/groups/42/files?status=file-not-found');
   });
 
+  it('never names the framework in response headers, even on error pages (F-553)', async () => {
+    // Error pages rendered before Helmet runs (tenant lookup failures rethrow
+    // out of tenantRouting) kept Express's default X-Powered-By header.
+    const normalPage = await request(app).get('/acme/accessible/contact');
+    expect(normalPage.status).toBe(200);
+    expect(normalPage.headers['x-powered-by']).toBeUndefined();
+
+    // A non-404 failure from the community lookup is rethrown by tenantRouting,
+    // so Express jumps straight to the error handler and Helmet never runs.
+    const api = require('../src/lib/api');
+    api.getTenantBootstrap.mockRejectedValueOnce(new api.ApiError('Community lookup failed', 400, {
+      success: false,
+      errors: [{ code: 'INVALID_TENANT', message: 'Community lookup failed' }]
+    }));
+
+    const errorPage = await request(app).get('/zzz/accessible/zzz');
+    expect(errorPage.status).toBeGreaterThanOrEqual(400);
+    expect(errorPage.headers['content-security-policy']).toBeUndefined(); // proves Helmet was skipped
+    expect(errorPage.headers['x-powered-by']).toBeUndefined();
+  });
+
   it('keeps group multipart uploads tenant-aware and rejects non-Laravel file types', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
