@@ -249,6 +249,28 @@ describe('ListingsAdmin', () => {
     });
   });
 
+  it('opens on the status tab named in the address and asks the API for it', async () => {
+    window.history.pushState({}, '', '/admin/listings?status=pending');
+    const { ListingsAdmin } = await import('./ListingsAdmin');
+    render(<ListingsAdmin />);
+
+    await waitFor(() => {
+      expect(mockAdminListings.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'pending' }));
+    });
+    window.history.pushState({}, '', '/');
+  });
+
+  it('falls back to all listings when the address carries an unknown status', async () => {
+    window.history.pushState({}, '', '/admin/listings?status=bogus');
+    const { ListingsAdmin } = await import('./ListingsAdmin');
+    render(<ListingsAdmin />);
+
+    await waitFor(() => {
+      expect(mockAdminListings.list).toHaveBeenCalledWith(expect.objectContaining({ status: undefined }));
+    });
+    window.history.pushState({}, '', '/');
+  });
+
   it('shows error toast when API call fails', async () => {
     mockAdminListings.list.mockRejectedValue(new Error('network'));
     const { ListingsAdmin } = await import('./ListingsAdmin');

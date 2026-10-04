@@ -13,6 +13,7 @@ import { Button, Chip, Card, CardBody, Input, Spinner, Tabs, Tab, Tooltip } from
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
@@ -306,6 +307,15 @@ function FeaturedListingsPanel() {
 // Main ListingsAdmin Component
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+const LISTING_STATUS_TABS = ['all', 'pending', 'active', 'inactive'] as const;
+type ListingStatusTab = (typeof LISTING_STATUS_TABS)[number];
+
+/** A URL value outside the four tabs falls back to "all" rather than an empty list. */
+function readStatusParam(value: string | null): ListingStatusTab {
+  return (LISTING_STATUS_TABS as readonly string[]).includes(value ?? '') ? (value as ListingStatusTab) : 'all';
+}
+
 export function ListingsAdmin() {
   const { t } = useTranslation('admin_listings');
   useAdminPageMeta({
@@ -319,7 +329,11 @@ export function ListingsAdmin() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState('all');
+  // The status tab lives in the address (`?status=pending`) so the dashboard's
+  // "Review" link and the sidebar badge open the list already filtered. Until
+  // 2026-10-04 this was plain state and every such link landed on "All".
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [status, setStatus] = useState(() => readStatusParam(searchParams.get('status')));
   const [search, setSearch] = useState('');
   const [confirmAction, setConfirmAction] = useState<{
     type: 'approve' | 'reject' | 'delete';
@@ -327,6 +341,30 @@ export function ListingsAdmin() {
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [featureToggleLoading, setFeatureToggleLoading] = useState<number | null>(null);
+
+  // Sync when the URL changes from outside (a sidebar or dashboard link while
+  // already on this page).
+  useEffect(() => {
+    const urlStatus = readStatusParam(searchParams.get('status'));
+    if (urlStatus !== status) {
+      setStatus(urlStatus);
+      setPage(1);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleStatusChange = (key: string) => {
+    const next = readStatusParam(key);
+    setStatus(next);
+    setPage(1);
+    const params = new URLSearchParams(searchParams);
+    if (next === 'all') {
+      params.delete('status');
+    } else {
+      params.set('status', next);
+    }
+    setSearchParams(params, { replace: true });
+  };
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -546,7 +584,7 @@ export function ListingsAdmin() {
             <Tabs
               aria-label={t('listings.filter_tabs_aria')}
               selectedKey={status}
-              onSelectionChange={(key) => { setStatus(key as string); setPage(1); }}
+              onSelectionChange={(key) => handleStatusChange(String(key))}
               variant="underlined"
               size="sm"
             >
