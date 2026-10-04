@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Auth;
  *   GET    /api/v2/wallet/transactions         transactions()
  *   GET    /api/v2/wallet/transactions/{id}    showTransaction()
  *   POST   /api/v2/wallet/transfer             transfer()
- *   DELETE /api/v2/wallet/transactions/{id}    destroyTransaction()
  *   GET    /api/v2/wallet/user-search          userSearch()
  *   GET    /api/v2/wallet/pending-count        pendingCount()
  */
@@ -237,32 +236,6 @@ class WalletController extends BaseApiController
 
     // -----------------------------------------------------------------
     //  DELETE /api/v2/wallet/transactions/{id}
-    // -----------------------------------------------------------------
-
-    /**
-     * Hide a transaction from the user's history (soft delete).
-     */
-    public function destroyTransaction(int $id): JsonResponse
-    {
-        $userId = $this->requireAuth();
-        $this->rateLimit('wallet_delete', 20, 60);
-
-        // Federation transactions (negative ids) are not user-hideable — they're an
-        // audit trail of external transfers. Return 404 so the frontend doesn't show
-        // a delete affordance for them.
-        if ($id < 0) {
-            return $this->respondWithError('NOT_FOUND', __('api.transaction_not_found'), null, 404);
-        }
-
-        $success = $this->walletService->deleteTransaction($id, $userId);
-
-        if (! $success) {
-            return $this->respondWithError('NOT_FOUND', __('api.transaction_not_found'), null, 404);
-        }
-
-        return $this->noContent();
-    }
-
     // -----------------------------------------------------------------
     //  GET /api/v2/wallet/user-search
     // -----------------------------------------------------------------

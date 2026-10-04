@@ -116,18 +116,6 @@ class WalletServiceTest extends TestCase
         $this->assertEmpty($result);
     }
 
-    public function test_deleteTransaction_returns_false_when_not_found(): void
-    {
-        $txnBuilder = Mockery::mock(Builder::class);
-        $txnBuilder->shouldReceive('where')->andReturnSelf();
-        $txnBuilder->shouldReceive('first')->andReturn(null);
-        $txnBuilder->shouldReceive('orWhere')->andReturnSelf();
-
-        $this->mockTransaction->shouldReceive('newQuery')->andReturn($txnBuilder);
-
-        $this->assertFalse($this->service->deleteTransaction(999, 1));
-    }
-
     public function test_getTransaction_returns_null_when_not_found(): void
     {
         $txnBuilder = Mockery::mock(Builder::class);

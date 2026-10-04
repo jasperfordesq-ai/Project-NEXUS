@@ -286,42 +286,6 @@ class WalletControllerTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    //  DELETE TRANSACTION
-    // ------------------------------------------------------------------
-
-    public function test_can_hide_own_transaction(): void
-    {
-        $user = $this->authenticatedUser();
-        $other = User::factory()->forTenant($this->testTenantId)->create();
-
-        $transaction = Transaction::factory()->forTenant($this->testTenantId)->create([
-            'sender_id' => $user->id,
-            'receiver_id' => $other->id,
-            'status' => 'completed',
-        ]);
-
-        $response = $this->apiDelete("/v2/wallet/transactions/{$transaction->id}");
-
-        $this->assertContains($response->getStatusCode(), [200, 204]);
-    }
-
-    public function test_hide_transaction_requires_authentication(): void
-    {
-        $response = $this->apiDelete('/v2/wallet/transactions/1');
-
-        $response->assertStatus(401);
-    }
-
-    public function test_hide_nonexistent_transaction_returns_404(): void
-    {
-        $this->authenticatedUser();
-
-        $response = $this->apiDelete('/v2/wallet/transactions/999999');
-
-        $response->assertStatus(404);
-    }
-
-    // ------------------------------------------------------------------
     //  USER SEARCH
     // ------------------------------------------------------------------
 

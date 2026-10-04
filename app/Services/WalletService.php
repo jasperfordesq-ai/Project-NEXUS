@@ -1026,35 +1026,6 @@ class WalletService
     }
 
     /**
-     * Hide (soft-delete) a transaction from a user's history.
-     *
-     * @return bool True on success, false if not found/not authorized
-     */
-    public function deleteTransaction(int $transactionId, int $userId): bool
-    {
-        /** @var Transaction|null $txn */
-        $txn = $this->transaction->newQuery()
-            ->where('id', $transactionId)
-            ->where(fn (Builder $q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
-            ->first();
-
-        if (! $txn) {
-            return false;
-        }
-
-        if ($txn->sender_id === $userId) {
-            $txn->deleted_for_sender = true;
-        }
-        if ($txn->receiver_id === $userId) {
-            $txn->deleted_for_receiver = true;
-        }
-
-        $txn->save();
-
-        return true;
-    }
-
-    /**
      * Search users for wallet transfer autocomplete.
      *
      * Surnames are private platform-wide (see UserService::getPublicProfile and

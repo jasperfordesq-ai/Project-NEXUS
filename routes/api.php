@@ -971,7 +971,9 @@ Route::get('/v2/wallet/transactions', [\App\Http\Controllers\Api\WalletControlle
 Route::get('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'showTransaction']);
 Route::post('/v2/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::post('/v2/wallet/operation-status', [\App\Http\Controllers\Api\WalletController::class, 'operationStatus']);
-Route::delete('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'destroyTransaction']);
+// F-564 (Cyphere, 4 Oct 2026): DELETE /v2/wallet/transactions/{id} removed. It only set a
+// per-member hide flag and no client offered it, but it let a member edit their own view of
+// the ledger. Historic hide flags are still honoured on read; nothing can set new ones.
 Route::get('/v2/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 Route::get('/v2/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
 });
@@ -3993,7 +3995,7 @@ Route::get('/wallet/transactions', [\App\Http\Controllers\Api\WalletController::
 Route::get('/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
 // Legacy alias of /v2/wallet/transfer — same gates as the canonical route (F-105).
 Route::post('/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required')->middleware('legal-acceptance');
-// Legacy route removed: /wallet/delete — use V2 DELETE /v2/wallet/transactions/{id} instead
+// Legacy route removed: /wallet/delete (and its V2 successor, see F-564)
 Route::post('/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 });
 // Legacy GET /members, /listings and /groups removed (F-145): they bypassed the
