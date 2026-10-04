@@ -140,6 +140,79 @@ function installHooksOnce(): void {
   });
 }
 
+/* ───────────────── Member links: the label must show where it goes ───────────────── */
+
+/**
+ * F-562 (Cyphere pen test, 4 Oct 2026). A member could write
+ * `<a href="https://evil.example/login">Click here to re-authenticate</a>`
+ * into a listing or event description and it rendered as a perfectly ordinary
+ * platform link — not script, so the sanitiser was content, but a convincing
+ * phishing lure in another member's feed.
+ *
+ * Rule: in member-authored content every link that leaves this origin shows
+ * its real destination. If the visible text already names the host (or the
+ * mailbox, for `mailto:`) it is left alone; otherwise the host is appended in
+ * brackets as a plain text node the author cannot style or hide (member
+ * content has no `class`, `id` or `style`). A link with no text at all shows
+ * its full address. Relative and same-origin links are not touched.
+ *
+ * Runs on the sanitiser's OUTPUT, not inside a DOMPurify hook: a hook sees
+ * the anchor before its children are cleaned, so `<script>evil.example</script>`
+ * inside the label would satisfy the host check and then vanish.
+ */
+function labelExternalLinks(cleanHtml: string): string {
+  if (!cleanHtml.includes('<a ')) return cleanHtml;
+  if (typeof document === 'undefined') return cleanHtml;
+
+  // <template> content is inert: nothing loads or runs. The markup is already
+  // DOMPurify output, so parsing it again changes nothing.
+  const tpl = document.createElement('template');
+  tpl.innerHTML = cleanHtml;
+
+  const anchors = tpl.content.querySelectorAll('a[href]');
+  if (anchors.length === 0) return cleanHtml;
+
+  let changed = false;
+  anchors.forEach((anchor) => {
+    const href = anchor.getAttribute('href') ?? '';
+    const destination = describeDestination(href);
+    if (!destination) return;
+
+    const label = (anchor.textContent ?? '').trim();
+    if (label === '') {
+      anchor.textContent = href;
+      changed = true;
+      return;
+    }
+    if (label.toLowerCase().includes(destination.toLowerCase())) return;
+
+    anchor.appendChild(document.createTextNode(` (${destination})`));
+    changed = true;
+  });
+
+  return changed ? tpl.innerHTML : cleanHtml;
+}
+
+/**
+ * The part of a link's destination a reader needs to see: the host for
+ * http(s), the mailbox for mailto. Empty string = nothing to show (relative,
+ * same-origin, or unparseable — the scheme guard has already run).
+ */
+function describeDestination(href: string): string {
+  let url: URL;
+  try {
+    url = new URL(href, window.location.origin);
+  } catch {
+    return '';
+  }
+  if (url.protocol === 'mailto:') {
+    return url.pathname.split('?')[0] ?? '';
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+  if (url.host.toLowerCase() === window.location.host.toLowerCase()) return '';
+  return url.host;
+}
+
 /* ───────────────────────── Public API ───────────────────────── */
 
 /**
@@ -164,19 +237,21 @@ export function sanitizeRichText(html: string | null | undefined): string {
  * Sanitize MEMBER-authored rich HTML: the rich-text profile without `class`
  * or `id` (see MEMBER_RICH_TEXT_ALLOWED_ATTR). Use for anything a member
  * wrote — feed posts, comments, bios, listing / event / group descriptions.
+ * Every link that leaves this origin also shows its destination (F-562).
  * Administrator-authored content (blog, KB, legal, custom pages) keeps
  * `sanitizeRichText`.
  */
 export function sanitizeMemberRichText(html: string | null | undefined): string {
   if (!html) return '';
   installHooksOnce();
-  return DOMPurify.sanitize(html, {
+  const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: RICH_TEXT_ALLOWED_TAGS,
     ALLOWED_ATTR: MEMBER_RICH_TEXT_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
     ALLOW_UNKNOWN_PROTOCOLS: false,
     KEEP_CONTENT: true,
   });
+  return labelExternalLinks(clean);
 }
 
 /**

@@ -45,7 +45,8 @@ describe('SafeHtml', () => {
     );
     const anchor = container.querySelector('a');
     expect(anchor).not.toBeNull();
-    expect(anchor?.textContent).toBe('Link');
+    // F-562: member links that leave the origin show their destination.
+    expect(anchor?.textContent).toBe('Link (example.com)');
   });
 
   it('strips <script> tags completely', async () => {

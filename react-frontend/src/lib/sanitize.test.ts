@@ -391,3 +391,49 @@ describe('sanitizeMemberRichText (F-075)', () => {
     expect(sanitizeRichText('<p class="legal-note">Clause</p>')).toContain('class="legal-note"');
   });
 });
+
+describe('sanitizeMemberRichText — link labels show their destination (F-562)', () => {
+  it('appends the destination host when the visible text hides it', () => {
+    const out = sanitizeMemberRichText('<p><a href="https://evil.example/login">Click here to re-authenticate</a></p>');
+    expect(out).toContain('Click here to re-authenticate');
+    expect(out).toContain('(evil.example)');
+    expect(out).toMatch(/<a [^>]*href="https:\/\/evil\.example\/login"[^>]*>Click here to re-authenticate \(evil\.example\)<\/a>/);
+  });
+
+  it('leaves a link alone when its text already names the host', () => {
+    const out = sanitizeMemberRichText('<a href="https://example.org/page">example.org/page</a>');
+    expect(out).toContain('>example.org/page</a>');
+    expect(out).not.toContain('(example.org)');
+  });
+
+  it('uses the address itself when the link has no text', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/x"></a>');
+    expect(out).toContain('>https://evil.example/x</a>');
+  });
+
+  it('labels a link that looks like the platform but points elsewhere', () => {
+    const out = sanitizeMemberRichText('<a href="https://app.project-nexus.ie.evil.example/">https://app.project-nexus.ie/login</a>');
+    expect(out).toContain('(app.project-nexus.ie.evil.example)');
+  });
+
+  it('does not label relative or same-origin links', () => {
+    expect(sanitizeMemberRichText('<a href="/listings/1">My listing</a>')).toContain('>My listing</a>');
+    const sameOrigin = `${window.location.origin}/events/2`;
+    expect(sanitizeMemberRichText(`<a href="${sameOrigin}">Event</a>`)).toContain('>Event</a>');
+  });
+
+  it('shows the mailbox for a mailto link whose text hides it', () => {
+    const out = sanitizeMemberRichText('<a href="mailto:scam@evil.example">Contact support</a>');
+    expect(out).toContain('Contact support (scam@evil.example)');
+  });
+
+  it('keeps nested formatting inside the label', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/"><strong>Sign in</strong></a>');
+    expect(out).toContain('<strong>Sign in</strong> (evil.example)</a>');
+  });
+
+  it('does not touch administrator rich text', () => {
+    const out = sanitizeRichText('<a href="https://evil.example/">Click here</a>');
+    expect(out).not.toContain('(evil.example)');
+  });
+});
