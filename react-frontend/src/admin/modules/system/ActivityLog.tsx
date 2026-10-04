@@ -19,6 +19,7 @@ import { adminSystem } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import type { ActivityLogEntry } from '../../api/types';
+import { useActivityDescription } from './activityDescription';
 
 import { useTranslation } from 'react-i18next';
 import { Button, Chip, Avatar } from '@/components/ui';
@@ -43,14 +44,6 @@ const actionColorMap: Record<string, 'success' | 'warning' | 'danger' | 'primary
   transfer: 'secondary',
 };
 
-const activityDetailKeys: Record<string, string> = {
-  blog_post_created: 'system.activity_details.blog_post_created',
-  blog_post_updated: 'system.activity_details.blog_post_updated',
-  blog_post_deleted: 'system.activity_details.blog_post_deleted',
-  blog_post_status_changed: 'system.activity_details.blog_post_status_changed',
-  blog_posts_bulk_deleted: 'system.activity_details.blog_posts_bulk_deleted',
-  blog_posts_bulk_published: 'system.activity_details.blog_posts_bulk_published',
-};
 
 function getActionColor(action: string): 'success' | 'warning' | 'danger' | 'primary' | 'default' | 'secondary' {
   const lower = action.toLowerCase();
@@ -90,27 +83,7 @@ export function ActivityLog() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
-  const getDescription = useCallback((entry: ActivityLogEntry): string => {
-    if (entry.description_code) {
-      const translationKey = activityDetailKeys[entry.description_code];
-      const params = { ...(entry.description_params ?? {}) };
-      for (const statusField of ['old_status', 'new_status'] as const) {
-        const status = params[statusField];
-        if (typeof status === 'string') {
-          params[statusField] = t(`system.activity_status.${status}`, {
-            defaultValue: t('system.activity_status.unknown'),
-          });
-        }
-      }
-      return translationKey
-        ? t(translationKey, params)
-        : t('system.activity_details.unknown', { code: entry.description_code });
-    }
-
-    // Historical rows stored free-form prose. Keep displaying that legacy
-    // value, but all newly structured rows are rendered from stable codes.
-    return entry.description || '—';
-  }, [t]);
+  const getDescription = useActivityDescription();
 
   const loadData = useCallback(async () => {
     setLoading(true);
