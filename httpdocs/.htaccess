@@ -12,6 +12,11 @@ RewriteRule ^uploads/(?:tenants/[^/]+/)?vetting/documents(?:/|$) - [F,L,NC]
 # an application-level upload validation regression is introduced later.
 RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|pht|phar)(?:/|$) - [F,L,NC]
 
+# Knowledge-base attachments are served only through the API download route,
+# which applies the draft-article and tenant rules (F-556). Production's
+# /storage Alias refuses the same path in docker/apache/storage-alias.conf.
+RewriteRule ^storage/tenant_[0-9]+/kb_attachments/ - [F,L,NC]
+
 # The same guard for the uploads tree, which had none. Measured 2026-09-11 in
 # the dev container (same AllowOverride All as the production images): a .php
 # file placed in httpdocs/uploads/ answered 200 and RAN, while the identical

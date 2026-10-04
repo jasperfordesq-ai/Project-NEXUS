@@ -247,7 +247,7 @@ class ImportKnowledgeBase extends Command
         $storagePath = "tenant_{$tenantId}/kb_attachments/{$storageName}";
 
         // Copy file to storage
-        Storage::disk('public')->put($storagePath, file_get_contents($file->getPathname()));
+        Storage::disk(\App\Services\KnowledgeBaseAttachmentService::DISK)->put($storagePath, file_get_contents($file->getPathname()));
 
         $mimeMap = [
             'md'   => 'text/markdown',

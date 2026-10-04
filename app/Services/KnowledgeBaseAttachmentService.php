@@ -34,6 +34,28 @@ class KnowledgeBaseAttachmentService
     ];
 
     /**
+     * Attachments are stored privately and served only through the API
+     * download route, which applies the draft-article and tenant rules. They
+     * used to be written to the public disk, where /storage served them to
+     * anyone with the URL (F-556, E-088); files written then stay there and
+     * are still read from it.
+     */
+    public const DISK = 'local';
+
+    private const LEGACY_DISK = 'public';
+
+    /**
+     * The disk that holds this attachment: private for everything uploaded
+     * since F-556, public for older uploads.
+     */
+    public static function diskFor(string $path): \Illuminate\Contracts\Filesystem\Filesystem
+    {
+        $private = Storage::disk(self::DISK);
+
+        return $private->exists($path) ? $private : Storage::disk(self::LEGACY_DISK);
+    }
+
+    /**
      * Get all attachments for an article.
      */
     public function getByArticleId(int $articleId): array
@@ -89,7 +111,7 @@ class KnowledgeBaseAttachmentService
         $storageName  = Str::uuid() . '.' . $ext;
         $storagePath  = "tenant_{$tenantId}/kb_attachments";
 
-        $path = $file->storeAs($storagePath, $storageName, 'public');
+        $path = $file->storeAs($storagePath, $storageName, self::DISK);
 
         if (! $path) {
             return ['error' => 'Failed to store file.'];
@@ -145,7 +167,7 @@ class KnowledgeBaseAttachmentService
 
         // Delete file from storage
         if ($attachment->file_path) {
-            Storage::disk('public')->delete($attachment->file_path);
+            self::diskFor($attachment->file_path)->delete($attachment->file_path);
         }
 
         DB::table('knowledge_base_attachments')
@@ -170,7 +192,7 @@ class KnowledgeBaseAttachmentService
 
         foreach ($attachments as $attachment) {
             if ($attachment->file_path) {
-                Storage::disk('public')->delete($attachment->file_path);
+                self::diskFor($attachment->file_path)->delete($attachment->file_path);
             }
         }
 

@@ -429,7 +429,7 @@ class KnowledgeBaseController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api_controllers_2.knowledge_base.attachment_not_found'), null, 404);
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $disk = \App\Services\KnowledgeBaseAttachmentService::diskFor((string) $attachment->file_path);
         if (! $disk->exists($attachment->file_path)) {
             return $this->respondWithError('NOT_FOUND', __('api_controllers_2.knowledge_base.file_not_found_on_disk'), null, 404);
         }
