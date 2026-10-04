@@ -10,7 +10,7 @@ import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
 // ── Hoisted mocks ────────────────────────────────────────────────────────────
-const { mockAdminSettings } = vi.hoisted(() => ({
+const { mockAdminSettings, mockAdminEnterprise } = vi.hoisted(() => ({
   mockAdminSettings: {
     get: vi.fn(),
     update: vi.fn(),
@@ -23,6 +23,11 @@ const { mockAdminSettings } = vi.hoisted(() => ({
     removeHeaderLogoDark: vi.fn(),
     saveHeaderColors: vi.fn(),
   },
+  mockAdminEnterprise: {
+    getConfig: vi.fn(),
+    updateConfig: vi.fn(),
+    resetConfig: vi.fn(),
+  },
 }));
 
 const mockToast = vi.hoisted(() => ({
@@ -33,6 +38,7 @@ const mockToast = vi.hoisted(() => ({
 }));
 
 const mockRefreshTenant = vi.hoisted(() => vi.fn());
+const mockConfirm = vi.hoisted(() => vi.fn());
 
 const DEFAULT_TEST_USER = { id: 1, name: 'Admin', role: 'god', is_super_admin: true, is_god: false };
 const mockAuthState = vi.hoisted(() => ({
@@ -60,7 +66,6 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-// PageMeta already mocked globally in setup.ts
 
 vi.mock('react-router-dom', async (importOriginal) => {
   const orig = await importOriginal<typeof import('react-router-dom')>();
@@ -69,19 +74,18 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('../../api/adminApi', () => ({
   adminSettings: mockAdminSettings,
+  adminEnterprise: mockAdminEnterprise,
 }));
-
-// Stub SystemConfig — it makes its own API calls we don't want to intercept
-vi.mock('../enterprise/SystemConfig', () => ({
-  SystemConfig: () => <div data-testid="system-config-stub">SystemConfig</div>,
-  default: () => <div data-testid="system-config-stub">SystemConfig</div>,
+vi.mock('@/admin/api/adminApi', () => ({
+  adminSettings: mockAdminSettings,
+  adminEnterprise: mockAdminEnterprise,
 }));
 
 vi.mock('../../AdminMetaContext', () => ({
   useAdminPageMeta: vi.fn(),
 }));
 
-vi.mock('../../components', () => ({
+vi.mock('../../components/PageHeader', () => ({
   PageHeader: ({ title, description }: { title: string; description?: string }) => (
     <div>
       <h1>{title}</h1>
@@ -99,12 +103,14 @@ vi.mock('@/components/ui', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...actual,
-    Select: ({ children, label, onSelectionChange, selectedKeys }: {
-      children: React.ReactNode; label?: string; onSelectionChange?: (keys: Set<string>) => void; selectedKeys?: string[];
+    useConfirm: () => mockConfirm,
+    Select: ({ children, label, 'aria-label': ariaLabel, onSelectionChange, selectedKeys }: {
+      children: React.ReactNode; label?: string; 'aria-label'?: string;
+      onSelectionChange?: (keys: Set<string>) => void; selectedKeys?: string[];
     }) => (
       <select
-        aria-label={label || 'select'}
-        defaultValue={selectedKeys?.[0]}
+        aria-label={label || ariaLabel || 'select'}
+        value={selectedKeys?.[0] ?? ''}
         onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
       >
         {children}
@@ -126,7 +132,42 @@ vi.mock('@/components/ui', async (importOriginal) => {
         onChange={(e) => onValueChange?.(e.target.checked)}
       />
     ),
-    // Keep Card, CardBody, CardHeader, Input, Button, Textarea, Spinner etc. from real HeroUI
+    // The three-way registration control, as a radio group the tests can drive.
+    ToggleButtonGroup: ({ children, selectedKeys, onSelectionChange, 'aria-label': ariaLabel }: {
+      children: React.ReactNode; selectedKeys?: Set<string>; onSelectionChange?: (keys: Set<string>) => void; 'aria-label'?: string;
+    }) => (
+      <div role="radiogroup" aria-label={ariaLabel} data-selected={Array.from(selectedKeys ?? []).join(',')}>
+        {React.Children.map(children, (child) =>
+          React.isValidElement<{ id: string; children: React.ReactNode }>(child)
+            ? React.cloneElement(child, {
+                // @ts-expect-error — test-only props understood by the ToggleButton stub below
+                selected: selectedKeys?.has(child.props.id),
+                onSelect: () => onSelectionChange?.(new Set([child.props.id])),
+              })
+            : child,
+        )}
+      </div>
+    ),
+    ToggleButton: ({ id, children, selected, onSelect }: {
+      id: string; children: React.ReactNode; selected?: boolean; onSelect?: () => void;
+    }) => (
+      <button type="button" role="radio" aria-checked={Boolean(selected)} data-id={id} onClick={onSelect}>
+        {children}
+      </button>
+    ),
+    Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    Dropdown: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+    DropdownTrigger: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    DropdownMenu: ({ children, onAction }: { children?: React.ReactNode; onAction?: (key: string) => void }) => (
+      <div data-testid="more-menu">
+        {React.Children.map(children, (child) =>
+          React.isValidElement<{ id: string; children: React.ReactNode }>(child) ? (
+            <button type="button" onClick={() => onAction?.(child.props.id)}>{child.props.children}</button>
+          ) : child,
+        )}
+      </div>
+    ),
+    DropdownItem: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   };
 });
 
@@ -154,6 +195,7 @@ const makeSettingsData = (overrides: Record<string, unknown> = {}) => ({
       powered_by_image_dark: '',
       powered_by_url: '',
       default_currency: 'eur',
+      region: 'IE',
       inactivity_timeout_minutes: '0',
       header_bg_color: '',
       header_accent_color: '',
@@ -161,6 +203,46 @@ const makeSettingsData = (overrides: Record<string, unknown> = {}) => ({
     },
   },
 });
+
+const makeEnterpriseConfig = (overrides: Record<string, unknown> = {}) => ({
+  success: true,
+  data: {
+    timezone: 'UTC',
+    locale: 'en',
+    onboarding_enabled: true,
+    welcome_message: '',
+    starting_balance: 0,
+    max_transaction: 0,
+    currency_name: 'Hours',
+    currency_symbol: 'h',
+    auto_approve_listings: true,
+    auto_approve_blog: false,
+    max_listing_images: 5,
+    profanity_filter: false,
+    email_notifications_enabled: true,
+    push_notifications_enabled: true,
+    digest_frequency: 'monthly',
+    max_listings_per_user: 0,
+    max_groups_per_user: 0,
+    max_file_upload_mb: 10,
+    ...overrides,
+  },
+});
+
+const isDisabled = (el: HTMLElement) =>
+  el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true' || el.getAttribute('data-disabled') === 'true';
+
+const getSaveButton = () => screen.getByRole('button', { name: /save all changes/i });
+const getDiscardButton = () => screen.getByRole('button', { name: /^discard$/i });
+const findSwitch = (label: string) =>
+  screen.getAllByRole('switch').find((el) => el.getAttribute('aria-label') === label);
+
+async function renderPage() {
+  const { AdminSettings } = await import('./AdminSettings');
+  render(<AdminSettings />);
+  await waitFor(() => expect(screen.getByText('Admin Settings')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Registration & Access' })).toBeInTheDocument());
+}
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 describe('AdminSettings', () => {
@@ -170,176 +252,224 @@ describe('AdminSettings', () => {
     mockAdminSettings.get.mockResolvedValue(makeSettingsData());
     mockAdminSettings.update.mockResolvedValue({ success: true });
     mockAdminSettings.saveHeaderColors.mockResolvedValue({ success: true });
+    mockAdminEnterprise.getConfig.mockResolvedValue(makeEnterpriseConfig());
+    mockAdminEnterprise.updateConfig.mockResolvedValue({ success: true });
+    mockAdminEnterprise.resetConfig.mockResolvedValue({ success: true });
     mockRefreshTenant.mockResolvedValue(undefined);
+    mockConfirm.mockResolvedValue(true);
   });
 
-  it('shows loading spinner while fetching settings', async () => {
+  it('shows a busy skeleton while fetching settings', async () => {
     mockAdminSettings.get.mockReturnValue(new Promise(() => {}));
+    mockAdminEnterprise.getConfig.mockReturnValue(new Promise(() => {}));
     const { AdminSettings } = await import('./AdminSettings');
     render(<AdminSettings />);
 
     const statusEls = screen.getAllByRole('status');
-    const busy = statusEls.find((el) => el.getAttribute('aria-busy') === 'true');
-    expect(busy).toBeDefined();
+    expect(statusEls.find((el) => el.getAttribute('aria-busy') === 'true')).toBeDefined();
   });
 
-  it('renders settings page title after successful load', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
+  it('renders the title, every section and the jump links after load', async () => {
+    await renderPage();
+    expect(screen.getByRole('heading', { name: 'Branding & Legal' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Header Logo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Accessible header colour' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Wallet & credits' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Related admin pages' })).toBeInTheDocument();
 
-    await waitFor(() => {
-      // "Admin Settings" is the actual English text for system.admin_settings_title
-      expect(screen.getByText('Admin Settings')).toBeInTheDocument();
-    });
+    const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+    expect(nav.querySelectorAll('a[href^="#settings-section-"]').length).toBeGreaterThanOrEqual(10);
   });
 
-  it('renders SystemConfig stub after load', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('system-config-stub')).toBeInTheDocument();
-    });
-  });
-
-  it('shows error toast when settings API fails', async () => {
+  it('calls both GET APIs on mount and shows an error toast when settings fail', async () => {
     mockAdminSettings.get.mockRejectedValue(new Error('network'));
     const { AdminSettings } = await import('./AdminSettings');
     render(<AdminSettings />);
 
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Failed to load settings');
-    });
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to load settings'));
+    expect(mockAdminSettings.get).toHaveBeenCalled();
+    expect(mockAdminEnterprise.getConfig).toHaveBeenCalled();
   });
 
-  it('shows "no changes" info when saving without modifying anything', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => screen.getByText('Admin Settings'));
-
-    // Find the save button — "Save settings" in English
-    const saveBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.trim() === 'Save settings'
-    );
-    if (saveBtn) {
-      await userEvent.click(saveBtn);
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith('No changes to save');
-      });
-    } else {
-      // Save button may have an icon child — check loosely
-      const btns = screen.getAllByRole('button');
-      const saveBtnLoose = btns.find((b) => b.textContent?.includes('Save settings'));
-      expect(saveBtnLoose).toBeDefined();
-    }
+  it('keeps Save disabled and reads "All changes saved" when nothing changed', async () => {
+    await renderPage();
+    expect(screen.getByRole('region', { name: 'Save or discard changes' })).toBeInTheDocument();
+    expect(screen.getByText('All changes saved')).toBeInTheDocument();
+    expect(isDisabled(getSaveButton())).toBe(true);
+    expect(isDisabled(getDiscardButton())).toBe(true);
+    expect(mockAdminSettings.update).not.toHaveBeenCalled();
   });
 
-  it('shows registration section with switches', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => {
-      // "Registration & Access" is the English text for system.section_registration_access
-      expect(screen.getByText('Registration & Access')).toBeInTheDocument();
-    });
-    // Open registration switch
-    expect(screen.getByText('Open Registration')).toBeInTheDocument();
-  });
-
-  it('shows maintenance mode read-only switch as disabled', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => screen.getByText('Admin Settings'));
-
-    // Find switch whose aria-label contains "Maintenance Mode"
-    const maintenanceSwitch = screen.getAllByRole('switch').find((el) =>
-      el.getAttribute('aria-label')?.includes('Maintenance Mode') ||
-      el.getAttribute('aria-label')?.includes('maintenance')
-    );
-    if (maintenanceSwitch) {
-      expect(maintenanceSwitch).toBeDisabled();
-    } else {
-      // Maintenance mode section may render as text only (read-only note)
-      expect(screen.getByText('Maintenance mode (read only)')).toBeInTheDocument();
-    }
-  });
-
-  it('shows branding and legal section', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => {
-      // "Branding & Legal" is the English for system.section_branding_legal
-      expect(screen.getByText('Branding & Legal')).toBeInTheDocument();
-    });
-  });
-
-  it('loads and saves the partner logo label', async () => {
-    mockAdminSettings.get.mockResolvedValue(makeSettingsData({
-      partner_logo_label: 'Community sponsor',
-    }));
-
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
+  it('shows the unsaved chip and a dot on the edited section only', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Community sponsor' }));
+    await renderPage();
 
     const labelInput = await screen.findByDisplayValue('Community sponsor');
     await userEvent.clear(labelInput);
     await userEvent.type(labelInput, 'Local partner');
 
-    const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Save settings'));
-    expect(saveBtn).toBeDefined();
-    await userEvent.click(saveBtn!);
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+    const dirtyPills = nav.querySelectorAll('a[data-dirty="true"]');
+    expect(dirtyPills).toHaveLength(1);
+    expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-branding');
+  });
+
+  it('saves only the changed main-form field and refreshes the tenant', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Community sponsor' }));
+    await renderPage();
+
+    const labelInput = await screen.findByDisplayValue('Community sponsor');
+    await userEvent.clear(labelInput);
+    await userEvent.type(labelInput, 'Local partner');
+    await userEvent.click(getSaveButton());
 
     await waitFor(() => {
       expect(mockAdminSettings.update).toHaveBeenCalledWith({ partner_logo_label: 'Local partner' });
     });
+    expect(mockAdminSettings.saveHeaderColors).not.toHaveBeenCalled();
+    expect(mockAdminEnterprise.updateConfig).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Settings Saved'));
+    expect(mockRefreshTenant).toHaveBeenCalled();
   });
 
-  it('does NOT show god-only Powered By section for non-god user', async () => {
-    // Default user has is_god: false
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
+  it('one Save writes both halves, main form first, with a single success toast', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
+    await renderPage();
 
-    await waitFor(() => screen.getByText('Admin Settings'));
+    const labelInput = await screen.findByDisplayValue('Sponsor');
+    await userEvent.clear(labelInput);
+    await userEvent.type(labelInput, 'Partner');
 
-    // "Powered By Branding" section (system.powered_by_branding_section) should not appear
-    expect(screen.queryByText('Powered By Branding')).not.toBeInTheDocument();
+    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
+    await userEvent.clear(currencyName);
+    await userEvent.type(currencyName, 'Credits');
+
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => expect(mockAdminEnterprise.updateConfig).toHaveBeenCalledWith({ currency_name: 'Credits' }));
+    expect(mockAdminSettings.update).toHaveBeenCalledWith({ partner_logo_label: 'Partner' });
+    expect(mockAdminSettings.update.mock.invocationCallOrder[0]).toBeLessThan(
+      mockAdminEnterprise.updateConfig.mock.invocationCallOrder[0]!,
+    );
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledTimes(1));
+    expect(mockToast.error).not.toHaveBeenCalled();
   });
 
-  it('calls get API on mount', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
+  it('reports a partial failure and keeps the failed half dirty', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
+    mockAdminEnterprise.updateConfig.mockResolvedValue({ success: false, error: 'nope' });
+    await renderPage();
 
-    await waitFor(() => {
-      expect(mockAdminSettings.get).toHaveBeenCalled();
+    const labelInput = await screen.findByDisplayValue('Sponsor');
+    await userEvent.clear(labelInput);
+    await userEvent.type(labelInput, 'Partner');
+    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
+    await userEvent.clear(currencyName);
+    await userEvent.type(currencyName, 'Credits');
+
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => expect(mockToast.warning).toHaveBeenCalledTimes(1));
+    expect(String(mockToast.warning.mock.calls[0]?.[0])).toContain('additional configuration');
+    // The additional-configuration half did not reload, so it is still dirty.
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+  });
+
+  it('Discard restores both halves', async () => {
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
+    await renderPage();
+
+    const labelInput = await screen.findByDisplayValue('Sponsor');
+    await userEvent.clear(labelInput);
+    await userEvent.type(labelInput, 'Partner');
+    const currencyName = screen.getByRole('textbox', { name: /currency name/i });
+    await userEvent.clear(currencyName);
+    await userEvent.type(currencyName, 'Credits');
+    expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+
+    await userEvent.click(getDiscardButton());
+
+    expect(screen.getByDisplayValue('Sponsor')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Hours')).toBeInTheDocument();
+    expect(screen.getByText('All changes saved')).toBeInTheDocument();
+  });
+
+  it('Reset in the more-menu asks first, then resets and reloads both halves', async () => {
+    await renderPage();
+    const getCalls = mockAdminSettings.get.mock.calls.length;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset additional configuration to defaults' }));
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
+    expect(mockConfirm.mock.calls[0]?.[0]).toMatchObject({ status: 'danger' });
+    await waitFor(() => expect(mockAdminEnterprise.resetConfig).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockAdminSettings.get.mock.calls.length).toBeGreaterThan(getCalls));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Additional configuration reset to defaults'));
+  });
+
+  it('does not reset when the admin cancels the confirmation', async () => {
+    mockConfirm.mockResolvedValue(false);
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset additional configuration to defaults' }));
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
+    expect(mockAdminEnterprise.resetConfig).not.toHaveBeenCalled();
+  });
+
+  it('sends the region when it changes', async () => {
+    await renderPage();
+    const regionSelect = screen.getByRole('combobox', { name: 'Date and number format' });
+    fireEvent.change(regionSelect, { target: { value: 'GB' } });
+    await userEvent.click(getSaveButton());
+    await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledWith({ region: 'GB' }));
+  });
+
+  describe('registration mode (three-way)', () => {
+    const getRadio = (name: RegExp) => screen.getByRole('radio', { name });
+
+    it('shows the loaded mode and sends invite_only when chosen', async () => {
+      await renderPage();
+      expect(getRadio(/^open$/i)).toHaveAttribute('aria-checked', 'true');
+      expect(getRadio(/invite only/i)).toHaveAttribute('aria-checked', 'false');
+
+      fireEvent.click(getRadio(/invite only/i));
+      expect(screen.getByText(/Only people with an invitation code or link/)).toBeInTheDocument();
+      await userEvent.click(getSaveButton());
+      await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledWith({ registration_mode: 'invite_only' }));
+    });
+
+    it('loads the legacy "invite" alias as Invite only and does not downgrade it', async () => {
+      mockAdminSettings.get.mockResolvedValue(makeSettingsData({ registration_mode: 'invite' }));
+      await renderPage();
+      expect(getRadio(/invite only/i)).toHaveAttribute('aria-checked', 'true');
+      expect(isDisabled(getSaveButton())).toBe(true);
     });
   });
 
-  it('shows the save settings button after load', async () => {
-    const { AdminSettings } = await import('./AdminSettings');
-    render(<AdminSettings />);
-
-    await waitFor(() => screen.getByText('Admin Settings'));
-
-    const saveBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-      b.textContent?.includes('Save settings')
-    );
-    expect(saveBtn).toBeDefined();
+  it('shows the maintenance mode switch as read only', async () => {
+    await renderPage();
+    expect(findSwitch('Maintenance Mode')).toBeDisabled();
+    expect(screen.getByText('Maintenance mode (read only)')).toBeInTheDocument();
   });
+
+  it('does NOT show the god-only Powered-by section for a non-god user', async () => {
+    await renderPage();
+    expect(screen.queryByText('Powered-by branding')).not.toBeInTheDocument();
+    expect(screen.queryByText('Powered By Branding')).not.toBeInTheDocument();
+  });
+
+  it('shows the Powered-by section for a platform god', async () => {
+    mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
+    await renderPage();
+    expect(screen.getByText('God only')).toBeInTheDocument();
+  });
+
   // F-054: email verification and member approval are platform-super-admin-only
   // on the server; a plain admin's save must not carry them or it 403s.
   describe('platform-super-admin-only registration settings (F-054)', () => {
-    const findSwitch = (label: string) =>
-      screen.getAllByRole('switch').find((el) => el.getAttribute('aria-label') === label);
-
     it('locks email verification and admin approval for a plain admin', async () => {
       mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
-      const { AdminSettings } = await import('./AdminSettings');
-      render(<AdminSettings />);
-
-      await waitFor(() => screen.getByText('Admin Settings'));
+      await renderPage();
       expect(findSwitch('Email Verification')).toBeDisabled();
       expect(findSwitch('Admin Approval')).toBeDisabled();
       expect(screen.getAllByText('Super admin only').length).toBeGreaterThanOrEqual(2);
@@ -347,10 +477,7 @@ describe('AdminSettings', () => {
 
     it('locks them for a tenant super-admin too (platform tier only)', async () => {
       mockAuthState.user = { id: 6, name: 'Tenant Super', role: 'tenant_admin', is_tenant_super_admin: true };
-      const { AdminSettings } = await import('./AdminSettings');
-      render(<AdminSettings />);
-
-      await waitFor(() => screen.getByText('Admin Settings'));
+      await renderPage();
       expect(findSwitch('Email Verification')).toBeDisabled();
       expect(findSwitch('Admin Approval')).toBeDisabled();
     });
@@ -358,14 +485,12 @@ describe('AdminSettings', () => {
     it('omits the reserved keys when a plain admin saves other fields', async () => {
       mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
       mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor' }));
-      const { AdminSettings } = await import('./AdminSettings');
-      render(<AdminSettings />);
+      await renderPage();
 
       const labelInput = await screen.findByDisplayValue('Sponsor');
       await userEvent.clear(labelInput);
       await userEvent.type(labelInput, 'Partner');
-      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Save settings'));
-      await userEvent.click(saveBtn!);
+      await userEvent.click(getSaveButton());
 
       await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledTimes(1));
       const payload = mockAdminSettings.update.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -377,17 +502,12 @@ describe('AdminSettings', () => {
 
     it('lets a platform super-admin change email verification', async () => {
       mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
-      const { AdminSettings } = await import('./AdminSettings');
-      render(<AdminSettings />);
-
-      await waitFor(() => screen.getByText('Admin Settings'));
+      await renderPage();
       const emailSwitch = findSwitch('Email Verification')!;
       expect(emailSwitch).not.toBeDisabled();
       expect(findSwitch('Admin Approval')).not.toBeDisabled();
       await userEvent.click(emailSwitch);
-
-      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.includes('Save settings'));
-      await userEvent.click(saveBtn!);
+      await userEvent.click(getSaveButton());
 
       await waitFor(() => {
         expect(mockAdminSettings.update).toHaveBeenCalledWith({ email_verification: 'false' });

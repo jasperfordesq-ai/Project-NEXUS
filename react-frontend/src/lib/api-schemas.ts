@@ -496,6 +496,8 @@ export const adminSettingsResponseSchema = z.object({
     maintenance_mode: z.string().nullable(),
     partner_logo_label: z.string().nullable().optional(),
     partner_logo_link_url: z.string().nullable().optional(),
+    /** ISO 3166-1 alpha-2; drives date/number formatting. */
+    region: z.string().nullable().optional(),
   }).passthrough(),
 }).passthrough();
 
