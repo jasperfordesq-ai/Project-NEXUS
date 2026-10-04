@@ -128,6 +128,7 @@
     "impersonate_started": "Representação iniciada",
     "impersonate_success": "Personificar com sucesso",
     "import_csv": "Importar CSV",
+    "export_all_members": "Exportar todos os membros",
     "import_csv_description": "Importe membros de um arquivo CSV. Baixe o modelo para ver o formato necessário.",
     "import_csv_file": "Arquivo CSV",
     "import_default_role": "Função padrão",

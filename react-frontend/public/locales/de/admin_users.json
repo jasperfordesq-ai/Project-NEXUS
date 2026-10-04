@@ -128,6 +128,7 @@
     "impersonate_started": "Identitätswechsel gestartet",
     "impersonate_success": "Erfolgreich imitieren",
     "import_csv": "CSV importieren",
+    "export_all_members": "Alle Mitglieder exportieren",
     "import_csv_description": "Importieren Sie Mitglieder aus einer CSV-Datei. Laden Sie die Vorlage herunter, um das erforderliche Format anzuzeigen.",
     "import_csv_file": "CSV-Datei",
     "import_default_role": "Standardrolle",

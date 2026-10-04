@@ -128,6 +128,7 @@
     "impersonate_started": "偽装が開始されました",
     "impersonate_success": "正常に偽装する",
     "import_csv": "CSVのインポート",
+    "export_all_members": "全メンバーをエクスポート",
     "import_csv_description": "CSV ファイルからメンバーをインポートします。テンプレートをダウンロードして、必要な形式を確認してください。",
     "import_csv_file": "CSVファイル",
     "import_default_role": "デフォルトの役割",

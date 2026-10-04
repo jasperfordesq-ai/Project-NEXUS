@@ -19,6 +19,7 @@ const mockAdminUsers = vi.hoisted(() => ({
   impersonate: vi.fn().mockResolvedValue({ success: true, data: { token: 'test' } }),
   importUsers: vi.fn().mockResolvedValue({ success: true, data: { imported: 0, skipped: 0, errors: [], total_rows: 0 } }),
   downloadImportTemplate: vi.fn(),
+  exportAllMembers: vi.fn(),
   bulkApprove: vi.fn().mockResolvedValue({ success: true, data: { success: 1, failed: 0 } }),
   bulkSuspend: vi.fn().mockResolvedValue({ success: true, data: { success: 1, failed: 0 } }),
 }));

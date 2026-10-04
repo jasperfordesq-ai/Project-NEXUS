@@ -21,6 +21,7 @@ const { mockAdminUsers } = vi.hoisted(() => ({
     impersonate: vi.fn(),
     importUsers: vi.fn(),
     downloadImportTemplate: vi.fn(),
+    exportAllMembers: vi.fn(),
     bulkApprove: vi.fn(),
     bulkSuspend: vi.fn(),
   },
@@ -206,6 +207,26 @@ describe('UserList', () => {
       const loadingEl = document.querySelector('[aria-busy="true"]');
       expect(loadingEl).toBeTruthy();
     });
+  });
+
+  it('exports all members through the authenticated client', async () => {
+    mockAdminUsers.exportAllMembers.mockResolvedValue(new Blob());
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /export all members|export_all_members/i }));
+
+    await waitFor(() => expect(mockAdminUsers.exportAllMembers).toHaveBeenCalledTimes(1));
+  });
+
+  it('shows an error toast when the member export fails', async () => {
+    mockAdminUsers.exportAllMembers.mockRejectedValue(new Error('401'));
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /export all members|export_all_members/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
   });
 
   it('calls adminUsers.list on mount', async () => {

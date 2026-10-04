@@ -317,6 +317,7 @@ export function UserList() {
 
   // Import modal state
   const [importOpen, setImportOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState<{
@@ -454,6 +455,17 @@ export function UserList() {
       toast.error(t('users.import_failed'));
     }
     setImportLoading(false);
+  };
+
+  const handleExportAllMembers = async () => {
+    setExportLoading(true);
+    try {
+      await adminUsers.exportAllMembers();
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleDownloadTemplate = async () => {
@@ -669,6 +681,14 @@ export function UserList() {
         description={t('users.description')}
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              startContent={<Download size={16} />}
+              onPress={handleExportAllMembers}
+              isLoading={exportLoading}
+            >
+              {t('users.export_all_members')}
+            </Button>
             <Button
               variant="secondary"
               startContent={<Upload size={16} />}

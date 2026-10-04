@@ -128,6 +128,7 @@
     "impersonate_started": "بدأ انتحال الشخصية",
     "impersonate_success": "انتحال الشخصية بنجاح",
     "import_csv": "استيراد ملف CSV",
+    "export_all_members": "تصدير جميع الأعضاء",
     "import_csv_description": "استيراد الأعضاء من ملف CSV. قم بتنزيل القالب لمعرفة التنسيق المطلوب.",
     "import_csv_file": "ملف CSV",
     "import_default_role": "الدور الافتراضي",

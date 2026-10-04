@@ -128,6 +128,7 @@
     "impersonate_started": "Logáladh isteach mar an úsáideoir",
     "impersonate_success": "Logáladh isteach mar an úsáideoir",
     "import_csv": "Iompórtáil CSV",
+    "export_all_members": "Easpórtáil gach ball",
     "import_csv_description": "Iompórtáil baill ó chomhad CSV. Íoslódáil an teimpléad chun féachaint ar an bhformáid.",
     "import_csv_file": "Comhad CSV",
     "import_default_role": "Ról Réamhshocraithe",

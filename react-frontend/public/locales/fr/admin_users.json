@@ -128,6 +128,7 @@
     "impersonate_started": "Usurpation d'identité démarrée",
     "impersonate_success": "Usurper l'identité avec succès",
     "import_csv": "Importer un fichier CSV",
+    "export_all_members": "Exporter tous les membres",
     "import_csv_description": "Importez des membres à partir d'un fichier CSV. Téléchargez le modèle pour voir le format requis.",
     "import_csv_file": "Fichier CSV",
     "import_default_role": "Rôle par défaut",

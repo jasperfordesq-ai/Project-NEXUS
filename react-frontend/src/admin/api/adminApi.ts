@@ -268,6 +268,13 @@ export const adminUsers = {
   downloadImportTemplate: () =>
     api.download('/v2/admin/users/import/template', { filename: 'user_import_template.csv' }),
 
+  // Same export as Reports → Member reports (every member of this community;
+  // formula cells neutralised server-side).
+  exportAllMembers: () =>
+    api.download('/v2/admin/reports/members/export?format=csv', {
+      filename: `members-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
+
   bulkApprove: (userIds: number[]) =>
     api.post<BulkActionResult>('/v2/admin/users/bulk-approve', { user_ids: userIds }),
 

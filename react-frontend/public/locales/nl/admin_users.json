@@ -128,6 +128,7 @@
     "impersonate_started": "Nabootsen gestart",
     "impersonate_success": "Succesvol nabootsen",
     "import_csv": "CSV importeren",
+    "export_all_members": "Alle leden exporteren",
     "import_csv_description": "Importeer leden uit een CSV-bestand. Download het sjabloon om het vereiste formaat te zien.",
     "import_csv_file": "CSV-bestand",
     "import_default_role": "Standaardrol",

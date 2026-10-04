@@ -128,6 +128,7 @@
     "impersonate_started": "Impersonate Started",
     "impersonate_success": "Impersonate successfully",
     "import_csv": "Import CSV",
+    "export_all_members": "Export all members",
     "import_csv_description": "Import members from a CSV file. Download the template to see the required format.",
     "import_csv_file": "CSV File",
     "import_default_role": "Default Role",

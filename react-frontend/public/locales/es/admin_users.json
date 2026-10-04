@@ -128,6 +128,7 @@
     "impersonate_started": "Suplantar iniciado",
     "impersonate_success": "Suplantar con éxito",
     "import_csv": "Importar CSV",
+    "export_all_members": "Exportar todos los miembros",
     "import_csv_description": "Importe miembros desde un archivo CSV. Descargue la plantilla para ver el formato requerido.",
     "import_csv_file": "Archivo CSV",
     "import_default_role": "Rol predeterminado",

@@ -280,6 +280,14 @@ describe('adminUsers', () => {
     expect((formData as FormData).get('default_role')).toBe('member');
   });
 
+  it('exportAllMembers downloads the member report CSV', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminUsers.exportAllMembers();
+    const [url, options] = mockDownload.mock.calls[0];
+    expect(url).toBe('/v2/admin/reports/members/export?format=csv');
+    expect(options?.filename).toMatch(/^members-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
+
   it('downloadImportTemplate uses an authenticated API download, not a new tab', async () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     mockDownload.mockResolvedValueOnce(new Blob());
