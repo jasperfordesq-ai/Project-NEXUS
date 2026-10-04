@@ -1011,6 +1011,22 @@ class SafeguardingService
 
     public function assignOrganizationDlp(int $organizationId, int $dlpUserId, int $adminId, int $tenantId): bool
     {
+        return $this->tryAssignOrganizationDlp($organizationId, $dlpUserId, $adminId, $tenantId) === null;
+    }
+
+    /**
+     * Assign an organisation's DLP and say WHY if it was refused.
+     *
+     * Returns null on success, otherwise one reason code: `organization_not_found`,
+     * `user_not_found` (no such member in this community), `user_inactive`,
+     * `not_staff` (an ordinary member — the DLP must be broker-tier or above),
+     * or `error` (an unexpected failure, already logged). The boolean
+     * assignOrganizationDlp() could only say "no", which left an admin staring at a
+     * generic failure message with no way to know the person simply needed a
+     * broker role first.
+     */
+    public function tryAssignOrganizationDlp(int $organizationId, int $dlpUserId, int $adminId, int $tenantId): ?string
+    {
         try {
             $organization = DB::table('vol_organizations')
                 ->where('id', $organizationId)
@@ -1018,17 +1034,28 @@ class SafeguardingService
                 ->first();
 
             if (!$organization) {
-                return false;
+                return 'organization_not_found';
             }
 
-            $dlpUser = User::where('id', $dlpUserId)
+            $candidate = User::where('id', $dlpUserId)
                 ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->where(fn ($q) => self::scopeToBrokerTier($q))
                 ->first();
 
-            if (!$dlpUser) {
-                return false;
+            if (!$candidate) {
+                return 'user_not_found';
+            }
+
+            if ($candidate->status !== 'active') {
+                return 'user_inactive';
+            }
+
+            $isStaff = User::where('id', $dlpUserId)
+                ->where('tenant_id', $tenantId)
+                ->where(fn ($q) => self::scopeToBrokerTier($q))
+                ->exists();
+
+            if (!$isStaff) {
+                return 'not_staff';
             }
 
             DB::table('vol_organizations')
@@ -1043,10 +1070,10 @@ class SafeguardingService
                 'dlp_user_id' => $dlpUserId,
             ]);
 
-            return true;
+            return null;
         } catch (\Throwable $e) {
             Log::error('SafeguardingService::assignOrganizationDlp error: ' . $e->getMessage());
-            return false;
+            return 'error';
         }
     }
 

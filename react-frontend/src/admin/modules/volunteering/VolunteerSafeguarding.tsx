@@ -26,6 +26,7 @@ import { adminVolunteering } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
+import { MemberSearchPicker, type MemberSearchMember } from '../../components/MemberSearchPicker';
 import { EmptyState } from '../../components/EmptyState';
 import { AdminEmbedAutoRefresh, useAdminEmbed } from '../../components/AdminEmbedContext';
 import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
@@ -37,7 +38,6 @@ import {
   CardBody,
   CardHeader,
   Chip,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -137,6 +137,9 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
   const [dlpModal, setDlpModal] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<DlpAssignment | null>(null);
   const [dlpUserId, setDlpUserId] = useState('');
+  const [dlpMember, setDlpMember] = useState<MemberSearchMember | null>(null);
+  // Why the last attempt was refused, shown in the dialog beside the field.
+  const [dlpError, setDlpError] = useState<string | null>(null);
 
   // ── Data loading ───────────────────────────────────────────────────────────
 
@@ -203,7 +206,11 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
 
   const openDlpAssign = (assignment: DlpAssignment) => {
     setSelectedOrg(assignment);
-    setDlpUserId(assignment.dlp_user_id ? String(assignment.dlp_user_id) : '');
+    // Start empty: the picker is a search box, and the current DLP is named
+    // under it. Pre-filling the id would make the picker look the person up.
+    setDlpUserId('');
+    setDlpMember(null);
+    setDlpError(null);
     setDlpModal(true);
   };
 
@@ -211,10 +218,11 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
     if (!selectedOrg) return;
     const userId = parseInt(dlpUserId, 10);
     if (isNaN(userId) || userId <= 0) {
-      toast.error(t('volunteering.invalid_user_id'));
+      setDlpError(t('volunteering.dlp_choose_person'));
       return;
     }
     setDlpLoading(true);
+    setDlpError(null);
     try {
       const res = await adminVolunteering.assignDlp(selectedOrg.organization_id, userId);
       if (res.success) {
@@ -222,10 +230,12 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
         setDlpModal(false);
         loadData();
       } else {
-        toast.error(t('volunteering.failed_to_assign_dlp'));
+        // The server says which rule was broken (not a member, not active, not
+        // broker-level…) in the community's language, so show that.
+        setDlpError(res.error || t('volunteering.failed_to_assign_dlp'));
       }
     } catch {
-      toast.error(t('volunteering.failed_to_assign_dlp'));
+      setDlpError(t('volunteering.failed_to_assign_dlp'));
     }
     setDlpLoading(false);
   };
@@ -607,16 +617,29 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
               <p className="text-sm text-muted">
                 {t('volunteering.dlp_explanation')}
               </p>
-              <Input
-                label={t('volunteering.dlp_user_id')}
-                type="number"
-                placeholder={t('volunteering.dlp_user_id_placeholder')}
-                value={dlpUserId}
-                onValueChange={setDlpUserId}
-              />
               {selectedOrg?.dlp_user_name && (
                 <p className="text-sm text-muted">
                   {t('volunteering.current_dlp')}: <span className="font-medium text-foreground/80">{selectedOrg.dlp_user_name}</span>
+                </p>
+              )}
+              <MemberSearchPicker
+                value={dlpUserId}
+                onValueChange={(next) => {
+                  setDlpUserId(next);
+                  setDlpError(null);
+                }}
+                selectedMember={dlpMember}
+                onSelectedMemberChange={setDlpMember}
+                label={t('volunteering.dlp_person_label')}
+                description={t('volunteering.dlp_person_help')}
+                placeholder={t('volunteering.dlp_person_placeholder')}
+                noResultsText={t('volunteering.dlp_person_no_results')}
+                clearText={t('volunteering.dlp_person_clear')}
+                isRequired
+              />
+              {dlpError && (
+                <p role="alert" className="text-sm text-danger">
+                  {dlpError}
                 </p>
               )}
             </div>

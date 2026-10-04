@@ -20,6 +20,8 @@ const { mockAdminVolunteering } = vi.hoisted(() => ({
 
 vi.mock('../../api/adminApi', () => ({
   adminVolunteering: mockAdminVolunteering,
+  // The assign dialog embeds MemberSearchPicker, which searches members.
+  adminUsers: { list: vi.fn(), get: vi.fn() },
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -231,6 +233,79 @@ describe('VolunteerSafeguarding', () => {
       const dialog = document.querySelector('[role="dialog"]');
       expect(dialog).toBeTruthy();
     });
+  });
+
+  it('asks for a person by name, not a numeric user id, and refuses an empty choice', async () => {
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ dlp_assignments: [makeDlpAssignment()] })
+    );
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+    await waitFor(() => screen.getByText('Org Alpha'));
+
+    const assignBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('assign')
+    );
+    if (assignBtn) fireEvent.click(assignBtn);
+
+    // A searchable picker, with no spin-box for an id number.
+    const picker = await screen.findByRole('combobox');
+    expect(picker).toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+
+    // Pressing Assign with nobody chosen explains what to do and sends nothing.
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    const confirm = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim().toLowerCase() === 'assign'
+    );
+    expect(confirm).toBeDefined();
+    if (confirm) fireEvent.click(confirm);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    expect(mockAdminVolunteering.assignDlp).not.toHaveBeenCalled();
+  });
+
+  it('shows the reason the server gives when the person cannot be made DLP', async () => {
+    const reason = 'The DLP must be a broker, coordinator or admin.';
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ dlp_assignments: [makeDlpAssignment()] })
+    );
+    mockAdminVolunteering.assignDlp.mockResolvedValue({ success: false, error: reason });
+    const { adminUsers } = await import('../../api/adminApi');
+    // The picker accepts a bare array as well as the paginated envelope.
+    vi.mocked(adminUsers.list).mockResolvedValue({
+      success: true,
+      data: [{ id: 42, name: 'Mary Member', email: 'mary@example.com' }],
+    } as never);
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+    await waitFor(() => screen.getByText('Org Alpha'));
+
+    const assignBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('assign')
+    );
+    if (assignBtn) fireEvent.click(assignBtn);
+
+    const picker = await screen.findByRole('combobox');
+    await userEvent.type(picker, 'mary');
+    await userEvent.click(await screen.findByText('Mary Member'));
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    const confirm = Array.from(dialog.querySelectorAll('button')).find(
+      (b) => b.textContent?.trim().toLowerCase() === 'assign'
+    );
+    if (confirm) fireEvent.click(confirm);
+
+    await waitFor(() => {
+      expect(mockAdminVolunteering.assignDlp).toHaveBeenCalledWith(10, 42);
+    });
+    // The server's own wording is shown beside the field, not a bare "failed".
+    expect(await screen.findByText(reason)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(reason);
   });
 
   it('shows success toast after successful incident update', async () => {

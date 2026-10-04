@@ -560,18 +560,32 @@ class VolunteerWellbeingController extends BaseApiController
         }
 
         $tenantId = TenantContext::getId();
-        $result = $this->safeguardingService->assignOrganizationDlp(
+        $refusal = $this->safeguardingService->tryAssignOrganizationDlp(
             (int) $id,
             $dlpUserId,
             $adminId,
             $tenantId
         );
 
-        if (!$result) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_dlp_assign_failed'), null, 422);
+        if ($refusal === 'organization_not_found') {
+            return $this->respondWithError('NOT_FOUND', __('api.vol_dlp_organization_not_found'), null, 404);
         }
 
-        return $this->respondWithData(['success' => $result]);
+        if ($refusal !== null) {
+            // Say which rule the chosen person broke, so the admin knows what to
+            // fix (e.g. give them a broker role first) rather than just "failed".
+            $message = match ($refusal) {
+                'user_not_found' => __('api.vol_dlp_user_not_found'),
+                'user_inactive' => __('api.vol_dlp_user_inactive'),
+                'not_staff' => __('api.vol_dlp_user_not_staff'),
+                default => __('api.vol_dlp_assign_failed'),
+            };
+            $field = $refusal === 'error' ? null : 'dlp_user_id';
+
+            return $this->respondWithError('VALIDATION_ERROR', $message, $field, 422);
+        }
+
+        return $this->respondWithData(['success' => true]);
     }
 
     // ========================================
