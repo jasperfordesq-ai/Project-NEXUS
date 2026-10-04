@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { Select, SelectItem, Button, Chip, Input } from '@/components/ui';
 
 /**
@@ -209,22 +210,17 @@ export function FederationAuditLog() {
       t('super.label_description'),
       t('super.label_actor'),
     ];
+    // Actor names and descriptions are user text, and the actor column was not
+    // even quoted; every cell is formula-neutralised (lib/csv).
     const rows = logs.map((entry) => [
       entry.id,
       entry.created_at,
       t(`super.cat_${categorizeAction(entry.action_type)}`),
       t(`super.level_${inferLevel(entry.action_type)}`),
-      `"${(entry.description || '').replace(/"/g, '""')}"`,
+      entry.description || '',
       entry.actor_name || t('super.user_with_id', { id: entry.actor_id }),
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `federation-audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`federation-audit-log-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(headers, rows));
   };
 
   const columns: Column<SuperAuditEntry>[] = [

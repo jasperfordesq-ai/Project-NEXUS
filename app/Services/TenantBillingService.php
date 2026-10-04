@@ -795,11 +795,13 @@ class TenantBillingService
             ];
             $effective = self::getEffectivePrice($assignmentArr);
 
+            // Community names are set by that community's own admin and land on
+            // the platform administrator's machine: neutralise formulas (E-088).
             $lines[] = implode(',', [
                 (int) $row->tenant_id,
-                '"' . str_replace('"', '""', $row->tenant_name) . '"',
+                '"' . str_replace('"', '""', \App\Support\CsvExportSanitizer::cell((string) $row->tenant_name)) . '"',
                 (int) $row->depth,
-                '"' . str_replace('"', '""', $row->plan_name) . '"',
+                '"' . str_replace('"', '""', \App\Support\CsvExportSanitizer::cell((string) $row->plan_name)) . '"',
                 $ownUsers,
                 $subtreeUsers,
                 number_format($effective['yearly'], 2, '.', ''),

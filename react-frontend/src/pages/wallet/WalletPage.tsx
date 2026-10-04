@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -228,35 +229,26 @@ export function WalletPage() {
     pendingOut: balance?.pending_out ?? balance?.pending_outgoing ?? 0,
   }), [balance]);
 
-  // Export transactions to CSV using papaparse
-  async function handleExport() {
+  // Export transactions to CSV. Descriptions and names are other members'
+  // text, so every cell is formula-neutralised (lib/csv).
+  function handleExport() {
     if (transactions.length === 0) {
       toast.info(t('toast.no_data'));
       return;
     }
 
-    const data = transactions.map((tx) => ({
-      [t('csv.date')]: new Date(tx.created_at).toLocaleDateString(getFormattingLocale()),
-      [t('csv.type')]: tx.type === 'credit' ? t('csv.received') : t('csv.sent'),
-      [t('csv.amount')]: tx.amount,
-      [t('csv.description')]: tx.description || '',
-      [t('csv.other_party')]: tx.other_user?.name || tx.other_party?.name || '',
-      [t('csv.status')]: tx.status,
-    }));
-
-    const Papa = await import('papaparse');
-    const csvContent = Papa.default.unparse(data);
-
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const csv = toCsv(
+      [t('csv.date'), t('csv.type'), t('csv.amount'), t('csv.description'), t('csv.other_party'), t('csv.status')],
+      transactions.map((tx) => [
+        new Date(tx.created_at).toLocaleDateString(getFormattingLocale()),
+        tx.type === 'credit' ? t('csv.received') : t('csv.sent'),
+        tx.amount,
+        tx.description || '',
+        tx.other_user?.name || tx.other_party?.name || '',
+        tx.status,
+      ]),
+    );
+    downloadCsv(`transactions_${new Date().toISOString().split('T')[0]}.csv`, csv);
 
     toast.success(t('toast.exported'), t('toast.exported_desc'));
   }
@@ -444,7 +436,7 @@ export function WalletPage() {
               size="sm"
               className="bg-theme-elevated text-theme-muted"
               startContent={<Download className="w-4 h-4" aria-hidden="true" />}
-              onPress={() => { void handleExport(); }}
+              onPress={handleExport}
               isDisabled={transactions.length === 0}
               aria-label={t('aria.export_csv')}
             >

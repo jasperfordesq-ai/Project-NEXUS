@@ -30,6 +30,7 @@ import Inbox from 'lucide-react/icons/inbox';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { adminFederation } from '../../api/adminApi';
 import { BrokerEmptyState } from '@/broker/components';
 import { PageHeader } from '../../components/PageHeader';
@@ -412,32 +413,20 @@ export function ActivityFeed() {
       t('federation.csv_actor'),
       t('federation.csv_partner_community'),
     ];
-    const csvEscape = (val: string | number | null | undefined): string => {
-      const s = String(val ?? '');
-      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-        return `"${s.replace(/"/g, '""')}"`;
-      }
-      return s;
-    };
+    // Descriptions and names come from other communities; every cell is
+    // formula-neutralised (lib/csv).
     const rows = items.map((item) => [
       item.id,
-      csvEscape(item.timestamp),
-      csvEscape(item.type),
-      csvEscape(item.category),
-      csvEscape(item.level),
-      csvEscape(item.direction),
-      csvEscape(item.description),
-      csvEscape(item.actor_name),
-      csvEscape(item.partner_tenant_name),
+      item.timestamp,
+      item.type,
+      item.category,
+      item.level,
+      item.direction,
+      item.description,
+      item.actor_name,
+      item.partner_tenant_name,
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `federation-activity-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`federation-activity-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(headers, rows));
   };
 
   // Stats derived from total

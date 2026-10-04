@@ -1,4 +1,5 @@
 import { formatNumber, getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { Card, CardBody, CardHeader, Button, Chip, Spinner, Input, Select, SelectItem, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -139,18 +140,9 @@ export function CronJobLogs() {
       log.executed_by,
     ]);
 
-    const csv = [
-      headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
-    ].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cron-logs-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Inner quotes were never doubled, so a value containing `"` broke the
+    // file; lib/csv quotes and formula-neutralises every cell.
+    downloadCsv(`cron-logs-${new Date().toISOString().split('T')[0]}.csv`, toCsv(headers, rows));
   };
 
   useEffect(() => {

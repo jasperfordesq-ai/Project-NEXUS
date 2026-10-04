@@ -1,4 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { Select, SelectItem, Button, Input } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -149,23 +150,19 @@ export default function SuperAuditLog() {
       t('super.col_description'),
       t('super.col_date'),
     ];
+    // Target and actor names are user text and were not quoted; every cell is
+    // formula-neutralised (lib/csv). Target / target-type now sit under the
+    // matching headings (they were swapped).
     const rows = logs.map((entry) => [
       entry.id,
       actionLabel(entry.action_type),
-      targetTypeLabel(entry.target_type),
       targetLabel(entry),
+      targetTypeLabel(entry.target_type),
       entry.actor_name || t('super.user_with_id', { id: entry.actor_id }),
-      `"${description(entry).replace(/"/g, '""')}"`,
+      description(entry),
       entry.created_at,
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(`audit-log-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(headers, rows));
   };
 
   const columns: Column<SuperAuditEntry>[] = [

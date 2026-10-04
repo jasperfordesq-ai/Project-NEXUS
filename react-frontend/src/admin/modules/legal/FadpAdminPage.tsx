@@ -1,4 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
+import { toCsv, downloadCsv as saveCsv } from '@/lib/csv';
 import { Card, CardBody, CardHeader, Button, Chip, Input, Spinner, Textarea, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,25 +64,14 @@ interface ConsentRecord {
 function downloadCsv(rows: Record<string, unknown>[], filename: string) {
   if (rows.length === 0) return;
   const headers = Object.keys(rows[0] ?? {});
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(row =>
-      headers
-        .map(h => {
-          const val = row[h];
-          const str = Array.isArray(val) ? val.join(';') : String(val ?? '');
-          return `"${str.replace(/"/g, '""')}"`;
-        })
-        .join(',')
-    ),
-  ].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  // Every cell is formula-neutralised (lib/csv).
+  saveCsv(
+    filename,
+    toCsv(headers, rows.map((row) => headers.map((h) => {
+      const val = row[h];
+      return Array.isArray(val) ? val.join(';') : (val === null || val === undefined ? '' : String(val));
+    }))),
+  );
 }
 
 const legalBasisColor: Record<string, 'primary' | 'success' | 'warning' | 'secondary'> = {

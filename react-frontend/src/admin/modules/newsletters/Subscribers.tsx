@@ -1,4 +1,5 @@
 import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
+import { toCsv, downloadCsv } from '@/lib/csv';
 import { Button, Chip, Card, CardBody, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tooltip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
@@ -305,18 +306,13 @@ export function Subscribers() {
           setExportLoading(false);
           return;
         }
+        // Names arrive from public sign-up forms, so every cell is
+        // formula-neutralised (lib/csv) before an admin opens the file.
         const headers = ['email', 'first_name', 'last_name', 'status', 'source', 'created_at', 'confirmed_at'];
-        const csvLines = [headers.join(',')];
-        for (const row of rows) {
-          csvLines.push(headers.map((h) => `"${(row[h] || '').replace(/"/g, '""')}"`).join(','));
-        }
-        const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadCsv(
+          `subscribers-${new Date().toISOString().slice(0, 10)}.csv`,
+          toCsv(headers, rows.map((row) => headers.map((h) => row[h] ?? ''))),
+        );
         toast.success(t('newsletters.subscribers_exported'));
       }
     } catch {
