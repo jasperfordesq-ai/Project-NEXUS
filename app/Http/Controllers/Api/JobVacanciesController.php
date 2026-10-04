@@ -481,6 +481,11 @@ class JobVacanciesController extends BaseApiController
             if (!$detectedMime || !in_array($detectedMime, $allowedMimes[$ext], true)) {
                 return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.job_cv_type_not_allowed'), 'cv', 422);
             }
+            // A .docx must be a real Word package, not any ZIP (F-559).
+            if ($ext === 'docx'
+                && !\App\Support\Uploads\OfficeDocumentInspector::isGenuineOoxml((string) $file->getRealPath(), 'docx')) {
+                return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.job_cv_type_not_allowed'), 'cv', 422);
+            }
             // Sanitize original filename: basename() to strip any path traversal, then allow only alnum/dot/dash/underscore
             $rawName = basename($file->getClientOriginalName());
             $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $rawName) ?: 'cv';

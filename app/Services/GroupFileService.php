@@ -10,6 +10,7 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Exceptions\GroupStorageQuarantineException;
+use App\Support\Uploads\OfficeDocumentInspector;
 use App\Support\Uploads\PdfActiveContentInspector;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -19,7 +20,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
-use ZipArchive;
 
 /** Manages tenant-scoped, private group files and their metadata. */
 final class GroupFileService
@@ -595,33 +595,21 @@ final class GroupFileService
     private function normalizeContentMime(string $path, string $extension, string $detectedMime): ?string
     {
         $mime = strtolower(trim(explode(';', $detectedMime, 2)[0]));
-        if ($mime === 'application/zip' && in_array($extension, ['docx', 'xlsx', 'pptx'], true)) {
-            if (! class_exists(ZipArchive::class)) {
-                return null;
-            }
-            $zip = new ZipArchive();
-            if ($zip->open($path) !== true || $zip->locateName('[Content_Types].xml') === false) {
-                $zip->close();
-                return null;
-            }
-            $requiredDirectory = ['docx' => 'word/', 'xlsx' => 'xl/', 'pptx' => 'ppt/'][$extension];
-            $valid = false;
-            for ($index = 0; $index < $zip->numFiles; ++$index) {
-                $entry = $zip->getNameIndex($index);
-                if (is_string($entry) && str_starts_with($entry, $requiredDirectory)) {
-                    $valid = true;
-                    break;
-                }
-            }
-            $zip->close();
-            if (! $valid) {
-                return null;
-            }
-            return [
+        if (in_array($extension, ['docx', 'xlsx', 'pptx'], true)) {
+            $ooxmlMime = [
                 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             ][$extension];
+            // finfo reports a package as plain application/zip or, when its
+            // [Content_Types].xml comes first, as the OOXML type itself — so
+            // inspect both. Shared with messages, resources and job CVs
+            // (F-559); also refuses macro-enabled packages.
+            if (! in_array($mime, ['application/zip', $ooxmlMime], true)
+                || ! OfficeDocumentInspector::isGenuineOoxml($path, $extension)) {
+                return null;
+            }
+            return $ooxmlMime;
         }
 
         if ($mime === 'text/plain' && $extension === 'csv') {

@@ -719,9 +719,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/JobVacanciesController.php:572:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/JobVacanciesController.php:577:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/JobVacanciesController.php",
-            "line": 572,
+            "line": 577,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $job->user_id",

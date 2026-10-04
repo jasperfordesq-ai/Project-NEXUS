@@ -43,6 +43,11 @@ class MessageAttachmentUploader
         if ($extension === '' || ! isset(self::ALLOWED[$extension]) || ! in_array($mime, self::ALLOWED[$extension], true)) {
             throw new \InvalidArgumentException(__('api.message_attachment_invalid_type'));
         }
+        // A .docx/.xlsx must be a real Office package, not any ZIP (F-559).
+        if (in_array($extension, ['docx', 'xlsx'], true)
+            && ! \App\Support\Uploads\OfficeDocumentInspector::isGenuineOoxml($tmp, $extension)) {
+            throw new \InvalidArgumentException(__('api.message_attachment_invalid_type'));
+        }
 
         $tenantId = (int) TenantContext::getId();
         $relative = "message-media/{$tenantId}/attachments/" . bin2hex(random_bytes(16)) . ".{$extension}";

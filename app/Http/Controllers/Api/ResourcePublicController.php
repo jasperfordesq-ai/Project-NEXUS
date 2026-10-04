@@ -254,6 +254,11 @@ class ResourcePublicController extends BaseApiController
         if (!$detectedMime || !in_array($detectedMime, $allowedMimesByExt[$ext] ?? [], true)) {
             return $this->respondWithError('FILE_TYPE_NOT_ALLOWED', __('api.file_type_blocked'), 'file', 400);
         }
+        // A .docx/.xlsx must be a real Office package, not any ZIP (F-559).
+        if (in_array($ext, ['docx', 'xlsx'], true)
+            && !\App\Support\Uploads\OfficeDocumentInspector::isGenuineOoxml($tmpPath, $ext)) {
+            return $this->respondWithError('FILE_TYPE_NOT_ALLOWED', __('api.file_type_blocked'), 'file', 400);
+        }
 
         // Capture MIME type BEFORE move() invalidates the temp file
         $fileType = $detectedMime;
