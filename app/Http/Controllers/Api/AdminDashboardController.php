@@ -8,7 +8,9 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Services\SocialValueService;
 use App\Services\UserInsightsService;
 use App\Support\UserDisplayName;
 
@@ -27,99 +29,229 @@ class AdminDashboardController extends BaseApiController
     ) {}
 
     /**
+     * Transaction types that are not a member giving another member their time.
+     * Opening balances, admin grants and the community fund are credits the
+     * system issued; donations are gifts of credit, not hours worked; reversals
+     * and refunds undo an earlier row. SocialValueService owns the first list so
+     * the dashboard and the social-value report can never disagree about what
+     * counts as an exchange.
+     */
+    private const NON_EXCHANGE_TYPES = [
+        ...SocialValueService::EXCLUDED_TRANSACTION_TYPES,
+        'exchange_reversal',
+        'marketplace_refund',
+    ];
+
+    /** Days of inactivity after which a member stops counting as "active". */
+    private const ACTIVE_WINDOW_DAYS = 30;
+
+    /**
      * GET /api/v2/admin/dashboard/stats
      *
      * Returns aggregate counts for the admin dashboard stat cards.
+     *
+     * Every figure runs in its own guard. A figure that cannot be computed is
+     * returned as null and named in `_failed_metrics`, so the dashboard can mark
+     * that tile rather than show a confident zero. (The previous version
+     * coerced a failed transactions query to 0, which read as "no exchanges".)
      */
     public function stats(): JsonResponse
     {
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        $totalUsers = (int) DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ?",
-            [$tenantId]
-        )->cnt;
+        $failed = [];
+        $metric = function (string $name, callable $fn) use (&$failed) {
+            try {
+                return $fn();
+            } catch (\Throwable $e) {
+                $failed[] = $name;
+                Log::warning("[AdminDashboard] stats metric {$name} failed: " . $e->getMessage());
+                return null;
+            }
+        };
 
-        $activeUsers = (int) DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND is_approved = 1",
-            [$tenantId]
-        )->cnt;
+        $monthStart = now()->startOfMonth();
+        $lastMonthStart = $monthStart->copy()->subMonth();
+        $activeSince = now()->subDays(self::ACTIVE_WINDOW_DAYS);
 
-        $pendingUsers = (int) DB::selectOne(
+        // Members who have not been deleted or anonymised. A removed account is
+        // not a member, and a dashboard that counted them would disagree with
+        // the Users page it links to.
+        $memberWhere = 'tenant_id = ? AND deleted_at IS NULL AND anonymized_at IS NULL';
+
+        $totalUsers = $metric('total_users', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users WHERE {$memberWhere}",
+            [$tenantId]
+        )->cnt);
+
+        $totalUsersStartOfMonth = $metric('total_users_start_of_month', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users WHERE {$memberWhere} AND created_at < ?",
+            [$tenantId, $monthStart]
+        )->cnt);
+
+        // "Active" = signed in or seen by the presence heartbeat in the last 30
+        // days. This used to be `is_approved = 1`, which is nearly every member
+        // and told a coordinator nothing. Suspended, banned and rejected accounts
+        // are excluded even if they were recently seen.
+        $activeUsers = $metric('active_users', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users
+             WHERE {$memberWhere}
+               AND (status IS NULL OR status NOT IN ('suspended', 'banned', 'rejected'))
+               AND (last_active_at >= ? OR last_login_at >= ?)",
+            [$tenantId, $activeSince, $activeSince]
+        )->cnt);
+
+        $approvedUsers = $metric('approved_users', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users WHERE {$memberWhere} AND is_approved = 1",
+            [$tenantId]
+        )->cnt);
+
+        // Same predicate as AdminBadgeCountService::countPendingUsers and the
+        // Users page's `filter=pending`, so the number and the list agree.
+        $pendingUsers = $metric('pending_users', fn () => (int) DB::selectOne(
             "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND is_approved = 0",
             [$tenantId]
-        )->cnt;
+        )->cnt);
 
-        $totalListings = (int) DB::selectOne(
+        $totalListings = $metric('total_listings', fn () => (int) DB::selectOne(
             "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ?",
             [$tenantId]
-        )->cnt;
+        )->cnt);
 
-        $activeListings = (int) DB::selectOne(
+        $activeListings = $metric('active_listings', fn () => (int) DB::selectOne(
             "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ? AND status = 'active'",
             [$tenantId]
-        )->cnt;
+        )->cnt);
 
-        $pendingListings = (int) DB::selectOne(
+        $pendingListings = $metric('pending_listings', fn () => (int) DB::selectOne(
             "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ? AND status = 'pending'",
             [$tenantId]
-        )->cnt;
+        )->cnt);
 
         // Volunteering organisations awaiting a decision. Registration used to
         // notify nobody, so this queue could build up entirely unseen -- two of
         // them sat pending for seven weeks and one day before anyone noticed.
-        // Guarded because the volunteering module is optional per tenant and the
-        // table is absent in some environments.
-        $pendingOrganisations = 0;
-        try {
-            if (Schema::hasTable('vol_organizations')) {
-                $pendingOrganisations = (int) DB::selectOne(
-                    "SELECT COUNT(*) as cnt FROM vol_organizations WHERE tenant_id = ? AND status = 'pending'",
-                    [$tenantId]
-                )->cnt;
+        // The volunteering module is optional per tenant and the table is absent
+        // in some environments, so a missing table is a real zero, not a failure.
+        $pendingOrganisations = $metric('pending_organisations', function () use ($tenantId) {
+            if (!Schema::hasTable('vol_organizations')) {
+                return 0;
             }
-        } catch (\Throwable $e) {
-            // A dashboard tile must never take the whole dashboard down.
-            $pendingOrganisations = 0;
-        }
-
-        $totalTransactions = 0;
-        $totalHoursExchanged = 0;
-        try {
-            $txRow = DB::selectOne(
-                "SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as total_hours FROM transactions WHERE tenant_id = ?",
+            return (int) DB::selectOne(
+                "SELECT COUNT(*) as cnt FROM vol_organizations WHERE tenant_id = ? AND status = 'pending'",
                 [$tenantId]
-            );
-            $totalTransactions = (int) ($txRow->cnt ?? 0);
-            $totalHoursExchanged = (float) ($txRow->total_hours ?? 0);
-        } catch (\Throwable $e) {
-            // transactions table may not exist in all envs
-        }
+            )->cnt;
+        });
 
-        $newUsersThisMonth = (int) DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
-            [$tenantId]
-        )->cnt;
+        [$exchangeWhere, $exchangeParams] = $this->exchangeWhere($tenantId);
 
-        $newListingsThisMonth = (int) DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ? AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
-            [$tenantId]
-        )->cnt;
+        $allTime = $metric('exchanges_all_time', fn () => DB::selectOne(
+            "SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as hours FROM transactions WHERE {$exchangeWhere}",
+            $exchangeParams
+        ));
+        $thisMonth = $metric('exchanges_this_month', fn () => DB::selectOne(
+            "SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as hours FROM transactions
+             WHERE {$exchangeWhere} AND created_at >= ?",
+            [...$exchangeParams, $monthStart]
+        ));
+        $lastMonth = $metric('exchanges_last_month', fn () => DB::selectOne(
+            "SELECT COUNT(*) as cnt, COALESCE(SUM(amount), 0) as hours FROM transactions
+             WHERE {$exchangeWhere} AND created_at >= ? AND created_at < ?",
+            [...$exchangeParams, $lastMonthStart, $monthStart]
+        ));
+
+        $newUsersThisMonth = $metric('new_users_this_month', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users WHERE {$memberWhere} AND created_at >= ?",
+            [$tenantId, $monthStart]
+        )->cnt);
+        $newUsersLastMonth = $metric('new_users_last_month', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM users WHERE {$memberWhere} AND created_at >= ? AND created_at < ?",
+            [$tenantId, $lastMonthStart, $monthStart]
+        )->cnt);
+
+        $newListingsThisMonth = $metric('new_listings_this_month', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ? AND created_at >= ?",
+            [$tenantId, $monthStart]
+        )->cnt);
+        $newListingsLastMonth = $metric('new_listings_last_month', fn () => (int) DB::selectOne(
+            "SELECT COUNT(*) as cnt FROM listings WHERE tenant_id = ? AND created_at >= ? AND created_at < ?",
+            [$tenantId, $lastMonthStart, $monthStart]
+        )->cnt);
+
+        $count = fn (?object $row): ?int => $row === null ? null : (int) ($row->cnt ?? 0);
+        $hours = fn (?object $row): ?float => $row === null ? null : round((float) ($row->hours ?? 0), 1);
 
         return $this->respondWithData([
             'total_users' => $totalUsers,
+            'total_users_start_of_month' => $totalUsersStartOfMonth,
+            'members_delta_pct' => $this->deltaPct($totalUsers, $totalUsersStartOfMonth),
             'active_users' => $activeUsers,
+            'active_users_window_days' => self::ACTIVE_WINDOW_DAYS,
+            'approved_users' => $approvedUsers,
             'pending_users' => $pendingUsers,
             'total_listings' => $totalListings,
             'active_listings' => $activeListings,
+            // Listings keep no status history, so "active a month ago" cannot be
+            // known. Always null; the card shows no arrow rather than a guess.
+            'active_listings_delta_pct' => null,
             'pending_listings' => $pendingListings,
             'pending_organisations' => $pendingOrganisations,
-            'total_transactions' => $totalTransactions,
-            'total_hours_exchanged' => round($totalHoursExchanged, 1),
+            'total_transactions' => $count($allTime),
+            'total_hours_exchanged' => $hours($allTime),
+            'exchanges_this_month' => $count($thisMonth),
+            'exchanges_last_month' => $count($lastMonth),
+            'exchanges_delta_pct' => $this->deltaPct($count($thisMonth), $count($lastMonth)),
+            'exchange_hours_this_month' => $hours($thisMonth),
+            'exchange_hours_last_month' => $hours($lastMonth),
+            'exchange_hours_delta_pct' => $this->deltaPct($hours($thisMonth), $hours($lastMonth)),
             'new_users_this_month' => $newUsersThisMonth,
+            'new_users_last_month' => $newUsersLastMonth,
+            'new_users_delta_pct' => $this->deltaPct($newUsersThisMonth, $newUsersLastMonth),
             'new_listings_this_month' => $newListingsThisMonth,
+            'new_listings_last_month' => $newListingsLastMonth,
+            '_partial' => $failed !== [],
+            '_failed_metrics' => $failed,
         ]);
+    }
+
+    /**
+     * The one definition of "an exchange" for every figure on this dashboard:
+     * a completed transaction of an exchange type between two different real
+     * members. System-issued credit has no real sender -- StartingBalanceService
+     * writes sender_id = 0, WalletService::mintToMember and admin adjustments
+     * write NULL, and the legacy welcome bonus was a self-transfer -- so the
+     * structural checks catch an import even when its type was left at the
+     * column default of 'transfer'.
+     *
+     * @return array{0: string, 1: array<int, mixed>}
+     */
+    private function exchangeWhere(int $tenantId): array
+    {
+        $placeholders = implode(',', array_fill(0, count(self::NON_EXCHANGE_TYPES), '?'));
+
+        return [
+            "tenant_id = ? AND status = 'completed'
+             AND transaction_type NOT IN ({$placeholders})
+             AND sender_id IS NOT NULL AND sender_id <> 0
+             AND receiver_id IS NOT NULL AND receiver_id <> 0
+             AND sender_id <> receiver_id",
+            [$tenantId, ...self::NON_EXCHANGE_TYPES],
+        ];
+    }
+
+    /**
+     * Percentage change from $previous to $current, one decimal. Null when
+     * either side is unknown or there is no baseline to compare against: a
+     * change "from 0" has no honest percentage.
+     */
+    private function deltaPct(int|float|null $current, int|float|null $previous): ?float
+    {
+        if ($current === null || $previous === null || $previous <= 0) {
+            return null;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
     }
 
     /**
@@ -147,83 +279,85 @@ class AdminDashboardController extends BaseApiController
     }
 
     /**
-     * GET /api/v2/admin/dashboard/trends?months=6
+     * GET /api/v2/admin/dashboard/trends?months=12
      *
-     * Returns monthly registration and listing creation counts for charts.
+     * One row per calendar month, oldest first: new members, new listings, and
+     * exchanges (count and hours, using the same definition as stats()). The
+     * window is bound as a first-of-month date so the oldest bucket is a whole
+     * month; the old `DATE_SUB(NOW(), INTERVAL n MONTH)` window started mid-month
+     * and under-counted it. A series that fails is returned as nulls and named in
+     * `meta._failed_metrics`; `data` stays a bare array for the chart.
      */
     public function trends(): JsonResponse
     {
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
-        $months = $this->queryInt('months', 6, 1, 24);
+        $months = $this->queryInt('months', 12, 1, 24);
+        $windowStart = now()->startOfMonth()->subMonths($months - 1);
 
-        // User registrations per month
-        $userTrends = DB::select(
+        $failed = [];
+        $series = function (string $name, string $sql, array $params) use (&$failed): ?array {
+            try {
+                $map = [];
+                foreach (DB::select($sql, $params) as $row) {
+                    $map[$row->month] = $row;
+                }
+                return $map;
+            } catch (\Throwable $e) {
+                $failed[] = $name;
+                Log::warning("[AdminDashboard] trends series {$name} failed: " . $e->getMessage());
+                return null;
+            }
+        };
+
+        $userMap = $series(
+            'users',
             "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count
              FROM users
-             WHERE tenant_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
-             GROUP BY month
-             ORDER BY month ASC",
-            [$tenantId, $months]
+             WHERE tenant_id = ? AND deleted_at IS NULL AND anonymized_at IS NULL AND created_at >= ?
+             GROUP BY month",
+            [$tenantId, $windowStart]
         );
 
-        // Listing creations per month
-        $listingTrends = DB::select(
+        $listingMap = $series(
+            'listings',
             "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count
              FROM listings
-             WHERE tenant_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
-             GROUP BY month
-             ORDER BY month ASC",
-            [$tenantId, $months]
+             WHERE tenant_id = ? AND created_at >= ?
+             GROUP BY month",
+            [$tenantId, $windowStart]
         );
 
-        // Transaction volumes per month
-        $txTrends = [];
-        try {
-            $txTrends = DB::select(
-                "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count, COALESCE(SUM(amount), 0) as hours
-                 FROM transactions
-                 WHERE tenant_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
-                 GROUP BY month
-                 ORDER BY month ASC",
-                [$tenantId, $months]
-            );
-        } catch (\Throwable $e) {
-            // transactions table may not exist
-        }
-
-        // Build maps
-        $userMap = [];
-        foreach ($userTrends as $row) {
-            $userMap[$row->month] = (int) $row->count;
-        }
-
-        $listingMap = [];
-        foreach ($listingTrends as $row) {
-            $listingMap[$row->month] = (int) $row->count;
-        }
-
-        $txCountMap = [];
-        $txHoursMap = [];
-        foreach ($txTrends as $row) {
-            $txCountMap[$row->month] = (int) $row->count;
-            $txHoursMap[$row->month] = round((float) $row->hours, 1);
-        }
+        [$exchangeWhere, $exchangeParams] = $this->exchangeWhere($tenantId);
+        $txMap = $series(
+            'transactions',
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as count, COALESCE(SUM(amount), 0) as hours
+             FROM transactions
+             WHERE {$exchangeWhere} AND created_at >= ?
+             GROUP BY month",
+            [...$exchangeParams, $windowStart]
+        );
 
         $trends = [];
-        for ($i = $months - 1; $i >= 0; $i--) {
-            $month = date('Y-m', strtotime("-{$i} months"));
+        $cursor = $windowStart->copy();
+        for ($i = 0; $i < $months; $i++) {
+            $month = $cursor->format('Y-m');
             $trends[] = [
                 'month' => $month,
-                'users' => $userMap[$month] ?? 0,
-                'listings' => $listingMap[$month] ?? 0,
-                'transactions' => $txCountMap[$month] ?? 0,
-                'hours' => $txHoursMap[$month] ?? 0,
+                'users' => $userMap === null ? null : (int) ($userMap[$month]->count ?? 0),
+                'listings' => $listingMap === null ? null : (int) ($listingMap[$month]->count ?? 0),
+                'transactions' => $txMap === null ? null : (int) ($txMap[$month]->count ?? 0),
+                'hours' => $txMap === null ? null : round((float) ($txMap[$month]->hours ?? 0), 1),
             ];
+            $cursor->addMonth();
         }
 
-        return $this->respondWithData($trends);
+        return $this->respondWithData($trends, [
+            'months' => $months,
+            '_partial' => $failed !== [],
+            '_failed_metrics' => $failed,
+        ]);
     }
 
     /**
