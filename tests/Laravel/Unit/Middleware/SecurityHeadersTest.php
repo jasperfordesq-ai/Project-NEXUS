@@ -162,6 +162,54 @@ class SecurityHeadersTest extends TestCase
         $this->assertEquals('strict-origin-when-cross-origin', $response->headers->get('Referrer-Policy'));
     }
 
+    /**
+     * F-555 (E-088): private file endpoints (message attachments, voice, admin
+     * support screenshots) set a locked-down CSP so a stored file opened
+     * directly can run nothing. The platform policy used to replace it.
+     */
+    public function test_handle_preserves_a_locked_down_endpoint_csp(): void
+    {
+        $request = Request::create('/api/v2/messages/1/attachments/1', 'GET');
+        $response = $this->middleware->handle($request, static function ($request) {
+            return response('file-bytes')
+                ->header('Content-Security-Policy', "default-src 'none'; sandbox");
+        });
+
+        $this->assertSame("default-src 'none'; sandbox", $response->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_handle_preserves_a_locked_down_endpoint_csp_without_sandbox(): void
+    {
+        $request = Request::create('/api/v2/admin/support-reports/1/screenshots/1', 'GET');
+        $response = $this->middleware->handle($request, static function ($request) {
+            return response('file-bytes')->header('Content-Security-Policy', "default-src 'none'");
+        });
+
+        $this->assertSame("default-src 'none'", $response->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_handle_replaces_an_endpoint_csp_that_loosens_scripts(): void
+    {
+        $request = Request::create('/api/v2/feed', 'GET');
+        $response = $this->middleware->handle($request, static function ($request) {
+            return response('x')->header('Content-Security-Policy', "default-src 'none'; script-src *");
+        });
+
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+        $this->assertStringContainsString("default-src 'self'", $csp);
+        $this->assertStringNotContainsString('script-src *', $csp);
+    }
+
+    public function test_handle_replaces_a_weaker_endpoint_csp(): void
+    {
+        $request = Request::create('/api/v2/feed', 'GET');
+        $response = $this->middleware->handle($request, static function ($request) {
+            return response('x')->header('Content-Security-Policy', "default-src *");
+        });
+
+        $this->assertStringContainsString("default-src 'self'", (string) $response->headers->get('Content-Security-Policy'));
+    }
+
     public function test_handle_sets_permissions_policy(): void
     {
         $request = Request::create('/api/v2/feed', 'GET');

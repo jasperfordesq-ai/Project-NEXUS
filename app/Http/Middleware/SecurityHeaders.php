@@ -27,6 +27,36 @@ class SecurityHeaders
     private static ?string $cachedBuildCommit = null;
 
     /**
+     * True when a policy grants nothing: `default-src 'none'`, and every other
+     * directive is either `sandbox` (no tokens) or `'none'`. Such a policy is
+     * stricter than the platform policy for any response, so keeping it can
+     * never widen what a response may do.
+     */
+    private static function isLockedDownPolicy(string $policy): bool
+    {
+        $directives = [];
+        foreach (explode(';', strtolower($policy)) as $segment) {
+            $tokens = preg_split('/\s+/', trim($segment), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            if ($tokens !== []) {
+                $directives[array_shift($tokens)] = $tokens;
+            }
+        }
+
+        if (($directives['default-src'] ?? null) !== ["'none'"]) {
+            return false;
+        }
+
+        foreach ($directives as $name => $tokens) {
+            $allowed = $name === 'sandbox' ? $tokens === [] : $tokens === ["'none'"];
+            if (! $allowed) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Resolve the current server build commit from httpdocs/.build-version
      * (written by bluegreen-deploy.sh) or fall back to git HEAD in dev. Empty
      * string means "unknown" — header is then omitted so old clients don't
@@ -143,7 +173,14 @@ class SecurityHeaders
             . "object-src 'none'; "
             . "report-uri /api/csp-report; "
             . "report-to nexus-csp;";
-        $response->headers->set('Content-Security-Policy', $csp);
+        // A private file endpoint (message attachments, voice, support
+        // screenshots) sets a locked-down policy so a stored file opened
+        // directly can run nothing; replacing it with the page policy above
+        // dropped that guarantee (F-555, E-088). Keep it only when it allows
+        // nothing at all, so an endpoint can never loosen the platform policy.
+        if (! self::isLockedDownPolicy((string) $response->headers->get('Content-Security-Policy', ''))) {
+            $response->headers->set('Content-Security-Policy', $csp);
+        }
         $response->headers->set('Reporting-Endpoints', 'nexus-csp="/api/csp-report"');
         // Keep an endpoint's equally strict or stricter policy (for example,
         // one-time calendar feed secrets), while replacing unknown or weaker
