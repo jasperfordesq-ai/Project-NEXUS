@@ -437,3 +437,38 @@ describe('sanitizeMemberRichText — link labels show their destination (F-562)'
     expect(out).not.toContain('(evil.example)');
   });
 });
+
+describe('sanitizeMemberRichText — link label edge cases (F-562 audit)', () => {
+  it('keeps an image inside a link and still names the destination', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/"><img src="https://img.example/a.png" alt=""></a>');
+    expect(out).toContain('<img');
+    expect(out).toContain('(evil.example)');
+  });
+
+  it('names the real host when the address carries fake credentials', () => {
+    const out = sanitizeMemberRichText('<a href="https://app.project-nexus.ie@evil.example/">app.project-nexus.ie</a>');
+    expect(out).toContain('(evil.example)');
+  });
+
+  it('shows a look-alike international domain in its punycode form', () => {
+    const out = sanitizeMemberRichText('<a href="https://аpp.example/">app.example</a>');
+    expect(out).toMatch(/\(xn--[a-z0-9-]+\.example\)/);
+  });
+
+  it('includes a non-default port in the destination', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example:8443/">Login</a>');
+    expect(out).toContain('(evil.example:8443)');
+  });
+
+  it('labels every link when several appear in one block', () => {
+    const out = sanitizeMemberRichText('<p><a href="https://a.example/">one</a> and <a href="https://b.example/">two</a></p>');
+    expect(out).toContain('one (a.example)');
+    expect(out).toContain('two (b.example)');
+  });
+
+  it('cannot be satisfied by host text inside a stripped element', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/"><script>evil.example</script>Click here</a>');
+    expect(out).not.toContain('<script');
+    expect(out).toContain('(evil.example)');
+  });
+});

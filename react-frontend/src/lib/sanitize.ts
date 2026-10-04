@@ -179,14 +179,13 @@ function labelExternalLinks(cleanHtml: string): string {
     if (!destination) return;
 
     const label = (anchor.textContent ?? '').trim();
-    if (label === '') {
-      anchor.textContent = href;
-      changed = true;
-      return;
-    }
     if (label.toLowerCase().includes(destination.toLowerCase())) return;
 
-    anchor.appendChild(document.createTextNode(` (${destination})`));
+    // No text at all: an empty anchor shows its full address; one that wraps
+    // only an image keeps the image and gains the host beside it (replacing
+    // the content would delete the image — caught by the F-562 audit tests).
+    const suffix = label === '' && anchor.childElementCount === 0 ? href : ` (${destination})`;
+    anchor.appendChild(document.createTextNode(suffix));
     changed = true;
   });
 
