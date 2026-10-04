@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'Nessun file CSV caricato o errore di caricamento',
     'csv_invalid_type' => 'Tipo di file non valido. Carica un file CSV.',
     'csv_empty' => 'File CSV vuoto',
+    'csv_too_large' => 'Il file è troppo grande. Il massimo è :max MB.',
+    'csv_too_many_rows' => 'Il file ha troppe righe. Il massimo è :max membri per importazione.',
     'csv_missing_columns' => 'Colonne obbligatorie mancanti: :columns',
     'csv_could_not_read' => 'Impossibile leggere il file',
     'csv_import_members_only' => 'Un’importazione può creare solo membri ordinari. Assegna gli altri ruoli alle persone una alla volta dopo l’importazione.',

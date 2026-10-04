@@ -38,6 +38,14 @@ class AdminUsersController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /** Member CSV import limits (F-558, E-088). */
+    public const IMPORT_MAX_BYTES = 2 * 1024 * 1024;
+
+    public const IMPORT_MAX_ROWS = 5000;
+
+    /** Content types a CSV can be detected as; anything else is refused. */
+    private const IMPORT_TEXT_TYPES = ['text/plain', 'text/csv', 'application/csv', 'text/x-csv'];
+
     public function __construct(
         private readonly GamificationService $gamificationService,
         private readonly TenantSettingsService $tenantSettingsService,
@@ -2185,12 +2193,19 @@ class AdminUsersController extends BaseApiController
         $safeName = preg_replace('/[^A-Za-z0-9._-]/', '_', $safeName) ?: 'upload.csv';
         $file['name'] = $safeName;
 
-        // SECURITY: Tighten MIME allowlist to the two canonical CSV types. Some
-        // browsers also report application/csv / text/plain; keep those but drop
-        // anything else that was historically accepted.
-        $allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/csv', 'text/plain'];
-        if (!in_array($file['type'], $allowedTypes, true)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.csv_invalid_type'), null, 400);
+        // F-558 (E-088): size and type are decided from the file itself, never
+        // from $_FILES[...]['type'], which is whatever the browser claimed (PNG
+        // bytes declared text/csv used to pass, and nothing limited the size).
+        $size = (int) @filesize($file['tmp_name']);
+        if ($size > self::IMPORT_MAX_BYTES) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.csv_too_large', ['max' => self::IMPORT_MAX_BYTES / 1024 / 1024]), 'csv_file', 422);
+        }
+        if ($size > 0) {
+            $detected = (string) (new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+            $head = (string) @file_get_contents($file['tmp_name'], false, null, 0, 8192);
+            if (!in_array($detected, self::IMPORT_TEXT_TYPES, true) || str_contains($head, "\0")) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.csv_invalid_type'), null, 400);
+            }
         }
 
         $handle = fopen($file['tmp_name'], 'r');
@@ -2205,6 +2220,11 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.csv_empty'), null, 400);
         }
 
+        // Our own template, and any CSV Excel saves as "CSV UTF-8", starts with
+        // a UTF-8 byte-order mark; it would otherwise become part of the first
+        // column's name and that column would be reported missing.
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
+
         // Normalize headers (lowercase, trim, underscores)
         $header = array_map(function ($h) {
             return strtolower(trim(str_replace([' ', '-'], '_', $h)));
@@ -2217,6 +2237,18 @@ class AdminUsersController extends BaseApiController
             fclose($handle);
             return $this->respondWithError('VALIDATION_ERROR', __('api.csv_missing_columns', ['columns' => implode(', ', $missing)]), null, 400);
         }
+
+        // F-558: count the rows before creating anyone, so an over-long file is
+        // refused whole rather than imported up to some arbitrary point.
+        $dataStart = ftell($handle);
+        $rowCount = 0;
+        while (fgetcsv($handle) !== false) {
+            if (++$rowCount > self::IMPORT_MAX_ROWS) {
+                fclose($handle);
+                return $this->respondWithError('VALIDATION_ERROR', __('api.csv_too_many_rows', ['max' => self::IMPORT_MAX_ROWS]), 'csv_file', 422);
+            }
+        }
+        fseek($handle, (int) $dataStart);
 
         $results = ['imported' => 0, 'skipped' => 0, 'errors' => []];
         $row = 1;

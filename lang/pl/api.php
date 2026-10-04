@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'Nie przesłano pliku CSV lub wystąpił błąd przesyłania',
     'csv_invalid_type' => 'Nieprawidłowy typ pliku. Prześlij plik CSV.',
     'csv_empty' => 'Pusty plik CSV',
+    'csv_too_large' => 'Plik jest za duży. Maksymalny rozmiar to :max MB.',
+    'csv_too_many_rows' => 'Plik zawiera zbyt wiele wierszy. Maksymalnie :max członków na jeden import.',
     'csv_missing_columns' => 'Brakuje wymaganych kolumn: :columns',
     'csv_could_not_read' => 'Nie można odczytać pliku',
     'csv_import_members_only' => 'Import może tworzyć tylko zwykłych członków. Inne role nadaj poszczególnym osobom po imporcie.',

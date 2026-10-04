@@ -280,6 +280,8 @@ return [
     'csv_no_file'                          => 'No CSV file uploaded or upload error',
     'csv_invalid_type'                     => 'Invalid file type. Please upload a CSV file.',
     'csv_empty'                            => 'Empty CSV file',
+    'csv_too_large'                        => 'The file is too large. The maximum is :max MB.',
+    'csv_too_many_rows'                    => 'The file has too many rows. The maximum is :max members per import.',
     'csv_missing_columns'                  => 'Missing required columns: :columns',
     'csv_could_not_read'                   => 'Could not read file',
     'csv_import_members_only'              => 'An import can only create ordinary members. Give other roles to people one at a time after the import.',

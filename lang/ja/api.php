@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'CSV ファイルがアップロードされていないか、アップロード エラーが発生しました',
     'csv_invalid_type' => '無効なファイルタイプです。 CSVファイルをアップロードしてください。',
     'csv_empty' => '空のCSVファイル',
+    'csv_too_large' => 'ファイルが大きすぎます。上限は :max MB です。',
+    'csv_too_many_rows' => 'ファイルの行数が多すぎます。1回のインポートで登録できるのは最大 :max 人です。',
     'csv_missing_columns' => '必須列が欠落しています: :columns',
     'csv_could_not_read' => 'ファイルを読み取れませんでした',
     'csv_import_members_only' => 'インポートで作成できるのは一般メンバーのみです。その他の役割は、インポート後に一人ずつ付与してください。',

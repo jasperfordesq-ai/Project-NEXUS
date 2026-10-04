@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'Keine CSV-Datei hochgeladen oder Fehler beim Hochladen',
     'csv_invalid_type' => 'Ungültiger Dateityp. Bitte laden Sie eine CSV-Datei hoch.',
     'csv_empty' => 'Leere CSV-Datei',
+    'csv_too_large' => 'Die Datei ist zu groß. Das Maximum beträgt :max MB.',
+    'csv_too_many_rows' => 'Die Datei enthält zu viele Zeilen. Pro Import sind höchstens :max Mitglieder möglich.',
     'csv_missing_columns' => 'Fehlende erforderliche Spalten: :columns',
     'csv_could_not_read' => 'Datei konnte nicht gelesen werden',
     'csv_import_members_only' => 'Ein Import kann nur normale Mitglieder anlegen. Vergeben Sie andere Rollen nach dem Import einzeln an die jeweilige Person.',

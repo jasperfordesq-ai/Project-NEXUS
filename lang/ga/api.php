@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'Níor uaslódáladh aon chomhad CSV nó níor uaslódáladh earráid',
     'csv_invalid_type' => 'Cineál comhaid neamhbhailí. Uaslódáil comhad CSV le do thoil.',
     'csv_empty' => 'Comhad CSV folamh',
+    'csv_too_large' => 'Tá an comhad rómhór. Is é :max MB an t-uasmhéid.',
+    'csv_too_many_rows' => 'Tá an iomarca sraitheanna sa chomhad. Is é :max ball in aghaidh an allmhairithe an t-uasmhéid.',
     'csv_missing_columns' => 'Colúin riachtanacha in easnamh: :columns',
     'csv_could_not_read' => 'Níorbh fhéidir an comhad a léamh',
     'csv_import_members_only' => 'Ní féidir le hiompórtáil ach gnáthbhaill a chruthú. Tabhair róil eile do dhaoine ceann ar cheann tar éis na hiompórtála.',

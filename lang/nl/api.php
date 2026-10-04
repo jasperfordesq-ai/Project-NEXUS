@@ -174,6 +174,8 @@ return [
     'csv_no_file' => 'Geen CSV-bestand geüpload of uploadfout',
     'csv_invalid_type' => 'Ongeldig bestandstype. Upload een CSV-bestand.',
     'csv_empty' => 'Leeg CSV-bestand',
+    'csv_too_large' => 'Het bestand is te groot. Het maximum is :max MB.',
+    'csv_too_many_rows' => 'Het bestand bevat te veel rijen. Het maximum is :max leden per import.',
     'csv_missing_columns' => 'Ontbrekende vereiste kolommen: :columns',
     'csv_could_not_read' => 'Kan bestand niet lezen',
     'csv_import_members_only' => 'Een import kan alleen gewone leden aanmaken. Geef andere rollen na de import per persoon.',
