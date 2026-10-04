@@ -40,7 +40,6 @@ import { usePageTitle } from '@/hooks';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { formatServerDate, formatServerDateTime } from '@/lib/serverTime';
 import { isAdminTierUser } from '@/lib/access';
-import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import {
   BrokerEmptyState,
   BrokerPageShell,
@@ -170,8 +169,6 @@ export function VettingRecords() {
   const [policyData, setPolicyData] = useState<VettingPolicyResponse | null>(null);
   const [policyLoading, setPolicyLoading] = useState(true);
   const [policyError, setPolicyError] = useState(false);
-  const [selectedJurisdiction, setSelectedJurisdiction] = useState('');
-  const [savingPolicy, setSavingPolicy] = useState(false);
 
   // One modal at a time; each is mounted fresh per member so its form starts clean.
   const [confirmItem, setConfirmItem] = useState<VettingRecord | null>(null);
@@ -271,7 +268,6 @@ export function VettingRecords() {
         data.review_resolution_codes.includes(code),
       );
       setPolicyData({ ...data, review_resolution_codes: reviewResolutionCodes });
-      setSelectedJurisdiction(data.policy.jurisdiction);
     } catch {
       setPolicyError(true);
     } finally {
@@ -347,26 +343,6 @@ export function VettingRecords() {
     void loadItems(true);
     void loadStats(true);
   });
-
-  const handleSavePolicy = async () => {
-    if (!selectedJurisdiction || !canConfigurePolicy) return;
-    setSavingPolicy(true);
-    try {
-      const response = await adminVetting.updatePolicy(selectedJurisdiction);
-      if (!response.success) {
-        toast.error(response.error || t('vetting.toast_policy_failed'));
-        return;
-      }
-      toast.success(t('vetting.toast_policy_saved'));
-      refreshAll();
-      // Clears the panel-wide "jurisdiction not set" notice at once.
-      window.dispatchEvent(new Event(BROKER_BADGES_REFRESH_EVENT));
-    } catch {
-      toast.error(t('vetting.toast_policy_failed'));
-    } finally {
-      setSavingPolicy(false);
-    }
-  };
 
   const exportCsv = () =>
     csv.run<VettingRecord>({
@@ -565,10 +541,6 @@ export function VettingRecords() {
           isCoordinator={isCoordinator}
           canRecordDecision={canRecordDecision}
           canConfigurePolicy={canConfigurePolicy}
-          selectedJurisdiction={selectedJurisdiction}
-          onJurisdictionChange={setSelectedJurisdiction}
-          savingPolicy={savingPolicy}
-          onSavePolicy={handleSavePolicy}
         />
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">

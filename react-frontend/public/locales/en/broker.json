@@ -507,7 +507,7 @@
     "policy_load_error": "The safeguarding policy could not be loaded. Decisions are disabled until it is available.",
     "policy_not_available": "This jurisdiction does not yet have a supported contact-vetting policy. Decisions are disabled.",
     "jurisdiction_label": "Safeguarding jurisdiction",
-    "save_jurisdiction": "Save jurisdiction",
+    "change_jurisdiction_link": "Change the jurisdiction in Configuration",
     "privacy_title": "Do not upload vetting documents",
     "privacy_body": "Record the operational scope and internal decision only. Do not upload or paste certificates, certificate numbers, disclosure results, identity documents, or criminal-record information into NEXUS.",
     "scheme_unavailable": "Not available",
@@ -568,7 +568,6 @@
     "resolution_duplicate_request": "Duplicate request",
     "resolution_member_contacted": "Member contacted",
     "resolve_button": "Resolve request",
-    "toast_policy_saved": "Safeguarding jurisdiction updated.",
     "toast_policy_failed": "The safeguarding jurisdiction could not be updated.",
     "toast_confirmed": "Community vetting confirmation recorded.",
     "toast_confirm_failed": "The confirmation could not be recorded.",
@@ -584,7 +583,6 @@
     "attestation_uk_safeguarding_clearance": "UK safeguarding clearance",
     "attestation_other": "Safeguarding confirmation",
     "jurisdiction_placeholder": "Not set",
-    "jurisdiction_admin_only_hint": "Only an admin can change the safeguarding jurisdiction. If it needs changing, ask an admin in your community.",
     "coordinator_view_only": "As a coordinator you can see vetting records here, but only a broker or an administrator can confirm, renew, revoke or resolve them.",
     "member_filter_banner": "Showing vetting records for {{name}}",
     "member_filter_clear": "Clear filter",
@@ -1507,7 +1505,9 @@
     "load_error_hint": "Try again — if it keeps failing, the API may be unavailable.",
     "retry": "Retry",
     "field_vetting_expiry_warning_days_help": "Days before a vetting record expires that expiry warnings begin.",
-    "field_insurance_expiry_warning_days_help": "Days before an insurance certificate expires that expiry warnings begin."
+    "field_insurance_expiry_warning_days_help": "Days before an insurance certificate expires that expiry warnings begin.",
+    "field_safeguarding_jurisdiction_help": "Which country's vetting scheme this community follows for safeguarded member contact. Until it is set, brokers cannot record vetting confirmations, and members who asked to be contacted only by vetted people cannot be contacted or matched.",
+    "jurisdiction_load_error": "The safeguarding jurisdiction could not be loaded. Try again later."
   },
   "admin_only": {
     "label": "Admin only",
@@ -1518,7 +1518,7 @@
     "intro": "Your community has not chosen its safeguarding jurisdiction yet. Until it is set:",
     "effect_vetting": "Brokers cannot record vetting confirmations.",
     "effect_contact": "Members who asked to be contacted only by vetted people cannot be contacted or matched.",
-    "action_admin": "Only an admin can set it. As an admin, you can set it on the Vetting confirmations page.",
+    "action_admin": "Only an admin can set it. As an admin, you can set it on the Configuration page, under Compliance & Safeguarding.",
     "action_ask_admin": "Only an admin can set it. Please ask an admin in your community to set it.",
     "set_button": "Set the jurisdiction"
   },

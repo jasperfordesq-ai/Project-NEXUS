@@ -14,9 +14,16 @@
  * bar (Save disabled when clean, Discard restores the loaded values), an
  * unsaved-changes guard on leaving, and an honest load-error state. A
  * non-admin's save sends only the settings they changed (F-547).
+ *
+ * The safeguarding jurisdiction (Oct 2026, moved from the Vetting page) is
+ * the first row of the Compliance & Safeguarding card. It is not part of the
+ * configuration object: it loads from and saves to the vetting policy
+ * endpoint, admin-only, but shares this page's Save bar, dirty state, Discard
+ * and leave guard so there is one way to save the page.
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Settings from 'lucide-react/icons/settings';
@@ -25,14 +32,16 @@ import AlertCircle from 'lucide-react/icons/circle-alert';
 
 import { Button, Alert } from '@/components/ui';
 import { usePageTitle } from '@/hooks';
-import { adminBroker } from '@/admin/api/adminApi';
-import type { BrokerConfig } from '@/admin/api/types';
+import { adminBroker, adminVetting } from '@/admin/api/adminApi';
+import type { BrokerConfig, VettingPolicyResponse } from '@/admin/api/types';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { isAdminTierUser } from '@/lib/access';
+import { BROKER_BADGES_REFRESH_EVENT } from '@/admin/modules/safeguarding/safeguardingShared';
 import { BrokerPageShell, BrokerSkeleton, BrokerEmptyState } from '../components';
 import {
   ConfigurationSection,
   ConfigurationSaveBar,
+  JurisdictionSettingRow,
   configSectionAnchor,
   useUnsavedChangesGuard,
   CONFIGURATION_SCHEMA,
@@ -68,7 +77,19 @@ export default function BrokerConfiguration() {
   // unchanged; a broker's save must never include them (F-547).
   const savedRawRef = useRef<Partial<BrokerConfig>>({});
 
+  // The safeguarding jurisdiction: loaded and saved apart from the
+  // configuration object. `savedJurisdiction` is what the server holds,
+  // `jurisdiction` what the admin is editing; '' means not set.
+  const [policyData, setPolicyData] = useState<VettingPolicyResponse | null>(null);
+  const [policyLoading, setPolicyLoading] = useState(true);
+  const [policyError, setPolicyError] = useState(false);
+  const [savedJurisdiction, setSavedJurisdiction] = useState('');
+  const [jurisdiction, setJurisdiction] = useState('');
+
   const isAdminTier = isAdminTierUser(user);
+  // Only an admin may choose the jurisdiction (owner decision, 3 Oct 2026);
+  // the server refuses anyone else, and the screen uses the same rule.
+  const canEditJurisdiction = isAdminTier;
   const canEditKey = useCallback(
     (key: keyof BrokerConfig) => isAdminTier || !ADMIN_ONLY_CONFIG_KEYS.has(key),
     [isAdminTier],
@@ -106,16 +127,50 @@ export default function BrokerConfiguration() {
     loadConfig();
   }, [loadConfig]);
 
-  const dirty = useMemo(() => isConfigDirty(form, saved), [form, saved]);
+  // Loaded apart from the configuration so a policy failure leaves the rest
+  // of the page usable: the row says so instead of the whole page failing.
+  const loadPolicy = useCallback(async () => {
+    setPolicyLoading(true);
+    setPolicyError(false);
+    try {
+      const res = await adminVetting.policy();
+      if (res.success && res.data?.policy) {
+        setPolicyData(res.data);
+        const current = res.data.policy.configured ? res.data.policy.jurisdiction : '';
+        setSavedJurisdiction(current);
+        setJurisdiction(current);
+      } else {
+        setPolicyError(true);
+      }
+    } catch {
+      setPolicyError(true);
+    } finally {
+      setPolicyLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPolicy();
+  }, [loadPolicy]);
+
+  const configDirty = useMemo(() => isConfigDirty(form, saved), [form, saved]);
+  const jurisdictionDirty = canEditJurisdiction && jurisdiction !== '' && jurisdiction !== savedJurisdiction;
+  const dirty = configDirty || jurisdictionDirty;
   useUnsavedChangesGuard(dirty && !loading && !loadError);
 
-  async function handleSave() {
-    const problem = validateConfigForm(form, t);
-    if (problem) {
-      toast.error(problem);
-      return;
-    }
-    setSaving(true);
+  // A link to one card (the "jurisdiction not set" notice, the Vetting page)
+  // arrives before the cards exist: scroll and focus once they have loaded.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (loading || loadError || !hash) return;
+    const target = document.getElementById(hash.slice(1));
+    if (!target) return;
+    target.scrollIntoView?.({ block: 'start' });
+    target.focus({ preventScroll: true });
+  }, [loading, loadError, hash]);
+
+  /** Saves the configuration object; true on success. Toasts its own failure. */
+  async function saveConfigurationValues(): Promise<boolean> {
     try {
       const next = fromFormValues(form, saved);
       // F-547: a non-admin sends only the settings they changed. The server
@@ -131,17 +186,59 @@ export default function BrokerConfiguration() {
           );
 
       const res = await adminBroker.saveConfiguration(payload);
-      if (res.success) {
-        savedRawRef.current = { ...savedRawRef.current, ...payload, ...res.data };
-        const confirmed = { ...next, ...res.data };
-        setSaved(confirmed);
-        setForm(toFormValues(confirmed));
-        toast.success(t('configuration.save_success'));
-      } else {
+      if (!res.success) {
         toast.error(t('configuration.save_failed'));
+        return false;
       }
+      savedRawRef.current = { ...savedRawRef.current, ...payload, ...res.data };
+      const confirmed = { ...next, ...res.data };
+      setSaved(confirmed);
+      setForm(toFormValues(confirmed));
+      return true;
     } catch {
       toast.error(t('configuration.save_failed'));
+      return false;
+    }
+  }
+
+  /** Saves the jurisdiction through the vetting policy endpoint; true on success. */
+  async function saveJurisdiction(): Promise<boolean> {
+    try {
+      const res = await adminVetting.updatePolicy(jurisdiction);
+      if (!res.success) {
+        toast.error(res.error || t('vetting.toast_policy_failed'));
+        return false;
+      }
+      setSavedJurisdiction(jurisdiction);
+      if (res.data?.policy) {
+        const policy = res.data.policy;
+        setPolicyData((prev) => (prev ? { ...prev, policy } : prev));
+      }
+      // Clears the panel-wide "jurisdiction not set" notice at once.
+      window.dispatchEvent(new Event(BROKER_BADGES_REFRESH_EVENT));
+      return true;
+    } catch {
+      toast.error(t('vetting.toast_policy_failed'));
+      return false;
+    }
+  }
+
+  async function handleSave() {
+    const problem = validateConfigForm(form, t);
+    if (problem) {
+      toast.error(problem);
+      return;
+    }
+    setSaving(true);
+    try {
+      // Each part saves on its own and reports its own failure, so a refused
+      // jurisdiction never loses the other settings, and the one success
+      // toast means everything on the page was saved.
+      const configOk = configDirty ? await saveConfigurationValues() : true;
+      const jurisdictionOk = jurisdictionDirty ? await saveJurisdiction() : true;
+      if (configOk && jurisdictionOk) {
+        toast.success(t('configuration.save_success'));
+      }
     } finally {
       setSaving(false);
     }
@@ -149,6 +246,7 @@ export default function BrokerConfiguration() {
 
   function handleDiscard() {
     setForm(toFormValues(saved));
+    setJurisdiction(savedJurisdiction);
   }
 
   const updateField = useCallback(
@@ -224,6 +322,16 @@ export default function BrokerConfiguration() {
                 form={form}
                 canEditKey={canEditKey}
                 onChange={updateField}
+                leading={section.id === 'compliance_safeguarding' ? (
+                  <JurisdictionSettingRow
+                    policyData={policyData}
+                    loading={policyLoading}
+                    error={policyError}
+                    canEdit={canEditJurisdiction}
+                    value={jurisdiction}
+                    onChange={setJurisdiction}
+                  />
+                ) : undefined}
               />
             ))}
           </div>

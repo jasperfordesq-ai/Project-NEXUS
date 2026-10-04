@@ -16,7 +16,7 @@ import { Card, CardBody, Input, NumberField, Separator, Switch } from '@/compone
 import type { BrokerConfig } from '@/admin/api/types';
 import { AdminOnlyBadge } from '../AdminOnlyBadge';
 import type { BrokerStatColor } from '../BrokerStatCard';
-import { unitFormatOptions, type ConfigSectionDef, type ConfigSettingDef } from './configurationSchema';
+import { configSectionAnchor, unitFormatOptions, type ConfigSectionDef, type ConfigSettingDef } from './configurationSchema';
 import type { ConfigFormValues } from './configurationForm';
 
 // Tailwind JIT needs full class names at build time.
@@ -36,7 +36,7 @@ interface SettingRowProps {
   children: ReactNode;
 }
 
-function SettingRow({ label, help, locked = false, children }: SettingRowProps) {
+export function SettingRow({ label, help, locked = false, children }: SettingRowProps) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
       <div className="min-w-0 flex-1">
@@ -51,10 +51,7 @@ function SettingRow({ label, help, locked = false, children }: SettingRowProps) 
   );
 }
 
-/** Anchor id used by the page's section jump links. */
-export function configSectionAnchor(sectionId: string): string {
-  return `config-section-${sectionId}`;
-}
+export { configSectionAnchor };
 
 interface ConfigurationSectionProps {
   section: ConfigSectionDef;
@@ -62,9 +59,15 @@ interface ConfigurationSectionProps {
   /** Whether the current user may change this key (admin, or not admin-only). */
   canEditKey: (key: keyof BrokerConfig) => boolean;
   onChange: <K extends keyof BrokerConfig>(key: K, value: ConfigFormValues[K]) => void;
+  /**
+   * Rows rendered before the schema rows — for a setting that lives in this
+   * card but is not part of the broker configuration object (the
+   * safeguarding jurisdiction, saved through the vetting policy endpoint).
+   */
+  leading?: ReactNode;
 }
 
-export function ConfigurationSection({ section, form, canEditKey, onChange }: ConfigurationSectionProps) {
+export function ConfigurationSection({ section, form, canEditKey, onChange, leading }: ConfigurationSectionProps) {
   const { t } = useTranslation('broker');
   const Icon = section.icon;
 
@@ -128,7 +131,10 @@ export function ConfigurationSection({ section, form, canEditKey, onChange }: Co
   return (
     <Card
       id={configSectionAnchor(section.id)}
-      className="scroll-mt-24 rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]"
+      // Focusable so a link to this card (the "jurisdiction not set" notice,
+      // the Vetting page) lands keyboard and screen-reader users on it.
+      tabIndex={-1}
+      className="scroll-mt-24 rounded-2xl border border-divider/70 bg-surface shadow-sm shadow-black/[0.03] outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <div className="flex items-start gap-3 p-4 sm:p-5">
         <span
@@ -145,6 +151,7 @@ export function ConfigurationSection({ section, form, canEditKey, onChange }: Co
       </div>
       <Separator />
       <CardBody className="divide-y divide-divider p-0">
+        {leading}
         {section.settings.map((setting) => {
           if (setting.visibleWhen && !form[setting.visibleWhen]) return null;
           return (

@@ -10,17 +10,24 @@ import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── Mock adminApi (default+named same object via vi.hoisted) ─────────────────
-const { mockAdminBroker, mockConfirm } = vi.hoisted(() => ({
+const { mockAdminBroker, mockAdminVetting, mockConfirm } = vi.hoisted(() => ({
   mockAdminBroker: {
     getConfiguration: vi.fn(),
     saveConfiguration: vi.fn(),
+  },
+  // The safeguarding jurisdiction lives on this page (Oct 2026) but is saved
+  // through the vetting policy endpoint, not the configuration one.
+  mockAdminVetting: {
+    policy: vi.fn(),
+    updatePolicy: vi.fn(),
   },
   mockConfirm: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminBroker: mockAdminBroker,
-  default: { adminBroker: mockAdminBroker },
+  adminVetting: mockAdminVetting,
+  default: { adminBroker: mockAdminBroker, adminVetting: mockAdminVetting },
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -45,6 +52,25 @@ vi.mock('@/components/ui', async (importOriginal) => {
       />
     ),
     Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+    // A native <select>: HeroUI's popover listbox cannot be driven in jsdom.
+    Select: ({ children, selectedKeys, onSelectionChange, isDisabled, ...rest }: {
+      children?: React.ReactNode; selectedKeys?: Iterable<string | number>;
+      onSelectionChange?: (keys: Set<string>) => void; isDisabled?: boolean; [k: string]: unknown;
+    }) => (
+      <select
+        value={String(Array.from(selectedKeys ?? [])[0] ?? '')}
+        disabled={isDisabled}
+        onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
+        {...(typeof rest['aria-label'] === 'string' ? { 'aria-label': rest['aria-label'] as string } : {})}
+        {...(typeof rest['aria-labelledby'] === 'string' ? { 'aria-labelledby': rest['aria-labelledby'] as string } : {})}
+      >
+        <option value="">—</option>
+        {children}
+      </select>
+    ),
+    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
+      <option value={id}>{children}</option>
+    ),
     useConfirm: () => mockConfirm,
   };
 });
@@ -130,6 +156,38 @@ const defaultConfig = {
 };
 
 const FIRST_CONTACT = 'Copy first contact between members';
+const JURISDICTION = 'Safeguarding jurisdiction';
+
+const policyResponse = {
+  policy: {
+    configured: true,
+    contact_policy_available: true,
+    jurisdiction: 'england_wales',
+    scheme_code: 'dbs_england_wales',
+    attestation_code: 'dbs_enhanced',
+    purpose_code: 'safeguarded_member_contact',
+    scope_type: 'tenant',
+    scope_identifier: '2',
+    policy_version: 'safeguarded-contact-v1',
+    label: 'England and Wales',
+    attestation_label: 'Enhanced DBS',
+    preset: 'england_wales',
+    certification_options: [],
+  },
+  jurisdictions: [
+    { code: 'england_wales', label: 'England and Wales', attestation_code: 'dbs_enhanced', attestation_label: 'Enhanced DBS', available_for_contact_policy: true, contact_policy_available: true, certification_options: [] },
+    { code: 'scotland', label: 'Scotland', attestation_code: 'pvg_scotland', attestation_label: 'PVG scheme', available_for_contact_policy: true, contact_policy_available: true, certification_options: [] },
+    { code: 'ireland', label: 'Republic of Ireland', attestation_code: null, attestation_label: null, available_for_contact_policy: false, contact_policy_available: false, certification_options: [] },
+  ],
+  revocation_reason_codes: [],
+  review_resolution_codes: [],
+};
+
+function complianceCard() {
+  const card = document.getElementById('config-section-compliance_safeguarding');
+  if (!card) throw new Error('compliance card not rendered');
+  return within(card);
+}
 
 function findSaveButton() {
   return screen.getAllByRole('button').find((b) =>
@@ -161,7 +219,13 @@ describe('BrokerConfigurationPage', () => {
     mockRole = 'admin';
     mockAdminBroker.getConfiguration.mockResolvedValue({ success: true, data: { ...defaultConfig } });
     mockAdminBroker.saveConfiguration.mockResolvedValue({ success: true, data: { ...defaultConfig } });
+    mockAdminVetting.policy.mockResolvedValue({ success: true, data: structuredClone(policyResponse) });
+    mockAdminVetting.updatePolicy.mockImplementation((jurisdiction: string) => Promise.resolve({
+      success: true,
+      data: { policy: { ...policyResponse.policy, jurisdiction, label: jurisdiction === 'scotland' ? 'Scotland' : 'England and Wales' }, message: 'ok' },
+    }));
     mockConfirm.mockResolvedValue(true);
+    window.history.replaceState({}, '', '/test/broker/configuration');
   });
 
   it('shows a skeleton loading state initially', async () => {
@@ -428,8 +492,9 @@ describe('BrokerConfigurationPage', () => {
       expect(screen.getByText('Some settings can only be changed by an admin')).toBeInTheDocument();
     });
 
-    // Every admin-only row carries the lock chip — twelve of them, the F-547 set…
-    expect(screen.getAllByText('Admin only')).toHaveLength(12);
+    // Every admin-only row carries the lock chip — the twelve of the F-547 set
+    // plus the safeguarding jurisdiction…
+    expect(screen.getAllByText('Admin only')).toHaveLength(13);
     // …and its control is disabled.
     expect(screen.getByRole('switch', { name: 'Broker messaging enabled' })).toBeDisabled();
     // Broker-editable settings stay enabled.
@@ -511,6 +576,111 @@ describe('BrokerConfigurationPage', () => {
         copy_first_contact: false,
         exchange_workflow_enabled: true,
       });
+    });
+  });
+
+  // ─── Safeguarding jurisdiction ─────────────────────────────────────────────
+  // Moved here from the Vetting page (Oct 2026): a tenant-wide setting only an
+  // admin may change belongs with the other admin-only settings, not on a
+  // broker's work queue. It is saved through the vetting policy endpoint.
+
+  describe('safeguarding jurisdiction', () => {
+    it('shows the jurisdiction in the Compliance & Safeguarding card with the confirmation it requires', async () => {
+      await renderLoaded();
+
+      const card = complianceCard();
+      const select = card.getByRole('combobox', { name: JURISDICTION }) as HTMLSelectElement;
+      expect(select.value).toBe('england_wales');
+      expect(card.getByText(/Required confirmation: Enhanced DBS/)).toBeInTheDocument();
+      expect(card.getByText(/Until it is set, brokers cannot record vetting confirmations/)).toBeInTheDocument();
+    });
+
+    it('changing it dirties the page, and Save sends it to the policy endpoint and nothing to the configuration one', async () => {
+      await renderLoaded();
+
+      fireEvent.change(complianceCard().getByRole('combobox', { name: JURISDICTION }), { target: { value: 'scotland' } });
+      expect(complianceCard().getByText(/Required confirmation: PVG scheme/)).toBeInTheDocument();
+      expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+
+      const saveBtn = findSaveButton();
+      expect(isButtonDisabled(saveBtn)).toBe(false);
+      if (saveBtn) fireEvent.click(saveBtn);
+
+      await waitFor(() => expect(mockAdminVetting.updatePolicy).toHaveBeenCalledWith('scotland'));
+      expect(mockAdminBroker.saveConfiguration).not.toHaveBeenCalled();
+      await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('Broker configuration saved.'));
+      expect(screen.getByText('All changes saved')).toBeInTheDocument();
+    });
+
+    it('Discard puts the jurisdiction back', async () => {
+      await renderLoaded();
+
+      const select = complianceCard().getByRole('combobox', { name: JURISDICTION }) as HTMLSelectElement;
+      fireEvent.change(select, { target: { value: 'scotland' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+      expect(select.value).toBe('england_wales');
+      expect(isButtonDisabled(findSaveButton())).toBe(true);
+    });
+
+    it('warns when the chosen jurisdiction has no supported contact policy', async () => {
+      await renderLoaded();
+
+      fireEvent.change(complianceCard().getByRole('combobox', { name: JURISDICTION }), { target: { value: 'ireland' } });
+      expect(complianceCard().getByText(/does not yet have a supported contact-vetting policy/)).toBeInTheDocument();
+    });
+
+    it('says when the jurisdiction could not be saved, and still saves the other settings', async () => {
+      mockAdminVetting.updatePolicy.mockResolvedValue({ success: false, error: 'Jurisdiction refused' });
+      await renderLoaded();
+
+      fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
+      fireEvent.change(complianceCard().getByRole('combobox', { name: JURISDICTION }), { target: { value: 'scotland' } });
+      const saveBtn = findSaveButton();
+      if (saveBtn) fireEvent.click(saveBtn);
+
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Jurisdiction refused'));
+      expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith(expect.objectContaining({ copy_first_contact: false }));
+      expect(mockToast.success).not.toHaveBeenCalled();
+      // The failed value is still on screen, so the admin can retry.
+      expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+    });
+
+    it('shows a broker the jurisdiction read-only, marked Admin only, and never sends it', async () => {
+      mockRole = 'broker';
+      const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
+      render(<BrokerConfigurationPage />);
+      await waitFor(() => expect(screen.getAllByRole('switch').length).toBeGreaterThan(0));
+
+      const card = complianceCard();
+      expect(card.queryByRole('combobox', { name: JURISDICTION })).toBeNull();
+      expect(card.getByRole('textbox', { name: JURISDICTION })).toHaveTextContent('England and Wales');
+      expect(card.getByText(/Required confirmation: Enhanced DBS/)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
+      const saveBtn = findSaveButton();
+      if (saveBtn) fireEvent.click(saveBtn);
+      await waitFor(() => expect(mockAdminBroker.saveConfiguration).toHaveBeenCalled());
+      expect(mockAdminVetting.updatePolicy).not.toHaveBeenCalled();
+    });
+
+    it('keeps the rest of the page working when the policy cannot be loaded', async () => {
+      mockAdminVetting.policy.mockRejectedValue(new Error('network'));
+      await renderLoaded();
+
+      expect(complianceCard().getByText('The safeguarding jurisdiction could not be loaded. Try again later.')).toBeInTheDocument();
+      expect(complianceCard().queryByRole('combobox', { name: JURISDICTION })).toBeNull();
+      expect(screen.getByRole('switch', { name: FIRST_CONTACT })).toBeInTheDocument();
+    });
+
+    it('scrolls to the section named in the URL hash once the page has loaded', async () => {
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      window.history.replaceState({}, '', '/test/broker/configuration#config-section-compliance_safeguarding');
+      await renderLoaded();
+
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
+      expect(document.activeElement).toBe(document.getElementById('config-section-compliance_safeguarding'));
     });
   });
 

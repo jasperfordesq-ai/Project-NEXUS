@@ -49,6 +49,7 @@ import { useAuth, useTenant, useToast } from '@/contexts';
 import { adminBroker, adminMatching } from '@/admin/api/adminApi';
 import { isAdminTierUser } from '@/lib/access';
 import { getFormattingLocale } from '@/lib/helpers';
+import { JURISDICTION_SETTING_PATH } from '../components/configuration/configurationSchema';
 import { parseServerTimestamp } from '@/lib/serverTime';
 import {
   BrokerPageShell,
@@ -469,7 +470,7 @@ export function BrokerDashboard() {
                   </div>
                 </div>
                 {canSetJurisdiction && (
-                  <Button as={Link} to={tenantPath('/broker/safeguarding-options')} size="sm" variant="primary" className="shrink-0 self-start sm:self-center">
+                  <Button as={Link} to={tenantPath(JURISDICTION_SETTING_PATH)} size="sm" variant="primary" className="shrink-0 self-start sm:self-center">
                     {t('jurisdiction_notice.set_button')}
                   </Button>
                 )}

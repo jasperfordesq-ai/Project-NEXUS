@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 import type { VettingPolicyResponse } from '@/admin/api/types';
 
@@ -47,44 +46,36 @@ const baseProps = {
   isCoordinator: false,
   canRecordDecision: true,
   canConfigurePolicy: true,
-  selectedJurisdiction: 'england_wales',
-  onJurisdictionChange: vi.fn(),
-  savingPolicy: false,
-  onSavePolicy: vi.fn(),
 };
+
+// The jurisdiction is chosen on the Configuration page (Oct 2026); this card
+// only states the policy and, for an admin, points there.
+const CONFIGURATION_LINK = '/test/broker/configuration#config-section-compliance_safeguarding';
 
 describe('VettingPolicyCard', () => {
   it('states the jurisdiction, required confirmation and purpose', () => {
     render(<VettingPolicyCard {...baseProps} />);
     expect(screen.getByText('Safeguarding contact policy')).toBeInTheDocument();
-    // The label appears in the summary and again as the selected jurisdiction.
-    expect(screen.getAllByText('England and Wales').length).toBeGreaterThan(0);
+    expect(screen.getByText('England and Wales')).toBeInTheDocument();
     expect(screen.getByText('Enhanced DBS')).toBeInTheDocument();
     expect(screen.getByText('Safeguarded member contact')).toBeInTheDocument();
     expect(screen.getByText('Do not upload vetting documents')).toBeInTheDocument();
   });
 
-  it('lets an admin pick a jurisdiction, with Save disabled until it changes', async () => {
-    const onSavePolicy = vi.fn();
-    const user = userEvent.setup();
-    const { rerender } = render(<VettingPolicyCard {...baseProps} onSavePolicy={onSavePolicy} />);
-
+  it('gives an admin a link to change the jurisdiction on the Configuration page, and no control here', () => {
+    render(<VettingPolicyCard {...baseProps} />);
+    expect(screen.getByRole('link', { name: 'Change the jurisdiction in Configuration' })).toHaveAttribute('href', CONFIGURATION_LINK);
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save jurisdiction' })).not.toBeInTheDocument();
     expect(screen.queryByText('Admin only')).not.toBeInTheDocument();
-    const save = screen.getByRole('button', { name: 'Save jurisdiction' });
-    expect(save).toBeDisabled();
-
-    rerender(<VettingPolicyCard {...baseProps} onSavePolicy={onSavePolicy} selectedJurisdiction="scotland" />);
-    expect(save).not.toBeDisabled();
-    await user.click(save);
-    expect(onSavePolicy).toHaveBeenCalledTimes(1);
   });
 
-  it('shows a broker the jurisdiction read-only and marked Admin only', () => {
+  it('shows a broker the policy with no link and no Admin only mark', () => {
     render(<VettingPolicyCard {...baseProps} canConfigurePolicy={false} />);
-    expect(screen.getByText('Admin only')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Safeguarding jurisdiction' })).toHaveTextContent('England and Wales');
-    expect(screen.queryByRole('button', { name: 'Save jurisdiction' })).not.toBeInTheDocument();
-    expect(screen.getByText(/Only an admin can change the safeguarding jurisdiction/)).toBeInTheDocument();
+    expect(screen.getByText('England and Wales')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Change the jurisdiction in Configuration' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Admin only')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('tells a coordinator the page is view-only for them', () => {

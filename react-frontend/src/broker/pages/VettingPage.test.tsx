@@ -388,15 +388,18 @@ describe('VettingRecords', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'vetting.action_confirm' })).toBeDisabled());
   });
   // Owner decision, 3 Oct 2026: only an admin chooses the safeguarding
-  // jurisdiction, but everyone sees it, marked Admin only.
-  it('shows a broker the jurisdiction read-only, marked Admin only', async () => {
+  // jurisdiction. Since Oct 2026 that happens on the Configuration page;
+  // this page states the policy and, for an admin, links there.
+  it('shows a broker the policy with no jurisdiction control and no link to change it', async () => {
     mocks.user = { id: 2, role: 'broker' };
     const { VettingRecords } = await import('./VettingPage');
     render(<VettingRecords />);
 
-    expect(await screen.findByText('vetting.jurisdiction_label')).toBeInTheDocument();
-    expect(screen.getByText('admin_only.label')).toBeInTheDocument();
-    expect(screen.getByText('vetting.jurisdiction_admin_only_hint')).toBeInTheDocument();
+    expect(await screen.findByText('vetting.policy_title')).toBeInTheDocument();
+    expect(screen.getByText('England and Wales')).toBeInTheDocument();
+    expect(screen.queryByText('vetting.jurisdiction_label')).toBeNull();
+    expect(screen.queryByText('admin_only.label')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'vetting.change_jurisdiction_link' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'vetting.save_jurisdiction' })).toBeNull();
   });
 
@@ -422,12 +425,13 @@ describe('VettingRecords', () => {
     expect(screen.getAllByRole('button', { name: /vetting\.action_(confirm|renew|revoke)/ }).length).toBeGreaterThan(0);
   });
 
-  it('lets an admin choose the jurisdiction, with no Admin only mark', async () => {
+  it('gives an admin a link to change the jurisdiction on the Configuration page', async () => {
     const { VettingRecords } = await import('./VettingPage');
     render(<VettingRecords />);
 
-    expect(await screen.findByRole('button', { name: 'vetting.save_jurisdiction' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'vetting.change_jurisdiction_link' }))
+      .toHaveAttribute('href', '/test/broker/configuration#config-section-compliance_safeguarding');
+    expect(screen.queryByRole('button', { name: 'vetting.save_jurisdiction' })).toBeNull();
     expect(screen.queryByText('admin_only.label')).toBeNull();
-    expect(screen.queryByText('vetting.jurisdiction_admin_only_hint')).toBeNull();
   });
 });

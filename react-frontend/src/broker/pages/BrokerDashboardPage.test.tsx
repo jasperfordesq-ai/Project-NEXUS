@@ -356,12 +356,16 @@ describe('BrokerDashboard', () => {
       expect(screen.queryByRole('link', { name: 'Set the jurisdiction' })).not.toBeInTheDocument();
     });
 
-    it('gives an admin a button to the safeguarding options', async () => {
+    // The setting lives in the Compliance & Safeguarding card of the
+    // Configuration page (Oct 2026). This pointed at Safeguarding Options,
+    // where there is no such control.
+    it('gives an admin a button to the jurisdiction setting on the Configuration page', async () => {
       mockAuth.user = { id: 1, role: 'admin' };
       mockGetDashboard.mockResolvedValueOnce({ success: true, data: { ...MOCK_STATS, safeguarding_jurisdiction_configured: false } });
       render(<BrokerDashboard />);
       await waitFor(() => expect(screen.getByText('Safeguarding jurisdiction not set')).toBeInTheDocument());
-      expect(screen.getByRole('link', { name: 'Set the jurisdiction' })).toHaveAttribute('href', '/hour-timebank/broker/safeguarding-options');
+      expect(screen.getByRole('link', { name: 'Set the jurisdiction' }))
+        .toHaveAttribute('href', '/hour-timebank/broker/configuration#config-section-compliance_safeguarding');
     });
 
     it('shows nothing when the jurisdiction is set or unknown', async () => {

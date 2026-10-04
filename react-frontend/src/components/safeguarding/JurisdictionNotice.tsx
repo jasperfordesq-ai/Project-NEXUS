@@ -10,6 +10,9 @@
  * reached (the contact gate fails closed — docs/SAFEGUARDING-AND-CONSENT.md).
  * Only an admin can choose it (owner decision, 3 Oct 2026), so an admin gets
  * a button to the setting and everyone else is told who to ask.
+ *
+ * The setting is the first row of the Compliance & Safeguarding card on the
+ * broker Configuration page (Oct 2026; it was on the Vetting page before).
  */
 
 import { useTranslation } from 'react-i18next';
@@ -18,6 +21,7 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import { Alert, Button } from '@/components/ui';
 import { useTenant } from '@/contexts';
+import { JURISDICTION_SETTING_PATH } from '@/broker/components/configuration/configurationSchema';
 
 interface JurisdictionNoticeProps {
   /** The viewer is an admin and can set the jurisdiction. */
@@ -29,8 +33,9 @@ export function JurisdictionNotice({ canSet }: JurisdictionNoticeProps) {
   const { tenantPath } = useTenant();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const vettingPath = tenantPath('/broker/vetting');
-  const onVettingPage = pathname === vettingPath;
+  const settingPath = tenantPath(JURISDICTION_SETTING_PATH);
+  // The button is noise on the page that holds the setting.
+  const onConfigurationPage = pathname === tenantPath('/broker/configuration');
 
   return (
     <Alert
@@ -55,12 +60,12 @@ export function JurisdictionNotice({ canSet }: JurisdictionNoticeProps) {
           <p className="mt-3 font-semibold">
             {canSet ? t('jurisdiction_notice.action_admin') : t('jurisdiction_notice.action_ask_admin')}
           </p>
-          {canSet && !onVettingPage && (
+          {canSet && !onConfigurationPage && (
             <Button
               className="mt-3"
               size="sm"
               variant="primary"
-              onPress={() => navigate(vettingPath)}
+              onPress={() => navigate(settingPath)}
             >
               {t('jurisdiction_notice.set_button')}
               <ArrowRight size={16} aria-hidden="true" />

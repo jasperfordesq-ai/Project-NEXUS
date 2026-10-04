@@ -136,6 +136,18 @@ export const CONFIGURATION_SCHEMA: ConfigSectionDef[] = [
   },
 ];
 
+/** Anchor id of a section card, used by the page's jump links and by links from elsewhere. */
+export function configSectionAnchor(sectionId: string): string {
+  return `config-section-${sectionId}`;
+}
+
+/**
+ * Where the safeguarding jurisdiction is set (Oct 2026): the first row of the
+ * Compliance & Safeguarding card. The Vetting page, the dashboard and the
+ * panel-wide "jurisdiction not set" notice all point here. Tenant-relative.
+ */
+export const JURISDICTION_SETTING_PATH = `/broker/configuration#${configSectionAnchor('compliance_safeguarding')}`;
+
 /** Every setting the page shows, in display order. */
 export const CONFIGURATION_SETTINGS: ConfigSettingDef[] = CONFIGURATION_SCHEMA.flatMap((s) => s.settings);
 

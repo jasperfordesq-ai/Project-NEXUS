@@ -3,10 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-export { ConfigurationSection, configSectionAnchor } from './ConfigurationSection';
+export { ConfigurationSection, SettingRow, configSectionAnchor } from './ConfigurationSection';
+export { JurisdictionSettingRow } from './JurisdictionSettingRow';
 export { ConfigurationSaveBar } from './ConfigurationSaveBar';
 export { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 export {
+  JURISDICTION_SETTING_PATH,
   CONFIGURATION_SCHEMA,
   CONFIGURATION_SETTINGS,
   ADMIN_ONLY_CONFIG_KEYS,
