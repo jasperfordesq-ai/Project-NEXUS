@@ -139,7 +139,11 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
     setSaving(true);
     try {
       const res = await adminSettings.saveHeaderColors(form.header_bg_color || null, form.header_accent_color || null);
-      if (res.success === false) return { ok: false, error: res.error || t('system.save_failed') };
+      if (res.success === false) {
+        // admin-i18n-ignore: localized server message — AdminConfigController
+        // refusals (invalid hex colour, prerender reset) are __() keys.
+        return { ok: false, error: res.error || t('system.save_failed') };
+      }
       return { ok: true, changed: true };
     } catch (err) {
       logError('Header colours save error', err);

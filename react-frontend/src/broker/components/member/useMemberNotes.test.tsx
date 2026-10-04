@@ -60,9 +60,11 @@ describe('useMemberNotes', () => {
     expect(result.current.notes).toEqual([]);
 
     act(() => result.current.reload());
-    await waitFor(() => expect(result.current.error).toBe(false));
+    // load() clears the error flag before the request resolves, so wait for
+    // the data itself rather than for the flag to flip.
+    await waitFor(() => expect(result.current.notes).toEqual([note]));
+    expect(result.current.error).toBe(false);
     expect(crm.getNotes).toHaveBeenCalledTimes(2);
-    expect(result.current.notes).toEqual([note]);
   });
 
   it('adds a trimmed note with its category, toasts, and refreshes the list', async () => {

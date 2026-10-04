@@ -207,7 +207,11 @@ export function useSystemConfigForm({ excludeKeys, icons = NO_ICONS }: UseSystem
     setSaving(true);
     try {
       const res = await adminEnterprise.updateConfig(payload);
-      if (!res.success) return { ok: false, error: res.error || t('enterprise.failed_to_save_settings') };
+      if (!res.success) {
+        // admin-i18n-ignore: localized server message — AdminEnterpriseController
+        // refusals are __() keys.
+        return { ok: false, error: res.error || t('enterprise.failed_to_save_settings') };
+      }
       await reload();
       return { ok: true, changed: true };
     } catch {
