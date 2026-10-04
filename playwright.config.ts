@@ -123,6 +123,17 @@ export default defineConfig({
 
     // Accept self-signed certificates
     ignoreHTTPSErrors: true,
+
+    // The production bundle registers a service worker (vite-plugin-pwa with
+    // clientsClaim). Once it takes control of a page, Playwright's request
+    // routing sees every API request twice, once from the page and once from
+    // the worker, so the single-use refresh token is presented twice and the
+    // second copy is refused as superseded (409). The app then shows
+    // "Something went wrong" and the actor appears signed out. On a slow CI
+    // runner the worker takes control mid-bootstrap, which is what sank the
+    // events journey on 2026-10-04. Only the `pwa` project tests the worker,
+    // and it opts back in explicitly.
+    serviceWorkers: 'block',
   },
 
   // Configure projects for major browsers
@@ -261,6 +272,7 @@ export default defineConfig({
       testMatch: '**/pwa/offline-install.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
+        serviceWorkers: 'allow',
       },
       dependencies: ['setup'],
     },
