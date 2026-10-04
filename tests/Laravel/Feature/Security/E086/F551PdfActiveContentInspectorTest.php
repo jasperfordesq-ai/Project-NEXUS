@@ -236,6 +236,35 @@ final class F551PdfActiveContentInspectorTest extends TestCase
         self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
     }
 
+    /**
+     * Second review round (4 Oct): the hidden-object pass only recognised
+     * "N G obj" separated by whitespace, but viewers also skip comments there.
+     * pdf.js loaded `6 0 %c\nobj` and `6%c\n0 obj` through the xref and ran
+     * the script while the checker said clean. Every `obj` keyword is now read,
+     * however the numbers before it are written, and so is every `trailer`.
+     *
+     * @return iterable<string, array{string}>
+     */
+    public static function hiddenObjectHeaders(): iterable
+    {
+        yield 'comment before obj' => ["6 0 %hidden\nobj"];
+        yield 'comment between number and generation' => ["6%hidden\n0 obj"];
+        yield 'keyword glued to digits' => ['6 0 obj6'];
+        yield 'trailer dictionary' => ['trailer'];
+    }
+
+    /** @dataProvider hiddenObjectHeaders */
+    public function test_a_hidden_object_is_read_however_its_header_is_written(string $header): void
+    {
+        $pdf = F551Pdf::build([
+            1 => '<< /Type /Catalog /Pages 2 0 R >>',
+            2 => '<< /Type /Pages /Kids [] /Count 0 >>',
+            4 => ['<< /Length 10 >>', "{$header}\n<< /Type /Catalog /OpenAction << /S /JavaScript /JS (app.alert(1)) >> >>\nendobj"],
+        ]);
+
+        self::assertSame(Inspector::ACTIVE, $this->inspect($pdf));
+    }
+
     public function test_a_literal_endstream_inside_compressed_object_stream_data_does_not_cut_the_scan_short(): void
     {
         // Level 0 deflate stores bytes verbatim, so the word "endstream" sits in

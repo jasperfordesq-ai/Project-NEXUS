@@ -21,10 +21,15 @@ namespace App\Support\Uploads;
  * - a top-to-bottom walk, in which literal and hex strings are skipped as
  *   strings (text such as "(>> stream ... endstream)" cannot hide a
  *   dictionary) and stream data is skipped to the first `endstream`;
- * - then EVERY "N G obj" header anywhere in the file, including inside other
- *   streams' data, is parsed as an object. An object smuggled into another
- *   stream's data (found in review, 3 Oct 2026: invisible to the walk, loaded
- *   by pdf.js through the xref table) is therefore still read.
+ * - then whatever follows EVERY `obj` keyword and EVERY `trailer` keyword
+ *   anywhere in the file, including inside other streams' data, is parsed.
+ *   A viewer can only load an uncompressed object through an `obj` keyword
+ *   (pdf.js and PDFium both require it, at the xref offset or when rebuilding
+ *   the xref), and a trailer can carry a direct /Root. Matching the keyword
+ *   alone, not the numbers before it, means no spelling of the header — a
+ *   comment between the tokens, digits glued to `obj` — can hide an object.
+ *   (Review findings, 3–4 Oct 2026: objects hidden in stream data, first with
+ *   a plain header, then with comments inside the header; pdf.js ran both.)
  *
  * Object streams (PDF 1.5 compressed objects, where /JS can hide) are decoded
  * and walked too. Their data counts as decoded only when the decode is
@@ -147,24 +152,27 @@ final class PdfActiveContentInspector
     }
 
     /**
-     * Parse the object after every "N G obj" header in the file, wherever it
-     * sits — including inside another stream's data, where the top-to-bottom
-     * walk skipped it but a viewer following the xref table would load it.
+     * Parse the value after every `obj` and `trailer` keyword in the file,
+     * wherever it sits — including inside another stream's data, where the
+     * top-to-bottom walk skipped it but a viewer following the xref would
+     * load it. Only the keyword is matched, never the header's numbers, so
+     * comments or odd spacing inside a header cannot hide the object.
      */
     private function readEveryObjectHeader(string $contents): void
     {
-        if ($this->verdict !== null
-            || preg_match_all('/\d+[\x00\t\n\f\r ]+\d+[\x00\t\n\f\r ]+obj/', $contents, $matches, PREG_OFFSET_CAPTURE) === false) {
-            return;
-        }
-
         $this->data = $contents;
         $this->length = strlen($contents);
-        foreach ($matches[0] as [$header, $offset]) {
+
+        foreach ($this->keywordEnds($contents) as $offset) {
             if ($this->verdict !== null) {
                 return;
             }
-            $this->pos = $offset + strlen($header);
+            $this->pos = $offset;
+            // pdf.js also accepts `obj1234` and similar: step over the rest of
+            // the token before reading the value.
+            if ($this->pos < $this->length && ! $this->isWhitespace($this->data[$this->pos]) && ! $this->isDelimiter($this->data[$this->pos])) {
+                $this->readRegularToken();
+            }
             $value = $this->parseValue(0);
             $this->skipWhitespaceAndComments();
             if (substr($this->data, $this->pos, 6) === 'stream') {
@@ -172,6 +180,29 @@ final class PdfActiveContentInspector
                 $this->consumeStream(is_array($value) && ($value['type'] ?? null) === 'dict' ? $value : null);
             }
         }
+    }
+
+    /**
+     * Offsets just past each `obj` (not `endobj`) and `trailer` keyword.
+     *
+     * @return list<int>
+     */
+    private function keywordEnds(string $contents): array
+    {
+        $ends = [];
+        foreach (['obj', 'trailer'] as $keyword) {
+            $offset = 0;
+            while (($found = strpos($contents, $keyword, $offset)) !== false) {
+                $offset = $found + strlen($keyword);
+                if ($keyword === 'obj' && $found >= 3 && substr($contents, $found - 3, 3) === 'end') {
+                    continue;
+                }
+                $ends[] = $offset;
+            }
+        }
+        sort($ends);
+
+        return $ends;
     }
 
     private function walk(string $data, bool $allowStreams): void
