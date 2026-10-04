@@ -59,6 +59,7 @@ import SearchIcon from 'lucide-react/icons/search';
 import CornerDownLeft from 'lucide-react/icons/corner-down-left';
 import { Modal, ModalContent, Kbd, Spinner } from '@/components/ui';
 import { useTenant, useTheme, useToast } from '@/contexts';
+import { resolveUserDisplayName } from '@/lib/helpers';
 import { adminBroker, adminUsers } from '@/admin/api/adminApi';
 import type { AdminUser, BrokerMessage } from '@/admin/api/types';
 import { useHelpGuides } from '@/pages/help/guides/useHelpGuides';
@@ -242,7 +243,7 @@ export function BrokerCommandPalette({ isOpen, onClose }: BrokerCommandPalettePr
     return memberResults.items.map((member) => ({
       id: `broker-palette-member-${member.id}`,
       section: 'members',
-      label: member.name || [member.first_name, member.last_name].filter(Boolean).join(' ') || member.email,
+      label: resolveUserDisplayName(member, member.email),
       hint: t('palette.member_hint'),
       icon: UserRound,
       onSelect: () => go(`/broker/members?search=${encodeURIComponent(member.name || member.email)}`),

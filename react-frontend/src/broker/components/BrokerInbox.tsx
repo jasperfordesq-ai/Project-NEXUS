@@ -32,6 +32,7 @@ import type { MemberSupportNeed } from '@/admin/modules/safeguarding/safeguardin
 import { api } from '@/lib/api';
 import { useTenant, useToast } from '@/contexts';
 import { formatServerDate } from '@/lib/serverTime';
+import { resolveUserDisplayName } from '@/lib/helpers';
 import { useBrokerAutoRefresh } from '../useBrokerAutoRefresh';
 
 const SHOW = 3;
@@ -289,7 +290,7 @@ export function BrokerInbox({ showExchanges, onVisibilityChange }: BrokerInboxPr
       <InboxSection key="vetting" title={t('dashboard.vetting_review_requests')} total={vetting.total}
         seeAll={tenantPath('/broker/vetting?status=review_requested')}>
         {vetting.items.map((row) => {
-          const name = `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() || row.email;
+          const name = resolveUserDisplayName(row, row.email);
           return (
             <InboxRow
               key={row.user_id}

@@ -88,7 +88,7 @@ function serve(groups: Partial<Record<keyof Counts, unknown[]>>, counts: Partial
 
 function lastGetUrl(): URL {
   const calls = mockApi.get.mock.calls;
-  return new URL(String(calls[calls.length - 1][0]), 'http://x');
+  return new URL(String(calls[calls.length - 1]![0]), 'http://x');
 }
 
 describe('MyListingsPage', () => {

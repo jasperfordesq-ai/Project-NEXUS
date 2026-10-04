@@ -147,6 +147,7 @@ export function ActivityChip({ actionType }: { actionType: string }) {
   const suffix = actionI18nKeySuffix[actionType];
   const label = suffix
     ? t(`dashboard.activity.chip_${suffix}`)
+    // admin-i18n-ignore: unmapped audit action slug shown as its technical identifier
     : actionType.replace(/_/g, ' ');
   return (
     <Chip size="sm" variant="tertiary" color={color} className="shrink-0">
@@ -161,6 +162,7 @@ export function formatActionLabel(actionType: string, t: TFunc): string {
   const suffix = actionI18nKeySuffix[actionType];
   return suffix
     ? t(`dashboard.activity.verb_${suffix}`)
+    // admin-i18n-ignore: unmapped audit action slug shown as its technical identifier
     : actionType.replace(/_/g, ' ');
 }
 

@@ -140,6 +140,7 @@ class ListingService
             }
         }
 
+        /** @var Collection<int, Listing> $items */
         $items = $query->orderByDesc('id')->limit($limit + 1)->get();
 
         $hasMore = $items->count() > $limit;

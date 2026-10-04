@@ -640,9 +640,6 @@
     "src/broker/pages/MembersPage.test.tsx": {
       "TS2769": 1
     },
-    "src/broker/pages/MessageReviewPage.test.tsx": {
-      "TS2345": 1
-    },
     "src/broker/pages/OnboardingPage.test.tsx": {
       "TS2345": 2,
       "TS2739": 2,
@@ -652,7 +649,6 @@
       "TS2532": 1
     },
     "src/broker/pages/UserMonitoringPage.test.tsx": {
-      "TS18048": 3,
       "TS2532": 1
     },
     "src/broker/pages/VettingPage.test.tsx": {
@@ -1907,7 +1903,7 @@
     }
   },
   "totals": {
-    "fileCount": 563,
-    "errorCount": 1712
+    "fileCount": 562,
+    "errorCount": 1708
   }
 }

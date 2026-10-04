@@ -296,6 +296,10 @@
       "status": "native",
       "mobile": "exchange-detail"
     },
+    "listings/mine": {
+      "status": "gap",
+      "reason": "My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile."
+    },
     "listings/create": {
       "status": "native",
       "mobile": "new-exchange"

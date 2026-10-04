@@ -762,7 +762,7 @@ describe('MessageReview (broker)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     expect(csvState.run).toHaveBeenCalledTimes(1);
-    const request = csvState.run.mock.calls[0][0] as {
+    const request = csvState.run.mock.calls[0]![0] as {
       filename: string;
       columns: { label: string; value: (row: unknown) => unknown }[];
       fetchPage: (page: number) => Promise<{ rows: unknown[]; hasMore: boolean }>;

@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
+import { formatServerDateTime } from '@/lib/serverTime';
 import { createMockContexts } from '@/test/mock-contexts';
 import type { BrokerDashboardActivityEntry } from '../dashboardTypes';
 
@@ -83,7 +84,7 @@ describe('BrokerActivityTimeline', () => {
     for (let i = 0; i < 6 && document.activeElement !== button; i++) await user.tab();
     expect(button).toHaveFocus();
     const tooltip = await screen.findByRole('tooltip');
-    const expected = new Date(MESSAGE_ENTRY.created_at).toLocaleString();
+    const expected = formatServerDateTime(MESSAGE_ENTRY.created_at);
     expect(tooltip).toHaveTextContent(expected);
   });
 

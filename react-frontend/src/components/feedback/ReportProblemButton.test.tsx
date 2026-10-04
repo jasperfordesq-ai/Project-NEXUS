@@ -182,7 +182,7 @@ describe('ReportProblemButton', () => {
       await user.click(screen.getByRole('button', { name: 'Send' }));
 
       await waitFor(() => expect(mocks.apiUpload).toHaveBeenCalledTimes(1));
-      const form = mocks.apiUpload.mock.calls[0][1] as FormData;
+      const form = mocks.apiUpload.mock.calls[0]![1] as FormData;
       expect((form.get('screenshots[0]') as File).name).toBe('keep.png');
       expect(form.get('screenshots[1]')).toBeNull();
     });
