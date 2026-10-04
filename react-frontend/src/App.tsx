@@ -16,7 +16,7 @@
  * @see docs/TRS-001-TENANT-RESOLUTION-SPEC.md
  */
 
-import { Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,12 @@ import { ScrollToTop } from '@/components/routing/ScrollToTop';
 import { TenantShell } from '@/components/routing/TenantShell';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { StepUpPrompt } from '@/components/security/StepUpPrompt';
+
+// Loaded after startup, not in the entry bundle: it pulls in the passkey
+// client and the security-confirmation modal, which only staff performing a
+// high-risk action ever see (E-085). It registers its handler as soon as its
+// chunk arrives; until then a refused request surfaces as the normal error.
+const StepUpPrompt = lazy(() => import('@/components/security/StepUpPrompt'));
 /**
  * Give date-entry widgets the same locale the rest of the app formats with.
  *
@@ -62,7 +67,9 @@ function App() {
             <ToastProvider>
               <ErrorBoundary>
                 <ConfirmDialogProvider>
-                <StepUpPrompt />
+                <Suspense fallback={null}>
+                  <StepUpPrompt />
+                </Suspense>
                 <Suspense fallback={<LoadingScreen />}>
                   <Routes>
                     {/* Single catch-all route â€” TenantShell detects tenant slug from
