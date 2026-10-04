@@ -28,6 +28,7 @@ import ChevronRight from 'lucide-react/icons/chevron-right';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import TrendingDown from 'lucide-react/icons/trending-down';
 import { Card, CardBody } from '@/components/ui/Card';
+import { Chip } from '@/components/ui/Chip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -39,7 +40,7 @@ interface StatCardProps {
   title?: string;
   value: string | number;
   icon: LucideIcon | ReactNode;
-  trend?: number;
+  trend?: number | null;
   trendLabel?: string;
   description?: string;
   color?: 'primary' | 'success' | 'warning' | 'danger' | 'secondary' | 'default';
@@ -48,6 +49,13 @@ interface StatCardProps {
   to?: string;
   /** Accessible hint shown to screen readers when the card is a link. */
   linkAriaLabel?: string;
+  /**
+   * The figure could not be computed (the API names it in `_failed_metrics`).
+   * Shows a dash and `failedLabel` as a chip on the tile itself, so the warning
+   * sits where the number is missing rather than only in a banner.
+   */
+  failed?: boolean;
+  failedLabel?: string;
 }
 
 type StatColor = NonNullable<StatCardProps['color']>;
@@ -83,6 +91,8 @@ export function StatCard({
   loading = false,
   to,
   linkAriaLabel,
+  failed = false,
+  failedLabel,
 }: StatCardProps) {
   const { t } = useTranslation('admin_nav');
   const { embedded } = useAdminEmbed();
@@ -99,8 +109,9 @@ export function StatCard({
         to={to}
         linkAriaLabel={linkAriaLabel}
         description={description}
-        delta={trend}
+        delta={trend ?? undefined}
         deltaLabel={trendLabel}
+        failed={failed}
       />
     );
   }
@@ -131,13 +142,18 @@ export function StatCard({
         <Skeleton role="status" aria-busy="true" aria-label={t('shared.loading')} className="mt-1.5 h-8 w-20 rounded bg-surface-tertiary" />
       ) : (
         <p className="mt-1 text-3xl font-semibold leading-none tracking-tight text-foreground tabular-nums">
-          {typeof value === 'number' ? value.toLocaleString(getFormattingLocale()) : value}
+          {failed ? '—' : typeof value === 'number' ? value.toLocaleString(getFormattingLocale()) : value}
         </p>
+      )}
+      {failed && !loading && (
+        <Chip size="sm" variant="soft" color="warning" className="mt-2 w-fit">
+          {failedLabel ?? '—'}
+        </Chip>
       )}
       {description && (
         <p className="mt-2 line-clamp-2 text-xs leading-4 text-muted break-normal [overflow-wrap:normal]">{description}</p>
       )}
-      {trend !== undefined && (
+      {trend !== undefined && trend !== null && !failed && (
         <div className="mt-2 flex items-center gap-1">
           {trend >= 0 ? (
             <TrendingUp size={14} className="text-success" />

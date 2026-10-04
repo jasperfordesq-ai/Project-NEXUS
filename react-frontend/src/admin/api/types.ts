@@ -126,26 +126,49 @@ export interface ResidencyVerification {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface AdminDashboardStats {
-  total_users: number;
-  active_users: number;
-  pending_users: number;
-  total_listings: number;
-  active_listings: number;
-  pending_listings?: number;
+  /** Members, excluding deleted and anonymised accounts. */
+  total_users: number | null;
+  total_users_start_of_month?: number | null;
+  members_delta_pct?: number | null;
+  /** Members seen (sign-in or heartbeat) in the last `active_users_window_days`. */
+  active_users: number | null;
+  active_users_window_days?: number;
+  /** The old "active" figure: approved accounts. */
+  approved_users?: number | null;
+  pending_users: number | null;
+  total_listings: number | null;
+  active_listings: number | null;
+  /** Always null: listings keep no status history, so no month-on-month figure exists. */
+  active_listings_delta_pct?: number | null;
+  pending_listings?: number | null;
   /** Volunteering organisations awaiting an approve/decline decision. */
-  pending_organisations?: number;
-  total_transactions: number;
-  total_hours_exchanged: number;
-  new_users_this_month: number;
-  new_listings_this_month: number;
+  pending_organisations?: number | null;
+  /** All-time exchanges between members (system credit, donations, reversals excluded). */
+  total_transactions: number | null;
+  total_hours_exchanged: number | null;
+  exchanges_this_month?: number | null;
+  exchanges_last_month?: number | null;
+  exchanges_delta_pct?: number | null;
+  exchange_hours_this_month?: number | null;
+  exchange_hours_last_month?: number | null;
+  exchange_hours_delta_pct?: number | null;
+  new_users_this_month: number | null;
+  new_users_last_month?: number | null;
+  new_users_delta_pct?: number | null;
+  new_listings_this_month: number | null;
+  new_listings_last_month?: number | null;
+  /** True when at least one figure could not be computed; see `_failed_metrics`. */
+  _partial?: boolean;
+  _failed_metrics?: string[];
 }
 
 export interface MonthlyTrend {
+  /** 'YYYY-MM' — the frontend formats it for the reader's locale. */
   month: string;
-  users: number;
-  listings: number;
-  transactions: number;
-  hours: number;
+  users: number | null;
+  listings: number | null;
+  transactions: number | null;
+  hours: number | null;
 }
 
 export interface ActivityLogEntry {

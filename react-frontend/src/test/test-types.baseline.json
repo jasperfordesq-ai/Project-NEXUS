@@ -337,9 +337,6 @@
     "src/admin/modules/crm/MemberTags.test.tsx": {
       "TS2345": 4
     },
-    "src/admin/modules/dashboard/AdminDashboard.test.tsx": {
-      "TS2345": 1
-    },
     "src/admin/modules/deliverability/DeliverablesList.test.tsx": {
       "TS2345": 4,
       "TS2532": 2,
@@ -1903,7 +1900,7 @@
     }
   },
   "totals": {
-    "fileCount": 562,
-    "errorCount": 1708
+    "fileCount": 561,
+    "errorCount": 1707
   }
 }

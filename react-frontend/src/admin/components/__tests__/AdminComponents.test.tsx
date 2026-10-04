@@ -310,4 +310,22 @@ describe('StatCard', () => {
     const { container } = render(<W><StatCard label="Total Users" value={150} icon={Users} loading /></W>);
     expect(container.querySelector('[role="status"]')).toBeTruthy();
   });
+
+  it('becomes a link when given a destination', () => {
+    render(<W><StatCard label="Total Users" value={150} icon={Users} to="/admin/users" /></W>);
+    expect(screen.getByRole('link', { name: 'Total Users' })).toHaveAttribute('href', '/admin/users');
+  });
+
+  it('shows a dash and a chip instead of the value when the figure failed to load', () => {
+    render(<W><StatCard label="Total Users" value={150} icon={Users} trend={12} failed failedLabel="Could not load" /></W>);
+    expect(screen.getByText('—')).toBeTruthy();
+    expect(screen.getByText('Could not load')).toBeTruthy();
+    expect(screen.queryByText('150')).toBeNull();
+    expect(screen.queryByText('+12%')).toBeNull();
+  });
+
+  it('hides the trend row when the delta is null', () => {
+    render(<W><StatCard label="Total Users" value={150} icon={Users} trend={null} trendLabel="vs last month" /></W>);
+    expect(screen.queryByText('vs last month')).toBeNull();
+  });
 });

@@ -40,12 +40,16 @@ const REFRESH_MS = 60_000;
 
 export function useAdminBadgeCounts() {
   const [counts, setCounts] = useState<AdminBadgeCounts>({});
+  // Whether at least one request has finished (well or badly). The dashboard's
+  // "Needs attention" strip must not say "All clear" before the first answer.
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     const res = await api.get<AdminBadgeCounts>('/v2/admin/badge-counts');
     if (res.success && res.data && typeof res.data === 'object') {
       setCounts(res.data);
     }
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -64,7 +68,7 @@ export function useAdminBadgeCounts() {
     };
   }, [load]);
 
-  return { counts, refresh: load };
+  return { counts, loaded, refresh: load };
 }
 
 /**

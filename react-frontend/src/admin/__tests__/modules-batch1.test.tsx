@@ -14,7 +14,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 // ─── Common mocks ────────────────────────────────────────────────────────────
@@ -169,27 +169,27 @@ describe('AdminDashboard', () => {
     expect(screen.getByText('Mission Control')).toBeInTheDocument();
   });
 
-  it('shows stat card labels', () => {
+  it('shows the headline stat card labels', async () => {
     render(<Wrapper><AdminDashboard /></Wrapper>);
-    expect(screen.getByText('Total Members')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Members')).toBeInTheDocument());
     expect(screen.getByText('Active Listings')).toBeInTheDocument();
-    expect(screen.getByText('Transactions')).toBeInTheDocument();
-    expect(screen.getByText('Hours Exchanged')).toBeInTheDocument();
+    expect(screen.getByText('Exchanges this month')).toBeInTheDocument();
+    expect(screen.getByText('Hours exchanged this month')).toBeInTheDocument();
   });
 
-  it('shows Quick Actions section', () => {
+  it('shows the quick links', async () => {
     render(<Wrapper><AdminDashboard /></Wrapper>);
-    expect(screen.getByText('Quick Actions')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('navigation', { name: 'Quick Actions' })).toBeInTheDocument());
   });
 
-  it('shows Monthly Trends section', () => {
+  it('shows the exchange activity chart card', async () => {
     render(<Wrapper><AdminDashboard /></Wrapper>);
-    expect(screen.getByText('Transaction Trends')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Exchange activity')).toBeInTheDocument());
   });
 
-  it('shows Recent Activity section', () => {
+  it('shows the Recent Activity section', async () => {
     render(<Wrapper><AdminDashboard /></Wrapper>);
-    expect(screen.getByText('Real-time Activity')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Real-time Activity')).toBeInTheDocument());
   });
 
   it('shows Refresh button', () => {

@@ -176,7 +176,7 @@ export const adminDashboard = {
   getStats: () =>
     api.get<AdminDashboardStats>('/v2/admin/dashboard/stats'),
 
-  getTrends: (months = 6) =>
+  getTrends: (months = 12) =>
     api.get<MonthlyTrend[]>(`/v2/admin/dashboard/trends?months=${months}`),
 
   getActivity: (page = 1, limit = 20) =>

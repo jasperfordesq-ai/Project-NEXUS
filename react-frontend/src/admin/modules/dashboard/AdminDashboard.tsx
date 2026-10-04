@@ -1,86 +1,77 @@
-import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Spinner, Button, Chip } from '@/components/ui';
-import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import Users from 'lucide-react/icons/users';
-import ListChecks from 'lucide-react/icons/list-checks';
-import Building2 from 'lucide-react/icons/building-2';
-import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
-import Clock from 'lucide-react/icons/clock';
-import UserCheck from 'lucide-react/icons/user-check';
-import UserPlus from 'lucide-react/icons/user-plus';
-import FileCheck from 'lucide-react/icons/file-check';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Activity from 'lucide-react/icons/activity';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
-import Send from 'lucide-react/icons/send';
-import PenSquare from 'lucide-react/icons/square-pen';
-import Trophy from 'lucide-react/icons/trophy';
-import Settings from 'lucide-react/icons/settings';
-import Rocket from 'lucide-react/icons/rocket';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import { useAuth, useTenant, useToast } from '@/contexts';
-import { isGodUser } from '@/lib/access';
-import { useOnboardingConfig } from '@/hooks/useOnboardingConfig';
-import { useAdminPageMeta } from '../../AdminMetaContext';
-import { adminDashboard } from '../../api/adminApi';
-import { StatCard } from '../../components/StatCard';
-import { PageHeader } from '../../components/PageHeader';
-import type { AdminDashboardStats, ActivityLogEntry, MonthlyTrend } from '../../api/types';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Admin Dashboard
- * Overview with key metrics, activity log, monthly trends, and quick actions.
- * Parity: PHP AdminController::index() / views/modern/admin/dashboard.php
+ * Admin Dashboard ("Mission Control")
  *
- * Parity notes (vs legacy PHP dashboard):
- * - Stats: Total Users, Active Listings, Transactions, Hours Exchanged -- DONE
- * - Pending alerts: Users, Listings -- DONE
- * - Quick Actions sidebar: Manage Users, View Listings, Newsletters, Blog, Gamification, Settings -- DONE
- * - Activity Log -- DONE
- * - Monthly Trends -- DONE (text bars; legacy uses Chart.js line chart)
+ * Top to bottom: what needs a decision now, four headline numbers with their
+ * change against last month, four supporting numbers, quick links, then the
+ * exchange chart beside the latest activity. Every number card is a link into
+ * the page that explains it, with the matching filter already applied.
  *
- * NOT yet implemented (parity gaps):
- * - Users Online / Active Sessions (LIVE stats) -- backend has no API for this
- * - Platform Modules grid (15 module cards) -- low priority, sidebar already provides navigation
- * - System Status panel (Database/Cache/Cron/Email) -- available at /admin/enterprise/monitoring
- * - Enterprise Suite sidebar links -- available at /admin/enterprise
- * - Transaction Volume chart (Chart.js line chart) -- current text bars are functional
- * - Onboarding Tour -- low priority
+ * Polished 2026-10-04. Before that the eight cards went nowhere, "Active users"
+ * meant approved accounts, the trend was text rows with an inline-style bar
+ * flattened by a 3,000-hour opening-balance import, and a failed load showed a
+ * row of dashes with no message.
  */
 
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import Users from 'lucide-react/icons/users';
+import UserCheck from 'lucide-react/icons/user-check';
+import UserPlus from 'lucide-react/icons/user-plus';
+import ListChecks from 'lucide-react/icons/list-checks';
+import FileCheck from 'lucide-react/icons/file-check';
+import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
+import Clock from 'lucide-react/icons/clock';
+import History from 'lucide-react/icons/history';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Send from 'lucide-react/icons/send';
+import PenSquare from 'lucide-react/icons/square-pen';
+import Trophy from 'lucide-react/icons/trophy';
+import Settings from 'lucide-react/icons/settings';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
+import AlertCircle from 'lucide-react/icons/circle-alert';
+import Building2 from 'lucide-react/icons/building-2';
+import { Alert, Button, Card, CardBody, Skeleton } from '@/components/ui';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { isGodUser } from '@/lib/access';
+import { formatRelativeTime } from '@/lib/helpers';
+import { useOnboardingConfig } from '@/hooks/useOnboardingConfig';
+import { useAdminPageMeta } from '../../AdminMetaContext';
+import { adminDashboard } from '../../api/adminApi';
+import { StatCard } from '../../components/StatCard';
+import { PageHeader } from '../../components/PageHeader';
+import { EmptyState } from '../../components/EmptyState';
+import { useAdminBadgeCounts } from '../../hooks/useAdminBadgeCounts';
+import type { AdminDashboardStats, ActivityLogEntry, MonthlyTrend } from '../../api/types';
+import { AttentionStrip } from './AttentionStrip';
+import { ExchangeTrendChart } from './ExchangeTrendChart';
+import { RecentActivityFeed } from './RecentActivityFeed';
+
+const TREND_MONTHS = 12;
 
 export function AdminDashboard() {
   const { t } = useTranslation('admin_dashboard');
   useAdminPageMeta({ title: t('title'), description: t('subtitle') });
-  const { tenantPath, hasFeature } = useTenant();
+  const { tenantPath, hasFeature, hasModule } = useTenant();
   const { user } = useAuth();
   // The Enterprise dashboard is god accounts only (owner decision 2026-10-02).
   const isGod = isGodUser(user);
   const toast = useToast();
-
-  /** Quick action items matching the legacy PHP dashboard sidebar */
-  const quickActions = [
-    { label: t('quick_actions.manage_users'), path: '/admin/users', icon: UserPlus, color: 'text-accent bg-accent/10' },
-    { label: t('quick_actions.view_listings'), path: '/admin/listings', icon: ListChecks, color: 'text-success bg-success/10' },
-    ...(hasFeature('newsletter') ? [
-      { label: t('quick_actions.send_newsletter'), path: '/admin/newsletters', icon: Send, color: 'text-accent bg-accent-soft' },
-    ] : []),
-    { label: t('quick_actions.new_blog_post'), path: '/admin/blog/create', icon: PenSquare, color: 'text-danger bg-danger/10' },
-    { label: t('quick_actions.gamification'), path: '/admin/gamification', icon: Trophy, color: 'text-warning bg-warning/10' },
-    { label: t('quick_actions.settings'), path: '/admin/settings', icon: Settings, color: 'text-muted bg-surface-secondary' },
-  ] as const;
+  const { counts: badgeCounts, loaded: badgesLoaded, refresh: refreshBadges } = useAdminBadgeCounts();
 
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [activity, setActivity] = useState<ActivityLogEntry[]>([]);
+  const [activityFailed, setActivityFailed] = useState(false);
   const [trends, setTrends] = useState<MonthlyTrend[]>([]);
+  const [trendsFailed, setTrendsFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   // Surface a prominent banner when the onboarding safeguarding step is off.
   // Without it, members cannot declare vulnerability or vetting needs during
@@ -90,38 +81,73 @@ export function AdminDashboard() {
   const showSafeguardingBanner =
     !onboardingLoading && onboardingConfig.step_safeguarding_enabled === false;
 
-  const loadDashboard = useCallback(async () => {
+  const loadDashboard = useCallback(async (isRefresh = false) => {
     setLoading(true);
-    try {
-      const [statsRes, activityRes, trendsRes] = await Promise.all([
-        adminDashboard.getStats(),
-        adminDashboard.getActivity(1, 10),
-        adminDashboard.getTrends(6),
-      ]);
+    // api.ts never throws: a failure comes back as { success: false }. The
+    // three requests are independent, so one failing must not blank the rest.
+    const [statsRes, activityRes, trendsRes] = await Promise.all([
+      adminDashboard.getStats(),
+      adminDashboard.getActivity(1, 10),
+      adminDashboard.getTrends(TREND_MONTHS),
+    ]);
 
-      if (statsRes.success && statsRes.data) {
-        setStats(statsRes.data);
-      }
-      if (activityRes.success) {
-        // After api.ts unwrapping, activityRes.data is already ActivityLogEntry[]
-        const items = activityRes.data;
-        if (Array.isArray(items)) {
-          setActivity(items);
-        }
-      }
-      if (trendsRes.success && trendsRes.data) {
-        setTrends(Array.isArray(trendsRes.data) ? trendsRes.data : []);
-      }
-    } catch {
-      toast.error(t('load_error'));
-    } finally {
-      setLoading(false);
+    const statsOk = statsRes.success && !!statsRes.data && typeof statsRes.data === 'object';
+    if (statsOk) {
+      setStats(statsRes.data as AdminDashboardStats);
+      setLoadError(false);
+    } else {
+      setLoadError(true);
+      if (isRefresh) toast.error(t('load_error'));
     }
-  }, [toast, t])
+
+    if (activityRes.success && Array.isArray(activityRes.data)) {
+      setActivity(activityRes.data);
+      setActivityFailed(false);
+    } else {
+      setActivityFailed(true);
+    }
+
+    if (trendsRes.success && Array.isArray(trendsRes.data)) {
+      setTrends(trendsRes.data);
+      const failedSeries = (trendsRes.meta as { _failed_metrics?: string[] } | undefined)?._failed_metrics ?? [];
+      setTrendsFailed(failedSeries.includes('transactions'));
+    } else {
+      setTrendsFailed(true);
+    }
+
+    setUpdatedAt(new Date());
+    setLoading(false);
+    if (isRefresh) void refreshBadges();
+  }, [toast, t, refreshBadges]);
 
   useEffect(() => {
-    loadDashboard();
+    void loadDashboard();
   }, [loadDashboard]);
+
+  const failed = useCallback(
+    (metric: string) => stats?._failed_metrics?.includes(metric) ?? false,
+    [stats],
+  );
+
+  const wallet = hasModule('wallet');
+  const exchangesPath = wallet ? '/admin/timebanking' : '/admin/community-analytics';
+  const hoursPath = wallet ? '/admin/reports/hours' : '/admin/community-analytics';
+
+  /** Quick links — the same pages as the sidebar's most-used entries. */
+  const quickActions = useMemo(() => [
+    { key: 'manage_users', path: '/admin/users', icon: UserPlus },
+    { key: 'view_listings', path: '/admin/listings', icon: ListChecks },
+    ...(hasFeature('newsletter') ? [{ key: 'send_newsletter', path: '/admin/newsletters', icon: Send }] : []),
+    { key: 'new_blog_post', path: '/admin/blog/create', icon: PenSquare },
+    { key: 'gamification', path: '/admin/gamification', icon: Trophy },
+    { key: 'activity_log', path: '/admin/activity-log', icon: History },
+    { key: 'settings', path: '/admin/settings', icon: Settings },
+  ], [hasFeature]);
+
+  const firstLoad = loading && !stats && !loadError;
+  const hardFailure = loadError && !stats;
+  const couldNotLoad = t('stats.could_not_load');
+  const vsLastMonth = t('stats.vs_last_month');
 
   return (
     <div className="space-y-6">
@@ -129,15 +155,22 @@ export function AdminDashboard() {
         title={t('title')}
         description={t('subtitle')}
         actions={
-          <Button
-            variant="tertiary"
-            startContent={<RefreshCw size={16} />}
-            onPress={loadDashboard}
-            isLoading={loading}
-            size="sm"
-          >
-            {t('refresh')}
-          </Button>
+          <div className="flex items-center gap-3">
+            {updatedAt && !loading && (
+              <span className="hidden text-xs text-muted sm:inline" data-testid="dashboard-updated-at">
+                {t('updated_ago', { time: formatRelativeTime(updatedAt.toISOString()) })}
+              </span>
+            )}
+            <Button
+              variant="tertiary"
+              startContent={<RefreshCw size={16} aria-hidden="true" />}
+              onPress={() => void loadDashboard(true)}
+              isLoading={loading}
+              size="sm"
+            >
+              {t('refresh')}
+            </Button>
+          </div>
         }
       />
 
@@ -148,291 +181,232 @@ export function AdminDashboard() {
         >
           <CardBody className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-danger/10">
-              <ShieldAlert size={22} className="text-danger" />
+              <ShieldAlert size={22} className="text-danger" aria-hidden="true" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-danger">
-                {t('safeguarding_banner.title')}
-              </p>
-              <p className="mt-0.5 text-sm text-muted">
-                {t('safeguarding_banner.body')}
-              </p>
+              <p className="text-sm font-semibold text-danger">{t('safeguarding_banner.title')}</p>
+              <p className="mt-0.5 text-sm text-muted">{t('safeguarding_banner.body')}</p>
             </div>
-            <Button
-              as={Link}
-              to={tenantPath('/admin/onboarding-settings')}
-              size="sm"
-              variant="danger"
-              className="shrink-0"
-            >
+            <Button as={Link} to={tenantPath('/admin/onboarding-settings')} size="sm" variant="danger" className="shrink-0">
               {t('safeguarding_banner.cta')}
             </Button>
           </CardBody>
         </Card>
       )}
 
-      {/* Stats Grid - Row 1: Core Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t('stats.total_members')}
-          value={stats?.total_users ?? '—'}
-          icon={Users}
-          color="default"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.active_listings')}
-          value={stats?.active_listings ?? '—'}
-          icon={FileCheck}
-          color="success"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.transactions')}
-          value={stats?.total_transactions ?? '—'}
-          icon={ArrowLeftRight}
-          color="default"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.hours_exchanged')}
-          value={stats?.total_hours_exchanged ?? '—'}
-          icon={Clock}
+      {stats?._partial && (
+        <Alert
+          role="status"
           color="warning"
-          loading={loading}
+          className="rounded-2xl border border-warning/40 border-l-4 border-l-warning bg-surface p-4 shadow-sm"
+          classNames={{
+            title: 'text-sm font-semibold text-foreground',
+            description: 'text-sm leading-6 text-foreground',
+            icon: 'text-warning',
+          }}
+          icon={<AlertCircle size={20} aria-hidden="true" />}
+          title={t('partial.title')}
+          description={t('partial.body')}
+          endContent={
+            <Button size="sm" variant="secondary" className="shrink-0 self-center" onPress={() => void loadDashboard(true)}>
+              {t('partial.retry')}
+            </Button>
+          }
+          data-testid="dashboard-partial-banner"
         />
-      </div>
-
-      {/* Stats Grid - Row 2: This Month */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t('stats.new_users_this_month')}
-          value={stats?.new_users_this_month ?? '—'}
-          icon={UserPlus}
-          color="default"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.active_users')}
-          value={stats?.active_users ?? '—'}
-          icon={UserCheck}
-          color="success"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.total_listings')}
-          value={stats?.total_listings ?? '—'}
-          icon={ListChecks}
-          color="default"
-          loading={loading}
-        />
-        <StatCard
-          label={t('stats.new_listings_this_month')}
-          value={stats?.new_listings_this_month ?? '—'}
-          icon={ListChecks}
-          color="default"
-          loading={loading}
-        />
-      </div>
-
-      {/* Actionable Alerts: Pending Users + Listings + Volunteering Organisations */}
-      {((stats?.pending_users ?? 0) > 0
-        || (stats?.pending_listings ?? 0) > 0
-        || (stats?.pending_organisations ?? 0) > 0) && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {stats?.pending_users !== undefined && stats.pending_users > 0 && (
-            <Card className="border border-warning/20 bg-surface shadow-sm shadow-warning/10">
-              <CardBody className="flex flex-row items-center gap-4 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-                  <UserCheck size={20} className="text-warning" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted">{t('alerts.pending_approvals')}</p>
-                  <p className="text-lg font-bold">{stats.pending_users}</p>
-                </div>
-                <Button
-                  as={Link}
-                  to={tenantPath('/admin/users?filter=pending')}
-                  size="sm"
-                  variant="secondary"
-                >
-                  {t('alerts.review')}
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-
-          {stats?.pending_listings !== undefined && stats.pending_listings > 0 && (
-            <Card className="border border-accent/20 bg-surface shadow-sm shadow-accent/10">
-              <CardBody className="flex flex-row items-center gap-4 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-                  <ListChecks size={20} className="text-accent" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted">{t('alerts.pending_listings')}</p>
-                  <p className="text-lg font-bold">{stats.pending_listings}</p>
-                </div>
-                <Button
-                  as={Link}
-                  to={tenantPath('/admin/listings?status=pending')}
-                  size="sm"
-                  variant="secondary"
-                >
-                  {t('alerts.review')}
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-
-          {stats?.pending_organisations !== undefined && stats.pending_organisations > 0 && (
-            <Card className="border border-warning/20 bg-surface shadow-sm shadow-warning/10">
-              <CardBody className="flex flex-row items-center gap-4 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-                  <Building2 size={20} className="text-warning" />
-                </div>
-                <div className="flex-1">
-                  {/* Reuses the existing, already-translated alerts key rather
-                      than introducing a twelfth-locale duplicate of the same phrase. */}
-                  <p className="text-sm text-muted">{t('alerts.orgs_pending_text')}</p>
-                  <p className="text-lg font-bold">{stats.pending_organisations}</p>
-                </div>
-                <Button
-                  as={Link}
-                  to={tenantPath('/admin/volunteering/organizations')}
-                  size="sm"
-                  variant="secondary"
-                >
-                  {t('alerts.review')}
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-        </div>
       )}
 
-      {/* Quick Actions + Trends + Activity -- 3-column layout on large screens */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {firstLoad ? (
+        <DashboardSkeleton label={t('loading')} />
+      ) : hardFailure ? (
+        <EmptyState
+          icon={AlertCircle}
+          title={t('error.title')}
+          description={t('error.hint')}
+          actionLabel={t('error.retry')}
+          onAction={() => void loadDashboard(true)}
+        />
+      ) : (
+        <>
+          <AttentionStrip
+            counts={badgeCounts}
+            loaded={badgesLoaded}
+            pendingOrganisations={stats?.pending_organisations}
+          />
 
-        {/* Quick Actions (matches legacy sidebar) */}
-        <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-          <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
-            <Rocket size={18} className="text-accent" aria-hidden="true" />
-            <h3 className="font-semibold">{t('quick_actions.card_title')}</h3>
-          </CardHeader>
-          <CardBody className="px-4 pb-4">
-            <div className="grid grid-cols-2 gap-2">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <Link
-                    key={action.path}
-                    to={tenantPath(action.path)}
-                    className="flex flex-col items-center gap-2 rounded-xl border border-divider/70 bg-surface-secondary/30 p-3 text-center transition-all hover:-translate-y-0.5 hover:bg-surface-secondary hover:shadow-sm"
-                  >
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${action.color}`}>
-                      <Icon size={20} />
-                    </div>
-                    <span className="text-xs font-medium text-foreground">{action.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
+          {/* Headline numbers — each links to the page that explains it. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="headline-stats">
+            <StatCard
+              label={t('stats.members')}
+              value={stats?.total_users ?? '—'}
+              icon={Users}
+              color="primary"
+              loading={loading}
+              trend={stats?.members_delta_pct}
+              trendLabel={vsLastMonth}
+              description={
+                (stats?.pending_users ?? 0) > 0
+                  ? t('stats.members_hint', { count: stats?.pending_users ?? 0 })
+                  : undefined
+              }
+              to={tenantPath('/admin/users')}
+              failed={failed('total_users')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.active_listings')}
+              value={stats?.active_listings ?? '—'}
+              icon={FileCheck}
+              color="success"
+              loading={loading}
+              description={
+                typeof stats?.total_listings === 'number'
+                  ? t('stats.of_total', { count: stats.total_listings })
+                  : undefined
+              }
+              to={tenantPath('/admin/listings?status=active')}
+              failed={failed('active_listings')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.exchanges_this_month')}
+              value={stats?.exchanges_this_month ?? '—'}
+              icon={ArrowLeftRight}
+              color="secondary"
+              loading={loading}
+              trend={stats?.exchanges_delta_pct}
+              trendLabel={vsLastMonth}
+              to={tenantPath(exchangesPath)}
+              failed={failed('exchanges_this_month')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.hours_this_month')}
+              value={stats?.exchange_hours_this_month ?? '—'}
+              icon={Clock}
+              color="warning"
+              loading={loading}
+              trend={stats?.exchange_hours_delta_pct}
+              trendLabel={vsLastMonth}
+              to={tenantPath(hoursPath)}
+              failed={failed('exchanges_this_month')}
+              failedLabel={couldNotLoad}
+            />
+          </div>
+
+          {/* Supporting numbers. */}
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4" data-testid="secondary-stats">
+            <StatCard
+              label={t('stats.active_members_30d', { days: stats?.active_users_window_days ?? 30 })}
+              value={stats?.active_users ?? '—'}
+              icon={UserCheck}
+              color="default"
+              loading={loading}
+              to={tenantPath('/admin/reports/members')}
+              failed={failed('active_users')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.new_members_this_month')}
+              value={stats?.new_users_this_month ?? '—'}
+              icon={UserPlus}
+              color="default"
+              loading={loading}
+              trend={stats?.new_users_delta_pct}
+              trendLabel={vsLastMonth}
+              to={tenantPath('/admin/reports/members')}
+              failed={failed('new_users_this_month')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.total_listings')}
+              value={stats?.total_listings ?? '—'}
+              icon={ListChecks}
+              color="default"
+              loading={loading}
+              to={tenantPath('/admin/listings')}
+              failed={failed('total_listings')}
+              failedLabel={couldNotLoad}
+            />
+            <StatCard
+              label={t('stats.hours_all_time')}
+              value={stats?.total_hours_exchanged ?? '—'}
+              icon={Clock}
+              color="default"
+              loading={loading}
+              description={
+                typeof stats?.total_transactions === 'number'
+                  ? t('stats.exchanges_count', { count: stats.total_transactions })
+                  : undefined
+              }
+              to={tenantPath(exchangesPath)}
+              failed={failed('exchanges_all_time')}
+              failedLabel={couldNotLoad}
+            />
+          </div>
+
+          {/* Quick links — one compact row; the sidebar has the same pages. */}
+          <nav aria-label={t('quick_actions.card_title')} className="flex flex-wrap items-center gap-2">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Button
+                  key={action.path}
+                  as={Link}
+                  to={tenantPath(action.path)}
+                  size="sm"
+                  variant="secondary"
+                  className="rounded-full"
+                  startContent={<Icon size={14} aria-hidden="true" />}
+                >
+                  {t(`quick_actions.${action.key}`)}
+                </Button>
+              );
+            })}
             {isGod && (
-            <div className="mt-3 pt-3 border-t border-divider">
-              <Link
+              <Button
+                as={Link}
                 to={tenantPath('/admin/enterprise')}
-                className="flex items-center justify-between rounded-xl px-2 py-2 text-sm text-accent transition-colors hover:bg-accent/10"
+                size="sm"
+                variant="tertiary"
+                className="rounded-full"
+                startContent={<Building2 size={14} aria-hidden="true" />}
               >
-                <span className="flex items-center gap-1.5">
-                  <Chip size="sm" color="default" variant="soft">{t('quick_actions.enterprise')}</Chip>
-                  {t('quick_actions.advanced_controls')}
-                </span>
-                <ChevronRight size={14} />
-              </Link>
-            </div>
+                {t('quick_actions.enterprise')}
+              </Button>
             )}
-          </CardBody>
-        </Card>
+          </nav>
 
-        {/* Monthly Trends */}
-        <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-          <CardHeader className="flex items-center gap-2 px-4 pt-4 pb-0">
-            <TrendingUp size={18} className="text-accent" aria-hidden="true" />
-            <h3 className="font-semibold">{t('trends.card_title')}</h3>
-          </CardHeader>
-          <CardBody className="px-4 pb-4">
-            {loading ? (
-              <div role="status" aria-busy="true" aria-label={t('loading')} className="flex h-48 items-center justify-center">
-                <Spinner />
-              </div>
-            ) : trends.length > 0 ? (
-              <div className="space-y-3">
-                {trends.map((trend) => (
-                  <div key={trend.month} className="flex items-center justify-between">
-                    <span className="text-sm text-muted">{trend.month}</span>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium">{trend.hours} {t('trends.hours_suffix')}</span>
-                      <div
-                        className="h-2 rounded-full bg-accent"
-                        style={{ width: `${Math.min(100, (trend.hours / Math.max(...trends.map((x) => x.hours || 1))) * 100)}px` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="py-8 text-center text-sm text-muted">
-                {t('trends.no_data')}
-              </p>
-            )}
-          </CardBody>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
-          <CardHeader className="flex items-center justify-between px-4 pt-4 pb-0">
-            <div className="flex items-center gap-2">
-              <Activity size={18} className="text-accent" aria-hidden="true" />
-              <h3 className="font-semibold">{t('activity.card_title')}</h3>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <ExchangeTrendChart trends={trends} loading={loading && trends.length === 0} failed={trendsFailed} />
             </div>
-            <Button
-              as={Link}
-              to={tenantPath('/admin/activity-log')}
-              size="sm"
-              variant="tertiary"
-            >
-              {t('activity.view_all')}
-            </Button>
-          </CardHeader>
-          <CardBody className="px-4 pb-4">
-            {loading ? (
-              <div role="status" aria-busy="true" aria-label={t('loading')} className="flex h-48 items-center justify-center">
-                <Spinner />
-              </div>
-            ) : activity.length > 0 ? (
-              <div className="space-y-3">
-                {activity.map((entry) => (
-                  <div key={entry.id} className="flex items-start gap-3 border-b border-divider pb-3 last:border-0 last:pb-0">
-                    <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-accent" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{entry.user_name}</span>{' '}
-                        <span className="text-muted">{entry.description}</span>
-                      </p>
-                      <p className="text-xs text-muted">
-                        {new Date(entry.created_at).toLocaleString(getFormattingLocale())}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="py-8 text-center text-sm text-muted">
-                {t('activity.empty')}
-              </p>
-            )}
-          </CardBody>
-        </Card>
+            <RecentActivityFeed entries={activity} loading={loading && activity.length === 0} failed={activityFailed} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** First-load placeholder in the shape of the finished page, so nothing jumps. */
+function DashboardSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className="space-y-6" data-testid="dashboard-skeleton">
+      <Skeleton className="h-24 w-full rounded-2xl bg-surface-tertiary" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-36 rounded-2xl bg-surface-tertiary" />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="h-32 rounded-2xl bg-surface-tertiary" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Skeleton className="h-80 rounded-2xl bg-surface-tertiary lg:col-span-2" />
+        <Skeleton className="h-80 rounded-2xl bg-surface-tertiary" />
       </div>
     </div>
   );
