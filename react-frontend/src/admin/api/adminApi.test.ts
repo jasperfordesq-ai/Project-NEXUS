@@ -1164,11 +1164,28 @@ describe('adminEnterprise', () => {
     });
   });
 
-  it('getGdprAuditExportUrl builds URL with params', () => {
-    const url = adminEnterprise.getGdprAuditExportUrl({ action: 'export', date_from: '2025-01-01' });
-    expect(url).toContain('/v2/admin/enterprise/gdpr/audit/export');
-    expect(url).toContain('action=export');
-    expect(url).toContain('date_from=2025-01-01');
+  it('exportGdprAudit uses an authenticated download with its filters', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminEnterprise.exportGdprAudit({ action: 'export', date_from: '2025-01-01' });
+    const [url, options] = mockDownload.mock.calls[0];
+    expect(url).toBe('/v2/admin/enterprise/gdpr/audit/export?action=export&date_from=2025-01-01');
+    expect(options?.filename).toMatch(/^gdpr-audit-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
+
+  it('downloadGdprExport uses an authenticated download of the request ZIP', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminEnterprise.downloadGdprExport(42);
+    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/enterprise/gdpr/requests/42/export/download', {
+      filename: 'gdpr-export-request-42.zip',
+    });
+  });
+
+  it('downloadLogFile uses an authenticated download', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminEnterprise.downloadLogFile('laravel.log');
+    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/enterprise/monitoring/log-files/laravel.log/download', {
+      filename: 'laravel.log',
+    });
   });
 
   it('notifyDpa posts to notify-dpa endpoint', async () => {
@@ -1189,9 +1206,12 @@ describe('adminEnterprise', () => {
     expect(mockDelete).toHaveBeenCalledWith('/v2/admin/enterprise/monitoring/log-files/laravel.log');
   });
 
-  it('exportConsentTypeUsers returns URL string (no api call)', () => {
-    const url = adminEnterprise.exportConsentTypeUsers('gdpr-terms');
-    expect(url).toBe('/v2/admin/enterprise/gdpr/consent-types/gdpr-terms/export');
+  it('exportConsentTypeUsers uses an authenticated download', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminEnterprise.exportConsentTypeUsers('gdpr-terms');
+    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/enterprise/gdpr/consent-types/gdpr-terms/export', {
+      filename: 'consent-gdpr-terms-users.csv',
+    });
   });
 });
 

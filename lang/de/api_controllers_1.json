@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "DSGVO-Anfrage konnte nicht erstellt werden",
     "data_export_generated": "Datenexport erfolgreich erstellt",
     "data_export_failed": "Datenexport konnte nicht erstellt werden",
+    "data_export_expired": "Dieser Datenexport ist abgelaufen. Erstelle einen neuen.",
     "dpa_notification_recorded": "DSB-Benachrichtigung erfolgreich aufgezeichnet",
     "dpa_notification_failed": "DSB-Benachrichtigung konnte nicht aufgezeichnet werden",
     "log_file_cleared": "Protokolldatei erfolgreich geleert",

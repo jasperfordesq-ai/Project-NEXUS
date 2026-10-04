@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event';
 
 // ─── Hoisted mock data ────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
-  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn(), download: vi.fn() },
 }));
 
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
@@ -35,7 +35,10 @@ function adminComponentsMock() {
     StatCard: ({ title, value }: { title: string; value: unknown }) => (
       <div data-testid="stat-card">{title}: {String(value)}</div>
     ),
-    PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
+    // Renders `actions` so the header's Refresh / Export CSV buttons are testable.
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">{title}{actions}</div>
+    ),
   };
 }
 
@@ -205,36 +208,26 @@ describe('PilotInquiryAdminPage', () => {
     });
   });
 
-  it('calls export endpoint when Export CSV button is pressed', async () => {
+  it('downloads the CSV through the authenticated client when Export CSV is pressed', async () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    mockApi.download.mockResolvedValue(new Blob());
 
     const { PilotInquiryAdminPage } = await import('./PilotInquiryAdminPage');
     render(<PilotInquiryAdminPage />);
 
-    // Wait for loading to complete
     await waitFor(() => {
       expect(screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
     });
 
-    // The export button text comes from i18n key 'actions.export_csv'; in test env t() returns the key
-    // Try to find by key string OR by partial text content
-    const allButtons = screen.getAllByRole('button');
-    const exportBtn = allButtons.find((b) => {
-      const text = b.textContent?.toLowerCase() ?? '';
-      return text.includes('export') || text.includes('csv') || text.includes('export_csv');
-    });
+    // The button used to open the API URL in a new tab, which sends no token
+    // and showed "Authentication required". It must exist and must download.
+    const exportBtn = screen.getAllByRole('button').find((b) => /export|csv/i.test(b.textContent ?? ''));
+    expect(exportBtn).toBeTruthy();
+    fireEvent.click(exportBtn!);
 
-    if (exportBtn) {
-      fireEvent.click(exportBtn);
-      expect(openSpy).toHaveBeenCalledWith(
-        expect.stringContaining('export'),
-        '_blank'
-      );
-    } else {
-      // Export button text is a translation key; skip assertion if not rendered
-      // but verify window.open handler is wired by calling it directly
-      // (the component is rendered — this is a translation-key environment limitation)
-    }
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toBe('/v2/admin/pilot-inquiries/export');
+    expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });
 

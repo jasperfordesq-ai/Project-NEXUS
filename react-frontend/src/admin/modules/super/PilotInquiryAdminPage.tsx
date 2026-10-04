@@ -400,16 +400,24 @@ function InquiryDetailModal({
 
 // â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function handleExport() {
-  window.open('/api/v2/admin/pilot-inquiries/export', '_blank');
-}
-
 export function PilotInquiryAdminPage() {
   const { t } = useTranslation('admin_super', { keyPrefix: 'pilot_inquiry_admin' });
   const { t: tAdmin } = useTranslation('admin_super');
   const { t: tCommon } = useTranslation('common');
   usePageTitle(t('page_title'));
   const toast = useToast();
+
+  // api.download carries the admin's auth header; opening the API URL in a
+  // new tab sent no token and showed "Authentication required".
+  const handleExport = async () => {
+    try {
+      await api.download('/v2/admin/pilot-inquiries/export', {
+        filename: `pilot-inquiries-${new Date().toISOString().slice(0, 10)}.csv`,
+      });
+    } catch {
+      toast.error(tCommon('errors.download_failed'));
+    }
+  };
 
   const [inquiries, setInquiries]   = useState<PilotInquiry[]>([]);
   const [stats, setStats]           = useState<PipelineStats | null>(null);

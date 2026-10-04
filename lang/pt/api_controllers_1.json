@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "Falha ao criar pedido RGPD",
     "data_export_generated": "Exportação de dados gerada com sucesso",
     "data_export_failed": "Falha ao gerar exportação de dados",
+    "data_export_expired": "Esta exportação de dados expirou. Gere uma nova.",
     "dpa_notification_recorded": "Notificação à autoridade de proteção de dados registada com sucesso",
     "dpa_notification_failed": "Falha ao registar notificação à autoridade de proteção de dados",
     "log_file_cleared": "Ficheiro de registo limpo com sucesso",

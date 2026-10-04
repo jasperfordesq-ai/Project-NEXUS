@@ -624,6 +624,7 @@
     "gdpr_enter_valid_user_id": "有効なユーザーIDを入力してください",
     "gdpr_escalate": "エスカレーション",
     "gdpr_export_available": "エクスポート可能",
+    "gdpr_download_export": "エクスポートをダウンロード",
     "gdpr_export_csv": "CSV をエクスポート",
     "gdpr_export_generated": "エクスポートが生成されました",
     "gdpr_failed_add_note": "メモの追加に失敗しました",

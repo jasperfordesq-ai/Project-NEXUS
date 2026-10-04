@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "فشل إنشاء طلب اللائحة العامة لحماية البيانات",
     "data_export_generated": "تم إنشاء تصدير البيانات بنجاح",
     "data_export_failed": "فشل إنشاء تصدير البيانات",
+    "data_export_expired": "انتهت صلاحية تصدير البيانات هذا. أنشئ تصديرًا جديدًا.",
     "dpa_notification_recorded": "تم تسجيل إشعار هيئة حماية البيانات بنجاح",
     "dpa_notification_failed": "فشل تسجيل إشعار هيئة حماية البيانات",
     "log_file_cleared": "تم مسح ملف السجل بنجاح",

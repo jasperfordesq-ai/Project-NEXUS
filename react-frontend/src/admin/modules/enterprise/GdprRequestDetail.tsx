@@ -84,6 +84,7 @@ export function GdprRequestDetail() {
   const [rejectLoading, setRejectLoading] = useState(false);
 
   const [actionLoading, setActionLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   const requestId = useMemo(() => (id ? parseInt(id, 10) : 0), [id]);
 
@@ -211,6 +212,17 @@ export function GdprRequestDetail() {
       toast.error(t('enterprise.gdpr_failed_generate_export'));
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleDownloadExport = async () => {
+    setDownloadLoading(true);
+    try {
+      await adminEnterprise.downloadGdprExport(requestId);
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    } finally {
+      setDownloadLoading(false);
     }
   };
 
@@ -509,7 +521,19 @@ export function GdprRequestDetail() {
                 {t('enterprise.gdpr_generate_export')}
               </Button>
               {request.export_file_path && (
-                <p className="text-xs text-success text-center">{t('enterprise.gdpr_export_available')}</p>
+                <>
+                  <p className="text-xs text-success text-center">{t('enterprise.gdpr_export_available')}</p>
+                  <Button
+                    variant="primary"
+                    startContent={<Download size={14} />}
+                    onPress={handleDownloadExport}
+                    isLoading={downloadLoading}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {t('enterprise.gdpr_download_export')}
+                  </Button>
+                </>
               )}
             </CardBody>
           </Card>

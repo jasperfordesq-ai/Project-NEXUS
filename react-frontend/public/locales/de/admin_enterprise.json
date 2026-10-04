@@ -624,6 +624,7 @@
     "gdpr_enter_valid_user_id": "Geben Sie eine gültige Benutzer-ID ein",
     "gdpr_escalate": "Eskaliere",
     "gdpr_export_available": "Export verfügbar",
+    "gdpr_download_export": "Export herunterladen",
     "gdpr_export_csv": "CSV exportieren",
     "gdpr_export_generated": "Export erstellt",
     "gdpr_failed_add_note": "Hinweis konnte nicht hinzugefügt werden",

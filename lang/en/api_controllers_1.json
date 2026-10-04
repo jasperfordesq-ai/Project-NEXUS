@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "Failed to create GDPR request",
     "data_export_generated": "Data export generated successfully",
     "data_export_failed": "Failed to generate data export",
+    "data_export_expired": "This data export has expired. Generate a new one.",
     "dpa_notification_recorded": "DPA notification recorded successfully",
     "dpa_notification_failed": "Failed to record DPA notification",
     "log_file_cleared": "Log file cleared successfully",

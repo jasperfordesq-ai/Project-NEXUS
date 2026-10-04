@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "GDPRリクエストの作成に失敗しました",
     "data_export_generated": "データエクスポートが正常に生成されました",
     "data_export_failed": "データエクスポートの生成に失敗しました",
+    "data_export_expired": "このデータエクスポートは期限切れです。新しく生成してください。",
     "dpa_notification_recorded": "DPA通知が正常に記録されました",
     "dpa_notification_failed": "DPA通知の記録に失敗しました",
     "log_file_cleared": "ログファイルが正常にクリアされました",

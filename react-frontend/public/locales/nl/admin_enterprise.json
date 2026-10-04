@@ -624,6 +624,7 @@
     "gdpr_enter_valid_user_id": "Voer een geldig gebruikers-ID in",
     "gdpr_escalate": "Escaleren",
     "gdpr_export_available": "Export beschikbaar",
+    "gdpr_download_export": "Export downloaden",
     "gdpr_export_csv": "CSV exporteren",
     "gdpr_export_generated": "Export gegenereerd",
     "gdpr_failed_add_note": "Kon geen notitie toevoegen",

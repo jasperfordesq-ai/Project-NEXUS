@@ -151,15 +151,18 @@ export function GdprAuditLog() {
     [appliedFilters]
   );
 
-  const handleExportCsv = useCallback(() => {
-    const url = adminEnterprise.getGdprAuditExportUrl({
-      action: appliedFilters.action || undefined,
-      entity_type: appliedFilters.entity_type || undefined,
-      date_from: appliedFilters.date_from || undefined,
-      date_to: appliedFilters.date_to || undefined,
-    });
-    window.open(url, '_blank');
-  }, [appliedFilters]);
+  const handleExportCsv = useCallback(async () => {
+    try {
+      await adminEnterprise.exportGdprAudit({
+        action: appliedFilters.action || undefined,
+        entity_type: appliedFilters.entity_type || undefined,
+        date_from: appliedFilters.date_from || undefined,
+        date_to: appliedFilters.date_to || undefined,
+      });
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    }
+  }, [appliedFilters, toast, t]);
 
   const handleViewEntry = useCallback((entry: GdprAuditEntry) => {
     setSelectedEntry(entry);

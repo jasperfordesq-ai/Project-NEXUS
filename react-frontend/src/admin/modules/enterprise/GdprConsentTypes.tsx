@@ -54,15 +54,18 @@ const emptyFormData = {
   is_active: true,
 };
 
-const handleExportUsers = (slug: string) => {
-  const url = adminEnterprise.exportConsentTypeUsers(slug);
-  window.open(url, '_blank');
-};
-
 export function GdprConsentTypes() {
   const { t } = useTranslation('admin_enterprise');
   useAdminPageMeta({ title: t('enterprise.gdpr_consent_types_title') });
   const toast = useToast();
+
+  const handleExportUsers = async (slug: string) => {
+    try {
+      await adminEnterprise.exportConsentTypeUsers(slug);
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    }
+  };
   const { user } = useAuth();
   // Mirrors requirePlatformSuperAdmin() on the create/update/delete routes.
   const canManage = isPlatformSuperAdminUser(user);

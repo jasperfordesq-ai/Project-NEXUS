@@ -2497,7 +2497,8 @@
   "errors": {
     "connection_failed": "Nie można nawiązać połączenia",
     "connection_failed_detail": "Sprawdź połączenie internetowe i spróbuj ponownie.",
-    "unexpected": "Coś poszło nie tak"
+    "unexpected": "Coś poszło nie tak",
+    "download_failed": "Nie udało się pobrać pliku. Spróbuj ponownie."
   },
   "actions": {
     "retry": "Spróbuj ponownie"

@@ -14,12 +14,12 @@ vi.mock('@/contexts', () => createMockContexts({ useToast: () => mockToast }));
 
 // ── Mock adminApi ─────────────────────────────────────────────────────────────
 const mockGetGdprAudit = vi.fn();
-const mockGetGdprAuditExportUrl = vi.fn(() => 'http://export/url');
+const mockExportGdprAudit = vi.fn();
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminEnterprise: {
     getGdprAudit: (...args: unknown[]) => mockGetGdprAudit(...args),
-    getGdprAuditExportUrl: (...args: unknown[]) => mockGetGdprAuditExportUrl(...args),
+    exportGdprAudit: (...args: unknown[]) => mockExportGdprAudit(...args),
   },
 }));
 
@@ -208,20 +208,36 @@ describe('GdprAuditLog', () => {
     });
   });
 
-  it('calls getGdprAuditExportUrl and opens window on Export CSV click', async () => {
+  it('downloads the CSV through the authenticated client, not a new tab', async () => {
     mockGetGdprAudit.mockResolvedValue(EMPTY_RESPONSE);
+    mockExportGdprAudit.mockResolvedValue(new Blob());
     render(<GdprAuditLog />);
     await waitFor(() => {
       expect(mockGetGdprAudit).toHaveBeenCalled();
     });
 
-    // Find and click the export CSV button
     const exportBtn = screen.getAllByRole('button').find(
       (b) => b.textContent?.toLowerCase().includes('export') || b.textContent?.toLowerCase().includes('csv'),
     );
     expect(exportBtn).toBeTruthy();
     await userEvent.click(exportBtn!);
-    expect(windowOpenSpy).toHaveBeenCalledWith('http://export/url', '_blank');
+    expect(mockExportGdprAudit).toHaveBeenCalledTimes(1);
+    expect(windowOpenSpy).not.toHaveBeenCalled();
+  });
+
+  it('shows an error toast when the CSV download fails', async () => {
+    mockGetGdprAudit.mockResolvedValue(EMPTY_RESPONSE);
+    mockExportGdprAudit.mockRejectedValue(new Error('401'));
+    render(<GdprAuditLog />);
+    await waitFor(() => {
+      expect(mockGetGdprAudit).toHaveBeenCalled();
+    });
+
+    const exportBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('export') || b.textContent?.toLowerCase().includes('csv'),
+    );
+    await userEvent.click(exportBtn!);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
   });
 
   it('shows an error toast when API call fails', async () => {

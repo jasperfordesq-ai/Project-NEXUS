@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2756,
-  "api_route_rows": 2721,
-  "distinct_api_paths": 2266,
+  "total_registered_routes": 2758,
+  "api_route_rows": 2723,
+  "distinct_api_paths": 2268,
   "route_source_fingerprint": {
-    "digest": "3b8fac2def50153c15d52df1ebaeae13f0af45ab5c862f4924897d0b1ba0c004",
+    "digest": "1bdb05304b0c118bcce11748ad2c229c36da41ac14d2d43b364d32bf66b4175c",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "fb727f8043a3405b140a0f599070d1e0322b9bb25c57b58330a60f73a95139b8"
+        "sha256": "27358edb8767458701221fd29088131b257fbd0cac97867b74e0ffe857fddc0c"
       },
       {
         "file": "routes/channels.php",
@@ -1521,6 +1521,9 @@
     "/api/v2/admin/enterprise/gdpr/requests/{id}/export": [
       "POST"
     ],
+    "/api/v2/admin/enterprise/gdpr/requests/{id}/export/download": [
+      "GET"
+    ],
     "/api/v2/admin/enterprise/gdpr/requests/{id}/notes": [
       "POST"
     ],
@@ -1544,6 +1547,9 @@
     ],
     "/api/v2/admin/enterprise/monitoring/log-files/{filename}": [
       "DELETE",
+      "GET"
+    ],
+    "/api/v2/admin/enterprise/monitoring/log-files/{filename}/download": [
       "GET"
     ],
     "/api/v2/admin/enterprise/monitoring/logs": [

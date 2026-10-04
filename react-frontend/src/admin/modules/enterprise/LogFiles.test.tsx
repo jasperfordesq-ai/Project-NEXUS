@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -29,13 +29,15 @@ vi.mock('@/contexts', () =>
 );
 
 // ── Mock the adminEnterprise API ──────────────────────────────────────────────
-const { mockGetLogFiles } = vi.hoisted(() => ({
+const { mockGetLogFiles, mockDownloadLogFile } = vi.hoisted(() => ({
   mockGetLogFiles: vi.fn(),
+  mockDownloadLogFile: vi.fn(),
 }));
 
 vi.mock('../../api/adminApi', () => ({
   adminEnterprise: {
     getLogFiles: mockGetLogFiles,
+    downloadLogFile: mockDownloadLogFile,
     getDashboard: vi.fn(),
     createBreach: vi.fn(),
     getGdprBreaches: vi.fn(),
@@ -149,6 +151,20 @@ describe('LogFiles', () => {
     await waitFor(() => screen.getByText('laravel.log'));
     const downloadButtons = screen.getAllByRole('button', { name: /download/i });
     expect(downloadButtons.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('downloads a log file through the authenticated client, not a new tab', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    mockDownloadLogFile.mockResolvedValue(new Blob());
+    render(<LogFiles />);
+    await waitFor(() => screen.getByText('laravel.log'));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /download/i })[0]);
+
+    await waitFor(() => expect(mockDownloadLogFile).toHaveBeenCalledTimes(1));
+    expect(mockDownloadLogFile.mock.calls[0][0]).toMatch(/\.log$/);
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
   });
 
   // ── refresh button ─────────────────────────────────────────────────────────

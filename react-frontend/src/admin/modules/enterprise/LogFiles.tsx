@@ -215,7 +215,11 @@ export function LogFiles() {
                       variant="tertiary"
                       isIconOnly
                       aria-label={t('log_files_labels.download')}
-                      onPress={() => window.open(`/v2/admin/enterprise/monitoring/log-files/${file.name}?download=1`, '_blank')}
+                      onPress={() => {
+                        adminEnterprise.downloadLogFile(file.name).catch(() => {
+                          toast.error(t('common:errors.download_failed'));
+                        });
+                      }}
                     >
                       <Download size={14} />
                     </Button>

@@ -2469,7 +2469,8 @@
   "errors": {
     "connection_failed": "Verbindung nicht möglich",
     "connection_failed_detail": "Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "unexpected": "Etwas ist schiefgelaufen"
+    "unexpected": "Etwas ist schiefgelaufen",
+    "download_failed": "Die Datei konnte nicht heruntergeladen werden. Bitte versuche es erneut."
   },
   "actions": {
     "retry": "Erneut versuchen"

@@ -2469,7 +2469,8 @@
   "errors": {
     "connection_failed": "Unable to connect",
     "connection_failed_detail": "Check your internet connection and try again.",
-    "unexpected": "Something went wrong"
+    "unexpected": "Something went wrong",
+    "download_failed": "The file could not be downloaded. Please try again."
   },
   "actions": {
     "retry": "Try again"

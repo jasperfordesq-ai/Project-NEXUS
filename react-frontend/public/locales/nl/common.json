@@ -2469,7 +2469,8 @@
   "errors": {
     "connection_failed": "Verbinden mislukt",
     "connection_failed_detail": "Controleer je internetverbinding en probeer opnieuw.",
-    "unexpected": "Er is iets misgegaan"
+    "unexpected": "Er is iets misgegaan",
+    "download_failed": "Het bestand kon niet worden gedownload. Probeer het opnieuw."
   },
   "actions": {
     "retry": "Opnieuw proberen"

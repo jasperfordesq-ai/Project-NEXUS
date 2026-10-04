@@ -2483,7 +2483,8 @@
   "errors": {
     "connection_failed": "Impossibile connettersi",
     "connection_failed_detail": "Verifica la tua connessione internet e riprova.",
-    "unexpected": "Si è verificato un errore"
+    "unexpected": "Si è verificato un errore",
+    "download_failed": "Impossibile scaricare il file. Riprova."
   },
   "actions": {
     "retry": "Riprova"

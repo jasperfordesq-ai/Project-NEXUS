@@ -2525,7 +2525,8 @@
   "errors": {
     "connection_failed": "تعذّر الاتصال",
     "connection_failed_detail": "تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.",
-    "unexpected": "حدث خطأ ما"
+    "unexpected": "حدث خطأ ما",
+    "download_failed": "تعذّر تنزيل الملف. يرجى المحاولة مرة أخرى."
   },
   "actions": {
     "retry": "حاول مرة أخرى"

@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "Error al crear la solicitud GDPR",
     "data_export_generated": "Exportación de datos generada con éxito",
     "data_export_failed": "Error al generar la exportación de datos",
+    "data_export_expired": "Esta exportación de datos ha caducado. Genera una nueva.",
     "dpa_notification_recorded": "Notificación a la autoridad de protección de datos registrada con éxito",
     "dpa_notification_failed": "Error al registrar la notificación a la autoridad de protección de datos",
     "log_file_cleared": "Archivo de registro vaciado con éxito",

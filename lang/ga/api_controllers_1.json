@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "Theip ar chruthú iarratais RGCS",
     "data_export_generated": "Gineadh onnmhairiú sonraí go rathúil",
     "data_export_failed": "Theip ar ghiniúint onnmhairiú sonraí",
+    "data_export_expired": "Tá an t-onnmhairiú sonraí seo imithe in éag. Gin ceann nua.",
     "dpa_notification_recorded": "Taifeadadh fógra ÚCS go rathúil",
     "dpa_notification_failed": "Theip ar thaifeadadh fógra ÚCS",
     "log_file_cleared": "Glanadh comhad loga go rathúil",

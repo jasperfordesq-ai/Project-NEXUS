@@ -1580,6 +1580,61 @@ class AdminEnterpriseController extends BaseApiController
         }
     }
 
+    /**
+     * GET /api/v2/admin/enterprise/gdpr/requests/{id}/export/download
+     *
+     * Serves the ZIP made by generateGdprExport(). The page said "Export
+     * available" but nothing could fetch it (E-088). Only an admin of the
+     * request's community, only while unexpired, only a file inside the export
+     * directory; every download is written to the GDPR audit log.
+     */
+    public function downloadGdprExport(int $id): \Symfony\Component\HttpFoundation\Response
+    {
+        $this->requireAdmin();
+        $this->rateLimit('gdpr_export_download', 30, 3600);
+        $tenantId = $this->getTenantId();
+
+        $request = DB::selectOne(
+            "SELECT id, export_file_path, export_expires_at FROM gdpr_requests WHERE id = ? AND tenant_id = ?",
+            [$id, $tenantId]
+        );
+        if (! $request || empty($request->export_file_path)) {
+            return $this->respondWithError('NOT_FOUND', __('api_controllers_1.admin_enterprise.gdpr_request_not_found'), null, 404);
+        }
+
+        if ($request->export_expires_at !== null && strtotime((string) $request->export_expires_at) < time()) {
+            return $this->respondWithError('EXPORT_EXPIRED', __('api_controllers_1.admin_enterprise.data_export_expired'), null, 410);
+        }
+
+        // The stored value is a full path; serve it only if it really is a
+        // file inside the export directory.
+        $dir = realpath(\App\Services\Enterprise\GdprService::exportDirectory());
+        $path = realpath((string) $request->export_file_path);
+        if ($dir === false || $path === false || ! is_file($path)
+            || ! str_starts_with($path, $dir . DIRECTORY_SEPARATOR)
+            || strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'zip') {
+            return $this->respondWithError('NOT_FOUND', __('api_controllers_1.admin_enterprise.gdpr_request_not_found'), null, 404);
+        }
+
+        try {
+            DB::insert(
+                "INSERT INTO gdpr_audit_log (tenant_id, admin_id, action, entity_type, entity_id, new_value, ip_address, created_at)
+                 VALUES (?, ?, 'download_export', 'gdpr_request', ?, ?, ?, NOW())",
+                [$tenantId, $this->getUserId(), $id, json_encode(['file' => basename($path)]), request()->ip()]
+            );
+        } catch (\Throwable $e) {
+            // A download that cannot be recorded is not served.
+            Log::error('GDPR export download could not be audited', ['id' => $id, 'error' => $e->getMessage()]);
+            return $this->respondWithError('EXPORT_FAILED', __('api_controllers_1.admin_enterprise.data_export_failed'), null, 500);
+        }
+
+        return response()->download($path, basename($path), [
+            'Content-Type' => 'application/zip',
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     // ─── GDPR Consent Type Management ────────────────────────────────
     //
     // 🔴 `consent_types` is a PLATFORM-GLOBAL catalogue, not a tenant-scoped
@@ -2098,6 +2153,37 @@ class AdminEnterpriseController extends BaseApiController
         } catch (\Exception $e) {
             return $this->respondWithError('READ_FAILED', __('api_controllers_1.admin_enterprise.log_file_read_failed'), null, 500);
         }
+    }
+
+    /**
+     * GET /api/v2/admin/enterprise/monitoring/log-files/{filename}/download
+     *
+     * The Log files page's download button opened the viewer URL without the
+     * /api prefix in a new tab, so it never downloaded anything (E-088). Same
+     * gate and filename rules as viewLogFile(); served as a plain-text
+     * attachment, never rendered.
+     */
+    public function downloadLogFile(string $filename): \Symfony\Component\HttpFoundation\Response
+    {
+        $this->requirePlatformSuperAdmin();
+
+        if (str_contains($filename, '/') || str_contains($filename, '\\') || str_contains($filename, '..')) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.invalid_log_filename'), 'filename', 400);
+        }
+        if (!str_ends_with($filename, '.log')) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.log_file_only_allowed'), 'filename', 400);
+        }
+
+        $filePath = storage_path('logs') . DIRECTORY_SEPARATOR . $filename;
+        if (!is_file($filePath)) {
+            return $this->respondWithError('NOT_FOUND', __('api_controllers_1.admin_enterprise.log_file_not_found'), null, 404);
+        }
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /** DELETE /api/v2/admin/enterprise/monitoring/log-files/{filename} */

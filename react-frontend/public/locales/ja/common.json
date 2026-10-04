@@ -2469,7 +2469,8 @@
   "errors": {
     "connection_failed": "接続できません",
     "connection_failed_detail": "インターネット接続を確認してもう一度お試しください。",
-    "unexpected": "問題が発生しました"
+    "unexpected": "問題が発生しました",
+    "download_failed": "ファイルをダウンロードできませんでした。もう一度お試しください。"
   },
   "actions": {
     "retry": "再試行"

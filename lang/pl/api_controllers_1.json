@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "Tworzenie żądania RODO nie powiodło się",
     "data_export_generated": "Eksport danych wygenerowany pomyślnie",
     "data_export_failed": "Generowanie eksportu danych nie powiodło się",
+    "data_export_expired": "Ten eksport danych wygasł. Wygeneruj nowy.",
     "dpa_notification_recorded": "Powiadomienie DPA zapisane pomyślnie",
     "dpa_notification_failed": "Zapisywanie powiadomienia DPA nie powiodło się",
     "log_file_cleared": "Plik dziennika wyczyszczony pomyślnie",

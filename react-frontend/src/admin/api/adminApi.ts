@@ -8,7 +8,7 @@
  * Wraps the main api client with admin-specific endpoints
  */
 
-import { api, API_BASE, type ApiResponse } from '@/lib/api';
+import { api, type ApiResponse } from '@/lib/api';
 import type {
   AdminDashboardStats,
   MonthlyTrend,
@@ -1275,8 +1275,12 @@ export const adminEnterprise = {
   getGdprAudit: (params: { page?: number; per_page?: number; action?: string; entity_type?: string; date_from?: string; date_to?: string; user_id?: number } = {}) =>
     api.get<PaginatedResponse<GdprAuditEntry>>(`/v2/admin/enterprise/gdpr/audit${buildQuery(params)}`),
 
-  getGdprAuditExportUrl: (params: { action?: string; entity_type?: string; date_from?: string; date_to?: string; user_id?: number } = {}) =>
-    `${API_BASE}/v2/admin/enterprise/gdpr/audit/export${buildQuery(params)}`,
+  // Downloads go through api.download so the request carries the admin's
+  // auth header; opening an API URL in a new tab sends no token (401).
+  exportGdprAudit: (params: { action?: string; entity_type?: string; date_from?: string; date_to?: string; user_id?: number } = {}) =>
+    api.download(`/v2/admin/enterprise/gdpr/audit/export${buildQuery(params)}`, {
+      filename: `gdpr-audit-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   getMonitoring: () =>
     api.get<SystemHealth>('/v2/admin/enterprise/monitoring'),
@@ -1314,6 +1318,11 @@ export const adminEnterprise = {
   generateGdprExport: (id: number) =>
     api.post<{ success: boolean; file_path?: string }>(`/v2/admin/enterprise/gdpr/requests/${id}/export`),
 
+  downloadGdprExport: (id: number) =>
+    api.download(`/v2/admin/enterprise/gdpr/requests/${id}/export/download`, {
+      filename: `gdpr-export-request-${id}.zip`,
+    }),
+
   // GDPR Consent Types
   getConsentTypes: () =>
     api.get<ConsentType[]>('/v2/admin/enterprise/gdpr/consent-types'),
@@ -1331,7 +1340,9 @@ export const adminEnterprise = {
     api.get<PaginatedResponse<ConsentTypeUser>>(`/v2/admin/enterprise/gdpr/consent-types/${slug}/users${buildQuery(params)}`),
 
   exportConsentTypeUsers: (slug: string) =>
-    `/v2/admin/enterprise/gdpr/consent-types/${slug}/export`,
+    api.download(`/v2/admin/enterprise/gdpr/consent-types/${encodeURIComponent(slug)}/export`, {
+      filename: `consent-${slug}-users.csv`,
+    }),
 
   // GDPR Breach Detail
   getGdprBreach: (id: number) =>
@@ -1360,6 +1371,11 @@ export const adminEnterprise = {
 
   clearLogFile: (filename: string) =>
     api.delete<{ success: boolean }>(`/v2/admin/enterprise/monitoring/log-files/${filename}`),
+
+  downloadLogFile: (filename: string) =>
+    api.download(`/v2/admin/enterprise/monitoring/log-files/${encodeURIComponent(filename)}/download`, {
+      filename,
+    }),
 
   // Monitoring — Requirements & Health History
   getSystemRequirements: () =>

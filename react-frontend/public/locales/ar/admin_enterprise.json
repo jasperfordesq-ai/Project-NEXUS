@@ -624,6 +624,7 @@
     "gdpr_enter_valid_user_id": "أدخل معرف مستخدم صالح",
     "gdpr_escalate": "تصعيد",
     "gdpr_export_available": "التصدير متاح",
+    "gdpr_download_export": "تنزيل التصدير",
     "gdpr_export_csv": "تصدير CSV",
     "gdpr_export_generated": "تم إنشاء التصدير",
     "gdpr_failed_add_note": "فشل في إضافة ملاحظة",

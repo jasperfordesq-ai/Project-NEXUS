@@ -16,6 +16,7 @@ const { mockAdminEnterprise } = vi.hoisted(() => ({
     addGdprRequestNote: vi.fn(),
     assignGdprRequest: vi.fn(),
     generateGdprExport: vi.fn(),
+    downloadGdprExport: vi.fn(),
   },
 }));
 
@@ -248,6 +249,41 @@ describe('GdprRequestDetail', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
+  });
+
+  it('offers a download once an export exists, and downloads it through the API client', async () => {
+    mockAdminEnterprise.getGdprRequest.mockResolvedValue({
+      success: true,
+      data: makeRequest({ export_file_path: '/storage/exports/nexus_data_export_101_1.zip' }),
+    });
+    mockAdminEnterprise.downloadGdprExport.mockResolvedValue(new Blob());
+    const { GdprRequestDetail } = await import('./GdprRequestDetail');
+    render(<GdprRequestDetail />);
+
+    const button = await screen.findByRole('button', { name: /download export/i });
+    fireEvent.click(button);
+    await waitFor(() => expect(mockAdminEnterprise.downloadGdprExport).toHaveBeenCalledWith(42));
+  });
+
+  it('shows an error toast when the export download fails', async () => {
+    mockAdminEnterprise.getGdprRequest.mockResolvedValue({
+      success: true,
+      data: makeRequest({ export_file_path: '/storage/exports/nexus_data_export_101_1.zip' }),
+    });
+    mockAdminEnterprise.downloadGdprExport.mockRejectedValue(new Error('410'));
+    const { GdprRequestDetail } = await import('./GdprRequestDetail');
+    render(<GdprRequestDetail />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /download export/i }));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+  });
+
+  it('offers no download before an export exists', async () => {
+    const { GdprRequestDetail } = await import('./GdprRequestDetail');
+    render(<GdprRequestDetail />);
+
+    await waitFor(() => screen.getByText('Jane Doe'));
+    expect(screen.queryByRole('button', { name: /download export/i })).toBeNull();
   });
 
   it('calls generateGdprExport when Generate Export button is clicked', async () => {

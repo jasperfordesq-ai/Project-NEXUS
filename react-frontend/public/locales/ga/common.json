@@ -2511,7 +2511,8 @@
   "errors": {
     "connection_failed": "Ní féidir nascadh",
     "connection_failed_detail": "Seiceáil do nasc idirlín agus bain triail eile as.",
-    "unexpected": "Chuaigh rud éigin amú"
+    "unexpected": "Chuaigh rud éigin amú",
+    "download_failed": "Níorbh fhéidir an comhad a íoslódáil. Bain triail eile as."
   },
   "actions": {
     "retry": "Bain triail eile as"

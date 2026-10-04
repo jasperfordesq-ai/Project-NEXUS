@@ -624,6 +624,7 @@
     "gdpr_enter_valid_user_id": "Iontráil ID úsáideora bailí",
     "gdpr_escalate": "Ardaigh",
     "gdpr_export_available": "Onnmhairiú ar fáil",
+    "gdpr_download_export": "Íoslódáil an t-onnmhairiú",
     "gdpr_export_csv": "Onnmhairigh CSV",
     "gdpr_export_generated": "Easpórtáil ginte",
     "gdpr_failed_add_note": "Theip ar nóta a chur leis",

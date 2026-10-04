@@ -3217,6 +3217,15 @@ class GdprService
     // HELPER METHODS
     // =========================================================================
 
+    /**
+     * Directory that holds generated export ZIPs. The admin download route
+     * serves a file only when it resolves inside this directory.
+     */
+    public static function exportDirectory(): string
+    {
+        return rtrim(self::getStoragePath('exports'), '/');
+    }
+
     private static function getStoragePath(string $path): string
     {
         $basePath = getenv('STORAGE_PATH') ?: __DIR__ . '/../../../storage';

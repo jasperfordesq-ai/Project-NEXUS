@@ -130,7 +130,7 @@ describe('GdprConsentTypes', () => {
     vi.clearAllMocks();
     mockAuthUser.current = { id: 1, role: 'super_admin', is_super_admin: true };
     mockGetConsentTypes.mockResolvedValue({ success: true, data: [] });
-    mockExportConsentTypeUsers.mockReturnValue('/api/v2/admin/consent-types/marketing/users.csv');
+    mockExportConsentTypeUsers.mockResolvedValue(new Blob());
   });
 
   it('shows loading spinner while fetching', async () => {

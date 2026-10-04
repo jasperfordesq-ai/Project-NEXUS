@@ -12,6 +12,7 @@
     "gdpr_request_create_failed": "AVG-verzoek aanmaken mislukt",
     "data_export_generated": "Gegevensexport succesvol gegenereerd",
     "data_export_failed": "Gegevensexport genereren mislukt",
+    "data_export_expired": "Deze gegevensexport is verlopen. Genereer een nieuwe.",
     "dpa_notification_recorded": "DPA-melding succesvol vastgelegd",
     "dpa_notification_failed": "DPA-melding vastleggen mislukt",
     "log_file_cleared": "Logbestand succesvol geleegd",

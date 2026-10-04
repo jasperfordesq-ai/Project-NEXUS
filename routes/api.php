@@ -2582,6 +2582,7 @@ Route::get('/v2/admin/enterprise/gdpr/requests/{id}', [\App\Http\Controllers\Api
 Route::put('/v2/admin/enterprise/gdpr/requests/{id}/assign', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'assignGdprRequest']);
 Route::post('/v2/admin/enterprise/gdpr/requests/{id}/notes', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'addGdprRequestNote']);
 Route::post('/v2/admin/enterprise/gdpr/requests/{id}/export', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'generateGdprExport']);
+Route::get('/v2/admin/enterprise/gdpr/requests/{id}/export/download', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'downloadGdprExport'])->whereNumber('id');
 
 // Enterprise GDPR — consent type management
 Route::get('/v2/admin/enterprise/gdpr/consent-types', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'consentTypes']);
@@ -2599,6 +2600,7 @@ Route::post('/v2/admin/enterprise/gdpr/breaches/{id}/notify-dpa', [\App\Http\Con
 // Enterprise monitoring — log files, requirements, health history
 Route::get('/v2/admin/enterprise/monitoring/log-files', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'logFiles']);
 Route::get('/v2/admin/enterprise/monitoring/log-files/{filename}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'viewLogFile']);
+Route::get('/v2/admin/enterprise/monitoring/log-files/{filename}/download', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'downloadLogFile']);
 Route::delete('/v2/admin/enterprise/monitoring/log-files/{filename}', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'clearLogFile']);
 Route::get('/v2/admin/enterprise/monitoring/requirements', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'systemRequirements']);
 Route::get('/v2/admin/enterprise/monitoring/health-history', [\App\Http\Controllers\Api\AdminEnterpriseController::class, 'healthCheckHistory']);
