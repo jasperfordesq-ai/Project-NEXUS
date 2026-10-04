@@ -345,9 +345,6 @@
     "src/admin/modules/diagnostics/MatchingDiagnostic.test.tsx": {
       "TS2345": 4
     },
-    "src/admin/modules/enterprise/GdprAuditLog.test.tsx": {
-      "TS2556": 1
-    },
     "src/admin/modules/enterprise/GdprBreachDetail.test.tsx": {
       "TS2345": 1
     },
@@ -1783,7 +1780,6 @@
     "src/pages/resources/ResourcesPage.test.tsx": {
       "TS2322": 1,
       "TS2345": 3,
-      "TS2739": 1,
       "TS7006": 1
     },
     "src/pages/reviews/ReviewsPage.test.tsx": {
@@ -1900,7 +1896,7 @@
     }
   },
   "totals": {
-    "fileCount": 561,
-    "errorCount": 1707
+    "fileCount": 560,
+    "errorCount": 1705
   }
 }

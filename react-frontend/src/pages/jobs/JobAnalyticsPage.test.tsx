@@ -196,7 +196,7 @@ describe('JobAnalyticsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /analytics\.export_csv|export csv/i }));
 
     await waitFor(() => expect(vi.mocked(api.download)).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(api.download).mock.calls[0][0]).toMatch(/^\/v2\/jobs\/[^/]+\/applications\/export-csv$/);
+    expect(vi.mocked(api.download).mock.calls[0]?.[0]).toMatch(/^\/v2\/jobs\/[^/]+\/applications\/export-csv$/);
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });

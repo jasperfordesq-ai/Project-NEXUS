@@ -235,6 +235,6 @@ describe('MunicipalRoiAdminPage', () => {
     await userEvent.click(exportBtn);
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/caring-community\/municipal-roi\/export/);
+    expect(mockApi.download.mock.calls[0]?.[0]).toMatch(/^\/v2\/admin\/caring-community\/municipal-roi\/export/);
   });
 });

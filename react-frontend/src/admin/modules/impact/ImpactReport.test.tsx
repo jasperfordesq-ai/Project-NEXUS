@@ -256,7 +256,7 @@ describe('ImpactReport', () => {
     fireEvent.click(btn!);
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/social_value\/export\?format=csv/);
+    expect(mockApi.download.mock.calls[0]?.[0]).toMatch(/^\/v2\/admin\/reports\/social_value\/export\?format=csv/);
   });
 
   it('renders a refresh/export button region', async () => {

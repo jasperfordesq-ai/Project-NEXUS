@@ -226,7 +226,7 @@ describe('PilotInquiryAdminPage', () => {
     fireEvent.click(exportBtn!);
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toBe('/v2/admin/pilot-inquiries/export');
+    expect(mockApi.download.mock.calls[0]?.[0]).toBe('/v2/admin/pilot-inquiries/export');
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });

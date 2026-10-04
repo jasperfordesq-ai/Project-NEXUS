@@ -123,7 +123,7 @@ describe('ResourcesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     isPhoneViewport = false;
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: {} });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: { per_page: 20, has_more: false } });
     // Re-seed so one test's admin override cannot leak into the next.
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 1, first_name: 'Test' },
@@ -139,7 +139,7 @@ describe('ResourcesPage', () => {
         file_type: 'application/pdf', file_size: 1024, downloads: 3, created_at: '2026-10-01T10:00:00Z',
         uploader: { id: 999, name: 'Someone', avatar: null }, category: null,
       }],
-      meta: {},
+      meta: { per_page: 20, has_more: false },
     });
     render(<ResourcesPage />);
     await waitFor(() => expect(screen.getByText('Volunteer handbook')).toBeInTheDocument());

@@ -237,7 +237,7 @@ describe('MemberReportsPage', () => {
     fireEvent.click(btn);
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/(members|inactive)\/export\?format=csv/);
+    expect(mockApi.download.mock.calls[0]?.[0]).toMatch(/^\/v2\/admin\/reports\/(members|inactive)\/export\?format=csv/);
   });
 
   it('renders Refresh button', async () => {

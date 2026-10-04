@@ -344,7 +344,7 @@ describe('HoursReportsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/hours_(category|member|period)\/export\?format=csv/);
+    expect(mockApi.download.mock.calls[0]?.[0]).toMatch(/^\/v2\/admin\/reports\/hours_(category|member|period)\/export\?format=csv/);
   });
 
   it('shows no_member_hours_data when member tab has no data', async () => {

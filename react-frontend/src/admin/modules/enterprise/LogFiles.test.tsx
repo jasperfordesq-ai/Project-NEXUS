@@ -159,10 +159,10 @@ describe('LogFiles', () => {
     render(<LogFiles />);
     await waitFor(() => screen.getByText('laravel.log'));
 
-    fireEvent.click(screen.getAllByRole('button', { name: /download/i })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /download/i })[0]!);
 
     await waitFor(() => expect(mockDownloadLogFile).toHaveBeenCalledTimes(1));
-    expect(mockDownloadLogFile.mock.calls[0][0]).toMatch(/\.log$/);
+    expect(mockDownloadLogFile.mock.calls[0]?.[0]).toMatch(/\.log$/);
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });

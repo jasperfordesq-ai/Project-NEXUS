@@ -144,7 +144,7 @@ describe('InactiveMembersPage', () => {
     fireEvent.click(btn!);
 
     await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
-    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/inactive\/export\?format=csv&days=/);
+    expect(mockApi.download.mock.calls[0]?.[0]).toMatch(/^\/v2\/admin\/reports\/inactive\/export\?format=csv&days=/);
   });
 
   it('renders stat cards once data loads', async () => {

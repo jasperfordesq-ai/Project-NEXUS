@@ -15,6 +15,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { ConfirmDialogProvider } from '@/components/ui';
 
 // ─── Common mocks ────────────────────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ function W({ children }: { children: React.ReactNode }) {
   return (
     <>
       <MemoryRouter initialEntries={['/test/admin']}>
-        {children}
+        <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
       </MemoryRouter>
     </>
   );

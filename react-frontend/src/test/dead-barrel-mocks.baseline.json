@@ -146,12 +146,6 @@
         "PageHeader"
       ]
     },
-    "src/admin/modules/dashboard/AdminDashboard.test.tsx": {
-      "@/admin/components": [
-        "PageHeader",
-        "StatCard"
-      ]
-    },
     "src/admin/modules/deliverability/EditDeliverable.test.tsx": {
       "@/admin/components": [
         "PageHeader"
@@ -277,11 +271,6 @@
       ]
     },
     "src/admin/modules/super/TenantShow.test.tsx": {
-      "@/admin/components": [
-        "PageHeader"
-      ]
-    },
-    "src/admin/modules/system/AdminSettings.test.tsx": {
       "@/admin/components": [
         "PageHeader"
       ]
@@ -574,7 +563,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 87,
-    "rowCount": 269
+    "offenderFileCount": 85,
+    "rowCount": 265
   }
 }
