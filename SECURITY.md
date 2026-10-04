@@ -66,12 +66,14 @@ In scope:
 - Messaging, notifications, WebAuthn/passkeys, and federation APIs.
 - Build, dependency, container, and deployment security.
 
-Images that members upload for display (profile photos, listing and event images, group and
-organisation logos) are served as static files from the public uploads tree and can be fetched by
-anyone holding their address. This is by design: the addresses are 128-bit random names that cannot
+Images that members upload for display (profile photos, listing and event images, feed post
+images and their thumbnails, group and organisation logos) are served as static files from the
+public uploads tree and can be fetched by anyone holding their address. This is by design: the addresses are 128-bit random names that cannot
 be guessed or listed, the files are served with a sandboxing Content-Security-Policy and
 `X-Content-Type-Options: nosniff`, and the same images appear on public profile, listing and event
-pages, in notification emails and in the mobile app. Reports that only show an image being fetched
+pages, in notification emails and in the mobile app. The address of an image attached to a
+restricted feed post is disclosed only to members who can see that post; the file itself stays
+fetchable by anyone who later holds the address. Reports that only show an image being fetched
 by its exact address will be recorded but not treated as a vulnerability. Message attachments and
 voice messages are private and are served only through the authenticated media endpoint.
 

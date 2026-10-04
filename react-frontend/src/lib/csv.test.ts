@@ -37,3 +37,9 @@ describe('toCsv', () => {
     );
   });
 });
+
+describe("csvCell — Cyphere's exact wallet payload (F-561, 4 Oct 2026)", () => {
+  it("neutralises =cmd|'/C calc'!A0 as it appears in a transfer description", () => {
+    expect(csvCell("=cmd|'/C calc'!A0")).toBe(`"'=cmd|'/C calc'!A0"`);
+  });
+});
