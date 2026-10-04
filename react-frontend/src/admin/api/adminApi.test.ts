@@ -89,10 +89,10 @@ describe('adminDashboard', () => {
     expect(mockGet).toHaveBeenCalledWith('/v2/admin/dashboard/stats');
   });
 
-  it('getTrends uses default 6 months', async () => {
+  it('getTrends uses default 12 months', async () => {
     mockGet.mockResolvedValueOnce({ success: true, data: [] });
     await adminDashboard.getTrends();
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/dashboard/trends?months=6');
+    expect(mockGet).toHaveBeenCalledWith('/v2/admin/dashboard/trends?months=12');
   });
 
   it('getTrends accepts custom months', async () => {
