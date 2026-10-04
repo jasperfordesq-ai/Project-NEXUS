@@ -498,7 +498,7 @@ export function EmployerBrandPage() {
             </h3>
 
             {reviewError && (
-              <div className="text-sm text-danger bg-danger-50 rounded-lg p-3">{reviewError}</div>
+              <div className="text-sm text-danger bg-danger/10 rounded-lg p-3">{reviewError}</div>
             )}
 
             {/* Overall rating */}

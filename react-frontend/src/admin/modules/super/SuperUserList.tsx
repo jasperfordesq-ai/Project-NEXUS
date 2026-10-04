@@ -273,8 +273,8 @@ export function SuperUserList() {
         </Switch>
       </div>
       {users.length >= 100 && (
-        <div className="mb-4 p-3 bg-warning-50 dark:bg-warning-50/10 border border-warning-200 dark:border-warning-200/20 rounded-lg">
-          <p className="text-sm text-warning-700 dark:text-warning-400">
+        <div className="mb-4 p-3 bg-warning/10 border border-warning/30 rounded-lg">
+          <p className="text-sm text-warning-soft-foreground">
             {t('super.showing_first_100')}
           </p>
         </div>

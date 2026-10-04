@@ -350,7 +350,7 @@ export default function FeedModeration() {
 
       {/* Error State */}
       {error && (
-        <div role="alert" className="bg-danger-50 dark:bg-danger-950 text-danger border border-danger rounded-lg p-4">
+        <div role="alert" className="bg-danger/10 text-danger border border-danger rounded-lg p-4">
           {t('moderation.failed_to_load_posts')}
         </div>
       )}

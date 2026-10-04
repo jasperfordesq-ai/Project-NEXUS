@@ -757,9 +757,9 @@ export default function PushCampaignAdminPage() {
                 {detailCampaign.rejection_reason && (
                   <>
                     <Separator />
-                    <div className="rounded-lg bg-danger-50 border border-danger-200 p-3 text-sm">
+                    <div className="rounded-lg bg-danger/10 border border-danger/30 p-3 text-sm">
                       <p className="font-medium text-danger mb-1">{t('advertising.shared.rejection_reason')}</p>
-                      <p className="text-danger-700">{detailCampaign.rejection_reason}</p>
+                      <p className="text-danger-soft-foreground">{detailCampaign.rejection_reason}</p>
                     </div>
                   </>
                 )}

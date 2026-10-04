@@ -194,7 +194,7 @@ export function CronJobs() {
                 <AlertTriangle aria-hidden="true" size={24} className="text-danger shrink-0" />
                 <div>
                   <p className="font-semibold text-danger">{t('system.critical_cron_failing')}</p>
-                  <p className="text-sm text-danger-700 dark:text-danger-300">
+                  <p className="text-sm text-danger-soft-foreground">
                     {t('system.jobs_failed_24h_message')}
                   </p>
                 </div>

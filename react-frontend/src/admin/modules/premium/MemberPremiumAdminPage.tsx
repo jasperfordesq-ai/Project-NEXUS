@@ -415,14 +415,14 @@ export function MemberPremiumAdminPage() {
               {t('member_premium_admin.settings.description')}
             </p>
             {accountStatus?.requirements_due?.length ? (
-              <p className="text-sm text-warning-600">
+              <p className="text-sm text-warning-soft-foreground">
                 {t('member_premium_admin.settings.requirements_due', {
                   count: accountStatus.requirements_due.length,
                 })}
               </p>
             ) : null}
             {fallbackReason === 'stripe_connect_not_ready' ? (
-              <p className="text-sm text-warning-600">
+              <p className="text-sm text-warning-soft-foreground">
                 {t('member_premium_admin.settings.connect_fallback_active')}
               </p>
             ) : null}
@@ -675,7 +675,7 @@ export function MemberPremiumAdminPage() {
               </Switch>
             </div>
             {form.id && (
-              <p className="text-xs text-warning-600 mt-2">
+              <p className="text-xs text-warning-soft-foreground mt-2">
                 {t('member_premium_admin.modal.stripe_price_note')}
               </p>
             )}

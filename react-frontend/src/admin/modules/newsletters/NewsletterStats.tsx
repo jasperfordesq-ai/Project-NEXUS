@@ -458,7 +458,7 @@ export function NewsletterStats() {
 
       {/* ── A/B Test Results (conditional) ── */}
       {ab_test && (
-        <Card  className="mb-6 border-2 border-warning-200">
+        <Card  className="mb-6 border-2 border-warning/30">
           <CardHeader className="flex flex-row items-center gap-3 px-5 pb-0 pt-5">
             <Chip size="sm" color="warning" variant="soft">{t('newsletters.ab_label')}</Chip>
             <h3 className="text-lg font-semibold text-foreground">{t('newsletters.section_ab_test_results')}</h3>
@@ -466,13 +466,13 @@ export function NewsletterStats() {
           <CardBody className="space-y-5 px-5 pb-5">
             {/* Winner Announcement */}
             {ab_test.winner && (
-              <div className="flex items-center gap-3 rounded-lg bg-success-50 p-4 dark:bg-success-50/10">
+              <div className="flex items-center gap-3 rounded-lg bg-success/10 p-4">
                 <Trophy aria-hidden="true" size={24} className="text-success" />
                 <div>
-                  <p className="font-semibold text-success-700 dark:text-success">
+                  <p className="font-semibold text-success-soft-foreground dark:text-success">
                     {t('newsletters.winner_subject')}
                   </p>
-                  <p className="text-sm text-success-600 dark:text-success-400">
+                  <p className="text-sm text-success-soft-foreground">
                     &quot;{ab_test.winner === 'a' ? ab_test.subject_a : ab_test.subject_b}&quot;
                   </p>
                 </div>
@@ -941,7 +941,7 @@ function AbVariantCard({
   const { t: tLocal } = useTranslation('admin_newsletters');
   return (
     <Card
-      className={`border-2 ${isWinner ? 'border-success bg-success-50/50 dark:bg-success-50/5' : 'border-border'}`}
+      className={`border-2 ${isWinner ? 'border-success bg-success/10' : 'border-border'}`}
     >
       <CardBody className="space-y-3 p-4">
         <div className="flex items-center justify-between">

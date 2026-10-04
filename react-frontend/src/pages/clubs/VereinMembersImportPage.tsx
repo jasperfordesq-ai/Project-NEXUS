@@ -270,26 +270,26 @@ export default function VereinMembersImportPage() {
                 <p className="text-xs uppercase text-muted">{t('verein_import.summary.total')}</p>
                 <p className="text-2xl font-bold">{preview.summary.total_rows}</p>
               </div>
-              <div className="rounded-lg border border-success-200 bg-success-50 p-3 text-center">
-                <p className="text-xs uppercase text-success-700">{t('verein_import.summary.create')}</p>
+              <div className="rounded-lg border border-success/30 bg-success/10 p-3 text-center">
+                <p className="text-xs uppercase text-success-soft-foreground">{t('verein_import.summary.create')}</p>
                 <p className="text-2xl font-bold text-success">{preview.summary.ready_to_create}</p>
               </div>
               <div className="rounded-lg border border-accent bg-accent-soft p-3 text-center">
                 <p className="text-xs uppercase text-accent">{t('verein_import.summary.link')}</p>
                 <p className="text-2xl font-bold text-accent">{preview.summary.ready_to_link}</p>
               </div>
-              <div className="rounded-lg border border-warning-200 bg-warning-50 p-3 text-center">
-                <p className="text-xs uppercase text-warning-700">{t('verein_import.summary.duplicates')}</p>
+              <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-center">
+                <p className="text-xs uppercase text-warning-soft-foreground">{t('verein_import.summary.duplicates')}</p>
                 <p className="text-2xl font-bold text-warning">{preview.summary.duplicates}</p>
               </div>
-              <div className="rounded-lg border border-danger-200 bg-danger-50 p-3 text-center">
-                <p className="text-xs uppercase text-danger-700">{t('verein_import.summary.invalid')}</p>
+              <div className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-center">
+                <p className="text-xs uppercase text-danger-soft-foreground">{t('verein_import.summary.invalid')}</p>
                 <p className="text-2xl font-bold text-danger">{preview.summary.invalid}</p>
               </div>
             </div>
 
             {preview.summary.invalid > 0 && (
-              <div role="alert" className="flex items-center gap-2 p-3 bg-danger-50 border border-danger-200 rounded-lg text-sm text-danger-800">
+              <div role="alert" className="flex items-center gap-2 p-3 bg-danger/10 border border-danger/30 rounded-lg text-sm text-danger-soft-foreground">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                 <span>
                   {t('verein_import.errors.has_invalid_summary')}
@@ -314,7 +314,7 @@ export default function VereinMembersImportPage() {
                 </TableHeader>
                 <TableBody>
                   {preview.items.map((row) => (
-                    <TableRow key={row.row} className={row.errors.length ? 'bg-danger-50/40' : ''}>
+                    <TableRow key={row.row} className={row.errors.length ? 'bg-danger/10' : ''}>
                       <TableCell className="text-muted tabular-nums">{row.row}</TableCell>
                       <TableCell>{actionChip(row.action)}</TableCell>
                       <TableCell>{row.email || t('empty_dash')}</TableCell>
@@ -322,7 +322,7 @@ export default function VereinMembersImportPage() {
                         {resolveUserDisplayName(row) || t('empty_dash')}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">{row.role}</TableCell>
-                      <TableCell className="text-danger-700">
+                      <TableCell className="text-danger-soft-foreground">
                         {row.errors.length > 0 ? row.errors.join('; ') : ''}
                       </TableCell>
                     </TableRow>
@@ -368,7 +368,7 @@ export default function VereinMembersImportPage() {
               })}
             </p>
             {importResult.members.some((m) => m.temporary_password) && (
-              <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg text-sm space-y-2">
+              <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm space-y-2">
                 <p className="font-medium">
                   {t('verein_import.result.passwords_title')}
                 </p>
@@ -381,7 +381,7 @@ export default function VereinMembersImportPage() {
                       </li>
                     ))}
                 </ul>
-                <p className="text-xs text-warning-700">
+                <p className="text-xs text-warning-soft-foreground">
                   {t('verein_import.result.passwords_warning')}
                 </p>
               </div>

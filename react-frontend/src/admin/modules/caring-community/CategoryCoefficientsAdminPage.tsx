@@ -189,18 +189,18 @@ export default function CategoryCoefficientsAdminPage() {
 
       {/* Migration pending warning */}
       {migrationPending && (
-        <Card className="border border-warning-200 bg-warning-50">
+        <Card className="border border-warning/30 bg-warning/10">
           <CardBody className="flex flex-row items-start gap-3 py-3">
-            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-warning-600" />
-            <div className="text-sm text-warning-800">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-warning-soft-foreground" />
+            <div className="text-sm text-warning-soft-foreground">
               <p className="font-semibold">{t('category_coefficients.migration.title')}</p>
               <p className="mt-1">
                 {t('category_coefficients.migration.body_prefix')}{' '}
                 {/* eslint-disable-next-line i18next/no-literal-string -- Database column name must remain verbatim. */}
-                <code className="rounded bg-warning-100 px-1">substitution_coefficient</code>{' '}
+                <code className="rounded bg-warning/10 px-1">substitution_coefficient</code>{' '}
                 {t('category_coefficients.migration.body_middle')}{' '}
                 {/* eslint-disable-next-line i18next/no-literal-string -- CLI command must remain verbatim. */}
-                <code className="rounded bg-warning-100 px-1">
+                <code className="rounded bg-warning/10 px-1">
                   docker exec nexus-php-app php artisan migrate
                 </code>{' '}
                 {t('category_coefficients.migration.body_suffix')}

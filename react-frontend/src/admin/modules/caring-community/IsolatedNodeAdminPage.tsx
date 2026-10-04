@@ -288,12 +288,12 @@ export default function IsolatedNodeAdminPage() {
         </CardBody>
       </Card>
 
-      <Card className="border border-warning-300 bg-warning-50/50 dark:bg-warning-900/10" >
+      <Card className="border border-warning/30 bg-warning/10" >
         <CardBody className="px-4 py-3">
           <div className="flex gap-3">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning-600" aria-hidden="true" />
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning-soft-foreground" aria-hidden="true" />
             <div className="text-sm">
-              <p className="font-semibold text-warning-800 dark:text-warning-200">{t('isolated_node.warning.title')}</p>
+              <p className="font-semibold text-warning-soft-foreground">{t('isolated_node.warning.title')}</p>
               <p className="text-muted mt-0.5">
                 {t('isolated_node.warning.body_prefix')} <Abbr term="NEXUS" /> {t('isolated_node.warning.body_suffix')}
               </p>
@@ -313,8 +313,8 @@ export default function IsolatedNodeAdminPage() {
           <Card
             className={
               gate.closed
-                ? 'border border-success-300 bg-success-50/50 dark:bg-success-900/10'
-                : 'border border-warning-300 bg-warning-50/50 dark:bg-warning-900/10'
+                ? 'border border-success/30 bg-success/10'
+                : 'border border-warning/30 bg-warning/10'
             }
           >
             <CardBody className="space-y-3 py-4">

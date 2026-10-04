@@ -215,11 +215,11 @@ export function WarmthPassAdminPage() {
           <CardBody className="space-y-5 p-6">
             {/* Not eligible notice */}
             {result.tier < 2 && (
-              <div className="rounded-lg border border-warning-200 bg-warning-50 p-3 dark:border-warning-800 dark:bg-warning-900/20">
-                <p className="text-sm font-semibold text-warning-700 dark:text-warning-400">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 p-3">
+                <p className="text-sm font-semibold text-warning-soft-foreground">
                   {t('admin.warmth_pass.not_eligible_notice.title')}
                 </p>
-                <p className="mt-1 text-sm text-warning-700 dark:text-warning-400">
+                <p className="mt-1 text-sm text-warning-soft-foreground">
                   {t('admin.warmth_pass.not_eligible_notice.body')}
                 </p>
               </div>

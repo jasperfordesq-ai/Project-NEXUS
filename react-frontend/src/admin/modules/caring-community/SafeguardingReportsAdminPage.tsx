@@ -268,7 +268,7 @@ export default function SafeguardingReportsAdminPage(): ReactNode {
           <div className="flex gap-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden="true" />
             <div className="space-y-1 text-sm">
-              <p className="font-semibold text-danger-800 dark:text-danger-200">{t('admin.safeguarding_reports.about.title')}</p>
+              <p className="font-semibold text-danger-soft-foreground">{t('admin.safeguarding_reports.about.title')}</p>
               <p className="text-muted">{t('admin.safeguarding_reports.about.body')}</p>
             </div>
           </div>

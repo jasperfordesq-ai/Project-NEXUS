@@ -885,9 +885,9 @@ export function UserList() {
                 </div>
 
                 {importResults.errors.length > 0 && (
-                  <div className="max-h-48 overflow-y-auto rounded-lg bg-danger-50 p-3">
+                  <div className="max-h-48 overflow-y-auto rounded-lg bg-danger/10 p-3">
                     <p className="text-sm font-medium text-danger mb-1">{t('users.import_errors')}</p>
-                    <ul className="text-xs text-danger-600 space-y-1">
+                    <ul className="text-xs text-danger-soft-foreground space-y-1">
                       {importResults.errors.map((err, i) => (
                         // Error strings may duplicate; use index prefix for stable key
                         <li key={`err-${i}`}>{err}</li>

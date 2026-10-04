@@ -127,7 +127,7 @@ export default function MySafeguardingReportsPage(): ReactNode {
           {error && !loading && (
             <div
               role="alert"
-              className="mb-4 rounded-lg border border-danger-200 bg-danger-50 p-4 text-sm text-danger-700 dark:border-danger-800 dark:bg-danger-950/30 dark:text-danger-300"
+              className="mb-4 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger-soft-foreground"
             >
               {error}
             </div>

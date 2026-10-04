@@ -169,7 +169,7 @@ export default function LegalDocComplianceDashboard() {
         <Card>
           <CardBody>
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-success-100 dark:bg-success-900/30 rounded-lg">
+              <div className="p-3 bg-success/10 rounded-lg">
                 <CheckCircle2 size={24} className="text-success" />
               </div>
               <div>
@@ -185,7 +185,7 @@ export default function LegalDocComplianceDashboard() {
         <Card>
           <CardBody>
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-warning-100 dark:bg-warning-900/30 rounded-lg">
+              <div className="p-3 bg-warning/10 rounded-lg">
                 <AlertCircle size={24} className="text-warning" />
               </div>
               <div>

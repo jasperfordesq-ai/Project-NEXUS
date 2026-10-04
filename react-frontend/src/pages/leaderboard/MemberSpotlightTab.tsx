@@ -95,7 +95,7 @@ export default function MemberSpotlightTab() {
   if (error) {
     return (
       <GlassCard className="p-6 text-center">
-        <p className="text-danger-500">{t('spotlight.load_error')}</p>
+        <p className="text-danger-soft-foreground">{t('spotlight.load_error')}</p>
       </GlassCard>
     );
   }

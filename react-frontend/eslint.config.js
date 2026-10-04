@@ -59,6 +59,25 @@ export default tseslint.config(
       // i18n — catch hardcoded strings in JSX markup (between tags and in common attributes)
       // markupOnly: true limits scope to JSX text nodes — won't flag JS constants or config strings
       'i18next/no-literal-string': ['warn', { markupOnly: true }],
+
+      // The HeroUI v3 theme defines NO numbered status shades. `bg-warning-50`,
+      // `text-danger-700`, `border-success-200` and the like compile to nothing,
+      // so the element renders with no colour at all — tsc, lint and every test
+      // stay green and only a look in the browser catches it. 235 such classes
+      // were found and replaced on 2026-10-04. Use the tokens that exist:
+      // `bg-warning/10`, `border-warning/30`, `text-warning-soft-foreground`
+      // (passes 4.5:1 in both themes), or the `Alert` wrapper for a boxed message.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/\\b(bg|text|border|ring|outline|divide|fill|stroke|from|via|to|shadow|decoration|placeholder|caret|accent)-(warning|danger|success)-\\d{2,3}\\b/]',
+          message: 'Numbered status shades (e.g. bg-warning-50, text-danger-700) do not exist in the HeroUI v3 theme and render uncoloured. Use bg-warning/10, border-warning/30, text-warning-soft-foreground, or the Alert component.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/\\b(bg|text|border|ring|outline|divide|fill|stroke|from|via|to|shadow|decoration|placeholder|caret|accent)-(warning|danger|success)-\\d{2,3}\\b/]',
+          message: 'Numbered status shades (e.g. bg-warning-50, text-danger-700) do not exist in the HeroUI v3 theme and render uncoloured. Use bg-warning/10, border-warning/30, text-warning-soft-foreground, or the Alert component.',
+        },
+      ],
     },
   },
   {

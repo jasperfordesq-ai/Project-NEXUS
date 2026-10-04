@@ -108,7 +108,7 @@ export function SuccessStoriesPage() {
         <GlassCard className="p-6 sm:p-8">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning/15">
-              <Award className="h-6 w-6 text-warning-600" aria-hidden="true" />
+              <Award className="h-6 w-6 text-warning-soft-foreground" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">
@@ -199,7 +199,7 @@ export function SuccessStoriesPage() {
                         <p className="text-xs font-medium uppercase tracking-wide text-theme-muted">
                           {t('after_label')}
                         </p>
-                        <p className="mt-1 truncate text-xl font-bold text-success-600 dark:text-success-400">
+                        <p className="mt-1 truncate text-xl font-bold text-success-soft-foreground">
                           {formatValue(story.after_value, story.unit)}
                         </p>
                       </div>

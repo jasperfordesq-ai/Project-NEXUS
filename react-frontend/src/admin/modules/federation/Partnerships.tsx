@@ -882,7 +882,7 @@ export function Partnerships() {
                           {detailPartnership.counter_proposal_message && (
                             <div className="mt-2">
                               <p className="text-sm text-muted">{t('federation.label_counter_proposal')}</p>
-                              <p className="text-sm mt-1 rounded-lg bg-warning-50 p-3">{detailPartnership.counter_proposal_message}</p>
+                              <p className="text-sm mt-1 rounded-lg bg-warning/10 p-3">{detailPartnership.counter_proposal_message}</p>
                             </div>
                           )}
                         </CardBody>

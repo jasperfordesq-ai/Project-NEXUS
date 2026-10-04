@@ -569,10 +569,10 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
 
           {/* All coming-soon notice */}
           {!isLinkOut && !isEditable && allComingSoon && module.configOptions.length > 0 && (
-            <Card className="bg-warning-50 dark:bg-warning-50/10 mb-4">
+            <Card className="bg-warning/10 mb-4">
               <CardBody className="flex flex-row items-center gap-3 py-3">
                 <Construction size={18} className="text-warning flex-shrink-0" aria-hidden="true" />
-                <p className="text-sm text-warning-700 dark:text-warning-400">
+                <p className="text-sm text-warning-soft-foreground">
                   {t('config.modal_coming_soon_notice')}
                 </p>
               </CardBody>

@@ -333,11 +333,11 @@ export default function PlatformInfrastructure({ config: _config, onConfigChange
           <CardBody className="px-4 pb-4 space-y-4">
             <div className="flex flex-wrap gap-2 items-center text-xs">
               <span className="text-muted">{t('tenant_features.currently_serving')}:</span>
-              <span className={`px-2 py-0.5 rounded-full font-medium ${mapsEnabled ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300' : 'bg-surface-secondary text-muted'}`}>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${mapsEnabled ? 'bg-success/10 text-success-soft-foreground' : 'bg-surface-secondary text-muted'}`}>
                 {t('tenant_features.status_maps')}{': '}
                 {mapsEnabled ? t('tenant_features.status_on') : t('tenant_features.status_off')}
               </span>
-              <span className={`px-2 py-0.5 rounded-full font-medium ${geocodingProvider === 'google' ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300' : 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'}`}>
+              <span className={`px-2 py-0.5 rounded-full font-medium ${geocodingProvider === 'google' ? 'bg-warning/10 text-warning-soft-foreground' : 'bg-success/10 text-success-soft-foreground'}`}>
                 {t('tenant_features.status_autocomplete')}{': '}
                 {geocodingProvider === 'google'
                   ? t('tenant_features.status_google_places_paid')
@@ -348,7 +348,7 @@ export default function PlatformInfrastructure({ config: _config, onConfigChange
             </div>
 
             {geocodingProvider === 'google' && (
-              <div className="rounded-lg bg-warning-50 dark:bg-warning-900/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-300 border border-warning-200 dark:border-warning-800">
+              <div className="rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-soft-foreground border border-warning/30">
                 {t('tenant_features.cost_warning')}
               </div>
             )}

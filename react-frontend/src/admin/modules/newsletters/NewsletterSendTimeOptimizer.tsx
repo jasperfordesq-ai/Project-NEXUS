@@ -89,10 +89,10 @@ export function NewsletterSendTimeOptimizer() {
     }
 
     const intensity = Math.min(score / maxScore, 1);
-    if (intensity > 0.7) return 'border-success-700 bg-success-500 text-success-950';
-    if (intensity > 0.4) return 'border-success-500 bg-success-300 text-success-950';
-    if (intensity > 0.2) return 'border-success-400 bg-success-200 text-success-950';
-    return 'border-success-300 bg-success-100 text-success-950';
+    if (intensity > 0.7) return 'border-success bg-success text-success-foreground';
+    if (intensity > 0.4) return 'border-success/60 bg-success/40 text-foreground';
+    if (intensity > 0.2) return 'border-success/40 bg-success/25 text-foreground';
+    return 'border-success/30 bg-success/10 text-foreground';
   };
 
   return (
@@ -139,7 +139,7 @@ export function NewsletterSendTimeOptimizer() {
                 {data.recommendations.map((rec, idx) => (
                   <div
                     key={`${rec.day_of_week}-${rec.hour}`}
-                    className="rounded-xl border border-success-200/70 bg-success-50/80 p-4 shadow-sm dark:border-success-400/20 dark:bg-success-50/10"
+                    className="rounded-xl border border-success/30 bg-success/10 p-4 shadow-sm"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -222,10 +222,10 @@ export function NewsletterSendTimeOptimizer() {
                     <span className="text-sm text-muted">{t('newsletter_send_time.low')}</span>
                     <div className="flex gap-1">
                       <div className="w-4 h-4 rounded border border-border bg-surface-secondary dark:border-border dark:bg-surface-secondary"></div>
-                      <div className="w-4 h-4 rounded border border-success-300 bg-success-100"></div>
-                      <div className="w-4 h-4 rounded border border-success-400 bg-success-200"></div>
-                      <div className="w-4 h-4 rounded border border-success-500 bg-success-300"></div>
-                      <div className="w-4 h-4 rounded border border-success-700 bg-success-500"></div>
+                      <div className="w-4 h-4 rounded border border-success/30 bg-success/10"></div>
+                      <div className="w-4 h-4 rounded border border-success/40 bg-success/25"></div>
+                      <div className="w-4 h-4 rounded border border-success/60 bg-success/40"></div>
+                      <div className="w-4 h-4 rounded border border-success bg-success"></div>
                     </div>
                     <span className="text-sm text-muted">{t('newsletter_send_time.high')}</span>
                   </div>

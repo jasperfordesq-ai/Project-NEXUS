@@ -379,7 +379,7 @@ export function NewsletterDiagnostics() {
 
         {/* Recommendations */}
         {data && (data.health_status !== 'healthy' || (data.sender_score_breakdown?.complaint_penalty ?? 0) > 0 || (!data.configuration.smtp_configured && !data.configuration.api_configured)) && (
-          <Card className="bg-warning-50 dark:bg-warning-50/10">
+          <Card className="bg-warning/10">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AlertCircle size={20} className="text-warning" />
@@ -387,7 +387,7 @@ export function NewsletterDiagnostics() {
               </div>
             </CardHeader>
             <CardBody>
-              <ul className="space-y-2 text-sm text-warning-700 dark:text-warning-300">
+              <ul className="space-y-2 text-sm text-warning-soft-foreground">
                 {data.bounce_rate > 5 && (
                   <li>• {t('newsletter_diagnostics.rec_high_bounce_rate')}</li>
                 )}

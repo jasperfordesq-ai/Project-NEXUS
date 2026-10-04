@@ -440,14 +440,14 @@ export function GdprBreachDetail() {
                     </Card>
                   )}
                   {dpaUrgent && (
-                    <div className="p-3 rounded-lg bg-danger-50 border border-danger-200">
+                    <div className="p-3 rounded-lg bg-danger/10 border border-danger/30">
                       <div className="flex items-center gap-2 text-danger">
                         <AlertTriangle size={16} />
                         <span className="text-sm font-semibold">
                           {isOverdue ? t('enterprise.gdpr_deadline_exceeded') : t('enterprise.gdpr_deadline_approaching')}
                         </span>
                       </div>
-                      <p className="text-xs text-danger-600 mt-1">
+                      <p className="text-xs text-danger-soft-foreground mt-1">
                         {t('enterprise.gdpr_dpa_72h_requirement')}
                       </p>
                     </div>

@@ -508,7 +508,7 @@ export function NewsletterActivity() {
               </TableHeader>
               <TableBody
                 items={nonOpeners}
-                emptyContent={<EmptyState title={t('newsletter_activity.all_recipients_opened_title')} message={t('newsletter_activity.all_recipients_opened')} icon={<Users size={48} className="text-success-300" />} />}
+                emptyContent={<EmptyState title={t('newsletter_activity.all_recipients_opened_title')} message={t('newsletter_activity.all_recipients_opened')} icon={<Users size={48} className="text-success-soft-foreground" />} />}
               >
                 {(row) => (
                   <TableRow key={row.id}>
@@ -536,7 +536,7 @@ export function NewsletterActivity() {
               </TableHeader>
               <TableBody
                 items={openedNoClick}
-                emptyContent={<EmptyState title={t('newsletter_activity.all_openers_clicked_title')} message={t('newsletter_activity.all_openers_clicked')} icon={<MousePointer size={48} className="text-success-300" />} />}
+                emptyContent={<EmptyState title={t('newsletter_activity.all_openers_clicked_title')} message={t('newsletter_activity.all_openers_clicked')} icon={<MousePointer size={48} className="text-success-soft-foreground" />} />}
               >
                 {(row) => (
                   <TableRow key={row.id}>

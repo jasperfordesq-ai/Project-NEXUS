@@ -310,9 +310,9 @@ export function GdprRequestDetail() {
               </div>
 
               {request.rejection_reason && (
-                <div className="p-3 rounded-lg bg-danger-50 border border-danger-200">
+                <div className="p-3 rounded-lg bg-danger/10 border border-danger/30">
                   <p className="text-sm font-medium text-danger">{t('enterprise.gdpr_rejection_reason')}</p>
-                  <p className="text-sm text-danger-700 mt-1">{request.rejection_reason}</p>
+                  <p className="text-sm text-danger-soft-foreground mt-1">{request.rejection_reason}</p>
                 </div>
               )}
             </CardBody>

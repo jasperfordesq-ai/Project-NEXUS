@@ -179,12 +179,12 @@ export function NewsletterResend({ isOpen, onClose, newsletterId, onSuccess }: N
                   </Card>
 
                   {recipientCount === 0 && (
-                    <Card className="bg-warning-50 dark:bg-warning-50/10">
+                    <Card className="bg-warning/10">
                       <CardBody className="flex-row items-center gap-3">
                         <AlertCircle size={20} className="text-warning" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-warning">{t('newsletter_resend.no_recipients')}</p>
-                          <p className="text-xs text-warning-600 dark:text-warning-400">
+                          <p className="text-xs text-warning-soft-foreground">
                             {t('newsletter_resend.no_recipients_desc')}
                           </p>
                         </div>

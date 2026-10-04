@@ -528,7 +528,7 @@ export function FeaturesPage() {
       </Card>
 
       {/* Security disclosure */}
-      <Card className="border border-danger-200 dark:border-danger-800">
+      <Card className="border border-danger/30">
         <Card.Header className="flex gap-2 items-center">
           <Shield className="w-5 h-5 text-danger" aria-hidden="true" />
           <h2 className="text-lg font-semibold">

@@ -33,7 +33,7 @@ export function ExternalFederationBanner() {
   return (
     <div
       role="status"
-      className="mb-4 flex items-start gap-3 rounded-lg border border-danger bg-danger-50 p-4 dark:bg-danger-950"
+      className="mb-4 flex items-start gap-3 rounded-lg border border-danger bg-danger/10 p-4"
     >
       <AlertTriangle aria-hidden="true" size={20} className="mt-0.5 shrink-0 text-danger" />
       <div className="min-w-0 flex-1">
@@ -42,11 +42,11 @@ export function ExternalFederationBanner() {
             ? t('external_federation.banner_title_lockdown')
             : t('external_federation.banner_title')}
         </p>
-        <p className="mt-1 text-sm text-danger-700 dark:text-danger-300">
+        <p className="mt-1 text-sm text-danger-soft-foreground">
           {t('external_federation.banner_body')}
         </p>
         {status.reason ? (
-          <p className="mt-1 text-sm italic text-danger-700 dark:text-danger-300">{status.reason}</p>
+          <p className="mt-1 text-sm italic text-danger-soft-foreground">{status.reason}</p>
         ) : null}
         <p className="mt-2 text-xs text-muted">{t('external_federation.banner_internal_unaffected')}</p>
         <Link

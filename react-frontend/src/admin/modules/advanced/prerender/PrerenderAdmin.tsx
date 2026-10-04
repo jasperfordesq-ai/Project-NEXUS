@@ -261,7 +261,7 @@ export function PrerenderAdmin() {
       </Modal>
 
       {readOnly && (
-        <div className="mb-3 rounded-md border border-warning-200 bg-warning-50 text-warning-800 px-3 py-2 text-sm">
+        <div className="mb-3 rounded-md border border-warning/30 bg-warning/10 text-warning-soft-foreground px-3 py-2 text-sm">
           {t('readonly.prefix')}{' '}
           <strong>{t('readonly.role')}</strong>{' '}
           {t('readonly.suffix')}
@@ -1074,7 +1074,7 @@ function InventoryTab({ presetTenant, onPresetConsumed }: { presetTenant: string
       )}
 
       {loadError ? (
-        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger-200 bg-danger-50 p-3 text-sm text-danger-800">
+        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger-soft-foreground">
           <span>{t('errors.load')}</span>
           <Button size="sm" variant="tertiary" onPress={load}>{t('actions.reload')}</Button>
         </div>
@@ -1456,7 +1456,7 @@ function CoverageTab({ isSuperAdmin, toast, onDrillDown }: { isSuperAdmin: boole
   };
 
   if (loadError) return (
-    <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger-200 bg-danger-50 p-3 text-sm text-danger-800">
+    <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger-soft-foreground">
       <span>{t('errors.load')}</span>
       <Button size="sm" variant="tertiary" onPress={load}>{tAdmin('common.retry')}</Button>
     </div>
@@ -2128,7 +2128,7 @@ function FailuresTab() {
         </CardBody>
       </Card>
       {loadError ? (
-        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger-200 bg-danger-50 p-3 text-sm text-danger-800">
+        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger-soft-foreground">
           <span>{t('errors.load')}</span>
           <Button size="sm" variant="tertiary" onPress={load}>{tAdmin('common.retry')}</Button>
         </div>
@@ -2172,9 +2172,9 @@ function statusToColor(s: 'green' | 'yellow' | 'red'): 'success' | 'warning' | '
 }
 
 const HEALTH_BANNER_CLASSES: Record<ReturnType<typeof statusToColor>, string> = {
-  success: 'border-success-200 bg-success-50 text-success-800 dark:border-success-900/40 dark:bg-success-950/20 dark:text-success-200',
-  warning: 'border-warning-200 bg-warning-50 text-warning-800 dark:border-warning-900/40 dark:bg-warning-950/20 dark:text-warning-200',
-  danger: 'border-danger-200 bg-danger-50 text-danger-800 dark:border-danger-900/40 dark:bg-danger-950/20 dark:text-danger-200',
+  success: 'border-success/30 bg-success/10 text-success-soft-foreground',
+  warning: 'border-warning/30 bg-warning/10 text-warning-soft-foreground',
+  danger: 'border-danger/30 bg-danger/10 text-danger-soft-foreground',
 };
 
 const HEALTH_DOT_CLASSES: Record<ReturnType<typeof statusToColor>, string> = {
@@ -2279,7 +2279,7 @@ function HealthBanner({ isSuperAdmin, toast, lastUpdate }: { isSuperAdmin: boole
   };
 
   if (loadError) return (
-    <div role="alert" className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-800">
+    <div role="alert" className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger-soft-foreground">
       <span>{tAdmin('common.error_loading_data')}</span>
       <Button size="sm" variant="tertiary" onPress={load}>{tAdmin('common.retry')}</Button>
     </div>
@@ -2291,7 +2291,7 @@ function HealthBanner({ isSuperAdmin, toast, lastUpdate }: { isSuperAdmin: boole
   );
   if (health.status === 'green') {
     return (
-      <div role="status" aria-live="polite" className="mb-3 rounded-md border border-success-200 bg-success-50 px-3 py-2 text-sm text-success-800 dark:border-success-900/40 dark:bg-success-950/20 dark:text-success-200">
+      <div role="status" aria-live="polite" className="mb-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success-soft-foreground">
         <div className="flex flex-wrap items-center gap-2">
           <CheckCircle size={14} className="text-success" />
           {t('engine_healthy')}
@@ -2358,7 +2358,7 @@ function HealthBanner({ isSuperAdmin, toast, lastUpdate }: { isSuperAdmin: boole
               {/* eslint-disable-next-line i18next/no-literal-string -- Queue state identifier must remain verbatim. */}
               <code>running</code> {t('modal.body_suffix')}
             </p>
-            <p className="text-warning-700 text-sm">
+            <p className="text-warning-soft-foreground text-sm">
               {t('modal.warning')}
             </p>
           </ModalBody>

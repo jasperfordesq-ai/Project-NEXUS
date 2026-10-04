@@ -628,7 +628,7 @@ function PredictiveInsightsCard({ forecast, loading, error, onRefresh, t }: Pred
             <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner size="md" /></div>
           </div>
         ) : error ? (
-          <div className="rounded-lg bg-danger-50 p-4 text-sm text-danger-700 flex items-center justify-between gap-3">
+          <div className="rounded-lg bg-danger/10 p-4 text-sm text-danger-soft-foreground flex items-center justify-between gap-3">
             <span>{error}</span>
             <Button size="sm" variant="danger" startContent={<RefreshCw aria-hidden="true" size={14} />} onPress={onRefresh}>
               {t('caring_workflow.actions.retry')}
@@ -1613,8 +1613,8 @@ export default function CaringCommunityWorkflowPage() {
               <div>
                 <h2 className="text-lg font-semibold">{t('caring_workflow.pending.title')}</h2>
                 <p className="mt-1 text-sm text-muted">
-                  {t('caring_workflow.pending.description_prefix')} <span className="font-medium text-warning-600">{t('caring_workflow.pending.needs_review')}</span> {t('caring_workflow.pending.description_middle')}{' '}
-                  <span className="font-medium text-danger-600">{t('caring_workflow.pending.escalate_now')}</span> {t('caring_workflow.pending.description_suffix')}
+                  {t('caring_workflow.pending.description_prefix')} <span className="font-medium text-warning-soft-foreground">{t('caring_workflow.pending.needs_review')}</span> {t('caring_workflow.pending.description_middle')}{' '}
+                  <span className="font-medium text-danger-soft-foreground">{t('caring_workflow.pending.escalate_now')}</span> {t('caring_workflow.pending.description_suffix')}
                 </p>
               </div>
               {(stats?.overdue_count ?? 0) > 0 && (
@@ -1629,7 +1629,7 @@ export default function CaringCommunityWorkflowPage() {
             <Separator />
             <CardBody className="gap-3">
               {summary?.pending_reviews.length === 0 ? (
-                <div className="rounded-lg bg-success/10 p-4 text-sm text-success-700">
+                <div className="rounded-lg bg-success/10 p-4 text-sm text-success-soft-foreground">
                   {t('caring_workflow.pending.empty')}
                 </div>
               ) : summary?.pending_reviews.map((review) => (
@@ -2036,7 +2036,7 @@ export default function CaringCommunityWorkflowPage() {
                   <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner size="md" /></div>
                 </div>
               ) : tandemError ? (
-                <div className="rounded-lg bg-danger-50 p-4 text-sm text-danger-700">
+                <div className="rounded-lg bg-danger/10 p-4 text-sm text-danger-soft-foreground">
                   {tandemError}
                 </div>
               ) : tandemSuggestions.length === 0 ? (
@@ -2607,8 +2607,8 @@ export default function CaringCommunityWorkflowPage() {
           </Button>
 
           {onboardingResult && (
-            <div className="rounded-lg border border-success-200 bg-success-50 p-4">
-              <p className="text-sm font-semibold text-success-700">
+            <div className="rounded-lg border border-success/30 bg-success/10 p-4">
+              <p className="text-sm font-semibold text-success-soft-foreground">
                 {t('caring_workflow.assisted_onboarding.created_for', { name: onboardingResult.user.name, email: onboardingResult.user.email })}
               </p>
               {onboardingResult.temp_password && (
@@ -2678,11 +2678,11 @@ export default function CaringCommunityWorkflowPage() {
 
           {/* Result box */}
           {generatedCode && (
-            <div className="rounded-lg border border-success-200 bg-success-50 p-4">
+            <div className="rounded-lg border border-success/30 bg-success/10 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs text-muted">{t('caring_workflow.invite_codes.new_code')}</p>
-                  <p className="mt-1 font-mono text-3xl font-bold tracking-widest text-success-700">
+                  <p className="mt-1 font-mono text-3xl font-bold tracking-widest text-success-soft-foreground">
                     {generatedCode.code}
                   </p>
                   {generatedCode.label && (

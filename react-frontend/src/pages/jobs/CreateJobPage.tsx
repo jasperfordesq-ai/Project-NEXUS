@@ -844,7 +844,7 @@ export function CreateJobPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1">
                   {duplicates.map((dup) => (
-                    <p key={dup.id} className="text-sm text-warning-600 dark:text-warning-400">
+                    <p key={dup.id} className="text-sm text-warning-soft-foreground">
                       {t('duplicate.warning', { title: dup.title, status: dup.status })}
                     </p>
                   ))}

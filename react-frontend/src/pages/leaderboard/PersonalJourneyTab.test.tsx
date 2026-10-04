@@ -182,7 +182,7 @@ describe('PersonalJourneyTab', () => {
     // numeric cards (badges/listings/volunteer/connections) are present.
     expect(screen.getAllByText('0').length).toBeGreaterThanOrEqual(1);
     // It is a (degraded) success, not the error state.
-    expect(document.querySelector('.text-danger-500')).toBeNull();
+    expect(document.querySelector('.text-danger-soft-foreground')).toBeNull();
   });
 
   // ── error state ───────────────────────────────────────────────────────────
@@ -192,8 +192,8 @@ describe('PersonalJourneyTab', () => {
     render(<PersonalJourneyTab />);
 
     await waitFor(() => {
-      // Error state renders a <p> with class text-danger-500
-      const errorEl = document.querySelector('.text-danger-500');
+      // Error state renders a <p> with class text-danger-soft-foreground
+      const errorEl = document.querySelector('.text-danger-soft-foreground');
       expect(errorEl).not.toBeNull();
     });
   });
@@ -203,7 +203,7 @@ describe('PersonalJourneyTab', () => {
     render(<PersonalJourneyTab />);
 
     await waitFor(() => {
-      const errorEl = document.querySelector('.text-danger-500');
+      const errorEl = document.querySelector('.text-danger-soft-foreground');
       expect(errorEl).not.toBeNull();
     });
   });

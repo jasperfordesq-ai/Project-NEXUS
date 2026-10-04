@@ -147,7 +147,7 @@ function TabPanel({ loading, error, t, children }: { loading: boolean; error: An
   }
   if (error) {
     return (
-      <div role="alert" className="rounded-lg bg-danger-50 p-4 text-sm text-danger">
+      <div role="alert" className="rounded-lg bg-danger/10 p-4 text-sm text-danger">
         {error === 'data_unavailable'
           ? t('analytics.regional.errors.data_unavailable')
           : t('analytics.regional.errors.failed_to_load_data')}
@@ -744,7 +744,7 @@ export default function RegionalAnalyticsPage() {
       </div>
 
       {overviewError && (
-        <div role="alert" className="rounded-lg bg-danger-50 p-4 text-sm text-danger">
+        <div role="alert" className="rounded-lg bg-danger/10 p-4 text-sm text-danger">
           {overviewError === 'data_unavailable'
             ? t('analytics.regional.errors.data_unavailable')
             : t('analytics.regional.errors.load_overview')}

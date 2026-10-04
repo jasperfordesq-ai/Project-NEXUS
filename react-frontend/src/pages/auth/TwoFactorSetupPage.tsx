@@ -150,7 +150,7 @@ export default function TwoFactorSetupPage() {
       {completion ? <>
         <h2 className="text-xl font-semibold">{t('mandatory_setup.recovery_title')}</h2>
         <p>{t('mandatory_setup.recovery_help')}</p>
-        <p role="alert" className="rounded-md border border-warning-500 bg-warning-50 px-3 py-2 text-sm dark:bg-warning-950">
+        <p role="alert" className="rounded-md border border-warning bg-warning/10 px-3 py-2 text-sm">
           {t('mandatory_setup.recovery_once')}
         </p>
         <ul

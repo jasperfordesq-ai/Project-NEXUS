@@ -420,7 +420,7 @@ export function AiSettings() {
         </Card>
 
         {/* Usage Limits */}
-        <Card  className="border border-warning-200/60 bg-warning-50/70 dark:border-warning-900/40 dark:bg-warning-950/20">
+        <Card  className="border border-warning/30 bg-warning/10">
           <CardHeader>
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Sliders size={20} aria-hidden="true" /> {t('usage_limits_heading')}

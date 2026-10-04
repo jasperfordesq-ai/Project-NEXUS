@@ -378,7 +378,7 @@ export function FadpAdminPage() {
       <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-border bg-surface p-5 shadow-sm">
         <div className="min-w-0">
           <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--color-text)]">
-            <ShieldCheck className="text-danger-500" size={24} aria-hidden="true" />
+            <ShieldCheck className="text-danger-soft-foreground" size={24} aria-hidden="true" />
             {t('fadp.header.title')}
           </h1>
           <p className="mt-1 max-w-3xl text-sm text-muted">
@@ -709,7 +709,7 @@ export function FadpAdminPage() {
                     </div>
                     <div>
                       <span className="text-muted">{t('fadp.summary.automated_profiling')}:</span>{' '}
-                      <span className="font-medium text-danger-600">
+                      <span className="font-medium text-danger-soft-foreground">
                         {(registerData as { automated_profiling_count?: number }).automated_profiling_count ?? 0}
                       </span>
                     </div>

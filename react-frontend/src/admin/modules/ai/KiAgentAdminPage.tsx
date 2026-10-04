@@ -589,9 +589,9 @@ export default function KiAgentAdminPage() {
               <span><Chip size="sm" color="success" variant="soft" className="mr-1">{statusText('auto_applied')}</Chip>{t('ai.ki_agents.legend.auto_applied')}</span>
               <span><Chip size="sm" color="danger" variant="soft" className="mr-1">{statusText('rejected')}</Chip>{t('ai.ki_agents.legend.rejected')}</span>
               <span className="ml-2 font-medium text-foreground">{t('ai.ki_agents.legend.confidence')}</span>
-              <span className="text-success-600">{t('ai.ki_agents.legend.confidence_high')}</span>
-              <span className="text-warning-600">{t('ai.ki_agents.legend.confidence_medium')}</span>
-              <span className="text-danger-600">{t('ai.ki_agents.legend.confidence_low')}</span>
+              <span className="text-success-soft-foreground">{t('ai.ki_agents.legend.confidence_high')}</span>
+              <span className="text-warning-soft-foreground">{t('ai.ki_agents.legend.confidence_medium')}</span>
+              <span className="text-danger-soft-foreground">{t('ai.ki_agents.legend.confidence_low')}</span>
             </div>
 
             <Table
@@ -826,7 +826,7 @@ export default function KiAgentAdminPage() {
                     )}
 
                     {selectedRun.error_message && (
-                      <p className="text-sm text-danger bg-danger-50 rounded-lg p-3">
+                      <p className="text-sm text-danger bg-danger/10 rounded-lg p-3">
                         {selectedRun.error_message}
                       </p>
                     )}

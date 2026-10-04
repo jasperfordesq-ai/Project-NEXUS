@@ -455,17 +455,17 @@ export function VolunteerTraining() {
 
       {/* Expiry alerts */}
       {expiringRecords.length > 0 && (
-        <Card className="border border-warning/40 bg-warning-50/50 shadow-sm shadow-warning/10">
+        <Card className="border border-warning/40 bg-warning/10 shadow-sm shadow-warning/10">
           <CardBody className="py-3 px-4">
             <div className="flex items-start gap-2">
               <AlertTriangle size={18} className="text-warning mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold text-sm text-warning-700">
+                <p className="font-semibold text-sm text-warning-soft-foreground">
                   {t('volunteering.expiry_alert_title', { count: expiringRecords.length })}
                 </p>
                 <ul className="mt-1.5 space-y-0.5">
                   {expiringRecords.map((r) => (
-                    <li key={r.id} className="text-xs text-warning-600">
+                    <li key={r.id} className="text-xs text-warning-soft-foreground">
                       <span className="font-medium">{r.volunteer_name}</span>
                       {' — '}
                       {t(`volunteering.type_${r.training_type}`)}

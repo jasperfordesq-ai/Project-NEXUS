@@ -525,8 +525,8 @@ export function Webhooks() {
               <ModalBody className="gap-4">
                 {/* Show secret after creation */}
                 {createdSecret && (
-                  <div className="rounded-lg border border-warning-200 bg-warning-50 p-4 space-y-2">
-                    <p className="text-sm font-semibold text-warning-700">
+                  <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 space-y-2">
+                    <p className="text-sm font-semibold text-warning-soft-foreground">
                       {t('federation.webhooks_secret_warning')}
                     </p>
                     <Snippet

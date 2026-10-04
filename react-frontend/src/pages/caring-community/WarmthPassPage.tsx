@@ -121,7 +121,7 @@ export function WarmthPassPage() {
         <GlassCard className="p-6 sm:p-8">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning/15">
-              <HeartHandshake className="h-6 w-6 text-warning-600" aria-hidden="true" />
+              <HeartHandshake className="h-6 w-6 text-warning-soft-foreground" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-2xl font-bold leading-tight text-theme-primary sm:text-3xl">
@@ -184,7 +184,7 @@ export function WarmthPassPage() {
           <>
             {/* The credential card */}
             <div
-              className="rounded-2xl bg-gradient-to-br from-warning-100 to-accent-soft p-1 shadow-lg dark:from-warning-900/40 dark:to-accent-soft"
+              className="rounded-2xl bg-gradient-to-br from-warning/10 to-accent-soft p-1 shadow-lg dark:to-accent-soft"
             >
               <div className="rounded-xl bg-white/80 p-6 backdrop-blur-sm dark:bg-black/30 sm:p-8">
                 {/* Card header row: tenant name + pass label */}
@@ -193,11 +193,11 @@ export function WarmthPassPage() {
                     <p className="text-xs font-semibold uppercase tracking-widest text-theme-muted">
                       {data.tenant_name}
                     </p>
-                    <p className="mt-0.5 text-sm font-bold uppercase tracking-wider text-warning-700 dark:text-warning-400">
+                    <p className="mt-0.5 text-sm font-bold uppercase tracking-wider text-warning-soft-foreground">
                       {t('warmth_pass.credential_label')}
                     </p>
                   </div>
-                  <HeartHandshake className="h-8 w-8 text-warning-500" aria-hidden="true" />
+                  <HeartHandshake className="h-8 w-8 text-warning-soft-foreground" aria-hidden="true" />
                 </div>
 
                 {/* Member name */}

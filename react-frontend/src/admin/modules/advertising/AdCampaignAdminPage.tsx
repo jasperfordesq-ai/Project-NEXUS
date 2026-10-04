@@ -633,9 +633,9 @@ export function AdCampaignAdminPage() {
 
                     {/* Rejection reason */}
                     {detailCampaign.rejection_reason && (
-                      <div className="rounded-lg bg-danger-50 border border-danger-200 p-3">
+                      <div className="rounded-lg bg-danger/10 border border-danger/30 p-3">
                         <p className="text-xs font-semibold text-danger uppercase tracking-wide mb-1">{t('advertising.shared.rejection_reason')}</p>
-                        <p className="text-sm text-danger-700">{detailCampaign.rejection_reason}</p>
+                        <p className="text-sm text-danger-soft-foreground">{detailCampaign.rejection_reason}</p>
                       </div>
                     )}
 

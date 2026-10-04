@@ -419,7 +419,7 @@ export default function ReportsManagement() {
           </Card>
           <Card  className="border border-border">
             <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-warning-100 dark:bg-warning-900/30">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-warning/10">
                 <AlertCircle aria-hidden="true" className="w-6 h-6 text-warning" />
               </div>
               <div>
@@ -430,7 +430,7 @@ export default function ReportsManagement() {
           </Card>
           <Card  className="border border-border">
             <CardBody className="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-success-100 dark:bg-success-900/30">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-success/10">
                 <CheckCircle2 aria-hidden="true" className="w-6 h-6 text-success" />
               </div>
               <div>
@@ -527,7 +527,7 @@ export default function ReportsManagement() {
 
       {/* Error State */}
       {error && (
-        <div role="alert" className="bg-danger-50 dark:bg-danger-950 text-danger border border-danger rounded-lg p-4">
+        <div role="alert" className="bg-danger/10 text-danger border border-danger rounded-lg p-4">
           {t('moderation.failed_to_load_reports')}
         </div>
       )}

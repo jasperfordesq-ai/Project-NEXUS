@@ -208,7 +208,7 @@ export default function Partnerships() {
         <Card>
           <CardBody>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-success-100 dark:bg-success-900">
+              <div className="p-2 rounded-lg bg-success/10">
                 <TrendingUp className="w-5 h-5 text-success" />
               </div>
               <div>
@@ -222,7 +222,7 @@ export default function Partnerships() {
         <Card>
           <CardBody>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-warning-100 dark:bg-warning-900">
+              <div className="p-2 rounded-lg bg-warning/10">
                 <TrendingUp className="w-5 h-5 text-warning" />
               </div>
               <div>
@@ -236,7 +236,7 @@ export default function Partnerships() {
         <Card>
           <CardBody>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-danger-100 dark:bg-danger-900">
+              <div className="p-2 rounded-lg bg-danger/10">
                 <Pause className="w-5 h-5 text-danger" />
               </div>
               <div>

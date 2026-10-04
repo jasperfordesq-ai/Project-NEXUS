@@ -370,11 +370,11 @@ export function OnboardingSettings() {
               </Button>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-50 dark:bg-warning-950/20 border border-warning-200 dark:border-warning-800">
-              <AlertTriangle aria-hidden="true" className="w-5 h-5 text-warning-600 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30">
+              <AlertTriangle aria-hidden="true" className="w-5 h-5 text-warning-soft-foreground flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-warning-700 dark:text-warning-400">{t('system.onboarding.legal_notice')}</p>
-                <p className="text-warning-600 dark:text-warning-500 mt-1">{t('system.onboarding.legal_notice_desc')}</p>
+                <p className="font-medium text-warning-soft-foreground">{t('system.onboarding.legal_notice')}</p>
+                <p className="text-warning-soft-foreground mt-1">{t('system.onboarding.legal_notice_desc')}</p>
               </div>
             </div>
 
@@ -389,7 +389,7 @@ export function OnboardingSettings() {
                 <div className="space-y-1.5">
                   {safeguardingOptions.filter(o => o.is_active).map((opt) => (
                     <div key={opt.id} className="flex items-center gap-2 text-sm">
-                      <CheckCircle aria-hidden="true" className="w-3.5 h-3.5 text-success-500" />
+                      <CheckCircle aria-hidden="true" className="w-3.5 h-3.5 text-success-soft-foreground" />
                       <span>{opt.label}</span>
                       {opt.triggers && Object.values(opt.triggers).some(Boolean) && (
                         <Chip size="sm" variant="soft" color="warning" className="text-xs">{t('system.onboarding.has_triggers')}</Chip>

@@ -543,7 +543,7 @@ export function NewsletterForm() {
                 <Switch isSelected={abTestEnabled} onValueChange={setAbTestEnabled} size="sm" isDisabled={isSent} />
               </div>
               {abTestEnabled && (
-                <div className="space-y-3 pl-4 border-l-2 border-warning-200">
+                <div className="space-y-3 pl-4 border-l-2 border-warning/30">
                   <Input
                     label={t('newsletter_form.label_subject_b')}
                     placeholder={t('newsletter_form.subject_b_placeholder')}
@@ -961,12 +961,12 @@ export function NewsletterForm() {
             )}
 
             {isSent && (
-              <Card className="bg-success-50 dark:bg-success-50/10">
+              <Card className="bg-success/10">
                 <CardBody className="flex-row items-center gap-3">
                   <CheckCircle aria-hidden="true" size={20} className="text-success" />
                   <div>
                     <p className="text-sm font-medium text-success">{t('newsletter_form.newsletter_sent')}</p>
-                    <p className="text-xs text-success-600 dark:text-success-400">{t('newsletter_form.newsletter_sent_desc')}</p>
+                    <p className="text-xs text-success-soft-foreground">{t('newsletter_form.newsletter_sent_desc')}</p>
                   </div>
                 </CardBody>
               </Card>
@@ -1027,7 +1027,7 @@ export function NewsletterForm() {
                   )}
                 </CardBody>
               </Card>
-              <p className="text-xs text-warning-600 dark:text-warning-400">
+              <p className="text-xs text-warning-soft-foreground">
                 {t('newsletter_form.confirm_send_warning')}
               </p>
             </div>

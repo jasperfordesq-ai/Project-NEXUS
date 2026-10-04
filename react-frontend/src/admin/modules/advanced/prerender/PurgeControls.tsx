@@ -146,7 +146,7 @@ export function PurgeControls({
           </Switch>
         </div>
         {!dryRun && (
-          <div className="rounded-md border border-warning-200 bg-warning-50 px-3 py-2 text-sm text-warning-900">
+          <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning-soft-foreground">
             <p className="font-medium">{t('preview_gate.title')}</p>
             <p className="mt-1">
               {hasMatchingPreview
@@ -165,7 +165,7 @@ export function PurgeControls({
           </div>
         )}
         {isAllTenantDelete && (
-          <div className="rounded-md border border-danger-200 bg-danger-50 px-3 py-2 text-sm text-danger-800">
+          <div className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger-soft-foreground">
             <p className="font-medium">{t('all_tenants_warning.title')}</p>
             <p className="mt-1">{t('all_tenants_warning.body')}</p>
             <Switch

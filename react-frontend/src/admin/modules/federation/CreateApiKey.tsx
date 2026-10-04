@@ -124,8 +124,8 @@ export function CreateApiKey({ onDone }: CreateApiKeyProps = {}) {
         )}
         <Card >
           <CardBody className="gap-4">
-            <div className="rounded-lg bg-success-50 border border-success-200 p-4">
-              <p className="text-sm font-medium text-success-700 mb-2">{t('federation.your_new_api_key')}</p>
+            <div className="rounded-lg bg-success/10 border border-success/30 p-4">
+              <p className="text-sm font-medium text-success-soft-foreground mb-2">{t('federation.your_new_api_key')}</p>
               <Snippet symbol="" variant="soft" color="success" className="w-full">{createdKey}</Snippet>
             </div>
             <div className="flex gap-2">

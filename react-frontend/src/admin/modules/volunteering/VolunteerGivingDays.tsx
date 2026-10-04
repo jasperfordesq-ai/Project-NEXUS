@@ -517,7 +517,7 @@ export default function VolunteerGivingDays() {
                   <p className="text-lg font-bold text-accent">{donorStats.total_donors}</p>
                 </CardBody>
               </Card>
-              <Card className="border border-success/20 bg-success-50/30 shadow-sm shadow-success/10">
+              <Card className="border border-success/20 bg-success/10 shadow-sm shadow-success/10">
                 <CardBody className="p-3 text-center">
                   <p className="text-xs text-muted">{t('volunteering.total_raised')}</p>
                   <p className="text-lg font-bold text-success">{donorStats.total_raised.toLocaleString(getFormattingLocale())}</p>

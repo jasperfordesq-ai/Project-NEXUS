@@ -272,7 +272,7 @@ export function NativeApp() {
               ))}
             </div>
             {!!readiness.missing_requirements?.length && (
-              <div className="mt-4 rounded-lg border border-warning-200 bg-warning-50 p-3 text-sm text-warning-800">
+              <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning-soft-foreground">
                 <p className="font-medium">{t('system.native_app.missing_requirements')}</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   {readiness.missing_requirements.map((requirement) => (

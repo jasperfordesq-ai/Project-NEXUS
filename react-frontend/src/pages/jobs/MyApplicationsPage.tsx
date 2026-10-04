@@ -448,13 +448,13 @@ function ApplicationCard({ application, onWithdraw, tenantPath, onMessageEmploye
         {application.offer && (
           <div className={`mt-3 p-3 rounded-lg border ${
             application.offer.status === 'pending'
-              ? 'bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800'
+              ? 'bg-success/10 border-success/30'
               : application.offer.status === 'accepted'
-              ? 'bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800'
-              : 'bg-danger-50 dark:bg-danger-900/20 border-danger-200 dark:border-danger-800'
+              ? 'bg-success/10 border-success/30'
+              : 'bg-danger/10 border-danger/30'
           }`}>
             <div className='flex flex-wrap items-center justify-between gap-2'>
-              <div className='text-sm font-medium text-success-700 dark:text-success-300'>
+              <div className='text-sm font-medium text-success-soft-foreground'>
                 {application.offer.salary_offered
                   ? t('offer_inline', {
                       salary: `${application.offer.salary_currency} ${Number(application.offer.salary_offered).toLocaleString(getFormattingLocale())} / ${t(`salary.${application.offer.salary_type}`)}`,
@@ -474,7 +474,7 @@ function ApplicationCard({ application, onWithdraw, tenantPath, onMessageEmploye
               </Chip>
             </div>
             {application.offer.start_date && (
-              <div className='text-xs text-success-600 dark:text-success-400 mt-1'>
+              <div className='text-xs text-success-soft-foreground mt-1'>
                 {t('offer_start_date', {
                   date: new Date(application.offer.start_date).toLocaleDateString(getFormattingLocale()),
                 })}

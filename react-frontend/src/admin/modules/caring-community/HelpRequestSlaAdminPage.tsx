@@ -253,25 +253,25 @@ export default function HelpRequestSlaAdminPage() {
           </Card>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Card className="border border-danger-200 bg-danger-50/30 dark:bg-danger-900/10">
+            <Card className="border border-danger/30 bg-danger/10">
               <CardBody className="py-3 text-center">
                 <p className="text-xs text-muted">{t('help_request_sla.metrics.first_response_breached')}</p>
                 <p className="text-2xl font-bold text-danger">{summary.first_response_breached}</p>
               </CardBody>
             </Card>
-            <Card className="border border-warning-200 bg-warning-50/30 dark:bg-warning-900/10">
+            <Card className="border border-warning/30 bg-warning/10">
               <CardBody className="py-3 text-center">
                 <p className="text-xs text-muted">{t('help_request_sla.metrics.first_response_at_risk')}</p>
                 <p className="text-2xl font-bold text-warning">{summary.first_response_at_risk}</p>
               </CardBody>
             </Card>
-            <Card className="border border-danger-200 bg-danger-50/30 dark:bg-danger-900/10">
+            <Card className="border border-danger/30 bg-danger/10">
               <CardBody className="py-3 text-center">
                 <p className="text-xs text-muted">{t('help_request_sla.metrics.resolution_breached')}</p>
                 <p className="text-2xl font-bold text-danger">{summary.resolution_breached}</p>
               </CardBody>
             </Card>
-            <Card className="border border-warning-200 bg-warning-50/30 dark:bg-warning-900/10">
+            <Card className="border border-warning/30 bg-warning/10">
               <CardBody className="py-3 text-center">
                 <p className="text-xs text-muted">{t('help_request_sla.metrics.resolution_at_risk')}</p>
                 <p className="text-2xl font-bold text-warning">{summary.resolution_at_risk}</p>
@@ -292,7 +292,7 @@ export default function HelpRequestSlaAdminPage() {
                 <p className="text-xl font-semibold">{summary.in_progress}</p>
               </CardBody>
             </Card>
-            <Card className="border border-success-200 bg-success-50/30 dark:bg-success-900/10">
+            <Card className="border border-success/30 bg-success/10">
               <CardBody className="py-3 text-center">
                 <p className="text-xs text-muted">{t('help_request_sla.metrics.resolved_24h')}</p>
                 <p className="text-xl font-semibold text-success">

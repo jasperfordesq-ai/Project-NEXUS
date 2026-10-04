@@ -487,14 +487,14 @@ export function MyListingsPage() {
                       if (inv == null) return null;
                       if (inv === 0) {
                         return (
-                          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-danger-100 text-danger-700">
+                          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-danger/10 text-danger-soft-foreground">
                             {t('inventory.sold_out')}
                           </span>
                         );
                       }
                       if (threshold != null && inv <= threshold) {
                         return (
-                          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-warning-100 text-warning-700">
+                          <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-warning/10 text-warning-soft-foreground">
                             {t('inventory.low_chip', { count: inv })}
                           </span>
                         );

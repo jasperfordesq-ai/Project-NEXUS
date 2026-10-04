@@ -393,7 +393,7 @@ export default function MunicipalCopilotAdminPage() {
 
                 {latest.status === 'accepted' && (
                   <>
-                    <div className="rounded-md border border-warning-200 bg-warning-50 px-3 py-2 text-xs text-warning-700">
+                    <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-soft-foreground">
                       {t('municipal_copilot.states.accepted')}
                     </div>
                     <div className="flex justify-end">
@@ -410,7 +410,7 @@ export default function MunicipalCopilotAdminPage() {
                 )}
 
                 {latest.status === 'published' && latest.source_announcement_id != null && (
-                  <div className="rounded-md border border-success-200 bg-success-50 px-3 py-2 text-xs text-success-700">
+                  <div className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs text-success-soft-foreground">
                     {t('municipal_copilot.states.published', { id: latest.source_announcement_id })}
                   </div>
                 )}

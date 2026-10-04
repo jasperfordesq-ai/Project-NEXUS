@@ -161,7 +161,7 @@ export function TenantSafetyTab({
                 )}
                 <h4 className="mb-2 text-sm font-semibold">{t('sections.attention')}</h4>
                 {visibleAttentionSnapshots.length === 0 ? (
-                  <p className="rounded-md border border-success-200 bg-success-50 px-3 py-2 text-sm text-success-800">
+                  <p className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success-soft-foreground">
                     {t('empty_attention')}
                   </p>
                 ) : (
@@ -235,7 +235,7 @@ export function TenantSafetyTab({
           </div>
         </div>
         {report && report.unexpected_routes.length > 0 && isSuperAdmin && (
-          <div className="rounded-md border border-warning-200 bg-warning-50 p-4 text-warning-900">
+          <div className="rounded-md border border-warning/30 bg-warning/10 p-4 text-warning-soft-foreground">
             <h4 className="text-sm font-semibold">{t('cleanup.title')}</h4>
             <p className="mt-1 text-sm">{t('cleanup.body')}</p>
           </div>

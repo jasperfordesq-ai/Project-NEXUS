@@ -163,7 +163,7 @@ export function MyVereinDuesPage() {
       )}
 
       {error && !isLoading && (
-        <div role="alert" className="flex items-start gap-2 p-3 rounded-lg bg-danger-50 text-danger text-sm">
+        <div role="alert" className="flex items-start gap-2 p-3 rounded-lg bg-danger/10 text-danger text-sm">
           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </div>

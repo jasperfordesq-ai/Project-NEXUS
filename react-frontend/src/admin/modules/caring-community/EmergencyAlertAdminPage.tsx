@@ -204,12 +204,12 @@ export default function EmergencyAlertAdminPage() {
   return (
     <>
       {/* Prominent intro/warning card */}
-      <Card className="border-l-4 border-l-danger bg-danger-50 dark:bg-danger-900/20 mb-4" >
+      <Card className="border-l-4 border-l-danger bg-danger/10 mb-4" >
         <CardBody className="px-4 py-3">
           <div className="flex gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden="true" />
             <div className="space-y-1 text-sm">
-              <p className="font-semibold text-danger-800 dark:text-danger-200">{t('caring_emergency.intro.title')}</p>
+              <p className="font-semibold text-danger-soft-foreground">{t('caring_emergency.intro.title')}</p>
               <p className="text-muted">
                 {t('caring_emergency.intro.body')}
               </p>

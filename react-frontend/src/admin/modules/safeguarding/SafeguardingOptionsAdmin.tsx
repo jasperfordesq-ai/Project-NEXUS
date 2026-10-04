@@ -527,7 +527,7 @@ function OptionCard({
     <div className="flex items-start justify-between p-4 rounded-lg bg-theme-elevated border border-theme-default">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <CheckCircle className="w-4 h-4 text-success-500 flex-shrink-0" />
+          <CheckCircle className="w-4 h-4 text-success-soft-foreground flex-shrink-0" />
           <p className="font-medium text-sm">{option.label}</p>
           {option.is_required && (
             <Chip size="sm" variant="soft" color="danger" className="text-xs">{t('safeguarding.required')}</Chip>

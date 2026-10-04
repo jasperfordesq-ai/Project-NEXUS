@@ -393,7 +393,7 @@ export default function LegalDocVersionList() {
               <ModalHeader>{t('legal_versions.publish_version')}</ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-warning/10 rounded-lg">
                     <AlertCircle size={20} className="text-warning flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
                       <p className="font-medium mb-1">{t('legal_versions.this_will')}:</p>
@@ -521,7 +521,7 @@ export default function LegalDocVersionList() {
               <ModalHeader>{t('legal_versions.delete_draft_version')}</ModalHeader>
               <ModalBody>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-danger-50 dark:bg-danger-900/20 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-danger/10 rounded-lg">
                     <AlertCircle size={20} className="text-danger shrink-0 mt-0.5" />
                     <div className="text-sm">
                       <p className="font-medium mb-1">{t('enterprise.action_cannot_be_undone')}</p>

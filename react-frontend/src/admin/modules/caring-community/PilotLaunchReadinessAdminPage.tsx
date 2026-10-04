@@ -297,7 +297,7 @@ export default function PilotLaunchReadinessAdminPage() {
 
       {!loading && report && (
         isLaunched ? (
-          <Card className="border border-success-300 bg-success-50/50 dark:bg-success-900/10">
+          <Card className="border border-success/30 bg-success/10">
             <CardBody className="space-y-1 py-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={22} className="text-success" />
@@ -320,7 +320,7 @@ export default function PilotLaunchReadinessAdminPage() {
             </CardBody>
           </Card>
         ) : canLaunch ? (
-          <Card className="border border-success-300 bg-success-50/50 dark:bg-success-900/10">
+          <Card className="border border-success/30 bg-success/10">
             <CardBody className="flex flex-row items-center justify-between gap-3 py-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={22} className="text-success" />
@@ -334,7 +334,7 @@ export default function PilotLaunchReadinessAdminPage() {
             </CardBody>
           </Card>
         ) : (
-          <Card className="border border-danger-300 bg-danger-50/50 dark:bg-danger-900/10">
+          <Card className="border border-danger/30 bg-danger/10">
             <CardBody className="space-y-1 py-4">
               <div className="flex items-center gap-3">
                 <ShieldAlert size={22} className="text-danger" />
@@ -359,7 +359,7 @@ export default function PilotLaunchReadinessAdminPage() {
       )}
 
       {!loading && loadError && (
-        <Card className="border border-danger-300 bg-danger-50/50 dark:bg-danger-900/10">
+        <Card className="border border-danger/30 bg-danger/10">
           <CardBody className="space-y-3 py-5">
             <div className="flex items-start gap-3">
               <AlertTriangle size={22} className="mt-0.5 shrink-0 text-danger" />
@@ -385,10 +385,10 @@ export default function PilotLaunchReadinessAdminPage() {
           <Card
             className={
               overall.status === 'ready'
-                ? 'border border-success-300 bg-success-50/50 dark:bg-success-900/10'
+                ? 'border border-success/30 bg-success/10'
                 : overall.status === 'blocked'
-                ? 'border border-danger-300 bg-danger-50/50 dark:bg-danger-900/10'
-                : 'border border-warning-300 bg-warning-50/50 dark:bg-warning-900/10'
+                ? 'border border-danger/30 bg-danger/10'
+                : 'border border-warning/30 bg-warning/10'
             }
           >
             <CardBody className="space-y-4 py-5">

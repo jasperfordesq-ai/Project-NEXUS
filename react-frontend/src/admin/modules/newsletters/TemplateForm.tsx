@@ -445,15 +445,15 @@ export function TemplateForm() {
             </Card>
 
             {/* Tips card */}
-            <Card className="bg-success-50 dark:bg-success-50/10">
+            <Card className="bg-success/10">
               <CardBody className="gap-2">
                 <div className="flex items-center gap-2">
-                  <Lightbulb size={16} className="text-success-600" />
-                  <span className="text-sm font-semibold text-success-700 dark:text-success-400">
+                  <Lightbulb size={16} className="text-success-soft-foreground" />
+                  <span className="text-sm font-semibold text-success-soft-foreground">
                     {t('newsletters.email_template_tips')}
                   </span>
                 </div>
-                <ul className="list-inside list-disc space-y-1 text-xs text-success-700 dark:text-success-400">
+                <ul className="list-inside list-disc space-y-1 text-xs text-success-soft-foreground">
                   <li>{t('newsletters.tip_inline_css')}</li>
                   <li>{t('newsletters.tip_content_width')}</li>
                   <li>{t('newsletters.tip_test_clients')}</li>

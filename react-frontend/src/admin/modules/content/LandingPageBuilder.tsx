@@ -1289,8 +1289,8 @@ export function LandingPageBuilder() {
 
       {/* Dirty state indicator */}
       {isDirty && (
-        <div className="mt-4 rounded-lg border border-warning-200 bg-warning-50 px-4 py-3">
-          <p className="text-sm text-warning-700">
+        <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3">
+          <p className="text-sm text-warning-soft-foreground">
             {t('content.landing_unsaved_changes')}
           </p>
         </div>

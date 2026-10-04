@@ -236,7 +236,7 @@ export default function CareProviderDirectoryPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8">
         <Card className="border border-warning/30 bg-warning/5">
-          <CardBody className="gap-3 p-6 text-center text-warning-700 dark:text-warning-300">
+          <CardBody className="gap-3 p-6 text-center text-warning-soft-foreground">
             <AlertCircle className="mx-auto h-8 w-8" aria-hidden="true" />
             <p className="font-medium">{t('providers.unavailable')}</p>
           </CardBody>

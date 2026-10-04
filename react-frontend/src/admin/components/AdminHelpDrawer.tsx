@@ -116,7 +116,7 @@ export function AdminHelpDrawer({ article, isOpen, onClose }: AdminHelpDrawerPro
           {article.caution && (
             <>
               <Separator />
-              <div className="flex gap-2.5 rounded-lg border border-danger-200 bg-danger-50 px-3 py-3 text-xs leading-relaxed text-danger-700">
+              <div className="flex gap-2.5 rounded-lg border border-danger/30 bg-danger/10 px-3 py-3 text-xs leading-relaxed text-danger-soft-foreground">
                 <TriangleAlertIcon
                   size={14}
                   className="mt-0.5 shrink-0 text-danger"

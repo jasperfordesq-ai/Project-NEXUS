@@ -165,13 +165,13 @@ export function GdprDashboard() {
 
       {/* Active Breach Alert */}
       {activeBreaches > 0 && (
-        <div role="alert" className="mb-6 p-4 rounded-xl border-2 border-danger bg-danger-50 animate-pulse flex items-center gap-3">
+        <div role="alert" className="mb-6 p-4 rounded-xl border-2 border-danger bg-danger/10 animate-pulse flex items-center gap-3">
           <ShieldAlert aria-hidden="true" size={24} className="text-danger shrink-0" />
           <div className="flex-1">
             <p className="font-semibold text-danger">
               {t('enterprise.gdpr_active_breaches_alert')}
             </p>
-            <p className="text-sm text-danger-600">{t('enterprise.gdpr_review_breaches_immediately')}</p>
+            <p className="text-sm text-danger-soft-foreground">{t('enterprise.gdpr_review_breaches_immediately')}</p>
           </div>
           <Button
             size="sm"
@@ -278,7 +278,7 @@ export function GdprDashboard() {
           <Card >
             <CardBody className="p-4 space-y-3">
               {overdueCount > 0 && (
-                <div role="alert" className="p-3 rounded-lg bg-danger-50 border border-danger-200 flex items-center gap-2">
+                <div role="alert" className="p-3 rounded-lg bg-danger/10 border border-danger/30 flex items-center gap-2">
                   <AlertTriangle aria-hidden="true" size={16} className="text-danger shrink-0" />
                   <span className="text-sm text-danger font-medium">
                     {t('enterprise.gdpr_overdue_requests', { count: overdueCount })}

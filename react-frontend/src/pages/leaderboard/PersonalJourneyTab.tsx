@@ -106,7 +106,7 @@ export default function PersonalJourneyTab() {
   if (error) {
     return (
       <GlassCard className="p-6 text-center">
-        <p className="text-danger-500">{error}</p>
+        <p className="text-danger-soft-foreground">{error}</p>
       </GlassCard>
     );
   }

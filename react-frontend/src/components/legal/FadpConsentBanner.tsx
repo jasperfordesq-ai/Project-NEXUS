@@ -79,8 +79,8 @@ export function FadpConsentBanner() {
           <Card.Content className="py-4 px-5">
             <div className="flex items-start gap-4">
               {/* Swiss flag-adjacent icon */}
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-danger-100 flex items-center justify-center mt-0.5">
-                <ShieldCheck size={18} className="text-danger-600" />
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-danger/10 flex items-center justify-center mt-0.5">
+                <ShieldCheck size={18} className="text-danger-soft-foreground" />
               </div>
 
               {/* Text content */}

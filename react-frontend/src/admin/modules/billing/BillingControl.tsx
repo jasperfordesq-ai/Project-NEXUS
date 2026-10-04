@@ -346,7 +346,7 @@ export function BillingControl() {
                       style={{ paddingLeft: `${row.depth * 16}px` }}
                     >
                       {row.is_over_limit && !row.is_in_grace_period && (
-                        <AlertTriangle size={14} className="inline mr-1 text-warning-500" />
+                        <AlertTriangle size={14} className="inline mr-1 text-warning-soft-foreground" />
                       )}
                       {row.tenant_name}
                     </span>
@@ -385,7 +385,7 @@ export function BillingControl() {
                         </Chip>
                       ) : null}
                       {row.effective_price?.nonprofit && (
-                        <Leaf size={12} className="text-success-500" aria-label={t('billing.nonprofit_verified')} />
+                        <Leaf size={12} className="text-success-soft-foreground" aria-label={t('billing.nonprofit_verified')} />
                       )}
                     </div>
                   </TableCell>

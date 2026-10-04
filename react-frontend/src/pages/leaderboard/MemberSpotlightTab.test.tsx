@@ -200,7 +200,7 @@ describe('MemberSpotlightTab', () => {
 
     await waitFor(() => {
       // The error card renders a danger-coloured message.
-      expect(document.querySelector('.text-danger-500')).not.toBeNull();
+      expect(document.querySelector('.text-danger-soft-foreground')).not.toBeNull();
     });
     expect(screen.queryByText('Alice Smith')).not.toBeInTheDocument();
     // It must NOT be the empty state.

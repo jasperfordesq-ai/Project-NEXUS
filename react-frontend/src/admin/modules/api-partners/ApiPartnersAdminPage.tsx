@@ -507,7 +507,7 @@ function CredentialsModal({
           <Key size={18} /> {t('api_partners.credentials_modal.title')}
         </ModalHeader>
         <ModalBody>
-          <div className="bg-warning-50 dark:bg-warning-100/10 border border-warning-200 rounded p-3 text-sm mb-4">
+          <div className="bg-warning/10 border border-warning/30 rounded p-3 text-sm mb-4">
             <strong>{t('api_partners.credentials_modal.warning_title')}</strong> {t('api_partners.credentials_modal.warning_body')}
           </div>
           <div className="space-y-3">

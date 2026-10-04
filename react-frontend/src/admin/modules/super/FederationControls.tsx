@@ -374,14 +374,14 @@ export function FederationControls() {
         </CardHeader>
         <CardBody className="gap-3 text-sm">
           {jwtStatus?.configured && jwtStatus.key_bits < jwtStatus.recommended_bits && (
-            <div className="rounded-md border border-warning bg-warning-50 dark:bg-warning-950 p-3 text-warning-700 dark:text-warning-300">
+            <div className="rounded-md border border-warning bg-warning/10 p-3 text-warning-soft-foreground">
               <strong>{t('super.jwt_warn_weak_key')}</strong>{' '}
               {t('super.jwt_warn_weak_key_body')}
             </div>
           )}
 
           {!jwtStatus?.configured && (
-            <div className="rounded-md border border-warning bg-warning-50 dark:bg-warning-950 p-3 text-warning-700 dark:text-warning-300">
+            <div className="rounded-md border border-warning bg-warning/10 p-3 text-warning-soft-foreground">
               <strong>{t('super.jwt_warn_not_set')}</strong>{' '}
               {t('super.jwt_warn_not_set_body')}
             </div>
@@ -579,12 +579,12 @@ export function FederationControls() {
 
       {/* Lockdown Banner */}
       {controls.emergency_lockdown_active && (
-        <Card className="border-2 border-danger bg-danger-50 dark:bg-danger-950">
+        <Card className="border-2 border-danger bg-danger/10">
           <CardBody className="flex flex-row items-center gap-4">
             <Lock aria-hidden="true" size={24} className="text-danger shrink-0" />
             <div className="flex-1">
               <p className="font-semibold text-danger">{t('super.emergency_lockdown_active')}</p>
-              <p className="text-sm text-danger-600 dark:text-danger-400">
+              <p className="text-sm text-danger-soft-foreground">
                 {controls.emergency_lockdown_reason || t('super.all_federation_disabled')}
               </p>
             </div>
@@ -627,12 +627,12 @@ export function FederationControls() {
           </div>
 
           {!controls.external_federation_enabled && (
-            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger-50 p-3 dark:bg-danger-950">
+            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger/10 p-3">
               <AlertTriangle aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-danger" />
               <div>
                 <p className="text-sm font-medium text-danger">{t('super.external_federation_blocked_notice')}</p>
                 {controls.external_federation_disabled_reason ? (
-                  <p className="mt-1 text-xs text-danger-600 dark:text-danger-400">
+                  <p className="mt-1 text-xs text-danger-soft-foreground">
                     {controls.external_federation_disabled_reason}
                   </p>
                 ) : null}
@@ -706,12 +706,12 @@ export function FederationControls() {
           </div>
 
           {!controls.partner_api_enabled && (
-            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger-50 p-3 dark:bg-danger-950">
+            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger/10 p-3">
               <AlertTriangle aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-danger" />
               <div>
                 <p className="text-sm font-medium text-danger">{t('super.partner_api_blocked_notice')}</p>
                 {controls.partner_api_disabled_reason ? (
-                  <p className="mt-1 text-xs text-danger-600 dark:text-danger-400">
+                  <p className="mt-1 text-xs text-danger-soft-foreground">
                     {controls.partner_api_disabled_reason}
                   </p>
                 ) : null}

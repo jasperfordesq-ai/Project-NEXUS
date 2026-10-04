@@ -110,11 +110,11 @@ export function BlogRestore() {
     <div>
       <PageHeader title={t('system.blog_restore_title')} description={t('system.blog_restore_desc')} />
 
-      <div className="rounded-lg border border-warning-200 bg-warning-50 p-4 mb-4 flex items-start gap-3">
+      <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 mb-4 flex items-start gap-3">
         <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
         <div>
-          <p className="font-medium text-warning-700">{t('system.use_with_caution')}</p>
-          <p className="text-sm text-warning-600">{t('system.blog_restore_warning')}</p>
+          <p className="font-medium text-warning-soft-foreground">{t('system.use_with_caution')}</p>
+          <p className="text-sm text-warning-soft-foreground">{t('system.blog_restore_warning')}</p>
         </div>
       </div>
 

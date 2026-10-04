@@ -278,7 +278,7 @@ export function CronJobSetup() {
 
                 <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
                   <AlertTriangle size={16} className="text-warning mt-0.5 shrink-0" />
-                  <p className="text-xs text-warning-700 dark:text-warning-300">
+                  <p className="text-xs text-warning-soft-foreground">
                     {t('system.do_word')} <strong>{t('system.not_word')}</strong>{' '}
                     {t('system.cron_http_warning_prefix')}{' '}
                     {/* eslint-disable-next-line i18next/no-literal-string -- Scheduler command must remain verbatim. */}
@@ -319,7 +319,7 @@ export function CronJobSetup() {
 
                 <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
                   <AlertTriangle size={16} className="text-warning mt-0.5 shrink-0" />
-                  <p className="text-xs text-warning-700 dark:text-warning-300">
+                  <p className="text-xs text-warning-soft-foreground">
                     {t('system.do_word')} <strong>{t('system.not_word')}</strong>{' '}
                     {t('system.cron_cloud_scheduler_warning_prefix')}{' '}
                     {/* eslint-disable-next-line i18next/no-literal-string -- Scheduler command must remain verbatim. */}

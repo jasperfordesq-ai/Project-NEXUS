@@ -518,7 +518,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                   <p className={`font-medium text-sm ${isNoneApply ? 'text-theme-muted' : 'text-theme-primary'}`}>
                     {option.label}
                     {option.is_required && (
-                      <span className="text-danger-500 ml-1">*</span>
+                      <span className="text-danger-soft-foreground ml-1">*</span>
                     )}
                   </p>
                   {option.description && (
@@ -587,7 +587,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
         {/* Required field notice */}
         {options.some(o => o.is_required) && (
           <p className="text-xs text-theme-muted mt-3">
-            <span className="text-danger-500">*</span> {t('safeguarding.required_fields')}
+            <span className="text-danger-soft-foreground">*</span> {t('safeguarding.required_fields')}
           </p>
         )}
       </GlassCard>

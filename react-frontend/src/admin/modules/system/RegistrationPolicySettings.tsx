@@ -372,7 +372,7 @@ export function RegistrationPolicySettings() {
             </Select>
 
             {policy.registration_mode === 'government_id' && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning-soft-foreground">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span className="text-sm">{t('system.reg.gov_id_future')}</span>
               </div>
@@ -386,7 +386,7 @@ export function RegistrationPolicySettings() {
             )}
 
             {policy.registration_mode === 'verified_identity' && availableProviderCount === 0 && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-danger-50 text-danger-700 dark:bg-danger-900/20 dark:text-danger-400">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/10 text-danger-soft-foreground">
                 <AlertTriangle size={16} className="shrink-0" />
                 <span className="text-sm">{t('system.reg.no_providers_warning')}</span>
               </div>

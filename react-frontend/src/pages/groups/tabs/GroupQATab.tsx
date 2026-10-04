@@ -673,7 +673,7 @@ export function GroupQATab({ groupId, isAdmin, isMember = true }: GroupQATabProp
                               key={answer.id}
                               className={`flex items-start gap-3 p-3 rounded-lg ${
                                 answer.is_accepted
-                                  ? 'bg-success-50 dark:bg-success-50/10 border border-success-200 dark:border-success-800'
+                                  ? 'bg-success/10 border border-success/30'
                                   : 'bg-surface-secondary/50'
                               }`}
                             >

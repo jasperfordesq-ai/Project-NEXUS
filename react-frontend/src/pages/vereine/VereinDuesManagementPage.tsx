@@ -337,7 +337,7 @@ export function VereinDuesManagementPage() {
 
       {/* Overdue dashboard */}
       {overdueCount > 0 && (
-        <Card className="bg-danger-50 border border-danger-200">
+        <Card className="bg-danger/10 border border-danger/30">
           <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-6 h-6 text-danger" aria-hidden="true" />

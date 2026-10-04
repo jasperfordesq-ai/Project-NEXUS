@@ -325,7 +325,7 @@ export function BulkOperations() {
                   >
                     <Radio value="disable_hub" classNames={{ wrapper: 'hidden' }}>
                       <div className="flex flex-col gap-1">
-                        <p className="text-sm font-semibold text-warning-600 dark:text-warning">{t('super.disable_hub')}</p>
+                        <p className="text-sm font-semibold text-warning-soft-foreground dark:text-warning">{t('super.disable_hub')}</p>
                         <p className="text-xs text-muted">{t('super.disable_hub_desc')}</p>
                       </div>
                     </Radio>

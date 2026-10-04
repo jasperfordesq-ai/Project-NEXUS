@@ -148,7 +148,7 @@ export function RegistrationBreakerCard() {
         </div>
 
         {tripped && (
-          <div className="bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg p-3 text-sm">
+          <div className="bg-danger/10 border border-danger/30 rounded-lg p-3 text-sm">
             <p className="font-medium text-danger">{t('system.registration_breaker.paused_title')}</p>
             <p className="text-foreground mt-1">
               {t('system.registration_breaker.paused_body', {

@@ -692,8 +692,8 @@ export function UserShow() {
                 name: user.name,
               })}
             </p>
-            <div className="bg-warning-50 dark:bg-warning-50/10 border border-warning-200 dark:border-warning-200/20 rounded-lg p-3 mt-3">
-              <p className="text-xs text-warning-700 dark:text-warning-400">
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mt-3">
+              <p className="text-xs text-warning-soft-foreground">
                 {t('super.impersonate_user_warning')}
               </p>
             </div>
@@ -730,8 +730,8 @@ export function UserShow() {
             <p className="text-sm text-muted mb-3">
               {t('super.move_and_promote_desc')}
             </p>
-            <div className="bg-warning-50 dark:bg-warning-50/10 border border-warning-200 dark:border-warning-200/20 rounded-lg p-3 mb-3">
-              <p className="text-xs text-warning-700 dark:text-warning-400">
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-3">
+              <p className="text-xs text-warning-soft-foreground">
                 {t('super.move_and_promote_warning')}
               </p>
             </div>

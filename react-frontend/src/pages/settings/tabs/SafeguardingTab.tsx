@@ -462,7 +462,7 @@ export function SafeguardingTab() {
         </div>
 
         {preferences.some(preference => preference.policy_review_required) && (
-          <div className="mb-6 rounded-xl border border-warning-300 bg-warning-50 p-4 text-warning-900 dark:border-warning-700 dark:bg-warning-950/30 dark:text-warning-100" role="status">
+          <div className="mb-6 rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning-soft-foreground" role="status">
             <div className="flex items-start gap-3">
               <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
               <div className="min-w-0 flex-1">
