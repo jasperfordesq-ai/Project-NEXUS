@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Support\CsvExportSanitizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -166,17 +167,19 @@ class TransactionExportService
     }
 
     /**
-     * Escape a value for CSV (double-quote if it contains commas, quotes, or newlines).
-     * Also prevents CSV injection by prefixing formula-trigger characters with a single quote.
+     * Escape a value for CSV: quote it when it contains a separator, a quote or a
+     * line break, and neutralise spreadsheet formulas first.
+     *
+     * F-565 (E-089): this used to apply its own rule that looked only at the very
+     * first character, so a trigger behind leading whitespace or a control
+     * character (" =1+1", "\x01+1+1") went through untouched. Every CSV the
+     * platform writes now neutralises through the one shared CsvExportSanitizer.
      */
     private function escapeCSV(string $value): string
     {
-        // CSV injection prevention: prefix formula-trigger characters
-        if (preg_match('/^[=+\-@\t\r]/', $value)) {
-            $value = "'" . $value;
-        }
+        $value = CsvExportSanitizer::cell($value);
 
-        if (str_contains($value, ',') || str_contains($value, '"') || str_contains($value, "\n")) {
+        if (str_contains($value, ',') || str_contains($value, '"') || str_contains($value, "\n") || str_contains($value, "\r")) {
             return '"' . str_replace('"', '""', $value) . '"';
         }
 
