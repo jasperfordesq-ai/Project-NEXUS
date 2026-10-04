@@ -43,7 +43,8 @@
     "your_progress": "Do dhul chun cinn",
     "pending_reviews": "Léirmheasanna ar feitheamh",
     "endorsements": "Formhuinithe",
-    "exchanges_attention": "Ní mór duit féachaint orthu"
+    "exchanges_attention": "Ní mór duit féachaint orthu",
+    "my_listings": "Do liostálacha"
   },
   "view_all": "Féach orthu go léir",
   "view_all_caps": "Féach orthu go léir",
@@ -136,7 +137,8 @@
     "view_all_endorsements": "Féach ar na formhuinithe go léir",
     "view_pending_reviews": "Féach ar na léirmheasanna ar feitheamh go léir",
     "loading_exchanges_attention": "Malartuithe a dteastaíonn d'aird á lódáil",
-    "view_exchanges_attention": "Féach ar gach malartú"
+    "view_exchanges_attention": "Féach ar gach malartú",
+    "view_my_listings": "Féach ar do liostálacha go léir"
   },
   "reviews": {
     "sent": "Sheol tú {{amount}}u",

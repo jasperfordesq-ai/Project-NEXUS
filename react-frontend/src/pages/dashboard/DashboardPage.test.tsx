@@ -108,11 +108,12 @@ function buildApiResponse(endpoint: string) {
       return { success: true, data: { balance: 12 } };
     case '/v2/wallet/pending-count':
       return { success: true, data: { count: 4 } };
-    case '/v2/listings?user_id=1&per_page=5':
+    case '/v2/listings/mine?status=live&limit=5':
       return {
         success: true,
         data: [{ id: 11, title: 'Garden help', description: 'Need help weeding', type: 'request', author_name: 'Pat' }],
-        meta: { total_items: 1 },
+        // More live listings than the five shown — the card must show the count, not the page length.
+        meta: { cursor: null, has_more: true, counts: { live: 7, review: 0, rejected: 0, expired: 2, closed: 0 } },
       };
     case '/v2/listings?per_page=4':
       return {
@@ -219,9 +220,17 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Find Members')).toBeInTheDocument();
   });
 
-  it('renders Recent Listings section', () => {
+  it("renders the member's own listings section, linking to My listings", async () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Recent Listings')).toBeInTheDocument();
+    expect(screen.getByText('Your listings')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View all your listings' })).toHaveAttribute('href', '/test/listings/mine');
+  });
+
+  it('Active Listings card shows the live count and opens My listings, not the community listings page', async () => {
+    render(<DashboardPage />);
+    const card = await screen.findByRole('link', { name: 'Active Listings: 7' });
+    expect(card).toHaveAttribute('href', '/test/listings/mine');
+    expect(mockApiGet).toHaveBeenCalledWith('/v2/listings/mine?status=live&limit=5');
   });
 
   it('shows New Listing button', () => {
@@ -284,7 +293,7 @@ describe('DashboardPage', () => {
     await waitFor(() => expect(screen.queryByText('Balance')).not.toBeInTheDocument());
     expect(mockApiGet).not.toHaveBeenCalledWith('/v2/wallet/balance');
     expect(mockApiGet.mock.calls.some(([url]) => String(url).startsWith('/v2/listings'))).toBe(false);
-    for (const label of ['Active Listings', 'Recent Listings', 'New Listing', 'Create Listing', 'View Wallet', 'Find Members']) {
+    for (const label of ['Active Listings', 'Your listings', 'New Listing', 'Create Listing', 'View Wallet', 'Find Members']) {
       expect(screen.queryByText(label)).not.toBeInTheDocument();
     }
   });

@@ -77,7 +77,8 @@
     "podcasts": "Podcasts",
     "switch_community": "Van gemeenschap wisselen",
     "unread_notifications_one": "{{count}} ongelezen meldingen",
-    "unread_notifications_other": "{{count}} ongelezen meldingen"
+    "unread_notifications_other": "{{count}} ongelezen meldingen",
+    "my_listings": "Mijn vermeldingen"
   },
   "landing_links": {
     "title": "Verken deze gemeenschap",
@@ -144,7 +145,8 @@
     "features": "Alles wat Project NEXUS doet, met eerlijke volwassenheidslabels",
     "dashboard": "Jouw persoonlijke woningoverzicht",
     "courses": "Leer nieuwe vaardigheden met uw community",
-    "podcasts": "Communityshows en audioverhalen"
+    "podcasts": "Communityshows en audioverhalen",
+    "my_listings": "Beheer je aanbod en verzoeken"
   },
   "user_menu": {
     "my_profile": "Mijn profiel",

@@ -78,7 +78,8 @@
     "switch_community": "Cambia comunità",
     "unread_notifications_one": "{{count}} notifiche non lette",
     "unread_notifications_other": "{{count}} notifiche non lette",
-    "unread_notifications_many": "{{count}} notifiche non lette"
+    "unread_notifications_many": "{{count}} notifiche non lette",
+    "my_listings": "I miei annunci"
   },
   "landing_links": {
     "title": "Esplora questa comunità",
@@ -145,7 +146,8 @@
     "features": "Tutto ciò che fa Project NEXUS, con etichette di maturità oneste",
     "dashboard": "La tua panoramica personalizzata della casa",
     "courses": "Impara nuove competenze con la tua comunità",
-    "podcasts": "Spettacoli comunitari e storie audio"
+    "podcasts": "Spettacoli comunitari e storie audio",
+    "my_listings": "Gestisci le tue offerte e richieste"
   },
   "user_menu": {
     "my_profile": "Il Mio Profilo",

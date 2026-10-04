@@ -81,7 +81,8 @@
     "unread_notifications_few": "{{count}} إشعارات غير مقروءة",
     "unread_notifications_many": "{{count}} إشعارات غير مقروءة",
     "unread_notifications_two": "{{count}} إشعارات غير مقروءة",
-    "unread_notifications_zero": "{{count}} إشعارات غير مقروءة"
+    "unread_notifications_zero": "{{count}} إشعارات غير مقروءة",
+    "my_listings": "إعلاناتي"
   },
   "landing_links": {
     "title": "استكشف هذا المجتمع",
@@ -148,7 +149,8 @@
     "features": "كل ما يفعله Project NEXUS، مع علامات نضج صادقة",
     "dashboard": "نظرة عامة على منزلك المخصص",
     "courses": "تعلم مهارات جديدة مع مجتمعك",
-    "podcasts": "عروض المجتمع والقصص الصوتية"
+    "podcasts": "عروض المجتمع والقصص الصوتية",
+    "my_listings": "إدارة عروضك وطلباتك"
   },
   "user_menu": {
     "my_profile": "ملفي الشخصي",

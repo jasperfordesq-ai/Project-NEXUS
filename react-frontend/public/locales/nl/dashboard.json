@@ -43,7 +43,8 @@
     "your_progress": "Jouw voortgang",
     "pending_reviews": "In afwachting van beoordelingen",
     "endorsements": "Aanbevelingen",
-    "exchanges_attention": "Vraagt om uw aandacht"
+    "exchanges_attention": "Vraagt om uw aandacht",
+    "my_listings": "Je vermeldingen"
   },
   "view_all": "Bekijk alles",
   "view_all_caps": "Bekijk alles",
@@ -130,7 +131,8 @@
     "view_all_endorsements": "Bekijk alle aanbevelingen",
     "view_pending_reviews": "Bekijk alle openstaande beoordelingen",
     "loading_exchanges_attention": "Uitwisselingen die aandacht vereisen worden geladen",
-    "view_exchanges_attention": "Alle uitwisselingen bekijken"
+    "view_exchanges_attention": "Alle uitwisselingen bekijken",
+    "view_my_listings": "Al je vermeldingen bekijken"
   },
   "reviews": {
     "sent": "Verzonden {{amount}}h",

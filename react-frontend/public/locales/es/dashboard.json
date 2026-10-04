@@ -43,7 +43,8 @@
     "your_progress": "Tu Progreso",
     "pending_reviews": "Reseñas Pendientes",
     "endorsements": "Recomendaciones",
-    "exchanges_attention": "Requiere su atención"
+    "exchanges_attention": "Requiere su atención",
+    "my_listings": "Tus anuncios"
   },
   "view_all": "Ver todo",
   "view_all_caps": "Ver Todo",
@@ -132,7 +133,8 @@
     "view_all_endorsements": "Ver todas las recomendaciones",
     "view_pending_reviews": "Ver todas las valoraciones pendientes",
     "loading_exchanges_attention": "Cargando intercambios que requieren atención",
-    "view_exchanges_attention": "Ver todos los intercambios"
+    "view_exchanges_attention": "Ver todos los intercambios",
+    "view_my_listings": "Ver todos tus anuncios"
   },
   "reviews": {
     "sent": "Enviado {{amount}}h",

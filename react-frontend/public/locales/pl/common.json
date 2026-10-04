@@ -79,7 +79,8 @@
     "unread_notifications_one": "{{count}} nieprzeczytanych powiadomień",
     "unread_notifications_other": "{{count}} nieprzeczytanych powiadomień",
     "unread_notifications_few": "{{count}} nieprzeczytanych powiadomień",
-    "unread_notifications_many": "{{count}} nieprzeczytanych powiadomień"
+    "unread_notifications_many": "{{count}} nieprzeczytanych powiadomień",
+    "my_listings": "Moje ogłoszenia"
   },
   "landing_links": {
     "title": "Poznaj tę społeczność",
@@ -146,7 +147,8 @@
     "features": "Wszystko, co robi Project NEXUS, z uczciwymi etykietami dojrzałości",
     "dashboard": "Twój spersonalizowany przegląd domu",
     "courses": "Ucz się nowych umiejętności razem ze swoją społecznością",
-    "podcasts": "Programy społecznościowe i historie audio"
+    "podcasts": "Programy społecznościowe i historie audio",
+    "my_listings": "Zarządzaj swoimi ofertami i prośbami"
   },
   "user_menu": {
     "my_profile": "Mój profil",

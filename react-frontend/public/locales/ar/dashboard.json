@@ -43,7 +43,8 @@
     "your_progress": "تقدمك",
     "pending_reviews": "المراجعات المعلقة",
     "endorsements": "التوصيات",
-    "exchanges_attention": "يتطلب انتباهك"
+    "exchanges_attention": "يتطلب انتباهك",
+    "my_listings": "إعلاناتك"
   },
   "view_all": "عرض الكل",
   "view_all_caps": "عرض الكل",
@@ -138,7 +139,8 @@
     "view_all_endorsements": "عرض جميع التزكيات",
     "view_pending_reviews": "عرض جميع التقييمات المعلقة",
     "loading_exchanges_attention": "جارٍ تحميل التبادلات التي تتطلب الانتباه",
-    "view_exchanges_attention": "عرض جميع التبادلات"
+    "view_exchanges_attention": "عرض جميع التبادلات",
+    "view_my_listings": "عرض كل إعلاناتك"
   },
   "reviews": {
     "sent": "أرسل {{amount}} ساعة",

@@ -272,7 +272,7 @@ export function DashboardPage() {
 
       const coreRequests = [
         hasWalletModule ? api.get<WalletBalance>('/v2/wallet/balance').catch(() => null) : Promise.resolve(null),
-        hasListingsModule ? api.get<Listing[]>(`/v2/listings?user_id=${user?.id}&per_page=5`).catch(() => null) : Promise.resolve(null),
+        hasListingsModule ? api.get<Listing[]>('/v2/listings/mine?status=live&limit=5').catch(() => null) : Promise.resolve(null),
       ];
 
       const optionalRequests: Array<{ key: string; promise: Promise<unknown> }> = [];
@@ -295,7 +295,9 @@ export function DashboardPage() {
       const walletRes = results[0]?.status === 'fulfilled' ? results[0].value : null;
       const listingsRes = results[1]?.status === 'fulfilled' ? results[1].value : null;
       const walletData = walletRes as { success?: boolean; data?: WalletBalance } | null;
-      const listingsData = listingsRes as { success?: boolean; data?: Listing[]; meta?: { total_items?: number } } | null;
+      // Same source as the "Live" tab on My listings, so the card's number
+      // always matches what the member sees when they click it.
+      const listingsData = listingsRes as { success?: boolean; data?: Listing[]; meta?: { counts?: { live?: number } } } | null;
 
       const optionalResults: Record<string, unknown> = {};
       optionalRequests.forEach((req, index) => {
@@ -332,7 +334,7 @@ export function DashboardPage() {
         }
       }
 
-      const listingsCount = listingsData?.meta?.total_items ?? listingsData?.data?.length ?? 0;
+      const listingsCount = listingsData?.meta?.counts?.live ?? listingsData?.data?.length ?? 0;
       setStats({
         walletBalance: walletData?.success ? walletData.data ?? null : null,
         recentListings: listingsData?.success ? listingsData.data ?? [] : [],
@@ -455,7 +457,7 @@ export function DashboardPage() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
           {hasWalletModule && <StatCard icon={<Wallet className="w-5 h-5" aria-hidden="true" />} label={t('stats.balance')} value={walletBalanceValue} color="indigo" href="/wallet" isLoading={isLoading} />}
-          {hasListingsModule && <StatCard icon={<ListTodo className="w-5 h-5" aria-hidden="true" />} label={t('stats.active_listings')} value={stats.activeListingsCount.toString()} color="emerald" href="/listings" isLoading={isLoading} />}
+          {hasListingsModule && <StatCard icon={<ListTodo className="w-5 h-5" aria-hidden="true" />} label={t('stats.active_listings')} value={stats.activeListingsCount.toString()} color="emerald" href="/listings/mine" isLoading={isLoading} />}
           {hasMessagesModule && <StatCard icon={<MessageSquare className="w-5 h-5" aria-hidden="true" />} label={t('stats.messages')} value={notificationCounts.messages.toString()} color="amber" href="/messages" isLoading={isLoading} />}
         </motion.div>
 
@@ -465,7 +467,7 @@ export function DashboardPage() {
           {/* Recent Listings (span 2) */}
           {hasListingsModule && <motion.div variants={itemVariants} className="md:col-span-2">
             <GlassCard className="h-full p-5 sm:p-6">
-              <SectionHeader icon={<ListTodo className="w-4 h-4 text-accent dark:text-accent" aria-hidden="true" />} iconColor="indigo" title={t('sections.recent_listings')} linkTo={tenantPath('/listings')} linkText={t('view_all')} linkAriaLabel={t('aria.view_all_listings')} />
+              <SectionHeader icon={<ListTodo className="w-4 h-4 text-accent dark:text-accent" aria-hidden="true" />} iconColor="indigo" title={t('sections.my_listings')} linkTo={tenantPath('/listings/mine')} linkText={t('view_all')} linkAriaLabel={t('aria.view_my_listings')} />
               {isLoading ? (
                 <div aria-label={t('aria.loading_listings')} role="status" aria-busy="true" className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="rounded-lg"><div className="h-16 rounded-lg bg-surface-tertiary" /></Skeleton>))}

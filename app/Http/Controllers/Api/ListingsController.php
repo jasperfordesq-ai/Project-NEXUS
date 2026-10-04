@@ -602,6 +602,46 @@ class ListingsController extends BaseApiController
     }
 
     // -----------------------------------------------------------------
+    //  GET /api/v2/listings/mine
+    // -----------------------------------------------------------------
+
+    /**
+     * The signed-in member's own listings, one owner group at a time, with a
+     * count for every group in `meta.counts`. Backs the "My listings" page.
+     *
+     * Query: status = live|review|rejected|expired|closed (default live),
+     *        type = offer|request (optional), limit 1–50, cursor.
+     */
+    public function mine(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('listings_mine', 60, 60);
+
+        $status = (string) ($this->query('status') ?? 'live');
+        if (! in_array($status, ListingService::OWNER_GROUPS, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.invalid_status_allowed', ['statuses' => implode(', ', ListingService::OWNER_GROUPS)]), 'status', 422);
+        }
+
+        $type = $this->query('type');
+        if ($type !== null && $type !== '' && ! in_array($type, ['offer', 'request'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.listing_type_invalid'), 'type', 422);
+        }
+        $type = ($type === null || $type === '') ? null : (string) $type;
+
+        $limit  = $this->queryInt('limit', 20, 1, 50);
+        $cursor = $this->query('cursor');
+
+        $result = $this->listingService->getOwnedByUser($userId, $status, $type, $limit, $cursor ? (string) $cursor : null);
+
+        return $this->respondWithData($result['items'], [
+            'cursor'   => $result['cursor'],
+            'has_more' => $result['has_more'],
+            'limit'    => $limit,
+            'counts'   => $this->listingService->countOwnedByUser($userId, $type),
+        ]);
+    }
+
+    // -----------------------------------------------------------------
     //  GET /api/v2/listings/featured
     // -----------------------------------------------------------------
 

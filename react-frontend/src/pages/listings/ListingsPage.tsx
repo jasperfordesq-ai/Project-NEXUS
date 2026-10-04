@@ -38,6 +38,7 @@ import Filter from 'lucide-react/icons/filter';
 import Grid from 'lucide-react/icons/grid-3x3';
 import List from 'lucide-react/icons/list';
 import ListTodo from 'lucide-react/icons/list-todo';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
 import MapIcon from 'lucide-react/icons/map';
 import MapPin from 'lucide-react/icons/map-pin';
 import Tag from 'lucide-react/icons/tag';
@@ -597,6 +598,15 @@ export function ListingsPage() {
           action={
             <div className="flex flex-wrap items-center gap-3">
               <AlgorithmLabel area="listings" />
+              {isAuthenticated && (
+                <Button as={Link} to={tenantPath('/listings/mine')}
+                  variant="tertiary"
+                  className="shrink-0"
+                  startContent={<ClipboardList className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {t('mine.title')}
+                </Button>
+              )}
               {isAuthenticated && (
                 <Button as={Link} to={tenantPath('/listings/create')}
                   variant="primary"

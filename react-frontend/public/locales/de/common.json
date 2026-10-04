@@ -77,7 +77,8 @@
     "podcasts": "Podcasts",
     "switch_community": "Gemeinschaft wechseln",
     "unread_notifications_one": "{{count}} ungelesene Benachrichtigungen",
-    "unread_notifications_other": "{{count}} ungelesene Benachrichtigungen"
+    "unread_notifications_other": "{{count}} ungelesene Benachrichtigungen",
+    "my_listings": "Meine Inserate"
   },
   "landing_links": {
     "title": "Diese Gemeinschaft erkunden",
@@ -144,7 +145,8 @@
     "features": "Alle Funktionen von Project NEXUS mit ehrlichen Reifegradkennzeichnungen",
     "dashboard": "Ihre persönliche Hausübersicht",
     "courses": "Lernen Sie neue Fähigkeiten mit Ihrer Community",
-    "podcasts": "Community-Shows und Audio-Storys"
+    "podcasts": "Community-Shows und Audio-Storys",
+    "my_listings": "Deine Angebote und Gesuche verwalten"
   },
   "user_menu": {
     "my_profile": "Mein Profil",

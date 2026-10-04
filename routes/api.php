@@ -577,6 +577,9 @@ Route::middleware('module:listings')->group(function () {
     Route::get('/v2/listings', [\App\Http\Controllers\Api\ListingsController::class, 'index']);
     Route::get('/v2/listings/nearby', [\App\Http\Controllers\Api\ListingsController::class, 'nearby']);
     Route::get('/v2/listings/saved', [\App\Http\Controllers\Api\ListingsController::class, 'getSavedListings']);
+    // The member's own listings in every state (live, waiting for review, not
+    // approved, expired, closed). Must stay above /v2/listings/{id}.
+    Route::get('/v2/listings/mine', [\App\Http\Controllers\Api\ListingsController::class, 'mine']);
     Route::get('/v2/listings/featured', [\App\Http\Controllers\Api\ListingsController::class, 'featured']);
     Route::get('/v2/listings/tags/popular', [\App\Http\Controllers\Api\ListingsController::class, 'popularTags'])->withoutMiddleware('auth:sanctum');
     Route::get('/v2/listings/tags/autocomplete', [\App\Http\Controllers\Api\ListingsController::class, 'autocompleteTags'])->withoutMiddleware('auth:sanctum');

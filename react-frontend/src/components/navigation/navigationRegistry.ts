@@ -8,6 +8,7 @@ import Activity from 'lucide-react/icons/activity';
 import ArrowRightLeft from 'lucide-react/icons/arrow-right-left';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Blog from 'lucide-react/icons/book-open';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
 import Bookmark from 'lucide-react/icons/bookmark';
 import Bot from 'lucide-react/icons/bot';
 import Briefcase from 'lucide-react/icons/briefcase';
@@ -88,6 +89,7 @@ type NavigationNavKey =
   | 'matches'
   | 'members'
   | 'messages'
+  | 'my_listings'
   | 'nexus_score'
   | 'organisations'
   | 'our_impact'
@@ -203,6 +205,7 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'activity', href: '/activity', labelKey: 'nav.activity', descriptionKey: 'nav_desc.activity', icon: Activity, auth: 'authenticated', placements: both('tools', 'main') },
 
   { id: 'listings', href: '/listings', labelKey: 'nav.listings', descriptionKey: 'nav_desc.timebanking_listings', icon: ListTodo, module: 'listings', placements: both('timebanking', 'timebanking') },
+  { id: 'my-listings', href: '/listings/mine', labelKey: 'nav.my_listings', descriptionKey: 'nav_desc.my_listings', icon: ClipboardList, auth: 'authenticated', module: 'listings', placements: both('timebanking', 'timebanking') },
   { id: 'exchanges', href: '/exchanges', labelKey: 'nav.exchanges', descriptionKey: 'nav_desc.exchanges', icon: ArrowRightLeft, feature: 'exchange_workflow', placements: both('timebanking', 'timebanking') },
   { id: 'group-exchanges', href: '/group-exchanges', labelKey: 'nav.group_exchanges', descriptionKey: 'nav_desc.group_exchanges', icon: Users, feature: 'group_exchanges', placements: both('timebanking', 'timebanking') },
   { id: 'wallet', href: '/wallet', labelKey: 'nav.wallet', descriptionKey: 'nav_desc.wallet', icon: Wallet, auth: 'authenticated', module: 'wallet', placements: both('timebanking', 'timebanking') },

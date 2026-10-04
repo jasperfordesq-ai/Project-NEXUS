@@ -80,7 +80,8 @@
     "unread_notifications_other": "{{count}} fógra gan léamh",
     "unread_notifications_few": "{{count}} fógra gan léamh",
     "unread_notifications_many": "{{count}} fógra gan léamh",
-    "unread_notifications_two": "{{count}} fógra gan léamh"
+    "unread_notifications_two": "{{count}} fógra gan léamh",
+    "my_listings": "Mo liostálacha"
   },
   "landing_links": {
     "title": "Déan iniúchadh ar an bpobal seo",
@@ -147,7 +148,8 @@
     "features": "Gach rud a dhéanann Project NEXUS, le lipéid aibíochta macánta",
     "dashboard": "Forbhreathnú pearsantaithe ar do leathanach baile",
     "courses": "Foghlaim scileanna nua le do phobal",
-    "podcasts": "Seónna pobail agus scéalta fuaime"
+    "podcasts": "Seónna pobail agus scéalta fuaime",
+    "my_listings": "Bainistigh do thairiscintí agus d'iarratais"
   },
   "user_menu": {
     "my_profile": "Mo Phróifíl",

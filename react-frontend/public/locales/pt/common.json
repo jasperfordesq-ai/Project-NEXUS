@@ -78,7 +78,8 @@
     "switch_community": "Mudar comunidade",
     "unread_notifications_one": "{{count}} notificações não lidas",
     "unread_notifications_other": "{{count}} notificações não lidas",
-    "unread_notifications_many": "{{count}} notificações não lidas"
+    "unread_notifications_many": "{{count}} notificações não lidas",
+    "my_listings": "Os meus anúncios"
   },
   "landing_links": {
     "title": "Explore esta comunidade",
@@ -145,7 +146,8 @@
     "features": "Tudo o que o Project NEXUS faz, com etiquetas de maturidade honestas",
     "dashboard": "Visão geral da sua casa personalizada",
     "courses": "Aprenda novas habilidades com sua comunidade",
-    "podcasts": "Programas comunitários e histórias em áudio"
+    "podcasts": "Programas comunitários e histórias em áudio",
+    "my_listings": "Gerir as suas ofertas e pedidos"
   },
   "user_menu": {
     "my_profile": "O Meu Perfil",

@@ -43,7 +43,8 @@
     "your_progress": "Your Progress",
     "pending_reviews": "Pending Reviews",
     "endorsements": "Endorsements",
-    "exchanges_attention": "Needs your attention"
+    "exchanges_attention": "Needs your attention",
+    "my_listings": "Your listings"
   },
   "view_all": "View all",
   "view_all_caps": "View All",
@@ -130,7 +131,8 @@
     "view_all_endorsements": "View all endorsements",
     "view_pending_reviews": "View all pending reviews",
     "loading_exchanges_attention": "Loading exchanges that need attention",
-    "view_exchanges_attention": "View all exchanges"
+    "view_exchanges_attention": "View all exchanges",
+    "view_my_listings": "View all your listings"
   },
   "reviews": {
     "sent": "Sent {{amount}}h",

@@ -59,6 +59,124 @@ class ListingService
             });
     }
 
+    /**
+     * The five states a member sees on their own "My listings" page. Every
+     * listing the member has not deleted falls in exactly one of them.
+     *
+     * Public reads (applyPublicVisibility) show only "live", so these groups
+     * are the only way a member can find a listing that is waiting for
+     * review, was not approved, expired, or was closed.
+     */
+    public const OWNER_GROUPS = ['live', 'review', 'rejected', 'expired', 'closed'];
+
+    /** Statuses that mean "taken down by the owner or by a past workflow". */
+    private const OWNER_CLOSED_STATUSES = ['inactive', 'paused', 'completed', 'closed'];
+
+    /**
+     * Restrict a query to one owner group. The groups are checked in a fixed
+     * order — rejected, then review, then the rest — so that a listing whose
+     * status and moderation_status disagree still lands in one place.
+     */
+    private static function applyOwnerGroup(Builder $query, string $group): Builder
+    {
+        // `<=>` is MariaDB's null-safe equals: it is never NULL, so negating
+        // it is safe. A plain `NOT (moderation_status = 'rejected')` is NULL
+        // for the many listings whose moderation_status is NULL, and those
+        // rows would silently drop out of every group.
+        $isRejected = "(listings.moderation_status <=> 'rejected' OR listings.status <=> 'rejected')";
+        $isInReview = "(listings.moderation_status <=> 'pending_review' OR listings.status <=> 'pending')";
+        $neither    = "NOT {$isRejected} AND NOT {$isInReview}";
+
+        return match ($group) {
+            'rejected' => $query->whereRaw($isRejected),
+            'review'   => $query->whereRaw("NOT {$isRejected} AND {$isInReview}"),
+            'expired'  => $query->whereRaw($neither)->where('status', 'expired'),
+            'closed'   => $query->whereRaw($neither)->whereIn('status', self::OWNER_CLOSED_STATUSES),
+            default    => $query->whereRaw($neither)->where(function (Builder $q) {
+                $q->whereNull('status')->orWhere('status', 'active');
+            }),
+        };
+    }
+
+    /** Every listing the owner has not deleted. */
+    private static function ownedBy(int $userId, ?string $type): Builder
+    {
+        $query = Listing::query()
+            ->where('tenant_id', TenantContext::getId())
+            ->where('user_id', $userId)
+            ->whereNull('deleted_at')
+            ->where(function (Builder $q) {
+                $q->whereNull('status')->orWhere('status', '!=', 'deleted');
+            });
+
+        if ($type !== null) {
+            $query->where('type', $type);
+        }
+
+        return $query;
+    }
+
+    /**
+     * One page of the member's own listings in a single owner group, newest
+     * first. Each item carries `owner_state` (the group) alongside the normal
+     * listing fields, including `rejection_reason` and the exact location —
+     * the viewer is the owner.
+     *
+     * @return array{items: array, cursor: string|null, has_more: bool}
+     */
+    public static function getOwnedByUser(int $userId, string $group, ?string $type = null, int $limit = 20, ?string $cursor = null): array
+    {
+        $group = in_array($group, self::OWNER_GROUPS, true) ? $group : 'live';
+        $limit = max(1, min($limit, 50));
+
+        $query = self::applyOwnerGroup(self::ownedBy($userId, $type), $group)
+            ->with(['user:id,first_name,last_name,organization_name,profile_type,avatar_url,tagline,is_verified',
+                    'category:id,name,color,slug']);
+
+        if ($cursor !== null) {
+            $cursorId = base64_decode($cursor, true);
+            if ($cursorId !== false && ctype_digit($cursorId)) {
+                $query->where('id', '<', (int) $cursorId);
+            }
+        }
+
+        $items = $query->orderByDesc('id')->limit($limit + 1)->get();
+
+        $hasMore = $items->count() > $limit;
+        if ($hasMore) {
+            $items->pop();
+        }
+
+        $formatted = $items->map(function (Listing $listing) use ($userId, $group) {
+            $data = self::formatListingItem($listing, [], $userId);
+            $data['owner_state'] = $group;
+
+            return $data;
+        })->all();
+
+        return [
+            'items'    => array_values($formatted),
+            'cursor'   => $hasMore && $items->isNotEmpty() ? base64_encode((string) $items->last()->id) : null,
+            'has_more' => $hasMore,
+        ];
+    }
+
+    /**
+     * How many of the member's listings are in each owner group.
+     *
+     * @return array{live: int, review: int, rejected: int, expired: int, closed: int}
+     */
+    public static function countOwnedByUser(int $userId, ?string $type = null): array
+    {
+        $counts = [];
+        foreach (self::OWNER_GROUPS as $group) {
+            $counts[$group] = self::applyOwnerGroup(self::ownedBy($userId, $type), $group)->count();
+        }
+
+        /** @var array{live: int, review: int, rejected: int, expired: int, closed: int} $counts */
+        return $counts;
+    }
+
     private static function configBool(array $config, string $key): bool
     {
         return filter_var($config[$key] ?? ListingConfigurationService::DEFAULTS[$key] ?? false, FILTER_VALIDATE_BOOLEAN);

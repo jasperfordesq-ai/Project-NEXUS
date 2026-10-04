@@ -77,7 +77,8 @@
     "podcasts": "ポッドキャスト",
     "switch_community": "コミュニティを切り替え",
     "unread_notifications_one": "{{count}} 未読の通知",
-    "unread_notifications_other": "未読通知 {{count}}件"
+    "unread_notifications_other": "未読通知 {{count}}件",
+    "my_listings": "自分のリスティング"
   },
   "landing_links": {
     "title": "このコミュニティを探索",
@@ -144,7 +145,8 @@
     "features": "Project NEXUSのすべての機能と正直な成熟度ラベル",
     "dashboard": "あなただけのパーソナライズされた家の概要",
     "courses": "コミュニティと一緒に新しいスキルを学びましょう",
-    "podcasts": "コミュニティ ショーとオーディオ ストーリー"
+    "podcasts": "コミュニティ ショーとオーディオ ストーリー",
+    "my_listings": "提供と依頼を管理"
   },
   "user_menu": {
     "my_profile": "マイプロフィール",

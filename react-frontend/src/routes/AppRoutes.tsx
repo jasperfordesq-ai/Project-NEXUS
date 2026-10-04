@@ -57,6 +57,8 @@ const DashboardPage = lazyWithRetry(() => import('@/pages/dashboard/DashboardPag
 const ListingsPage = lazyWithRetry(() => import('@/pages/listings/ListingsPage'));
 const ListingDetailPage = lazyWithRetry(() => import('@/pages/listings/ListingDetailPage'));
 const CreateListingPage = lazyWithRetry(() => import('@/pages/listings/CreateListingPage'));
+// Named OwnListingsPage here because MyListingsPage is the marketplace page.
+const OwnListingsPage = lazyWithRetry(() => import('@/pages/listings/MyListingsPage'));
 const MessagesPage = lazyWithRetry(() => import('@/pages/messages/MessagesPage'));
 const ConversationPage = lazyWithRetry(() => import('@/pages/messages/ConversationPage'));
 const WalletPage = lazyWithRetry(() => import('@/pages/wallet/WalletPage'));
@@ -647,6 +649,15 @@ export function AppRoutes() {
             <FeatureGate module="listings" redirect="/">
               <FeatureErrorBoundary featureName="Listings">
                 <ListingsPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          {/* Must be declared beside listings/:id; React Router ranks the
+              static "mine" segment above the :id parameter. */}
+          <Route path="listings/mine" element={
+            <FeatureGate module="listings" redirect="/">
+              <FeatureErrorBoundary featureName="Listings">
+                <OwnListingsPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />

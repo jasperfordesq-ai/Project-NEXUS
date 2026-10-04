@@ -77,7 +77,8 @@
     "podcasts": "Podcasts",
     "switch_community": "Switch community",
     "unread_notifications_one": "{{count}} unread notifications",
-    "unread_notifications_other": "{{count}} unread notifications"
+    "unread_notifications_other": "{{count}} unread notifications",
+    "my_listings": "My listings"
   },
   "landing_links": {
     "title": "Explore this community",
@@ -144,7 +145,8 @@
     "features": "Everything Project NEXUS does, with honest maturity labels",
     "dashboard": "Your personalised home overview",
     "courses": "Learn new skills with your community",
-    "podcasts": "Community shows and audio stories"
+    "podcasts": "Community shows and audio stories",
+    "my_listings": "Manage your offers and requests"
   },
   "user_menu": {
     "my_profile": "My Profile",

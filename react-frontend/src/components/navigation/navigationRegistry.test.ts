@@ -154,6 +154,7 @@ describe('navigationRegistry', () => {
       'federation-settings',
       'feed',
       'messages',
+      'my-listings',
       'saved',
       'venues',
       'wallet',

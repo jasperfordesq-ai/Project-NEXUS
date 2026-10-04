@@ -43,7 +43,8 @@
     "your_progress": "あなたの進捗",
     "pending_reviews": "保留中のレビュー",
     "endorsements": "推薦",
-    "exchanges_attention": "対応が必要"
+    "exchanges_attention": "対応が必要",
+    "my_listings": "あなたのリスティング"
   },
   "view_all": "すべて表示",
   "view_all_caps": "すべて表示",
@@ -130,7 +131,8 @@
     "view_all_endorsements": "すべての推薦を表示",
     "view_pending_reviews": "保留中のレビューをすべて表示",
     "loading_exchanges_attention": "対応が必要な交換を読み込み中",
-    "view_exchanges_attention": "すべての交換を表示"
+    "view_exchanges_attention": "すべての交換を表示",
+    "view_my_listings": "自分のリスティングをすべて見る"
   },
   "reviews": {
     "sent": "{{amount}}hを送信しました",
