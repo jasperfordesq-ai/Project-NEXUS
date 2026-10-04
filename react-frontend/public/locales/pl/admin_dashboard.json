@@ -1,6 +1,6 @@
 {
   "title": "Kontrola Misji",
-  "subtitle": "Przegląd platformy i centrum dowodzenia w czasie rzeczywistym",
+  "subtitle": "Twoja społeczność w skrócie i to, co dziś wymaga decyzji",
   "tour_btn": "Wycieczka",
   "refresh": "Odśwież",
   "loading": "Ładowanie",
@@ -23,7 +23,27 @@
     "new_users_this_month": "Nowi użytkownicy w tym miesiącu",
     "active_users": "Aktywni użytkownicy",
     "total_listings": "Łączna liczba ofert",
-    "new_listings_this_month": "Nowe oferty w tym miesiącu"
+    "new_listings_this_month": "Nowe oferty w tym miesiącu",
+    "members": "Członkowie",
+    "members_hint_one": "{{count}} oczekuje na zatwierdzenie",
+    "members_hint_few": "{{count}} oczekuje na zatwierdzenie",
+    "members_hint_many": "{{count}} oczekuje na zatwierdzenie",
+    "members_hint_other": "{{count}} oczekuje na zatwierdzenie",
+    "exchanges_this_month": "Wymiany w tym miesiącu",
+    "hours_this_month": "Godziny wymienione w tym miesiącu",
+    "active_members_30d": "Aktywni w ciągu ostatnich {{days}} dni",
+    "new_members_this_month": "Nowi członkowie w tym miesiącu",
+    "hours_all_time": "Godziny wymienione łącznie",
+    "of_total_one": "z {{count}} ogłoszenia łącznie",
+    "of_total_few": "z {{count}} ogłoszeń łącznie",
+    "of_total_many": "z {{count}} ogłoszeń łącznie",
+    "of_total_other": "z {{count}} ogłoszeń łącznie",
+    "exchanges_count_one": "w {{count}} wymianie",
+    "exchanges_count_few": "w {{count}} wymianach",
+    "exchanges_count_many": "w {{count}} wymianach",
+    "exchanges_count_other": "w {{count}} wymianach",
+    "vs_last_month": "wobec poprzedniego miesiąca",
+    "could_not_load": "Nie wczytano"
   },
   "trends": {
     "card_title": "Trendy transakcyjne",
@@ -87,12 +107,18 @@
     "card_title": "Aktywność w czasie rzeczywistym",
     "card_subtitle": "Najnowsze wydarzenia w Twojej społeczności",
     "view_all": "Zobacz wszystko",
-    "empty": "Brak ostatniej aktywności do wyświetlenia"
+    "empty": "Brak ostatniej aktywności do wyświetlenia",
+    "could_not_load": "Nie udało się wczytać ostatniej aktywności."
   },
   "chart": {
-    "title": "Wolumen transakcji",
-    "subtitle": "Aktywność z ostatnich 6 miesięcy",
-    "dataset_label": "Wymienione godziny"
+    "title": "Aktywność wymian",
+    "subtitle": "Wymienione godziny i liczba wymian, według miesięcy",
+    "dataset_label": "Wymienione godziny",
+    "exchanges_series": "Wymiany",
+    "aria_label": "Wykres wymienionych godzin i liczby wymian z ostatnich {{months}} miesięcy",
+    "excludes_note": "Liczone są tylko godziny, które jeden członek przekazał drugiemu. Salda początkowe, korekty administratora, darowizny i cofnięcia są pomijane.",
+    "no_data": "Brak wymian w tym okresie",
+    "could_not_load": "Nie udało się wczytać wykresu."
   },
   "quick_actions": {
     "card_title": "Szybkie działania",
@@ -104,7 +130,8 @@
     "gamification": "Grywalizacja",
     "settings": "Ustawienia",
     "enterprise": "Przedsiębiorstwo",
-    "advanced_controls": "Zaawansowane sterowanie"
+    "advanced_controls": "Zaawansowane sterowanie",
+    "activity_log": "Dziennik aktywności"
   },
   "enterprise": {
     "card_title": "Pakiet korporacyjny",
@@ -121,5 +148,33 @@
     "cache": "Kryjówka",
     "queue": "Praca Crona",
     "api": "API poczty e-mail"
+  },
+  "updated_ago": "Zaktualizowano {{time}}",
+  "partial": {
+    "title": "Niektórych liczb nie udało się wczytać",
+    "body": "Kafelki oznaczone „Nie wczytano” nie są zerami – platforma nie mogła ich teraz obliczyć. Reszta tej strony jest poprawna.",
+    "retry": "Spróbuj ponownie"
+  },
+  "error": {
+    "title": "Nie udało się wczytać panelu",
+    "hint": "Platforma nie zwróciła danych panelu. Spróbuj ponownie; jeśli problem się powtarza, powiadom zespół platformy.",
+    "retry": "Spróbuj ponownie"
+  },
+  "attention": {
+    "title": "Wymaga Twojej uwagi",
+    "open_items_one": "{{count}} sprawa czeka na decyzję",
+    "open_items_few": "{{count}} sprawy czekają na decyzję",
+    "open_items_many": "{{count}} spraw czeka na decyzję",
+    "open_items_other": "{{count}} sprawy czeka na decyzję",
+    "all_clear": "Wszystko w porządku",
+    "all_clear_hint": "Nic na Ciebie nie czeka. Nowe zatwierdzenia i przeglądy pojawią się tutaj, gdy tylko nadejdą.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Członkowie oczekujący na zatwierdzenie",
+    "pending_listings": "Ogłoszenia oczekujące na przegląd",
+    "pending_orgs": "Organizacje oczekujące na zatwierdzenie",
+    "pending_exchanges": "Wymiany wymagające pośrednika",
+    "unreviewed_messages": "Wiadomości do przejrzenia",
+    "fraud_alerts": "Alerty o nadużyciach",
+    "gdpr_requests": "Wnioski o dane"
   }
 }

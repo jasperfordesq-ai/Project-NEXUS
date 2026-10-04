@@ -1,6 +1,6 @@
 {
   "title": "Contrôle de mission",
-  "subtitle": "Aperçu de la plateforme en temps réel et centre de commande",
+  "subtitle": "Votre communauté en un coup d’œil, et ce qui attend une décision aujourd’hui",
   "tour_btn": "Tournée",
   "refresh": "Rafraîchir",
   "loading": "Chargement",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Nouveaux utilisateurs ce mois-ci",
     "active_users": "Utilisateurs actifs",
     "total_listings": "Total des annonces",
-    "new_listings_this_month": "Nouvelles inscriptions ce mois-ci"
+    "new_listings_this_month": "Nouvelles inscriptions ce mois-ci",
+    "members": "Membres",
+    "members_hint_one": "{{count}} en attente d’approbation",
+    "members_hint_other": "{{count}} en attente d’approbation",
+    "exchanges_this_month": "Échanges ce mois-ci",
+    "hours_this_month": "Heures échangées ce mois-ci",
+    "active_members_30d": "Actifs au cours des {{days}} derniers jours",
+    "new_members_this_month": "Nouveaux membres ce mois-ci",
+    "hours_all_time": "Heures échangées, au total",
+    "of_total_one": "sur {{count}} annonce au total",
+    "of_total_other": "sur {{count}} annonces au total",
+    "exchanges_count_one": "en {{count}} échange",
+    "exchanges_count_other": "en {{count}} échanges",
+    "vs_last_month": "par rapport au mois dernier",
+    "could_not_load": "Chargement impossible"
   },
   "trends": {
     "card_title": "Tendances des transactions",
@@ -87,12 +101,18 @@
     "card_title": "Activité en temps réel",
     "card_subtitle": "Derniers événements dans votre communauté",
     "view_all": "Tout afficher",
-    "empty": "Aucune activité récente à afficher"
+    "empty": "Aucune activité récente à afficher",
+    "could_not_load": "L’activité récente n’a pas pu être chargée."
   },
   "chart": {
-    "title": "Volume des transactions",
-    "subtitle": "Activité des 6 derniers mois",
-    "dataset_label": "Heures échangées"
+    "title": "Activité d’échange",
+    "subtitle": "Heures échangées et nombre d’échanges, par mois",
+    "dataset_label": "Heures échangées",
+    "exchanges_series": "Échanges",
+    "aria_label": "Graphique des heures échangées et du nombre d’échanges sur les {{months}} derniers mois",
+    "excludes_note": "Seules les heures qu’un membre a données à un autre sont comptées. Les soldes d’ouverture, ajustements administratifs, dons et annulations sont exclus.",
+    "no_data": "Aucun échange sur cette période pour l’instant",
+    "could_not_load": "Le graphique n’a pas pu être chargé."
   },
   "quick_actions": {
     "card_title": "Actions rapides",
@@ -104,7 +124,8 @@
     "gamification": "Gamification",
     "settings": "Paramètres",
     "enterprise": "Entreprise",
-    "advanced_controls": "Contrôles avancés"
+    "advanced_controls": "Contrôles avancés",
+    "activity_log": "Journal d’activité"
   },
   "enterprise": {
     "card_title": "Suite Entreprise",
@@ -121,5 +142,31 @@
     "queue": "Emplois Cron",
     "api": "API de messagerie",
     "cache": "Cache"
+  },
+  "updated_ago": "Mis à jour {{time}}",
+  "partial": {
+    "title": "Certains chiffres n’ont pas pu être chargés",
+    "body": "Les tuiles marquées « Chargement impossible » ne sont pas à zéro : la plateforme n’a pas pu les calculer pour le moment. Le reste de cette page est exact.",
+    "retry": "Réessayer"
+  },
+  "error": {
+    "title": "Le tableau de bord n’a pas pu se charger",
+    "hint": "La plateforme n’a pas renvoyé les chiffres du tableau de bord. Réessayez ; si le problème persiste, prévenez l’équipe de la plateforme.",
+    "retry": "Réessayer"
+  },
+  "attention": {
+    "title": "Demande votre attention",
+    "open_items_one": "{{count}} élément attend une décision",
+    "open_items_other": "{{count}} éléments attendent une décision",
+    "all_clear": "Tout est en ordre",
+    "all_clear_hint": "Rien ne vous attend. Les nouvelles approbations et vérifications apparaîtront ici dès leur arrivée.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Membres en attente d’approbation",
+    "pending_listings": "Annonces en attente de vérification",
+    "pending_orgs": "Organisations en attente d’approbation",
+    "pending_exchanges": "Échanges nécessitant un médiateur",
+    "unreviewed_messages": "Messages à vérifier",
+    "fraud_alerts": "Alertes de fraude",
+    "gdpr_requests": "Demandes de données"
   }
 }

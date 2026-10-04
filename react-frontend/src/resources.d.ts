@@ -12604,6 +12604,7 @@ export default interface Resources {
     "activity": {
       "card_subtitle": "Latest events in your community",
       "card_title": "Real-time Activity",
+      "could_not_load": "Recent activity could not be loaded.",
       "empty": "No recent activity to display",
       "view_all": "View All"
     },
@@ -12621,10 +12622,30 @@ export default interface Resources {
       "users_pending_other": "{{count}} Users Pending",
       "users_pending_text": "New member registrations require your review"
     },
+    "attention": {
+      "all_clear": "All clear",
+      "all_clear_hint": "Nothing is waiting for you. New approvals and reviews appear here the moment they arrive.",
+      "fraud_alerts": "Fraud alerts",
+      "gdpr_requests": "Data requests",
+      "open_items_one": "{{count}} item is waiting for a decision",
+      "open_items_other": "{{count}} items are waiting for a decision",
+      "open_queue": "{{queue}}: {{count}}",
+      "pending_exchanges": "Exchanges needing a broker",
+      "pending_listings": "Listings awaiting review",
+      "pending_orgs": "Organisations awaiting approval",
+      "pending_users": "Members awaiting approval",
+      "title": "Needs your attention",
+      "unreviewed_messages": "Messages to review"
+    },
     "chart": {
-      "dataset_label": "Hours Exchanged",
-      "subtitle": "Last 6 months activity",
-      "title": "Transaction Volume"
+      "aria_label": "Chart of hours exchanged and number of exchanges over the last {{months}} months",
+      "could_not_load": "The chart could not be loaded.",
+      "dataset_label": "Hours exchanged",
+      "exchanges_series": "Exchanges",
+      "excludes_note": "Only hours one member gave another are counted. Opening balances, admin adjustments, donations and reversals are left out.",
+      "no_data": "No exchanges in this period yet",
+      "subtitle": "Hours exchanged and number of exchanges, by month",
+      "title": "Exchange activity"
     },
     "enterprise": {
       "card_subtitle": "Advanced controls",
@@ -12633,6 +12654,11 @@ export default interface Resources {
       "gdpr": "GDPR Compliance",
       "overview": "Overview",
       "system_health": "System Health"
+    },
+    "error": {
+      "hint": "The platform did not return the dashboard figures. Try again; if it keeps happening, let the platform team know.",
+      "retry": "Try again",
+      "title": "The dashboard could not load"
     },
     "load_error": "Failed to load dashboard data",
     "loading": "Loading",
@@ -12670,7 +12696,13 @@ export default interface Resources {
       "volunteering": "Volunteering",
       "volunteering_desc": "Opportunities & assignments"
     },
+    "partial": {
+      "body": "Tiles marked “Could not load” are not zero — the platform could not work them out just now. Everything else on this page is accurate.",
+      "retry": "Try again",
+      "title": "Some figures could not be loaded"
+    },
     "quick_actions": {
+      "activity_log": "Activity log",
       "advanced_controls": "Advanced Controls",
       "card_subtitle": "Common tasks",
       "card_title": "Quick Actions",
@@ -12690,18 +12722,32 @@ export default interface Resources {
     },
     "stats": {
       "active_listings": "Active Listings",
+      "active_members_30d": "Active in the last {{days}} days",
       "active_sessions": "Active Sessions",
       "active_users": "Active Users",
+      "could_not_load": "Could not load",
+      "exchanges_count_one": "across {{count}} exchange",
+      "exchanges_count_other": "across {{count}} exchanges",
+      "exchanges_this_month": "Exchanges this month",
       "hours": "Hours",
+      "hours_all_time": "Hours exchanged, all time",
       "hours_exchanged": "Hours Exchanged",
+      "hours_this_month": "Hours exchanged this month",
+      "members": "Members",
+      "members_hint_one": "{{count}} awaiting approval",
+      "members_hint_other": "{{count}} awaiting approval",
       "new_listings_this_month": "New Listings This Month",
+      "new_members_this_month": "New members this month",
       "new_users_this_month": "New Users This Month",
+      "of_total_one": "of {{count}} listing in total",
+      "of_total_other": "of {{count}} listings in total",
       "total_listings": "Total Listings",
       "total_members": "Total Members",
       "transactions": "Transactions",
-      "users_online": "Users Online"
+      "users_online": "Users Online",
+      "vs_last_month": "vs last month"
     },
-    "subtitle": "Real-time platform overview and command center",
+    "subtitle": "Your community at a glance, and what needs a decision today",
     "system_status": {
       "api": "Email API",
       "cache": "Cache",
@@ -12723,6 +12769,7 @@ export default interface Resources {
       "hours_suffix": "hrs",
       "no_data": "No trend data available"
     },
+    "updated_ago": "Updated {{time}}",
     "view_all_activity": "View All Activity"
   },
   "admin_deliverability": {
@@ -31322,6 +31369,7 @@ export default interface Resources {
       "import_csv_file": "CSV File",
       "import_default_role": "Default Role",
       "import_download_template": "Download Template",
+      "import_download_template_failed": "The template could not be downloaded. Please try again.",
       "import_errors": "Import Errors",
       "import_failed": "Import Failed",
       "import_imported": "Import Imported",

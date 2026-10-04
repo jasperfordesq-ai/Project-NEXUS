@@ -1,6 +1,6 @@
 {
   "title": "Rialú Misean",
-  "subtitle": "Forbhreathnú ardán fíor-ama agus ionad ordaithe",
+  "subtitle": "Do phobal ar aon amharc, agus a bhfuil cinneadh de dhíth air inniu",
   "tour_btn": "Turas",
   "refresh": "Athnuaigh",
   "loading": "Luchtú",
@@ -23,7 +23,30 @@
     "new_users_this_month": "Úsáideoirí Nua an Mhí seo",
     "active_users": "Úsáideoirí Gníomhacha",
     "total_listings": "Liostaí Iomlána",
-    "new_listings_this_month": "Liostaí Nua an Mhí seo"
+    "new_listings_this_month": "Liostaí Nua an Mhí seo",
+    "members": "Baill",
+    "members_hint_one": "{{count}} ag fanacht le ceadú",
+    "members_hint_two": "{{count}} ag fanacht le ceadú",
+    "members_hint_few": "{{count}} ag fanacht le ceadú",
+    "members_hint_many": "{{count}} ag fanacht le ceadú",
+    "members_hint_other": "{{count}} ag fanacht le ceadú",
+    "exchanges_this_month": "Malartuithe an mhí seo",
+    "hours_this_month": "Uaireanta malartaithe an mhí seo",
+    "active_members_30d": "Gníomhach le {{days}} lá anuas",
+    "new_members_this_month": "Baill nua an mhí seo",
+    "hours_all_time": "Uaireanta malartaithe, san iomlán",
+    "of_total_one": "as {{count}} liosta san iomlán",
+    "of_total_two": "as {{count}} liosta san iomlán",
+    "of_total_few": "as {{count}} liosta san iomlán",
+    "of_total_many": "as {{count}} liosta san iomlán",
+    "of_total_other": "as {{count}} liosta san iomlán",
+    "exchanges_count_one": "i {{count}} mhalartú",
+    "exchanges_count_two": "i {{count}} mhalartú",
+    "exchanges_count_few": "i {{count}} mhalartú",
+    "exchanges_count_many": "i {{count}} malartú",
+    "exchanges_count_other": "i {{count}} malartú",
+    "vs_last_month": "i gcomparáid leis an mí seo caite",
+    "could_not_load": "Níorbh fhéidir lódáil"
   },
   "trends": {
     "card_title": "Treochtaí Idirbheart",
@@ -87,12 +110,18 @@
     "card_title": "Gníomhaíocht Fíor-ama",
     "card_subtitle": "Imeachtaí is déanaí i do phobal",
     "view_all": "Féach ar Uile",
-    "empty": "Níl aon ghníomhaíocht le déanaí le taispeáint"
+    "empty": "Níl aon ghníomhaíocht le déanaí le taispeáint",
+    "could_not_load": "Níorbh fhéidir an ghníomhaíocht is déanaí a lódáil."
   },
   "chart": {
-    "title": "Toirt Idirbhirt",
-    "subtitle": "Gníomhaíocht 6 mhí seo caite",
-    "dataset_label": "Uaireanta Malartaithe"
+    "title": "Gníomhaíocht malartaithe",
+    "subtitle": "Uaireanta malartaithe agus líon na malartuithe, de réir míosa",
+    "dataset_label": "Uaireanta malartaithe",
+    "exchanges_series": "Malartuithe",
+    "aria_label": "Cairt d’uaireanta malartaithe agus líon na malartuithe le {{months}} mí anuas",
+    "excludes_note": "Ní chomhairtear ach uaireanta a thug ball amháin do bhall eile. Fágtar iarmhéideanna tosaigh, coigeartuithe riaracháin, síntiúis agus aisiompuithe ar lár.",
+    "no_data": "Níl aon mhalartú sa tréimhse seo fós",
+    "could_not_load": "Níorbh fhéidir an chairt a lódáil."
   },
   "quick_actions": {
     "card_title": "Gníomhartha Tapa",
@@ -104,7 +133,8 @@
     "gamification": "Cearrbhachas",
     "settings": "Socruithe",
     "enterprise": "Fiontar",
-    "advanced_controls": "Ard-rialuithe"
+    "advanced_controls": "Ard-rialuithe",
+    "activity_log": "Loga gníomhaíochta"
   },
   "enterprise": {
     "card_title": "Suite Fiontair",
@@ -121,5 +151,34 @@
     "cache": "Taisce",
     "queue": "Jabanna Cron",
     "api": "Ríomhphost API"
+  },
+  "updated_ago": "Nuashonraithe {{time}}",
+  "partial": {
+    "title": "Níorbh fhéidir roinnt figiúirí a lódáil",
+    "body": "Ní nialas iad na tíleanna a bhfuil „Níorbh fhéidir lódáil“ orthu – níorbh fhéidir leis an ardán iad a ríomh faoi láthair. Tá gach rud eile ar an leathanach seo cruinn.",
+    "retry": "Bain triail eile as"
+  },
+  "error": {
+    "title": "Níorbh fhéidir an deais a lódáil",
+    "hint": "Níor sheol an t-ardán figiúirí an deais ar ais. Bain triail eile as; má leanann sé ar aghaidh, cuir in iúl d’fhoireann an ardáin.",
+    "retry": "Bain triail eile as"
+  },
+  "attention": {
+    "title": "Ag teastáil d’aird",
+    "open_items_one": "Tá {{count}} mhír ag fanacht le cinneadh",
+    "open_items_two": "Tá {{count}} mhír ag fanacht le cinneadh",
+    "open_items_few": "Tá {{count}} mhír ag fanacht le cinneadh",
+    "open_items_many": "Tá {{count}} mír ag fanacht le cinneadh",
+    "open_items_other": "Tá {{count}} mír ag fanacht le cinneadh",
+    "all_clear": "Gach rud in ord",
+    "all_clear_hint": "Níl aon rud ag fanacht leat. Beidh ceaduithe agus athbhreithnithe nua le feiceáil anseo a luaithe a thagann siad.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Baill ag fanacht le ceadú",
+    "pending_listings": "Liostaí ag fanacht le hathbhreithniú",
+    "pending_orgs": "Eagraíochtaí ag fanacht le ceadú",
+    "pending_exchanges": "Malartuithe a bhfuil bróicéir de dhíth orthu",
+    "unreviewed_messages": "Teachtaireachtaí le hathbhreithniú",
+    "fraud_alerts": "Foláirimh chalaoise",
+    "gdpr_requests": "Iarratais ar shonraí"
   }
 }

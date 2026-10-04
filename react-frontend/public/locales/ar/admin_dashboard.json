@@ -1,6 +1,6 @@
 {
   "title": "مراقبة المهمة",
-  "subtitle": "نظرة عامة على النظام الأساسي ومركز القيادة في الوقت الفعلي",
+  "subtitle": "لمحة عن مجتمعك، وما يحتاج إلى قرار اليوم",
   "tour_btn": "رحلة",
   "refresh": "تحديث",
   "loading": "جارٍ التحميل",
@@ -23,7 +23,30 @@
     "new_users_this_month": "المستخدمون الجدد هذا الشهر",
     "active_users": "المستخدمون النشطون",
     "total_listings": "إجمالي القوائم",
-    "new_listings_this_month": "قوائم جديدة هذا الشهر"
+    "new_listings_this_month": "قوائم جديدة هذا الشهر",
+    "members": "الأعضاء",
+    "members_hint_one": "{{count}} عضو بانتظار الموافقة",
+    "members_hint_two": "{{count}} عضوان بانتظار الموافقة",
+    "members_hint_few": "{{count}} أعضاء بانتظار الموافقة",
+    "members_hint_many": "{{count}} عضواً بانتظار الموافقة",
+    "members_hint_other": "{{count}} عضو بانتظار الموافقة",
+    "exchanges_this_month": "التبادلات هذا الشهر",
+    "hours_this_month": "الساعات المتبادلة هذا الشهر",
+    "active_members_30d": "نشطون خلال آخر {{days}} يوماً",
+    "new_members_this_month": "أعضاء جدد هذا الشهر",
+    "hours_all_time": "الساعات المتبادلة إجمالاً",
+    "of_total_one": "من {{count}} إعلان إجمالاً",
+    "of_total_two": "من {{count}} إعلانين إجمالاً",
+    "of_total_few": "من {{count}} إعلانات إجمالاً",
+    "of_total_many": "من {{count}} إعلاناً إجمالاً",
+    "of_total_other": "من {{count}} إعلان إجمالاً",
+    "exchanges_count_one": "في {{count}} تبادل",
+    "exchanges_count_two": "في {{count}} تبادلين",
+    "exchanges_count_few": "في {{count}} تبادلات",
+    "exchanges_count_many": "في {{count}} تبادلاً",
+    "exchanges_count_other": "في {{count}} تبادل",
+    "vs_last_month": "مقارنة بالشهر الماضي",
+    "could_not_load": "تعذّر التحميل"
   },
   "trends": {
     "card_title": "اتجاهات المعاملات",
@@ -87,12 +110,18 @@
     "card_title": "النشاط في الوقت الحقيقي",
     "card_subtitle": "آخر الأحداث في مجتمعك",
     "view_all": "عرض الكل",
-    "empty": "لا يوجد نشاط حديث لعرضه"
+    "empty": "لا يوجد نشاط حديث لعرضه",
+    "could_not_load": "تعذّر تحميل النشاط الأخير."
   },
   "chart": {
-    "title": "حجم الصفقة",
-    "subtitle": "نشاط آخر 6 أشهر",
-    "dataset_label": "ساعات متبادلة"
+    "title": "نشاط التبادل",
+    "subtitle": "الساعات المتبادلة وعدد التبادلات، حسب الشهر",
+    "dataset_label": "الساعات المتبادلة",
+    "exchanges_series": "التبادلات",
+    "aria_label": "رسم بياني للساعات المتبادلة وعدد التبادلات خلال آخر {{months}} شهراً",
+    "excludes_note": "تُحتسب فقط الساعات التي قدّمها عضو لعضو آخر. تُستبعد الأرصدة الافتتاحية وتعديلات المشرفين والتبرعات وعمليات الإلغاء.",
+    "no_data": "لا توجد تبادلات في هذه الفترة بعد",
+    "could_not_load": "تعذّر تحميل الرسم البياني."
   },
   "quick_actions": {
     "card_title": "إجراءات سريعة",
@@ -104,7 +133,8 @@
     "gamification": "التلعيب",
     "settings": "إعدادات",
     "enterprise": "مَشرُوع",
-    "advanced_controls": "الضوابط المتقدمة"
+    "advanced_controls": "الضوابط المتقدمة",
+    "activity_log": "سجل النشاط"
   },
   "enterprise": {
     "card_title": "جناح المؤسسة",
@@ -121,5 +151,34 @@
     "cache": "مخبأ",
     "queue": "وظائف كرون",
     "api": "واجهة برمجة تطبيقات البريد الإلكتروني"
+  },
+  "updated_ago": "تم التحديث {{time}}",
+  "partial": {
+    "title": "تعذّر تحميل بعض الأرقام",
+    "body": "البطاقات المعلَّمة بـ «تعذّر التحميل» ليست صفراً، بل لم تتمكن المنصة من حسابها الآن. بقية هذه الصفحة دقيقة.",
+    "retry": "حاول مرة أخرى"
+  },
+  "error": {
+    "title": "تعذّر تحميل لوحة التحكم",
+    "hint": "لم تُرجع المنصة أرقام لوحة التحكم. حاول مرة أخرى، وإذا استمر ذلك فأبلغ فريق المنصة.",
+    "retry": "حاول مرة أخرى"
+  },
+  "attention": {
+    "title": "يحتاج إلى انتباهك",
+    "open_items_one": "{{count}} عنصر بانتظار قرار",
+    "open_items_two": "{{count}} عنصران بانتظار قرار",
+    "open_items_few": "{{count}} عناصر بانتظار قرار",
+    "open_items_many": "{{count}} عنصراً بانتظار قرار",
+    "open_items_other": "{{count}} عنصر بانتظار قرار",
+    "all_clear": "كل شيء على ما يرام",
+    "all_clear_hint": "لا شيء بانتظارك. ستظهر الموافقات والمراجعات الجديدة هنا فور وصولها.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "أعضاء بانتظار الموافقة",
+    "pending_listings": "إعلانات بانتظار المراجعة",
+    "pending_orgs": "منظمات بانتظار الموافقة",
+    "pending_exchanges": "تبادلات تحتاج إلى وسيط",
+    "unreviewed_messages": "رسائل للمراجعة",
+    "fraud_alerts": "تنبيهات الاحتيال",
+    "gdpr_requests": "طلبات البيانات"
   }
 }

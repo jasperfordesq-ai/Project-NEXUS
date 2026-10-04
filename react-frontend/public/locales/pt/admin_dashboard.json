@@ -1,6 +1,6 @@
 {
   "title": "Controle da Missão",
-  "subtitle": "Visão geral da plataforma e centro de comando em tempo real",
+  "subtitle": "A sua comunidade num relance, e o que precisa de uma decisão hoje",
   "tour_btn": "Percorrer",
   "refresh": "Atualizar",
   "loading": "Carregando",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Novos usuários este mês",
     "active_users": "Usuários ativos",
     "total_listings": "Listagens totais",
-    "new_listings_this_month": "Novas listagens este mês"
+    "new_listings_this_month": "Novas listagens este mês",
+    "members": "Membros",
+    "members_hint_one": "{{count}} a aguardar aprovação",
+    "members_hint_other": "{{count}} a aguardar aprovação",
+    "exchanges_this_month": "Trocas este mês",
+    "hours_this_month": "Horas trocadas este mês",
+    "active_members_30d": "Ativos nos últimos {{days}} dias",
+    "new_members_this_month": "Novos membros este mês",
+    "hours_all_time": "Horas trocadas, no total",
+    "of_total_one": "de {{count}} anúncio no total",
+    "of_total_other": "de {{count}} anúncios no total",
+    "exchanges_count_one": "em {{count}} troca",
+    "exchanges_count_other": "em {{count}} trocas",
+    "vs_last_month": "face ao mês passado",
+    "could_not_load": "Não carregado"
   },
   "trends": {
     "card_title": "Tendências de transações",
@@ -87,12 +101,18 @@
     "card_title": "Atividade em tempo real",
     "card_subtitle": "Últimos eventos em sua comunidade",
     "view_all": "Ver tudo",
-    "empty": "Nenhuma atividade recente para exibir"
+    "empty": "Nenhuma atividade recente para exibir",
+    "could_not_load": "A atividade recente não pôde ser carregada."
   },
   "chart": {
-    "title": "Volume de transações",
-    "subtitle": "Atividade dos últimos 6 meses",
-    "dataset_label": "Horas trocadas"
+    "title": "Atividade de trocas",
+    "subtitle": "Horas trocadas e número de trocas, por mês",
+    "dataset_label": "Horas trocadas",
+    "exchanges_series": "Trocas",
+    "aria_label": "Gráfico das horas trocadas e do número de trocas nos últimos {{months}} meses",
+    "excludes_note": "Só se contam as horas que um membro deu a outro. Saldos iniciais, ajustes administrativos, doações e reversões ficam de fora.",
+    "no_data": "Ainda não há trocas neste período",
+    "could_not_load": "O gráfico não pôde ser carregado."
   },
   "quick_actions": {
     "card_title": "Ações rápidas",
@@ -104,7 +124,8 @@
     "gamification": "Gamificação",
     "settings": "Configurações",
     "enterprise": "Empresa",
-    "advanced_controls": "Controles Avançados"
+    "advanced_controls": "Controles Avançados",
+    "activity_log": "Registo de atividade"
   },
   "enterprise": {
     "card_title": "Suíte Empresarial",
@@ -121,5 +142,31 @@
     "queue": "Tarefas cron",
     "api": "API de e-mail",
     "cache": "Cache"
+  },
+  "updated_ago": "Atualizado {{time}}",
+  "partial": {
+    "title": "Alguns números não puderam ser carregados",
+    "body": "Os cartões marcados com «Não carregado» não estão a zero: a plataforma não conseguiu calculá-los agora. O resto desta página está correto.",
+    "retry": "Tentar novamente"
+  },
+  "error": {
+    "title": "O painel não pôde ser carregado",
+    "hint": "A plataforma não devolveu os números do painel. Tente novamente; se continuar a acontecer, avise a equipa da plataforma.",
+    "retry": "Tentar novamente"
+  },
+  "attention": {
+    "title": "Precisa da sua atenção",
+    "open_items_one": "{{count}} item aguarda uma decisão",
+    "open_items_other": "{{count}} itens aguardam uma decisão",
+    "all_clear": "Tudo em ordem",
+    "all_clear_hint": "Nada está à sua espera. Novas aprovações e revisões aparecerão aqui assim que chegarem.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Membros a aguardar aprovação",
+    "pending_listings": "Anúncios a aguardar revisão",
+    "pending_orgs": "Organizações a aguardar aprovação",
+    "pending_exchanges": "Trocas que precisam de um mediador",
+    "unreviewed_messages": "Mensagens por rever",
+    "fraud_alerts": "Alertas de fraude",
+    "gdpr_requests": "Pedidos de dados"
   }
 }

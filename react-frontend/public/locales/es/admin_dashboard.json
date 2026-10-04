@@ -1,6 +1,6 @@
 {
   "title": "Control de misión",
-  "subtitle": "Descripción general de la plataforma en tiempo real y centro de comando",
+  "subtitle": "Su comunidad de un vistazo, y lo que necesita una decisión hoy",
   "tour_btn": "Recorrido",
   "refresh": "Refrescar",
   "loading": "Cargando",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Nuevos usuarios este mes",
     "active_users": "Usuarios activos",
     "total_listings": "Listados totales",
-    "new_listings_this_month": "Nuevos listados este mes"
+    "new_listings_this_month": "Nuevos listados este mes",
+    "members": "Miembros",
+    "members_hint_one": "{{count}} pendiente de aprobación",
+    "members_hint_other": "{{count}} pendientes de aprobación",
+    "exchanges_this_month": "Intercambios este mes",
+    "hours_this_month": "Horas intercambiadas este mes",
+    "active_members_30d": "Activos en los últimos {{days}} días",
+    "new_members_this_month": "Nuevos miembros este mes",
+    "hours_all_time": "Horas intercambiadas en total",
+    "of_total_one": "de {{count}} anuncio en total",
+    "of_total_other": "de {{count}} anuncios en total",
+    "exchanges_count_one": "en {{count}} intercambio",
+    "exchanges_count_other": "en {{count}} intercambios",
+    "vs_last_month": "respecto al mes pasado",
+    "could_not_load": "No se pudo cargar"
   },
   "trends": {
     "card_title": "Tendencias de transacciones",
@@ -87,12 +101,18 @@
     "card_title": "Actividad en tiempo real",
     "card_subtitle": "Últimos eventos en tu comunidad",
     "view_all": "Ver todo",
-    "empty": "No hay actividad reciente para mostrar"
+    "empty": "No hay actividad reciente para mostrar",
+    "could_not_load": "La actividad reciente no se pudo cargar."
   },
   "chart": {
-    "title": "Volumen de transacciones",
-    "subtitle": "Actividad de los últimos 6 meses",
-    "dataset_label": "Horas Intercambiadas"
+    "title": "Actividad de intercambio",
+    "subtitle": "Horas intercambiadas y número de intercambios, por mes",
+    "dataset_label": "Horas intercambiadas",
+    "exchanges_series": "Intercambios",
+    "aria_label": "Gráfico de horas intercambiadas y número de intercambios en los últimos {{months}} meses",
+    "excludes_note": "Solo se cuentan las horas que un miembro dio a otro. Los saldos iniciales, ajustes administrativos, donaciones y reversiones quedan fuera.",
+    "no_data": "Aún no hay intercambios en este periodo",
+    "could_not_load": "El gráfico no se pudo cargar."
   },
   "quick_actions": {
     "card_title": "Acciones Rápidas",
@@ -104,7 +124,8 @@
     "gamification": "Gamificación",
     "settings": "Ajustes",
     "enterprise": "Empresa",
-    "advanced_controls": "Controles avanzados"
+    "advanced_controls": "Controles avanzados",
+    "activity_log": "Registro de actividad"
   },
   "enterprise": {
     "card_title": "Suite empresarial",
@@ -121,5 +142,31 @@
     "cache": "caché",
     "queue": "Trabajos cronificados",
     "api": "API de correo electrónico"
+  },
+  "updated_ago": "Actualizado {{time}}",
+  "partial": {
+    "title": "Algunas cifras no se pudieron cargar",
+    "body": "Las tarjetas marcadas con «No se pudo cargar» no están a cero: la plataforma no pudo calcularlas ahora mismo. El resto de esta página es correcto.",
+    "retry": "Reintentar"
+  },
+  "error": {
+    "title": "El panel no se pudo cargar",
+    "hint": "La plataforma no devolvió las cifras del panel. Vuelva a intentarlo; si sigue ocurriendo, avise al equipo de la plataforma.",
+    "retry": "Reintentar"
+  },
+  "attention": {
+    "title": "Requiere su atención",
+    "open_items_one": "{{count}} elemento espera una decisión",
+    "open_items_other": "{{count}} elementos esperan una decisión",
+    "all_clear": "Todo en orden",
+    "all_clear_hint": "No hay nada pendiente. Las nuevas aprobaciones y revisiones aparecerán aquí en cuanto lleguen.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Miembros pendientes de aprobación",
+    "pending_listings": "Anuncios pendientes de revisión",
+    "pending_orgs": "Organizaciones pendientes de aprobación",
+    "pending_exchanges": "Intercambios que necesitan un mediador",
+    "unreviewed_messages": "Mensajes por revisar",
+    "fraud_alerts": "Alertas de fraude",
+    "gdpr_requests": "Solicitudes de datos"
   }
 }

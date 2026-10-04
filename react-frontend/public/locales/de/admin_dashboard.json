@@ -1,6 +1,6 @@
 {
   "title": "Missionskontrolle",
-  "subtitle": "Plattformübersicht und Kommandozentrale in Echtzeit",
+  "subtitle": "Ihre Gemeinschaft auf einen Blick – und was heute eine Entscheidung braucht",
   "tour_btn": "Rundgang",
   "refresh": "Aktualisieren",
   "loading": "Lädt",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Neue Benutzer diesen Monat",
     "active_users": "Aktive Benutzer",
     "total_listings": "Gesamteinträge",
-    "new_listings_this_month": "Neue Angebote in diesem Monat"
+    "new_listings_this_month": "Neue Angebote in diesem Monat",
+    "members": "Mitglieder",
+    "members_hint_one": "{{count}} wartet auf Freigabe",
+    "members_hint_other": "{{count}} warten auf Freigabe",
+    "exchanges_this_month": "Tausche in diesem Monat",
+    "hours_this_month": "Getauschte Stunden in diesem Monat",
+    "active_members_30d": "Aktiv in den letzten {{days}} Tagen",
+    "new_members_this_month": "Neue Mitglieder in diesem Monat",
+    "hours_all_time": "Getauschte Stunden insgesamt",
+    "of_total_one": "von {{count}} Eintrag insgesamt",
+    "of_total_other": "von {{count}} Einträgen insgesamt",
+    "exchanges_count_one": "in {{count}} Tausch",
+    "exchanges_count_other": "in {{count}} Tauschen",
+    "vs_last_month": "gegenüber dem Vormonat",
+    "could_not_load": "Nicht ladbar"
   },
   "trends": {
     "card_title": "Transaktionstrends",
@@ -87,12 +101,18 @@
     "card_title": "Echtzeitaktivität",
     "card_subtitle": "Neueste Ereignisse in Ihrer Community",
     "view_all": "Alle anzeigen",
-    "empty": "Keine aktuelle Aktivität zum Anzeigen"
+    "empty": "Keine aktuelle Aktivität zum Anzeigen",
+    "could_not_load": "Die letzten Aktivitäten konnten nicht geladen werden."
   },
   "chart": {
-    "title": "Transaktionsvolumen",
-    "subtitle": "Aktivität der letzten 6 Monate",
-    "dataset_label": "Stunden ausgetauscht"
+    "title": "Tauschaktivität",
+    "subtitle": "Getauschte Stunden und Anzahl der Tausche pro Monat",
+    "dataset_label": "Getauschte Stunden",
+    "exchanges_series": "Tausche",
+    "aria_label": "Diagramm der getauschten Stunden und Anzahl der Tausche in den letzten {{months}} Monaten",
+    "excludes_note": "Gezählt werden nur Stunden, die ein Mitglied einem anderen gegeben hat. Startguthaben, Admin-Anpassungen, Spenden und Stornierungen bleiben außen vor.",
+    "no_data": "In diesem Zeitraum noch keine Tausche",
+    "could_not_load": "Das Diagramm konnte nicht geladen werden."
   },
   "quick_actions": {
     "card_title": "Schnelle Aktionen",
@@ -104,7 +124,8 @@
     "gamification": "Gamifizierung",
     "settings": "Einstellungen",
     "enterprise": "Unternehmen",
-    "advanced_controls": "Erweiterte Steuerelemente"
+    "advanced_controls": "Erweiterte Steuerelemente",
+    "activity_log": "Aktivitätsprotokoll"
   },
   "enterprise": {
     "card_title": "Enterprise-Suite",
@@ -121,5 +142,31 @@
     "queue": "Cron-Jobs",
     "api": "E-Mail-API",
     "cache": "Cache"
+  },
+  "updated_ago": "Aktualisiert {{time}}",
+  "partial": {
+    "title": "Einige Zahlen konnten nicht geladen werden",
+    "body": "Kacheln mit „Nicht ladbar“ sind nicht null – die Plattform konnte sie gerade nicht berechnen. Alles andere auf dieser Seite ist korrekt.",
+    "retry": "Erneut versuchen"
+  },
+  "error": {
+    "title": "Das Dashboard konnte nicht geladen werden",
+    "hint": "Die Plattform hat keine Dashboard-Zahlen geliefert. Versuchen Sie es erneut; falls es weiterhin passiert, informieren Sie das Plattform-Team.",
+    "retry": "Erneut versuchen"
+  },
+  "attention": {
+    "title": "Braucht Ihre Aufmerksamkeit",
+    "open_items_one": "{{count}} Vorgang wartet auf eine Entscheidung",
+    "open_items_other": "{{count}} Vorgänge warten auf eine Entscheidung",
+    "all_clear": "Alles erledigt",
+    "all_clear_hint": "Nichts wartet auf Sie. Neue Freigaben und Prüfungen erscheinen hier, sobald sie eintreffen.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Mitglieder warten auf Freigabe",
+    "pending_listings": "Einträge warten auf Prüfung",
+    "pending_orgs": "Organisationen warten auf Freigabe",
+    "pending_exchanges": "Tausche brauchen einen Vermittler",
+    "unreviewed_messages": "Nachrichten zur Prüfung",
+    "fraud_alerts": "Betrugswarnungen",
+    "gdpr_requests": "Datenanfragen"
   }
 }

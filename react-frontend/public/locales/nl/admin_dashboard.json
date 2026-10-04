@@ -1,6 +1,6 @@
 {
   "title": "Missiecontrole",
-  "subtitle": "Realtime platformoverzicht en commandocentrum",
+  "subtitle": "Uw gemeenschap in één oogopslag, en wat vandaag een besluit nodig heeft",
   "tour_btn": "Rondleiding",
   "refresh": "Vernieuwen",
   "loading": "Laden",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Nieuwe gebruikers deze maand",
     "active_users": "Actieve gebruikers",
     "total_listings": "Totaal aantal vermeldingen",
-    "new_listings_this_month": "Nieuwe aanbiedingen deze maand"
+    "new_listings_this_month": "Nieuwe aanbiedingen deze maand",
+    "members": "Leden",
+    "members_hint_one": "{{count}} wacht op goedkeuring",
+    "members_hint_other": "{{count}} wachten op goedkeuring",
+    "exchanges_this_month": "Uitwisselingen deze maand",
+    "hours_this_month": "Uitgewisselde uren deze maand",
+    "active_members_30d": "Actief in de afgelopen {{days}} dagen",
+    "new_members_this_month": "Nieuwe leden deze maand",
+    "hours_all_time": "Uitgewisselde uren, totaal",
+    "of_total_one": "van {{count}} aanbieding in totaal",
+    "of_total_other": "van {{count}} aanbiedingen in totaal",
+    "exchanges_count_one": "in {{count}} uitwisseling",
+    "exchanges_count_other": "in {{count}} uitwisselingen",
+    "vs_last_month": "t.o.v. vorige maand",
+    "could_not_load": "Kon niet laden"
   },
   "trends": {
     "card_title": "Transactietrends",
@@ -87,12 +101,18 @@
     "card_title": "Realtime activiteit",
     "card_subtitle": "Laatste evenementen in uw gemeenschap",
     "view_all": "Bekijk alles",
-    "empty": "Er is geen recente activiteit om weer te geven"
+    "empty": "Er is geen recente activiteit om weer te geven",
+    "could_not_load": "Recente activiteit kon niet worden geladen."
   },
   "chart": {
-    "title": "Transactievolume",
-    "subtitle": "Activiteit van de laatste 6 maanden",
-    "dataset_label": "Uren uitgewisseld"
+    "title": "Uitwisselingsactiviteit",
+    "subtitle": "Uitgewisselde uren en aantal uitwisselingen, per maand",
+    "dataset_label": "Uitgewisselde uren",
+    "exchanges_series": "Uitwisselingen",
+    "aria_label": "Grafiek van uitgewisselde uren en aantal uitwisselingen in de afgelopen {{months}} maanden",
+    "excludes_note": "Alleen uren die een lid aan een ander gaf worden geteld. Startsaldi, beheerderscorrecties, donaties en terugboekingen blijven buiten beschouwing.",
+    "no_data": "Nog geen uitwisselingen in deze periode",
+    "could_not_load": "De grafiek kon niet worden geladen."
   },
   "quick_actions": {
     "card_title": "Snelle acties",
@@ -104,7 +124,8 @@
     "gamification": "Gamificatie",
     "settings": "Instellingen",
     "enterprise": "Onderneming",
-    "advanced_controls": "Geavanceerde bedieningselementen"
+    "advanced_controls": "Geavanceerde bedieningselementen",
+    "activity_log": "Activiteitenlogboek"
   },
   "enterprise": {
     "card_title": "Enterprise-suite",
@@ -121,5 +142,31 @@
     "api": "E-mail-API",
     "database": "Database",
     "cache": "Cache"
+  },
+  "updated_ago": "Bijgewerkt {{time}}",
+  "partial": {
+    "title": "Sommige cijfers konden niet worden geladen",
+    "body": "Tegels met „Kon niet laden” staan niet op nul: het platform kon ze zojuist niet berekenen. De rest van deze pagina klopt.",
+    "retry": "Opnieuw proberen"
+  },
+  "error": {
+    "title": "Het dashboard kon niet worden geladen",
+    "hint": "Het platform gaf geen dashboardcijfers terug. Probeer het opnieuw; blijft het gebeuren, laat het dan het platformteam weten.",
+    "retry": "Opnieuw proberen"
+  },
+  "attention": {
+    "title": "Vraagt uw aandacht",
+    "open_items_one": "{{count}} item wacht op een besluit",
+    "open_items_other": "{{count}} items wachten op een besluit",
+    "all_clear": "Alles in orde",
+    "all_clear_hint": "Er wacht niets op u. Nieuwe goedkeuringen en beoordelingen verschijnen hier zodra ze binnenkomen.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Leden wachten op goedkeuring",
+    "pending_listings": "Aanbiedingen wachten op beoordeling",
+    "pending_orgs": "Organisaties wachten op goedkeuring",
+    "pending_exchanges": "Uitwisselingen die een bemiddelaar nodig hebben",
+    "unreviewed_messages": "Berichten om te beoordelen",
+    "fraud_alerts": "Fraudewaarschuwingen",
+    "gdpr_requests": "Gegevensverzoeken"
   }
 }

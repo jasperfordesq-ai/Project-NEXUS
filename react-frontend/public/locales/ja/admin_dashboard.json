@@ -1,6 +1,6 @@
 {
   "title": "ミッションコントロール",
-  "subtitle": "リアルタイム プラットフォームの概要とコマンド センター",
+  "subtitle": "コミュニティの概要と、今日判断が必要なこと",
   "tour_btn": "ツアー",
   "refresh": "リフレッシュ",
   "loading": "読み込み中",
@@ -23,7 +23,18 @@
     "new_users_this_month": "今月の新規ユーザー",
     "active_users": "アクティブユーザー",
     "total_listings": "総出品数",
-    "new_listings_this_month": "今月の新規リスティング"
+    "new_listings_this_month": "今月の新規リスティング",
+    "members": "メンバー",
+    "members_hint_other": "{{count}}名が承認待ち",
+    "exchanges_this_month": "今月の交換",
+    "hours_this_month": "今月の交換時間",
+    "active_members_30d": "過去{{days}}日間のアクティブ",
+    "new_members_this_month": "今月の新規メンバー",
+    "hours_all_time": "累計の交換時間",
+    "of_total_other": "全{{count}}件の掲載のうち",
+    "exchanges_count_other": "{{count}}件の交換",
+    "vs_last_month": "前月比",
+    "could_not_load": "読み込めません"
   },
   "trends": {
     "card_title": "取引動向",
@@ -87,12 +98,18 @@
     "card_title": "リアルタイムアクティビティ",
     "card_subtitle": "コミュニティの最新イベント",
     "view_all": "すべて見る",
-    "empty": "表示する最近のアクティビティはありません"
+    "empty": "表示する最近のアクティビティはありません",
+    "could_not_load": "最近のアクティビティを読み込めませんでした。"
   },
   "chart": {
-    "title": "取引量",
-    "subtitle": "過去 6 か月間のアクティビティ",
-    "dataset_label": "交換時間"
+    "title": "交換の推移",
+    "subtitle": "月ごとの交換時間と交換件数",
+    "dataset_label": "交換時間",
+    "exchanges_series": "交換件数",
+    "aria_label": "過去{{months}}か月の交換時間と交換件数のグラフ",
+    "excludes_note": "メンバー同士でやり取りした時間のみを数えます。初期残高、管理者による調整、寄付、取り消しは含みません。",
+    "no_data": "この期間の交換はまだありません",
+    "could_not_load": "グラフを読み込めませんでした。"
   },
   "quick_actions": {
     "card_title": "クイックアクション",
@@ -104,7 +121,8 @@
     "gamification": "ゲーミフィケーション",
     "settings": "設定",
     "enterprise": "企業",
-    "advanced_controls": "高度なコントロール"
+    "advanced_controls": "高度なコントロール",
+    "activity_log": "アクティビティログ"
   },
   "enterprise": {
     "card_title": "エンタープライズ スイート",
@@ -121,5 +139,30 @@
     "cache": "キャッシュ",
     "queue": "クロンジョブ",
     "api": "メールAPI"
+  },
+  "updated_ago": "{{time}}に更新",
+  "partial": {
+    "title": "一部の数値を読み込めませんでした",
+    "body": "「読み込めません」と表示されたタイルはゼロではなく、現在プラットフォームが計算できなかったものです。このページの他の内容は正確です。",
+    "retry": "再試行"
+  },
+  "error": {
+    "title": "ダッシュボードを読み込めませんでした",
+    "hint": "プラットフォームからダッシュボードの数値が返されませんでした。再試行してください。続く場合はプラットフォームチームにお知らせください。",
+    "retry": "再試行"
+  },
+  "attention": {
+    "title": "対応が必要です",
+    "open_items_other": "{{count}}件が判断を待っています",
+    "all_clear": "すべて完了",
+    "all_clear_hint": "対応待ちはありません。新しい承認や確認が届くと、ここに表示されます。",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "承認待ちのメンバー",
+    "pending_listings": "確認待ちの掲載",
+    "pending_orgs": "承認待ちの団体",
+    "pending_exchanges": "仲介者が必要な交換",
+    "unreviewed_messages": "確認が必要なメッセージ",
+    "fraud_alerts": "不正アラート",
+    "gdpr_requests": "データ請求"
   }
 }

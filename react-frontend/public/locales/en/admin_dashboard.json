@@ -1,6 +1,6 @@
 {
   "title": "Mission Control",
-  "subtitle": "Real-time platform overview and command center",
+  "subtitle": "Your community at a glance, and what needs a decision today",
   "tour_btn": "Tour",
   "refresh": "Refresh",
   "loading": "Loading",
@@ -23,7 +23,21 @@
     "new_users_this_month": "New Users This Month",
     "active_users": "Active Users",
     "total_listings": "Total Listings",
-    "new_listings_this_month": "New Listings This Month"
+    "new_listings_this_month": "New Listings This Month",
+    "members": "Members",
+    "members_hint_one": "{{count}} awaiting approval",
+    "members_hint_other": "{{count}} awaiting approval",
+    "exchanges_this_month": "Exchanges this month",
+    "hours_this_month": "Hours exchanged this month",
+    "active_members_30d": "Active in the last {{days}} days",
+    "new_members_this_month": "New members this month",
+    "hours_all_time": "Hours exchanged, all time",
+    "of_total_one": "of {{count}} listing in total",
+    "of_total_other": "of {{count}} listings in total",
+    "exchanges_count_one": "across {{count}} exchange",
+    "exchanges_count_other": "across {{count}} exchanges",
+    "vs_last_month": "vs last month",
+    "could_not_load": "Could not load"
   },
   "trends": {
     "card_title": "Transaction Trends",
@@ -87,12 +101,18 @@
     "card_title": "Real-time Activity",
     "card_subtitle": "Latest events in your community",
     "view_all": "View All",
-    "empty": "No recent activity to display"
+    "empty": "No recent activity to display",
+    "could_not_load": "Recent activity could not be loaded."
   },
   "chart": {
-    "title": "Transaction Volume",
-    "subtitle": "Last 6 months activity",
-    "dataset_label": "Hours Exchanged"
+    "title": "Exchange activity",
+    "subtitle": "Hours exchanged and number of exchanges, by month",
+    "dataset_label": "Hours exchanged",
+    "exchanges_series": "Exchanges",
+    "aria_label": "Chart of hours exchanged and number of exchanges over the last {{months}} months",
+    "excludes_note": "Only hours one member gave another are counted. Opening balances, admin adjustments, donations and reversals are left out.",
+    "no_data": "No exchanges in this period yet",
+    "could_not_load": "The chart could not be loaded."
   },
   "quick_actions": {
     "card_title": "Quick Actions",
@@ -104,7 +124,8 @@
     "gamification": "Gamification",
     "settings": "Settings",
     "enterprise": "Enterprise",
-    "advanced_controls": "Advanced Controls"
+    "advanced_controls": "Advanced Controls",
+    "activity_log": "Activity log"
   },
   "enterprise": {
     "card_title": "Enterprise Suite",
@@ -121,5 +142,31 @@
     "cache": "Cache",
     "queue": "Cron Jobs",
     "api": "Email API"
+  },
+  "updated_ago": "Updated {{time}}",
+  "partial": {
+    "title": "Some figures could not be loaded",
+    "body": "Tiles marked “Could not load” are not zero — the platform could not work them out just now. Everything else on this page is accurate.",
+    "retry": "Try again"
+  },
+  "error": {
+    "title": "The dashboard could not load",
+    "hint": "The platform did not return the dashboard figures. Try again; if it keeps happening, let the platform team know.",
+    "retry": "Try again"
+  },
+  "attention": {
+    "title": "Needs your attention",
+    "open_items_one": "{{count}} item is waiting for a decision",
+    "open_items_other": "{{count}} items are waiting for a decision",
+    "all_clear": "All clear",
+    "all_clear_hint": "Nothing is waiting for you. New approvals and reviews appear here the moment they arrive.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Members awaiting approval",
+    "pending_listings": "Listings awaiting review",
+    "pending_orgs": "Organisations awaiting approval",
+    "pending_exchanges": "Exchanges needing a broker",
+    "unreviewed_messages": "Messages to review",
+    "fraud_alerts": "Fraud alerts",
+    "gdpr_requests": "Data requests"
   }
 }

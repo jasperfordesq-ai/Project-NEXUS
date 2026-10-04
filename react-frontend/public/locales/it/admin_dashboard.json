@@ -1,6 +1,6 @@
 {
   "title": "Controllo della missione",
-  "subtitle": "Panoramica della piattaforma in tempo reale e centro di comando",
+  "subtitle": "La tua comunità a colpo d’occhio, e cosa richiede una decisione oggi",
   "tour_btn": "Giro",
   "refresh": "Aggiorna",
   "loading": "Caricamento",
@@ -23,7 +23,21 @@
     "new_users_this_month": "Nuovi utenti questo mese",
     "active_users": "Utenti attivi",
     "total_listings": "Elenchi totali",
-    "new_listings_this_month": "Nuove inserzioni questo mese"
+    "new_listings_this_month": "Nuove inserzioni questo mese",
+    "members": "Membri",
+    "members_hint_one": "{{count}} in attesa di approvazione",
+    "members_hint_other": "{{count}} in attesa di approvazione",
+    "exchanges_this_month": "Scambi questo mese",
+    "hours_this_month": "Ore scambiate questo mese",
+    "active_members_30d": "Attivi negli ultimi {{days}} giorni",
+    "new_members_this_month": "Nuovi membri questo mese",
+    "hours_all_time": "Ore scambiate in totale",
+    "of_total_one": "su {{count}} annuncio in totale",
+    "of_total_other": "su {{count}} annunci in totale",
+    "exchanges_count_one": "in {{count}} scambio",
+    "exchanges_count_other": "in {{count}} scambi",
+    "vs_last_month": "rispetto al mese scorso",
+    "could_not_load": "Non caricato"
   },
   "trends": {
     "card_title": "Tendenze delle transazioni",
@@ -87,12 +101,18 @@
     "card_title": "Attività in tempo reale",
     "card_subtitle": "Ultimi eventi nella tua comunità",
     "view_all": "Visualizza tutto",
-    "empty": "Nessuna attività recente da visualizzare"
+    "empty": "Nessuna attività recente da visualizzare",
+    "could_not_load": "Impossibile caricare l’attività recente."
   },
   "chart": {
-    "title": "Volume delle transazioni",
-    "subtitle": "Attività degli ultimi 6 mesi",
-    "dataset_label": "Ore scambiate"
+    "title": "Attività di scambio",
+    "subtitle": "Ore scambiate e numero di scambi, per mese",
+    "dataset_label": "Ore scambiate",
+    "exchanges_series": "Scambi",
+    "aria_label": "Grafico delle ore scambiate e del numero di scambi negli ultimi {{months}} mesi",
+    "excludes_note": "Si contano solo le ore che un membro ha dato a un altro. Saldi iniziali, rettifiche amministrative, donazioni e storni sono esclusi.",
+    "no_data": "Nessuno scambio in questo periodo, per ora",
+    "could_not_load": "Impossibile caricare il grafico."
   },
   "quick_actions": {
     "card_title": "Azioni rapide",
@@ -104,7 +124,8 @@
     "gamification": "Ludicizzazione",
     "settings": "Impostazioni",
     "enterprise": "Impresa",
-    "advanced_controls": "Controlli avanzati"
+    "advanced_controls": "Controlli avanzati",
+    "activity_log": "Registro attività"
   },
   "enterprise": {
     "card_title": "Suite aziendale",
@@ -121,5 +142,31 @@
     "queue": "Lavori Cron",
     "api": "API di posta elettronica",
     "cache": "Cache"
+  },
+  "updated_ago": "Aggiornato {{time}}",
+  "partial": {
+    "title": "Alcune cifre non sono state caricate",
+    "body": "Le schede con «Non caricato» non sono a zero: la piattaforma non è riuscita a calcolarle in questo momento. Il resto della pagina è corretto.",
+    "retry": "Riprova"
+  },
+  "error": {
+    "title": "Impossibile caricare il pannello",
+    "hint": "La piattaforma non ha restituito le cifre del pannello. Riprova; se continua, avvisa il team della piattaforma.",
+    "retry": "Riprova"
+  },
+  "attention": {
+    "title": "Richiede la tua attenzione",
+    "open_items_one": "{{count}} elemento attende una decisione",
+    "open_items_other": "{{count}} elementi attendono una decisione",
+    "all_clear": "Tutto in ordine",
+    "all_clear_hint": "Non c’è nulla in attesa. Nuove approvazioni e revisioni compariranno qui non appena arrivano.",
+    "open_queue": "{{queue}}: {{count}}",
+    "pending_users": "Membri in attesa di approvazione",
+    "pending_listings": "Annunci in attesa di revisione",
+    "pending_orgs": "Organizzazioni in attesa di approvazione",
+    "pending_exchanges": "Scambi che richiedono un mediatore",
+    "unreviewed_messages": "Messaggi da revisionare",
+    "fraud_alerts": "Avvisi di frode",
+    "gdpr_requests": "Richieste sui dati"
   }
 }
