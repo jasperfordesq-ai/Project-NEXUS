@@ -63,7 +63,7 @@ describe('useUnsavedChangesGuard', () => {
     // Default prevented: the guard took over the navigation.
     expect(event).toBe(false);
     await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
-    expect(mockConfirm.mock.calls[0][0]).toMatchObject({ status: 'warning', title: 'Leave without saving?' });
+    expect(mockConfirm.mock.calls[0]?.[0]).toMatchObject({ status: 'warning', title: 'Leave without saving?' });
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/test/admin/users'));
   });
 
