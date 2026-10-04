@@ -263,10 +263,10 @@ export const adminUsers = {
     return api.upload<{ imported: number; skipped: number; errors: string[]; total_rows: number }>('/v2/admin/users/import', formData);
   },
 
-  downloadImportTemplate: () => {
-    const baseUrl = import.meta.env.VITE_API_BASE || '/api';
-    window.open(`${baseUrl}/v2/admin/users/import/template`, '_blank');
-  },
+  // Fetched through api.download so the request carries the admin's auth
+  // header; opening the URL in a new tab sends no token and gets a 401.
+  downloadImportTemplate: () =>
+    api.download('/v2/admin/users/import/template', { filename: 'user_import_template.csv' }),
 
   bulkApprove: (userIds: number[]) =>
     api.post<BulkActionResult>('/v2/admin/users/bulk-approve', { user_ids: userIds }),

@@ -132,6 +132,7 @@
     "import_csv_file": "CSVファイル",
     "import_default_role": "デフォルトの役割",
     "import_download_template": "テンプレートをダウンロード",
+    "import_download_template_failed": "テンプレートをダウンロードできませんでした。もう一度お試しください。",
     "import_errors": "インポートエラー",
     "import_failed": "インポートに失敗しました",
     "import_imported": "輸入 輸入",

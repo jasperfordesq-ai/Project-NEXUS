@@ -132,6 +132,7 @@
     "import_csv_file": "CSV-Datei",
     "import_default_role": "Standardrolle",
     "import_download_template": "Vorlage herunterladen",
+    "import_download_template_failed": "Die Vorlage konnte nicht heruntergeladen werden. Bitte versuche es erneut.",
     "import_errors": "Fehler importieren",
     "import_failed": "Import fehlgeschlagen",
     "import_imported": "Importiert",

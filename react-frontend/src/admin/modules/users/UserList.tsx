@@ -456,6 +456,14 @@ export function UserList() {
     setImportLoading(false);
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      await adminUsers.downloadImportTemplate();
+    } catch {
+      toast.error(t('users.import_download_template_failed'));
+    }
+  };
+
   const resetImportModal = () => {
     setImportOpen(false);
     setImportFile(null);
@@ -847,7 +855,7 @@ export function UserList() {
                     size="sm"
                     variant="tertiary"
                     startContent={<Download size={14} />}
-                    onPress={() => adminUsers.downloadImportTemplate()}
+                    onPress={handleDownloadTemplate}
                   >
                     {t('users.import_download_template')}
                   </Button>

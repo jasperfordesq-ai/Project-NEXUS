@@ -132,6 +132,7 @@
     "import_csv_file": "CSV-bestand",
     "import_default_role": "Standaardrol",
     "import_download_template": "Sjabloon downloaden",
+    "import_download_template_failed": "Het sjabloon kon niet worden gedownload. Probeer het opnieuw.",
     "import_errors": "Importfouten",
     "import_failed": "Importeren mislukt",
     "import_imported": "Importeren Geïmporteerd",

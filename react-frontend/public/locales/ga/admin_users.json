@@ -132,6 +132,7 @@
     "import_csv_file": "Comhad CSV",
     "import_default_role": "Ról Réamhshocraithe",
     "import_download_template": "Íoslódáil teimpléad",
+    "import_download_template_failed": "Níorbh fhéidir an teimpléad a íoslódáil. Bain triail eile as.",
     "import_errors": "Earráidí Iompórtála",
     "import_failed": "Theip ar an Iompórtáil",
     "import_imported": "Iompórtáil Iompórtáilte",

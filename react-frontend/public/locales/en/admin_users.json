@@ -132,6 +132,7 @@
     "import_csv_file": "CSV File",
     "import_default_role": "Default Role",
     "import_download_template": "Download Template",
+    "import_download_template_failed": "The template could not be downloaded. Please try again.",
     "import_errors": "Import Errors",
     "import_failed": "Import Failed",
     "import_imported": "Import Imported",

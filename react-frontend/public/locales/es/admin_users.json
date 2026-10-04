@@ -132,6 +132,7 @@
     "import_csv_file": "Archivo CSV",
     "import_default_role": "Rol predeterminado",
     "import_download_template": "Descargar plantilla",
+    "import_download_template_failed": "No se pudo descargar la plantilla. Inténtalo de nuevo.",
     "import_errors": "Errores de importación",
     "import_failed": "Importación fallida",
     "import_imported": "Importar Importado",

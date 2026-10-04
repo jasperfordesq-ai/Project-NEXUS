@@ -132,6 +132,7 @@
     "import_csv_file": "ملف CSV",
     "import_default_role": "الدور الافتراضي",
     "import_download_template": "تحميل القالب",
+    "import_download_template_failed": "تعذّر تنزيل القالب. يرجى المحاولة مرة أخرى.",
     "import_errors": "أخطاء الاستيراد",
     "import_failed": "فشل الاستيراد",
     "import_imported": "استيراد مستورد",

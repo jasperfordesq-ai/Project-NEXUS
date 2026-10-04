@@ -132,6 +132,7 @@
     "import_csv_file": "Fichier CSV",
     "import_default_role": "Rôle par défaut",
     "import_download_template": "Télécharger le modèle",
+    "import_download_template_failed": "Impossible de télécharger le modèle. Veuillez réessayer.",
     "import_errors": "Erreurs d'importation",
     "import_failed": "Échec de l'importation",
     "import_imported": "Importer Importé",

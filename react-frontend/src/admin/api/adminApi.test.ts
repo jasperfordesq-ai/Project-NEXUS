@@ -279,6 +279,17 @@ describe('adminUsers', () => {
     expect((formData as FormData).get('csv_file')).toBe(file);
     expect((formData as FormData).get('default_role')).toBe('member');
   });
+
+  it('downloadImportTemplate uses an authenticated API download, not a new tab', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminUsers.downloadImportTemplate();
+    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/users/import/template', {
+      filename: 'user_import_template.csv',
+    });
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
 });
 
 // ─── Config ───────────────────────────────────────────────────────────────────
