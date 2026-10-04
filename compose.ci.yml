@@ -65,6 +65,10 @@ services:
       - QUEUE_CONNECTION=sync
       - CACHE_DRIVER=redis
       - SESSION_DRIVER=redis
+      # The end-to-end rig drives every browser from this one address and signs
+      # in ~30 times a minute; the production ceiling (10 refreshes per 60 s per
+      # IP, config/auth.php) logged actors out mid-journey on 2026-10-04. CI only.
+      - AUTH_REFRESH_RATE_LIMIT_MAX_ATTEMPTS=600
       # Disable external integrations in tests
       - MEILISEARCH_HOST=
       - MEILISEARCH_KEY=

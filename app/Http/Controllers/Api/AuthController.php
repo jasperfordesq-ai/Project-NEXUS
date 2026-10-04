@@ -583,9 +583,12 @@ class AuthController extends BaseApiController
      */
     public function refreshToken(): JsonResponse
     {
-        // Rate limiting
+        // Rate limiting — ceiling and window come from config('auth.refresh_token_rate_limit')
+        // (env AUTH_REFRESH_RATE_LIMIT_*); production keeps the 10-per-60s default.
         $ip = \App\Core\ClientIp::get();
-        if (!$this->rateLimitService->increment("auth:refresh:$ip", 10, 60)) {
+        $refreshLimit = max(1, (int) config('auth.refresh_token_rate_limit.max_attempts', 10));
+        $refreshWindow = max(1, (int) config('auth.refresh_token_rate_limit.window_seconds', 60));
+        if (!$this->rateLimitService->increment("auth:refresh:$ip", $refreshLimit, $refreshWindow)) {
             return $this->authError(
                 __('api.too_many_attempts'),
                 ApiErrorCodes::RATE_LIMIT_EXCEEDED,

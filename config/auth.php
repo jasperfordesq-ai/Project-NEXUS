@@ -45,5 +45,15 @@ return [
     // never widen a real credential's life.
     'test_access_token_expiry_seconds' => (int) env('NEXUS_TEST_ACCESS_TOKEN_EXPIRY_SECONDS', 0),
 
+    // POST /api/auth/refresh-token is limited per client IP so a stolen refresh
+    // cookie cannot be replayed in bulk. Production keeps the defaults (10 per
+    // 60 s). The CI end-to-end rig drives every browser from ONE address and
+    // signs in ~30 times a minute, so it raises the ceiling in compose.ci.yml;
+    // it is never raised in a deployed environment. AuthController floors both at 1.
+    'refresh_token_rate_limit' => [
+        'max_attempts' => (int) env('AUTH_REFRESH_RATE_LIMIT_MAX_ATTEMPTS', 10),
+        'window_seconds' => (int) env('AUTH_REFRESH_RATE_LIMIT_WINDOW_SECONDS', 60),
+    ],
+
     // Administrator MFA is an invariant in TwoFactorPolicy, not an environment toggle.
 ];

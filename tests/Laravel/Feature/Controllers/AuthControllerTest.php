@@ -580,6 +580,50 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_refresh_token_rate_limit_defaults_to_ten_per_minute(): void
+    {
+        // The ceiling is read from config so the one-address CI rig can raise it;
+        // a deployed environment must still get the production default.
+        $this->assertSame(10, (int) config('auth.refresh_token_rate_limit.max_attempts'));
+        $this->assertSame(60, (int) config('auth.refresh_token_rate_limit.window_seconds'));
+    }
+
+    public function test_refresh_token_rate_limit_ceiling_comes_from_config(): void
+    {
+        config(['auth.refresh_token_rate_limit.max_attempts' => 2]);
+        \App\Core\ClientIp::clearCache();
+        $key = 'auth:refresh:' . \App\Core\ClientIp::get();
+        \Illuminate\Support\Facades\RateLimiter::clear($key);
+
+        try {
+            // Two attempts pass the limiter (and fail validation, which is fine:
+            // the limiter runs first). The third is refused as rate-limited.
+            $this->apiPost('/auth/refresh-token', [])->assertStatus(400);
+            $this->apiPost('/auth/refresh-token', [])->assertStatus(400);
+            $this->apiPost('/auth/refresh-token', [])
+                ->assertStatus(429)
+                ->assertJsonPath('errors.0.code', ApiErrorCodes::RATE_LIMIT_EXCEEDED);
+        } finally {
+            \Illuminate\Support\Facades\RateLimiter::clear($key);
+        }
+    }
+
+    public function test_refresh_token_rate_limit_never_drops_below_one(): void
+    {
+        // A misconfigured zero or negative ceiling must not lock every client out.
+        config(['auth.refresh_token_rate_limit.max_attempts' => 0]);
+        \App\Core\ClientIp::clearCache();
+        $key = 'auth:refresh:' . \App\Core\ClientIp::get();
+        \Illuminate\Support\Facades\RateLimiter::clear($key);
+
+        try {
+            $this->apiPost('/auth/refresh-token', [])->assertStatus(400);
+            $this->apiPost('/auth/refresh-token', [])->assertStatus(429);
+        } finally {
+            \Illuminate\Support\Facades\RateLimiter::clear($key);
+        }
+    }
+
     public function test_refresh_token_returns_401_with_invalid_token(): void
     {
         $response = $this->apiPost('/auth/refresh-token', [
