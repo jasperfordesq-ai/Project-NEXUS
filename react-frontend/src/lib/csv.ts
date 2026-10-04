@@ -16,6 +16,7 @@
 
 export type CsvValue = string | number | boolean | null | undefined;
 
+// eslint-disable-next-line no-control-regex -- the control characters are the point: a cell that hides a formula behind them must still be neutralised.
 const FORMULA_START = /^[\s\x00-\x1F]*[=+\-@]/;
 
 /** One cell, neutralised and quoted. */
