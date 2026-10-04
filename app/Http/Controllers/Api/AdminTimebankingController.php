@@ -13,7 +13,9 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Services\AbuseDetectionService;
 use App\Support\Authorization\AdminTier;
+use App\Support\CsvExportSanitizer;
 use App\Support\UserDisplayName;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * AdminTimebankingController -- Admin timebanking stats, alerts, balance adjustments, org wallets, user reports.
@@ -456,7 +458,7 @@ class AdminTimebankingController extends BaseApiController
     }
 
     /** GET /api/v2/admin/timebanking/user-statement */
-    public function userStatement(): JsonResponse
+    public function userStatement(): JsonResponse|Response
     {
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
@@ -562,23 +564,47 @@ class AdminTimebankingController extends BaseApiController
         return $this->respondWithData(['users' => $users]);
     }
 
-    /** Generate CSV response for user statement */
-    private function sendCsvStatementResponse(array $statement): JsonResponse
+    /**
+     * Statement as a CSV file download (F-557, E-088).
+     *
+     * Every cell goes through CsvExportSanitizer: descriptions are member text,
+     * and one starting with = + - @ would otherwise run as a formula when an
+     * admin opens the file. This used to be built by string concatenation and
+     * returned inside a JSON envelope, so the admin's saved .csv was JSON text.
+     * The old "Balance After" column repeated today's balance on every row;
+     * balances also move through grants and adjustments that are not in this
+     * list, so a per-row balance cannot be derived here and the column is gone.
+     */
+    private function sendCsvStatementResponse(array $statement): Response
     {
-        $csv = "Date,Type,Description,Amount,Balance After\n";
-        $runningBalance = $statement['summary']['current_balance'];
+        $userId = (int) $statement['user']['id'];
+
+        $out = fopen('php://temp', 'r+');
+        // UTF-8 BOM so Excel reads non-ASCII names and descriptions correctly.
+        fwrite($out, "\xEF\xBB\xBF");
+        CsvExportSanitizer::put($out, ['Date', 'Type', 'Description', 'Amount', 'Status']);
 
         foreach ($statement['transactions'] as $t) {
-            $isEarned = ((int) $t['receiver_id'] === $statement['user']['id']);
-            $type = $isEarned ? 'Earned' : 'Spent';
-            $amount = $isEarned ? '+' . $t['amount'] : '-' . $t['amount'];
-            $desc = str_replace('"', '""', $t['description'] ?? $t['listing_title'] ?? '');
-            $csv .= "\"{$t['created_at']}\",\"{$type}\",\"{$desc}\",\"{$amount}\",\"{$runningBalance}\"\n";
+            $isEarned = (int) $t['receiver_id'] === $userId;
+            CsvExportSanitizer::put($out, [
+                (string) $t['created_at'],
+                $isEarned ? 'Earned' : 'Spent',
+                (string) ($t['description'] ?? $t['listing_title'] ?? ''),
+                ($isEarned ? 1 : -1) * (float) $t['amount'],
+                (string) ($t['status'] ?? ''),
+            ]);
         }
 
-        return $this->respondWithData([
-            'csv' => $csv,
-            'filename' => "statement_{$statement['user']['id']}_{$statement['period']['start']}_{$statement['period']['end']}.csv",
+        rewind($out);
+        $csv = (string) stream_get_contents($out);
+        fclose($out);
+
+        $filename = "statement_{$userId}_{$statement['period']['start']}_{$statement['period']['end']}.csv";
+        $filename = preg_replace('/[^A-Za-z0-9._-]/', '_', $filename) ?? 'statement.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 }
