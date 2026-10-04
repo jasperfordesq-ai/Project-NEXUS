@@ -280,6 +280,15 @@ describe('adminUsers', () => {
     expect((formData as FormData).get('default_role')).toBe('member');
   });
 
+  it('exportAcceptances downloads the streamed CSV instead of parsing it as JSON', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminLegalDocs.exportAcceptances(3, '2026-01-01');
+    expect(mockDownload).toHaveBeenCalledWith(
+      '/v2/admin/legal-documents/3/acceptances/export?start_date=2026-01-01',
+      { filename: 'acceptances_3.csv' },
+    );
+  });
+
   it('exportAllMembers downloads the member report CSV', async () => {
     mockDownload.mockResolvedValueOnce(new Blob());
     await adminUsers.exportAllMembers();

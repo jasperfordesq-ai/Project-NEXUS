@@ -14,6 +14,7 @@ vi.mock('@/lib/api', () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: [], meta: {} }),
     post: vi.fn().mockResolvedValue({ success: true }),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   API_BASE: '/api',
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
@@ -128,6 +129,29 @@ describe('ResourcesPage', () => {
       user: { id: 1, first_name: 'Test' },
       isAuthenticated: true,
     });
+  });
+
+  it('downloads a resource through the authenticated client', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [{
+        id: 77, title: 'Volunteer handbook', description: 'Guide', file_url: '', file_path: '',
+        file_type: 'application/pdf', file_size: 1024, downloads: 3, created_at: '2026-10-01T10:00:00Z',
+        uploader: { id: 999, name: 'Someone', avatar: null }, category: null,
+      }],
+      meta: {},
+    });
+    render(<ResourcesPage />);
+    await waitFor(() => expect(screen.getByText('Volunteer handbook')).toBeInTheDocument());
+
+    const button = screen.getAllByRole('button').find((b) => /download/i.test(b.textContent ?? ''));
+    expect(button).toBeDefined();
+    fireEvent.click(button!);
+
+    await waitFor(() => expect(api.download).toHaveBeenCalledWith(
+      '/v2/resources/77/download',
+      { filename: 'Volunteer handbook' },
+    ));
   });
 
   it('renders without crashing', () => {

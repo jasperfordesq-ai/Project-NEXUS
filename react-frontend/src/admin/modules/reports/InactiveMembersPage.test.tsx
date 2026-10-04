@@ -15,6 +15,7 @@ const { mockApi } = vi.hoisted(() => ({
     put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    download: vi.fn(),
   },
 }));
 
@@ -131,6 +132,19 @@ describe('InactiveMembersPage', () => {
       const table = document.querySelector('[aria-label]');
       expect(table).toBeInTheDocument();
     });
+  });
+
+  it('exports through the authenticated client so an expired sign-in is renewed', async () => {
+    mockApi.download.mockResolvedValue(new Blob());
+    render(<InactiveMembersPage />);
+    await waitFor(() => expect(screen.getAllByTestId('stat-card').length).toBeGreaterThanOrEqual(4));
+
+    const btn = screen.getAllByRole('button').find((b) => /export|csv/i.test(b.textContent ?? ''));
+    expect(btn).toBeDefined();
+    fireEvent.click(btn!);
+
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/inactive\/export\?format=csv&days=/);
   });
 
   it('renders stat cards once data loads', async () => {

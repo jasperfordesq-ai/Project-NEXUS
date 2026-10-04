@@ -59,7 +59,7 @@ import { SocialInteractionPanel } from '@/components/social/SocialInteractionPan
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
-import { api, API_BASE, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatNumber, formatRelativeTime } from '@/lib/helpers';
 
@@ -818,31 +818,10 @@ export function PollsPage() {
   /* ── P4: Export CSV ── */
   const handleExport = async (pollId: number) => {
     try {
-      const token = tokenManager.getAccessToken();
-      const tenantId = tokenManager.getTenantId();
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
-      const response = await fetch(`${API_BASE}/v2/polls/${pollId}/export`, {
-        headers,
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `poll-${pollId}-results.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        toastRef.current.success(tRef.current('toast.csv_exported'));
-      } else {
-        toastRef.current.error(tRef.current('toast.export_failed'));
-      }
+      // api.download renews an expired sign-in and retries; a hand-rolled
+      // fetch failed once the short-lived access token expired.
+      await api.download(`/v2/polls/${pollId}/export`, { filename: `poll-${pollId}-results.csv` });
+      toastRef.current.success(tRef.current('toast.csv_exported'));
     } catch (err) {
       logError('Failed to export poll', err);
       toastRef.current.error(tRef.current('toast.export_failed'));

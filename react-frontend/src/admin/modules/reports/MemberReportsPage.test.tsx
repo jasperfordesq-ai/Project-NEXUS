@@ -16,6 +16,7 @@ const { mockApi } = vi.hoisted(() => ({
     put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    download: vi.fn(),
   },
 }));
 
@@ -219,6 +220,24 @@ describe('MemberReportsPage', () => {
       );
       expect(btn).toBeInTheDocument();
     });
+  });
+
+  it('exports through the authenticated client so an expired sign-in is renewed', async () => {
+    mockApi.download.mockResolvedValue(new Blob());
+    const { MemberReportsPage } = await import('./MemberReportsPage');
+    render(<MemberReportsPage />);
+
+    const btn = await waitFor(() => {
+      const found = screen.getAllByRole('button').find((b) =>
+        b.textContent?.toLowerCase().includes('csv') || b.textContent?.toLowerCase().includes('export')
+      );
+      expect(found).toBeDefined();
+      return found!;
+    });
+    fireEvent.click(btn);
+
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/(members|inactive)\/export\?format=csv/);
   });
 
   it('renders Refresh button', async () => {

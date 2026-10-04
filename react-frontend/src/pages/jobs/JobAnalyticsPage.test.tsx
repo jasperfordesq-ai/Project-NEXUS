@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
 vi.mock('react-i18next', () => ({
@@ -32,6 +32,7 @@ vi.mock('@/lib/api', () => ({
     post: vi.fn().mockResolvedValue({ success: true }),
     put: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   tokenManager: { getTenantId: vi.fn() },
 }));
@@ -185,6 +186,19 @@ describe('JobAnalyticsPage', () => {
     expect(screen.getByText('analytics.total_applications')).toBeInTheDocument();
     expect(screen.getByText('analytics.conversion_rate')).toBeInTheDocument();
     expect(screen.getByText('analytics.unique_viewers')).toBeInTheDocument();
+  });
+
+  it('exports applications CSV through the authenticated client, not a new tab', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    render(<JobAnalyticsPage />);
+    await waitFor(() => expect(screen.getByText('analytics.total_views')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /analytics\.export_csv|export csv/i }));
+
+    await waitFor(() => expect(vi.mocked(api.download)).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.download).mock.calls[0][0]).toMatch(/^\/v2\/jobs\/[^/]+\/applications\/export-csv$/);
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
   });
 
   it('renders total_views value', async () => {

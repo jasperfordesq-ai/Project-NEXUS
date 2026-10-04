@@ -1456,9 +1456,12 @@ export const adminLegalDocs = {
   getAcceptances: (versionId: number, limit = 50, offset = 0) =>
     api.get<UserAcceptance[]>(`/v2/admin/legal-documents/versions/${versionId}/acceptances${buildQuery({ limit, offset })}`),
 
+  // The server streams a CSV file; fetched as a download, not as JSON.
   exportAcceptances: (docId: number, startDate?: string, endDate?: string) => {
     const query = buildQuery({ start_date: startDate, end_date: endDate });
-    return api.get<{ data: unknown }>(`/v2/admin/legal-documents/${docId}/acceptances/export${query}`);
+    return api.download(`/v2/admin/legal-documents/${docId}/acceptances/export${query}`, {
+      filename: `acceptances_${docId}.csv`,
+    });
   },
 
   // Notifications

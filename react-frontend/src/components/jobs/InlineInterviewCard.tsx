@@ -14,7 +14,8 @@ import XCircle from 'lucide-react/icons/circle-x';
 import Video from 'lucide-react/icons/video';
 import CalendarPlus from 'lucide-react/icons/calendar-plus';
 import { useTranslation } from 'react-i18next';
-import { API_BASE } from '@/lib/api';
+import { api } from '@/lib/api';
+import { useToast } from '@/contexts';
 import { formatDateTime } from '@/lib/helpers';
 import { safeHref, webHref } from '@/lib/safeHref';
 import type { InlineInterview } from './JobDetailTypes';
@@ -33,6 +34,7 @@ export function InlineInterviewCard({
   onDeclineOpen,
 }: InlineInterviewCardProps) {
   const { t } = useTranslation('jobs');
+  const toast = useToast();
 
   if (pendingInterview.status !== 'proposed') return null;
 
@@ -88,9 +90,12 @@ export function InlineInterviewCard({
                 <Button
                   size="sm"
                   variant="flat"
-                  as="a"
-                  href={`${API_BASE}/v2/jobs/interviews/${pendingInterview.id}/calendar`}
-                  download="interview.ics"
+                  onPress={() => {
+                    // api.download carries the sign-in token; a plain link sent none (401).
+                    api.download(`/v2/jobs/interviews/${pendingInterview.id}/calendar`, {
+                      filename: 'interview.ics',
+                    }).catch(() => toast.error(t('common:errors.download_failed')));
+                  }}
                   startContent={<CalendarPlus className="w-3.5 h-3.5" aria-hidden="true" />}
                 >
                   {t('interview.download_ics')}

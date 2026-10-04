@@ -16,6 +16,7 @@ vi.mock('@/lib/api', () => ({
     put: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   API_BASE: '/api',
   default: {
@@ -164,7 +165,8 @@ describe('InlineInterviewCard', () => {
     expect(joinLink).toBeDefined();
   });
 
-  it('renders .ics download link for calendar', () => {
+  it('downloads the .ics through the authenticated client, not a plain link', async () => {
+    const { api } = await import('@/lib/api');
     render(
       <InlineInterviewCard
         pendingInterview={PROPOSED_INTERVIEW}
@@ -173,11 +175,17 @@ describe('InlineInterviewCard', () => {
         onDeclineOpen={vi.fn()}
       />
     );
-    const calendarLink = screen.getAllByRole('link').find(
-      (el) => el.getAttribute('href')?.includes('/calendar')
+    // A plain <a href> to the API sends no sign-in token and answered 401.
+    expect(screen.queryAllByRole('link').find((el) => el.getAttribute('href')?.includes('/calendar'))).toBeUndefined();
+
+    const button = screen.getAllByRole('button').find((b) => /download_ics|calendar|\.ics/i.test(b.textContent ?? ''));
+    expect(button).toBeDefined();
+    fireEvent.click(button!);
+
+    expect(api.download).toHaveBeenCalledWith(
+      `/v2/jobs/interviews/${PROPOSED_INTERVIEW.id}/calendar`,
+      { filename: 'interview.ics' },
     );
-    expect(calendarLink).toBeDefined();
-    expect(calendarLink).toHaveAttribute('download', 'interview.ics');
   });
 
   it('shows in-person location notes with map pin', () => {

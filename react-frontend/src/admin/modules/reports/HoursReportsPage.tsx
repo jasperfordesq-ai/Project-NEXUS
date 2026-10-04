@@ -27,7 +27,7 @@ import Activity from 'lucide-react/icons/activity';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
-import { api, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { CHART_COLORS, CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
@@ -175,28 +175,17 @@ function exportTypeForTab(groupBy: string): string {
 /** `tab` is the active groupBy ('category' | 'member' | 'period'). */
 async function exportCsv(tab: string, dateFrom?: string, dateTo?: string) {
   const exportType = exportTypeForTab(tab);
-  const token = tokenManager.getAccessToken();
-  const tenantId = tokenManager.getTenantId();
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
   const params = new URLSearchParams({ format: 'csv' });
   if (dateFrom) params.append('date_from', dateFrom);
   if (dateTo) params.append('date_to', dateTo);
 
-  const apiBase = import.meta.env.VITE_API_BASE || '/api';
-  const res = await fetch(`${apiBase}/v2/admin/reports/${exportType}/export?${params}`, { headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  // Name the file after the tab the operator was looking at; the URL above uses
-  // the mapped export type so the CONTENTS match that tab.
-  a.download = `hours-report-${tab}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  // api.download renews an expired sign-in and retries (a hand-rolled fetch
+  // failed once the short-lived access token expired). Name the file after the
+  // tab the operator was looking at; the URL uses the mapped export type so
+  // the CONTENTS match that tab.
+  await api.download(`/v2/admin/reports/${exportType}/export?${params}`, {
+    filename: `hours-report-${tab}.csv`,
+  });
 }
 
 // ---------------------------------------------------------------------------

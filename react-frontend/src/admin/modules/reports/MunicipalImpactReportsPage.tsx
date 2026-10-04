@@ -21,7 +21,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
-import { api, API_BASE, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { Abbr } from '../../components/Abbr';
@@ -163,28 +163,12 @@ function municipalReportParams(templateId: number | null, filters: ReportDateFil
 }
 
 async function downloadMunicipalExport(format: 'csv' | 'pdf', filename: string, templateId: number | null, filters: ReportDateFilters, audience: AudienceMode) {
-  const headers: Record<string, string> = {};
-  const token = tokenManager.getAccessToken();
-  const tenantId = tokenManager.getTenantId();
-  if (token) headers.Authorization = `Bearer ${token}`;
-  if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
   const params = municipalReportParams(templateId, filters, audience);
   params.set('format', format);
 
-  const res = await fetch(`${API_BASE}/v2/admin/reports/municipal_impact/export?${params.toString()}`, {
-    headers,
-    credentials: 'include',
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  // api.download renews an expired sign-in and retries; a hand-rolled fetch
+  // failed once the short-lived access token expired.
+  await api.download(`/v2/admin/reports/municipal_impact/export?${params.toString()}`, { filename });
 }
 
 export default function MunicipalImpactReportsPage() {

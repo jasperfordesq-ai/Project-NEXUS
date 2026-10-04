@@ -11,7 +11,7 @@ import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
 const { mockApi, mockTokenManager } = vi.hoisted(() => ({
-  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn(), download: vi.fn() },
   mockTokenManager: { getAccessToken: vi.fn(() => 'tok'), getTenantId: vi.fn(() => '2') },
 }));
 
@@ -333,6 +333,18 @@ describe('HoursReportsPage', () => {
     // Refresh is disabled while a report request is in flight, so it must be
     // enabled again now that the initial load finished.
     await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh' })).toBeEnabled());
+  });
+
+  it('exports through the authenticated client so an expired sign-in is renewed', async () => {
+    mockApi.download.mockResolvedValue(new Blob());
+    const { HoursReportsPage } = await import('./HoursReportsPage');
+    render(<HoursReportsPage />);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/hours_(category|member|period)\/export\?format=csv/);
   });
 
   it('shows no_member_hours_data when member tab has no data', async () => {

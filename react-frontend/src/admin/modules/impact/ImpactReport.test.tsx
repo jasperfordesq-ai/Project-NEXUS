@@ -57,7 +57,9 @@ async function adminComponentsMock(importOriginal: () => Promise<Record<string, 
     StatCard: ({ label, value }: { label?: string; value?: unknown }) => (
       <div data-testid="stat-card">{label}: {String(value)}</div>
     ),
-    PageHeader: ({ title }: { title?: string }) => <h1>{title}</h1>,
+    PageHeader: ({ title, actions }: { title?: string; actions?: React.ReactNode }) => (
+      <div><h1>{title}</h1>{actions}</div>
+    ),
   };
 }
 
@@ -237,6 +239,24 @@ describe('ImpactReport', () => {
       const hasValue = cards.some((c) => /\d/.test(c.textContent || ''));
       expect(hasValue).toBe(true);
     });
+  });
+
+  it('exports through the authenticated client so an expired sign-in is renewed', async () => {
+    mockApi.download.mockResolvedValue(new Blob());
+    const { ImpactReport } = await import('./ImpactReport');
+    render(<ImpactReport />);
+    await waitFor(() => {
+      const statuses = screen.queryAllByRole('status');
+      expect(statuses.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
+    });
+
+    // The PDF button sits first and also says "export"; pick the CSV one.
+    const btn = screen.getAllByRole('button').find((b) => /csv/i.test(b.textContent ?? ''));
+    expect(btn).toBeDefined();
+    fireEvent.click(btn!);
+
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/reports\/social_value\/export\?format=csv/);
   });
 
   it('renders a refresh/export button region', async () => {

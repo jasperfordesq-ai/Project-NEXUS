@@ -17,6 +17,7 @@ vi.mock('@/lib/api', () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: [] }),
     post: vi.fn().mockResolvedValue({ success: true }),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   API_BASE: 'https://api.example.com',
 }));
@@ -105,6 +106,22 @@ describe('CertificatesTab', () => {
     expect(screen.getByText(/Help Centre/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Download/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Verify/i })).toBeInTheDocument();
+  });
+
+  it('downloads the certificate as a file through the authenticated client', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { certificates: [mockCertificate] } });
+    render(<CertificatesTab />);
+    await waitFor(() => expect(screen.getByText('CERT-ABC123')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
+
+    await waitFor(() => expect(api.download).toHaveBeenCalledWith(
+      '/v2/volunteering/certificates/CERT-ABC123/html',
+      { filename: 'volunteer-certificate-CERT-ABC123.html' },
+    ));
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
   });
 
   it('calls POST when Generate Certificate button is pressed', async () => {

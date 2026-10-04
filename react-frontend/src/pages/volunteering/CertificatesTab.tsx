@@ -25,7 +25,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { EmptyState } from '@/components/feedback';
-import { api, API_BASE } from '@/lib/api';
+import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { useToast } from '@/contexts';
 
@@ -53,10 +53,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const handleDownload = (code: string) => {
-  window.open(`${API_BASE}/v2/volunteering/certificates/${code}/html`, '_blank');
-};
-
 export function CertificatesTab() {
   const { t } = useTranslation('volunteering');
   const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -65,6 +61,19 @@ export function CertificatesTab() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const toast = useToast();
+
+  // Saved as an .html file the member opens and prints. A new tab sent no
+  // sign-in token (401), and rendering the server's HTML inside the app
+  // would run it with the app's privileges.
+  const handleDownload = async (code: string) => {
+    try {
+      await api.download(`/v2/volunteering/certificates/${encodeURIComponent(code)}/html`, {
+        filename: `volunteer-certificate-${code}.html`,
+      });
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    }
+  };
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);

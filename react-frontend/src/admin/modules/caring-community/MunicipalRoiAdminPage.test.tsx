@@ -11,7 +11,7 @@ import { createMockContexts } from '@/test/mock-contexts';
 
 // ─── api mock ─────────────────────────────────────────────────────────────────
 const { mockApi, mockTokenManager } = vi.hoisted(() => ({
-  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  mockApi: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn(), download: vi.fn() },
   mockTokenManager: { getAccessToken: vi.fn(() => 'tok'), getTenantId: vi.fn(() => '2') },
 }));
 
@@ -219,5 +219,22 @@ describe('MunicipalRoiAdminPage', () => {
       );
       expect(exportBtn).toBeDefined();
     });
+  });
+
+  it('exports through the authenticated client so an expired sign-in is renewed', async () => {
+    mockApi.download.mockResolvedValue(new Blob());
+    const { default: Page } = await import('./MunicipalRoiAdminPage');
+    render(<Page />);
+    const exportBtn = await waitFor(() => {
+      const found = screen.queryAllByRole('button').find(
+        (b) => b.textContent?.toLowerCase().includes('csv') || b.textContent?.toLowerCase().includes('export'),
+      );
+      expect(found).toBeDefined();
+      return found!;
+    });
+    await userEvent.click(exportBtn);
+
+    await waitFor(() => expect(mockApi.download).toHaveBeenCalledTimes(1));
+    expect(mockApi.download.mock.calls[0][0]).toMatch(/^\/v2\/admin\/caring-community\/municipal-roi\/export/);
   });
 });

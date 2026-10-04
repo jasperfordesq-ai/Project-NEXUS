@@ -57,7 +57,7 @@ import {
   type ResourceFilterDraft,
 } from '@/components/resources/ResourceFilterSheet';
 import { useAuth, useToast, useTenant } from '@/contexts';
-import { api, API_BASE, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks';
@@ -648,27 +648,12 @@ export function ResourcesPage() {
     }
   };
 
-  // Authenticated download handler - fetches with auth headers then triggers browser download
+  // Authenticated download. api.download renews an expired sign-in and
+  // retries; the hand-rolled fetch it replaces failed once the short-lived
+  // access token expired. The server names the file (title + real extension).
   async function handleDownload(resourceId: number, title: string) {
     try {
-      const downloadUrl = `${API_BASE}/v2/resources/${resourceId}/download`;
-      const response = await fetch(downloadUrl, {
-        headers: {
-          'Authorization': `Bearer ${tokenManager.getAccessToken()}`,
-          'X-Tenant-ID': tokenManager.getTenantId() || '',
-        },
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Download failed');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = title || 'download';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await api.download(`/v2/resources/${resourceId}/download`, { filename: title || 'download' });
       // Optimistically increment local download count
       setResources((prev) =>
         prev.map((r) => r.id === resourceId ? { ...r, downloads: r.downloads + 1 } : r)

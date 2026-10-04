@@ -195,23 +195,9 @@ describe('LegalDocComplianceDashboard', () => {
       success: true,
       data: makeStats({ documents: [makeDoc()] }),
     });
-    mockExportAcceptances.mockResolvedValue({
-      success: true,
-      data: 'user_name,email\nAlice,alice@example.com',
-    });
-
-    // Capture the real createElement before spying so we can delegate non-'a' tags
-    const realCreateElement = document.createElement.bind(document);
-    const mockAnchorClick = vi.fn();
-    vi.spyOn(document, 'createElement').mockImplementation((tag, ...args) => {
-      if (tag === 'a') {
-        const a = realCreateElement(tag, ...args) as HTMLAnchorElement;
-        // Override click so we don't attempt real navigation
-        a.click = mockAnchorClick;
-        return a;
-      }
-      return realCreateElement(tag, ...args);
-    });
+    // exportAcceptances is now an authenticated file download (api.download),
+    // which saves the file itself and resolves with the Blob.
+    mockExportAcceptances.mockResolvedValue(new Blob(['user_name,email\nAlice,alice@example.com']));
 
     const user = userEvent.setup();
     render(<LegalDocComplianceDashboard />);
@@ -235,7 +221,7 @@ describe('LegalDocComplianceDashboard', () => {
       success: true,
       data: makeStats({ documents: [makeDoc()] }),
     });
-    mockExportAcceptances.mockResolvedValue({ success: false, error: 'Export failed' });
+    mockExportAcceptances.mockRejectedValue(new Error('HTTP 500'));
 
     const user = userEvent.setup();
     render(<LegalDocComplianceDashboard />);

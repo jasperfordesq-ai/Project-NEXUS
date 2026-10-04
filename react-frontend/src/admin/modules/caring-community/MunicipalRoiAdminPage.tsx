@@ -15,7 +15,7 @@ import Users from 'lucide-react/icons/users';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
-import { api, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { Abbr } from '../../components/Abbr';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
@@ -178,26 +178,12 @@ export default function MunicipalRoiAdminPage() {
   const handleExport = useCallback(async () => {
     setExporting(true);
     try {
-      const token = tokenManager.getAccessToken();
-      const tenantId = tokenManager.getTenantId();
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
-      const apiBase = import.meta.env.VITE_API_BASE || '/api';
-      const url =
-        `${apiBase}/v2/admin/caring-community/municipal-roi/export` +
-        (queryParams ? `?${queryParams}` : '');
-
-      const res = await fetch(url, { headers, credentials: 'include' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = `municipal-impact-${from}_to_${to}.csv`;
-      a.click();
-      URL.revokeObjectURL(objectUrl);
+      // api.download renews an expired sign-in and retries; a hand-rolled
+      // fetch failed once the short-lived access token expired.
+      await api.download(
+        '/v2/admin/caring-community/municipal-roi/export' + (queryParams ? `?${queryParams}` : ''),
+        { filename: `municipal-impact-${from}_to_${to}.csv` },
+      );
     } catch {
       showToast(t('municipal_roi_page.toasts.export_failed'), 'error');
     } finally {

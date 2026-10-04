@@ -39,8 +39,8 @@ import Star from 'lucide-react/icons/star';
 import Sparkles from 'lucide-react/icons/sparkles';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
-import { useTenant } from '@/contexts';
-import { api, API_BASE } from '@/lib/api';
+import { useTenant, useToast } from '@/contexts';
+import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -159,6 +159,7 @@ export function JobAnalyticsPage() {
   const { t } = useTranslation('jobs');
   const { id } = useParams<{ id: string }>();
   const { tenantPath } = useTenant();
+  const toast = useToast();
   usePageTitle(t('analytics.title'));
 
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -253,8 +254,15 @@ export function JobAnalyticsPage() {
   // Find the max view count for the bar chart
   const maxViews = Math.max(...analytics.views_by_day.map((d) => Number(d.count)), 1);
 
-  const handleExportCsv = () => {
-    window.open(API_BASE + `/v2/jobs/${id}/applications/export-csv`, '_blank');
+  // api.download carries the sign-in token; a new tab sent none (401).
+  const handleExportCsv = async () => {
+    try {
+      await api.download(`/v2/jobs/${id}/applications/export-csv`, {
+        filename: `job-${id}-applications.csv`,
+      });
+    } catch {
+      toast.error(t('common:errors.download_failed'));
+    }
   };
 
   return (

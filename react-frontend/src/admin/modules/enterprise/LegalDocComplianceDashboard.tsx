@@ -88,32 +88,14 @@ export default function LegalDocComplianceDashboard() {
   const handleExport = async (docId: number) => {
     try {
       setExportingDocId(docId);
-      const response = await adminLegalDocs.exportAcceptances(
+      // The server streams the CSV itself; it used to be requested as JSON,
+      // which found nothing to parse, so no file was ever saved.
+      await adminLegalDocs.exportAcceptances(
         docId,
         dateRange.start || undefined,
         dateRange.end || undefined
       );
-
-      if (response.success && response.data) {
-        // Convert API response data to a downloadable CSV blob
-        const exportData = response.data;
-        const csvContent = typeof exportData === 'string'
-          ? exportData
-          : JSON.stringify(exportData);
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `acceptances_${docId}_${Date.now()}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        success(t('enterprise.export_downloaded_successfully'));
-      } else {
-        error(t('enterprise.failed_to_export_acceptances'));
-      }
+      success(t('enterprise.export_downloaded_successfully'));
     } catch {
       error(t('enterprise.failed_to_export_acceptances'));
     } finally {

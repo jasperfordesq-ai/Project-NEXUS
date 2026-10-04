@@ -21,7 +21,7 @@ import Activity from 'lucide-react/icons/activity';
 import Trophy from 'lucide-react/icons/trophy';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import { usePageTitle } from '@/hooks';
-import { api, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { formatNumber, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { CHART_COLOR_MAP } from '@/lib/chartColors';
 import { StatCard } from '../../components/StatCard';
@@ -191,30 +191,19 @@ function memberExportTypeForTab(reportType: string): string | null {
 async function exportCsv(reportType: string, period: string) {
   const exportType = memberExportTypeForTab(reportType);
   if (!exportType) return;
-  const token = tokenManager.getAccessToken();
-  const tenantId = tokenManager.getTenantId();
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
   const params = new URLSearchParams({ format: 'csv' });
   // `inactive` genuinely filters on `days`; passing it keeps the file in step
   // with the threshold shown on screen.
   if (exportType === 'inactive') params.set('days', period);
 
-  const apiBase = import.meta.env.VITE_API_BASE || '/api';
-  const res = await fetch(`${apiBase}/v2/admin/reports/${exportType}/export?${params}`, { headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  // api.download renews an expired sign-in and retries; a hand-rolled fetch
+  // simply failed once the short-lived access token had expired.
   // Name the file after what it CONTAINS, not the tab. `members` is the complete
   // directory and is not period-scoped, so calling it "member-report-active"
   // overstated what the operator was getting.
-  a.download = exportType === 'members' ? 'member-directory.csv' : `member-report-${reportType}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  await api.download(`/v2/admin/reports/${exportType}/export?${params}`, {
+    filename: exportType === 'members' ? 'member-directory.csv' : `member-report-${reportType}.csv`,
+  });
 }
 
 // ---------------------------------------------------------------------------

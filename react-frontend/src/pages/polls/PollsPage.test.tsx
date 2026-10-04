@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -21,6 +21,7 @@ vi.mock('@/lib/api', () => ({
     post: (...args: unknown[]) => mockApiPost(...args),
     put: vi.fn().mockResolvedValue({ success: true }),
     delete: vi.fn().mockResolvedValue({ success: true }),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   API_BASE: 'http://localhost:8090/api',
   tokenManager: { getTenantId: vi.fn() },
@@ -196,6 +197,28 @@ describe('PollsPage', () => {
 
     expect(shown.textContent).toBe(description);
     expect(shown.className).toContain('whitespace-pre-wrap');
+  });
+
+  it("exports the owner's poll results through the authenticated client", async () => {
+    const { api } = await import('@/lib/api');
+    const poll = {
+      id: 41, question: 'Own poll?', description: null, expires_at: null,
+      created_at: '2026-10-03T17:20:04Z', total_votes: 2, status: 'open',
+      has_voted: false, voted_option_id: null,
+      options: [{ id: 150, label: 'Yes', vote_count: 2, percentage: 100 }],
+      creator: { id: 1, name: 'Test', avatar_url: null },
+    };
+    mockApiGet.mockImplementation((url: string) => Promise.resolve(
+      url.startsWith('/v2/polls?') ? { success: true, data: [poll] } : { success: true, data: [] },
+    ));
+    render(<PollsPage />);
+    await screen.findByText('Own poll?');
+
+    const exportBtn = screen.getAllByRole('button').find((b) => /export/i.test(b.getAttribute('aria-label') ?? ''));
+    expect(exportBtn).toBeDefined();
+    fireEvent.click(exportBtn!);
+
+    await waitFor(() => expect(api.download).toHaveBeenCalledWith('/v2/polls/41/export', { filename: 'poll-41-results.csv' }));
   });
 
   describe('a member who has already voted', () => {

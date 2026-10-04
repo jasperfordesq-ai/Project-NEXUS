@@ -33,7 +33,7 @@ import Plus from 'lucide-react/icons/plus';
 import Trash2 from 'lucide-react/icons/trash-2';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
-import { api, tokenManager } from '@/lib/api';
+import { api } from '@/lib/api';
 import { CHART_COLOR_MAP, CHART_TOKEN_COLORS } from '@/lib/chartColors';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
@@ -255,26 +255,13 @@ function formatMonth(monthStr: string): string {
 }
 
 async function exportCsv(dateFrom?: string, dateTo?: string) {
-  const token = tokenManager.getAccessToken();
-  const tenantId = tokenManager.getTenantId();
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (tenantId) headers['X-Tenant-ID'] = tenantId;
-
   const params = new URLSearchParams({ format: 'csv' });
   if (dateFrom) params.append('date_from', dateFrom);
   if (dateTo) params.append('date_to', dateTo);
 
-  const apiBase = import.meta.env.VITE_API_BASE || '/api';
-  const res = await fetch(`${apiBase}/v2/admin/reports/social_value/export?${params}`, { headers, credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'impact-report.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  // api.download renews an expired sign-in and retries; a hand-rolled fetch
+  // failed once the short-lived access token expired.
+  await api.download(`/v2/admin/reports/social_value/export?${params}`, { filename: 'impact-report.csv' });
 }
 
 // ---------------------------------------------------------------------------
