@@ -1288,6 +1288,14 @@ class AdminEnterpriseController extends BaseApiController
                         continue;
                     }
                     $resettableKeys[] = $settingKey;
+                    // E-073 F-458: approval and verification are enforced from
+                    // the BARE key as well as the general.* row. Deleting only
+                    // the prefixed row left the sign-up gate on the old value
+                    // while the page showed the default.
+                    $bareKey = str_starts_with($settingKey, 'general.') ? substr($settingKey, 8) : null;
+                    if ($bareKey !== null && in_array($bareKey, \App\Services\TenantSettingsService::DUAL_KEY_GATE_SETTINGS, true)) {
+                        $resettableKeys[] = $bareKey;
+                    }
                 }
                 if (!empty($resettableKeys)) {
                     $placeholders = implode(',', array_fill(0, count($resettableKeys), '?'));
@@ -1298,6 +1306,10 @@ class AdminEnterpriseController extends BaseApiController
                 }
             }
             try { app(\App\Services\RedisCache::class)->delete('tenant_bootstrap', $tenantId); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
+            // Settings are read through TenantSettingsService's cache; without this
+            // the deleted rows kept being served for up to five minutes (updateConfig
+            // already clears it).
+            try { app(\App\Services\TenantSettingsService::class)->clearCacheForTenant($tenantId); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: ' . $e->getMessage(), ['context' => __METHOD__]); }
             return $this->respondWithData(['reset' => true]);
         } catch (\Exception $e) {
             return $this->respondWithError('RESET_FAILED', __('api_controllers_1.admin_enterprise.config_reset_failed'), null, 500);

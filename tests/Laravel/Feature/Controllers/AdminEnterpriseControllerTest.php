@@ -421,6 +421,41 @@ class AdminEnterpriseControllerTest extends TestCase
             ->assertJsonPath('data.registration_mode', 'closed');
     }
 
+    public function test_reset_config_clears_bare_gate_keys_and_the_settings_cache(): void
+    {
+        // The gate settings are stored twice (F-458): general.<key> for the admin
+        // UI and the bare key the sign-up/login gates read. Reset used to delete
+        // only the prefixed row and left the cache warm, so the page showed the
+        // default while the gate kept the old value.
+        $settings = app(\App\Services\TenantSettingsService::class);
+        foreach (['general.email_verification', 'email_verification', 'general.admin_approval', 'admin_approval'] as $key) {
+            DB::table('tenant_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => 'false', 'setting_type' => 'boolean', 'updated_at' => now()]
+            );
+        }
+        $settings->clearCacheForTenant($this->testTenantId);
+        // Explicit opt-out on both keys: the gate is off.
+        $this->assertFalse($settings->requiresAdminApproval($this->testTenantId));
+
+        // Platform super-admin: the reserved keys are only resettable at that tier.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/enterprise/config/reset')->assertStatus(200);
+
+        $remaining = DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->whereIn('setting_key', ['general.email_verification', 'email_verification', 'general.admin_approval', 'admin_approval'])
+            ->pluck('setting_key')
+            ->all();
+        $this->assertSame([], $remaining);
+
+        // Read through the (now cleared) cache: back to the fail-closed default
+        // (required), not the stale opt-out.
+        $this->assertTrue($settings->requiresAdminApproval($this->testTenantId));
+    }
+
     // ================================================================
     // LEGAL DOCS — GET /v2/admin/legal-documents
     // ================================================================

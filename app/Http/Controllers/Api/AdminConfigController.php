@@ -93,6 +93,11 @@ class AdminConfigController extends BaseApiController
         'google_maps_api_key', 'google_maps_map_id', 'maptiler_api_key',
         'os_maps_api_key',
         'inactivity_timeout_minutes',
+        // ISO 3166-1 alpha-2; drives date/number formatting (FormattingLocale).
+        // Missing from this list until 2026-10-04, so the admin "Date and number
+        // format" picker saved a key this controller dropped (422 when it was
+        // the only change) and GET never returned it.
+        'region',
     ];
 
     /**
@@ -1508,6 +1513,19 @@ class AdminConfigController extends BaseApiController
                 return $this->respondWithError('VALIDATION_ERROR', __('api.default_currency_invalid', []), 'default_currency', 422);
             }
             $kvUpdates['default_currency'] = $cur;
+        }
+
+        // Validate region — ISO 3166-1 alpha-2, normalised to uppercase. A shape
+        // check rather than a closed country list: an unknown pair degrades to
+        // the base language in FormattingLocale rather than failing.
+        // array_key_exists, not isset: the empty-strings-to-null middleware turns
+        // "" into null, which must be rejected rather than stored.
+        if (array_key_exists('region', $kvUpdates)) {
+            $region = strtoupper(trim((string) ($kvUpdates['region'] ?? '')));
+            if (!preg_match('/^[A-Z]{2}$/', $region)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.region_invalid'), 'region', 422);
+            }
+            $kvUpdates['region'] = $region;
         }
 
         // Validate the complete request before its first write. Previously a

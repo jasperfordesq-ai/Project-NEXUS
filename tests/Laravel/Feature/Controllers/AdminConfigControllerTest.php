@@ -572,6 +572,81 @@ class AdminConfigControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    // ----------------------------------------------------------------
+    // region — the admin "Date and number format" picker. Until 2026-10-04
+    // the key was missing from GENERAL_SETTING_KEYS, so a region-only save
+    // was a 422 and a mixed save silently dropped it.
+    // ----------------------------------------------------------------
+
+    public function test_settings_region_only_save_is_recognised_and_round_trips_uppercased(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
+            $mock->shouldReceive('refreshTenantOrFail')->andReturn(1);
+        });
+
+        $this->apiPut('/v2/admin/settings', ['region' => ' gb '])
+            ->assertStatus(200)
+            ->assertJsonPath('data.settings_updated.0', 'region');
+
+        $this->assertSame(
+            'GB',
+            DB::table('tenant_settings')
+                ->where('tenant_id', $this->testTenantId)
+                ->where('setting_key', 'general.region')
+                ->value('setting_value')
+        );
+
+        $this->apiGet('/v2/admin/settings')
+            ->assertStatus(200)
+            ->assertJsonPath('data.settings.region', 'GB');
+
+        // The formatting layer reads through the settings cache, which the
+        // save must have cleared.
+        \App\I18n\FormattingLocale::flush();
+        $this->assertSame('GB', \App\I18n\FormattingLocale::region($this->testTenantId));
+    }
+
+    public function test_settings_region_rejects_anything_but_two_letters(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+
+        foreach (['GBR', '1E', '', 'G'] as $bad) {
+            $this->apiPut('/v2/admin/settings', ['region' => $bad, 'tagline' => 'x'])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.0.field', 'region');
+        }
+
+        $this->assertNull(
+            DB::table('tenant_settings')
+                ->where('tenant_id', $this->testTenantId)
+                ->where('setting_key', 'general.region')
+                ->value('setting_value')
+        );
+    }
+
+    public function test_settings_registration_mode_accepts_invite_only(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
+            $mock->shouldReceive('refreshTenantOrFail')->andReturn(1);
+        });
+
+        $this->apiPut('/v2/admin/settings', ['registration_mode' => 'invite_only'])->assertStatus(200);
+        $this->apiGet('/v2/admin/settings')->assertJsonPath('data.settings.registration_mode', 'invite_only');
+
+        $this->apiPut('/v2/admin/settings', ['registration_mode' => 'invite'])->assertStatus(422);
+    }
+
     public function test_settings_validate_every_field_before_mutating_tenant_routing(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['is_super_admin' => true]);
