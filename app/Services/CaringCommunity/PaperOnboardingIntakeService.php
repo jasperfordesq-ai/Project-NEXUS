@@ -22,9 +22,25 @@ class PaperOnboardingIntakeService
      * @param array<string, mixed> $seedFields
      * @return array<string, mixed>
      */
+    /** Accepted scan types, keyed by detected MIME, with the extension stored on disk. */
+    private const STORED_EXTENSION = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
     public function createFromUpload(int $tenantId, int $coordinatorId, UploadedFile $file, array $seedFields = []): array
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
+        // The stored extension follows the detected content, never the name the
+        // client sent (F-560, E-088: JPEG bytes named x.php were stored as
+        // <uuid>.php). The controller validates the type first; this is the
+        // backstop for any other caller.
+        $mime = strtolower((string) $file->getMimeType());
+        $extension = self::STORED_EXTENSION[$mime] ?? null;
+        if ($extension === null) {
+            throw new \InvalidArgumentException('Unsupported paper onboarding file type.');
+        }
         $filename = Str::uuid()->toString() . '.' . $extension;
         $storedPath = $file->storeAs("caring-paper-onboarding/{$tenantId}", $filename, 'local');
 
