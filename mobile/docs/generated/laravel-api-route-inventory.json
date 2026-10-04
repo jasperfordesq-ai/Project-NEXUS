@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2758,
-  "api_route_rows": 2723,
+  "total_registered_routes": 2757,
+  "api_route_rows": 2722,
   "distinct_api_paths": 2268,
   "route_source_fingerprint": {
-    "digest": "1bdb05304b0c118bcce11748ad2c229c36da41ac14d2d43b364d32bf66b4175c",
+    "digest": "a9d7823085bd0d31bfd4a9c81a1525082b14764cc9c1c846868483fb54921315",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "27358edb8767458701221fd29088131b257fbd0cac97867b74e0ffe857fddc0c"
+        "sha256": "4159929c4b6e025765bb30151d64e7d42de43e6c66d28ce8d262fa4aa1091189"
       },
       {
         "file": "routes/channels.php",
@@ -7218,7 +7218,6 @@
       "GET"
     ],
     "/api/v2/wallet/transactions/{id}": [
-      "DELETE",
       "GET"
     ],
     "/api/v2/wallet/transfer": [

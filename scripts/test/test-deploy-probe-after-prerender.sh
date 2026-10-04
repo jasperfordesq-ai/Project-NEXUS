@@ -50,7 +50,12 @@ chmod +x "$TMP_DIR/bin/ssh"
 export PATH="$TMP_DIR/bin:$PATH"
 export STUB_LOG="$TMP_DIR/ssh.log" STUB_QUEUE="$TMP_DIR/queue"
 export SSH_KEY="$TMP_DIR/fake.key" SSH_HOST="deploy@stub.invalid"
-export PRERENDER_WAIT_POLL_SECONDS=0 PRERENDER_WAIT_TIMEOUT_SECONDS=5 PRERENDER_WAIT_NOLOG_GRACE_SECONDS=1
+# The grace must be more than one second: the waiter measures elapsed time
+# with `date +%s`, so a single NOLOG poll that straddles a second boundary
+# already reads as 1s elapsed and, with a 1s grace, exits 3 before the queue's
+# RUNNING answers are ever read (seen on a slow CI runner, 2026-10-04).
+# 3s is still well inside the 5s timeout scenario 3 bounds itself against.
+export PRERENDER_WAIT_POLL_SECONDS=0 PRERENDER_WAIT_TIMEOUT_SECONDS=5 PRERENDER_WAIT_NOLOG_GRACE_SECONDS=3
 
 echo "Scenario 1: waits through 'no log yet' and 'running', returns 0 on 'background end'"
 : > "$STUB_LOG"
