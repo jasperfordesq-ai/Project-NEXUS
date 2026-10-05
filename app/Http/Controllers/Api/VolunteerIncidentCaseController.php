@@ -111,6 +111,7 @@ class VolunteerIncidentCaseController extends BaseApiController
         $eventId = $audience === 'reporter'
             ? $this->timeline->record($tenantId, $id, 'message_to_reporter', $staffId, 'staff', $body)
             : $this->timeline->record($tenantId, $id, 'message_to_organisation', $staffId, 'staff', $body, [], $orgId);
+        $this->safeguardingService->notifyIncidentMessage($tenantId, $incident, $audience);
 
         return $this->respondWithData(['event_id' => $eventId], null, 201);
     }
@@ -127,7 +128,12 @@ class VolunteerIncidentCaseController extends BaseApiController
             return $this->notFound();
         }
 
-        return match ($this->shares->share($tenantId, $incident, $staffId)) {
+        $outcome = $this->shares->share($tenantId, $incident, $staffId);
+        if ($outcome === 'shared') {
+            $this->safeguardingService->notifyIncidentShared($tenantId, $incident);
+        }
+
+        return match ($outcome) {
             'shared' => $this->respondWithData(['shared' => true], null, 201),
             'already_shared' => $this->respondWithData(['shared' => true]),
             'no_organisation' => $this->respondWithError('VALIDATION_ERROR', __('api.vol_incident_invalid_field'), 'organization_id', 422),
@@ -187,6 +193,7 @@ class VolunteerIncidentCaseController extends BaseApiController
         }
 
         $eventId = $this->timeline->record($tenantId, $id, 'reporter_addition', $userId, 'reporter', $body);
+        $this->safeguardingService->notifyIncidentContribution($tenantId, $incident, 'reporter_addition', $userId);
 
         return $this->respondWithData(['event_id' => $eventId], null, 201);
     }
@@ -271,6 +278,7 @@ class VolunteerIncidentCaseController extends BaseApiController
         }
 
         $eventId = $this->timeline->record($tenantId, $id, 'org_update', $userId, 'organisation', $body, [], $orgId);
+        $this->safeguardingService->notifyIncidentContribution($tenantId, $incident, 'org_update', $userId);
 
         return $this->respondWithData(['event_id' => $eventId], null, 201);
     }

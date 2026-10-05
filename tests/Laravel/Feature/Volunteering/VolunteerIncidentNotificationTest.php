@@ -83,7 +83,9 @@ final class VolunteerIncidentNotificationTest extends TestCase
             $this->assertStringContainsString('A near miss (nobody was harmed)', $mail['body'], 'the kind is in words');
             $this->assertStringNotContainsString('near_miss', $mail['body']);
         }
-        $this->assertNull($this->mailTo($member), 'the reporting member is not sent the staff alert');
+        // The reporting member gets their own confirmation, never the staff alert (spec §6).
+        $this->assertStringContainsString('We have received your safeguarding report', (string) ($this->mailTo($member)['subject'] ?? ''));
+        $this->assertCount(1, array_filter($this->sent, fn ($m) => strcasecmp($m['to'], (string) $member->email) === 0));
     }
 
     public function test_a_staff_member_the_incident_is_about_is_not_told(): void
@@ -138,7 +140,10 @@ final class VolunteerIncidentNotificationTest extends TestCase
             );
         }
         $this->assertNull($this->mailTo($plainMember), 'a plain member of the organisation is not told');
-        $this->assertNull($this->mailTo($reporter), 'the reporter is not told about their own report');
+        // The reporter gets only their own confirmation — not the organisation's notice.
+        $toReporter = array_values(array_filter($this->sent, fn ($m) => strcasecmp($m['to'], (string) $reporter->email) === 0));
+        $this->assertCount(1, $toReporter, 'the reporter is not sent the organisation notice');
+        $this->assertStringContainsString('We have received your safeguarding report', $toReporter[0]['subject']);
     }
 
     public function test_an_organisation_contact_the_incident_is_about_is_not_told(): void
@@ -213,9 +218,9 @@ final class VolunteerIncidentNotificationTest extends TestCase
         $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", ['status' => 'investigating'])->assertStatus(200);
         $this->assertSame(1, $bells(), 'a real status change is still news');
         $this->assertSame(
-            '/volunteering?tab=safeguarding',
-            DB::table('notifications')->where('user_id', $reporter->id)->where('type', 'safeguarding_flag')->value('link'),
-            'and links to where the member can see their reports'
+            "/volunteering/incidents/{$incidentId}",
+            DB::table('notifications')->where('user_id', $reporter->id)->where('type', 'safeguarding_flag')->orderByDesc('id')->value('link'),
+            'and links to the report\'s own page'
         );
     }
 

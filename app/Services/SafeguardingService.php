@@ -662,6 +662,8 @@ class SafeguardingService
                 if (!empty($record->organization_id)) {
                     $this->notifyOrganisationOfIncident($tenantId, $record, $staffTold);
                 }
+                // The reporter is told it arrived, with the reference to follow it by.
+                $this->notifyReporterReceived($tenantId, $record);
             }
 
             return $record ? (array) $record : [];
@@ -1529,6 +1531,11 @@ class SafeguardingService
                 if (self::isIncidentAboutUser($incident, (int) $staff->id)) {
                     continue;
                 }
+                // A staff member who reported it gets the reporter's confirmation
+                // instead (spec §6: the reporter never gets staff notices).
+                if ((int) $staff->id === $reporterId) {
+                    continue;
+                }
                 $notified[] = (int) $staff->id;
 
                 LocaleContext::withLocale($staff, function () use ($staff, $tenantId, $incident, $incidentId, $reporterName, $title, $severity, $severityLabel, $context) {
@@ -1744,6 +1751,219 @@ class SafeguardingService
         return $told;
     }
 
+    // =========================================================================
+    // CASE-RECORD NOTICES (spec §6) — who is told about what happens on an
+    // incident after it is reported. Every notice is a bell plus, unless it is
+    // bell-only, a short email; each is rendered in the recipient's language and
+    // says WHAT happened and WHERE to look — never any text someone wrote.
+    // =========================================================================
+
+    /** Where each kind of viewer reads an incident. */
+    private static function reporterIncidentLink(object $incident): string
+    {
+        return '/volunteering/incidents/' . (int) $incident->id;
+    }
+
+    private static function organisationIncidentLink(object $incident): string
+    {
+        return '/volunteering/org/' . (int) $incident->organization_id . '/safeguarding/' . (int) $incident->id;
+    }
+
+    private static function staffIncidentLink(object $incident): string
+    {
+        return '/broker/safeguarding/volunteering/' . (int) $incident->id;
+    }
+
+    /**
+     * Active members of this community with the columns a notice needs, in id order.
+     *
+     * @param list<int> $ids
+     */
+    private function noticeRecipients(int $tenantId, array $ids): \Illuminate\Support\Collection
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn (int $id) => $id > 0)));
+        if ($ids === []) {
+            return collect();
+        }
+
+        return User::where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->get(['id', 'email', 'first_name', 'last_name', 'name', 'profile_type', 'organization_name', 'preferred_language']);
+    }
+
+    /**
+     * One notice to one person: a bell, and an email unless `$emailToo` is false.
+     * `$keys` names the translation keys under emails_misc.safeguarding:
+     * bell, subject, title, body, cta. Failures are logged and never thrown —
+     * a notice must not undo the action that caused it.
+     *
+     * @param array{bell: string, subject?: string, title?: string, body?: string, cta?: string} $keys
+     * @param array<string, string|int> $params
+     */
+    private function sendIncidentNotice(int $tenantId, User $recipient, object $incident, string $link, array $keys, array $params, bool $emailToo = true, string $bellType = 'safeguarding_flag'): void
+    {
+        $params = $params + ['incident_id' => (int) $incident->id];
+        LocaleContext::withLocale($recipient, function () use ($tenantId, $recipient, $incident, $link, $keys, $params, $emailToo, $bellType) {
+            try {
+                \App\Models\Notification::create([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $recipient->id,
+                    'type' => $bellType,
+                    'message' => __('emails_misc.safeguarding.' . $keys['bell'], $params),
+                    'link' => $link,
+                    'is_read' => false,
+                ]);
+            } catch (\Throwable $bellError) {
+                Log::critical('SafeguardingService: incident notice bell failed', [
+                    'user_id' => $recipient->id, 'incident_id' => $incident->id, 'notice' => $keys['bell'],
+                    'error' => $bellError->getMessage(),
+                ]);
+            }
+
+            if (!$emailToo || empty($recipient->email)) {
+                return;
+            }
+            try {
+                $safe = array_map(fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'), $params);
+                $html = EmailTemplateBuilder::make()
+                    ->theme('brand')
+                    ->title(__('emails_misc.safeguarding.' . $keys['title'], $safe))
+                    ->previewText(__('emails_misc.safeguarding.' . $keys['subject'], $safe))
+                    ->greeting(htmlspecialchars(UserDisplayName::resolve($recipient) ?: (string) ($recipient->first_name ?? ''), ENT_QUOTES, 'UTF-8'))
+                    ->paragraph(__('emails_misc.safeguarding.' . $keys['body'], $safe))
+                    ->paragraph(__('emails_misc.safeguarding.notice_confidential'))
+                    ->button(__('emails_misc.safeguarding.' . $keys['cta']), EmailTemplateBuilder::tenantUrl($link))
+                    ->render();
+                $sent = EmailDispatchService::sendRaw(
+                    $recipient->email,
+                    __('emails_misc.safeguarding.' . $keys['subject'], $params),
+                    $html, null, null, null, 'safeguarding', ['tenant_id' => $tenantId]
+                );
+                if (!$sent) {
+                    Log::critical('SafeguardingService: incident notice email failed to send', [
+                        'user_id' => $recipient->id, 'incident_id' => $incident->id, 'notice' => $keys['subject'],
+                    ]);
+                }
+            } catch (\Throwable $emailError) {
+                Log::critical('SafeguardingService: incident notice email exception', [
+                    'user_id' => $recipient->id, 'incident_id' => $incident->id, 'notice' => $keys['subject'],
+                    'error' => $emailError->getMessage(),
+                ]);
+            }
+        });
+    }
+
+    /** The organisation's owner, admins, lead and deputy who may see this incident — never its reporter. @return list<int> */
+    private function organisationNoticeIds(int $tenantId, object $incident): array
+    {
+        $orgId = (int) ($incident->organization_id ?? 0);
+        if ($orgId <= 0) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            \App\Services\Volunteering\IncidentAccess::organisationContactIds($tenantId, $orgId),
+            fn (int $id) => $id !== (int) ($incident->reported_by ?? 0)
+                && \App\Services\Volunteering\IncidentAccess::orgRelation($incident, $tenantId, $id, $orgId) !== \App\Services\Volunteering\IncidentAccess::NONE
+        ));
+    }
+
+    /** The reporter is told their report arrived, with its reference — and nothing it said. */
+    public function notifyReporterReceived(int $tenantId, object $incident): void
+    {
+        foreach ($this->noticeRecipients($tenantId, [(int) ($incident->reported_by ?? 0)]) as $reporter) {
+            $this->sendIncidentNotice($tenantId, $reporter, $incident, self::reporterIncidentLink($incident), [
+                'bell' => 'reporter_received_bell', 'subject' => 'reporter_received_subject',
+                'title' => 'reporter_received_title', 'body' => 'reporter_received_body', 'cta' => 'reporter_received_cta',
+            ], []);
+        }
+    }
+
+    /** Staff sent a message: tell its audience that there is one to read. */
+    public function notifyIncidentMessage(int $tenantId, object $incident, string $audience): void
+    {
+        if ($audience === 'reporter') {
+            foreach ($this->noticeRecipients($tenantId, [(int) ($incident->reported_by ?? 0)]) as $reporter) {
+                $this->sendIncidentNotice($tenantId, $reporter, $incident, self::reporterIncidentLink($incident), [
+                    'bell' => 'message_reporter_bell', 'subject' => 'message_reporter_subject',
+                    'title' => 'message_reporter_title', 'body' => 'message_reporter_body', 'cta' => 'message_reporter_cta',
+                ], []);
+            }
+
+            return;
+        }
+
+        $organisation = (string) ($this->incidentContext($tenantId, $incident)['organisation'] ?? '');
+        foreach ($this->noticeRecipients($tenantId, $this->organisationNoticeIds($tenantId, $incident)) as $contact) {
+            $this->sendIncidentNotice($tenantId, $contact, $incident, self::organisationIncidentLink($incident), [
+                'bell' => 'message_org_bell', 'subject' => 'message_org_subject',
+                'title' => 'message_org_title', 'body' => 'message_org_body', 'cta' => 'message_org_cta',
+            ], ['organisation' => $organisation]);
+        }
+    }
+
+    /**
+     * The reporter added information, or the organisation sent an update: tell
+     * whoever is handling the incident — or, while nobody is, every staff member
+     * who may see it. Never the person who wrote it.
+     *
+     * @param 'reporter_addition'|'org_update' $kind
+     */
+    public function notifyIncidentContribution(int $tenantId, object $incident, string $kind, ?int $writerId = null): void
+    {
+        $access = \App\Services\Volunteering\IncidentAccess::class;
+        $handler = (int) ($incident->assigned_to ?? 0);
+        $ids = $handler > 0 && $access::staffCanSee($incident, $tenantId, $handler)
+            ? [$handler]
+            : array_values(array_filter(
+                SafeguardingStaff::scope(DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active'))->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                fn (int $id) => $access::staffCanSee($incident, $tenantId, $id)
+            ));
+        $ids = array_values(array_filter($ids, fn (int $id) => $id !== (int) $writerId && $id !== (int) ($incident->reported_by ?? 0)));
+
+        $bell = $kind === 'org_update' ? 'contribution_bell_update' : 'contribution_bell_addition';
+        $body = $kind === 'org_update' ? 'contribution_body_update' : 'contribution_body_addition';
+        foreach ($this->noticeRecipients($tenantId, $ids) as $staff) {
+            $this->sendIncidentNotice($tenantId, $staff, $incident, self::staffIncidentLink($incident), [
+                'bell' => $bell, 'subject' => 'contribution_subject',
+                'title' => 'contribution_title', 'body' => $body, 'cta' => 'contribution_cta',
+            ], [], true, 'safeguarding_assignment');
+        }
+    }
+
+    /** The full report was shared: tell the organisation's lead and deputy to sign in and read it. */
+    public function notifyIncidentShared(int $tenantId, object $incident): void
+    {
+        $orgId = (int) ($incident->organization_id ?? 0);
+        $ids = array_values(array_filter(
+            \App\Services\Volunteering\IncidentAccess::organisationLeadIds($tenantId, $orgId),
+            fn (int $id) => $id !== (int) ($incident->reported_by ?? 0)
+                && !self::isIncidentAboutUser($incident, $id)
+        ));
+        $organisation = (string) ($this->incidentContext($tenantId, $incident)['organisation'] ?? '');
+        foreach ($this->noticeRecipients($tenantId, $ids) as $lead) {
+            $this->sendIncidentNotice($tenantId, $lead, $incident, self::organisationIncidentLink($incident), [
+                'bell' => 'shared_bell', 'subject' => 'shared_subject',
+                'title' => 'shared_title', 'body' => 'shared_body', 'cta' => 'shared_cta',
+            ], ['organisation' => $organisation]);
+        }
+    }
+
+    /** A status change, for the organisation: a bell only, in plain words, pointing at its page. */
+    private function notifyOrganisationOfStatus(int $tenantId, object $incident, string $newStatus): void
+    {
+        $plain = ['open' => 'received', 'investigating' => 'looking_into', 'escalated' => 'specialist', 'resolved' => 'dealt_with', 'closed' => 'closed'];
+        foreach ($this->noticeRecipients($tenantId, $this->organisationNoticeIds($tenantId, $incident)) as $contact) {
+            // The status word in the contact's own language, not the actor's.
+            $label = LocaleContext::withLocale($contact, fn () => __('emails_misc.safeguarding.member_status_' . ($plain[$newStatus] ?? 'received')));
+            $this->sendIncidentNotice($tenantId, $contact, $incident, self::organisationIncidentLink($incident), [
+                'bell' => 'status_org_bell',
+            ], ['status' => (string) $label], false);
+        }
+    }
+
     /**
      * Names an email shows: the organisation, the opportunity, and the date it
      * happened, read fresh and tenant-scoped.
@@ -1809,9 +2029,8 @@ class SafeguardingService
                     'user_id' => $reporterId,
                     'type' => 'safeguarding_flag',
                     'message' => __('emails_misc.safeguarding.incident_status_changed', ['incident_id' => $incidentId, 'status' => $label]),
-                    // The member's own reports live on the Volunteering page's
-                    // Safeguarding tab; '/safeguarding/incidents' was never a route.
-                    'link' => '/volunteering?tab=safeguarding',
+                    // The report's own page, where the reporter follows it.
+                    'link' => '/volunteering/incidents/' . $incidentId,
                     'is_read' => false,
                 ]);
             });
@@ -1854,6 +2073,7 @@ class SafeguardingService
                             ->greeting($firstName)
                             ->paragraph(__('emails_misc.safeguarding.reporter_status_body', ['incident_id' => $incidentId, 'status' => $safeLabel]))
                             ->paragraph(__('emails_misc.safeguarding.reporter_status_confidentiality'))
+                            ->button(__('emails_misc.safeguarding.reporter_status_cta'), EmailTemplateBuilder::tenantUrl('/volunteering/incidents/' . $incidentId))
                             ->render();
 
                         $subject = __('emails_misc.safeguarding.reporter_status_subject', ['incident_id' => $incidentId, 'status' => $safeLabel]);
@@ -1877,6 +2097,11 @@ class SafeguardingService
                 ->where('id', $incidentId)
                 ->where('tenant_id', $tenantId)
                 ->first();
+
+            // The organisation linked to it gets a bell (no email) in plain words.
+            if ($incident && !empty($incident->organization_id)) {
+                $this->notifyOrganisationOfStatus($tenantId, $incident, $newStatus);
+            }
 
             if ($incident && in_array($incident->severity, ['high', 'critical'])) {
                 $severityLabel = strtoupper($incident->severity);
@@ -1903,31 +2128,8 @@ class SafeguardingService
                     return [$emailSubject, $emailBody];
                 };
 
-                // Email the reporter — render in reporter's locale
-                $reporter = User::where('tenant_id', $tenantId)
-                    ->where('id', $reporterId)
-                    ->first();
-                if ($reporter && !empty($reporter->email)) {
-                    LocaleContext::withLocale($reporter, function () use ($reporter, $reporterId, $incidentId, $tenantId, $renderForRecipient) {
-                        try {
-                            [$subject, $body] = $renderForRecipient();
-                            $sent = EmailDispatchService::sendRaw($reporter->email, $subject, $body, null, null, null, 'safeguarding', ['tenant_id' => $tenantId]);
-                            if (!$sent) {
-                                Log::critical('SafeguardingService: status change email failed for reporter', [
-                                    'reporter_id' => $reporterId,
-                                    'incident_id' => $incidentId,
-                                ]);
-                            }
-                        } catch (\Throwable $emailError) {
-                            Log::critical('SafeguardingService: status change email exception for reporter', [
-                                'reporter_id' => $reporterId,
-                                'incident_id' => $incidentId,
-                                'error' => $emailError->getMessage(),
-                            ]);
-                        }
-                    });
-                }
-
+                // The reporter already had their own plain update above; this alert
+                // is the staff one (it links to the broker panel), for the handler only.
                 // Email the assigned DLP if different from reporter — render in DLP's locale
                 if ($dlpUserId && $dlpUserId !== $reporterId) {
                     $dlpUser = User::where('tenant_id', $tenantId)
