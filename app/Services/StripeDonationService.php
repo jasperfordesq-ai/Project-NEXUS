@@ -204,47 +204,20 @@ class StripeDonationService
         $tenantName = (string) (($tenant->name ?? null) ?: 'Community');
         $tenantSlug = (string) (($tenant->slug ?? null) ?: '');
 
-        // Create PaymentIntent
-        try {
-            $paymentIntentParams = [
-                'amount' => self::toStripeMinorUnits($amount, $currency),
-                'currency' => $currency,
-                'description' => self::paymentDescription($tenantName, $organisation, $givingDayTitle),
-                'metadata' => array_merge([
-                    'nexus_tenant_id' => (string) $tenantId,
-                    'nexus_tenant_name' => $tenantName,
-                    'nexus_tenant_slug' => $tenantSlug,
-                    'nexus_user_id' => (string) $userId,
-                    'nexus_donation_type' => 'monetary',
-                    'nexus_payment_route' => $paymentRoute,
-                    'nexus_stripe_account_id' => $tenantStripeAccountId ?: 'platform_default',
-                ], self::attributionMetadata($organisation, $givingDayId, $givingDayTitle)),
-            ];
+        $historyRefs = static fn (int $donationId): array => [
+            'giving_day_id' => $givingDayId,
+            'donation_id' => $donationId,
+            'organization_id' => $organisation['id'] ?? null,
+        ];
 
-            if ($stripeCustomerId) {
-                $paymentIntentParams['customer'] = $stripeCustomerId;
-            }
-
-            $stripeOptions = $tenantStripeAccountId ? ['stripe_account' => $tenantStripeAccountId] : [];
-            $paymentIntent = $stripeOptions
-                ? $client->paymentIntents->create($paymentIntentParams, $stripeOptions)
-                : $client->paymentIntents->create($paymentIntentParams);
-        } catch (\Exception $e) {
-            Log::error('Stripe: failed to create PaymentIntent', [
-                'user_id' => $userId,
-                'tenant_id' => $tenantId,
-                'stripe_account_id' => $tenantStripeAccountId,
-                'amount' => $amount,
-                'currency' => $currency,
-                'error' => $e->getMessage(),
-            ]);
-            throw new \RuntimeException('Failed to create payment intent: ' . $e->getMessage());
-        }
-
-        // Create pending donation record in a transaction
+        // The pending donation row is created BEFORE the PaymentIntent, so the
+        // PaymentIntent can carry the platform donation number (nexus_donation_id)
+        // and a Stripe record can always be traced back to its donation. The
+        // intent id is stored on the row straight after; a webhook that lands
+        // in between is matched by the donation number (findDonationForIntent).
         $donation = DB::transaction(function () use (
-            $tenantId, $userId, $data, $amount, $currency, $paymentIntent, $user, $tenantStripeAccountId, $paymentRoute,
-            $givingDayId, $organisation
+            $tenantId, $userId, $data, $amount, $currency, $user, $tenantStripeAccountId, $paymentRoute,
+            $givingDayId, $organisation, $historyRefs
         ) {
             $giftAid = self::normalizeGiftAidDeclaration($data, $currency);
 
@@ -274,13 +247,79 @@ class StripeDonationService
                 'gift_aid_postcode' => $giftAid['postcode'],
                 'gift_aid_country' => $giftAid['country'],
                 'gift_aid_consented_at' => $giftAid['consented_at'],
-                'stripe_payment_intent_id' => $paymentIntent->id,
+                'stripe_payment_intent_id' => null,
                 'stripe_account_id' => $tenantStripeAccountId,
                 'created_at' => now(),
             ];
 
-            return VolDonation::create(self::filterVolDonationColumns($attributes));
+            $donation = VolDonation::create(self::filterVolDonationColumns($attributes));
+            FundraisingHistoryService::record(
+                $tenantId, 'donation_started', FundraisingHistoryService::ACTOR_MEMBER, $userId,
+                $historyRefs((int) $donation->id), $amount, strtoupper($currency), ['payment_method' => 'stripe'],
+            );
+
+            return $donation;
         });
+
+        // Create PaymentIntent
+        try {
+            $paymentIntentParams = [
+                'amount' => self::toStripeMinorUnits($amount, $currency),
+                'currency' => $currency,
+                'description' => self::paymentDescription($tenantName, $organisation, $givingDayTitle),
+                'metadata' => array_merge([
+                    'nexus_tenant_id' => (string) $tenantId,
+                    'nexus_tenant_name' => $tenantName,
+                    'nexus_tenant_slug' => $tenantSlug,
+                    'nexus_user_id' => (string) $userId,
+                    'nexus_donation_id' => (string) $donation->id,
+                    'nexus_donation_type' => 'monetary',
+                    'nexus_payment_route' => $paymentRoute,
+                    'nexus_stripe_account_id' => $tenantStripeAccountId ?: 'platform_default',
+                ], self::attributionMetadata($organisation, $givingDayId, $givingDayTitle)),
+            ];
+
+            if ($stripeCustomerId) {
+                $paymentIntentParams['customer'] = $stripeCustomerId;
+            }
+
+            $stripeOptions = $tenantStripeAccountId ? ['stripe_account' => $tenantStripeAccountId] : [];
+            $paymentIntent = $stripeOptions
+                ? $client->paymentIntents->create($paymentIntentParams, $stripeOptions)
+                : $client->paymentIntents->create($paymentIntentParams);
+        } catch (\Exception $e) {
+            // The attempt stays on record as failed, with a history entry, so
+            // the trail never has a gift that silently disappeared.
+            DB::transaction(function () use ($donation, $tenantId, $historyRefs, $e) {
+                $affected = DB::table('vol_donations')
+                    ->where('id', $donation->id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'failed']);
+                if ($affected > 0) {
+                    FundraisingHistoryService::record(
+                        $tenantId, 'donation_payment_not_started', FundraisingHistoryService::ACTOR_SYSTEM, null,
+                        $historyRefs((int) $donation->id), null, null, ['error' => get_class($e)],
+                    );
+                }
+            });
+            Log::error('Stripe: failed to create PaymentIntent', [
+                'donation_id' => $donation->id,
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $tenantStripeAccountId,
+                'amount' => $amount,
+                'currency' => $currency,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Failed to create payment intent: ' . $e->getMessage());
+        }
+
+        DB::table('vol_donations')
+            ->where('id', $donation->id)
+            ->where('tenant_id', $tenantId)
+            ->whereNull('stripe_payment_intent_id')
+            ->update(['stripe_payment_intent_id' => $paymentIntent->id]);
 
         Log::info('Stripe: PaymentIntent created for donation', [
             'donation_id' => $donation->id,
@@ -309,6 +348,57 @@ class StripeDonationService
      *
      * @param array{id:int,name:string}|null $organisation
      */
+    /**
+     * The donation a PaymentIntent belongs to. The donation row is created
+     * BEFORE the PaymentIntent (so Stripe can carry its number) and the intent
+     * id is saved a moment later, so a webhook can land in between. Fall back
+     * to the donation number in the metadata — only for a card donation in the
+     * same community that has no intent id yet — and adopt the intent id onto it.
+     */
+    private static function findDonationForIntent(object $paymentIntent, ?int $metaTenantId): ?object
+    {
+        $piId = (string) $paymentIntent->id;
+
+        $query = DB::table('vol_donations')->where('stripe_payment_intent_id', $piId);
+        if ($metaTenantId) {
+            $query->where('tenant_id', $metaTenantId);
+        }
+        $donation = $query->first();
+        if ($donation || !$metaTenantId) {
+            return $donation;
+        }
+
+        $donationId = (int) ($paymentIntent->metadata->nexus_donation_id ?? 0);
+        if ($donationId <= 0) {
+            return null;
+        }
+
+        $adopted = DB::table('vol_donations')
+            ->where('id', $donationId)
+            ->where('tenant_id', $metaTenantId)
+            ->where('payment_method', 'stripe')
+            ->whereNull('stripe_payment_intent_id')
+            ->update(['stripe_payment_intent_id' => $piId]);
+
+        return $adopted > 0
+            ? DB::table('vol_donations')->where('id', $donationId)->where('tenant_id', $metaTenantId)->first()
+            : null;
+    }
+
+    /**
+     * The record numbers a donation's history entries carry.
+     *
+     * @return array{giving_day_id: ?int, donation_id: int, organization_id: ?int}
+     */
+    private static function historyRefs(object $donation): array
+    {
+        return [
+            'giving_day_id' => !empty($donation->giving_day_id) ? (int) $donation->giving_day_id : null,
+            'donation_id' => (int) $donation->id,
+            'organization_id' => !empty($donation->organization_id) ? (int) $donation->organization_id : null,
+        ];
+    }
+
     private static function paymentDescription(string $tenantName, ?array $organisation, ?string $givingDayTitle): string
     {
         $description = $organisation !== null
@@ -438,11 +528,7 @@ class StripeDonationService
             ? (int) $paymentIntent->metadata->nexus_tenant_id
             : null;
 
-        $query = DB::table('vol_donations')->where('stripe_payment_intent_id', $piId);
-        if ($metaTenantId) {
-            $query->where('tenant_id', $metaTenantId);
-        }
-        $donation = $query->first();
+        $donation = self::findDonationForIntent($paymentIntent, $metaTenantId);
 
         if (!$donation) {
             Log::info('Stripe donation: no matching donation for PaymentIntent', [
@@ -470,7 +556,7 @@ class StripeDonationService
             return;
         }
 
-        $transitioned = DB::transaction(function () use ($donation) {
+        $transitioned = DB::transaction(function () use ($donation, $piId) {
             // Re-read under lock. The status pre-check above runs OUTSIDE this
             // transaction, so a concurrent/late charge.refunded or a reclaimed-
             // and-replayed event could have moved the row. Only pending →
@@ -499,6 +585,11 @@ class StripeDonationService
                     ->where('tenant_id', $donation->tenant_id)
                     ->increment('raised_amount', (float) $locked->amount);
             }
+
+            FundraisingHistoryService::record(
+                (int) $locked->tenant_id, 'donation_paid', FundraisingHistoryService::ACTOR_STRIPE, null,
+                self::historyRefs($locked), (float) $locked->amount, $locked->currency, null, (string) $piId,
+            );
 
             return true;
         });
@@ -671,11 +762,7 @@ class StripeDonationService
             ? (int) $paymentIntent->metadata->nexus_tenant_id
             : null;
 
-        $query = DB::table('vol_donations')->where('stripe_payment_intent_id', $piId);
-        if ($metaTenantId) {
-            $query->where('tenant_id', $metaTenantId);
-        }
-        $donation = $query->first();
+        $donation = self::findDonationForIntent($paymentIntent, $metaTenantId);
 
         if (!$donation) {
             Log::info('Stripe donation: no matching donation for failed PaymentIntent', [
@@ -688,11 +775,21 @@ class StripeDonationService
         // Only pending → failed. Stripe does not guarantee event ordering, so a
         // late payment_failed from a first attempt must never clobber a donation
         // already completed (or refunded) by a later attempt's succeeded event.
-        $affected = DB::table('vol_donations')
-            ->where('id', $donation->id)
-            ->where('tenant_id', $donation->tenant_id)
-            ->where('status', 'pending')
-            ->update(['status' => 'failed']);
+        $affected = DB::transaction(function () use ($donation, $piId) {
+            $affected = DB::table('vol_donations')
+                ->where('id', $donation->id)
+                ->where('tenant_id', $donation->tenant_id)
+                ->where('status', 'pending')
+                ->update(['status' => 'failed']);
+            if ($affected > 0) {
+                FundraisingHistoryService::record(
+                    (int) $donation->tenant_id, 'donation_failed', FundraisingHistoryService::ACTOR_STRIPE, null,
+                    self::historyRefs($donation), (float) $donation->amount, $donation->currency, null, (string) $piId,
+                );
+            }
+
+            return $affected;
+        });
 
         Log::warning('Stripe donation: payment failed', [
             'donation_id' => $donation->id,
@@ -763,7 +860,8 @@ class StripeDonationService
             $currency = strtolower((string) ($charge->currency ?? $donation->currency ?? ''));
             self::applyPartialDonationRefund(
                 $donation,
-                self::fromStripeMinorUnits($amountRefunded, $currency)
+                self::fromStripeMinorUnits($amountRefunded, $currency),
+                isset($charge->id) ? (string) $charge->id : null,
             );
             return;
         }
@@ -771,7 +869,12 @@ class StripeDonationService
         // Shared, idempotent refund-ledger step (see applyDonationRefund): the
         // admin createRefund() path and this charge.refunded webhook may race, so
         // both converge on a single decrement under a row lock.
-        self::applyDonationRefund($donation);
+        self::applyDonationRefund(
+            $donation,
+            FundraisingHistoryService::ACTOR_STRIPE,
+            null,
+            isset($charge->id) ? (string) $charge->id : null,
+        );
 
         Log::info('Stripe donation: charge refunded', [
             'donation_id' => $donation->id,
@@ -788,9 +891,13 @@ class StripeDonationService
      * racing a still-pending donation does not drive the total negative (only a
      * locked 'completed' row is decremented).
      */
-    private static function applyDonationRefund(object $donation): void
-    {
-        DB::transaction(function () use ($donation) {
+    private static function applyDonationRefund(
+        object $donation,
+        string $actorKind = FundraisingHistoryService::ACTOR_STRIPE,
+        ?int $actorUserId = null,
+        ?string $stripeObjectId = null,
+    ): void {
+        DB::transaction(function () use ($donation, $actorKind, $actorUserId, $stripeObjectId) {
             $locked = DB::table('vol_donations')
                 ->where('id', $donation->id)
                 ->where('tenant_id', $donation->tenant_id)
@@ -831,6 +938,15 @@ class StripeDonationService
                         ->decrement('raised_amount', $remainder);
                 }
             }
+
+            // The amount is what THIS refund reverses: the whole gift, less any
+            // earlier partial refund already recorded.
+            FundraisingHistoryService::record(
+                (int) $locked->tenant_id, 'donation_refunded', $actorKind, $actorUserId,
+                self::historyRefs($locked),
+                round((float) $locked->amount - (float) ($locked->amount_refunded ?? 0), 2),
+                $locked->currency, null, $stripeObjectId,
+            );
         });
     }
 
@@ -845,7 +961,7 @@ class StripeDonationService
      * @param object $donation       Pre-read vol_donations row
      * @param float  $refundedTotal  Cumulative refunded amount in donation currency
      */
-    private static function applyPartialDonationRefund(object $donation, float $refundedTotal): void
+    private static function applyPartialDonationRefund(object $donation, float $refundedTotal, ?string $chargeId = null): void
     {
         if (!Schema::hasColumn('vol_donations', 'amount_refunded')) {
             Log::warning('Stripe donation: partial refund received but vol_donations.amount_refunded is missing — run migrations; reporting stays overstated', [
@@ -854,7 +970,7 @@ class StripeDonationService
             return;
         }
 
-        DB::transaction(function () use ($donation, $refundedTotal) {
+        DB::transaction(function () use ($donation, $refundedTotal, $chargeId) {
             $locked = DB::table('vol_donations')
                 ->where('id', $donation->id)
                 ->where('tenant_id', $donation->tenant_id)
@@ -893,6 +1009,11 @@ class StripeDonationService
                     ->decrement('raised_amount', $delta);
             }
 
+            FundraisingHistoryService::record(
+                (int) $locked->tenant_id, 'donation_partially_refunded', FundraisingHistoryService::ACTOR_STRIPE, null,
+                self::historyRefs($locked), $delta, $locked->currency, ['refunded_total' => $newTotal], $chargeId,
+            );
+
             Log::info('Stripe donation: partial refund recorded', [
                 'donation_id' => $donation->id,
                 'amount_refunded_total' => $newTotal,
@@ -904,13 +1025,14 @@ class StripeDonationService
     /**
      * Create a refund for a completed donation (admin action).
      *
-     * @param int $donationId Donation ID to refund
-     * @param int $tenantId   Current tenant ID (security check)
+     * @param int      $donationId  Donation ID to refund
+     * @param int      $tenantId    Current tenant ID (security check)
+     * @param int|null $actorUserId The community admin who pressed Refund (history + Stripe metadata)
      * @return array{success: bool, refund_id: string}
      *
      * @throws \RuntimeException On Stripe API failure or invalid state
      */
-    public static function createRefund(int $donationId, int $tenantId): array
+    public static function createRefund(int $donationId, int $tenantId, ?int $actorUserId = null): array
     {
         // F-292: one refund attempt per donation at a time, and the donation's
         // state is read INSIDE that claim — two overlapping admin requests used
@@ -921,7 +1043,7 @@ class StripeDonationService
         }
 
         try {
-            return self::createRefundClaimed($donationId, $tenantId);
+            return self::createRefundClaimed($donationId, $tenantId, $actorUserId);
         } finally {
             $lock->release();
         }
@@ -930,7 +1052,7 @@ class StripeDonationService
     /**
      * @return array{success: bool, refund_id: string}
      */
-    private static function createRefundClaimed(int $donationId, int $tenantId): array
+    private static function createRefundClaimed(int $donationId, int $tenantId, ?int $actorUserId): array
     {
         $donation = DB::table('vol_donations')
             ->where('id', $donationId)
@@ -953,8 +1075,17 @@ class StripeDonationService
         $stripeAccountId = DonationStripeAccountService::normalizeAccountId($donation->stripe_account_id ?? null);
 
         try {
+            // The refund carries the same trail as the payment, so the Stripe
+            // dashboard shows which donation was refunded and by whom.
             $refundParams = [
                 'payment_intent' => $donation->stripe_payment_intent_id,
+                'metadata' => array_filter([
+                    'nexus_tenant_id' => (string) $tenantId,
+                    'nexus_donation_id' => (string) $donationId,
+                    'nexus_giving_day_id' => !empty($donation->giving_day_id) ? (string) $donation->giving_day_id : null,
+                    'nexus_organization_id' => !empty($donation->organization_id) ? (string) $donation->organization_id : null,
+                    'nexus_refunded_by_user_id' => $actorUserId ? (string) $actorUserId : null,
+                ]),
             ];
             $stripeOptions = DonationStripeAccountService::stripeOptionsForAccountId($stripeAccountId);
             // F-292: a stable key per donation, so a repeated request is the
@@ -976,7 +1107,16 @@ class StripeDonationService
         // Re-reading the locked row here (instead of trusting the stale pre-Stripe
         // read) ensures the giving day is decremented exactly once whichever path
         // commits first (VOL-BE-003).
-        self::applyDonationRefund($donation);
+        FundraisingHistoryService::record(
+            $tenantId, 'donation_refund_requested', FundraisingHistoryService::ACTOR_COMMUNITY_ADMIN, $actorUserId,
+            self::historyRefs($donation), (float) $donation->amount, $donation->currency, null, (string) $refund->id,
+        );
+        self::applyDonationRefund(
+            $donation,
+            FundraisingHistoryService::ACTOR_COMMUNITY_ADMIN,
+            $actorUserId,
+            (string) $refund->id,
+        );
 
         Log::info('Stripe donation: admin refund processed', [
             'donation_id' => $donationId,

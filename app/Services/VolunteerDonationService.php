@@ -260,6 +260,11 @@ class VolunteerDonationService
                 $attributes['organization_id'] = $organisation['id'] ?? null;
             }
             $donation = VolDonation::create($attributes);
+            FundraisingHistory::record($tenantId, 'donation_started', FundraisingHistory::ACTOR_MEMBER, $userId, [
+                'giving_day_id' => $givingDayId,
+                'donation_id' => (int) $donation->id,
+                'organization_id' => $organisation['id'] ?? null,
+            ], $amount, $currency, ['payment_method' => $paymentMethod]);
 
             // Increment giving day raised_amount only for completed donations
             if ($givingDayId !== null && $status === 'completed') {
@@ -323,9 +328,9 @@ class VolunteerDonationService
      * @throws \RuntimeException         If the donation does not exist for this tenant
      * @throws \InvalidArgumentException If the donation cannot be completed manually
      */
-    public static function markCompleted(int $donationId, int $tenantId): array
+    public static function markCompleted(int $donationId, int $tenantId, ?int $actorUserId = null): array
     {
-        return DB::transaction(function () use ($donationId, $tenantId) {
+        return DB::transaction(function () use ($donationId, $tenantId, $actorUserId) {
             $donation = DB::table('vol_donations')
                 ->where('id', $donationId)
                 ->where('tenant_id', $tenantId)
@@ -359,6 +364,12 @@ class VolunteerDonationService
                     ->where('tenant_id', $tenantId)
                     ->increment('raised_amount', (float) $donation->amount);
             }
+
+            FundraisingHistory::record($tenantId, 'donation_paid', FundraisingHistory::ACTOR_COMMUNITY_ADMIN, $actorUserId, [
+                'giving_day_id' => $donation->giving_day_id !== null ? (int) $donation->giving_day_id : null,
+                'donation_id' => (int) $donation->id,
+                'organization_id' => ($donation->organization_id ?? null) !== null ? (int) $donation->organization_id : null,
+            ], (float) $donation->amount, $donation->currency, ['payment_method' => $donation->payment_method]);
 
             return ['id' => (int) $donation->id, 'status' => 'completed', 'already_completed' => false];
         });

@@ -121,11 +121,11 @@ class DonationPaymentController extends BaseApiController
      */
     public function adminRefund(int $id): JsonResponse
     {
-        $this->requireAdmin();
+        $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
         try {
-            $result = StripeDonationService::createRefund($id, $tenantId);
+            $result = StripeDonationService::createRefund($id, $tenantId, $adminId);
 
             return $this->respondWithData($result);
         } catch (\RuntimeException $e) {

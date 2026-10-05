@@ -860,10 +860,10 @@ class VolunteerCommunityController extends BaseApiController
     public function completeDonation(string $id): JsonResponse
     {
         $this->ensureFeature();
-        $this->requireAdmin();
+        $adminId = $this->requireAdmin();
 
         try {
-            $result = VolunteerDonationService::markCompleted((int) $id, TenantContext::getId());
+            $result = VolunteerDonationService::markCompleted((int) $id, TenantContext::getId(), $adminId);
             return $this->respondWithData($result);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
