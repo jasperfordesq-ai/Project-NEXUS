@@ -70,9 +70,9 @@ describe('HandoverList', () => {
     unmount();
 
     render(<HandoverList data={data(items)} onCancel={onCancel} />);
-    const buttons = screen.getAllByRole('button', { name: 'Cancel hand-over' });
-    expect(buttons).toHaveLength(1);
-    fireEvent.click(buttons[0]);
+    const [cancel, ...others] = screen.getAllByRole('button', { name: 'Cancel hand-over' });
+    expect(others).toHaveLength(0);
+    fireEvent.click(cancel as HTMLElement);
     expect(onCancel).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 
@@ -80,9 +80,9 @@ describe('HandoverList', () => {
     const onConfirm = vi.fn();
     render(<HandoverList data={data([handover({ id: 1 }), handover({ id: 2, status: 'cancelled' })])} onConfirm={onConfirm} />);
 
-    const buttons = screen.getAllByRole('button', { name: 'Confirm received' });
-    expect(buttons).toHaveLength(1);
-    fireEvent.click(buttons[0]);
+    const [confirm, ...others] = screen.getAllByRole('button', { name: 'Confirm received' });
+    expect(others).toHaveLength(0);
+    fireEvent.click(confirm as HTMLElement);
     expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 });
