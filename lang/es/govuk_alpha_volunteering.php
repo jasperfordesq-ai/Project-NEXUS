@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'El miembro que eligió antes',
         'error_incident_person_search_short' => 'Introduzca al menos 2 letras del nombre de la persona para buscarla',
         'error_incident_person_not_searched' => 'Seleccione «Buscar miembro» para localizar a la persona que ha nombrado, o borre el nombre',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Si alguien está en peligro inmediato, llame ahora al número de emergencias local. Este formulario no se revisa a todas horas.',
+        'incident_who_is_told_summary' => 'Quién será informado de este informe',
+        'incident_who_is_told_staff' => 'El equipo de protección de su comunidad —sus administradores, intermediarios y coordinadores— ve el informe completo de inmediato.',
+        'incident_who_is_told_organisation' => 'Si elige una organización, su propietario, sus administradores y su responsable de protección sabrán que se ha vinculado un informe a ella, de qué tipo es y cuándo ocurrió. No sabrán quién presentó el informe, a quién se refiere ni qué dice.',
+        'incident_who_is_told_subject' => 'Este servicio no informa a la persona a la que se refiere el informe, y nadie gestiona un informe sobre sí mismo.',
     ],
 ];

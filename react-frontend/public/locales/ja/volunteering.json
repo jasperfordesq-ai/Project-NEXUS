@@ -601,7 +601,12 @@
     "incident_person_search": "名前でメンバーを検索",
     "incident_person_empty": "メンバーが見つかりません。",
     "incident_person_clear": "削除",
-    "incident_options_unavailable": "団体の一覧を読み込めませんでした。報告は送信できます。起きた場所は説明欄に記入してください。"
+    "incident_options_unavailable": "団体の一覧を読み込めませんでした。報告は送信できます。起きた場所は説明欄に記入してください。",
+    "incident_emergency_warning": "誰かが差し迫った危険にある場合は、今すぐ地域の緊急通報番号に電話してください。このフォームは常時確認されているわけではありません。",
+    "incident_who_is_told_summary": "この報告を知らされる人",
+    "incident_who_is_told_staff": "コミュニティの安全保護チーム（管理者、ブローカー、コーディネーター）が報告の全内容をすぐに確認します。",
+    "incident_who_is_told_organisation": "団体を選択した場合、その団体のオーナー、管理者、安全保護担当者には、団体に関連する報告があったこと、報告の種類、発生日が伝えられます。報告者、報告の対象者、報告の内容は伝えられません。",
+    "incident_who_is_told_subject": "報告の対象者には、このサービスから報告について知らされることはありません。また、自分自身に関する報告を自分で扱うことはありません。"
   },
   "accessibility": {
     "heading": "アクセシビリティと配慮",

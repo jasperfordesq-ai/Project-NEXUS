@@ -33,11 +33,14 @@ import { BrokerSkeleton } from '@/broker/components/BrokerSkeleton';
 import { useTranslation } from 'react-i18next';
 
 import {
+  Autocomplete,
+  AutocompleteItem,
   Button,
   Card,
   CardBody,
   CardHeader,
   Chip,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -45,6 +48,7 @@ import {
   ModalHeader,
   Select,
   SelectItem,
+  Switch,
   Textarea,
 } from '@/components/ui';
 
@@ -68,6 +72,25 @@ interface Incident {
   assigned_to_name?: string | null;
   subject_user_id?: number | null;
   involved_user_id?: number | null;
+  incident_date?: string | null;
+  created_at?: string | null;
+  organization_id?: number | null;
+  opportunity_id?: number | null;
+  authority_notified?: number | boolean | null;
+  authority_reference?: string | null;
+}
+
+/** What an incident can be filed under: the community's organisations and their opportunities. */
+interface FilingOrganisation { id: number; name: string; }
+interface FilingOpportunity { id: number; title: string; organization_id: number; organization_name: string; }
+
+const INCIDENT_TYPES = ['concern', 'allegation', 'disclosure', 'near_miss', 'other'] as const;
+const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
+
+/** Today in the browser's own calendar, for the date field's upper bound. */
+function todayIso(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
 /** Someone an incident can be handed to — active broker-tier staff. */
@@ -168,6 +191,17 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
   const [handlerId, setHandlerId] = useState<string>(NO_HANDLER);
   const [handlers, setHandlers] = useState<IncidentHandler[]>([]);
 
+  // How the incident is filed — staff can correct what the reporter chose, or
+  // tie it to an organisation and opportunity the reporter did not pick.
+  const [filing, setFiling] = useState({
+    type: 'concern', severity: 'medium', date: '', organizationId: '', opportunityId: '',
+    authorityNotified: false, authorityReference: '',
+  });
+  const [filingOrganisations, setFilingOrganisations] = useState<FilingOrganisation[]>([]);
+  const [filingOpportunities, setFilingOpportunities] = useState<FilingOpportunity[]>([]);
+  const [filingOptionsState, setFilingOptionsState] = useState<'idle' | 'loading' | 'ready' | 'failed'>('idle');
+  const [filingError, setFilingError] = useState<string | null>(null);
+
   // DLP assignments
   const [dlpAssignments, setDlpAssignments] = useState<DlpAssignment[]>([]);
   const [dlpLoading, setDlpLoading] = useState(false);
@@ -241,22 +275,103 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
+  const loadFilingOptions = useCallback(async () => {
+    setFilingOptionsState('loading');
+    try {
+      const res = await adminVolunteering.getIncidentReportOptions();
+      const payload = res?.success && res.data
+        ? parsePayload<{ organisations?: FilingOrganisation[]; opportunities?: FilingOpportunity[] }>(res.data)
+        : null;
+      if (!payload) {
+        setFilingOptionsState('failed');
+        return;
+      }
+      setFilingOrganisations(payload.organisations || []);
+      setFilingOpportunities(payload.opportunities || []);
+      setFilingOptionsState('ready');
+    } catch {
+      setFilingOptionsState('failed');
+    }
+  }, []);
+
+  const filingFrom = (incident: Incident) => ({
+    type: incident.type,
+    severity: incident.severity,
+    date: (incident.incident_date || '').slice(0, 10),
+    organizationId: incident.organization_id ? String(incident.organization_id) : '',
+    opportunityId: incident.opportunity_id ? String(incident.opportunity_id) : '',
+    authorityNotified: !!Number(incident.authority_notified ?? 0),
+    authorityReference: incident.authority_reference || '',
+  });
+
   const openUpdate = (incident: Incident) => {
     setSelectedIncident(incident);
     setUpdateStatus(incident.status);
     setActionTaken(incident.action_taken || '');
     setResolutionNotes(incident.resolution_notes || '');
     setHandlerId(incident.assigned_to ? String(incident.assigned_to) : NO_HANDLER);
+    setFiling(filingFrom(incident));
+    setFilingError(null);
+    if (filingOptionsState === 'idle' || filingOptionsState === 'failed') void loadFilingOptions();
     setUpdateModal(true);
+  };
+
+  // An inactive or removed organisation is not in the community's list, but an
+  // incident already filed under it must still show it.
+  const organisationChoices: FilingOrganisation[] = (() => {
+    const list = [...filingOrganisations];
+    const currentId = selectedIncident?.organization_id;
+    if (currentId && !list.some((o) => o.id === currentId)) {
+      list.unshift({ id: currentId, name: selectedIncident?.organization_name || `#${currentId}` });
+    }
+    return list;
+  })();
+  const opportunityChoices: FilingOpportunity[] = (() => {
+    const list = filing.organizationId
+      ? filingOpportunities.filter((o) => String(o.organization_id) === filing.organizationId)
+      : filingOpportunities;
+    const currentId = selectedIncident?.opportunity_id;
+    if (currentId && String(currentId) === filing.opportunityId && !list.some((o) => o.id === currentId)) {
+      return [{ id: currentId, title: selectedIncident?.opportunity_title || `#${currentId}`, organization_id: Number(filing.organizationId) || 0, organization_name: '' }, ...list];
+    }
+    return list;
+  })();
+
+  const chooseFilingOrganisation = (key: string | null) => {
+    setFiling((f) => {
+      const keep = !!key && filingOpportunities.some((o) => String(o.id) === f.opportunityId && String(o.organization_id) === key);
+      return { ...f, organizationId: key ?? '', opportunityId: keep ? f.opportunityId : '' };
+    });
+  };
+  const chooseFilingOpportunity = (key: string | null) => {
+    const chosen = key ? filingOpportunities.find((o) => String(o.id) === key) : undefined;
+    // Choosing an opportunity also files the incident under its organisation.
+    setFiling((f) => ({ ...f, opportunityId: key ?? '', organizationId: chosen ? String(chosen.organization_id) : f.organizationId }));
   };
 
   const handleUpdate = async () => {
     if (!selectedIncident) return;
     setActionLoading(true);
     try {
-      const data: { status: string; action_taken?: string; resolution_notes?: string; assigned_to?: number | null } = {
+      if (filing.date && filing.date > todayIso()) {
+        setFilingError(t('volunteering.incident_date_future'));
+        setActionLoading(false);
+        return;
+      }
+      const data: Parameters<typeof adminVolunteering.updateIncident>[1] = {
         status: updateStatus,
       };
+      // Only what changed is sent: a newly linked organisation is told.
+      const before = filingFrom(selectedIncident);
+      if (filing.type !== before.type) data.incident_type = filing.type;
+      if (filing.severity !== before.severity) data.severity = filing.severity;
+      if (filing.date && filing.date !== before.date) data.incident_date = filing.date;
+      if (filing.organizationId !== before.organizationId || filing.opportunityId !== before.opportunityId) {
+        data.organization_id = filing.organizationId ? Number(filing.organizationId) : null;
+        data.opportunity_id = filing.opportunityId ? Number(filing.opportunityId) : null;
+      }
+      if (filing.authorityNotified !== before.authorityNotified) data.authority_notified = filing.authorityNotified;
+      if (filing.authorityReference.trim() !== before.authorityReference) data.authority_reference = filing.authorityReference.trim();
       if (actionTaken.trim()) data.action_taken = actionTaken.trim();
       if (resolutionNotes.trim()) data.resolution_notes = resolutionNotes.trim();
       // Send the handler only when it changed: a new handler is notified.
@@ -663,23 +778,6 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                 )}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-muted">{t('volunteering.col_incident_type')}:</span>
-                    <p className="font-medium">{t(`volunteering.incident_type_${selectedIncident.type}`)}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted">{t('volunteering.col_severity')}:</span>
-                    <p>
-                      <Chip
-                        size="sm"
-                        color={SEVERITY_COLORS[selectedIncident.severity] || 'default'}
-                        variant="soft"
-                        className={selectedIncident.severity === 'critical' ? 'font-bold' : ''}
-                      >
-                        {t(`volunteering.severity_${selectedIncident.severity}`)}
-                      </Chip>
-                    </p>
-                  </div>
-                  <div>
                     <span className="text-muted">{t('volunteering.col_reporter')}:</span>
                     <p className="font-medium">{selectedIncident.reporter_name}</p>
                   </div>
@@ -688,17 +786,9 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                     <p className="font-medium">{selectedIncident.subject_name || '--'}</p>
                   </div>
                   <div>
-                    <span className="text-muted">{t('volunteering.col_organization')}:</span>
-                    <p className="font-medium">{selectedIncident.organization_name || '--'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted">{t('volunteering.col_opportunity')}:</span>
-                    <p className="font-medium">{selectedIncident.opportunity_title || '--'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted">{t('volunteering.col_date')}:</span>
+                    <span className="text-muted">{t('volunteering.reported_on')}:</span>
                     <p className="font-medium">
-                      {selectedIncident.date ? new Date(selectedIncident.date).toLocaleDateString(getFormattingLocale()) : '--'}
+                      {selectedIncident.created_at ? new Date(selectedIncident.created_at).toLocaleDateString(getFormattingLocale()) : '--'}
                     </p>
                   </div>
                 </div>
@@ -709,6 +799,96 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                     <p className="text-sm mt-1">{selectedIncident.description}</p>
                   </div>
                 )}
+
+                {/* How it is filed. Staff can correct the reporter's choices and
+                    link an organisation they did not pick. */}
+                <section aria-labelledby="incident-filing-heading" className="space-y-3 rounded-2xl border border-divider/70 p-3">
+                  <h3 id="incident-filing-heading" className="text-sm font-semibold">{t('volunteering.filing_heading')}</h3>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Select
+                      label={t('volunteering.col_incident_type')}
+                      selectedKeys={[filing.type]}
+                      onSelectionChange={(keys) => setFiling((f) => ({ ...f, type: (Array.from(keys)[0] as string) || f.type }))}
+                    >
+                      {INCIDENT_TYPES.map((type) => (
+                        <SelectItem key={type} id={type}>{t(`volunteering.incident_type_${type}`)}</SelectItem>
+                      ))}
+                    </Select>
+                    <Select
+                      label={t('volunteering.col_severity')}
+                      selectedKeys={[filing.severity]}
+                      onSelectionChange={(keys) => setFiling((f) => ({ ...f, severity: (Array.from(keys)[0] as string) || f.severity }))}
+                    >
+                      {SEVERITIES.map((sev) => (
+                        <SelectItem key={sev} id={sev}>{t(`volunteering.severity_${sev}`)}</SelectItem>
+                      ))}
+                    </Select>
+                  </div>
+                  <Input
+                    type="date"
+                    label={t('volunteering.incident_date_label')}
+                    value={filing.date}
+                    max={todayIso()}
+                    onValueChange={(v) => { setFilingError(null); setFiling((f) => ({ ...f, date: v })); }}
+                    isInvalid={!!filingError}
+                    errorMessage={filingError ?? undefined}
+                  />
+                  {filingOptionsState === 'failed' ? (
+                    <p className="text-sm text-warning" role="status">{t('volunteering.filing_options_unavailable')}</p>
+                  ) : (
+                    <>
+                      <Autocomplete
+                        label={t('volunteering.col_organization')}
+                        placeholder={t('volunteering.filing_no_organisation')}
+                        searchPlaceholder={t('volunteering.filing_search_organisations')}
+                        value={filing.organizationId || null}
+                        onChange={(key) => chooseFilingOrganisation(key && !Array.isArray(key) ? String(key) : null)}
+                        isDisabled={filingOptionsState !== 'ready' && organisationChoices.length === 0}
+                      >
+                        {organisationChoices.map((org) => (
+                          <AutocompleteItem key={String(org.id)} id={String(org.id)} textValue={org.name}>{org.name}</AutocompleteItem>
+                        ))}
+                      </Autocomplete>
+                      {filing.organizationId && (
+                        <Button size="sm" variant="tertiary" onPress={() => chooseFilingOrganisation(null)}>
+                          {t('volunteering.filing_clear_organisation')}
+                        </Button>
+                      )}
+                      <Autocomplete
+                        label={t('volunteering.col_opportunity')}
+                        placeholder={t('volunteering.filing_no_opportunity')}
+                        searchPlaceholder={t('volunteering.filing_search_opportunities')}
+                        value={filing.opportunityId || null}
+                        onChange={(key) => chooseFilingOpportunity(key && !Array.isArray(key) ? String(key) : null)}
+                        isDisabled={opportunityChoices.length === 0}
+                      >
+                        {opportunityChoices.map((opp) => (
+                          <AutocompleteItem key={String(opp.id)} id={String(opp.id)} textValue={`${opp.title} ${opp.organization_name}`}>
+                            {filing.organizationId || !opp.organization_name ? opp.title : `${opp.title} — ${opp.organization_name}`}
+                          </AutocompleteItem>
+                        ))}
+                      </Autocomplete>
+                      {filing.organizationId !== (selectedIncident.organization_id ? String(selectedIncident.organization_id) : '') && filing.organizationId && (
+                        <p className="text-xs text-muted" role="note">{t('volunteering.filing_org_notice')}</p>
+                      )}
+                    </>
+                  )}
+                  <Switch
+                    isSelected={filing.authorityNotified}
+                    onValueChange={(v) => setFiling((f) => ({ ...f, authorityNotified: v }))}
+                  >
+                    {t('volunteering.authority_notified_label')}
+                  </Switch>
+                  {filing.authorityNotified && (
+                    <Input
+                      label={t('volunteering.authority_reference_label')}
+                      description={t('volunteering.authority_reference_help')}
+                      maxLength={100}
+                      value={filing.authorityReference}
+                      onValueChange={(v) => setFiling((f) => ({ ...f, authorityReference: v }))}
+                    />
+                  )}
+                </section>
 
                 <Select
                   label={t('volunteering.status')}

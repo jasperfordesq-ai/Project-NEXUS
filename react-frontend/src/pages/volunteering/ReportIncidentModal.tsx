@@ -209,6 +209,20 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
           </ModalHeading>
         </ModalHeader>
         <ModalBody className="space-y-4">
+          {/* A report form is never the way to get help for someone in danger right now. */}
+          <div role="note" className="flex gap-2 rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm text-theme-primary">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden="true" />
+            <p className="font-medium">{t('safeguarding.incident_emergency_warning')}</p>
+          </div>
+          {/* Said before they write anything: who is told, and what the organisation is not told. */}
+          <details className="rounded-xl border border-theme-default bg-theme-elevated p-3 text-sm">
+            <summary className="cursor-pointer font-medium text-theme-primary">{t('safeguarding.incident_who_is_told_summary')}</summary>
+            <div className="mt-2 space-y-2 text-theme-muted">
+              <p>{t('safeguarding.incident_who_is_told_staff')}</p>
+              <p>{t('safeguarding.incident_who_is_told_organisation')}</p>
+              <p>{t('safeguarding.incident_who_is_told_subject')}</p>
+            </div>
+          </details>
           <Input label={t('safeguarding.incident_title')} isRequired value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} classNames={fieldWrapper} />
 
           <Select

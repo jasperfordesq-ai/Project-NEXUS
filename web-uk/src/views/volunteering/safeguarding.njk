@@ -178,6 +178,27 @@
       {{ t("govuk_alpha_volunteering.safeguarding.report_notice") }}
     </div>
 
+    {# A report form is never the way to get help for someone in danger right now. #}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+        {{ t("govuk_alpha_volunteering.safeguarding.incident_emergency_warning") }}
+      </strong>
+    </div>
+
+    {# Said before they write anything: who is told, and what the organisation is not told. #}
+    <details class="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">{{ t("govuk_alpha_volunteering.safeguarding.incident_who_is_told_summary") }}</span>
+      </summary>
+      <div class="govuk-details__text">
+        <p class="govuk-body">{{ t("govuk_alpha_volunteering.safeguarding.incident_who_is_told_staff") }}</p>
+        <p class="govuk-body">{{ t("govuk_alpha_volunteering.safeguarding.incident_who_is_told_organisation") }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.safeguarding.incident_who_is_told_subject") }}</p>
+      </div>
+    </details>
+
     <form method="post" action="{{ urlFor('/volunteering/incidents') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       {# Pressing Enter in a text box "clicks" the FIRST submit button in the form, which

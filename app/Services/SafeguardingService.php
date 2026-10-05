@@ -642,8 +642,14 @@ class SafeguardingService
                 'title' => $data['title'] ?? '',
             ]);
 
-            // Notify all admins/brokers of new incident (legally required for ALL severities)
-            $this->notifyAdminsOfIncident($tenantId, $reporterId, $id, $data['title'] ?? '', $severity, $incidentType);
+            // Notify all admins/brokers of new incident (legally required for ALL
+            // severities), then the organisation it is linked to, if any.
+            if ($record) {
+                $staffTold = $this->notifyAdminsOfIncident($tenantId, $record);
+                if (!empty($record->organization_id)) {
+                    $this->notifyOrganisationOfIncident($tenantId, $record, $staffTold);
+                }
+            }
 
             return $record ? (array) $record : [];
         } catch (\Throwable $e) {
@@ -892,7 +898,13 @@ class SafeguardingService
                 }
             }
 
-            $allowedFields = ['status', 'action_taken', 'resolution_notes', 'assigned_to', 'severity'];
+            $allowedFields = [
+                'status', 'action_taken', 'resolution_notes', 'assigned_to', 'severity',
+                // Staff can correct how an incident was filed, and tie it to an
+                // organisation and opportunity after the fact.
+                'incident_type', 'incident_date', 'organization_id', 'opportunity_id',
+                'authority_notified', 'authority_reference',
+            ];
             $updates = [];
 
             foreach ($allowedFields as $field) {
@@ -908,6 +920,39 @@ class SafeguardingService
             // A form sends the handler as a string; "nobody" is empty or null.
             if (array_key_exists('assigned_to', $updates)) {
                 $updates['assigned_to'] = !empty($updates['assigned_to']) ? (int) $updates['assigned_to'] : null;
+            }
+
+            if (array_key_exists('severity', $updates)
+                && !in_array($updates['severity'], ['low', 'medium', 'high', 'critical'], true)) {
+                return false;
+            }
+            if (array_key_exists('incident_type', $updates)
+                && !in_array($updates['incident_type'], ['concern', 'allegation', 'disclosure', 'near_miss', 'other'], true)) {
+                return false;
+            }
+            if (array_key_exists('incident_date', $updates)) {
+                $date = is_string($updates['incident_date']) ? trim($updates['incident_date']) : '';
+                $parsed = $date !== '' ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
+                // Same rule as reporting: a real date, today or earlier.
+                if (!$parsed || $parsed->format('Y-m-d') !== $date || $date > now()->toDateString()) {
+                    return false;
+                }
+                $updates['incident_date'] = $date;
+            }
+            if (array_key_exists('authority_notified', $updates)) {
+                $updates['authority_notified'] = filter_var($updates['authority_notified'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            }
+            if (array_key_exists('authority_reference', $updates)) {
+                $reference = is_string($updates['authority_reference']) ? trim($updates['authority_reference']) : '';
+                if (mb_strlen($reference) > 100) {
+                    return false;
+                }
+                $updates['authority_reference'] = $reference !== '' ? $reference : null;
+            }
+            foreach (['organization_id', 'opportunity_id'] as $idField) {
+                if (array_key_exists($idField, $updates)) {
+                    $updates[$idField] = !empty($updates[$idField]) ? (int) $updates[$idField] : null;
+                }
             }
 
             if (isset($data['status']) && in_array($data['status'], ['resolved', 'closed'])) {
@@ -945,6 +990,42 @@ class SafeguardingService
                 }
             }
 
+            // Organisation and opportunity must belong to this community and to
+            // each other. Choosing an opportunity alone files the incident under
+            // its organisation; changing the organisation drops an opportunity
+            // that belongs to the old one.
+            if (array_key_exists('organization_id', $updates) || array_key_exists('opportunity_id', $updates)) {
+                $orgId = array_key_exists('organization_id', $updates)
+                    ? $updates['organization_id']
+                    : (!empty($currentIncident->organization_id) ? (int) $currentIncident->organization_id : null);
+                $oppId = array_key_exists('opportunity_id', $updates)
+                    ? $updates['opportunity_id']
+                    : (!empty($currentIncident->opportunity_id) ? (int) $currentIncident->opportunity_id : null);
+
+                if ($orgId !== null && !DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', $tenantId)->exists()) {
+                    return false;
+                }
+                if ($oppId !== null) {
+                    $oppOrg = DB::table('vol_opportunities')
+                        ->where('id', $oppId)
+                        ->where('tenant_id', $tenantId)
+                        ->value('organization_id');
+                    if ($oppOrg === null) {
+                        return false;
+                    }
+                    if ($orgId === null && array_key_exists('opportunity_id', $updates) && !array_key_exists('organization_id', $updates)) {
+                        $orgId = (int) $oppOrg;
+                    } elseif ((int) $oppOrg !== (int) $orgId) {
+                        if (array_key_exists('opportunity_id', $updates)) {
+                            return false; // an explicit, mismatched pair
+                        }
+                        $oppId = null; // the old opportunity belonged to the old organisation
+                    }
+                }
+                $updates['organization_id'] = $orgId;
+                $updates['opportunity_id'] = $oppId;
+            }
+
             $newAssignee = null;
             if (isset($updates['assigned_to']) && $updates['assigned_to'] !== null) {
                 $newAssignee = User::where('id', (int) $updates['assigned_to'])
@@ -971,8 +1052,25 @@ class SafeguardingService
                 $this->notifyIncidentAssignee($newAssignee, $tenantId, $incidentId, $currentIncident);
             }
 
-            // Notify reporter and assigned DLP of status changes
-            if (isset($data['status']) && $currentIncident) {
+            // An organisation newly linked to the incident is told, as it would
+            // have been had the reporter chosen it. Re-saving the same one, or
+            // removing it, stays quiet.
+            $newOrgId = array_key_exists('organization_id', $updates) ? (int) ($updates['organization_id'] ?? 0) : 0;
+            if ($newOrgId > 0 && $newOrgId !== (int) ($currentIncident->organization_id ?? 0)) {
+                $updatedIncident = DB::table('vol_safeguarding_incidents')
+                    ->where('id', $incidentId)
+                    ->where('tenant_id', $tenantId)
+                    ->first();
+                if ($updatedIncident) {
+                    $this->notifyOrganisationOfIncident($tenantId, $updatedIncident);
+                }
+            }
+
+            // Notify reporter and assigned DLP of status changes. The staff screen
+            // sends the status with every save, so only a status that actually
+            // changed is news — re-saving used to tell the reporter "marked as
+            // opened" each time anyone touched the incident.
+            if (isset($data['status']) && $currentIncident && (string) $data['status'] !== (string) ($currentIncident->status ?? '')) {
                 $this->notifyIncidentStatusChange(
                     $tenantId,
                     $incidentId,
@@ -1334,23 +1432,36 @@ class SafeguardingService
     /**
      * Notify all admins/brokers of a new safeguarding incident.
      */
-    private function notifyAdminsOfIncident(int $tenantId, int $reporterId, int $incidentId, string $title, string $severity, string $type): void
+    private function notifyAdminsOfIncident(int $tenantId, object $incident): array
     {
+        $notified = [];
         try {
+            $incidentId = (int) $incident->id;
+            $reporterId = (int) ($incident->reported_by ?? 0);
             $reporter = User::where('tenant_id', $tenantId)
                 ->where('id', $reporterId)
                 ->first(['first_name', 'last_name', 'profile_type', 'organization_name']);
             $reporterName = $reporter ? UserDisplayName::resolve($reporter) : __('emails_misc.safeguarding.reporter_fallback_name');
+            $context = $this->incidentContext($tenantId, $incident);
 
             $staffUsers = DB::select(
                 "SELECT id, email, preferred_language FROM users WHERE tenant_id = ? AND " . SafeguardingStaff::sqlCondition() . " AND status = 'active'",
                 [$tenantId]
             );
 
+            $title = (string) ($incident->title ?? '');
+            $severity = (string) ($incident->severity ?? '');
             $severityLabel = strtoupper($severity);
 
             foreach ($staffUsers as $staff) {
-                LocaleContext::withLocale($staff, function () use ($staff, $tenantId, $incidentId, $reporterName, $title, $severity, $severityLabel, $type) {
+                // F-507: nobody is told about an incident that is about them —
+                // not by bell, not by email. Every other staff member is.
+                if (self::isIncidentAboutUser($incident, (int) $staff->id)) {
+                    continue;
+                }
+                $notified[] = (int) $staff->id;
+
+                LocaleContext::withLocale($staff, function () use ($staff, $tenantId, $incident, $incidentId, $reporterName, $title, $severity, $severityLabel, $context) {
                     $message = __('emails_misc.safeguarding.incident_reported_bell', ['severity' => $severityLabel, 'reporter' => $reporterName, 'title' => $title]);
 
                     \App\Models\Notification::create([
@@ -1366,22 +1477,32 @@ class SafeguardingService
                     // Severity label is included in subject for prioritization
                     if (!empty($staff->email)) {
                         try {
+                            $typeLabel = $this->incidentTypeLabel((string) ($incident->incident_type ?? 'other'));
                             $safeReporterName = htmlspecialchars($reporterName, ENT_QUOTES, 'UTF-8');
                             $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
                             $safeSeverity = htmlspecialchars($severityLabel, ENT_QUOTES, 'UTF-8');
-                            $safeType = htmlspecialchars($type, ENT_QUOTES, 'UTF-8');
+                            $safeType = htmlspecialchars($typeLabel, ENT_QUOTES, 'UTF-8');
+
+                            $details = [
+                                __('emails_misc.safeguarding.info_card_reported_by') => $safeReporterName,
+                                __('emails_misc.safeguarding.info_card_title')       => $safeTitle,
+                                __('emails_misc.safeguarding.info_card_severity')    => $safeSeverity,
+                                __('emails_misc.safeguarding.info_card_type')        => $safeType,
+                                __('emails_misc.safeguarding.info_card_organisation') => htmlspecialchars($context['organisation'] ?? __('emails_misc.safeguarding.info_card_none'), ENT_QUOTES, 'UTF-8'),
+                            ];
+                            if (!empty($context['opportunity'])) {
+                                $details[__('emails_misc.safeguarding.info_card_opportunity')] = htmlspecialchars($context['opportunity'], ENT_QUOTES, 'UTF-8');
+                            }
+                            if (!empty($context['date'])) {
+                                $details[__('emails_misc.safeguarding.info_card_date')] = htmlspecialchars($context['date'], ENT_QUOTES, 'UTF-8');
+                            }
 
                             $emailBody = EmailTemplateBuilder::make()
                                 ->theme('danger')
                                 ->title(__('emails_misc.safeguarding.incident_reported_title'))
                                 ->previewText(__('emails_misc.safeguarding.incident_reported_preview', ['severity' => $safeSeverity, 'type' => $safeType, 'reporter' => $safeReporterName]))
                                 ->highlight(__('emails_misc.safeguarding.incident_reported_highlight', ['severity' => $safeSeverity]), '🚨')
-                                ->infoCard([
-                                    __('emails_misc.safeguarding.info_card_reported_by') => $safeReporterName,
-                                    __('emails_misc.safeguarding.info_card_title')       => $safeTitle,
-                                    __('emails_misc.safeguarding.info_card_severity')    => $safeSeverity,
-                                    __('emails_misc.safeguarding.info_card_type')        => $safeType,
-                                ], __('emails_misc.safeguarding.info_card_incident_details'))
+                                ->infoCard($details, __('emails_misc.safeguarding.info_card_incident_details'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_review'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_auto_note'))
                                 ->button(__('emails_misc.safeguarding.incident_reported_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
@@ -1418,6 +1539,203 @@ class SafeguardingService
         } catch (\Throwable $e) {
             Log::error('SafeguardingService::notifyAdminsOfIncident error: ' . $e->getMessage());
         }
+
+        return $notified;
+    }
+
+    /**
+     * The people who answer for an organisation: its owner, its active owners and
+     * admins, and its designated liaison person and deputy. Ids only, de-duplicated.
+     *
+     * @return list<int>
+     */
+    public static function organisationContactIds(int $tenantId, int $organizationId): array
+    {
+        if ($organizationId <= 0) {
+            return [];
+        }
+        $org = DB::table('vol_organizations')
+            ->where('id', $organizationId)
+            ->where('tenant_id', $tenantId)
+            ->first(['user_id', 'dlp_user_id', 'deputy_dlp_user_id']);
+        if (!$org) {
+            return [];
+        }
+        $adminIds = DB::table('org_members')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
+            ->where('org_type', 'volunteer')
+            ->where('status', 'active')
+            ->whereIn('role', ['owner', 'admin'])
+            ->pluck('user_id')
+            ->all();
+
+        $ids = array_map('intval', array_merge(
+            [$org->user_id ?? 0, $org->dlp_user_id ?? 0, $org->deputy_dlp_user_id ?? 0],
+            $adminIds
+        ));
+
+        return array_values(array_unique(array_filter($ids, fn (int $id) => $id > 0)));
+    }
+
+    /**
+     * Tell an organisation that a safeguarding report has been linked to it.
+     *
+     * 🔴 Deliberately LESS than the staff email: the kind of report, how serious,
+     * when, and which opportunity — never the title, the description, the reporter
+     * or the person it is about. A report can be ABOUT the organisation's own
+     * people or conduct, and naming the reporter to that organisation could expose
+     * a whistleblower. The community's safeguarding team (who get the full record)
+     * decide what else the organisation needs to know.
+     *
+     * Not sent to the reporter, to anyone the incident is about (F-507), or to
+     * anyone already told as community staff for the same event.
+     *
+     * @param list<int> $alreadyNotified
+     * @return list<int> who was told
+     */
+    private function notifyOrganisationOfIncident(int $tenantId, object $incident, array $alreadyNotified = []): array
+    {
+        $told = [];
+        try {
+            $organizationId = (int) ($incident->organization_id ?? 0);
+            $recipientIds = array_values(array_filter(
+                self::organisationContactIds($tenantId, $organizationId),
+                fn (int $id) => $id !== (int) ($incident->reported_by ?? 0)
+                    && !self::isIncidentAboutUser($incident, $id)
+                    && !in_array($id, $alreadyNotified, true)
+            ));
+            if ($recipientIds === []) {
+                return [];
+            }
+
+            $context = $this->incidentContext($tenantId, $incident);
+            $recipients = User::where('tenant_id', $tenantId)
+                ->whereIn('id', $recipientIds)
+                ->where('status', 'active')
+                ->get(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
+
+            foreach ($recipients as $recipient) {
+                $told[] = (int) $recipient->id;
+                LocaleContext::withLocale($recipient, function () use ($recipient, $tenantId, $incident, $organizationId, $context) {
+                    $orgName = (string) ($context['organisation'] ?? '');
+                    try {
+                        \App\Models\Notification::create([
+                            'tenant_id' => $tenantId,
+                            'user_id' => $recipient->id,
+                            'type' => 'safeguarding_flag',
+                            'message' => __('emails_misc.safeguarding.org_incident_bell', ['organisation' => $orgName]),
+                            'link' => '/volunteering/org/' . $organizationId . '/dashboard',
+                            'is_read' => false,
+                        ]);
+                    } catch (\Throwable $bellError) {
+                        Log::critical('SafeguardingService: organisation incident bell failed', [
+                            'user_id' => $recipient->id,
+                            'incident_id' => $incident->id ?? null,
+                            'error' => $bellError->getMessage(),
+                        ]);
+                    }
+
+                    if (empty($recipient->email)) {
+                        return;
+                    }
+                    try {
+                        $safeOrg = htmlspecialchars($orgName, ENT_QUOTES, 'UTF-8');
+                        $severityLabel = strtoupper((string) ($incident->severity ?? ''));
+                        $details = [
+                            __('emails_misc.safeguarding.info_card_organisation') => $safeOrg,
+                            __('emails_misc.safeguarding.info_card_type') => htmlspecialchars($this->incidentTypeLabel((string) ($incident->incident_type ?? 'other')), ENT_QUOTES, 'UTF-8'),
+                            __('emails_misc.safeguarding.info_card_severity') => htmlspecialchars($severityLabel, ENT_QUOTES, 'UTF-8'),
+                        ];
+                        if (!empty($context['opportunity'])) {
+                            $details[__('emails_misc.safeguarding.info_card_opportunity')] = htmlspecialchars($context['opportunity'], ENT_QUOTES, 'UTF-8');
+                        }
+                        if (!empty($context['date'])) {
+                            $details[__('emails_misc.safeguarding.info_card_date')] = htmlspecialchars($context['date'], ENT_QUOTES, 'UTF-8');
+                        }
+
+                        $emailBody = EmailTemplateBuilder::make()
+                            ->theme('danger')
+                            ->title(__('emails_misc.safeguarding.org_incident_title'))
+                            ->previewText(__('emails_misc.safeguarding.org_incident_preview', ['organisation' => $safeOrg]))
+                            ->greeting(htmlspecialchars(UserDisplayName::resolve($recipient), ENT_QUOTES, 'UTF-8'))
+                            ->paragraph(__('emails_misc.safeguarding.org_incident_body', ['organisation' => $safeOrg]))
+                            ->infoCard($details, __('emails_misc.safeguarding.info_card_incident_details'))
+                            ->paragraph(__('emails_misc.safeguarding.org_incident_what_next'))
+                            ->paragraph(__('emails_misc.safeguarding.org_incident_confidential'))
+                            ->button(__('emails_misc.safeguarding.org_incident_cta'), EmailTemplateBuilder::tenantUrl('/volunteering/org/' . $organizationId . '/dashboard'))
+                            ->render();
+
+                        $sent = EmailDispatchService::sendRaw(
+                            $recipient->email,
+                            __('emails_misc.safeguarding.org_incident_subject', ['organisation' => $orgName]),
+                            $emailBody,
+                            null,
+                            null,
+                            null,
+                            'safeguarding',
+                            ['tenant_id' => $tenantId]
+                        );
+                        if (!$sent) {
+                            Log::critical('SafeguardingService: organisation incident email failed to send', [
+                                'user_id' => $recipient->id,
+                                'incident_id' => $incident->id ?? null,
+                            ]);
+                        }
+                    } catch (\Throwable $emailError) {
+                        Log::critical('SafeguardingService: organisation incident email exception', [
+                            'user_id' => $recipient->id,
+                            'incident_id' => $incident->id ?? null,
+                            'error' => $emailError->getMessage(),
+                        ]);
+                    }
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::error('SafeguardingService::notifyOrganisationOfIncident error: ' . $e->getMessage());
+        }
+
+        return $told;
+    }
+
+    /**
+     * Names an email shows: the organisation, the opportunity, and the date it
+     * happened, read fresh and tenant-scoped.
+     *
+     * @return array{organisation: ?string, opportunity: ?string, date: ?string}
+     */
+    private function incidentContext(int $tenantId, object $incident): array
+    {
+        $organisation = null;
+        $opportunity = null;
+        if (!empty($incident->organization_id)) {
+            $organisation = DB::table('vol_organizations')
+                ->where('id', (int) $incident->organization_id)
+                ->where('tenant_id', $tenantId)
+                ->value('name');
+        }
+        if (!empty($incident->opportunity_id)) {
+            $opportunity = DB::table('vol_opportunities')
+                ->where('id', (int) $incident->opportunity_id)
+                ->where('tenant_id', $tenantId)
+                ->value('title');
+        }
+        $date = !empty($incident->incident_date) ? substr((string) $incident->incident_date, 0, 10) : null;
+
+        return [
+            'organisation' => $organisation !== null ? (string) $organisation : null,
+            'opportunity' => $opportunity !== null ? (string) $opportunity : null,
+            'date' => $date,
+        ];
+    }
+
+    /** The kind of incident in the reader's language, not the stored code ("near_miss"). */
+    private function incidentTypeLabel(string $type): string
+    {
+        $key = 'emails_misc.safeguarding.type_' . $type;
+        $label = __($key);
+
+        return $label === $key ? $type : $label;
     }
 
     /**
@@ -1445,7 +1763,9 @@ class SafeguardingService
                     'user_id' => $reporterId,
                     'type' => 'safeguarding_flag',
                     'message' => __('emails_misc.safeguarding.incident_status_changed', ['incident_id' => $incidentId, 'status' => $label]),
-                    'link' => '/safeguarding/incidents',
+                    // The member's own reports live on the Volunteering page's
+                    // Safeguarding tab; '/safeguarding/incidents' was never a route.
+                    'link' => '/volunteering?tab=safeguarding',
                     'is_read' => false,
                 ]);
             });

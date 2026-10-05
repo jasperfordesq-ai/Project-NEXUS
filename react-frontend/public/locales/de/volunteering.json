@@ -601,7 +601,12 @@
     "incident_person_search": "Mitglieder nach Namen suchen",
     "incident_person_empty": "Keine Mitglieder gefunden.",
     "incident_person_clear": "Entfernen",
-    "incident_options_unavailable": "Die Liste der Organisationen konnte nicht geladen werden. Sie können Ihre Meldung trotzdem senden und in der Beschreibung angeben, wo es passiert ist."
+    "incident_options_unavailable": "Die Liste der Organisationen konnte nicht geladen werden. Sie können Ihre Meldung trotzdem senden und in der Beschreibung angeben, wo es passiert ist.",
+    "incident_emergency_warning": "Wenn jemand in akuter Gefahr ist, rufen Sie jetzt Ihre örtliche Notrufnummer an. Dieses Formular wird nicht rund um die Uhr gelesen.",
+    "incident_who_is_told_summary": "Wer über diese Meldung informiert wird",
+    "incident_who_is_told_staff": "Das Schutzteam Ihrer Gemeinschaft – Administratoren, Broker und Koordinatoren – sieht die vollständige Meldung sofort.",
+    "incident_who_is_told_organisation": "Wenn Sie eine Organisation auswählen, erfahren deren Inhaber, Administratoren und Schutzbeauftragte, dass eine Meldung mit ihr verknüpft wurde, um welche Art es sich handelt und wann es passiert ist. Sie erfahren nicht, wer die Meldung gemacht hat, wen sie betrifft oder was darin steht.",
+    "incident_who_is_told_subject": "Die Person, um die es in der Meldung geht, wird von diesem Dienst nicht darüber informiert, und niemand bearbeitet eine Meldung über sich selbst."
   },
   "accessibility": {
     "heading": "Barrierefreiheit & Anpassungen",

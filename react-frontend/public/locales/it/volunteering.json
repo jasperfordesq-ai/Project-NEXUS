@@ -607,7 +607,12 @@
     "incident_person_search": "Cerca membri per nome",
     "incident_person_empty": "Nessun membro trovato.",
     "incident_person_clear": "Rimuovi",
-    "incident_options_unavailable": "Non è stato possibile caricare l’elenco delle organizzazioni. Puoi comunque inviare la segnalazione e indicare nella descrizione dove è successo."
+    "incident_options_unavailable": "Non è stato possibile caricare l’elenco delle organizzazioni. Puoi comunque inviare la segnalazione e indicare nella descrizione dove è successo.",
+    "incident_emergency_warning": "Se qualcuno è in pericolo immediato, chiama subito il numero di emergenza locale. Questo modulo non è controllato 24 ore su 24.",
+    "incident_who_is_told_summary": "Chi verrà informato di questa segnalazione",
+    "incident_who_is_told_staff": "Il team di tutela della tua comunità — amministratori, broker e coordinatori — vede subito la segnalazione completa.",
+    "incident_who_is_told_organisation": "Se scegli un’organizzazione, il suo proprietario, i suoi amministratori e il referente per la tutela sapranno che le è stata collegata una segnalazione, di che tipo è e quando è successo. Non sapranno chi ha fatto la segnalazione, chi riguarda né cosa contiene.",
+    "incident_who_is_told_subject": "La persona a cui si riferisce la segnalazione non viene informata da questo servizio e nessuno gestisce una segnalazione che lo riguarda."
   },
   "accessibility": {
     "heading": "Accessibilità e Sistemazioni",

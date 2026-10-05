@@ -601,7 +601,12 @@
     "incident_person_search": "Search members by name",
     "incident_person_empty": "No members found.",
     "incident_person_clear": "Remove",
-    "incident_options_unavailable": "We couldn't load the list of organisations. You can still send your report and say where it happened in the description."
+    "incident_options_unavailable": "We couldn't load the list of organisations. You can still send your report and say where it happened in the description.",
+    "incident_emergency_warning": "If someone is in immediate danger, call your local emergency number now. This form is not watched around the clock.",
+    "incident_who_is_told_summary": "Who will be told about this report",
+    "incident_who_is_told_staff": "Your community’s safeguarding team — its administrators, brokers and coordinators — see the full report straight away.",
+    "incident_who_is_told_organisation": "If you choose an organisation, its owner, administrators and safeguarding contact are told that a report has been linked to it, what kind of report it is and when it happened. They are not told who made the report, who it is about or what it says.",
+    "incident_who_is_told_subject": "The person the report is about is not told about it by this service, and nobody handles a report about themselves."
   },
   "accessibility": {
     "heading": "Accessibility & Accommodations",

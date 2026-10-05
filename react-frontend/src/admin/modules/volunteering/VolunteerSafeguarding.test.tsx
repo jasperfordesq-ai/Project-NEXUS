@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 const { mockAdminVolunteering } = vi.hoisted(() => ({
   mockAdminVolunteering: {
     getIncidents: vi.fn(),
+    getIncidentReportOptions: vi.fn(),
     updateIncident: vi.fn(),
     assignDlp: vi.fn(),
   },
@@ -25,6 +26,32 @@ vi.mock('../../api/adminApi', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+
+// The organisation and opportunity pickers are React Aria Autocompletes, whose
+// popover cannot open in jsdom ("Cannot set property focus"). Stub just those two
+// as a native select — the same approach as GroupSelector.test.tsx. The DLP
+// member picker is a ComboBox and stays real.
+vi.mock('@/components/ui', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('@/components/ui')>();
+  return {
+    ...orig,
+    Autocomplete: ({ label, placeholder, value, onChange, children }: {
+      label?: string;
+      placeholder?: string;
+      value?: string | null;
+      onChange?: (key: string | null) => void;
+      children?: React.ReactNode;
+    }) => (
+      <select aria-label={label} value={value ?? ''} onChange={(e) => onChange?.(e.target.value || null)}>
+        <option value="">{placeholder}</option>
+        {children}
+      </select>
+    ),
+    AutocompleteItem: ({ id, children }: { id?: string; children?: React.ReactNode }) => (
+      <option value={id}>{typeof children === 'string' ? children : id}</option>
+    ),
+  };
+});
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // Stub DataTable — render a simple list of row keys so we can detect rows.
@@ -447,6 +474,90 @@ describe('VolunteerSafeguarding', () => {
     await waitFor(() =>
       expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20 })
     );
+  });
+
+  it('lets staff correct how an incident is filed, sending only what changed', async () => {
+    const user = userEvent.setup();
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({
+        incidents: [makeIncident({ title: 'Filed wrongly', type: 'concern', severity: 'medium', incident_date: '2026-09-01' })],
+      })
+    );
+    mockAdminVolunteering.getIncidentReportOptions.mockResolvedValue({
+      success: true,
+      data: {
+        organisations: [{ id: 3, name: 'Food Bank' }],
+        opportunities: [{ id: 9, title: 'Sorting donations', organization_id: 3, organization_name: 'Food Bank' }],
+      },
+    });
+    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    const row = await screen.findByTestId('incident-row-1');
+    await user.click(within(row).getByRole('button'));
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() => expect(mockAdminVolunteering.getIncidentReportOptions).toHaveBeenCalled());
+    expect(within(dialog).getByRole('heading', { name: 'How this incident is filed' })).toBeInTheDocument();
+
+    // Correct the kind of incident.
+    const typeTrigger = within(dialog).getAllByRole('button').find((b) => b.textContent?.includes('Concern'));
+    await user.click(typeTrigger as HTMLElement);
+    await user.click(await screen.findByRole('option', { name: 'Allegation' }));
+
+    // Record that the authorities were told, with their reference.
+    await user.click(within(dialog).getByRole('switch'));
+    await user.type(await within(dialog).findByLabelText('Their reference (optional)'), 'POL-42');
+
+    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === 'Update Incident');
+    await user.click(save as HTMLElement);
+
+    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, {
+      status: 'open',
+      incident_type: 'allegation',
+      authority_notified: true,
+      authority_reference: 'POL-42',
+    }));
+  });
+
+  it('files an incident under an organisation by choosing it, and says the organisation will be told', async () => {
+    const user = userEvent.setup();
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ incidents: [makeIncident({ organization_name: '', organization_id: null })] })
+    );
+    mockAdminVolunteering.getIncidentReportOptions.mockResolvedValue({
+      success: true,
+      data: {
+        organisations: [{ id: 3, name: 'Food Bank' }],
+        opportunities: [{ id: 9, title: 'Sorting donations', organization_id: 3, organization_name: 'Food Bank' }],
+      },
+    });
+    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+    const row = await screen.findByTestId('incident-row-1');
+    await user.click(within(row).getByRole('button'));
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() => expect(mockAdminVolunteering.getIncidentReportOptions).toHaveBeenCalled());
+
+    // Choosing the opportunity files it under that opportunity's organisation too.
+    const opportunityPicker = await within(dialog).findByRole('combobox', { name: 'Opportunity' });
+    await waitFor(() => expect(within(opportunityPicker).getAllByRole('option')).toHaveLength(2));
+    await user.selectOptions(opportunityPicker, '9');
+    // ...and that filled in the organisation.
+    expect(within(dialog).getByRole('combobox', { name: 'Organization' })).toHaveValue('3');
+
+    expect(await within(dialog).findByRole('note')).toHaveTextContent(/emailed a short notice/);
+
+    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === 'Update Incident');
+    await user.click(save as HTMLElement);
+    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, {
+      status: 'open',
+      organization_id: 3,
+      opportunity_id: 9,
+    }));
   });
 
   it('renders audit log timeline when incidents are present', async () => {

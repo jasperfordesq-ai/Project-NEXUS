@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'Het lid dat u eerder koos',
         'error_incident_person_search_short' => 'Voer minstens 2 letters van de naam in om naar de persoon te zoeken',
         'error_incident_person_not_searched' => 'Kies „Lid zoeken” om de genoemde persoon op te zoeken, of wis de naam',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Als iemand in direct gevaar is, bel dan nu het lokale alarmnummer. Dit formulier wordt niet de klok rond gelezen.',
+        'incident_who_is_told_summary' => 'Wie over deze melding wordt geïnformeerd',
+        'incident_who_is_told_staff' => 'Het veiligheidsteam van uw gemeenschap — beheerders, makelaars en coördinatoren — ziet de volledige melding meteen.',
+        'incident_who_is_told_organisation' => 'Als u een organisatie kiest, horen de eigenaar, beheerders en veiligheidscontactpersoon daarvan dat er een melding aan de organisatie is gekoppeld, wat voor melding het is en wanneer het gebeurde. Zij horen niet wie de melding deed, over wie die gaat of wat erin staat.',
+        'incident_who_is_told_subject' => 'De persoon over wie de melding gaat, wordt hierover niet door deze dienst ingelicht, en niemand behandelt een melding over zichzelf.',
     ],
 ];

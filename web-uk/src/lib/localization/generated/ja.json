@@ -10900,7 +10900,12 @@
                 "incident_person_search_failed": "現在メンバーを検索できません。人物を選択せずに報告を送信することもできます。",
                 "incident_person_previous": "以前に選択したメンバー",
                 "error_incident_person_search_short": "人物を検索するには、名前を2文字以上入力してください",
-                "error_incident_person_not_searched": "入力した人物を探すには「メンバーを検索」を選択するか、名前を消去してください"
+                "error_incident_person_not_searched": "入力した人物を探すには「メンバーを検索」を選択するか、名前を消去してください",
+                "incident_emergency_warning": "誰かが差し迫った危険にある場合は、今すぐ地域の緊急通報番号に電話してください。このフォームは常時確認されているわけではありません。",
+                "incident_who_is_told_summary": "この報告を知らされる人",
+                "incident_who_is_told_staff": "コミュニティの安全保護チーム（管理者、ブローカー、コーディネーター）が報告の全内容をすぐに確認します。",
+                "incident_who_is_told_organisation": "団体を選択した場合、その団体のオーナー、管理者、安全保護担当者には、団体に関連する報告があったこと、報告の種類、発生日が伝えられます。報告者、報告の対象者、報告の内容は伝えられません。",
+                "incident_who_is_told_subject": "報告の対象者には、このサービスから報告について知らされることはありません。また、自分自身に関する報告を自分で扱うことはありません。"
             }
         },
         "govuk_alpha_wallet": {

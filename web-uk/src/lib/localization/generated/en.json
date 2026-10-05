@@ -10900,7 +10900,12 @@
                 "incident_person_search_failed": "We could not search for members just now. You can still send your report without choosing a person.",
                 "incident_person_previous": "The member you chose before",
                 "error_incident_person_search_short": "Enter at least 2 letters of the person’s name to search for them",
-                "error_incident_person_not_searched": "Select “Find member” to look up the person you named, or clear the name"
+                "error_incident_person_not_searched": "Select “Find member” to look up the person you named, or clear the name",
+                "incident_emergency_warning": "If someone is in immediate danger, call your local emergency number now. This form is not watched around the clock.",
+                "incident_who_is_told_summary": "Who will be told about this report",
+                "incident_who_is_told_staff": "Your community’s safeguarding team — its administrators, brokers and coordinators — see the full report straight away.",
+                "incident_who_is_told_organisation": "If you choose an organisation, its owner, administrators and safeguarding contact are told that a report has been linked to it, what kind of report it is and when it happened. They are not told who made the report, who it is about or what it says.",
+                "incident_who_is_told_subject": "The person the report is about is not told about it by this service, and nobody handles a report about themselves."
             }
         },
         "govuk_alpha_wallet": {

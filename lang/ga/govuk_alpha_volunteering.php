@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'An ball a roghnaigh tú roimhe seo',
         'error_incident_person_search_short' => 'Cuir isteach 2 litir ar a laghad d’ainm an duine chun iad a chuardach',
         'error_incident_person_not_searched' => 'Roghnaigh “Aimsigh ball” chun an duine a d’ainmnigh tú a chuardach, nó glan an t-ainm',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Má tá duine i mbaol láithreach, glaoigh ar d’uimhir éigeandála áitiúil anois. Ní dhéantar faireachán ar an bhfoirm seo i gcónaí.',
+        'incident_who_is_told_summary' => 'Cé a chuirfear ar an eolas faoin tuairisc seo',
+        'incident_who_is_told_staff' => 'Feiceann foireann chosanta do phobail — a riarthóirí, a bhróicéirí agus a comhordaitheoirí — an tuairisc iomlán láithreach.',
+        'incident_who_is_told_organisation' => 'Má roghnaíonn tú eagraíocht, cuirtear a húinéir, a riarthóirí agus a teagmhálaí cosanta ar an eolas gur nascadh tuairisc léi, cén cineál tuairisce í agus cathain a tharla sé. Ní insítear dóibh cé a rinne an tuairisc, cé faoi a bhfuil sí ná cad atá inti.',
+        'incident_who_is_told_subject' => 'Ní chuireann an tseirbhís seo an duine a bhfuil an tuairisc fúthu ar an eolas, agus ní dhéileálann aon duine le tuairisc fúthu féin.',
     ],
 ];

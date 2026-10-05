@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'Das zuvor gewählte Mitglied',
         'error_incident_person_search_short' => 'Geben Sie mindestens 2 Buchstaben des Namens ein, um nach der Person zu suchen',
         'error_incident_person_not_searched' => 'Wählen Sie „Mitglied suchen“, um die genannte Person nachzuschlagen, oder löschen Sie den Namen',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Wenn jemand in akuter Gefahr ist, rufen Sie jetzt Ihre örtliche Notrufnummer an. Dieses Formular wird nicht rund um die Uhr gelesen.',
+        'incident_who_is_told_summary' => 'Wer über diese Meldung informiert wird',
+        'incident_who_is_told_staff' => 'Das Schutzteam Ihrer Gemeinschaft – Administratoren, Broker und Koordinatoren – sieht die vollständige Meldung sofort.',
+        'incident_who_is_told_organisation' => 'Wenn Sie eine Organisation auswählen, erfahren deren Inhaber, Administratoren und Schutzbeauftragte, dass eine Meldung mit ihr verknüpft wurde, um welche Art es sich handelt und wann es passiert ist. Sie erfahren nicht, wer die Meldung gemacht hat, wen sie betrifft oder was darin steht.',
+        'incident_who_is_told_subject' => 'Die Person, um die es in der Meldung geht, wird von diesem Dienst nicht darüber informiert, und niemand bearbeitet eine Meldung über sich selbst.',
     ],
 ];

@@ -239,6 +239,22 @@ describe('the incident form offers type, date, organisation and opportunity', ()
     expect(opportunities).toContain('<option value="12">Garden tidy-up — Bantry Community Trust</option>');
   });
 
+  it('says to call the emergency services first, and who will be told, before the form starts', async () => {
+    const page = await request(createApp()).get(`${MOUNT}/incidents`);
+    const formStart = page.text.indexOf('action="/acme/accessible/volunteering/incidents"');
+    const warning = page.text.indexOf('If someone is in immediate danger, call your local emergency number now.');
+    const details = page.text.indexOf('Who will be told about this report');
+
+    expect(warning).toBeGreaterThan(-1);
+    expect(details).toBeGreaterThan(-1);
+    expect(warning).toBeLessThan(formStart);
+    expect(details).toBeLessThan(formStart);
+    // GOV.UK warning text, with its hidden prefix translated rather than an English literal.
+    expect(page.text).toMatch(/govuk-warning-text__text">\s*<span class="govuk-visually-hidden">[^<]+<\/span>\s*If someone is in immediate danger/);
+    // The member is told plainly what the organisation is NOT told.
+    expect(page.text).toContain('They are not told who made the report, who it is about or what it says.');
+  });
+
   it('does not ask for the report options on the training tab', async () => {
     await request(createApp()).get(`${MOUNT}/training`);
     expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/incidents/report-options');

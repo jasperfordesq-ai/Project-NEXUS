@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'O membro que escolheu antes',
         'error_incident_person_search_short' => 'Introduza pelo menos 2 letras do nome da pessoa para a procurar',
         'error_incident_person_not_searched' => 'Selecione «Procurar membro» para encontrar a pessoa que indicou, ou apague o nome',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Se alguém estiver em perigo imediato, ligue agora para o número de emergência local. Este formulário não é acompanhado a toda a hora.',
+        'incident_who_is_told_summary' => 'Quem será informado desta denúncia',
+        'incident_who_is_told_staff' => 'A equipa de proteção da sua comunidade — administradores, mediadores e coordenadores — vê de imediato a denúncia completa.',
+        'incident_who_is_told_organisation' => 'Se escolher uma organização, o proprietário, os administradores e o responsável de proteção dessa organização ficam a saber que lhe foi associada uma denúncia, de que tipo é e quando aconteceu. Não ficam a saber quem fez a denúncia, a quem diz respeito nem o que contém.',
+        'incident_who_is_told_subject' => 'Este serviço não informa a pessoa a quem a denúncia diz respeito, e ninguém trata uma denúncia sobre si próprio.',
     ],
 ];

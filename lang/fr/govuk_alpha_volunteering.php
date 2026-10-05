@@ -550,5 +550,12 @@ return [
         'incident_person_previous' => 'Le membre choisi précédemment',
         'error_incident_person_search_short' => 'Saisissez au moins 2 lettres du nom de la personne pour la rechercher',
         'error_incident_person_not_searched' => 'Sélectionnez « Rechercher un membre » pour retrouver la personne nommée, ou effacez le nom',
+
+        // Report form notices — immediate danger, and who is told
+        'incident_emergency_warning' => 'Si quelqu’un est en danger immédiat, appelez maintenant le numéro d’urgence local. Ce formulaire n’est pas surveillé en permanence.',
+        'incident_who_is_told_summary' => 'Qui sera informé de ce signalement',
+        'incident_who_is_told_staff' => 'L’équipe de protection de votre communauté — ses administrateurs, courtiers et coordinateurs — voit immédiatement le signalement complet.',
+        'incident_who_is_told_organisation' => 'Si vous choisissez une organisation, son propriétaire, ses administrateurs et son référent protection sont informés qu’un signalement lui a été rattaché, de quel type il s’agit et quand cela s’est produit. Ils ne savent pas qui a fait le signalement, qui il concerne ni ce qu’il contient.',
+        'incident_who_is_told_subject' => 'La personne concernée par le signalement n’en est pas informée par ce service, et personne ne traite un signalement qui le concerne.',
     ],
 ];

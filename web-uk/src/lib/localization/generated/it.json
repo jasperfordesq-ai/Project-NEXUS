@@ -10900,7 +10900,12 @@
                 "incident_person_search_failed": "Al momento non è stato possibile cercare i membri. Puoi comunque inviare la segnalazione senza scegliere una persona.",
                 "incident_person_previous": "Il membro scelto in precedenza",
                 "error_incident_person_search_short": "Inserisci almeno 2 lettere del nome della persona per cercarla",
-                "error_incident_person_not_searched": "Seleziona «Trova membro» per cercare la persona indicata, oppure cancella il nome"
+                "error_incident_person_not_searched": "Seleziona «Trova membro» per cercare la persona indicata, oppure cancella il nome",
+                "incident_emergency_warning": "Se qualcuno è in pericolo immediato, chiama subito il numero di emergenza locale. Questo modulo non è controllato 24 ore su 24.",
+                "incident_who_is_told_summary": "Chi verrà informato di questa segnalazione",
+                "incident_who_is_told_staff": "Il team di tutela della tua comunità — amministratori, broker e coordinatori — vede subito la segnalazione completa.",
+                "incident_who_is_told_organisation": "Se scegli un’organizzazione, il suo proprietario, i suoi amministratori e il referente per la tutela sapranno che le è stata collegata una segnalazione, di che tipo è e quando è successo. Non sapranno chi ha fatto la segnalazione, chi riguarda né cosa contiene.",
+                "incident_who_is_told_subject": "La persona a cui si riferisce la segnalazione non viene informata da questo servizio e nessuno gestisce una segnalazione che lo riguarda."
             }
         },
         "govuk_alpha_wallet": {

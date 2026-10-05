@@ -613,7 +613,12 @@
     "incident_person_search": "Szukaj członków po imieniu",
     "incident_person_empty": "Nie znaleziono członków.",
     "incident_person_clear": "Usuń",
-    "incident_options_unavailable": "Nie udało się wczytać listy organizacji. Nadal możesz wysłać zgłoszenie i podać w opisie, gdzie to się stało."
+    "incident_options_unavailable": "Nie udało się wczytać listy organizacji. Nadal możesz wysłać zgłoszenie i podać w opisie, gdzie to się stało.",
+    "incident_emergency_warning": "Jeśli ktoś jest w bezpośrednim niebezpieczeństwie, zadzwoń teraz pod lokalny numer alarmowy. Ten formularz nie jest sprawdzany przez całą dobę.",
+    "incident_who_is_told_summary": "Kto zostanie poinformowany o tym zgłoszeniu",
+    "incident_who_is_told_staff": "Zespół ochrony Twojej społeczności — administratorzy, brokerzy i koordynatorzy — od razu widzi całe zgłoszenie.",
+    "incident_who_is_told_organisation": "Jeśli wybierzesz organizację, jej właściciel, administratorzy i osoba odpowiedzialna za ochronę dowiedzą się, że powiązano z nią zgłoszenie, jakiego jest rodzaju i kiedy do zdarzenia doszło. Nie dowiedzą się, kto złożył zgłoszenie, kogo dotyczy ani co zawiera.",
+    "incident_who_is_told_subject": "Osoba, której dotyczy zgłoszenie, nie jest o nim informowana przez ten serwis, a nikt nie zajmuje się zgłoszeniem dotyczącym jego samego."
   },
   "accessibility": {
     "heading": "Dostępność i zakwaterowanie",

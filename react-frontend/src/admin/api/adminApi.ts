@@ -1770,8 +1770,22 @@ export const adminVolunteering = {
     const suffix = query.toString();
     return api.get(`/v2/admin/volunteering/incidents${suffix ? `?${suffix}` : ''}`);
   },
-  updateIncident: (id: number, data: { status: string; action_taken?: string; resolution_notes?: string; assigned_to?: number | null }) =>
+  updateIncident: (id: number, data: {
+    status: string;
+    action_taken?: string;
+    resolution_notes?: string;
+    assigned_to?: number | null;
+    incident_type?: string;
+    severity?: string;
+    incident_date?: string;
+    organization_id?: number | null;
+    opportunity_id?: number | null;
+    authority_notified?: boolean;
+    authority_reference?: string;
+  }) =>
     api.put(`/v2/admin/volunteering/incidents/${id}`, data),
+  /** The community's organisations and their opportunities, for filing an incident. */
+  getIncidentReportOptions: () => api.get('/v2/volunteering/incidents/report-options'),
 
   // DLP
   assignDlp: (orgId: number, dlpUserId: number) =>

@@ -601,7 +601,12 @@
     "incident_person_search": "Leden zoeken op naam",
     "incident_person_empty": "Geen leden gevonden.",
     "incident_person_clear": "Verwijderen",
-    "incident_options_unavailable": "De lijst met organisaties kon niet worden geladen. Je kunt je melding toch versturen en in de beschrijving aangeven waar het gebeurde."
+    "incident_options_unavailable": "De lijst met organisaties kon niet worden geladen. Je kunt je melding toch versturen en in de beschrijving aangeven waar het gebeurde.",
+    "incident_emergency_warning": "Als iemand in direct gevaar is, bel dan nu het lokale alarmnummer. Dit formulier wordt niet de klok rond gelezen.",
+    "incident_who_is_told_summary": "Wie over deze melding wordt geïnformeerd",
+    "incident_who_is_told_staff": "Het veiligheidsteam van uw gemeenschap — beheerders, makelaars en coördinatoren — ziet de volledige melding meteen.",
+    "incident_who_is_told_organisation": "Als u een organisatie kiest, horen de eigenaar, beheerders en veiligheidscontactpersoon daarvan dat er een melding aan de organisatie is gekoppeld, wat voor melding het is en wanneer het gebeurde. Zij horen niet wie de melding deed, over wie die gaat of wat erin staat.",
+    "incident_who_is_told_subject": "De persoon over wie de melding gaat, wordt hierover niet door deze dienst ingelicht, en niemand behandelt een melding over zichzelf."
   },
   "accessibility": {
     "heading": "Bereikbaarheid & Accommodaties",

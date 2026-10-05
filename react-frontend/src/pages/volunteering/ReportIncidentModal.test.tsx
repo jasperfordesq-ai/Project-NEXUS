@@ -69,6 +69,19 @@ describe('ReportIncidentModal', () => {
     vi.mocked(api.post).mockResolvedValue({ success: true, data: {} });
   });
 
+  it('says to call the emergency services first, and who will be told, before anything is typed', async () => {
+    mockGet();
+    renderModal();
+
+    const warning = await screen.findByText('safeguarding.incident_emergency_warning');
+    expect(warning.closest('[role="note"]')).not.toBeNull();
+    expect(screen.getByText('safeguarding.incident_who_is_told_summary')).toBeInTheDocument();
+    expect(screen.getByText('safeguarding.incident_who_is_told_organisation')).toBeInTheDocument();
+    // The notices come before the first field.
+    const title = screen.getByLabelText(/safeguarding\.incident_title/);
+    expect(warning.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('loads the organisations and opportunities to choose from', async () => {
     mockGet();
     renderModal();
