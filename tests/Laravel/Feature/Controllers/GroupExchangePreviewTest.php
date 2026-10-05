@@ -103,6 +103,60 @@ final class GroupExchangePreviewTest extends TestCase
         $this->assertStringNotContainsString('Secret', $response->getContent());
     }
 
+    /**
+     * Review finding I2: the preview must not turn into a name lookup. Only
+     * active, not-deleted members who are visible in search are named (the
+     * caller always sees their own name), and one request is capped.
+     */
+    public function test_preview_names_only_people_a_member_could_find_anyway(): void
+    {
+        $caller = $this->member('Org', 'Aniser');
+        Sanctum::actingAs($caller, ['*']);
+        $visible = $this->member('Vera', 'Visible');
+        $banned = $this->member('Barry', 'Banned');
+        $hidden = $this->member('Hilda', 'Hidden');
+        $deleted = $this->member('Dora', 'Deleted');
+        DB::table('users')->where('id', $banned->id)->update(['status' => 'banned']);
+        DB::table('users')->where('id', $hidden->id)->update(['privacy_search' => 0]);
+        DB::table('users')->where('id', $deleted->id)->update(['deleted_at' => now()]);
+
+        $response = $this->apiPost('/v2/group-exchanges/preview', [
+            'split_type' => 'custom',
+            'total_hours' => 1,
+            'participants' => [
+                ['user_id' => $caller->id, 'role' => 'provider', 'hours' => 4],
+                ['user_id' => $visible->id, 'role' => 'receiver', 'hours' => 1],
+                ['user_id' => $banned->id, 'role' => 'receiver', 'hours' => 1],
+                ['user_id' => $hidden->id, 'role' => 'receiver', 'hours' => 1],
+                ['user_id' => $deleted->id, 'role' => 'receiver', 'hours' => 1],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $names = array_column($response->json('data.lines'), 'name', 'user_id');
+        $this->assertSame('Org Aniser', $names[$caller->id]);
+        $this->assertSame('Vera Visible', $names[$visible->id]);
+        $this->assertNull($names[$banned->id]);
+        $this->assertNull($names[$hidden->id]);
+        $this->assertNull($names[$deleted->id]);
+        foreach (['Barry', 'Hilda', 'Dora'] as $secret) {
+            $this->assertStringNotContainsString($secret, $response->getContent());
+        }
+    }
+
+    public function test_preview_refuses_an_oversized_request(): void
+    {
+        Sanctum::actingAs($this->member(), ['*']);
+        $participants = [];
+        for ($i = 1; $i <= 201; $i++) {
+            $participants[] = ['user_id' => $i, 'role' => $i === 1 ? 'provider' : 'receiver', 'hours' => 1];
+        }
+
+        $this->apiPost('/v2/group-exchanges/preview', [
+            'split_type' => 'workshop', 'total_hours' => 1, 'participants' => $participants,
+        ])->assertStatus(422)->assertJsonPath('errors.0.code', 'TOO_MANY_PARTICIPANTS');
+    }
+
     public function test_preview_requires_sign_in_and_the_feature(): void
     {
         $this->apiPost('/v2/group-exchanges/preview', ['split_type' => 'workshop'])->assertStatus(401);

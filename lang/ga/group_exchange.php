@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Tabhair líon uaireanta níos mó ná nialas do gach duine.',
         'earned_exceeds_paid' => 'Thuillfeadh na daoine atá ag tabhairt ama :earned uair an chloig, ach ní íocfadh na daoine atá ag freastal ach :paid. I gceardlann nó i rang, íocann gach duine a fhreastalaíonn as an am a fhaigheann siad, mar sin caithfidh siad an méid a thuilltear ar a laghad a íoc. Má tá roinnt daoine ag tabhairt a gcuid ama do dhuine amháin, roghnaigh “Foireann ag cabhrú le duine” ina ionad.',
         'unbalanced' => 'Caithfidh na huaireanta a thuilltear (:earned) a bheith mar an gcéanna leis na huaireanta a íoctar (:paid). Athraigh cuid de na huimhreacha ionas go mbeidh siad cothrom.',
+        'too_many_participants' => 'Ní féidir níos mó ná :max duine a bheith i malartú grúpa.',
     ],
     'ledger' => [
         'to_fund' => 'Malartú grúpa “:title” — uaireanta fágtha chuig an gCiste Pobail',

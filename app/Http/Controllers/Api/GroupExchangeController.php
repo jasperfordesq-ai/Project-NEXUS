@@ -134,14 +134,23 @@ class GroupExchangeController extends BaseApiController
      */
     public function preview(): JsonResponse
     {
-        $this->requireAuth();
+        $userId = $this->requireAuth();
 
         $data = $this->getAllInput();
         if ($invalidKind = $this->invalidKindResponse($data)) {
             return $invalidKind;
         }
+        if (is_array($data['participants'] ?? null)
+            && count($data['participants']) > GroupExchangeService::PREVIEW_MAX_PARTICIPANTS) {
+            return $this->respondWithError(
+                'TOO_MANY_PARTICIPANTS',
+                __('group_exchange.problem.too_many_participants', ['max' => GroupExchangeService::PREVIEW_MAX_PARTICIPANTS]),
+                'participants',
+                422,
+            );
+        }
 
-        return $this->respondWithData($this->groupExchangeService->preview($data));
+        return $this->respondWithData($this->groupExchangeService->preview($data, $userId));
     }
 
     /** GET /api/v2/group-exchanges/{id} */

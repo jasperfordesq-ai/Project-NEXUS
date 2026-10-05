@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Geef iedereen een aantal uren groter dan nul.',
         'earned_exceeds_paid' => 'De mensen die tijd geven zouden :earned uur verdienen, maar de deelnemers zouden maar :paid betalen. Bij een workshop of les betaalt iedere deelnemer voor de tijd die hij ontvangt, dus ze moeten minstens zoveel betalen als er wordt verdiend. Geven meerdere mensen hun tijd aan één persoon? Kies dan "Een team helpt iemand".',
         'unbalanced' => 'De verdiende uren (:earned) moeten gelijk zijn aan de betaalde uren (:paid). Pas enkele getallen aan zodat ze gelijk zijn.',
+        'too_many_participants' => 'Een groepsruil kan hoogstens :max personen hebben.',
     ],
     'ledger' => [
         'to_fund' => 'Groepsruil ":title" — overgebleven uren naar het Gemeenschapsfonds',

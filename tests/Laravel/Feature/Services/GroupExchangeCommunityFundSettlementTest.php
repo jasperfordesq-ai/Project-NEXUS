@@ -84,6 +84,40 @@ final class GroupExchangeCommunityFundSettlementTest extends TestCase
         );
     }
 
+    /**
+     * Review finding I3: CommunityFundService locks the fund row before a member's
+     * row, so settlement must take the fund lock first too — the reverse order can
+     * deadlock against a concurrent donation and hand the organiser a 500.
+     */
+    public function test_workshop_settlement_locks_the_fund_before_any_member(): void
+    {
+        $mary = $this->makeUser(0.0);
+        $attendees = [$this->makeUser(10.0), $this->makeUser(10.0)];
+        $id = $this->makeExchange('workshop', 2.0, [[$mary, 'provider', 2.0]], array_map(fn ($u) => [$u, 'receiver', 2.0], $attendees));
+
+        $locks = [];
+        DB::listen(function ($query) use (&$locks): void {
+            $sql = strtolower($query->sql);
+            if (str_contains($sql, 'for update')) {
+                if (str_contains($sql, 'community_fund_accounts')) {
+                    $locks[] = 'fund';
+                } elseif (preg_match('/from [`"]?users[`"]?/', $sql)) {
+                    $locks[] = 'user';
+                }
+            }
+        });
+
+        $this->assertTrue($this->service()->complete($id)['success']);
+
+        $this->assertContains('fund', $locks);
+        $this->assertContains('user', $locks);
+        $this->assertLessThan(
+            array_search('user', $locks, true),
+            array_search('fund', $locks, true),
+            'the fund row must be locked before any member row: ' . implode(',', $locks),
+        );
+    }
+
     public function test_an_attendees_wallet_history_shows_the_payment_to_the_fund(): void
     {
         $mary = $this->makeUser(0.0);

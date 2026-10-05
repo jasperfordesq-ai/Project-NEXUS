@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Give every person a number of hours above zero.',
         'earned_exceeds_paid' => 'The people giving time would earn :earned hours, but the people attending would pay only :paid. In a workshop or class, everyone attending pays for the time they receive, so they must pay at least as much as is earned. If several people are giving their time to one person, choose "A team helping someone" instead.',
         'unbalanced' => 'The hours earned (:earned) must be the same as the hours paid (:paid). Change some of the numbers so they match.',
+        'too_many_participants' => 'A group exchange can have at most :max people.',
     ],
     'ledger' => [
         'to_fund' => 'Group exchange ":title" — leftover hours to the community time fund',

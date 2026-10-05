@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Indiquez pour chaque personne un nombre d’heures supérieur à zéro.',
         'earned_exceeds_paid' => 'Les personnes qui donnent du temps gagneraient :earned heures, mais les participants ne paieraient que :paid. Dans un atelier ou un cours, chaque participant paie le temps qu’il reçoit, il doit donc payer au moins autant que ce qui est gagné. Si plusieurs personnes donnent leur temps à une seule personne, choisissez plutôt « Une équipe aide quelqu’un ».',
         'unbalanced' => 'Les heures gagnées (:earned) doivent être égales aux heures payées (:paid). Modifiez certains chiffres pour qu’ils correspondent.',
+        'too_many_participants' => 'Un échange de groupe peut compter au maximum :max personnes.',
     ],
     'ledger' => [
         'to_fund' => 'Échange de groupe « :title » – heures restantes au Fonds communautaire',

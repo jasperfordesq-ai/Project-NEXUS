@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Indica per ogni persona un numero di ore maggiore di zero.',
         'earned_exceeds_paid' => 'Le persone che danno tempo guadagnerebbero :earned ore, ma chi partecipa pagherebbe solo :paid. In un laboratorio o in un corso, ogni partecipante paga il tempo che riceve, quindi deve pagare almeno quanto viene guadagnato. Se più persone danno il loro tempo a una sola persona, scegli invece «Una squadra aiuta qualcuno».',
         'unbalanced' => 'Le ore guadagnate (:earned) devono essere uguali alle ore pagate (:paid). Modifica alcuni numeri perché coincidano.',
+        'too_many_participants' => 'Uno scambio di gruppo può avere al massimo :max persone.',
     ],
     'ledger' => [
         'to_fund' => 'Scambio di gruppo «:title» — ore avanzate al Fondo Comunitario',

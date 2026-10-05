@@ -522,7 +522,9 @@ class GroupExchangeService
      *   problem: ?array{code: string, message: string}
      * }
      */
-    public function preview(array $data): array
+    public const PREVIEW_MAX_PARTICIPANTS = 200;
+
+    public function preview(array $data, ?int $viewerId = null): array
     {
         $tenantId = TenantContext::getId();
         $participants = [];
@@ -550,6 +552,19 @@ class GroupExchangeService
         $names = $ids === [] ? [] : DB::table('users')
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $ids)
+            // Review I2: never a name lookup — only people a member could find
+            // in the directory anyway (active, not deleted, visible in search),
+            // plus the caller themselves.
+            ->where(static function ($q) use ($viewerId): void {
+                $q->where(static function ($v): void {
+                    $v->where('status', 'active')
+                        ->whereNull('deleted_at')
+                        ->where(static fn ($s) => $s->where('privacy_search', 1)->orWhereNull('privacy_search'));
+                });
+                if ($viewerId !== null) {
+                    $q->orWhere('id', $viewerId);
+                }
+            })
             ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name'])
             ->mapWithKeys(static fn ($u): array => [(int) $u->id => UserDisplayName::resolve($u)])
             ->all();
@@ -1143,6 +1158,22 @@ class GroupExchangeService
                 return false; // another request completed it first
             }
 
+            // Review I3: take the community fund lock FIRST, the same order
+            // CommunityFundService uses (fund, then member). Locking members
+            // first and the fund last could deadlock against a concurrent
+            // donation and hand the organiser a 500.
+            $lockedFund = null;
+            if ($fund !== null && $fundCents > 0) {
+                $lockedFund = DB::table('community_fund_accounts')
+                    ->where('id', $fund['id'])
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (! $lockedFund) {
+                    throw new RuntimeException('GROUP_EXCHANGE_COMMUNITY_FUND_MISSING');
+                }
+            }
+
             // Remaining hours per side, in whole cents, for the ledger rows below.
             $creditCents = [];
             $debitCents = [];
@@ -1228,16 +1259,8 @@ class GroupExchangeService
             // transaction: if anything after this fails, the fund rolls back with
             // every balance. The fund is the LAST credit target, so attendees pay
             // the people who ran the session first and the rest goes to the fund.
-            if ($fund !== null && $fundCents > 0) {
-                $lockedFund = DB::table('community_fund_accounts')
-                    ->where('id', $fund['id'])
-                    ->where('tenant_id', $tenantId)
-                    ->lockForUpdate()
-                    ->first();
-                if (! $lockedFund) {
-                    throw new \RuntimeException('GROUP_EXCHANGE_COMMUNITY_FUND_MISSING');
-                }
-
+            // (The fund row was already locked above, before any member.)
+            if ($lockedFund !== null) {
                 $amount = $fundCents / 100;
                 DB::table('community_fund_accounts')
                     ->where('id', $fund['id'])

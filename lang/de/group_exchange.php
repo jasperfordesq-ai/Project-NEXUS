@@ -13,6 +13,7 @@ return [
         'hours_missing' => 'Gib für jede Person eine Stundenzahl über null an.',
         'earned_exceeds_paid' => 'Die Personen, die Zeit geben, würden :earned Stunden verdienen, die Teilnehmenden würden aber nur :paid bezahlen. Bei einem Workshop oder Kurs bezahlen alle Teilnehmenden die Zeit, die sie erhalten, also müssen sie mindestens so viel bezahlen, wie verdient wird. Wenn mehrere Personen einer Person ihre Zeit geben, wähle stattdessen „Ein Team hilft jemandem“.',
         'unbalanced' => 'Die verdienten Stunden (:earned) müssen den bezahlten Stunden (:paid) entsprechen. Ändere einige Zahlen, damit sie übereinstimmen.',
+        'too_many_participants' => 'Ein Gruppentausch kann höchstens :max Personen haben.',
     ],
     'ledger' => [
         'to_fund' => 'Gruppentausch „:title“ – übrige Stunden an den Gemeinschaftsfonds',
