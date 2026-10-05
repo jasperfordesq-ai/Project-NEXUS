@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'أضفت معلومات',
         'report_add_failed' => 'تعذّرت إضافة معلوماتك. يُرجى المحاولة مرة أخرى.',
         'report_about_label' => 'الشخص المعني',
+        'report_fact_kind' => 'نوع البلاغ',
+        'report_fact_date' => 'متى حدث',
+        'report_fact_organisation' => 'المنظمة المعنية',
+        'report_fact_opportunity' => 'الفرصة التطوعية',
+        'report_fact_person' => 'الشخص المعني',
     ],
     'org_safeguarding' => [
         'title' => 'بلاغات الحماية',

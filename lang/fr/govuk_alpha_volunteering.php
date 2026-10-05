@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'Vous avez ajouté des informations',
         'report_add_failed' => 'Vos informations n\'ont pas pu être ajoutées. Veuillez réessayer.',
         'report_about_label' => 'Personne concernée',
+        'report_fact_kind' => 'Type de signalement',
+        'report_fact_date' => 'Date des faits',
+        'report_fact_organisation' => 'Organisme concerné',
+        'report_fact_opportunity' => 'Mission de bénévolat',
+        'report_fact_person' => 'Personne concernée',
     ],
     'org_safeguarding' => [
         'title' => 'Signalements de protection',

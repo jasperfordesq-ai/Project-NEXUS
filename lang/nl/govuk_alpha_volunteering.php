@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'U hebt informatie toegevoegd',
         'report_add_failed' => 'Uw informatie kon niet worden toegevoegd. Probeer het opnieuw.',
         'report_about_label' => 'Over wie het gaat',
+        'report_fact_kind' => 'Soort melding',
+        'report_fact_date' => 'Wanneer het gebeurde',
+        'report_fact_organisation' => 'Betrokken organisatie',
+        'report_fact_opportunity' => 'Vrijwilligerswerk',
+        'report_fact_person' => 'Over wie het gaat',
     ],
     'org_safeguarding' => [
         'title' => 'Meldingen over veiligheid',

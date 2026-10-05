@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'Sie haben Informationen ergänzt',
         'report_add_failed' => 'Ihre Informationen konnten nicht hinzugefügt werden. Bitte versuchen Sie es erneut.',
         'report_about_label' => 'Betroffene Person',
+        'report_fact_kind' => 'Art der Meldung',
+        'report_fact_date' => 'Wann es passiert ist',
+        'report_fact_organisation' => 'Betroffene Organisation',
+        'report_fact_opportunity' => 'Ehrenamtlicher Einsatz',
+        'report_fact_person' => 'Betroffene Person',
     ],
     'org_safeguarding' => [
         'title' => 'Meldungen zum Schutz',

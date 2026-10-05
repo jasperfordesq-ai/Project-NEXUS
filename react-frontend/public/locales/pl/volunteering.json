@@ -647,7 +647,12 @@
     "timeline_status_changed": "Zaktualizowano status",
     "timeline_message_from_team": "Wiadomość od zespołu ds. ochrony",
     "timeline_your_addition": "Dodano Twoje informacje",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "report_fact_kind": "Rodzaj zgłoszenia",
+    "report_fact_date": "Kiedy to się stało",
+    "report_fact_organisation": "Organizacja, której dotyczy",
+    "report_fact_opportunity": "Wolontariat",
+    "report_fact_person": "Osoba, której dotyczy"
   },
   "accessibility": {
     "heading": "Dostępność i zakwaterowanie",

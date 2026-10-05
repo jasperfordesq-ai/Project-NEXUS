@@ -79,6 +79,10 @@ describe('IncidentReportPage', () => {
     expect(screen.getByText('safeguarding.member_status.looking_into')).toBeInTheDocument();
     expect(screen.getByText('A volunteer was left alone with a client for hours.')).toBeInTheDocument();
     expect(screen.getByText('Food Bank')).toBeInTheDocument();
+    // Plain labels for a read-only page, not the form's "(optional)" questions.
+    expect(screen.getByText('safeguarding.report_fact_kind')).toBeInTheDocument();
+    expect(screen.getByText('safeguarding.report_fact_organisation')).toBeInTheDocument();
+    expect(screen.queryByText('safeguarding.incident_organisation')).not.toBeInTheDocument();
   });
 
   it('lists what has happened, including the team’s message', async () => {

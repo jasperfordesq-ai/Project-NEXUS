@@ -106,11 +106,11 @@ function presentReport(data, t, formatDate) {
     isFinished: status === 'resolved' || status === 'closed',
     canAdd: report.can_add === true,
     facts: [
-      [t(`${KEY}incident_type_label`), report.type ? t(`${KEY}incident_type_${report.type}`) : ''],
-      [t(`${KEY}incident_date_label`), formatDate(report.incident_date)],
-      [t(`${KEY}incident_organisation_label`), report.organization_name || ''],
-      [t(`${KEY}incident_opportunity_label`), report.opportunity_title || ''],
-      [t(`${KEY}report_about_label`), report.subject_name || '']
+      [t(`${KEY}report_fact_kind`), report.type ? t(`${KEY}incident_type_${report.type}`) : ''],
+      [t(`${KEY}report_fact_date`), formatDate(report.incident_date)],
+      [t(`${KEY}report_fact_organisation`), report.organization_name || ''],
+      [t(`${KEY}report_fact_opportunity`), report.opportunity_title || ''],
+      [t(`${KEY}report_fact_person`), report.subject_name || '']
     ].filter(([, value]) => value),
     timeline
   };

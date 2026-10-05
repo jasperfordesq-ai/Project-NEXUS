@@ -128,6 +128,10 @@ final class IncidentNotificationMatrixTest extends TestCase
         $this->assertCount(1, $reporterMails, 'one plain update — not also the staff-style alert');
         $this->assertStringNotContainsString('/broker/', $reporterMails[0]['body']);
         $this->assertContains("/volunteering/incidents/{$incident->id}", $this->bellLinks($p['reporter']));
+        // The same plain words the reporter's page uses, not the staff word.
+        $bell = (string) DB::table('notifications')->where('user_id', $p['reporter']->id)->orderByDesc('id')->value('message');
+        $this->assertStringContainsString('Being looked into', $bell);
+        $this->assertStringContainsString('Being looked into', $reporterMails[0]['subject'] . $reporterMails[0]['body']);
 
         foreach (['owner', 'admin', 'lead', 'deputy'] as $who) {
             $this->assertContains("/volunteering/org/{$orgId}/safeguarding/{$incident->id}", $this->bellLinks($p[$who]), "{$who} gets a bell");

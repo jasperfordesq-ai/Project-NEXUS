@@ -635,7 +635,12 @@
     "timeline_status_changed": "Status bijgewerkt",
     "timeline_message_from_team": "Bericht van het veiligheidsteam",
     "timeline_your_addition": "U hebt informatie toegevoegd",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "report_fact_kind": "Soort melding",
+    "report_fact_date": "Wanneer het gebeurde",
+    "report_fact_organisation": "Betrokken organisatie",
+    "report_fact_opportunity": "Vrijwilligerswerk",
+    "report_fact_person": "Over wie het gaat"
   },
   "accessibility": {
     "heading": "Bereikbaarheid & Accommodaties",

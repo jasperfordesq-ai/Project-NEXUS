@@ -659,7 +659,12 @@
     "timeline_status_changed": "تم تحديث الحالة",
     "timeline_message_from_team": "رسالة من فريق الحماية",
     "timeline_your_addition": "أضفت معلومات",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "report_fact_kind": "نوع البلاغ",
+    "report_fact_date": "متى حدث",
+    "report_fact_organisation": "المنظمة المعنية",
+    "report_fact_opportunity": "الفرصة التطوعية",
+    "report_fact_person": "الشخص المعني"
   },
   "accessibility": {
     "heading": "إمكانية الوصول والإقامة",

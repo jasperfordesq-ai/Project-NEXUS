@@ -167,11 +167,11 @@ export function IncidentReportPage() {
 
   const events = report.timeline.filter((e) => e.type !== 'migrated');
   const facts: [string, string | null][] = [
-    [t('safeguarding.incident_type'), t(`safeguarding.incident_types.${report.type}`)],
-    [t('safeguarding.incident_date'), formatDate(report.incident_date)],
-    [t('safeguarding.incident_organisation'), report.organization_name],
-    [t('safeguarding.incident_opportunity'), report.opportunity_title],
-    [t('safeguarding.incident_person'), report.subject_name],
+    [t('safeguarding.report_fact_kind'), t(`safeguarding.incident_types.${report.type}`)],
+    [t('safeguarding.report_fact_date'), formatDate(report.incident_date)],
+    [t('safeguarding.report_fact_organisation'), report.organization_name],
+    [t('safeguarding.report_fact_opportunity'), report.opportunity_title],
+    [t('safeguarding.report_fact_person'), report.subject_name],
   ];
 
   return (

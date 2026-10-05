@@ -641,7 +641,12 @@
     "timeline_status_changed": "Estado actualizado",
     "timeline_message_from_team": "Mensaje del equipo de protección",
     "timeline_your_addition": "Usted añadió información",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "report_fact_kind": "Tipo de denuncia",
+    "report_fact_date": "Cuándo ocurrió",
+    "report_fact_organisation": "Organización implicada",
+    "report_fact_opportunity": "Oportunidad de voluntariado",
+    "report_fact_person": "Persona afectada"
   },
   "accessibility": {
     "heading": "Accesibilidad y Adaptaciones",

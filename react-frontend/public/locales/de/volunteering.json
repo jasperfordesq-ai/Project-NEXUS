@@ -635,7 +635,12 @@
     "timeline_status_changed": "Status aktualisiert",
     "timeline_message_from_team": "Nachricht vom Schutzteam",
     "timeline_your_addition": "Sie haben Informationen ergänzt",
-    "close": "Schließen"
+    "close": "Schließen",
+    "report_fact_kind": "Art der Meldung",
+    "report_fact_date": "Wann es passiert ist",
+    "report_fact_organisation": "Betroffene Organisation",
+    "report_fact_opportunity": "Ehrenamtlicher Einsatz",
+    "report_fact_person": "Betroffene Person"
   },
   "accessibility": {
     "heading": "Barrierefreiheit & Anpassungen",

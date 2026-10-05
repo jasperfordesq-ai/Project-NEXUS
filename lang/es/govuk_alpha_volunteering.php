@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'Usted añadió información',
         'report_add_failed' => 'No se ha podido añadir su información. Inténtelo de nuevo.',
         'report_about_label' => 'Persona afectada',
+        'report_fact_kind' => 'Tipo de denuncia',
+        'report_fact_date' => 'Cuándo ocurrió',
+        'report_fact_organisation' => 'Organización implicada',
+        'report_fact_opportunity' => 'Oportunidad de voluntariado',
+        'report_fact_person' => 'Persona afectada',
     ],
     'org_safeguarding' => [
         'title' => 'Denuncias de protección',

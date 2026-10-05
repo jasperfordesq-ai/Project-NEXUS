@@ -625,6 +625,11 @@ return [
         'timeline_your_addition' => 'You added information',
         'report_add_failed' => 'Your information could not be added. Please try again.',
         'report_about_label' => 'Who it is about',
+        'report_fact_kind' => 'Kind of report',
+        'report_fact_date' => 'When it happened',
+        'report_fact_organisation' => 'Organisation it was with',
+        'report_fact_opportunity' => 'Volunteering opportunity',
+        'report_fact_person' => 'Who it is about',
     ],
     'org_safeguarding' => [
         'title' => 'Safeguarding reports',

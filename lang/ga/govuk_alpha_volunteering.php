@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'Chuir tú eolas leis',
         'report_add_failed' => 'Níorbh fhéidir d\'eolas a chur leis. Bain triail eile as.',
         'report_about_label' => 'Cé faoi a bhfuil sé',
+        'report_fact_kind' => 'Cineál tuairisce',
+        'report_fact_date' => 'Cathain a tharla sé',
+        'report_fact_organisation' => 'An eagraíocht lena raibh sé',
+        'report_fact_opportunity' => 'Deis obair dheonach',
+        'report_fact_person' => 'Cé faoi a bhfuil sé',
     ],
     'org_safeguarding' => [
         'title' => 'Tuairiscí cosanta',

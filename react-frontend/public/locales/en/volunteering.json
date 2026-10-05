@@ -635,7 +635,12 @@
     "timeline_status_changed": "Status updated",
     "timeline_message_from_team": "Message from the safeguarding team",
     "timeline_your_addition": "You added information",
-    "close": "Close"
+    "close": "Close",
+    "report_fact_kind": "Kind of report",
+    "report_fact_date": "When it happened",
+    "report_fact_organisation": "Organisation it was with",
+    "report_fact_opportunity": "Volunteering opportunity",
+    "report_fact_person": "Who it is about"
   },
   "accessibility": {
     "heading": "Accessibility & Accommodations",

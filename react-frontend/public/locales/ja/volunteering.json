@@ -635,7 +635,12 @@
     "timeline_status_changed": "ステータスが更新されました",
     "timeline_message_from_team": "セーフガーディングチームからのメッセージ",
     "timeline_your_addition": "あなたが情報を追加しました",
-    "close": "閉じる"
+    "close": "閉じる",
+    "report_fact_kind": "報告の種類",
+    "report_fact_date": "発生日",
+    "report_fact_organisation": "関係する団体",
+    "report_fact_opportunity": "ボランティア活動",
+    "report_fact_person": "対象者"
   },
   "accessibility": {
     "heading": "アクセシビリティと配慮",

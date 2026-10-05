@@ -2018,17 +2018,23 @@ class SafeguardingService
                 'closed' => __('emails_misc.safeguarding.status_closed'),
             ];
             $label = $statusLabels[$newStatus] ?? $newStatus;
+            // The reporter is told in the same plain words as their report page,
+            // rendered in their own language (spec §5.2).
+            $plainKey = 'emails_misc.safeguarding.member_status_' . ([
+                'open' => 'received', 'investigating' => 'looking_into', 'escalated' => 'specialist',
+                'resolved' => 'dealt_with', 'closed' => 'closed',
+            ][$newStatus] ?? 'received');
 
             // Notify reporter (bell) — render in reporter's locale
             $reporterForBell = User::where('tenant_id', $tenantId)
                 ->where('id', $reporterId)
                 ->first(['id', 'preferred_language']);
-            LocaleContext::withLocale($reporterForBell, function () use ($reporterForBell, $tenantId, $reporterId, $incidentId, $label) {
+            LocaleContext::withLocale($reporterForBell, function () use ($reporterForBell, $tenantId, $reporterId, $incidentId, $plainKey) {
                 \App\Models\Notification::create([
                     'tenant_id' => $tenantId,
                     'user_id' => $reporterId,
                     'type' => 'safeguarding_flag',
-                    'message' => __('emails_misc.safeguarding.incident_status_changed', ['incident_id' => $incidentId, 'status' => $label]),
+                    'message' => __('emails_misc.safeguarding.incident_status_changed', ['incident_id' => $incidentId, 'status' => __($plainKey)]),
                     // The report's own page, where the reporter follows it.
                     'link' => '/volunteering/incidents/' . $incidentId,
                     'is_read' => false,
@@ -2061,10 +2067,10 @@ class SafeguardingService
                     ->first();
 
                 if ($reporter && !empty($reporter->email)) {
-                    TenantContext::runForTenant($tenantId, function () use ($reporter, $incidentId, $label, $newStatus, $tenantId, $reporterId) {
-                        LocaleContext::withLocale($reporter, function () use ($reporter, $incidentId, $label, $newStatus, $tenantId, $reporterId) {
+                    TenantContext::runForTenant($tenantId, function () use ($reporter, $incidentId, $plainKey, $newStatus, $tenantId, $reporterId) {
+                        LocaleContext::withLocale($reporter, function () use ($reporter, $incidentId, $plainKey, $newStatus, $tenantId, $reporterId) {
                         $firstName = $reporter->first_name ?? $reporter->name ?? __('emails.common.fallback_name');
-                        $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+                        $safeLabel = htmlspecialchars((string) __($plainKey), ENT_QUOTES, 'UTF-8');
 
                         $html = \App\Core\EmailTemplateBuilder::make()
                             ->theme($newStatus === 'resolved' ? 'success' : 'brand')

@@ -167,6 +167,9 @@ describe('safeguarding report page', () => {
     expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.member_status_looking_into'));
     expect(res.text).toContain('A volunteer was left alone with a client for hours.');
     expect(res.text).toContain('Food Bank');
+    // Plain labels for a read-only page, not the form's "(optional)" questions.
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.report_fact_organisation'));
+    expect(res.text).not.toContain(t('govuk_alpha_volunteering.safeguarding.incident_organisation_label'));
     expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.timeline_message_from_team'));
     expect(res.text).toContain('Thank you for telling us.');
     expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.timeline_your_addition'));

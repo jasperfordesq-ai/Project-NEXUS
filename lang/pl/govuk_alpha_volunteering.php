@@ -582,6 +582,11 @@ return [
         'timeline_your_addition' => 'Dodano Twoje informacje',
         'report_add_failed' => 'Nie udało się dodać Twoich informacji. Spróbuj ponownie.',
         'report_about_label' => 'Osoba, której dotyczy',
+        'report_fact_kind' => 'Rodzaj zgłoszenia',
+        'report_fact_date' => 'Kiedy to się stało',
+        'report_fact_organisation' => 'Organizacja, której dotyczy',
+        'report_fact_opportunity' => 'Wolontariat',
+        'report_fact_person' => 'Osoba, której dotyczy',
     ],
     'org_safeguarding' => [
         'title' => 'Zgłoszenia dotyczące ochrony',

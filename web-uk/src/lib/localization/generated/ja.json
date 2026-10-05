@@ -10986,7 +10986,12 @@
                 "timeline_message_from_team": "セーフガーディングチームからのメッセージ",
                 "timeline_your_addition": "あなたが情報を追加しました",
                 "report_add_failed": "情報を追加できませんでした。もう一度お試しください。",
-                "report_about_label": "対象者"
+                "report_about_label": "対象者",
+                "report_fact_kind": "報告の種類",
+                "report_fact_date": "発生日",
+                "report_fact_organisation": "関係する団体",
+                "report_fact_opportunity": "ボランティア活動",
+                "report_fact_person": "対象者"
             },
             "org_safeguarding": {
                 "title": "セーフガーディング報告",
