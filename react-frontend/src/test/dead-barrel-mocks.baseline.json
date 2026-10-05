@@ -128,24 +128,6 @@
         "PageHeader"
       ]
     },
-    "src/admin/modules/crm/ActivityTimeline.test.tsx": {
-      "@/admin/components": [
-        "MemberSearchPicker"
-      ]
-    },
-    "src/admin/modules/crm/CoordinatorTasks.test.tsx": {
-      "@/admin/components": [
-        "MemberSearchPicker",
-        "PageHeader"
-      ]
-    },
-    "src/admin/modules/crm/MemberNotes.test.tsx": {
-      "@/admin/components": [
-        "ConfirmModal",
-        "MemberSearchPicker",
-        "PageHeader"
-      ]
-    },
     "src/admin/modules/deliverability/EditDeliverable.test.tsx": {
       "@/admin/components": [
         "PageHeader"
@@ -563,7 +545,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 85,
-    "rowCount": 265
+    "offenderFileCount": 82,
+    "rowCount": 259
   }
 }
