@@ -22,9 +22,11 @@
       "disputed": "Díospóid"
     },
     "split": {
-      "equal": "Roinnt chothrom",
-      "custom": "Roinnt shaincheaptha",
-      "weighted": "Roinnt ualaithe"
+      "equal": "Roinn go cothrom",
+      "custom": "Cuir isteach uaireanta gach duine",
+      "weighted": "Roinn de réir iarrachta",
+      "workshop": "Ceardlann nó rang",
+      "team": "Foireann ag cabhrú le duine"
     },
     "participants": "{{count}} rannpháirtí",
     "participants_one": "{{count}} rannpháirtí",
@@ -43,12 +45,11 @@
       "notFoundDescription": "B'fhéidir nach bhfuil rochtain agat ar an ngrúpmhalartán seo, nó seans gur baineadh é.",
       "participants": "Rannpháirtithe",
       "noParticipants": "Níor cuireadh rannpháirtí ar bith leis fós.",
-      "splitPreview": "Réamhamharc scoilte",
       "confirmed": "Deimhnithe",
       "unconfirmed": "Gan daingniú",
       "roles": {
-        "provider": "Soláthraí",
-        "receiver": "Faighteoir"
+        "provider": "Ag tabhairt ama",
+        "receiver": "Ag fáil ama"
       },
       "actions": {
         "title": " Gníomhartha ar fáil",
@@ -61,12 +62,10 @@
         "completeFailed": "Níorbh fhéidir linn an malartú seo a chur i gcrích. Bain triail eile as.",
         "cancelFailed": "Níorbh fhéidir linn an malartú seo a chealú. Bain triail eile as.",
         "completeTitle": "An malartú grúpa seo a chur i gcrích?",
-        "completeDescription": "Aistreofar creidmheasanna ama chuig gach rannpháirtí anois. Ní féidir é seo a chealú.",
+        "completeDescription": "Tuillfear agus íocfar na huaireanta anois, mar a thaispeántar ar an scáileán seo. Ní féidir é seo a chealú.",
         "confirmTitle": "Do chuid uaireanta a dheimhniú?",
         "confirmDescription": "Trí dheimhniú, insíonn tú don eagraí gur ghlac tú páirt ar feadh na n-uaireanta a thaispeántar. Bogann na creidmheasanna nuair a chuirtear an malartú i gcrích."
-      },
-      "splitShare": "{{name}} — {{hours}} uair",
-      "splitUnknownMember": "Ball #{{id}}"
+      }
     },
     "emptyTitle": "Níor aimsíodh aon mhalartuithe grúpa",
     "emptyAll": "Beidh malartuithe grúpa a eagraíonn tú nó a nglacann tú leo le feiceáil anseo.",
@@ -83,7 +82,6 @@
         "title": "Teideal",
         "description": "Cur síos",
         "totalHours": "Uaireanta iomlána",
-        "splitType": "Cineál roinnte",
         "memberSearch": "Aimsigh baill",
         "participantHours": "Uaireanta",
         "participantWeight": "Ualú"
@@ -96,34 +94,77 @@
         "participantHours": "0",
         "participantWeight": "1"
       },
-      "participantNote": "Cuir soláthraithe agus faighteoirí leis, agus coigeartaigh uaireanta nó ualú na rannpháirtithe sula gcuireann tú isteach é. Is féidir na huaireanta iarbhír a dheimhniú ón sreabhadh sonraí níos déanaí fós.",
-      "summaryHours": "{{count}} uair beartaithe",
-      "summaryHours_one": "{{count}} uair beartaithe",
-      "summaryHours_other": "{{count}} uaireanta beartaithe",
       "submit": "Cruthaigh malartú",
       "saving": "Á chruthú...",
       "error": "Níorbh fhéidir linn an malartú grúpa seo a chruthú. Seiceáil na sonraí agus bain triail eile as.",
       "participantsTitle": "Rannpháirtithe",
-      "participantsDescription": "Is féidir baill a chur leis sula gcruthaítear an malartú grúpa. Is féidir na huaireanta a dheimhniú níos déanaí ón scáileán sonraí.",
+      "participantsDescription": "Cuir gach duine atá páirteach leis: duine amháin ar a laghad atá ag tabhairt ama agus duine amháin atá ag fáil ama.",
       "searchMembers": "Cuardaigh baill",
       "searching": "Ag cuardach...",
       "searchError": "Níorbh fhéidir linn baill a chuardach faoi láthair. Bain triail eile as.",
-      "addProvider": "Cuir soláthraí leis",
-      "addReceiver": "Cuir faighteoir leis",
+      "addProvider": "Cuir le “Ag tabhairt ama”",
+      "addReceiver": "Cuir le “Ag fáil ama”",
       "addYourself": "Cuir tú féin leis mar",
-      "providers": "{{count}} soláthraí",
-      "providers_one": "{{count}} soláthraí",
-      "providers_other": "{{count}} soláthraithe",
-      "receivers": "{{count}} faighteoir",
-      "receivers_one": "{{count}} faighteoir",
-      "receivers_other": "{{count}} faighteoirí",
-      "summaryParticipants": "{{count}} rannpháirtí roghnaithe",
-      "summaryParticipants_one": "{{count}} rannpháirtí roghnaithe",
-      "summaryParticipants_other": "{{count}} rannpháirtithe roghnaithe",
+      "providers": "Ag tabhairt ama ({{count}})",
+      "providers_one": "Ag tabhairt ama ({{count}})",
+      "providers_other": "Ag tabhairt ama ({{count}})",
+      "receivers": "Ag fáil ama ({{count}})",
+      "receivers_one": "Ag fáil ama ({{count}})",
+      "receivers_other": "Ag fáil ama ({{count}})",
       "remove": "Bain",
       "removeParticipant": "Bain {{name}}",
       "participantHoursInvalid": "Cuir isteach na huaireanta do gach rannpháirtí mar uimhir, mar shampla 1,5.",
-      "participantWeightInvalid": "Cuir isteach ualach níos mó ná nialas do gach rannpháirtí."
+      "participantWeightInvalid": "Cuir isteach ualach níos mó ná nialas do gach rannpháirtí.",
+      "kinds": {
+        "heading": "Cén cineál malartaithe grúpa é seo?",
+        "rule": "Is ionann uair an chloig ama agus creidmheas ama amháin. Tuilleann daoine atá ag tabhairt ama creidmheasanna; íocann daoine atá ag fáil ama iad.",
+        "descriptions": {
+          "workshop": "Reáchtálann duine éigin seisiún do ghrúpa. Tuilleann an duine a reáchtálann é na huaireanta a chuir sé isteach. Íocann gach duine a bhíonn ann as na huaireanta a bhí sé ann. Téann aon uaireanta atá fágtha chuig an gCiste Pobail.",
+          "team": "Tugann roinnt daoine a gcuid ama do dhuine amháin. Tuilleann gach cúntóir na huaireanta a chaith sé, agus íocann an duine a fuair cabhair as an iomlán.",
+          "equal": "Socraigh iomlán amháin. Tuilleann gach duine atá ag tabhairt ama cuid chothrom de, agus íocann gach duine atá ag fáil ama cuid chothrom.",
+          "weighted": "Cosúil le roinnt go cothrom, ach marcálann tú cé a rinne níos mó. Faigheann duine atá marcáilte 2 dhá oiread de chuid duine atá marcáilte 1.",
+          "custom": "Cuireann tú isteach go díreach cad a thuilleann nó a íocann gach duine. Caithfidh an t-iomlán a thuillte a bheith cothrom leis an iomlán a íocadh."
+        },
+        "examples": {
+          "workshop": "Reáchtálann Máire rang 2 uair an chloig do 4 dhuine. Tuilleann Máire 2 uair. Íocann gach duine 2 uair. Téann an 6 uair eile chuig an gCiste Pobail.",
+          "team": "Caitheann beirt oibrithe deonacha 1 uair ag bogadh troscáin do Thomás. Tuilleann gach oibrí deonach 1 uair. Íocann Tomás 2 uair.",
+          "equal": "6 uair, 2 duine ag tabhairt agus 3 ag fáil: tuilleann gach duine atá ag tabhairt 3 uair agus íocann gach duine atá ag fáil 2.",
+          "weighted": "As 6 uair, tuilleann Áine (marcáilte 2) 4 agus tuilleann Brian (marcáilte 1) 2.",
+          "custom": "Tuilleann Áine 3, tuilleann Brian 1 agus íocann Clár 4."
+        }
+      },
+      "inputs": {
+        "sessionHours": "Cá fhad a mhair an seisiún (in uaireanta)?",
+        "sessionHoursHint": "Líonaimid é seo do gach duine. Athraigh é do dhuine ar bith a bhí ann ar feadh tréimhse níos giorra.",
+        "teamHours": "Cé mhéad uair a chaith gach cúntóir?",
+        "teamHoursHint": "Líonaimid é seo do gach cúntóir. Athraigh é do dhuine ar bith a chaith níos mó nó níos lú ama.",
+        "weight": "Sciar iarrachta {{name}}",
+        "weightHint": "Is gnáthsciar é 1. Is dhá oiread é 2.",
+        "hoursFor": "Uaireanta {{name}}"
+      }
+    },
+    "summary": {
+      "heading": "An méid a thuillfidh nó a íocfaidh gach duine",
+      "earns": "Tuilleann {{name}} {{count}} uair",
+      "earns_one": "Tuilleann {{name}} {{count}} uair",
+      "earns_other": "Tuilleann {{name}} {{count}} uair",
+      "pays": "Íocann {{name}} {{count}} uair",
+      "pays_one": "Íocann {{name}} {{count}} uair",
+      "pays_other": "Íocann {{name}} {{count}} uair",
+      "fund": "Téann {{count}} uair chuig an gCiste Pobail",
+      "fund_one": "Téann {{count}} uair chuig an gCiste Pobail",
+      "fund_other": "Téann {{count}} uair chuig an gCiste Pobail",
+      "totals": "Íoctha: {{paid}} · Tuillte: {{earned}}",
+      "totalsWithFund": "Íoctha: {{paid}} · Tuillte: {{earned}} · Chuig an gCiste Pobail: {{fund}}",
+      "loading": "Ag oibriú amach na n-uaireanta…",
+      "error": "Níorbh fhéidir na huaireanta a oibriú amach. Bain triail eile as.",
+      "unknownMember": "Ball",
+      "youWillEarn": "Tuillfidh tú {{count}} uair",
+      "youWillEarn_one": "Tuillfidh tú {{count}} uair",
+      "youWillEarn_other": "Tuillfidh tú {{count}} uair",
+      "youWillPay": "Íocfaidh tú {{count}} uair",
+      "youWillPay_one": "Íocfaidh tú {{count}} uair",
+      "youWillPay_other": "Íocfaidh tú {{count}} uair"
     }
   },
   "newExchange": "Liostú Nua",

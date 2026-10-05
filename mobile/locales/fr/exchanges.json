@@ -22,9 +22,11 @@
       "disputed": "Contesté"
     },
     "split": {
-      "equal": "Répartition égale",
-      "custom": "Répartition personnalisée",
-      "weighted": "Répartition pondérée"
+      "equal": "Partager à parts égales",
+      "custom": "Saisir les heures de chaque personne",
+      "weighted": "Partager selon l’effort",
+      "workshop": "Atelier ou cours",
+      "team": "Une équipe aide quelqu’un"
     },
     "participants": "{{count}} participant",
     "participants_one": "{{count}} participant",
@@ -43,12 +45,11 @@
       "notFoundDescription": "Vous n'avez peut-être pas accès à cet échange de groupe, ou il a peut-être été supprimé.",
       "participants": "Participants",
       "noParticipants": "Aucun participant n'a encore été ajouté.",
-      "splitPreview": "Aperçu fractionné",
       "confirmed": "Confirmé",
       "unconfirmed": "Non confirmé",
       "roles": {
-        "provider": "Fournisseur",
-        "receiver": "Récepteur"
+        "provider": "Donne du temps",
+        "receiver": "Reçoit du temps"
       },
       "actions": {
         "title": "Actions disponibles",
@@ -61,12 +62,10 @@
         "completeFailed": "Nous n'avons pas pu finaliser cet échange. Veuillez réessayer.",
         "cancelFailed": "Nous n'avons pas pu annuler cet échange. Veuillez réessayer.",
         "completeTitle": "Clôturer cet échange de groupe ?",
-        "completeDescription": "Les crédits-temps seront transférés à chaque participant maintenant. Cette action est irréversible.",
+        "completeDescription": "Les heures seront gagnées et payées maintenant, comme indiqué sur cet écran. Cette action est irréversible.",
         "confirmTitle": "Confirmer vos heures ?",
         "confirmDescription": "Confirmer indique à l’organisateur que vous avez participé pour les heures affichées. Les crédits sont transférés à la clôture de l’échange."
-      },
-      "splitShare": "{{name}} — {{hours}} heures",
-      "splitUnknownMember": "Membre #{{id}}"
+      }
     },
     "emptyTitle": "Aucun échange de groupe trouvé",
     "emptyAll": "Les échanges de groupe que vous organisez ou rejoignez apparaîtront ici.",
@@ -83,7 +82,6 @@
         "title": "Title",
         "description": "Description",
         "totalHours": "Heures totales",
-        "splitType": "Mode de répartition",
         "memberSearch": "Trouver des membres",
         "participantHours": "Hours",
         "participantWeight": "Weight"
@@ -96,34 +94,77 @@
         "participantHours": "0",
         "participantWeight": "1"
       },
-      "participantNote": "Ajoutez les personnes qui donnent et reçoivent, puis ajustez leurs heures ou leur pondération avant l’envoi. Vous pourrez confirmer les heures réelles plus tard depuis l’écran de détail.",
-      "summaryHours": "{{count}} heure prévue",
-      "summaryHours_one": "{{count}} heure prévue",
-      "summaryHours_other": "{{count}} heures prévues",
       "submit": "Créer l’échange",
       "saving": "Creating...",
       "error": "Impossible de créer cet échange collectif. Vérifiez les informations et réessayez.",
       "participantsTitle": "Participants",
-      "participantsDescription": "Vous pouvez ajouter des membres avant de créer l’échange collectif. Les heures pourront être confirmées plus tard depuis l’écran de détail.",
+      "participantsDescription": "Ajoutez toutes les personnes qui participent : au moins une qui donne du temps et une qui en reçoit.",
       "searchMembers": "Rechercher des membres",
       "searching": "Searching...",
       "searchError": "Impossible de rechercher des membres pour le moment. Réessayez.",
-      "addProvider": "Ajouter un fournisseur",
-      "addReceiver": "Ajouter une personne bénéficiaire",
+      "addProvider": "Ajouter à « Donne du temps »",
+      "addReceiver": "Ajouter à « Reçoit du temps »",
       "addYourself": "Vous ajouter en tant que",
-      "providers": "{{count}} personne contributrice",
-      "providers_one": "{{count}} personne contributrice",
-      "providers_other": "{{count}} personnes contributrices",
-      "receivers": "{{count}} personne bénéficiaire",
-      "receivers_one": "{{count}} personne bénéficiaire",
-      "receivers_other": "{{count}} personnes bénéficiaires",
-      "summaryParticipants": "{{count}} participant sélectionné",
-      "summaryParticipants_one": "{{count}} participant sélectionné",
-      "summaryParticipants_other": "{{count}} participants sélectionnés",
+      "providers": "Donne du temps ({{count}})",
+      "providers_one": "Donne du temps ({{count}})",
+      "providers_other": "Donne du temps ({{count}})",
+      "receivers": "Reçoit du temps ({{count}})",
+      "receivers_one": "Reçoit du temps ({{count}})",
+      "receivers_other": "Reçoit du temps ({{count}})",
       "remove": "Remove",
       "removeParticipant": "Retirer {{name}}",
       "participantHoursInvalid": "Saisissez les heures de chaque participant sous forme de nombre, par exemple 1,5.",
-      "participantWeightInvalid": "Saisissez une pondération supérieure à zéro pour chaque participant."
+      "participantWeightInvalid": "Saisissez une pondération supérieure à zéro pour chaque participant.",
+      "kinds": {
+        "heading": "De quel type d’échange de groupe s’agit-il ?",
+        "rule": "Une heure de temps vaut un crédit de temps. Les personnes qui donnent du temps gagnent des crédits ; celles qui reçoivent du temps les paient.",
+        "descriptions": {
+          "workshop": "Quelqu’un anime une séance pour un groupe. La personne qui l’anime gagne les heures qu’elle y consacre. Chaque participant paie les heures auxquelles il a assisté. Les heures restantes vont au Fonds communautaire.",
+          "team": "Plusieurs personnes donnent leur temps à une seule personne. Chaque aidant gagne les heures qu’il a passées, et la personne aidée paie le tout.",
+          "equal": "Fixez un total. Chaque personne qui donne du temps en gagne une part égale, et chaque personne qui en reçoit en paie une part égale.",
+          "weighted": "Comme le partage à parts égales, mais vous indiquez qui a fait le plus. Une personne marquée 2 reçoit deux fois la part d’une personne marquée 1.",
+          "custom": "Vous saisissez exactement ce que chaque personne gagne ou paie. Le total gagné doit être égal au total payé."
+        },
+        "examples": {
+          "workshop": "Marie anime un cours de 2 heures pour 4 personnes. Marie gagne 2 heures. Chaque personne paie 2 heures. Les 6 autres heures vont au Fonds communautaire.",
+          "team": "Deux bénévoles passent 1 heure à déménager des meubles pour Tom. Chaque bénévole gagne 1 heure. Tom paie 2 heures.",
+          "equal": "6 heures, 2 personnes qui donnent et 3 qui reçoivent : chaque personne qui donne gagne 3 heures et chaque personne qui reçoit en paie 2.",
+          "weighted": "Sur 6 heures, Ann (marquée 2) gagne 4 et Ben (marqué 1) gagne 2.",
+          "custom": "Ann gagne 3, Ben gagne 1 et Cara paie 4."
+        }
+      },
+      "inputs": {
+        "sessionHours": "Quelle a été la durée de la séance (en heures) ?",
+        "sessionHoursHint": "Nous le remplissons pour tout le monde. Modifiez-le pour les personnes venues moins longtemps.",
+        "teamHours": "Combien d’heures chaque aidant a-t-il passées ?",
+        "teamHoursHint": "Nous le remplissons pour chaque aidant. Modifiez-le pour ceux qui ont passé plus ou moins de temps.",
+        "weight": "Part de l’effort de {{name}}",
+        "weightHint": "1 correspond à une part normale. 2 correspond au double.",
+        "hoursFor": "Heures de {{name}}"
+      }
+    },
+    "summary": {
+      "heading": "Ce que chaque personne gagnera ou paiera",
+      "earns": "{{name}} gagne {{count}} heure",
+      "earns_one": "{{name}} gagne {{count}} heure",
+      "earns_other": "{{name}} gagne {{count}} heures",
+      "pays": "{{name}} paie {{count}} heure",
+      "pays_one": "{{name}} paie {{count}} heure",
+      "pays_other": "{{name}} paie {{count}} heures",
+      "fund": "{{count}} heure va au Fonds communautaire",
+      "fund_one": "{{count}} heure va au Fonds communautaire",
+      "fund_other": "{{count}} heures vont au Fonds communautaire",
+      "totals": "Payé : {{paid}} · Gagné : {{earned}}",
+      "totalsWithFund": "Payé : {{paid}} · Gagné : {{earned}} · Pour le Fonds communautaire : {{fund}}",
+      "loading": "Calcul des heures…",
+      "error": "Nous n’avons pas pu calculer les heures. Veuillez réessayer.",
+      "unknownMember": "Un membre",
+      "youWillEarn": "Vous gagnerez {{count}} heure",
+      "youWillEarn_one": "Vous gagnerez {{count}} heure",
+      "youWillEarn_other": "Vous gagnerez {{count}} heures",
+      "youWillPay": "Vous paierez {{count}} heure",
+      "youWillPay_one": "Vous paierez {{count}} heure",
+      "youWillPay_other": "Vous paierez {{count}} heures"
     }
   },
   "newExchange": "Nouvelle annonce",

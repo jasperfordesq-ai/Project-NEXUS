@@ -22,9 +22,11 @@
       "disputed": "Disputado"
     },
     "split": {
-      "equal": "Divisão igual",
-      "custom": "Divisão personalizada",
-      "weighted": "Divisão ponderada"
+      "equal": "Dividir em partes iguais",
+      "custom": "Escrever as horas de cada pessoa",
+      "weighted": "Dividir conforme o esforço",
+      "workshop": "Workshop ou aula",
+      "team": "Uma equipa ajuda alguém"
     },
     "participants": "{{count}} participante",
     "participants_one": "{{count}} participante",
@@ -43,12 +45,11 @@
       "notFoundDescription": "Talvez você não tenha acesso a esta troca de grupo ou ela pode ter sido removida.",
       "participants": "Participantes",
       "noParticipants": "Nenhum participante foi adicionado ainda.",
-      "splitPreview": "Dividir visualização",
       "confirmed": "Confirmado",
       "unconfirmed": "Não confirmado",
       "roles": {
-        "provider": "Provedor",
-        "receiver": "Receptor"
+        "provider": "Dá tempo",
+        "receiver": "Recebe tempo"
       },
       "actions": {
         "title": "Disponível ações",
@@ -61,12 +62,10 @@
         "completeFailed": "Não foi possível concluir esta troca. Por favor, tente novamente.",
         "cancelFailed": "Não foi possível cancelar esta troca. Tente novamente.",
         "completeTitle": "Concluir esta troca de grupo?",
-        "completeDescription": "Os créditos de tempo serão transferidos para todos os participantes agora. Esta ação não pode ser anulada.",
+        "completeDescription": "As horas serão ganhas e pagas agora, tal como mostrado neste ecrã. Esta ação não pode ser anulada.",
         "confirmTitle": "Confirmar as suas horas?",
         "confirmDescription": "Ao confirmar, indica ao organizador que participou durante as horas indicadas. Os créditos movem-se quando a troca for concluída."
-      },
-      "splitShare": "{{name}} — {{hours}} horas",
-      "splitUnknownMember": "Membro #{{id}}"
+      }
     },
     "emptyTitle": "Nenhuma troca de grupo encontrada",
     "emptyAll": "As trocas de grupo que você organiza ou participa aparecerão aqui.",
@@ -83,7 +82,6 @@
         "title": "Title",
         "description": "Description",
         "totalHours": "Total de horas",
-        "splitType": "Tipo de divisão",
         "memberSearch": "Encontre membros",
         "participantHours": "Hours",
         "participantWeight": "Weight"
@@ -96,34 +94,77 @@
         "participantHours": "0",
         "participantWeight": "1"
       },
-      "participantNote": "Adicione quem oferece e quem recebe e ajuste as horas ou a ponderação antes de enviar. Poderá confirmar as horas reais mais tarde no ecrã de detalhes.",
-      "summaryHours": "{{count}} hora prevista",
-      "summaryHours_one": "{{count}} hora prevista",
-      "summaryHours_other": "{{count}} horas previstas",
       "submit": "Criar troca",
       "saving": "Creating...",
       "error": "Não foi possível criar esta troca em grupo. Verifique os dados e tente novamente.",
       "participantsTitle": "Participants",
-      "participantsDescription": "Pode adicionar membros antes de criar a troca em grupo. As horas poderão ser confirmadas mais tarde no ecrã de detalhes.",
+      "participantsDescription": "Adicione todas as pessoas que participam: pelo menos uma que dê tempo e uma que receba tempo.",
       "searchMembers": "Pesquisar membros",
       "searching": "Searching...",
       "searchError": "Não foi possível pesquisar membros neste momento. Tente novamente.",
-      "addProvider": "Adicionar provedor",
-      "addReceiver": "Adicionar pessoa recetora",
+      "addProvider": "Adicionar a «Dá tempo»",
+      "addReceiver": "Adicionar a «Recebe tempo»",
       "addYourself": "Adicionar-se como",
-      "providers": "{{count}} pessoa prestadora",
-      "providers_one": "{{count}} pessoa prestadora",
-      "providers_other": "{{count}} pessoas prestadoras",
-      "receivers": "{{count}} pessoa recetora",
-      "receivers_one": "{{count}} pessoa recetora",
-      "receivers_other": "{{count}} pessoas recetoras",
-      "summaryParticipants": "{{count}} participante selecionado",
-      "summaryParticipants_one": "{{count}} participante selecionado",
-      "summaryParticipants_other": "{{count}} participantes selecionados",
+      "providers": "Dá tempo ({{count}})",
+      "providers_one": "Dá tempo ({{count}})",
+      "providers_other": "Dá tempo ({{count}})",
+      "receivers": "Recebe tempo ({{count}})",
+      "receivers_one": "Recebe tempo ({{count}})",
+      "receivers_other": "Recebe tempo ({{count}})",
       "remove": "Remove",
       "removeParticipant": "Remover {{name}}",
       "participantHoursInvalid": "Introduza as horas de cada participante como um número, por exemplo 1,5.",
-      "participantWeightInvalid": "Introduza um peso maior que zero para cada participante."
+      "participantWeightInvalid": "Introduza um peso maior que zero para cada participante.",
+      "kinds": {
+        "heading": "Que tipo de troca de grupo é esta?",
+        "rule": "Uma hora de tempo é um crédito de tempo. Quem dá tempo ganha créditos; quem recebe tempo paga-os.",
+        "descriptions": {
+          "workshop": "Alguém orienta uma sessão para um grupo. A pessoa que a orienta ganha as horas que dedica. Cada participante paga as horas a que assistiu. As horas que sobrarem vão para o Fundo Comunitário.",
+          "team": "Várias pessoas dão o seu tempo a uma só pessoa. Cada ajudante ganha as horas que dedicou e a pessoa ajudada paga tudo.",
+          "equal": "Defina um total. Quem dá tempo ganha uma parte igual desse total e quem recebe tempo paga uma parte igual.",
+          "weighted": "Como dividir em partes iguais, mas marque quem fez mais. Quem tiver um 2 recebe o dobro de quem tiver um 1.",
+          "custom": "Escreva exatamente o que cada pessoa ganha ou paga. O total ganho tem de ser igual ao total pago."
+        },
+        "examples": {
+          "workshop": "A Maria orienta uma aula de 2 horas para 4 pessoas. A Maria ganha 2 horas. Cada pessoa paga 2 horas. As outras 6 horas vão para o Fundo Comunitário.",
+          "team": "Dois voluntários dedicam 1 hora a mudar móveis para o Tom. Cada voluntário ganha 1 hora. O Tom paga 2 horas.",
+          "equal": "6 horas, 2 pessoas a dar e 3 a receber: cada pessoa que dá ganha 3 horas e cada pessoa que recebe paga 2.",
+          "weighted": "De 6 horas, a Ann (com 2) ganha 4 e o Ben (com 1) ganha 2.",
+          "custom": "A Ann ganha 3, o Ben ganha 1 e a Cara paga 4."
+        }
+      },
+      "inputs": {
+        "sessionHours": "Quanto tempo durou a sessão (em horas)?",
+        "sessionHoursHint": "Preenchemos isto para todas as pessoas. Altere para quem ficou menos tempo.",
+        "teamHours": "Quantas horas dedicou cada ajudante?",
+        "teamHoursHint": "Preenchemos isto para cada ajudante. Altere para quem dedicou mais ou menos tempo.",
+        "weight": "Parte do esforço de {{name}}",
+        "weightHint": "1 é uma parte normal. 2 é o dobro.",
+        "hoursFor": "Horas de {{name}}"
+      }
+    },
+    "summary": {
+      "heading": "O que cada pessoa vai ganhar ou pagar",
+      "earns": "{{name}} ganha {{count}} hora",
+      "earns_one": "{{name}} ganha {{count}} hora",
+      "earns_other": "{{name}} ganha {{count}} horas",
+      "pays": "{{name}} paga {{count}} hora",
+      "pays_one": "{{name}} paga {{count}} hora",
+      "pays_other": "{{name}} paga {{count}} horas",
+      "fund": "{{count}} hora vai para o Fundo Comunitário",
+      "fund_one": "{{count}} hora vai para o Fundo Comunitário",
+      "fund_other": "{{count}} horas vão para o Fundo Comunitário",
+      "totals": "Pago: {{paid}} · Ganho: {{earned}}",
+      "totalsWithFund": "Pago: {{paid}} · Ganho: {{earned}} · Para o Fundo Comunitário: {{fund}}",
+      "loading": "A calcular as horas…",
+      "error": "Não foi possível calcular as horas. Tente novamente.",
+      "unknownMember": "Um membro",
+      "youWillEarn": "Vai ganhar {{count}} hora",
+      "youWillEarn_one": "Vai ganhar {{count}} hora",
+      "youWillEarn_other": "Vai ganhar {{count}} horas",
+      "youWillPay": "Vai pagar {{count}} hora",
+      "youWillPay_one": "Vai pagar {{count}} hora",
+      "youWillPay_other": "Vai pagar {{count}} horas"
     }
   },
   "newExchange": "Novo Listagem",

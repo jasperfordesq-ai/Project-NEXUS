@@ -11,7 +11,7 @@ jest.mock('@/lib/api/client', () => ({
   },
 }));
 
-import { createGroupExchange } from './groupExchanges';
+import { createGroupExchange, previewGroupExchange } from './groupExchanges';
 
 describe('groupExchanges API', () => {
   beforeEach(() => {
@@ -45,5 +45,32 @@ describe('groupExchanges API', () => {
       { ...payload, idempotency_key: 'mobile-group-exchange-create-123' },
       { headers: { 'Idempotency-Key': 'mobile-group-exchange-create-123' } },
     );
+  });
+
+  it('asks the server to preview a split, writing nothing', async () => {
+    const preview = {
+      lines: [{ user_id: 1, name: 'Mary Byrne', role: 'provider', hours: 2, verb: 'earns' }],
+      community_fund_hours: 6,
+      totals: { earned: 2, paid: 8, to_fund: 6 },
+      problem: null,
+    };
+    mockPost.mockResolvedValueOnce({ data: preview });
+    const payload = {
+      split_type: 'workshop' as const,
+      total_hours: 2,
+      participants: [{ user_id: 1, role: 'provider' as const, hours: 2, weight: 1 }],
+    };
+
+    const response = await previewGroupExchange(payload);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/group-exchanges/preview', payload);
+    expect(response.data.community_fund_hours).toBe(6);
+  });
+
+  it.each(['workshop', 'team', 'equal', 'weighted', 'custom'] as const)('accepts the %s kind when creating', async kind => {
+    await createGroupExchange({ title: 'Kind check', split_type: kind, total_hours: 2 });
+
+    expect(mockPost).toHaveBeenCalledWith('/api/v2/group-exchanges', expect.objectContaining({ split_type: kind }));
   });
 });

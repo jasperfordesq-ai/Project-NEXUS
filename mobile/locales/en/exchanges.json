@@ -22,9 +22,11 @@
       "disputed": "Disputed"
     },
     "split": {
-      "equal": "Equal split",
-      "custom": "Custom split",
-      "weighted": "Weighted split"
+      "equal": "Share equally",
+      "custom": "Type each person's hours",
+      "weighted": "Share by amount of effort",
+      "workshop": "Workshop or class",
+      "team": "A team helping someone"
     },
     "participants": "{{count}} participant",
     "participants_one": "{{count}} participant",
@@ -43,12 +45,11 @@
       "notFoundDescription": "You may not have access to this group exchange, or it may have been removed.",
       "participants": "Participants",
       "noParticipants": "No participants have been added yet.",
-      "splitPreview": "Split preview",
       "confirmed": "Confirmed",
       "unconfirmed": "Not confirmed",
       "roles": {
-        "provider": "Provider",
-        "receiver": "Receiver"
+        "provider": "Giving time",
+        "receiver": "Receiving time"
       },
       "actions": {
         "title": "Available actions",
@@ -61,12 +62,10 @@
         "completeFailed": "We could not complete this exchange. Please try again.",
         "cancelFailed": "We could not cancel this exchange. Please try again.",
         "completeTitle": "Complete this group exchange?",
-        "completeDescription": "Time credits will be transferred to every participant now. This cannot be undone.",
+        "completeDescription": "The hours will be earned and paid now, as shown on this screen. This cannot be undone.",
         "confirmTitle": "Confirm your hours?",
         "confirmDescription": "Confirming tells the organiser you took part for the hours shown. The credits move when the exchange is completed."
-      },
-      "splitShare": "{{name}} — {{hours}} hours",
-      "splitUnknownMember": "Member #{{id}}"
+      }
     },
     "emptyTitle": "No group exchanges found",
     "emptyAll": "Group exchanges you organise or join will appear here.",
@@ -83,7 +82,6 @@
         "title": "Title",
         "description": "Description",
         "totalHours": "Total hours",
-        "splitType": "Split type",
         "memberSearch": "Find members",
         "participantHours": "Hours",
         "participantWeight": "Weight"
@@ -96,34 +94,77 @@
         "participantHours": "0",
         "participantWeight": "1"
       },
-      "participantNote": "Add providers and receivers, then tune participant hours or weighting before submit. You can still confirm actual hours from the detail workflow later.",
-      "summaryHours": "{{count}} hour planned",
-      "summaryHours_one": "{{count}} hour planned",
-      "summaryHours_other": "{{count}} hours planned",
       "submit": "Create exchange",
       "saving": "Creating...",
       "error": "We could not create this group exchange. Please check the details and try again.",
       "participantsTitle": "Participants",
-      "participantsDescription": "Optionally add members before creating the group exchange. Hours can be confirmed later from the detail screen.",
+      "participantsDescription": "Add everyone taking part: at least one person giving time and one person receiving time.",
       "searchMembers": "Search members",
       "searching": "Searching...",
       "searchError": "We could not search members right now. Please try again.",
-      "addProvider": "Add provider",
-      "addReceiver": "Add receiver",
+      "addProvider": "Add to giving time",
+      "addReceiver": "Add to receiving time",
       "addYourself": "Add yourself as",
-      "providers": "{{count}} provider",
-      "providers_one": "{{count}} provider",
-      "providers_other": "{{count}} providers",
-      "receivers": "{{count}} receiver",
-      "receivers_one": "{{count}} receiver",
-      "receivers_other": "{{count}} receivers",
-      "summaryParticipants": "{{count}} participant selected",
-      "summaryParticipants_one": "{{count}} participant selected",
-      "summaryParticipants_other": "{{count}} participants selected",
+      "providers": "Giving time ({{count}})",
+      "providers_one": "Giving time ({{count}})",
+      "providers_other": "Giving time ({{count}})",
+      "receivers": "Receiving time ({{count}})",
+      "receivers_one": "Receiving time ({{count}})",
+      "receivers_other": "Receiving time ({{count}})",
       "remove": "Remove",
       "removeParticipant": "Remove {{name}}",
       "participantHoursInvalid": "Enter the hours for each participant as a number, for example 1.5.",
-      "participantWeightInvalid": "Enter a weight greater than zero for each participant."
+      "participantWeightInvalid": "Enter a weight greater than zero for each participant.",
+      "kinds": {
+        "heading": "What kind of group exchange is this?",
+        "rule": "One hour of time is one time credit. People giving time earn credits; people receiving time pay them.",
+        "descriptions": {
+          "workshop": "Someone runs a session for a group. The person running it earns the hours they put in. Everyone who attends pays the hours they attended. Any hours left over go to the community's time fund.",
+          "team": "Several people give their time to one person. Each helper earns the hours they spent, and the person helped pays for all of it.",
+          "equal": "Set one total. Everyone giving time earns an equal share of it, and everyone receiving time pays an equal share.",
+          "weighted": "Like sharing equally, but you mark who did more. Someone marked 2 gets twice the share of someone marked 1.",
+          "custom": "You enter exactly what each person earns or pays. The total earned must equal the total paid."
+        },
+        "examples": {
+          "workshop": "Mary runs a 2-hour class for 4 people. Mary earns 2 hours. Each person pays 2 hours. The other 6 hours go to the community time fund.",
+          "team": "Two volunteers spend 1 hour moving furniture for Tom. Each volunteer earns 1 hour. Tom pays 2 hours.",
+          "equal": "6 hours, 2 people giving and 3 receiving: each person giving time earns 3 hours and each person receiving time pays 2.",
+          "weighted": "Of 6 hours, Ann (marked 2) earns 4 and Ben (marked 1) earns 2.",
+          "custom": "Ann earns 3, Ben earns 1, and Cara pays 4."
+        }
+      },
+      "inputs": {
+        "sessionHours": "How long was the session (in hours)?",
+        "sessionHoursHint": "We fill this in for everyone. Change it for anyone who came for less time.",
+        "teamHours": "How many hours did each helper spend?",
+        "teamHoursHint": "We fill this in for every helper. Change it for anyone who spent more or less time.",
+        "weight": "Share of the effort for {{name}}",
+        "weightHint": "1 is a normal share. 2 is twice as much.",
+        "hoursFor": "Hours for {{name}}"
+      }
+    },
+    "summary": {
+      "heading": "What everyone will earn or pay",
+      "earns": "{{name}} earns {{count}} hour",
+      "earns_one": "{{name}} earns {{count}} hour",
+      "earns_other": "{{name}} earns {{count}} hours",
+      "pays": "{{name}} pays {{count}} hour",
+      "pays_one": "{{name}} pays {{count}} hour",
+      "pays_other": "{{name}} pays {{count}} hours",
+      "fund": "{{count}} hour goes to the community time fund",
+      "fund_one": "{{count}} hour goes to the community time fund",
+      "fund_other": "{{count}} hours go to the community time fund",
+      "totals": "{{paid}} paid · {{earned}} earned",
+      "totalsWithFund": "{{paid}} paid · {{earned}} earned · {{fund}} to the community time fund",
+      "loading": "Working out the hours…",
+      "error": "We could not work out the hours. Please try again.",
+      "unknownMember": "A member",
+      "youWillEarn": "You will earn {{count}} hour",
+      "youWillEarn_one": "You will earn {{count}} hour",
+      "youWillEarn_other": "You will earn {{count}} hours",
+      "youWillPay": "You will pay {{count}} hour",
+      "youWillPay_one": "You will pay {{count}} hour",
+      "youWillPay_other": "You will pay {{count}} hours"
     }
   },
   "newExchange": "New Listing",

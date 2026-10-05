@@ -18,41 +18,6 @@ let mockHoldConfirmation = false;
 let mockUserId = 7;
 let mockTenantId = 2;
 
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) => {
-      const map: Record<string, string> = {
-        'groupExchanges.detail.title': 'Group Exchange',
-        'groupExchanges.detail.created': `Created ${String(opts?.date ?? '')}`,
-        'groupExchanges.detail.unknownDate': 'recently',
-        'groupExchanges.detail.invalidTitle': 'Group exchange not available',
-        'groupExchanges.detail.invalidDescription': 'This group exchange link is missing a valid identifier.',
-        'groupExchanges.detail.notFoundTitle': 'Group exchange not found',
-        'groupExchanges.detail.notFoundDescription': 'You may not have access to this group exchange, or it may have been removed.',
-        'groupExchanges.detail.participants': 'Participants',
-        'groupExchanges.detail.noParticipants': 'No participants have been added yet.',
-        'groupExchanges.detail.splitPreview': 'Split preview',
-        'groupExchanges.detail.splitShare': `${String(opts?.name ?? '')} — ${String(opts?.hours ?? '')} hours`,
-        'groupExchanges.detail.splitUnknownMember': `Member #${String(opts?.id ?? '')}`,
-        'groupExchanges.detail.confirmed': 'Confirmed',
-        'groupExchanges.detail.unconfirmed': 'Not confirmed',
-        'groupExchanges.detail.roles.provider': 'Provider',
-        'groupExchanges.detail.roles.receiver': 'Receiver',
-        'groupExchanges.detail.actions.title': 'Available actions',
-        'groupExchanges.detail.actions.confirm': 'Confirm hours',
-        'groupExchanges.detail.actions.complete': 'Complete exchange',
-        'groupExchanges.detail.actions.cancel': 'Cancel exchange',
-        'groupExchanges.status.pending_confirmation': 'Needs confirmation',
-        'groupExchanges.split.weighted': 'Weighted split',
-        'groupExchanges.participants': `${String(opts?.count ?? 0)} participants`,
-        'groupExchanges.hours': `${String(opts?.count ?? 0)} hours`,
-        'common:buttons.back': 'Back',
-      };
-      return map[key] ?? key;
-    },
-  }),
-}));
-
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
@@ -358,20 +323,128 @@ describe('GroupExchangeDetailScreen', () => {
     expect(toast).not.toHaveBeenCalled();
   });
 
-  it('renders participant and split details from the backend shape', () => {
+  it('renders participant and per-person lines from the backend shape', () => {
     const { getByText, queryByText } = render(<GroupExchangeDetailScreen />);
 
     expect(getByText('Community garden shift')).toBeTruthy();
     expect(getByText('Needs confirmation')).toBeTruthy();
     expect(getByText('Alice Smith')).toBeTruthy();
     expect(getByText('Ben Jones')).toBeTruthy();
-    expect(getByText('Split preview')).toBeTruthy();
-    // Each share names the member and their role — never a raw field name or a bare id.
-    expect(getByText('Alice Smith — 2 hours')).toBeTruthy();
-    expect(getByText('Ben Jones — 2 hours')).toBeTruthy();
+    expect(getByText('What everyone will earn or pay')).toBeTruthy();
+    // Each line names the member and what happens to them — never a raw field name or a bare id.
+    expect(getByText('Alice Smith earns 2 hours')).toBeTruthy();
+    expect(getByText('Ben Jones pays 2 hours')).toBeTruthy();
     expect(queryByText(/#user_id/)).toBeNull();
     expect(queryByText(/#role/)).toBeNull();
     expect(queryByText(/From member/)).toBeNull();
+  });
+
+  it('shows the kind by its name, never by its stored value', () => {
+    const { getByText, queryByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText('Share by amount of effort')).toBeTruthy();
+    expect(queryByText('weighted')).toBeNull();
+  });
+
+  it.each([
+    ['workshop', 'Workshop or class'],
+    ['team', 'A team helping someone'],
+    ['equal', 'Share equally'],
+    ['weighted', 'Share by amount of effort'],
+    ['custom', "Type each person's hours"],
+  ])('names the %s kind "%s"', (kind, name) => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...baseExchange, split_type: kind } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText(name)).toBeTruthy();
+  });
+
+  it('shows an exchange made before the new kinds as "Share equally", working as before', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: { ...baseExchange, split_type: 'equal' } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText('Share equally')).toBeTruthy();
+    expect(getByText('Confirm hours')).toBeTruthy();
+    expect(getByText('Alice Smith earns 2 hours')).toBeTruthy();
+  });
+
+  it('tells a giving participant what they will earn, beside Confirm', () => {
+    const { getByText, queryByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText('You will earn 2 hours')).toBeTruthy();
+    expect(queryByText(/You will pay/)).toBeNull();
+  });
+
+  it('tells a receiving participant what they will pay', () => {
+    mockUserId = 8;
+    mockUseApi.mockReturnValue({
+      data: { data: { ...baseExchange, split_type: 'equal' } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText, queryByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText('You will pay 2 hours')).toBeTruthy();
+    expect(queryByText(/You will earn/)).toBeNull();
+  });
+
+  it('says nothing about "you" to someone who is not taking part', () => {
+    mockUserId = 99;
+
+    const { queryByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(queryByText(/You will (earn|pay)/)).toBeNull();
+  });
+
+  it('shows the community fund line from the exchange, which is not one of the lines', () => {
+    mockUseApi.mockReturnValue({
+      data: {
+        data: {
+          ...baseExchange,
+          split_type: 'workshop',
+          community_fund_hours: 6,
+          calculated_split: [
+            { user_id: 7, role: 'provider', hours: 2 },
+            { user_id: 8, role: 'receiver', hours: 8 },
+          ],
+        },
+      },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(getByText('Alice Smith earns 2 hours')).toBeTruthy();
+    expect(getByText('Ben Jones pays 8 hours')).toBeTruthy();
+    expect(getByText('6 hours go to the community time fund')).toBeTruthy();
+  });
+
+  it('leaves out the fund line when there is no fund', () => {
+    const { queryByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(queryByText(/go(es)? to the community time fund/)).toBeNull();
+  });
+
+  it('never calls anyone a provider or a receiver', () => {
+    const { queryAllByText } = render(<GroupExchangeDetailScreen />);
+
+    expect(queryAllByText(/provider|receiver|transfer/i)).toHaveLength(0);
   });
 
   it('names a share whose member is not in the participants list', () => {
@@ -390,14 +463,14 @@ describe('GroupExchangeDetailScreen', () => {
 
     const { getByText } = render(<GroupExchangeDetailScreen />);
 
-    expect(getByText('Member #99 — 3 hours')).toBeTruthy();
+    expect(getByText('A member earns 3 hours')).toBeTruthy();
   });
 
   /*
     A response in the old map shape, or any other unexpected value, must not crash the
-    screen and must not print field names — it shows no preview at all.
+    screen and must not print field names — it shows no per-person lines at all.
   */
-  it('shows no split preview when the shares are not a list', () => {
+  it('shows no per-person lines when the shares are not a list', () => {
     mockUseApi.mockReturnValue({
       data: {
         data: {
@@ -412,7 +485,7 @@ describe('GroupExchangeDetailScreen', () => {
 
     const { queryByText } = render(<GroupExchangeDetailScreen />);
 
-    expect(queryByText('Split preview')).toBeNull();
+    expect(queryByText('What everyone will earn or pay')).toBeNull();
     expect(queryByText(/#7/)).toBeNull();
   });
 
@@ -458,6 +531,7 @@ describe('GroupExchangeDetailScreen', () => {
     const button = getByText('Complete exchange');
     fireEvent.press(button);
     await waitFor(() => expect(mockCompleteGroupExchange).toHaveBeenCalledWith(42));
-    expect(mockConfirmCalls[0]?.title).toBe('groupExchanges.detail.actions.completeTitle');
+    expect(mockConfirmCalls[0]?.title).toBe('Complete this group exchange?');
+    expect(mockConfirmCalls[0]?.message).not.toMatch(/transfer/i);
   });
 });

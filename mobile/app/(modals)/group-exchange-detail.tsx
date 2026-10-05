@@ -41,6 +41,9 @@ const statusTones: Record<GroupExchangeStatus, string> = {
   disputed: '#ef4444',
 };
 
+/** The kinds that have a name to show. Anything else is left unnamed rather than printing its stored value. */
+const knownKinds = ['workshop', 'team', 'equal', 'weighted', 'custom'];
+
 function formatDate(value?: string | null) {
   if (!value) return '';
   const date = new Date(value);
@@ -228,6 +231,18 @@ function GroupExchangeDetailScreenInner() {
     : [];
   const participantNames = new Map(participants.map((participant) => [participant.user_id, participant.name]));
   const createdDate = formatDate(exchange.created_at);
+  // The community time fund (a workshop's leftover hours) is a number on the exchange, not a line.
+  const fundHours = Number(exchange.community_fund_hours ?? 0);
+  const ownShare = currentParticipant
+    ? splitShares.find((share) => share.user_id === currentParticipant.user_id)
+    : undefined;
+  // Say it once: beside Confirm when there is a Confirm, otherwise at the head of the lines below.
+  const youWillLine = ownShare ? (
+    <Text className="text-base font-semibold" style={{ color: theme.text }} testID="group-exchange-you-will">
+      {t(ownShare.role === 'receiver' ? 'groupExchanges.summary.youWillPay' : 'groupExchanges.summary.youWillEarn', { count: ownShare.hours })}
+    </Text>
+  ) : null;
+  const shareHours = new Map(splitShares.map((share) => [`${share.user_id}:${share.role}`, share.hours]));
 
   return (
     <ScreenShell title={t('groupExchanges.detail.title')} backLabel={t('common:buttons.back')} refreshing={isLoading} onRefresh={refresh}>
@@ -252,7 +267,9 @@ function GroupExchangeDetailScreenInner() {
           <View className="flex-row flex-wrap gap-2">
             <Metric icon="people-outline" tone={tone} label={t('groupExchanges.participants', { count: participants.length })} />
             <Metric icon="time-outline" tone={tone} label={t('groupExchanges.hours', { count: Number(exchange.total_hours) })} />
-            <Metric icon="git-compare-outline" tone={tone} label={t(`groupExchanges.split.${exchange.split_type}`)} />
+            {knownKinds.includes(exchange.split_type) ? (
+              <Metric icon="git-compare-outline" tone={tone} label={t(`groupExchanges.split.${exchange.split_type}`)} />
+            ) : null}
           </View>
         </HeroCard.Body>
       </HeroCard>
@@ -261,6 +278,7 @@ function GroupExchangeDetailScreenInner() {
         <HeroCard className="mb-4 rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
             <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.actions.title')}</Text>
+            {canConfirm ? youWillLine : null}
             <View className="flex-row flex-wrap gap-2">
               {canConfirm ? (
                 <HeroButton variant="primary" onPress={confirmConfirm} isDisabled={submitting || awaitingRead}>
@@ -286,7 +304,14 @@ function GroupExchangeDetailScreenInner() {
         <HeroCard.Body className="gap-3 p-4">
           <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.participants')}</Text>
           {participants.length > 0 ? (
-            participants.map((participant) => <ParticipantRow key={participant.id} participant={participant} tone={tone} />)
+            participants.map((participant) => (
+              <ParticipantRow
+                key={participant.id}
+                participant={participant}
+                tone={tone}
+                hours={shareHours.get(`${participant.user_id}:${participant.role}`)}
+              />
+            ))
           ) : (
             <Surface variant="secondary" className="rounded-panel p-3">
               <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('groupExchanges.detail.noParticipants')}</Text>
@@ -299,19 +324,21 @@ function GroupExchangeDetailScreenInner() {
         🔴 This block used to read `calculated_split` as a from-member / to-member matrix,
         which the server has never sent. On a real group exchange it printed the response's
         own field names at the member: "From member #0", "To member #role: provider hours".
-        The server sends one row per participant — a share, not a transfer — so that is what
-        is shown, named from the participants list where the id is one of them.
+        The server sends one row per participant, so that is what is shown: who earns and who
+        pays, named from the participants list where the id is one of them. The community time
+        fund is not a participant; it comes from `community_fund_hours`.
       */}
-      {splitShares.length > 0 ? (
+      {splitShares.length > 0 || fundHours > 0 ? (
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-3 p-4">
-            <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.detail.splitPreview')}</Text>
+            <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('groupExchanges.summary.heading')}</Text>
+            {canConfirm ? null : youWillLine}
             {splitShares.map((share, index) => (
               <Surface key={`${share.user_id}-${share.role}-${index}`} variant="secondary" className="rounded-panel p-3">
                 <Text className="text-sm font-medium" style={{ color: theme.text }}>
-                  {t('groupExchanges.detail.splitShare', {
-                    name: participantNames.get(share.user_id) ?? t('groupExchanges.detail.splitUnknownMember', { id: share.user_id }),
-                    hours: share.hours,
+                  {t(share.role === 'receiver' ? 'groupExchanges.summary.pays' : 'groupExchanges.summary.earns', {
+                    name: participantNames.get(share.user_id) || t('groupExchanges.summary.unknownMember'),
+                    count: share.hours,
                   })}
                 </Text>
                 <Text className="text-sm" style={{ color: theme.textSecondary }}>
@@ -321,6 +348,13 @@ function GroupExchangeDetailScreenInner() {
                 </Text>
               </Surface>
             ))}
+            {fundHours > 0 ? (
+              <Surface variant="secondary" className="rounded-panel p-3">
+                <Text className="text-sm font-medium" style={{ color: theme.text }}>
+                  {t('groupExchanges.summary.fund', { count: fundHours })}
+                </Text>
+              </Surface>
+            ) : null}
           </HeroCard.Body>
         </HeroCard>
       ) : null}
@@ -355,7 +389,7 @@ function Metric({ icon, tone, label }: { icon: React.ComponentProps<typeof Ionic
   );
 }
 
-function ParticipantRow({ participant, tone }: { participant: GroupExchangeParticipant; tone: string }) {
+function ParticipantRow({ participant, tone, hours }: { participant: GroupExchangeParticipant; tone: string; hours?: number }) {
   const { t } = useTranslation('exchanges');
   const theme = useTheme();
   return (
@@ -373,7 +407,8 @@ function ParticipantRow({ participant, tone }: { participant: GroupExchangeParti
             <Ionicons name={participant.confirmed ? 'checkmark-circle-outline' : 'time-outline'} size={12} color={tone} />
             <Chip.Label>{participant.confirmed ? t('groupExchanges.detail.confirmed') : t('groupExchanges.detail.unconfirmed')}</Chip.Label>
           </Chip>
-          <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('groupExchanges.hours', { count: Number(participant.hours) })}</Text>
+          {/* The share the server worked out, not the figure typed in: an equal exchange stores none. */}
+          <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('groupExchanges.hours', { count: Number(hours ?? participant.hours) })}</Text>
         </View>
       </View>
     </Surface>

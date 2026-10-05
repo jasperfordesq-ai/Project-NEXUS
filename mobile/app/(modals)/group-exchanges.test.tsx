@@ -26,7 +26,11 @@ jest.mock('react-i18next', () => ({
         'groupExchanges.filters.cancelled': 'Cancelled',
         'groupExchanges.status.active': 'Active',
         'groupExchanges.status.pending_confirmation': 'Needs confirmation',
-        'groupExchanges.split.weighted': 'Weighted split',
+        'groupExchanges.split.workshop': 'Workshop or class',
+        'groupExchanges.split.team': 'A team helping someone',
+        'groupExchanges.split.equal': 'Share equally',
+        'groupExchanges.split.weighted': 'Share by amount of effort',
+        'groupExchanges.split.custom': "Type each person's hours",
         'groupExchanges.participants': `${String(opts?.count ?? 0)} participants`,
         'groupExchanges.hours': `${String(opts?.count ?? 0)} hours`,
         'groupExchanges.unknownOrganizer': 'Community member',
@@ -149,7 +153,7 @@ describe('GroupExchangesScreen', () => {
 
     expect(getByText('Group Exchanges')).toBeTruthy();
     expect(getByLabelText(
-      'Community garden shift, Active, 3 participants, 6 hours, Weighted split, 1 May 2026',
+      'Community garden shift, Active, 3 participants, 6 hours, Share by amount of effort, 1 May 2026',
     )).toBeTruthy();
   });
 
@@ -179,5 +183,41 @@ describe('GroupExchangesScreen', () => {
     fireEvent.press(getByText('Create group exchange'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/new-group-exchange');
+  });
+
+  it.each([
+    ['workshop', 'Workshop or class'],
+    ['team', 'A team helping someone'],
+    ['equal', 'Share equally'],
+    ['weighted', 'Share by amount of effort'],
+    ['custom', "Type each person's hours"],
+  ])('names a %s exchange "%s", including one made before the new kinds', (kind, name) => {
+    mockUseApi.mockReturnValue({
+      data: { data: [{ ...exchangeRow, split_type: kind }], meta: { has_more: false } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByLabelText, getByText, queryByText } = render(<GroupExchangesScreen />);
+
+    expect(getByText(name)).toBeTruthy();
+    expect(getByLabelText(`Community garden shift, Active, 3 participants, 6 hours, ${name}, 1 May 2026`)).toBeTruthy();
+    // The stored value is never shown to a member.
+    expect(queryByText(kind)).toBeNull();
+  });
+
+  it('leaves a kind it does not know unnamed rather than printing the stored value', () => {
+    mockUseApi.mockReturnValue({
+      data: { data: [{ ...exchangeRow, split_type: 'some_future_kind' }], meta: { has_more: false } },
+      isLoading: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+
+    const { getByLabelText, queryByText } = render(<GroupExchangesScreen />);
+
+    expect(queryByText(/some_future_kind|groupExchanges\.split/)).toBeNull();
+    expect(getByLabelText('Community garden shift, Active, 3 participants, 6 hours, 1 May 2026')).toBeTruthy();
   });
 });

@@ -24,7 +24,8 @@ export interface GroupExchange {
   organizer_name?: string | null;
   organizer_avatar?: string | null;
   status: GroupExchangeStatus;
-  split_type: 'equal' | 'custom' | 'weighted';
+  /** The five kinds, in the order members see them. Older exchanges are `equal`, `weighted` or `custom`. */
+  split_type: 'workshop' | 'team' | 'equal' | 'weighted' | 'custom';
   total_hours: number;
   participant_count?: number;
   created_at: string;
@@ -72,6 +73,11 @@ export interface GroupExchangeDetail extends GroupExchange {
   broker_notes: string | null;
   participants: GroupExchangeParticipant[];
   calculated_split: GroupExchangeSplitShare[];
+  /**
+   * Hours that go to the community time fund (a workshop's leftover). The fund is NOT a line in
+   * `calculated_split`; it is only this number. Absent on an older server, which means none.
+   */
+  community_fund_hours?: number;
 }
 
 /**
@@ -94,6 +100,41 @@ export interface CreateGroupExchangePayload {
   split_type: GroupExchange['split_type'];
   total_hours: number;
   participants?: {
+    user_id: number;
+    role: 'provider' | 'receiver';
+    hours?: number;
+    weight?: number;
+  }[];
+}
+
+/** What the server says everyone will earn or pay, before anything is saved. */
+export interface GroupExchangePreviewLine {
+  user_id: number;
+  /** May be null for someone who is not a member of this community: show "A member". */
+  name: string | null;
+  role: 'provider' | 'receiver' | string;
+  hours: number;
+  verb: 'earns' | 'pays' | string;
+}
+
+export interface GroupExchangePreviewProblem {
+  code: 'EARNED_EXCEEDS_PAID' | 'HOURS_MISSING' | 'NO_GIVERS' | 'NO_RECEIVERS' | 'UNBALANCED' | string;
+  /** Already translated by the server: show as it is. */
+  message: string;
+}
+
+export interface GroupExchangePreview {
+  lines: GroupExchangePreviewLine[];
+  community_fund_hours: number;
+  totals: { earned: number; paid: number; to_fund: number };
+  /** A problem is still an HTTP 200; it means the exchange cannot go ahead as entered. */
+  problem: GroupExchangePreviewProblem | null;
+}
+
+export interface PreviewGroupExchangePayload {
+  split_type: GroupExchange['split_type'];
+  total_hours: number;
+  participants: {
     user_id: number;
     role: 'provider' | 'receiver';
     hours?: number;
@@ -134,4 +175,9 @@ export function completeGroupExchange(id: number): Promise<{ data: { message: st
 
 export function cancelGroupExchange(id: number): Promise<{ data: { message: string } }> {
   return api.delete<{ data: { message: string } }>(`${API_V2}/group-exchanges/${id}`);
+}
+
+/** Writes nothing: the server works out what each person earns or pays, so no client does the arithmetic. */
+export function previewGroupExchange(payload: PreviewGroupExchangePayload): Promise<{ data: GroupExchangePreview }> {
+  return api.post<{ data: GroupExchangePreview }>(`${API_V2}/group-exchanges/preview`, payload);
 }

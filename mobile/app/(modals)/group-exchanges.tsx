@@ -27,6 +27,9 @@ import NativePressable from '@/components/ui/NativePressable';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import { withRouteGate } from '@/components/withRouteGate';
 
+/** The kinds that have a name to show. Anything else is left unnamed rather than printing its stored value. */
+const knownKinds = ['workshop', 'team', 'equal', 'weighted', 'custom'];
+
 const statusFilters = ['all', 'active', 'pending_confirmation', 'completed', 'cancelled'] as const;
 type StatusFilter = (typeof statusFilters)[number];
 
@@ -189,7 +192,7 @@ function GroupExchangesScreenInner() {
           t(`groupExchanges.status.${exchange.status}`),
           typeof exchange.participant_count === 'number' ? t('groupExchanges.participants', { count: exchange.participant_count }) : '',
           t('groupExchanges.hours', { count: Number(exchange.total_hours) }),
-          t(`groupExchanges.split.${exchange.split_type}`),
+          knownKinds.includes(exchange.split_type) ? t(`groupExchanges.split.${exchange.split_type}`) : '',
           createdDate,
         ].filter(Boolean).join(', ')}
         onPress={() => router.push({ pathname: '/(modals)/group-exchange-detail', params: { id: String(exchange.id) } } as unknown as Href)}
@@ -225,10 +228,12 @@ function GroupExchangesScreenInner() {
                 <Ionicons name="time-outline" size={12} color={tone} />
                 <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t('groupExchanges.hours', { count: Number(exchange.total_hours) })}</Text>
               </Surface>
-              <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
-                <Ionicons name="git-compare-outline" size={12} color={tone} />
-                <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t(`groupExchanges.split.${exchange.split_type}`)}</Text>
-              </Surface>
+              {knownKinds.includes(exchange.split_type) ? (
+                <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
+                  <Ionicons name="git-compare-outline" size={12} color={tone} />
+                  <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>{t(`groupExchanges.split.${exchange.split_type}`)}</Text>
+                </Surface>
+              ) : null}
               {createdDate ? (
                 <Surface variant="secondary" className="flex-row items-center gap-1 rounded-full px-3 py-1.5">
                   <Ionicons name="calendar-outline" size={12} color={tone} />

@@ -19,7 +19,15 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Input from '@/components/ui/Input';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import { createGroupExchange, type CreateGroupExchangePayload, type GroupExchange } from '@/lib/api/groupExchanges';
+import NativePressable from '@/components/ui/NativePressable';
+import {
+  createGroupExchange,
+  previewGroupExchange,
+  type CreateGroupExchangePayload,
+  type GroupExchange,
+  type GroupExchangePreview,
+  type PreviewGroupExchangePayload,
+} from '@/lib/api/groupExchanges';
 import { getMembers, type Member } from '@/lib/api/members';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -33,7 +41,13 @@ import {
 
 import { parseDecimalInput } from '@/lib/utils/decimal';
 import { withRouteGate } from '@/components/withRouteGate';
-const splitTypes: GroupExchange['split_type'][] = ['equal', 'custom', 'weighted'];
+
+type Kind = GroupExchange['split_type'];
+/** The five kinds, in the order members see them. A new form starts on the first. */
+const kinds: Kind[] = ['workshop', 'team', 'equal', 'weighted', 'custom'];
+
+/** A short pause in typing before the server is asked what everyone will earn or pay. */
+const PREVIEW_DELAY_MS = 300;
 
 type ParticipantDraft = {
   user_id: number;
@@ -46,6 +60,25 @@ type ParticipantDraft = {
 
 function memberName(member: Member) {
   return member.name || [member.first_name, member.last_name].filter(Boolean).join(' ') || String(member.id);
+}
+
+/**
+ * Does this kind take the person's own hours? A workshop and a custom exchange do for everyone;
+ * a team does for the helpers only (the person helped shares the cost and types nothing);
+ * equal and weighted share one total and need no hours at all.
+ */
+function takesOwnHours(kind: Kind, role: ParticipantDraft['role']): boolean {
+  if (kind === 'workshop' || kind === 'custom') return true;
+  return kind === 'team' && role === 'provider';
+}
+
+/** Does the number typed above the people stand in for each person's hours until they change it? */
+function fillsInHours(kind: Kind): boolean {
+  return kind === 'workshop' || kind === 'team';
+}
+
+function roundHours(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 type SignedInUser = NonNullable<ReturnType<typeof useAuth>['user']>;
@@ -82,17 +115,24 @@ function NewGroupExchangeScreen() {
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [totalHours, setTotalHours] = useState('');
-  const [splitType, setSplitType] = useState<GroupExchange['split_type']>('equal');
+  // One number, whose meaning follows the kind: the session length (workshop), the hours each
+  // helper spent (team) or the total to share (equal, weighted). A custom exchange has none.
+  const [amount, setAmount] = useState('');
+  const [kind, setKind] = useState<Kind>('workshop');
   const [participantQuery, setParticipantQuery] = useState('');
   const [participants, setParticipants] = useState<ParticipantDraft[]>([]);
   const [memberResults, setMemberResults] = useState<Member[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  // What the server said about the numbers on the form. It is only trusted for the exact request
+  // it answered: change a figure and it is stale until the next answer arrives.
+  const [preview, setPreview] = useState<{ key: string; data: GroupExchangePreview } | null>(null);
+  const [previewFailedKey, setPreviewFailedKey] = useState<string | null>(null);
+  const latestPreviewKeyRef = useRef('');
   const { confirm, confirmDialog } = useConfirm();
   useUnsavedChangesGuard({
-    isDirty: Boolean(title.trim() || description.trim() || totalHours.trim() || participants.length > 0),
+    isDirty: Boolean(title.trim() || description.trim() || amount.trim() || participants.length > 0),
     isSaving: isSubmitting,
     hasSaved: hasSubmitted,
     confirm,
@@ -104,11 +144,62 @@ function NewGroupExchangeScreen() {
 
   // parseDecimalInput, not parseFloat: parseFloat('1,5') is 1 — silently the wrong
   // number of hours for a comma-locale member (audit 2026-09-05, F06).
-  const parsedHours = useMemo(() => parseDecimalInput(totalHours) ?? Number.NaN, [totalHours]);
-  const canSubmit = title.trim().length >= 3 && Number.isFinite(parsedHours) && parsedHours > 0 && !isSubmitting;
+  const parsedAmount = useMemo(() => parseDecimalInput(amount) ?? Number.NaN, [amount]);
   const selectedIds = useMemo(() => new Set(participants.map((participant) => participant.user_id)), [participants]);
   const providerCount = participants.filter((participant) => participant.role === 'provider').length;
   const receiverCount = participants.filter((participant) => participant.role === 'receiver').length;
+
+  /*
+    The request the server is asked about, and the one sent on create, are built from the same
+    place, so what is previewed is exactly what is saved. No split is worked out here: the server
+    does the arithmetic for every kind.
+  */
+  const splitRequest = useMemo<PreviewGroupExchangePayload>(() => {
+    const people = participants.map((participant) => ({
+      user_id: participant.user_id,
+      role: participant.role,
+      hours: takesOwnHours(kind, participant.role) ? (parseDecimalInput(participant.hours) ?? 0) : 0,
+      weight: kind === 'weighted' ? (parseDecimalInput(participant.weight) ?? 1) : 1,
+    }));
+    // A custom exchange has no typed total: the total is what the people giving time earn.
+    const total = kind === 'custom'
+      ? roundHours(people.filter((person) => person.role === 'provider').reduce((sum, person) => sum + person.hours, 0))
+      : (Number.isFinite(parsedAmount) ? parsedAmount : 0);
+    return { split_type: kind, total_hours: total, participants: people };
+  }, [kind, participants, parsedAmount]);
+  const splitRequestKey = JSON.stringify(splitRequest);
+  latestPreviewKeyRef.current = splitRequestKey;
+
+  useEffect(() => {
+    // Nobody added yet: nothing to work out, and Create stays off until someone is.
+    if (splitRequest.participants.length === 0) return undefined;
+    const key = splitRequestKey;
+    const timer = setTimeout(() => {
+      previewGroupExchange(splitRequest)
+        .then((response) => {
+          if (!mountedRef.current || latestPreviewKeyRef.current !== key) return;
+          setPreviewFailedKey(null);
+          setPreview({ key, data: response.data });
+        })
+        .catch(() => {
+          if (!mountedRef.current || latestPreviewKeyRef.current !== key) return;
+          setPreviewFailedKey(key);
+        });
+    }, PREVIEW_DELAY_MS);
+    return () => clearTimeout(timer);
+    // splitRequestKey is the serialised splitRequest, so it covers every field.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [splitRequestKey]);
+
+  const currentPreview = preview && preview.key === splitRequestKey ? preview.data : null;
+  const previewFailed = previewFailedKey === splitRequestKey;
+  const previewProblem = currentPreview?.problem ?? null;
+  const canSubmit = title.trim().length >= 3
+    && splitRequest.participants.length > 0
+    && splitRequest.total_hours > 0
+    && currentPreview !== null
+    && previewProblem === null
+    && !isSubmitting;
 
   async function searchMembers() {
     const requestId = ++memberSearchRequestRef.current;
@@ -138,6 +229,38 @@ function NewGroupExchangeScreen() {
     setIsSearching(false);
   }
 
+  /** A workshop's session length or a team's hours per helper is filled in for each person added. */
+  function startingHours(role: ParticipantDraft['role'], forKind: Kind = kind, figure: string = amount): string {
+    return fillsInHours(forKind) && takesOwnHours(forKind, role) && (parseDecimalInput(figure) ?? 0) > 0 ? figure : '';
+  }
+
+  /**
+   * The figure above the people moves everyone who is still on the old figure (or on nothing), and
+   * leaves anyone whose hours were changed by hand.
+   */
+  function changeAmount(value: string) {
+    const previous = amount;
+    setAmount(value);
+    if (!fillsInHours(kind)) return;
+    setParticipants((current) => current.map((participant) => (
+      takesOwnHours(kind, participant.role) && (participant.hours === previous || participant.hours.trim() === '')
+        ? { ...participant, hours: value }
+        : participant
+    )));
+  }
+
+  /** Switching kind keeps every person and every figure typed; it only fills hours that are empty. */
+  function changeKind(next: Kind) {
+    if (next === kind) return;
+    setKind(next);
+    if (!fillsInHours(next)) return;
+    setParticipants((current) => current.map((participant) => (
+      participant.hours.trim() === '' && takesOwnHours(next, participant.role)
+        ? { ...participant, hours: startingHours(participant.role, next) }
+        : participant
+    )));
+  }
+
   function addParticipant(member: Member, role: ParticipantDraft['role']) {
     if (selectedIds.has(member.id)) return;
     setParticipants((current) => [
@@ -147,7 +270,7 @@ function NewGroupExchangeScreen() {
         name: memberName(member),
         avatar: member.avatar_url ?? member.avatar ?? null,
         role,
-        hours: '',
+        hours: startingHours(role),
         weight: '1',
       },
     ]);
@@ -156,7 +279,7 @@ function NewGroupExchangeScreen() {
 
   function addSelf(role: ParticipantDraft['role']) {
     if (!user?.id || selectedIds.has(user.id)) return;
-    setParticipants((current) => [...current, selfAsParticipant(user, role)]);
+    setParticipants((current) => [...current, { ...selfAsParticipant(user, role), hours: startingHours(role) }]);
     setMemberResults((current) => current.filter((result) => result.id !== user.id));
   }
 
@@ -169,17 +292,11 @@ function NewGroupExchangeScreen() {
   async function handleSubmit() {
     if (!canSubmit || submittingRef.current || !mountedRef.current) return;
     /*
-      🔴 An unparseable participant figure was silently sent as 0 hours or weight 1 (audit
-      2026-09-07, C/F-14). Only the split types that use the field are checked.
+      🔴 An unparseable participant figure was silently sent as weight 1 (audit 2026-09-07,
+      C/F-14), so the weight is checked here. An unparseable or empty number of hours is sent as 0
+      and the server refuses it by name in the preview, which keeps Create switched off.
     */
-    if (splitType === 'custom') {
-      const bad = participants.find((participant) => (parseDecimalInput(participant.hours) ?? -1) < 0);
-      if (bad) {
-        showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.participantHoursInvalid'), variant: 'warning' });
-        return;
-      }
-    }
-    if (splitType === 'weighted') {
+    if (kind === 'weighted') {
       const bad = participants.find((participant) => !((parseDecimalInput(participant.weight) ?? 0) > 0));
       if (bad) {
         showToast({ title: t('common:errors.alertTitle'), description: t('groupExchanges.create.participantWeightInvalid'), variant: 'warning' });
@@ -194,16 +311,9 @@ function NewGroupExchangeScreen() {
       const payload: CreateGroupExchangePayload = {
         title: title.trim(),
         description: description.trim() || null,
-        split_type: splitType,
-        total_hours: parsedHours,
-        participants: participants.length > 0
-          ? participants.map((participant) => ({
-              user_id: participant.user_id,
-              role: participant.role,
-              hours: parseDecimalInput(participant.hours) ?? 0,
-              weight: parseDecimalInput(participant.weight) ?? 1,
-            }))
-          : undefined,
+        split_type: splitRequest.split_type,
+        total_hours: splitRequest.total_hours,
+        participants: splitRequest.participants,
       };
       const creationOperation = await reserveGroupExchangeCreationOperation(JSON.stringify(payload));
       const response = await createGroupExchange(payload, creationOperation.key);
@@ -282,49 +392,79 @@ function NewGroupExchangeScreen() {
               textAlignVertical="top"
               style={{ minHeight: 96 }}
             />
-            <Input
-              label={t('groupExchanges.create.fields.totalHours')}
-              value={totalHours}
-              onChangeText={setTotalHours}
-              placeholder={t('groupExchanges.create.placeholders.totalHours')}
-              keyboardType="decimal-pad"
-            />
-
-            <View className="gap-2">
-              <Text className="text-sm font-semibold" style={{ color: theme.text }}>
-                {t('groupExchanges.create.fields.splitType')}
+            <View className="gap-2" accessibilityRole="radiogroup">
+              <Text className="text-sm font-semibold" style={{ color: theme.text }} accessibilityRole="header">
+                {t('groupExchanges.create.kinds.heading')}
               </Text>
-              <View className="flex-row flex-wrap gap-2">
-                {splitTypes.map((value) => (
-                  <HeroButton
-                    key={value}
-                    size="sm"
-                    variant={splitType === value ? 'primary' : 'secondary'}
-                    onPress={() => setSplitType(value)}
-                    accessibilityState={{ selected: splitType === value }}
-                  >
-                    <HeroButton.Label>{t(`groupExchanges.split.${value}`)}</HeroButton.Label>
-                  </HeroButton>
-                ))}
-              </View>
-            </View>
-
-            <View className="gap-2 rounded-panel-inner bg-surface-secondary p-3">
-              <View className="flex-row flex-wrap gap-2">
-                <Chip size="sm" variant="secondary">
-                  <Chip.Label>{t('groupExchanges.create.summaryHours', { count: Number.isFinite(parsedHours) ? parsedHours : 0 })}</Chip.Label>
-                </Chip>
-                <Chip size="sm" variant="secondary">
-                  <Chip.Label>{t(`groupExchanges.split.${splitType}`)}</Chip.Label>
-                </Chip>
-                <Chip size="sm" variant="secondary">
-                  <Chip.Label>{t('groupExchanges.create.summaryParticipants', { count: participants.length })}</Chip.Label>
-                </Chip>
-              </View>
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-                {t('groupExchanges.create.participantNote')}
+                {t('groupExchanges.create.kinds.rule')}
               </Text>
+              {kinds.map((value) => {
+                const selected = kind === value;
+                return (
+                  <NativePressable
+                    key={value}
+                    className="w-full p-0"
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected, checked: selected }}
+                    accessibilityLabel={`${t(`groupExchanges.split.${value}`)}. ${t(`groupExchanges.create.kinds.descriptions.${value}`)}`}
+                    onPress={() => changeKind(value)}
+                    feedback="highlight"
+                  >
+                    <View
+                      className="gap-1 rounded-panel-inner border-2 p-3"
+                      style={{
+                        borderColor: selected ? primary : theme.border,
+                        backgroundColor: selected ? withAlpha(primary, 0.1) : undefined,
+                      }}
+                    >
+                      <View className="flex-row items-center gap-2">
+                        <Ionicons name={selected ? 'radio-button-on' : 'radio-button-off'} size={18} color={selected ? primary : theme.textSecondary} />
+                        <Text className="flex-1 text-base font-semibold" style={{ color: theme.text }}>
+                          {t(`groupExchanges.split.${value}`)}
+                        </Text>
+                      </View>
+                      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                        {t(`groupExchanges.create.kinds.descriptions.${value}`)}
+                      </Text>
+                      <Text className="text-sm italic leading-5" style={{ color: theme.textSecondary }}>
+                        {t(`groupExchanges.create.kinds.examples.${value}`)}
+                      </Text>
+                    </View>
+                  </NativePressable>
+                );
+              })}
             </View>
+
+            {kind === 'workshop' ? (
+              <Input
+                label={t('groupExchanges.create.inputs.sessionHours')}
+                helper={t('groupExchanges.create.inputs.sessionHoursHint')}
+                value={amount}
+                onChangeText={changeAmount}
+                placeholder={t('groupExchanges.create.placeholders.totalHours')}
+                keyboardType="decimal-pad"
+              />
+            ) : null}
+            {kind === 'team' ? (
+              <Input
+                label={t('groupExchanges.create.inputs.teamHours')}
+                helper={t('groupExchanges.create.inputs.teamHoursHint')}
+                value={amount}
+                onChangeText={changeAmount}
+                placeholder={t('groupExchanges.create.placeholders.totalHours')}
+                keyboardType="decimal-pad"
+              />
+            ) : null}
+            {kind === 'equal' || kind === 'weighted' ? (
+              <Input
+                label={t('groupExchanges.create.fields.totalHours')}
+                value={amount}
+                onChangeText={changeAmount}
+                placeholder={t('groupExchanges.create.placeholders.totalHours')}
+                keyboardType="decimal-pad"
+              />
+            ) : null}
 
             <View className="gap-3">
               <View>
@@ -421,29 +561,81 @@ function NewGroupExchangeScreen() {
                           <HeroButton.Label>{t('groupExchanges.create.remove')}</HeroButton.Label>
                         </HeroButton>
                       </View>
-                      <View className="flex-row gap-2">
+                      {takesOwnHours(kind, participant.role) ? (
                         <Input
-                          containerClassName="flex-1"
                           label={t('groupExchanges.create.fields.participantHours')}
+                          accessibilityLabel={t('groupExchanges.create.inputs.hoursFor', { name: participant.name })}
                           value={participant.hours}
                           onChangeText={(value) => updateParticipant(participant.user_id, { hours: value })}
                           placeholder={t('groupExchanges.create.placeholders.participantHours')}
                           keyboardType="decimal-pad"
                         />
+                      ) : null}
+                      {kind === 'weighted' ? (
                         <Input
-                          containerClassName="flex-1"
-                          label={t('groupExchanges.create.fields.participantWeight')}
+                          label={t('groupExchanges.create.inputs.weight', { name: participant.name })}
+                          helper={t('groupExchanges.create.inputs.weightHint')}
                           value={participant.weight}
                           onChangeText={(value) => updateParticipant(participant.user_id, { weight: value })}
                           placeholder={t('groupExchanges.create.placeholders.participantWeight')}
                           keyboardType="decimal-pad"
                         />
-                      </View>
+                      ) : null}
                     </View>
                   ))}
                 </View>
               ) : null}
             </View>
+
+            {participants.length > 0 ? (
+              <View className="gap-2 rounded-panel-inner bg-surface-secondary p-3" accessibilityLiveRegion="polite">
+                <Text className="text-sm font-semibold" style={{ color: theme.text }} accessibilityRole="header">
+                  {t('groupExchanges.summary.heading')}
+                </Text>
+                {previewFailed ? (
+                  <Text className="text-sm leading-5" style={{ color: theme.error }}>
+                    {t('groupExchanges.summary.error')}
+                  </Text>
+                ) : currentPreview === null ? (
+                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+                    {t('groupExchanges.summary.loading')}
+                  </Text>
+                ) : (
+                  <>
+                    {currentPreview.lines.map((line, index) => (
+                      <Text key={`${line.user_id}-${line.role}-${index}`} className="text-sm leading-5" style={{ color: theme.text }}>
+                        {t(line.role === 'provider' ? 'groupExchanges.summary.earns' : 'groupExchanges.summary.pays', {
+                          name: line.name || t('groupExchanges.summary.unknownMember'),
+                          count: Number(line.hours),
+                        })}
+                      </Text>
+                    ))}
+                    {Number(currentPreview.community_fund_hours) > 0 ? (
+                      <Text className="text-sm leading-5" style={{ color: theme.text }}>
+                        {t('groupExchanges.summary.fund', { count: Number(currentPreview.community_fund_hours) })}
+                      </Text>
+                    ) : null}
+                    <Text className="text-xs leading-5" style={{ color: theme.textSecondary }}>
+                      {Number(currentPreview.totals.to_fund) > 0
+                        ? t('groupExchanges.summary.totalsWithFund', {
+                            paid: t('groupExchanges.hours', { count: Number(currentPreview.totals.paid) }),
+                            earned: t('groupExchanges.hours', { count: Number(currentPreview.totals.earned) }),
+                            fund: t('groupExchanges.hours', { count: Number(currentPreview.totals.to_fund) }),
+                          })
+                        : t('groupExchanges.summary.totals', {
+                            paid: t('groupExchanges.hours', { count: Number(currentPreview.totals.paid) }),
+                            earned: t('groupExchanges.hours', { count: Number(currentPreview.totals.earned) }),
+                          })}
+                    </Text>
+                    {previewProblem ? (
+                      <Text className="text-sm font-semibold leading-5" style={{ color: theme.error }} accessibilityRole="alert">
+                        {previewProblem.message}
+                      </Text>
+                    ) : null}
+                  </>
+                )}
+              </View>
+            ) : null}
 
             <HeroButton variant="primary" onPress={handleSubmit} isDisabled={!canSubmit}>
               <HeroButton.Label>{isSubmitting ? t('groupExchanges.create.saving') : t('groupExchanges.create.submit')}</HeroButton.Label>
