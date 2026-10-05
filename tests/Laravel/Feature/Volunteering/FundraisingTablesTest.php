@@ -92,6 +92,35 @@ class FundraisingTablesTest extends TestCase
         DB::table('vol_fundraising_handovers')->where('id', $id)->update(['confirmed_by' => 6]);
     }
 
+    public function test_a_cancelled_handover_cannot_be_confirmed_even_directly(): void
+    {
+        $id = $this->handover();
+        DB::table('vol_fundraising_handovers')->where('id', $id)
+            ->update(['cancelled_by' => 5, 'cancelled_at' => now(), 'cancel_reason' => 'Mistake']);
+
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessage('vol_fundraising_handover_immutable');
+        DB::table('vol_fundraising_handovers')->where('id', $id)->update(['confirmed_by' => 6, 'confirmed_at' => now()]);
+    }
+
+    public function test_a_confirmation_needs_both_who_and_when(): void
+    {
+        $id = $this->handover();
+
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessage('vol_fundraising_handover_immutable');
+        DB::table('vol_fundraising_handovers')->where('id', $id)->update(['confirmed_by' => 6]);
+    }
+
+    public function test_a_cancellation_needs_a_reason(): void
+    {
+        $id = $this->handover();
+
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessage('vol_fundraising_handover_immutable');
+        DB::table('vol_fundraising_handovers')->where('id', $id)->update(['cancelled_by' => 5, 'cancelled_at' => now()]);
+    }
+
     public function test_retention_never_prunes_fundraising_tables(): void
     {
         $tables = array_column(RetentionPolicyService::DATA_TYPES, 'table');

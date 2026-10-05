@@ -20518,7 +20518,7 @@ CREATE TABLE `vol_fundraising_handovers` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_handovers_guard` BEFORE UPDATE ON `vol_fundraising_handovers` FOR EACH ROW BEGIN IF NOT (NEW.tenant_id <=> OLD.tenant_id AND NEW.giving_day_id <=> OLD.giving_day_id AND NEW.organization_id <=> OLD.organization_id AND NEW.amount <=> OLD.amount AND NEW.currency <=> OLD.currency AND NEW.handed_over_on <=> OLD.handed_over_on AND NEW.method <=> OLD.method AND NEW.reference <=> OLD.reference AND NEW.note <=> OLD.note AND NEW.recorded_by <=> OLD.recorded_by AND NEW.created_at <=> OLD.created_at) OR (OLD.confirmed_at IS NOT NULL AND NOT (NEW.confirmed_at <=> OLD.confirmed_at AND NEW.confirmed_by <=> OLD.confirmed_by)) OR (OLD.cancelled_at IS NOT NULL AND NOT (NEW.cancelled_at <=> OLD.cancelled_at AND NEW.cancelled_by <=> OLD.cancelled_by AND NEW.cancel_reason <=> OLD.cancel_reason)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_handover_immutable'; END IF; END 
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_handovers_guard` BEFORE UPDATE ON `vol_fundraising_handovers` FOR EACH ROW BEGIN IF NOT (NEW.tenant_id <=> OLD.tenant_id AND NEW.giving_day_id <=> OLD.giving_day_id AND NEW.organization_id <=> OLD.organization_id AND NEW.amount <=> OLD.amount AND NEW.currency <=> OLD.currency AND NEW.handed_over_on <=> OLD.handed_over_on AND NEW.method <=> OLD.method AND NEW.reference <=> OLD.reference AND NEW.note <=> OLD.note AND NEW.recorded_by <=> OLD.recorded_by AND NEW.created_at <=> OLD.created_at) OR (OLD.confirmed_at IS NOT NULL AND NOT (NEW.confirmed_at <=> OLD.confirmed_at AND NEW.confirmed_by <=> OLD.confirmed_by)) OR (OLD.cancelled_at IS NOT NULL AND NOT (NEW.cancelled_at <=> OLD.cancelled_at AND NEW.cancelled_by <=> OLD.cancelled_by AND NEW.cancel_reason <=> OLD.cancel_reason)) OR (NEW.confirmed_at IS NOT NULL AND NEW.cancelled_at IS NOT NULL) OR ((NEW.confirmed_at IS NULL) <> (NEW.confirmed_by IS NULL)) OR ((NEW.cancelled_at IS NULL) <> (NEW.cancelled_by IS NULL)) OR (NEW.cancelled_at IS NOT NULL AND (NEW.cancel_reason IS NULL OR TRIM(NEW.cancel_reason) = '')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_handover_immutable'; END IF; END 
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -21781,7 +21781,8 @@ INSERT INTO `laravel_migrations` VALUES
 (460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142),
 (461,'2026_10_03_200000_create_support_report_attachments_table',143),
 (463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145),
-(464,'2026_10_05_160000_create_fundraising_history_and_handovers',146);
+(464,'2026_10_05_160000_create_fundraising_history_and_handovers',146),
+(465,'2026_10_05_170000_tighten_fundraising_handover_guard',147);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
