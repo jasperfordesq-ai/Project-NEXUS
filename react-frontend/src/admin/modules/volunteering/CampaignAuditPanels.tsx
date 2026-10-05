@@ -157,6 +157,8 @@ export function CampaignHandoversPanel({ givingDayId, hasOrganisation }: Handove
         setFormOpen(false);
         await load();
       } else {
+        // admin-i18n-ignore: localized server message — FundraisingHandoverService
+        // refuses with __('fundraising.*') in the caller's locale (lang/*/fundraising.php).
         setFormError(res.error || res.errors?.[0]?.message || t('load_failed'));
       }
     } catch (err) {
@@ -177,6 +179,8 @@ export function CampaignHandoversPanel({ givingDayId, hasOrganisation }: Handove
         setCancelTarget(null);
         await load();
       } else {
+        // admin-i18n-ignore: localized server message — FundraisingHandoverService
+        // refuses with __('fundraising.*') in the caller's locale (lang/*/fundraising.php).
         toast.error(res.error || res.errors?.[0]?.message || t('load_failed'));
       }
     } catch (err) {
