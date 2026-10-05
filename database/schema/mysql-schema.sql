@@ -20611,6 +20611,38 @@ CREATE TABLE `vol_incident_events` (
   KEY `idx_vie_org` (`tenant_id`,`organization_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `vol_incident_events_no_update` BEFORE UPDATE ON `vol_incident_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_incident_events_immutable' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `vol_incident_events_no_delete` BEFORE DELETE ON `vol_incident_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_incident_events_immutable' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 DROP TABLE IF EXISTS `vol_incident_shares`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -20797,6 +20829,58 @@ CREATE TABLE `vol_organizations` (
   KEY `idx_vol_org_balance` (`tenant_id`,`balance`),
   KEY `idx_vol_org_type` (`tenant_id`,`org_type`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_qualification_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_qualification_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `qualification_id` int(10) unsigned NOT NULL,
+  `actor_user_id` int(11) DEFAULT NULL,
+  `event` enum('recorded','updated','confirmed','withdrawn','expired','reminder_sent','expired_notice_sent') NOT NULL,
+  `organization_id` int(11) DEFAULT NULL,
+  `details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`details`)),
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_vol_qualification_events_tenant_qual` (`tenant_id`,`qualification_id`),
+  KEY `vol_qualification_events_qualification_id_foreign` (`qualification_id`),
+  CONSTRAINT `vol_qualification_events_qualification_id_foreign` FOREIGN KEY (`qualification_id`) REFERENCES `vol_qualifications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_qualifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_qualifications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `qualification_type` varchar(60) NOT NULL,
+  `title` varchar(160) DEFAULT NULL,
+  `issuer` varchar(160) DEFAULT NULL,
+  `reference_number` varchar(100) DEFAULT NULL,
+  `obtained_at` date DEFAULT NULL,
+  `expires_at` date DEFAULT NULL,
+  `status` enum('recorded','confirmed','expired','withdrawn') NOT NULL DEFAULT 'recorded',
+  `confirmed_by` int(11) DEFAULT NULL,
+  `confirmed_at` datetime DEFAULT NULL,
+  `confirmation_method` enum('saw_original','online_register','issuer_confirmed') DEFAULT NULL,
+  `confirmed_for_organization_id` int(11) DEFAULT NULL,
+  `withdrawn_by` int(11) DEFAULT NULL,
+  `withdrawn_at` datetime DEFAULT NULL,
+  `withdrawal_reason` enum('entered_in_error','no_longer_held','replaced','volunteer_request') DEFAULT NULL,
+  `expiry_reminder_sent_at` datetime DEFAULT NULL,
+  `expired_notice_sent_at` datetime DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_vol_qualifications_tenant_user` (`tenant_id`,`user_id`),
+  KEY `idx_vol_qualifications_tenant_status_expiry` (`tenant_id`,`status`,`expires_at`),
+  KEY `idx_vol_qualifications_tenant_org` (`tenant_id`,`confirmed_for_organization_id`),
+  KEY `vol_qualifications_user_id_foreign` (`user_id`),
+  CONSTRAINT `vol_qualifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_reminder_delivery_claims`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -21815,6 +21899,7 @@ INSERT INTO `laravel_migrations` VALUES
 (459,'2026_10_02_130000_add_jira_status_to_support_reports',141),
 (460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142),
 (461,'2026_10_03_200000_create_support_report_attachments_table',143),
+(462,'2026_10_05_120000_create_vol_qualifications_tables',144),
 (463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145),
 (464,'2026_10_05_160000_create_fundraising_history_and_handovers',146),
 (465,'2026_10_05_170000_tighten_fundraising_handover_guard',147),

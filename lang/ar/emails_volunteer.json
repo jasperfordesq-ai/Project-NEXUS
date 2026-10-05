@@ -48,5 +48,52 @@
     "label_type": "التدريب",
     "label_expires": "تنتهي الصلاحية",
     "cta": "مراجعة التدريب"
+  },
+  "qualification_expiring": {
+    "subject": "مؤهلك {{type}} ينتهي في {{date}}",
+    "title": "مؤهل على وشك الانتهاء",
+    "preview": "جدّده قبل أن ينتهي",
+    "body": "ينتهي مؤهلك {{type}} في {{date}}. بعد تجديده، حدّث تاريخ الانتهاء حتى ترى المنظمات التي تتطوع معها أنه ساري المفعول.",
+    "label_type": "المؤهل",
+    "label_expires": "ينتهي في",
+    "cta": "تحديث مؤهلاتي"
+  },
+  "qualification_expired": {
+    "subject": "انتهت صلاحية مؤهلك {{type}}",
+    "title": "انتهت صلاحية مؤهل",
+    "preview": "حدّثه بعد تجديده",
+    "body": "انتهت صلاحية مؤهلك {{type}} في {{date}}. لم يعد يظهر كمؤهل ساري المفعول للمنظمات التي تتطوع معها. حدّث تاريخ الانتهاء بعد تجديده.",
+    "label_type": "المؤهل",
+    "label_expires": "انتهى في",
+    "cta": "تحديث مؤهلاتي"
+  },
+  "qualification_org_digest": {
+    "subject": "مؤهلات متطوعين تحتاج إلى اهتمام في {{org}}",
+    "title": "مؤهلات المتطوعين",
+    "preview": "مؤهلات متطوعيك المنتهية أو التي توشك على الانتهاء",
+    "intro": "هذه المؤهلات التي يحملها متطوعون في {{org}} توشك على الانتهاء أو انتهت بالفعل.",
+    "expiring_heading": "تنتهي قريبًا",
+    "expired_heading": "منتهية",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "فتح تبويب المؤهلات"
+  },
+  "qualification_bell": {
+    "expiring": "مؤهلك {{type}} ينتهي في {{date}}",
+    "expired": "انتهت صلاحية مؤهلك {{type}} في {{date}}",
+    "org_attention": "{{number}} من مؤهلات المتطوعين في {{org}} تحتاج إلى اهتمام"
+  },
+  "qualification_types": {
+    "first_aid": "الإسعافات الأولية",
+    "safeguarding_training": "تدريب على الحماية",
+    "manual_handling": "المناولة اليدوية",
+    "food_hygiene": "سلامة الغذاء",
+    "driving_licence": "رخصة القيادة",
+    "professional_registration": "التسجيل المهني",
+    "other": "أخرى",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "حماية البالغين",
+    "efaw": "الإسعافات الأولية الطارئة في مكان العمل (EFAW)",
+    "faw": "الإسعافات الأولية في مكان العمل (FAW)"
   }
 }

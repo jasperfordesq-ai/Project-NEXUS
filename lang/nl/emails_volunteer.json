@@ -48,5 +48,52 @@
     "label_type": "Opleiding",
     "label_expires": "Verloopt",
     "cta": "Training controleren"
+  },
+  "qualification_expiring": {
+    "subject": "Je kwalificatie {{type}} verloopt op {{date}}",
+    "title": "Een kwalificatie verloopt binnenkort",
+    "preview": "Verleng hem voordat hij verloopt",
+    "body": "Je kwalificatie {{type}} verloopt op {{date}}. Werk na het verlengen de vervaldatum bij, zodat de organisaties waar je vrijwilligerswerk doet kunnen zien dat hij geldig is.",
+    "label_type": "Kwalificatie",
+    "label_expires": "Verloopt op",
+    "cta": "Mijn kwalificaties bijwerken"
+  },
+  "qualification_expired": {
+    "subject": "Je kwalificatie {{type}} is verlopen",
+    "title": "Een kwalificatie is verlopen",
+    "preview": "Werk hem bij zodra hij is verlengd",
+    "body": "Je kwalificatie {{type}} is op {{date}} verlopen. Hij wordt niet langer als geldig getoond aan de organisaties waar je vrijwilligerswerk doet. Werk de vervaldatum bij zodra je hem hebt verlengd.",
+    "label_type": "Kwalificatie",
+    "label_expires": "Verlopen op",
+    "cta": "Mijn kwalificaties bijwerken"
+  },
+  "qualification_org_digest": {
+    "subject": "Kwalificaties van vrijwilligers bij {{org}} vragen aandacht",
+    "title": "Kwalificaties van vrijwilligers",
+    "preview": "Verlopende en verlopen kwalificaties van je vrijwilligers",
+    "intro": "Deze kwalificaties van vrijwilligers bij {{org}} verlopen binnenkort of zijn verlopen.",
+    "expiring_heading": "Verloopt binnenkort",
+    "expired_heading": "Verlopen",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Open het tabblad Kwalificaties"
+  },
+  "qualification_bell": {
+    "expiring": "Je kwalificatie {{type}} verloopt op {{date}}",
+    "expired": "Je kwalificatie {{type}} is op {{date}} verlopen",
+    "org_attention": "{{number}} kwalificaties van vrijwilligers bij {{org}} vragen aandacht"
+  },
+  "qualification_types": {
+    "first_aid": "EHBO",
+    "safeguarding_training": "Training veilig werken met kwetsbare mensen",
+    "manual_handling": "Tillen en dragen",
+    "food_hygiene": "Voedselhygiëne",
+    "driving_licence": "Rijbewijs",
+    "professional_registration": "Beroepsregistratie",
+    "other": "Anders",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Bescherming van volwassenen",
+    "efaw": "Bedrijfs-EHBO voor noodgevallen (EFAW)",
+    "faw": "Bedrijfs-EHBO (FAW)"
   }
 }

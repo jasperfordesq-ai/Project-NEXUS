@@ -48,5 +48,52 @@
     "label_type": "Formación",
     "label_expires": "Caduca",
     "cta": "Revisar formación"
+  },
+  "qualification_expiring": {
+    "subject": "Tu cualificación {{type}} caduca el {{date}}",
+    "title": "Una cualificación está a punto de caducar",
+    "preview": "Renuévala antes de que caduque",
+    "body": "Tu cualificación {{type}} caduca el {{date}}. Cuando la hayas renovado, actualiza la fecha de caducidad para que las organizaciones con las que colaboras vean que está vigente.",
+    "label_type": "Cualificación",
+    "label_expires": "Caduca el",
+    "cta": "Actualizar mis cualificaciones"
+  },
+  "qualification_expired": {
+    "subject": "Tu cualificación {{type}} ha caducado",
+    "title": "Una cualificación ha caducado",
+    "preview": "Actualízala cuando la renueves",
+    "body": "Tu cualificación {{type}} caducó el {{date}}. Ya no se muestra como vigente a las organizaciones con las que colaboras. Actualiza la fecha de caducidad cuando la hayas renovado.",
+    "label_type": "Cualificación",
+    "label_expires": "Caducó el",
+    "cta": "Actualizar mis cualificaciones"
+  },
+  "qualification_org_digest": {
+    "subject": "Cualificaciones de voluntariado que requieren atención en {{org}}",
+    "title": "Cualificaciones del voluntariado",
+    "preview": "Cualificaciones caducadas o a punto de caducar de tus voluntarios",
+    "intro": "Estas cualificaciones de personas voluntarias de {{org}} están a punto de caducar o ya han caducado.",
+    "expiring_heading": "Caducan pronto",
+    "expired_heading": "Caducadas",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Abrir la pestaña de cualificaciones"
+  },
+  "qualification_bell": {
+    "expiring": "Tu cualificación {{type}} caduca el {{date}}",
+    "expired": "Tu cualificación {{type}} caducó el {{date}}",
+    "org_attention": "{{number}} cualificaciones de voluntariado en {{org}} requieren atención"
+  },
+  "qualification_types": {
+    "first_aid": "Primeros auxilios",
+    "safeguarding_training": "Formación en protección de personas",
+    "manual_handling": "Manipulación manual de cargas",
+    "food_hygiene": "Higiene alimentaria",
+    "driving_licence": "Permiso de conducir",
+    "professional_registration": "Colegiación profesional",
+    "other": "Otra",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Protección de personas adultas",
+    "efaw": "Primeros auxilios de emergencia en el trabajo (EFAW)",
+    "faw": "Primeros auxilios en el trabajo (FAW)"
   }
 }

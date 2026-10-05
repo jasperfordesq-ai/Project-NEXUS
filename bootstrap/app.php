@@ -335,6 +335,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('safeguarding-vetting-renewals');
 
+        // Volunteer qualifications register: mark records past their expiry
+        // date as expired, and remind the volunteer (plus the organisations
+        // they volunteer with) once before and once after. Window and on/off
+        // come from the tenant's "credential expiry" reminder setting.
+        $schedule->command('volunteering:qualification-expiry')
+            ->dailyAt('07:50')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->name('volunteering-qualification-expiry');
+
         // Announce podcast episodes whose scheduled publish time has arrived —
         // notifies subscribers + posts the feed activity. Deferred from publish
         // time so future-scheduled episodes aren't announced before they're live.

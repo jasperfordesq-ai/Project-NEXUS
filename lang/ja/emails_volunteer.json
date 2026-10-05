@@ -48,5 +48,52 @@
     "label_type": "研修",
     "label_expires": "有効期限",
     "cta": "研修を確認"
+  },
+  "qualification_expiring": {
+    "subject": "{{type}}の資格が{{date}}に期限切れになります",
+    "title": "資格の有効期限が近づいています",
+    "preview": "期限切れになる前に更新してください",
+    "body": "あなたの{{type}}の資格は{{date}}に期限切れになります。更新が済んだら有効期限を更新して、ボランティア先の団体が有効であることを確認できるようにしてください。",
+    "label_type": "資格",
+    "label_expires": "有効期限",
+    "cta": "資格を更新する"
+  },
+  "qualification_expired": {
+    "subject": "{{type}}の資格が期限切れになりました",
+    "title": "資格が期限切れになりました",
+    "preview": "更新が済んだら登録を更新してください",
+    "body": "あなたの{{type}}の資格は{{date}}に期限切れになりました。ボランティア先の団体には有効な資格として表示されなくなっています。更新が済んだら有効期限を更新してください。",
+    "label_type": "資格",
+    "label_expires": "期限切れ日",
+    "cta": "資格を更新する"
+  },
+  "qualification_org_digest": {
+    "subject": "{{org}}のボランティア資格に対応が必要です",
+    "title": "ボランティアの資格",
+    "preview": "ボランティアの期限切れ・期限間近の資格",
+    "intro": "{{org}}のボランティアが保有する以下の資格は、期限が近づいているか、すでに期限切れです。",
+    "expiring_heading": "まもなく期限切れ",
+    "expired_heading": "期限切れ",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "資格タブを開く"
+  },
+  "qualification_bell": {
+    "expiring": "{{type}}の資格が{{date}}に期限切れになります",
+    "expired": "{{type}}の資格が{{date}}に期限切れになりました",
+    "org_attention": "{{org}}のボランティア資格{{number}}件に対応が必要です"
+  },
+  "qualification_types": {
+    "first_aid": "救急法",
+    "safeguarding_training": "セーフガーディング研修",
+    "manual_handling": "手作業による運搬",
+    "food_hygiene": "食品衛生",
+    "driving_licence": "運転免許",
+    "professional_registration": "専門職登録",
+    "other": "その他",
+    "children_first": "Children First（Tusla）",
+    "first_aid_response": "First Aid Response（PHECC）",
+    "safeguarding_adults": "成人のセーフガーディング",
+    "efaw": "職場の緊急救急法（EFAW）",
+    "faw": "職場の救急法（FAW）"
   }
 }

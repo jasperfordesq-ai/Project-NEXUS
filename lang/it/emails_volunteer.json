@@ -48,5 +48,52 @@
     "label_type": "Formazione",
     "label_expires": "Scade",
     "cta": "Verifica la formazione"
+  },
+  "qualification_expiring": {
+    "subject": "La tua qualifica {{type}} scade il {{date}}",
+    "title": "Una qualifica sta per scadere",
+    "preview": "Rinnovala prima che scada",
+    "body": "La tua qualifica {{type}} scade il {{date}}. Dopo averla rinnovata, aggiorna la data di scadenza così le organizzazioni con cui fai volontariato vedranno che è in corso di validità.",
+    "label_type": "Qualifica",
+    "label_expires": "Scade il",
+    "cta": "Aggiorna le mie qualifiche"
+  },
+  "qualification_expired": {
+    "subject": "La tua qualifica {{type}} è scaduta",
+    "title": "Una qualifica è scaduta",
+    "preview": "Aggiornala dopo il rinnovo",
+    "body": "La tua qualifica {{type}} è scaduta il {{date}}. Non viene più mostrata come valida alle organizzazioni con cui fai volontariato. Aggiorna la data di scadenza dopo averla rinnovata.",
+    "label_type": "Qualifica",
+    "label_expires": "Scaduta il",
+    "cta": "Aggiorna le mie qualifiche"
+  },
+  "qualification_org_digest": {
+    "subject": "Qualifiche dei volontari da controllare presso {{org}}",
+    "title": "Qualifiche dei volontari",
+    "preview": "Qualifiche in scadenza e scadute dei tuoi volontari",
+    "intro": "Queste qualifiche dei volontari di {{org}} stanno per scadere o sono scadute.",
+    "expiring_heading": "In scadenza",
+    "expired_heading": "Scadute",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Apri la scheda Qualifiche"
+  },
+  "qualification_bell": {
+    "expiring": "La tua qualifica {{type}} scade il {{date}}",
+    "expired": "La tua qualifica {{type}} è scaduta il {{date}}",
+    "org_attention": "{{number}} qualifiche dei volontari presso {{org}} richiedono attenzione"
+  },
+  "qualification_types": {
+    "first_aid": "Primo soccorso",
+    "safeguarding_training": "Formazione sulla tutela",
+    "manual_handling": "Movimentazione manuale dei carichi",
+    "food_hygiene": "Igiene alimentare",
+    "driving_licence": "Patente di guida",
+    "professional_registration": "Iscrizione all'albo professionale",
+    "other": "Altro",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Tutela degli adulti",
+    "efaw": "Primo soccorso di emergenza sul lavoro (EFAW)",
+    "faw": "Primo soccorso sul lavoro (FAW)"
   }
 }

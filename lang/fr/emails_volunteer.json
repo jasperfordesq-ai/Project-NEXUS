@@ -48,5 +48,52 @@
     "label_type": "Formation",
     "label_expires": "Expire",
     "cta": "Vérifier les formations"
+  },
+  "qualification_expiring": {
+    "subject": "Votre qualification {{type}} expire le {{date}}",
+    "title": "Une qualification arrive à expiration",
+    "preview": "Renouvelez-la avant qu'elle n'expire",
+    "body": "Votre qualification {{type}} expire le {{date}}. Une fois renouvelée, mettez à jour la date d'expiration pour que les organisations auprès desquelles vous êtes bénévole voient qu'elle est à jour.",
+    "label_type": "Type de qualification",
+    "label_expires": "Expire le",
+    "cta": "Mettre à jour mes qualifications"
+  },
+  "qualification_expired": {
+    "subject": "Votre qualification {{type}} a expiré",
+    "title": "Une qualification a expiré",
+    "preview": "Mettez-la à jour une fois renouvelée",
+    "body": "Votre qualification {{type}} a expiré le {{date}}. Elle n'apparaît plus comme à jour pour les organisations auprès desquelles vous êtes bénévole. Mettez à jour la date d'expiration une fois qu'elle est renouvelée.",
+    "label_type": "Type de qualification",
+    "label_expires": "Expirée le",
+    "cta": "Mettre à jour mes qualifications"
+  },
+  "qualification_org_digest": {
+    "subject": "Qualifications de bénévoles à surveiller chez {{org}}",
+    "title": "Qualifications des bénévoles",
+    "preview": "Qualifications expirées ou arrivant à expiration pour vos bénévoles",
+    "intro": "Ces qualifications détenues par des bénévoles de {{org}} arrivent à expiration ou ont expiré.",
+    "expiring_heading": "Expire bientôt",
+    "expired_heading": "Expirées",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Ouvrir l'onglet Qualifications"
+  },
+  "qualification_bell": {
+    "expiring": "Votre qualification {{type}} expire le {{date}}",
+    "expired": "Votre qualification {{type}} a expiré le {{date}}",
+    "org_attention": "{{number}} qualifications de bénévoles chez {{org}} demandent votre attention"
+  },
+  "qualification_types": {
+    "first_aid": "Premiers secours",
+    "safeguarding_training": "Formation à la protection des personnes",
+    "manual_handling": "Manutention manuelle",
+    "food_hygiene": "Hygiène alimentaire",
+    "driving_licence": "Permis de conduire",
+    "professional_registration": "Inscription professionnelle",
+    "other": "Autre",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Protection des adultes",
+    "efaw": "Premiers secours d'urgence au travail (EFAW)",
+    "faw": "Premiers secours au travail (FAW)"
   }
 }

@@ -275,6 +275,13 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
+            // Volunteer qualifications register — same middleware group and
+            // prefix as routes/api.php, kept in its own file (see the header
+            // comment there for why).
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/api-volunteering-qualifications.php'));
+
             // 🔴 The Blade accessible frontend route group was REMOVED on 2026-08-14.
             //
             // It served `/{tenantSlug}/accessible/...` from routes/govuk-alpha.php through

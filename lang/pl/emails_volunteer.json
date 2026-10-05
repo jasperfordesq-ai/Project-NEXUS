@@ -48,5 +48,52 @@
     "label_type": "Szkolenie",
     "label_expires": "Wygasa",
     "cta": "Sprawdź szkolenie"
+  },
+  "qualification_expiring": {
+    "subject": "Twoja kwalifikacja {{type}} traci ważność {{date}}",
+    "title": "Kwalifikacja wkrótce straci ważność",
+    "preview": "Odnów ją, zanim straci ważność",
+    "body": "Twoja kwalifikacja {{type}} traci ważność {{date}}. Po jej odnowieniu zaktualizuj datę ważności, aby organizacje, w których działasz jako wolontariusz, widziały, że jest aktualna.",
+    "label_type": "Kwalifikacja",
+    "label_expires": "Ważna do",
+    "cta": "Zaktualizuj moje kwalifikacje"
+  },
+  "qualification_expired": {
+    "subject": "Twoja kwalifikacja {{type}} straciła ważność",
+    "title": "Kwalifikacja straciła ważność",
+    "preview": "Zaktualizuj ją po odnowieniu",
+    "body": "Twoja kwalifikacja {{type}} straciła ważność {{date}}. Nie jest już pokazywana jako aktualna organizacjom, w których działasz jako wolontariusz. Zaktualizuj datę ważności po jej odnowieniu.",
+    "label_type": "Kwalifikacja",
+    "label_expires": "Straciła ważność",
+    "cta": "Zaktualizuj moje kwalifikacje"
+  },
+  "qualification_org_digest": {
+    "subject": "Kwalifikacje wolontariuszy w {{org}} wymagają uwagi",
+    "title": "Kwalifikacje wolontariuszy",
+    "preview": "Wygasające i wygasłe kwalifikacje Twoich wolontariuszy",
+    "intro": "Te kwalifikacje wolontariuszy w {{org}} wkrótce stracą ważność lub już ją straciły.",
+    "expiring_heading": "Wkrótce stracą ważność",
+    "expired_heading": "Wygasłe",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Otwórz zakładkę Kwalifikacje"
+  },
+  "qualification_bell": {
+    "expiring": "Twoja kwalifikacja {{type}} traci ważność {{date}}",
+    "expired": "Twoja kwalifikacja {{type}} straciła ważność {{date}}",
+    "org_attention": "{{number}} kwalifikacji wolontariuszy w {{org}} wymaga uwagi"
+  },
+  "qualification_types": {
+    "first_aid": "Pierwsza pomoc",
+    "safeguarding_training": "Szkolenie z ochrony osób",
+    "manual_handling": "Ręczne przenoszenie ciężarów",
+    "food_hygiene": "Higiena żywności",
+    "driving_licence": "Prawo jazdy",
+    "professional_registration": "Rejestracja zawodowa",
+    "other": "Inne",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Ochrona osób dorosłych",
+    "efaw": "Pierwsza pomoc w nagłych wypadkach w pracy (EFAW)",
+    "faw": "Pierwsza pomoc w pracy (FAW)"
   }
 }

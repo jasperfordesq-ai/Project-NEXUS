@@ -48,5 +48,52 @@
     "label_type": "Schulung",
     "label_expires": "Läuft ab",
     "cta": "Schulungen prüfen"
+  },
+  "qualification_expiring": {
+    "subject": "Ihre Qualifikation „{{type}}“ läuft am {{date}} ab",
+    "title": "Eine Qualifikation läuft bald ab",
+    "preview": "Erneuern Sie sie, bevor sie abläuft",
+    "body": "Ihre Qualifikation „{{type}}“ läuft am {{date}} ab. Aktualisieren Sie nach der Erneuerung das Ablaufdatum, damit die Organisationen, bei denen Sie sich engagieren, sehen, dass sie aktuell ist.",
+    "label_type": "Qualifikation",
+    "label_expires": "Läuft ab am",
+    "cta": "Meine Qualifikationen aktualisieren"
+  },
+  "qualification_expired": {
+    "subject": "Ihre Qualifikation „{{type}}“ ist abgelaufen",
+    "title": "Eine Qualifikation ist abgelaufen",
+    "preview": "Aktualisieren Sie sie nach der Erneuerung",
+    "body": "Ihre Qualifikation „{{type}}“ ist am {{date}} abgelaufen. Sie wird den Organisationen, bei denen Sie sich engagieren, nicht mehr als aktuell angezeigt. Aktualisieren Sie das Ablaufdatum, sobald Sie sie erneuert haben.",
+    "label_type": "Qualifikation",
+    "label_expires": "Abgelaufen am",
+    "cta": "Meine Qualifikationen aktualisieren"
+  },
+  "qualification_org_digest": {
+    "subject": "Qualifikationen von Freiwilligen bei {{org}} brauchen Aufmerksamkeit",
+    "title": "Qualifikationen von Freiwilligen",
+    "preview": "Ablaufende und abgelaufene Qualifikationen Ihrer Freiwilligen",
+    "intro": "Diese Qualifikationen von Freiwilligen bei {{org}} laufen bald ab oder sind abgelaufen.",
+    "expiring_heading": "Läuft bald ab",
+    "expired_heading": "Abgelaufen",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Zum Reiter Qualifikationen"
+  },
+  "qualification_bell": {
+    "expiring": "Ihre Qualifikation „{{type}}“ läuft am {{date}} ab",
+    "expired": "Ihre Qualifikation „{{type}}“ ist am {{date}} abgelaufen",
+    "org_attention": "{{number}} Qualifikationen von Freiwilligen bei {{org}} brauchen Aufmerksamkeit"
+  },
+  "qualification_types": {
+    "first_aid": "Erste Hilfe",
+    "safeguarding_training": "Schutzschulung (Safeguarding)",
+    "manual_handling": "Manuelles Heben und Tragen",
+    "food_hygiene": "Lebensmittelhygiene",
+    "driving_licence": "Führerschein",
+    "professional_registration": "Berufliche Registrierung",
+    "other": "Sonstiges",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Schutz von Erwachsenen",
+    "efaw": "Betriebliche Notfall-Erste-Hilfe (EFAW)",
+    "faw": "Betriebliche Erste Hilfe (FAW)"
   }
 }

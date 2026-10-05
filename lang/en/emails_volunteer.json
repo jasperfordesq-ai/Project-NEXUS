@@ -48,5 +48,52 @@
     "label_type": "Training",
     "label_expires": "Expires",
     "cta": "Review Training"
+  },
+  "qualification_expiring": {
+    "subject": "Your {{type}} qualification expires on {{date}}",
+    "title": "A qualification is about to run out",
+    "preview": "Renew it before it expires",
+    "body": "Your {{type}} qualification expires on {{date}}. Once you have renewed it, update the expiry date so the organisations you volunteer with can see it is current.",
+    "label_type": "Qualification",
+    "label_expires": "Expires",
+    "cta": "Update my qualifications"
+  },
+  "qualification_expired": {
+    "subject": "Your {{type}} qualification has expired",
+    "title": "A qualification has expired",
+    "preview": "Update it once renewed",
+    "body": "Your {{type}} qualification expired on {{date}}. It is no longer shown as current to the organisations you volunteer with. Update the expiry date once you have renewed it.",
+    "label_type": "Qualification",
+    "label_expires": "Expired",
+    "cta": "Update my qualifications"
+  },
+  "qualification_org_digest": {
+    "subject": "Volunteer qualifications needing attention at {{org}}",
+    "title": "Volunteer qualifications",
+    "preview": "Expiring and expired qualifications for your volunteers",
+    "intro": "These qualifications held by volunteers at {{org}} are expiring or have expired.",
+    "expiring_heading": "Expiring soon",
+    "expired_heading": "Expired",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Open the qualifications tab"
+  },
+  "qualification_bell": {
+    "expiring": "Your {{type}} qualification expires on {{date}}",
+    "expired": "Your {{type}} qualification expired on {{date}}",
+    "org_attention": "{{number}} volunteer qualifications at {{org}} need attention"
+  },
+  "qualification_types": {
+    "first_aid": "First aid",
+    "safeguarding_training": "Safeguarding training",
+    "manual_handling": "Manual handling",
+    "food_hygiene": "Food hygiene",
+    "driving_licence": "Driving licence",
+    "professional_registration": "Professional registration",
+    "other": "Other",
+    "children_first": "Children First (Tusla)",
+    "first_aid_response": "First Aid Response (PHECC)",
+    "safeguarding_adults": "Safeguarding adults",
+    "efaw": "Emergency First Aid at Work",
+    "faw": "First Aid at Work"
   }
 }

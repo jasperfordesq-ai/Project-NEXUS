@@ -48,5 +48,52 @@
     "label_type": "Oiliúint",
     "label_expires": "Dáta Éaga",
     "cta": "Athbhreithnigh Oiliúint"
+  },
+  "qualification_expiring": {
+    "subject": "Rachaidh do cháilíocht {{type}} in éag ar {{date}}",
+    "title": "Tá cáilíocht ar tí dul in éag",
+    "preview": "Athnuaigh í sula rachaidh sí in éag",
+    "body": "Rachaidh do cháilíocht {{type}} in éag ar {{date}}. Nuair a bheidh sí athnuaite agat, nuashonraigh an dáta éaga ionas go bhfeicfidh na heagraíochtaí a ndéanann tú obair dheonach leo go bhfuil sí reatha.",
+    "label_type": "Cáilíocht",
+    "label_expires": "In éag ar",
+    "cta": "Nuashonraigh mo cháilíochtaí"
+  },
+  "qualification_expired": {
+    "subject": "Tá do cháilíocht {{type}} imithe in éag",
+    "title": "Tá cáilíocht imithe in éag",
+    "preview": "Nuashonraigh í nuair a bheidh sí athnuaite",
+    "body": "Chuaigh do cháilíocht {{type}} in éag ar {{date}}. Ní thaispeántar í mar cháilíocht reatha a thuilleadh do na heagraíochtaí a ndéanann tú obair dheonach leo. Nuashonraigh an dáta éaga nuair a bheidh sí athnuaite agat.",
+    "label_type": "Cáilíocht",
+    "label_expires": "Imithe in éag",
+    "cta": "Nuashonraigh mo cháilíochtaí"
+  },
+  "qualification_org_digest": {
+    "subject": "Cáilíochtaí oibrithe deonacha a dteastaíonn aird orthu ag {{org}}",
+    "title": "Cáilíochtaí oibrithe deonacha",
+    "preview": "Cáilíochtaí atá ag dul in éag nó imithe in éag do d'oibrithe deonacha",
+    "intro": "Tá na cáilíochtaí seo atá ag oibrithe deonacha ag {{org}} ag dul in éag nó imithe in éag.",
+    "expiring_heading": "Ag dul in éag go luath",
+    "expired_heading": "Imithe in éag",
+    "row": "{{volunteer}} — {{type}} — {{date}}",
+    "cta": "Oscail an táb cáilíochtaí"
+  },
+  "qualification_bell": {
+    "expiring": "Rachaidh do cháilíocht {{type}} in éag ar {{date}}",
+    "expired": "Chuaigh do cháilíocht {{type}} in éag ar {{date}}",
+    "org_attention": "Teastaíonn aird ar {{number}} cáilíocht oibrithe deonacha ag {{org}}"
+  },
+  "qualification_types": {
+    "first_aid": "Garchabhair",
+    "safeguarding_training": "Oiliúint chumhdaigh",
+    "manual_handling": "Láimhseáil de láimh",
+    "food_hygiene": "Sláinteachas bia",
+    "driving_licence": "Ceadúnas tiomána",
+    "professional_registration": "Clárú gairmiúil",
+    "other": "Eile",
+    "children_first": "Tús Áite do Leanaí (Tusla)",
+    "first_aid_response": "Freagairt Gharchabhrach (PHECC)",
+    "safeguarding_adults": "Cumhdach daoine fásta",
+    "efaw": "Garchabhair Éigeandála san Ionad Oibre",
+    "faw": "Garchabhair san Ionad Oibre"
   }
 }
