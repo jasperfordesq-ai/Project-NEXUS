@@ -20592,6 +20592,41 @@ CREATE TABLE `vol_guardian_consents` (
   KEY `idx_guardian_consent_status` (`tenant_id`,`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_incident_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_incident_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `incident_id` int(10) unsigned NOT NULL,
+  `event_type` varchar(40) NOT NULL,
+  `actor_user_id` int(10) unsigned DEFAULT NULL,
+  `actor_role` varchar(20) NOT NULL,
+  `organization_id` int(10) unsigned DEFAULT NULL,
+  `body` text DEFAULT NULL,
+  `data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data`)),
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_vie_incident` (`tenant_id`,`incident_id`,`id`),
+  KEY `idx_vie_org` (`tenant_id`,`organization_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_incident_shares`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_incident_shares` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `incident_id` int(10) unsigned NOT NULL,
+  `organization_id` int(10) unsigned NOT NULL,
+  `shared_by` int(10) unsigned NOT NULL,
+  `shared_at` datetime NOT NULL,
+  `withdrawn_at` datetime DEFAULT NULL,
+  `withdrawn_by` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_vis_incident` (`tenant_id`,`incident_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21782,7 +21817,8 @@ INSERT INTO `laravel_migrations` VALUES
 (461,'2026_10_03_200000_create_support_report_attachments_table',143),
 (463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145),
 (464,'2026_10_05_160000_create_fundraising_history_and_handovers',146),
-(465,'2026_10_05_170000_tighten_fundraising_handover_guard',147);
+(465,'2026_10_05_170000_tighten_fundraising_handover_guard',147),
+(477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
