@@ -1170,7 +1170,7 @@ class GroupExchangeService
                     ->lockForUpdate()
                     ->first();
                 if (! $lockedFund) {
-                    throw new RuntimeException('GROUP_EXCHANGE_COMMUNITY_FUND_MISSING');
+                    throw new \RuntimeException('GROUP_EXCHANGE_COMMUNITY_FUND_MISSING');
                 }
             }
 
