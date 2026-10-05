@@ -222,6 +222,7 @@
     "community_fund_title": "صندوق المجتمع",
     "community_fund_type_deposit": "الإيداع",
     "community_fund_type_donation": "تبرع",
+    "community_fund_type_group_exchange": "تبادل جماعي",
     "community_fund_type_withdrawal": "منحة",
     "hours_value": "{{count}}هـ"
   }

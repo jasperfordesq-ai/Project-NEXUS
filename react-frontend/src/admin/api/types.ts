@@ -647,7 +647,7 @@ export interface CommunityFundBalance {
 
 export interface CommunityFundTransaction {
   id: number;
-  type: 'deposit' | 'withdrawal' | 'donation' | 'starting_balance_grant';
+  type: 'deposit' | 'withdrawal' | 'donation' | 'starting_balance_grant' | 'group_exchange';
   amount: number;
   balance_after: number;
   description: string;

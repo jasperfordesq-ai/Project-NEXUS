@@ -41,6 +41,7 @@ const TRANSACTION_TYPE_COLOR: Record<
   withdrawal: 'accent',
   donation: 'default',
   starting_balance_grant: 'warning',
+  group_exchange: 'success',
 };
 
 function unwrapArray<T>(payload: unknown): T[] {

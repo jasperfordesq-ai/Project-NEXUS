@@ -218,6 +218,7 @@
     "community_fund_title": "Gemeinschaftsfonds",
     "community_fund_type_deposit": "Einzahlung",
     "community_fund_type_donation": "Spende",
+    "community_fund_type_group_exchange": "Gruppentausch",
     "community_fund_type_withdrawal": "Zuschuss",
     "hours_value": "{{count}}h"
   }

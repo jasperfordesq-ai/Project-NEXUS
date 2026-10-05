@@ -220,6 +220,7 @@
     "community_fund_title": "Fundusz społeczności",
     "community_fund_type_deposit": "Wpłata",
     "community_fund_type_donation": "Darowizna",
+    "community_fund_type_group_exchange": "Wymiana grupowa",
     "community_fund_type_withdrawal": "Dotacja",
     "hours_value": "{{count}}h"
   }

@@ -221,6 +221,7 @@
     "community_fund_title": "Ciste Pobail",
     "community_fund_type_deposit": "Taisce",
     "community_fund_type_donation": "Tabhair",
+    "community_fund_type_group_exchange": "Malartú grúpa",
     "community_fund_type_withdrawal": "Gradam",
     "hours_value": "{{count}}h"
   }

@@ -218,6 +218,7 @@
     "community_fund_title": "コミュニティ基金",
     "community_fund_type_deposit": "入金",
     "community_fund_type_donation": "寄付",
+    "community_fund_type_group_exchange": "グループ交換",
     "community_fund_type_withdrawal": "助成金",
     "hours_value": "{{count}}h"
   }

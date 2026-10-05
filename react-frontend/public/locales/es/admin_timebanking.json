@@ -219,6 +219,7 @@
     "community_fund_title": "Fondo Comunitario",
     "community_fund_type_deposit": "Depósito",
     "community_fund_type_donation": "Donación",
+    "community_fund_type_group_exchange": "Intercambio grupal",
     "community_fund_type_withdrawal": "Subvención",
     "hours_value": "{{count}}h"
   }

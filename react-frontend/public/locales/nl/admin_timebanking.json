@@ -218,6 +218,7 @@
     "community_fund_title": "Gemeenschapsfonds",
     "community_fund_type_deposit": "Storting",
     "community_fund_type_donation": "Donatie",
+    "community_fund_type_group_exchange": "Groepsruil",
     "community_fund_type_withdrawal": "Subsidie",
     "hours_value": "{{count}}h"
   }
