@@ -977,7 +977,7 @@ class VolunteerCommunityController extends BaseApiController
     public function updateGivingDay($id): JsonResponse
     {
         $this->ensureFeature();
-        $this->requireAdmin();
+        $adminId = $this->requireAdmin();
 
         $data = $this->getAllInput();
         $tenantId = TenantContext::getId();
@@ -993,7 +993,13 @@ class VolunteerCommunityController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.vol_giving_day_not_found'), null, 404);
         }
 
-        $result = $this->volunteerDonationService->updateGivingDay((int) $id, $data, $tenantId);
+        try {
+            $result = $this->volunteerDonationService->updateGivingDay((int) $id, $data, $tenantId, $adminId);
+        } catch (\InvalidArgumentException $e) {
+            // e.g. a non-positive goal, an unknown organisation, or an
+            // organisation change on a campaign that already has gifts.
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        }
         return $this->respondWithData(['success' => $result]);
     }
 

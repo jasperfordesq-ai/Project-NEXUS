@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\VolDonation;
 use App\Models\VolGivingDay;
 use App\Models\VolOpportunity;
+use App\Services\FundraisingHistoryService as FundraisingHistory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -440,11 +441,20 @@ class VolunteerDonationService
             ->get(array_merge([
                 'id', 'title', 'description', 'start_date', 'end_date',
                 'goal_amount', 'raised_amount', 'target_hours', 'is_active', 'created_at',
-            ], self::organisationColumn('vol_giving_days')));
+            ], self::organisationColumn('vol_giving_days'), self::updatedColumns()));
 
         if ($rows->isEmpty()) {
             return [];
         }
+
+        // Campaigns referenced by ANY donation (any status) — their
+        // organisation is locked, and the admin picker says so.
+        $withDonations = VolDonation::whereIn('giving_day_id', $rows->pluck('id'))
+            ->where('tenant_id', TenantContext::getId())
+            ->distinct()
+            ->pluck('giving_day_id')
+            ->map(fn ($id) => (int) $id)
+            ->flip();
 
         // Resolve per-day aggregates in ONE grouped query instead of a query
         // per row (N+1). Days with no completed donations are absent from the
@@ -458,11 +468,12 @@ class VolunteerDonationService
             ->keyBy('giving_day_id');
         $organisationNames = self::organisationNames($rows->pluck('organization_id'));
 
-        return $rows->map(function ($row) use ($statsByDay, $organisationNames) {
+        return $rows->map(function ($row) use ($statsByDay, $organisationNames, $withDonations) {
             $day = $row->toArray();
             $stats = $statsByDay->get($row->id);
             $day['donor_count'] = (int) ($stats->donor_count ?? 0);
             $day['donation_count'] = (int) ($stats->total_donations ?? 0);
+            $day['has_donations'] = $withDonations->has((int) $row->id);
             // raised_amount deliberately serves the STORED vol_giving_days
             // counter — the same source of truth the public getGivingDays()
             // and getGivingDayStats() paths use. The counter is maintained
@@ -479,11 +490,18 @@ class VolunteerDonationService
     /**
      * Create a new giving day.
      *
-     * @param array $data Must include: title, start_date, end_date, goal_amount. Optional: description.
+     * @param array $data Must include: title, start_date, end_date, goal_amount. Optional: description,
+     *                    organization_id, created_by (the actor recorded in the history).
      * @param int $tenantId
+     * @param string $actorKind Who is acting: a community admin (admin screen) or an
+     *                          organisation admin (organisation dashboard).
      * @return array|false The created giving day record, or false on failure
      */
-    public static function createGivingDay(array $data, int $tenantId): array|false
+    public static function createGivingDay(
+        array $data,
+        int $tenantId,
+        string $actorKind = FundraisingHistory::ACTOR_COMMUNITY_ADMIN,
+    ): array|false
     {
         $title = trim($data['title'] ?? $data['name'] ?? '');
         $description = trim($data['description'] ?? '');
@@ -508,20 +526,44 @@ class VolunteerDonationService
 
         $now = now();
 
-        $givingDay = VolGivingDay::create([
-            'tenant_id' => $tenantId,
-            'title' => $title,
-            'description' => $description,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'goal_amount' => $goalAmount,
-            'raised_amount' => 0.00,
-            'target_hours' => $targetHours,
-            'is_active' => 1,
-            'organization_id' => $organisation['id'] ?? null,
-            'created_by' => $data['created_by'] ?? null,
-            'created_at' => $now,
-        ]);
+        // The campaign and its history entries commit together: a campaign
+        // whose creation was not recorded must not exist.
+        $givingDay = DB::transaction(function () use (
+            $tenantId, $title, $description, $startDate, $endDate, $goalAmount, $targetHours,
+            $organisation, $data, $now, $actorKind
+        ) {
+            $givingDay = VolGivingDay::create([
+                'tenant_id' => $tenantId,
+                'title' => $title,
+                'description' => $description,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'goal_amount' => $goalAmount,
+                'raised_amount' => 0.00,
+                'target_hours' => $targetHours,
+                'is_active' => 1,
+                'organization_id' => $organisation['id'] ?? null,
+                'created_by' => $data['created_by'] ?? null,
+                'created_at' => $now,
+            ]);
+
+            $actorId = isset($data['created_by']) ? (int) $data['created_by'] : null;
+            $orgId = $organisation['id'] ?? null;
+            $refs = ['giving_day_id' => (int) $givingDay->id, 'organization_id' => $orgId];
+            FundraisingHistory::record($tenantId, 'campaign_created', $actorKind, $actorId, $refs, null, null, [
+                'title' => $title,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'goal_amount' => number_format($goalAmount, 2, '.', ''),
+            ]);
+            if ($orgId !== null) {
+                FundraisingHistory::record($tenantId, 'campaign_organisation_set', $actorKind, $actorId, $refs, null, null, [
+                    'changes' => ['organization_id' => ['from' => null, 'to' => $orgId]],
+                ]);
+            }
+
+            return $givingDay;
+        });
 
         return self::formatGivingDay([
             'id' => $givingDay->id,
@@ -596,12 +638,25 @@ class VolunteerDonationService
      * Update a giving day by ID.
      *
      * @param int $givingDayId
+     * Every real change is recorded in the fundraising history (who, when,
+     * before → after). Pausing, resuming and ending are recorded as their own
+     * events. A campaign's organisation is locked once any donation references
+     * the campaign, so a past gift can never appear to have gone elsewhere.
+     *
      * @param array $data Fields to update: title, description, start_date, end_date, goal_amount, is_active
      * @param int $tenantId
-     * @return bool True if a row was updated
+     * @param int|null $actorUserId Who made the change (stored as updated_by and in the history)
+     * @param string $actorKind community_admin or org_admin
+     * @return bool True if the campaign exists and the update was applied (or changed nothing)
+     * @throws \InvalidArgumentException On invalid input or a locked organisation
      */
-    public static function updateGivingDay(int $givingDayId, array $data, int $tenantId): bool
-    {
+    public static function updateGivingDay(
+        int $givingDayId,
+        array $data,
+        int $tenantId,
+        ?int $actorUserId = null,
+        string $actorKind = FundraisingHistory::ACTOR_COMMUNITY_ADMIN,
+    ): bool {
         $givingDay = VolGivingDay::where('tenant_id', $tenantId)->find($givingDayId);
 
         if (!$givingDay) {
@@ -646,7 +701,83 @@ class VolunteerDonationService
             return false;
         }
 
-        return $givingDay->update($updates);
+        return DB::transaction(function () use ($givingDay, $updates, $tenantId, $actorUserId, $actorKind) {
+            $locked = DB::table('vol_giving_days')
+                ->where('id', $givingDay->id)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
+            if (!$locked) {
+                return false;
+            }
+
+            $changes = [];
+            foreach ($updates as $column => $value) {
+                $normalise = static fn ($v) => match ($column) {
+                    'goal_amount' => $v === null ? null : number_format((float) $v, 2, '.', ''),
+                    'target_hours' => $v === null ? null : number_format((float) $v, 1, '.', ''),
+                    'is_active', 'organization_id' => $v === null ? null : (int) $v,
+                    default => $v === null ? null : (string) $v,
+                };
+                $before = $normalise($locked->{$column} ?? null);
+                $after = $normalise($value);
+                if ($before !== $after) {
+                    $changes[$column] = ['from' => $before, 'to' => $after];
+                }
+            }
+            if ($changes === []) {
+                return true;
+            }
+
+            if (array_key_exists('organization_id', $changes) && self::campaignHasDonations($tenantId, (int) $locked->id)) {
+                throw new \InvalidArgumentException(__('fundraising.organisation_locked'));
+            }
+
+            DB::table('vol_giving_days')
+                ->where('id', $locked->id)
+                ->where('tenant_id', $tenantId)
+                ->update(array_merge(
+                    array_intersect_key($updates, $changes),
+                    ['updated_at' => now(), 'updated_by' => $actorUserId],
+                ));
+
+            $orgAfter = array_key_exists('organization_id', $changes)
+                ? $changes['organization_id']['to']
+                : ($locked->organization_id !== null ? (int) $locked->organization_id : null);
+            $refs = ['giving_day_id' => (int) $locked->id, 'organization_id' => $orgAfter];
+
+            if (array_key_exists('organization_id', $changes)) {
+                FundraisingHistory::record($tenantId, 'campaign_organisation_set', $actorKind, $actorUserId, $refs,
+                    null, null, ['changes' => ['organization_id' => $changes['organization_id']]]);
+                unset($changes['organization_id']);
+            }
+            if (array_key_exists('is_active', $changes)) {
+                $endPassed = \Carbon\Carbon::parse($updates['end_date'] ?? $locked->end_date)->endOfDay()->isPast();
+                $event = $changes['is_active']['to'] === 1
+                    ? 'campaign_resumed'
+                    : ($endPassed ? 'campaign_ended' : 'campaign_paused');
+                FundraisingHistory::record($tenantId, $event, $actorKind, $actorUserId, $refs);
+                unset($changes['is_active']);
+            }
+            if ($changes !== []) {
+                FundraisingHistory::record($tenantId, 'campaign_updated', $actorKind, $actorUserId, $refs,
+                    null, null, ['changes' => $changes]);
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * Whether any donation (any status) references this campaign. Once one
+     * does, the campaign's organisation can no longer change.
+     */
+    public static function campaignHasDonations(int $tenantId, int $givingDayId): bool
+    {
+        return DB::table('vol_donations')
+            ->where('tenant_id', $tenantId)
+            ->where('giving_day_id', $givingDayId)
+            ->exists();
     }
 
     /**
@@ -669,8 +800,10 @@ class VolunteerDonationService
             $today = now()->startOfDay();
             $start = !empty($day['start_date']) ? \Carbon\Carbon::parse($day['start_date'])->startOfDay() : null;
             $end = !empty($day['end_date']) ? \Carbon\Carbon::parse($day['end_date'])->endOfDay() : null;
+            // Inactive before its end date = paused (it can be resumed);
+            // inactive after it = ended.
             $day['status'] = !$day['is_active']
-                ? 'ended'
+                ? (($end && $end->lt($today)) ? 'ended' : 'paused')
                 : (($start && $start->gt($today)) ? 'upcoming' : (($end && $end->lt($today)) ? 'ended' : 'active'));
         }
 
@@ -786,6 +919,20 @@ class VolunteerDonationService
         $day['organization_name'] = $orgId !== null ? ($organisationNames[$orgId] ?? null) : null;
 
         return $day;
+    }
+
+    /**
+     * vol_giving_days.updated_at / updated_by, schema-guarded like the
+     * organisation column.
+     *
+     * @return array<int, string>
+     */
+    private static function updatedColumns(): array
+    {
+        static $present = null;
+        $present ??= Schema::hasColumn('vol_giving_days', 'updated_at');
+
+        return $present ? ['updated_at', 'updated_by'] : [];
     }
 
     /**
