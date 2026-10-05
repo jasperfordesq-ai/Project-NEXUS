@@ -1407,7 +1407,7 @@ class VolunteerQualificationService
         }
 
         try {
-            return CarbonImmutable::parse($date)->locale((string) app()->getLocale())->translatedFormat('j F Y');
+            return CarbonImmutable::parse($date)->locale(\App\I18n\FormattingLocale::carbon())->translatedFormat('j F Y');
         } catch (\Throwable) {
             return $date;
         }

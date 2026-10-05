@@ -544,6 +544,18 @@
       "status": "native",
       "mobile": "volunteering-org-dashboard"
     },
+    "volunteering/incidents/:id": {
+      "status": "gap",
+      "reason": "A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web."
+    },
+    "volunteering/org/:orgId/safeguarding": {
+      "status": "gap",
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab."
+    },
+    "volunteering/org/:orgId/safeguarding/:id": {
+      "status": "gap",
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab."
+    },
     "wallet": {
       "status": "native",
       "mobile": "wallet"
