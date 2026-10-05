@@ -160,7 +160,7 @@ describe('GroupExchangesPage', () => {
     vi.mocked(api.get).mockResolvedValue({
       success: true,
       data: mockExchanges,
-      meta: { has_more: false },
+      meta: { has_more: false, per_page: 20 },
     });
 
     render(<GroupExchangesPage />);

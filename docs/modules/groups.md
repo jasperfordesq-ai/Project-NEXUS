@@ -17,7 +17,7 @@ Audience: maintainers and contributors working on the Groups feature — members
 - **Chatroom** — real-time group chat via Pusher; messages persist in `group_chatroom_messages`.
 - **Group events** — events may be linked to a group via `events.group_id`; surfaced in the Events tab.
 - **Subgroups** — groups may have child groups via `groups.parent_id`.
-- **Group exchanges** — time-credit exchanges scoped to a group membership. Covered in [docs/modules/wallet-exchanges.md](wallet-exchanges.md).
+- **Group exchanges** — multi-person time-credit exchanges. Despite the name they are **not** part of the Groups module and do not need it: they have their own `group_exchanges` switch and no link to a group. Covered in [docs/modules/wallet-exchanges.md](wallet-exchanges.md).
 - **Analytics** — growth, engagement, contributors, and retention dashboards for group admins.
 
 ## Tenant and feature-gate rules

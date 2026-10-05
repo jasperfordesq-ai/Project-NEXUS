@@ -251,7 +251,7 @@ const DEFAULT_BODY_TEXT_PAGE_PATHS = [
   { path: '/skills', text: 'Skills' },
   { path: '/goals', text: 'Goals' },
   { path: '/group-exchanges', text: 'Start a group exchange' },
-  { path: '/group-exchanges/new', text: 'How are the hours shared out?' },
+  { path: '/group-exchanges/new', text: 'What kind of group exchange is this?' },
   { path: '/saved', text: 'Saved items' },
   { path: '/members', text: 'Members' },
   { path: '/members/discover', text: 'Recommended members' },

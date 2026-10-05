@@ -128,10 +128,10 @@ async function fillStepOne(hours: string, hoursLabel: string | RegExp = /How lon
 
 async function addPeople() {
   // The organiser gives time; Tom Archer receives it.
-  fireEvent.click(screen.getAllByRole('button', { name: 'Giving time' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Giving time' })[0]!);
   fireEvent.change(screen.getByPlaceholderText('Search members by name...'), { target: { value: 'Tom' } });
   await screen.findByText('Tom Archer');
-  fireEvent.click(screen.getAllByRole('button', { name: 'Receiving time' })[0]);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Receiving time' })[0]!);
   await screen.findByText('Giving time (1)');
 }
 
@@ -176,7 +176,7 @@ describe('CreateGroupExchangePage — kinds', () => {
       "Type each person's hours",
     ];
     radios.forEach((radio, i) => {
-      expect(radio.closest('label')).toHaveTextContent(titles[i]);
+      expect(radio.closest('label')).toHaveTextContent(titles[i]!);
     });
     expect(radios[0]).toBeChecked();
     expect(radios[1]).not.toBeChecked();
@@ -190,17 +190,17 @@ describe('CreateGroupExchangePage — kinds', () => {
     render(<CreateGroupExchangePage />);
     expect(box(/How long was the session/)).toBeInTheDocument();
 
-    await userEvent.click(screen.getAllByRole('radio')[1]);
+    await userEvent.click(screen.getAllByRole('radio')[1]!);
     expect(box(/How many hours did each helper spend/)).toBeInTheDocument();
     expect(screen.getByText(/Two volunteers spend 1 hour moving furniture/)).toBeInTheDocument();
 
-    await userEvent.click(screen.getAllByRole('radio')[2]);
+    await userEvent.click(screen.getAllByRole('radio')[2]!);
     expect(
       screen.getByText('6 hours, 2 people giving and 3 receiving: each person giving time earns 3 hours and each person receiving time pays 2.'),
     ).toBeInTheDocument();
     expect(box('Total Hours')).toBeInTheDocument();
 
-    await userEvent.click(screen.getAllByRole('radio')[4]);
+    await userEvent.click(screen.getAllByRole('radio')[4]!);
     expect(maybeBox('Total Hours')).not.toBeInTheDocument();
     expect(maybeBox(/How long was the session/)).not.toBeInTheDocument();
   });
@@ -215,7 +215,7 @@ describe('CreateGroupExchangePage — kinds', () => {
 
   it('hides the hours of the people helped when a team is helping someone', async () => {
     render(<CreateGroupExchangePage />);
-    await userEvent.click(screen.getAllByRole('radio')[1]);
+    await userEvent.click(screen.getAllByRole('radio')[1]!);
     await fillStepOne('1', /How many hours did each helper spend/);
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await screen.findByText('Add Participants');
@@ -235,7 +235,7 @@ describe('CreateGroupExchangePage — kinds', () => {
     fireEvent.blur(maryHours);
 
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-    await userEvent.click((await screen.findAllByRole('radio'))[4]);
+    await userEvent.click((await screen.findAllByRole('radio'))[4]!);
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await screen.findByText('Add Participants');
 
@@ -247,7 +247,7 @@ describe('CreateGroupExchangePage — kinds', () => {
 
   it('shows the weights only for "Share by amount of effort"', async () => {
     render(<CreateGroupExchangePage />);
-    await userEvent.click(screen.getAllByRole('radio')[3]);
+    await userEvent.click(screen.getAllByRole('radio')[3]!);
     fireEvent.change(screen.getByPlaceholderText('e.g., Community Garden Workday'), { target: { value: 'Move' } });
     const total = box('Total Hours');
     fireEvent.change(total, { target: { value: '6' } });
@@ -276,7 +276,7 @@ describe('CreateGroupExchangePage — kinds', () => {
 
     const calls = previewCalls();
     expect(calls).toHaveLength(1);
-    expect(calls[0][1]).toEqual({
+    expect(calls[0]![1]).toEqual({
       split_type: 'workshop',
       total_hours: 2,
       participants: [

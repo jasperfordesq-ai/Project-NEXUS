@@ -13,8 +13,6 @@ const irishDir = path.join(root, 'react-frontend', 'public', 'locales', 'ga');
 const invariantManifestPath = path.join(root, 'scripts', 'irish-react-reviewed-invariants.json');
 
 const reviewedEnglishFallbacks = new Set([
-  'group_exchanges.role_provider',
-  'group_exchanges.role_receiver',
   'municipality_survey.no',
   'notifications.page_meta.title',
   'notifications.undo',

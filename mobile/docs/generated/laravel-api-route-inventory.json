@@ -2,15 +2,15 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2757,
-  "api_route_rows": 2722,
-  "distinct_api_paths": 2268,
+  "total_registered_routes": 2773,
+  "api_route_rows": 2738,
+  "distinct_api_paths": 2282,
   "route_source_fingerprint": {
-    "digest": "a9d7823085bd0d31bfd4a9c81a1525082b14764cc9c1c846868483fb54921315",
+    "digest": "0edb538ac2aaaf26068828447d64a852790daefa1a61ccfc00eaad54bb42b143",
     "files": [
       {
         "file": "routes/api.php",
-        "sha256": "4159929c4b6e025765bb30151d64e7d42de43e6c66d28ce8d262fa4aa1091189"
+        "sha256": "690c5b76750eb70877ec1c9e0d620c2199785338d67f55260330af769b8e353a"
       },
       {
         "file": "routes/channels.php",
@@ -1336,10 +1336,19 @@
     "/api/v2/admin/crm/export/dashboard": [
       "GET"
     ],
+    "/api/v2/admin/crm/export/funnel": [
+      "GET"
+    ],
     "/api/v2/admin/crm/export/notes": [
       "GET"
     ],
+    "/api/v2/admin/crm/export/tags": [
+      "GET"
+    ],
     "/api/v2/admin/crm/export/tasks": [
+      "GET"
+    ],
+    "/api/v2/admin/crm/export/timeline": [
       "GET"
     ],
     "/api/v2/admin/crm/funnel": [
@@ -3366,11 +3375,21 @@
     "/api/v2/admin/volunteering/giving-days/{id}/donors": [
       "GET"
     ],
+    "/api/v2/admin/volunteering/giving-days/{id}/handovers": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/giving-days/{id}/history": [
+      "GET"
+    ],
     "/api/v2/admin/volunteering/giving-days/{id}/trends": [
       "GET"
     ],
     "/api/v2/admin/volunteering/guardian-consents": [
       "GET"
+    ],
+    "/api/v2/admin/volunteering/handovers/{handoverId}/cancel": [
+      "POST"
     ],
     "/api/v2/admin/volunteering/hours": [
       "GET"
@@ -4922,6 +4941,9 @@
     ],
     "/api/v2/group-exchanges": [
       "GET",
+      "POST"
+    ],
+    "/api/v2/group-exchanges/preview": [
       "POST"
     ],
     "/api/v2/group-exchanges/{id}": [
@@ -7037,6 +7059,9 @@
       "GET",
       "POST"
     ],
+    "/api/v2/volunteering/incidents/report-options": [
+      "GET"
+    ],
     "/api/v2/volunteering/incidents/{id}": [
       "GET"
     ],
@@ -7079,6 +7104,22 @@
     "/api/v2/volunteering/organisations/{id}/applications": [
       "GET"
     ],
+    "/api/v2/volunteering/organisations/{id}/campaigns": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}": [
+      "PUT"
+    ],
+    "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/gifts": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/handovers": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/history": [
+      "GET"
+    ],
     "/api/v2/volunteering/organisations/{id}/expenses": [
       "GET"
     ],
@@ -7087,6 +7128,9 @@
     ],
     "/api/v2/volunteering/organisations/{id}/expenses/{expenseId}/receipt": [
       "GET"
+    ],
+    "/api/v2/volunteering/organisations/{id}/handovers/{handoverId}/confirm": [
+      "POST"
     ],
     "/api/v2/volunteering/organisations/{id}/hours/pending": [
       "GET"
