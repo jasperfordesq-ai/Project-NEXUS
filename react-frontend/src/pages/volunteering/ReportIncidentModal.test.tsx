@@ -23,7 +23,18 @@ vi.mock('react-i18next', () => ({
 const toastError = vi.fn();
 const toastSuccess = vi.fn();
 vi.mock('@/contexts', () => createMockContexts({
-  useAuth: () => ({ user: { id: 1, name: 'Reporter' } as User, isAuthenticated: true }),
+  // The override must match the full useAuth shape the shared mock declares.
+  useAuth: () => ({
+    user: { id: 1, name: 'Reporter' } as User | null,
+    isAuthenticated: true,
+    login: vi.fn(),
+    logout: vi.fn(),
+    register: vi.fn(),
+    updateUser: vi.fn(),
+    refreshUser: vi.fn(),
+    status: 'idle' as const,
+    error: null,
+  }),
   useToast: () => ({ success: toastSuccess, error: toastError, info: vi.fn(), warning: vi.fn() }),
 }));
 
@@ -142,7 +153,7 @@ describe('ReportIncidentModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /safeguarding\.submit_incident/ }));
 
     await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(api.post).mock.calls[0][1]).toMatchObject({
+    expect(vi.mocked(api.post).mock.calls[0]?.[1]).toMatchObject({
       incident_date: '2026-01-15',
       subject_user_id: 42,
     });
@@ -157,6 +168,6 @@ describe('ReportIncidentModal', () => {
     fillRequired();
     fireEvent.click(screen.getByRole('button', { name: /safeguarding\.submit_incident/ }));
     await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(api.post).mock.calls[0][1]).not.toHaveProperty('organization_id');
+    expect(vi.mocked(api.post).mock.calls[0]?.[1]).not.toHaveProperty('organization_id');
   });
 });
