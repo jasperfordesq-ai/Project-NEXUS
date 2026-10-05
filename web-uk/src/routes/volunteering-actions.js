@@ -146,6 +146,11 @@ const SAFEGUARDING_INCIDENT_STATUS_LABELS = {
   resolved: 'Resolved',
   closed: 'Closed'
 };
+// The kinds of report the API accepts. Order is the order the radios are shown in;
+// `concern` is first because it is the right answer when a member is unsure, and it is
+// what the handler falls back to when nothing (or something unknown) is posted.
+const SAFEGUARDING_INCIDENT_TYPES = ['concern', 'allegation', 'disclosure', 'near_miss', 'other'];
+const SAFEGUARDING_INCIDENT_DEFAULT_TYPE = 'concern';
 const SAFEGUARDING_INCIDENT_STATUS_CLASSES = {
   open: 'govuk-tag--yellow',
   investigating: 'govuk-tag--blue',
@@ -683,6 +688,9 @@ function safeguardingStatus(status, t = null) {
     'training-failed': { type: 'error', key: 'error_training_failed' },
     'incident-title-required': { type: 'error', key: 'error_incident_title_required', field: 'title' },
     'incident-description-too-short': { type: 'error', key: 'error_incident_description_short', field: 'description' },
+    'incident-date-invalid': { type: 'error', key: 'error_incident_date_invalid', field: 'incident_date' },
+    'incident-date-future': { type: 'error', key: 'error_incident_date_future', field: 'incident_date' },
+    'incident-opportunity-mismatch': { type: 'error', key: 'error_incident_opportunity_mismatch', field: 'opportunity_id' },
     'incident-failed': { type: 'error', key: 'error_incident_failed' }
   };
   const config = messages[status] || null;
@@ -1317,8 +1325,73 @@ function normalizeSafeguardingIncident(row, t = null) {
         : SAFEGUARDING_INCIDENT_STATUS_LABELS[statusValue]
     },
     category: trimmed(incident.category),
+    organizationName: trimmed(incident.organization_name ?? incident.organizationName),
     createdAtLabel: dateLabel(incident.created_at ?? incident.createdAt)
   };
+}
+
+/**
+ * The organisations and opportunities a member may say a report is about, from
+ * `GET /incidents/report-options`. Rows without a usable id and name are dropped rather
+ * than rendered as blank options.
+ *
+ * An opportunity keeps its `organizationId` so the POST handler can refuse a mismatched
+ * pair before sending it — without JavaScript the opportunity list cannot be filtered by
+ * the organisation chosen above it.
+ */
+function normalizeIncidentReportOptions(result) {
+  const data = dataFrom(result);
+  const source = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  const organisations = (Array.isArray(source.organisations) ? source.organisations : [])
+    .map((row) => ({
+      id: positiveInteger(row?.id),
+      name: trimmed(row?.name)
+    }))
+    .filter((row) => row.id && row.name);
+  const opportunities = (Array.isArray(source.opportunities) ? source.opportunities : [])
+    .map((row) => {
+      const title = trimmed(row?.title);
+      const organizationName = trimmed(row?.organization_name);
+      return {
+        id: positiveInteger(row?.id),
+        title,
+        organizationId: positiveInteger(row?.organization_id),
+        organizationName,
+        // Two names joined by a dash — no words of our own to translate.
+        label: organizationName ? `${title} — ${organizationName}` : title
+      };
+    })
+    .filter((row) => row.id && row.title);
+  return { organisations, opportunities };
+}
+
+async function loadIncidentReportOptions(token) {
+  return normalizeIncidentReportOptions(
+    await callApi(token, 'GET', '/incidents/report-options')
+  );
+}
+
+/**
+ * The latest calendar date it can be anywhere on Earth right now (UTC+14).
+ *
+ * 🔴 Comparing against the web server's own "today" would refuse a member in Japan or
+ * New Zealand who reports something that happened today, their time, while it is still
+ * yesterday on the server. This local check only exists to catch an obviously future
+ * date early; the API makes the final decision, and its refusal is mapped to the same
+ * message.
+ */
+function latestPossibleToday(now = Date.now()) {
+  return new Date(now + 14 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+/** Which incident refusal is this? Field-specific 422s get a specific answer. */
+function incidentFailureStatus(error) {
+  if (error instanceof ApiError && error.status === 422) {
+    const field = apiErrorField(error);
+    if (field === 'opportunity_id') return 'incident-opportunity-mismatch';
+    if (field === 'incident_date') return 'incident-date-future';
+  }
+  return 'incident-failed';
 }
 
 function normalizeWaitlistEntry(row, t = null) {
@@ -2102,6 +2175,20 @@ async function renderSafeguarding(req, res) {
     loadError = 'We could not load your safeguarding records. Please try again.';
   }
 
+  // Only the incident form uses these, and it must still work without them: a member
+  // reporting a concern is never turned away because a list of organisations failed.
+  let reportOptions = { organisations: [], opportunities: [] };
+  let reportOptionsUnavailable = false;
+  if (subView === 'incidents') {
+    try {
+      reportOptions = await loadIncidentReportOptions(token);
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      reportOptionsUnavailable = true;
+    }
+  }
+
+  const status = safeguardingStatus(trimmed(req.query.status), res.locals.t);
   return res.render('volunteering/safeguarding', {
     title: res.locals.t('govuk_alpha_volunteering.safeguarding.title'),
     activeNav: 'volunteering',
@@ -2118,8 +2205,16 @@ async function renderSafeguarding(req, res) {
       value,
       label: res.locals.t(`govuk_alpha_volunteering.safeguarding.severity_${value}`)
     })),
+    incidentTypes: SAFEGUARDING_INCIDENT_TYPES.map((value) => ({
+      value,
+      label: res.locals.t(`govuk_alpha_volunteering.safeguarding.incident_type_${value}`),
+      hint: res.locals.t(`govuk_alpha_volunteering.safeguarding.incident_type_${value}_hint`)
+    })),
+    reportOrganisations: reportOptions.organisations,
+    reportOpportunities: reportOptions.opportunities,
+    reportOptionsUnavailable,
     loadError,
-    status: safeguardingStatus(trimmed(req.query.status), res.locals.t),
+    status,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }
@@ -3233,37 +3328,91 @@ router.post('/incidents', asyncRoute(async (req, res) => {
   // 🔴 The worst case on this page. The `description.length < 20` check below rejected and
   // then DISCARDED up to 2,000 characters of a safeguarding report — something a member
   // may not be able to write again from memory.
+  const rawType = trimmed(req.body.incident_type);
+  const organizationId = positiveInteger(req.body.organization_id);
+  const opportunityId = positiveInteger(req.body.opportunity_id);
+  const incidentDate = readDate(req.body, 'incident_date');
   rememberFormReplay(req, 'volunteering', 'incidents', {
     title,
     description,
     severity: trimmed(req.body.severity),
-    category: trimmed(req.body.category, 100)
+    category: trimmed(req.body.category, 100),
+    incidentType: SAFEGUARDING_INCIDENT_TYPES.includes(rawType) ? rawType : '',
+    organizationId: organizationId ? String(organizationId) : '',
+    opportunityId: opportunityId ? String(opportunityId) : '',
+    incidentDateParts: dateParts(req.body, 'incident_date'),
+    incidentDateErrorFields: incidentDate.errorFields
   });
 
+  const back = (status) => redirectTo(res, `/volunteering/incidents?status=${status}&tab=incidents`);
+
   if (title === '') {
-    return redirectTo(res, '/volunteering/incidents?status=incident-title-required&tab=incidents');
+    return back('incident-title-required');
   }
   if (description.length < 20) {
-    return redirectTo(res, '/volunteering/incidents?status=incident-description-too-short&tab=incidents');
+    return back('incident-description-too-short');
+  }
+  // Optional, but a half-typed or unreal date is refused rather than silently dropped:
+  // dropping it would file the report as "today" without the member knowing.
+  if (incidentDate.error) {
+    return back('incident-date-invalid');
+  }
+  if (incidentDate.value && incidentDate.value > latestPossibleToday()) {
+    return back('incident-date-future');
+  }
+
+  // Without JavaScript the opportunity list cannot be narrowed to the organisation chosen
+  // above it, so a mismatched pair is easy to pick. Catch it here with a clear message
+  // instead of an API refusal. If the options cannot be read, the API still refuses the
+  // pair, and that refusal maps to the same message.
+  if (organizationId && opportunityId) {
+    const token = tokenFrom(req);
+    if (token) {
+      let options = null;
+      try {
+        options = await loadIncidentReportOptions(token);
+      } catch (error) {
+        if (redirectOnAuthError(error, res)) return undefined;
+      }
+      const opportunity = options
+        ? options.opportunities.find((row) => row.id === opportunityId)
+        : null;
+      if (opportunity && opportunity.organizationId && opportunity.organizationId !== organizationId) {
+        return back('incident-opportunity-mismatch');
+      }
+    }
   }
 
   const severity = trimmed(req.body.severity);
+  const payload = {
+    title,
+    description,
+    severity: ['low', 'medium', 'high', 'critical'].includes(severity)
+      ? severity
+      : 'low',
+    category: trimmed(req.body.category) || 'general',
+    // Was hardcoded to 'other', so every report reached staff unclassified.
+    incident_type: SAFEGUARDING_INCIDENT_TYPES.includes(rawType) ? rawType : SAFEGUARDING_INCIDENT_DEFAULT_TYPE
+  };
+  // Optional fields are sent only when they have a value, so an empty choice means
+  // "not about a particular one" rather than an id of 0 or an empty date string.
+  if (incidentDate.value) payload.incident_date = incidentDate.value;
+  if (organizationId) payload.organization_id = organizationId;
+  if (opportunityId) payload.opportunity_id = opportunityId;
+
   return runAction(
     req,
     res,
     'POST',
     '/incidents',
-    {
-      title,
-      description,
-      severity: ['low', 'medium', 'high', 'critical'].includes(severity)
-        ? severity
-        : 'low',
-      category: trimmed(req.body.category) || 'general',
-      incident_type: 'other'
+    payload,
+    () => {
+      // The stash is for failures. Left in place after a success, the confirmation page
+      // re-rendered the form pre-filled with the report just sent, inviting a duplicate.
+      consumeFormReplay(req, 'volunteering', 'incidents');
+      return '/volunteering/incidents?status=incident-reported&tab=incidents';
     },
-    '/volunteering/incidents?status=incident-reported&tab=incidents',
-    '/volunteering/incidents?status=incident-failed&tab=incidents'
+    (error) => `/volunteering/incidents?status=${incidentFailureStatus(error)}&tab=incidents`
   );
 }));
 

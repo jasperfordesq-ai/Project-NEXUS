@@ -38,7 +38,7 @@
                     the whole point of a focusable error summary. GDS links date errors to
                     the day field.
                   #}
-                  {% set anchorTarget = status.field ~ "-day" if status.field in ["completed_at", "expires_at"] else status.field %}
+                  {% set anchorTarget = status.field ~ "-day" if status.field in ["completed_at", "expires_at", "incident_date"] else status.field %}
                   <a href="#{{ anchorTarget }}">{{ status.message }}</a>
                 {% else %}
                   {{ status.message }}
@@ -181,6 +181,24 @@
     <form method="post" action="{{ urlFor('/volunteering/incidents') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
+      {# Not pre-selected, per GOV.UK radios guidance. If nothing is chosen the report is
+         filed as a concern about welfare, which is what the hint tells the member. #}
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="incident_type-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.safeguarding.incident_type_label") }}</legend>
+          <div id="incident_type-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.safeguarding.incident_type_hint") }}</div>
+          <div class="govuk-radios">
+            {% for type in incidentTypes %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="incident_type-{{ type.value }}" name="incident_type" type="radio" value="{{ type.value }}" aria-describedby="incident_type-{{ type.value }}-hint"{% if incidentForm and incidentForm.incidentType == type.value %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="incident_type-{{ type.value }}">{{ type.label }}</label>
+                <div id="incident_type-{{ type.value }}-hint" class="govuk-hint govuk-radios__hint">{{ type.hint }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
       <div class="govuk-form-group{% if status.field == 'title' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_volunteering.safeguarding.incident_title_label") }}</label>
         {% if status.field == "title" %}
@@ -202,6 +220,54 @@
         <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %} description-info">{% if incidentForm %}{{ incidentForm.description }}{% endif %}</textarea>
       </div>
       {% endcall %}
+
+      {{ nexusDateInput({
+        name: "incident_date",
+        legend: t("govuk_alpha_volunteering.safeguarding.incident_date_label"),
+        legendClasses: "govuk-fieldset__legend--s",
+        hint: t("govuk_alpha_volunteering.safeguarding.incident_date_hint"),
+        value: incidentForm.incidentDateParts if incidentForm else undefined,
+        errorMessage: status.message if status.field == "incident_date" else undefined,
+        errorFields: ((incidentForm.incidentDateErrorFields if (incidentForm and incidentForm.incidentDateErrorFields and incidentForm.incidentDateErrorFields.length) else ["day", "month", "year"]) if status.field == "incident_date" else [])
+      }, t) }}
+
+      {% if reportOptionsUnavailable %}
+        <div class="govuk-inset-text" role="note">{{ t("govuk_alpha_volunteering.safeguarding.incident_options_unavailable") }}</div>
+      {% endif %}
+
+      {% if reportOrganisations.length %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="organization_id">{{ t("govuk_alpha_volunteering.safeguarding.incident_organisation_label") }}</label>
+          <select class="govuk-select" id="organization_id" name="organization_id">
+            <option value="">{{ t("govuk_alpha_volunteering.safeguarding.incident_organisation_none") }}</option>
+            {% for organisation in reportOrganisations %}
+              <option value="{{ organisation.id }}"{% if incidentForm and incidentForm.organizationId == (organisation.id | string) %} selected{% endif %}>{{ organisation.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      {% if reportOpportunities.length %}
+        {# One list of every opportunity, each named with its organisation: without
+           JavaScript it cannot be narrowed to the organisation chosen above. A mismatched
+           pair is refused with its own message rather than sent. #}
+        <div class="govuk-form-group{% if status.field == 'opportunity_id' %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="opportunity_id">{{ t("govuk_alpha_volunteering.safeguarding.incident_opportunity_label") }}</label>
+          <div id="opportunity_id-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.safeguarding.incident_opportunity_hint") }}</div>
+          {% if status.field == "opportunity_id" %}
+            <p id="opportunity_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+          {% endif %}
+          <select class="govuk-select{% if status.field == 'opportunity_id' %} govuk-select--error{% endif %}" id="opportunity_id" name="opportunity_id" aria-describedby="opportunity_id-hint{% if status.field == 'opportunity_id' %} opportunity_id-error{% endif %}">
+            <option value="">{{ t("govuk_alpha_volunteering.safeguarding.incident_opportunity_none") }}</option>
+            {% for opportunity in reportOpportunities %}
+              <option value="{{ opportunity.id }}"{% if incidentForm and incidentForm.opportunityId == (opportunity.id | string) %} selected{% endif %}>{{ opportunity.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% elif status.field == "opportunity_id" %}
+        {# The list could not be loaded this time, but the error summary links here. #}
+        <p id="opportunity_id" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+      {% endif %}
 
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">
@@ -237,6 +303,7 @@
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_incident_title") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_incident_organisation") }}</th>
             <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_severity") }}</th>
             <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_incident_status") }}</th>
             <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_reported") }}</th>
@@ -254,6 +321,7 @@
                   <br><span class="govuk-hint govuk-!-font-size-16">{{ incident.descriptionExcerpt }}</span>
                 {% endif %}
               </td>
+              <td class="govuk-table__cell">{{ incident.organizationName or "—" }}</td>
               <td class="govuk-table__cell">{{ govukTag({ text: incident.severity.label, classes: (incident.severity.className) }) }}</td>
               <td class="govuk-table__cell">{{ govukTag({ text: incident.status.label, classes: (incident.status.className) }) }}</td>
               <td class="govuk-table__cell">{{ incident.createdAtLabel or "—" }}</td>

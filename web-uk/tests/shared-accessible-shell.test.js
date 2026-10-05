@@ -38793,7 +38793,8 @@ describe('shared accessible frontend shell', () => {
       description: 'A wet floor caused a near miss by the entrance.',
       severity: 'medium',
       category: 'site',
-      incident_type: 'other'
+      // Nothing chosen: the API is told 'concern', no longer the hardcoded 'other'.
+      incident_type: 'concern'
     });
   });
 

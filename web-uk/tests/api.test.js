@@ -2475,7 +2475,10 @@ describe('API Request Functions', () => {
           description: 'A damaged tool was removed from service immediately.',
           severity: 'low',
           category: 'equipment',
-          incident_type: 'other'
+          incident_type: 'near_miss',
+          incident_date: '2026-07-01',
+          organization_id: 42,
+          opportunity_id: 9
         }],
         ['PUT', '/organisations/42', {
           name: 'Community Helpers',
@@ -2527,6 +2530,30 @@ describe('API Request Functions', () => {
         message: 'Vetting is required.',
         data: { message: 'Vetting is required.', code: 'VETTING_REQUIRED' }
       });
+    });
+
+    it('should read the safeguarding incident report options with the bearer token and no body', async () => {
+      const payload = {
+        data: {
+          organisations: [{ id: 3, name: 'Food Bank' }],
+          opportunities: [{ id: 9, title: 'Sorting donations', organization_id: 3, organization_name: 'Food Bank' }]
+        }
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => payload
+      });
+
+      await expect(api.callVolunteeringApi('test-token', 'GET', '/incidents/report-options'))
+        .resolves.toEqual(payload);
+      const [url, options] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      expect(url).toBe('http://localhost:5000/api/v2/volunteering/incidents/report-options');
+      expect(options).toEqual(expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+      }));
+      expect(options.body).toBeUndefined();
     });
 
     it('should upload volunteer credentials to Laravel with multipart file data', async () => {
