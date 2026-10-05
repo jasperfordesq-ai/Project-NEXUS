@@ -86,17 +86,18 @@ vi.mock('@/components/donations/DonationReceipt', () => ({
 }));
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
+// Mirrors StripeDonationService::getDonationReceipt().
 const makeReceipt = (overrides = {}) => ({
-  id: 42,
+  donation_id: 42,
   donor_name: 'Jane Doe',
-  amount: 50,
+  amount: '50.00',
   currency: 'EUR',
   date: '2025-06-01T10:00:00Z',
-  community_name: 'hOUR Timebank',
+  tenant_name: 'hOUR Timebank',
   message: null,
   status: 'completed',
-  payment_method: 'card',
-  reference: 'REF-001',
+  payment_method: 'stripe',
+  payment_reference: 'pi_001',
   ...overrides,
 });
 
@@ -233,7 +234,7 @@ describe('DonationReceiptPage (with real DonationReceipt child)', () => {
   it('DonationReceipt shows community name in receipt', async () => {
     mockApi.get.mockResolvedValue({
       success: true,
-      data: makeReceipt({ community_name: 'hOUR Timebank' }),
+      data: makeReceipt({ tenant_name: 'hOUR Timebank' }),
     });
 
     vi.doMock('@/components/donations/DonationReceipt', async (importOriginal) => {

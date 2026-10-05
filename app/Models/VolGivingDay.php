@@ -28,6 +28,7 @@ class VolGivingDay extends Model
         'raised_amount',
         'target_hours',
         'is_active',
+        'organization_id',
         'created_by',
         'created_at',
     ];
@@ -37,6 +38,7 @@ class VolGivingDay extends Model
         'raised_amount' => 'decimal:2',
         'target_hours' => 'decimal:1',
         'is_active' => 'boolean',
+        'organization_id' => 'integer',
         'created_at' => 'datetime',
     ];
 

@@ -26,6 +26,7 @@ class VolDonation extends Model
         'opportunity_id',
         'community_project_id',
         'giving_day_id',
+        'organization_id',
         'fund_code',
         'amount',
         'amount_refunded',

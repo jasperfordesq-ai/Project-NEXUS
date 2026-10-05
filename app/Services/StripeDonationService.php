@@ -120,6 +120,31 @@ class StripeDonationService
             );
         }
 
+        // The campaign must belong to this community. Until 2026-10-05 the id
+        // was stored unchecked, so a stray or foreign id produced a donation
+        // linked to a campaign the community could not see.
+        $givingDayId = isset($data['giving_day_id']) ? (int) $data['giving_day_id'] : null;
+        $givingDayTitle = null;
+        if ($givingDayId !== null) {
+            $givingDayTitle = DB::table('vol_giving_days')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $givingDayId)
+                ->value('title');
+            if ($givingDayTitle === null) {
+                throw new \InvalidArgumentException(__('api.vol_giving_day_not_found'));
+            }
+            $givingDayTitle = (string) $givingDayTitle;
+        }
+
+        // Which organisation the gift benefits — from the campaign, else the
+        // opportunity — resolved server-side and shared with the pledge path so
+        // the donation row and the Stripe metadata always agree.
+        $organisation = VolunteerDonationService::resolveDonationOrganisation(
+            $tenantId,
+            $givingDayId,
+            isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null,
+        );
+
         // Resolve the ACTING user by global id only. $userId is requireAuth()
         // (the caller themselves) and users.id is the global PK, so there is no
         // IDOR. Do NOT tenant-scope this self-lookup: a platform super-admin /
@@ -184,8 +209,8 @@ class StripeDonationService
             $paymentIntentParams = [
                 'amount' => self::toStripeMinorUnits($amount, $currency),
                 'currency' => $currency,
-                'description' => "Donation to {$tenantName}",
-                'metadata' => [
+                'description' => self::paymentDescription($tenantName, $organisation, $givingDayTitle),
+                'metadata' => array_merge([
                     'nexus_tenant_id' => (string) $tenantId,
                     'nexus_tenant_name' => $tenantName,
                     'nexus_tenant_slug' => $tenantSlug,
@@ -193,7 +218,7 @@ class StripeDonationService
                     'nexus_donation_type' => 'monetary',
                     'nexus_payment_route' => $paymentRoute,
                     'nexus_stripe_account_id' => $tenantStripeAccountId ?: 'platform_default',
-                ],
+                ], self::attributionMetadata($organisation, $givingDayId, $givingDayTitle)),
             ];
 
             if ($stripeCustomerId) {
@@ -218,7 +243,8 @@ class StripeDonationService
 
         // Create pending donation record in a transaction
         $donation = DB::transaction(function () use (
-            $tenantId, $userId, $data, $amount, $currency, $paymentIntent, $user, $tenantStripeAccountId, $paymentRoute
+            $tenantId, $userId, $data, $amount, $currency, $paymentIntent, $user, $tenantStripeAccountId, $paymentRoute,
+            $givingDayId, $organisation
         ) {
             $giftAid = self::normalizeGiftAidDeclaration($data, $currency);
 
@@ -227,7 +253,8 @@ class StripeDonationService
                 'user_id' => $userId,
                 'opportunity_id' => isset($data['opportunity_id']) ? (int) $data['opportunity_id'] : null,
                 'community_project_id' => isset($data['community_project_id']) ? (int) $data['community_project_id'] : null,
-                'giving_day_id' => isset($data['giving_day_id']) ? (int) $data['giving_day_id'] : null,
+                'giving_day_id' => $givingDayId,
+                'organization_id' => $organisation['id'] ?? null,
                 'fund_code' => self::normalizeFundCode($data['fund_code'] ?? null),
                 'amount' => $amount,
                 'currency' => strtoupper($currency),
@@ -262,6 +289,8 @@ class StripeDonationService
             'tenant_id' => $tenantId,
             'payment_route' => $paymentRoute,
             'stripe_account_id' => $tenantStripeAccountId,
+            'organization_id' => $organisation['id'] ?? null,
+            'giving_day_id' => $givingDayId,
             'amount' => $amount,
             'currency' => $currency,
         ]);
@@ -270,6 +299,56 @@ class StripeDonationService
             'client_secret' => $paymentIntent->client_secret,
             'donation_id' => $donation->id,
         ];
+    }
+
+    /**
+     * The PaymentIntent description a finance team sees in the Stripe
+     * dashboard and payouts export. Names the organisation the gift benefits
+     * and the campaign, so a donation can be reconciled without opening the
+     * platform. Stripe caps descriptions; 500 characters is well inside it.
+     *
+     * @param array{id:int,name:string}|null $organisation
+     */
+    private static function paymentDescription(string $tenantName, ?array $organisation, ?string $givingDayTitle): string
+    {
+        $description = $organisation !== null
+            ? "Donation to {$organisation['name']} via {$tenantName}"
+            : "Donation to {$tenantName}";
+
+        if ($givingDayTitle !== null && $givingDayTitle !== '') {
+            $description .= " - {$givingDayTitle}";
+        }
+
+        return mb_substr($description, 0, 500);
+    }
+
+    /**
+     * Which organisation and campaign a donation is for, as PaymentIntent
+     * metadata. `nexus_beneficiary` is always set, so a Stripe report can
+     * split organisation gifts from community gifts on one key; the others are
+     * omitted when they do not apply (Stripe treats an empty value as "unset").
+     * Stripe limits a metadata value to 500 characters.
+     *
+     * @param array{id:int,name:string}|null $organisation
+     * @return array<string, string>
+     */
+    private static function attributionMetadata(?array $organisation, ?int $givingDayId, ?string $givingDayTitle): array
+    {
+        $metadata = [
+            'nexus_beneficiary' => $organisation !== null ? 'organization' : 'community',
+        ];
+        if ($organisation !== null) {
+            $metadata['nexus_organization_id'] = (string) $organisation['id'];
+            $metadata['nexus_organization_name'] = mb_substr($organisation['name'], 0, 500);
+        }
+        if ($givingDayId !== null) {
+            $metadata['nexus_giving_day_id'] = (string) $givingDayId;
+            if ($givingDayTitle !== null && $givingDayTitle !== '') {
+                $metadata['nexus_giving_day_title'] = mb_substr($givingDayTitle, 0, 500);
+            }
+        }
+
+        return $metadata;
     }
 
     private static function normalizeFundCode(mixed $value): string
@@ -964,8 +1043,25 @@ class StripeDonationService
             $donorName = __('api.vol_activity_donor_anonymous');
         }
 
+        // Name the organisation and campaign the gift went to. Shown whatever
+        // the organisation's current status — the gift still went to it.
+        $organisationName = !empty($donation->organization_id)
+            ? DB::table('vol_organizations')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $donation->organization_id)
+                ->value('name')
+            : null;
+        $givingDayTitle = !empty($donation->giving_day_id)
+            ? DB::table('vol_giving_days')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $donation->giving_day_id)
+                ->value('title')
+            : null;
+
         return [
             'donation_id' => $donation->id,
+            'organization_name' => $organisationName !== null ? (string) $organisationName : null,
+            'giving_day_title' => $givingDayTitle !== null ? (string) $givingDayTitle : null,
             'donor_name' => $donorName,
             'donor_email' => $donation->is_anonymous ? null : ($donation->donor_email ?? null),
             'amount' => number_format((float) $donation->amount, 2, '.', ''),

@@ -23,17 +23,31 @@ import { logError } from '@/lib/logger';
 
 /* ───────────────────────── Types ───────────────────────── */
 
+/**
+ * Mirrors StripeDonationService::getDonationReceipt(). Until 2026-10-05 this
+ * declared `community_name` / `reference` / `id`, which the server never
+ * sends, so every receipt showed a blank Community line and no reference.
+ */
 interface ReceiptData {
-  id: number;
+  donation_id: number;
   donor_name: string;
-  amount: number;
+  amount: number | string;
   currency: string;
   date: string;
-  community_name: string;
+  tenant_name: string;
+  organization_name?: string | null;
+  giving_day_title?: string | null;
   message: string | null;
   status: string;
   payment_method: string;
-  reference: string;
+  payment_reference: string | null;
+}
+
+/** Stored method keys -> the labels the Donations tab already uses. */
+function methodLabelKey(method: string | null | undefined): string {
+  if (method === 'stripe' || method === 'card') return 'donations.methods.card';
+  if (method === 'bank_transfer' || method === 'paypal' || method === 'cash') return `donations.methods.${method}`;
+  return 'donations.methods.other';
 }
 
 interface DonationReceiptProps {
@@ -100,7 +114,7 @@ export function DonationReceipt({ donationId }: DonationReceiptProps) {
     );
   }
 
-  const formattedAmount = formatCurrency(receipt.amount, receipt.currency);
+  const formattedAmount = formatCurrency(Number(receipt.amount) || 0, receipt.currency);
 
   return (
     <>
@@ -124,9 +138,9 @@ export function DonationReceipt({ donationId }: DonationReceiptProps) {
 
         <CardBody className="space-y-4">
           {/* Reference */}
-          {receipt.reference && (
-            <div className="text-xs text-theme-subtle text-right">
-              {t('donations.receipt_ref', { ref: receipt.reference })}
+          {receipt.payment_reference && (
+            <div className="text-xs text-theme-subtle text-right break-all">
+              {t('donations.receipt_ref', { ref: receipt.payment_reference })}
             </div>
           )}
 
@@ -155,14 +169,28 @@ export function DonationReceipt({ donationId }: DonationReceiptProps) {
               <span className="text-theme-primary">{formatDateValue(receipt.date)}</span>
             </div>
 
-            <div className="flex justify-between">
+            {receipt.organization_name && (
+              <div className="flex justify-between gap-4">
+                <span className="text-theme-muted">{t('donations.receipt_organisation')}</span>
+                <span className="text-theme-primary text-right">{receipt.organization_name}</span>
+              </div>
+            )}
+
+            {receipt.giving_day_title && (
+              <div className="flex justify-between gap-4">
+                <span className="text-theme-muted">{t('donations.receipt_campaign')}</span>
+                <span className="text-theme-primary text-right">{receipt.giving_day_title}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between gap-4">
               <span className="text-theme-muted">{t('donations.receipt_community')}</span>
-              <span className="text-theme-primary">{receipt.community_name}</span>
+              <span className="text-theme-primary text-right">{receipt.tenant_name}</span>
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
               <span className="text-theme-muted">{t('donations.receipt_method')}</span>
-              <span className="text-theme-primary capitalize">{receipt.payment_method}</span>
+              <span className="text-theme-primary text-right">{t(methodLabelKey(receipt.payment_method))}</span>
             </div>
 
             {receipt.message && (

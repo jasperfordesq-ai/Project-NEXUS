@@ -4,10 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { formatNumber, getFormattingLocale } from '@/lib/helpers';
-import { Button, Chip, Card, CardBody, CardHeader, Input, Textarea, Spinner, Progress, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tab, Tabs } from '@/components/ui';
+import { Button, Chip, Card, CardBody, CardHeader, Input, Textarea, Spinner, Progress, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tab, Tabs, Select, SelectItem } from '@/components/ui';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
 import Gift from 'lucide-react/icons/gift';
+import Building2 from 'lucide-react/icons/building-2';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Plus from 'lucide-react/icons/plus';
 import Edit2 from 'lucide-react/icons/pen';
@@ -22,7 +23,7 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from 'recharts';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { adminVolunteering } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
@@ -52,7 +53,29 @@ interface GivingDay {
   end_date: string;
   is_active: boolean;
   created_at: string;
+  /** The organisation the campaign raises money for; null = the whole community. */
+  organization_id?: number | null;
+  organization_name?: string | null;
 }
+
+interface OrganisationOption {
+  id: number;
+  name: string;
+}
+
+/** Row shape of GET /v2/admin/volunteering/organizations (names it `org_name`). */
+interface AdminOrganisationRow {
+  id: number;
+  org_name?: string;
+  name?: string;
+  status?: string;
+}
+
+/** Only organisations members can see may front a campaign (VolunteerService::PUBLIC_ORGANIZATION_STATUSES). */
+const PUBLIC_ORG_STATUSES = ['approved', 'active'];
+
+/** Select key for "no organisation — the whole community". */
+const WHOLE_COMMUNITY = 'community';
 
 interface DonationStats {
   total_donations: number;
@@ -90,6 +113,7 @@ const emptyForm = {
   target_hours: '',
   start_date: '',
   end_date: '',
+  organization_id: WHOLE_COMMUNITY,
 };
 
 const getProgressColor = (pct: number): 'success' | 'warning' | 'danger' | 'default' => {
@@ -103,6 +127,10 @@ export default function VolunteerGivingDays() {
   const { t } = useTranslation('admin_volunteering');
   usePageTitle(t('volunteering.giving_days_title'));
   const toast = useToast();
+  // Campaign goals are in the community's own currency (donations are refused
+  // in any other), so show its code rather than a fixed dollar sign.
+  const { tenant } = useTenant();
+  const currency = (tenant?.currency || 'EUR').toUpperCase();
 
   const formatTrendPeriod = (period: string): string => {
     const dayMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(period);
@@ -125,6 +153,11 @@ export default function VolunteerGivingDays() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
+  // The organisation the campaign had when the editor opened, so an update only
+  // sends organization_id when the admin actually changed it (a campaign whose
+  // organisation has since been suspended can still have its dates edited).
+  const [originalOrgKey, setOriginalOrgKey] = useState(WHOLE_COMMUNITY);
+  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [donorStats, setDonorStats] = useState<DonorResponse['stats']>({ total_donors: 0, anonymous_count: 0, total_raised: 0 });
@@ -166,13 +199,34 @@ export default function VolunteerGivingDays() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // The organisation picker is optional: if the list cannot load, the form
+  // still works and the campaign is for the whole community.
+  useEffect(() => {
+    let cancelled = false;
+    adminVolunteering.getOrganizations()
+      .then((res) => {
+        if (cancelled || !res.success || !Array.isArray(res.data)) return;
+        const rows = res.data as unknown as AdminOrganisationRow[];
+        setOrganisations(
+          rows
+            .filter((row) => PUBLIC_ORG_STATUSES.includes(row.status ?? ''))
+            .map((row) => ({ id: Number(row.id), name: row.org_name ?? row.name ?? '' }))
+            .filter((row) => row.id > 0 && row.name !== ''),
+        );
+      })
+      .catch(() => { /* picker stays community-only */ });
+    return () => { cancelled = true; };
+  }, []);
+
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setOriginalOrgKey(WHOLE_COMMUNITY);
     onOpen();
   };
 
   const openEdit = (day: GivingDay) => {
+    const orgKey = day.organization_id ? String(day.organization_id) : WHOLE_COMMUNITY;
     setEditingId(day.id);
     setForm({
       name: day.name,
@@ -181,9 +235,25 @@ export default function VolunteerGivingDays() {
       target_hours: String(day.target_hours),
       start_date: day.start_date?.slice(0, 10) || '',
       end_date: day.end_date?.slice(0, 10) || '',
+      organization_id: orgKey,
     });
+    setOriginalOrgKey(orgKey);
     onOpen();
   };
+
+  // The campaign being edited may name an organisation that is no longer
+  // public; keep it in the list so the picker can still show it.
+  const organisationOptions = useMemo(() => {
+    const editing = editingId !== null ? givingDays.find((d) => d.id === editingId) : undefined;
+    if (
+      editing?.organization_id
+      && editing.organization_name
+      && !organisations.some((o) => o.id === editing.organization_id)
+    ) {
+      return [...organisations, { id: editing.organization_id, name: editing.organization_name }];
+    }
+    return organisations;
+  }, [organisations, editingId, givingDays]);
 
   const handleSave = async () => {
     if (!form.name.trim()) {
@@ -192,7 +262,7 @@ export default function VolunteerGivingDays() {
     }
     setSaving(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: form.name.trim(),
         description: form.description.trim(),
         target_amount: Number(form.target_amount) || 0,
@@ -200,6 +270,9 @@ export default function VolunteerGivingDays() {
         start_date: form.start_date,
         end_date: form.end_date,
       };
+      if (!editingId || form.organization_id !== originalOrgKey) {
+        payload.organization_id = form.organization_id === WHOLE_COMMUNITY ? null : Number(form.organization_id);
+      }
       const res = editingId
         ? await adminVolunteering.updateGivingDay(editingId, payload)
         : await adminVolunteering.createGivingDay(payload);
@@ -311,6 +384,14 @@ export default function VolunteerGivingDays() {
 
   const columns: Column<GivingDay>[] = [
     { key: 'name', label: t('volunteering.col_name'), sortable: true },
+    {
+      key: 'organization_name',
+      label: t('volunteering.col_organisation'),
+      sortable: true,
+      render: (row) => row.organization_name
+        ? <span className="inline-flex items-center gap-1.5"><Building2 size={14} className="shrink-0 text-muted" aria-hidden="true" />{row.organization_name}</span>
+        : <span className="text-muted">{t('volunteering.organisation_whole_community')}</span>,
+    },
     {
       key: 'target_amount',
       label: t('volunteering.col_target_amount'),
@@ -687,6 +768,25 @@ export default function VolunteerGivingDays() {
                 onValueChange={(v) => setForm((f) => ({ ...f, description: v }))}
                 variant="secondary"
               />
+              <Select
+                label={t('volunteering.field_organisation')}
+                description={t('volunteering.field_organisation_hint')}
+                variant="secondary"
+                selectedKeys={[form.organization_id]}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0];
+                  if (selected !== undefined) setForm((f) => ({ ...f, organization_id: String(selected) }));
+                }}
+              >
+                {[
+                  <SelectItem key={WHOLE_COMMUNITY} id={WHOLE_COMMUNITY}>
+                    {t('volunteering.organisation_whole_community')}
+                  </SelectItem>,
+                  ...organisationOptions.map((org) => (
+                    <SelectItem key={String(org.id)} id={String(org.id)}>{org.name}</SelectItem>
+                  )),
+                ]}
+              </Select>
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label={t('volunteering.field_target_amount')}
@@ -694,7 +794,7 @@ export default function VolunteerGivingDays() {
                   value={form.target_amount}
                   onValueChange={(v) => setForm((f) => ({ ...f, target_amount: v }))}
                   variant="secondary"
-                  startContent={<DollarSign size={14} className="text-muted" />}
+                  endContent={<span className="text-xs font-semibold text-muted">{currency}</span>}
                 />
                 <Input
                   label={t('volunteering.field_target_hours')}

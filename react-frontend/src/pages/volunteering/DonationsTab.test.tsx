@@ -63,6 +63,7 @@ const translations: Record<string, string> = {
   'donations.status.pending': 'Pending',
   'donations.status.refunded': 'Refunded',
   'donations.methods.card': 'Card',
+  'donations.for_organisation': 'For {{name}}',
   'donations.methods.bank_transfer': 'Bank transfer',
   'donations.methods.paypal': 'PayPal',
   'donations.methods.cash': 'Cash',
@@ -231,6 +232,24 @@ describe('DonationsTab', () => {
     expect(within(past).getByText('Closed to new donations.')).toBeInTheDocument();
     expect(within(past).queryByRole('button', { name: 'Donate by card' })).not.toBeInTheDocument();
     expect(within(past).queryByRole('button', { name: 'Record a pledge' })).not.toBeInTheDocument();
+  });
+
+  it('says which organisation a campaign and a past gift are for', async () => {
+    mockLoad(
+      [{ ...liveCampaign, organization_id: 4, organization_name: 'Food Bank' }, endedCampaign],
+      [{ ...cardGift, organization_name: 'Food Bank' }, pendingPledge],
+    );
+    render(<DonationsTab />);
+    await screen.findByText('Winter warmth appeal', { selector: 'h4' });
+
+    const live = screen.getByRole('region', { name: 'Live campaigns' });
+    expect(within(live).getByText('For Food Bank')).toBeInTheDocument();
+    // A whole-community campaign names no organisation.
+    const past = screen.getByRole('region', { name: 'Past campaigns' });
+    expect(within(past).queryByText(/^For /)).not.toBeInTheDocument();
+
+    // One on the live card, one on the card gift in My donations; none on the general pledge.
+    expect(screen.getAllByText('For Food Bank')).toHaveLength(2);
   });
 
   it('shows money in the community currency and the funding percentage', async () => {

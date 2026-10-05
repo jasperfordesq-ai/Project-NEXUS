@@ -56,7 +56,7 @@ class VolunteerDonationService
             'id', 'user_id', 'opportunity_id', 'giving_day_id',
             'amount', 'currency', 'payment_method', 'payment_reference',
             'message', 'is_anonymous', 'status', 'created_at',
-        ], self::donationRoutingColumns());
+        ], self::donationRoutingColumns(), self::organisationColumn('vol_donations'));
 
         // community_project_id was added after the base table shipped, so it is
         // schema-guarded like the Stripe routing columns above.
@@ -107,12 +107,17 @@ class VolunteerDonationService
             : VolGivingDay::where('tenant_id', TenantContext::getId())
                 ->whereIn('id', $givingDayIds)
                 ->pluck('title', 'id');
+        $organisationNames = self::organisationNames($rows->pluck('organization_id'));
 
         return [
-            'items' => $rows->map(function ($row) use ($titles) {
+            'items' => $rows->map(function ($row) use ($titles, $organisationNames) {
                 $item = $row->toArray();
                 $item['giving_day_title'] = $row->giving_day_id !== null
                     ? ($titles[(int) $row->giving_day_id] ?? null)
+                    : null;
+                $item['organization_id'] = $row->organization_id !== null ? (int) $row->organization_id : null;
+                $item['organization_name'] = $item['organization_id'] !== null
+                    ? ($organisationNames[$item['organization_id']] ?? null)
                     : null;
                 return $item;
             })->values()->toArray(),
@@ -192,6 +197,10 @@ class VolunteerDonationService
             }
         }
 
+        // Which organisation the gift benefits is decided here, from the
+        // campaign (or opportunity) - never taken from the client.
+        $organisation = self::resolveDonationOrganisation($tenantId, $givingDayId, $opportunityId);
+
         $idempotencyKey = trim((string) ($data['idempotency_key'] ?? ''));
         $keyHash = null;
         $requestHash = null;
@@ -228,9 +237,9 @@ class VolunteerDonationService
             $donation = DB::transaction(function () use (
             $tenantId, $userId, $opportunityId, $givingDayId, $amount,
             $currency, $paymentMethod, $paymentReference, $message,
-            $isAnonymous, $status, $now, $keyHash, $requestHash
+            $isAnonymous, $status, $now, $keyHash, $requestHash, $organisation
             ) {
-            $donation = VolDonation::create([
+            $attributes = [
                 'tenant_id' => $tenantId,
                 'user_id' => $userId,
                 'creation_idempotency_key_hash' => $keyHash,
@@ -245,7 +254,11 @@ class VolunteerDonationService
                 'is_anonymous' => $isAnonymous,
                 'status' => $status,
                 'created_at' => $now,
-            ]);
+            ];
+            if (self::organisationColumn('vol_donations') !== []) {
+                $attributes['organization_id'] = $organisation['id'] ?? null;
+            }
+            $donation = VolDonation::create($attributes);
 
             // Increment giving day raised_amount only for completed donations
             if ($givingDayId !== null && $status === 'completed') {
@@ -282,6 +295,7 @@ class VolunteerDonationService
             'user_id' => (int) $donation->user_id,
             'opportunity_id' => $donation->opportunity_id !== null ? (int) $donation->opportunity_id : null,
             'giving_day_id' => $donation->giving_day_id !== null ? (int) $donation->giving_day_id : null,
+            'organization_id' => $donation->organization_id !== null ? (int) $donation->organization_id : null,
             'amount' => number_format((float) $donation->amount, 2, '.', ''),
             'currency' => (string) $donation->currency,
             'payment_method' => (string) $donation->payment_method,
@@ -356,10 +370,10 @@ class VolunteerDonationService
     {
         $rows = VolGivingDay::where('is_active', true)
             ->orderByDesc('start_date')
-            ->get([
+            ->get(array_merge([
                 'id', 'title', 'description', 'start_date', 'end_date',
                 'goal_amount', 'raised_amount', 'is_active', 'created_at',
-            ]);
+            ], self::organisationColumn('vol_giving_days')));
 
         if ($rows->isEmpty()) {
             return [];
@@ -373,11 +387,12 @@ class VolunteerDonationService
             ->groupBy('giving_day_id')
             ->selectRaw('giving_day_id, COUNT(DISTINCT user_id) as donor_count')
             ->pluck('donor_count', 'giving_day_id');
+        $organisationNames = self::organisationNames($rows->pluck('organization_id'));
 
-        return $rows->map(function ($row) use ($donorCounts) {
+        return $rows->map(function ($row) use ($donorCounts, $organisationNames) {
             $day = $row->toArray();
             $day['donor_count'] = (int) ($donorCounts[$row->id] ?? 0);
-            return self::formatGivingDay($day);
+            return self::formatGivingDay(self::withOrganisationName($day, $organisationNames));
         })->toArray();
     }
 
@@ -422,10 +437,10 @@ class VolunteerDonationService
     public static function adminGetGivingDays(): array
     {
         $rows = VolGivingDay::orderByDesc('created_at')
-            ->get([
+            ->get(array_merge([
                 'id', 'title', 'description', 'start_date', 'end_date',
                 'goal_amount', 'raised_amount', 'target_hours', 'is_active', 'created_at',
-            ]);
+            ], self::organisationColumn('vol_giving_days')));
 
         if ($rows->isEmpty()) {
             return [];
@@ -441,8 +456,9 @@ class VolunteerDonationService
             ->selectRaw('giving_day_id, COUNT(*) as total_donations, COUNT(DISTINCT COALESCE(user_id, id)) as donor_count')
             ->get()
             ->keyBy('giving_day_id');
+        $organisationNames = self::organisationNames($rows->pluck('organization_id'));
 
-        return $rows->map(function ($row) use ($statsByDay) {
+        return $rows->map(function ($row) use ($statsByDay, $organisationNames) {
             $day = $row->toArray();
             $stats = $statsByDay->get($row->id);
             $day['donor_count'] = (int) ($stats->donor_count ?? 0);
@@ -456,7 +472,7 @@ class VolunteerDonationService
             // handleChargeRefunded and ::createRefund). Recomputing
             // SUM(amount) here made the admin total silently diverge from the
             // totals members see.
-            return self::formatGivingDay($day);
+            return self::formatGivingDay(self::withOrganisationName($day, $organisationNames));
         })->toArray();
     }
 
@@ -488,6 +504,7 @@ class VolunteerDonationService
         if ($goalAmount <= 0) {
             throw new \InvalidArgumentException(__('api.vol_giving_day_goal_positive'));
         }
+        $organisation = self::organisationFromInput($data['organization_id'] ?? null, $tenantId);
 
         $now = now();
 
@@ -501,12 +518,15 @@ class VolunteerDonationService
             'raised_amount' => 0.00,
             'target_hours' => $targetHours,
             'is_active' => 1,
+            'organization_id' => $organisation['id'] ?? null,
             'created_by' => $data['created_by'] ?? null,
             'created_at' => $now,
         ]);
 
         return self::formatGivingDay([
             'id' => $givingDay->id,
+            'organization_id' => $organisation['id'] ?? null,
+            'organization_name' => $organisation['name'] ?? null,
             'title' => $title,
             'description' => $description,
             'start_date' => $startDate,
@@ -534,10 +554,13 @@ class VolunteerDonationService
                 'id', 'user_id', 'opportunity_id', 'giving_day_id',
                 'amount', 'currency', 'payment_method', 'payment_reference',
                 'message', 'is_anonymous', 'status', 'created_at',
-            ], self::donationRoutingColumns()));
+            ], self::donationRoutingColumns(), self::organisationColumn('vol_donations')));
 
         if (!empty($filters['opportunity_id'])) {
             $query->where('opportunity_id', (int) $filters['opportunity_id']);
+        }
+        if (!empty($filters['organization_id']) && self::organisationColumn('vol_donations') !== []) {
+            $query->where('organization_id', (int) $filters['organization_id']);
         }
         if (!empty($filters['giving_day_id'])) {
             $query->where('giving_day_id', (int) $filters['giving_day_id']);
@@ -552,9 +575,20 @@ class VolunteerDonationService
             $query->where('created_at', '<=', $filters['date_to']);
         }
 
-        return $query->orderByDesc('created_at')
-            ->get()
-            ->map(fn ($row) => $row->toArray())
+        $rows = $query->orderByDesc('created_at')->get();
+        $hasOrganisation = self::organisationColumn('vol_donations') !== [];
+        $organisationNames = $hasOrganisation ? self::organisationNames($rows->pluck('organization_id')) : [];
+
+        return $rows
+            ->map(function ($row) use ($hasOrganisation, $organisationNames) {
+                $item = $row->toArray();
+                if ($hasOrganisation) {
+                    $orgId = $row->organization_id !== null ? (int) $row->organization_id : null;
+                    $item['organization_id'] = $orgId;
+                    $item['organization_name'] = $orgId !== null ? ($organisationNames[$orgId] ?? null) : null;
+                }
+                return $item;
+            })
             ->toArray();
     }
 
@@ -601,6 +635,12 @@ class VolunteerDonationService
         if (isset($data['is_active'])) {
             $updates['is_active'] = $data['is_active'] ? 1 : 0;
         }
+        // array_key_exists, not isset: an explicit null (or empty string) moves
+        // the campaign back to "the whole community".
+        if (array_key_exists('organization_id', $data) && self::organisationColumn('vol_giving_days') !== []) {
+            $organisation = self::organisationFromInput($data['organization_id'], $tenantId);
+            $updates['organization_id'] = $organisation['id'] ?? null;
+        }
 
         if (empty($updates)) {
             return false;
@@ -635,6 +675,131 @@ class VolunteerDonationService
         }
 
         return $day;
+    }
+
+    /**
+     * The organisation a donation benefits.
+     *
+     * A campaign that names an organisation wins; otherwise a gift made against
+     * an opportunity goes to the opportunity's organisation; otherwise it is a
+     * gift to the whole community (null). Every lookup is tenant-scoped, and an
+     * organisation that is no longer public (pending / declined / suspended)
+     * resolves to null rather than to a stale attribution.
+     *
+     * Used by both the pledge path and StripeDonationService, so the
+     * organisation on the donation row and in the PaymentIntent metadata can
+     * never disagree.
+     *
+     * @return array{id:int,name:string}|null
+     */
+    public static function resolveDonationOrganisation(int $tenantId, ?int $givingDayId, ?int $opportunityId): ?array
+    {
+        $organisationId = null;
+
+        if ($givingDayId !== null && self::organisationColumn('vol_giving_days') !== []) {
+            $organisationId = VolGivingDay::where('tenant_id', $tenantId)
+                ->where('id', $givingDayId)
+                ->value('organization_id');
+        }
+
+        if ($organisationId === null && $opportunityId !== null) {
+            $organisationId = VolOpportunity::where('tenant_id', $tenantId)
+                ->where('id', $opportunityId)
+                ->value('organization_id');
+        }
+
+        if ($organisationId === null) {
+            return null;
+        }
+
+        $organisation = DB::table('vol_organizations')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $organisationId)
+            ->whereIn('status', VolunteerService::PUBLIC_ORGANIZATION_STATUSES)
+            ->first(['id', 'name']);
+
+        return $organisation ? ['id' => (int) $organisation->id, 'name' => (string) $organisation->name] : null;
+    }
+
+    /**
+     * Validate an admin-supplied organisation for a campaign. Empty means "the
+     * whole community"; anything else must be a public organisation in this
+     * community.
+     *
+     * @return array{id:int,name:string}|null
+     * @throws \InvalidArgumentException
+     */
+    private static function organisationFromInput(mixed $value, int $tenantId): ?array
+    {
+        if ($value === null || $value === '' || $value === 0 || $value === '0') {
+            return null;
+        }
+        if (!is_numeric($value) || (int) $value < 1) {
+            throw new \InvalidArgumentException(__('api.organization_not_found'));
+        }
+
+        $organisation = DB::table('vol_organizations')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $value)
+            ->whereIn('status', VolunteerService::PUBLIC_ORGANIZATION_STATUSES)
+            ->first(['id', 'name']);
+
+        if (!$organisation) {
+            throw new \InvalidArgumentException(__('api.organization_not_found'));
+        }
+
+        return ['id' => (int) $organisation->id, 'name' => (string) $organisation->name];
+    }
+
+    /**
+     * Names for a set of organisation ids, in ONE tenant-scoped query. Names
+     * are shown whatever the organisation's current status: a past gift still
+     * went to that organisation.
+     *
+     * @param iterable<mixed> $ids
+     * @return array<int, string>
+     */
+    private static function organisationNames(iterable $ids): array
+    {
+        $ids = collect($ids)->filter()->map(fn ($id) => (int) $id)->unique()->values();
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('vol_organizations')
+            ->where('tenant_id', TenantContext::getId())
+            ->whereIn('id', $ids->all())
+            ->pluck('name', 'id')
+            ->mapWithKeys(fn ($name, $id) => [(int) $id => (string) $name])
+            ->all();
+    }
+
+    /**
+     * @param array<string, mixed> $day
+     * @param array<int, string>   $organisationNames
+     * @return array<string, mixed>
+     */
+    private static function withOrganisationName(array $day, array $organisationNames): array
+    {
+        $orgId = isset($day['organization_id']) ? (int) $day['organization_id'] : null;
+        $day['organization_id'] = $orgId;
+        $day['organization_name'] = $orgId !== null ? ($organisationNames[$orgId] ?? null) : null;
+
+        return $day;
+    }
+
+    /**
+     * The organisation column, schema-guarded like the routing columns so the
+     * code stays safe on a database that has not run the migration yet.
+     *
+     * @return array<int, string>
+     */
+    private static function organisationColumn(string $table): array
+    {
+        static $present = [];
+        $present[$table] ??= Schema::hasColumn($table, 'organization_id');
+
+        return $present[$table] ? ['organization_id'] : [];
     }
 
     /**

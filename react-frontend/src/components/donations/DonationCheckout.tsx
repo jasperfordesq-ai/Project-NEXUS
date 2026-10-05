@@ -18,6 +18,7 @@ import { lazy, Suspense, useState } from 'react';
 
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Banknote from 'lucide-react/icons/banknote';
+import Building2 from 'lucide-react/icons/building-2';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import CreditCard from 'lucide-react/icons/credit-card';
 import FileText from 'lucide-react/icons/file-text';
@@ -38,6 +39,8 @@ interface DonationCheckoutProps {
   onClose: () => void;
   givingDayId?: number;
   opportunityId?: number;
+  /** Shown to the donor: the organisation this campaign raises money for. */
+  beneficiaryName?: string;
   onDonationComplete?: () => void;
 }
 
@@ -72,6 +75,7 @@ export function DonationCheckout({
   onClose,
   givingDayId,
   opportunityId,
+  beneficiaryName,
   onDonationComplete,
 }: DonationCheckoutProps) {
   const { t } = useTranslation('volunteering');
@@ -249,6 +253,12 @@ export function DonationCheckout({
               {/* ── Step 1: Form ── */}
               {step === 'form' && (
                 <>
+                  {beneficiaryName && (
+                    <p className="flex items-start gap-2 rounded-lg border border-theme-default bg-surface-secondary/50 p-3 text-sm text-theme-primary">
+                      <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-theme-subtle" aria-hidden="true" />
+                      <span>{t('donations.checkout_for_organisation', { name: beneficiaryName })}</span>
+                    </p>
+                  )}
                   <Input
                     label={t('donations.amount_label')}
                     type="number"

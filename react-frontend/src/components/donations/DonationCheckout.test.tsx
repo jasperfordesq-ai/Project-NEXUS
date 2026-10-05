@@ -117,6 +117,16 @@ describe('DonationCheckout', () => {
     expect(amountInput).toBeInTheDocument();
   });
 
+  it('tells the donor which organisation the campaign supports', () => {
+    render(<DonationCheckout {...defaultProps} givingDayId={3} beneficiaryName="Food Bank" />);
+    expect(screen.getByText('Your donation supports Food Bank.')).toBeInTheDocument();
+  });
+
+  it('names no organisation for a whole-community donation', () => {
+    render(<DonationCheckout {...defaultProps} />);
+    expect(screen.queryByText(/Your donation supports/)).not.toBeInTheDocument();
+  });
+
   it('shows the modal header', () => {
     render(<DonationCheckout {...defaultProps} />);
     // Dialog should be present

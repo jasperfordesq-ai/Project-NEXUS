@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import Banknote from 'lucide-react/icons/banknote';
+import Building2 from 'lucide-react/icons/building-2';
 import Calendar from 'lucide-react/icons/calendar';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import CreditCard from 'lucide-react/icons/credit-card';
@@ -75,6 +76,9 @@ interface GivingDay {
   ends_at?: string;
   is_active?: boolean;
   status?: CampaignStatus;
+  /** The organisation the campaign raises money for; null = the whole community. */
+  organization_id?: number | null;
+  organization_name?: string | null;
 }
 
 type DonationStatus = 'pending' | 'completed' | 'failed' | 'refunded';
@@ -91,6 +95,7 @@ interface Donation {
   status: DonationStatus;
   giving_day_id?: number | null;
   giving_day_title?: string | null;
+  organization_name?: string | null;
   created_at: string;
 }
 
@@ -360,6 +365,12 @@ export function DonationsTab() {
                 {t(`donations.day_status.${status}`)}
               </Chip>
             </div>
+            {day.organization_name && (
+              <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-theme-secondary">
+                <Building2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t('donations.for_organisation', { name: day.organization_name })}
+              </p>
+            )}
             {day.description && (
               <p className="mt-1 text-sm text-theme-muted">{day.description}</p>
             )}
@@ -452,6 +463,12 @@ export function DonationsTab() {
             </div>
             <p className="mt-1 text-sm text-theme-secondary">{campaign}</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-theme-subtle">
+              {d.organization_name && (
+                <span className="inline-flex items-center gap-1">
+                  <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t('donations.for_organisation', { name: d.organization_name })}
+                </span>
+              )}
               <span className="inline-flex items-center gap-1">
                 {method === 'card'
                   ? <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
@@ -665,6 +682,11 @@ export function DonationsTab() {
             isOpen={checkoutModal.isOpen}
             onClose={checkoutModal.onClose}
             givingDayId={checkoutGivingDayId}
+            beneficiaryName={
+              checkoutGivingDayId != null
+                ? givingDays.find((day) => day.id === checkoutGivingDayId)?.organization_name ?? undefined
+                : undefined
+            }
             onDonationComplete={() => void load()}
           />
         </Suspense>

@@ -17,6 +17,7 @@ const { mockAdminVolunteering } = vi.hoisted(() => ({
     exportDonations: vi.fn(),
     getGivingDayDonors: vi.fn(),
     getGivingDayTrends: vi.fn(),
+    getOrganizations: vi.fn(),
   },
 }));
 
@@ -66,10 +67,19 @@ vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 // factory returns no ConfirmModal stub, and vitest throws on a missing export.
 function adminComponentsMock() {
   return {
-    DataTable: ({ data, isLoading }: { data: object[]; isLoading: boolean }) => (
+    DataTable: ({ data, isLoading, columns = [] }: {
+      data: object[];
+      isLoading: boolean;
+      columns?: Array<{ key: string; render?: (row: Record<string, unknown>) => React.ReactNode }>;
+    }) => (
       <div data-testid="data-table" data-loading={String(isLoading)}>
         {data.map((row: Record<string, unknown>) => (
-          <div key={String(row['id'])} data-testid="table-row">{String(row['name'])}</div>
+          <div key={String(row['id'])} data-testid="table-row">
+            <span>{String(row['name'])}</span>
+            {columns
+              .filter((col) => col.key === 'organization_name' || col.key === 'actions')
+              .map((col) => <span key={col.key} data-testid={`cell-${col.key}`}>{col.render?.(row)}</span>)}
+          </div>
         ))}
       </div>
     ),
@@ -135,6 +145,77 @@ describe('VolunteerGivingDays', () => {
       meta: { has_more: false, cursor: null, stats: { total_donors: 0, anonymous_count: 0, total_raised: 0 } },
     });
     mockAdminVolunteering.getGivingDayTrends.mockResolvedValue({ success: true, data: { trends: [] } });
+    mockAdminVolunteering.getOrganizations.mockResolvedValue({
+      success: true,
+      data: [
+        { id: 7, org_name: 'Food Bank', status: 'approved' },
+        { id: 8, org_name: 'Not Yet Approved', status: 'pending' },
+      ],
+    });
+  });
+
+  it('shows which organisation each campaign raises money for', async () => {
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([
+      makeGivingDay({ id: 1, name: 'Food appeal', organization_id: 7, organization_name: 'Food Bank' }),
+      makeGivingDay({ id: 2, name: 'Community appeal', organization_id: null, organization_name: null }),
+    ]));
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+
+    await waitFor(() => screen.getByText('Food appeal'));
+    const cells = screen.getAllByTestId('cell-organization_name');
+    expect(cells[0]).toHaveTextContent('Food Bank');
+    expect(cells[1]).toHaveTextContent('Whole community');
+  });
+
+  it('creates a campaign for the whole community by default', async () => {
+    mockAdminVolunteering.createGivingDay.mockResolvedValue({ success: true });
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+    await waitFor(() => screen.getByTestId('data-table'));
+
+    fireEvent.click(screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('create'))!);
+    const dialog = await waitFor(() => {
+      const el = document.querySelector('[role="dialog"]');
+      expect(el).toBeTruthy();
+      return el as HTMLElement;
+    });
+
+    const nameInput = dialog.querySelector('input:not([type="date"]):not([type="number"])') as HTMLInputElement;
+    fireEvent.change(nameInput, { target: { value: 'Winter appeal' } });
+    fireEvent.click(Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Create')!);
+
+    await waitFor(() => {
+      expect(mockAdminVolunteering.createGivingDay).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Winter appeal', organization_id: null }),
+      );
+    });
+  });
+
+  it('does not resend the organisation when an edit leaves it unchanged', async () => {
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([
+      makeGivingDay({ id: 1, name: 'Food appeal', organization_id: 7, organization_name: 'Food Bank' }),
+    ]));
+    mockAdminVolunteering.updateGivingDay.mockResolvedValue({ success: true });
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+    await waitFor(() => screen.getByText('Food appeal'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    const dialog = await waitFor(() => {
+      const el = document.querySelector('[role="dialog"]');
+      expect(el).toBeTruthy();
+      return el as HTMLElement;
+    });
+    fireEvent.click(Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Save')!);
+
+    await waitFor(() => expect(mockAdminVolunteering.updateGivingDay).toHaveBeenCalledTimes(1));
+    const [, payload] = mockAdminVolunteering.updateGivingDay.mock.calls[0] as [number, Record<string, unknown>];
+    expect(payload).not.toHaveProperty('organization_id');
+    expect(payload).toMatchObject({ name: 'Food appeal' });
   });
 
   it('shows loading spinner initially', async () => {

@@ -33,17 +33,22 @@ Object.defineProperty(window, 'print', { value: vi.fn(), writable: true });
 
 import { DonationReceipt } from './DonationReceipt';
 
+// The shape StripeDonationService::getDonationReceipt() actually returns. The
+// fixture used to invent `community_name` / `reference` / `id`, so these tests
+// passed while every real receipt showed a blank Community line.
 const MOCK_RECEIPT = {
-  id: 42,
+  donation_id: 42,
   donor_name: 'Jane Smith',
-  amount: 5000,
+  amount: '5000.00',
   currency: 'EUR',
   date: '2024-06-01T10:00:00Z',
-  community_name: 'Test Timebank',
+  tenant_name: 'Test Timebank',
+  organization_name: null as string | null,
+  giving_day_title: null as string | null,
   message: 'Keep up the good work',
   status: 'completed',
-  payment_method: 'card',
-  reference: 'REF-12345',
+  payment_method: 'stripe',
+  payment_reference: 'pi_12345',
 };
 
 describe('DonationReceipt', () => {
@@ -67,10 +72,35 @@ describe('DonationReceipt', () => {
     render(<DonationReceipt donationId={42} />);
 
     await waitFor(() => expect(screen.getByText('Jane Smith')).toBeInTheDocument());
-    expect(screen.getByText(/REF-12345/)).toBeInTheDocument();
+    expect(screen.getByText(/pi_12345/)).toBeInTheDocument();
     expect(screen.getByText('Test Timebank')).toBeInTheDocument();
-    // payment_method is rendered capitalized
-    expect(screen.getByText(/card/i)).toBeInTheDocument();
+    // The stored method key 'stripe' is shown as the member-facing label.
+    expect(screen.getByText('Card')).toBeInTheDocument();
+    expect(screen.queryByText(/stripe/i)).not.toBeInTheDocument();
+  });
+
+  it('names the organisation and campaign the gift went to', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_RECEIPT, organization_name: 'Food Bank', giving_day_title: 'Winter appeal' },
+    });
+
+    render(<DonationReceipt donationId={42} />);
+
+    await waitFor(() => expect(screen.getByText('Food Bank')).toBeInTheDocument());
+    expect(screen.getByText('Organisation')).toBeInTheDocument();
+    expect(screen.getByText('Winter appeal')).toBeInTheDocument();
+    expect(screen.getByText('Campaign')).toBeInTheDocument();
+  });
+
+  it('leaves out the organisation and campaign rows for a general gift', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: MOCK_RECEIPT });
+
+    render(<DonationReceipt donationId={42} />);
+
+    await waitFor(() => expect(screen.getByText('Jane Smith')).toBeInTheDocument());
+    expect(screen.queryByText('Organisation')).not.toBeInTheDocument();
+    expect(screen.queryByText('Campaign')).not.toBeInTheDocument();
   });
 
   it('renders the optional donor message when present', async () => {

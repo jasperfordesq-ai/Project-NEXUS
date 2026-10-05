@@ -20307,6 +20307,7 @@ CREATE TABLE `vol_donations` (
   `receipt_email_failed_at` timestamp NULL DEFAULT NULL,
   `creation_idempotency_key_hash` char(64) DEFAULT NULL,
   `creation_request_hash` char(64) DEFAULT NULL,
+  `organization_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_vd_stripe_pi` (`stripe_payment_intent_id`),
   UNIQUE KEY `uq_vol_donation_creation_idempotency` (`tenant_id`,`user_id`,`creation_idempotency_key_hash`),
@@ -20319,7 +20320,8 @@ CREATE TABLE `vol_donations` (
   KEY `idx_vd_fund_code` (`fund_code`),
   KEY `idx_vd_gift_aid_status` (`gift_aid_claim_status`),
   KEY `idx_vd_gift_aid_postcode` (`gift_aid_postcode`),
-  KEY `idx_vol_donations_tenant_created` (`tenant_id`,`created_at`)
+  KEY `idx_vol_donations_tenant_created` (`tenant_id`,`created_at`),
+  KEY `idx_vol_donations_org` (`tenant_id`,`organization_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_emergency_alert_recipients`;
@@ -20441,9 +20443,11 @@ CREATE TABLE `vol_giving_days` (
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `organization_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_vol_giving_days_tenant` (`tenant_id`),
-  KEY `idx_vol_giving_days_dates` (`tenant_id`,`start_date`,`end_date`)
+  KEY `idx_vol_giving_days_dates` (`tenant_id`,`start_date`,`end_date`),
+  KEY `idx_vol_giving_days_org` (`tenant_id`,`organization_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_guardian_consents`;
@@ -21658,7 +21662,8 @@ INSERT INTO `laravel_migrations` VALUES
 (458,'2026_10_02_120000_add_jira_sync_to_support_reports',140),
 (459,'2026_10_02_130000_add_jira_status_to_support_reports',141),
 (460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142),
-(461,'2026_10_03_200000_create_support_report_attachments_table',143);
+(461,'2026_10_03_200000_create_support_report_attachments_table',143),
+(463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
