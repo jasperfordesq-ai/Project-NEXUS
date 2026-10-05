@@ -1182,7 +1182,7 @@ function PreviewSummary({ status, preview, onRetry }: PreviewSummaryProps) {
 
       <p className="text-sm text-theme-muted">
         {fund > 0
-          ? t('summary.totals_with_fund', { ...totals, fund: hoursText(fund) })
+          ? t('summary.totals_with_fund', { paid: totals.paid, earned: totals.earned, fund: hoursText(fund) })
           : t('summary.totals', totals)}
       </p>
     </div>
