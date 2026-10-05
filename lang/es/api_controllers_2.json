@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Conexión aceptada",
   "connections.connection_accepted": "Conexión aceptada",
   "admin_crm.invalid_type": "Parámetro de tipo no válido",
+  "admin_crm.invalid_joined_days": "joined_days debe ser 0 (todos), 30, 90 o 365",
+  "admin_crm.invalid_step": "step debe ser un paso del embudo anterior al último",
   "endorsement.cannot_endorse_self": "No puede recomendarse a sí mismo",
   "endorsement.member_not_found": "Miembro no encontrado",
   "endorsement.already_endorsed": "Ya ha recomendado esta habilidad",

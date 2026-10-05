@@ -159,6 +159,119 @@ class AdminCrmControllerTest extends TestCase
         $this->assertSame(now()->subMonths(5)->format('Y-m'), $months[0]['month']);
     }
 
+    /**
+     * ?joined_days= narrows the funnel to members who joined within that
+     * window, so a coordinator can ask "are this quarter's recruits getting
+     * through?". The "new in the last 30 days" figure stays community-wide.
+     */
+    public function test_funnel_joined_days_narrows_the_population_to_recent_joiners(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $plain = ['email_verified_at' => null, 'bio' => null, 'location' => null];
+        $old = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(200)] + $plain);
+        $recent = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(3)] + $plain);
+
+        $everyone = $this->apiGet('/v2/admin/crm/funnel')->assertOk()->json('data');
+        $quarter = $this->apiGet('/v2/admin/crm/funnel?joined_days=90')->assertOk()->json('data');
+
+        $this->assertSame(0, $everyone['joined_days']);
+        $this->assertSame(90, $quarter['joined_days']);
+        $this->assertLessThan($everyone['total_members'], $quarter['total_members']);
+        $this->assertSame($everyone['new_last_30_days'], $quarter['new_last_30_days']);
+
+        $waitingEveryone = array_column($everyone['stages'][0]['waiting_members'], 'id');
+        $waitingQuarter = array_column($quarter['stages'][0]['waiting_members'], 'id');
+        $this->assertContains($recent->id, $waitingQuarter);
+        $this->assertNotContains($old->id, $waitingQuarter);
+        // The sample names the newest first, so the 3-day-old member is in both views.
+        $this->assertContains($recent->id, $waitingEveryone);
+    }
+
+    public function test_funnel_rejects_a_joined_days_window_the_page_does_not_offer(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiGet('/v2/admin/crm/funnel?joined_days=7')->assertStatus(400);
+        $this->apiGet('/v2/admin/crm/funnel?joined_days=365')->assertOk();
+    }
+
+    // ================================================================
+    // EXPORT FUNNEL — GET /v2/admin/crm/export/funnel
+    // ================================================================
+
+    public function test_export_funnel_lists_who_is_waiting_at_a_step_longest_waiting_first(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $verifiedOnly = ['email_verified_at' => now(), 'bio' => null, 'location' => null];
+        $longWait = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(40)] + $verifiedOnly);
+        $shortWait = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(5)] + $verifiedOnly);
+        // Two regulars: they have finished the journey and must not be in a "waiting" export.
+        $regularA = User::factory()->forTenant($this->testTenantId)->create($verifiedOnly);
+        $regularB = User::factory()->forTenant($this->testTenantId)->create($verifiedOnly);
+        $this->completedTransaction($regularA->id, $regularB->id);
+        $this->completedTransaction($regularB->id, $regularA->id);
+
+        $response = $this->apiGet('/v2/admin/crm/export/funnel?step=email_verified');
+        $response->assertStatus(200);
+        $this->assertStringStartsWith('text/csv', (string) $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('crm-funnel-waiting-', (string) $response->headers->get('Content-Disposition'));
+
+        $lines = array_values(array_filter(explode("\n", str_replace("\r", '', $response->streamedContent()))));
+        $this->assertSame('Step,"Next Step","User ID",Name,Email,Joined,"Days Since Joined"', $lines[0]);
+
+        $rowFor = fn (int $id) => array_values(array_filter($lines, fn ($l) => str_contains($l, ',' . $id . ',')));
+        $this->assertCount(1, $rowFor($longWait->id));
+        $this->assertCount(1, $rowFor($shortWait->id));
+        $this->assertCount(0, $rowFor($regularA->id));
+        $this->assertCount(0, $rowFor($regularB->id));
+
+        $long = $rowFor($longWait->id)[0];
+        $this->assertStringStartsWith('email_verified,profile_complete,', $long);
+        $this->assertStringContainsString($longWait->fresh()->name, $long);
+        $this->assertStringContainsString($longWait->email, $long);
+        $this->assertStringEndsWith(',40', $long);
+        // Longest waiting first within the step.
+        $this->assertLessThan(array_search($rowFor($shortWait->id)[0], $lines, true), array_search($long, $lines, true));
+        // Only the requested step is in the file.
+        $this->assertSame([], array_values(array_filter(array_slice($lines, 1), fn ($l) => !str_starts_with($l, 'email_verified,'))));
+    }
+
+    public function test_export_funnel_honours_the_joined_days_cohort(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $plain = ['email_verified_at' => null, 'bio' => null, 'location' => null];
+        $old = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(200)] + $plain);
+        $recent = User::factory()->forTenant($this->testTenantId)->create(['created_at' => now()->subDays(3)] + $plain);
+
+        $body = $this->apiGet('/v2/admin/crm/export/funnel?joined_days=30')->assertOk()->streamedContent();
+
+        $this->assertStringContainsString(',' . $recent->id . ',', $body);
+        $this->assertStringNotContainsString(',' . $old->id . ',', $body);
+    }
+
+    public function test_export_funnel_rejects_the_final_step_and_unknown_steps(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        // Nobody waits at the final step, so there is nothing to export there.
+        $this->apiGet('/v2/admin/crm/export/funnel?step=repeat_user')->assertStatus(400);
+        $this->apiGet('/v2/admin/crm/export/funnel?step=bogus')->assertStatus(400);
+        $this->apiGet('/v2/admin/crm/export/funnel?joined_days=12')->assertStatus(400);
+    }
+
+    public function test_export_funnel_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $this->apiGet('/v2/admin/crm/export/funnel')->assertStatus(403);
+    }
+
     /** @return array<string, int> */
     private function funnelCounts(): array
     {

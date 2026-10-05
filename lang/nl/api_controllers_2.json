@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Verbinding geaccepteerd",
   "connections.connection_accepted": "Verbinding geaccepteerd",
   "admin_crm.invalid_type": "Ongeldig typeparameter",
+  "admin_crm.invalid_joined_days": "joined_days moet 0 (iedereen), 30, 90 of 365 zijn",
+  "admin_crm.invalid_step": "step moet een stap in het traject vóór de laatste zijn",
   "endorsement.cannot_endorse_self": "U kunt uzelf niet aanbevelen",
   "endorsement.member_not_found": "Lid niet gevonden",
   "endorsement.already_endorsed": "U heeft deze vaardigheid al aanbevolen",

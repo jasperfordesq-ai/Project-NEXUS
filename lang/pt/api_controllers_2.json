@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Ligação aceite",
   "connections.connection_accepted": "Ligação aceite",
   "admin_crm.invalid_type": "Parâmetro de tipo inválido",
+  "admin_crm.invalid_joined_days": "joined_days tem de ser 0 (todos), 30, 90 ou 365",
+  "admin_crm.invalid_step": "step tem de ser um passo do funil anterior ao último",
   "endorsement.cannot_endorse_self": "Não pode recomendar-se a si próprio",
   "endorsement.member_not_found": "Membro não encontrado",
   "endorsement.already_endorsed": "Já recomendou esta competência",

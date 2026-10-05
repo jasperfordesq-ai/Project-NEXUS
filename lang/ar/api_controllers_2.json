@@ -169,6 +169,8 @@
   "connections.accepted_connection": "تم قبول الاتصال",
   "connections.connection_accepted": "الاتصال مقبول",
   "admin_crm.invalid_type": "معلمة النوع غير صالحة",
+  "admin_crm.invalid_joined_days": "يجب أن تكون joined_days إما 0 (الجميع) أو 30 أو 90 أو 365",
+  "admin_crm.invalid_step": "يجب أن تكون step خطوة في مسار الانضمام قبل الخطوة الأخيرة",
   "endorsement.cannot_endorse_self": "لا يمكنك توصية نفسك",
   "endorsement.member_not_found": "العضو غير موجود",
   "endorsement.already_endorsed": "لقد وصّيت على هذه المهارة مسبقاً",

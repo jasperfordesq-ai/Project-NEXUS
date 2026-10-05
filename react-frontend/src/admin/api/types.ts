@@ -2726,9 +2726,12 @@ export interface CrmFunnelStage {
 export interface CrmFunnelData {
   /** Members counted by the funnel: banned, suspended and deleted accounts excluded. */
   total_members?: number;
+  /** The cohort window that was applied: 0 is everyone, otherwise days since joining (30, 90, 365). */
+  joined_days?: number;
   stages: CrmFunnelStage[];
   /** The last six calendar months, current month last, empty months included as 0. */
   monthly_registrations: Array<{ month: string; count: number }>;
+  /** Always community-wide, whatever `joined_days` was asked for. */
   new_last_30_days?: number;
 }
 

@@ -162,8 +162,178 @@ class AdminCrmController extends BaseApiController
         $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
+        $joinedDays = $this->funnelJoinedDays();
+        if ($joinedDays === null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.admin_crm.invalid_joined_days'), null, 400);
+        }
+
+        $everyone = $this->funnelPlacements($tenantId);
+        $members = $this->funnelCohort($everyone, $joinedDays);
+
+        $codes = array_keys(self::FUNNEL_STAGES);
+        $reached = array_fill(0, count($codes), 0);
+        $waiting = array_fill(0, count($codes), []);
+        $waitingCount = array_fill(0, count($codes), 0);
+
+        foreach ($members as $member) {
+            $furthest = $member['furthest'];
+            for ($step = 0; $step <= $furthest; $step++) {
+                $reached[$step]++;
+            }
+            $waitingCount[$furthest]++;
+            if (count($waiting[$furthest]) < self::FUNNEL_WAITING_SAMPLE) {
+                $waiting[$furthest][] = [
+                    'id' => $member['id'],
+                    'name' => $member['name'],
+                    'avatar_url' => $member['avatar_url'],
+                    'joined_at' => $member['joined_at'],
+                ];
+            }
+        }
+
+        $stages = [];
+        $lastStep = count($codes) - 1;
+        foreach ($codes as $step => $code) {
+            // Nobody "waits" at the final step: there is no next one.
+            $isLast = $step === $lastStep;
+            $stages[] = [
+                'code' => $code,
+                'count' => $reached[$step],
+                'color' => self::FUNNEL_STAGES[$code],
+                'waiting' => $isLast ? 0 : $waitingCount[$step],
+                'waiting_members' => $isLast ? [] : $waiting[$step],
+            ];
+        }
+
+        $monthAgo = strtotime('-30 days');
+
+        return $this->respondWithData([
+            'total_members' => count($members),
+            'joined_days' => $joinedDays,
+            'stages' => $stages,
+            'monthly_registrations' => $this->funnelMonthlyRegistrations($tenantId),
+            // Always the whole community, whatever cohort is being looked at:
+            // the tile that shows it says "across the whole community" then.
+            'new_last_30_days' => count(array_filter(
+                $everyone,
+                fn ($member) => $member['joined_ts'] !== null && $member['joined_ts'] >= $monthAgo
+            )),
+        ]);
+    }
+
+    /** Cohort windows (days since joining) the funnel and its export accept; 0 is everyone. */
+    private const FUNNEL_JOINED_WINDOWS = [0, 30, 90, 365];
+
+    /** Rows a single funnel CSV may contain. */
+    private const FUNNEL_EXPORT_LIMIT = 5000;
+
+    /**
+     * GET /api/v2/admin/crm/export/funnel
+     *
+     * Every member who has NOT reached the final step — the people a
+     * coordinator might nudge — one row each with the step they are waiting
+     * at and the step that would come next. Same `joined_days` cohort as the
+     * page; `step` narrows it to one step. Ordered by step, then by who has
+     * been waiting longest, so the top of each step is the most overdue
+     * nudge. Emails are included because outreach is what the list is for;
+     * the member export under Admin → Users already hands admins the same
+     * addresses. Admin only, like the other CRM exports.
+     */
+    public function exportFunnel(): StreamedResponse|JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        $joinedDays = $this->funnelJoinedDays();
+        if ($joinedDays === null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.admin_crm.invalid_joined_days'), null, 400);
+        }
+
+        $codes = array_keys(self::FUNNEL_STAGES);
+        $lastStep = count($codes) - 1;
+        $step = $this->query('step');
+        $stepIndex = null;
+        if ($step !== null && $step !== '') {
+            $stepIndex = array_search($step, $codes, true);
+            if ($stepIndex === false || $stepIndex === $lastStep) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.admin_crm.invalid_step'), null, 400);
+            }
+        }
+
+        $members = array_values(array_filter(
+            $this->funnelCohort($this->funnelPlacements($tenantId), $joinedDays),
+            fn (array $member) => $member['furthest'] < $lastStep
+                && ($stepIndex === null || $member['furthest'] === $stepIndex)
+        ));
+        usort($members, fn (array $a, array $b) =>
+            [$a['furthest'], $a['joined_ts'] ?? PHP_INT_MAX, $a['id']] <=> [$b['furthest'], $b['joined_ts'] ?? PHP_INT_MAX, $b['id']]);
+        $members = array_slice($members, 0, self::FUNNEL_EXPORT_LIMIT);
+
+        $today = strtotime('today');
+        $rows = [];
+        foreach ($members as $member) {
+            $rows[] = [
+                'step' => $codes[$member['furthest']],
+                'next_step' => $codes[$member['furthest'] + 1],
+                'user_id' => $member['id'],
+                'name' => $member['name'],
+                'email' => $member['email'],
+                'joined_at' => $member['joined_at'],
+                // Calendar days, so someone who joined 40 days ago at 9am reads 40, not 39.
+                'days_since_joined' => $member['joined_ts'] === null
+                    ? ''
+                    : max(0, (int) round(($today - strtotime(date('Y-m-d', $member['joined_ts']))) / 86400)),
+            ];
+        }
+
+        return $this->streamCsv(
+            'crm-funnel-waiting',
+            ['Step', 'Next Step', 'User ID', 'Name', 'Email', 'Joined', 'Days Since Joined'],
+            $rows
+        );
+    }
+
+    /**
+     * The `joined_days` cohort window from the query string: absent or 0 is
+     * everyone, otherwise one of FUNNEL_JOINED_WINDOWS. Null means the value
+     * was not one the page offers.
+     */
+    private function funnelJoinedDays(): ?int
+    {
+        $days = $this->queryInt('joined_days', 0);
+
+        return in_array($days, self::FUNNEL_JOINED_WINDOWS, true) ? $days : null;
+    }
+
+    /**
+     * @param list<array{id:int,name:?string,email:?string,avatar_url:?string,joined_at:?string,joined_ts:?int,furthest:int}> $members
+     * @return list<array{id:int,name:?string,email:?string,avatar_url:?string,joined_at:?string,joined_ts:?int,furthest:int}>
+     */
+    private function funnelCohort(array $members, int $joinedDays): array
+    {
+        if ($joinedDays === 0) {
+            return $members;
+        }
+        $since = strtotime("-{$joinedDays} days");
+
+        return array_values(array_filter(
+            $members,
+            fn (array $member) => $member['joined_ts'] !== null && $member['joined_ts'] >= $since
+        ));
+    }
+
+    /**
+     * Every counted member (banned, suspended, rejected, deleted and anonymised
+     * accounts excluded), newest first, each with the index of the FURTHEST
+     * journey step they have reached. Shared by the funnel page and its export
+     * so the two can never disagree about where a member stands.
+     *
+     * @return list<array{id:int,name:?string,email:?string,avatar_url:?string,joined_at:?string,joined_ts:?int,furthest:int}>
+     */
+    private function funnelPlacements(int $tenantId): array
+    {
         $members = DB::select(
-            "SELECT id, name, avatar_url, created_at,
+            "SELECT id, name, email, avatar_url, created_at,
                     email_verified_at IS NOT NULL AS verified,
                     (COALESCE(bio, '') <> '' AND COALESCE(location, '') <> '') AS profile_complete
              FROM users
@@ -198,11 +368,7 @@ class AdminCrmController extends BaseApiController
             $exchanges[(int) $row->u] = (int) $row->exchanges;
         }
 
-        $codes = array_keys(self::FUNNEL_STAGES);
-        $reached = array_fill(0, count($codes), 0);
-        $waiting = array_fill(0, count($codes), []);
-        $waitingCount = array_fill(0, count($codes), 0);
-
+        $placed = [];
         foreach ($members as $member) {
             $id = (int) $member->id;
             $done = [
@@ -213,46 +379,19 @@ class AdminCrmController extends BaseApiController
                 ($exchanges[$id] ?? 0) >= 1,
                 ($exchanges[$id] ?? 0) >= 2,
             ];
-            $furthest = (int) max(array_keys(array_filter($done)));
-
-            for ($step = 0; $step <= $furthest; $step++) {
-                $reached[$step]++;
-            }
-            $waitingCount[$furthest]++;
-            if (count($waiting[$furthest]) < self::FUNNEL_WAITING_SAMPLE) {
-                $waiting[$furthest][] = [
-                    'id' => $id,
-                    'name' => $member->name,
-                    'avatar_url' => $member->avatar_url,
-                    'joined_at' => $member->created_at,
-                ];
-            }
-        }
-
-        $stages = [];
-        $lastStep = count($codes) - 1;
-        foreach ($codes as $step => $code) {
-            // Nobody "waits" at the final step: there is no next one.
-            $isLast = $step === $lastStep;
-            $stages[] = [
-                'code' => $code,
-                'count' => $reached[$step],
-                'color' => self::FUNNEL_STAGES[$code],
-                'waiting' => $isLast ? 0 : $waitingCount[$step],
-                'waiting_members' => $isLast ? [] : $waiting[$step],
+            $joinedTs = $member->created_at === null ? null : strtotime((string) $member->created_at);
+            $placed[] = [
+                'id' => $id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'avatar_url' => $member->avatar_url,
+                'joined_at' => $member->created_at,
+                'joined_ts' => $joinedTs === false ? null : $joinedTs,
+                'furthest' => (int) max(array_keys(array_filter($done))),
             ];
         }
 
-        return $this->respondWithData([
-            'total_members' => count($members),
-            'stages' => $stages,
-            'monthly_registrations' => $this->funnelMonthlyRegistrations($tenantId),
-            'new_last_30_days' => count(array_filter(
-                $members,
-                fn ($member) => $member->created_at !== null
-                    && strtotime((string) $member->created_at) >= strtotime('-30 days')
-            )),
-        ]);
+        return $placed;
     }
 
     /**

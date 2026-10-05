@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Glacadh le nasc",
   "connections.connection_accepted": "Nasc glactha",
   "admin_crm.invalid_type": "Paraiméadar cineál neamhbhailí",
+  "admin_crm.invalid_joined_days": "Caithfidh joined_days a bheith 0 (gach duine), 30, 90 nó 365",
+  "admin_crm.invalid_step": "Caithfidh step a bheith ina chéim den tonnadóir roimh an gceann deiridh",
   "endorsement.cannot_endorse_self": "Ní féidir leat tú féin a fhormhuiniú",
   "endorsement.member_not_found": "Ball gan aimsiú",
   "endorsement.already_endorsed": "Tá an scil seo formhuinithe agat cheana féin",

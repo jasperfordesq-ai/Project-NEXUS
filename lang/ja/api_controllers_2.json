@@ -169,6 +169,8 @@
   "connections.accepted_connection": "つながりを承認しました",
   "connections.connection_accepted": "つながりが承認されました",
   "admin_crm.invalid_type": "無効なタイプパラメーター",
+  "admin_crm.invalid_joined_days": "joined_days は 0（全員）、30、90、365 のいずれかにしてください",
+  "admin_crm.invalid_step": "step は最終ステップより前のファネルのステップにしてください",
   "endorsement.cannot_endorse_self": "自分自身を推薦することはできません",
   "endorsement.member_not_found": "メンバーが見つかりません",
   "endorsement.already_endorsed": "このスキルはすでに推薦済みです",

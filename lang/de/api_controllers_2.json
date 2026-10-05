@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Verbindung akzeptiert",
   "connections.connection_accepted": "Verbindung akzeptiert",
   "admin_crm.invalid_type": "Ungültiger Typparameter",
+  "admin_crm.invalid_joined_days": "joined_days muss 0 (alle), 30, 90 oder 365 sein",
+  "admin_crm.invalid_step": "step muss ein Schritt des Trichters vor dem letzten sein",
   "endorsement.cannot_endorse_self": "Sie können sich nicht selbst empfehlen",
   "endorsement.member_not_found": "Mitglied nicht gefunden",
   "endorsement.already_endorsed": "Sie haben diese Fähigkeit bereits empfohlen",

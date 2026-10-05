@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Connessione accettata",
   "connections.connection_accepted": "Connessione accettata",
   "admin_crm.invalid_type": "Parametro tipo non valido",
+  "admin_crm.invalid_joined_days": "joined_days deve essere 0 (tutti), 30, 90 o 365",
+  "admin_crm.invalid_step": "step deve essere un passaggio del percorso precedente all'ultimo",
   "endorsement.cannot_endorse_self": "Non puoi raccomandare te stesso",
   "endorsement.member_not_found": "Membro non trovato",
   "endorsement.already_endorsed": "Hai già raccomandato questa competenza",

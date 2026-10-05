@@ -223,6 +223,8 @@
   "connections.accepted_connection": "Accepted a connection",
   "connections.connection_accepted": "Connection accepted",
   "admin_crm.invalid_type": "Invalid type parameter",
+  "admin_crm.invalid_joined_days": "joined_days must be 0 (everyone), 30, 90 or 365",
+  "admin_crm.invalid_step": "step must be a funnel step before the final one",
   "endorsement.cannot_endorse_self": "You cannot endorse yourself",
   "endorsement.member_not_found": "Member not found",
   "endorsement.already_endorsed": "You have already endorsed this skill",

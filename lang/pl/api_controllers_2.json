@@ -169,6 +169,8 @@
   "connections.accepted_connection": "Połączenie zaakceptowane",
   "connections.connection_accepted": "Połączenie zaakceptowane",
   "admin_crm.invalid_type": "Nieprawidłowy parametr typu",
+  "admin_crm.invalid_joined_days": "joined_days musi wynosić 0 (wszyscy), 30, 90 lub 365",
+  "admin_crm.invalid_step": "step musi być krokiem ścieżki przed ostatnim",
   "endorsement.cannot_endorse_self": "Nie możesz rekomendować samego/samej siebie",
   "endorsement.member_not_found": "Członek nie znaleziony",
   "endorsement.already_endorsed": "Już zarekomendowałeś/aś tę umiejętność",

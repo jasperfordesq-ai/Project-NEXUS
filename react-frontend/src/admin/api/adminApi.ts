@@ -3045,9 +3045,18 @@ export const adminCrm = {
   getDashboard: () =>
     api.get<CrmDashboardStats>('/v2/admin/crm/dashboard'),
 
-  // Onboarding Funnel
-  getFunnel: () =>
-    api.get<CrmFunnelData>('/v2/admin/crm/funnel'),
+  // Onboarding Funnel. `joined_days` narrows the population to members who
+  // joined within that window (0 or absent = everyone; 30, 90 or 365).
+  getFunnel: (params?: { joined_days?: number }) =>
+    api.get<CrmFunnelData>(`/v2/admin/crm/funnel${buildQuery(params || {})}`),
+
+  // Admin-only CSV of every member who has not reached the final step, with
+  // the step they are waiting at and the one that comes next; same cohort as
+  // the page, optionally one step only. Longest waiting first within a step.
+  exportFunnel: (params?: { joined_days?: number; step?: string }) =>
+    api.download(`/v2/admin/crm/export/funnel${buildQuery(params || {})}`, {
+      filename: `onboarding-funnel-waiting-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   // Admin list (for task assignment)
   getAdmins: () =>
