@@ -279,9 +279,11 @@ class GroupExchangeServiceTest extends TestCase
             ], 'draft');
             $service = \Mockery::mock(GroupExchangeService::class)->makePartial();
             $notificationsAfterCompetition = null;
-            $service->shouldReceive('calculateSplit')->once()->with($exchangeId)
-                ->andReturnUsing(function () use ($exchangeId, $competingAction, &$notificationsAfterCompetition): array {
-                    $split = $this->service->calculateSplit($exchangeId);
+            // start() reads the split through splitFor() (it also needs the
+            // community fund's share), so that is the seam to interleave at.
+            $service->shouldReceive('splitFor')->once()->with($exchangeId)
+                ->andReturnUsing(function () use ($exchangeId, $competingAction, &$notificationsAfterCompetition): ?array {
+                    $split = $this->service->splitFor($exchangeId);
                     // Interleave after the first request read draft, before its final write.
                     $result = $this->service->{$competingAction}($exchangeId);
                     $this->assertTrue(is_array($result) ? $result['success'] : $result);

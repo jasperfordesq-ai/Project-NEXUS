@@ -253,6 +253,8 @@ class GroupExchangeService
             'created_at'        => $exchange->created_at,
             'updated_at'        => $exchange->updated_at,
             'calculated_split'  => $this->calculateSplit($id),
+            // A workshop's leftover hours, which go to the community time fund.
+            'community_fund_hours' => $this->splitFor($id)['community_fund_hours'] ?? 0.0,
             'terms_token'       => $this->termsToken((array) $exchange, $participantList),
             'participant_count' => count($participantList),
             'participants'      => $participantList,
@@ -518,12 +520,15 @@ class GroupExchangeService
      * to 2dp, entries <= 0 skipped) so a negative-hours row can't disguise an
      * imbalance that a plain SUM() would miss.
      *
+     * A workshop's leftover hours go to the community time fund, so the fund's
+     * share counts as a credit: attendees' debits == givers' credits + fund.
+     *
      * @param array<int, array{user_id: int, role: string, hours: float}> $split
      * @return string|null translated rejection message, or null when balanced
      */
-    private function splitImbalanceError(array $split): ?string
+    private function splitImbalanceError(array $split, float $fundHours = 0.0): ?string
     {
-        $credits = 0.0;
+        $credits = round($fundHours, 2);
         $debits = 0.0;
 
         foreach ($split as $entry) {
@@ -548,6 +553,31 @@ class GroupExchangeService
         }
 
         return null;
+    }
+
+    /**
+     * The member-facing reason a split cannot go ahead, or null when it can.
+     * start() and complete() leave UNBALANCED to splitImbalanceError(), the
+     * conservation gate they always ran; the preview shows this message for it.
+     *
+     * @param array{earned: float, paid: float, problem: ?string} $calc
+     */
+    private function problemMessage(array $calc): ?string
+    {
+        $replace = [
+            'earned' => number_format($calc['earned'], 2, '.', ''),
+            'paid' => number_format($calc['paid'], 2, '.', ''),
+        ];
+
+        return match ($calc['problem']) {
+            'SPLIT_TYPE_INVALID' => __('group_exchange.problem.split_type_invalid'),
+            'NO_GIVERS' => __('group_exchange.problem.no_givers'),
+            'NO_RECEIVERS' => __('group_exchange.problem.no_receivers'),
+            'HOURS_MISSING' => __('group_exchange.problem.hours_missing'),
+            'EARNED_EXCEEDS_PAID' => __('group_exchange.problem.earned_exceeds_paid', $replace),
+            'UNBALANCED' => __('group_exchange.problem.unbalanced', $replace),
+            default => null,
+        };
     }
 
     /**
@@ -665,7 +695,11 @@ class GroupExchangeService
         // Reject an unbalanced split up front so the organizer hears about it
         // before participants are asked to confirm. complete() re-checks — the
         // split can still change after start (update() allows split_type edits).
-        $imbalance = $this->splitImbalanceError($this->calculateSplit($exchangeId));
+        $calc = $this->splitFor($exchangeId);
+        if ($calc !== null && $calc['problem'] !== null && $calc['problem'] !== 'UNBALANCED') {
+            return ['success' => false, 'error' => (string) $this->problemMessage($calc)];
+        }
+        $imbalance = $this->splitImbalanceError($calc['lines'] ?? [], $calc['community_fund_hours'] ?? 0.0);
         if ($imbalance !== null) {
             return ['success' => false, 'error' => $imbalance];
         }
@@ -994,18 +1028,28 @@ class GroupExchangeService
             ];
         }
 
-        $split = $this->calculateSplit($exchangeId);
+        $calc = $this->splitFor($exchangeId);
+        $split = $calc['lines'] ?? [];
         if (empty($split)) {
             return ['success' => false, 'error' => __('api.group_exchange_no_participants')];
         }
+        if ($calc['problem'] !== null && $calc['problem'] !== 'UNBALANCED') {
+            return ['success' => false, 'error' => (string) $this->problemMessage($calc)];
+        }
+
+        // A workshop's leftover hours (attendees pay more than givers earn) go to
+        // the community time fund, in whole cents.
+        $fundCents = (int) round($calc['community_fund_hours'] * 100);
 
         // Authoritative conservation gate — money only moves from here, so this
         // check must live here (start() checks too, but the split can change
         // between start and complete).
-        $imbalance = $this->splitImbalanceError($split);
+        $imbalance = $this->splitImbalanceError($split, $fundCents / 100);
         if ($imbalance !== null) {
             return ['success' => false, 'error' => $imbalance];
         }
+
+        $fund = $fundCents > 0 ? CommunityFundService::getOrCreateFund() : null;
 
         $transactionIds = [];
         // Participants whose balance actually changed in the committed transaction.
@@ -1013,7 +1057,7 @@ class GroupExchangeService
         // Each entry: ['user_id' => int, 'role' => 'provider'|string, 'hours' => float]
         $balanceChanges = [];
 
-        $completed = DB::transaction(function () use ($exchangeId, $exchange, $split, $tenantId, &$transactionIds, &$balanceChanges): bool {
+        $completed = DB::transaction(function () use ($exchangeId, $exchange, $split, $tenantId, $fund, $fundCents, &$transactionIds, &$balanceChanges): bool {
             // Claim completion FIRST, atomically — the status predicate makes a
             // concurrent double-complete (double-click / parallel request) a
             // no-op instead of crediting every participant twice.
@@ -1112,6 +1156,43 @@ class GroupExchangeService
                 ];
             }
 
+            // Workshop leftover → the community time fund, inside the same
+            // transaction: if anything after this fails, the fund rolls back with
+            // every balance. The fund is the LAST credit target, so attendees pay
+            // the people who ran the session first and the rest goes to the fund.
+            if ($fund !== null && $fundCents > 0) {
+                $lockedFund = DB::table('community_fund_accounts')
+                    ->where('id', $fund['id'])
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+                if (! $lockedFund) {
+                    throw new \RuntimeException('GROUP_EXCHANGE_COMMUNITY_FUND_MISSING');
+                }
+
+                $amount = $fundCents / 100;
+                DB::table('community_fund_accounts')
+                    ->where('id', $fund['id'])
+                    ->where('tenant_id', $tenantId)
+                    ->update([
+                        'balance' => DB::raw('balance + ' . number_format($amount, 2, '.', '')),
+                        'total_donated' => DB::raw('total_donated + ' . number_format($amount, 2, '.', '')),
+                        'updated_at' => now(),
+                    ]);
+                DB::table('community_fund_transactions')->insert([
+                    'tenant_id' => $tenantId,
+                    'fund_id' => $fund['id'],
+                    'user_id' => (int) $exchange->organizer_id,
+                    'type' => 'group_exchange',
+                    'amount' => $amount,
+                    'balance_after' => round((float) $lockedFund->balance + $amount, 2),
+                    'description' => __('group_exchange.fund.description', ['title' => $exchange->title]),
+                    'created_at' => now(),
+                ]);
+
+                $creditCents[] = ['user_id' => 0, 'cents' => $fundCents];
+            }
+
             // Ledger rows: receivers pay providers. Every row debits its sender
             // and credits its receiver, so each participant's history nets to
             // exactly their balance change. The organiser is recorded on
@@ -1126,14 +1207,20 @@ class GroupExchangeService
                 $cents = min($creditCents[$p]['cents'], $debitCents[$r]['cents']);
 
                 if ($cents > 0 && $debitCents[$r]['user_id'] !== $creditCents[$p]['user_id']) {
+                    // Credit target 0 is the community time fund: recorded like a
+                    // member's donation to it (receiver_id NULL, type donation),
+                    // the shape CommunityFundService::receiveDonation() writes.
+                    $toFund = $creditCents[$p]['user_id'] === 0;
                     $transactionIds[] = (int) DB::table('transactions')->insertGetId([
                         'tenant_id'        => $tenantId,
                         'sender_id'        => $debitCents[$r]['user_id'],
-                        'receiver_id'      => $creditCents[$p]['user_id'],
+                        'receiver_id'      => $toFund ? null : $creditCents[$p]['user_id'],
                         'amount'           => $cents / 100,
-                        'description'      => __('api.group_exchange_transaction_description', ['title' => $exchange->title]),
+                        'description'      => $toFund
+                            ? __('group_exchange.ledger.to_fund', ['title' => $exchange->title])
+                            : __('api.group_exchange_transaction_description', ['title' => $exchange->title]),
                         'status'           => 'completed',
-                        'transaction_type' => 'exchange',
+                        'transaction_type' => $toFund ? 'donation' : 'exchange',
                         'listing_id'       => null,
                         'created_at'       => now(),
                     ]);
