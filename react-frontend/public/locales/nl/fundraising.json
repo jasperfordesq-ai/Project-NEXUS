@@ -1,0 +1,123 @@
+{
+  "tab": "Inzamelen",
+  "history": {
+    "title": "Geschiedenis",
+    "empty": "Voor deze campagne is nog niets vastgelegd.",
+    "by": "door {{name}}",
+    "actor": {
+      "community_admin": "Gemeenschapsbeheerder",
+      "org_admin": "Organisatiebeheerder",
+      "member": "Donateur",
+      "stripe": "Stripe",
+      "system": "Platform"
+    },
+    "event": {
+      "campaign_created": "Campagne aangemaakt",
+      "campaign_updated": "Campagne bewerkt",
+      "campaign_paused": "Campagne gepauzeerd",
+      "campaign_resumed": "Campagne hervat",
+      "campaign_ended": "Campagne beëindigd",
+      "campaign_organisation_set": "Organisatie ingesteld",
+      "donation_started": "Gift gestart",
+      "donation_paid": "Gift betaald",
+      "donation_failed": "Betaling mislukt",
+      "donation_payment_not_started": "Betaling kon niet starten",
+      "donation_refund_requested": "Terugbetaling aangevraagd",
+      "donation_refunded": "Gift terugbetaald",
+      "donation_partially_refunded": "Gift deels terugbetaald",
+      "handover_recorded": "Overdracht vastgelegd",
+      "handover_confirmed": "Overdracht bevestigd",
+      "handover_cancelled": "Overdracht geannuleerd"
+    },
+    "field": {
+      "title": "Titel",
+      "description": "Beschrijving",
+      "start_date": "Startdatum",
+      "end_date": "Einddatum",
+      "goal_amount": "Doel",
+      "target_hours": "Doeluren",
+      "organization_id": "Organisatie"
+    },
+    "change": "{{field}} gewijzigd van {{from}} naar {{to}}",
+    "empty_value": "(geen)",
+    "gift_number": "Gift nr. {{number}}",
+    "stripe_reference": "Stripe-kenmerk {{id}}",
+    "reason": "Reden: {{reason}}"
+  },
+  "handovers": {
+    "title": "Overdrachten",
+    "raised": "Opgehaald",
+    "handed_over": "Doorgegeven",
+    "still_held": "Nog in beheer",
+    "empty": "Er is nog geen geld doorgegeven.",
+    "record": "Overdracht vastleggen",
+    "amount": "Bedrag",
+    "date": "Datum van doorgeven",
+    "method": "Hoe het is doorgegeven",
+    "methods": {
+      "bank_transfer": "Bankoverschrijving",
+      "cheque": "Cheque",
+      "cash": "Contant",
+      "other": "Anders"
+    },
+    "reference": "Betalingskenmerk",
+    "note": "Notitie (optioneel)",
+    "save": "Overdracht vastleggen",
+    "cancel_action": "Overdracht annuleren",
+    "cancel_reason": "Waarom wordt deze geannuleerd?",
+    "cancel_confirm": "Annuleren",
+    "confirm_action": "Ontvangst bevestigen",
+    "status": {
+      "recorded": "Wacht op bevestiging",
+      "confirmed": "Bevestigd",
+      "cancelled": "Geannuleerd"
+    },
+    "recorded_by": "Vastgelegd door {{name}}",
+    "confirmed_by": "Bevestigd door {{name}}",
+    "cancelled_by": "Geannuleerd door {{name}}",
+    "saved": "Overdracht vastgelegd. De organisatie is op de hoogte gebracht.",
+    "cancelled": "Overdracht geannuleerd.",
+    "confirmed": "Bedankt, ontvangst bevestigd.",
+    "community_wide": "Deze campagne is voor de hele gemeenschap, dus er valt niets door te geven.",
+    "permanent_note": "Overdrachten kunnen niet worden bewerkt of verwijderd. Klopt er een niet, annuleer hem dan met een reden en leg hem opnieuw vast.",
+    "over_held": "Dat is meer dan deze campagne nog in beheer heeft ({{held}})."
+  },
+  "org": {
+    "intro": "Campagnes die u hier start, gaan meteen live en zamelen geld in voor uw organisatie. De giften worden beheerd door de gemeenschap, die ze aan u doorgeeft.",
+    "new_campaign": "Nieuwe campagne",
+    "edit_campaign": "Campagne bewerken",
+    "empty": "Uw organisatie heeft nog geen inzamelingscampagnes.",
+    "gifts": "Giften",
+    "no_gifts": "Nog geen giften.",
+    "anonymous": "Anoniem",
+    "method": {
+      "card": "Kaart",
+      "pledge": "Toezegging"
+    },
+    "pause": "Pauzeren",
+    "resume": "Hervatten",
+    "end": "Campagne beëindigen",
+    "end_confirm": "Deze campagne beëindigen? Leden kunnen er dan niet meer aan geven.",
+    "saved": "Campagne opgeslagen.",
+    "load_failed": "Uw campagnes konden niet worden geladen.",
+    "status": {
+      "active": "Actief",
+      "upcoming": "Binnenkort",
+      "paused": "Gepauzeerd",
+      "ended": "Beëindigd"
+    },
+    "raised_of_goal": "{{raised}} opgehaald van {{goal}}",
+    "accepting": "Neemt giften aan",
+    "save": "Campagne opslaan",
+    "show_details": "Details tonen",
+    "hide_details": "Details verbergen"
+  },
+  "admin": {
+    "organisation_locked": "Deze campagne heeft al giften ontvangen, dus de organisatie kan niet meer worden gewijzigd.",
+    "status_paused": "Gepauzeerd"
+  },
+  "member": {
+    "raising_for_link": "Zamelt geld in voor {{organisation}}",
+    "held_on_behalf": "Beheerd door {{community}} namens {{organisation}}."
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "tab": "جمع التبرعات",
+  "history": {
+    "title": "السجل",
+    "empty": "لم يُسجَّل أي شيء لهذه الحملة بعد.",
+    "by": "بواسطة {{name}}",
+    "actor": {
+      "community_admin": "مشرف المجتمع",
+      "org_admin": "مشرف المنظمة",
+      "member": "متبرع",
+      "stripe": "Stripe",
+      "system": "المنصة"
+    },
+    "event": {
+      "campaign_created": "أُنشئت الحملة",
+      "campaign_updated": "عُدّلت الحملة",
+      "campaign_paused": "أُوقفت الحملة مؤقتًا",
+      "campaign_resumed": "استُؤنفت الحملة",
+      "campaign_ended": "انتهت الحملة",
+      "campaign_organisation_set": "حُدّدت المنظمة",
+      "donation_started": "بدأ التبرع",
+      "donation_paid": "دُفع التبرع",
+      "donation_failed": "فشل الدفع",
+      "donation_payment_not_started": "تعذّر بدء الدفع",
+      "donation_refund_requested": "طُلب الاسترداد",
+      "donation_refunded": "استُرد التبرع",
+      "donation_partially_refunded": "استُرد جزء من التبرع",
+      "handover_recorded": "سُجّل التسليم",
+      "handover_confirmed": "تأكّد التسليم",
+      "handover_cancelled": "أُلغي التسليم"
+    },
+    "field": {
+      "title": "العنوان",
+      "description": "الوصف",
+      "start_date": "تاريخ البدء",
+      "end_date": "تاريخ الانتهاء",
+      "goal_amount": "الهدف",
+      "target_hours": "الساعات المستهدفة",
+      "organization_id": "المنظمة"
+    },
+    "change": "تغيّر {{field}} من {{from}} إلى {{to}}",
+    "empty_value": "(لا شيء)",
+    "gift_number": "التبرع رقم {{number}}",
+    "stripe_reference": "مرجع Stripe {{id}}",
+    "reason": "السبب: {{reason}}"
+  },
+  "handovers": {
+    "title": "عمليات التسليم",
+    "raised": "المبلغ المجموع",
+    "handed_over": "المُسلَّم",
+    "still_held": "لا يزال محتفظًا به",
+    "empty": "لم يُسلَّم أي مال بعد.",
+    "record": "تسجيل عملية تسليم",
+    "amount": "المبلغ",
+    "date": "تاريخ التسليم",
+    "method": "طريقة التسليم",
+    "methods": {
+      "bank_transfer": "تحويل بنكي",
+      "cheque": "شيك",
+      "cash": "نقدًا",
+      "other": "أخرى"
+    },
+    "reference": "مرجع الدفع",
+    "note": "ملاحظة (اختياري)",
+    "save": "تسجيل التسليم",
+    "cancel_action": "إلغاء التسليم",
+    "cancel_reason": "لماذا يُلغى؟",
+    "cancel_confirm": "ألغِه",
+    "confirm_action": "تأكيد الاستلام",
+    "status": {
+      "recorded": "بانتظار التأكيد",
+      "confirmed": "مؤكَّد",
+      "cancelled": "ملغى"
+    },
+    "recorded_by": "سجّله {{name}}",
+    "confirmed_by": "أكّده {{name}}",
+    "cancelled_by": "ألغاه {{name}}",
+    "saved": "سُجّل التسليم وأُبلغت المنظمة.",
+    "cancelled": "أُلغي التسليم.",
+    "confirmed": "شكرًا، تم تأكيد الاستلام.",
+    "community_wide": "هذه الحملة للمجتمع بأكمله، لذا لا يوجد ما يُسلَّم.",
+    "permanent_note": "لا يمكن تعديل عمليات التسليم أو حذفها. إذا كانت إحداها خاطئة، فألغِها مع ذكر السبب وسجّلها من جديد.",
+    "over_held": "هذا أكثر مما لا تزال هذه الحملة تحتفظ به ({{held}})."
+  },
+  "org": {
+    "intro": "الحملات التي تبدؤها هنا تصبح متاحة فورًا وتجمع المال لمنظمتك. يحتفظ المجتمع بالتبرعات ثم يسلّمها إليك.",
+    "new_campaign": "حملة جديدة",
+    "edit_campaign": "تعديل الحملة",
+    "empty": "لا توجد لدى منظمتك حملات لجمع التبرعات بعد.",
+    "gifts": "التبرعات",
+    "no_gifts": "لا توجد تبرعات بعد.",
+    "anonymous": "مجهول",
+    "method": {
+      "card": "بطاقة",
+      "pledge": "تعهّد"
+    },
+    "pause": "إيقاف مؤقت",
+    "resume": "استئناف",
+    "end": "إنهاء الحملة",
+    "end_confirm": "هل تريد إنهاء هذه الحملة؟ لن يتمكن الأعضاء من التبرع لها بعد ذلك.",
+    "saved": "حُفظت الحملة.",
+    "load_failed": "تعذّر تحميل حملاتك.",
+    "status": {
+      "active": "جارية",
+      "upcoming": "قريبًا",
+      "paused": "متوقفة مؤقتًا",
+      "ended": "منتهية"
+    },
+    "raised_of_goal": "جُمع {{raised}} من {{goal}}",
+    "accepting": "تقبل التبرعات",
+    "save": "حفظ الحملة",
+    "show_details": "إظهار التفاصيل",
+    "hide_details": "إخفاء التفاصيل"
+  },
+  "admin": {
+    "organisation_locked": "تلقّت هذه الحملة تبرعات بالفعل، لذا لا يمكن تغيير منظمتها.",
+    "status_paused": "متوقفة مؤقتًا"
+  },
+  "member": {
+    "raising_for_link": "تجمع المال لصالح {{organisation}}",
+    "held_on_behalf": "يحتفظ به {{community}} نيابةً عن {{organisation}}."
+  }
+}

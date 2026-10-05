@@ -1,0 +1,123 @@
+{
+  "tab": "Tiomsú airgid",
+  "history": {
+    "title": "Stair",
+    "empty": "Níor taifeadadh aon rud don fheachtas seo fós.",
+    "by": "ag {{name}}",
+    "actor": {
+      "community_admin": "Riarthóir pobail",
+      "org_admin": "Riarthóir eagraíochta",
+      "member": "Deontóir",
+      "stripe": "Stripe",
+      "system": "Ardán"
+    },
+    "event": {
+      "campaign_created": "Feachtas cruthaithe",
+      "campaign_updated": "Feachtas curtha in eagar",
+      "campaign_paused": "Feachtas curtha ar sos",
+      "campaign_resumed": "Feachtas atosaithe",
+      "campaign_ended": "Feachtas críochnaithe",
+      "campaign_organisation_set": "Eagraíocht socraithe",
+      "donation_started": "Bronntanas tosaithe",
+      "donation_paid": "Bronntanas íoctha",
+      "donation_failed": "Theip ar an íocaíocht",
+      "donation_payment_not_started": "Níorbh fhéidir an íocaíocht a thosú",
+      "donation_refund_requested": "Aisíocaíocht iarrtha",
+      "donation_refunded": "Bronntanas aisíoctha",
+      "donation_partially_refunded": "Bronntanas aisíoctha go páirteach",
+      "handover_recorded": "Aistriú taifeadta",
+      "handover_confirmed": "Aistriú deimhnithe",
+      "handover_cancelled": "Aistriú cealaithe"
+    },
+    "field": {
+      "title": "Teideal",
+      "description": "Cur síos",
+      "start_date": "Dáta tosaithe",
+      "end_date": "Dáta deiridh",
+      "goal_amount": "Sprioc",
+      "target_hours": "Uaireanta sprice",
+      "organization_id": "Eagraíocht"
+    },
+    "change": "Athraíodh {{field}} ó {{from}} go {{to}}",
+    "empty_value": "(dada)",
+    "gift_number": "Bronntanas uimh. {{number}}",
+    "stripe_reference": "Tagairt Stripe {{id}}",
+    "reason": "Cúis: {{reason}}"
+  },
+  "handovers": {
+    "title": "Aistrithe",
+    "raised": "Bailithe",
+    "handed_over": "Curtha ar aghaidh",
+    "still_held": "Fós ar coimeád",
+    "empty": "Níor cuireadh aon airgead ar aghaidh fós.",
+    "record": "Taifead aistriú",
+    "amount": "Méid",
+    "date": "Dáta an aistrithe",
+    "method": "Conas a cuireadh ar aghaidh é",
+    "methods": {
+      "bank_transfer": "Aistriú bainc",
+      "cheque": "Seic",
+      "cash": "Airgead tirim",
+      "other": "Eile"
+    },
+    "reference": "Tagairt íocaíochta",
+    "note": "Nóta (roghnach)",
+    "save": "Taifead an t-aistriú",
+    "cancel_action": "Cealaigh an t-aistriú",
+    "cancel_reason": "Cén fáth a bhfuil sé á chealú?",
+    "cancel_confirm": "Cealaigh é",
+    "confirm_action": "Deimhnigh go bhfuarthas é",
+    "status": {
+      "recorded": "Ag fanacht le deimhniú",
+      "confirmed": "Deimhnithe",
+      "cancelled": "Cealaithe"
+    },
+    "recorded_by": "Taifeadta ag {{name}}",
+    "confirmed_by": "Deimhnithe ag {{name}}",
+    "cancelled_by": "Cealaithe ag {{name}}",
+    "saved": "Aistriú taifeadta. Cuireadh an eagraíocht ar an eolas.",
+    "cancelled": "Aistriú cealaithe.",
+    "confirmed": "Go raibh maith agat, deimhníodh go bhfuarthas é.",
+    "community_wide": "Is don phobal ar fad an feachtas seo, mar sin níl aon rud le cur ar aghaidh.",
+    "permanent_note": "Ní féidir aistrithe a chur in eagar ná a scriosadh. Má tá ceann mícheart, cealaigh é le cúis agus taifead arís é.",
+    "over_held": "Is mó é sin ná a bhfuil fós ag an bhfeachtas seo ({{held}})."
+  },
+  "org": {
+    "intro": "Bíonn na feachtais a reáchtálann tú anseo beo láithreach agus bailíonn siad airgead do d’eagraíocht. Coimeádann an pobal na bronntanais agus cuireann sé ar aghaidh chugat iad.",
+    "new_campaign": "Feachtas nua",
+    "edit_campaign": "Cuir an feachtas in eagar",
+    "empty": "Níl aon fheachtas tiomsaithe airgid ag d’eagraíocht fós.",
+    "gifts": "Bronntanais",
+    "no_gifts": "Gan bhronntanais fós.",
+    "anonymous": "Gan ainm",
+    "method": {
+      "card": "Cárta",
+      "pledge": "Gealltanas"
+    },
+    "pause": "Cuir ar sos",
+    "resume": "Atosaigh",
+    "end": "Críochnaigh an feachtas",
+    "end_confirm": "An bhfuil tú ag iarraidh an feachtas seo a chríochnú? Ní bheidh baill in ann tabhairt dó a thuilleadh.",
+    "saved": "Feachtas sábháilte.",
+    "load_failed": "Níorbh fhéidir d’fheachtais a lódáil.",
+    "status": {
+      "active": "Beo",
+      "upcoming": "Le teacht",
+      "paused": "Ar sos",
+      "ended": "Críochnaithe"
+    },
+    "raised_of_goal": "{{raised}} bailithe as {{goal}}",
+    "accepting": "Ag glacadh le bronntanais",
+    "save": "Sábháil an feachtas",
+    "show_details": "Taispeáin sonraí",
+    "hide_details": "Folaigh sonraí"
+  },
+  "admin": {
+    "organisation_locked": "Fuair an feachtas seo bronntanais cheana féin, mar sin ní féidir a eagraíocht a athrú.",
+    "status_paused": "Ar sos"
+  },
+  "member": {
+    "raising_for_link": "Ag bailiú airgid do {{organisation}}",
+    "held_on_behalf": "Á choimeád ag {{community}} thar ceann {{organisation}}."
+  }
+}

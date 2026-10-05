@@ -1,0 +1,123 @@
+{
+  "tab": "Recaudación",
+  "history": {
+    "title": "Historial",
+    "empty": "Todavía no se ha registrado nada para esta campaña.",
+    "by": "por {{name}}",
+    "actor": {
+      "community_admin": "Admin de la comunidad",
+      "org_admin": "Admin de la organización",
+      "member": "Donante",
+      "stripe": "Stripe",
+      "system": "Plataforma"
+    },
+    "event": {
+      "campaign_created": "Campaña creada",
+      "campaign_updated": "Campaña editada",
+      "campaign_paused": "Campaña en pausa",
+      "campaign_resumed": "Campaña reanudada",
+      "campaign_ended": "Campaña finalizada",
+      "campaign_organisation_set": "Organización asignada",
+      "donation_started": "Donación iniciada",
+      "donation_paid": "Donación pagada",
+      "donation_failed": "Pago fallido",
+      "donation_payment_not_started": "No se pudo iniciar el pago",
+      "donation_refund_requested": "Reembolso solicitado",
+      "donation_refunded": "Donación reembolsada",
+      "donation_partially_refunded": "Donación reembolsada en parte",
+      "handover_recorded": "Entrega registrada",
+      "handover_confirmed": "Entrega confirmada",
+      "handover_cancelled": "Entrega cancelada"
+    },
+    "field": {
+      "title": "Título",
+      "description": "Descripción",
+      "start_date": "Fecha de inicio",
+      "end_date": "Fecha de fin",
+      "goal_amount": "Objetivo",
+      "target_hours": "Horas objetivo",
+      "organization_id": "Organización"
+    },
+    "change": "{{field}} cambió de {{from}} a {{to}}",
+    "empty_value": "(ninguno)",
+    "gift_number": "Donación n.º {{number}}",
+    "stripe_reference": "Referencia de Stripe {{id}}",
+    "reason": "Motivo: {{reason}}"
+  },
+  "handovers": {
+    "title": "Entregas",
+    "raised": "Recaudado",
+    "handed_over": "Entregado",
+    "still_held": "Aún retenido",
+    "empty": "Todavía no se ha entregado dinero.",
+    "record": "Registrar una entrega",
+    "amount": "Importe",
+    "date": "Fecha de entrega",
+    "method": "Forma de entrega",
+    "methods": {
+      "bank_transfer": "Transferencia bancaria",
+      "cheque": "Cheque",
+      "cash": "Efectivo",
+      "other": "Otro"
+    },
+    "reference": "Referencia de pago",
+    "note": "Nota (opcional)",
+    "save": "Registrar entrega",
+    "cancel_action": "Cancelar entrega",
+    "cancel_reason": "¿Por qué se cancela?",
+    "cancel_confirm": "Cancelarla",
+    "confirm_action": "Confirmar recepción",
+    "status": {
+      "recorded": "Pendiente de confirmación",
+      "confirmed": "Confirmada",
+      "cancelled": "Cancelada"
+    },
+    "recorded_by": "Registrada por {{name}}",
+    "confirmed_by": "Confirmada por {{name}}",
+    "cancelled_by": "Cancelada por {{name}}",
+    "saved": "Entrega registrada. Se ha avisado a la organización.",
+    "cancelled": "Entrega cancelada.",
+    "confirmed": "Gracias, recepción confirmada.",
+    "community_wide": "Esta campaña es para toda la comunidad, así que no hay nada que entregar.",
+    "permanent_note": "Las entregas no se pueden editar ni eliminar. Si una es incorrecta, cancélela indicando el motivo y regístrela de nuevo.",
+    "over_held": "Eso es más de lo que esta campaña aún conserva ({{held}})."
+  },
+  "org": {
+    "intro": "Las campañas que inicie aquí se publican de inmediato y recaudan dinero para su organización. Las donaciones las guarda la comunidad, que se las entrega a ustedes.",
+    "new_campaign": "Nueva campaña",
+    "edit_campaign": "Editar campaña",
+    "empty": "Su organización aún no tiene campañas de recaudación.",
+    "gifts": "Donaciones",
+    "no_gifts": "Todavía no hay donaciones.",
+    "anonymous": "Anónimo",
+    "method": {
+      "card": "Tarjeta",
+      "pledge": "Promesa"
+    },
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "end": "Finalizar campaña",
+    "end_confirm": "¿Finalizar esta campaña? Los miembros ya no podrán donar.",
+    "saved": "Campaña guardada.",
+    "load_failed": "No se pudieron cargar sus campañas.",
+    "status": {
+      "active": "Activa",
+      "upcoming": "Próximamente",
+      "paused": "En pausa",
+      "ended": "Finalizada"
+    },
+    "raised_of_goal": "{{raised}} recaudados de {{goal}}",
+    "accepting": "Acepta donaciones",
+    "save": "Guardar campaña",
+    "show_details": "Mostrar detalles",
+    "hide_details": "Ocultar detalles"
+  },
+  "admin": {
+    "organisation_locked": "Esta campaña ya ha recibido donaciones, así que no se puede cambiar su organización.",
+    "status_paused": "En pausa"
+  },
+  "member": {
+    "raising_for_link": "Recaudando para {{organisation}}",
+    "held_on_behalf": "Lo guarda {{community}} en nombre de {{organisation}}."
+  }
+}

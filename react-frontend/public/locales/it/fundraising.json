@@ -1,0 +1,123 @@
+{
+  "tab": "Raccolta fondi",
+  "history": {
+    "title": "Cronologia",
+    "empty": "Non è stato ancora registrato nulla per questa campagna.",
+    "by": "da {{name}}",
+    "actor": {
+      "community_admin": "Amministratore della comunità",
+      "org_admin": "Amministratore dell’organizzazione",
+      "member": "Donatore",
+      "stripe": "Stripe",
+      "system": "Piattaforma"
+    },
+    "event": {
+      "campaign_created": "Campagna creata",
+      "campaign_updated": "Campagna modificata",
+      "campaign_paused": "Campagna in pausa",
+      "campaign_resumed": "Campagna ripresa",
+      "campaign_ended": "Campagna terminata",
+      "campaign_organisation_set": "Organizzazione impostata",
+      "donation_started": "Donazione avviata",
+      "donation_paid": "Donazione pagata",
+      "donation_failed": "Pagamento non riuscito",
+      "donation_payment_not_started": "Impossibile avviare il pagamento",
+      "donation_refund_requested": "Rimborso richiesto",
+      "donation_refunded": "Donazione rimborsata",
+      "donation_partially_refunded": "Donazione rimborsata in parte",
+      "handover_recorded": "Trasferimento registrato",
+      "handover_confirmed": "Trasferimento confermato",
+      "handover_cancelled": "Trasferimento annullato"
+    },
+    "field": {
+      "title": "Titolo",
+      "description": "Descrizione",
+      "start_date": "Data di inizio",
+      "end_date": "Data di fine",
+      "goal_amount": "Obiettivo",
+      "target_hours": "Ore obiettivo",
+      "organization_id": "Organizzazione"
+    },
+    "change": "{{field}} modificato da {{from}} a {{to}}",
+    "empty_value": "(nessuno)",
+    "gift_number": "Donazione n. {{number}}",
+    "stripe_reference": "Riferimento Stripe {{id}}",
+    "reason": "Motivo: {{reason}}"
+  },
+  "handovers": {
+    "title": "Trasferimenti",
+    "raised": "Raccolto",
+    "handed_over": "Trasferito",
+    "still_held": "Ancora detenuto",
+    "empty": "Non è stato ancora trasferito denaro.",
+    "record": "Registra un trasferimento",
+    "amount": "Importo",
+    "date": "Data del trasferimento",
+    "method": "Modalità di trasferimento",
+    "methods": {
+      "bank_transfer": "Bonifico bancario",
+      "cheque": "Assegno",
+      "cash": "Contanti",
+      "other": "Altro"
+    },
+    "reference": "Riferimento di pagamento",
+    "note": "Nota (facoltativa)",
+    "save": "Registra trasferimento",
+    "cancel_action": "Annulla trasferimento",
+    "cancel_reason": "Perché viene annullato?",
+    "cancel_confirm": "Annullalo",
+    "confirm_action": "Conferma ricezione",
+    "status": {
+      "recorded": "In attesa di conferma",
+      "confirmed": "Confermato",
+      "cancelled": "Annullato"
+    },
+    "recorded_by": "Registrato da {{name}}",
+    "confirmed_by": "Confermato da {{name}}",
+    "cancelled_by": "Annullato da {{name}}",
+    "saved": "Trasferimento registrato. L’organizzazione è stata avvisata.",
+    "cancelled": "Trasferimento annullato.",
+    "confirmed": "Grazie, ricezione confermata.",
+    "community_wide": "Questa campagna è per l’intera comunità, quindi non c’è nulla da trasferire.",
+    "permanent_note": "I trasferimenti non possono essere modificati né eliminati. Se uno è sbagliato, annullalo indicando il motivo e registralo di nuovo.",
+    "over_held": "È più di quanto questa campagna detenga ancora ({{held}})."
+  },
+  "org": {
+    "intro": "Le campagne che avvii qui sono subito attive e raccolgono fondi per la tua organizzazione. Le donazioni sono custodite dalla comunità, che te le trasferisce.",
+    "new_campaign": "Nuova campagna",
+    "edit_campaign": "Modifica campagna",
+    "empty": "La tua organizzazione non ha ancora campagne di raccolta fondi.",
+    "gifts": "Donazioni",
+    "no_gifts": "Nessuna donazione per ora.",
+    "anonymous": "Anonimo",
+    "method": {
+      "card": "Carta",
+      "pledge": "Promessa"
+    },
+    "pause": "Metti in pausa",
+    "resume": "Riprendi",
+    "end": "Termina campagna",
+    "end_confirm": "Terminare questa campagna? I membri non potranno più donare.",
+    "saved": "Campagna salvata.",
+    "load_failed": "Impossibile caricare le tue campagne.",
+    "status": {
+      "active": "Attiva",
+      "upcoming": "In arrivo",
+      "paused": "In pausa",
+      "ended": "Terminata"
+    },
+    "raised_of_goal": "{{raised}} raccolti su {{goal}}",
+    "accepting": "Accetta donazioni",
+    "save": "Salva campagna",
+    "show_details": "Mostra dettagli",
+    "hide_details": "Nascondi dettagli"
+  },
+  "admin": {
+    "organisation_locked": "Questa campagna ha già ricevuto donazioni, quindi la sua organizzazione non può essere cambiata.",
+    "status_paused": "In pausa"
+  },
+  "member": {
+    "raising_for_link": "Raccolta fondi per {{organisation}}",
+    "held_on_behalf": "Custodito da {{community}} per conto di {{organisation}}."
+  }
+}

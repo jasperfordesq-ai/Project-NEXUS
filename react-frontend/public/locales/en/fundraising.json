@@ -1,0 +1,123 @@
+{
+  "tab": "Fundraising",
+  "history": {
+    "title": "History",
+    "empty": "Nothing has been recorded for this campaign yet.",
+    "by": "by {{name}}",
+    "actor": {
+      "community_admin": "Community admin",
+      "org_admin": "Organisation admin",
+      "member": "Donor",
+      "stripe": "Stripe",
+      "system": "Platform"
+    },
+    "event": {
+      "campaign_created": "Campaign created",
+      "campaign_updated": "Campaign edited",
+      "campaign_paused": "Campaign paused",
+      "campaign_resumed": "Campaign resumed",
+      "campaign_ended": "Campaign ended",
+      "campaign_organisation_set": "Organisation set",
+      "donation_started": "Gift started",
+      "donation_paid": "Gift paid",
+      "donation_failed": "Payment failed",
+      "donation_payment_not_started": "Payment could not start",
+      "donation_refund_requested": "Refund requested",
+      "donation_refunded": "Gift refunded",
+      "donation_partially_refunded": "Gift partly refunded",
+      "handover_recorded": "Hand-over recorded",
+      "handover_confirmed": "Hand-over confirmed",
+      "handover_cancelled": "Hand-over cancelled"
+    },
+    "field": {
+      "title": "Title",
+      "description": "Description",
+      "start_date": "Start date",
+      "end_date": "End date",
+      "goal_amount": "Goal",
+      "target_hours": "Target hours",
+      "organization_id": "Organisation"
+    },
+    "change": "{{field}} changed from {{from}} to {{to}}",
+    "empty_value": "(none)",
+    "gift_number": "Gift #{{number}}",
+    "stripe_reference": "Stripe reference {{id}}",
+    "reason": "Reason: {{reason}}"
+  },
+  "handovers": {
+    "title": "Hand-overs",
+    "raised": "Raised",
+    "handed_over": "Passed on",
+    "still_held": "Still held",
+    "empty": "No money has been passed on yet.",
+    "record": "Record a hand-over",
+    "amount": "Amount",
+    "date": "Date passed on",
+    "method": "How it was passed on",
+    "methods": {
+      "bank_transfer": "Bank transfer",
+      "cheque": "Cheque",
+      "cash": "Cash",
+      "other": "Other"
+    },
+    "reference": "Payment reference",
+    "note": "Note (optional)",
+    "save": "Record hand-over",
+    "cancel_action": "Cancel hand-over",
+    "cancel_reason": "Why is this being cancelled?",
+    "cancel_confirm": "Cancel it",
+    "confirm_action": "Confirm received",
+    "status": {
+      "recorded": "Waiting for confirmation",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "recorded_by": "Recorded by {{name}}",
+    "confirmed_by": "Confirmed by {{name}}",
+    "cancelled_by": "Cancelled by {{name}}",
+    "saved": "Hand-over recorded. The organisation has been told.",
+    "cancelled": "Hand-over cancelled.",
+    "confirmed": "Thank you — receipt confirmed.",
+    "community_wide": "This campaign is for the whole community, so there is nothing to pass on.",
+    "permanent_note": "Hand-overs cannot be edited or deleted. If one is wrong, cancel it with a reason and record it again.",
+    "over_held": "That is more than this campaign still holds ({{held}})."
+  },
+  "org": {
+    "intro": "Campaigns you run here go live straight away and raise money for your organisation. Gifts are held by the community, which passes them on to you.",
+    "new_campaign": "New campaign",
+    "edit_campaign": "Edit campaign",
+    "empty": "Your organisation has no fundraising campaigns yet.",
+    "gifts": "Gifts",
+    "no_gifts": "No gifts yet.",
+    "anonymous": "Anonymous",
+    "method": {
+      "card": "Card",
+      "pledge": "Pledge"
+    },
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End campaign",
+    "end_confirm": "End this campaign? Members will no longer be able to give to it.",
+    "saved": "Campaign saved.",
+    "load_failed": "Could not load your campaigns.",
+    "status": {
+      "active": "Live",
+      "upcoming": "Coming up",
+      "paused": "Paused",
+      "ended": "Ended"
+    },
+    "raised_of_goal": "{{raised}} raised of {{goal}}",
+    "accepting": "Accepting gifts",
+    "save": "Save campaign",
+    "show_details": "Show details",
+    "hide_details": "Hide details"
+  },
+  "admin": {
+    "organisation_locked": "This campaign has already received gifts, so its organisation cannot be changed.",
+    "status_paused": "Paused"
+  },
+  "member": {
+    "raising_for_link": "Raising money for {{organisation}}",
+    "held_on_behalf": "Held by {{community}} on behalf of {{organisation}}."
+  }
+}
