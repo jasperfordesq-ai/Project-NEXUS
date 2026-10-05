@@ -694,7 +694,7 @@ class SafeguardingService
      * @param int|null $excludeAboutUserId F-507: omit incidents about this person
      *                                     (the viewing administrator).
      */
-    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null, ?int $excludeAboutUserId = null, ?string $search = null): array
+    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null, ?int $excludeAboutUserId = null, ?string $search = null, bool $unassignedOnly = false): array
     {
         $page = max(1, $page ?? 1);
         $perPage = min(100, max(1, $perPage ?? 20));
@@ -706,6 +706,10 @@ class SafeguardingService
 
             if ($status !== null) {
                 $query->where('si.status', $status);
+            }
+            // "Nobody handling yet" — the incidents still waiting for a handler.
+            if ($unassignedOnly) {
+                $query->whereNull('si.assigned_to');
             }
 
             // Staff search: the incident's own words, its organisation, and the

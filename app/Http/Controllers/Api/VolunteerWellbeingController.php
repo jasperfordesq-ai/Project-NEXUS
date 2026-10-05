@@ -536,9 +536,10 @@ class VolunteerWellbeingController extends BaseApiController
         $perPage = $this->queryInt('per_page', 20, 1, 50);
         $search = $this->query('search');
         $search = is_string($search) ? mb_substr(trim($search), 0, 100) : null;
+        $unassignedOnly = $this->query('handler') === 'none';
 
         // F-507: an administrator never sees an incident about themselves.
-        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $this->getUserId(), $search);
+        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $this->getUserId(), $search, $unassignedOnly);
         $incidents = $result['items'] ?? [];
 
         return $this->respondWithData([

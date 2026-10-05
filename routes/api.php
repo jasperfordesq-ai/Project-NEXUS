@@ -2791,6 +2791,12 @@ Route::put('/v2/admin/volunteering/training/{id}/reject', [\App\Http\Controllers
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
     Route::get('/v2/admin/volunteering/incidents', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminIncidents']);
     Route::put('/v2/admin/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateIncident']);
+    // The case file: one page per incident, with its permanent timeline.
+    Route::get('/v2/admin/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'staffCase'])->whereNumber('id');
+    Route::post('/v2/admin/volunteering/incidents/{id}/notes', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'addNote'])->whereNumber('id');
+    Route::post('/v2/admin/volunteering/incidents/{id}/messages', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'sendMessage'])->whereNumber('id');
+    Route::post('/v2/admin/volunteering/incidents/{id}/share', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'share'])->whereNumber('id');
+    Route::delete('/v2/admin/volunteering/incidents/{id}/share', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'withdrawShare'])->whereNumber('id');
 });
 Route::get('/v2/admin/volunteering/wellbeing/alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminWellbeingAlerts']);
 Route::put('/v2/admin/volunteering/wellbeing/alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateWellbeingAlert'])->whereNumber('id');
