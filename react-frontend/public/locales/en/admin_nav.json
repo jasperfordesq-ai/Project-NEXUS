@@ -398,7 +398,7 @@
     "feed": "Feed",
     "feed_algorithm": "Feed Algorithm",
     "geocode_groups": "Geocode Groups",
-    "giving_days": "Giving Days",
+    "giving_days": "Fundraising campaigns",
     "goals": "Goals",
     "group_locations": "Group Locations",
     "group_ranking": "Group Ranking",
@@ -755,11 +755,11 @@
     "organisations": "Organisations",
     "training": "Training",
     "safeguarding": "Safeguarding & incidents",
-    "giving_days": "Giving days",
+    "giving_days": "Fundraising campaigns",
     "settings": "Settings",
     "group_day_to_day": "Day to day",
     "group_organisations_safety": "Organisations & safety",
-    "group_giving": "Giving",
+    "group_giving": "Fundraising",
     "group_setup": "Setup",
     "keywords": {
       "applications": "approvals|volunteer applications|sign-ups|pending volunteers|opportunities",
@@ -770,7 +770,7 @@
       "organisations": "organizations|charities|charity|nonprofits|NGOs|partner organisations|volunteer organisations",
       "training": "certificates|certifications|qualifications|compliance",
       "safeguarding": "incidents|concerns|DLP|designated liaison person|reports",
-      "giving_days": "fundraising|donations|appeals|campaigns",
+      "giving_days": "fundraising|donations|appeals|campaigns|giving days",
       "settings": "custom fields|reminders|webhooks|configuration"
     }
   },

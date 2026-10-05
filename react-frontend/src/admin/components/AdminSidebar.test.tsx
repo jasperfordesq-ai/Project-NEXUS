@@ -420,7 +420,7 @@ describe('AdminSidebar', () => {
     ['Organisations', '/test/admin/volunteering/organizations'],
     ['Training', '/test/admin/volunteering/training'],
     ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
-    ['Giving days', '/test/admin/volunteering/giving-days'],
+    ['Fundraising campaigns', '/test/admin/volunteering/giving-days'],
     ['Donation Refunds', '/test/admin/volunteering/donations'],
     ['Settings', '/test/admin/volunteering/config'],
   ];
