@@ -232,6 +232,8 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
       } else {
         // The server says which rule was broken (not a member of this
         // community, account not active…) in the community's language.
+        // admin-i18n-ignore: localized server message — VolunteerWellbeingController::assignDlp
+        // renders every refusal through __('api.vol_dlp_*') in the caller's locale.
         setDlpError(res.error || t('volunteering.failed_to_assign_dlp'));
       }
     } catch {

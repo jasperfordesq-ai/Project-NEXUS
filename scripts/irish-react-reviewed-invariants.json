@@ -773,6 +773,10 @@
       "value": "MatchRank & CommunityRank",
       "reason": "reviewed-locale-invariant"
     },
+    "admin_dashboard.attention.open_queue": {
+      "value": "{{queue}}: {{count}}",
+      "reason": "placeholder-number-or-display-format"
+    },
     "admin_deliverability.common.ok": {
       "value": "OK",
       "reason": "protocol-acronym-or-identifier"
@@ -1985,6 +1989,14 @@
       "value": "⌘K",
       "reason": "keyboard-or-control-label"
     },
+    "broker.header.search_shortcut_ctrl": {
+      "value": "Ctrl",
+      "reason": "keyboard-or-control-label"
+    },
+    "broker.header.search_shortcut_key": {
+      "value": "K",
+      "reason": "keyboard-or-control-label"
+    },
     "broker.palette.close_key": {
       "value": "esc",
       "reason": "keyboard-or-control-label"
@@ -1992,6 +2004,10 @@
     "broker.vetting.attestation_access_ni": {
       "value": "AccessNI",
       "reason": "reviewed-locale-invariant"
+    },
+    "broker.member_detail.edit_phone_placeholder": {
+      "value": "+1 555 123 4567",
+      "reason": "placeholder-number-or-display-format"
     },
     "broker.messages.detail_none": {
       "value": "—",
@@ -2008,6 +2024,14 @@
     "broker.matching.distance_km": {
       "value": "{{km}} km",
       "reason": "reviewed-locale-invariant"
+    },
+    "broker.inbox.message_between": {
+      "value": "{{sender}} → {{receiver}}",
+      "reason": "placeholder-number-or-display-format"
+    },
+    "broker.inbox.match_between": {
+      "value": "{{a}} ↔ {{b}}",
+      "reason": "placeholder-number-or-display-format"
     },
     "caring_community.providers.filter_spitex": {
       "value": "Spitex",
