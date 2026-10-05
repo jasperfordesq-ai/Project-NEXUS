@@ -48,7 +48,8 @@ function requirementForHref(href: string): Requirement | null {
     const fromTable = requirementForRoute(routeName);
     if (fromTable) return fromTable;
   }
-  if (/\/(?:group-exchange|group-exchanges)/.test(path)) return { features: ['groups', 'group_exchanges'] };
+  // Group exchanges are not part of Groups: their own switch only (HELP-12).
+  if (/\/(?:group-exchange|group-exchanges)/.test(path)) return { features: ['group_exchanges'] };
   if (/\/(?:group|groups)/.test(path)) return { features: ['groups'] };
   if (/\/(?:event|events)/.test(path)) return { features: ['events'] };
   if (/\/(?:volunteering|donation)/.test(path)) return { features: ['volunteering'] };

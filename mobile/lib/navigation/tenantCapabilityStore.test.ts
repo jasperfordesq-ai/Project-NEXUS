@@ -75,6 +75,21 @@ describe('notification destination tenant capabilities', () => {
     expect(isNativeHrefDisabled(href)).toBe(true);
   });
 
+  // HELP-12: group exchanges are not part of Groups (owner decision, 5 Oct 2026).
+  // A web-shaped link to one used to demand both switches, so a community with
+  // Groups off and group exchanges on could not open its own exchanges.
+  it.each(['/group-exchanges/4', '/group-exchanges', '/group-exchange/4'])(
+    'opens %s where Groups is off but group exchanges are on',
+    (href) => {
+      setNavigationTenantCapabilities({
+        features: { groups: false, group_exchanges: true },
+        modules: {},
+      });
+
+      expect(isNativeHrefDisabled(href)).toBe(false);
+    },
+  );
+
   it('allows a destination when every declared requirement is enabled', () => {
     setNavigationTenantCapabilities({
       features: { direct_messaging: true, polls: true },
