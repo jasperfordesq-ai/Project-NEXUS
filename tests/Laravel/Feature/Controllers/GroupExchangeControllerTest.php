@@ -100,6 +100,64 @@ class GroupExchangeControllerTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  Feature switch (HELP-12)
+    // ------------------------------------------------------------------
+
+    /** @param array<string, bool> $overrides */
+    private function setTenantFeatures(array $overrides): void
+    {
+        $tenant = DB::table('tenants')->where('id', $this->testTenantId)->first();
+        $features = [];
+        if ($tenant && ! empty($tenant->features)) {
+            $decoded = is_string($tenant->features) ? json_decode($tenant->features, true) : $tenant->features;
+            $features = is_array($decoded) ? $decoded : [];
+        }
+        DB::table('tenants')
+            ->where('id', $this->testTenantId)
+            ->update(['features' => json_encode(array_merge($features, $overrides))]);
+        \App\Core\TenantContext::setById($this->testTenantId);
+    }
+
+    /**
+     * Group exchanges have their own switch, `group_exchanges`, and every client
+     * (React, web-uk, the Expo app) shows the screens on that switch. The API used
+     * to gate them on `groups` instead, so a community with community groups off
+     * showed members the form and then refused every save with "Service
+     * unavailable" (HELP-12, Feminist Marketplace).
+     */
+    public function test_group_exchanges_work_when_community_groups_are_switched_off(): void
+    {
+        $this->setTenantFeatures(['groups' => false, 'group_exchanges' => true]);
+        $this->authenticatedUser();
+        $provider = $this->makeUser();
+        $receiver = $this->makeUser();
+
+        $this->apiGet('/v2/group-exchanges')->assertStatus(200);
+
+        $this->apiPost('/v2/group-exchanges', [
+            'title' => 'Small group session',
+            'total_hours' => 2,
+            'participants' => [
+                ['user_id' => $provider->id, 'role' => 'provider', 'hours' => 1],
+                ['user_id' => $receiver->id, 'role' => 'receiver', 'hours' => 1],
+            ],
+        ])->assertStatus(201);
+    }
+
+    public function test_group_exchanges_are_refused_when_their_own_switch_is_off(): void
+    {
+        $this->setTenantFeatures(['groups' => true, 'group_exchanges' => false]);
+        $this->authenticatedUser();
+
+        $this->apiGet('/v2/group-exchanges')
+            ->assertStatus(403)
+            ->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
+        $this->apiPost('/v2/group-exchanges', ['title' => 'Blocked', 'total_hours' => 1])
+            ->assertStatus(403)
+            ->assertJsonPath('errors.0.code', 'FEATURE_DISABLED');
+    }
+
+    // ------------------------------------------------------------------
     //  Store validation
     // ------------------------------------------------------------------
 

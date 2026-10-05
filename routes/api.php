@@ -3737,13 +3737,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v2/onboarding/safeguarding', [\App\Http\Controllers\Api\OnboardingController::class, 'saveSafeguarding'])->middleware('throttle:nexus-route-5-per-1m');
     Route::post('/v2/onboarding/complete', [\App\Http\Controllers\Api\OnboardingController::class, 'complete'])->middleware('throttle:nexus-route-5-per-1m');
 });
-Route::middleware('feature:groups')
+// Group exchanges have their own switch. Every client shows these screens on
+// `group_exchanges`; gating on `groups` showed members the form and then
+// refused every save wherever community groups were off (HELP-12).
+Route::middleware('feature:group_exchanges')
     ->where([
         'id' => '[0-9]+',
         'userId' => '[0-9]+',
     ])
     ->group(function () {
-Route::get('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'index']);
+Route::get('/v2/group-exchanges',[\App\Http\Controllers\Api\GroupExchangeController::class, 'index']);
 // Same legal-acceptance gate as POST /v2/exchanges (F-259).
 Route::post('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'store'])->middleware('legal-acceptance');
 Route::get('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'show']);

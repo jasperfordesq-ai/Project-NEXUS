@@ -45,8 +45,9 @@ final class GroupFeatureBoundaryTest extends TestCase
         ));
 
         // 143 since the legacy GET /api/groups directory was retired (F-145);
-        // 144 with GET /v2/groups/types (directory type filter).
-        self::assertCount(144, $routes, 'The end-user Groups API route inventory changed.');
+        // 144 with GET /v2/groups/types (directory type filter); 134 once the
+        // ten group-exchange routes moved to their own switch (HELP-12).
+        self::assertCount(134, $routes, 'The end-user Groups API route inventory changed.');
         foreach ($routes as $route) {
             self::assertContains(
                 'feature:groups',
@@ -57,6 +58,30 @@ final class GroupFeatureBoundaryTest extends TestCase
                     $route->uri(),
                 ),
             );
+        }
+    }
+
+    /**
+     * Group exchanges are not part of community groups: they have their own
+     * `group_exchanges` switch, which is what React, web-uk and the Expo app
+     * check. Gating them on `groups` refused every save in a community with
+     * groups off while the clients still showed the form (HELP-12).
+     */
+    public function test_every_group_exchange_route_has_its_own_feature_boundary(): void
+    {
+        $routes = array_values(array_filter(
+            iterator_to_array(Route::getRoutes()),
+            static fn (LaravelRoute $route): bool => str_starts_with(
+                $route->getActionName(),
+                GroupExchangeController::class . '@',
+            ),
+        ));
+
+        self::assertCount(10, $routes, 'The group-exchange API route inventory changed.');
+        foreach ($routes as $route) {
+            $label = implode('|', $route->methods()) . ' ' . $route->uri();
+            self::assertContains('feature:group_exchanges', $route->middleware(), $label . ' is missing its feature boundary.');
+            self::assertNotContains('feature:groups', $route->middleware(), $label . ' must not depend on the Groups switch.');
         }
     }
 
@@ -131,17 +156,6 @@ final class GroupFeatureBoundaryTest extends TestCase
         yield 'legacy recommendation track' => ['POST', '/recommendations/track'];
         yield 'legacy recommendation metrics' => ['GET', '/recommendations/metrics'];
         yield 'legacy similar groups' => ['GET', '/recommendations/similar/999999999'];
-
-        yield 'exchange directory' => ['GET', '/v2/group-exchanges'];
-        yield 'exchange create' => ['POST', '/v2/group-exchanges'];
-        yield 'exchange detail' => ['GET', '/v2/group-exchanges/999999999'];
-        yield 'exchange update' => ['PUT', '/v2/group-exchanges/999999999'];
-        yield 'exchange delete' => ['DELETE', '/v2/group-exchanges/999999999'];
-        yield 'exchange participant add' => ['POST', '/v2/group-exchanges/999999999/participants'];
-        yield 'exchange participant remove' => ['DELETE', '/v2/group-exchanges/999999999/participants/999999998'];
-        yield 'exchange start' => ['POST', '/v2/group-exchanges/999999999/start'];
-        yield 'exchange confirm' => ['POST', '/v2/group-exchanges/999999999/confirm'];
-        yield 'exchange complete' => ['POST', '/v2/group-exchanges/999999999/complete'];
 
         yield 'legacy groups analytics' => ['GET', '/groups/999999999/analytics'];
     }
@@ -228,7 +242,6 @@ final class GroupFeatureBoundaryTest extends TestCase
 
         return str_starts_with($action, CourseGroupController::class . '@')
             || str_starts_with($action, GroupConversationController::class . '@')
-            || str_starts_with($action, GroupExchangeController::class . '@')
             || str_starts_with($action, GroupRecommendController::class . '@')
             || $action === AdminGroupsController::class . '@apiData';
     }
