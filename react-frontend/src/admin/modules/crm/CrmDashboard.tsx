@@ -179,6 +179,7 @@ export function CrmDashboard() {
           value={data?.open_tasks ?? 0}
           icon={ClipboardList}
           loading={!data}
+          to={tenantPath('/admin/crm/tasks')}
         />
         <StatCard
           label={t('crm.label_overdue_tasks')}
@@ -186,6 +187,7 @@ export function CrmDashboard() {
           icon={AlertTriangle}
           color={(data?.overdue_tasks ?? 0) > 0 ? 'danger' : 'default'}
           loading={!data}
+          to={tenantPath('/admin/crm/tasks?status=overdue')}
         />
         <StatCard
           label={t('crm.label_member_notes')}

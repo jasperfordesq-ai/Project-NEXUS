@@ -568,8 +568,16 @@ class AdminCrmController extends BaseApiController
         $where = "ct.tenant_id = ?";
         $params = [$tenantId];
 
+        // Two views on top of the four stored statuses: 'open' is what still
+        // needs doing, 'overdue' is the open subset whose due date has passed
+        // (same rule as the CRM dashboard's "Overdue tasks" figure). Anything
+        // else that is not a stored status — including 'all' — applies no filter.
         $validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
-        if ($status && in_array($status, $validStatuses, true)) {
+        if ($status === 'open') {
+            $where .= " AND ct.status IN ('pending','in_progress')";
+        } elseif ($status === 'overdue') {
+            $where .= " AND ct.status IN ('pending','in_progress') AND ct.due_date IS NOT NULL AND ct.due_date < CURDATE()";
+        } elseif ($status && in_array($status, $validStatuses, true)) {
             $where .= " AND ct.status = ?";
             $params[] = $status;
         }

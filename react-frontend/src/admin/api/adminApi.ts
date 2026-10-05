@@ -3074,9 +3074,17 @@ export const adminCrm = {
       filename: `member-notes-${new Date().toISOString().slice(0, 10)}.csv`,
     }),
 
-  // Coordinator Tasks
+  // Coordinator Tasks. `status` accepts the four stored statuses plus the two
+  // views the page and the dashboard use: 'open' (pending + in progress) and
+  // 'overdue' (open with a due date in the past); 'all' applies no filter.
   getTasks: (params?: { page?: number; limit?: number; status?: string; priority?: string; assigned_to?: number; search?: string }) =>
     api.get<PaginatedResponse<CoordinatorTask>>(`/v2/admin/crm/tasks${buildQuery(params || {})}`),
+
+  // Admin-only CSV of every task in the community (same columns as the dashboard's export).
+  exportTasks: () =>
+    api.download('/v2/admin/crm/export/tasks', {
+      filename: `coordinator-tasks-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   createTask: (payload: { title: string; description?: string; priority?: string; assigned_to?: number; user_id?: number; due_date?: string }) =>
     api.post<CoordinatorTask>('/v2/admin/crm/tasks', payload),

@@ -259,6 +259,74 @@ class AdminCrmControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * The Coordinator tasks page defaults to ?status=open and the CRM dashboard
+     * links its "Overdue tasks" figure to ?status=overdue. 'open' is pending +
+     * in progress; 'overdue' is the open subset whose due date has passed — a
+     * completed task past its date is not overdue, and a task due today is not
+     * overdue yet.
+     */
+    public function test_list_tasks_open_and_overdue_views(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $marker = 'CrmTaskViews' . uniqid();
+        $base = [
+            'tenant_id' => $this->testTenantId,
+            'assigned_to' => $admin->id,
+            'created_by' => $admin->id,
+            'completed_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        // Row first, defaults second: a multi-row insert needs every row to carry the same columns.
+        DB::table('coordinator_tasks')->insert([
+            ['title' => "$marker overdue open", 'status' => 'pending', 'due_date' => now()->subDays(2)->toDateString()] + $base,
+            ['title' => "$marker due today", 'status' => 'in_progress', 'due_date' => now()->toDateString()] + $base,
+            ['title' => "$marker no date", 'status' => 'pending', 'due_date' => null] + $base,
+            ['title' => "$marker done late", 'status' => 'completed', 'due_date' => now()->subDays(2)->toDateString(), 'completed_at' => now()] + $base,
+            ['title' => "$marker cancelled", 'status' => 'cancelled', 'due_date' => now()->subDays(2)->toDateString()] + $base,
+        ]);
+
+        $titles = function (string $query) use ($marker): array {
+            $response = $this->apiGet('/v2/admin/crm/tasks?limit=100' . $query);
+            $response->assertStatus(200);
+
+            return collect($response->json('data'))
+                ->pluck('title')
+                ->filter(fn ($t) => str_starts_with((string) $t, $marker))
+                ->map(fn ($t) => substr((string) $t, strlen($marker) + 1))
+                ->sort()->values()->all();
+        };
+
+        $this->assertSame(['due today', 'no date', 'overdue open'], $titles('&status=open'));
+        $this->assertSame(['overdue open'], $titles('&status=overdue'));
+        $this->assertSame(['cancelled', 'done late', 'due today', 'no date', 'overdue open'], $titles('&status=all'));
+        $this->assertSame(['cancelled', 'done late', 'due today', 'no date', 'overdue open'], $titles(''));
+        $this->assertSame(['done late'], $titles('&status=completed'));
+    }
+
+    public function test_list_tasks_filters_by_assignee(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $colleague = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $marker = 'CrmTaskAssignee' . uniqid();
+        $base = ['tenant_id' => $this->testTenantId, 'created_by' => $admin->id, 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()];
+        DB::table('coordinator_tasks')->insert([
+            $base + ['title' => "$marker mine", 'assigned_to' => $admin->id],
+            $base + ['title' => "$marker theirs", 'assigned_to' => $colleague->id],
+        ]);
+
+        $response = $this->apiGet('/v2/admin/crm/tasks?limit=100&assigned_to=' . $colleague->id);
+        $response->assertStatus(200);
+        $mine = collect($response->json('data'))->pluck('title')->filter(fn ($t) => str_starts_with((string) $t, $marker))->values()->all();
+
+        $this->assertSame(["$marker theirs"], $mine);
+    }
+
     // ================================================================
     // TAGS — GET /v2/admin/crm/tags
     // ================================================================
