@@ -109,7 +109,6 @@
       "ended": "منتهية"
     },
     "raised_of_goal": "جُمع {{raised}} من {{goal}}",
-    "accepting": "تقبل التبرعات",
     "save": "حفظ الحملة",
     "show_details": "إظهار التفاصيل",
     "hide_details": "إخفاء التفاصيل"
@@ -119,7 +118,6 @@
     "status_paused": "متوقفة مؤقتًا"
   },
   "member": {
-    "raising_for_link": "تجمع المال لصالح {{organisation}}",
     "held_on_behalf": "يحتفظ به {{community}} نيابةً عن {{organisation}}."
   }
 }

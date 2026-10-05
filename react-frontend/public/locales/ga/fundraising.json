@@ -109,7 +109,6 @@
       "ended": "Críochnaithe"
     },
     "raised_of_goal": "{{raised}} bailithe as {{goal}}",
-    "accepting": "Ag glacadh le bronntanais",
     "save": "Sábháil an feachtas",
     "show_details": "Taispeáin sonraí",
     "hide_details": "Folaigh sonraí"
@@ -119,7 +118,6 @@
     "status_paused": "Ar sos"
   },
   "member": {
-    "raising_for_link": "Ag bailiú airgid do {{organisation}}",
     "held_on_behalf": "Á choimeád ag {{community}} thar ceann {{organisation}}."
   }
 }

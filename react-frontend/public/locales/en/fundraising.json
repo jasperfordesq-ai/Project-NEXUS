@@ -109,7 +109,6 @@
       "ended": "Ended"
     },
     "raised_of_goal": "{{raised}} raised of {{goal}}",
-    "accepting": "Accepting gifts",
     "save": "Save campaign",
     "show_details": "Show details",
     "hide_details": "Hide details"
@@ -119,7 +118,6 @@
     "status_paused": "Paused"
   },
   "member": {
-    "raising_for_link": "Raising money for {{organisation}}",
     "held_on_behalf": "Held by {{community}} on behalf of {{organisation}}."
   }
 }

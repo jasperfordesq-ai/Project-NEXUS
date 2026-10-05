@@ -252,6 +252,15 @@ describe('DonationsTab', () => {
     expect(screen.getAllByText('For Food Bank')).toHaveLength(2);
   });
 
+  it('links a campaign to the organisation it raises money for', async () => {
+    mockLoad([{ ...liveCampaign, organization_id: 4, organization_name: 'Food Bank' }], []);
+    render(<DonationsTab />);
+    await screen.findByText('Winter warmth appeal', { selector: 'h4' });
+
+    const live = screen.getByRole('region', { name: 'Live campaigns' });
+    expect(within(live).getByRole('link', { name: 'For Food Bank' })).toHaveAttribute('href', '/test/organisations/4');
+  });
+
   it('shows money in the community currency and the funding percentage', async () => {
     mockLoad([liveCampaign], []);
     render(<DonationsTab />);

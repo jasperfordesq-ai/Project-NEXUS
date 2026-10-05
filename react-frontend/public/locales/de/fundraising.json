@@ -109,7 +109,6 @@
       "ended": "Beendet"
     },
     "raised_of_goal": "{{raised}} von {{goal}} gesammelt",
-    "accepting": "Nimmt Spenden an",
     "save": "Kampagne speichern",
     "show_details": "Details anzeigen",
     "hide_details": "Details ausblenden"
@@ -119,7 +118,6 @@
     "status_paused": "Pausiert"
   },
   "member": {
-    "raising_for_link": "Sammelt Geld für {{organisation}}",
     "held_on_behalf": "Verwaltet von {{community}} im Namen von {{organisation}}."
   }
 }

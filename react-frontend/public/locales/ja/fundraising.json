@@ -109,7 +109,6 @@
       "ended": "終了"
     },
     "raised_of_goal": "{{goal}}のうち{{raised}}が集まりました",
-    "accepting": "寄付受付中",
     "save": "キャンペーンを保存",
     "show_details": "詳細を表示",
     "hide_details": "詳細を隠す"
@@ -119,7 +118,6 @@
     "status_paused": "一時停止中"
   },
   "member": {
-    "raising_for_link": "{{organisation}}のための募金",
     "held_on_behalf": "{{community}}が{{organisation}}に代わって預かっています。"
   }
 }

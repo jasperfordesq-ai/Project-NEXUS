@@ -109,7 +109,6 @@
       "ended": "Beëindigd"
     },
     "raised_of_goal": "{{raised}} opgehaald van {{goal}}",
-    "accepting": "Neemt giften aan",
     "save": "Campagne opslaan",
     "show_details": "Details tonen",
     "hide_details": "Details verbergen"
@@ -119,7 +118,6 @@
     "status_paused": "Gepauzeerd"
   },
   "member": {
-    "raising_for_link": "Zamelt geld in voor {{organisation}}",
     "held_on_behalf": "Beheerd door {{community}} namens {{organisation}}."
   }
 }

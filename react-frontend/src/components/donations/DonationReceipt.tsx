@@ -62,6 +62,7 @@ const handlePrint = () => {
 
 export function DonationReceipt({ donationId }: DonationReceiptProps) {
   const { t } = useTranslation('volunteering');
+  const { t: tf } = useTranslation('fundraising');
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +188,12 @@ export function DonationReceipt({ donationId }: DonationReceiptProps) {
               <span className="text-theme-muted">{t('donations.receipt_community')}</span>
               <span className="text-theme-primary text-right">{receipt.tenant_name}</span>
             </div>
+
+            {receipt.organization_name && (
+              <p className="text-xs text-theme-muted">
+                {tf('member.held_on_behalf', { community: receipt.tenant_name, organisation: receipt.organization_name })}
+              </p>
+            )}
 
             <div className="flex justify-between gap-4">
               <span className="text-theme-muted">{t('donations.receipt_method')}</span>

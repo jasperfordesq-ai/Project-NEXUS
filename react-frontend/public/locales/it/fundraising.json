@@ -109,7 +109,6 @@
       "ended": "Terminata"
     },
     "raised_of_goal": "{{raised}} raccolti su {{goal}}",
-    "accepting": "Accetta donazioni",
     "save": "Salva campagna",
     "show_details": "Mostra dettagli",
     "hide_details": "Nascondi dettagli"
@@ -119,7 +118,6 @@
     "status_paused": "In pausa"
   },
   "member": {
-    "raising_for_link": "Raccolta fondi per {{organisation}}",
     "held_on_behalf": "Custodito da {{community}} per conto di {{organisation}}."
   }
 }

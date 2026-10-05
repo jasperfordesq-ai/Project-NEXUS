@@ -368,7 +368,16 @@ export function DonationsTab() {
             {day.organization_name && (
               <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-theme-secondary">
                 <Building2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                {t('donations.for_organisation', { name: day.organization_name })}
+                {day.organization_id ? (
+                  <Link
+                    to={tenantPath(`/organisations/${day.organization_id}`)}
+                    className="underline-offset-2 hover:underline focus-visible:underline"
+                  >
+                    {t('donations.for_organisation', { name: day.organization_name })}
+                  </Link>
+                ) : (
+                  t('donations.for_organisation', { name: day.organization_name })
+                )}
               </p>
             )}
             {day.description && (

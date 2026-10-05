@@ -93,6 +93,17 @@ describe('DonationReceipt', () => {
     expect(screen.getByText('Campaign')).toBeInTheDocument();
   });
 
+  it('says the community holds the gift on the organisation’s behalf', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...MOCK_RECEIPT, organization_name: 'Food Bank' },
+    });
+
+    render(<DonationReceipt donationId={42} />);
+
+    expect(await screen.findByText('Held by Test Timebank on behalf of Food Bank.')).toBeInTheDocument();
+  });
+
   it('leaves out the organisation and campaign rows for a general gift', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: MOCK_RECEIPT });
 

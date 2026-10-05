@@ -109,7 +109,6 @@
       "ended": "Zakończona"
     },
     "raised_of_goal": "Zebrano {{raised}} z {{goal}}",
-    "accepting": "Przyjmuje darowizny",
     "save": "Zapisz zbiórkę",
     "show_details": "Pokaż szczegóły",
     "hide_details": "Ukryj szczegóły"
@@ -119,7 +118,6 @@
     "status_paused": "Wstrzymana"
   },
   "member": {
-    "raising_for_link": "Zbiórka na rzecz {{organisation}}",
     "held_on_behalf": "Przechowywane przez {{community}} w imieniu {{organisation}}."
   }
 }
