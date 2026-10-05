@@ -14,7 +14,16 @@ export interface HistoryItem {
   currency: string | null;
   donation_id: number | null;
   handover_id: number | null;
-  details: { changes?: Record<string, { from: string | number | null; to: string | number | null }>; reason?: string } | null;
+  /** For an organisation change the server adds today's names as from_label / to_label. */
+  details: {
+    changes?: Record<string, {
+      from: string | number | null;
+      to: string | number | null;
+      from_label?: string | null;
+      to_label?: string | null;
+    }>;
+    reason?: string;
+  } | null;
   stripe_object_id: string | null;
   created_at: string;
 }

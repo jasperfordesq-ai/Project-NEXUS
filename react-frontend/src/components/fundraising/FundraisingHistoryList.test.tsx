@@ -51,6 +51,14 @@ describe('FundraisingHistoryList', () => {
     expect(screen.getByText('Goal changed from 500.00 to 800.00')).toBeInTheDocument();
   });
 
+  it('names organisations in a change instead of showing record numbers', () => {
+    render(<FundraisingHistoryList items={[
+      item({ event: 'campaign_organisation_set', details: { changes: { organization_id: { from: null, to: 138, from_label: null, to_label: 'Food Bank' } } } }),
+    ]} />);
+
+    expect(screen.getByText('Organisation changed from (none) to Food Bank')).toBeInTheDocument();
+  });
+
   it('shows a cancellation reason', () => {
     render(<FundraisingHistoryList items={[item({ event: 'handover_cancelled', details: { reason: 'Typed twice' } })]} />);
     expect(screen.getByText('Reason: Typed twice')).toBeInTheDocument();

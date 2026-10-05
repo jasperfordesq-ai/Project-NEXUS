@@ -54,6 +54,23 @@ class FundraisingHistoryServiceTest extends TestCase
         $this->assertSame('campaign_ended', $rows[0]['event']);
     }
 
+    public function test_an_organisation_change_reads_as_names_not_numbers(): void
+    {
+        $orgId = (int) DB::table('vol_organizations')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => 1, 'name' => 'Named Food Bank',
+            'slug' => 'named-fb-' . uniqid(), 'status' => 'approved', 'created_at' => now(),
+        ]);
+        History::record($this->testTenantId, 'campaign_organisation_set', History::ACTOR_SYSTEM, null,
+            ['giving_day_id' => 900003, 'organization_id' => $orgId], null, null,
+            ['changes' => ['organization_id' => ['from' => null, 'to' => $orgId]]]);
+
+        $change = History::forCampaign($this->testTenantId, 900003, true)[0]['details']['changes']['organization_id'];
+
+        $this->assertSame($orgId, $change['to'], 'the record number itself is unchanged');
+        $this->assertSame('Named Food Bank', $change['to_label']);
+        $this->assertNull($change['from_label']);
+    }
+
     public function test_organisation_view_hides_donor_identity_and_stripe_ids(): void
     {
         $donor = User::factory()->forTenant($this->testTenantId)->create(['first_name' => 'Dana', 'last_name' => 'Donor']);

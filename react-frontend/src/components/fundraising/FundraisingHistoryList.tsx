@@ -65,8 +65,8 @@ export function FundraisingHistoryList({ items, showStripe = false }: Fundraisin
               <p key={field} className="text-sm text-foreground">
                 {t('history.change', {
                   field: t(`history.field.${field}`, { defaultValue: field }),
-                  from: value(change.from),
-                  to: value(change.to),
+                  from: value(change.from_label ?? change.from),
+                  to: value(change.to_label ?? change.to),
                 })}
               </p>
             ))}

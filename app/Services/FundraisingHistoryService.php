@@ -95,9 +95,33 @@ final class FundraisingHistoryService
             ->get(['id', 'first_name', 'last_name', 'name', 'profile_type', 'organization_name'])
             ->keyBy('id');
 
-        return $rows->map(function ($row) use ($actors, $organisationView) {
+        // An organisation change is stored as record numbers (the trail never
+        // depends on a name that can later be edited); resolve today's names
+        // for display so a person reads "Food Bank", not "138".
+        $decoded = $rows->mapWithKeys(fn ($row) => [
+            $row->id => $row->details !== null ? json_decode((string) $row->details, true) : null,
+        ]);
+        $orgIds = $decoded->flatMap(function ($details) {
+            $change = $details['changes']['organization_id'] ?? null;
+            return $change ? [$change['from'] ?? null, $change['to'] ?? null] : [];
+        })->filter()->map(fn ($id) => (int) $id)->unique()->values()->all();
+        $orgNames = $orgIds === [] ? [] : DB::table('vol_organizations')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $orgIds)
+            ->pluck('name', 'id')
+            ->mapWithKeys(fn ($name, $id) => [(int) $id => (string) $name])
+            ->all();
+
+        return $rows->map(function ($row) use ($actors, $organisationView, $decoded, $orgNames) {
             $showActor = ! $organisationView || in_array($row->actor_kind, self::STAFF_KINDS, true);
             $actor = $row->actor_user_id ? $actors->get($row->actor_user_id) : null;
+            $details = $decoded[$row->id];
+            if (isset($details['changes']['organization_id'])) {
+                $change = &$details['changes']['organization_id'];
+                $change['from_label'] = isset($change['from']) ? ($orgNames[(int) $change['from']] ?? null) : null;
+                $change['to_label'] = isset($change['to']) ? ($orgNames[(int) $change['to']] ?? null) : null;
+                unset($change);
+            }
 
             return [
                 'id' => (int) $row->id,
@@ -108,7 +132,7 @@ final class FundraisingHistoryService
                 'currency' => $row->currency,
                 'donation_id' => $row->donation_id !== null ? (int) $row->donation_id : null,
                 'handover_id' => $row->handover_id !== null ? (int) $row->handover_id : null,
-                'details' => $row->details !== null ? json_decode((string) $row->details, true) : null,
+                'details' => $details,
                 'stripe_object_id' => $organisationView ? null : $row->stripe_object_id,
                 'created_at' => (string) $row->created_at,
             ];
