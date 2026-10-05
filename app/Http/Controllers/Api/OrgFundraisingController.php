@@ -49,6 +49,14 @@ class OrgFundraisingController extends BaseApiController
             ->where('organization_id', $orgId)->exists();
     }
 
+    /** Only approved organisations may start or change campaigns. */
+    private function isApproved(int $orgId): bool
+    {
+        $status = DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', TenantContext::getId())->value('status');
+
+        return VolunteerService::isApprovedOrganizationStatus(is_string($status) ? $status : null);
+    }
+
     private function notFound(): JsonResponse
     {
         return $this->respondWithError('NOT_FOUND', __('fundraising.campaign_not_found'), null, 404);
@@ -69,8 +77,7 @@ class OrgFundraisingController extends BaseApiController
     {
         $orgId = (int) $id;
         $userId = $this->guard($orgId);
-        $status = DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', TenantContext::getId())->value('status');
-        if (! VolunteerService::isApprovedOrganizationStatus(is_string($status) ? $status : null)) {
+        if (! $this->isApproved($orgId)) {
             return $this->respondWithError('VALIDATION_ERROR', __('fundraising.organisation_not_eligible'), null, 422);
         }
         $data = array_intersect_key($this->getAllInput(), array_flip(self::EDITABLE));
@@ -90,6 +97,11 @@ class OrgFundraisingController extends BaseApiController
         $userId = $this->guard($orgId);
         if (! $this->ownCampaign($orgId, (int) $campaignId)) {
             return $this->notFound();
+        }
+        // An organisation that is no longer approved keeps read access to its
+        // campaigns' trail but can no longer change them.
+        if (! $this->isApproved($orgId)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('fundraising.organisation_not_eligible'), null, 422);
         }
         $data = array_intersect_key($this->getAllInput(), array_flip(self::EDITABLE));
         try {

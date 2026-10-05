@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'أدخل تاريخ تسليم المال. لا يمكن أن يكون في المستقبل.',
     'handover_campaign_has_no_organisation' => 'هذه الحملة للمجتمع بأكمله، لذا لا توجد منظمة يُسلَّم إليها المال.',
     'handover_already_closed' => 'تم تأكيد عملية التسليم هذه أو إلغاؤها بالفعل.',
+    'paused_by_community' => 'أوقف مشرف المجتمع هذه الحملة مؤقتًا، لذا لا يمكن استئنافها إلا من قِبل المجتمع.',
     'cancel_reason_required' => 'اذكر سبب إلغاء عملية التسليم هذه.',
     'email' => [
         'handover_subject' => 'سلّم :community مبلغ :amount من حملة :campaign',

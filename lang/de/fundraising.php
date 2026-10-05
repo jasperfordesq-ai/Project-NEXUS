@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Geben Sie das Datum ein, an dem das Geld weitergegeben wurde. Es darf nicht in der Zukunft liegen.',
     'handover_campaign_has_no_organisation' => 'Diese Kampagne gilt für die gesamte Gemeinschaft, daher gibt es keine Organisation, an die Geld übergeben werden kann.',
     'handover_already_closed' => 'Diese Übergabe wurde bereits bestätigt oder storniert.',
+    'paused_by_community' => 'Ein Gemeinschafts-Admin hat diese Kampagne pausiert, daher kann nur die Gemeinschaft sie wieder starten.',
     'cancel_reason_required' => 'Geben Sie einen Grund für die Stornierung dieser Übergabe an.',
     'email' => [
         'handover_subject' => ':community hat :amount für :campaign weitergegeben',

@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Saisissez la date à laquelle l’argent a été reversé. Elle ne peut pas être dans le futur.',
     'handover_campaign_has_no_organisation' => 'Cette campagne concerne toute la communauté : il n’y a donc aucune organisation à qui reverser l’argent.',
     'handover_already_closed' => 'Ce versement a déjà été confirmé ou annulé.',
+    'paused_by_community' => 'Un administrateur de la communauté a mis cette campagne en pause : seule la communauté peut la relancer.',
     'cancel_reason_required' => 'Indiquez la raison de l’annulation de ce versement.',
     'email' => [
         'handover_subject' => ':community a reversé :amount pour :campaign',

@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Inserisci la data in cui il denaro è stato trasferito. Non può essere nel futuro.',
     'handover_campaign_has_no_organisation' => 'Questa campagna è per l’intera comunità, quindi non c’è alcuna organizzazione a cui trasferire il denaro.',
     'handover_already_closed' => 'Questo trasferimento è già stato confermato o annullato.',
+    'paused_by_community' => 'Un amministratore della comunità ha messo in pausa questa campagna, quindi solo la comunità può riavviarla.',
     'cancel_reason_required' => 'Indica un motivo per l’annullamento di questo trasferimento.',
     'email' => [
         'handover_subject' => ':community ha trasferito :amount per :campaign',

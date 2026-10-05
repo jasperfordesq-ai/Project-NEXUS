@@ -744,6 +744,22 @@ class VolunteerDonationService
                 throw new \InvalidArgumentException(__('fundraising.organisation_locked'));
             }
 
+            // A community admin's pause or end holds: the organisation cannot
+            // switch the campaign back on over it (owner decision D3 — the
+            // community keeps control of what it collects money for).
+            if ($actorKind === FundraisingHistory::ACTOR_ORG_ADMIN
+                && ($changes['is_active']['to'] ?? null) === 1) {
+                $lastStop = DB::table('vol_fundraising_events')
+                    ->where('tenant_id', $tenantId)
+                    ->where('giving_day_id', (int) $locked->id)
+                    ->whereIn('event', ['campaign_paused', 'campaign_ended'])
+                    ->orderByDesc('id')
+                    ->value('actor_kind');
+                if ($lastStop === FundraisingHistory::ACTOR_COMMUNITY_ADMIN) {
+                    throw new \InvalidArgumentException(__('fundraising.paused_by_community'));
+                }
+            }
+
             DB::table('vol_giving_days')
                 ->where('id', $locked->id)
                 ->where('tenant_id', $tenantId)
@@ -763,10 +779,13 @@ class VolunteerDonationService
                 unset($changes['organization_id']);
             }
             if (array_key_exists('is_active', $changes)) {
-                $endPassed = \Carbon\Carbon::parse($updates['end_date'] ?? $locked->end_date)->endOfDay()->isPast();
+                // Switched off on or after its last day = ended (the
+                // organisation's "End campaign" sets end_date to today).
+                $endReached = \Carbon\Carbon::parse($updates['end_date'] ?? $locked->end_date)
+                    ->startOfDay()->lte(now()->startOfDay());
                 $event = $changes['is_active']['to'] === 1
                     ? 'campaign_resumed'
-                    : ($endPassed ? 'campaign_ended' : 'campaign_paused');
+                    : ($endReached ? 'campaign_ended' : 'campaign_paused');
                 FundraisingHistory::record($tenantId, $event, $actorKind, $actorUserId, $refs);
                 unset($changes['is_active']);
             }
@@ -811,10 +830,10 @@ class VolunteerDonationService
             $today = now()->startOfDay();
             $start = !empty($day['start_date']) ? \Carbon\Carbon::parse($day['start_date'])->startOfDay() : null;
             $end = !empty($day['end_date']) ? \Carbon\Carbon::parse($day['end_date'])->endOfDay() : null;
-            // Inactive before its end date = paused (it can be resumed);
-            // inactive after it = ended.
+            // Inactive before its last day = paused (it can be resumed);
+            // inactive on or after its last day = ended.
             $day['status'] = !$day['is_active']
-                ? (($end && $end->lt($today)) ? 'ended' : 'paused')
+                ? (($end && $end->copy()->startOfDay()->lte($today)) ? 'ended' : 'paused')
                 : (($start && $start->gt($today)) ? 'upcoming' : (($end && $end->lt($today)) ? 'ended' : 'active'));
         }
 

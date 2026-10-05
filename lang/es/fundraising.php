@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Introduzca la fecha en que se entregó el dinero. No puede ser una fecha futura.',
     'handover_campaign_has_no_organisation' => 'Esta campaña es para toda la comunidad, así que no hay ninguna organización a la que entregar el dinero.',
     'handover_already_closed' => 'Esta entrega ya se ha confirmado o cancelado.',
+    'paused_by_community' => 'Un administrador de la comunidad pausó esta campaña, así que solo la comunidad puede reanudarla.',
     'cancel_reason_required' => 'Indique el motivo para cancelar esta entrega.',
     'email' => [
         'handover_subject' => ':community ha entregado :amount de :campaign',

@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Voer de datum in waarop het geld is doorgegeven. Deze mag niet in de toekomst liggen.',
     'handover_campaign_has_no_organisation' => 'Deze campagne is voor de hele gemeenschap, dus er is geen organisatie om geld aan over te dragen.',
     'handover_already_closed' => 'Deze overdracht is al bevestigd of geannuleerd.',
+    'paused_by_community' => 'Een gemeenschapsbeheerder heeft deze campagne gepauzeerd, dus alleen de gemeenschap kan haar hervatten.',
     'cancel_reason_required' => 'Geef een reden op voor het annuleren van deze overdracht.',
     'email' => [
         'handover_subject' => ':community heeft :amount voor :campaign doorgegeven',

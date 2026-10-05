@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Cuir isteach an dáta ar cuireadh an t-airgead ar aghaidh. Ní féidir leis a bheith sa todhchaí.',
     'handover_campaign_has_no_organisation' => 'Is don phobal ar fad an feachtas seo, mar sin níl aon eagraíocht ann le hairgead a thabhairt di.',
     'handover_already_closed' => 'Deimhníodh nó cealaíodh an t-aistriú seo cheana féin.',
+    'paused_by_community' => 'Chuir riarthóir pobail an feachtas seo ar sos, mar sin ní féidir ach leis an bpobal é a atosú.',
     'cancel_reason_required' => 'Tabhair cúis le cealú an aistrithe seo.',
     'email' => [
         'handover_subject' => 'Chuir :community :amount ar aghaidh do :campaign',

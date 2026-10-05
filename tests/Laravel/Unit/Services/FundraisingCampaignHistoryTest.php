@@ -94,6 +94,36 @@ class FundraisingCampaignHistoryTest extends TestCase
         $this->assertSame('ended', collect(Donations::adminGetGivingDays())->firstWhere('id', $day['id'])['status']);
     }
 
+    public function test_ending_a_campaign_today_records_ended_not_paused(): void
+    {
+        $day = $this->create();
+        Donations::updateGivingDay($day['id'], ['is_active' => false, 'end_date' => now()->toDateString()], $this->testTenantId, 12);
+
+        $this->assertContains('campaign_ended', $this->events($day['id']));
+        $this->assertNotContains('campaign_paused', $this->events($day['id']));
+        $this->assertSame('ended', collect(Donations::adminGetGivingDays())->firstWhere('id', $day['id'])['status']);
+    }
+
+    public function test_an_organisation_cannot_resume_a_campaign_the_community_paused(): void
+    {
+        $day = $this->create($this->org());
+        Donations::updateGivingDay($day['id'], ['is_active' => false], $this->testTenantId, 12);
+
+        try {
+            Donations::updateGivingDay($day['id'], ['is_active' => true], $this->testTenantId, 13, 'org_admin');
+            $this->fail('the organisation must not override a community pause');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame(__('fundraising.paused_by_community'), $e->getMessage());
+        }
+        $this->assertSame(0, (int) DB::table('vol_giving_days')->where('id', $day['id'])->value('is_active'));
+
+        // The community itself can resume it, and after an org's own pause the org can resume.
+        Donations::updateGivingDay($day['id'], ['is_active' => true], $this->testTenantId, 12);
+        Donations::updateGivingDay($day['id'], ['is_active' => false], $this->testTenantId, 13, 'org_admin');
+        Donations::updateGivingDay($day['id'], ['is_active' => true], $this->testTenantId, 13, 'org_admin');
+        $this->assertSame(1, (int) DB::table('vol_giving_days')->where('id', $day['id'])->value('is_active'));
+    }
+
     public function test_organisation_is_locked_once_a_gift_exists(): void
     {
         $day = $this->create($this->org());

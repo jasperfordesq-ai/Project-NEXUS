@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Wpisz datę przekazania pieniędzy. Nie może to być data przyszła.',
     'handover_campaign_has_no_organisation' => 'Ta zbiórka jest dla całej społeczności, więc nie ma organizacji, której można przekazać pieniądze.',
     'handover_already_closed' => 'To przekazanie zostało już potwierdzone lub anulowane.',
+    'paused_by_community' => 'Administrator społeczności wstrzymał tę zbiórkę, więc tylko społeczność może ją wznowić.',
     'cancel_reason_required' => 'Podaj powód anulowania tego przekazania.',
     'email' => [
         'handover_subject' => ':community przekazała :amount ze zbiórki :campaign',

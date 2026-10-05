@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'お金を引き渡した日付を入力してください。未来の日付は指定できません。',
     'handover_campaign_has_no_organisation' => 'このキャンペーンはコミュニティ全体のためのものなので、お金を引き渡す団体はありません。',
     'handover_already_closed' => 'この引き渡しはすでに確認済みまたは取り消し済みです。',
+    'paused_by_community' => 'このキャンペーンはコミュニティ管理者が一時停止したため、再開できるのはコミュニティのみです。',
     'cancel_reason_required' => 'この引き渡しを取り消す理由を入力してください。',
     'email' => [
         'handover_subject' => ':communityが:campaignの:amountを引き渡しました',

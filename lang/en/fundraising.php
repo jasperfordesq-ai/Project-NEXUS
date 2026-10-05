@@ -17,6 +17,7 @@ return [
     'handover_date_invalid' => 'Enter the date the money was passed on. It cannot be in the future.',
     'handover_campaign_has_no_organisation' => 'This campaign is for the whole community, so there is no organisation to hand money over to.',
     'handover_already_closed' => 'This hand-over has already been confirmed or cancelled.',
+    'paused_by_community' => 'A community administrator paused this campaign, so only they can start it again.',
     'cancel_reason_required' => 'Give a reason for cancelling this hand-over.',
     'email' => [
         'handover_subject' => ':community has passed on :amount for :campaign',

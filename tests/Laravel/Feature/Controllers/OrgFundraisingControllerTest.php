@@ -146,6 +146,20 @@ class OrgFundraisingControllerTest extends TestCase
             ->assertJsonPath('errors.0.message', __('fundraising.organisation_not_eligible'));
     }
 
+    public function test_a_suspended_organisation_can_no_longer_change_its_campaigns(): void
+    {
+        $campaign = $this->campaign($this->orgId);
+        DB::table('vol_organizations')->where('id', $this->orgId)->update(['status' => 'suspended']);
+        Sanctum::actingAs($this->owner);
+
+        $this->apiPut($this->base() . "/campaigns/{$campaign}", ['goal_amount' => 9999])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.message', __('fundraising.organisation_not_eligible'));
+        $this->assertSame(500.0, (float) DB::table('vol_giving_days')->where('id', $campaign)->value('goal_amount'));
+        // Reading what happened stays possible.
+        $this->apiGet($this->base() . '/campaigns')->assertOk();
+    }
+
     public function test_campaigns_that_are_not_the_organisations_are_not_found(): void
     {
         Sanctum::actingAs($this->owner);
