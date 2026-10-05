@@ -77,7 +77,8 @@ final class GroupFeatureBoundaryTest extends TestCase
             ),
         ));
 
-        self::assertCount(10, $routes, 'The group-exchange API route inventory changed.');
+        // 11 with POST /v2/group-exchanges/preview (what everyone earns or pays).
+        self::assertCount(11, $routes, 'The group-exchange API route inventory changed.');
         foreach ($routes as $route) {
             $label = implode('|', $route->methods()) . ' ' . $route->uri();
             self::assertContains('feature:group_exchanges', $route->middleware(), $label . ' is missing its feature boundary.');

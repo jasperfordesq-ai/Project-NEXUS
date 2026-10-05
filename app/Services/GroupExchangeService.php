@@ -510,6 +510,74 @@ class GroupExchangeService
     }
 
     /**
+     * What every person in a draft would earn or pay, and the community fund's
+     * share — nothing is saved. Names are looked up among this community's
+     * members only (anyone else is listed without a name), and no email or
+     * other contact detail is returned.
+     *
+     * @return array{
+     *   lines: list<array{user_id:int, name:?string, role:string, hours:float, verb:string}>,
+     *   community_fund_hours: float,
+     *   totals: array{earned: float, paid: float, to_fund: float},
+     *   problem: ?array{code: string, message: string}
+     * }
+     */
+    public function preview(array $data): array
+    {
+        $tenantId = TenantContext::getId();
+        $participants = [];
+        foreach (is_array($data['participants'] ?? null) ? $data['participants'] : [] as $participant) {
+            $userId = (int) ($participant['user_id'] ?? 0);
+            $role = trim((string) ($participant['role'] ?? ''));
+            if ($userId <= 0 || $role === '') {
+                continue;
+            }
+            $participants[] = [
+                'user_id' => $userId,
+                'role' => $role,
+                'hours' => (float) ($participant['hours'] ?? 0),
+                'weight' => (float) ($participant['weight'] ?? 1.0),
+            ];
+        }
+
+        $calc = GroupExchangeSplitCalculator::compute(
+            (string) ($data['split_type'] ?? 'equal'),
+            (float) ($data['total_hours'] ?? 0),
+            $participants,
+        );
+
+        $ids = array_values(array_unique(array_column($calc['lines'], 'user_id')));
+        $names = $ids === [] ? [] : DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids)
+            ->get(['id', 'first_name', 'last_name', 'profile_type', 'organization_name'])
+            ->mapWithKeys(static fn ($u): array => [(int) $u->id => UserDisplayName::resolve($u)])
+            ->all();
+
+        $message = $this->problemMessage($calc);
+
+        return [
+            'lines' => array_map(static fn (array $line): array => [
+                'user_id' => $line['user_id'],
+                'name' => $names[$line['user_id']] ?? null,
+                'role' => $line['role'],
+                'hours' => $line['hours'],
+                'verb' => $line['role'] === 'provider' ? 'earns' : 'pays',
+            ], $calc['lines']),
+            'community_fund_hours' => $calc['community_fund_hours'],
+            'totals' => [
+                'earned' => $calc['earned'],
+                'paid' => $calc['paid'],
+                'to_fund' => $calc['community_fund_hours'],
+            ],
+            'problem' => $calc['problem'] === null ? null : [
+                'code' => $calc['problem'],
+                'message' => (string) $message,
+            ],
+        ];
+    }
+
+    /**
      * Conservation guard: the credits complete() would give providers must equal
      * the debits it would take from receivers, or completing the exchange changes
      * the total credits in circulation. Equal/weighted splits are derived from

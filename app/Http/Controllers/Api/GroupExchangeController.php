@@ -125,6 +125,25 @@ class GroupExchangeController extends BaseApiController
         return $this->respondWithData($exchange, null, 201);
     }
 
+    /**
+     * POST /api/v2/group-exchanges/preview
+     *
+     * What every person would earn or pay, and the community fund's share, for
+     * a draft that has not been saved. A split that cannot go ahead is a 200
+     * with `problem` set, so the form can explain it while the member edits.
+     */
+    public function preview(): JsonResponse
+    {
+        $this->requireAuth();
+
+        $data = $this->getAllInput();
+        if ($invalidKind = $this->invalidKindResponse($data)) {
+            return $invalidKind;
+        }
+
+        return $this->respondWithData($this->groupExchangeService->preview($data));
+    }
+
     /** GET /api/v2/group-exchanges/{id} */
     public function show(int $id): JsonResponse
     {

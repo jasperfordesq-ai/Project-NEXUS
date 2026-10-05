@@ -3749,6 +3749,8 @@ Route::middleware('feature:group_exchanges')
 Route::get('/v2/group-exchanges',[\App\Http\Controllers\Api\GroupExchangeController::class, 'index']);
 // Same legal-acceptance gate as POST /v2/exchanges (F-259).
 Route::post('/v2/group-exchanges', [\App\Http\Controllers\Api\GroupExchangeController::class, 'store'])->middleware('legal-acceptance');
+// Read-only: what everyone would earn or pay, so no client works out a split itself.
+Route::post('/v2/group-exchanges/preview', [\App\Http\Controllers\Api\GroupExchangeController::class, 'preview'])->middleware('throttle:nexus-route-60-per-1m');
 Route::get('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'show']);
 Route::put('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'update']);
 Route::delete('/v2/group-exchanges/{id}', [\App\Http\Controllers\Api\GroupExchangeController::class, 'destroy']);
