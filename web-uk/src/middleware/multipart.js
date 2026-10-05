@@ -76,6 +76,15 @@ function parseMultipartForm(options = {}) {
       filter: part => typeof part.originalFilename === 'string' && part.originalFilename.trim() !== ''
     });
 
+    // Formidable records a file only once its temp-file write has finished, so
+    // several files in one field come back in completion order, not the order
+    // they were sent. Note the order each part began in and restore it, so a
+    // member's three screenshots keep the order they attached them in.
+    const arrival = new Map();
+    form.on('fileBegin', (_name, file) => {
+      arrival.set(file, arrival.size);
+    });
+
     // F-206: formidable calls back from a later socket event, outside the
     // AsyncLocalStorage context this request started in, so the API calls an
     // upload route made afterwards carried no visitor address (F-110), no
@@ -90,6 +99,12 @@ function parseMultipartForm(options = {}) {
           error.status = 413;
         }
         return next(error);
+      }
+
+      for (const value of Object.values(files || {})) {
+        if (Array.isArray(value)) {
+          value.sort((a, b) => (arrival.get(a) ?? 0) - (arrival.get(b) ?? 0));
+        }
       }
 
       req.body = {
