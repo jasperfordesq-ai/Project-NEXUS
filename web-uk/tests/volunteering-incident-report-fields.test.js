@@ -304,7 +304,8 @@ describe('posting the new fields', () => {
       opportunity_id: '9'
     });
 
-    expect(post.headers.location).toBe(`${MOUNT}/incidents?status=incident-reported&tab=incidents`);
+    // A new report goes straight to its own page (volunteering-incidents.js).
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/501?status=incident-reported`);
     expect(incidentPosts()).toHaveLength(1);
     expect(incidentPosts()[0][3]).toEqual({
       title: 'Frightened volunteer',
@@ -318,7 +319,7 @@ describe('posting the new fields', () => {
     });
 
     // A success leaves nothing behind to pre-fill the next, blank form.
-    const page = await agent.get(`${MOUNT}/incidents?status=incident-reported&tab=incidents`);
+    const page = await agent.get(`${MOUNT}/incidents?tab=incidents`);
     expect(valueOf(page.text, 'title')).toBe('');
     expect(isChecked(page.text, 'incident_type-disclosure')).toBe(false);
   });

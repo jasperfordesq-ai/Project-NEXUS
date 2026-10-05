@@ -38795,7 +38795,8 @@ describe('shared accessible frontend shell', () => {
         severity: 'medium',
         category: 'site'
       });
-    expect(incidentResponse.headers.location).toBe('/volunteering/incidents?status=incident-reported&tab=incidents');
+    // A new report goes straight to its own page (routes/volunteering-incidents.js).
+    expect(incidentResponse.headers.location).toBe('/volunteering/incidents/42?status=incident-reported');
     expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'POST', '/incidents', {
       title: 'Wet floor',
       description: 'A wet floor caused a near miss by the entrance.',

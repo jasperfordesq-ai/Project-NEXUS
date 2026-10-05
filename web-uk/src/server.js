@@ -55,6 +55,7 @@ const feedActionRoutes = require('./routes/feed-actions');
 const marketplaceActionRoutes = require('./routes/marketplace-actions');
 const marketplaceRoutes = require('./routes/marketplace');
 const volunteeringActionRoutes = require('./routes/volunteering-actions');
+const volunteeringIncidentRoutes = require('./routes/volunteering-incidents');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
 const groupExchangeRoutes = require('./routes/group-exchanges');
@@ -2338,6 +2339,9 @@ app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);
 app.use('/event-templates', doubleCsrfProtection, postOnly(formLimiter), eventTemplateRoutes);
 app.use('/marketplace', doubleCsrfProtection, postOnly(formLimiter), marketplaceActionRoutes);
+// A safeguarding report's own page and its "add information" form, ahead of the
+// volunteering actions that own the incident list and report form.
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringIncidentRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);

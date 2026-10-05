@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-05T16:10:38.446Z",
+  "generatedAt": "2026-10-05T18:44:15.396Z",
   "provenance": {
-    "generatedAt": "2026-10-05T16:10:38.446Z",
+    "generatedAt": "2026-10-05T18:44:15.396Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "5c0efa2311d77fdc8a894cd2fc54aed3a8bd2281",
+    "laravelCommitSha": "1ac93e6173cf6139aacaac127d070e7fc22ebcde",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "5c0efa2311d77fdc8a894cd2fc54aed3a8bd2281",
+    "webUkRepositoryCommitSha": "1ac93e6173cf6139aacaac127d070e7fc22ebcde",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -18,16 +18,16 @@
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
     "laravelOpenApiSha256": "e60992f5ac21058988b49e3c96375ebc43f3d570d1b52b18d699aaa4e2b3ba7b",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
-    "laravelApiRoutesSha256": "0d23480617ebc7d24fe0eb9d8f2b73d7d71c406cd38597580e394bb0de3d5c1c"
+    "laravelApiRoutesSha256": "ddcbc296a38d51b18ae12144095e09c1f21248e20d4d2de96b596a02b296ea5b"
   },
   "summary": {
-    "contracts": 715,
+    "contracts": 717,
     "matchedOpenApi": 470,
-    "missingOpenApi": 245,
-    "routeDeclaredOpenApiOmissions": 245,
+    "missingOpenApi": 247,
+    "routeDeclaredOpenApiOmissions": 247,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 393,
+    "stateChanging": 394,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -1950,6 +1950,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-volunteering.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -23304,6 +23305,7 @@
         "tests/supported-message-viewer.test.js",
         "tests/two-factor-review.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25097,6 +25099,7 @@
         "tests/group-exchange-kinds.test.js",
         "tests/messages-unread-freshness-and-group-self-add.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25135,6 +25138,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25173,6 +25177,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25216,6 +25221,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25258,6 +25264,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25268,7 +25275,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/applications/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3510",
+      "source": "src/routes/volunteering-actions.js:3514",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -25300,6 +25307,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25343,6 +25351,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25386,6 +25395,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25428,6 +25438,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25438,7 +25449,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?public=true&limit=12",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1195",
+      "source": "src/server.js:1196",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25466,6 +25477,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25509,6 +25521,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25549,6 +25562,7 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25592,6 +25606,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25626,6 +25641,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-volunteering.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25667,6 +25683,7 @@
         "tests/shared-accessible-shell.test.js",
         "tests/template-source.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25708,6 +25725,7 @@
         "tests/shared-accessible-shell.test.js",
         "tests/template-source.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25752,6 +25770,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25796,6 +25815,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25835,6 +25855,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25874,6 +25895,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25912,6 +25934,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25954,6 +25977,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25996,6 +26020,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26038,6 +26063,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26080,6 +26106,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26123,6 +26150,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26166,6 +26194,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26176,7 +26205,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/hours/{param}/verify",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3534",
+      "source": "src/routes/volunteering-actions.js:3538",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -26208,6 +26237,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26251,6 +26281,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26290,6 +26321,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26329,6 +26361,86 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/incidents/{param} [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/incidents/{param}",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-incidents.js:119",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-incidents.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/incidents/{id}",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-incidents.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/laravel-runtime-smoke.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/volunteering/incidents/{param}/additions [callVolunteeringApi]",
+      "method": "POST",
+      "path": "/api/v2/volunteering/incidents/{param}/additions",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-incidents.js:155",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: body",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-incidents.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/incidents/{id}/additions",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-incidents.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26367,6 +26479,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26412,6 +26525,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26492,6 +26606,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26536,6 +26651,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26692,6 +26808,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26813,6 +26930,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26823,7 +26941,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/organisations/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3556",
+      "source": "src/routes/volunteering-actions.js:3560",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -26853,6 +26971,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26929,6 +27048,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26967,6 +27087,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27005,6 +27126,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27043,6 +27165,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27081,6 +27204,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27091,7 +27215,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/organisations/{param}/wallet/deposit",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-actions.js:3587",
+      "source": "src/routes/volunteering-actions.js:3591",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -27119,6 +27243,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27158,6 +27283,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27202,6 +27328,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27276,6 +27403,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27318,6 +27446,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27360,6 +27489,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27402,6 +27532,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27446,6 +27577,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27490,6 +27622,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27534,6 +27667,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27578,6 +27712,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27617,6 +27752,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27656,6 +27792,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27700,6 +27837,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27742,6 +27880,7 @@
         "tests/runtime/volunteering-credentials-mutation.spec.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
         "tests/volunteering-incident-report-fields.test.js"
       ],
       "directApiHelperAssertion": true,

@@ -173,7 +173,7 @@
       </div>
     {% endif %}
   {% else %}
-    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.report_incident_title") }}</h2>
+    <h2 class="govuk-heading-m" id="report-incident">{{ t("govuk_alpha_volunteering.safeguarding.report_incident_title") }}</h2>
     <div class="govuk-inset-text" role="note">
       {{ t("govuk_alpha_volunteering.safeguarding.report_notice") }}
     </div>
@@ -379,7 +379,8 @@
           {% for incident in incidents %}
             <tr class="govuk-table__row">
               <td class="govuk-table__cell">
-                <strong>{{ incident.title }}</strong>
+                {% if incident.id %}<span class="govuk-hint govuk-!-margin-bottom-0">#{{ incident.id }}</span>
+                <a class="govuk-link govuk-!-font-weight-bold" href="{{ urlFor('/volunteering/incidents/' ~ incident.id) }}">{{ incident.title }}</a>{% else %}<strong>{{ incident.title }}</strong>{% endif %}
                 {% if incident.category and incident.category != "general" %}
                   <br><span class="govuk-hint govuk-!-font-size-16">{{ incident.category }}</span>
                 {% endif %}

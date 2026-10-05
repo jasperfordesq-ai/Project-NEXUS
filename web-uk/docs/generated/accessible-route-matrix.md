@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-05T16:10:37.629Z
-Laravel commit SHA: `5c0efa2311d77fdc8a894cd2fc54aed3a8bd2281`
-Web UK repository commit SHA: `5c0efa2311d77fdc8a894cd2fc54aed3a8bd2281`
+Generated: 2026-10-05T18:44:14.594Z
+Laravel commit SHA: `1ac93e6173cf6139aacaac127d070e7fc22ebcde`
+Web UK repository commit SHA: `1ac93e6173cf6139aacaac127d070e7fc22ebcde`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 749 |
+| web-uk routes | 751 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 39 |
+| Extra web-uk routes | 41 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -99,7 +99,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | venues | 5 | 0 | 0 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 1 | 0 |
+| volunteering | 52 | 0 | 3 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -152,6 +152,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
+| POST | `/volunteering/incidents/{param}/additions` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
 
 ## Ignored Web UK Infrastructure Routes
 

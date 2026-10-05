@@ -3486,11 +3486,15 @@ router.post('/incidents', asyncRoute(async (req, res) => {
     'POST',
     '/incidents',
     payload,
-    () => {
+    (result) => {
       // The stash is for failures. Left in place after a success, the confirmation page
       // re-rendered the form pre-filled with the report just sent, inviting a duplicate.
       consumeFormReplay(req, 'volunteering', 'incidents');
-      return '/volunteering/incidents?status=incident-reported&tab=incidents';
+      // The new report's own page shows its reference and lets the member follow it.
+      const created = positiveInteger(dataFrom(result) && dataFrom(result).id);
+      return created
+        ? `/volunteering/incidents/${created}?status=incident-reported`
+        : '/volunteering/incidents?status=incident-reported&tab=incidents';
     },
     (error) => `/volunteering/incidents?status=${incidentFailureStatus(error)}&tab=incidents`
   );

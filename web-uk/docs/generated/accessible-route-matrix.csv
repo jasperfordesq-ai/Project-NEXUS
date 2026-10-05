@@ -38,6 +38,8 @@ extra-web-uk,POST,/profile/two-factor/revoke-devices,profile,,,,,,,,,,,,,web-uk/
 extra-web-uk,POST,/profile/two-factor/setup,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,GET,/terms,terms,,,,,,,,,,,,,web-uk/src/routes/legal.js,
 extra-web-uk,GET,/volunteering/credentials/{param}/download,volunteering,,,,,,,,,streamed-download,,,,web-uk/src/routes/volunteering-actions.js,
+extra-web-uk,GET,/volunteering/incidents/{param},volunteering,,,,,,,,,volunteering/incident-report,,,,web-uk/src/routes/volunteering-incidents.js,
+extra-web-uk,POST,/volunteering/incidents/{param}/additions,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-incidents.js,
 ignored-web-uk-infrastructure,GET,/health,health,,,,,,,,,,infrastructure,,,web-uk/src/server.js,
 ignored-web-uk-infrastructure,GET,/service-unavailable,service-unavailable,,,,,,,,,,infrastructure,,,web-uk/src/server.js,
 ignored-web-uk-infrastructure,POST,/session/touch,session,,,,,,,,,,infrastructure,,,web-uk/src/server.js,

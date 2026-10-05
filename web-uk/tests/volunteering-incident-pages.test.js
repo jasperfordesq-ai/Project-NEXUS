@@ -1,0 +1,261 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+/**
+ * A safeguarding report's own page on the accessible frontend: the person who made the
+ * report follows it in plain words and can add information until it is closed.
+ *
+ * Pinned here:
+ * - the page shows the reference, the plain status word and the reporter's part of the
+ *   history — the API only ever sends that part, and the page renders nothing else;
+ * - adding information posts `{ body }` to the API and comes back with a confirmation;
+ * - fewer than 20 characters is refused locally, with what was typed kept;
+ * - a report closed in the meantime (API 409) says so; a closed report has no box;
+ * - another member's report (API 404) is a plain "not found";
+ * - sending a new report goes straight to its page.
+ */
+
+const path = require('path');
+const express = require('express');
+const session = require('express-session');
+const nunjucks = require('nunjucks');
+const request = require('supertest');
+const { createChoiceTranslator, createTranslator } = require('../src/lib/localization');
+const { registerTemplateFilters } = require('../src/lib/template-filters');
+
+jest.mock('../src/lib/api', () => {
+  class ApiError extends Error {
+    constructor(message, status, data) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+      this.data = data;
+    }
+  }
+  return {
+    ApiError,
+    ApiOfflineError: class ApiOfflineError extends Error {},
+    callVolunteeringApi: jest.fn(),
+    downloadVolunteerCredential: jest.fn(),
+    getVolunteeringCategories: jest.fn(),
+    searchUsers: jest.fn(),
+    uploadVolunteerCredential: jest.fn(),
+    getProfile: jest.fn(),
+    invalidateUserCache: jest.fn()
+  };
+});
+
+const api = require('../src/lib/api');
+const volunteeringIncidentRoutes = require('../src/routes/volunteering-incidents');
+const volunteeringActionRoutes = require('../src/routes/volunteering-actions');
+
+const PREFIX = '/acme/accessible';
+const MOUNT = `${PREFIX}/volunteering`;
+const VIEWS = path.join(__dirname, '..', 'src', 'views');
+const GOVUK = path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist');
+
+function createApp() {
+  const app = express();
+  const env = nunjucks.configure([VIEWS, GOVUK], { autoescape: true, express: app, watch: false });
+  registerTemplateFilters(env);
+  env.addFilter('formatDate', (value) => String(value || ''));
+  env.addFilter('nl2br', (value) => String(value || ''));
+
+  app.set('view engine', 'njk');
+  app.set('views', VIEWS);
+  app.use(express.urlencoded({ extended: true }));
+  app.use(session({ secret: 'incident-pages-test-secret', resave: false, saveUninitialized: false }));
+
+  app.use(MOUNT, (req, res, next) => {
+    req.signedCookies = { token: 'test-token' };
+    req.accessibleRouting = {
+      mode: 'shared',
+      tenantSlug: 'acme',
+      tenant: { id: 2, slug: 'acme', name: 'Acme Timebank', settings: {} },
+      prefix: PREFIX
+    };
+    res.locals.urlFor = (value) => {
+      const target = String(value || '/');
+      return target.startsWith(PREFIX) ? target : `${PREFIX}${target.startsWith('/') ? target : `/${target}`}`;
+    };
+    Object.assign(res.locals, {
+      serviceName: 'Project NEXUS',
+      tenantName: 'Acme Timebank',
+      isAuthenticated: true,
+      csrfToken: 'test-csrf-token',
+      alphaNavItems: [],
+      feedbackUrl: `${PREFIX}/feedback`,
+      currentPath: MOUNT,
+      alphaLocaleOptions: [],
+      alphaLanguageQueryParams: [],
+      htmlLang: 'en',
+      htmlDirection: 'ltr',
+      t: createTranslator('en'),
+      tc: createChoiceTranslator('en'),
+      formatLocaleNumber: (value) => String(value ?? ''),
+      formatLocaleDate: (value) => String(value ?? '')
+    });
+    next();
+  }, volunteeringIncidentRoutes, volunteeringActionRoutes);
+
+  return app;
+}
+
+const REPORT = {
+  id: 7,
+  type: 'concern',
+  severity: 'medium',
+  status: 'investigating',
+  incident_date: '2026-10-01',
+  created_at: '2026-10-02 09:00:00',
+  organization_id: 3,
+  organization_name: 'Food Bank',
+  opportunity_id: 9,
+  opportunity_title: 'Sorting donations',
+  title: 'Left alone on shift',
+  description: 'A volunteer was left alone with a client for hours.',
+  subject_name: 'Sam Jones',
+  can_add: true,
+  timeline: [
+    { id: 1, type: 'reported', created_at: '2026-10-02 09:00:00' },
+    { id: 2, type: 'status_changed', created_at: '2026-10-02 10:00:00', from: 'open', to: 'investigating' },
+    { id: 3, type: 'message_to_reporter', created_at: '2026-10-02 11:00:00', body: 'Thank you for telling us.' },
+    { id: 4, type: 'reporter_addition', created_at: '2026-10-02 12:00:00', body: 'It happened again on Tuesday.' }
+  ]
+};
+
+function mockApi({ report = REPORT, addError = null } = {}) {
+  api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+    if (method === 'GET' && apiPath === '/incidents/7') {
+      if (report === null) throw new api.ApiError('Incident not found', 404, {});
+      return { data: report };
+    }
+    if (method === 'POST' && apiPath === '/incidents/7/additions') {
+      if (addError) throw addError;
+      return { data: { event_id: 10 } };
+    }
+    if (method === 'POST' && apiPath === '/incidents') {
+      return { data: { id: 501 } };
+    }
+    if (method === 'GET') return { data: { items: [] } };
+    throw new api.ApiError('unexpected call', 500, {});
+  });
+}
+
+function additionPosts() {
+  return api.callVolunteeringApi.mock.calls.filter(([, method, apiPath]) => method === 'POST' && apiPath === '/incidents/7/additions');
+}
+
+const t = createTranslator('en');
+const ADDITION = 'Another volunteer saw it happen on Wednesday too.';
+
+beforeEach(() => {
+  api.callVolunteeringApi.mockReset();
+  mockApi();
+});
+
+describe('safeguarding report page', () => {
+  it('shows the reference, the plain status word and the reporter’s part of the history', async () => {
+    const res = await request(createApp()).get(`${MOUNT}/incidents/7`);
+
+    expect(res.status).toBe(200);
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/incidents/7');
+    expect(res.text).toContain('Left alone on shift');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.report_reference', { id: 7 }));
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.member_status_looking_into'));
+    expect(res.text).toContain('A volunteer was left alone with a client for hours.');
+    expect(res.text).toContain('Food Bank');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.timeline_message_from_team'));
+    expect(res.text).toContain('Thank you for telling us.');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.timeline_your_addition'));
+    expect(res.text).toContain('It happened again on Tuesday.');
+    expect(res.text).toContain('name="body"');
+  });
+
+  it('adds information and comes back with a confirmation', async () => {
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/incidents/7/additions`).type('form').send({ _csrf: 'test-csrf-token', body: `  ${ADDITION}  ` });
+
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/7?status=information-added`);
+    expect(additionPosts()).toHaveLength(1);
+    expect(additionPosts()[0][3]).toEqual({ body: ADDITION });
+
+    const page = await agent.get(post.headers.location);
+    expect(page.text).toContain(t('govuk_alpha_volunteering.safeguarding.report_added'));
+  });
+
+  it('refuses fewer than 20 characters without sending, and keeps what was typed', async () => {
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/incidents/7/additions`).type('form').send({ _csrf: 'test-csrf-token', body: 'Too short.' });
+
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/7?status=addition-too-short#body`);
+    expect(additionPosts()).toHaveLength(0);
+
+    const page = await agent.get(`${MOUNT}/incidents/7?status=addition-too-short`);
+    expect(page.text).toContain(t('govuk_alpha_volunteering.safeguarding.report_add_too_short'));
+    expect(page.text).toContain('href="#body"');
+    expect(page.text).toMatch(/<textarea[^>]*name="body"[^>]*>Too short\.<\/textarea>/);
+  });
+
+  it('says so when the report was closed in the meantime', async () => {
+    mockApi({ addError: new api.ApiError('This report is closed.', 409, { errors: [{ code: 'INCIDENT_CLOSED' }] }) });
+    const post = await request(createApp()).post(`${MOUNT}/incidents/7/additions`).type('form').send({ _csrf: 'test-csrf-token', body: ADDITION });
+
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/7?status=report-closed`);
+  });
+
+  it('keeps the text when the API refuses it for being too short', async () => {
+    mockApi({ addError: new api.ApiError('Write between 20 and 5000 characters.', 422, { errors: [{ code: 'VALIDATION_ERROR', field: 'body' }] }) });
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/incidents/7/additions`).type('form').send({ _csrf: 'test-csrf-token', body: ADDITION });
+
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/7?status=addition-too-short#body`);
+    const page = await agent.get(`${MOUNT}/incidents/7?status=addition-too-short`);
+    expect(page.text).toContain(ADDITION);
+  });
+
+  it('shows no box on a closed report, and points to a new report instead', async () => {
+    mockApi({ report: { ...REPORT, status: 'closed', can_add: false } });
+    const res = await request(createApp()).get(`${MOUNT}/incidents/7`);
+
+    expect(res.text).not.toContain('name="body"');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.report_closed_message'));
+    expect(res.text).toContain(`href="${MOUNT}/incidents?tab=incidents#report-incident"`);
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.member_status_closed'));
+  });
+
+  it('answers not found for a report that is not the member’s', async () => {
+    mockApi({ report: null });
+    const res = await request(createApp()).get(`${MOUNT}/incidents/7`);
+
+    expect(res.status).toBe(404);
+    expect(res.text).not.toContain('Left alone on shift');
+  });
+
+  it('takes a new report straight to its own page', async () => {
+    const post = await request(createApp()).post(`${MOUNT}/incidents`).type('form').send({
+      _csrf: 'test-csrf-token',
+      title: 'Frightened volunteer',
+      description: 'A volunteer seemed frightened of another adult and left early.',
+      severity: 'high'
+    });
+
+    expect(post.headers.location).toBe(`${MOUNT}/incidents/501?status=incident-reported`);
+  });
+
+  it('links each report in the list to its page, with its reference', async () => {
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (method === 'GET' && apiPath === '/incidents') {
+        return { data: { items: [{ id: 7, title: 'Left alone on shift', severity: 'medium', status: 'open', created_at: '2026-10-02' }] } };
+      }
+      return { data: { items: [] } };
+    });
+    const res = await request(createApp()).get(`${MOUNT}/incidents?tab=incidents`);
+
+    expect(res.text).toContain(`href="${MOUNT}/incidents/7"`);
+    expect(res.text).toContain('#7');
+  });
+});
