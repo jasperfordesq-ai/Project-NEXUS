@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 229,
+    "producer_count": 230,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -1860,6 +1860,19 @@
             "body_expression": "$notifyMessage",
             "type_expression": "federation_message",
             "link_expression": "/federation/messages",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/FundraisingHandoverService.php:265:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/FundraisingHandoverService.php",
+            "line": 265,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $recipient->id",
+            "title_expression": null,
+            "body_expression": "$bell",
+            "type_expression": "vol_fundraising_handover",
+            "link_expression": "$link",
             "data_expression": null
         },
         {
