@@ -1,5 +1,7 @@
 {
   "tab": "Tiomsú airgid",
+  "retry": "Bain triail eile as",
+  "load_failed": "Níorbh fhéidir é seo a lódáil.",
   "history": {
     "title": "Stair",
     "empty": "Níor taifeadadh aon rud don fheachtas seo fós.",

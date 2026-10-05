@@ -1,5 +1,7 @@
 {
   "tab": "Angariação",
+  "retry": "Tentar novamente",
+  "load_failed": "Não foi possível carregar.",
   "history": {
     "title": "Histórico",
     "empty": "Ainda não foi registado nada para esta campanha.",

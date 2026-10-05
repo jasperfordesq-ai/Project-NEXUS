@@ -1,5 +1,7 @@
 {
   "tab": "Spendenaktionen",
+  "retry": "Erneut versuchen",
+  "load_failed": "Das konnte nicht geladen werden.",
   "history": {
     "title": "Verlauf",
     "empty": "Für diese Kampagne wurde noch nichts erfasst.",

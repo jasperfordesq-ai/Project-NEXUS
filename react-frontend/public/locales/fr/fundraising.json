@@ -1,5 +1,7 @@
 {
   "tab": "Collecte de fonds",
+  "retry": "Réessayer",
+  "load_failed": "Impossible de charger ces informations.",
   "history": {
     "title": "Historique",
     "empty": "Rien n’a encore été enregistré pour cette campagne.",

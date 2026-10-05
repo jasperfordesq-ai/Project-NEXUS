@@ -1,5 +1,7 @@
 {
   "tab": "Raccolta fondi",
+  "retry": "Riprova",
+  "load_failed": "Impossibile caricare queste informazioni.",
   "history": {
     "title": "Cronologia",
     "empty": "Non è stato ancora registrato nulla per questa campagna.",

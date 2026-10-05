@@ -1,5 +1,7 @@
 {
   "tab": "Inzamelen",
+  "retry": "Opnieuw proberen",
+  "load_failed": "Dit kon niet worden geladen.",
   "history": {
     "title": "Geschiedenis",
     "empty": "Voor deze campagne is nog niets vastgelegd.",

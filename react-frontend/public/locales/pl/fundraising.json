@@ -1,5 +1,7 @@
 {
   "tab": "Zbiórki",
+  "retry": "Spróbuj ponownie",
+  "load_failed": "Nie udało się tego wczytać.",
   "history": {
     "title": "Historia",
     "empty": "Dla tej zbiórki nic jeszcze nie zarejestrowano.",

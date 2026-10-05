@@ -1,5 +1,7 @@
 {
   "tab": "Recaudación",
+  "retry": "Reintentar",
+  "load_failed": "No se ha podido cargar.",
   "history": {
     "title": "Historial",
     "empty": "Todavía no se ha registrado nada para esta campaña.",

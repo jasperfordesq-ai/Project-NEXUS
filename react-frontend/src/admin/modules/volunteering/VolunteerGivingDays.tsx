@@ -20,6 +20,9 @@ import Users from 'lucide-react/icons/users';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import EyeOff from 'lucide-react/icons/eye-off';
 import TrendingUp from 'lucide-react/icons/trending-up';
+import History from 'lucide-react/icons/history';
+import HandCoins from 'lucide-react/icons/hand-coins';
+import { CampaignHandoversPanel, CampaignHistoryPanel } from './CampaignAuditPanels';
 import {
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from 'recharts';
 import { usePageTitle } from '@/hooks';
@@ -56,6 +59,10 @@ interface GivingDay {
   /** The organisation the campaign raises money for; null = the whole community. */
   organization_id?: number | null;
   organization_name?: string | null;
+  /** Server-derived: active / upcoming / paused / ended. */
+  status?: string;
+  /** Any donation references the campaign, so its organisation is locked. */
+  has_donations?: boolean;
 }
 
 interface OrganisationOption {
@@ -125,6 +132,7 @@ const getProgressColor = (pct: number): 'success' | 'warning' | 'danger' | 'defa
 
 export default function VolunteerGivingDays() {
   const { t } = useTranslation('admin_volunteering');
+  const { t: tf } = useTranslation('fundraising');
   usePageTitle(t('volunteering.giving_days_title'));
   const toast = useToast();
   // Campaign goals are in the community's own currency (donations are refused
@@ -381,6 +389,9 @@ export default function VolunteerGivingDays() {
   };
 
   const selectedDay = givingDays.find((d) => d.id === selectedDayId);
+  // Once a campaign has any gift its organisation can no longer change
+  // (the server refuses it too) — say so rather than offer a dead control.
+  const organisationLocked = Boolean(editingId && givingDays.find((d) => d.id === editingId)?.has_donations);
 
   const columns: Column<GivingDay>[] = [
     { key: 'name', label: t('volunteering.col_name'), sortable: true },
@@ -450,9 +461,13 @@ export default function VolunteerGivingDays() {
       key: 'is_active',
       label: t('volunteering.col_status'),
       render: (row) => (
-        <Chip size="sm" color={row.is_active ? 'success' : 'default'} variant="soft">
-          {row.is_active ? t('volunteering.active') : t('volunteering.inactive')}
-        </Chip>
+        row.status === 'paused' ? (
+          <Chip size="sm" color="warning" variant="soft">{tf('admin.status_paused')}</Chip>
+        ) : (
+          <Chip size="sm" color={row.is_active ? 'success' : 'default'} variant="soft">
+            {row.is_active ? t('volunteering.active') : t('volunteering.inactive')}
+          </Chip>
+        )
       ),
     },
     {
@@ -737,6 +752,33 @@ export default function VolunteerGivingDays() {
                   </div>
                 )}
               </Tab>
+              <Tab
+                key="history"
+                title={
+                  <div className="flex items-center gap-2">
+                    <History size={14} />
+                    {tf('history.title')}
+                  </div>
+                }
+              >
+                {selectedDayId !== null && <CampaignHistoryPanel givingDayId={selectedDayId} />}
+              </Tab>
+              <Tab
+                key="handovers"
+                title={
+                  <div className="flex items-center gap-2">
+                    <HandCoins size={14} />
+                    {tf('handovers.title')}
+                  </div>
+                }
+              >
+                {selectedDayId !== null && (
+                  <CampaignHandoversPanel
+                    givingDayId={selectedDayId}
+                    hasOrganisation={Boolean(selectedDay?.organization_id)}
+                  />
+                )}
+              </Tab>
             </Tabs>
           </ModalBody>
           <ModalFooter>
@@ -770,8 +812,9 @@ export default function VolunteerGivingDays() {
               />
               <Select
                 label={t('volunteering.field_organisation')}
-                description={t('volunteering.field_organisation_hint')}
+                description={organisationLocked ? tf('admin.organisation_locked') : t('volunteering.field_organisation_hint')}
                 variant="secondary"
+                isDisabled={organisationLocked}
                 selectedKeys={[form.organization_id]}
                 onSelectionChange={(keys) => {
                   const selected = Array.from(keys)[0];

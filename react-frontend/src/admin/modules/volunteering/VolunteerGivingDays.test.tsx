@@ -77,7 +77,7 @@ function adminComponentsMock() {
           <div key={String(row['id'])} data-testid="table-row">
             <span>{String(row['name'])}</span>
             {columns
-              .filter((col) => col.key === 'organization_name' || col.key === 'actions')
+              .filter((col) => col.key === 'organization_name' || col.key === 'actions' || col.key === 'is_active')
               .map((col) => <span key={col.key} data-testid={`cell-${col.key}`}>{col.render?.(row)}</span>)}
           </div>
         ))}
@@ -92,6 +92,13 @@ function adminComponentsMock() {
     EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
   };
 }
+
+vi.mock('./CampaignAuditPanels', () => ({
+  CampaignHistoryPanel: ({ givingDayId }: { givingDayId: number }) => <div data-testid="history-panel">history {givingDayId}</div>,
+  CampaignHandoversPanel: ({ givingDayId, hasOrganisation }: { givingDayId: number; hasOrganisation: boolean }) => (
+    <div data-testid="handovers-panel">handovers {givingDayId} {String(hasOrganisation)}</div>
+  ),
+}));
 
 vi.mock('../../components', adminComponentsMock);
 vi.mock('../../components/DataTable', adminComponentsMock);
@@ -192,6 +199,48 @@ describe('VolunteerGivingDays', () => {
         expect.objectContaining({ name: 'Winter appeal', organization_id: null }),
       );
     });
+  });
+
+  it('shows a paused campaign as Paused, not Inactive', async () => {
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([
+      makeGivingDay({ id: 1, name: 'Paused appeal', is_active: false, status: 'paused' }),
+    ]));
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+
+    await waitFor(() => screen.getByText('Paused appeal'));
+    expect(screen.getByTestId('cell-is_active')).toHaveTextContent('Paused');
+  });
+
+  it('explains that the organisation is locked once a campaign has gifts', async () => {
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([
+      makeGivingDay({ id: 1, name: 'Food appeal', organization_id: 7, organization_name: 'Food Bank', has_donations: true }),
+    ]));
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+    await waitFor(() => screen.getByText('Food appeal'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(await screen.findByText('This campaign has already received gifts, so its organisation cannot be changed.')).toBeInTheDocument();
+  });
+
+  it('opens the campaign’s history and hand-overs from the donors view', async () => {
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([
+      makeGivingDay({ id: 4, name: 'Food appeal', organization_id: 7, organization_name: 'Food Bank' }),
+    ]));
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+    await waitFor(() => screen.getByText('Food appeal'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'View donors' }));
+    fireEvent.click(await screen.findByRole('tab', { name: /History/ }));
+    expect(await screen.findByTestId('history-panel')).toHaveTextContent('history 4');
+
+    fireEvent.click(screen.getByRole('tab', { name: /Hand-overs/ }));
+    expect(await screen.findByTestId('handovers-panel')).toHaveTextContent('handovers 4 true');
   });
 
   it('does not resend the organisation when an edit leaves it unchanged', async () => {

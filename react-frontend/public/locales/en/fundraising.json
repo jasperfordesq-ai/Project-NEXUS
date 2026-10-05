@@ -1,5 +1,7 @@
 {
   "tab": "Fundraising",
+  "retry": "Try again",
+  "load_failed": "This could not be loaded.",
   "history": {
     "title": "History",
     "empty": "Nothing has been recorded for this campaign yet.",
