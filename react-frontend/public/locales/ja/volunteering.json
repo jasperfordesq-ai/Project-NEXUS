@@ -405,37 +405,27 @@
     "intro_title": "寄付とは何ですか",
     "intro_desc": "ここでの寄付とは、このコミュニティをサポートするための、カードで支払われる現地通貨でのお金の贈り物です。ボランティア活動によって獲得できる時間単位とは異なります。以下のアクティブな募金キャンペーンを選択するか、コミュニティに一般寄付を行ってください。",
     "refresh": "リフレッシュ",
-    "donate": "寄付する",
     "load_error": "寄付データを読み込めませんでした。",
-    "try_again": "もう一度試す",
     "empty_title": "寄付日や寄付はありません",
     "empty_description": "寄付の日がアクティブなときは、コミュニティを支援するために寄付を行うことができます。",
-    "make_donation": "寄付をする",
-    "active_giving_days": "アクティブな寄付の日",
     "donors_count": "{{count}} の寄付者",
     "my_donations": "私の寄付",
     "anonymous": "匿名",
     "progress_aria": "寄付の進捗状況: {{percent}}%",
-    "modal_title": "寄付をする",
     "form": {
       "amount": "額",
       "payment_method": "支払方法",
-      "message": "メッセージ（任意）"
+      "message": "メッセージ（任意）",
+      "campaign": "キャンペーン",
+      "reference": "振込の参照番号（任意）",
+      "reference_hint": "照合できるように、振込時に付けた参照番号を入力してください。"
     },
     "placeholder_amount": "0.00",
-    "anonymous_toggle_on": "匿名で寄付する",
-    "anonymous_toggle_off": "匿名で寄付する",
     "cancel": "キャンセル",
     "confirm": "寄付を確認する",
     "invalid_amount": "有効な金額を入力してください。",
-    "submit_success": "寄付が記録されました！",
     "submit_error": "寄付の記録に失敗しました。",
     "submit_error_retry": "寄付の記録に失敗しました。もう一度お試しください。",
-    "payment_methods": {
-      "card": "カード",
-      "bank_transfer": "銀行振込",
-      "paypal": "ペイパル"
-    },
     "status": {
       "completed": "完了しました",
       "pending": "保留中",
@@ -443,9 +433,11 @@
       "refunded": "返金されました"
     },
     "stats": {
-      "total_raised": "合計調達額",
-      "total_donors": "合計寄付者数",
-      "active_campaigns": "アクティブなキャンペーン"
+      "live_campaigns": "実施中のキャンペーン",
+      "raised": "これまでの寄付総額",
+      "raised_hint": "実施中のキャンペーン全体",
+      "you_gave": "あなたの寄付額",
+      "pending_pledges": "保留中 {{number}} 件"
     },
     "day_status": {
       "active": "アクティブ",
@@ -454,7 +446,6 @@
     },
     "checkout_title": "カードで寄付する",
     "amount_label": "額",
-    "currency_label": "通貨",
     "fund_label": "基金",
     "fund_options": {
       "general": "コミュニティ全般の支援",
@@ -492,11 +483,6 @@
     "payment_action_required": "追加の認証が必要です。",
     "payment_unexpected": "予期しない支払い状況です。サポートにお問い合わせください。",
     "payment_error": "支払い中にエラーが発生しました。",
-    "currencies": {
-      "EUR": "ユーロ",
-      "GBP": "英ポンド",
-      "USD": "米ドル"
-    },
     "receipt_title": "寄付領収書",
     "receipt_ref": "参照: {{ref}}",
     "receipt_donor": "ドナー",
@@ -507,7 +493,29 @@
     "receipt_error": "領収書の読み込みに失敗しました。",
     "receipt_not_found": "領収書が見つかりません。",
     "donors_count_one": "{{count}} 寄付者",
-    "donors_count_other": "{{count}} の寄付者"
+    "donors_count_other": "{{count}} の寄付者",
+    "record_pledge": "寄付の約束を記録",
+    "live_campaigns": "実施中のキャンペーン",
+    "upcoming_campaigns": "近日開始",
+    "past_campaigns": "過去のキャンペーン",
+    "past_campaigns_hint": "新規の寄付は受け付けていません。",
+    "raised_of_goal": "目標 {{goal}} のうち {{raised}} 達成",
+    "percent_funded": "達成率 {{percent}}%",
+    "ends_on": "{{date}} に終了",
+    "ended_on": "{{date}} に終了しました",
+    "starts_on": "{{date}} に開始",
+    "methods": {
+      "card": "カード",
+      "bank_transfer": "銀行振込",
+      "paypal": "PayPal",
+      "cash": "現金",
+      "other": "その他"
+    },
+    "pending_pledge_note": "寄付の約束として記録されています。入金が確認されると管理者が完了にします。",
+    "pledge_intro": "銀行振込、PayPal、現金で送金した、または送金する予定のお金に使います。管理者が入金を確認するまで保留中と表示されます。",
+    "pledge_success": "寄付の約束を記録しました。確認されるまで保留中と表示されます。",
+    "currency_fixed_hint": "このコミュニティへの寄付は {{currency}} で受け付けています。",
+    "my_donations_hint": "あなたの寄付と約束（新しい順）。"
   },
   "safeguarding": {
     "heading": "保護",

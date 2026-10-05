@@ -405,37 +405,27 @@
     "intro_title": "Wat donaties zijn",
     "intro_desc": "Een donatie hier is een gift in de vorm van geld – in uw lokale valuta, betaald met een kaart – om deze gemeenschap te ondersteunen. Het is NIET hetzelfde als tijdskredieten, die je verdient door vrijwilligerswerk te doen. Kies hieronder een actieve inzamelingscampagne of doe een algemene donatie aan de gemeenschap.",
     "refresh": "Vernieuwen",
-    "donate": "Toezeggen via bankoverschrijving",
     "load_error": "Kan donatiegegevens niet laden.",
-    "try_again": "Probeer het opnieuw",
     "empty_title": "Geen geefdagen of donaties",
     "empty_description": "Wanneer er een donatiedag actief is, kunt u donaties doen om uw gemeenschap te ondersteunen.",
-    "make_donation": "Doe een donatie",
-    "active_giving_days": "Actieve geefdagen",
     "donors_count": "{{count}} donoren",
     "my_donations": "Mijn donaties",
     "anonymous": "Anoniem",
     "progress_aria": "Voortgang donatie: {{percent}}%",
-    "modal_title": "Offline toezegging vastleggen",
     "form": {
       "amount": "Hoeveelheid",
       "payment_method": "Betaalmethode",
-      "message": "Bericht (optioneel)"
+      "message": "Bericht (optioneel)",
+      "campaign": "Campagne",
+      "reference": "Betalingskenmerk (optioneel)",
+      "reference_hint": "Het kenmerk dat je bij de overschrijving hebt gebruikt, zodat deze gekoppeld kan worden."
     },
     "placeholder_amount": "0,00",
-    "anonymous_toggle_on": "Anoniem doneren",
-    "anonymous_toggle_off": "Doneer anoniem",
     "cancel": "Annuleren",
     "confirm": "Toezegging vastleggen",
     "invalid_amount": "Voer een geldig bedrag in.",
-    "submit_success": "Offline toezegging vastgelegd.",
     "submit_error": "Kan donatie niet registreren.",
     "submit_error_retry": "Kan donatie niet registreren. Probeer het opnieuw.",
-    "payment_methods": {
-      "card": "kaart",
-      "bank_transfer": "bankoverschrijving",
-      "paypal": "PayPal"
-    },
     "status": {
       "completed": "Voltooid",
       "pending": "In behandeling",
@@ -443,9 +433,11 @@
       "refunded": "Terugbetaald"
     },
     "stats": {
-      "total_raised": "Totaal verhoogd",
-      "total_donors": "Totaal donoren",
-      "active_campaigns": "Actieve campagnes"
+      "live_campaigns": "Lopende campagnes",
+      "raised": "Tot nu toe opgehaald",
+      "raised_hint": "Over alle lopende campagnes",
+      "you_gave": "Jij hebt gegeven",
+      "pending_pledges": "{{number}} in afwachting"
     },
     "day_status": {
       "active": "Actief",
@@ -454,7 +446,6 @@
     },
     "checkout_title": "Doneer met kaart",
     "amount_label": "Hoeveelheid",
-    "currency_label": "Munteenheid",
     "fund_label": "Fonds",
     "fund_options": {
       "general": "Algemene steun voor de gemeenschap",
@@ -492,11 +483,6 @@
     "payment_action_required": "Aanvullende authenticatie vereist.",
     "payment_unexpected": "Onverwachte betalingsstatus. Neem contact op met de ondersteuning.",
     "payment_error": "Er is een fout opgetreden tijdens de betaling.",
-    "currencies": {
-      "EUR": "EUR",
-      "GBP": "GBP",
-      "USD": "USD"
-    },
     "receipt_title": "Donatie ontvangstbewijs",
     "receipt_ref": "Zie: {{ref}}",
     "receipt_donor": "Donateur",
@@ -506,8 +492,30 @@
     "receipt_message": "Bericht",
     "receipt_error": "Kan de bon niet laden.",
     "receipt_not_found": "Ontvangstbewijs niet gevonden.",
-    "donors_count_one": "{{count}} donoren",
-    "donors_count_other": "{{count}} donoren"
+    "donors_count_one": "{{count}} donateur",
+    "donors_count_other": "{{count}} donoren",
+    "record_pledge": "Toezegging vastleggen",
+    "live_campaigns": "Lopende campagnes",
+    "upcoming_campaigns": "Binnenkort",
+    "past_campaigns": "Eerdere campagnes",
+    "past_campaigns_hint": "Gesloten voor nieuwe donaties.",
+    "raised_of_goal": "{{raised}} opgehaald van {{goal}}",
+    "percent_funded": "{{percent}}% gefinancierd",
+    "ends_on": "Eindigt op {{date}}",
+    "ended_on": "Geëindigd op {{date}}",
+    "starts_on": "Begint op {{date}}",
+    "methods": {
+      "card": "Kaart",
+      "bank_transfer": "Bankoverschrijving",
+      "paypal": "PayPal",
+      "cash": "Contant",
+      "other": "Anders"
+    },
+    "pending_pledge_note": "Vastgelegd als toezegging. Een beheerder markeert deze als voltooid zodra het geld binnen is.",
+    "pledge_intro": "Gebruik dit voor geld dat je hebt overgemaakt, of gaat overmaken, per bankoverschrijving, PayPal of contant. Het staat op in afwachting totdat een beheerder de ontvangst bevestigt.",
+    "pledge_success": "Toezegging vastgelegd. Deze staat op in afwachting totdat ze is bevestigd.",
+    "currency_fixed_hint": "Donaties aan deze gemeenschap worden in {{currency}} aangenomen.",
+    "my_donations_hint": "Jouw giften en toezeggingen, nieuwste eerst."
   },
   "safeguarding": {
     "heading": "Bescherming",

@@ -420,37 +420,27 @@
     "intro_title": "Cad iad na síntiúis",
     "intro_desc": "Is bronntanas airgid é síntiús anseo — i d’airgeadra áitiúil agus íoctha le cárta — chun tacú leis an bpobal seo. Ní hionann é agus creidmheasanna ama, a thuilleann tú trí obair dheonach. Roghnaigh feachtas gníomhach tiomsaithe airgid thíos, nó tabhair síntiús ginearálta don phobal.",
     "refresh": "Athnuaigh",
-    "donate": "Geall Síntiús trí Aistriú Bainc",
     "load_error": "Ní féidir sonraí tabhartais a lódáil.",
-    "try_again": "Bain Triail Eile As",
     "empty_title": "Níl aon fheachtas tiomsaithe airgid ar siúl faoi láthair",
     "empty_description": "Nuair a bheidh feachtas tiomsaithe airgid ar siúl, beidh tú in ann airgead a bhronnadh anseo chun tacú leis an bpobal. Tá sé seo ar leithligh ó chreidmheasanna ama, a thuilleann tú trí obair dheonach.",
-    "make_donation": "Déan Tabhartas",
-    "active_giving_days": "Laethanta Tabhartha Gníomhacha",
     "donors_count": "{{count}} deontóir",
     "my_donations": "Mo Thabhartais",
     "anonymous": "Anaithnid",
     "progress_aria": "Dul chun cinn síntiús: {{percent}}%",
-    "modal_title": "Taifead Gealltanas As Líne",
     "form": {
       "amount": "Méid",
       "payment_method": "Modh íocaíochta",
-      "message": "Teachtaireacht (roghnach)"
+      "message": "Teachtaireacht (roghnach)",
+      "campaign": "Feachtas",
+      "reference": "Tagairt íocaíochta (roghnach)",
+      "reference_hint": "An tagairt a chuir tú ar an aistriú, ionas gur féidir é a mheaitseáil."
     },
     "placeholder_amount": "0,00",
-    "anonymous_toggle_on": "Ag tabhairt gan ainm",
-    "anonymous_toggle_off": "Tabhair gan ainm",
     "cancel": "Cealaigh",
     "confirm": "Taifead an Gealltanas",
     "invalid_amount": "Cuir isteach méid bailí le do thoil.",
-    "submit_success": "Taifeadadh an gealltanas as líne.",
     "submit_error": "Theip ar thabhartas a thaifeadadh.",
     "submit_error_retry": "Theip ar thabhartas a thaifeadadh. Bain triail eile as le do thoil.",
-    "payment_methods": {
-      "card": "cárta",
-      "bank_transfer": "aistriú bainc",
-      "paypal": "paypal"
-    },
     "status": {
       "completed": "Críochnaithe",
       "pending": "Ar Feitheamh",
@@ -458,9 +448,11 @@
       "refunded": "Aisíoctha"
     },
     "stats": {
-      "total_raised": "Iomlán Bailithe",
-      "total_donors": "Deontóirí Iomlána",
-      "active_campaigns": "Feachtais Ghníomhacha"
+      "live_campaigns": "Feachtais bheo",
+      "raised": "Bailithe go dtí seo",
+      "raised_hint": "Thar feachtais bheo",
+      "you_gave": "Thug tú",
+      "pending_pledges": "{{number}} ar feitheamh"
     },
     "day_status": {
       "active": "Gníomhach",
@@ -469,7 +461,6 @@
     },
     "checkout_title": "Tabhair le cárta",
     "amount_label": "Méid",
-    "currency_label": "Airgeadra",
     "fund_label": "Ciste",
     "fund_options": {
       "general": "Tacaíocht ghinearálta don phobal",
@@ -507,11 +498,6 @@
     "payment_action_required": "Fíordheimhniú breise ag teastáil.",
     "payment_unexpected": "Stádas íocaíochta gan choinne. Téigh i dteagmháil le tacaíocht.",
     "payment_error": "Tharla earráid le linn na híocaíochta.",
-    "currencies": {
-      "EUR": "EUR",
-      "GBP": "GBP",
-      "USD": "USD"
-    },
     "receipt_title": "Admháil Tabhartais",
     "receipt_ref": "Tagairt: {{ref}}",
     "receipt_donor": "Deontóir",
@@ -525,7 +511,29 @@
     "donors_count_other": "{{count}} deontóir",
     "donors_count_few": "{{count}} deontóir",
     "donors_count_many": "{{count}} deontóir",
-    "donors_count_two": "{{count}} deontóir"
+    "donors_count_two": "{{count}} deontóir",
+    "record_pledge": "Taifead gealltanas",
+    "live_campaigns": "Feachtais bheo",
+    "upcoming_campaigns": "Ag teacht",
+    "past_campaigns": "Feachtais roimhe seo",
+    "past_campaigns_hint": "Dúnta do shíntiúis nua.",
+    "raised_of_goal": "{{raised}} bailithe as {{goal}}",
+    "percent_funded": "{{percent}}% maoinithe",
+    "ends_on": "Críochnaíonn {{date}}",
+    "ended_on": "Chríochnaigh {{date}}",
+    "starts_on": "Tosaíonn {{date}}",
+    "methods": {
+      "card": "Cárta",
+      "bank_transfer": "Aistriú bainc",
+      "paypal": "PayPal",
+      "cash": "Airgead tirim",
+      "other": "Eile"
+    },
+    "pending_pledge_note": "Taifeadta mar ghealltanas. Marcálann riarthóir é mar chríochnaithe nuair a thagann an t-airgead.",
+    "pledge_intro": "Úsáid é seo le haghaidh airgid atá seolta agat, nó a sheolfaidh tú, trí aistriú bainc, PayPal nó airgead tirim. Taispeánfar é ar feitheamh go dtí go ndeimhníonn riarthóir gur tháinig sé.",
+    "pledge_success": "Gealltanas taifeadta. Taispeánfar é ar feitheamh go dtí go ndeimhnítear é.",
+    "currency_fixed_hint": "Glactar le síntiúis don phobal seo in {{currency}}.",
+    "my_donations_hint": "Do bhronntanais agus do ghealltanais, an ceann is nuaí ar dtús."
   },
   "safeguarding": {
     "heading": "Cosaint",

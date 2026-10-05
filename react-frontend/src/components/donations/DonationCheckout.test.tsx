@@ -24,9 +24,23 @@ const mockStripe = vi.hoisted(() => ({
 }));
 const mockElements = vi.hoisted(() => ({}));
 
+// The community currency comes from the tenant bootstrap; tests flip it per case.
+const tenantState = vi.hoisted(() => ({ currency: 'EUR' }));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useTenant: () => {
+      // Built as a variable so the extra `currency` field type-checks against
+      // the helper's narrower default tenant shape.
+      const tenant = { id: 2, name: 'Test Tenant', slug: 'test', currency: tenantState.currency };
+      return {
+        tenant,
+        tenantPath: (p: string) => `/test${p}`,
+        hasFeature: vi.fn((_key: string) => true),
+        hasModule: vi.fn((_key: string) => true),
+      };
+    },
   })
 );
 
@@ -91,6 +105,7 @@ const defaultProps = {
 describe('DonationCheckout', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    tenantState.currency = 'EUR';
   });
 
   // ── Step 1: Form ──────────────────────────────────────────────────────────
@@ -189,7 +204,20 @@ describe('DonationCheckout', () => {
     );
   });
 
-  it('sends the selected fund and Gift Aid declaration to the payment intent API', async () => {
+  // The server refuses any currency other than the community's own, so the
+  // checkout never offers a choice: it shows the tenant currency and pays in it.
+  it('shows the community currency on the amount field and offers no currency picker', () => {
+    render(<DonationCheckout {...defaultProps} />);
+    expect(screen.getByText('EUR')).toBeInTheDocument();
+    expect(
+      screen.queryAllByRole('button').find((b) => b.getAttribute('data-slot') === 'select-trigger' && b.textContent?.includes('EUR')),
+    ).toBeUndefined();
+    // Gift Aid is a UK scheme — not shown for a euro community.
+    expect(screen.queryByRole('switch', { name: /gift aid/i })).not.toBeInTheDocument();
+  });
+
+  it('sends the selected fund and Gift Aid declaration to the payment intent API for a GBP community', async () => {
+    tenantState.currency = 'GBP';
     vi.mocked(api.post).mockResolvedValueOnce({
       success: true,
       data: { client_secret: 'pi_test_secret', donation_id: 99 },
@@ -198,23 +226,6 @@ describe('DonationCheckout', () => {
     render(<DonationCheckout {...defaultProps} />);
 
     await user.type(screen.getByRole('spinbutton'), '25');
-
-    const currencyTrigger = screen.getAllByRole('button').find((button) =>
-      button.getAttribute('data-slot') === 'select-trigger' && button.textContent?.includes('EUR'),
-    );
-    expect(currencyTrigger).toBeDefined();
-    await user.click(currencyTrigger!);
-    const gbpOption = await waitFor(
-      () => {
-        const option = Array.from(document.body.querySelectorAll('[role="option"]')).find((node) =>
-          node.textContent?.includes('GBP'),
-        );
-        if (!option) throw new Error('GBP option not found');
-        return option;
-      },
-      { timeout: 3000 },
-    );
-    await user.click(gbpOption as HTMLElement);
 
     await user.click(screen.getByRole('switch', { name: /gift aid/i }));
     await user.type(screen.getByLabelText(/full name on declaration/i), 'Ada Lovelace');

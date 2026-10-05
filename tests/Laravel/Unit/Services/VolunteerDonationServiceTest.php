@@ -266,6 +266,51 @@ class VolunteerDonationServiceTest extends TestCase
         $this->assertSame($projectId, (int) $result['items'][0]['community_project_id']);
     }
 
+    public function test_getDonations_names_the_campaign_on_each_row(): void
+    {
+        $userId = random_int(10_000_000, 99_999_999);
+        $givingDayId = (int) DB::table('vol_giving_days')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'title' => 'Winter warmth appeal',
+            'start_date' => now()->subDays(40)->toDateString(),
+            'end_date' => now()->subDays(10)->toDateString(),
+            // Closed campaigns drop out of getGivingDays(), so the list is the
+            // only place a donor can still learn which appeal a gift went to.
+            'is_active' => 0,
+            'goal_amount' => 500,
+            'raised_amount' => 0,
+            'created_by' => 1,
+            'created_at' => now(),
+        ]);
+        $campaignDonationId = (int) DB::table('vol_donations')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $userId,
+            'giving_day_id' => $givingDayId,
+            'amount' => 25.00,
+            'currency' => 'EUR',
+            'payment_method' => 'stripe',
+            'status' => 'completed',
+            'created_at' => now()->subDay(),
+        ]);
+        $generalDonationId = (int) DB::table('vol_donations')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $userId,
+            'giving_day_id' => null,
+            'amount' => 10.00,
+            'currency' => 'EUR',
+            'payment_method' => 'bank_transfer',
+            'status' => 'pending',
+            'created_at' => now(),
+        ]);
+
+        $items = collect(VolunteerDonationService::getDonations(['user_id' => $userId])['items'])
+            ->keyBy('id');
+
+        $this->assertSame('Winter warmth appeal', $items[$campaignDonationId]['giving_day_title']);
+        $this->assertArrayHasKey('giving_day_title', $items[$generalDonationId]);
+        $this->assertNull($items[$generalDonationId]['giving_day_title']);
+    }
+
     public function test_adminGetGivingDays_serves_stored_raised_amount_counter(): void
     {
         $givingDayId = (int) DB::table('vol_giving_days')->insertGetId([

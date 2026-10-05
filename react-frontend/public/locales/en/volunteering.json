@@ -405,37 +405,27 @@
     "intro_title": "What donations are",
     "intro_desc": "A donation here is a gift of money — in your local currency, paid by card — to support this community. It is NOT the same as time credits, which you earn by volunteering. Choose an active fundraising campaign below, or make a general donation to the community.",
     "refresh": "Refresh",
-    "donate": "Pledge by bank transfer",
     "load_error": "Unable to load donations data.",
-    "try_again": "Try Again",
     "empty_title": "No fundraising campaigns right now",
     "empty_description": "When a fundraising campaign is running, you can donate money here to support the community. This is separate from time credits, which you earn by volunteering.",
-    "make_donation": "Make a Donation",
-    "active_giving_days": "Active Giving Days",
     "donors_count": "{{count}} donors",
-    "my_donations": "My Donations",
+    "my_donations": "My donations",
     "anonymous": "Anonymous",
     "progress_aria": "Donation progress: {{percent}}%",
-    "modal_title": "Record an Offline Pledge",
     "form": {
       "amount": "Amount",
       "payment_method": "Payment method",
-      "message": "Message (optional)"
+      "message": "Message (optional)",
+      "campaign": "Campaign",
+      "reference": "Payment reference (optional)",
+      "reference_hint": "The reference you put on the transfer, so it can be matched."
     },
     "placeholder_amount": "0.00",
-    "anonymous_toggle_on": "Donating anonymously",
-    "anonymous_toggle_off": "Donate anonymously",
     "cancel": "Cancel",
-    "confirm": "Record Pledge",
+    "confirm": "Record pledge",
     "invalid_amount": "Please enter a valid amount.",
-    "submit_success": "Offline pledge recorded.",
     "submit_error": "Failed to record donation.",
     "submit_error_retry": "Failed to record donation. Please try again.",
-    "payment_methods": {
-      "card": "card",
-      "bank_transfer": "bank transfer",
-      "paypal": "paypal"
-    },
     "status": {
       "completed": "Completed",
       "pending": "Pending",
@@ -443,9 +433,11 @@
       "refunded": "Refunded"
     },
     "stats": {
-      "total_raised": "Total Raised",
-      "total_donors": "Total Donors",
-      "active_campaigns": "Active Campaigns"
+      "live_campaigns": "Live campaigns",
+      "raised": "Raised so far",
+      "raised_hint": "Across live campaigns",
+      "you_gave": "You've given",
+      "pending_pledges": "{{number}} pending"
     },
     "day_status": {
       "active": "Active",
@@ -454,7 +446,6 @@
     },
     "checkout_title": "Donate with Card",
     "amount_label": "Amount",
-    "currency_label": "Currency",
     "fund_label": "Fund",
     "fund_options": {
       "general": "General community support",
@@ -492,11 +483,6 @@
     "payment_action_required": "Additional authentication required.",
     "payment_unexpected": "Unexpected payment status. Please contact support.",
     "payment_error": "An error occurred during payment.",
-    "currencies": {
-      "EUR": "EUR",
-      "GBP": "GBP",
-      "USD": "USD"
-    },
     "receipt_title": "Donation Receipt",
     "receipt_ref": "Ref: {{ref}}",
     "receipt_donor": "Donor",
@@ -506,8 +492,30 @@
     "receipt_message": "Message",
     "receipt_error": "Failed to load receipt.",
     "receipt_not_found": "Receipt not found.",
-    "donors_count_one": "{{count}} donors",
-    "donors_count_other": "{{count}} donors"
+    "donors_count_one": "{{count}} donor",
+    "donors_count_other": "{{count}} donors",
+    "record_pledge": "Record a pledge",
+    "live_campaigns": "Live campaigns",
+    "upcoming_campaigns": "Coming up",
+    "past_campaigns": "Past campaigns",
+    "past_campaigns_hint": "Closed to new donations.",
+    "raised_of_goal": "{{raised}} raised of {{goal}}",
+    "percent_funded": "{{percent}}% funded",
+    "ends_on": "Ends {{date}}",
+    "ended_on": "Ended {{date}}",
+    "starts_on": "Starts {{date}}",
+    "methods": {
+      "card": "Card",
+      "bank_transfer": "Bank transfer",
+      "paypal": "PayPal",
+      "cash": "Cash",
+      "other": "Other"
+    },
+    "pending_pledge_note": "Recorded as a pledge. An administrator marks it complete once the money arrives.",
+    "pledge_intro": "Use this for money you have sent, or will send, by bank transfer, PayPal or cash. It shows as pending until an administrator confirms it arrived.",
+    "pledge_success": "Pledge recorded. It will show as pending until it is confirmed.",
+    "currency_fixed_hint": "Donations to this community are taken in {{currency}}.",
+    "my_donations_hint": "Your gifts and pledges, newest first."
   },
   "safeguarding": {
     "heading": "Safeguarding",

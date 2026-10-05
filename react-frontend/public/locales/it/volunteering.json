@@ -410,37 +410,27 @@
     "intro_title": "Cosa sono le donazioni",
     "intro_desc": "Una donazione qui è un dono in denaro, nella tua valuta locale, pagato con carta, per sostenere questa comunità. NON è la stessa cosa dei crediti temporali che guadagni facendo volontariato. Scegli una campagna di raccolta fondi attiva di seguito o fai una donazione generale alla comunità.",
     "refresh": "Aggiorna",
-    "donate": "Dona",
     "load_error": "Impossibile caricare i dati delle donazioni.",
-    "try_again": "Riprova",
     "empty_title": "Nessuna giornata di donazione o donazione",
     "empty_description": "Quando è attiva una giornata di donazione, puoi fare donazioni per sostenere la tua comunità.",
-    "make_donation": "Fai una Donazione",
-    "active_giving_days": "Giornate di Donazione Attive",
     "donors_count": "{{count}} donatori",
     "my_donations": "Le Mie Donazioni",
     "anonymous": "Anonimo",
     "progress_aria": "Avanzamento della donazione: {{percent}}%",
-    "modal_title": "Fai una Donazione",
     "form": {
       "amount": "Importo",
       "payment_method": "Metodo di pagamento",
-      "message": "Messaggio (opzionale)"
+      "message": "Messaggio (opzionale)",
+      "campaign": "Campagna",
+      "reference": "Riferimento del pagamento (facoltativo)",
+      "reference_hint": "La causale che hai indicato nel bonifico, per poterlo abbinare."
     },
     "placeholder_amount": "0,00",
-    "anonymous_toggle_on": "Donazione anonima",
-    "anonymous_toggle_off": "Dona in modo anonimo",
     "cancel": "Annulla",
     "confirm": "Conferma Donazione",
     "invalid_amount": "Inserisci un importo valido.",
-    "submit_success": "Donazione registrata!",
     "submit_error": "Impossibile registrare la donazione.",
     "submit_error_retry": "Impossibile registrare la donazione. Riprova.",
-    "payment_methods": {
-      "card": "carta",
-      "bank_transfer": "bonifico bancario",
-      "paypal": "PayPal"
-    },
     "status": {
       "completed": "Completato",
       "pending": "In Attesa",
@@ -448,9 +438,11 @@
       "refunded": "Rimborsato"
     },
     "stats": {
-      "total_raised": "Totale Raccolto",
-      "total_donors": "Totale Donatori",
-      "active_campaigns": "Campagne Attive"
+      "live_campaigns": "Campagne attive",
+      "raised": "Raccolto finora",
+      "raised_hint": "Nelle campagne attive",
+      "you_gave": "Hai donato",
+      "pending_pledges": "{{number}} in attesa"
     },
     "day_status": {
       "active": "Attiva",
@@ -459,7 +451,6 @@
     },
     "checkout_title": "Dona con carta",
     "amount_label": "Importo",
-    "currency_label": "Valuta",
     "fund_label": "Fondo",
     "fund_options": {
       "general": "Sostegno generale alla comunità",
@@ -497,11 +488,6 @@
     "payment_action_required": "Autenticazione aggiuntiva richiesta.",
     "payment_unexpected": "Stato del pagamento imprevisto. Contatta l'assistenza.",
     "payment_error": "Si è verificato un errore durante il pagamento.",
-    "currencies": {
-      "EUR": "EUR",
-      "GBP": "GBP",
-      "USD": "USD"
-    },
     "receipt_title": "Ricevuta di donazione",
     "receipt_ref": "Rif: {{ref}}",
     "receipt_donor": "Donatore",
@@ -511,9 +497,31 @@
     "receipt_message": "Messaggio",
     "receipt_error": "Impossibile caricare la ricevuta.",
     "receipt_not_found": "Ricevuta non trovata.",
-    "donors_count_one": "{{count}} donatori",
+    "donors_count_one": "{{count}} donatore",
     "donors_count_other": "{{count}} donatori",
-    "donors_count_many": "{{count}} donatori"
+    "donors_count_many": "{{count}} donatori",
+    "record_pledge": "Registra una promessa",
+    "live_campaigns": "Campagne attive",
+    "upcoming_campaigns": "In arrivo",
+    "past_campaigns": "Campagne passate",
+    "past_campaigns_hint": "Chiuse a nuove donazioni.",
+    "raised_of_goal": "{{raised}} raccolti su {{goal}}",
+    "percent_funded": "{{percent}}% finanziato",
+    "ends_on": "Termina il {{date}}",
+    "ended_on": "Terminata il {{date}}",
+    "starts_on": "Inizia il {{date}}",
+    "methods": {
+      "card": "Carta",
+      "bank_transfer": "Bonifico bancario",
+      "paypal": "PayPal",
+      "cash": "Contanti",
+      "other": "Altro"
+    },
+    "pending_pledge_note": "Registrata come promessa. Un amministratore la segnerà come completata quando il denaro sarà arrivato.",
+    "pledge_intro": "Usa questa opzione per denaro che hai inviato, o invierai, con bonifico bancario, PayPal o contanti. Resta in attesa finché un amministratore non conferma la ricezione.",
+    "pledge_success": "Promessa registrata. Resterà in attesa finché non sarà confermata.",
+    "currency_fixed_hint": "Le donazioni a questa comunità sono accettate in {{currency}}.",
+    "my_donations_hint": "Le tue donazioni e promesse, dalla più recente."
   },
   "safeguarding": {
     "heading": "Tutela",

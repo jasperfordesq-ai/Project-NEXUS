@@ -97,8 +97,25 @@ class VolunteerDonationService
             $nextCursor = $rows->last()->id;
         }
 
+        // Name the campaign on each row. The member-facing list used to show
+        // only the id, so a donor could not tell which appeal a gift went to
+        // once the campaign had closed and dropped out of the giving-days list.
+        // One grouped lookup, tenant-scoped, instead of a query per row.
+        $givingDayIds = $rows->pluck('giving_day_id')->filter()->unique()->values();
+        $titles = $givingDayIds->isEmpty()
+            ? collect()
+            : VolGivingDay::where('tenant_id', TenantContext::getId())
+                ->whereIn('id', $givingDayIds)
+                ->pluck('title', 'id');
+
         return [
-            'items' => $rows->map(fn ($row) => $row->toArray())->values()->toArray(),
+            'items' => $rows->map(function ($row) use ($titles) {
+                $item = $row->toArray();
+                $item['giving_day_title'] = $row->giving_day_id !== null
+                    ? ($titles[(int) $row->giving_day_id] ?? null)
+                    : null;
+                return $item;
+            })->values()->toArray(),
             'next_cursor' => $nextCursor,
         ];
     }

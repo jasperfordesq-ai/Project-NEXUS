@@ -425,37 +425,27 @@
     "intro_title": "ما هي التبرعات",
     "intro_desc": "التبرع هنا هو هدية مالية - بعملتك المحلية، تُدفع عن طريق البطاقة - لدعم هذا المجتمع. إنها ليست مثل رصيد الوقت الذي تكسبه من خلال العمل التطوعي. اختر حملة جمع تبرعات نشطة أدناه، أو قم بالتبرع العام للمجتمع.",
     "refresh": "تحديث",
-    "donate": "يتبرع",
     "load_error": "غير قادر على تحميل بيانات التبرعات.",
-    "try_again": "حاول ثانية",
     "empty_title": "لا أيام العطاء أو التبرعات",
     "empty_description": "عندما يكون يوم العطاء نشطًا، يمكنك تقديم التبرعات لدعم مجتمعك.",
-    "make_donation": "قم بالتبرع",
-    "active_giving_days": "أيام العطاء النشطة",
     "donors_count": "{{count}} الجهات المانحة",
     "my_donations": "تبرعاتي",
     "anonymous": "مجهول",
     "progress_aria": "تقدم التبرع: {{percent}}%",
-    "modal_title": "Make a Donation",
     "form": {
       "amount": "كمية",
       "payment_method": "طريقة الدفع",
-      "message": "الرسالة (اختياري)"
+      "message": "الرسالة (اختياري)",
+      "campaign": "الحملة",
+      "reference": "مرجع الدفع (اختياري)",
+      "reference_hint": "المرجع الذي كتبته في التحويل حتى يمكن مطابقته."
     },
     "placeholder_amount": "0.00",
-    "anonymous_toggle_on": "التبرع بشكل مجهول",
-    "anonymous_toggle_off": "التبرع بشكل مجهول",
     "cancel": "إلغاء",
     "confirm": "Confirm Donation",
     "invalid_amount": "الرجاء إدخال مبلغ صالح.",
-    "submit_success": "Donation recorded!",
     "submit_error": "فشل في تسجيل التبرع.",
     "submit_error_retry": "فشل في تسجيل التبرع. يرجى المحاولة مرة أخرى.",
-    "payment_methods": {
-      "card": "بطاقة",
-      "bank_transfer": "تحويل مصرفي",
-      "paypal": "باي بال"
-    },
     "status": {
       "completed": "مكتمل",
       "pending": "قيد الانتظار",
@@ -463,9 +453,11 @@
       "refunded": "ردها"
     },
     "stats": {
-      "total_raised": "إجمالي المرفوع",
-      "total_donors": "إجمالي الجهات المانحة",
-      "active_campaigns": "الحملات النشطة"
+      "live_campaigns": "الحملات الجارية",
+      "raised": "ما جُمع حتى الآن",
+      "raised_hint": "عبر الحملات الجارية",
+      "you_gave": "ما تبرعت به",
+      "pending_pledges": "{{number}} قيد الانتظار"
     },
     "day_status": {
       "active": "نشيط",
@@ -474,7 +466,6 @@
     },
     "checkout_title": "التبرع بالبطاقة",
     "amount_label": "كمية",
-    "currency_label": "عملة",
     "fund_label": "الصندوق",
     "fund_options": {
       "general": "دعم المجتمع العام",
@@ -512,11 +503,6 @@
     "payment_action_required": "مطلوب مصادقة إضافية.",
     "payment_unexpected": "حالة دفع غير متوقعة. يرجى الاتصال بالدعم.",
     "payment_error": "حدث خطأ أثناء الدفع.",
-    "currencies": {
-      "EUR": "يورو",
-      "GBP": "جنيه إسترليني",
-      "USD": "دولار أمريكي"
-    },
     "receipt_title": "إيصال التبرع",
     "receipt_ref": "المرجع: {{ref}}",
     "receipt_donor": "الجهة المانحة",
@@ -531,7 +517,29 @@
     "donors_count_few": "{{count}} الجهات المانحة",
     "donors_count_many": "{{count}} الجهات المانحة",
     "donors_count_two": "{{count}} الجهات المانحة",
-    "donors_count_zero": "{{count}} الجهات المانحة"
+    "donors_count_zero": "{{count}} الجهات المانحة",
+    "record_pledge": "تسجيل تعهد",
+    "live_campaigns": "الحملات الجارية",
+    "upcoming_campaigns": "قريباً",
+    "past_campaigns": "الحملات السابقة",
+    "past_campaigns_hint": "مغلقة أمام التبرعات الجديدة.",
+    "raised_of_goal": "جُمع {{raised}} من {{goal}}",
+    "percent_funded": "تم تمويل {{percent}}%",
+    "ends_on": "تنتهي في {{date}}",
+    "ended_on": "انتهت في {{date}}",
+    "starts_on": "تبدأ في {{date}}",
+    "methods": {
+      "card": "بطاقة",
+      "bank_transfer": "تحويل مصرفي",
+      "paypal": "PayPal",
+      "cash": "نقداً",
+      "other": "أخرى"
+    },
+    "pending_pledge_note": "سُجِّل كتعهد. سيحدده المسؤول كمكتمل عند وصول المبلغ.",
+    "pledge_intro": "استخدم هذا للمبالغ التي أرسلتها أو ستُرسلها عبر تحويل مصرفي أو PayPal أو نقداً. يظهر قيد الانتظار حتى يؤكد المسؤول وصوله.",
+    "pledge_success": "تم تسجيل التعهد. سيظهر قيد الانتظار حتى يتم تأكيده.",
+    "currency_fixed_hint": "تُقبل التبرعات لهذا المجتمع بعملة {{currency}}.",
+    "my_donations_hint": "تبرعاتك وتعهداتك، الأحدث أولاً."
   },
   "safeguarding": {
     "heading": "الحماية",

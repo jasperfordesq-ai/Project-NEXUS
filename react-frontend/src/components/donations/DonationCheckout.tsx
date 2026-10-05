@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { detectTenantFromUrl, tenantPath } from '@/lib/tenant-routing';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 
 const StripePaymentForm = lazy(() =>
   import('./StripePaymentForm').then((module) => ({ default: module.StripePaymentForm }))
@@ -58,12 +58,6 @@ interface GiftAidDeclaration {
   postcode: string;
 }
 
-const CURRENCIES = [
-  { key: 'EUR', labelKey: 'donations.currencies.EUR' },
-  { key: 'GBP', labelKey: 'donations.currencies.GBP' },
-  { key: 'USD', labelKey: 'donations.currencies.USD' },
-];
-
 const DONATION_FUNDS = [
   { key: 'general', labelKey: 'donations.fund_options.general' },
   { key: 'community', labelKey: 'donations.fund_options.community' },
@@ -81,11 +75,18 @@ export function DonationCheckout({
   onDonationComplete,
 }: DonationCheckoutProps) {
   const { t } = useTranslation('volunteering');
+  const { tenant } = useTenant();
   const toast = useToast();
+
+  // The server accepts donations only in the community's own currency (the
+  // giving-day total sums raw amounts with no FX), so the currency is read
+  // from the tenant bootstrap and shown, never chosen. Gift Aid is a UK
+  // scheme and is offered only when that currency is GBP.
+  const currency = (tenant?.currency || 'EUR').toUpperCase();
+  const isGbp = currency === 'GBP';
 
   // Form state
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('EUR');
   const [fundCode, setFundCode] = useState('general');
   const [message, setMessage] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -106,7 +107,6 @@ export function DonationCheckout({
 
   const resetForm = () => {
     setAmount('');
-    setCurrency('EUR');
     setFundCode('general');
     setMessage('');
     setIsAnonymous(false);
@@ -136,7 +136,7 @@ export function DonationCheckout({
       return;
     }
 
-    const canUseGiftAid = giftAidEnabled && currency === 'GBP';
+    const canUseGiftAid = giftAidEnabled && isGbp;
     if (giftAidEnabled && !canUseGiftAid) {
       toast.error(t('donations.gift_aid_gbp_required'));
       return;
@@ -258,28 +258,11 @@ export function DonationCheckout({
                     value={amount}
                     onValueChange={setAmount}
                     startContent={<Banknote className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
+                    endContent={<span className="text-xs font-semibold text-theme-subtle">{currency}</span>}
+                    description={t('donations.currency_fixed_hint', { currency })}
                     isRequired
                     placeholder={t('donations.placeholder_amount')}
                   />
-
-                  <Select
-                    label={t('donations.currency_label')}
-                    variant="bordered"
-                    selectedKeys={[currency]}
-                    onSelectionChange={(keys) => {
-                      const selected = Array.from(keys)[0] as string;
-                      if (selected) {
-                        setCurrency(selected);
-                        if (selected !== 'GBP') {
-                          setGiftAidEnabled(false);
-                        }
-                      }
-                    }}
-                  >
-                    {CURRENCIES.map((c) => (
-                      <SelectItem key={c.key} id={c.key}>{t(c.labelKey)}</SelectItem>
-                    ))}
-                  </Select>
 
                   <Select
                     label={t('donations.fund_label')}
@@ -295,26 +278,18 @@ export function DonationCheckout({
                     ))}
                   </Select>
 
+                  {isGbp && (
                   <div className="rounded-lg border border-theme-default bg-surface-secondary/50 p-3">
                     <Switch
                       isSelected={giftAidEnabled}
-                      isDisabled={currency !== 'GBP'}
                       onValueChange={setGiftAidEnabled}
                       size="sm"
-                      classNames={{
-                        base: 'flex w-full max-w-none flex-row-reverse justify-between',
-                        label: 'text-sm font-medium text-theme-secondary',
-                      }}
                     >
                       {t('donations.gift_aid_toggle')}
                     </Switch>
-                    <p className="mt-2 text-xs text-theme-muted">
-                      {currency === 'GBP'
-                        ? t('donations.gift_aid_description')
-                        : t('donations.gift_aid_gbp_hint')}
-                    </p>
+                    <p className="mt-2 text-xs text-theme-muted">{t('donations.gift_aid_description')}</p>
 
-                    {giftAidEnabled && currency === 'GBP' && (
+                    {giftAidEnabled && (
                       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <Input
                           label={t('donations.gift_aid_name_label')}
@@ -355,6 +330,7 @@ export function DonationCheckout({
                       </div>
                     )}
                   </div>
+                  )}
 
                   <Textarea
                     label={t('donations.message_label')}
@@ -369,10 +345,6 @@ export function DonationCheckout({
                     isSelected={isAnonymous}
                     onValueChange={setIsAnonymous}
                     size="sm"
-                    classNames={{
-                      base: 'flex w-full max-w-none flex-row-reverse justify-between rounded-xl border border-theme-default bg-surface-secondary/60 p-3',
-                      label: 'text-sm text-theme-secondary',
-                    }}
                   >
                     {t('donations.anonymous_toggle')}
                   </Switch>
