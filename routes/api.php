@@ -1339,6 +1339,16 @@ Route::middleware(['feature:volunteering', 'feature:organisations'])->group(func
     Route::get('/v2/volunteering/organisations/{id}/expenses', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgExpenses'])->whereNumber('id');
     Route::put('/v2/volunteering/organisations/{id}/expenses/{expenseId}', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgReviewExpense'])->whereNumber(['id', 'expenseId']);
     Route::get('/v2/volunteering/organisations/{id}/expenses/{expenseId}/receipt', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'orgDownloadReceipt'])->whereNumber(['id', 'expenseId']);
+    // Fundraising campaigns run by the organisation (owner decisions 5 Oct 2026):
+    // owner/admin only via OrgFundraisingController::guard(); campaign ids are
+    // re-checked against the organisation in the URL.
+    Route::get('/v2/volunteering/organisations/{id}/campaigns', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'index'])->whereNumber('id');
+    Route::post('/v2/volunteering/organisations/{id}/campaigns', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'store'])->whereNumber('id');
+    Route::put('/v2/volunteering/organisations/{id}/campaigns/{campaignId}', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'update'])->whereNumber(['id', 'campaignId']);
+    Route::get('/v2/volunteering/organisations/{id}/campaigns/{campaignId}/gifts', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'gifts'])->whereNumber(['id', 'campaignId']);
+    Route::get('/v2/volunteering/organisations/{id}/campaigns/{campaignId}/history', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'history'])->whereNumber(['id', 'campaignId']);
+    Route::get('/v2/volunteering/organisations/{id}/campaigns/{campaignId}/handovers', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'handovers'])->whereNumber(['id', 'campaignId']);
+    Route::post('/v2/volunteering/organisations/{id}/handovers/{handoverId}/confirm', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'confirmHandover'])->whereNumber(['id', 'handoverId']);
     Route::put('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'updateOrganisation']);
     Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
 });
