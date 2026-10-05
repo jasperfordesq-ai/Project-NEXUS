@@ -160,7 +160,7 @@
     "loading_tasks": "Chargement des tâches",
     "member_count": "Membre",
     "members": "Membres",
-    "member_notes_desc": "Ajouter, afficher et gérer les notes du coordinateur privé pour ce membre",
+    "member_notes_desc": "Notes privées que les coordinateurs conservent sur les membres. Les membres ne les voient jamais.",
     "member_notes_title": "Notes des membres",
     "member_tags_desc": "Marquez les membres pour les catégoriser à des fins de filtrage et de sensibilisation",
     "member_tags_title": "Balises de membre",
@@ -179,7 +179,7 @@
     "no_members_found": "Aucun membre trouvé",
     "no_members_with_tag": "Aucun membre avec ce tag",
     "no_notes_found": "Aucune note trouvée",
-    "no_notes_hint_default": "Aucune note n'a encore été ajoutée. Ajoutez-en un ci-dessus.",
+    "no_notes_hint_default": "Aucune note n'a encore été ajoutée.",
     "no_notes_hint_filtered": "Aucune note ne correspond à vos filtres actuels",
     "no_registration_data": "Aucune donnée d'enregistrement",
     "no_tags_found": "Aucune balise trouvée",
@@ -370,6 +370,18 @@
     "funnel_step_first_exchange_desc": "A donné ou reçu du temps au moins une fois.",
     "funnel_step_first_exchange_waiting": "Un échange effectué, mais pas encore un deuxième.",
     "funnel_step_repeat_user_title": "Membre régulier",
-    "funnel_step_repeat_user_desc": "A effectué deux échanges ou plus."
+    "funnel_step_repeat_user_desc": "A effectué deux échanges ou plus.",
+    "category_all": "Toutes les catégories",
+    "notes_summary_one": "{{count}} note au total",
+    "notes_summary_other": "{{count}} notes au total",
+    "notes_summary_filtered_one": "{{count}} note correspond à vos filtres",
+    "notes_summary_filtered_other": "{{count}} notes correspondent à vos filtres",
+    "note_by_name": "Note de {{name}}",
+    "note_edited_on": "Modifiée le {{date}}",
+    "note_about_member": "À propos de {{name}}",
+    "pin_switch_label": "Épingler en haut",
+    "pin_switch_desc": "Les notes épinglées restent en haut de la liste.",
+    "label_note_text": "Note",
+    "member_with_id": "Membre n° {{id}}"
   }
 }

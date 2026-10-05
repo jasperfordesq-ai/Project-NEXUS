@@ -161,7 +161,7 @@
     "loading_tasks": "Aufgaben laden",
     "member_count": "Mitglied",
     "members": "Mitglieder",
-    "member_notes_desc": "Fügen Sie private Koordinatornotizen für dieses Mitglied hinzu, zeigen Sie sie an und verwalten Sie sie",
+    "member_notes_desc": "Private Notizen, die Koordinatoren zu Mitgliedern führen. Mitglieder sehen sie nie.",
     "member_notes_title": "Mitgliedernotizen",
     "member_tags_desc": "Markieren Sie Mitglieder, um sie zum Filtern und zur Kontaktaufnahme zu kategorisieren",
     "member_tags_title": "Mitglieder-Tags",
@@ -180,7 +180,7 @@
     "no_members_found": "Keine Mitglieder gefunden",
     "no_members_with_tag": "Keine Mitglieder mit diesem Tag",
     "no_notes_found": "Keine Notizen gefunden",
-    "no_notes_hint_default": "Es wurden noch keine Notizen hinzugefügt. Fügen Sie oben eines hinzu.",
+    "no_notes_hint_default": "Es wurden noch keine Notizen hinzugefügt.",
     "no_notes_hint_filtered": "Keine Notizen entsprechen Ihren aktuellen Filtern",
     "no_registration_data": "Keine Registrierungsdaten",
     "no_tags_found": "Keine Tags gefunden",
@@ -369,6 +369,18 @@
     "funnel_step_first_exchange_desc": "Hat mindestens einmal Zeit gegeben oder erhalten.",
     "funnel_step_first_exchange_waiting": "Ein Tausch ist erfolgt, ein zweiter noch nicht.",
     "funnel_step_repeat_user_title": "Regelmäßiges Mitglied",
-    "funnel_step_repeat_user_desc": "Hat zwei oder mehr Tauschvorgänge abgeschlossen."
+    "funnel_step_repeat_user_desc": "Hat zwei oder mehr Tauschvorgänge abgeschlossen.",
+    "category_all": "Alle Kategorien",
+    "notes_summary_one": "{{count}} Notiz",
+    "notes_summary_other": "{{count}} Notizen",
+    "notes_summary_filtered_one": "{{count}} Notiz entspricht Ihren Filtern",
+    "notes_summary_filtered_other": "{{count}} Notizen entsprechen Ihren Filtern",
+    "note_by_name": "Notiz von {{name}}",
+    "note_edited_on": "Bearbeitet am {{date}}",
+    "note_about_member": "Über {{name}}",
+    "pin_switch_label": "Oben anheften",
+    "pin_switch_desc": "Angeheftete Notizen bleiben oben in der Liste.",
+    "label_note_text": "Notiz",
+    "member_with_id": "Mitglied #{{id}}"
   }
 }

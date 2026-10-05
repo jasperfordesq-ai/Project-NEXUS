@@ -3066,6 +3066,14 @@ export const adminCrm = {
   deleteNote: (id: number) =>
     api.delete<{ success: boolean }>(`/v2/admin/crm/notes/${id}`),
 
+  // Admin-only (not in the broker-or-admin group): the CSV applies the same
+  // concern-note exclusion as the list, so nobody exports a note they could
+  // not read on screen.
+  exportNotes: () =>
+    api.download('/v2/admin/crm/export/notes', {
+      filename: `member-notes-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
+
   // Coordinator Tasks
   getTasks: (params?: { page?: number; limit?: number; status?: string; priority?: string; assigned_to?: number; search?: string }) =>
     api.get<PaginatedResponse<CoordinatorTask>>(`/v2/admin/crm/tasks${buildQuery(params || {})}`),

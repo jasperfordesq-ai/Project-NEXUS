@@ -331,9 +331,6 @@
     "src/admin/modules/crm/CoordinatorTasks.test.tsx": {
       "TS2345": 5
     },
-    "src/admin/modules/crm/MemberNotes.test.tsx": {
-      "TS2345": 1
-    },
     "src/admin/modules/crm/MemberTags.test.tsx": {
       "TS2345": 4
     },
@@ -1896,7 +1893,7 @@
     }
   },
   "totals": {
-    "fileCount": 560,
-    "errorCount": 1705
+    "fileCount": 559,
+    "errorCount": 1704
   }
 }

@@ -161,7 +161,7 @@
     "loading_tasks": "Cargando tareas",
     "member_count": "Miembro",
     "members": "Miembros",
-    "member_notes_desc": "Agregar, ver y administrar notas privadas del coordinador para este miembro",
+    "member_notes_desc": "Notas privadas que los coordinadores guardan sobre los miembros. Los miembros nunca las ven.",
     "member_notes_title": "Notas para miembros",
     "member_tags_desc": "Etiquetar a los miembros para categorizarlos para filtrado y divulgación.",
     "member_tags_title": "Etiquetas de miembros",
@@ -180,7 +180,7 @@
     "no_members_found": "No se encontraron miembros",
     "no_members_with_tag": "No hay miembros con esta etiqueta",
     "no_notes_found": "No se encontraron notas",
-    "no_notes_hint_default": "Aún no se han agregado notas. Agrega uno arriba.",
+    "no_notes_hint_default": "Aún no se han añadido notas.",
     "no_notes_hint_filtered": "Ninguna nota coincide con tus filtros actuales",
     "no_registration_data": "Sin datos de registro",
     "no_tags_found": "No se encontraron etiquetas",
@@ -370,6 +370,18 @@
     "funnel_step_first_exchange_desc": "Dio o recibió tiempo al menos una vez.",
     "funnel_step_first_exchange_waiting": "Han hecho un intercambio, pero todavía no un segundo.",
     "funnel_step_repeat_user_title": "Miembro habitual",
-    "funnel_step_repeat_user_desc": "Ha hecho dos o más intercambios."
+    "funnel_step_repeat_user_desc": "Ha hecho dos o más intercambios.",
+    "category_all": "Todas las categorías",
+    "notes_summary_one": "{{count}} nota",
+    "notes_summary_other": "{{count}} notas",
+    "notes_summary_filtered_one": "{{count}} nota coincide con tus filtros",
+    "notes_summary_filtered_other": "{{count}} notas coinciden con tus filtros",
+    "note_by_name": "Nota de {{name}}",
+    "note_edited_on": "Editada el {{date}}",
+    "note_about_member": "Sobre {{name}}",
+    "pin_switch_label": "Fijar arriba",
+    "pin_switch_desc": "Las notas fijadas se mantienen al principio de la lista.",
+    "label_note_text": "Nota",
+    "member_with_id": "Miembro #{{id}}"
   }
 }

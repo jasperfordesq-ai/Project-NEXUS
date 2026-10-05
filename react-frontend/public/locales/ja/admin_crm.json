@@ -161,7 +161,7 @@
     "loading_tasks": "タスクをロードしています",
     "member_count": "メンバー",
     "members": "メンバー",
-    "member_notes_desc": "このメンバーのプライベート コーディネーター メモを追加、表示、管理します",
+    "member_notes_desc": "コーディネーターがメンバーについて記録する非公開メモです。メンバーには表示されません。",
     "member_notes_title": "メンバーノート",
     "member_tags_desc": "メンバーにタグを付けてフィルタリングとアウトリーチのために分類します",
     "member_tags_title": "メンバータグ",
@@ -180,7 +180,7 @@
     "no_members_found": "メンバーが見つかりませんでした",
     "no_members_with_tag": "このタグを持つメンバーはいません",
     "no_notes_found": "メモが見つかりませんでした",
-    "no_notes_hint_default": "まだメモは追加されていません。上に 1 つ追加します。",
+    "no_notes_hint_default": "まだメモは追加されていません。",
     "no_notes_hint_filtered": "現在のフィルターに一致するノートはありません",
     "no_registration_data": "登録データがありません",
     "no_tags_found": "タグが見つかりませんでした",
@@ -369,6 +369,18 @@
     "funnel_step_first_exchange_desc": "少なくとも1回、時間を提供または受け取りました。",
     "funnel_step_first_exchange_waiting": "1回交換しましたが、2回目はまだです。",
     "funnel_step_repeat_user_title": "常連メンバー",
-    "funnel_step_repeat_user_desc": "2回以上の交換をしました。"
+    "funnel_step_repeat_user_desc": "2回以上の交換をしました。",
+    "category_all": "すべてのカテゴリ",
+    "notes_summary_one": "{{count}}件のメモ",
+    "notes_summary_other": "{{count}}件のメモ",
+    "notes_summary_filtered_one": "{{count}}件のメモがフィルターに一致",
+    "notes_summary_filtered_other": "{{count}}件のメモがフィルターに一致",
+    "note_by_name": "{{name}}によるメモ",
+    "note_edited_on": "{{date}}に編集",
+    "note_about_member": "{{name}}について",
+    "pin_switch_label": "一番上にピン留め",
+    "pin_switch_desc": "ピン留めしたメモはリストの一番上に表示されます。",
+    "label_note_text": "メモ",
+    "member_with_id": "メンバー #{{id}}"
   }
 }

@@ -161,7 +161,7 @@
     "loading_tasks": "Carregando Tarefas",
     "member_count": "Membro",
     "members": "Membros",
-    "member_notes_desc": "Adicione, visualize e gerencie notas privadas do coordenador deste membro",
+    "member_notes_desc": "Notas privadas que os coordenadores mantêm sobre os membros. Os membros nunca as veem.",
     "member_notes_title": "Notas dos membros",
     "member_tags_desc": "Marque os membros para categorizá-los para filtragem e divulgação",
     "member_tags_title": "Etiquetas de membros",
@@ -180,7 +180,7 @@
     "no_members_found": "Nenhum membro encontrado",
     "no_members_with_tag": "Nenhum membro com esta tag",
     "no_notes_found": "Nenhuma nota encontrada",
-    "no_notes_hint_default": "Nenhuma nota foi adicionada ainda. Adicione um acima.",
+    "no_notes_hint_default": "Ainda não foram adicionadas notas.",
     "no_notes_hint_filtered": "Nenhuma nota corresponde aos seus filtros atuais",
     "no_registration_data": "Sem dados cadastrais",
     "no_tags_found": "Nenhuma tag encontrada",
@@ -370,6 +370,18 @@
     "funnel_step_first_exchange_desc": "Deu ou recebeu tempo pelo menos uma vez.",
     "funnel_step_first_exchange_waiting": "Fizeram uma troca, mas ainda não a segunda.",
     "funnel_step_repeat_user_title": "Membro frequente",
-    "funnel_step_repeat_user_desc": "Fez duas ou mais trocas."
+    "funnel_step_repeat_user_desc": "Fez duas ou mais trocas.",
+    "category_all": "Todas as categorias",
+    "notes_summary_one": "{{count}} nota",
+    "notes_summary_other": "{{count}} notas",
+    "notes_summary_filtered_one": "{{count}} nota corresponde aos seus filtros",
+    "notes_summary_filtered_other": "{{count}} notas correspondem aos seus filtros",
+    "note_by_name": "Nota de {{name}}",
+    "note_edited_on": "Editada em {{date}}",
+    "note_about_member": "Sobre {{name}}",
+    "pin_switch_label": "Fixar no topo",
+    "pin_switch_desc": "As notas fixadas ficam no topo da lista.",
+    "label_note_text": "Nota",
+    "member_with_id": "Membro #{{id}}"
   }
 }

@@ -161,7 +161,7 @@
     "loading_tasks": "تحميل المهام",
     "member_count": "عضو",
     "members": "أعضاء",
-    "member_notes_desc": "إضافة وعرض وإدارة ملاحظات المنسق الخاصة لهذا العضو",
+    "member_notes_desc": "ملاحظات خاصة يحتفظ بها المنسقون عن الأعضاء. لا يراها الأعضاء أبدًا.",
     "member_notes_title": "ملاحظات الأعضاء",
     "member_tags_desc": "ضع علامة على الأعضاء لتصنيفهم للتصفية والتواصل",
     "member_tags_title": "علامات الأعضاء",
@@ -180,7 +180,7 @@
     "no_members_found": "لم يتم العثور على أعضاء",
     "no_members_with_tag": "لا يوجد أعضاء بهذا الوسم",
     "no_notes_found": "لم يتم العثور على أي ملاحظات",
-    "no_notes_hint_default": "لم تتم إضافة أي ملاحظات حتى الآن. أضف واحدة أعلاه.",
+    "no_notes_hint_default": "لم تتم إضافة أي ملاحظات بعد.",
     "no_notes_hint_filtered": "لا توجد ملاحظات تتطابق مع عوامل التصفية الحالية",
     "no_registration_data": "لا توجد بيانات التسجيل",
     "no_tags_found": "لم يتم العثور على علامات",
@@ -373,6 +373,18 @@
     "funnel_step_first_exchange_desc": "قدّم وقتًا أو تلقّاه مرة واحدة على الأقل.",
     "funnel_step_first_exchange_waiting": "أجروا تبادلًا واحدًا، لكن ليس تبادلًا ثانيًا بعد.",
     "funnel_step_repeat_user_title": "عضو دائم",
-    "funnel_step_repeat_user_desc": "أجرى تبادلين أو أكثر."
+    "funnel_step_repeat_user_desc": "أجرى تبادلين أو أكثر.",
+    "category_all": "كل الفئات",
+    "notes_summary_one": "{{count}} ملاحظة",
+    "notes_summary_other": "{{count}} ملاحظات",
+    "notes_summary_filtered_one": "{{count}} ملاحظة تطابق عوامل التصفية",
+    "notes_summary_filtered_other": "{{count}} ملاحظات تطابق عوامل التصفية",
+    "note_by_name": "ملاحظة بواسطة {{name}}",
+    "note_edited_on": "تم التعديل في {{date}}",
+    "note_about_member": "عن {{name}}",
+    "pin_switch_label": "تثبيت في الأعلى",
+    "pin_switch_desc": "تبقى الملاحظات المثبتة في أعلى القائمة.",
+    "label_note_text": "ملاحظة",
+    "member_with_id": "العضو #{{id}}"
   }
 }

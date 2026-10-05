@@ -1,25 +1,3 @@
-import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Button, Input, Textarea, Chip, Spinner, Select, SelectItem, useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Pagination } from '@/components/ui';
-import { useState, useCallback, useEffect } from 'react';
-
-import StickyNote from 'lucide-react/icons/sticky-note';
-import Plus from 'lucide-react/icons/plus';
-import Pin from 'lucide-react/icons/pin';
-import Trash2 from 'lucide-react/icons/trash-2';
-import Edit3 from 'lucide-react/icons/pen-line';
-import Filter from 'lucide-react/icons/filter';
-import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
-import Search from 'lucide-react/icons/search';
-import { useSearchParams,
-  Link } from 'react-router-dom';
-import { useAdminPageMeta } from '../../AdminMetaContext';
-import { useTenant,
-  useToast } from '@/contexts';
-import { adminCrm } from '../../api/adminApi';
-import { PageHeader } from '../../components/PageHeader';
-import { ConfirmModal } from '../../components/ConfirmModal';
-import { MemberSearchPicker, type MemberSearchMember } from '../../components/MemberSearchPicker';
-import { useTranslation } from 'react-i18next';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -27,9 +5,41 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * Member Notes
- * Admin CRM page for managing private notes about members.
- * Supports add, edit, pin, delete, category filtering, and user search.
+ * Admin CRM page for the private notes coordinators keep about members.
+ * Supports add, edit, pin, delete, category / member / text filtering and a
+ * CSV export. The filters live in the address (?q=&category=&user_id=&page=)
+ * so a reload, the back button or a shared link keeps them; the CRM dashboard
+ * and the member pages link here with ?user_id=.
  */
+
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { Key } from '@heroui/react/rac';
+
+import StickyNote from 'lucide-react/icons/sticky-note';
+import Plus from 'lucide-react/icons/plus';
+import Pin from 'lucide-react/icons/pin';
+import Trash2 from 'lucide-react/icons/trash-2';
+import Edit3 from 'lucide-react/icons/pen-line';
+import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
+import Search from 'lucide-react/icons/search';
+import Download from 'lucide-react/icons/download';
+
+import { getFormattingLocale } from '@/lib/helpers';
+import {
+  Card, CardBody, Button, Input, Textarea, Chip, Spinner, Select, SelectItem, Switch,
+  useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
+  Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Pagination,
+  ToggleButtonGroup, ToggleButton,
+} from '@/components/ui';
+import { useTenant, useToast } from '@/contexts';
+import { useAdminPageMeta } from '../../AdminMetaContext';
+import { adminCrm } from '../../api/adminApi';
+import { PageHeader } from '../../components/PageHeader';
+import { ConfirmModal } from '../../components/ConfirmModal';
+import { EmptyState } from '../../components/EmptyState';
+import { MemberSearchPicker, type MemberSearchMember } from '../../components/MemberSearchPicker';
 
 interface Note {
   id: number;
@@ -64,16 +74,25 @@ const CATEGORIES = [
 
 type CategoryKey = typeof CATEGORIES[number]['key'];
 
-const CATEGORY_COLORS: Record<string, 'default' | 'primary' | 'warning' | 'success' | 'danger' | 'secondary'> = {
+const CATEGORY_KEYS: readonly string[] = CATEGORIES.map((c) => c.key);
+const isCategoryKey = (value: string | null | undefined): value is CategoryKey =>
+  typeof value === 'string' && CATEGORY_KEYS.includes(value);
+
+// The HeroUI theme has no numbered status shades, so the chips lean on the
+// semantic colours. 'general' gets the neutral secondary (outlined) look so it
+// still reads as a tag rather than vanishing into plain text.
+const CATEGORY_COLORS: Record<CategoryKey, 'default' | 'accent' | 'warning' | 'success' | 'danger'> = {
   general: 'default',
-  outreach: 'primary',
+  outreach: 'accent',
   support: 'warning',
   onboarding: 'success',
   concern: 'danger',
-  follow_up: 'secondary',
+  follow_up: 'default',
 };
 
 const ITEMS_PER_PAGE = 20;
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 2;
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -89,22 +108,60 @@ const formatDate = (dateStr: string) => {
 export function MemberNotes() {
   const { t: tNav } = useTranslation('admin_nav');
   const { t } = useTranslation('admin_crm');
+  const { t: tCommon } = useTranslation('common');
   useAdminPageMeta({ title: tNav('crm') });
   const { tenantPath } = useTenant();
   const toast = useToast();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // List state
+  // ----- Filters: the address is the source of truth -----
+  const rawCategory = searchParams.get('category');
+  const filterCategory: CategoryKey | '' = isCategoryKey(rawCategory) ? rawCategory : '';
+  const filterUserId = (searchParams.get('user_id') || '').replace(/\D/g, '');
+  const searchQuery = searchParams.get('q') || '';
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const hasFilters = Boolean(filterCategory || filterUserId || searchQuery);
+
+  const updateParams = useCallback((changes: Record<string, string | null>) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value) next.set(key, value);
+        else next.delete(key);
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Every filter change starts from page 1 again.
+  const setFilter = useCallback((changes: Record<string, string | null>) => {
+    updateParams({ ...changes, page: null });
+  }, [updateParams]);
+
+  // The search box is typed into freely and only reaches the address (and the
+  // server) after a short pause, instead of one request per keystroke.
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { setSearchInput(searchQuery); }, [searchQuery]);
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      const trimmed = value.trim();
+      setFilter({ q: trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : null });
+    }, SEARCH_DEBOUNCE_MS);
+  };
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
+
+  const [filterMember, setFilterMember] = useState<MemberSearchMember | null>(null);
+
+  // ----- List state -----
   const [notes, setNotes] = useState<Note[]>([]);
   const [meta, setMeta] = useState<NotesMeta>({ total: 0, page: 1, limit: ITEMS_PER_PAGE, pages: 1 });
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [filterCategory, setFilterCategory] = useState<string>('');
-  const [filterUserId, setFilterUserId] = useState<string>(searchParams.get('user_id') || '');
-  const [filterMember, setFilterMember] = useState<MemberSearchMember | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [exporting, setExporting] = useState(false);
 
-  // Form modal state
+  // ----- Form modal state -----
   const formModal = useDisclosure();
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [formUserId, setFormUserId] = useState('');
@@ -114,7 +171,7 @@ export function MemberNotes() {
   const [formPinned, setFormPinned] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Delete state
+  // ----- Delete state -----
   const [deleteTarget, setDeleteTarget] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -126,7 +183,7 @@ export function MemberNotes() {
       const params: Record<string, string | number> = { page, limit: ITEMS_PER_PAGE };
       if (filterCategory) params.category = filterCategory;
       if (filterUserId) params.user_id = filterUserId;
-      if (searchQuery.trim().length >= 2) params.search = searchQuery.trim();
+      if (searchQuery.length >= MIN_SEARCH_LENGTH) params.search = searchQuery;
 
       const res = await adminCrm.getNotes(params);
       if (res.success) {
@@ -153,7 +210,7 @@ export function MemberNotes() {
     setFormUserId(filterUserId || '');
     setFormMember(filterMember);
     setFormContent('');
-    setFormCategory('general');
+    setFormCategory(filterCategory || 'general');
     setFormPinned(false);
     formModal.onOpen();
   };
@@ -168,7 +225,7 @@ export function MemberNotes() {
       avatar_url: note.user_avatar,
     });
     setFormContent(note.content);
-    setFormCategory(note.category as CategoryKey);
+    setFormCategory(isCategoryKey(note.category) ? note.category : 'general');
     setFormPinned(note.is_pinned === 1);
     formModal.onOpen();
   };
@@ -223,11 +280,7 @@ export function MemberNotes() {
 
   const handleTogglePin = async (note: Note) => {
     try {
-      const res = await adminCrm.updateNote(note.id, {
-        content: note.content,
-        category: note.category,
-        is_pinned: note.is_pinned !== 1,
-      });
+      const res = await adminCrm.updateNote(note.id, { is_pinned: note.is_pinned !== 1 });
       if (res.success) {
         toast.success(note.is_pinned === 1 ? t('crm.note_unpinned') : t('crm.note_pinned'));
         loadNotes();
@@ -259,12 +312,38 @@ export function MemberNotes() {
     setDeleting(false);
   };
 
+  // ----- Export -----
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await adminCrm.exportNotes();
+      toast.success(t('crm.export_success'));
+    } catch {
+      toast.error(tCommon('errors.download_failed'));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // ----- Formatting -----
 
   const getCategoryLabel = (key: string) => {
     const cat = CATEGORIES.find(c => c.key === key);
     return cat ? t(cat.labelKey) : key;
   };
+
+  const clearFilters = () => {
+    setFilterMember(null);
+    setSearchInput('');
+    setFilter({ q: null, category: null, user_id: null });
+  };
+
+  const categorySelection = useMemo(() => new Set<Key>([filterCategory || 'all']), [filterCategory]);
+
+  const summary = hasFilters
+    ? t('crm.notes_summary_filtered', { count: meta.total })
+    : t('crm.notes_summary', { count: meta.total });
 
   // ----- Render -----
 
@@ -273,187 +352,203 @@ export function MemberNotes() {
       <PageHeader
         title={t('crm.member_notes_title')}
         description={t('crm.member_notes_desc')}
+        icon={<StickyNote size={20} />}
         actions={
-          <Button startContent={<Plus size={16} />} onPress={openCreateModal}>
-            {t('crm.add_note')}
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              startContent={<Download size={16} />}
+              onPress={handleExport}
+              isLoading={exporting}
+              isDisabled={exporting}
+            >
+              {t('crm.export_notes')}
+            </Button>
+            <Button startContent={<Plus size={16} />} onPress={openCreateModal}>
+              {t('crm.add_note')}
+            </Button>
+          </>
         }
       />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-3 mb-6">
-        <Input type="search" name="admin-search" autoComplete="off"
-          label={t('crm.label_search')}
-          placeholder={t('crm.placeholder_search_notes')}
-          className="w-56"
-          size="sm"
-          startContent={<Search size={14} />}
-          value={searchQuery}
-          onValueChange={(val) => {
-            setSearchQuery(val);
-            setPage(1);
-          }}
-          isClearable
-          onClear={() => { setSearchQuery(''); setPage(1); }}
-        />
-
-        <Select
-          label={t('crm.label_category')}
-          placeholder={t('crm.placeholder_all_categories')}
-          className="w-48"
-          size="sm"
-          startContent={<Filter size={14} />}
-          selectedKeys={filterCategory ? [filterCategory] : []}
-          onSelectionChange={(keys) => {
-            const val = Array.from(keys)[0] as string || '';
-            setFilterCategory(val);
-            setPage(1);
-          }}
-        >
-          {CATEGORIES.map(cat => (
-            <SelectItem key={cat.key} id={cat.key}>{t(cat.labelKey)}</SelectItem>
-          ))}
-        </Select>
-
-        <MemberSearchPicker
-          label={t('crm.label_search_member')}
-          placeholder={t('crm.placeholder_type_name_or_email')}
-          noResultsText={t('crm.no_members_found')}
-          clearText={t('crm.clear')}
-          className="w-full sm:w-72"
-          size="sm"
-          value={filterUserId}
-          selectedMember={filterMember}
-          onSelectedMemberChange={setFilterMember}
-          onValueChange={(val) => {
-            setFilterUserId(val);
-            setPage(1);
-          }}
-        />
-
-        {(filterCategory || filterUserId || searchQuery) && (
-          <Button
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <Input type="search" name="admin-search" autoComplete="off"
+            label={t('crm.label_search')}
+            placeholder={t('crm.placeholder_search_notes')}
+            className="w-full sm:max-w-[280px]"
             size="sm"
-            variant="tertiary"
-            onPress={() => {
-              setFilterCategory('');
-              setFilterUserId('');
-              setFilterMember(null);
-              setSearchQuery('');
-              setPage(1);
-            }}
-          >
-            {t('crm.clear_filters')}
-          </Button>
-        )}
+            startContent={<Search size={14} />}
+            value={searchInput}
+            onValueChange={handleSearchChange}
+            isClearable
+            onClear={() => { setSearchInput(''); setFilter({ q: null }); }}
+          />
+
+          <MemberSearchPicker
+            label={t('crm.label_search_member')}
+            placeholder={t('crm.placeholder_type_name_or_email')}
+            noResultsText={t('crm.no_members_found')}
+            clearText={t('crm.clear')}
+            className="w-full sm:max-w-[340px]"
+            size="sm"
+            value={filterUserId}
+            selectedMember={filterMember}
+            onSelectedMemberChange={setFilterMember}
+            onValueChange={(val) => setFilter({ user_id: val || null })}
+          />
+
+          {hasFilters && (
+            <Button size="sm" variant="tertiary" onPress={clearFilters} className="self-start sm:self-end">
+              {t('crm.clear_filters')}
+            </Button>
+          )}
+        </div>
+
+        <ToggleButtonGroup
+          aria-label={t('crm.label_category')}
+          selectionMode="single"
+          disallowEmptySelection
+          isDetached
+          size="sm"
+          selectedKeys={categorySelection}
+          onSelectionChange={(keys) => {
+            const [key] = Array.from(keys);
+            const next = key == null ? '' : String(key);
+            setFilter({ category: isCategoryKey(next) ? next : null });
+          }}
+          className="flex flex-wrap justify-start gap-2"
+        >
+          <ToggleButton id="all">{t('crm.category_all')}</ToggleButton>
+          {CATEGORIES.map((cat) => (
+            <ToggleButton key={cat.key} id={cat.key}>{t(cat.labelKey)}</ToggleButton>
+          ))}
+        </ToggleButtonGroup>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-4"><Spinner size="lg" label={t('crm.loading_notes')} /></div>
+        <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-16">
+          <Spinner size="lg" label={t('crm.loading_notes')} />
         </div>
       ) : notes.length === 0 ? (
-        <Card>
-          <CardBody className="flex flex-col items-center py-16 text-center">
-            <StickyNote size={48} className="text-muted mb-4" />
-            <p className="text-muted text-lg font-medium">{t('crm.no_notes_found')}</p>
-            <p className="text-muted text-sm mt-1">
-              {filterCategory || filterUserId
-                ? t('crm.no_notes_hint_filtered')
-                : t('crm.no_notes_hint_default')}
-            </p>
-          </CardBody>
-        </Card>
+        <EmptyState
+          icon={StickyNote}
+          title={t('crm.no_notes_found')}
+          description={hasFilters ? t('crm.no_notes_hint_filtered') : t('crm.no_notes_hint_default')}
+          actionLabel={hasFilters ? t('crm.clear_filters') : t('crm.add_note')}
+          onAction={hasFilters ? clearFilters : openCreateModal}
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          {notes.map(note => (
-            <Card key={note.id} className={note.is_pinned === 1 ? 'border-l-4 border-l-warning' : ''}>
-              <CardHeader className="flex items-start justify-between gap-3 pb-1">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar
-                    src={note.user_avatar || undefined}
-                    name={note.user_name}
-                    size="sm"
-                    className="shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <Link
-                      to={tenantPath(`/admin/users/${note.user_id}/edit`)}
-                      className="font-semibold text-foreground hover:text-accent transition-colors"
-                    >
-                      {note.user_name}
-                    </Link>
-                    <p className="text-xs text-muted">
-                      {t('crm.user_with_id', { id: note.user_id })}
-                    </p>
+          <p className="text-sm text-muted" aria-live="polite">{summary}</p>
+
+          {notes.map(note => {
+            const pinned = note.is_pinned === 1;
+            const edited = note.updated_at !== note.created_at;
+            const category = isCategoryKey(note.category) ? note.category : 'general';
+            return (
+              <Card
+                key={note.id}
+                className={`border border-divider/70 bg-surface shadow-sm shadow-black/[0.03] ${pinned ? 'border-l-4 border-l-warning' : ''}`}
+              >
+                <CardBody className="flex flex-col gap-3 p-4 sm:p-5">
+                  <div className="flex items-start gap-3">
+                    <Avatar
+                      src={note.user_avatar || undefined}
+                      name={note.user_name}
+                      size="sm"
+                      className="shrink-0"
+                    />
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="min-w-0">
+                        <Link
+                          to={tenantPath(`/admin/users/${note.user_id}/edit`)}
+                          className="block truncate font-semibold text-foreground transition-colors hover:text-accent"
+                        >
+                          {note.user_name}
+                        </Link>
+                        <p className="text-xs text-muted">
+                          {t('crm.member_with_id', { id: note.user_id })}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Chip
+                          size="sm"
+                          // The neutral soft chip is near-invisible on a white card, so
+                          // uncoloured categories are outlined instead.
+                          variant={CATEGORY_COLORS[category] === 'default' ? 'secondary' : 'soft'}
+                          color={CATEGORY_COLORS[category]}
+                        >
+                          {getCategoryLabel(category)}
+                        </Chip>
+                        {pinned && (
+                          <Chip size="sm" variant="soft" color="warning" startContent={<Pin size={12} aria-hidden="true" />}>
+                            {t('crm.pin_button_pinned')}
+                          </Chip>
+                        )}
+                      </div>
+                    </div>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button isIconOnly size="sm" variant="tertiary" className="-mr-2 -mt-1 shrink-0" aria-label={t('crm.label_note_actions')}>
+                          <MoreVertical size={16} />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label={t('crm.label_note_actions')}
+                        onAction={(key) => {
+                          if (key === 'edit') openEditModal(note);
+                          else if (key === 'pin') handleTogglePin(note);
+                          else if (key === 'delete') setDeleteTarget(note);
+                        }}
+                      >
+                        <DropdownItem key="edit" id="edit" startContent={<Edit3 size={14} />}>
+                          {t('crm.note_action_edit')}
+                        </DropdownItem>
+                        <DropdownItem key="pin" id="pin" startContent={<Pin size={14} />}>
+                          {pinned ? t('crm.note_action_unpin') : t('crm.note_action_pin')}
+                        </DropdownItem>
+                        <DropdownItem
+                          key="delete" id="delete"
+                          startContent={<Trash2 size={14} />}
+                          className="text-danger"
+                          variant="danger"
+                        >
+                          {t('crm.note_action_delete')}
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
                   </div>
-                  <Chip
-                    size="sm"
-                    variant="soft"
-                    color={CATEGORY_COLORS[note.category] || 'default'}
-                  >
-                    {getCategoryLabel(note.category)}
-                  </Chip>
-                  {note.is_pinned === 1 && (
-                    <Pin size={14} className="text-warning shrink-0" />
-                  )}
-                </div>
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button isIconOnly size="sm" variant="tertiary" aria-label={t('crm.label_note_actions')}>
-                      <MoreVertical size={16} />
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label={t('crm.label_note_actions')}
-                    onAction={(key) => {
-                      if (key === 'edit') openEditModal(note);
-                      else if (key === 'pin') handleTogglePin(note);
-                      else if (key === 'delete') setDeleteTarget(note);
-                    }}
-                  >
-                    <DropdownItem key="edit" id="edit" startContent={<Edit3 size={14} />}>
-                      {t('crm.note_action_edit')}
-                    </DropdownItem>
-                    <DropdownItem key="pin" id="pin" startContent={<Pin size={14} />}>
-                      {note.is_pinned === 1 ? t('crm.note_action_unpin') : t('crm.note_action_pin')}
-                    </DropdownItem>
-                    <DropdownItem
-                      key="delete" id="delete"
-                      startContent={<Trash2 size={14} />}
-                      className="text-danger"
-                      variant="danger"
-                    >
-                      {t('crm.note_action_delete')}
-                    </DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </CardHeader>
-              <CardBody className="pt-0">
-                <p className="text-foreground whitespace-pre-wrap">{note.content}</p>
-                <div className="flex items-center gap-2 mt-3 text-xs text-muted">
-                  <span>{t('crm.note_by')} {note.author_name}</span>
-                  <span>·</span>
-                  <span>{formatDate(note.created_at)}</span>
-                  {note.updated_at !== note.created_at && (
-                    <>
-                      <span>·</span>
-                      <span>{t('crm.note_edited')} {formatDate(note.updated_at)}</span>
-                    </>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-          ))}
+
+                  <p className="whitespace-pre-wrap break-words text-sm leading-6 text-foreground [overflow-wrap:anywhere]">
+                    {note.content}
+                  </p>
+
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted">
+                    <span>{t('crm.note_by_name', { name: note.author_name })}</span>
+                    <span aria-hidden="true">·</span>
+                    <time dateTime={note.created_at}>{formatDate(note.created_at)}</time>
+                    {edited && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <time dateTime={note.updated_at}>{t('crm.note_edited_on', { date: formatDate(note.updated_at) })}</time>
+                      </>
+                    )}
+                  </p>
+                </CardBody>
+              </Card>
+            );
+          })}
 
           {/* Pagination */}
           {meta.pages > 1 && (
-            <div className="flex justify-center mt-4">
+            <div className="mt-4 flex justify-center">
               <Pagination
                 total={meta.pages}
                 page={page}
-                onChange={setPage}
+                onChange={(next) => updateParams({ page: next > 1 ? String(next) : null })}
                 showControls
               />
             </div>
@@ -469,7 +564,19 @@ export function MemberNotes() {
             {editingNote ? t('crm.edit_note_title') : t('crm.add_note_title')}
           </ModalHeader>
           <ModalBody className="flex flex-col gap-4">
-            {!editingNote && (
+            {editingNote ? (
+              <div className="flex items-center gap-3 rounded-xl bg-surface-secondary px-3 py-2">
+                <Avatar
+                  src={editingNote.user_avatar || undefined}
+                  name={editingNote.user_name}
+                  size="sm"
+                  className="shrink-0"
+                />
+                <p className="min-w-0 truncate text-sm text-foreground">
+                  {t('crm.note_about_member', { name: editingNote.user_name })}
+                </p>
+              </div>
+            ) : (
               <MemberSearchPicker
                 label={t('crm.label_search_member')}
                 placeholder={t('crm.placeholder_type_name_or_email')}
@@ -483,7 +590,7 @@ export function MemberNotes() {
               />
             )}
             <Textarea
-              label={t('crm.label_content')}
+              label={t('crm.label_note_text')}
               placeholder={t('crm.placeholder_write_your_note_about_this_member')}
               isRequired
               minRows={4}
@@ -495,25 +602,27 @@ export function MemberNotes() {
               label={t('crm.label_category')}
               selectedKeys={[formCategory]}
               onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as CategoryKey;
-                if (val) setFormCategory(val);
+                const val = Array.from(keys)[0];
+                if (isCategoryKey(typeof val === 'string' ? val : null)) setFormCategory(val as CategoryKey);
               }}
             >
               {CATEGORIES.map(cat => (
                 <SelectItem key={cat.key} id={cat.key}>{t(cat.labelKey)}</SelectItem>
               ))}
             </Select>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant={formPinned ? 'solid' : 'flat'}
-                color={formPinned ? 'warning' : 'default'}
-                startContent={<Pin size={14} />}
-                onPress={() => setFormPinned(!formPinned)}
-              >
-                {formPinned ? t('crm.pin_button_pinned') : t('crm.pin_button_unpin')}
-              </Button>
-            </div>
+            {/* The shared Switch stacks its control above the label and puts the
+                description beside them; lay it out as control + label on one
+                row with the hint underneath, as the HeroUI anatomy intends. */}
+            <Switch
+              isSelected={formPinned}
+              onValueChange={setFormPinned}
+              color="warning"
+              description={t('crm.pin_switch_desc')}
+              className="flex-col items-start gap-1"
+              classNames={{ content: 'flex-row items-center gap-3' }}
+            >
+              {t('crm.pin_switch_label')}
+            </Switch>
           </ModalBody>
           <ModalFooter>
             <Button variant="tertiary" onPress={formModal.onClose} isDisabled={saving}>

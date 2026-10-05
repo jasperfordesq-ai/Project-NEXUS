@@ -161,7 +161,7 @@
     "loading_tasks": "Taken laden",
     "member_count": "Lid",
     "members": "Leden",
-    "member_notes_desc": "Privécoördinatornotities voor dit lid toevoegen, bekijken en beheren",
+    "member_notes_desc": "Privénotities die coördinatoren over leden bijhouden. Leden zien ze nooit.",
     "member_notes_title": "Notities van leden",
     "member_tags_desc": "Tag leden om ze te categoriseren voor filtering en outreach",
     "member_tags_title": "Ledentags",
@@ -180,7 +180,7 @@
     "no_members_found": "Geen leden gevonden",
     "no_members_with_tag": "Geen leden met deze tag",
     "no_notes_found": "Geen notities gevonden",
-    "no_notes_hint_default": "Er zijn nog geen notities toegevoegd. Voeg er hierboven één toe.",
+    "no_notes_hint_default": "Er zijn nog geen notities toegevoegd.",
     "no_notes_hint_filtered": "Er zijn geen notities die overeenkomen met uw huidige filters",
     "no_registration_data": "Geen registratiegegevens",
     "no_tags_found": "Geen tags gevonden",
@@ -369,6 +369,18 @@
     "funnel_step_first_exchange_desc": "Heeft minstens één keer tijd gegeven of ontvangen.",
     "funnel_step_first_exchange_waiting": "Ze hebben één keer geruild, maar nog geen tweede keer.",
     "funnel_step_repeat_user_title": "Vast lid",
-    "funnel_step_repeat_user_desc": "Heeft twee of meer ruilingen gedaan."
+    "funnel_step_repeat_user_desc": "Heeft twee of meer ruilingen gedaan.",
+    "category_all": "Alle categorieën",
+    "notes_summary_one": "{{count}} notitie",
+    "notes_summary_other": "{{count}} notities",
+    "notes_summary_filtered_one": "{{count}} notitie komt overeen met je filters",
+    "notes_summary_filtered_other": "{{count}} notities komen overeen met je filters",
+    "note_by_name": "Notitie van {{name}}",
+    "note_edited_on": "Bewerkt op {{date}}",
+    "note_about_member": "Over {{name}}",
+    "pin_switch_label": "Bovenaan vastzetten",
+    "pin_switch_desc": "Vastgezette notities blijven bovenaan de lijst staan.",
+    "label_note_text": "Notitie",
+    "member_with_id": "Lid #{{id}}"
   }
 }

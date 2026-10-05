@@ -161,7 +161,7 @@
     "loading_tasks": "Tascanna á Luchtú",
     "member_count": "Ball",
     "members": "Baill",
-    "member_notes_desc": "Cuir leis, féach ar, agus bainistigh nótaí comhordaitheora príobháideacha don bhall seo",
+    "member_notes_desc": "Nótaí príobháideacha a choinníonn comhordaitheoirí faoi bhaill. Ní fheiceann baill iad riamh.",
     "member_notes_title": "Nótaí Baill",
     "member_tags_desc": "Clibeáil baill chun iad a chatagóiriú le haghaidh scagadh agus for-rochtana",
     "member_tags_title": "Clibeanna Ball",
@@ -180,7 +180,7 @@
     "no_members_found": "Níor aimsíodh aon bhall",
     "no_members_with_tag": "Níl aon bhall leis an gclib seo",
     "no_notes_found": "Níor aimsíodh aon nótaí",
-    "no_notes_hint_default": "Níl aon nótaí curtha leis fós. Cuir ceann amháin thuas leis.",
+    "no_notes_hint_default": "Níor cuireadh aon nótaí leis fós.",
     "no_notes_hint_filtered": "Ní mheaitseálann aon nótaí do scagairí reatha",
     "no_registration_data": "Gan sonraí clárúcháin",
     "no_tags_found": "Níor aimsíodh clibeanna",
@@ -372,6 +372,18 @@
     "funnel_step_first_exchange_desc": "Thug nó fuair am uair amháin ar a laghad.",
     "funnel_step_first_exchange_waiting": "Rinne siad malartú amháin, ach ní dhearna siad an dara ceann fós.",
     "funnel_step_repeat_user_title": "Ball rialta",
-    "funnel_step_repeat_user_desc": "Rinne dhá mhalartú nó níos mó."
+    "funnel_step_repeat_user_desc": "Rinne dhá mhalartú nó níos mó.",
+    "category_all": "Gach catagóir",
+    "notes_summary_one": "{{count}} nóta",
+    "notes_summary_other": "{{count}} nóta",
+    "notes_summary_filtered_one": "Tá {{count}} nóta ag teacht le do scagairí",
+    "notes_summary_filtered_other": "Tá {{count}} nóta ag teacht le do scagairí",
+    "note_by_name": "Nóta le {{name}}",
+    "note_edited_on": "Curtha in eagar {{date}}",
+    "note_about_member": "Faoi {{name}}",
+    "pin_switch_label": "Pionnáil ag an mbarr",
+    "pin_switch_desc": "Fanann nótaí pionnáilte ag barr an liosta.",
+    "label_note_text": "Nóta",
+    "member_with_id": "Ball #{{id}}"
   }
 }

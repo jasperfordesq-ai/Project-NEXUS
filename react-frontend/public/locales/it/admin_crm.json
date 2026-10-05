@@ -161,7 +161,7 @@
     "loading_tasks": "Caricamento attività",
     "member_count": "Membro",
     "members": "Membri",
-    "member_notes_desc": "Aggiungi, visualizza e gestisci le note private del coordinatore per questo membro",
+    "member_notes_desc": "Note private che i coordinatori conservano sui membri. I membri non le vedono mai.",
     "member_notes_title": "Note dei membri",
     "member_tags_desc": "Tagga i membri per classificarli per filtrarli e raggiungerli",
     "member_tags_title": "Tag dei membri",
@@ -180,7 +180,7 @@
     "no_members_found": "Nessun membro trovato",
     "no_members_with_tag": "Nessun membro con questo tag",
     "no_notes_found": "Nessuna nota trovata",
-    "no_notes_hint_default": "Nessuna nota è stata ancora aggiunta. Aggiungine uno sopra.",
+    "no_notes_hint_default": "Non è stata ancora aggiunta alcuna nota.",
     "no_notes_hint_filtered": "Nessuna nota corrisponde ai filtri attuali",
     "no_registration_data": "Nessun dato di registrazione",
     "no_tags_found": "Nessun tag trovato",
@@ -370,6 +370,18 @@
     "funnel_step_first_exchange_desc": "Ha dato o ricevuto tempo almeno una volta.",
     "funnel_step_first_exchange_waiting": "Hanno fatto uno scambio, ma non ancora un secondo.",
     "funnel_step_repeat_user_title": "Membro abituale",
-    "funnel_step_repeat_user_desc": "Ha fatto due o più scambi."
+    "funnel_step_repeat_user_desc": "Ha fatto due o più scambi.",
+    "category_all": "Tutte le categorie",
+    "notes_summary_one": "{{count}} nota",
+    "notes_summary_other": "{{count}} note",
+    "notes_summary_filtered_one": "{{count}} nota corrisponde ai tuoi filtri",
+    "notes_summary_filtered_other": "{{count}} note corrispondono ai tuoi filtri",
+    "note_by_name": "Nota di {{name}}",
+    "note_edited_on": "Modificata il {{date}}",
+    "note_about_member": "Su {{name}}",
+    "pin_switch_label": "Fissa in alto",
+    "pin_switch_desc": "Le note fissate restano in cima all'elenco.",
+    "label_note_text": "Nota",
+    "member_with_id": "Membro #{{id}}"
   }
 }
