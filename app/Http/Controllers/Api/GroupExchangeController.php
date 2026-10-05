@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use App\Services\GroupExchangeService;
+use App\Services\GroupExchangeSplitCalculator;
 use App\Services\MessageService;
 
 /**
@@ -66,6 +67,10 @@ class GroupExchangeController extends BaseApiController
         }
         if (is_string($headerKey) && trim($headerKey) !== '') {
             $data['idempotency_key'] = trim($headerKey);
+        }
+
+        if ($invalidKind = $this->invalidKindResponse($data)) {
+            return $invalidKind;
         }
 
         if (empty($data['title'])) {
@@ -160,6 +165,9 @@ class GroupExchangeController extends BaseApiController
         }
 
         $data = $this->getAllInput();
+        if ($invalidKind = $this->invalidKindResponse($data)) {
+            return $invalidKind;
+        }
         if (!$this->groupExchangeService->update($id, $data)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.cannot_update_completed_exchange'), null, 400);
         }
@@ -386,6 +394,28 @@ class GroupExchangeController extends BaseApiController
             'message' => __('api_controllers_1.group_exchange.exchange_completed'),
             'transaction_ids' => $result['transaction_ids'],
         ]);
+    }
+
+    /**
+     * A split_type outside the five kinds used to be stored as '' (the
+     * connection is not strict, so MariaDB blanks an unknown enum value), which
+     * left an exchange no kind could settle. Refuse it in plain words instead.
+     */
+    private function invalidKindResponse(array $data): ?JsonResponse
+    {
+        if (! array_key_exists('split_type', $data) || $data['split_type'] === null) {
+            return null;
+        }
+        if (is_string($data['split_type']) && in_array($data['split_type'], GroupExchangeSplitCalculator::KINDS, true)) {
+            return null;
+        }
+
+        return $this->respondWithError(
+            'SPLIT_TYPE_INVALID',
+            __('group_exchange.problem.split_type_invalid'),
+            'split_type',
+            422,
+        );
     }
 
     private function canViewExchange(array $exchange, int $userId): bool

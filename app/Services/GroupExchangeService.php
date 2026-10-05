@@ -463,6 +463,19 @@ class GroupExchangeService
      */
     public function calculateSplit(int $exchangeId): array
     {
+        return $this->splitFor($exchangeId)['lines'] ?? [];
+    }
+
+    /**
+     * The full split for an exchange — per-person lines, the community fund's
+     * share and any problem — from GroupExchangeSplitCalculator, the one place
+     * the arithmetic lives. Null when the exchange is not in this tenant or has
+     * no participants.
+     *
+     * @return array{lines: list<array{user_id:int, role:string, hours:float}>, community_fund_hours: float, earned: float, paid: float, problem: ?string}|null
+     */
+    public function splitFor(int $exchangeId): ?array
+    {
         $tenantId = TenantContext::getId();
 
         $exchange = DB::table('group_exchanges')
@@ -471,7 +484,7 @@ class GroupExchangeService
             ->first();
 
         if (! $exchange) {
-            return [];
+            return null;
         }
 
         $participants = DB::table('group_exchange_participants')
@@ -479,84 +492,19 @@ class GroupExchangeService
             ->get();
 
         if ($participants->isEmpty()) {
-            return [];
+            return null;
         }
 
-        $totalHours = (float) $exchange->total_hours;
-        $splitType = $exchange->split_type;
-
-        $result = [];
-
-        if ($splitType === 'custom') {
-            // Custom: each participant already has their hours set
-            foreach ($participants as $p) {
-                $result[] = [
-                    'user_id' => (int) $p->user_id,
-                    'role'    => $p->role,
-                    'hours'   => (float) $p->hours,
-                ];
-            }
-        } elseif ($splitType === 'weighted') {
-            // Weighted: distribute total_hours proportionally by weight within each role.
-            // The LAST participant in each role absorbs the rounding remainder so the
-            // role's shares sum to total_hours EXACTLY — otherwise independent per-role
-            // rounding makes provider-credits != receiver-debits, minting or destroying
-            // credits on completion (a conservation violation).
-            $byRole = $participants->groupBy('role');
-
-            foreach ($byRole as $roleParticipants) {
-                $totalWeight = $roleParticipants->sum('weight');
-                if ($totalWeight <= 0) {
-                    $totalWeight = $roleParticipants->count();
-                }
-
-                $count = $roleParticipants->count();
-                $allocated = 0.0;
-                $idx = 0;
-                foreach ($roleParticipants as $p) {
-                    $idx++;
-                    if ($idx === $count) {
-                        $hours = round($totalHours - $allocated, 2);
-                    } else {
-                        $weight = (float) ($p->weight ?: 1.0);
-                        $hours = round(($weight / $totalWeight) * $totalHours, 2);
-                        $allocated += $hours;
-                    }
-
-                    $result[] = [
-                        'user_id' => (int) $p->user_id,
-                        'role'    => $p->role,
-                        'hours'   => $hours,
-                    ];
-                }
-            }
-        } else {
-            // Equal: split total_hours equally within each role. The LAST participant
-            // in each role absorbs the rounding remainder so the role sums to
-            // total_hours EXACTLY (see weighted note above on conservation).
-            $byRole = $participants->groupBy('role');
-
-            foreach ($byRole as $roleParticipants) {
-                $count = $roleParticipants->count();
-                $hoursEach = $count > 0 ? round($totalHours / $count, 2) : 0;
-
-                $idx = 0;
-                foreach ($roleParticipants as $p) {
-                    $idx++;
-                    $hours = ($idx === $count)
-                        ? round($totalHours - $hoursEach * ($count - 1), 2)
-                        : $hoursEach;
-
-                    $result[] = [
-                        'user_id' => (int) $p->user_id,
-                        'role'    => $p->role,
-                        'hours'   => $hours,
-                    ];
-                }
-            }
-        }
-
-        return $result;
+        return GroupExchangeSplitCalculator::compute(
+            (string) $exchange->split_type,
+            (float) $exchange->total_hours,
+            $participants->map(static fn ($p): array => [
+                'user_id' => (int) $p->user_id,
+                'role' => (string) $p->role,
+                'hours' => (float) $p->hours,
+                'weight' => (float) $p->weight,
+            ])->values()->all(),
+        );
     }
 
     /**

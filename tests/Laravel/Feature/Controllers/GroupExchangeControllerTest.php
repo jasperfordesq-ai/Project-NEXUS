@@ -161,6 +161,45 @@ class GroupExchangeControllerTest extends TestCase
     //  Store validation
     // ------------------------------------------------------------------
 
+    public function test_store_and_update_refuse_an_unknown_kind_in_plain_words(): void
+    {
+        $organizer = $this->authenticatedUser();
+
+        $this->apiPost('/v2/group-exchanges', ['title' => 'Odd', 'total_hours' => 1, 'split_type' => 'banana'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'SPLIT_TYPE_INVALID')
+            ->assertJsonPath('errors.0.message', 'Choose one of the five kinds of group exchange.');
+
+        $id = (int) DB::table('group_exchanges')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'title' => 'Draft', 'organizer_id' => $organizer->id,
+            'status' => 'draft', 'split_type' => 'equal', 'total_hours' => 1,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->apiPut('/v2/group-exchanges/' . $id, ['split_type' => 'banana'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'SPLIT_TYPE_INVALID');
+        $this->assertSame('equal', DB::table('group_exchanges')->where('id', $id)->value('split_type'));
+    }
+
+    public function test_store_accepts_the_workshop_and_team_kinds(): void
+    {
+        $this->authenticatedUser();
+        $giver = $this->makeUser();
+        $attendee = $this->makeUser();
+
+        foreach (['workshop', 'team'] as $kind) {
+            $this->apiPost('/v2/group-exchanges', [
+                'title' => ucfirst($kind),
+                'total_hours' => 2,
+                'split_type' => $kind,
+                'participants' => [
+                    ['user_id' => $giver->id, 'role' => 'provider', 'hours' => 2],
+                    ['user_id' => $attendee->id, 'role' => 'receiver', 'hours' => 2],
+                ],
+            ])->assertStatus(201)->assertJsonPath('data.split_type', $kind);
+        }
+    }
+
     public function test_store_requires_title_and_positive_hours(): void
     {
         $this->authenticatedUser();
