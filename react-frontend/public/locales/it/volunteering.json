@@ -414,7 +414,7 @@
     "empty_title": "Nessuna giornata di donazione o donazione",
     "empty_description": "Quando è attiva una giornata di donazione, puoi fare donazioni per sostenere la tua comunità.",
     "donors_count": "{{count}} donatori",
-    "my_donations": "Le Mie Donazioni",
+    "my_donations": "Le mie donazioni",
     "anonymous": "Anonimo",
     "progress_aria": "Avanzamento della donazione: {{percent}}%",
     "form": {
@@ -427,7 +427,7 @@
     },
     "placeholder_amount": "0,00",
     "cancel": "Annulla",
-    "confirm": "Conferma Donazione",
+    "confirm": "Registra promessa",
     "invalid_amount": "Inserisci un importo valido.",
     "submit_error": "Impossibile registrare la donazione.",
     "submit_error_retry": "Impossibile registrare la donazione. Riprova.",

@@ -484,7 +484,7 @@
     "intent_error": "Nie udało się zainicjować płatności. Spróbuj ponownie.",
     "success_title": "Dziękuję!",
     "success_message": "Twoja darowizna w wysokości {{amount}} została pomyślnie przetworzona.",
-    "view_receipt": "Zobacz paragon",
+    "view_receipt": "Zobacz potwierdzenie",
     "print_receipt": "Wydrukuj paragon",
     "donate_with_card": "Przekaż darowiznę za pomocą karty",
     "back": "Z powrotem",

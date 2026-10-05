@@ -427,7 +427,7 @@
     },
     "placeholder_amount": "0,00",
     "cancel": "Annuler",
-    "confirm": "Confirmer le don",
+    "confirm": "Enregistrer la promesse",
     "invalid_amount": "Veuillez saisir un montant valide.",
     "submit_error": "Échec de l'enregistrement du don.",
     "submit_error_retry": "Échec de l'enregistrement du don. Veuillez réessayer.",

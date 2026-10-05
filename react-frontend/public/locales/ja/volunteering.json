@@ -409,7 +409,7 @@
     "empty_title": "寄付日や寄付はありません",
     "empty_description": "寄付の日がアクティブなときは、コミュニティを支援するために寄付を行うことができます。",
     "donors_count": "{{count}} の寄付者",
-    "my_donations": "私の寄付",
+    "my_donations": "マイ寄付",
     "anonymous": "匿名",
     "progress_aria": "寄付の進捗状況: {{percent}}%",
     "form": {
@@ -422,7 +422,7 @@
     },
     "placeholder_amount": "0.00",
     "cancel": "キャンセル",
-    "confirm": "寄付を確認する",
+    "confirm": "約束を記録",
     "invalid_amount": "有効な金額を入力してください。",
     "submit_error": "寄付の記録に失敗しました。",
     "submit_error_retry": "寄付の記録に失敗しました。もう一度お試しください。",

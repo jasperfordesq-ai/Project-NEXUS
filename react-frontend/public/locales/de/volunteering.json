@@ -422,7 +422,7 @@
     },
     "placeholder_amount": "0,00",
     "cancel": "Abbrechen",
-    "confirm": "Spende bestätigen",
+    "confirm": "Zusage erfassen",
     "invalid_amount": "Bitte geben Sie einen gültigen Betrag ein.",
     "submit_error": "Spende konnte nicht aufgezeichnet werden.",
     "submit_error_retry": "Spende konnte nicht aufgezeichnet werden. Bitte versuchen Sie es erneut.",

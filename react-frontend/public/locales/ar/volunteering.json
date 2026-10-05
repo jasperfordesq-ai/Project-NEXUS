@@ -442,7 +442,7 @@
     },
     "placeholder_amount": "0.00",
     "cancel": "إلغاء",
-    "confirm": "Confirm Donation",
+    "confirm": "تسجيل التعهد",
     "invalid_amount": "الرجاء إدخال مبلغ صالح.",
     "submit_error": "فشل في تسجيل التبرع.",
     "submit_error_retry": "فشل في تسجيل التبرع. يرجى المحاولة مرة أخرى.",

@@ -414,7 +414,7 @@
     "empty_title": "Sem dias de doação ou doações",
     "empty_description": "Quando um dia de doação estiver ativo, pode fazer doações para apoiar a sua comunidade.",
     "donors_count": "{{count}} doadores",
-    "my_donations": "As Minhas Doações",
+    "my_donations": "As minhas doações",
     "anonymous": "Anónimo",
     "progress_aria": "Progresso da doação: {{percent}}%",
     "form": {
@@ -427,7 +427,7 @@
     },
     "placeholder_amount": "0,00",
     "cancel": "Cancelar",
-    "confirm": "Confirmar Doação",
+    "confirm": "Registar promessa",
     "invalid_amount": "Introduza um montante válido.",
     "submit_error": "Falha ao registrar doação.",
     "submit_error_retry": "Falha ao registrar doação. Tente novamente.",
