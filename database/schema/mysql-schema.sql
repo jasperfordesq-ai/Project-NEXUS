@@ -20426,6 +20426,121 @@ CREATE TABLE `vol_expenses` (
   CONSTRAINT `vol_expenses_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_fundraising_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_fundraising_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `giving_day_id` int(10) unsigned DEFAULT NULL,
+  `donation_id` int(10) unsigned DEFAULT NULL,
+  `handover_id` bigint(20) unsigned DEFAULT NULL,
+  `organization_id` int(11) DEFAULT NULL,
+  `actor_user_id` int(11) DEFAULT NULL,
+  `actor_kind` varchar(20) NOT NULL,
+  `event` varchar(50) NOT NULL,
+  `amount` decimal(10,2) DEFAULT NULL,
+  `currency` char(3) DEFAULT NULL,
+  `details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`details`)),
+  `stripe_object_id` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_vfe_campaign` (`tenant_id`,`giving_day_id`,`id`),
+  KEY `idx_vfe_donation` (`tenant_id`,`donation_id`),
+  KEY `idx_vfe_org` (`tenant_id`,`organization_id`,`id`),
+  KEY `idx_vfe_handover` (`tenant_id`,`handover_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_events_no_update` BEFORE UPDATE ON `vol_fundraising_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_events_append_only' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_events_no_delete` BEFORE DELETE ON `vol_fundraising_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_events_append_only' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+DROP TABLE IF EXISTS `vol_fundraising_handovers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_fundraising_handovers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `giving_day_id` int(10) unsigned NOT NULL,
+  `organization_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` char(3) NOT NULL,
+  `handed_over_on` date NOT NULL,
+  `method` varchar(20) NOT NULL,
+  `reference` varchar(255) NOT NULL,
+  `note` text DEFAULT NULL,
+  `recorded_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `confirmed_by` int(11) DEFAULT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `cancelled_by` int(11) DEFAULT NULL,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
+  `cancel_reason` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_vfh_campaign` (`tenant_id`,`giving_day_id`),
+  KEY `idx_vfh_org` (`tenant_id`,`organization_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_handovers_guard` BEFORE UPDATE ON `vol_fundraising_handovers` FOR EACH ROW BEGIN IF NOT (NEW.tenant_id <=> OLD.tenant_id AND NEW.giving_day_id <=> OLD.giving_day_id AND NEW.organization_id <=> OLD.organization_id AND NEW.amount <=> OLD.amount AND NEW.currency <=> OLD.currency AND NEW.handed_over_on <=> OLD.handed_over_on AND NEW.method <=> OLD.method AND NEW.reference <=> OLD.reference AND NEW.note <=> OLD.note AND NEW.recorded_by <=> OLD.recorded_by AND NEW.created_at <=> OLD.created_at) OR (OLD.confirmed_at IS NOT NULL AND NOT (NEW.confirmed_at <=> OLD.confirmed_at AND NEW.confirmed_by <=> OLD.confirmed_by)) OR (OLD.cancelled_at IS NOT NULL AND NOT (NEW.cancelled_at <=> OLD.cancelled_at AND NEW.cancelled_by <=> OLD.cancelled_by AND NEW.cancel_reason <=> OLD.cancel_reason)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_handover_immutable'; END IF; END 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_vol_fundraising_handovers_no_delete` BEFORE DELETE ON `vol_fundraising_handovers` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_fundraising_handover_immutable' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 DROP TABLE IF EXISTS `vol_giving_days`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -20444,6 +20559,8 @@ CREATE TABLE `vol_giving_days` (
   `created_by` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `organization_id` int(11) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_vol_giving_days_tenant` (`tenant_id`),
   KEY `idx_vol_giving_days_dates` (`tenant_id`,`start_date`,`end_date`),
@@ -21663,7 +21780,8 @@ INSERT INTO `laravel_migrations` VALUES
 (459,'2026_10_02_130000_add_jira_status_to_support_reports',141),
 (460,'2026_10_03_120000_add_role_fingerprint_to_user_trusted_devices',142),
 (461,'2026_10_03_200000_create_support_report_attachments_table',143),
-(463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145);
+(463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145),
+(464,'2026_10_05_160000_create_fundraising_history_and_handovers',146);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
