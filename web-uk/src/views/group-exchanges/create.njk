@@ -46,11 +46,13 @@
         {% endcall %}
 
         {# The five kinds, in this order, with workshop chosen unless the member had chosen
-           another. Each kind carries its own number box inside its reveal. Without
-           JavaScript every reveal is open, so every box is in the page: the server reads the
-           box that belongs to the chosen kind and ignores the rest. None of them is
-           `required` - a required box inside a closed reveal would stop the whole form
-           submitting. #}
+           another. Each kind carries its own number box, shown under it at all times: the
+           server reads the box that belongs to the chosen kind and ignores the rest. Not a
+           GOV.UK conditional reveal - its script puts aria-expanded on the radio, which ARIA
+           does not allow (axe aria-allowed-attr, critical), and the rest of this site avoids
+           it for that reason. Each box's label names its kind for screen readers, because
+           three kinds share the same visible label. None of them is `required` - only the
+           chosen kind's box is needed. #}
         <div class="govuk-form-group{% if kindProblem %} govuk-form-group--error{% endif %}">
           <fieldset class="govuk-fieldset" aria-describedby="kinds-rule{% if kindProblem %} kinds-error{% endif %}">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("group_exchanges.form_split_label") }}</legend>
@@ -61,7 +63,7 @@
             <div class="govuk-radios" data-module="govuk-radios">
               {% for kind in kinds %}
                 <div class="govuk-radios__item">
-                  <input class="govuk-radios__input" id="split-{{ kind }}" name="split_type" type="radio" value="{{ kind }}"{% if selectedKind == kind %} checked{% endif %} data-aria-controls="conditional-split-{{ kind }}" aria-describedby="split-{{ kind }}-item-hint">
+                  <input class="govuk-radios__input" id="split-{{ kind }}" name="split_type" type="radio" value="{{ kind }}"{% if selectedKind == kind %} checked{% endif %} aria-describedby="split-{{ kind }}-item-hint">
                   <label class="govuk-label govuk-radios__label" for="split-{{ kind }}">{{ t("group_exchanges.kinds." + kind + ".title") }}</label>
                   <div id="split-{{ kind }}-item-hint" class="govuk-hint govuk-radios__hint">{{ t("group_exchanges.kinds." + kind + ".description") }}</div>
                 </div>
@@ -78,7 +80,7 @@
                       {% set hoursLabelKey = "group_exchanges.form_hours_label" %}
                       {% set hoursHintKey = "group_exchanges.form_hours_hint" %}
                     {% endif %}
-                    <label class="govuk-label" for="total-hours-{{ kind }}">{{ t(hoursLabelKey) }}</label>
+                    <label class="govuk-label" for="total-hours-{{ kind }}">{{ t(hoursLabelKey) }}<span class="govuk-visually-hidden"> ({{ t("group_exchanges.kinds." + kind + ".title") }})</span></label>
                     <div id="total-hours-{{ kind }}-hint" class="govuk-hint">{{ t(hoursHintKey) }}</div>
                     <input class="govuk-input govuk-input--width-5" id="total-hours-{{ kind }}" name="total_hours_{{ kind }}" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" value="{{ exchangeForm.totalHours if (exchangeForm and selectedKind == kind) else '' }}" aria-describedby="total-hours-{{ kind }}-hint">
                   </div>

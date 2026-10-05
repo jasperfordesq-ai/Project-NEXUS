@@ -22053,6 +22053,12 @@ describe('shared accessible frontend shell', () => {
     expect(create.text).toContain('name="total_hours_workshop"');
     expect(create.text).toContain('name="total_hours_custom"');
     expect(create.text).toContain('name="split_type"');
+    // No kind radio carries a GOV.UK conditional reveal: its script sets aria-expanded on
+    // the radio, which ARIA does not allow (axe aria-allowed-attr, critical — it failed the
+    // authenticated accessibility gate). Every kind's box is always shown, and its label
+    // names the kind for screen readers because three kinds share one visible label.
+    expect(create.text).not.toMatch(/type="radio"[^>]*data-aria-controls/);
+    expect(create.text).toMatch(/for="total-hours-custom">[^<]+<span class="govuk-visually-hidden"> \([^)]+\)<\/span><\/label>/);
     expect(create.text).toContain('Create group exchange');
     expect(create.text).toContain('Something went wrong. Please try again.');
     expect(create.text).not.toContain('shared accessible frontend preparation page');
