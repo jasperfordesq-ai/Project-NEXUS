@@ -134,7 +134,7 @@ final class F467SafeguardingRostersIncludeANetworkAdminTest extends TestCase
                 ['assigned_to' => (int) $networkAdmin->id],
                 (int) $actor->id,
                 $this->testTenantId
-            ),
+            )->ok,
             'a real network administrator is accepted as the assignee'
         );
         self::assertSame(
@@ -151,7 +151,7 @@ final class F467SafeguardingRostersIncludeANetworkAdminTest extends TestCase
                 ['assigned_to' => (int) $roleAdmin->id],
                 (int) $actor->id,
                 $this->testTenantId
-            ),
+            )->ok,
             'control: a role-string administrator is still accepted'
         );
 
@@ -163,7 +163,7 @@ final class F467SafeguardingRostersIncludeANetworkAdminTest extends TestCase
                 ['assigned_to' => (int) $this->plainMember()->id],
                 (int) $actor->id,
                 $this->testTenantId
-            ),
+            )->ok,
             'control: an ordinary member must never be accepted as assignee'
         );
         self::assertSame(

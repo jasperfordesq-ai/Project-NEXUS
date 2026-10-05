@@ -185,7 +185,7 @@ final class VolunteerIncidentNotificationTest extends TestCase
 
         // An explicit pair that does not belong together is refused and nothing changes.
         $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", ['organization_id' => $orgB, 'opportunity_id' => $oppA])
-            ->assertStatus(404);
+            ->assertStatus(422)->assertJsonPath('errors.0.field', 'opportunity_id');
         $this->assertSame($orgA, (int) DB::table('vol_safeguarding_incidents')->where('id', $incidentId)->value('organization_id'));
 
         $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", ['organization_id' => $orgB])->assertStatus(200);
@@ -246,7 +246,7 @@ final class VolunteerIncidentNotificationTest extends TestCase
             ['incident_date' => '2026-02-31'],
             ['authority_reference' => str_repeat('x', 101)],
         ] as $bad) {
-            $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", $bad)->assertStatus(404);
+            $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", $bad)->assertStatus(422);
         }
         $this->assertSame('allegation', DB::table('vol_safeguarding_incidents')->where('id', $incidentId)->value('incident_type'));
     }

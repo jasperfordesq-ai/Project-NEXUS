@@ -565,8 +565,15 @@ class VolunteerWellbeingController extends BaseApiController
         $tenantId = TenantContext::getId();
         $result = $this->safeguardingService->updateIncident((int) $id, $data, $adminId, $tenantId);
 
-        if (!$result) {
+        if ($result->notFound) {
             return $this->respondWithError('NOT_FOUND', __('api.vol_incident_not_found'), null, 404);
+        }
+        if (!$result->ok) {
+            // Say which field was refused, so the screen can show it beside that field.
+            $message = $result->errorField === 'reason'
+                ? __('api.vol_incident_reason_required')
+                : __('api.vol_incident_invalid_field');
+            return $this->respondWithError('VALIDATION_ERROR', $message, $result->errorField, 422);
         }
         return $this->respondWithData(['success' => true]);
     }

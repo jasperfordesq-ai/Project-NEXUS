@@ -89,10 +89,23 @@ class SafeguardingServiceTest extends TestCase
 
     // ── updateIncident ──
 
-    public function test_updateIncident_returns_false_for_empty_data(): void
+    public function test_updateIncident_with_nothing_to_change_changes_nothing(): void
     {
-        $result = $this->service->updateIncident(1, [], 1, $this->testTenantId);
-        $this->assertFalse($result);
+        // An empty update is a no-op: accepted, and nothing is written —
+        // not the row, and not the incident's timeline.
+        $staffId = $this->seedActiveUser($this->testTenantId);
+        $incidentId = $this->seedIncident($this->testTenantId, $staffId, 'open');
+
+        $result = $this->service->updateIncident($incidentId, [], $staffId, $this->testTenantId);
+
+        $this->assertTrue($result->ok);
+        $this->assertSame(0, DB::table('vol_incident_events')->where('incident_id', $incidentId)->count());
+    }
+
+    public function test_updateIncident_for_an_unknown_incident_is_not_found(): void
+    {
+        $result = $this->service->updateIncident(999999999, ['status' => 'investigating'], 1, $this->testTenantId);
+        $this->assertTrue($result->notFound);
     }
 
     public function test_updateIncident_sets_resolved_at_for_closed_status(): void
@@ -108,12 +121,13 @@ class SafeguardingServiceTest extends TestCase
 
         $result = $this->service->updateIncident(
             $incidentId,
-            ['status' => 'resolved'],
+            // Resolving needs a reason since the incident timeline was added.
+            ['status' => 'resolved', 'reason' => 'Dealt with by the organisation.'],
             $reporterId,
             $this->testTenantId
         );
 
-        $this->assertTrue($result);
+        $this->assertTrue($result->ok);
 
         $row = DB::table('vol_safeguarding_incidents')
             ->where('id', $incidentId)

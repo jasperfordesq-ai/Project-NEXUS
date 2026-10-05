@@ -285,7 +285,7 @@ final class VolunteerIncidentReportingTest extends TestCase
 
         $this->apiPut("/v2/admin/volunteering/incidents/{$incidentId}", [
             'assigned_to' => $member->id,
-        ])->assertStatus(404);
+        ])->assertStatus(422)->assertJsonPath('errors.0.field', 'assigned_to');
 
         $this->assertNull(DB::table('vol_safeguarding_incidents')->where('id', $incidentId)->value('assigned_to'));
     }

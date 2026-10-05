@@ -134,7 +134,8 @@ final class F507SubjectAdminCannotHandleVolunteerIncidentAboutThemTest extends T
         Sanctum::actingAs($this->otherAdmin, ['*']);
 
         $this->apiGet("/v2/volunteering/incidents/{$this->aboutSubject}")->assertStatus(200);
-        $this->apiPut("/v2/admin/volunteering/incidents/{$this->aboutSubject}", ['status' => 'escalated'])->assertStatus(200);
+        // Escalating needs a reason since the incident timeline was added.
+        $this->apiPut("/v2/admin/volunteering/incidents/{$this->aboutSubject}", ['status' => 'escalated', 'reason' => 'Referred to the statutory service.'])->assertStatus(200);
         $this->assertSame('escalated', (string) DB::table('vol_safeguarding_incidents')->where('id', $this->aboutSubject)->value('status'));
     }
 

@@ -209,11 +209,17 @@ final class F488ExportWithholdsInvestigatorsRecordFromReporterTest extends TestC
         self::assertGreaterThan(0, $incidentId, 'precondition: the incident has an id');
 
         $updated = $service->updateIncident($incidentId, [
-            'status'           => 'investigating',
-            'action_taken'     => self::ACTION_TAKEN_SECRET,
-            'resolution_notes' => self::RESOLUTION_SECRET,
+            'status' => 'investigating',
         ], (int) $admin->id, $this->testTenantId);
-        self::assertTrue($updated, 'precondition: the administrator recorded the investigation');
+        self::assertTrue($updated->ok, 'precondition: the administrator moved the incident on');
+        // Staff now write notes on the incident timeline, and the API refuses the
+        // two old free-text fields. Incidents from before that still carry text in
+        // them, so the export must keep withholding it: write it as such a legacy
+        // record would hold it.
+        DB::table('vol_safeguarding_incidents')
+            ->where('id', $incidentId)
+            ->where('tenant_id', $this->testTenantId)
+            ->update(['action_taken' => self::ACTION_TAKEN_SECRET, 'resolution_notes' => self::RESOLUTION_SECRET]);
 
         return [$reporter, $subject, $incidentId];
     }

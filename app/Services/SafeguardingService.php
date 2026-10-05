@@ -642,6 +642,19 @@ class SafeguardingService
                 'title' => $data['title'] ?? '',
             ]);
 
+            // The first row of the incident's permanent timeline.
+            app(\App\Services\Volunteering\IncidentTimelineService::class)->record(
+                $tenantId, (int) $id, 'reported', $reporterId, 'reporter', null,
+                [
+                    'type' => $incidentType,
+                    'severity' => $severity,
+                    'incident_date' => $record && $record->incident_date ? substr((string) $record->incident_date, 0, 10) : null,
+                    'organization_id' => $organizationId,
+                    'opportunity_id' => $opportunityId,
+                ],
+                $organizationId
+            );
+
             // Notify all admins/brokers of new incident (legally required for ALL
             // severities), then the organisation it is linked to, if any.
             if ($record) {
@@ -887,55 +900,68 @@ class SafeguardingService
     /**
      * Update a safeguarding incident.
      */
-    public function updateIncident(int $incidentId, array $data, int $adminId, int $tenantId): bool
+    public function updateIncident(int $incidentId, array $data, int $adminId, int $tenantId): \App\Services\Volunteering\IncidentUpdateResult
     {
+        $result = \App\Services\Volunteering\IncidentUpdateResult::class;
         try {
-            // Validate status enum if provided
-            if (isset($data['status'])) {
-                $validStatuses = ['open', 'investigating', 'resolved', 'escalated', 'closed'];
-                if (!in_array($data['status'], $validStatuses, true)) {
-                    return false;
+            $currentIncident = DB::table('vol_safeguarding_incidents')
+                ->where('id', $incidentId)
+                ->where('tenant_id', $tenantId)
+                ->first();
+            if (!$currentIncident) {
+                return $result::notFound();
+            }
+            // F-507: the subject or involved person may not handle the incident
+            // (treated as not found, like caring reportDetail()).
+            if (self::isIncidentAboutUser($currentIncident, $adminId)) {
+                return $result::notFound();
+            }
+            // These free-text boxes were replaced by the incident timeline: staff
+            // write notes there, so a late caller is told rather than ignored.
+            // Checked only after not-found, so the answer never reveals an
+            // incident to someone it is about.
+            foreach (['action_taken', 'resolution_notes'] as $retired) {
+                if (array_key_exists($retired, $data)) {
+                    return $result::invalid($retired);
                 }
             }
 
-            $allowedFields = [
-                'status', 'action_taken', 'resolution_notes', 'assigned_to', 'severity',
-                // Staff can correct how an incident was filed, and tie it to an
-                // organisation and opportunity after the fact.
-                'incident_type', 'incident_date', 'organization_id', 'opportunity_id',
-                'authority_notified', 'authority_reference',
+            $fields = [
+                'status', 'assigned_to', 'severity', 'incident_type', 'incident_date',
+                'organization_id', 'opportunity_id', 'authority_notified', 'authority_reference',
             ];
             $updates = [];
-
-            foreach ($allowedFields as $field) {
+            foreach ($fields as $field) {
                 if (array_key_exists($field, $data)) {
                     $updates[$field] = $data[$field];
                 }
             }
 
-            if (empty($updates)) {
-                return false;
+            // ── Validate and normalise ──────────────────────────────────────
+            if (array_key_exists('status', $updates)) {
+                $status = is_string($updates['status']) ? $updates['status'] : '';
+                if (!in_array($status, ['open', 'investigating', 'resolved', 'escalated', 'closed'], true)) {
+                    return $result::invalid('status');
+                }
             }
-
             // A form sends the handler as a string; "nobody" is empty or null.
             if (array_key_exists('assigned_to', $updates)) {
                 $updates['assigned_to'] = !empty($updates['assigned_to']) ? (int) $updates['assigned_to'] : null;
             }
-
             if (array_key_exists('severity', $updates)
                 && !in_array($updates['severity'], ['low', 'medium', 'high', 'critical'], true)) {
-                return false;
+                return $result::invalid('severity');
             }
             if (array_key_exists('incident_type', $updates)
                 && !in_array($updates['incident_type'], ['concern', 'allegation', 'disclosure', 'near_miss', 'other'], true)) {
-                return false;
+                return $result::invalid('incident_type');
             }
             if (array_key_exists('incident_date', $updates)) {
                 $date = is_string($updates['incident_date']) ? trim($updates['incident_date']) : '';
                 $parsed = $date !== '' ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
                 // Same rule as reporting: a real date, today or earlier.
                 if (!$parsed || $parsed->format('Y-m-d') !== $date || $date > now()->toDateString()) {
-                    return false;
+                    return $result::invalid('incident_date');
                 }
                 $updates['incident_date'] = $date;
             }
@@ -945,48 +971,13 @@ class SafeguardingService
             if (array_key_exists('authority_reference', $updates)) {
                 $reference = is_string($updates['authority_reference']) ? trim($updates['authority_reference']) : '';
                 if (mb_strlen($reference) > 100) {
-                    return false;
+                    return $result::invalid('authority_reference');
                 }
                 $updates['authority_reference'] = $reference !== '' ? $reference : null;
             }
             foreach (['organization_id', 'opportunity_id'] as $idField) {
                 if (array_key_exists($idField, $updates)) {
                     $updates[$idField] = !empty($updates[$idField]) ? (int) $updates[$idField] : null;
-                }
-            }
-
-            if (isset($data['status']) && in_array($data['status'], ['resolved', 'closed'])) {
-                $updates['resolved_at'] = now();
-            }
-
-            $updates['updated_at'] = now();
-
-            // Get current incident state for comparison
-            $currentIncident = DB::table('vol_safeguarding_incidents')
-                ->where('id', $incidentId)
-                ->where('tenant_id', $tenantId)
-                ->first();
-
-            if (!$currentIncident) {
-                return false;
-            }
-
-            // F-507: the subject or involved person may not handle the incident
-            // (treated as not found, like caring reportDetail()), and nobody may
-            // hand it to them.
-            if (self::isIncidentAboutUser($currentIncident, $adminId)) {
-                return false;
-            }
-            if (isset($updates['assigned_to']) && $updates['assigned_to'] !== null
-                && self::isIncidentAboutUser($currentIncident, (int) $updates['assigned_to'])) {
-                return false;
-            }
-
-            if (isset($updates['status'])) {
-                $currentStatus = (string) ($currentIncident->status ?? '');
-                $nextStatus = (string) $updates['status'];
-                if (!in_array($nextStatus, self::INCIDENT_STATUS_TRANSITIONS[$currentStatus] ?? [], true)) {
-                    return false;
                 }
             }
 
@@ -1003,7 +994,7 @@ class SafeguardingService
                     : (!empty($currentIncident->opportunity_id) ? (int) $currentIncident->opportunity_id : null);
 
                 if ($orgId !== null && !DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', $tenantId)->exists()) {
-                    return false;
+                    return $result::invalid('organization_id');
                 }
                 if ($oppId !== null) {
                     $oppOrg = DB::table('vol_opportunities')
@@ -1011,13 +1002,13 @@ class SafeguardingService
                         ->where('tenant_id', $tenantId)
                         ->value('organization_id');
                     if ($oppOrg === null) {
-                        return false;
+                        return $result::invalid('opportunity_id');
                     }
                     if ($orgId === null && array_key_exists('opportunity_id', $updates) && !array_key_exists('organization_id', $updates)) {
                         $orgId = (int) $oppOrg;
                     } elseif ((int) $oppOrg !== (int) $orgId) {
                         if (array_key_exists('opportunity_id', $updates)) {
-                            return false; // an explicit, mismatched pair
+                            return $result::invalid('opportunity_id'); // an explicit, mismatched pair
                         }
                         $oppId = null; // the old opportunity belonged to the old organisation
                     }
@@ -1026,37 +1017,114 @@ class SafeguardingService
                 $updates['opportunity_id'] = $oppId;
             }
 
+            // ── Keep only what actually changes ─────────────────────────────
+            $before = [
+                'status' => (string) $currentIncident->status,
+                'assigned_to' => $currentIncident->assigned_to ? (int) $currentIncident->assigned_to : null,
+                'severity' => (string) $currentIncident->severity,
+                'incident_type' => (string) $currentIncident->incident_type,
+                'incident_date' => $currentIncident->incident_date ? substr((string) $currentIncident->incident_date, 0, 10) : null,
+                'organization_id' => $currentIncident->organization_id ? (int) $currentIncident->organization_id : null,
+                'opportunity_id' => $currentIncident->opportunity_id ? (int) $currentIncident->opportunity_id : null,
+                'authority_notified' => (int) ($currentIncident->authority_notified ?? 0),
+                'authority_reference' => $currentIncident->authority_reference !== null && $currentIncident->authority_reference !== ''
+                    ? (string) $currentIncident->authority_reference : null,
+            ];
+            $changes = array_filter(
+                $updates,
+                fn ($value, $field) => $value !== $before[$field],
+                ARRAY_FILTER_USE_BOTH
+            );
+
+            $reason = isset($data['reason']) && is_string($data['reason']) ? trim($data['reason']) : '';
+            if (mb_strlen($reason) > 5000) {
+                return $result::invalid('reason');
+            }
+            if (isset($changes['status'])) {
+                if (!in_array($changes['status'], self::INCIDENT_STATUS_TRANSITIONS[$before['status']] ?? [], true)) {
+                    return $result::invalid('status');
+                }
+                // Resolving, escalating or closing is a decision: say why.
+                if (in_array($changes['status'], ['resolved', 'escalated', 'closed'], true) && $reason === '') {
+                    return $result::invalid('reason');
+                }
+            }
+
             $newAssignee = null;
-            if (isset($updates['assigned_to']) && $updates['assigned_to'] !== null) {
-                $newAssignee = User::where('id', (int) $updates['assigned_to'])
+            if (array_key_exists('assigned_to', $changes) && $changes['assigned_to'] !== null) {
+                // Nobody may hand an incident to someone it is about (F-507).
+                if (self::isIncidentAboutUser($currentIncident, (int) $changes['assigned_to'])) {
+                    return $result::invalid('assigned_to');
+                }
+                $newAssignee = User::where('id', (int) $changes['assigned_to'])
                     ->where('tenant_id', $tenantId)
                     ->where('status', 'active')
                     ->where(fn ($q) => self::scopeToBrokerTier($q))
                     ->first();
-
                 if (!$newAssignee) {
-                    return false;
+                    return $result::invalid('assigned_to');
                 }
             }
 
-            DB::table('vol_safeguarding_incidents')
-                ->where('id', $incidentId)
-                ->where('tenant_id', $tenantId)
-                ->update($updates);
+            if ($changes === []) {
+                return $result::ok();
+            }
 
-            $this->logActivity($adminId, 'safeguarding_incident_updated', 'safeguarding_incident', $incidentId, $updates);
+            // ── Write the change and its timeline rows together ─────────────
+            $timeline = app(\App\Services\Volunteering\IncidentTimelineService::class);
+            DB::transaction(function () use ($changes, $before, $reason, $incidentId, $tenantId, $adminId, $currentIncident, $timeline) {
+                $write = $changes + ['updated_at' => now()];
+                if (isset($changes['status']) && in_array($changes['status'], ['resolved', 'closed'], true)) {
+                    $write['resolved_at'] = now();
+                }
+                DB::table('vol_safeguarding_incidents')
+                    ->where('id', $incidentId)
+                    ->where('tenant_id', $tenantId)
+                    ->update($write);
+
+                if (isset($changes['status'])) {
+                    $timeline->record($tenantId, $incidentId, 'status_changed', $adminId, 'staff',
+                        $reason !== '' ? $reason : null, ['from' => $before['status'], 'to' => $changes['status']]);
+                }
+                if (array_key_exists('assigned_to', $changes)) {
+                    $timeline->record($tenantId, $incidentId, 'handler_changed', $adminId, 'staff', null,
+                        ['from_user_id' => $before['assigned_to'], 'to_user_id' => $changes['assigned_to']]);
+                }
+                $filing = [];
+                foreach (['organization_id', 'opportunity_id', 'incident_type', 'severity', 'incident_date'] as $field) {
+                    if (array_key_exists($field, $changes)) {
+                        $filing[$field] = ['from' => $before[$field], 'to' => $changes[$field]];
+                    }
+                }
+                if ($filing !== []) {
+                    $timeline->record($tenantId, $incidentId, 'filing_changed', $adminId, 'staff', null, $filing);
+                }
+                if (array_key_exists('authority_notified', $changes) || array_key_exists('authority_reference', $changes)) {
+                    $timeline->record($tenantId, $incidentId, 'authority_recorded', $adminId, 'staff', null, [
+                        'notified' => (bool) ($changes['authority_notified'] ?? $before['authority_notified']),
+                        'reference' => array_key_exists('authority_reference', $changes) ? $changes['authority_reference'] : $before['authority_reference'],
+                    ]);
+                }
+                // A full-report share belongs to one organisation: moving the
+                // incident ends it, so the old organisation loses sight at once.
+                if (array_key_exists('organization_id', $changes)) {
+                    app(\App\Services\Volunteering\IncidentShareService::class)
+                        ->withdraw($tenantId, $currentIncident, $adminId, 'organisation_changed');
+                }
+            });
+
+            $this->logActivity($adminId, 'safeguarding_incident_updated', 'safeguarding_incident', $incidentId, $changes);
 
             // A newly named handler is told the incident is theirs, exactly as
-            // assignDlp() tells them. Re-saving the same handler stays quiet.
-            if ($newAssignee && (int) ($currentIncident->assigned_to ?? 0) !== (int) $newAssignee->id) {
+            // assignDlp() tells them.
+            if ($newAssignee) {
                 $this->notifyIncidentAssignee($newAssignee, $tenantId, $incidentId, $currentIncident);
             }
 
             // An organisation newly linked to the incident is told, as it would
-            // have been had the reporter chosen it. Re-saving the same one, or
-            // removing it, stays quiet.
-            $newOrgId = array_key_exists('organization_id', $updates) ? (int) ($updates['organization_id'] ?? 0) : 0;
-            if ($newOrgId > 0 && $newOrgId !== (int) ($currentIncident->organization_id ?? 0)) {
+            // have been had the reporter chosen it. Removing it stays quiet.
+            $newOrgId = (int) ($changes['organization_id'] ?? 0);
+            if ($newOrgId > 0) {
                 $updatedIncident = DB::table('vol_safeguarding_incidents')
                     ->where('id', $incidentId)
                     ->where('tenant_id', $tenantId)
@@ -1066,24 +1134,22 @@ class SafeguardingService
                 }
             }
 
-            // Notify reporter and assigned DLP of status changes. The staff screen
-            // sends the status with every save, so only a status that actually
-            // changed is news — re-saving used to tell the reporter "marked as
-            // opened" each time anyone touched the incident.
-            if (isset($data['status']) && $currentIncident && (string) $data['status'] !== (string) ($currentIncident->status ?? '')) {
+            // Only a status that actually changed is news to the reporter.
+            if (isset($changes['status'])) {
                 $this->notifyIncidentStatusChange(
                     $tenantId,
                     $incidentId,
                     (int) $currentIncident->reported_by,
                     $currentIncident->assigned_to ? (int) $currentIncident->assigned_to : null,
-                    $data['status']
+                    $changes['status']
                 );
             }
 
-            return true;
+            return $result::ok();
         } catch (\Throwable $e) {
+            // Never turn a failure into a success-shaped answer: log and re-throw.
             Log::error('SafeguardingService::updateIncident error: ' . $e->getMessage());
-            return false;
+            throw $e;
         }
     }
 
