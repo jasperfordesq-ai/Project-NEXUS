@@ -122,6 +122,7 @@ final class VolunteerIncidentNotificationTest extends TestCase
             'organization_id' => $orgId,
         ]);
 
+        $incidentId = (int) DB::table('vol_safeguarding_incidents')->where('title', 'INCNOTE secret title')->value('id');
         foreach ([$owner, $orgAdmin, $dlp] as $contact) {
             $mail = $this->mailTo($contact);
             $this->assertNotNull($mail, 'an organisation contact is emailed');
@@ -132,8 +133,8 @@ final class VolunteerIncidentNotificationTest extends TestCase
             $this->assertStringNotContainsString((string) $reporter->first_name, $mail['body']);
             $this->assertTrue(
                 DB::table('notifications')->where('user_id', $contact->id)->where('type', 'safeguarding_flag')
-                    ->where('link', "/volunteering/org/{$orgId}/dashboard")->exists(),
-                'and gets a bell pointing at the organisation dashboard'
+                    ->where('link', "/volunteering/org/{$orgId}/safeguarding/{$incidentId}")->exists(),
+                'and gets a bell pointing at the organisation page for that report'
             );
         }
         $this->assertNull($this->mailTo($plainMember), 'a plain member of the organisation is not told');

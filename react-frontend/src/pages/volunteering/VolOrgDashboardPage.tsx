@@ -24,6 +24,7 @@ import HandCoins from 'lucide-react/icons/hand-coins';
 import Users from 'lucide-react/icons/users';
 import Wallet from 'lucide-react/icons/wallet';
 import Settings from 'lucide-react/icons/settings';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Building2 from 'lucide-react/icons/building-2';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
@@ -48,10 +49,11 @@ const OrgHoursReviewTab = React.lazy(() => import('./OrgHoursReviewTab'));
 const OrgExpensesTab = React.lazy(() => import('./OrgExpensesTab'));
 const OrgFundraisingTab = React.lazy(() => import('./OrgFundraisingTab'));
 const OrgVolunteersTab = React.lazy(() => import('./OrgVolunteersTab'));
+const OrgSafeguardingPage = React.lazy(() => import('./OrgSafeguardingPage'));
 const OrgWalletTab = React.lazy(() => import('./OrgWalletTab'));
 const OrgSettingsTab = React.lazy(() => import('./OrgSettingsTab'));
 
-type OrgDashTab = 'overview' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'wallet' | 'settings';
+type OrgDashTab = 'overview' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'safeguarding' | 'wallet' | 'settings';
 
 interface OrgDetails {
   id: number;
@@ -86,6 +88,7 @@ const TAB_DEFS: { key: OrgDashTab; icon: typeof LayoutDashboard }[] = [
   { key: 'expenses', icon: Receipt },
   { key: 'fundraising', icon: HandCoins },
   { key: 'volunteers', icon: Users },
+  { key: 'safeguarding', icon: ShieldAlert },
   { key: 'wallet', icon: Wallet },
   { key: 'settings', icon: Settings },
 ];
@@ -317,6 +320,7 @@ export default function VolOrgDashboardPage() {
     expenses: t('org_dashboard.tab_expenses'),
     fundraising: tf('tab'),
     volunteers: t('org_dashboard.tab_volunteers'),
+    safeguarding: t('org_dashboard.tab_safeguarding'),
     wallet: t('org_dashboard.tab_wallet'),
     settings: t('org_dashboard.tab_settings'),
   };
@@ -406,6 +410,9 @@ export default function VolOrgDashboardPage() {
         )}
         {tab === 'volunteers' && (
           <OrgVolunteersTab orgId={orgId} />
+        )}
+        {tab === 'safeguarding' && (
+          <OrgSafeguardingPage embedded orgId={orgId} />
         )}
         {tab === 'wallet' && (
           <OrgWalletTab

@@ -1671,7 +1671,7 @@ class SafeguardingService
                             'user_id' => $recipient->id,
                             'type' => 'safeguarding_flag',
                             'message' => __('emails_misc.safeguarding.org_incident_bell', ['organisation' => $orgName]),
-                            'link' => '/volunteering/org/' . $organizationId . '/dashboard',
+                            'link' => '/volunteering/org/' . $organizationId . '/safeguarding/' . (int) $incident->id,
                             'is_read' => false,
                         ]);
                     } catch (\Throwable $bellError) {
@@ -1709,7 +1709,7 @@ class SafeguardingService
                             ->infoCard($details, __('emails_misc.safeguarding.info_card_incident_details'))
                             ->paragraph(__('emails_misc.safeguarding.org_incident_what_next'))
                             ->paragraph(__('emails_misc.safeguarding.org_incident_confidential'))
-                            ->button(__('emails_misc.safeguarding.org_incident_cta'), EmailTemplateBuilder::tenantUrl('/volunteering/org/' . $organizationId . '/dashboard'))
+                            ->button(__('emails_misc.safeguarding.org_incident_cta'), EmailTemplateBuilder::tenantUrl('/volunteering/org/' . $organizationId . '/safeguarding/' . (int) $incident->id))
                             ->render();
 
                         $sent = EmailDispatchService::sendRaw(
