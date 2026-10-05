@@ -326,7 +326,8 @@
       "TS2345": 3
     },
     "src/admin/modules/crm/ActivityTimeline.test.tsx": {
-      "TS2322": 2
+      "TS2345": 1,
+      "TS2532": 3
     },
     "src/admin/modules/deliverability/DeliverablesList.test.tsx": {
       "TS2345": 4,
@@ -1888,6 +1889,6 @@
   },
   "totals": {
     "fileCount": 557,
-    "errorCount": 1695
+    "errorCount": 1697
   }
 }

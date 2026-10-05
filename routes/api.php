@@ -3402,6 +3402,7 @@ Route::get('/v2/admin/crm/timeline', [\App\Http\Controllers\Api\AdminCrmControll
 Route::get('/v2/admin/crm/export/notes', [\App\Http\Controllers\Api\AdminCrmController::class, 'exportNotes']);
 Route::get('/v2/admin/crm/export/tasks', [\App\Http\Controllers\Api\AdminCrmController::class, 'exportTasks']);
 Route::get('/v2/admin/crm/export/tags', [\App\Http\Controllers\Api\AdminCrmController::class, 'exportTags']);
+Route::get('/v2/admin/crm/export/timeline', [\App\Http\Controllers\Api\AdminCrmController::class, 'exportTimeline']);
 Route::get('/v2/admin/crm/export/dashboard', [\App\Http\Controllers\Api\AdminCrmController::class, 'exportDashboard']);
 
 // ============================================

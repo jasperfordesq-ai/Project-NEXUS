@@ -3117,9 +3117,16 @@ export const adminCrm = {
   bulkRemoveTag: (tag: string) =>
     api.delete<{ success: boolean; deleted: number }>(`/v2/admin/crm/tags/bulk?tag=${encodeURIComponent(tag)}`),
 
-  // Activity Timeline
+  // Activity Timeline. `days` is the window in days; pass 0 for all time (the
+  // server applies its 30-day default when the parameter is absent).
   getTimeline: (params?: { user_id?: number; type?: string; days?: number; page?: number; limit?: number }) =>
     api.get<PaginatedResponse<TimelineEntry>>(`/v2/admin/crm/timeline${buildQuery(params || {})}`),
+
+  // The same filters as getTimeline, as a CSV (admin-only, capped server-side).
+  exportTimeline: (params?: { user_id?: number; type?: string; days?: number }) =>
+    api.download(`/v2/admin/crm/export/timeline${buildQuery(params || {})}`, {
+      filename: `activity-timeline-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   // CSV Exports (return blob URLs)
   exportNotesUrl: () => '/v2/admin/crm/export/notes',

@@ -466,6 +466,73 @@ class AdminCrmControllerTest extends TestCase
     }
 
     // ================================================================
+    // EXPORT TIMELINE — GET /v2/admin/crm/export/timeline
+    // ================================================================
+
+    public function test_export_timeline_streams_the_same_activity_as_the_page_for_admin(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $marker = 'tltest-' . substr(md5((string) microtime(true)), 0, 8);
+        // The factory derives `name` itself, so the member is recognised by id and by the name it got.
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('listings')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $member->id,
+            'title' => "$marker listing", 'description' => 'x', 'type' => 'offer',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // days=0 (all time) so a Carbon test clock leaked by another test cannot hide the rows.
+        $response = $this->apiGet('/v2/admin/crm/export/timeline?days=0&type=listing_created');
+        $response->assertStatus(200);
+        $this->assertStringStartsWith('text/csv', (string) $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('crm-activity-', (string) $response->headers->get('Content-Disposition'));
+
+        $lines = array_values(array_filter(explode("\n", str_replace("\r", '', $response->streamedContent()))));
+        $this->assertSame('Date,Activity,"User ID","User Name",Details', $lines[0]);
+
+        $mine = array_values(array_filter($lines, fn ($l) => str_contains($l, "$marker listing")));
+        $this->assertCount(1, $mine);
+        $this->assertStringContainsString('listing_created', $mine[0]);
+        $this->assertStringContainsString(',' . $member->id . ',', $mine[0]);
+        $this->assertStringContainsString($member->fresh()->name, $mine[0]);
+        // The type filter applies to the export too: no sign-up rows in a listing export.
+        $this->assertSame([], array_values(array_filter($lines, fn ($l) => str_contains($l, ',signup,'))));
+    }
+
+    public function test_export_timeline_honours_the_member_filter(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $wanted = User::factory()->forTenant($this->testTenantId)->create();
+        $other = User::factory()->forTenant($this->testTenantId)->create();
+
+        $response = $this->apiGet('/v2/admin/crm/export/timeline?days=0&type=signup&user_id=' . $wanted->id);
+        $response->assertStatus(200);
+
+        $body = $response->streamedContent();
+        $this->assertStringContainsString(',' . $wanted->id . ',', $body);
+        $this->assertStringContainsString($wanted->fresh()->name, $body);
+        $this->assertStringNotContainsString(',' . $other->id . ',', $body);
+    }
+
+    public function test_export_timeline_rejects_an_unknown_activity_type(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiGet('/v2/admin/crm/export/timeline?type=bogus')->assertStatus(400);
+    }
+
+    public function test_export_timeline_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $this->apiGet('/v2/admin/crm/export/timeline')->assertStatus(403);
+    }
+
+    // ================================================================
     // EXPORT NOTES — GET /v2/admin/crm/export/notes
     // ================================================================
 

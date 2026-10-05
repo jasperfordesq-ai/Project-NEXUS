@@ -943,10 +943,50 @@ class AdminCrmController extends BaseApiController
         $limit = min(100, max(1, $this->queryInt('limit', 25)));
         $offset = ($page - 1) * $limit;
 
+        ['unions' => $unions, 'params' => $params, 'countParams' => $countParams] =
+            $this->buildTimelineUnion($callerId, $tenantId, $userId ?: null, $type ?: null, (int) $days);
+
+        if (empty($unions)) {
+            return $this->respondWithPaginatedCollection([], 0, $page, $limit);
+        }
+
+        try {
+            $unionSql = implode(" UNION ALL ", $unions);
+
+            $total = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM ({$unionSql}) AS timeline", $countParams)->cnt;
+
+            $entries = DB::select("SELECT * FROM ({$unionSql}) AS timeline ORDER BY created_at DESC LIMIT " . (int) $limit . " OFFSET " . (int) $offset, $params);
+            $entries = array_map(fn($r) => (array)$r, $entries);
+
+            foreach ($entries as $i => &$entry) {
+                $entry['id'] = ($page - 1) * $limit + $i + 1;
+                $entry['description_code'] = $entry['activity_type'];
+                $descriptionParams = json_decode((string) ($entry['description_params'] ?? '{}'), true);
+                $entry['description_params'] = is_array($descriptionParams) ? $descriptionParams : [];
+            }
+            unset($entry);
+
+            return $this->respondWithPaginatedCollection($entries, $total, $page, $limit);
+        } catch (\Throwable $e) {
+            Log::warning('CRM timeline query failed', ['error' => $e->getMessage()]);
+            return $this->respondWithPaginatedCollection([], 0, $page, $limit);
+        }
+    }
+
+    /**
+     * The UNION ALL behind the activity timeline, shared by the JSON page and the
+     * CSV export so the two can never disagree about what counts as activity.
+     * Each branch is probed before it is included (canRunTimelineBranch), so a
+     * missing optional table drops its branch instead of failing the whole query.
+     *
+     * @return array{unions: list<string>, params: list<mixed>, countParams: list<mixed>}
+     */
+    private function buildTimelineUnion(int $callerId, int $tenantId, ?int $userId, ?string $type, int $days): array
+    {
         $unions = [];
         $params = [];
         $countParams = [];
-        $safeDays = (int) $days;
+        $safeDays = $days;
         $useDayFilter = $safeDays > 0;
         $nullText = "CAST(NULL AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_unicode_ci";
         $emptyDescriptionParams = "CONVERT('{}' USING utf8mb4) COLLATE utf8mb4_unicode_ci";
@@ -1092,31 +1132,72 @@ class AdminCrmController extends BaseApiController
             $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
         }
 
-        if (empty($unions)) {
-            return $this->respondWithPaginatedCollection([], 0, $page, $limit);
+        return ['unions' => $unions, 'params' => $params, 'countParams' => $countParams];
+    }
+
+    /** Rows a single timeline CSV may contain; the page's filters narrow it further. */
+    private const TIMELINE_EXPORT_LIMIT = 5000;
+
+    /**
+     * GET /api/v2/admin/crm/export/timeline
+     *
+     * The same filters as the timeline page (user_id, type, days — 30 by default,
+     * 0 for all time), newest first, capped at TIMELINE_EXPORT_LIMIT rows. The
+     * Details column flattens each activity's parameters into one readable cell.
+     */
+    public function exportTimeline(): StreamedResponse|JsonResponse
+    {
+        $callerId = $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        $userId = $this->queryInt('user_id');
+        $type = $this->query('type');
+        $allowedTypes = ['login', 'signup', 'listing_created', 'exchange_completed', 'note_added', 'task_created', 'group_joined', 'profile_updated'];
+        if ($type && !in_array($type, $allowedTypes, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_2.admin_crm.invalid_type'), null, 400);
         }
+        $days = $this->queryInt('days', 30);
 
-        try {
-            $unionSql = implode(" UNION ALL ", $unions);
+        ['unions' => $unions, 'params' => $params] =
+            $this->buildTimelineUnion($callerId, $tenantId, $userId ?: null, $type ?: null, (int) $days);
 
-            $total = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM ({$unionSql}) AS timeline", $countParams)->cnt;
-
-            $entries = DB::select("SELECT * FROM ({$unionSql}) AS timeline ORDER BY created_at DESC LIMIT " . (int) $limit . " OFFSET " . (int) $offset, $params);
-            $entries = array_map(fn($r) => (array)$r, $entries);
-
-            foreach ($entries as $i => &$entry) {
-                $entry['id'] = ($page - 1) * $limit + $i + 1;
-                $entry['description_code'] = $entry['activity_type'];
-                $descriptionParams = json_decode((string) ($entry['description_params'] ?? '{}'), true);
-                $entry['description_params'] = is_array($descriptionParams) ? $descriptionParams : [];
+        $rows = [];
+        if ($unions !== []) {
+            try {
+                $unionSql = implode(" UNION ALL ", $unions);
+                $entries = DB::select(
+                    "SELECT * FROM ({$unionSql}) AS timeline ORDER BY created_at DESC LIMIT " . self::TIMELINE_EXPORT_LIMIT,
+                    $params
+                );
+                foreach ($entries as $entry) {
+                    $entry = (array) $entry;
+                    $details = json_decode((string) ($entry['description_params'] ?? '{}'), true);
+                    $rows[] = [
+                        'created_at' => $entry['created_at'],
+                        'activity_type' => $entry['activity_type'],
+                        'user_id' => $entry['user_id'],
+                        'user_name' => $entry['user_name'],
+                        'details' => $this->timelineDetails((string) $entry['activity_type'], is_array($details) ? $details : []),
+                    ];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('CRM timeline export query failed', ['error' => $e->getMessage()]);
             }
-            unset($entry);
-
-            return $this->respondWithPaginatedCollection($entries, $total, $page, $limit);
-        } catch (\Throwable $e) {
-            Log::warning('CRM timeline query failed', ['error' => $e->getMessage()]);
-            return $this->respondWithPaginatedCollection([], 0, $page, $limit);
         }
+
+        return $this->streamCsv('crm-activity', ['Date', 'Activity', 'User ID', 'User Name', 'Details'], $rows);
+    }
+
+    /** One readable cell per activity: the listing title, the other party, the note, the task, the group. */
+    private function timelineDetails(string $type, array $params): string
+    {
+        return match ($type) {
+            'listing_created', 'task_created' => (string) ($params['title'] ?? ''),
+            'exchange_completed' => (string) ($params['member_name'] ?? ''),
+            'group_joined' => (string) ($params['group_name'] ?? ''),
+            'note_added' => trim(((string) ($params['author_name'] ?? '')) . ': ' . ((string) ($params['content'] ?? '')), ': '),
+            default => '',
+        };
     }
 
     // ─────────────────────────────────────────────────────────────────────────
