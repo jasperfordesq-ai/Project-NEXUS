@@ -191,7 +191,98 @@ class VolunteerIncidentCaseController extends BaseApiController
         return $this->respondWithData(['event_id' => $eventId], null, 201);
     }
 
+    // ── The organisation it is linked to ─────────────────────────────────────
+
+    /**
+     * GET /v2/volunteering/organisations/{orgId}/incidents — incidents linked to
+     * an organisation, for its owner, admins and safeguarding leads. Incidents
+     * about the caller are left out.
+     */
+    public function organisationIncidents(int $orgId): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_incidents_list', 30, 60);
+        $tenantId = TenantContext::getId();
+        if (IncidentAccess::organisationRelation($tenantId, $userId, $orgId) === IncidentAccess::NONE) {
+            return $this->respondWithError('NOT_ORGANISATION_CONTACT', __('api.vol_incident_not_org_contact'), null, 403);
+        }
+
+        $incidents = DB::table('vol_safeguarding_incidents')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $orgId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
+
+        $items = [];
+        foreach ($incidents as $incident) {
+            if (IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::NONE) {
+                continue;
+            }
+            $items[] = IncidentViews::summary($incident) + [
+                'full_report_shared' => $this->leadHasShare($tenantId, $incident, $userId, $orgId),
+            ];
+        }
+
+        return $this->respondWithData([
+            'items' => $items,
+            'relation' => IncidentAccess::organisationRelation($tenantId, $userId, $orgId),
+        ]);
+    }
+
+    /** GET /v2/volunteering/organisations/{orgId}/incidents/{id} */
+    public function organisationIncident(int $orgId, int $id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_incident_get', 30, 60);
+        $tenantId = TenantContext::getId();
+        $incident = $this->loadIncident($id, $tenantId);
+        $relation = $incident ? IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) : IncidentAccess::NONE;
+        if (!$incident || $relation === IncidentAccess::NONE) {
+            return $this->notFound();
+        }
+
+        return $this->respondWithData(IncidentViews::organisation(
+            $incident,
+            $this->timeline->forIncident($tenantId, $id),
+            $relation,
+            $this->shares->activeShare($tenantId, $incident) !== null,
+            $orgId
+        ));
+    }
+
+    /** POST /v2/volunteering/organisations/{orgId}/incidents/{id}/updates {body} */
+    public function organisationUpdate(int $orgId, int $id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_incident_case_write', 30, 60);
+        $tenantId = TenantContext::getId();
+        $incident = $this->loadIncident($id, $tenantId);
+        if (!$incident || IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::NONE) {
+            return $this->notFound();
+        }
+        $body = $this->text('body', self::CONTRIBUTION_MIN);
+        if ($body === null) {
+            return $this->invalidText('body', self::CONTRIBUTION_MIN);
+        }
+
+        $eventId = $this->timeline->record($tenantId, $id, 'org_update', $userId, 'organisation', $body, [], $orgId);
+
+        return $this->respondWithData(['event_id' => $eventId], null, 201);
+    }
+
     // ── Shared helpers ───────────────────────────────────────────────────────
+
+    /** Whether this caller is one of the organisation's leads and the full report is shared with it. */
+    private function leadHasShare(int $tenantId, object $incident, int $userId, int $orgId): bool
+    {
+        return IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::ORG_LEAD
+            && $this->shares->activeShare($tenantId, $incident) !== null;
+    }
 
     /** The incident when the caller reported it (including about themselves); otherwise null. */
     private function reporterIncident(int $id, int $tenantId, int $userId): ?object
