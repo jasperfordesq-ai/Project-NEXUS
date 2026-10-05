@@ -30,10 +30,20 @@ return [
 
     'channels' => [
 
+        // A log sink that cannot be written must lose the log line, never the
+        // request. Monolog rethrows a handler failure from every Log::*() call
+        // unless told otherwise, which turned a root-owned
+        // `laravel-YYYY-MM-DD.log` (created by a `docker exec` script) into a
+        // 500 on any code path that logged — including the catch blocks meant
+        // to swallow errors (safeguarding incident report, 2026-10-05). The
+        // `stack` driver has its own switch; the file channels get the same
+        // guarantee through the tap, because the dev `.env` points LOG_CHANNEL
+        // straight at `daily`. Pinned by
+        // tests/Laravel/Feature/Logging/LoggingFailureDoesNotBreakRequestsTest.
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'daily,stderr')),
-            'ignore_exceptions' => false,
+            'ignore_exceptions' => true,
         ],
 
         'single' => [
@@ -41,6 +51,7 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'warning'),
             'replace_placeholders' => true,
+            'tap' => [App\Logging\IgnoreHandlerFailures::class],
         ],
 
         'daily' => [
@@ -49,6 +60,7 @@ return [
             'level' => env('LOG_LEVEL', 'warning'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'tap' => [App\Logging\IgnoreHandlerFailures::class],
             // No explicit 'permission' — setting it makes Monolog chmod() the
             // file on every write, which throws "Operation not permitted" when
             // the existing log file is owned by a different user (e.g. left
