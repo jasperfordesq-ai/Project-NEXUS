@@ -200,6 +200,31 @@ class GroupExchangeControllerTest extends TestCase
         }
     }
 
+    /**
+     * Review finding I1: someone added to a workshop after it was created (the
+     * web app's "Add participants" sends no hours) got 0 hours, so the exchange
+     * could never start. Without hours they now get the session length; a team
+     * helper gets the hours per helper; a team's people helped need none.
+     */
+    public function test_a_person_added_later_without_hours_gets_the_session_length(): void
+    {
+        $organizer = $this->authenticatedUser();
+        $late = $this->makeUser();
+        $helper = $this->makeUser();
+        foreach ([['workshop', 'receiver', $late], ['team', 'provider', $helper]] as [$kind, $role, $person]) {
+            $id = (int) DB::table('group_exchanges')->insertGetId([
+                'tenant_id' => $this->testTenantId, 'title' => ucfirst($kind), 'organizer_id' => $organizer->id,
+                'status' => 'draft', 'split_type' => $kind, 'total_hours' => 2,
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+
+            $this->apiPost("/v2/group-exchanges/{$id}/participants", ['user_id' => $person->id, 'role' => $role]);
+
+            $this->assertSame(2.0, (float) DB::table('group_exchange_participants')
+                ->where('group_exchange_id', $id)->where('user_id', $person->id)->value('hours'), $kind);
+        }
+    }
+
     public function test_store_requires_title_and_positive_hours(): void
     {
         $this->authenticatedUser();

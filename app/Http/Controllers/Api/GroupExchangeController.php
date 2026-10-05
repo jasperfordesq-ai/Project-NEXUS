@@ -248,11 +248,22 @@ class GroupExchangeController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.user_id_and_role_required'), null, 400);
         }
 
+        // Review I1: a person added later with no hours to a workshop (anyone)
+        // or a team (a helper) gets the exchange's pre-filled number — the
+        // session length / hours per helper — instead of 0, which would block
+        // the exchange from ever starting. They can still be given other hours.
+        $hours = (float) ($data['hours'] ?? 0);
+        if ($hours <= 0
+            && ($exchange['split_type'] === 'workshop'
+                || ($exchange['split_type'] === 'team' && $data['role'] === 'provider'))) {
+            $hours = (float) $exchange['total_hours'];
+        }
+
         $ok = $this->groupExchangeService->addParticipant(
             (int) $id,
             (int) $data['user_id'],
             $data['role'],
-            (float) ($data['hours'] ?? 0),
+            $hours,
             (float) ($data['weight'] ?? 1.0)
         );
 
