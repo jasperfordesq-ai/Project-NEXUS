@@ -243,8 +243,8 @@ export function MemberSearchPicker({
       }}
       startContent={
         searchLoading || hydrationLoading
-          ? <Spinner size="sm" className="ml-3 shrink-0" />
-          : <Search size={14} className="ml-3 shrink-0 text-muted" aria-hidden="true" />
+          ? <Spinner size="sm" className="shrink-0" />
+          : <Search size={14} className="shrink-0 text-muted" aria-hidden="true" />
       }
       renderEmptyState={() => (
         <div role="status" className="flex items-center gap-2 px-3 py-2 text-sm text-muted">

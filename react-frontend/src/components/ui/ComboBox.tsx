@@ -75,8 +75,24 @@ export function ComboBox<T extends object = object>({
     >
       {label != null && <Label>{label}</Label>}
       <HeroComboBox.InputGroup className={classNames?.inputGroup}>
-        {startContent}
-        <Input className={classNames?.input} placeholder={placeholder} />
+        {/* HeroUI's ComboBox input group is a plain positioned flex row: the Input
+            carries the border and the Trigger floats over its end. A start icon
+            dropped in as a sibling therefore sat OUTSIDE the field's border. Float
+            it over the start the same way the trigger floats over the end, and
+            make room for it inside the input. */}
+        {startContent != null && (
+          <span
+            aria-hidden="true"
+            data-slot="combo-box-start-content"
+            className="pointer-events-none absolute inset-y-0 start-0 z-10 flex items-center ps-3 text-muted"
+          >
+            {startContent}
+          </span>
+        )}
+        <Input
+          className={cn(startContent != null && 'ps-9', classNames?.input)}
+          placeholder={placeholder}
+        />
         <HeroComboBox.Trigger />
       </HeroComboBox.InputGroup>
       {description != null && <Description>{description}</Description>}
