@@ -799,6 +799,11 @@
     "expense_not_approved": "Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd.",
     "expense_paid_by_org_hint": "De organisatie registreert de betaling via haar eigen dashboard.",
     "col_handled_by": "Behandeld door",
+    "incidents_search_placeholder": "Zoeken op titel, organisatie of persoon",
+    "incidents_status_filter": "Incidenten filteren op status",
+    "incidents_status_all": "Alle statussen",
+    "incidents_no_match": "Geen incidenten komen overeen met uw zoekopdracht of filter.",
+    "incidents_clear_filters": "Zoekopdracht en filter wissen",
     "handled_by_label": "Wie behandelt dit?",
     "handled_by_nobody": "Nog niemand",
     "handled_by_help": "Diegene krijgt een melding en een e-mail dat het incident aan hem of haar is toegewezen."

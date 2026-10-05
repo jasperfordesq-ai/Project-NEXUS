@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Saisissez une date réelle, par exemple 27 3 2026, ou laissez le champ vide',
         'error_incident_date_future' => 'La date doit être aujourd’hui ou dans le passé',
         'error_incident_opportunity_mismatch' => 'La mission choisie n’est pas proposée par l’organisme choisi. Choisissez une mission correspondante ou changez d’organisme',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'Cela concerne-t-il une personne en particulier ? (facultatif)',
+        'incident_person_hint' => 'S’il s’agit d’un membre de cette communauté, recherchez-le par son nom et sélectionnez-le. Laissez ce champ vide si cela ne concerne pas une seule personne ou si elle n’est pas membre.',
+        'incident_person_results' => 'Choisissez la personne concernée par ce signalement :',
+        'incident_person_none' => 'Ne concerne pas une personne en particulier',
+        'incident_person_no_results' => 'Aucun membre trouvé avec ce nom. Vérifiez l’orthographe ou laissez ce champ vide.',
+        'incident_person_search_label' => 'Nom du membre',
+        'incident_person_search_button' => 'Rechercher un membre',
+        'incident_person_search_failed' => 'Nous n’avons pas pu rechercher les membres pour le moment. Vous pouvez tout de même envoyer votre signalement sans choisir de personne.',
+        'incident_person_previous' => 'Le membre choisi précédemment',
+        'error_incident_person_search_short' => 'Saisissez au moins 2 lettres du nom de la personne pour la rechercher',
+        'error_incident_person_not_searched' => 'Sélectionnez « Rechercher un membre » pour retrouver la personne nommée, ou effacez le nom',
     ],
 ];

@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Wpisz prawdziwą datę, na przykład 27 3 2026, albo zostaw pole puste',
         'error_incident_date_future' => 'Data musi być dzisiejsza lub wcześniejsza',
         'error_incident_opportunity_mismatch' => 'Wybrana oferta nie jest prowadzona przez wybraną organizację. Wybierz pasującą ofertę albo zmień organizację',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'Czy dotyczy to konkretnej osoby? (opcjonalnie)',
+        'incident_person_hint' => 'Jeśli dotyczy to członka tej społeczności, wyszukaj go po imieniu i nazwisku i wybierz. Pozostaw puste, jeśli nie dotyczy to jednej osoby lub jeśli nie jest ona członkiem.',
+        'incident_person_results' => 'Wybierz osobę, której dotyczy to zgłoszenie:',
+        'incident_person_none' => 'Nie dotyczy konkretnej osoby',
+        'incident_person_no_results' => 'Nie znaleziono członków o tym imieniu. Sprawdź pisownię lub pozostaw puste.',
+        'incident_person_search_label' => 'Imię i nazwisko członka',
+        'incident_person_search_button' => 'Znajdź członka',
+        'incident_person_search_failed' => 'Nie udało się teraz wyszukać członków. Nadal możesz wysłać zgłoszenie bez wybierania osoby.',
+        'incident_person_previous' => 'Wcześniej wybrany członek',
+        'error_incident_person_search_short' => 'Wpisz co najmniej 2 litery imienia lub nazwiska, aby wyszukać tę osobę',
+        'error_incident_person_not_searched' => 'Wybierz „Znajdź członka”, aby wyszukać podaną osobę, albo usuń imię',
     ],
 ];

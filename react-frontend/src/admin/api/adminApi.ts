@@ -1762,8 +1762,15 @@ export const adminVolunteering = {
   rejectTraining: (id: number, reason: string) => api.put(`/v2/admin/volunteering/training/${id}/reject`, { reason }),
 
   // Incidents
-  getIncidents: () => api.get('/v2/admin/volunteering/incidents'),
-  updateIncident: (id: number, data: { status: string; action_taken?: string; resolution_notes?: string }) =>
+  getIncidents: (params: { page?: number; per_page?: number; search?: string; status?: string } = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== '') query.set(key, String(value));
+    }
+    const suffix = query.toString();
+    return api.get(`/v2/admin/volunteering/incidents${suffix ? `?${suffix}` : ''}`);
+  },
+  updateIncident: (id: number, data: { status: string; action_taken?: string; resolution_notes?: string; assigned_to?: number | null }) =>
     api.put(`/v2/admin/volunteering/incidents/${id}`, data),
 
   // DLP

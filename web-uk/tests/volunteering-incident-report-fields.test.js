@@ -18,7 +18,10 @@
  * - an opportunity that does not belong to the chosen organisation is refused locally
  *   (without JavaScript the opportunity list cannot be narrowed), and the API's own 422
  *   for the same mistake maps to the same message;
- * - if the organisation/opportunity list cannot be loaded, the form still renders.
+ * - if the organisation/opportunity list cannot be loaded, the form still renders;
+ * - "who is it about" is a server-side member search (no JavaScript): the name never
+ *   goes in the address, the reporter is never offered, a name typed but never looked
+ *   up is not silently dropped, and Enter still sends the report rather than searching.
  *
  * Every POST uses the field NAMES THE TEMPLATE EMITS.
  */
@@ -46,6 +49,7 @@ jest.mock('../src/lib/api', () => {
     callVolunteeringApi: jest.fn(),
     downloadVolunteerCredential: jest.fn(),
     getVolunteeringCategories: jest.fn(),
+    searchUsers: jest.fn(),
     uploadVolunteerCredential: jest.fn(),
     getProfile: jest.fn(),
     invalidateUserCache: jest.fn()
@@ -178,8 +182,19 @@ function errorSummary(html) {
 const BASE = { _csrf: 'test-csrf-token', title: 'Frightened volunteer', description: REPORT, severity: 'high' };
 const today = new Date();
 
+const SELF_ID = 50;
+const PEOPLE = [
+  { id: 61, name: 'Sam Rivers' },
+  { id: SELF_ID, name: 'Sam Reporter' },
+  { id: 62, name: 'Samira Okafor' }
+];
+
 beforeEach(() => {
   api.callVolunteeringApi.mockReset();
+  api.searchUsers.mockReset();
+  api.getProfile.mockReset();
+  api.getProfile.mockResolvedValue({ data: { id: SELF_ID, name: 'Sam Reporter' } });
+  api.searchUsers.mockResolvedValue({ data: { items: PEOPLE } });
   mockApi();
 });
 
@@ -432,5 +447,114 @@ describe('an opportunity from a different organisation', () => {
     mockApi({ postError: new api.ApiError('service unavailable', 503, {}) });
     const post = await request(createApp()).post(`${MOUNT}/incidents`).type('form').send(BASE);
     expect(post.headers.location).toBe(`${MOUNT}/incidents?status=incident-failed&tab=incidents`);
+  });
+});
+
+describe('who the report is about', () => {
+  async function findPerson(agent, fields) {
+    return agent.post(`${MOUNT}/incidents`).type('form').send({ ...BASE, ...fields, find_person: '1' });
+  }
+
+  it('makes Enter send the report: the first submit button in the form is not "Find member"', async () => {
+    const page = await request(createApp()).get(`${MOUNT}/incidents`);
+    const formStart = page.text.indexOf('action="/acme/accessible/volunteering/incidents"');
+    const firstButton = /<button[^>]*type="submit"[^>]*>/.exec(page.text.slice(formStart))[0];
+    expect(firstButton).not.toContain('find_person');
+    expect(firstButton).toContain('tabindex="-1"');
+    expect(page.text).toContain('name="find_person" value="1"');
+    expect(page.text).toContain('Is this about a particular person? (optional)');
+  });
+
+  it('searches without sending anything, keeps the form, and never puts the name in the address', async () => {
+    const agent = request.agent(createApp());
+    const post = await findPerson(agent, { incident_type: 'allegation', person_q: 'Sam' });
+
+    expect(incidentPosts()).toHaveLength(0);
+    expect(post.headers.location).toBe(`${MOUNT}/incidents?tab=incidents#incident-person`);
+    expect(post.headers.location).not.toContain('Sam');
+
+    const page = await agent.get(`${MOUNT}/incidents?tab=incidents`);
+    expect(api.searchUsers).toHaveBeenCalledWith('test-token', 'Sam', { limit: 10 });
+    expect(page.text).toContain('id="subject_user_id-61"');
+    expect(page.text).toContain('Sam Rivers');
+    expect(page.text).toContain('id="subject_user_id-62"');
+    // The reporter is never offered as the person the report is about.
+    expect(page.text).not.toContain('id="subject_user_id-50"');
+    // Nobody is chosen for them; "not about a particular person" starts selected.
+    expect(isChecked(page.text, 'subject_user_id-none')).toBe(true);
+    expect(isChecked(page.text, 'subject_user_id-61')).toBe(false);
+    // Everything already typed is still there.
+    expect(valueOf(page.text, 'title')).toBe('Frightened volunteer');
+    expect(page.text).toContain(REPORT);
+    expect(isChecked(page.text, 'incident_type-allegation')).toBe(true);
+    expect(valueOf(page.text, 'person_q')).toBe('Sam');
+    expect(page.text).toContain('name="person_searched" value="Sam"');
+  });
+
+  it('sends the chosen person with the report', async () => {
+    await request(createApp()).post(`${MOUNT}/incidents`).type('form')
+      .send({ ...BASE, person_q: 'Sam', person_searched: 'Sam', subject_user_id: '61' });
+    expect(incidentPosts()).toHaveLength(1);
+    expect(incidentPosts()[0][3].subject_user_id).toBe(61);
+  });
+
+  it('sends no person when "not about a particular person" is chosen after a search', async () => {
+    await request(createApp()).post(`${MOUNT}/incidents`).type('form')
+      .send({ ...BASE, person_q: 'Sam', person_searched: 'Sam', subject_user_id: '' });
+    expect(incidentPosts()).toHaveLength(1);
+    expect(incidentPosts()[0][3]).not.toHaveProperty('subject_user_id');
+  });
+
+  it('keeps the choice after another error sends the member back', async () => {
+    const agent = request.agent(createApp());
+    await agent.post(`${MOUNT}/incidents`).type('form').send({
+      ...BASE,
+      title: '',
+      person_q: 'Sam',
+      person_searched: 'Sam',
+      subject_user_id: '62'
+    });
+    const page = await agent.get(`${MOUNT}/incidents?status=incident-title-required&tab=incidents`);
+    expect(isChecked(page.text, 'subject_user_id-62')).toBe(true);
+    expect(isChecked(page.text, 'subject_user_id-none')).toBe(false);
+  });
+
+  it('refuses a name typed but never looked up, rather than dropping it', async () => {
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/incidents`).type('form')
+      .send({ ...BASE, person_q: 'Samira', person_searched: '' });
+    expect(incidentPosts()).toHaveLength(0);
+    expect(post.headers.location).toBe(`${MOUNT}/incidents?status=incident-person-not-searched&tab=incidents`);
+
+    const page = await agent.get(`${MOUNT}/incidents?status=incident-person-not-searched&tab=incidents`);
+    expect(errorSummary(page.text)).toContain('<a href="#person_q">Select “Find member” to look up the person you named, or clear the name</a>');
+    expect(page.text).toContain('id="person_q-error"');
+  });
+
+  it('asks for at least two letters before searching', async () => {
+    const post = await findPerson(request.agent(createApp()), { person_q: 'S' });
+    expect(post.headers.location).toBe(`${MOUNT}/incidents?status=incident-person-search-short&tab=incidents`);
+    expect(api.searchUsers).not.toHaveBeenCalled();
+    expect(incidentPosts()).toHaveLength(0);
+  });
+
+  it('says so when nobody matches', async () => {
+    api.searchUsers.mockResolvedValue({ data: { items: [] } });
+    const agent = request.agent(createApp());
+    await findPerson(agent, { person_q: 'Nobody' });
+    const page = await agent.get(`${MOUNT}/incidents?tab=incidents`);
+    expect(page.text).toContain('No members found with that name. Check the spelling, or leave this blank.');
+    expect(page.text).not.toContain('name="subject_user_id"');
+  });
+
+  it('still lets the report be sent when the search fails', async () => {
+    api.searchUsers.mockRejectedValue(new api.ApiError('service unavailable', 503, {}));
+    const agent = request.agent(createApp());
+    await findPerson(agent, { person_q: 'Sam' });
+    const page = await agent.get(`${MOUNT}/incidents?tab=incidents`);
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('We could not search for members just now.');
+    // The failed search counts as looked up, so the member is not then blocked.
+    expect(page.text).toContain('name="person_searched" value="Sam"');
   });
 });

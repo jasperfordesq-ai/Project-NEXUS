@@ -815,6 +815,11 @@
     "expense_not_approved": "Solo una spesa approvata può essere contrassegnata come pagata.",
     "expense_paid_by_org_hint": "L'organizzazione registra il pagamento dalla propria dashboard.",
     "col_handled_by": "Gestito da",
+    "incidents_search_placeholder": "Cerca per titolo, organizzazione o persona",
+    "incidents_status_filter": "Filtra gli incidenti per stato",
+    "incidents_status_all": "Tutti gli stati",
+    "incidents_no_match": "Nessun incidente corrisponde alla ricerca o al filtro.",
+    "incidents_clear_filters": "Cancella ricerca e filtro",
     "handled_by_label": "Chi se ne occupa?",
     "handled_by_nobody": "Ancora nessuno",
     "handled_by_help": "Riceverà una notifica e un’email che gli comunica che il caso è suo."

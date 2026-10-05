@@ -10889,7 +10889,18 @@
                 "col_incident_organisation": "Organisation",
                 "error_incident_date_invalid": "Enter the date it happened as a real date, for example 27 3 2026, or leave it blank",
                 "error_incident_date_future": "The date it happened must be today or in the past",
-                "error_incident_opportunity_mismatch": "The opportunity you chose is not run by the organisation you chose. Choose a matching opportunity, or change the organisation"
+                "error_incident_opportunity_mismatch": "The opportunity you chose is not run by the organisation you chose. Choose a matching opportunity, or change the organisation",
+                "incident_person_label": "Is this about a particular person? (optional)",
+                "incident_person_hint": "If it is about a member of this community, search for them by name and choose them. Leave this blank if it is not about one person, or if they are not a member.",
+                "incident_person_results": "Choose the person this report is about:",
+                "incident_person_none": "Not about a particular person",
+                "incident_person_no_results": "No members found with that name. Check the spelling, or leave this blank.",
+                "incident_person_search_label": "Member’s name",
+                "incident_person_search_button": "Find member",
+                "incident_person_search_failed": "We could not search for members just now. You can still send your report without choosing a person.",
+                "incident_person_previous": "The member you chose before",
+                "error_incident_person_search_short": "Enter at least 2 letters of the person’s name to search for them",
+                "error_incident_person_not_searched": "Select “Find member” to look up the person you named, or clear the name"
             }
         },
         "govuk_alpha_wallet": {

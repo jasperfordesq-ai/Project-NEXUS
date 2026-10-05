@@ -10889,7 +10889,18 @@
                 "col_incident_organisation": "Organizzazione",
                 "error_incident_date_invalid": "Inserisci una data reale, ad esempio 27 3 2026, oppure lascia vuoto",
                 "error_incident_date_future": "La data deve essere oggi o nel passato",
-                "error_incident_opportunity_mismatch": "L’opportunità scelta non è gestita dall’organizzazione scelta. Scegli un’opportunità corrispondente o cambia organizzazione"
+                "error_incident_opportunity_mismatch": "L’opportunità scelta non è gestita dall’organizzazione scelta. Scegli un’opportunità corrispondente o cambia organizzazione",
+                "incident_person_label": "Riguarda una persona in particolare? (facoltativo)",
+                "incident_person_hint": "Se riguarda un membro di questa comunità, cercalo per nome e selezionalo. Lascia vuoto se non riguarda una sola persona o se non è un membro.",
+                "incident_person_results": "Scegli la persona a cui si riferisce questa segnalazione:",
+                "incident_person_none": "Non riguarda una persona in particolare",
+                "incident_person_no_results": "Nessun membro trovato con questo nome. Controlla l’ortografia o lascia vuoto.",
+                "incident_person_search_label": "Nome del membro",
+                "incident_person_search_button": "Trova membro",
+                "incident_person_search_failed": "Al momento non è stato possibile cercare i membri. Puoi comunque inviare la segnalazione senza scegliere una persona.",
+                "incident_person_previous": "Il membro scelto in precedenza",
+                "error_incident_person_search_short": "Inserisci almeno 2 lettere del nome della persona per cercarla",
+                "error_incident_person_not_searched": "Seleziona «Trova membro» per cercare la persona indicata, oppure cancella il nome"
             }
         },
         "govuk_alpha_wallet": {

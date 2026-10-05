@@ -180,6 +180,12 @@
 
     <form method="post" action="{{ urlFor('/volunteering/incidents') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {# Pressing Enter in a text box "clicks" the FIRST submit button in the form, which
+         would otherwise be "Find member" further down — so Enter in the title box would
+         run a search instead of sending the report. This first button makes Enter send
+         the report, as it does everywhere else. Out of the tab order and hidden from
+         assistive technology: the real "Submit report" button is the one people use. #}
+      <button type="submit" class="govuk-visually-hidden" tabindex="-1" aria-hidden="true">{{ t("govuk_alpha_volunteering.safeguarding.submit_incident") }}</button>
 
       {# Not pre-selected, per GOV.UK radios guidance. If nothing is chosen the report is
          filed as a concern about welfare, which is what the hint tells the member. #}
@@ -268,6 +274,45 @@
         {# The list could not be loaded this time, but the error summary links here. #}
         <p id="opportunity_id" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
       {% endif %}
+
+      {# Who the report is about. A server-side search, so it works without JavaScript:
+         "Find member" posts the form, which is kept, and the page comes back with the
+         matches as radios. #}
+      <div class="govuk-form-group{% if status.field == 'person_q' %} govuk-form-group--error{% endif %}" id="incident-person">
+        <fieldset class="govuk-fieldset" aria-describedby="person_q-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_label") }}</legend>
+          <div id="person_q-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_hint") }}</div>
+          {% if personResults.length %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_results") }}</p>
+            <div class="govuk-radios govuk-radios--small govuk-!-margin-bottom-4">
+              {% for person in personResults %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="subject_user_id-{{ person.id }}" name="subject_user_id" type="radio" value="{{ person.id }}"{% if chosenSubjectId == (person.id | string) %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="subject_user_id-{{ person.id }}">{{ person.name }}</label>
+                </div>
+              {% endfor %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="subject_user_id-none" name="subject_user_id" type="radio" value=""{% if not chosenSubjectId %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="subject_user_id-none">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_none") }}</label>
+              </div>
+            </div>
+          {% elif personSearched %}
+            <p class="govuk-body">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_no_results") }}</p>
+          {% endif %}
+          {% if personSearchFailed %}
+            <div class="govuk-inset-text" role="note">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_search_failed") }}</div>
+          {% endif %}
+          <div class="govuk-form-group govuk-!-margin-bottom-0">
+            <label class="govuk-label" for="person_q">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_search_label") }}</label>
+            {% if status.field == "person_q" %}
+              <p id="person_q-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+            {% endif %}
+            <input class="govuk-input govuk-!-width-one-half{% if status.field == 'person_q' %} govuk-input--error{% endif %}" id="person_q" name="person_q" type="text" maxlength="100" autocomplete="off" spellcheck="false" value="{{ personQuery or (incidentForm.personQuery if incidentForm else '') }}"{% if status.field == 'person_q' %} aria-describedby="person_q-error"{% endif %}>
+            <input type="hidden" name="person_searched" value="{{ personSearchedFor }}">
+            <button type="submit" name="find_person" value="1" class="govuk-button govuk-button--secondary govuk-!-margin-top-2 govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_volunteering.safeguarding.incident_person_search_button") }}</button>
+          </div>
+        </fieldset>
+      </div>
 
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">

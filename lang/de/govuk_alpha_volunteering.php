@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Geben Sie ein echtes Datum ein, zum Beispiel 27 3 2026, oder lassen Sie das Feld leer',
         'error_incident_date_future' => 'Das Datum muss heute oder in der Vergangenheit liegen',
         'error_incident_opportunity_mismatch' => 'Der gewählte Einsatz wird nicht von der gewählten Organisation angeboten. Wählen Sie einen passenden Einsatz oder ändern Sie die Organisation',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'Betrifft dies eine bestimmte Person? (optional)',
+        'incident_person_hint' => 'Wenn es um ein Mitglied dieser Gemeinschaft geht, suchen Sie es nach Namen und wählen Sie es aus. Lassen Sie das Feld leer, wenn es nicht um eine einzelne Person geht oder die Person kein Mitglied ist.',
+        'incident_person_results' => 'Wählen Sie die Person aus, um die es in dieser Meldung geht:',
+        'incident_person_none' => 'Betrifft keine bestimmte Person',
+        'incident_person_no_results' => 'Keine Mitglieder mit diesem Namen gefunden. Prüfen Sie die Schreibweise oder lassen Sie das Feld leer.',
+        'incident_person_search_label' => 'Name des Mitglieds',
+        'incident_person_search_button' => 'Mitglied suchen',
+        'incident_person_search_failed' => 'Die Mitgliedersuche ist gerade nicht möglich. Sie können Ihre Meldung trotzdem senden, ohne eine Person auszuwählen.',
+        'incident_person_previous' => 'Das zuvor gewählte Mitglied',
+        'error_incident_person_search_short' => 'Geben Sie mindestens 2 Buchstaben des Namens ein, um nach der Person zu suchen',
+        'error_incident_person_not_searched' => 'Wählen Sie „Mitglied suchen“, um die genannte Person nachzuschlagen, oder löschen Sie den Namen',
     ],
 ];

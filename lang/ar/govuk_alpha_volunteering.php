@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'أدخل تاريخًا حقيقيًا، مثل 27 3 2026، أو اتركه فارغًا',
         'error_incident_date_future' => 'يجب أن يكون التاريخ اليوم أو في الماضي',
         'error_incident_opportunity_mismatch' => 'الفرصة التي اخترتها لا تديرها المنظمة التي اخترتها. اختر فرصة مطابقة أو غيّر المنظمة',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'هل يتعلق هذا بشخص معيّن؟ (اختياري)',
+        'incident_person_hint' => 'إذا كان يتعلق بعضو في هذا المجتمع، فابحث عنه بالاسم واختره. اترك هذا الحقل فارغًا إذا لم يكن يتعلق بشخص واحد، أو إذا لم يكن الشخص عضوًا.',
+        'incident_person_results' => 'اختر الشخص الذي يتعلق به هذا البلاغ:',
+        'incident_person_none' => 'لا يتعلق بشخص معيّن',
+        'incident_person_no_results' => 'لم يُعثر على أعضاء بهذا الاسم. تحقّق من التهجئة، أو اترك الحقل فارغًا.',
+        'incident_person_search_label' => 'اسم العضو',
+        'incident_person_search_button' => 'ابحث عن عضو',
+        'incident_person_search_failed' => 'تعذّر البحث عن الأعضاء الآن. لا يزال بإمكانك إرسال بلاغك دون اختيار شخص.',
+        'incident_person_previous' => 'العضو الذي اخترته سابقًا',
+        'error_incident_person_search_short' => 'أدخل حرفين على الأقل من اسم الشخص للبحث عنه',
+        'error_incident_person_not_searched' => 'اختر «ابحث عن عضو» للعثور على الشخص الذي ذكرته، أو امسح الاسم',
     ],
 ];

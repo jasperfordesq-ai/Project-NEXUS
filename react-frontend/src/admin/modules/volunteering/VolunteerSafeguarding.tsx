@@ -79,6 +79,13 @@ interface IncidentHandler {
 /** Sentinel for "nobody is handling this yet" in the handler picker. */
 const NO_HANDLER = 'none';
 
+/** Sentinel for "every status" in the status filter. */
+const ALL_STATUSES = 'all';
+const INCIDENT_STATUSES = ['open', 'investigating', 'resolved', 'escalated', 'closed'] as const;
+
+/** Rows per page. The API caps a page at 50. */
+const PAGE_SIZE = 20;
+
 interface IncidentStats {
   total_incidents: number;
   open: number;
@@ -137,6 +144,19 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [stats, setStats] = useState<IncidentStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Paging, search and status filter all run on the server. This screen asked
+  // for one page of 20 and had no way to ask for more, so incident 21 onwards
+  // could not be reached at all.
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
+  // Whether the rows on screen came from a filtered request. Decided when the
+  // rows arrive, not from the inputs: clearing a search that matched nothing
+  // must not flash the "no incidents yet" screen before the full list loads.
+  const [shownFiltered, setShownFiltered] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Update modal
@@ -165,15 +185,24 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
   const loadData = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
     try {
-      const res = await adminVolunteering.getIncidents();
+      const res = await adminVolunteering.getIncidents({
+        page,
+        per_page: PAGE_SIZE,
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+        ...(statusFilter !== ALL_STATUSES ? { status: statusFilter } : {}),
+      });
       if (res.success && res.data) {
         const payload = parsePayload<{
           incidents?: Incident[];
           stats?: IncidentStats;
           dlp_assignments?: DlpAssignment[];
           handlers?: IncidentHandler[];
+          total?: number;
         }>(res.data);
-        setIncidents(payload.incidents || []);
+        const rows = payload.incidents || [];
+        setIncidents(rows);
+        setShownFiltered(debouncedSearch !== '' || statusFilter !== ALL_STATUSES);
+        setTotal(typeof payload.total === 'number' ? payload.total : rows.length);
         setStats(payload.stats || null);
         setDlpAssignments(payload.dlp_assignments || []);
         setHandlers(payload.handlers || []);
@@ -181,13 +210,34 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
     } catch {
       toast.error(t('volunteering.failed_to_load_incidents'));
       setIncidents([]);
+      setTotal(0);
       setStats(null);
     }
     setLoading(false);
-  }, [toast, t]);
+  }, [toast, t, page, debouncedSearch, statusFilter]);
 
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Search as the coordinator types, without a request per keystroke. A new
+  // search or filter always starts again from the first page.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const next = search.trim();
+      if (next !== debouncedSearch) {
+        setDebouncedSearch(next);
+        setPage(1);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, debouncedSearch]);
+
+  const clearFilters = () => {
+    setSearch('');
+    setDebouncedSearch('');
+    setStatusFilter(ALL_STATUSES);
+    setPage(1);
+  };
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -413,16 +463,55 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
       </div>
 
       {/* Incidents Table — embedded, the first load is a shaped skeleton */}
-      {embedded && loading && incidents.length === 0 ? (
+      {embedded && loading && incidents.length === 0 && !shownFiltered ? (
         <BrokerSkeleton variant="table" />
-      ) : !loading && incidents.length === 0 ? (
+      ) : !loading && incidents.length === 0 && !shownFiltered ? (
         <EmptyState
           icon={ShieldAlert}
           title={t('volunteering.no_incidents')}
           description={t('volunteering.no_incidents_desc')}
         />
       ) : (
-        <DataTable columns={columns} data={incidents} isLoading={loading && !embedded} onRefresh={() => void loadData()} />
+        <DataTable
+          columns={columns}
+          data={incidents}
+          isLoading={loading && !embedded}
+          onRefresh={() => void loadData()}
+          searchPlaceholder={t('volunteering.incidents_search_placeholder')}
+          searchValue={search}
+          onSearch={setSearch}
+          totalItems={total}
+          page={page}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
+          topContent={
+            <Select
+              aria-label={t('volunteering.incidents_status_filter')}
+              className="w-full sm:w-48"
+              size="sm"
+              selectedKeys={[statusFilter]}
+              onSelectionChange={(keys) => {
+                setStatusFilter((Array.from(keys)[0] as string) || ALL_STATUSES);
+                setPage(1);
+              }}
+            >
+              {[
+                <SelectItem key={ALL_STATUSES} id={ALL_STATUSES}>{t('volunteering.incidents_status_all')}</SelectItem>,
+                ...INCIDENT_STATUSES.map((status) => (
+                  <SelectItem key={status} id={status}>{t(`volunteering.status_${status}`)}</SelectItem>
+                )),
+              ]}
+            </Select>
+          }
+          emptyContent={
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <p className="text-sm text-muted">{t('volunteering.incidents_no_match')}</p>
+              <Button size="sm" variant="tertiary" onPress={clearFilters}>
+                {t('volunteering.incidents_clear_filters')}
+              </Button>
+            </div>
+          }
+        />
       )}
 
       {/* DLP Assignments Section */}
@@ -536,10 +625,12 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                           </Chip>
                         </div>
                         <p className="text-xs text-muted mt-0.5">
-                          {incident.subject_name}
-                          {incident.organization_name && ` — ${incident.organization_name}`}
-                          {' | '}
-                          {t('volunteering.reported_by', { name: incident.reporter_name })}
+                          {/* Only the parts an incident has: one with no subject
+                              began with a stray "— ". */}
+                          {[
+                            [incident.subject_name, incident.organization_name].filter(Boolean).join(' — '),
+                            t('volunteering.reported_by', { name: incident.reporter_name }),
+                          ].filter(Boolean).join(' | ')}
                         </p>
                         {incident.action_taken && (
                           <p className="text-xs text-muted mt-0.5 italic">

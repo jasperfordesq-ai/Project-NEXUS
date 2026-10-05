@@ -815,6 +815,11 @@
     "expense_not_approved": "Seule une dépense approuvée peut être marquée comme payée.",
     "expense_paid_by_org_hint": "L'organisation enregistre le paiement depuis son propre tableau de bord.",
     "col_handled_by": "Traité par",
+    "incidents_search_placeholder": "Rechercher par titre, organisation ou personne",
+    "incidents_status_filter": "Filtrer les incidents par statut",
+    "incidents_status_all": "Tous les statuts",
+    "incidents_no_match": "Aucun incident ne correspond à votre recherche ou à votre filtre.",
+    "incidents_clear_filters": "Effacer la recherche et le filtre",
     "handled_by_label": "Qui s'en occupe ?",
     "handled_by_nobody": "Personne pour l'instant",
     "handled_by_help": "La personne recevra une notification et un e-mail lui indiquant que le dossier lui est confié."

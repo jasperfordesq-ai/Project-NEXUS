@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Voer een echte datum in, bijvoorbeeld 27 3 2026, of laat het leeg',
         'error_incident_date_future' => 'De datum moet vandaag zijn of in het verleden liggen',
         'error_incident_opportunity_mismatch' => 'De gekozen mogelijkheid wordt niet aangeboden door de gekozen organisatie. Kies een passende mogelijkheid of wijzig de organisatie',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'Gaat dit over een bepaalde persoon? (optioneel)',
+        'incident_person_hint' => 'Als het over een lid van deze gemeenschap gaat, zoek diegene dan op naam en kies hem of haar. Laat dit leeg als het niet over één persoon gaat of als diegene geen lid is.',
+        'incident_person_results' => 'Kies de persoon over wie deze melding gaat:',
+        'incident_person_none' => 'Gaat niet over een bepaalde persoon',
+        'incident_person_no_results' => 'Geen leden gevonden met die naam. Controleer de spelling of laat dit leeg.',
+        'incident_person_search_label' => 'Naam van het lid',
+        'incident_person_search_button' => 'Lid zoeken',
+        'incident_person_search_failed' => 'We konden nu niet naar leden zoeken. U kunt uw melding toch versturen zonder een persoon te kiezen.',
+        'incident_person_previous' => 'Het lid dat u eerder koos',
+        'error_incident_person_search_short' => 'Voer minstens 2 letters van de naam in om naar de persoon te zoeken',
+        'error_incident_person_not_searched' => 'Kies „Lid zoeken” om de genoemde persoon op te zoeken, of wis de naam',
     ],
 ];

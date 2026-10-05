@@ -831,6 +831,11 @@
     "expense_not_approved": "Jako opłacony można oznaczyć tylko zatwierdzony wydatek.",
     "expense_paid_by_org_hint": "Organizacja odnotowuje płatność we własnym panelu.",
     "col_handled_by": "Prowadzi",
+    "incidents_search_placeholder": "Szukaj według tytułu, organizacji lub osoby",
+    "incidents_status_filter": "Filtruj zdarzenia według statusu",
+    "incidents_status_all": "Wszystkie statusy",
+    "incidents_no_match": "Żadne zdarzenie nie pasuje do wyszukiwania ani filtra.",
+    "incidents_clear_filters": "Wyczyść wyszukiwanie i filtr",
     "handled_by_label": "Kto się tym zajmuje?",
     "handled_by_nobody": "Jeszcze nikt",
     "handled_by_help": "Ta osoba otrzyma powiadomienie i e-mail z informacją, że sprawa została jej przydzielona."

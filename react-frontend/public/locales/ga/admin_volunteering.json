@@ -847,6 +847,11 @@
     "expense_not_approved": "Ní féidir ach costas ceadaithe a mharcáil mar íoctha.",
     "expense_paid_by_org_hint": "Taifeadann an eagraíocht an íocaíocht óna painéal féin.",
     "col_handled_by": "Á láimhseáil ag",
+    "incidents_search_placeholder": "Cuardaigh de réir teidil, eagraíochta nó duine",
+    "incidents_status_filter": "Scag teagmhais de réir stádais",
+    "incidents_status_all": "Gach stádas",
+    "incidents_no_match": "Níl aon teagmhas a mheaitseálann do chuardach nó do scagaire.",
+    "incidents_clear_filters": "Glan an cuardach agus an scagaire",
     "handled_by_label": "Cé atá á láimhseáil seo?",
     "handled_by_nobody": "Duine ar bith fós",
     "handled_by_help": "Gheobhaidh siad fógra agus ríomhphost ag rá gur leo é."

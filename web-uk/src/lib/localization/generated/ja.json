@@ -10889,7 +10889,18 @@
                 "col_incident_organisation": "団体",
                 "error_incident_date_invalid": "実在する日付を入力してください（例：27 3 2026）。または空欄のままにしてください",
                 "error_incident_date_future": "日付は今日または過去の日付にしてください",
-                "error_incident_opportunity_mismatch": "選択した活動は、選択した団体が運営するものではありません。対応する活動を選ぶか、団体を変更してください"
+                "error_incident_opportunity_mismatch": "選択した活動は、選択した団体が運営するものではありません。対応する活動を選ぶか、団体を変更してください",
+                "incident_person_label": "特定の人物に関することですか？（任意）",
+                "incident_person_hint": "このコミュニティのメンバーに関することであれば、名前で検索して選択してください。特定の一人に関することではない場合や、その人がメンバーでない場合は空欄のままにしてください。",
+                "incident_person_results": "この報告の対象となる人物を選択してください：",
+                "incident_person_none": "特定の人物に関することではない",
+                "incident_person_no_results": "その名前のメンバーは見つかりませんでした。綴りを確認するか、空欄のままにしてください。",
+                "incident_person_search_label": "メンバーの名前",
+                "incident_person_search_button": "メンバーを検索",
+                "incident_person_search_failed": "現在メンバーを検索できません。人物を選択せずに報告を送信することもできます。",
+                "incident_person_previous": "以前に選択したメンバー",
+                "error_incident_person_search_short": "人物を検索するには、名前を2文字以上入力してください",
+                "error_incident_person_not_searched": "入力した人物を探すには「メンバーを検索」を選択するか、名前を消去してください"
             }
         },
         "govuk_alpha_wallet": {

@@ -799,6 +799,11 @@
     "expense_not_approved": "支払済みにできるのは承認済みの経費のみです。",
     "expense_paid_by_org_hint": "支払いは団体が自身のダッシュボードで記録します。",
     "col_handled_by": "担当者",
+    "incidents_search_placeholder": "タイトル、団体、または人物で検索",
+    "incidents_status_filter": "ステータスでインシデントを絞り込む",
+    "incidents_status_all": "すべてのステータス",
+    "incidents_no_match": "検索条件または絞り込みに一致するインシデントはありません。",
+    "incidents_clear_filters": "検索と絞り込みをクリア",
     "handled_by_label": "誰が対応しますか？",
     "handled_by_nobody": "まだいません",
     "handled_by_help": "担当者には、担当になったことを知らせる通知とメールが届きます。"

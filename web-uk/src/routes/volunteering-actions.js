@@ -11,8 +11,10 @@ const {
   callVolunteeringApi,
   downloadVolunteerCredential,
   getVolunteeringCategories,
+  searchUsers,
   uploadVolunteerCredential
 } = require('../lib/api');
+const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { readDate, splitDate, dateParts } = require('../lib/date-input');
@@ -691,6 +693,8 @@ function safeguardingStatus(status, t = null) {
     'incident-date-invalid': { type: 'error', key: 'error_incident_date_invalid', field: 'incident_date' },
     'incident-date-future': { type: 'error', key: 'error_incident_date_future', field: 'incident_date' },
     'incident-opportunity-mismatch': { type: 'error', key: 'error_incident_opportunity_mismatch', field: 'opportunity_id' },
+    'incident-person-search-short': { type: 'error', key: 'error_incident_person_search_short', field: 'person_q' },
+    'incident-person-not-searched': { type: 'error', key: 'error_incident_person_not_searched', field: 'person_q' },
     'incident-failed': { type: 'error', key: 'error_incident_failed' }
   };
   const config = messages[status] || null;
@@ -1382,6 +1386,26 @@ async function loadIncidentReportOptions(token) {
  */
 function latestPossibleToday(now = Date.now()) {
   return new Date(now + 14 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+/**
+ * Members a report may be about, for the "Is this about a particular person?" search.
+ * The reporter is left out: a report is about someone else. Names only — the search
+ * endpoint already hides surnames from non-admin viewers.
+ */
+async function searchIncidentPeople(req, token, query) {
+  const [found, profile] = await Promise.all([
+    searchUsers(token, query, { limit: 10 }),
+    getRequestProfile(req, token).catch(() => null)
+  ]);
+  const self = dataFrom(profile);
+  const selfId = positiveInteger(self && self.id);
+  return collectionFrom(found)
+    .map((row) => ({
+      id: positiveInteger(row?.id),
+      name: trimmed(row?.name) || [trimmed(row?.first_name), trimmed(row?.last_name)].filter(Boolean).join(' ')
+    }))
+    .filter((row) => row.id && row.name && row.id !== selfId);
 }
 
 /** Which incident refusal is this? Field-specific 422s get a specific answer. */
@@ -2188,6 +2212,33 @@ async function renderSafeguarding(req, res) {
     }
   }
 
+  // The person search runs on the server: the member typed a name and pressed "Find
+  // member", the POST handler kept the whole form, and this page searches and shows the
+  // matches as radios. The name is never put in the address — it would land in browser
+  // history and server logs, on a safeguarding form.
+  const incidentForm = consumeFormReplay(req, 'volunteering', 'incidents');
+  const personQuery = subView === 'incidents' && incidentForm ? trimmed(incidentForm.personQuery) : '';
+  const chosenSubjectId = incidentForm ? positiveInteger(incidentForm.subjectUserId) : null;
+  let personResults = [];
+  let personSearched = false;
+  let personSearchFailed = false;
+  if (personQuery.length >= 2) {
+    try {
+      personResults = await searchIncidentPeople(req, token, personQuery);
+      personSearched = true;
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      personSearchFailed = true;
+    }
+  }
+  // Keep a choice the member already made, even if this search no longer finds them.
+  if (chosenSubjectId && !personResults.some((row) => row.id === chosenSubjectId)) {
+    personResults.unshift({
+      id: chosenSubjectId,
+      name: res.locals.t('govuk_alpha_volunteering.safeguarding.incident_person_previous')
+    });
+  }
+
   const status = safeguardingStatus(trimmed(req.query.status), res.locals.t);
   return res.render('volunteering/safeguarding', {
     title: res.locals.t('govuk_alpha_volunteering.safeguarding.title'),
@@ -2196,7 +2247,14 @@ async function renderSafeguarding(req, res) {
     trainings,
     incidents,
     trainingForm: consumeFormReplay(req, 'volunteering', 'training'),
-    incidentForm: consumeFormReplay(req, 'volunteering', 'incidents'),
+    incidentForm,
+    personQuery,
+    personResults,
+    personSearched,
+    personSearchFailed,
+    // Only a query that was actually looked up counts as searched.
+    personSearchedFor: personSearched || personSearchFailed ? personQuery : '',
+    chosenSubjectId: chosenSubjectId ? String(chosenSubjectId) : '',
     trainingTypes: SAFEGUARDING_TRAINING_TYPES.map((type) => ({
       ...type,
       label: res.locals.t(`govuk_alpha_volunteering.safeguarding.training_type_${type.value}`)
@@ -3332,6 +3390,11 @@ router.post('/incidents', asyncRoute(async (req, res) => {
   const organizationId = positiveInteger(req.body.organization_id);
   const opportunityId = positiveInteger(req.body.opportunity_id);
   const incidentDate = readDate(req.body, 'incident_date');
+  const personQuery = trimmed(req.body.person_q, 100);
+  // What the page last searched for, carried in a hidden field, so a name typed but
+  // never looked up can be told apart from one already searched.
+  const personSearchedFor = trimmed(req.body.person_searched, 100);
+  const subjectUserId = positiveInteger(req.body.subject_user_id);
   rememberFormReplay(req, 'volunteering', 'incidents', {
     title,
     description,
@@ -3341,10 +3404,26 @@ router.post('/incidents', asyncRoute(async (req, res) => {
     organizationId: organizationId ? String(organizationId) : '',
     opportunityId: opportunityId ? String(opportunityId) : '',
     incidentDateParts: dateParts(req.body, 'incident_date'),
-    incidentDateErrorFields: incidentDate.errorFields
+    incidentDateErrorFields: incidentDate.errorFields,
+    personQuery,
+    subjectUserId: subjectUserId ? String(subjectUserId) : ''
   });
 
   const back = (status) => redirectTo(res, `/volunteering/incidents?status=${status}&tab=incidents`);
+
+  // "Find member" — search, and come back to the same form with the matches. Nothing is
+  // validated or sent yet: the member is still filling the form in.
+  if (trimmed(req.body.find_person) !== '') {
+    if (personQuery.length < 2) {
+      return back('incident-person-search-short');
+    }
+    return redirectTo(res, '/volunteering/incidents?tab=incidents#incident-person');
+  }
+  // A name typed but never looked up would otherwise be dropped without a word, and the
+  // report would reach staff about nobody.
+  if (personQuery !== '' && personQuery !== personSearchedFor && !subjectUserId) {
+    return back('incident-person-not-searched');
+  }
 
   if (title === '') {
     return back('incident-title-required');
@@ -3399,6 +3478,7 @@ router.post('/incidents', asyncRoute(async (req, res) => {
   if (incidentDate.value) payload.incident_date = incidentDate.value;
   if (organizationId) payload.organization_id = organizationId;
   if (opportunityId) payload.opportunity_id = opportunityId;
+  if (subjectUserId) payload.subject_user_id = subjectUserId;
 
   return runAction(
     req,

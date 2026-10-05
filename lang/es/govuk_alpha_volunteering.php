@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Introduzca una fecha real, por ejemplo 27 3 2026, o déjela en blanco',
         'error_incident_date_future' => 'La fecha debe ser hoy o una fecha pasada',
         'error_incident_opportunity_mismatch' => 'La oportunidad que eligió no la ofrece la organización que eligió. Elija una oportunidad que corresponda o cambie la organización',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => '¿Se trata de una persona en concreto? (opcional)',
+        'incident_person_hint' => 'Si se trata de un miembro de esta comunidad, búsquelo por su nombre y selecciónelo. Deje este campo en blanco si no se trata de una sola persona o si no es miembro.',
+        'incident_person_results' => 'Elija la persona a la que se refiere este informe:',
+        'incident_person_none' => 'No se refiere a una persona en concreto',
+        'incident_person_no_results' => 'No se han encontrado miembros con ese nombre. Compruebe la ortografía o deje este campo en blanco.',
+        'incident_person_search_label' => 'Nombre del miembro',
+        'incident_person_search_button' => 'Buscar miembro',
+        'incident_person_search_failed' => 'No hemos podido buscar miembros en este momento. Puede enviar su informe sin elegir a una persona.',
+        'incident_person_previous' => 'El miembro que eligió antes',
+        'error_incident_person_search_short' => 'Introduzca al menos 2 letras del nombre de la persona para buscarla',
+        'error_incident_person_not_searched' => 'Seleccione «Buscar miembro» para localizar a la persona que ha nombrado, o borre el nombre',
     ],
 ];

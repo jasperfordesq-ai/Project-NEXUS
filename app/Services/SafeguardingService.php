@@ -675,7 +675,7 @@ class SafeguardingService
      * @param int|null $excludeAboutUserId F-507: omit incidents about this person
      *                                     (the viewing administrator).
      */
-    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null, ?int $excludeAboutUserId = null): array
+    public function getIncidents(int $tenantId, ?string $status = null, ?int $page = null, ?int $perPage = null, ?int $excludeAboutUserId = null, ?string $search = null): array
     {
         $page = max(1, $page ?? 1);
         $perPage = min(100, max(1, $perPage ?? 20));
@@ -687,6 +687,27 @@ class SafeguardingService
 
             if ($status !== null) {
                 $query->where('si.status', $status);
+            }
+
+            // Staff search: the incident's own words, its organisation, and the
+            // names of the people on it. Subqueries rather than the joins below,
+            // so the count and the page apply exactly the same filter.
+            $search = $search !== null ? trim($search) : '';
+            if ($search !== '') {
+                $like = '%' . addcslashes($search, '%_\\') . '%';
+                $usersNamed = fn ($sub) => $sub->select('id')->from('users')
+                    ->where('tenant_id', $tenantId)
+                    ->where('name', 'like', $like);
+                $query->where(function ($q) use ($like, $tenantId, $usersNamed) {
+                    $q->where('si.title', 'like', $like)
+                        ->orWhere('si.description', 'like', $like)
+                        ->orWhereIn('si.organization_id', fn ($sub) => $sub->select('id')->from('vol_organizations')
+                            ->where('tenant_id', $tenantId)
+                            ->where('name', 'like', $like))
+                        ->orWhereIn('si.reported_by', $usersNamed)
+                        ->orWhereIn('si.subject_user_id', $usersNamed)
+                        ->orWhereIn('si.involved_user_id', $usersNamed);
+                });
             }
 
             if ($excludeAboutUserId !== null && $excludeAboutUserId > 0) {

@@ -863,6 +863,11 @@
     "expense_not_approved": "لا يمكن وضع علامة \"مدفوعة\" إلا على نفقة تمت الموافقة عليها.",
     "expense_paid_by_org_hint": "تسجّل المنظمة الدفع من لوحة التحكم الخاصة بها.",
     "col_handled_by": "المسؤول عنها",
+    "incidents_search_placeholder": "البحث حسب العنوان أو المنظمة أو الشخص",
+    "incidents_status_filter": "تصفية الحوادث حسب الحالة",
+    "incidents_status_all": "جميع الحالات",
+    "incidents_no_match": "لا توجد حوادث تطابق بحثك أو عامل التصفية.",
+    "incidents_clear_filters": "مسح البحث وعامل التصفية",
     "handled_by_label": "من يتولى هذه الحادثة؟",
     "handled_by_nobody": "لا أحد بعد",
     "handled_by_help": "سيصله إشعار وبريد إلكتروني يفيد بأن الحادثة أُسندت إليه."

@@ -537,5 +537,18 @@ return [
         'error_incident_date_invalid' => 'Iontráil dáta fíor, mar shampla 27 3 2026, nó fág bán é',
         'error_incident_date_future' => 'Caithfidh an dáta a bheith inniu nó san am atá caite',
         'error_incident_opportunity_mismatch' => 'Ní hí an eagraíocht a roghnaigh tú a reáchtálann an deis a roghnaigh tú. Roghnaigh deis a oireann, nó athraigh an eagraíocht',
+
+        // Incident report — which member it is about (server-side search, no JavaScript)
+        'incident_person_label' => 'An bhfuil sé seo faoi dhuine ar leith? (roghnach)',
+        'incident_person_hint' => 'Más faoi bhall den phobal seo é, cuardaigh iad de réir ainm agus roghnaigh iad. Fág é seo bán mura bhfuil sé faoi dhuine amháin, nó mura ball iad.',
+        'incident_person_results' => 'Roghnaigh an duine a bhfuil an tuairisc seo fúthu:',
+        'incident_person_none' => 'Ní faoi dhuine ar leith',
+        'incident_person_no_results' => 'Níor aimsíodh aon bhall leis an ainm sin. Seiceáil an litriú, nó fág é seo bán.',
+        'incident_person_search_label' => 'Ainm an bhaill',
+        'incident_person_search_button' => 'Aimsigh ball',
+        'incident_person_search_failed' => 'Níorbh fhéidir baill a chuardach anois díreach. Is féidir leat do thuairisc a sheoladh fós gan duine a roghnú.',
+        'incident_person_previous' => 'An ball a roghnaigh tú roimhe seo',
+        'error_incident_person_search_short' => 'Cuir isteach 2 litir ar a laghad d’ainm an duine chun iad a chuardach',
+        'error_incident_person_not_searched' => 'Roghnaigh “Aimsigh ball” chun an duine a d’ainmnigh tú a chuardach, nó glan an t-ainm',
     ],
 ];

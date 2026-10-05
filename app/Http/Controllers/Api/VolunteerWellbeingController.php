@@ -527,11 +527,18 @@ class VolunteerWellbeingController extends BaseApiController
 
         $tenantId = TenantContext::getId();
         $status = $this->query('status');
+        // An unknown status would silently match nothing, which reads as "no
+        // incidents". Ignore it instead, so the full list shows.
+        if (!in_array($status, ['open', 'investigating', 'resolved', 'escalated', 'closed'], true)) {
+            $status = null;
+        }
         $page = $this->queryInt('page', 1, 1, 1000);
         $perPage = $this->queryInt('per_page', 20, 1, 50);
+        $search = $this->query('search');
+        $search = is_string($search) ? mb_substr(trim($search), 0, 100) : null;
 
         // F-507: an administrator never sees an incident about themselves.
-        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $this->getUserId());
+        $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $this->getUserId(), $search);
         $incidents = $result['items'] ?? [];
 
         return $this->respondWithData([

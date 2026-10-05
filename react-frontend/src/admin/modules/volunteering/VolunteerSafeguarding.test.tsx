@@ -36,24 +36,42 @@ vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 // module body, so a const factory is still uninitialised when they run.
 function adminComponentsMock() {
   return {
-    DataTable: ({ data, isLoading, columns }: {
+    DataTable: ({ data, isLoading, columns, totalItems, page, pageSize, onPageChange, onSearch, searchValue, topContent, emptyContent }: {
       data: { id: number; reporter_name: string }[];
       isLoading?: boolean;
       columns?: { key: string; render?: (row: unknown) => React.ReactNode }[];
+      totalItems?: number;
+      page?: number;
+      pageSize?: number;
+      onPageChange?: (page: number) => void;
+      onSearch?: (query: string) => void;
+      searchValue?: string;
+      topContent?: React.ReactNode;
+      emptyContent?: React.ReactNode;
     }) =>
       isLoading ? (
         <div role="status" aria-busy="true" aria-label="loading" />
       ) : (
-        <table>
-          <tbody>
-            {data.map((row) => (
-              <tr key={row.id} data-testid={`incident-row-${row.id}`}>
-                <td>{row.reporter_name}</td>
-                <td>{columns?.find((c) => c.key === 'actions')?.render?.(row)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div>
+          {onSearch && (
+            <input aria-label="table search" value={searchValue ?? ''} onChange={(e) => onSearch(e.target.value)} />
+          )}
+          {topContent}
+          <table>
+            <tbody>
+              {data.map((row) => (
+                <tr key={row.id} data-testid={`incident-row-${row.id}`}>
+                  <td>{row.reporter_name}</td>
+                  <td>{columns?.find((c) => c.key === 'actions')?.render?.(row)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.length === 0 && emptyContent}
+          {onPageChange && totalItems !== undefined && totalItems > (pageSize ?? 20) && (
+            <button type="button" onClick={() => onPageChange((page ?? 1) + 1)}>next page</button>
+          )}
+        </div>
       ),
     PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
     StatCard: ({ label, value }: { label: string; value: unknown }) => (
@@ -365,6 +383,70 @@ describe('VolunteerSafeguarding', () => {
     await user.click(save as HTMLElement);
 
     await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, { status: 'open', assigned_to: 5 }));
+  });
+
+  it('asks the server for the first page of 20', async () => {
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    await waitFor(() => expect(mockAdminVolunteering.getIncidents).toHaveBeenCalled());
+    expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20 });
+  });
+
+  it('reaches incidents beyond the first 20 by asking for the next page', async () => {
+    // The screen used to ask for one page and stop, so incident 21 onwards was unreachable.
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ incidents: [makeIncident()], total: 45 })
+    );
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'next page' }));
+
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 2, per_page: 20 })
+    );
+  });
+
+  it('searches on the server and starts again from the first page', async () => {
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({ incidents: [makeIncident()], total: 45 })
+    );
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'next page' }));
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 2, per_page: 20 })
+    );
+
+    fireEvent.change(screen.getByLabelText('table search'), { target: { value: 'Food Bank' } });
+
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20, search: 'Food Bank' })
+    );
+  });
+
+  it('says nothing matches, and offers to clear, when a search finds nothing', async () => {
+    mockAdminVolunteering.getIncidents.mockResolvedValueOnce(
+      makeGetIncidentsResponse({ incidents: [makeIncident()], total: 1 })
+    );
+    mockAdminVolunteering.getIncidents.mockResolvedValue(makeGetIncidentsResponse({ incidents: [], total: 0 }));
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    await screen.findByTestId('incident-row-1');
+    fireEvent.change(screen.getByLabelText('table search'), { target: { value: 'nobody' } });
+
+    expect(await screen.findByText('No incidents match your search or filter.')).toBeInTheDocument();
+    // Not the "no incidents yet" empty state, which would also hide the search box.
+    expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('table search')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search and filter' }));
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20 })
+    );
   });
 
   it('renders audit log timeline when incidents are present', async () => {

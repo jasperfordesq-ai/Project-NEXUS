@@ -799,6 +799,11 @@
     "expense_not_approved": "Nur eine genehmigte Ausgabe kann als bezahlt markiert werden.",
     "expense_paid_by_org_hint": "Die Organisation erfasst die Zahlung in ihrem eigenen Dashboard.",
     "col_handled_by": "Bearbeitet von",
+    "incidents_search_placeholder": "Nach Titel, Organisation oder Person suchen",
+    "incidents_status_filter": "Vorfälle nach Status filtern",
+    "incidents_status_all": "Alle Status",
+    "incidents_no_match": "Keine Vorfälle entsprechen Ihrer Suche oder Ihrem Filter.",
+    "incidents_clear_filters": "Suche und Filter zurücksetzen",
     "handled_by_label": "Wer bearbeitet das?",
     "handled_by_nobody": "Noch niemand",
     "handled_by_help": "Die Person erhält eine Benachrichtigung und eine E-Mail, dass der Fall ihr zugewiesen ist."

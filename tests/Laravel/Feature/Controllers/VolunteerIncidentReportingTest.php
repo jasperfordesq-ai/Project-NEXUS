@@ -179,6 +179,83 @@ final class VolunteerIncidentReportingTest extends TestCase
         $this->assertSame('INCREP Food Bank', $incident['organization_name']);
     }
 
+    /**
+     * The staff screen asked for one page of 20 and had no way to ask for more,
+     * so incident 21 onwards could not be reached at all. The API must page
+     * through everything and say how many there are.
+     */
+    public function test_the_staff_list_pages_through_every_incident(): void
+    {
+        // Only this test's incidents, so the counts are exact on a shared DB.
+        $otherOwner = $this->user('member');
+        $orgId = $this->organisation((int) $otherOwner->id, 'INCPAGE Org', 'active');
+        $member = $this->user('member');
+        for ($i = 1; $i <= 23; $i++) {
+            $id = $this->incident((int) $member->id, sprintf('INCPAGE %02d', $i));
+            DB::table('vol_safeguarding_incidents')->where('id', $id)->update(['organization_id' => $orgId, 'opportunity_id' => null]);
+        }
+
+        Sanctum::actingAs($this->user('broker'), ['*']);
+        $first = $this->apiGet('/v2/admin/volunteering/incidents?search=INCPAGE&per_page=20&page=1');
+        $first->assertStatus(200);
+        $this->assertSame(23, $first->json('data.total'));
+        $this->assertCount(20, $first->json('data.incidents'));
+
+        $second = $this->apiGet('/v2/admin/volunteering/incidents?search=INCPAGE&per_page=20&page=2');
+        $second->assertStatus(200);
+        $this->assertSame(23, $second->json('data.total'));
+        $this->assertCount(3, $second->json('data.incidents'));
+
+        $seen = array_merge(
+            array_column($first->json('data.incidents'), 'id'),
+            array_column($second->json('data.incidents'), 'id'),
+        );
+        $this->assertCount(23, array_unique($seen), 'no incident is missed or shown twice across the pages');
+    }
+
+    public function test_staff_can_search_incidents_by_words_organisation_and_the_people_on_them(): void
+    {
+        $reporter = $this->user('member');
+        $subject = $this->user('member');
+        DB::table('users')->where('id', $subject->id)->update(['name' => 'Zebedee Incsearchperson']);
+
+        $aboutSubject = $this->incident((int) $reporter->id, 'INCSRCH about a person');
+        DB::table('vol_safeguarding_incidents')->where('id', $aboutSubject)->update(['subject_user_id' => $subject->id]);
+        $this->incident((int) $reporter->id, 'INCSRCH loose paving');
+
+        Sanctum::actingAs($this->user('broker'), ['*']);
+
+        $titles = fn (string $q) => array_column(
+            $this->apiGet('/v2/admin/volunteering/incidents?search=' . urlencode($q))->assertStatus(200)->json('data.incidents'),
+            'title'
+        );
+
+        $this->assertSame(['INCSRCH loose paving'], $titles('INCSRCH loose'));
+        $this->assertSame(['INCSRCH about a person'], $titles('Incsearchperson'));
+        // The organisation's name finds both of this test's incidents.
+        $byOrg = $titles('INCREP Food Bank');
+        $this->assertContains('INCSRCH about a person', $byOrg);
+        $this->assertContains('INCSRCH loose paving', $byOrg);
+        // A literal "%" is a character to find, not a wildcard matching everything.
+        $this->assertSame([], $titles('INCSRCH%paving'));
+    }
+
+    public function test_an_unknown_status_filter_is_ignored_rather_than_hiding_everything(): void
+    {
+        $member = $this->user('member');
+        $this->incident((int) $member->id, 'INCSTAT still listed');
+
+        Sanctum::actingAs($this->user('broker'), ['*']);
+        $titles = array_column(
+            $this->apiGet('/v2/admin/volunteering/incidents?status=bogus&search=INCSTAT')->assertStatus(200)->json('data.incidents'),
+            'title'
+        );
+        $this->assertSame(['INCSTAT still listed'], $titles);
+
+        $none = $this->apiGet('/v2/admin/volunteering/incidents?status=closed&search=INCSTAT')->assertStatus(200);
+        $this->assertSame([], $none->json('data.incidents'));
+    }
+
     public function test_handing_an_incident_to_a_broker_records_it_and_tells_them(): void
     {
         $handler = $this->user('broker');
