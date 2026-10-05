@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { User } from '@/types/api';
 import type { CrmDashboardStats } from '../../api/types';
 
 // ── Stable hoisted refs ───────────────────────────────────────────────────────
@@ -25,7 +26,17 @@ const { mockToast, mockGetDashboard, mockExports } = vi.hoisted(() => ({
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useAuth: () => ({ user: { id: 7, name: 'Coordinator Casey' }, isAuthenticated: true }),
+    useAuth: () => ({
+      user: { id: 7, name: 'Coordinator Casey' } as unknown as User,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
   }),
 );
 
@@ -141,9 +152,9 @@ describe('CrmDashboard', () => {
     expect(within(strip).getByText(/waiting on a coordinator right now: 17/i)).toBeInTheDocument();
     const links = within(strip).getAllByRole('link');
     expect(links.map((l) => l.getAttribute('aria-label'))).toEqual(['Overdue tasks: 3', 'Due today: 2', 'Waiting for approval: 12']);
-    expect(links[0]).toHaveAttribute('href', '/test/admin/crm/tasks?status=overdue');
-    expect(links[1]).toHaveAttribute('href', '/test/admin/crm/tasks?status=open');
-    expect(links[2]).toHaveAttribute('href', '/test/admin/users?filter=pending');
+    expect(links[0]!).toHaveAttribute('href', '/test/admin/crm/tasks?status=overdue');
+    expect(links[1]!).toHaveAttribute('href', '/test/admin/crm/tasks?status=open');
+    expect(links[2]!).toHaveAttribute('href', '/test/admin/users?filter=pending');
   });
 
   it('says nothing is waiting when every queue is empty', async () => {
@@ -158,14 +169,14 @@ describe('CrmDashboard', () => {
     const list = screen.getByTestId('crm-next-tasks');
     const rows = within(list).getAllByRole('listitem');
     expect(rows).toHaveLength(3);
-    expect(within(rows[0]).getByText('Call Priya about the garden swap')).toBeInTheDocument();
-    expect(within(rows[0]).getByText(/about priya nair/i)).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Overdue')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Urgent')).toBeInTheDocument();
-    expect(within(rows[1]).getByText('Due today')).toBeInTheDocument();
-    expect(within(rows[2]).getByText('No due date')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText('Call Priya about the garden swap')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/about priya nair/i)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText('Overdue')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText('Urgent')).toBeInTheDocument();
+    expect(within(rows[1]!).getByText('Due today')).toBeInTheDocument();
+    expect(within(rows[2]!).getByText('No due date')).toBeInTheDocument();
     // Every row and the footer open the tasks page filtered to me.
-    expect(within(rows[0]).getByRole('link')).toHaveAttribute('href', '/test/admin/crm/tasks?assigned_to=7');
+    expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', '/test/admin/crm/tasks?assigned_to=7');
     expect(screen.getByRole('link', { name: /all your tasks/i })).toHaveAttribute('href', '/test/admin/crm/tasks?assigned_to=7');
     expect(screen.getByText(/more open tasks assigned to you: 4/i)).toBeInTheDocument();
   });
@@ -183,14 +194,14 @@ describe('CrmDashboard', () => {
     const list = screen.getByTestId('crm-recent-notes');
     const rows = within(list).getAllByRole('listitem');
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]).getByRole('link', { name: /notes about priya nair/i })).toHaveAttribute('href', '/test/admin/crm/notes?user_id=31');
-    expect(within(rows[0]).getByText('Concern')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Pinned')).toBeInTheDocument();
-    expect(within(rows[0]).getByText(/missed two swaps/i)).toBeInTheDocument();
-    expect(within(rows[0]).getByText(/sam okafor/i)).toBeInTheDocument();
-    expect(within(rows[0]).getByText(/5 minutes ago/i)).toBeInTheDocument();
-    expect(within(rows[1]).getByText('Onboarding')).toBeInTheDocument();
-    expect(within(rows[1]).queryByText('Pinned')).not.toBeInTheDocument();
+    expect(within(rows[0]!).getByRole('link', { name: /notes about priya nair/i })).toHaveAttribute('href', '/test/admin/crm/notes?user_id=31');
+    expect(within(rows[0]!).getByText('Concern')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText('Pinned')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/missed two swaps/i)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/sam okafor/i)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/5 minutes ago/i)).toBeInTheDocument();
+    expect(within(rows[1]!).getByText('Onboarding')).toBeInTheDocument();
+    expect(within(rows[1]!).queryByText('Pinned')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /all notes/i })).toHaveAttribute('href', '/test/admin/crm/notes');
   });
 
