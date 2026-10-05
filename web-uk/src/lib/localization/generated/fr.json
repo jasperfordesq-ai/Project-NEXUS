@@ -2952,13 +2952,13 @@
                 "check_result_hint": "Voici comment les heures se répartiraient avec ce que vous avez saisi. Rien n'a encore été enregistré.",
                 "summary": {
                     "heading": "Ce que chacun gagnera ou paiera",
-                    "earns": "[0,2[ :name gagne :hours heure|[2,*] :name gagne :hours heures",
-                    "pays": "[0,2[ :name paie :hours heure|[2,*] :name paie :hours heures",
-                    "to_fund": "[0,2[ :hours heure va au fonds communautaire|[2,*] :hours heures vont au fonds communautaire",
+                    "earns": ":name gagne :hours heure|:name gagne :hours heures",
+                    "pays": ":name paie :hours heure|:name paie :hours heures",
+                    "to_fund": ":hours heure va au fonds communautaire|:hours heures vont au fonds communautaire",
                     "totals": ":paid heures payées · :earned heures gagnées",
                     "totals_with_fund": ":paid heures payées · :earned heures gagnées · :fund heures pour le fonds communautaire",
-                    "you_earn": "[0,2[ Vous gagnerez :hours heure|[2,*] Vous gagnerez :hours heures",
-                    "you_pay": "[0,2[ Vous paierez :hours heure|[2,*] Vous paierez :hours heures",
+                    "you_earn": "Vous gagnerez :hours heure|Vous gagnerez :hours heures",
+                    "you_pay": "Vous paierez :hours heure|Vous paierez :hours heures",
                     "unknown_member": "Un membre",
                     "fund_label": "Fonds communautaire",
                     "totals_label": "Totaux"

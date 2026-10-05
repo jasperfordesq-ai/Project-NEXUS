@@ -2952,13 +2952,13 @@
                 "check_result_hint": "Tak rozłożyłyby się godziny przy tym, co wpisano. Nic jeszcze nie zapisano.",
                 "summary": {
                     "heading": "Ile każda osoba zdobędzie lub zapłaci",
-                    "earns": "{1} :name zdobywa :hours godzinę|[5,*] :name zdobywa :hours godzin|[2,4] :name zdobywa :hours godziny",
-                    "pays": "{1} :name płaci :hours godzinę|[5,*] :name płaci :hours godzin|[2,4] :name płaci :hours godziny",
-                    "to_fund": "{1} :hours godzina trafia do funduszu społeczności|[5,*] :hours godzin trafia do funduszu społeczności|[2,4] :hours godziny trafiają do funduszu społeczności",
+                    "earns": ":name zdobywa :hours godzinę|:name zdobywa :hours godz.",
+                    "pays": ":name płaci :hours godzinę|:name płaci :hours godz.",
+                    "to_fund": ":hours godzina trafia do funduszu społeczności|:hours godz. trafia do funduszu społeczności",
                     "totals": "Zapłacono: :paid godz. · Zdobyto: :earned godz.",
                     "totals_with_fund": "Zapłacono: :paid godz. · Zdobyto: :earned godz. · Do funduszu społeczności: :fund godz.",
-                    "you_earn": "{1} Zdobędziesz :hours godzinę|[5,*] Zdobędziesz :hours godzin|[2,4] Zdobędziesz :hours godziny",
-                    "you_pay": "{1} Zapłacisz :hours godzinę|[5,*] Zapłacisz :hours godzin|[2,4] Zapłacisz :hours godziny",
+                    "you_earn": "Zdobędziesz :hours godzinę|Zdobędziesz :hours godz.",
+                    "you_pay": "Zapłacisz :hours godzinę|Zapłacisz :hours godz.",
                     "unknown_member": "Członek",
                     "fund_label": "Fundusz społeczności",
                     "totals_label": "Razem"

@@ -2952,13 +2952,13 @@
                 "check_result_hint": "Seo mar a oibreodh na huaireanta amach leis an méid atá clóscríofa agat. Níor sábháladh aon rud go fóill.",
                 "summary": {
                     "heading": "Cad a thuillfidh nó a íocfaidh gach duine",
-                    "earns": "{1} Tuilleann :name :hours uair|{2} Tuilleann :name :hours uair|[3,*] Tuilleann :name :hours uaire",
-                    "pays": "{1} Íocann :name :hours uair|{2} Íocann :name :hours uair|[3,*] Íocann :name :hours uaire",
-                    "to_fund": "{1} Téann :hours uair chuig ciste ama an phobail|{2} Téann :hours uair chuig ciste ama an phobail|[3,*] Téann :hours uaire chuig ciste ama an phobail",
+                    "earns": "Tuilleann :name :hours uair an chloig|Tuilleann :name :hours uair an chloig",
+                    "pays": "Íocann :name :hours uair an chloig|Íocann :name :hours uair an chloig",
+                    "to_fund": "Téann :hours uair an chloig chuig ciste ama an phobail|Téann :hours uair an chloig chuig ciste ama an phobail",
                     "totals": "Íocadh :paid uair · Tuilleadh :earned uair",
                     "totals_with_fund": "Íocadh :paid uair · Tuilleadh :earned uair · :fund uair chuig ciste ama an phobail",
-                    "you_earn": "{1} Tuillfidh tú :hours uair|{2} Tuillfidh tú :hours uair|[3,*] Tuillfidh tú :hours uaire",
-                    "you_pay": "{1} Íocfaidh tú :hours uair|{2} Íocfaidh tú :hours uair|[3,*] Íocfaidh tú :hours uaire",
+                    "you_earn": "Tuillfidh tú :hours uair an chloig|Tuillfidh tú :hours uair an chloig",
+                    "you_pay": "Íocfaidh tú :hours uair an chloig|Íocfaidh tú :hours uair an chloig",
                     "unknown_member": "Comhalta",
                     "fund_label": "Ciste ama an phobail",
                     "totals_label": "Iomláin"

@@ -2952,13 +2952,13 @@
                 "check_result_hint": "入力した内容でこのように時間が分配されます。まだ何も保存されていません。",
                 "summary": {
                     "heading": "各自が得る時間・支払う時間",
-                    "earns": ":nameは:hours時間を得ます",
-                    "pays": ":nameは:hours時間を支払います",
-                    "to_fund": ":hours時間がコミュニティファンドに入ります",
+                    "earns": ":nameは:hours時間を得ます|:nameは:hours時間を得ます",
+                    "pays": ":nameは:hours時間を支払います|:nameは:hours時間を支払います",
+                    "to_fund": ":hours時間がコミュニティファンドに入ります|:hours時間がコミュニティファンドに入ります",
                     "totals": "支払い :paid時間 ・ 獲得 :earned時間",
                     "totals_with_fund": "支払い :paid時間 ・ 獲得 :earned時間 ・ コミュニティファンド :fund時間",
-                    "you_earn": "あなたは:hours時間を得ます",
-                    "you_pay": "あなたは:hours時間を支払います",
+                    "you_earn": "あなたは:hours時間を得ます|あなたは:hours時間を得ます",
+                    "you_pay": "あなたは:hours時間を支払います|あなたは:hours時間を支払います",
                     "unknown_member": "メンバー",
                     "fund_label": "コミュニティファンド",
                     "totals_label": "合計"

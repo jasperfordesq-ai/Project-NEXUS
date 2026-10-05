@@ -2952,13 +2952,13 @@
                 "check_result_hint": "Zo zouden de uren uitpakken met wat u hebt ingevuld. Er is nog niets opgeslagen.",
                 "summary": {
                     "heading": "Wat iedereen gaat verdienen of betalen",
-                    "earns": ":name verdient :hours uur",
-                    "pays": ":name betaalt :hours uur",
+                    "earns": ":name verdient :hours uur|:name verdient :hours uur",
+                    "pays": ":name betaalt :hours uur|:name betaalt :hours uur",
                     "to_fund": ":hours uur gaat naar het gemeenschapsfonds|:hours uur gaan naar het gemeenschapsfonds",
                     "totals": ":paid uur betaald · :earned uur verdiend",
                     "totals_with_fund": ":paid uur betaald · :earned uur verdiend · :fund uur voor het gemeenschapsfonds",
-                    "you_earn": "U verdient :hours uur",
-                    "you_pay": "U betaalt :hours uur",
+                    "you_earn": "U verdient :hours uur|U verdient :hours uur",
+                    "you_pay": "U betaalt :hours uur|U betaalt :hours uur",
                     "unknown_member": "Een lid",
                     "fund_label": "Gemeenschapsfonds",
                     "totals_label": "Totaal"
