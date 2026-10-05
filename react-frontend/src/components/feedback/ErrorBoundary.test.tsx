@@ -30,6 +30,14 @@ vi.mock('@/components/feedback/ReportProblemButton', () => ({
   ReportProblemButton: () => <button type="button">Report a problem</button>,
 }));
 
+// componentDidCatch reports through a dynamic import('@/lib/sentry'). Unmocked,
+// that pulls in sentry -> cookieConsentStorage -> safeStorage after the test has
+// finished; on a slow CI runner the load lands after environment teardown and
+// Vitest fails the shard with EnvironmentTeardownError, though every test passed.
+vi.mock('@/lib/sentry', () => ({
+  captureSentryException: vi.fn(),
+}));
+
 // A component that always throws
 function ThrowingComponent() {
   throw new Error('Test error');
