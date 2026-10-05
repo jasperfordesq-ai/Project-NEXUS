@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Passaggio più debole",
     "weakest_handoff_help": "È il tasso di conversione più basso tra due fasi del percorso attuale, anche se un’altra fase registra una perdita assoluta maggiore.",
     "lost_since_previous": "persi dalla fase precedente",
-    "overall_conversion_help": "È la percentuale di membri che passa dalla prima fase registrata fino all’ultima fase mostrata in questa pagina."
+    "overall_conversion_help": "È la percentuale di membri che passa dalla prima fase registrata fino all’ultima fase mostrata in questa pagina.",
+    "export_metric_members": "Membri",
+    "export_metric_active": "Attivi negli ultimi 30 giorni",
+    "export_metric_new_this_month": "Nuovi questo mese",
+    "export_metric_pending": "In attesa di approvazione",
+    "export_metric_activity_rate": "Tasso di attività a 30 giorni",
+    "export_metric_never_signed_in": "Mai effettuato l'accesso",
+    "export_metric_open_tasks": "Attività aperte",
+    "export_metric_overdue_tasks": "Attività scadute",
+    "export_metric_due_today": "Attività in scadenza oggi",
+    "export_metric_notes": "Note sui membri",
+    "export_metric_notes_recent": "Note aggiunte negli ultimi 30 giorni",
+    "export_metric_tags": "Tag in uso",
+    "export_metric_tagged_members": "Membri con un tag"
   },
   "data_table": {
     "admin_data_table": "Tabella dati di amministrazione",

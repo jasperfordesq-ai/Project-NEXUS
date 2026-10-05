@@ -1030,7 +1030,20 @@
     "weakest_handoff": "أضعف نقطة انتقال",
     "weakest_handoff_help": "هذه أدنى نسبة تحويل من مرحلة إلى أخرى في المسار الحالي، حتى إن كانت مرحلة أخرى تسجّل خسارة عددية أكبر.",
     "lost_since_previous": "فُقدوا منذ المرحلة السابقة",
-    "overall_conversion_help": "هذه هي نسبة الأعضاء الذين ينتقلون من أول مرحلة مسجّلة وصولًا إلى المرحلة النهائية المعروضة في هذه الصفحة."
+    "overall_conversion_help": "هذه هي نسبة الأعضاء الذين ينتقلون من أول مرحلة مسجّلة وصولًا إلى المرحلة النهائية المعروضة في هذه الصفحة.",
+    "export_metric_members": "الأعضاء",
+    "export_metric_active": "نشطون خلال آخر 30 يومًا",
+    "export_metric_new_this_month": "جدد هذا الشهر",
+    "export_metric_pending": "في انتظار الموافقة",
+    "export_metric_activity_rate": "معدل النشاط خلال 30 يومًا",
+    "export_metric_never_signed_in": "لم يسجلوا الدخول قط",
+    "export_metric_open_tasks": "المهام المفتوحة",
+    "export_metric_overdue_tasks": "المهام المتأخرة",
+    "export_metric_due_today": "المهام المستحقة اليوم",
+    "export_metric_notes": "ملاحظات الأعضاء",
+    "export_metric_notes_recent": "ملاحظات أُضيفت خلال آخر 30 يومًا",
+    "export_metric_tags": "الوسوم المستخدمة",
+    "export_metric_tagged_members": "الأعضاء الذين لديهم وسم"
   },
   "data_table": {
     "admin_data_table": "جدول بيانات الإدارة",

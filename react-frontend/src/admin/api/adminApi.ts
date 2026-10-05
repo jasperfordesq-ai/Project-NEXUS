@@ -3041,9 +3041,16 @@ export const adminSupportReports = {
 };
 
 export const adminCrm = {
-  // Dashboard
+  // The CRM overview: community figures plus the caller's own next tasks and
+  // the latest notes they may read.
   getDashboard: () =>
     api.get<CrmDashboardStats>('/v2/admin/crm/dashboard'),
+
+  // Every figure the overview shows, one CSV row each (admin only).
+  exportDashboard: () =>
+    api.download('/v2/admin/crm/export/dashboard', {
+      filename: `crm-overview-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   // Onboarding Funnel. `joined_days` narrows the population to members who
   // joined within that window (0 or absent = everyone; 30, 90 or 365).

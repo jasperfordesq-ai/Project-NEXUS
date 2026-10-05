@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Transição mais fraca",
     "weakest_handoff_help": "Esta é a menor taxa de conversão entre etapas no funil atual, mesmo que outra etapa tenha uma perda absoluta maior.",
     "lost_since_previous": "perdidos desde a etapa anterior",
-    "overall_conversion_help": "Esta é a percentagem de membros que passa da primeira etapa registada até à última etapa mostrada nesta página."
+    "overall_conversion_help": "Esta é a percentagem de membros que passa da primeira etapa registada até à última etapa mostrada nesta página.",
+    "export_metric_members": "Membros",
+    "export_metric_active": "Ativos nos últimos 30 dias",
+    "export_metric_new_this_month": "Novos este mês",
+    "export_metric_pending": "À espera de aprovação",
+    "export_metric_activity_rate": "Taxa de atividade em 30 dias",
+    "export_metric_never_signed_in": "Nunca iniciaram sessão",
+    "export_metric_open_tasks": "Tarefas abertas",
+    "export_metric_overdue_tasks": "Tarefas atrasadas",
+    "export_metric_due_today": "Tarefas para hoje",
+    "export_metric_notes": "Notas de membros",
+    "export_metric_notes_recent": "Notas adicionadas nos últimos 30 dias",
+    "export_metric_tags": "Etiquetas em uso",
+    "export_metric_tagged_members": "Membros com etiqueta"
   },
   "data_table": {
     "admin_data_table": "Tabela de dados administrativos",

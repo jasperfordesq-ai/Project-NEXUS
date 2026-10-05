@@ -53,6 +53,151 @@ class AdminCrmControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_dashboard_counts_the_callers_tasks_and_lists_the_next_five_soonest_due_first(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $colleague = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        $before = $this->apiGet('/v2/admin/crm/dashboard')->json('data');
+
+        $marker = 'CrmDashTasks' . uniqid();
+        $base = [
+            'tenant_id' => $this->testTenantId,
+            'assigned_to' => $admin->id,
+            'created_by' => $admin->id,
+            'user_id' => null,
+            'priority' => 'medium',
+            'status' => 'pending',
+            'completed_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        DB::table('coordinator_tasks')->insert([
+            ['title' => "$marker no date", 'due_date' => null] + $base,
+            ['title' => "$marker next week", 'due_date' => now()->addDays(7)->toDateString(), 'user_id' => $member->id] + $base,
+            ['title' => "$marker overdue", 'due_date' => now()->subDays(3)->toDateString()] + $base,
+            ['title' => "$marker today urgent", 'due_date' => now()->toDateString(), 'priority' => 'urgent'] + $base,
+            ['title' => "$marker today low", 'due_date' => now()->toDateString(), 'priority' => 'low', 'status' => 'in_progress'] + $base,
+            ['title' => "$marker next month", 'due_date' => now()->addDays(30)->toDateString()] + $base,
+            ['title' => "$marker done", 'due_date' => now()->subDays(1)->toDateString(), 'status' => 'completed', 'completed_at' => now()] + $base,
+            ['title' => "$marker theirs overdue", 'due_date' => now()->subDays(1)->toDateString(), 'assigned_to' => $colleague->id] + $base,
+        ]);
+
+        $data = $this->apiGet('/v2/admin/crm/dashboard')->assertStatus(200)->json('data');
+
+        // Community-wide figures grew by the seeded open rows (7 open: 6 mine + 1 theirs).
+        $this->assertSame($before['open_tasks'] + 7, $data['open_tasks']);
+        $this->assertSame($before['overdue_tasks'] + 2, $data['overdue_tasks']);
+        $this->assertSame($before['tasks_due_today'] + 2, $data['tasks_due_today']);
+
+        // The caller is a fresh account, so "my" figures are exactly the seeded rows.
+        $this->assertSame(['open' => 6, 'overdue' => 1, 'due_today' => 2], $data['my_tasks']);
+
+        // Five at most, overdue first, then by date, same-day by priority, undated last.
+        $titles = array_map(fn ($t) => substr((string) $t['title'], strlen($marker) + 1), $data['next_tasks']);
+        $this->assertSame(['overdue', 'today urgent', 'today low', 'next week', 'next month'], $titles);
+        $this->assertSame($member->name, $data['next_tasks'][3]['user_name']);
+        $this->assertSame($member->id, (int) $data['next_tasks'][3]['user_id']);
+        $this->assertArrayNotHasKey('description', $data['next_tasks'][0]);
+    }
+
+    public function test_dashboard_recent_notes_are_newest_first_and_hide_concern_notes_the_caller_may_not_read(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $peer = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        $marker = 'CrmDashNotes' . uniqid();
+        $base = ['tenant_id' => $this->testTenantId, 'author_id' => $peer->id, 'is_pinned' => 0, 'updated_at' => now()];
+        $long = str_repeat('word ', 60); // 300 chars
+        DB::table('member_notes')->insert([
+            ['user_id' => $member->id, 'category' => 'general', 'content' => "$marker oldest $long", 'created_at' => now()->subMinutes(30)] + $base,
+            ['user_id' => $admin->id, 'category' => 'concern', 'content' => "$marker about the caller", 'created_at' => now()->subMinutes(20)] + $base,
+            ['user_id' => $peer->id, 'category' => 'concern', 'content' => "$marker about a peer admin", 'created_at' => now()->subMinutes(15)] + $base,
+            ['user_id' => $member->id, 'category' => 'concern', 'content' => "$marker about a member", 'created_at' => now()->subMinutes(10)] + $base,
+            ['user_id' => $admin->id, 'category' => 'support', 'content' => "$marker support note about the caller", 'created_at' => now()->subMinutes(5)] + $base,
+        ]);
+
+        $data = $this->apiGet('/v2/admin/crm/dashboard')->assertStatus(200)->json('data');
+
+        $mine = array_values(array_filter($data['recent_notes'], fn ($n) => str_contains((string) $n['excerpt'], $marker)));
+        $excerpts = array_map(fn ($n) => $n['excerpt'], $mine);
+
+        $this->assertCount(3, $mine);
+        $this->assertStringContainsString('support note about the caller', $excerpts[0]);
+        $this->assertStringContainsString('about a member', $excerpts[1]);
+        $this->assertStringContainsString('oldest', $excerpts[2]);
+        // Concern notes about the caller and about a fellow admin are not for them (F-252 / F-457).
+        $this->assertStringNotContainsString('about the caller', implode("\n", array_filter($excerpts, fn ($e) => !str_contains($e, 'support'))));
+        $this->assertStringNotContainsString('about a peer admin', implode("\n", $excerpts));
+
+        // The overview carries an excerpt, never the whole note.
+        $this->assertLessThanOrEqual(161, mb_strlen($excerpts[2]));
+        $this->assertStringEndsWith('…', $excerpts[2]);
+        $this->assertArrayNotHasKey('content', $mine[0]);
+        $this->assertSame($member->name, $mine[1]['user_name']);
+        $this->assertSame($peer->name, $mine[1]['author_name']);
+        $this->assertSame('concern', $mine[1]['category']);
+    }
+
+    public function test_dashboard_counts_notes_tags_and_tagged_members(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $members = User::factory()->count(2)->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        $before = $this->apiGet('/v2/admin/crm/dashboard')->json('data');
+
+        $marker = 'CrmDashTags' . uniqid();
+        DB::table('member_tags')->insert([
+            ['tenant_id' => $this->testTenantId, 'user_id' => $members[0]->id, 'tag' => "$marker a", 'created_by' => $admin->id, 'created_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'user_id' => $members[1]->id, 'tag' => "$marker a", 'created_by' => $admin->id, 'created_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'user_id' => $members[1]->id, 'tag' => "$marker b", 'created_by' => $admin->id, 'created_at' => now()],
+        ]);
+        DB::table('member_notes')->insert([
+            ['tenant_id' => $this->testTenantId, 'user_id' => $members[0]->id, 'author_id' => $admin->id, 'category' => 'general', 'content' => "$marker new", 'created_at' => now()->subDays(2), 'updated_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'user_id' => $members[0]->id, 'author_id' => $admin->id, 'category' => 'general', 'content' => "$marker old", 'created_at' => now()->subDays(45), 'updated_at' => now()],
+        ]);
+
+        $data = $this->apiGet('/v2/admin/crm/dashboard')->assertStatus(200)->json('data');
+
+        $this->assertSame($before['tags_in_use'] + 2, $data['tags_in_use']);
+        $this->assertSame($before['tagged_members'] + 2, $data['tagged_members']);
+        $this->assertSame($before['total_notes'] + 2, $data['total_notes']);
+        $this->assertSame($before['notes_last_30_days'] + 1, $data['notes_last_30_days']);
+    }
+
+    public function test_export_dashboard_lists_every_figure_the_overview_shows(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiGet('/v2/admin/crm/export/dashboard');
+        $response->assertStatus(200);
+        $this->assertStringStartsWith('text/csv', (string) $response->headers->get('Content-Type'));
+
+        $body = $response->streamedContent();
+        $lines = array_values(array_filter(explode("\n", str_replace("\r", '', $body))));
+        $this->assertSame('Metric,Value', $lines[0]);
+        $metrics = array_map(fn ($l) => str_getcsv($l, ',', '"', '\\')[0], array_slice($lines, 1));
+        $this->assertSame([
+            'Members', 'Active in the last 30 days', 'New this month', 'Waiting for approval',
+            '30-day activity rate', 'Never signed in', 'Open tasks', 'Overdue tasks', 'Tasks due today',
+            'Member notes', 'Notes added in the last 30 days', 'Tags in use', 'Members with a tag',
+        ], $metrics);
+    }
+
+    public function test_export_dashboard_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $this->apiGet('/v2/admin/crm/export/dashboard')->assertStatus(403);
+    }
+
     // ================================================================
     // FUNNEL — GET /v2/admin/crm/funnel
     // ================================================================

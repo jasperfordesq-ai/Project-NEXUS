@@ -1030,7 +1030,20 @@
     "weakest_handoff": "最も弱い移行",
     "weakest_handoff_help": "別の段階の離脱人数が多い場合でも、現在のファネルで段階間の移行率が最も低い箇所です。",
     "lost_since_previous": "前段階から離脱",
-    "overall_conversion_help": "最初の記録段階からこのページに表示された最終段階まで到達したメンバーの割合です。"
+    "overall_conversion_help": "最初の記録段階からこのページに表示された最終段階まで到達したメンバーの割合です。",
+    "export_metric_members": "メンバー",
+    "export_metric_active": "過去30日間のアクティブ",
+    "export_metric_new_this_month": "今月の新規",
+    "export_metric_pending": "承認待ち",
+    "export_metric_activity_rate": "30日間のアクティビティ率",
+    "export_metric_never_signed_in": "一度もサインインしていない",
+    "export_metric_open_tasks": "未完了のタスク",
+    "export_metric_overdue_tasks": "期限切れのタスク",
+    "export_metric_due_today": "今日が期限のタスク",
+    "export_metric_notes": "メンバーのメモ",
+    "export_metric_notes_recent": "過去30日間に追加されたメモ",
+    "export_metric_tags": "使用中のタグ",
+    "export_metric_tagged_members": "タグ付きのメンバー"
   },
   "data_table": {
     "admin_data_table": "管理データ表",

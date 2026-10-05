@@ -2691,6 +2691,31 @@ export interface Partnership {
 // CRM (Member Notes, Coordinator Tasks, Tags)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** One of the caller's open tasks as the CRM overview lists it (no description). */
+export interface CrmNextTask {
+  id: number;
+  title: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'pending' | 'in_progress';
+  /** Calendar date (YYYY-MM-DD) without a time, or null when undated. */
+  due_date: string | null;
+  user_id: number | null;
+  user_name: string | null;
+}
+
+/** A note as the CRM overview lists it: an excerpt, never the whole text. */
+export interface CrmRecentNote {
+  id: number;
+  user_id: number;
+  user_name: string | null;
+  user_avatar: string | null;
+  author_name: string | null;
+  category: 'general' | 'outreach' | 'support' | 'onboarding' | 'concern' | 'follow_up';
+  is_pinned: boolean;
+  created_at: string;
+  excerpt: string;
+}
+
 export interface CrmDashboardStats {
   total_members: number;
   active_members: number;
@@ -2698,7 +2723,18 @@ export interface CrmDashboardStats {
   pending_approvals: number;
   open_tasks: number;
   overdue_tasks: number;
+  /** Open tasks whose due date is today (community-wide). */
+  tasks_due_today: number;
+  /** The caller's own open tasks. */
+  my_tasks: { open: number; overdue: number; due_today: number };
+  /** Up to five of the caller's open tasks, overdue first, undated last. */
+  next_tasks: CrmNextTask[];
   total_notes: number;
+  notes_last_30_days: number;
+  /** The newest notes the caller may read (concern notes they may not see are left out). */
+  recent_notes: CrmRecentNote[];
+  tags_in_use: number;
+  tagged_members: number;
   never_logged_in: number;
   retention_rate: number;
 }

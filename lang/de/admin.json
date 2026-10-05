@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Schwächste Übergabe",
     "weakest_handoff_help": "Dies ist die niedrigste Konversionsrate zwischen zwei Stufen im aktuellen Ablauf, auch wenn an einer anderen Stufe absolut mehr Mitglieder verloren gehen.",
     "lost_since_previous": "seit der vorherigen Stufe verloren",
-    "overall_conversion_help": "Dies ist der Prozentsatz der Mitglieder, die von der ersten erfassten Stufe bis zur letzten auf dieser Seite dargestellten Stufe gelangen."
+    "overall_conversion_help": "Dies ist der Prozentsatz der Mitglieder, die von der ersten erfassten Stufe bis zur letzten auf dieser Seite dargestellten Stufe gelangen.",
+    "export_metric_members": "Mitglieder",
+    "export_metric_active": "Aktiv in den letzten 30 Tagen",
+    "export_metric_new_this_month": "Neu in diesem Monat",
+    "export_metric_pending": "Warten auf Freigabe",
+    "export_metric_activity_rate": "30-Tage-Aktivitätsrate",
+    "export_metric_never_signed_in": "Noch nie angemeldet",
+    "export_metric_open_tasks": "Offene Aufgaben",
+    "export_metric_overdue_tasks": "Überfällige Aufgaben",
+    "export_metric_due_today": "Heute fällige Aufgaben",
+    "export_metric_notes": "Mitgliedernotizen",
+    "export_metric_notes_recent": "In den letzten 30 Tagen hinzugefügte Notizen",
+    "export_metric_tags": "Verwendete Tags",
+    "export_metric_tagged_members": "Mitglieder mit Tag"
   },
   "data_table": {
     "admin_data_table": "Admin-Datentabelle",

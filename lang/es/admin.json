@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Transición más débil",
     "weakest_handoff_help": "Esta es la tasa de conversión entre etapas más baja del embudo actual, aunque otra etapa tenga una pérdida bruta mayor.",
     "lost_since_previous": "perdidos desde la etapa anterior",
-    "overall_conversion_help": "Es el porcentaje de miembros que pasan desde la primera etapa registrada hasta la última etapa mostrada en esta página."
+    "overall_conversion_help": "Es el porcentaje de miembros que pasan desde la primera etapa registrada hasta la última etapa mostrada en esta página.",
+    "export_metric_members": "Miembros",
+    "export_metric_active": "Activos en los últimos 30 días",
+    "export_metric_new_this_month": "Nuevos este mes",
+    "export_metric_pending": "Pendientes de aprobación",
+    "export_metric_activity_rate": "Tasa de actividad a 30 días",
+    "export_metric_never_signed_in": "Nunca han iniciado sesión",
+    "export_metric_open_tasks": "Tareas abiertas",
+    "export_metric_overdue_tasks": "Tareas atrasadas",
+    "export_metric_due_today": "Tareas que vencen hoy",
+    "export_metric_notes": "Notas de miembros",
+    "export_metric_notes_recent": "Notas añadidas en los últimos 30 días",
+    "export_metric_tags": "Etiquetas en uso",
+    "export_metric_tagged_members": "Miembros con etiqueta"
   },
   "data_table": {
     "admin_data_table": "Tabla de datos de administración",

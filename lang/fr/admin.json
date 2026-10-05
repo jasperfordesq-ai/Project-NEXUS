@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Transition la plus faible",
     "weakest_handoff_help": "Il s’agit du taux de conversion entre deux étapes le plus faible de l’entonnoir actuel, même si une autre étape enregistre un nombre brut de pertes plus élevé.",
     "lost_since_previous": "perdus depuis l’étape précédente",
-    "overall_conversion_help": "Il s’agit du pourcentage de membres qui passent de la première étape enregistrée à la dernière étape affichée sur cette page."
+    "overall_conversion_help": "Il s’agit du pourcentage de membres qui passent de la première étape enregistrée à la dernière étape affichée sur cette page.",
+    "export_metric_members": "Membres",
+    "export_metric_active": "Actifs au cours des 30 derniers jours",
+    "export_metric_new_this_month": "Nouveaux ce mois-ci",
+    "export_metric_pending": "En attente d'approbation",
+    "export_metric_activity_rate": "Taux d'activité sur 30 jours",
+    "export_metric_never_signed_in": "Jamais connectés",
+    "export_metric_open_tasks": "Tâches ouvertes",
+    "export_metric_overdue_tasks": "Tâches en retard",
+    "export_metric_due_today": "Tâches à faire aujourd'hui",
+    "export_metric_notes": "Notes sur les membres",
+    "export_metric_notes_recent": "Notes ajoutées au cours des 30 derniers jours",
+    "export_metric_tags": "Étiquettes utilisées",
+    "export_metric_tagged_members": "Membres avec une étiquette"
   },
   "data_table": {
     "admin_data_table": "Tableau de données d’administration",

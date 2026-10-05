@@ -100,29 +100,194 @@ class AdminCrmController extends BaseApiController
     // Dashboard
     // ─────────────────────────────────────────────────────────────────────────
 
+    /** How many of the caller's open tasks, and how many recent notes, the overview names. */
+    private const DASHBOARD_LIST_LIMIT = 5;
+
+    /** Characters of a note the overview carries; the full text stays on the notes page. */
+    private const DASHBOARD_NOTE_EXCERPT = 160;
+
+    /**
+     * GET /api/v2/admin/crm/dashboard — the CRM overview.
+     *
+     * Community-wide member, task, note and tag figures, plus two things that
+     * are personal to the caller: their own open tasks (soonest due first) and
+     * the latest notes they are allowed to read. A concern note about the
+     * caller, or about an account they do not outrank, is left out exactly as
+     * the notes list leaves it out (F-252 / F-457).
+     *
+     * Until 2026-10-05 the task and note counts were wrapped in catch-all
+     * blocks that turned a failed query into a zero, so a broken count read
+     * as "nothing to do". The queries now throw and the page shows an error.
+     */
     public function dashboard(): JsonResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
 
         $memberStats = $this->getMemberStats($tenantId);
-
-        $openTasks = 0; $overdueTasks = 0;
-        try {
-            $openTasks = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM coordinator_tasks WHERE tenant_id = ? AND status IN ('pending','in_progress')", [$tenantId])->cnt;
-            $overdueTasks = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM coordinator_tasks WHERE tenant_id = ? AND status IN ('pending','in_progress') AND due_date < CURDATE()", [$tenantId])->cnt;
-        } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
-
-        $totalNotes = 0;
-        try { $totalNotes = (int) DB::selectOne("SELECT COUNT(*) as cnt FROM member_notes WHERE tenant_id = ?", [$tenantId])->cnt; } catch (\Throwable $e) { Log::warning('Stats query failed in ' . __METHOD__, ['error' => $e->getMessage()]); }
+        $taskStats = $this->getTaskStats($tenantId, $callerId);
+        $noteStats = $this->getNoteStats($tenantId);
+        $tagStats = $this->getTagStats($tenantId);
 
         return $this->respondWithData([
             'total_members' => $memberStats['total_members'], 'active_members' => $memberStats['active_members'],
             'new_this_month' => $memberStats['new_this_month'], 'pending_approvals' => $memberStats['pending_approvals'],
-            'open_tasks' => $openTasks, 'overdue_tasks' => $overdueTasks,
-            'total_notes' => $totalNotes, 'never_logged_in' => $memberStats['never_logged_in'],
+            'open_tasks' => $taskStats['open'], 'overdue_tasks' => $taskStats['overdue'],
+            'tasks_due_today' => $taskStats['due_today'],
+            'my_tasks' => $taskStats['mine'],
+            'next_tasks' => $this->nextTasksFor($tenantId, $callerId),
+            'total_notes' => $noteStats['total'], 'notes_last_30_days' => $noteStats['last_30_days'],
+            'recent_notes' => $this->recentNotesFor($tenantId, $callerId),
+            'tags_in_use' => $tagStats['tags'], 'tagged_members' => $tagStats['members'],
+            'never_logged_in' => $memberStats['never_logged_in'],
             'retention_rate' => $memberStats['retention_rate'],
         ]);
+    }
+
+    /**
+     * Open, overdue and due-today task counts for the community and for the
+     * caller, from one pass over the table. "Open" is pending or in progress;
+     * "overdue" is open with a due date before today — the same rule the
+     * tasks list applies to its status=open / status=overdue views.
+     *
+     * @return array{open: int, overdue: int, due_today: int, mine: array{open: int, overdue: int, due_today: int}}
+     */
+    private function getTaskStats(int $tenantId, int $callerId): array
+    {
+        $row = DB::selectOne(
+            "SELECT
+                COALESCE(SUM(status IN ('pending','in_progress')), 0) AS open_cnt,
+                COALESCE(SUM(status IN ('pending','in_progress') AND due_date IS NOT NULL AND due_date < CURDATE()), 0) AS overdue_cnt,
+                COALESCE(SUM(status IN ('pending','in_progress') AND due_date = CURDATE()), 0) AS due_today_cnt,
+                COALESCE(SUM(status IN ('pending','in_progress') AND assigned_to = ?), 0) AS my_open,
+                COALESCE(SUM(status IN ('pending','in_progress') AND assigned_to = ? AND due_date IS NOT NULL AND due_date < CURDATE()), 0) AS my_overdue,
+                COALESCE(SUM(status IN ('pending','in_progress') AND assigned_to = ? AND due_date = CURDATE()), 0) AS my_due_today
+             FROM coordinator_tasks
+             WHERE tenant_id = ?",
+            [$callerId, $callerId, $callerId, $tenantId]
+        );
+
+        return [
+            'open' => (int) $row->open_cnt,
+            'overdue' => (int) $row->overdue_cnt,
+            'due_today' => (int) $row->due_today_cnt,
+            'mine' => [
+                'open' => (int) $row->my_open,
+                'overdue' => (int) $row->my_overdue,
+                'due_today' => (int) $row->my_due_today,
+            ],
+        ];
+    }
+
+    /**
+     * The caller's open tasks that come up first: by due date (overdue
+     * first), same-day ties by priority, undated tasks last. Only what the
+     * overview row shows — no description, no audit columns.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function nextTasksFor(int $tenantId, int $callerId): array
+    {
+        $rows = DB::select(
+            "SELECT ct.id, ct.title, ct.priority, ct.status, ct.due_date, ct.user_id, member.name AS user_name
+             FROM coordinator_tasks ct
+             LEFT JOIN users member ON member.id = ct.user_id AND member.tenant_id = ct.tenant_id
+             WHERE ct.tenant_id = ? AND ct.assigned_to = ? AND ct.status IN ('pending','in_progress')
+             ORDER BY
+                ct.due_date IS NULL, ct.due_date ASC,
+                CASE ct.priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END,
+                ct.created_at ASC, ct.id ASC
+             LIMIT ?",
+            [$tenantId, $callerId, self::DASHBOARD_LIST_LIMIT]
+        );
+
+        return array_map(fn ($r) => [
+            'id' => (int) $r->id,
+            'title' => $r->title,
+            'priority' => $r->priority,
+            'status' => $r->status,
+            'due_date' => $r->due_date,
+            'user_id' => $r->user_id === null ? null : (int) $r->user_id,
+            'user_name' => $r->user_name,
+        ], $rows);
+    }
+
+    /** @return array{total: int, last_30_days: int} */
+    private function getNoteStats(int $tenantId): array
+    {
+        $row = DB::selectOne(
+            "SELECT COUNT(*) AS total,
+                    COALESCE(SUM(created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)), 0) AS recent
+             FROM member_notes WHERE tenant_id = ?",
+            [$tenantId]
+        );
+
+        return ['total' => (int) $row->total, 'last_30_days' => (int) $row->recent];
+    }
+
+    /** @return array{tags: int, members: int} */
+    private function getTagStats(int $tenantId): array
+    {
+        $row = DB::selectOne(
+            "SELECT COUNT(DISTINCT tag) AS tags, COUNT(DISTINCT user_id) AS members
+             FROM member_tags WHERE tenant_id = ?",
+            [$tenantId]
+        );
+
+        return ['tags' => (int) $row->tags, 'members' => (int) $row->members];
+    }
+
+    /**
+     * The newest notes the caller may read, as excerpts. The concern-note
+     * exclusion is the one the notes list applies, so the overview can never
+     * show a note the notes page would refuse.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function recentNotesFor(int $tenantId, int $callerId): array
+    {
+        $where = 'mn.tenant_id = ?';
+        $params = [$tenantId];
+
+        $hiddenSubjects = $this->concernSubjectsHiddenFromCaller($callerId, $tenantId);
+        if ($hiddenSubjects !== []) {
+            $placeholders = implode(',', array_fill(0, count($hiddenSubjects), '?'));
+            $where .= " AND NOT (mn.category = ? AND mn.user_id IN ({$placeholders}))";
+            $params[] = self::CONCERN_CATEGORY;
+            array_push($params, ...$hiddenSubjects);
+        }
+        $params[] = self::DASHBOARD_LIST_LIMIT;
+
+        $rows = DB::select(
+            "SELECT mn.id, mn.user_id, mn.category, mn.is_pinned, mn.created_at, mn.content,
+                    u.name AS user_name, u.avatar_url AS user_avatar, a.name AS author_name
+             FROM member_notes mn
+             LEFT JOIN users u ON u.id = mn.user_id
+             LEFT JOIN users a ON a.id = mn.author_id
+             WHERE {$where}
+             ORDER BY mn.created_at DESC, mn.id DESC
+             LIMIT ?",
+            $params
+        );
+
+        return array_map(function ($r) {
+            $content = trim((string) $r->content);
+            $excerpt = mb_strlen($content) > self::DASHBOARD_NOTE_EXCERPT
+                ? rtrim(mb_substr($content, 0, self::DASHBOARD_NOTE_EXCERPT)) . '…'
+                : $content;
+
+            return [
+                'id' => (int) $r->id,
+                'user_id' => (int) $r->user_id,
+                'user_name' => $r->user_name,
+                'user_avatar' => $r->user_avatar,
+                'author_name' => $r->author_name,
+                'category' => $r->category,
+                'is_pinned' => (bool) $r->is_pinned,
+                'created_at' => $r->created_at,
+                'excerpt' => $excerpt,
+            ];
+        }, $rows);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1421,18 +1586,34 @@ class AdminCrmController extends BaseApiController
     }
 
     /** GET /api/v2/admin/crm/export/dashboard */
+    /**
+     * GET /api/v2/admin/crm/export/dashboard — every figure the overview
+     * shows, one row each. Until 2026-10-05 it carried five member figures
+     * and none of the task, note or tag ones.
+     */
     public function exportDashboard(): StreamedResponse
     {
-        $this->requireAdmin();
+        $callerId = $this->requireAdmin();
         $tenantId = TenantContext::getId();
         $memberStats = $this->getMemberStats($tenantId);
+        $taskStats = $this->getTaskStats($tenantId, $callerId);
+        $noteStats = $this->getNoteStats($tenantId);
+        $tagStats = $this->getTagStats($tenantId);
 
         $rows = [
-            ['metric' => __('admin.label_total_members'), 'value' => $memberStats['total_members']],
-            ['metric' => __('admin.label_active_members'), 'value' => $memberStats['active_members']],
-            ['metric' => __('admin.label_new_this_month'), 'value' => $memberStats['new_this_month']],
-            ['metric' => __('admin.label_pending_approvals'), 'value' => $memberStats['pending_approvals']],
-            ['metric' => __('admin.label_retention_rate'), 'value' => $memberStats['retention_rate'] . '%'],
+            ['metric' => __('admin.crm.export_metric_members'), 'value' => $memberStats['total_members']],
+            ['metric' => __('admin.crm.export_metric_active'), 'value' => $memberStats['active_members']],
+            ['metric' => __('admin.crm.export_metric_new_this_month'), 'value' => $memberStats['new_this_month']],
+            ['metric' => __('admin.crm.export_metric_pending'), 'value' => $memberStats['pending_approvals']],
+            ['metric' => __('admin.crm.export_metric_activity_rate'), 'value' => $memberStats['retention_rate'] . '%'],
+            ['metric' => __('admin.crm.export_metric_never_signed_in'), 'value' => $memberStats['never_logged_in']],
+            ['metric' => __('admin.crm.export_metric_open_tasks'), 'value' => $taskStats['open']],
+            ['metric' => __('admin.crm.export_metric_overdue_tasks'), 'value' => $taskStats['overdue']],
+            ['metric' => __('admin.crm.export_metric_due_today'), 'value' => $taskStats['due_today']],
+            ['metric' => __('admin.crm.export_metric_notes'), 'value' => $noteStats['total']],
+            ['metric' => __('admin.crm.export_metric_notes_recent'), 'value' => $noteStats['last_30_days']],
+            ['metric' => __('admin.crm.export_metric_tags'), 'value' => $tagStats['tags']],
+            ['metric' => __('admin.crm.export_metric_tagged_members'), 'value' => $tagStats['members']],
         ];
 
         return $this->streamCsv('crm-dashboard', ['Metric', 'Value'], $rows);

@@ -1030,7 +1030,20 @@
     "weakest_handoff": "An tAistriú is Laige",
     "weakest_handoff_help": "Seo é an ráta tiontaithe céim ar chéim is ísle sa tonnadóir reatha, fiú má tá líon amh caillteanais níos mó ag céim eile.",
     "lost_since_previous": "caillte ón gcéim roimhe seo",
-    "overall_conversion_help": "Seo céatadán na mball a théann ón gcéad chéim thaifeadta go dtí an chéim dheiridh a thaispeántar ar an leathanach seo."
+    "overall_conversion_help": "Seo céatadán na mball a théann ón gcéad chéim thaifeadta go dtí an chéim dheiridh a thaispeántar ar an leathanach seo.",
+    "export_metric_members": "Baill",
+    "export_metric_active": "Gníomhach le 30 lá anuas",
+    "export_metric_new_this_month": "Nua an mhí seo",
+    "export_metric_pending": "Ag fanacht le ceadú",
+    "export_metric_activity_rate": "Ráta gníomhaíochta 30 lá",
+    "export_metric_never_signed_in": "Níor logáil isteach riamh",
+    "export_metric_open_tasks": "Tascanna oscailte",
+    "export_metric_overdue_tasks": "Tascanna thar téarma",
+    "export_metric_due_today": "Tascanna atá dlite inniu",
+    "export_metric_notes": "Nótaí ball",
+    "export_metric_notes_recent": "Nótaí a cuireadh leis le 30 lá anuas",
+    "export_metric_tags": "Clibeanna in úsáid",
+    "export_metric_tagged_members": "Baill a bhfuil clib acu"
   },
   "data_table": {
     "admin_data_table": "Tábla Sonraí Riaracháin",

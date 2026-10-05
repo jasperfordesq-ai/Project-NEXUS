@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Zwakste overdracht",
     "weakest_handoff_help": "Dit is het laagste conversiepercentage tussen twee fasen in de huidige trechter, ook als een andere fase absoluut meer leden verliest.",
     "lost_since_previous": "uitgevallen sinds de vorige fase",
-    "overall_conversion_help": "Dit is het percentage leden dat van de eerste geregistreerde fase helemaal tot de laatste fase op deze pagina komt."
+    "overall_conversion_help": "Dit is het percentage leden dat van de eerste geregistreerde fase helemaal tot de laatste fase op deze pagina komt.",
+    "export_metric_members": "Leden",
+    "export_metric_active": "Actief in de laatste 30 dagen",
+    "export_metric_new_this_month": "Nieuw deze maand",
+    "export_metric_pending": "Wachtend op goedkeuring",
+    "export_metric_activity_rate": "Activiteitspercentage over 30 dagen",
+    "export_metric_never_signed_in": "Nooit aangemeld",
+    "export_metric_open_tasks": "Openstaande taken",
+    "export_metric_overdue_tasks": "Achterstallige taken",
+    "export_metric_due_today": "Taken die vandaag vervallen",
+    "export_metric_notes": "Ledennotities",
+    "export_metric_notes_recent": "Notities toegevoegd in de laatste 30 dagen",
+    "export_metric_tags": "Tags in gebruik",
+    "export_metric_tagged_members": "Leden met een tag"
   },
   "data_table": {
     "admin_data_table": "Beheergegevenstabel",

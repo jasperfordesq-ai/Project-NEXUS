@@ -1035,7 +1035,20 @@
     "status_all": "All",
     "status_completed": "Completed",
     "status_in_progress": "In Progress",
-    "status_pending": "Pending"
+    "status_pending": "Pending",
+    "export_metric_members": "Members",
+    "export_metric_active": "Active in the last 30 days",
+    "export_metric_new_this_month": "New this month",
+    "export_metric_pending": "Waiting for approval",
+    "export_metric_activity_rate": "30-day activity rate",
+    "export_metric_never_signed_in": "Never signed in",
+    "export_metric_open_tasks": "Open tasks",
+    "export_metric_overdue_tasks": "Overdue tasks",
+    "export_metric_due_today": "Tasks due today",
+    "export_metric_notes": "Member notes",
+    "export_metric_notes_recent": "Notes added in the last 30 days",
+    "export_metric_tags": "Tags in use",
+    "export_metric_tagged_members": "Members with a tag"
   },
   "data_table": {
     "admin_data_table": "Admin Data Table",

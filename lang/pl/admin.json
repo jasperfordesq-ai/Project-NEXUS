@@ -1030,7 +1030,20 @@
     "weakest_handoff": "Najsłabsze przejście",
     "weakest_handoff_help": "To najniższy współczynnik konwersji między etapami w bieżącym lejku, nawet jeśli inny etap ma większą bezwzględną liczbę odpływu.",
     "lost_since_previous": "utraconych od poprzedniego etapu",
-    "overall_conversion_help": "To odsetek członków, którzy przechodzą od pierwszego zarejestrowanego etapu aż do ostatniego etapu widocznego na tej stronie."
+    "overall_conversion_help": "To odsetek członków, którzy przechodzą od pierwszego zarejestrowanego etapu aż do ostatniego etapu widocznego na tej stronie.",
+    "export_metric_members": "Członkowie",
+    "export_metric_active": "Aktywni w ciągu ostatnich 30 dni",
+    "export_metric_new_this_month": "Nowi w tym miesiącu",
+    "export_metric_pending": "Oczekujący na zatwierdzenie",
+    "export_metric_activity_rate": "Wskaźnik aktywności z 30 dni",
+    "export_metric_never_signed_in": "Nigdy nie zalogowani",
+    "export_metric_open_tasks": "Otwarte zadania",
+    "export_metric_overdue_tasks": "Zaległe zadania",
+    "export_metric_due_today": "Zadania na dziś",
+    "export_metric_notes": "Notatki o członkach",
+    "export_metric_notes_recent": "Notatki dodane w ciągu ostatnich 30 dni",
+    "export_metric_tags": "Używane tagi",
+    "export_metric_tagged_members": "Członkowie z tagiem"
   },
   "data_table": {
     "admin_data_table": "Tabela danych administracyjnych",
