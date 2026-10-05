@@ -3,96 +3,27 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
-const { mockAdminCrm } = vi.hoisted(() => ({
-  mockAdminCrm: {
+const { mockCrm } = vi.hoisted(() => ({
+  mockCrm: {
     getTags: vi.fn(),
     addTag: vi.fn(),
     removeTag: vi.fn(),
     bulkRemoveTag: vi.fn(),
+    exportTags: vi.fn(),
   },
 }));
 
 vi.mock('../../api/adminApi', () => ({
-  adminCrm: mockAdminCrm,
+  adminCrm: mockCrm,
 }));
 
-// ─── Stub heavy admin child components ────────────────────────────────────────
-vi.mock('../../AdminMetaContext', () => ({
-  useAdminPageMeta: vi.fn(),
-}));
-
-// MemberTags imports PageHeader, ConfirmModal and MemberSearchPicker from their INDIVIDUAL paths
-// ('../../components/PageHeader' etc.), not from the '../../components' barrel. Vitest resolves
-// mocks per specifier, so registering these stubs on the barrel alone left all three dead: the real
-// admin components rendered and none of the data-testid hooks below existed, which is why every
-// assertion in this file failed. Hoisted once and registered on the barrel AND each direct path.
-const adminComponentsStub = vi.hoisted(() => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <span>{title}</span>
-      <div data-testid="page-header-actions">{actions}</div>
-    </div>
-  ),
-  ConfirmModal: ({
-    isOpen,
-    onConfirm,
-    onClose,
-    title,
-    isLoading,
-  }: {
-    isOpen: boolean;
-    onConfirm: () => void;
-    onClose: () => void;
-    title: string;
-    isLoading?: boolean;
-    message?: string;
-    confirmLabel?: string;
-    confirmColor?: string;
-  }) =>
-    isOpen ? (
-      <div role="dialog" aria-label="Dialog" data-testid="confirm-modal">
-        <span>{title}</span>
-        <button onClick={onConfirm} disabled={isLoading}>Confirm</button>
-        <button onClick={onClose}>Cancel</button>
-      </div>
-    ) : null,
-  MemberSearchPicker: ({
-    onValueChange,
-    onSelectedMemberChange,
-    label,
-  }: {
-    label?: string;
-    placeholder?: string;
-    noResultsText?: string;
-    clearText?: string;
-    isRequired?: boolean;
-    value?: string;
-    selectedMember?: unknown;
-    onSelectedMemberChange?: (m: unknown) => void;
-    onValueChange?: (v: string) => void;
-  }) => (
-    <div data-testid="member-search-picker">
-      <input
-        aria-label={label || 'member search'}
-        onChange={(e) => {
-          onValueChange?.(e.target.value);
-          onSelectedMemberChange?.({ id: 7, name: 'Test User' });
-        }}
-      />
-    </div>
-  ),
-}));
-
-vi.mock('../../components', () => adminComponentsStub);
-vi.mock('../../components/PageHeader', () => adminComponentsStub);
-vi.mock('../../components/ConfirmModal', () => adminComponentsStub);
-vi.mock('../../components/MemberSearchPicker', () => adminComponentsStub);
+vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Contexts / hooks ─────────────────────────────────────────────────────────
 const mockToast = vi.hoisted(() => ({
@@ -116,11 +47,59 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
+// ─── Admin-specific stubs ─────────────────────────────────────────────────────
+vi.mock('../../AdminMetaContext', () => ({
+  useAdminPageMeta: vi.fn(),
+}));
+
+vi.mock('../../components/PageHeader', () => ({
+  PageHeader: ({ title, description, actions }: { title: string; description?: React.ReactNode; actions?: React.ReactNode }) => (
+    <div>
+      <h1>{title}</h1>
+      {description && <p>{description}</p>}
+      <div data-testid="page-header-actions">{actions}</div>
+    </div>
+  ),
+}));
+
+vi.mock('../../components/ConfirmModal', () => ({
+  ConfirmModal: ({ isOpen, onConfirm, onClose, title, message, isLoading }: {
+    isOpen: boolean; onConfirm: () => void; onClose: () => void; title: string; message: string; isLoading?: boolean;
+  }) =>
+    isOpen ? (
+      <div role="dialog" aria-label={title} data-testid="confirm-modal">
+        <span>{title}</span>
+        <p data-testid="confirm-message">{message}</p>
+        <button onClick={onConfirm} disabled={isLoading}>Confirm</button>
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
+}));
+
+vi.mock('../../components/MemberSearchPicker', () => ({
+  MemberSearchPicker: ({ label, value, onValueChange, onSelectedMemberChange }: {
+    label: string; value: string; onValueChange: (v: string) => void; onSelectedMemberChange?: (m: unknown) => void;
+  }) => (
+    <div data-testid="member-search-picker" data-value={value}>
+      {label}
+      <button
+        onClick={() => {
+          onValueChange('42');
+          onSelectedMemberChange?.({ id: 42, name: 'Alice Example', email: 'alice@example.test' });
+        }}
+      >
+        pick-member-42
+      </button>
+    </div>
+  ),
+}));
+
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const makeTagSummary = (overrides = {}) => ({
-  tag: 'vip',
+  tag: 'Gardening',
   member_count: 3,
+  last_added_at: '2026-10-01T10:00:00Z',
   ...overrides,
 });
 
@@ -128,269 +107,372 @@ const makeMemberTag = (overrides = {}) => ({
   id: 1,
   tenant_id: 2,
   user_id: 42,
-  tag: 'vip',
+  tag: 'Gardening',
   created_by: 1,
-  created_at: '2025-01-01T10:00:00Z',
+  created_at: '2026-10-01T10:00:00Z',
   user_name: 'Alice Example',
   user_avatar: null,
+  created_by_name: 'Jane Coordinator',
   ...overrides,
 });
 
-const makeSuccess = (data: unknown) => ({ success: true, data });
+const ok = (data: unknown) => ({ success: true, data });
+
+const waitForLoaded = () =>
+  waitFor(() => {
+    const busy = screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
+    expect(busy).toBeUndefined();
+  });
+
+/** Routes getTags: no filter → summaries, ?tag= → members of that tag. */
+const routeTags = (summaries: object[], membersByTag: Record<string, object[]> = {}) => {
+  mockCrm.getTags.mockImplementation((params?: { tag?: string }) =>
+    Promise.resolve(ok(params?.tag ? (membersByTag[params.tag] ?? []) : summaries))
+  );
+};
+
+const headerButton = (pattern: RegExp) =>
+  within(screen.getByTestId('page-header-actions')).getAllByRole('button').find((b) => pattern.test(b.textContent ?? ''));
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('MemberTags', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([]));
+    window.history.pushState({}, '', '/admin/crm/tags');
+    routeTags([]);
+    mockCrm.addTag.mockResolvedValue(ok(makeMemberTag()));
+    mockCrm.removeTag.mockResolvedValue({ success: true });
+    mockCrm.bulkRemoveTag.mockResolvedValue({ success: true, data: { deleted: 3 } });
+    mockCrm.exportTags.mockResolvedValue(new Blob());
   });
 
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+  });
+
+  // ─── Tag list ──────────────────────────────────────────────────────────────
+
   it('shows a loading spinner while tags are being loaded', async () => {
-    mockAdminCrm.getTags.mockImplementation(() => new Promise(() => {}));
+    mockCrm.getTags.mockImplementation(() => new Promise(() => {}));
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    const statuses = screen.getAllByRole('status');
-    const busy = statuses.find((el) => el.getAttribute('aria-busy') === 'true');
+    const busy = screen.getAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
     expect(busy).toBeDefined();
   });
 
-  it('shows empty state when no tags exist', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([]));
+  it('shows an empty state with an Add tag action when no tags exist', async () => {
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => {
-      // Loading disappears
-      const busy = screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
-      expect(busy).toBeUndefined();
-    });
+    await waitForLoaded();
+    expect(screen.getByText(/no tags yet|crm\.no_tags_yet/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /add tag|crm\.add_tag/i }).length).toBeGreaterThanOrEqual(2);
   });
 
-  it('renders tag cards when tag summaries are returned', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([makeTagSummary()]));
+  it('renders one card per tag with its member count and when it was last added', async () => {
+    routeTags([makeTagSummary(), makeTagSummary({ tag: 'Needs a lift', member_count: 1 })]);
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => {
-      expect(screen.getByText('vip')).toBeInTheDocument();
-    });
+    await waitForLoaded();
+    expect(screen.getByRole('link', { name: 'Gardening' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Needs a lift' })).toBeInTheDocument();
+    // The count is a number, not the bare word "Members" the old page showed.
+    expect(screen.getByText(/^3 members$|crm\.tag_member_count/)).toBeInTheDocument();
+    expect(screen.getByText(/^1 member$/)).toBeInTheDocument();
+    expect(screen.getAllByText(/last added|crm\.tag_last_added/i).length).toBe(2);
+    expect(screen.getByText(/^2 tags$|crm\.tags_summary/)).toBeInTheDocument();
   });
 
-  it('renders multiple tag cards', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(
-      makeSuccess([makeTagSummary({ tag: 'vip' }), makeTagSummary({ tag: 'volunteer', member_count: 7 })])
-    );
+  it('filters the list from ?q= and says how many tags match', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?q=lift');
+    routeTags([makeTagSummary(), makeTagSummary({ tag: 'Needs a lift', member_count: 1 })]);
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => {
-      expect(screen.getByText('vip')).toBeInTheDocument();
-      expect(screen.getByText('volunteer')).toBeInTheDocument();
-    });
+    await waitForLoaded();
+    expect(screen.queryByRole('link', { name: 'Gardening' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Needs a lift' })).toBeInTheDocument();
+    expect(screen.getByText(/1 tag matches your search|crm\.tags_summary_filtered/i)).toBeInTheDocument();
   });
 
-  it('renders the Add Tag button in the page header actions', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([]));
-    const { MemberTags } = await import('./MemberTags');
-    render(<MemberTags />);
+  it('writes the search box into the address after the debounce, and Clear resets it', async () => {
+    vi.useFakeTimers();
+    try {
+      routeTags([makeTagSummary()]);
+      const { MemberTags } = await import('./MemberTags');
+      render(<MemberTags />);
+      await vi.waitFor(() => expect(mockCrm.getTags).toHaveBeenCalled());
 
-    await waitFor(() => {
-      const actions = screen.getByTestId('page-header-actions');
-      const addBtn = actions.querySelector('button');
-      expect(addBtn).toBeInTheDocument();
-    });
-  });
-
-  it('opens the Add Tag modal when button is clicked', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([]));
-    const { MemberTags } = await import('./MemberTags');
-    render(<MemberTags />);
-
-    await waitFor(() => screen.getByTestId('page-header-actions'));
-
-    const addBtn = screen.getByTestId('page-header-actions').querySelector('button');
-    if (addBtn) fireEvent.click(addBtn);
-
-    await waitFor(() => {
-      expect(document.querySelector('[role="dialog"]')).toBeTruthy();
-    });
-  });
-
-  it('shows error toast when addTag is called without a user selected', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([]));
-    const { MemberTags } = await import('./MemberTags');
-    render(<MemberTags />);
-
-    await waitFor(() => screen.getByTestId('page-header-actions'));
-
-    const addBtn = screen.getByTestId('page-header-actions').querySelector('button');
-    if (addBtn) fireEvent.click(addBtn);
-
-    await waitFor(() => document.querySelector('[role="dialog"]'));
-
-    // Click Add Tag inside modal without providing a user
-    const dialogBtns = Array.from(document.querySelectorAll('[role="dialog"] button'));
-    const confirmBtn = dialogBtns.find((b) =>
-      b.textContent?.toLowerCase().includes('add') || b.textContent?.toLowerCase().includes('tag')
-    );
-    if (confirmBtn) fireEvent.click(confirmBtn);
-
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
-    });
-  });
-
-  it('opens members view when a tag card is clicked', async () => {
-    // getTags is called twice: first for summary, then for members of the clicked tag
-    mockAdminCrm.getTags
-      .mockResolvedValueOnce(makeSuccess([makeTagSummary()]))
-      .mockResolvedValueOnce(makeSuccess([makeMemberTag()]));
-
-    const { MemberTags } = await import('./MemberTags');
-    render(<MemberTags />);
-
-    // Wait for the summary to load (tag name shows)
-    await waitFor(() => {
-      expect(screen.getByText('vip')).toBeInTheDocument();
-    });
-
-    // HeroUI Card with isPressable renders as a button in jsdom
-    // Click the vip tag text — the card wraps it in a pressable element
-    const vipEl = screen.getByText('vip');
-    // Walk up to find a pressable/button ancestor (HeroUI isPressable Card)
-    let target: Element | null = vipEl;
-    while (target && target.tagName !== 'BUTTON' && !target.hasAttribute('data-pressable') && !target.getAttribute('role')?.includes('button')) {
-      target = target.parentElement;
+      const search = screen.getByRole('searchbox');
+      fireEvent.change(search, { target: { value: 'gard' } });
+      expect(window.location.search).toBe('');
+      vi.advanceTimersByTime(350);
+      expect(window.location.search).toBe('?q=gard');
+    } finally {
+      vi.useRealTimers();
     }
-    // Fall back to the span itself if no button found
-    fireEvent.click(target ?? vipEl);
-
-    // After clicking the card the view transitions to 'members'
-    // The loading spinner for members appears, followed by the back button
-    await waitFor(() => {
-      const backBtn = screen.queryAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('back') ||
-        b.textContent?.toLowerCase().includes('all tags')
-      );
-      // The back button appears in members view OR the members spinner appears
-      const spinner = screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
-      expect(backBtn !== undefined || spinner !== undefined).toBe(true);
-    }, { timeout: 3000 });
   });
 
-  it('shows member data in members view', async () => {
-    mockAdminCrm.getTags
-      .mockResolvedValueOnce(makeSuccess([makeTagSummary()]))
-      .mockResolvedValueOnce(makeSuccess([makeMemberTag()]));
-
+  it('offers Clear in the empty state when a search matches nothing', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?q=zzz');
+    routeTags([makeTagSummary()]);
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => screen.getByText('vip'));
-
-    // Click the tag — the card might be rendered as a button by HeroUI isPressable
-    const vipText = screen.getByText('vip');
-    const clickTarget = vipText.closest('[data-pressable]') ??
-      vipText.closest('button') ??
-      vipText;
-    fireEvent.click(clickTarget);
-
-    await waitFor(() => {
-      // Loading spinner appears for members view
-      // and then Alice Example should appear
-    }, { timeout: 3000 });
-    // Note: the members view may or may not render immediately; we just verify no crash
+    await waitForLoaded();
+    expect(screen.getByText(/no tags found|crm\.no_tags_found/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^clear$|crm\.clear$/i }));
+    await waitFor(() => expect(window.location.search).toBe(''));
+    expect(screen.getByRole('link', { name: 'Gardening' })).toBeInTheDocument();
   });
 
-  it('opens delete confirmation when trash button on a tag card is clicked', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([makeTagSummary()]));
+  it('sorts A to Z from ?sort=name and most-members otherwise', async () => {
+    routeTags([makeTagSummary({ tag: 'Zumba', member_count: 9 }), makeTagSummary({ tag: 'Baking', member_count: 2 })]);
+    const { MemberTags } = await import('./MemberTags');
+    const { unmount } = render(<MemberTags />);
+
+    await waitForLoaded();
+    let names = screen.getAllByRole('listitem').map((li) => within(li).getByRole('link').textContent);
+    expect(names).toEqual(['Zumba', 'Baking']);
+    unmount();
+
+    window.history.pushState({}, '', '/admin/crm/tags?sort=name');
+    render(<MemberTags />);
+    await waitForLoaded();
+    names = screen.getAllByRole('listitem').map((li) => within(li).getByRole('link').textContent);
+    expect(names).toEqual(['Baking', 'Zumba']);
+  });
+
+  it('opens a tag through the address (?tag=) so the back button returns to the list', async () => {
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag()] });
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => screen.getByText('vip'));
+    await waitForLoaded();
+    fireEvent.click(screen.getByRole('link', { name: 'Gardening' }));
 
-    // Find the delete (trash) icon button on the tag card
-    const trashBtns = screen.getAllByRole('button').filter((b) =>
-      b.getAttribute('aria-label')?.toLowerCase().includes('delete') ||
-      b.getAttribute('aria-label')?.toLowerCase().includes('remove')
-    );
-    if (trashBtns.length > 0) fireEvent.click(trashBtns[0]);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('confirm-modal')).toBeInTheDocument();
-    });
+    await waitFor(() => expect(window.location.search).toBe('?tag=Gardening'));
+    await waitFor(() => expect(mockCrm.getTags).toHaveBeenCalledWith({ tag: 'Gardening' }));
+    expect(await screen.findByRole('link', { name: 'Alice Example' })).toBeInTheDocument();
   });
 
-  it('calls bulkRemoveTag when delete tag confirmation is confirmed', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([makeTagSummary()]));
-    mockAdminCrm.bulkRemoveTag.mockResolvedValue({ success: true });
+  // ─── Members of one tag ────────────────────────────────────────────────────
 
+  it('lands on the members view from a ?tag= link, naming the tag, the count and who added it', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Gardening');
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag(), makeMemberTag({ id: 2, user_id: 43, user_name: 'Bob Example', created_by_name: null })] });
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => screen.getByText('vip'));
-
-    const trashBtns = screen.getAllByRole('button').filter((b) =>
-      b.getAttribute('aria-label')?.toLowerCase().includes('delete') ||
-      b.getAttribute('aria-label')?.toLowerCase().includes('remove')
-    );
-    if (trashBtns.length > 0) fireEvent.click(trashBtns[0]);
-
-    await waitFor(() => screen.getByTestId('confirm-modal'));
-
-    const confirmBtn = screen.getByText('Confirm');
-    fireEvent.click(confirmBtn);
-
-    await waitFor(() => {
-      expect(mockAdminCrm.bulkRemoveTag).toHaveBeenCalledWith('vip');
-    });
+    expect(await screen.findByRole('link', { name: 'Alice Example' })).toHaveAttribute('href', '/test/admin/users/42/edit');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/Gardening/);
+    expect(screen.getByText(/2 members have this tag|crm\.tagged_members_summary/i)).toBeInTheDocument();
+    expect(screen.getByText(/by Jane Coordinator|crm\.tag_added_on_by/i)).toBeInTheDocument();
+    // The header button now offers to tag another member, and a remove-from-all button is present.
+    expect(headerButton(/tag another member|crm\.tag_another_member/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: /remove from all members|crm\.remove_from_all_members/i })).toBeInTheDocument();
   });
 
-  it('shows success toast after bulk tag removal', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([makeTagSummary()]));
-    mockAdminCrm.bulkRemoveTag.mockResolvedValue({ success: true });
-
+  it('All tags takes the member view back to the list', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Gardening');
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag()] });
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => screen.getByText('vip'));
+    await screen.findByRole('link', { name: 'Alice Example' });
+    fireEvent.click(screen.getAllByRole('button', { name: /all tags|crm\.all_tags/i })[0]!);
 
-    const trashBtns = screen.getAllByRole('button').filter((b) =>
-      b.getAttribute('aria-label')?.toLowerCase().includes('delete') ||
-      b.getAttribute('aria-label')?.toLowerCase().includes('remove')
-    );
-    if (trashBtns.length > 0) fireEvent.click(trashBtns[0]);
-
-    await waitFor(() => screen.getByTestId('confirm-modal'));
-    fireEvent.click(screen.getByText('Confirm'));
-
-    await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(window.location.search).toBe(''));
+    expect(await screen.findByRole('link', { name: 'Gardening' })).toBeInTheDocument();
   });
 
-  it('shows error toast when bulkRemoveTag fails', async () => {
-    mockAdminCrm.getTags.mockResolvedValue(makeSuccess([makeTagSummary()]));
-    mockAdminCrm.bulkRemoveTag.mockRejectedValue(new Error('network'));
-
+  it('shows an empty state when nobody carries the tag in the address', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Nobody');
+    routeTags([makeTagSummary()]);
     const { MemberTags } = await import('./MemberTags');
     render(<MemberTags />);
 
-    await waitFor(() => screen.getByText('vip'));
+    expect(await screen.findByText(/no members with this tag|crm\.no_members_with_tag/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /remove from all members|crm\.remove_from_all_members/i })).not.toBeInTheDocument();
+  });
 
-    const trashBtns = screen.getAllByRole('button').filter((b) =>
-      b.getAttribute('aria-label')?.toLowerCase().includes('delete') ||
-      b.getAttribute('aria-label')?.toLowerCase().includes('remove')
-    );
-    if (trashBtns.length > 0) fireEvent.click(trashBtns[0]);
+  it('removing the tag from one member confirms by name and reloads', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Gardening');
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag()] });
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
 
-    await waitFor(() => screen.getByTestId('confirm-modal'));
-    fireEvent.click(screen.getByText('Confirm'));
+    await screen.findByRole('link', { name: 'Alice Example' });
+    fireEvent.click(screen.getByRole('button', { name: /remove tag from alice example|crm\.remove_tag_from_member_aria/i }));
 
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
-    });
+    const dialog = await screen.findByTestId('confirm-modal');
+    expect(within(dialog).getByTestId('confirm-message')).toHaveTextContent(/Gardening.*Alice Example|crm\.remove_tag_confirm_named/);
+    fireEvent.click(within(dialog).getByText('Confirm'));
+
+    await waitFor(() => expect(mockCrm.removeTag).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    // Members of the tag and the summary are both refreshed.
+    await waitFor(() => expect(mockCrm.getTags.mock.calls.filter(([p]) => p?.tag === 'Gardening').length).toBeGreaterThanOrEqual(2));
+    await waitFor(() => expect(mockCrm.getTags.mock.calls.filter(([p]) => !p).length).toBeGreaterThanOrEqual(2));
+  });
+
+  it('removing a tag from everyone, from a card, confirms with the tag and count and calls the bulk endpoint', async () => {
+    routeTags([makeTagSummary()]);
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(screen.getByRole('button', { name: /remove .*gardening.* from all members|crm\.remove_tag_all_aria/i }));
+
+    const dialog = await screen.findByTestId('confirm-modal');
+    expect(within(dialog).getByTestId('confirm-message')).toHaveTextContent(/Gardening.*3 members|crm\.remove_tag_all_confirm_named/);
+    fireEvent.click(within(dialog).getByText('Confirm'));
+
+    await waitFor(() => expect(mockCrm.bulkRemoveTag).toHaveBeenCalledWith('Gardening'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+  });
+
+  it('removing a tag from everyone while viewing it returns to the list', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Gardening');
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag()] });
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await screen.findByRole('link', { name: 'Alice Example' });
+    fireEvent.click(screen.getByRole('button', { name: /remove from all members|crm\.remove_from_all_members/i }));
+    fireEvent.click(within(await screen.findByTestId('confirm-modal')).getByText('Confirm'));
+
+    await waitFor(() => expect(mockCrm.bulkRemoveTag).toHaveBeenCalledWith('Gardening'));
+    await waitFor(() => expect(window.location.search).toBe(''));
+  });
+
+  it('shows an error toast when the bulk removal fails', async () => {
+    routeTags([makeTagSummary()]);
+    mockCrm.bulkRemoveTag.mockRejectedValue(new Error('network'));
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(screen.getByRole('button', { name: /remove .*gardening.* from all members|crm\.remove_tag_all_aria/i }));
+    fireEvent.click(within(await screen.findByTestId('confirm-modal')).getByText('Confirm'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+  });
+
+  // ─── Add tag ───────────────────────────────────────────────────────────────
+
+  it('opens the Add tag dialog from the header', async () => {
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/add tag|crm\.add_tag/i)!);
+
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+    expect(screen.getByTestId('member-search-picker')).toBeInTheDocument();
+  });
+
+  it('refuses to add without a member selected', async () => {
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/add tag|crm\.add_tag/i)!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    const submit = within(dialog).getAllByRole('button').find((b) => /add tag|crm\.add_tag/i.test(b.textContent ?? ''));
+    fireEvent.click(submit!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockCrm.addTag).not.toHaveBeenCalled();
+  });
+
+  it('adds the tag typed into the dialog and refreshes the list', async () => {
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/add tag|crm\.add_tag/i)!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    fireEvent.click(within(dialog).getByText('pick-member-42'));
+    fireEvent.change(within(dialog).getByRole('combobox'), { target: { value: '  Baking  ' } });
+    const submit = within(dialog).getAllByRole('button').find((b) => /add tag|crm\.add_tag/i.test(b.textContent ?? ''));
+    fireEvent.click(submit!);
+
+    await waitFor(() => expect(mockCrm.addTag).toHaveBeenCalledWith({ user_id: 42, tag: 'Baking' }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    await waitFor(() => expect(mockCrm.getTags.mock.calls.filter(([p]) => !p).length).toBeGreaterThanOrEqual(2));
+  });
+
+  it('pre-fills the tag when adding from a tag’s members view', async () => {
+    window.history.pushState({}, '', '/admin/crm/tags?tag=Gardening');
+    routeTags([makeTagSummary()], { Gardening: [makeMemberTag()] });
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await screen.findByRole('link', { name: 'Alice Example' });
+    fireEvent.click(headerButton(/tag another member|crm\.tag_another_member/i)!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    expect(within(dialog).getByRole('combobox')).toHaveValue('Gardening');
+  });
+
+  it('says the member already has the tag when the API answers 409', async () => {
+    mockCrm.addTag.mockResolvedValue({ success: false, code: 'RESOURCE_ALREADY_EXISTS' });
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/add tag|crm\.add_tag/i)!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    fireEvent.click(within(dialog).getByText('pick-member-42'));
+    fireEvent.change(within(dialog).getByRole('combobox'), { target: { value: 'Gardening' } });
+    const submit = within(dialog).getAllByRole('button').find((b) => /add tag|crm\.add_tag/i.test(b.textContent ?? ''));
+    fireEvent.click(submit!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringMatching(/already has|crm\.tag_already_assigned/i)));
+  });
+
+  it('refuses a tag longer than 50 characters before calling the API', async () => {
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/add tag|crm\.add_tag/i)!);
+    await waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeTruthy());
+
+    const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+    fireEvent.click(within(dialog).getByText('pick-member-42'));
+    fireEvent.change(within(dialog).getByRole('combobox'), { target: { value: 'x'.repeat(51) } });
+    const submit = within(dialog).getAllByRole('button').find((b) => /add tag|crm\.add_tag/i.test(b.textContent ?? ''));
+    fireEvent.click(submit!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockCrm.addTag).not.toHaveBeenCalled();
+  });
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+
+  it('exports the tags CSV from the header and reports the result', async () => {
+    const { MemberTags } = await import('./MemberTags');
+    render(<MemberTags />);
+
+    await waitForLoaded();
+    fireEvent.click(headerButton(/export tags|crm\.export_tags/i)!);
+    await waitFor(() => expect(mockCrm.exportTags).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+
+    mockCrm.exportTags.mockRejectedValueOnce(new Error('401'));
+    fireEvent.click(headerButton(/export tags|crm\.export_tags/i)!);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
   });
 });

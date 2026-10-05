@@ -2774,12 +2774,17 @@ export interface MemberTag {
   tag: string;
   created_by: number;
   created_at: string;
-  user_name?: string;
+  user_name?: string | null;
+  user_avatar?: string | null;
+  /** Name of the admin who added the tag; only on the ?tag= listing. */
+  created_by_name?: string | null;
 }
 
 export interface TagSummary {
   tag: string;
   member_count: number;
+  /** When the tag was most recently given to anyone. */
+  last_added_at?: string | null;
 }
 
 export interface CrmAdmin {

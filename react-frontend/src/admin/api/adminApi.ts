@@ -3095,12 +3095,21 @@ export const adminCrm = {
   deleteTask: (id: number) =>
     api.delete<{ success: boolean }>(`/v2/admin/crm/tasks/${id}`),
 
-  // Member Tags
+  // Member Tags. Without a filter the list is one summary row per tag
+  // (member_count, last_added_at); with ?tag= it is every member carrying
+  // that tag, newest first, with who added it (created_by_name).
   getTags: (params?: { user_id?: number; tag?: string }) =>
     api.get<MemberTag[] | TagSummary[]>(`/v2/admin/crm/tags${buildQuery(params || {})}`),
 
   addTag: (payload: { user_id: number; tag: string }) =>
     api.post<MemberTag>('/v2/admin/crm/tags', payload),
+
+  // Admin-only CSV of every tag assignment (tag, member, email, who added it,
+  // when), grouped by tag so a spreadsheet filter gives one outreach list per tag.
+  exportTags: () =>
+    api.download('/v2/admin/crm/export/tags', {
+      filename: `member-tags-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
 
   removeTag: (id: number) =>
     api.delete<{ success: boolean }>(`/v2/admin/crm/tags/${id}`),

@@ -328,9 +328,6 @@
     "src/admin/modules/crm/ActivityTimeline.test.tsx": {
       "TS2322": 2
     },
-    "src/admin/modules/crm/MemberTags.test.tsx": {
-      "TS2345": 4
-    },
     "src/admin/modules/deliverability/DeliverablesList.test.tsx": {
       "TS2345": 4,
       "TS2532": 2,
@@ -1890,7 +1887,7 @@
     }
   },
   "totals": {
-    "fileCount": 558,
-    "errorCount": 1699
+    "fileCount": 557,
+    "errorCount": 1695
   }
 }

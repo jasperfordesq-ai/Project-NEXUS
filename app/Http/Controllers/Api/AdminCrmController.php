@@ -816,15 +816,24 @@ class AdminCrmController extends BaseApiController
             );
             $tags = array_map(fn($r) => (array)$r, $tags);
         } elseif ($tagFilter) {
+            // The members carrying one tag, newest first, with who tagged them
+            // so the page can say "Added 3 Oct by Jane".
             $tags = DB::select(
-                "SELECT mt.*, u.name as user_name, u.avatar_url as user_avatar FROM member_tags mt LEFT JOIN users u ON u.id = mt.user_id
-                 WHERE mt.tenant_id = ? AND mt.tag = ? ORDER BY mt.created_at DESC",
+                "SELECT mt.*, u.name as user_name, u.avatar_url as user_avatar, c.name as created_by_name
+                 FROM member_tags mt
+                 LEFT JOIN users u ON u.id = mt.user_id
+                 LEFT JOIN users c ON c.id = mt.created_by
+                 WHERE mt.tenant_id = ? AND mt.tag = ? ORDER BY mt.created_at DESC, mt.id DESC",
                 [$tenantId, $tagFilter]
             );
             $tags = array_map(fn($r) => (array)$r, $tags);
         } else {
+            // One row per tag. last_added_at is the most recent time the tag
+            // was given to anyone, so a tag nobody has touched in a year is
+            // easy to spot; ties on the count fall back to the name.
             $tags = DB::select(
-                "SELECT tag, COUNT(*) as member_count FROM member_tags WHERE tenant_id = ? GROUP BY tag ORDER BY member_count DESC",
+                "SELECT tag, COUNT(*) as member_count, MAX(created_at) as last_added_at
+                 FROM member_tags WHERE tenant_id = ? GROUP BY tag ORDER BY member_count DESC, tag ASC",
                 [$tenantId]
             );
             $tags = array_map(fn($r) => (array)$r, $tags);
@@ -1165,6 +1174,30 @@ class AdminCrmController extends BaseApiController
         $tasks = array_map(fn($r) => (array)$r, $tasks);
 
         return $this->streamCsv('crm-tasks', ['ID', 'Title', 'Description', 'Priority', 'Status', 'Assigned To', 'Related Member', 'Due Date', 'Completed At', 'Created By', 'Created'], $tasks);
+    }
+
+    /** GET /api/v2/admin/crm/export/tags */
+    public function exportTags(): StreamedResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        // Grouped by tag, then newest first within it, so a spreadsheet filter
+        // on the Tag column gives one outreach list per tag. Emails are
+        // included because outreach is what tags are for; the member export
+        // under Admin → Users already hands admins the same addresses.
+        $rows = DB::select(
+            "SELECT mt.id, mt.tag, mt.user_id, u.name as user_name, u.email as user_email,
+                    c.name as created_by_name, mt.created_at
+             FROM member_tags mt
+             LEFT JOIN users u ON u.id = mt.user_id AND u.tenant_id = mt.tenant_id
+             LEFT JOIN users c ON c.id = mt.created_by
+             WHERE mt.tenant_id = ? ORDER BY mt.tag ASC, mt.created_at DESC, mt.id DESC",
+            [$tenantId]
+        );
+        $rows = array_map(fn($r) => (array)$r, $rows);
+
+        return $this->streamCsv('crm-tags', ['ID', 'Tag', 'User ID', 'User Name', 'Email', 'Added By', 'Added'], $rows);
     }
 
     /** GET /api/v2/admin/crm/export/dashboard */

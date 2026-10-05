@@ -342,6 +342,104 @@ class AdminCrmControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    /** Seeds two members with one tag and a third with another; returns [admin, marker, member ids]. */
+    private function seedTags(): array
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $marker = 'tagtest-' . substr(md5((string) microtime(true)), 0, 8);
+        $members = [];
+        for ($i = 0; $i < 3; $i++) {
+            $members[] = User::factory()->forTenant($this->testTenantId)->create();
+        }
+        $base = ['tenant_id' => $this->testTenantId, 'created_by' => $admin->id];
+        DB::table('member_tags')->insert([
+            ['user_id' => $members[0]->id, 'tag' => "$marker garden", 'created_at' => now()->subDays(5)] + $base,
+            ['user_id' => $members[1]->id, 'tag' => "$marker garden", 'created_at' => now()->subDay()] + $base,
+            ['user_id' => $members[2]->id, 'tag' => "$marker lift", 'created_at' => now()->subDays(3)] + $base,
+        ]);
+
+        return [$admin, $marker, $members];
+    }
+
+    public function test_list_tags_summary_counts_members_and_says_when_each_tag_was_last_added(): void
+    {
+        [, $marker] = $this->seedTags();
+
+        $response = $this->apiGet('/v2/admin/crm/tags');
+        $response->assertStatus(200);
+
+        $mine = collect($response->json('data'))
+            ->filter(fn ($row) => str_starts_with((string) ($row['tag'] ?? ''), $marker))
+            ->values();
+
+        $this->assertCount(2, $mine);
+        // Most members first.
+        $this->assertSame("$marker garden", $mine[0]['tag']);
+        $this->assertSame(2, (int) $mine[0]['member_count']);
+        $this->assertSame("$marker lift", $mine[1]['tag']);
+        $this->assertSame(1, (int) $mine[1]['member_count']);
+        // last_added_at is the newest of the tag's rows (one day ago, not five).
+        $this->assertNotEmpty($mine[0]['last_added_at']);
+        $this->assertGreaterThan(now()->subDays(2)->timestamp, strtotime($mine[0]['last_added_at']));
+    }
+
+    public function test_list_tags_by_tag_returns_each_member_with_who_added_the_tag(): void
+    {
+        [$admin, $marker, $members] = $this->seedTags();
+
+        $response = $this->apiGet('/v2/admin/crm/tags?tag=' . rawurlencode("$marker garden"));
+        $response->assertStatus(200);
+
+        $rows = $response->json('data');
+        $this->assertCount(2, $rows);
+        // Newest first.
+        $this->assertSame($members[1]->id, (int) $rows[0]['user_id']);
+        $this->assertSame($members[0]->id, (int) $rows[1]['user_id']);
+        foreach ($rows as $row) {
+            $this->assertSame("$marker garden", $row['tag']);
+            $this->assertSame($admin->name, $row['created_by_name']);
+            $this->assertArrayHasKey('user_name', $row);
+            $this->assertArrayHasKey('user_avatar', $row);
+        }
+    }
+
+    // ================================================================
+    // EXPORT TAGS — GET /v2/admin/crm/export/tags
+    // ================================================================
+
+    public function test_export_tags_streams_a_csv_grouped_by_tag_for_admin(): void
+    {
+        [$admin, $marker, $members] = $this->seedTags();
+
+        $response = $this->apiGet('/v2/admin/crm/export/tags');
+        $response->assertStatus(200);
+        $this->assertStringStartsWith('text/csv', (string) $response->headers->get('Content-Type'));
+
+        $body = $response->streamedContent();
+        $lines = array_values(array_filter(explode("\n", str_replace("\r", '', $body))));
+        $this->assertSame('ID,Tag,"User ID","User Name",Email,"Added By",Added', $lines[0]);
+
+        $mine = array_values(array_filter($lines, fn ($l) => str_contains($l, $marker)));
+        $this->assertCount(3, $mine);
+        // Grouped by tag (garden rows before lift), newest first inside a tag.
+        $this->assertStringContainsString("$marker garden", $mine[0]);
+        $this->assertStringContainsString("$marker garden", $mine[1]);
+        $this->assertStringContainsString("$marker lift", $mine[2]);
+        $this->assertStringContainsString($members[1]->email, $mine[0]);
+        $this->assertStringContainsString($admin->name, $mine[0]);
+    }
+
+    public function test_export_tags_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $response = $this->apiGet('/v2/admin/crm/export/tags');
+
+        $response->assertStatus(403);
+    }
+
     // ================================================================
     // TIMELINE — GET /v2/admin/crm/timeline
     // ================================================================
