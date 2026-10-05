@@ -97,6 +97,7 @@ class EmailTriggerAuditService
             ['module' => 'knowledge_base', 'event' => 'kb_article_approved_or_rejected', 'category' => 'knowledge_base', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'community_projects', 'event' => 'community_project_approved_or_rejected', 'category' => 'community_project', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'volunteering', 'event' => 'volunteer_expense_approved_rejected_paid', 'category' => 'volunteer_expense', 'critical' => true, 'source_table' => 'email_log'],
+            ['module' => 'volunteering', 'event' => 'fundraising_handover_recorded', 'category' => 'volunteer_fundraising', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'volunteering', 'event' => 'safeguarding_training_approved_or_rejected', 'category' => 'safeguarding', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'volunteering', 'event' => 'shift_reminder_feedback_certificate_payment', 'category' => 'volunteer_reminder', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'volunteering', 'event' => 'volunteer_certificate_ready', 'category' => 'volunteer_certificate', 'critical' => true, 'source_table' => 'email_log'],
