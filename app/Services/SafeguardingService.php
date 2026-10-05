@@ -1551,31 +1551,7 @@ class SafeguardingService
      */
     public static function organisationContactIds(int $tenantId, int $organizationId): array
     {
-        if ($organizationId <= 0) {
-            return [];
-        }
-        $org = DB::table('vol_organizations')
-            ->where('id', $organizationId)
-            ->where('tenant_id', $tenantId)
-            ->first(['user_id', 'dlp_user_id', 'deputy_dlp_user_id']);
-        if (!$org) {
-            return [];
-        }
-        $adminIds = DB::table('org_members')
-            ->where('tenant_id', $tenantId)
-            ->where('organization_id', $organizationId)
-            ->where('org_type', 'volunteer')
-            ->where('status', 'active')
-            ->whereIn('role', ['owner', 'admin'])
-            ->pluck('user_id')
-            ->all();
-
-        $ids = array_map('intval', array_merge(
-            [$org->user_id ?? 0, $org->dlp_user_id ?? 0, $org->deputy_dlp_user_id ?? 0],
-            $adminIds
-        ));
-
-        return array_values(array_unique(array_filter($ids, fn (int $id) => $id > 0)));
+        return \App\Services\Volunteering\IncidentAccess::organisationContactIds($tenantId, $organizationId);
     }
 
     /**
