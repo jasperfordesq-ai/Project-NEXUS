@@ -28,13 +28,6 @@
       "reason": "A key word bolded where the guide explains who runs a community, not an on-screen label."
     },
     {
-      "label": "Community Pot",
-      "locales": [
-        "en"
-      ],
-      "reason": "The name of a shared member account that a community creates for itself; it is data, not interface text."
-    },
-    {
       "label": "Signaler un problème",
       "locales": [
         "fr"

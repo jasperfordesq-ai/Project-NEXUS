@@ -154,7 +154,7 @@ describe('Help Centre home', () => {
     expect(await screen.findByRole('heading', { name: 'Guides matching "community pot"' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Recording hours for a workshop or group activity/ }))
       .toHaveAttribute('href', '/test/help/members/group_exchanges/workshop_community_pot');
-    expect(screen.getByRole('link', { name: /Using a Community Pot account for workshops/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Workshops: leftover hours and the community fund/ })).toBeInTheDocument();
   });
 
   it('says so when nothing matches', async () => {

@@ -48,21 +48,21 @@ describe('BrokerHelpPage', () => {
   it('lists every broker topic with its guides', () => {
     renderAt('/broker/help');
     expect(screen.getByRole('heading', { name: 'Workshops and group activities' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Using a Community Pot account for workshops/ }))
+    expect(screen.getByRole('link', { name: /Workshops: leftover hours and the community fund/ }))
       .toHaveAttribute('href', '/test/broker/help/broker_group_activities/broker_community_pot');
   });
 
   it('searches the broker guides only', () => {
     renderAt('/broker/help');
     fireEvent.change(screen.getByRole('textbox', { name: 'Search the Help Centre' }), { target: { value: 'community pot' } });
-    expect(screen.getByRole('link', { name: /Using a Community Pot account for workshops/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Workshops: leftover hours and the community fund/ })).toBeInTheDocument();
     // The member version of the same topic lives in the member guide, not here.
     expect(screen.queryByRole('link', { name: /Recording hours for a workshop or group activity/ })).not.toBeInTheDocument();
   });
 
   it('shows an article inside the panel, with a way back', () => {
     renderAt('/broker/help/broker_group_activities/broker_community_pot');
-    expect(screen.getByRole('heading', { name: 'Using a Community Pot account for workshops' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Workshops: leftover hours and the community fund' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /All broker guides/ })).toHaveAttribute('href', '/test/broker/help');
     expect(screen.getByRole('link', { name: /Open in the Help Centre/ }))
       .toHaveAttribute('href', '/test/help/brokers/broker_group_activities/broker_community_pot');
@@ -70,7 +70,7 @@ describe('BrokerHelpPage', () => {
 
   it("titles the browser tab with the article, not the guide's name", () => {
     renderAt('/broker/help/broker_group_activities/broker_community_pot');
-    expect(vi.mocked(usePageTitle)).toHaveBeenCalledWith('Using a Community Pot account for workshops');
+    expect(vi.mocked(usePageTitle)).toHaveBeenCalledWith('Workshops: leftover hours and the community fund');
     expect(vi.mocked(usePageTitle)).not.toHaveBeenCalledWith('Broker and coordinator guide');
   });
 
