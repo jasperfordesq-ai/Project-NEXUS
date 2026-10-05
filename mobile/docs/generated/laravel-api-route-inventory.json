@@ -2,15 +2,19 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2778,
-  "api_route_rows": 2743,
-  "distinct_api_paths": 2285,
+  "total_registered_routes": 2789,
+  "api_route_rows": 2754,
+  "distinct_api_paths": 2295,
   "route_source_fingerprint": {
-    "digest": "ccf60e80f2577f0843b1726e2f3dc75bce9574ba10ac7e78212547946b8ca0b1",
+    "digest": "2c6d6ba5f716960736585a846f760ed63789a43c2af9006c572b020fafcbbe0d",
     "files": [
       {
+        "file": "routes/api-volunteering-qualifications.php",
+        "sha256": "423ddab28b18c662f7ac5bf84fcc4fc7f98c231beb772e1fb9bd92660f972dc5"
+      },
+      {
         "file": "routes/api.php",
-        "sha256": "7cf88004838804238a09251652c7fbb460921df6adceff3807e8b132312bc6e8"
+        "sha256": "c95dbbb0010d405068bcf5b333075c901a7e6a6b1d0a27273f86540c7c9cc5ab"
       },
       {
         "file": "routes/channels.php",
@@ -18,7 +22,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "a4bd0a7e4ea69a2162acd9c8ac18fffae7458ccbb0af04e0087db2b857922193"
+        "sha256": "8505a781486b909823dd27c26dc1e664f2502b9c7414fbbf3c458ff9b09730a2"
       }
     ]
   },
@@ -3437,6 +3441,9 @@
       "PUT"
     ],
     "/api/v2/admin/volunteering/organizations/{id}/wallet/transactions": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/qualifications": [
       "GET"
     ],
     "/api/v2/admin/volunteering/reminder-logs": [
@@ -7076,6 +7083,9 @@
     "/api/v2/volunteering/incidents/{id}": [
       "GET"
     ],
+    "/api/v2/volunteering/incidents/{id}/additions": [
+      "POST"
+    ],
     "/api/v2/volunteering/my-organisations": [
       "GET"
     ],
@@ -7160,6 +7170,31 @@
     ],
     "/api/v2/volunteering/organisations/{id}/wallet/transactions": [
       "GET"
+    ],
+    "/api/v2/volunteering/organisations/{orgId}/incidents": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{orgId}/incidents/{id}": [
+      "GET"
+    ],
+    "/api/v2/volunteering/organisations/{orgId}/incidents/{id}/updates": [
+      "POST"
+    ],
+    "/api/v2/volunteering/organizations/{orgId}/qualifications": [
+      "GET"
+    ],
+    "/api/v2/volunteering/qualifications": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/qualifications/{id}": [
+      "PUT"
+    ],
+    "/api/v2/volunteering/qualifications/{id}/confirm": [
+      "POST"
+    ],
+    "/api/v2/volunteering/qualifications/{id}/withdraw": [
+      "POST"
     ],
     "/api/v2/volunteering/recommended-shifts": [
       "GET"
