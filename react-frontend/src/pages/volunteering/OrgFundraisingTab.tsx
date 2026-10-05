@@ -18,9 +18,13 @@ import { useTranslation } from 'react-i18next';
 import HandCoins from 'lucide-react/icons/hand-coins';
 import Plus from 'lucide-react/icons/plus';
 import ChevronDown from 'lucide-react/icons/chevron-down';
-import {
-  Button, Chip, GlassCard, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Textarea,
-} from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { Input } from '@/components/ui/Input';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/Modal';
+import { Spinner } from '@/components/ui/Spinner';
+import { Textarea } from '@/components/ui/Textarea';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
