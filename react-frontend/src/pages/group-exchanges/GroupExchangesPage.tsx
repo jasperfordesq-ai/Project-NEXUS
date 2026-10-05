@@ -8,7 +8,7 @@
  *
  * Features:
  * - Tabs: All, Active, Completed, Cancelled
- * - Exchange cards with title, status chip, participant count, total hours
+ * - Exchange cards with title, status chip, kind of exchange, participant count, total hours
  * - Click to navigate to detail page
  * - Loading skeleton, empty state
  * - "New Exchange" button links to creation wizard
@@ -54,7 +54,7 @@ interface GroupExchange {
   organizer_name: string;
   organizer_avatar: string | null;
   status: GroupExchangeStatus;
-  split_type: 'equal' | 'custom' | 'weighted';
+  split_type: 'workshop' | 'team' | 'equal' | 'weighted' | 'custom';
   total_hours: number;
   participant_count: number;
   created_at: string;
@@ -352,8 +352,8 @@ export function GroupExchangesPage() {
 
                           {/* Split type badge */}
                           <div className="flex-shrink-0">
-                            <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-muted capitalize">
-                              {t('split_type.' + exchange.split_type)}
+                            <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-muted">
+                              {t('kinds.' + exchange.split_type + '.title')}
                             </Chip>
                           </div>
                         </div>

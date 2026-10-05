@@ -35,10 +35,63 @@
     "cancelled": "キャンセル済み",
     "disputed": "係争中"
   },
-  "split_type": {
-    "equal": "均等分割",
-    "custom": "カスタム分割",
-    "weighted": "加重分割"
+  "kinds": {
+    "heading": "どのような種類のグループ交換ですか？",
+    "rule": "1時間の時間は1タイムクレジットです。時間を提供する人はクレジットを得て、時間を受け取る人はクレジットを支払います。",
+    "workshop": {
+      "title": "ワークショップまたは講座",
+      "desc": "1人がグループのためにセッションを行います。行った人は、費やした時間分を得ます。参加した人は全員、参加した時間分を支払います。余った時間はコミュニティ基金に入ります。",
+      "example": "Maryが4人向けに2時間の講座を行います。Maryは2時間を得ます。参加者はそれぞれ2時間を支払います。残りの6時間はコミュニティ基金に入ります。"
+    },
+    "team": {
+      "title": "チームで誰かを手伝う",
+      "desc": "複数の人が1人のために時間を提供します。手伝った人はそれぞれ費やした時間分を得て、手伝ってもらった人が全体を支払います。",
+      "example": "2人のボランティアがTomのために家具の移動に1時間ずつ費やします。ボランティアはそれぞれ1時間を得ます。Tomは2時間を支払います。"
+    },
+    "equal": {
+      "title": "均等に分ける",
+      "desc": "合計時間を1つ決めます。時間を提供する人は全員同じ分を得て、時間を受け取る人は全員同じ分を支払います。",
+      "example": "6時間で、提供する人が2人、受け取る人が3人の場合：提供する人はそれぞれ3時間を得て、受け取る人はそれぞれ2時間を支払います。"
+    },
+    "weighted": {
+      "title": "貢献度で分ける",
+      "desc": "均等に分ける方法と似ていますが、より多く貢献した人を指定します。「2」の人は「1」の人の2倍の分になります。",
+      "example": "6時間のうち、Ann（2）は4時間、Ben（1）は2時間を得ます。"
+    },
+    "custom": {
+      "title": "各人の時間を入力する",
+      "desc": "各人が得る時間または支払う時間を、そのまま入力します。得る時間の合計と支払う時間の合計は同じでなければなりません。",
+      "example": "Annは3時間を得て、Benは1時間を得て、Caraは4時間を支払います。"
+    }
+  },
+  "roles": {
+    "giving": "時間を提供",
+    "receiving": "時間を受け取る",
+    "giving_count": "時間を提供（{{count}}）",
+    "receiving_count": "時間を受け取る（{{count}}）"
+  },
+  "inputs": {
+    "session_length_label": "セッションは何時間でしたか？",
+    "session_length_hint": "全員分を自動で入力します。参加時間が短かった人は変更してください。",
+    "helper_hours_label": "手伝った人は1人あたり何時間費やしましたか？",
+    "helper_hours_hint": "手伝った人全員分を自動で入力します。費やした時間が異なる人は変更してください。",
+    "effort_label": "{{name}}の貢献度",
+    "effort_hint": "1が標準の割合です。2は2倍です。",
+    "hours_placeholder": "例：2"
+  },
+  "summary": {
+    "heading": "全員が得る時間・支払う時間",
+    "earns": "{{name}}は{{hours}}を得ます",
+    "pays": "{{name}}は{{hours}}を支払います",
+    "to_fund_one": "{{count}}時間がコミュニティ基金に入ります",
+    "to_fund_other": "{{count}}時間がコミュニティ基金に入ります",
+    "totals": "支払い：{{paid}}・獲得：{{earned}}",
+    "totals_with_fund": "支払い：{{paid}}・獲得：{{earned}}・コミュニティ基金へ：{{fund}}",
+    "you_earn": "あなたは{{hours}}を得ます",
+    "you_pay": "あなたは{{hours}}を支払います",
+    "checking": "時間を計算しています…",
+    "unknown_member": "メンバー",
+    "unavailable": "時間を計算できませんでした。もう一度お試しください。"
   },
   "detail": {
     "page_title": "グループ交換",
@@ -49,8 +102,6 @@
     "organized_by": "主催者",
     "you": "あなた",
     "total_hours": "合計時間",
-    "providers": "提供者",
-    "receivers": "受取人",
     "created": "作成済み",
     "broker_notes": "ブローカーノート",
     "exchange_completed": "交換完了",
@@ -70,26 +121,19 @@
     "hours_amount": "{{count}}時間",
     "col_weight": "割合",
     "col_confirmed": "確認済み",
-    "col_provider": "提供者",
-    "col_receiver": "受取人",
     "confirmed": "確認済み",
     "pending": "保留中",
     "remove_participant": "削除 {{name}}",
-    "hour_split": "時間分割",
-    "gives_to": "に与える",
     "cancel_modal_title": "グループ交換をキャンセルしますか？",
     "cancel_modal_body": "このグループ交換をキャンセルしてもよろしいですか？この操作は元に戻せません。取引は作成されません。",
     "keep_exchange": "交換を維持",
     "add_participant_title": "参加者を追加",
-    "role_provider": "提供者",
-    "role_receiver": "受取人",
     "search_members_placeholder": "名前でメンバーを検索...",
     "search_members_aria": "メンバーを検索",
     "add_as_role": "として追加 {{role}}",
     "no_members_found": "検索に一致するメンバーは見つかりませんでした。",
     "done": "完了",
     "aria_exchange_participants": "交換参加者",
-    "aria_hour_split": "時間分割",
     "participants_heading_other": "参加者 ({{count}})",
     "hours_amount_other": "{{count}}時間",
     "participants_heading_one": "参加者 ({{count}})",
@@ -114,32 +158,16 @@
     "description_heading": "説明",
     "total_hours_label": "合計時間",
     "total_hours_placeholder": "例：10",
-    "hours_unit": "時間",
-    "split_type_heading": "分配タイプ",
-    "split_type_desc": "参加者間で時間をどのように分配しますか？",
-    "split_equal_title": "均等分配",
-    "split_equal_desc": "合計時間をすべての提供者と受取人の間で均等に分配します。",
-    "split_custom_title": "カスタム時間",
-    "split_custom_desc": "各参加者に対して個別に特定の時間を設定します。",
-    "split_weighted_title": "加重分配",
-    "split_weighted_desc": "割り当てられた重みで時間を比例的に分配します。",
+    "kind_label": "交換の種類",
     "next": "次へ",
     "back": "戻る",
     "review": "確認",
     "add_participants": "参加者を追加",
-    "add_participants_desc": "メンバーを検索し、提供者または受取人として追加します。少なくとも1人の提供者と1人の受取人が必要です。",
-    "providers_count": "提供者（{{count}}）",
-    "receivers_count": "受取人（{{count}}）",
+    "add_participants_desc": "メンバーを検索して、一人ひとりを「時間を提供」または「時間を受け取る」に追加します。それぞれ少なくとも1人が必要です。",
     "no_participants_yet": "まだ参加者が追加されていません",
     "add_yourself": "自分を次の役割で追加",
-    "validation_min_participants": "続行するには少なくとも1人の提供者と1人の受取人が必要です。",
-    "hour_split_preview": "時間分配プレビュー",
+    "validation_min_participants": "続行するには、時間を提供する人と時間を受け取る人がそれぞれ少なくとも1人必要です。",
     "hour_split_preview_desc": "参加者間で時間がどのように分配されるかを確認します。",
-    "transfer_summary": "{{providerCount}} 提供者が {{hours}} 時間を {{receiverCount}} 受取人に {{splitType}} 分配します。",
-    "unable_to_calculate": "分配を計算できません。参加者の時間または重みを確認してください。",
-    "per_participant_summary": "参加者ごとの概要",
-    "giving": "提供",
-    "receiving": "受け取り",
     "review_your_exchange": "交換を確認する",
     "review_your_exchange_desc": "すべて問題ありませんか？グループ交換を作成しましょう。",
     "participants_label": "参加者",
@@ -147,17 +175,10 @@
     "hours_placeholder": "時間",
     "weight_placeholder": "割合",
     "hours_for": "{{name}}の時間",
-    "weight_for": "{{name}}の重み",
-    "aria_hour_split_preview": "時間分割プレビュー",
     "current_step": "現在のステップ",
     "step_of_named": "ステップ {{current}}/{{total}}: {{name}}",
-    "hours_value": "{{hours}}時間",
     "hours_suffix": "時間",
-    "weight_suffix": "×",
-    "providers_count_other": "提供者（{{count}}）",
-    "receivers_count_other": "受取人（{{count}}）",
-    "providers_count_one": "提供者 ({{count}})",
-    "receivers_count_one": "受信者 ({{count}})"
+    "weight_suffix": "×"
   },
   "toast": {
     "exchange_started": "交換を開始しました",
@@ -196,7 +217,5 @@
     "create": {
       "title": "グループ交換を作成"
     }
-  },
-  "role_provider": "提供者",
-  "role_receiver": "受取人"
+  }
 }

@@ -236,7 +236,40 @@ describe('GroupExchangesPage', () => {
     render(<GroupExchangesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Weighted split')).toBeInTheDocument();
+      expect(screen.getByText('Share by amount of effort')).toBeInTheDocument();
     });
+  });
+  it('names every kind on the cards, including exchanges made before the new kinds', async () => {
+    const { api } = await import('@/lib/api');
+    const base = {
+      description: null,
+      organizer_id: 2,
+      organizer_name: 'Other User',
+      organizer_avatar: null,
+      status: 'active',
+      total_hours: 2,
+      participant_count: 2,
+      created_at: '2026-01-20T10:00:00Z',
+      updated_at: '2026-01-25T10:00:00Z',
+      completed_at: null,
+    };
+
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [
+        { ...base, id: 1, title: 'Pottery class', split_type: 'workshop' },
+        { ...base, id: 2, title: 'Moving help', split_type: 'team' },
+        { ...base, id: 3, title: 'Old exchange', split_type: 'equal' },
+      ],
+      meta: { has_more: false },
+    });
+
+    render(<GroupExchangesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Workshop or class')).toBeInTheDocument();
+    });
+    expect(screen.getByText('A team helping someone')).toBeInTheDocument();
+    expect(screen.getByText('Share equally')).toBeInTheDocument();
   });
 });

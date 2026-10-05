@@ -125,9 +125,9 @@ describe('CreateGroupExchangePage', () => {
     expect(screen.getByPlaceholderText('e.g., Community Garden Workday')).toBeInTheDocument();
   });
 
-  it('renders total hours input on step 1', () => {
+  it('renders the session length input on step 1 (a workshop is chosen to start with)', () => {
     render(<CreateGroupExchangePage />);
-    expect(screen.getByPlaceholderText('e.g., 10')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('e.g., 2')).toBeInTheDocument();
   });
 
   it('renders next button to advance to step 2', () => {
@@ -135,10 +135,9 @@ describe('CreateGroupExchangePage', () => {
     expect(screen.getByText('Next')).toBeInTheDocument();
   });
 
-  it('shows split type options on step 1', () => {
+  it('shows the five kinds of exchange on step 1', () => {
     render(<CreateGroupExchangePage />);
-    // Should show equal/custom/weighted split options
-    expect(document.body).toBeInTheDocument();
+    expect(screen.getAllByRole('radio')).toHaveLength(5);
   });
 
   // The member directory never returns the viewer, so an organiser who is
@@ -149,13 +148,13 @@ describe('CreateGroupExchangePage', () => {
     fireEvent.change(screen.getByPlaceholderText('e.g., Community Garden Workday'), {
       target: { value: 'Workshop' },
     });
-    const hours = screen.getByPlaceholderText('e.g., 10');
+    const hours = screen.getByPlaceholderText('e.g., 2');
     fireEvent.change(hours, { target: { value: '1' } });
     fireEvent.blur(hours);
     fireEvent.click(screen.getByText('Next'));
 
     const selfRow = (await screen.findByText('Add yourself as')).parentElement as HTMLElement;
-    fireEvent.click(within(selfRow).getByRole('button', { name: /Provider/ }));
+    fireEvent.click(within(selfRow).getByRole('button', { name: /Giving time/ }));
 
     await waitFor(() => expect(screen.getByText('Test User')).toBeInTheDocument());
     expect(screen.queryByText('Add yourself as')).not.toBeInTheDocument();

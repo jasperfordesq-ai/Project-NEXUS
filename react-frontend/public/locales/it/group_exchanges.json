@@ -35,10 +35,64 @@
     "cancelled": "Annullato",
     "disputed": "Contestato"
   },
-  "split_type": {
-    "equal": "Suddivisione equa",
-    "custom": "Suddivisione personalizzata",
-    "weighted": "Suddivisione ponderata"
+  "kinds": {
+    "heading": "Che tipo di scambio di gruppo è questo?",
+    "rule": "Un'ora di tempo equivale a un credito tempo. Chi dà tempo guadagna crediti; chi riceve tempo li paga.",
+    "workshop": {
+      "title": "Laboratorio o corso",
+      "desc": "Una persona tiene una sessione per un gruppo. Chi la tiene guadagna le ore che dedica. Ogni partecipante paga le ore a cui ha partecipato. Le ore avanzate vanno al Fondo Comunitario.",
+      "example": "Mary tiene un corso di 2 ore per 4 persone. Mary guadagna 2 ore. Ogni persona paga 2 ore. Le altre 6 ore vanno al Fondo Comunitario."
+    },
+    "team": {
+      "title": "Una squadra aiuta qualcuno",
+      "desc": "Più persone danno il loro tempo a una sola persona. Ogni aiutante guadagna le ore che ha dedicato e la persona aiutata paga il totale.",
+      "example": "Due volontari dedicano 1 ora a spostare mobili per Tom. Ogni volontario guadagna 1 ora. Tom paga 2 ore."
+    },
+    "equal": {
+      "title": "Dividere in parti uguali",
+      "desc": "Imposti un totale. Chi dà tempo guadagna una parte uguale del totale e chi riceve tempo paga una parte uguale.",
+      "example": "6 ore, 2 persone danno e 3 ricevono: ogni persona che dà guadagna 3 ore e ogni persona che riceve paga 2."
+    },
+    "weighted": {
+      "title": "Dividere in base all'impegno",
+      "desc": "Come dividere in parti uguali, ma Lei indica chi ha fatto di più. Chi è segnato con 2 riceve il doppio di chi è segnato con 1.",
+      "example": "Su 6 ore, Ann (segnata 2) guadagna 4 e Ben (segnato 1) guadagna 2."
+    },
+    "custom": {
+      "title": "Inserire le ore di ciascuno",
+      "desc": "Inserisce esattamente quanto ogni persona guadagna o paga. Il totale guadagnato deve essere uguale al totale pagato.",
+      "example": "Ann guadagna 3, Ben guadagna 1 e Cara paga 4."
+    }
+  },
+  "roles": {
+    "giving": "Dare tempo",
+    "receiving": "Ricevere tempo",
+    "giving_count": "Dare tempo ({{count}})",
+    "receiving_count": "Ricevere tempo ({{count}})"
+  },
+  "inputs": {
+    "session_length_label": "Quanto è durata la sessione (in ore)?",
+    "session_length_hint": "La compiliamo per tutti. La modifichi per chi è rimasto meno tempo.",
+    "helper_hours_label": "Quante ore ha dedicato ogni aiutante?",
+    "helper_hours_hint": "La compiliamo per ogni aiutante. La modifichi per chi ha dedicato più o meno tempo.",
+    "effort_label": "Quota di impegno di {{name}}",
+    "effort_hint": "1 è una quota normale. 2 è il doppio.",
+    "hours_placeholder": "es. 2"
+  },
+  "summary": {
+    "heading": "Cosa guadagnerà o pagherà ciascuno",
+    "earns": "{{name}} guadagna {{hours}}",
+    "pays": "{{name}} paga {{hours}}",
+    "to_fund_many": "{{count}} ore vanno al Fondo Comunitario",
+    "to_fund_one": "{{count}} ora va al Fondo Comunitario",
+    "to_fund_other": "{{count}} ore vanno al Fondo Comunitario",
+    "totals": "Pagato: {{paid}} · Guadagnato: {{earned}}",
+    "totals_with_fund": "Pagato: {{paid}} · Guadagnato: {{earned}} · Al Fondo Comunitario: {{fund}}",
+    "you_earn": "Lei guadagnerà {{hours}}",
+    "you_pay": "Lei pagherà {{hours}}",
+    "checking": "Calcolo delle ore…",
+    "unknown_member": "Un membro",
+    "unavailable": "Non siamo riusciti a calcolare le ore. Riprovi."
   },
   "detail": {
     "page_title": "Scambio di gruppo",
@@ -49,8 +103,6 @@
     "organized_by": "Organizzato da",
     "you": "Tu",
     "total_hours": "Ore totali",
-    "providers": "Fornitori",
-    "receivers": "Beneficiari",
     "created": "Creato",
     "broker_notes": "Note del mediatore",
     "exchange_completed": "Scambio completato",
@@ -70,26 +122,19 @@
     "hours_amount": "{{count}} h",
     "col_weight": "Peso",
     "col_confirmed": "Confermato",
-    "col_provider": "Fornitore",
-    "col_receiver": "Beneficiario",
     "confirmed": "Confermato",
     "pending": "In attesa",
     "remove_participant": "Rimuovi {{name}}",
-    "hour_split": "Suddivisione ore",
-    "gives_to": "dà a",
     "cancel_modal_title": "Annullare lo scambio di gruppo?",
     "cancel_modal_body": "È sicuro/a di voler annullare questo scambio di gruppo? Questa azione non può essere annullata. Non verrà creata alcuna transazione.",
     "keep_exchange": "Mantieni scambio",
     "add_participant_title": "Aggiungi partecipante",
-    "role_provider": "Fornitore",
-    "role_receiver": "Beneficiario",
     "search_members_placeholder": "Cerca membri per nome...",
     "search_members_aria": "Cerca membri",
     "add_as_role": "Aggiungi come {{role}}",
     "no_members_found": "Nessun membro trovato corrispondente alla tua ricerca.",
     "done": "Fatto",
     "aria_exchange_participants": "Partecipanti allo scambio",
-    "aria_hour_split": "Suddivisione ore",
     "participants_heading_many": "Partecipanti ({{count}})",
     "participants_heading_one": "Partecipanti ({{count}})",
     "participants_heading_other": "Partecipanti ({{count}})",
@@ -116,32 +161,16 @@
     "description_heading": "Descrizione",
     "total_hours_label": "Ore totali",
     "total_hours_placeholder": "es. 10",
-    "hours_unit": "ore",
-    "split_type_heading": "Tipo di suddivisione",
-    "split_type_desc": "Come devono essere distribuite le ore tra i partecipanti?",
-    "split_equal_title": "Suddivisione equa",
-    "split_equal_desc": "Le ore totali vengono divise equamente tra tutti i fornitori e beneficiari.",
-    "split_custom_title": "Ore personalizzate",
-    "split_custom_desc": "Imposti ore specifiche per ciascun partecipante individualmente.",
-    "split_weighted_title": "Suddivisione ponderata",
-    "split_weighted_desc": "Distribuisca le ore proporzionalmente in base ai pesi assegnati.",
+    "kind_label": "Tipo di scambio",
     "next": "Avanti",
     "back": "Indietro",
     "review": "Verifica",
     "add_participants": "Aggiungi partecipanti",
-    "add_participants_desc": "Cerchi membri e li aggiunga come fornitori o beneficiari. Servono almeno 1 fornitore e 1 beneficiario.",
-    "providers_count": "Fornitori ({{count}})",
-    "receivers_count": "Beneficiari ({{count}})",
+    "add_participants_desc": "Cerchi i membri e aggiunga ogni persona a «Dare tempo» o «Ricevere tempo». Serve almeno una persona per ciascun lato.",
     "no_participants_yet": "Nessun partecipante aggiunto ancora",
     "add_yourself": "Aggiungiti come",
-    "validation_min_participants": "Servono almeno 1 fornitore e 1 beneficiario per continuare.",
-    "hour_split_preview": "Anteprima suddivisione ore",
+    "validation_min_participants": "Per continuare serve almeno una persona che dà tempo e una che lo riceve.",
     "hour_split_preview_desc": "Verifichi come le ore verranno distribuite tra i partecipanti.",
-    "transfer_summary": "{{providerCount}} fornitore/i trasferirà/anno {{hours}} ora/e a {{receiverCount}} beneficiario/i tramite suddivisione {{splitType}}.",
-    "unable_to_calculate": "Impossibile calcolare la suddivisione. Verifichi le ore o i pesi dei partecipanti.",
-    "per_participant_summary": "Riepilogo per partecipante",
-    "giving": "offre",
-    "receiving": "riceve",
     "review_your_exchange": "Controlla il tuo scambio",
     "review_your_exchange_desc": "Tutto sembra corretto? Crea il tuo scambio di gruppo.",
     "participants_label": "Partecipanti",
@@ -149,19 +178,10 @@
     "hours_placeholder": "Ore",
     "weight_placeholder": "Peso",
     "hours_for": "Ore per {{name}}",
-    "weight_for": "Peso per {{name}}",
-    "aria_hour_split_preview": "Anteprima suddivisione ore",
     "current_step": "Passaggio corrente",
     "step_of_named": "Passaggio {{current}} di {{total}}: {{name}}",
-    "hours_value": "{{hours}} h",
     "hours_suffix": "H",
-    "weight_suffix": "X",
-    "providers_count_many": "Fornitori ({{count}})",
-    "providers_count_one": "Fornitori ({{count}})",
-    "providers_count_other": "Fornitori ({{count}})",
-    "receivers_count_many": "Beneficiari ({{count}})",
-    "receivers_count_one": "Beneficiari ({{count}})",
-    "receivers_count_other": "Beneficiari ({{count}})"
+    "weight_suffix": "X"
   },
   "toast": {
     "exchange_started": "Scambio avviato",
@@ -201,8 +221,6 @@
       "title": "Crea Scambio di Gruppo"
     }
   },
-  "role_provider": "Fornitore",
-  "role_receiver": "Beneficiario",
   "participants_count_many": "{{count}} partecipanti",
   "hours_count_many": "{{count}} ore"
 }

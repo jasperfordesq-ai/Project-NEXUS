@@ -7,24 +7,30 @@
  * Create Group Exchange Page - 4-step wizard
  *
  * Steps:
- *  1. Exchange Details - Title, description, split type, total hours
- *  2. Add Participants - Search members, assign as provider/receiver
- *  3. Review Split    - Table showing calculated hour distribution
+ *  1. Exchange Details - Title, description, the kind of exchange and its hours
+ *  2. Add Participants - Search members, add each to giving time or receiving time
+ *  3. Review Split    - What everyone will earn or pay, as worked out by the server
  *  4. Confirm & Create - Full summary, create button
+ *
+ * Five kinds, always in this order: workshop, team, equal, weighted, custom.
+ * No arithmetic happens here: the review calls POST /v2/group-exchanges/preview
+ * so what a member sees is exactly what settlement will do.
  *
  * Route: /group-exchanges/create
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from '@/lib/motion';
 
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Users from 'lucide-react/icons/users';
-import Clock from 'lucide-react/icons/clock';
+import GraduationCap from 'lucide-react/icons/graduation-cap';
+import HandHelping from 'lucide-react/icons/hand-helping';
 import Scale from 'lucide-react/icons/scale';
 import Percent from 'lucide-react/icons/percent';
+import PencilLine from 'lucide-react/icons/pencil-line';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import Search from 'lucide-react/icons/search';
 import Plus from 'lucide-react/icons/plus';
@@ -32,9 +38,11 @@ import X from 'lucide-react/icons/x';
 import UserPlus from 'lucide-react/icons/user-plus';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import { useTranslation } from 'react-i18next';
+import { Alert } from '@/components/ui/Alert';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import { Description } from '@/components/ui/Description';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
@@ -44,7 +52,6 @@ import { RadioGroup, Radio } from '@/components/ui/Radio';
 import { SearchField } from '@/components/ui/SearchField';
 import { Separator } from '@/components/ui/Separator';
 import { Spinner } from '@/components/ui/Spinner';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui/Table';
 import { Textarea } from '@/components/ui/Textarea';
 import { Breadcrumbs } from '@/components/navigation';
 import { PageMeta } from '@/components/seo';
@@ -59,13 +66,15 @@ import type { User } from '@/types/api';
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type SplitType = 'equal' | 'custom' | 'weighted';
+/** The five kinds of group exchange, in the order members see them everywhere. */
+type SplitType = 'workshop' | 'team' | 'equal' | 'weighted' | 'custom';
+type ParticipantRole = 'provider' | 'receiver';
 
 interface Participant {
   user_id: number;
   name: string;
   avatar: string | null;
-  role: 'provider' | 'receiver';
+  role: ParticipantRole;
   hours: number;
   weight: number;
 }
@@ -80,7 +89,27 @@ interface SearchResult {
   email?: string;
 }
 
+/** POST /v2/group-exchanges/preview — what everyone will earn or pay. */
+interface PreviewLine {
+  user_id: number;
+  name: string | null;
+  role: ParticipantRole;
+  hours: number;
+  verb: 'earns' | 'pays';
+}
+
+interface PreviewResult {
+  lines: PreviewLine[];
+  community_fund_hours: number;
+  totals: { earned: number; paid: number; to_fund: number };
+  problem: { code: string; message: string } | null;
+}
+
+type PreviewStatus = 'idle' | 'loading' | 'ready' | 'error';
+
 const TOTAL_STEPS = 4;
+const PREVIEW_ENDPOINT = '/v2/group-exchanges/preview';
+const PREVIEW_DEBOUNCE_MS = 300;
 
 function selfAsSearchResult(user: User): SearchResult {
   return {
@@ -94,19 +123,50 @@ function selfAsSearchResult(user: User): SearchResult {
 }
 
 const SPLIT_TYPE_CARDS: { value: SplitType; icon: React.ReactNode }[] = [
-  {
-    value: 'equal',
-    icon: <Scale className="w-6 h-6 text-accent" />,
-  },
-  {
-    value: 'custom',
-    icon: <Clock className="w-6 h-6 text-accent" />,
-  },
-  {
-    value: 'weighted',
-    icon: <Percent className="w-6 h-6 text-emerald-500" />,
-  },
+  { value: 'workshop', icon: <GraduationCap className="w-6 h-6 text-accent" /> },
+  { value: 'team', icon: <HandHelping className="w-6 h-6 text-accent" /> },
+  { value: 'equal', icon: <Scale className="w-6 h-6 text-accent" /> },
+  { value: 'weighted', icon: <Percent className="w-6 h-6 text-emerald-500" /> },
+  { value: 'custom', icon: <PencilLine className="w-6 h-6 text-accent" /> },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// What each kind needs from the form (the server does all the arithmetic)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Workshop and team ask for one number that pre-fills people's own hours. */
+function prefillApplies(kind: SplitType, role: ParticipantRole): boolean {
+  return kind === 'workshop' || (kind === 'team' && role === 'provider');
+}
+
+/** Whether a person types their own hours for this kind. */
+function entersOwnHours(kind: SplitType, role: ParticipantRole): boolean {
+  return kind === 'custom' || prefillApplies(kind, role);
+}
+
+function finiteOrZero(value: number): number {
+  return Number.isFinite(value) ? value : 0;
+}
+
+function roundHours(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+/** The `total_hours` the server expects for each kind. */
+function totalHoursFor(kind: SplitType, prefillHours: number, totalHours: number, participants: Participant[]): number {
+  switch (kind) {
+    case 'workshop':
+    case 'team':
+      return finiteOrZero(prefillHours);
+    case 'equal':
+    case 'weighted':
+      return finiteOrZero(totalHours);
+    default:
+      return roundHours(
+        participants.filter((p) => p.role === 'provider').reduce((sum, p) => sum + p.hours, 0),
+      );
+  }
+}
 
 // Shared classNames
 const inputClassNames = {
@@ -141,8 +201,12 @@ export function CreateGroupExchangePage() {
   // Step 1: Exchange details
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [splitType, setSplitType] = useState<SplitType>('equal');
+  const [splitType, setSplitType] = useState<SplitType>('workshop');
   // NumberField works in numbers; NaN represents the empty state.
+  // Workshop and team: one number that pre-fills people's own hours
+  // (session length / hours per helper).
+  const [prefillHours, setPrefillHours] = useState<number>(NaN);
+  // Equal and weighted: the one total that is shared out.
   const [totalHours, setTotalHours] = useState<number>(NaN);
 
   // Step 2: Participants
@@ -170,7 +234,38 @@ export function CreateGroupExchangePage() {
   // Step 1 validation
   // ─────────────────────────────────────────────────────────────────────────
 
-  const canProceedStep1 = title.trim().length > 0 && totalHours > 0;
+  const needsPrefill = splitType === 'workshop' || splitType === 'team';
+  const needsTotal = splitType === 'equal' || splitType === 'weighted';
+  const canProceedStep1 =
+    title.trim().length > 0
+    && (needsPrefill ? prefillHours > 0 : needsTotal ? totalHours > 0 : true);
+
+  // Changing the kind never removes anyone or any typed hours. Where the new
+  // kind pre-fills people's hours, a person still on blank gets the number.
+  const handleKindChange = useCallback((value: string) => {
+    const next = value as SplitType;
+    setSplitType(next);
+    if (prefillHours > 0) {
+      setParticipants((prev) =>
+        prev.map((p) => (prefillApplies(next, p.role) && p.hours === 0 ? { ...p, hours: prefillHours } : p)),
+      );
+    }
+  }, [prefillHours]);
+
+  // Changing the pre-fill number updates everyone who has not been given their
+  // own hours (blank, or still on the old number).
+  const handlePrefillChange = useCallback((value: number | undefined) => {
+    const next = value === undefined || Number.isNaN(value) ? NaN : value;
+    const previous = prefillHours;
+    setPrefillHours(next);
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (!prefillApplies(splitType, p.role)) return p;
+        const untouched = p.hours === 0 || (previous > 0 && p.hours === previous);
+        return untouched ? { ...p, hours: next > 0 ? next : 0 } : p;
+      }),
+    );
+  }, [prefillHours, splitType]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Step 2: Member search
@@ -214,7 +309,7 @@ export function CreateGroupExchangePage() {
     setSearchTimeout(timeout);
   }, [participants, user?.id, searchTimeout]);
 
-  const addParticipant = useCallback((result: SearchResult, role: 'provider' | 'receiver') => {
+  const addParticipant = useCallback((result: SearchResult, role: ParticipantRole) => {
     const displayName = result.name || resolveUserDisplayName(result) || 'Unknown';
     const avatarUrl = result.avatar_url || result.avatar || null;
 
@@ -225,14 +320,15 @@ export function CreateGroupExchangePage() {
         name: displayName,
         avatar: avatarUrl,
         role,
-        hours: 0,
+        // Workshop/team pre-fill the person's hours with the number from step 1.
+        hours: prefillApplies(splitType, role) && prefillHours > 0 ? prefillHours : 0,
         weight: 1,
       },
     ]);
 
     // Remove from search results
     setSearchResults((prev) => prev.filter((r) => r.id !== result.id));
-  }, []);
+  }, [splitType, prefillHours]);
 
   const removeParticipant = useCallback((userId: number) => {
     setParticipants((prev) => prev.filter((p) => p.user_id !== userId));
@@ -255,95 +351,74 @@ export function CreateGroupExchangePage() {
   const canProceedStep2 = providers.length >= 1 && receivers.length >= 1;
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Step 3: Calculate split preview (client-side)
+  // Step 3: What everyone will earn or pay — worked out by the server
   // ─────────────────────────────────────────────────────────────────────────
 
-  function calculateSplitPreview(): { providerId: number; providerName: string; receiverId: number; receiverName: string; amount: number }[] {
-    const total = totalHours || 0;
-    if (total <= 0 || providers.length === 0 || receivers.length === 0) return [];
+  // The same body is used to preview and to create, so they cannot disagree.
+  const requestBody = useMemo(() => ({
+    split_type: splitType,
+    total_hours: totalHoursFor(splitType, prefillHours, totalHours, participants),
+    participants: participants.map((p) => ({
+      user_id: p.user_id,
+      role: p.role,
+      hours: entersOwnHours(splitType, p.role) ? finiteOrZero(p.hours) : 0,
+      weight: p.weight,
+    })),
+  }), [splitType, prefillHours, totalHours, participants]);
+  const requestKey = JSON.stringify(requestBody);
 
-    const splits: { providerId: number; providerName: string; receiverId: number; receiverName: string; amount: number }[] = [];
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
+  const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
+  const [previewAttempt, setPreviewAttempt] = useState(0);
+  const needsPreview = currentStep >= 3;
 
-    switch (splitType) {
-      case 'equal': {
-        const perTransaction = total / providers.length / receivers.length;
-        for (const provider of providers) {
-          for (const receiver of receivers) {
-            splits.push({
-              providerId: provider.user_id,
-              providerName: provider.name,
-              receiverId: receiver.user_id,
-              receiverName: receiver.name,
-              amount: Math.round(perTransaction * 100) / 100,
-            });
-          }
+  useEffect(() => {
+    if (!needsPreview) return;
+
+    // Set when this run is superseded (or the page leaves the review), so a slow
+    // answer that arrives after a newer request is ignored rather than shown.
+    let superseded = false;
+    setPreview(null);
+    setPreviewStatus('loading');
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await api.post<PreviewResult>(PREVIEW_ENDPOINT, JSON.parse(requestKey));
+        if (superseded) return;
+        if (response.success && response.data) {
+          setPreview(response.data);
+          setPreviewStatus('ready');
+        } else {
+          setPreviewStatus('error');
         }
-        break;
+      } catch (err) {
+        if (superseded) return;
+        logError('Failed to preview group exchange hours', err);
+        setPreviewStatus('error');
       }
+    }, PREVIEW_DEBOUNCE_MS);
 
-      case 'custom': {
-        const totalReceiverHours = receivers.reduce((sum, r) => sum + r.hours, 0);
-        if (totalReceiverHours <= 0) break;
-        for (const provider of providers) {
-          for (const receiver of receivers) {
-            const receiverShare = receiver.hours / totalReceiverHours;
-            splits.push({
-              providerId: provider.user_id,
-              providerName: provider.name,
-              receiverId: receiver.user_id,
-              receiverName: receiver.name,
-              amount: Math.round(provider.hours * receiverShare * 100) / 100,
-            });
-          }
-        }
-        break;
-      }
+    return () => {
+      superseded = true;
+      clearTimeout(timer);
+    };
+  }, [needsPreview, requestKey, previewAttempt]);
 
-      case 'weighted': {
-        const totalProviderWeight = providers.reduce((sum, p) => sum + p.weight, 0);
-        const totalReceiverWeight = receivers.reduce((sum, r) => sum + r.weight, 0);
-        if (totalProviderWeight <= 0 || totalReceiverWeight <= 0) break;
-        for (const provider of providers) {
-          const providerShare = (provider.weight / totalProviderWeight) * total;
-          for (const receiver of receivers) {
-            const receiverShare = receiver.weight / totalReceiverWeight;
-            splits.push({
-              providerId: provider.user_id,
-              providerName: provider.name,
-              receiverId: receiver.user_id,
-              receiverName: receiver.name,
-              amount: Math.round(providerShare * receiverShare * 100) / 100,
-            });
-          }
-        }
-        break;
-      }
-    }
-
-    return splits;
-  }
-
-  const splitPreview = calculateSplitPreview();
+  const canCreate = previewStatus === 'ready' && preview !== null && preview.problem === null;
 
   // ─────────────────────────────────────────────────────────────────────────
   // Step 4: Create exchange
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleCreate = useCallback(async () => {
+    if (!canCreate) return;
     try {
       setIsSubmitting(true);
 
       const payload = {
         title: title.trim(),
         description: description.trim() || null,
-        split_type: splitType,
-        total_hours: totalHours,
-        participants: participants.map((p) => ({
-          user_id: p.user_id,
-          role: p.role,
-          hours: p.hours,
-          weight: p.weight,
-        })),
+        ...requestBody,
       };
 
       const response = await api.post<{ id: number }>('/v2/group-exchanges', payload);
@@ -361,7 +436,7 @@ export function CreateGroupExchangePage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [title, description, splitType, totalHours, participants, navigate, tenantPath]);
+  }, [canCreate, title, description, requestBody, navigate, tenantPath]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Animation
@@ -521,64 +596,106 @@ export function CreateGroupExchangePage() {
                     }}
                   />
 
-                  <NumberField
-                    value={totalHours}
-                    onChange={setTotalHours}
-                    minValue={0.25}
-                    step={0.25}
-                    isRequired
-                    formatOptions={{ maximumFractionDigits: 2 }}
-                    className="w-full"
-                  >
-                    <Label className={inputClassNames.label}>{t('create.total_hours_label')}</Label>
-                    <NumberField.Group className={inputClassNames.inputWrapper}>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className={inputClassNames.input} placeholder={t('create.total_hours_placeholder')} />
-                      <span className="px-2 text-sm text-theme-subtle">{t('create.hours_unit')}</span>
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
                 </div>
               </GlassCard>
 
-              {/* Split Type Selection */}
+              {/* Kind of exchange */}
               <GlassCard className="p-6 sm:p-8">
                 <h2 className="text-lg font-semibold text-theme-primary mb-2 flex items-center gap-2">
                   <Scale className="w-5 h-5 text-accent dark:text-accent" aria-hidden="true" />
-                  {t('create.split_type_heading')}
+                  {t('kinds.heading')}
                 </h2>
                 <p className="text-theme-muted text-sm mb-4">
-                  {t('create.split_type_desc')}
+                  {t('kinds.rule')}
                 </p>
 
                 <RadioGroup
-                  aria-label={t('create.split_type_heading')}
+                  aria-label={t('kinds.heading')}
                   value={splitType}
-                  onChange={(v) => setSplitType(v as SplitType)}
-                  className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                  onChange={handleKindChange}
+                  className="grid grid-cols-1 gap-3"
                 >
                   {SPLIT_TYPE_CARDS.map((card) => (
                     <Radio
                       key={card.value}
                       value={card.value}
-                      className="cursor-pointer rounded-xl border-2 border-theme-default bg-theme-elevated p-4 text-center transition-all hover:border-accent/30 hover:bg-theme-hover data-[selected=true]:border-accent data-[selected=true]:bg-accent/10"
+                      // Selected styling is applied directly: the theme's
+                      // border/bg tokens are unlayered CSS, so they beat a
+                      // data-[selected=true]: utility and the chosen card
+                      // looked exactly like the others.
+                      className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                        splitType === card.value
+                          ? 'border-accent bg-accent/10'
+                          : 'border-theme-default bg-theme-elevated hover:border-accent/30 hover:bg-theme-hover'
+                      }`}
                     >
                       {() => (
-                        <div>
-                          <div className="flex justify-center mb-3" aria-hidden="true">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5 shrink-0" aria-hidden="true">
                             {card.icon}
                           </div>
-                          <h3 className="font-semibold text-theme-primary text-sm mb-1">
-                            {t('create.split_' + card.value + '_title')}
-                          </h3>
-                          <p className="text-xs text-theme-subtle leading-relaxed">
-                            {t('create.split_' + card.value + '_desc')}
-                          </p>
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-theme-primary text-sm mb-1">
+                              {t('kinds.' + card.value + '.title')}
+                            </h3>
+                            <p className="text-xs text-theme-muted leading-relaxed">
+                              {t('kinds.' + card.value + '.desc')}
+                            </p>
+                            {splitType === card.value && (
+                              <p className="mt-2 rounded-lg bg-theme-surface px-3 py-2 text-xs text-theme-primary leading-relaxed">
+                                {t('kinds.' + card.value + '.example')}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </Radio>
                   ))}
                 </RadioGroup>
+
+                {/* The one number this kind needs (custom needs none: each person types their own) */}
+                {needsPrefill && (
+                  <NumberField
+                    value={prefillHours}
+                    onChange={handlePrefillChange}
+                    minValue={0.25}
+                    step={0.25}
+                    isRequired
+                    formatOptions={{ maximumFractionDigits: 2 }}
+                    className="w-full mt-6"
+                  >
+                    <Label className={inputClassNames.label}>
+                      {splitType === 'workshop' ? t('inputs.session_length_label') : t('inputs.helper_hours_label')}
+                    </Label>
+                    <NumberField.Group className={inputClassNames.inputWrapper}>
+                      <NumberField.DecrementButton />
+                      <NumberField.Input className={inputClassNames.input} placeholder={t('inputs.hours_placeholder')} />
+                      <NumberField.IncrementButton />
+                    </NumberField.Group>
+                    <Description>
+                      {splitType === 'workshop' ? t('inputs.session_length_hint') : t('inputs.helper_hours_hint')}
+                    </Description>
+                  </NumberField>
+                )}
+
+                {needsTotal && (
+                  <NumberField
+                    value={totalHours}
+                    onChange={(v) => setTotalHours(v ?? NaN)}
+                    minValue={0.25}
+                    step={0.25}
+                    isRequired
+                    formatOptions={{ maximumFractionDigits: 2 }}
+                    className="w-full mt-6"
+                  >
+                    <Label className={inputClassNames.label}>{t('create.total_hours_label')}</Label>
+                    <NumberField.Group className={inputClassNames.inputWrapper}>
+                      <NumberField.DecrementButton />
+                      <NumberField.Input className={inputClassNames.input} placeholder={t('create.total_hours_placeholder')} />
+                      <NumberField.IncrementButton />
+                    </NumberField.Group>
+                  </NumberField>
+                )}
               </GlassCard>
 
               {/* Navigation */}
@@ -658,7 +775,7 @@ export function CreateGroupExchangePage() {
                                   onPress={() => addParticipant(result, 'provider')}
                                   startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
                                 >
-                                  {t('detail.role_provider')}
+                                  {t('roles.giving')}
                                 </Button>
                                 <Button
                                   size="sm"
@@ -667,7 +784,7 @@ export function CreateGroupExchangePage() {
                                   onPress={() => addParticipant(result, 'receiver')}
                                   startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
                                 >
-                                  {t('detail.role_receiver')}
+                                  {t('roles.receiving')}
                                 </Button>
                               </div>
                             </div>
@@ -698,7 +815,7 @@ export function CreateGroupExchangePage() {
                         onPress={() => addParticipant(selfAsSearchResult(user), 'provider')}
                         startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
                       >
-                        {t('detail.role_provider')}
+                        {t('roles.giving')}
                       </Button>
                       <Button
                         size="sm"
@@ -707,7 +824,7 @@ export function CreateGroupExchangePage() {
                         onPress={() => addParticipant(selfAsSearchResult(user), 'receiver')}
                         startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
                       >
-                        {t('detail.role_receiver')}
+                        {t('roles.receiving')}
                       </Button>
                     </div>
                   </div>
@@ -729,11 +846,14 @@ export function CreateGroupExchangePage() {
                   </div>
                 ) : (
                   <>
-                  {/* Providers */}
+                  {splitType === 'weighted' && (
+                    <p className="mb-4 text-sm text-theme-muted">{t('inputs.effort_hint')}</p>
+                  )}
+                  {/* Giving time */}
                   {providers.length > 0 && (
                     <div className="mb-4">
                       <h4 className="text-sm font-medium text-theme-success mb-2">
-                        {t('create.providers_count', { count: providers.length })}
+                        {t('roles.giving_count', { count: providers.length })}
                       </h4>
                       <div className="space-y-2">
                         {providers.map((p) => (
@@ -751,11 +871,11 @@ export function CreateGroupExchangePage() {
                     </div>
                   )}
 
-                  {/* Receivers */}
+                  {/* Receiving time */}
                   {receivers.length > 0 && (
                     <div>
                       <h4 className="text-sm font-medium text-theme-warning mb-2">
-                        {t('create.receivers_count', { count: receivers.length })}
+                        {t('roles.receiving_count', { count: receivers.length })}
                       </h4>
                       <div className="space-y-2">
                         {receivers.map((p) => (
@@ -798,110 +918,25 @@ export function CreateGroupExchangePage() {
               <GlassCard className="p-6 sm:p-8">
                 <h2 className="text-lg font-semibold text-theme-primary mb-2 flex items-center gap-2">
                   <Scale className="w-5 h-5 text-accent dark:text-accent" aria-hidden="true" />
-                  {t('create.hour_split_preview')}
+                  {t('summary.heading')}
                 </h2>
                 <p className="text-theme-muted text-sm mb-6">
                   {t('create.hour_split_preview_desc')}
                 </p>
 
-                {/* Summary */}
-                <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
-                  <div className="bg-theme-elevated rounded-xl p-3 sm:p-4 text-center">
-                    <p className="text-xs sm:text-sm text-theme-muted">{t('detail.providers')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-theme-success">{providers.length}</p>
-                  </div>
-                  <div className="bg-theme-elevated rounded-xl p-3 sm:p-4 text-center">
-                    <p className="text-xs sm:text-sm text-theme-muted">{t('detail.total_hours')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-theme-primary">{Number.isNaN(totalHours) ? '—' : totalHours}</p>
-                  </div>
-                  <div className="bg-theme-elevated rounded-xl p-3 sm:p-4 text-center">
-                    <p className="text-xs sm:text-sm text-theme-muted">{t('detail.receivers')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-theme-warning">{receivers.length}</p>
-                  </div>
-                </div>
-
-                <div className="text-center mb-6 text-sm text-theme-muted">
-                  {t('create.transfer_summary', { providerCount: providers.length, hours: totalHours, receiverCount: receivers.length, splitType })}
-                </div>
-
-                {/* Split Table */}
-                <Table
-                  aria-label={t('create.aria_hour_split_preview')}
-                  shadow="none"
-                  isStriped
-                  classNames={{
-                    wrapper: 'bg-transparent shadow-none p-0',
-                  }}
-                >
-                  <TableHeader>
-                    <TableColumn>{t('detail.col_provider')}</TableColumn>
-                    <TableColumn className="text-center" aria-hidden="true">{' '}</TableColumn>
-                    <TableColumn>{t('detail.col_receiver')}</TableColumn>
-                    <TableColumn className="text-right">{t('detail.col_hours')}</TableColumn>
-                  </TableHeader>
-                  <TableBody emptyContent={<div className="text-center py-6 text-theme-muted">{t('create.unable_to_calculate')}</div>}>
-                    {splitPreview.map((split) => (
-                      <TableRow key={`${split.providerId}-${split.receiverId}`}>
-                        <TableCell className="text-emerald-700 dark:text-emerald-400">{split.providerName}</TableCell>
-                        <TableCell className="text-center text-theme-subtle">
-                          <ArrowRight className="w-4 h-4 inline" aria-label={t('detail.gives_to')} />
-                        </TableCell>
-                        <TableCell className="text-amber-700 dark:text-amber-400">{split.receiverName}</TableCell>
-                        <TableCell className="text-right font-medium text-theme-primary">{t('create.hours_value', { hours: split.amount })}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <PreviewSummary
+                  status={previewStatus}
+                  preview={preview}
+                  onRetry={() => setPreviewAttempt((n) => n + 1)}
+                />
               </GlassCard>
 
-              {/* Participant Details */}
-              <GlassCard className="p-6 sm:p-8">
-                <h3 className="text-sm font-medium text-theme-muted mb-3">{t('create.per_participant_summary')}</h3>
-                <div className="space-y-2">
-                  {participants.map((p) => {
-                    let totalForParticipant = 0;
-                    if (p.role === 'provider') {
-                      totalForParticipant = splitPreview
-                        .filter((s) => s.providerId === p.user_id)
-                        .reduce((sum, s) => sum + s.amount, 0);
-                    } else {
-                      totalForParticipant = splitPreview
-                        .filter((s) => s.receiverId === p.user_id)
-                        .reduce((sum, s) => sum + s.amount, 0);
-                    }
-
-                    return (
-                      <div key={p.user_id} className="flex items-center justify-between p-3 rounded-xl bg-theme-elevated">
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            src={resolveAvatarUrl(p.avatar)}
-                            name={p.name}
-                            size="sm"
-                          />
-                          <div>
-                            <p className="font-medium text-theme-primary text-sm">{p.name}</p>
-                            <Chip
-                              size="sm"
-                              variant="flat"
-                              color={p.role === 'provider' ? 'success' : 'warning'}
-                            >
-                              {p.role}
-                            </Chip>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-theme-primary">{t('create.hours_value', { hours: totalForParticipant })}</p>
-                          <p className="text-xs text-theme-subtle">
-                            {p.role === 'provider' ? t('create.giving') : t('create.receiving')}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </GlassCard>
-
-              <StepNavigation onBack={goBack} onNext={goNext} nextLabel={t('create.review')} />
+              <StepNavigation
+                onBack={goBack}
+                onNext={goNext}
+                nextLabel={t('create.review')}
+                isNextDisabled={previewStatus === 'loading'}
+              />
             </div>
           )}
 
@@ -933,15 +968,11 @@ export function CreateGroupExchangePage() {
 
                   <Separator />
 
-                  {/* Split & Hours */}
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* Kind & people */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-theme-muted mb-1">{t('create.split_type_heading')}</h3>
-                      <Chip size="sm" variant="flat" color="primary" className="capitalize">{splitType}</Chip>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-theme-muted mb-1">{t('detail.total_hours')}</h3>
-                      <p className="text-theme-primary font-semibold">{t('create.hours_value', { hours: totalHours })}</p>
+                      <h3 className="text-sm font-medium text-theme-muted mb-1">{t('create.kind_label')}</h3>
+                      <Chip size="sm" variant="flat" color="primary">{t('kinds.' + splitType + '.title')}</Chip>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-theme-muted mb-1">{t('create.participants_label')}</h3>
@@ -951,28 +982,14 @@ export function CreateGroupExchangePage() {
 
                   <Separator />
 
-                  {/* Participants summary */}
+                  {/* What everyone will earn or pay */}
                   <div>
-                    <h3 className="text-sm font-medium text-theme-muted mb-2">{t('create.participants_label')}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {participants.map((p) => (
-                        <Chip
-                          key={p.user_id}
-                          size="sm"
-                          variant="flat"
-                          color={p.role === 'provider' ? 'success' : 'warning'}
-                          avatar={
-                            <Avatar
-                              src={resolveAvatarUrl(p.avatar)}
-                              name={p.name}
-                              size="sm"
-                            />
-                          }
-                        >
-                          {p.name} ({p.role === 'provider' ? t('role_provider') : t('role_receiver')})
-                        </Chip>
-                      ))}
-                    </div>
+                    <h3 className="text-sm font-medium text-theme-muted mb-2">{t('summary.heading')}</h3>
+                    <PreviewSummary
+                      status={previewStatus}
+                      preview={preview}
+                      onRetry={() => setPreviewAttempt((n) => n + 1)}
+                    />
                   </div>
                 </div>
               </GlassCard>
@@ -992,6 +1009,7 @@ export function CreateGroupExchangePage() {
                   className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
                   onPress={handleCreate}
                   isLoading={isSubmitting}
+                  isDisabled={!canCreate}
                   startContent={!isSubmitting && <CheckCircle className="w-5 h-5" aria-hidden="true" />}
                 >
                   {t('create.create_exchange')}
@@ -1035,15 +1053,15 @@ function ParticipantRow({ participant, splitType, onRemove, onHoursChange, onWei
           variant="flat"
           color={participant.role === 'provider' ? 'success' : 'warning'}
         >
-          {participant.role === 'provider' ? t('role_provider') : t('role_receiver')}
+          {participant.role === 'provider' ? t('roles.giving') : t('roles.receiving')}
         </Chip>
       </div>
 
-      {/* Custom hours input */}
-      {splitType === 'custom' && (
+      {/* Own hours: workshop and custom for everyone, team for helpers only */}
+      {entersOwnHours(splitType, participant.role) && (
         <NumberField
           value={participant.hours > 0 ? participant.hours : NaN}
-          onChange={(v) => onHoursChange(Number.isNaN(v) ? 0 : v)}
+          onChange={(v) => onHoursChange(v === undefined || Number.isNaN(v) ? 0 : v)}
           minValue={0}
           step={0.25}
           formatOptions={{ maximumFractionDigits: 2 }}
@@ -1057,16 +1075,16 @@ function ParticipantRow({ participant, splitType, onRemove, onHoursChange, onWei
         </NumberField>
       )}
 
-      {/* Weighted input */}
+      {/* Share of the effort */}
       {splitType === 'weighted' && (
         <NumberField
           value={participant.weight > 0 ? participant.weight : NaN}
-          onChange={(v) => onWeightChange(Number.isNaN(v) ? 0 : v)}
+          onChange={(v) => onWeightChange(v === undefined || Number.isNaN(v) ? 0 : v)}
           minValue={0.1}
           step={0.1}
           formatOptions={{ maximumFractionDigits: 2 }}
           className="w-28 shrink-0"
-          aria-label={t('create.weight_for', { name: participant.name })}
+          aria-label={t('inputs.effort_label', { name: participant.name })}
         >
           <NumberField.Group className={inputClassNames.inputWrapper}>
             <NumberField.Input className={inputClassNames.input} placeholder={t('create.weight_placeholder')} />
@@ -1085,6 +1103,88 @@ function ParticipantRow({ participant, splitType, onRemove, onHoursChange, onWei
       >
         <X className="w-4 h-4" />
       </Button>
+    </div>
+  );
+}
+
+/**
+ * What everyone will earn or pay, exactly as the server worked it out. This
+ * component only displays the answer; it never does arithmetic.
+ */
+interface PreviewSummaryProps {
+  status: PreviewStatus;
+  preview: PreviewResult | null;
+  onRetry: () => void;
+}
+
+function PreviewSummary({ status, preview, onRetry }: PreviewSummaryProps) {
+  const { t } = useTranslation('group_exchanges');
+
+  if (status === 'error') {
+    return (
+      <Alert
+        color="danger"
+        role="alert"
+        description={t('summary.unavailable')}
+        endContent={(
+          <Button size="sm" variant="flat" onPress={onRetry}>
+            {t('try_again')}
+          </Button>
+        )}
+      />
+    );
+  }
+
+  if (status !== 'ready' || !preview) {
+    return (
+      <div role="status" aria-busy="true" className="flex items-center gap-3 text-sm text-theme-muted">
+        <Spinner size="sm" />
+        <span>{t('summary.checking')}</span>
+      </div>
+    );
+  }
+
+  const hoursText = (hours: number) => t('hours_count', { count: roundHours(Number(hours)) });
+  const fund = roundHours(Number(preview.community_fund_hours) || 0);
+  const totals = {
+    paid: hoursText(preview.totals.paid),
+    earned: hoursText(preview.totals.earned),
+  };
+
+  return (
+    <div className="space-y-4">
+      {preview.problem && (
+        <Alert color="danger" role="alert" description={preview.problem.message} />
+      )}
+
+      <ul className="space-y-2">
+        {preview.lines.map((line) => (
+          <li
+            key={`${line.user_id}-${line.role}`}
+            className={`rounded-xl bg-theme-elevated p-3 text-sm font-medium ${
+              line.role === 'provider'
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-amber-700 dark:text-amber-400'
+            }`}
+          >
+            {t(line.role === 'provider' ? 'summary.earns' : 'summary.pays', {
+              name: line.name || t('summary.unknown_member'),
+              hours: hoursText(line.hours),
+            })}
+          </li>
+        ))}
+        {fund > 0 && (
+          <li className="rounded-xl bg-accent/10 p-3 text-sm font-medium text-theme-primary">
+            {t('summary.to_fund', { count: fund })}
+          </li>
+        )}
+      </ul>
+
+      <p className="text-sm text-theme-muted">
+        {fund > 0
+          ? t('summary.totals_with_fund', { ...totals, fund: hoursText(fund) })
+          : t('summary.totals', totals)}
+      </p>
     </div>
   );
 }

@@ -35,10 +35,63 @@
     "cancelled": "Geannuleerd",
     "disputed": "Betwist"
   },
-  "split_type": {
-    "equal": "Gelijke splitsing",
-    "custom": "Aangepaste splitsing",
-    "weighted": "Gewogen splitsing"
+  "kinds": {
+    "heading": "Wat voor soort groepsruil is dit?",
+    "rule": "Een uur tijd is één tijdcredit. Mensen die tijd geven verdienen credits; mensen die tijd ontvangen betalen ze.",
+    "workshop": {
+      "title": "Workshop of les",
+      "desc": "Iemand geeft een sessie voor een groep. De persoon die de sessie geeft verdient de uren die hij of zij erin steekt. Iedereen die meedoet betaalt de uren waarvoor hij of zij er was. Overgebleven uren gaan naar het Gemeenschapsfonds.",
+      "example": "Mary geeft een les van 2 uur voor 4 mensen. Mary verdient 2 uur. Iedereen betaalt 2 uur. De andere 6 uur gaan naar het Gemeenschapsfonds."
+    },
+    "team": {
+      "title": "Een team helpt iemand",
+      "desc": "Meerdere mensen geven hun tijd aan één persoon. Elke helper verdient de uren die hij of zij eraan besteedde, en de geholpen persoon betaalt voor alles.",
+      "example": "Twee vrijwilligers besteden 1 uur aan het verhuizen van meubels voor Tom. Elke vrijwilliger verdient 1 uur. Tom betaalt 2 uur."
+    },
+    "equal": {
+      "title": "Gelijk verdelen",
+      "desc": "Stel één totaal in. Iedereen die tijd geeft verdient een gelijk deel ervan, en iedereen die tijd ontvangt betaalt een gelijk deel.",
+      "example": "6 uur, 2 mensen geven en 3 ontvangen: elke persoon die geeft verdient 3 uur en elke persoon die ontvangt betaalt 2 uur."
+    },
+    "weighted": {
+      "title": "Verdelen naar inzet",
+      "desc": "Zoals gelijk verdelen, maar je geeft aan wie meer deed. Wie een 2 heeft krijgt twee keer zoveel als wie een 1 heeft.",
+      "example": "Van 6 uur verdient Ann (met een 2) 4 en Ben (met een 1) 2."
+    },
+    "custom": {
+      "title": "De uren van iedereen invullen",
+      "desc": "Je vult precies in wat elke persoon verdient of betaalt. Het totaal dat wordt verdiend moet gelijk zijn aan het totaal dat wordt betaald.",
+      "example": "Ann verdient 3, Ben verdient 1 en Cara betaalt 4."
+    }
+  },
+  "roles": {
+    "giving": "Tijd geven",
+    "receiving": "Tijd ontvangen",
+    "giving_count": "Tijd geven ({{count}})",
+    "receiving_count": "Tijd ontvangen ({{count}})"
+  },
+  "inputs": {
+    "session_length_label": "Hoe lang duurde de sessie (in uren)?",
+    "session_length_hint": "We vullen dit voor iedereen in. Pas het aan voor wie korter aanwezig was.",
+    "helper_hours_label": "Hoeveel uur besteedde elke helper?",
+    "helper_hours_hint": "We vullen dit voor elke helper in. Pas het aan voor wie meer of minder tijd besteedde.",
+    "effort_label": "Aandeel in de inzet van {{name}}",
+    "effort_hint": "1 is een gewoon aandeel. 2 is twee keer zoveel.",
+    "hours_placeholder": "bijv. 2"
+  },
+  "summary": {
+    "heading": "Wat iedereen verdient of betaalt",
+    "earns": "{{name}} verdient {{hours}}",
+    "pays": "{{name}} betaalt {{hours}}",
+    "to_fund_one": "{{count}} uur gaat naar het Gemeenschapsfonds",
+    "to_fund_other": "{{count}} uren gaan naar het Gemeenschapsfonds",
+    "totals": "{{paid}} betaald · {{earned}} verdiend",
+    "totals_with_fund": "{{paid}} betaald · {{earned}} verdiend · {{fund}} naar het Gemeenschapsfonds",
+    "you_earn": "Je verdient {{hours}}",
+    "you_pay": "Je betaalt {{hours}}",
+    "checking": "De uren worden berekend…",
+    "unknown_member": "Een lid",
+    "unavailable": "We konden de uren niet berekenen. Probeer het opnieuw."
   },
   "detail": {
     "page_title": "Groep Wisseling",
@@ -49,8 +102,6 @@
     "organized_by": "Georganiseerd door",
     "you": "Jij",
     "total_hours": "Totaal Uren",
-    "providers": "Aanbieders",
-    "receivers": "Ontvangers",
     "created": "Aangemaakt",
     "broker_notes": "Brokernotities",
     "exchange_completed": "Ruil Voltooid",
@@ -70,26 +121,19 @@
     "hours_amount": "{{count}} u",
     "col_weight": "Gewicht",
     "col_confirmed": "Bevestigd",
-    "col_provider": "Aanbieder",
-    "col_receiver": "Ontvanger",
     "confirmed": "Bevestigd",
     "pending": "In behandeling",
     "remove_participant": "Verwijder {{name}}",
-    "hour_split": "Uren Verdeling",
-    "gives_to": "geeft aan",
     "cancel_modal_title": "Groepsruil Annuleren?",
     "cancel_modal_body": "Weet je zeker dat je deze groepsruil wilt annuleren? Deze actie kan niet ongedaan worden gemaakt. Er zullen geen transacties worden aangemaakt.",
     "keep_exchange": "Ruil Behouden",
     "add_participant_title": "Deelnemer Toevoegen",
-    "role_provider": "Aanbieder",
-    "role_receiver": "Ontvanger",
     "search_members_placeholder": "Zoek leden op naam...",
     "search_members_aria": "Zoek leden",
     "add_as_role": "Toevoegen als {{role}}",
     "no_members_found": "Geen leden gevonden die overeenkomen met je zoekopdracht.",
     "done": "Gereed",
     "aria_exchange_participants": "Ruil deelnemers",
-    "aria_hour_split": "Uren verdeling",
     "participants_heading_one": "Deelnemers ({{count}})",
     "participants_heading_other": "Deelnemers ({{count}})",
     "hours_amount_one": "{{count}} u",
@@ -114,32 +158,16 @@
     "description_heading": "Beschrijving",
     "total_hours_label": "Totaal Uren",
     "total_hours_placeholder": "bijv., 10",
-    "hours_unit": "uren",
-    "split_type_heading": "Verdelingstype",
-    "split_type_desc": "Hoe moeten de uren verdeeld worden onder de deelnemers?",
-    "split_equal_title": "Gelijke verdeling",
-    "split_equal_desc": "Totaal uren gelijk verdeeld onder alle aanbieders en ontvangers.",
-    "split_custom_title": "Aangepaste Uren",
-    "split_custom_desc": "Stel specifieke uren in voor elke deelnemer afzonderlijk.",
-    "split_weighted_title": "Gewogen verdeling",
-    "split_weighted_desc": "Verdeel uren proportioneel op basis van toegewezen gewichten.",
+    "kind_label": "Soort ruil",
     "next": "Volgende",
     "back": "Terug",
     "review": "Controleer",
     "add_participants": "Deelnemers Toevoegen",
-    "add_participants_desc": "Zoek naar leden en voeg ze toe als aanbieders of ontvangers. U heeft minimaal 1 aanbieder en 1 ontvanger nodig.",
-    "providers_count": "Aanbieders ({{count}})",
-    "receivers_count": "Ontvangers ({{count}})",
+    "add_participants_desc": "Zoek leden en voeg elke persoon toe bij 'Tijd geven' of 'Tijd ontvangen'. Aan elke kant is minstens één persoon nodig.",
     "no_participants_yet": "Nog geen deelnemers toegevoegd",
     "add_yourself": "Jezelf toevoegen als",
-    "validation_min_participants": "U heeft minimaal 1 aanbieder en 1 ontvanger nodig om door te gaan.",
-    "hour_split_preview": "Voorbeeld urenverdeling",
+    "validation_min_participants": "Om door te gaan heb je minstens één persoon nodig die tijd geeft en één die tijd ontvangt.",
     "hour_split_preview_desc": "Bekijk hoe de uren verdeeld zullen worden tussen de deelnemers.",
-    "transfer_summary": "{{providerCount}} aanbieder(s) zullen {{hours}} uur(en) overdragen aan {{receiverCount}} ontvanger(s), verdeling: {{splitType}}.",
-    "unable_to_calculate": "Kan de verdeling niet berekenen. Controleer de uren of gewichten van de deelnemers.",
-    "per_participant_summary": "Per-Deelnemer Samenvatting",
-    "giving": "geeft",
-    "receiving": "ontvangt",
     "review_your_exchange": "Beoordeel uw uitwisseling",
     "review_your_exchange_desc": "Ziet alles er goed uit? Maak uw groepsuitwisseling aan.",
     "participants_label": "Deelnemers",
@@ -147,17 +175,10 @@
     "hours_placeholder": "Uren",
     "weight_placeholder": "Gewicht",
     "hours_for": "Uren voor {{name}}",
-    "weight_for": "Gewicht voor {{name}}",
-    "aria_hour_split_preview": "Voorbeeld van uurverdeling",
     "current_step": "Huidige stap",
     "step_of_named": "Stap {{current}} van {{total}}: {{name}}",
-    "hours_value": "{{hours}} u",
     "hours_suffix": "u",
-    "weight_suffix": "X",
-    "providers_count_one": "Aanbieders ({{count}})",
-    "providers_count_other": "Aanbieders ({{count}})",
-    "receivers_count_one": "Ontvangers ({{count}})",
-    "receivers_count_other": "Ontvangers ({{count}})"
+    "weight_suffix": "X"
   },
   "toast": {
     "exchange_started": "Uitwisseling gestart",
@@ -196,7 +217,5 @@
     "create": {
       "title": "Maak Groep Uitwisseling"
     }
-  },
-  "role_provider": "Aanbieder",
-  "role_receiver": "Ontvanger"
+  }
 }

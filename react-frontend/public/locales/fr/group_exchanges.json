@@ -35,10 +35,64 @@
     "cancelled": "Annulé",
     "disputed": "Contesté"
   },
-  "split_type": {
-    "equal": "Répartition égale",
-    "custom": "Répartition personnalisée",
-    "weighted": "Répartition pondérée"
+  "kinds": {
+    "heading": "De quel type d'échange de groupe s'agit-il ?",
+    "rule": "Une heure de temps équivaut à un crédit-temps. Les personnes qui donnent du temps gagnent des crédits ; celles qui reçoivent du temps les paient.",
+    "workshop": {
+      "title": "Atelier ou cours",
+      "desc": "Une personne anime une séance pour un groupe. Elle gagne les heures qu'elle y consacre. Chaque participant paie les heures auxquelles il a assisté. Les heures restantes vont au Fonds communautaire.",
+      "example": "Mary donne un cours de 2 heures à 4 personnes. Mary gagne 2 heures. Chaque personne paie 2 heures. Les 6 autres heures vont au Fonds communautaire."
+    },
+    "team": {
+      "title": "Une équipe aide quelqu'un",
+      "desc": "Plusieurs personnes donnent leur temps à une seule personne. Chaque aidant gagne les heures qu'il a passées, et la personne aidée paie le tout.",
+      "example": "Deux bénévoles passent 1 heure à déménager des meubles pour Tom. Chaque bénévole gagne 1 heure. Tom paie 2 heures."
+    },
+    "equal": {
+      "title": "Partager à parts égales",
+      "desc": "Fixez un total. Chaque personne qui donne du temps en gagne une part égale, et chaque personne qui reçoit du temps en paie une part égale.",
+      "example": "6 heures, 2 personnes donnent et 3 reçoivent : chaque personne qui donne gagne 3 heures et chaque personne qui reçoit paie 2."
+    },
+    "weighted": {
+      "title": "Partager selon l'effort",
+      "desc": "Comme le partage à parts égales, mais vous indiquez qui a fait le plus. Une personne notée 2 reçoit deux fois la part d'une personne notée 1.",
+      "example": "Sur 6 heures, Ann (notée 2) gagne 4 et Ben (noté 1) gagne 2."
+    },
+    "custom": {
+      "title": "Saisir les heures de chacun",
+      "desc": "Vous saisissez exactement ce que chaque personne gagne ou paie. Le total gagné doit être égal au total payé.",
+      "example": "Ann gagne 3, Ben gagne 1 et Cara paie 4."
+    }
+  },
+  "roles": {
+    "giving": "Donner du temps",
+    "receiving": "Recevoir du temps",
+    "giving_count": "Donner du temps ({{count}})",
+    "receiving_count": "Recevoir du temps ({{count}})"
+  },
+  "inputs": {
+    "session_length_label": "Combien de temps a duré la séance (en heures) ?",
+    "session_length_hint": "Nous le remplissons pour tout le monde. Modifiez-le pour ceux qui sont venus moins longtemps.",
+    "helper_hours_label": "Combien d'heures chaque aidant a-t-il passées ?",
+    "helper_hours_hint": "Nous le remplissons pour chaque aidant. Modifiez-le pour ceux qui ont passé plus ou moins de temps.",
+    "effort_label": "Part d'effort de {{name}}",
+    "effort_hint": "1 est une part normale. 2 vaut le double.",
+    "hours_placeholder": "p. ex. 2"
+  },
+  "summary": {
+    "heading": "Ce que chacun gagnera ou paiera",
+    "earns": "{{name}} gagne {{hours}}",
+    "pays": "{{name}} paie {{hours}}",
+    "to_fund_many": "{{count}} heures vont au Fonds communautaire",
+    "to_fund_one": "{{count}} heure va au Fonds communautaire",
+    "to_fund_other": "{{count}} heures vont au Fonds communautaire",
+    "totals": "Payé : {{paid}} · Gagné : {{earned}}",
+    "totals_with_fund": "Payé : {{paid}} · Gagné : {{earned}} · Au Fonds communautaire : {{fund}}",
+    "you_earn": "Vous gagnerez {{hours}}",
+    "you_pay": "Vous paierez {{hours}}",
+    "checking": "Calcul des heures…",
+    "unknown_member": "Un membre",
+    "unavailable": "Nous n'avons pas pu calculer les heures. Veuillez réessayer."
   },
   "detail": {
     "page_title": "Échange de groupe",
@@ -49,8 +103,6 @@
     "organized_by": "Organisé par",
     "you": "Vous",
     "total_hours": "Heures totales",
-    "providers": "Fournisseurs",
-    "receivers": "Bénéficiaires",
     "created": "Créé",
     "broker_notes": "Notes du courtier",
     "exchange_completed": "Échange terminé",
@@ -70,26 +122,19 @@
     "hours_amount": "{{count}} h",
     "col_weight": "Pondération",
     "col_confirmed": "Confirmé",
-    "col_provider": "Fournisseur",
-    "col_receiver": "Bénéficiaire",
     "confirmed": "Confirmé",
     "pending": "En attente",
     "remove_participant": "Retirer {{name}}",
-    "hour_split": "Répartition des heures",
-    "gives_to": "donne à",
     "cancel_modal_title": "Annuler l'échange de groupe ?",
     "cancel_modal_body": "Êtes-vous sûr de vouloir annuler cet échange de groupe ? Cette action est irréversible. Aucune transaction ne sera créée.",
     "keep_exchange": "Conserver l'échange",
     "add_participant_title": "Ajouter un participant",
-    "role_provider": "Fournisseur",
-    "role_receiver": "Bénéficiaire",
     "search_members_placeholder": "Rechercher des membres par nom...",
     "search_members_aria": "Rechercher des membres",
     "add_as_role": "Ajouter comme {{role}}",
     "no_members_found": "Aucun membre trouvé correspondant à votre recherche.",
     "done": "Terminé",
     "aria_exchange_participants": "Participants de l’échange",
-    "aria_hour_split": "Répartition des heures",
     "participants_heading_many": "Participants ({{count}})",
     "participants_heading_one": "Participants ({{count}})",
     "participants_heading_other": "Participants ({{count}})",
@@ -116,32 +161,16 @@
     "description_heading": "Description",
     "total_hours_label": "Heures totales",
     "total_hours_placeholder": "p. ex. 10",
-    "hours_unit": "heures",
-    "split_type_heading": "Type de répartition",
-    "split_type_desc": "Comment les heures doivent-elles être réparties entre les participants ?",
-    "split_equal_title": "Répartition égale",
-    "split_equal_desc": "Les heures totales sont divisées également entre tous les fournisseurs et bénéficiaires.",
-    "split_custom_title": "Heures personnalisées",
-    "split_custom_desc": "Définissez des heures spécifiques pour chaque participant individuellement.",
-    "split_weighted_title": "Répartition pondérée",
-    "split_weighted_desc": "Répartissez les heures proportionnellement selon les pondérations attribuées.",
+    "kind_label": "Type d'échange",
     "next": "Suivant",
     "back": "Retour",
     "review": "Vérifier",
     "add_participants": "Ajouter des participants",
-    "add_participants_desc": "Recherchez des membres et ajoutez-les comme fournisseurs ou bénéficiaires. Vous avez besoin d'au moins 1 fournisseur et 1 bénéficiaire.",
-    "providers_count": "Fournisseurs ({{count}})",
-    "receivers_count": "Bénéficiaires ({{count}})",
+    "add_participants_desc": "Recherchez des membres et ajoutez chaque personne à « Donner du temps » ou « Recevoir du temps ». Il faut au moins une personne de chaque côté.",
     "no_participants_yet": "Aucun participant ajouté pour le moment",
     "add_yourself": "Vous ajouter en tant que",
-    "validation_min_participants": "Vous avez besoin d'au moins 1 fournisseur et 1 bénéficiaire pour continuer.",
-    "hour_split_preview": "Aperçu de la répartition des heures",
+    "validation_min_participants": "Pour continuer, il faut au moins une personne qui donne du temps et une personne qui en reçoit.",
     "hour_split_preview_desc": "Vérifiez comment les heures seront réparties entre les participants.",
-    "transfer_summary": "{{providerCount}} fournisseur(s) transféreront {{hours}} heure(s) à {{receiverCount}} bénéficiaire(s) via une répartition {{splitType}}.",
-    "unable_to_calculate": "Impossible de calculer la répartition. Vérifiez les heures ou les pondérations des participants.",
-    "per_participant_summary": "Résumé par participant",
-    "giving": "donne",
-    "receiving": "reçoit",
     "review_your_exchange": "Vérifiez votre échange",
     "review_your_exchange_desc": "Tout semble correct ? Créez votre échange de groupe.",
     "participants_label": "Participants",
@@ -149,19 +178,10 @@
     "hours_placeholder": "Heures",
     "weight_placeholder": "Pondération",
     "hours_for": "Heures pour {{name}}",
-    "weight_for": "Pondération pour {{name}}",
-    "aria_hour_split_preview": "Aperçu de la répartition des heures",
     "current_step": "Étape actuelle",
     "step_of_named": "Étape {{current}} sur {{total}} : {{name}}",
-    "hours_value": "{{hours}} h",
     "hours_suffix": "h",
-    "weight_suffix": "x",
-    "providers_count_many": "Fournisseurs ({{count}})",
-    "providers_count_one": "Fournisseurs ({{count}})",
-    "providers_count_other": "Fournisseurs ({{count}})",
-    "receivers_count_many": "Bénéficiaires ({{count}})",
-    "receivers_count_one": "Bénéficiaires ({{count}})",
-    "receivers_count_other": "Bénéficiaires ({{count}})"
+    "weight_suffix": "x"
   },
   "toast": {
     "exchange_started": "Échange démarré",
@@ -201,8 +221,6 @@
       "title": "Créer un échange de groupe"
     }
   },
-  "role_provider": "Fournisseur",
-  "role_receiver": "Bénéficiaire",
   "participants_count_many": "{{count}} participants",
   "hours_count_many": "{{count}} heures"
 }

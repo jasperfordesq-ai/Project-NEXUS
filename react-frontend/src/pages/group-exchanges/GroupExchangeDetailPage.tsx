@@ -10,10 +10,11 @@
  * - Breadcrumbs: Group Exchanges > Exchange Title
  * - Status badge and description
  * - Organizer info with avatar
- * - Split type display
- * - Participants table with name, role, hours, weight, confirmed status
+ * - Kind of exchange, shown by its name (never the raw value)
+ * - Participants table with name, role (giving / receiving time), hours or weight, confirmed status
  * - Action buttons based on status (organizer vs participant)
- * - Hour split preview table
+ * - What everyone will earn or pay, plus any leftover hours for the community time fund
+ * - "You will earn / pay N hours" for the signed-in participant
  * - Completed: transaction receipt
  * - Cancelled: notice
  *
@@ -94,7 +95,7 @@ interface GroupExchangeDetail {
   organizer_avatar: string | null;
   listing_id: number | null;
   status: GroupExchangeStatus;
-  split_type: 'equal' | 'custom' | 'weighted';
+  split_type: 'workshop' | 'team' | 'equal' | 'weighted' | 'custom';
   total_hours: number;
   broker_id: number | null;
   broker_notes: string | null;
@@ -102,10 +103,13 @@ interface GroupExchangeDetail {
   created_at: string;
   updated_at: string;
   participants: GroupExchangeParticipant[];
-  // Flat per-participant split: how much each provider is credited / each receiver
-  // is debited when the exchange completes. This is exactly what the wallet ledger
-  // does, so it is the honest thing to preview.
+  // Flat per-participant split: how much each person giving time is credited / each
+  // person receiving time is debited when the exchange completes. This is exactly what
+  // the wallet ledger does, so it is the honest thing to show. The community fund is
+  // NOT a line here; it comes separately as `community_fund_hours`.
   calculated_split: { user_id: number; role: 'provider' | 'receiver'; hours: number }[];
+  // A workshop's leftover hours (paid minus earned) that go to the community time fund.
+  community_fund_hours?: number;
 }
 
 interface SearchResult {
@@ -217,6 +221,9 @@ export function GroupExchangeDetailPage() {
   const providers = exchange?.participants?.filter((p) => p.role === 'provider') ?? [];
   const receivers = exchange?.participants?.filter((p) => p.role === 'receiver') ?? [];
   const allConfirmed = exchange?.participants?.every((p) => p.confirmed) ?? false;
+  // For a workshop or team the stored number is a per-person pre-fill, and for
+  // custom it is just the sum, so only equal / weighted have a "total" to show.
+  const showsTotalHours = exchange?.split_type === 'equal' || exchange?.split_type === 'weighted';
 
   // Status-based action flags
   const canAddParticipants = isOrganizer && ['draft', 'pending_participants'].includes(exchange?.status ?? '');
@@ -402,22 +409,39 @@ export function GroupExchangeDetailPage() {
   // Build split rows
   // ─────────────────────────────────────────────────────────────────────────
 
+  function roundHours(value: number): number {
+    return Math.round(Number(value) * 100) / 100;
+  }
+
+  function hoursText(hours: number): string {
+    return tRef.current('hours_count', { count: roundHours(hours) });
+  }
+
   function buildSplitRows(): { key: string; name: string; role: 'provider' | 'receiver'; hours: number }[] {
     if (!Array.isArray(exchange?.calculated_split)) return [];
 
     const participantMap = new Map(exchange.participants.map((p) => [p.user_id, p.user_name]));
 
     return exchange.calculated_split
-      .filter((entry) => entry.hours > 0)
+      .filter((entry) => Number(entry.hours) > 0)
       .map((entry) => ({
         key: `${entry.user_id}-${entry.role}`,
-        name: participantMap.get(entry.user_id) || `User #${entry.user_id}`,
+        name: participantMap.get(entry.user_id) || tRef.current('summary.unknown_member'),
         role: entry.role,
-        hours: entry.hours,
+        hours: roundHours(entry.hours),
       }));
   }
 
   const splitRows = exchange ? buildSplitRows() : [];
+  const fundHours = roundHours(Number(exchange?.community_fund_hours) || 0);
+  const earnedHours = roundHours(splitRows.filter((r) => r.role === 'provider').reduce((sum, r) => sum + r.hours, 0));
+  const paidHours = roundHours(splitRows.filter((r) => r.role === 'receiver').reduce((sum, r) => sum + r.hours, 0));
+
+  // What the signed-in participant will earn or pay once this completes.
+  const myLine = user?.id && exchange
+    ? splitRows.find((r) => r.key.startsWith(`${user.id}-`))
+    : undefined;
+  const showMyLine = !!myLine && isParticipant && !['completed', 'cancelled'].includes(exchange?.status ?? '');
 
   // ─────────────────────────────────────────────────────────────────────────
   // Render
@@ -479,8 +503,8 @@ export function GroupExchangeDetailPage() {
               >
                 {t('status.' + exchange.status)}
               </Chip>
-              <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-muted capitalize">
-                {t('split_type.' + exchange.split_type)}
+              <Chip size="sm" variant="flat" className="bg-theme-elevated text-theme-muted">
+                {t('kinds.' + exchange.split_type + '.title')}
               </Chip>
             </div>
           </div>
@@ -507,17 +531,19 @@ export function GroupExchangeDetailPage() {
         </div>
 
         {/* Hours */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-2 gap-4 ${showsTotalHours ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
+          {showsTotalHours && (
+            <div className="bg-theme-elevated rounded-lg p-4">
+              <p className="text-sm text-theme-muted">{t('detail.total_hours')}</p>
+              <p className="text-2xl font-bold text-theme-primary">{Number(exchange.total_hours)}</p>
+            </div>
+          )}
           <div className="bg-theme-elevated rounded-lg p-4">
-            <p className="text-sm text-theme-muted">{t('detail.total_hours')}</p>
-            <p className="text-2xl font-bold text-theme-primary">{Number(exchange.total_hours)}</p>
-          </div>
-          <div className="bg-theme-elevated rounded-lg p-4">
-            <p className="text-sm text-theme-muted">{t('detail.providers')}</p>
+            <p className="text-sm text-theme-muted">{t('roles.giving')}</p>
             <p className="text-2xl font-bold text-theme-success">{providers.length}</p>
           </div>
           <div className="bg-theme-elevated rounded-lg p-4">
-            <p className="text-sm text-theme-muted">{t('detail.receivers')}</p>
+            <p className="text-sm text-theme-muted">{t('roles.receiving')}</p>
             <p className="text-2xl font-bold text-theme-warning">{receivers.length}</p>
           </div>
           <div className="bg-theme-elevated rounded-lg p-4">
@@ -562,6 +588,13 @@ export function GroupExchangeDetailPage() {
               {t('detail.cancelled_notice')}
             </p>
           </div>
+        )}
+
+        {/* What the signed-in participant will earn or pay */}
+        {showMyLine && myLine && (
+          <p className="mt-4 rounded-lg bg-accent/10 px-4 py-3 text-sm font-medium text-theme-primary">
+            {t(myLine.role === 'provider' ? 'summary.you_earn' : 'summary.you_pay', { hours: hoursText(myLine.hours) })}
+          </p>
         )}
 
         {/* Actions */}
@@ -640,7 +673,7 @@ export function GroupExchangeDetailPage() {
           <TableHeader>
             <TableColumn>{t('detail.col_name')}</TableColumn>
             <TableColumn>{t('detail.col_role')}</TableColumn>
-            {exchange.split_type === 'custom' ? (
+            {exchange.split_type === 'custom' || exchange.split_type === 'workshop' || exchange.split_type === 'team' ? (
               <TableColumn className="text-right">{t('detail.col_hours')}</TableColumn>
             ) : exchange.split_type === 'weighted' ? (
               <TableColumn className="text-right">{t('detail.col_weight')}</TableColumn>
@@ -658,7 +691,9 @@ export function GroupExchangeDetailPage() {
             {exchange.participants.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  {/* min-w: on a phone the table scrolls sideways instead of
+                      squeezing names into a one-letter-wide column. */}
+                  <div className="flex min-w-[9rem] items-center gap-2">
                     <Avatar
                       src={resolveAvatarUrl(p.user_avatar)}
                       name={p.user_name}
@@ -678,15 +713,17 @@ export function GroupExchangeDetailPage() {
                     variant="flat"
                     color={p.role === 'provider' ? 'success' : 'warning'}
                   >
-                    {p.role === 'provider' ? t('role_provider') : t('role_receiver')}
+                    {p.role === 'provider' ? t('roles.giving') : t('roles.receiving')}
                   </Chip>
                 </TableCell>
-                <TableCell className={exchange.split_type === 'custom' || exchange.split_type === 'weighted' ? 'text-right text-theme-primary' : ''}>
-                  {exchange.split_type === 'custom'
-                    ? `${Number(p.hours)}h`
-                    : exchange.split_type === 'weighted'
-                    ? `${Number(p.weight)}x`
-                    : null}
+                <TableCell className={exchange.split_type === 'equal' ? '' : 'text-right text-theme-primary'}>
+                  {exchange.split_type === 'weighted'
+                    ? `${Number(p.weight)}${t('create.weight_suffix')}`
+                    : exchange.split_type === 'equal'
+                    ? null
+                    : exchange.split_type === 'team' && p.role !== 'provider'
+                    ? null
+                    : t('detail.hours_amount', { count: roundHours(p.hours) })}
                 </TableCell>
                 <TableCell className="text-center">
                   {p.confirmed ? (
@@ -718,38 +755,42 @@ export function GroupExchangeDetailPage() {
         </Table>
       </GlassCard>
 
-      {/* Hour Split Preview */}
+      {/* What everyone will earn or pay */}
       {splitRows.length > 0 && (
         <GlassCard className="p-6">
           <h2 className="text-xl font-semibold text-theme-primary mb-6 flex items-center gap-3">
             <Scale className="w-5 h-5 text-accent" aria-hidden="true" />
-            {t('detail.hour_split')}
+            {t('summary.heading')}
           </h2>
 
-          <Table aria-label={t('detail.aria_hour_split')} shadow="sm" isStriped>
-            <TableHeader>
-              <TableColumn>{t('detail.col_name')}</TableColumn>
-              <TableColumn>{t('detail.col_role')}</TableColumn>
-              <TableColumn className="text-right">{t('detail.col_hours')}</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {splitRows.map((row) => (
-                <TableRow key={row.key}>
-                  <TableCell className="text-theme-primary">{row.name}</TableCell>
-                  <TableCell>
-                    <Chip size="sm" variant="flat" color={row.role === 'provider' ? 'success' : 'warning'}>
-                      {row.role === 'provider' ? t('role_provider') : t('role_receiver')}
-                    </Chip>
-                  </TableCell>
-                  <TableCell
-                    className={`text-right font-medium ${row.role === 'provider' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}
-                  >
-                    {row.role === 'provider' ? '+' : '−'}{t('detail.hours_amount', { count: row.hours })}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <ul className="space-y-2" aria-label={t('summary.heading')}>
+            {splitRows.map((row) => (
+              <li
+                key={row.key}
+                className={`rounded-xl bg-theme-elevated p-3 text-sm font-medium ${
+                  row.role === 'provider'
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    : 'text-amber-700 dark:text-amber-400'
+                }`}
+              >
+                {t(row.role === 'provider' ? 'summary.earns' : 'summary.pays', {
+                  name: row.name,
+                  hours: hoursText(row.hours),
+                })}
+              </li>
+            ))}
+            {fundHours > 0 && (
+              <li className="rounded-xl bg-accent/10 p-3 text-sm font-medium text-theme-primary">
+                {t('summary.to_fund', { count: fundHours })}
+              </li>
+            )}
+          </ul>
+
+          <p className="mt-4 text-sm text-theme-muted">
+            {fundHours > 0
+              ? t('summary.totals_with_fund', { paid: hoursText(paidHours), earned: hoursText(earnedHours), fund: hoursText(fundHours) })
+              : t('summary.totals', { paid: hoursText(paidHours), earned: hoursText(earnedHours) })}
+          </p>
         </GlassCard>
       )}
 
@@ -811,7 +852,7 @@ export function GroupExchangeDetailPage() {
                 aria-pressed={addRole === 'provider'}
                 className={addRole !== 'provider' ? 'bg-theme-elevated text-theme-muted' : ''}
               >
-                {t('detail.role_provider')}
+                {t('roles.giving')}
               </Button>
               <Button
                 size="sm"
@@ -821,7 +862,7 @@ export function GroupExchangeDetailPage() {
                 aria-pressed={addRole === 'receiver'}
                 className={addRole !== 'receiver' ? 'bg-theme-elevated text-theme-muted' : ''}
               >
-                {t('detail.role_receiver')}
+                {t('roles.receiving')}
               </Button>
             </div>
 
@@ -868,7 +909,7 @@ export function GroupExchangeDetailPage() {
                         isLoading={isSubmitting}
                         startContent={<Plus className="w-3 h-3" aria-hidden="true" />}
                       >
-                        {t('detail.add_as_role', { role: t('detail.role_' + addRole) })}
+                        {t('detail.add_as_role', { role: addRole === 'provider' ? t('roles.giving') : t('roles.receiving') })}
                       </Button>
                     </div>
                   );

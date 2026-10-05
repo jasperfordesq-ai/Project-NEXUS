@@ -182,9 +182,9 @@ describe('GroupExchangeDetailPage', () => {
     });
 
     render(<GroupExchangeDetailPage />);
-    // The "Hour Split" section only renders when buildSplitRows() returns rows.
+    // The summary section only renders when buildSplitRows() returns rows.
     await waitFor(() => {
-      expect(screen.getByText('Hour Split')).toBeInTheDocument();
+      expect(screen.getByText('What everyone will earn or pay')).toBeInTheDocument();
     });
   });
 
@@ -226,8 +226,8 @@ describe('GroupExchangeDetailPage', () => {
   it('renders split type information', async () => {
     render(<GroupExchangeDetailPage />);
     await waitFor(() => {
-      // split_type 'equal' renders as 'Equal split'
-      expect(screen.getAllByText(/Equal split/i).length).toBeGreaterThanOrEqual(1);
+      // An exchange made before the new kinds existed ('equal') is shown by its name.
+      expect(screen.getAllByText('Share equally').length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -235,6 +235,102 @@ describe('GroupExchangeDetailPage', () => {
     render(<GroupExchangeDetailPage />);
     await waitFor(() => {
       expect(screen.getByText('6')).toBeInTheDocument();
+    });
+  });
+  describe('what everyone will earn or pay', () => {
+    const neutral = {
+      ...mockGroupExchange,
+      status: 'pending_confirmation',
+      split_type: 'workshop',
+      total_hours: 2,
+      community_fund_hours: 6,
+      participants: [
+        { id: 11, user_id: 1, user_name: 'Alice Organizer', user_avatar: null, role: 'receiver', hours: 2, weight: 1, confirmed: false },
+        { id: 12, user_id: 2, user_name: 'Mary Byrne', user_avatar: null, role: 'provider', hours: 2, weight: 1, confirmed: true },
+        { id: 13, user_id: 3, user_name: 'Tom Archer', user_avatar: null, role: 'receiver', hours: 2, weight: 1, confirmed: true },
+      ],
+      calculated_split: [
+        { user_id: 2, role: 'provider', hours: 2 },
+        { user_id: 1, role: 'receiver', hours: 2 },
+        { user_id: 3, role: 'receiver', hours: 2 },
+      ],
+    };
+
+    it('tells the signed-in member what they will pay, beside the confirm button', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: neutral });
+      render(<GroupExchangeDetailPage />);
+
+      expect(await screen.findByText('You will pay 2 hours')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /confirm my hours/i })).toBeInTheDocument();
+    });
+
+    it('tells a member who gives time what they will earn', async () => {
+      vi.mocked(api.get).mockResolvedValue({
+        success: true,
+        data: {
+          ...neutral,
+          participants: [
+            { ...neutral.participants[0], role: 'provider' },
+            { ...neutral.participants[1], role: 'receiver' },
+            neutral.participants[2],
+          ],
+          calculated_split: [
+            { user_id: 1, role: 'provider', hours: 1.5 },
+            { user_id: 2, role: 'receiver', hours: 2 },
+            { user_id: 3, role: 'receiver', hours: 2 },
+          ],
+        },
+      });
+      render(<GroupExchangeDetailPage />);
+
+      expect(await screen.findByText('You will earn 1.5 hours')).toBeInTheDocument();
+    });
+
+    it('lists a line for each person, the community fund and the totals', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: neutral });
+      render(<GroupExchangeDetailPage />);
+
+      expect(await screen.findByText('What everyone will earn or pay')).toBeInTheDocument();
+      expect(screen.getByText('Mary Byrne earns 2 hours')).toBeInTheDocument();
+      expect(screen.getByText('Alice Organizer pays 2 hours')).toBeInTheDocument();
+      expect(screen.getByText('Tom Archer pays 2 hours')).toBeInTheDocument();
+      expect(screen.getByText('6 hours go to the community time fund')).toBeInTheDocument();
+      expect(
+        screen.getByText('4 hours paid · 2 hours earned · 6 hours to the community time fund'),
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('Workshop or class').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('does not show a fund line when nothing goes to the fund', async () => {
+      vi.mocked(api.get).mockResolvedValue({
+        success: true,
+        data: { ...neutral, split_type: 'equal', community_fund_hours: 0 },
+      });
+      render(<GroupExchangeDetailPage />);
+
+      await screen.findByText('Mary Byrne earns 2 hours');
+      expect(screen.queryByText(/community time fund/)).not.toBeInTheDocument();
+    });
+
+    it('never shows the words provider, receiver or transfer', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: neutral });
+      render(<GroupExchangeDetailPage />);
+
+      await screen.findByText('Mary Byrne earns 2 hours');
+      expect(document.body.textContent).not.toMatch(/provider|receiver|transfer/i);
+      expect(screen.getAllByText('Giving time').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Receiving time').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows no "you will" line to someone who is not taking part', async () => {
+      vi.mocked(api.get).mockResolvedValue({
+        success: true,
+        data: { ...neutral, participants: neutral.participants.filter((p) => p.user_id !== 1) },
+      });
+      render(<GroupExchangeDetailPage />);
+
+      await screen.findByText('Mary Byrne earns 2 hours');
+      expect(screen.queryByText(/You will (earn|pay)/)).not.toBeInTheDocument();
     });
   });
 });

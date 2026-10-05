@@ -35,10 +35,63 @@
     "cancelled": "Abgebrochen",
     "disputed": "Angefochten"
   },
-  "split_type": {
-    "equal": "Gleichmässige Aufteilung",
-    "custom": "Individuelle Aufteilung",
-    "weighted": "Gewichtete Aufteilung"
+  "kinds": {
+    "heading": "Was für ein Gruppentausch ist das?",
+    "rule": "Eine Stunde Zeit ist ein Zeitguthaben. Wer Zeit gibt, verdient Zeitguthaben; wer Zeit erhält, bezahlt sie.",
+    "workshop": {
+      "title": "Workshop oder Kurs",
+      "desc": "Eine Person leitet eine Einheit für eine Gruppe. Die leitende Person verdient die Stunden, die sie einsetzt. Alle, die teilnehmen, bezahlen die Stunden, an denen sie dabei waren. Übrige Stunden gehen an den Gemeinschaftsfonds.",
+      "example": "Mary leitet einen 2-stündigen Kurs für 4 Personen. Mary verdient 2 Stunden. Jede Person bezahlt 2 Stunden. Die übrigen 6 Stunden gehen an den Gemeinschaftsfonds."
+    },
+    "team": {
+      "title": "Ein Team hilft jemandem",
+      "desc": "Mehrere Personen geben einer Person ihre Zeit. Jede helfende Person verdient die Stunden, die sie eingesetzt hat, und die unterstützte Person bezahlt alles.",
+      "example": "Zwei Freiwillige helfen Tom 1 Stunde lang beim Möbeltragen. Jede freiwillige Person verdient 1 Stunde. Tom bezahlt 2 Stunden."
+    },
+    "equal": {
+      "title": "Gleichmässig aufteilen",
+      "desc": "Legen Sie eine Gesamtstundenzahl fest. Alle, die Zeit geben, verdienen einen gleich grossen Anteil davon, und alle, die Zeit erhalten, bezahlen einen gleich grossen Anteil.",
+      "example": "6 Stunden, 2 Personen geben und 3 erhalten: Jede Person, die Zeit gibt, verdient 3 Stunden, und jede Person, die Zeit erhält, bezahlt 2."
+    },
+    "weighted": {
+      "title": "Nach Aufwand aufteilen",
+      "desc": "Wie gleichmässig aufteilen, aber Sie markieren, wer mehr geleistet hat. Wer mit 2 markiert ist, erhält den doppelten Anteil von jemandem, der mit 1 markiert ist.",
+      "example": "Von 6 Stunden verdient Ann (mit 2 markiert) 4 und Ben (mit 1 markiert) 2."
+    },
+    "custom": {
+      "title": "Stunden pro Person eingeben",
+      "desc": "Sie geben genau ein, was jede Person verdient oder bezahlt. Die verdienten Stunden insgesamt müssen den bezahlten Stunden entsprechen.",
+      "example": "Ann verdient 3, Ben verdient 1 und Cara bezahlt 4."
+    }
+  },
+  "roles": {
+    "giving": "Zeit geben",
+    "receiving": "Zeit erhalten",
+    "giving_count": "Zeit geben ({{count}})",
+    "receiving_count": "Zeit erhalten ({{count}})"
+  },
+  "inputs": {
+    "session_length_label": "Wie lange dauerte die Einheit (in Stunden)?",
+    "session_length_hint": "Wir tragen das für alle ein. Ändern Sie es bei allen, die kürzer dabei waren.",
+    "helper_hours_label": "Wie viele Stunden hat jede helfende Person eingesetzt?",
+    "helper_hours_hint": "Wir tragen das für alle helfenden Personen ein. Ändern Sie es bei allen, die mehr oder weniger Zeit eingesetzt haben.",
+    "effort_label": "Anteil am Aufwand für {{name}}",
+    "effort_hint": "1 ist ein normaler Anteil. 2 ist doppelt so viel.",
+    "hours_placeholder": "z. B. 2"
+  },
+  "summary": {
+    "heading": "Was alle verdienen oder bezahlen",
+    "earns": "{{name}} verdient {{hours}}",
+    "pays": "{{name}} bezahlt {{hours}}",
+    "to_fund_one": "{{count}} Stunde geht an den Gemeinschaftsfonds",
+    "to_fund_other": "{{count}} Stunden gehen an den Gemeinschaftsfonds",
+    "totals": "{{paid}} bezahlt · {{earned}} verdient",
+    "totals_with_fund": "{{paid}} bezahlt · {{earned}} verdient · {{fund}} an den Gemeinschaftsfonds",
+    "you_earn": "Sie verdienen {{hours}}",
+    "you_pay": "Sie bezahlen {{hours}}",
+    "checking": "Die Stunden werden berechnet …",
+    "unknown_member": "Ein Mitglied",
+    "unavailable": "Die Stunden konnten nicht berechnet werden. Bitte versuchen Sie es erneut."
   },
   "detail": {
     "page_title": "Gruppentausch",
@@ -49,8 +102,6 @@
     "organized_by": "Organisiert von",
     "you": "Sie",
     "total_hours": "Stunden gesamt",
-    "providers": "Anbietende",
-    "receivers": "Empfangende",
     "created": "Erstellt",
     "broker_notes": "Vermittler-Notizen",
     "exchange_completed": "Tausch abgeschlossen",
@@ -70,26 +121,19 @@
     "hours_amount": "{{count}} Std.",
     "col_weight": "Gewichtung",
     "col_confirmed": "Bestätigt",
-    "col_provider": "Anbietend",
-    "col_receiver": "Empfangend",
     "confirmed": "Bestätigt",
     "pending": "Ausstehend",
     "remove_participant": "{{name}} entfernen",
-    "hour_split": "Stundenaufteilung",
-    "gives_to": "gibt an",
     "cancel_modal_title": "Gruppentausch abbrechen?",
     "cancel_modal_body": "Möchten Sie diesen Gruppentausch wirklich abbrechen? Diese Aktion kann nicht rückgängig gemacht werden. Es werden keine Transaktionen erstellt.",
     "keep_exchange": "Tausch beibehalten",
     "add_participant_title": "Teilnehmende hinzufügen",
-    "role_provider": "Anbietend",
-    "role_receiver": "Empfangend",
     "search_members_placeholder": "Mitglieder nach Name suchen...",
     "search_members_aria": "Mitglieder suchen",
     "add_as_role": "Als {{role}} hinzufügen",
     "no_members_found": "Keine Mitglieder gefunden, die Ihrer Suche entsprechen.",
     "done": "Fertig",
     "aria_exchange_participants": "Austauschteilnehmer",
-    "aria_hour_split": "Stundenaufteilung",
     "participants_heading_one": "Teilnehmende ({{count}})",
     "participants_heading_other": "Teilnehmende ({{count}})",
     "hours_amount_one": "{{count}} Std.",
@@ -114,32 +158,16 @@
     "description_heading": "Beschreibung",
     "total_hours_label": "Stunden gesamt",
     "total_hours_placeholder": "z.B. 10",
-    "hours_unit": "Stunden",
-    "split_type_heading": "Aufteilungsart",
-    "split_type_desc": "Wie sollen die Stunden unter den Teilnehmenden verteilt werden?",
-    "split_equal_title": "Gleichmässige Aufteilung",
-    "split_equal_desc": "Gesamtstunden werden gleichmässig unter allen Anbietenden und Empfangenden aufgeteilt.",
-    "split_custom_title": "Individuelle Stunden",
-    "split_custom_desc": "Legen Sie für jeden Teilnehmenden individuelle Stunden fest.",
-    "split_weighted_title": "Gewichtete Aufteilung",
-    "split_weighted_desc": "Stunden werden proportional nach zugewiesener Gewichtung verteilt.",
+    "kind_label": "Art des Tauschs",
     "next": "Weiter",
     "back": "Zurück",
     "review": "Überprüfen",
     "add_participants": "Teilnehmende hinzufügen",
-    "add_participants_desc": "Suchen Sie nach Mitgliedern und fügen Sie diese als Anbietende oder Empfangende hinzu. Sie benötigen mindestens 1 Anbietende(n) und 1 Empfangende(n).",
-    "providers_count": "Anbietende ({{count}})",
-    "receivers_count": "Empfangende ({{count}})",
+    "add_participants_desc": "Suchen Sie nach Mitgliedern und fügen Sie jede Person bei „Zeit geben“ oder „Zeit erhalten“ hinzu. Auf beiden Seiten wird mindestens eine Person benötigt.",
     "no_participants_yet": "Noch keine Teilnehmer hinzugefügt",
     "add_yourself": "Sich selbst hinzufügen als",
-    "validation_min_participants": "Sie benötigen mindestens 1 Anbietende(n) und 1 Empfangende(n), um fortzufahren.",
-    "hour_split_preview": "Vorschau der Stundenaufteilung",
+    "validation_min_participants": "Zum Fortfahren benötigen Sie mindestens eine Person, die Zeit gibt, und eine Person, die Zeit erhält.",
     "hour_split_preview_desc": "Überprüfen Sie, wie die Stunden zwischen den Teilnehmenden verteilt werden.",
-    "transfer_summary": "{{providerCount}} Anbietende(r) überträgt/übertragen {{hours}} Stunde(n) an {{receiverCount}} Empfangende(n) per {{splitType}}-Aufteilung.",
-    "unable_to_calculate": "Aufteilung kann nicht berechnet werden. Überprüfen Sie die Stunden oder Gewichtungen der Teilnehmenden.",
-    "per_participant_summary": "Zusammenfassung pro Teilnehmer",
-    "giving": "gibt",
-    "receiving": "empfängt",
     "review_your_exchange": "Ihren Tausch überprüfen",
     "review_your_exchange_desc": "Sieht alles gut aus? Erstellen Sie Ihren Gruppentausch.",
     "participants_label": "Teilnehmende",
@@ -147,17 +175,10 @@
     "hours_placeholder": "Stunden",
     "weight_placeholder": "Gewichtung",
     "hours_for": "Stunden für {{name}}",
-    "weight_for": "Gewichtung für {{name}}",
-    "aria_hour_split_preview": "Vorschau der Stundenaufteilung",
     "current_step": "Aktueller Schritt",
     "step_of_named": "Schritt {{current}} von {{total}}: {{name}}",
-    "hours_value": "{{hours}} Std.",
     "hours_suffix": "Std.",
-    "weight_suffix": "X",
-    "providers_count_one": "Anbietende ({{count}})",
-    "providers_count_other": "Anbietende ({{count}})",
-    "receivers_count_one": "Empfangende ({{count}})",
-    "receivers_count_other": "Empfangende ({{count}})"
+    "weight_suffix": "X"
   },
   "toast": {
     "exchange_started": "Austausch gestartet",
@@ -196,7 +217,5 @@
     "create": {
       "title": "Gruppenaustausch erstellen"
     }
-  },
-  "role_provider": "Anbietend",
-  "role_receiver": "Empfangend"
+  }
 }
