@@ -37862,7 +37862,7 @@ describe('shared accessible frontend shell', () => {
     expect(incidentResponse.text).toContain('site');
     expect(incidentResponse.text).toContain('A wet floor caused a near miss beside the kitchen entrance during setup.');
     expect(incidentResponse.text).toContain('Medium');
-    expect(incidentResponse.text).toContain('Under review');
+    expect(incidentResponse.text).toContain('Being looked into'); // plain member words, as on the report page
     expect(incidentResponse.text).toContain('20 June 2026');
     expect(incidentResponse.text).toContain('Unattended equipment');
     expect(incidentResponse.text).toContain('Low');

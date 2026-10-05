@@ -34,6 +34,7 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 import { OrgSafeguardingPage } from './OrgSafeguardingPage';
 import { api } from '@/lib/api';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const summary = (overrides: Record<string, unknown> = {}) => ({
   id: 12,
@@ -168,5 +169,7 @@ describe('OrgSafeguardingPage', () => {
     expect(await screen.findByText('org_safeguarding.empty')).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith('/v2/volunteering/organisations/5/incidents');
     expect(within(document.body).queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    // Inside the dashboard the dashboard keeps its own browser-tab title.
+    expect(vi.mocked(usePageTitle)).not.toHaveBeenCalled();
   });
 });

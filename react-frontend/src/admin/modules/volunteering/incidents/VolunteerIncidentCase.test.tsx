@@ -256,4 +256,13 @@ describe('VolunteerIncidentCase', () => {
 
     expect(await screen.findByText(/This incident could not be found/)).toBeInTheDocument();
   });
+
+  it('never puts the free-text title of a report in the browser tab', async () => {
+    const { usePageTitle } = await import('@/hooks');
+    await renderCase();
+
+    expect(vi.mocked(usePageTitle)).toHaveBeenCalledWith(expect.stringContaining('#12'));
+    expect(vi.mocked(usePageTitle)).not.toHaveBeenCalledWith(expect.stringContaining('Left alone on shift'));
+  });
+
 });

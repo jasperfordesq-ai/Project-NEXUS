@@ -136,12 +136,17 @@ export function OrgSafeguardingPage({ embedded = false, orgId: orgIdProp }: OrgS
   const orgId = orgIdProp ?? Number(params.orgId);
   const incidentId = !embedded && params.id ? Number(params.id) : null;
 
-  usePageTitle(t('org_safeguarding.title'));
+  const page = incidentId
+    ? <IncidentView orgId={orgId} incidentId={incidentId} />
+    : <IncidentList orgId={orgId} embedded={embedded} />;
 
-  if (incidentId) {
-    return <IncidentView orgId={orgId} incidentId={incidentId} />;
-  }
-  return <IncidentList orgId={orgId} embedded={embedded} />;
+  // Inside the organisation dashboard the dashboard keeps its own tab title.
+  return embedded ? page : <><PageTitle title={t('org_safeguarding.title')} />{page}</>;
+}
+
+function PageTitle({ title }: { title: string }) {
+  usePageTitle(title);
+  return null;
 }
 
 function IncidentList({ orgId, embedded }: { orgId: number; embedded: boolean }) {

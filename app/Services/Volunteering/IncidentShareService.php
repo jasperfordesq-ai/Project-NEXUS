@@ -45,13 +45,21 @@ final class IncidentShareService
         if ($orgId <= 0) {
             return 'no_organisation';
         }
-        if (IncidentAccess::organisationLeadIds($tenantId, $orgId) === []) {
+        // A lead the incident is about can never read it (F-507), so they do not
+        // count: sharing with only them would share with nobody.
+        if (self::readableLeadIds($tenantId, $incident) === []) {
             return 'no_lead';
         }
-        if ($this->activeShare($tenantId, $incident)) {
-            return 'already_shared';
-        }
-        DB::transaction(function () use ($tenantId, $incident, $orgId, $staffId) {
+        $outcome = DB::transaction(function () use ($tenantId, $incident, $orgId, $staffId) {
+            // Lock the incident so two clicks cannot both create a share.
+            DB::table('vol_safeguarding_incidents')
+                ->where('id', (int) $incident->id)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
+            if ($this->activeShare($tenantId, $incident)) {
+                return 'already_shared';
+            }
             DB::table('vol_incident_shares')->insert([
                 'tenant_id' => $tenantId,
                 'incident_id' => (int) $incident->id,
@@ -63,9 +71,25 @@ final class IncidentShareService
                 $tenantId, (int) $incident->id, 'shared_with_organisation', $staffId, 'staff', null,
                 ['organization_id' => $orgId], $orgId
             );
+
+            return 'shared';
         });
 
-        return 'shared';
+        return $outcome;
+    }
+
+    /**
+     * The organisation's lead and deputy who may actually read this incident —
+     * never someone it is about.
+     *
+     * @return list<int>
+     */
+    public static function readableLeadIds(int $tenantId, object $incident): array
+    {
+        return array_values(array_filter(
+            IncidentAccess::organisationLeadIds($tenantId, (int) ($incident->organization_id ?? 0)),
+            fn (int $id) => !IncidentAccess::isAboutUser($incident, $id)
+        ));
     }
 
     /** Withdraw every open share of this incident (with any organisation); one timeline row per share. */

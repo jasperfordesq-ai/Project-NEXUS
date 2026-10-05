@@ -142,7 +142,9 @@ export function VolunteerIncidentCase({ incidentId, backPath }: VolunteerInciden
   const [audience, setAudience] = useState<'reporter' | 'organisation'>('reporter');
   const [message, setMessage] = useState('');
 
-  usePageTitle(incident ? `#${incident.id} ${incident.title}` : t('volunteering.safeguarding_page_title'));
+  // Only the reference: the report's own title is free text about a person and
+  // would end up in browser history.
+  usePageTitle(incident ? t('volunteering.case_reference', { id: incident.id }) : t('volunteering.safeguarding_page_title'));
 
   const load = useCallback(async () => {
     try {

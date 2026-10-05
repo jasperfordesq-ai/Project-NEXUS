@@ -61,7 +61,7 @@ class VolunteerIncidentCaseController extends BaseApiController
             $this->safeguardingService->getIncidentHandlers($tenantId),
             fn (array $h) => !IncidentAccess::isAboutUser($incident, (int) $h['id'])
         ));
-        $view['organisation_leads'] = $this->leadNames($tenantId, (int) ($incident->organization_id ?? 0));
+        $view['organisation_leads'] = $this->leadNames($tenantId, $incident);
 
         return $this->respondWithData($view);
     }
@@ -111,7 +111,7 @@ class VolunteerIncidentCaseController extends BaseApiController
         $eventId = $audience === 'reporter'
             ? $this->timeline->record($tenantId, $id, 'message_to_reporter', $staffId, 'staff', $body)
             : $this->timeline->record($tenantId, $id, 'message_to_organisation', $staffId, 'staff', $body, [], $orgId);
-        $this->safeguardingService->notifyIncidentMessage($tenantId, $incident, $audience);
+        $this->safeguardingService->notifyIncidentMessage($tenantId, $incident, $audience, $staffId);
 
         return $this->respondWithData(['event_id' => $eventId], null, 201);
     }
@@ -149,9 +149,12 @@ class VolunteerIncidentCaseController extends BaseApiController
         $this->rateLimit('vol_incident_case_write', 30, 60);
         $tenantId = TenantContext::getId();
         $incident = $this->staffIncident($id, $tenantId, $staffId);
-        if (!$incident || !$this->shares->withdraw($tenantId, $incident, $staffId)) {
+        if (!$incident) {
             return $this->notFound();
         }
+        // Already withdrawn (perhaps by a colleague a moment ago): the outcome the
+        // caller wanted is true, so say so rather than "not found".
+        $this->shares->withdraw($tenantId, $incident, $staffId);
 
         return $this->respondWithData(['shared' => false]);
     }
@@ -223,20 +226,34 @@ class VolunteerIncidentCaseController extends BaseApiController
             ->limit(200)
             ->get();
 
+        // Everything a row needs is looked up once for the whole list: the
+        // caller's relation, the names, and which incidents are shared.
+        $relation = IncidentAccess::organisationRelation($tenantId, $userId, $orgId);
+        $incidents = $incidents->reject(fn ($incident) => IncidentAccess::isAboutUser($incident, $userId))->values();
+        $orgName = DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', $tenantId)->value('name');
+        $oppIds = $incidents->pluck('opportunity_id')->filter()->map(fn ($v) => (int) $v)->unique()->values()->all();
+        $oppTitles = $oppIds === [] ? collect() : DB::table('vol_opportunities')
+            ->where('tenant_id', $tenantId)->whereIn('id', $oppIds)->pluck('title', 'id');
+        $sharedIds = $relation === IncidentAccess::ORG_LEAD && $incidents->isNotEmpty()
+            ? DB::table('vol_incident_shares')
+                ->where('tenant_id', $tenantId)
+                ->where('organization_id', $orgId)
+                ->whereNull('withdrawn_at')
+                ->whereIn('incident_id', $incidents->pluck('id')->map(fn ($v) => (int) $v)->all())
+                ->pluck('incident_id')->map(fn ($v) => (int) $v)->all()
+            : [];
+
         $items = [];
         foreach ($incidents as $incident) {
-            if (IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::NONE) {
-                continue;
-            }
-            $items[] = IncidentViews::summary($incident) + [
-                'full_report_shared' => $this->leadHasShare($tenantId, $incident, $userId, $orgId),
-            ];
+            $oppTitle = $incident->opportunity_id ? $oppTitles->get((int) $incident->opportunity_id) : null;
+            $items[] = IncidentViews::summaryWithNames(
+                $incident,
+                $orgName !== null ? (string) $orgName : null,
+                $oppTitle !== null ? (string) $oppTitle : null
+            ) + ['full_report_shared' => in_array((int) $incident->id, $sharedIds, true)];
         }
 
-        return $this->respondWithData([
-            'items' => $items,
-            'relation' => IncidentAccess::organisationRelation($tenantId, $userId, $orgId),
-        ]);
+        return $this->respondWithData(['items' => $items, 'relation' => $relation]);
     }
 
     /** GET /v2/volunteering/organisations/{orgId}/incidents/{id} */
@@ -272,6 +289,9 @@ class VolunteerIncidentCaseController extends BaseApiController
         if (!$incident || IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::NONE) {
             return $this->notFound();
         }
+        if ($incident->status === 'closed') {
+            return $this->respondWithError('INCIDENT_CLOSED', __('api.vol_incident_closed'), null, 409);
+        }
         $body = $this->text('body', self::CONTRIBUTION_MIN);
         if ($body === null) {
             return $this->invalidText('body', self::CONTRIBUTION_MIN);
@@ -284,13 +304,6 @@ class VolunteerIncidentCaseController extends BaseApiController
     }
 
     // ── Shared helpers ───────────────────────────────────────────────────────
-
-    /** Whether this caller is one of the organisation's leads and the full report is shared with it. */
-    private function leadHasShare(int $tenantId, object $incident, int $userId, int $orgId): bool
-    {
-        return IncidentAccess::orgRelation($incident, $tenantId, $userId, $orgId) === IncidentAccess::ORG_LEAD
-            && $this->shares->activeShare($tenantId, $incident) !== null;
-    }
 
     /** The incident when the caller reported it (including about themselves); otherwise null. */
     private function reporterIncident(int $id, int $tenantId, int $userId): ?object
@@ -347,9 +360,9 @@ class VolunteerIncidentCaseController extends BaseApiController
     }
 
     /** @return list<array{id: int, name: string}> */
-    private function leadNames(int $tenantId, int $organizationId): array
+    private function leadNames(int $tenantId, object $incident): array
     {
-        $ids = IncidentAccess::organisationLeadIds($tenantId, $organizationId);
+        $ids = IncidentShareService::readableLeadIds($tenantId, $incident);
         if ($ids === []) {
             return [];
         }

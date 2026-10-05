@@ -98,7 +98,7 @@ final class StaffIncidentCaseApiTest extends TestCase
         $this->assertNotNull($this->apiGet("/v2/admin/volunteering/incidents/{$incident->id}")->json('data.share'));
 
         $this->apiDelete("/v2/admin/volunteering/incidents/{$incident->id}/share")->assertStatus(200);
-        $this->apiDelete("/v2/admin/volunteering/incidents/{$incident->id}/share")->assertStatus(404);
+        $this->apiDelete("/v2/admin/volunteering/incidents/{$incident->id}/share")->assertStatus(200); // already withdrawn: harmless
 
         $noOrg = $this->incident($this->user());
         $this->apiPost("/v2/admin/volunteering/incidents/{$noOrg->id}/share")

@@ -612,7 +612,10 @@ class SafeguardingService
                 }
             }
 
-            $id = DB::table('vol_safeguarding_incidents')->insertGetId([
+            // The incident and the first row of its permanent history are written
+            // together: a report whose history cannot be written is not half saved
+            // (a retry would otherwise file it twice, and staff would never be told).
+            $incidentRow = [
                 'tenant_id' => $tenantId,
                 'reported_by' => $reporterId,
                 'title' => $data['title'] ?? '',
@@ -629,31 +632,33 @@ class SafeguardingService
                 'status' => 'open',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+            [$id, $record] = DB::transaction(function () use ($incidentRow, $tenantId, $reporterId, $incidentType, $severity, $organizationId, $opportunityId) {
+                $newId = DB::table('vol_safeguarding_incidents')->insertGetId($incidentRow);
+                $row = DB::table('vol_safeguarding_incidents')
+                    ->where('id', $newId)
+                    ->where('tenant_id', $tenantId)
+                    ->first();
+                app(\App\Services\Volunteering\IncidentTimelineService::class)->record(
+                    $tenantId, (int) $newId, 'reported', $reporterId, 'reporter', null,
+                    [
+                        'type' => $incidentType,
+                        'severity' => $severity,
+                        'incident_date' => $row && $row->incident_date ? substr((string) $row->incident_date, 0, 10) : null,
+                        'organization_id' => $organizationId,
+                        'opportunity_id' => $opportunityId,
+                    ],
+                    $organizationId
+                );
 
-            $record = DB::table('vol_safeguarding_incidents')
-                ->where('id', $id)
-                ->where('tenant_id', $tenantId)
-                ->first();
+                return [$newId, $row];
+            });
 
             $this->logActivity($reporterId, 'safeguarding_incident_reported', 'safeguarding_incident', $id, [
                 'severity' => $severity,
                 'incident_type' => $incidentType,
                 'title' => $data['title'] ?? '',
             ]);
-
-            // The first row of the incident's permanent timeline.
-            app(\App\Services\Volunteering\IncidentTimelineService::class)->record(
-                $tenantId, (int) $id, 'reported', $reporterId, 'reporter', null,
-                [
-                    'type' => $incidentType,
-                    'severity' => $severity,
-                    'incident_date' => $record && $record->incident_date ? substr((string) $record->incident_date, 0, 10) : null,
-                    'organization_id' => $organizationId,
-                    'opportunity_id' => $opportunityId,
-                ],
-                $organizationId
-            );
 
             // Notify all admins/brokers of new incident (legally required for ALL
             // severities), then the organisation it is linked to, if any.
@@ -1136,17 +1141,23 @@ class SafeguardingService
                     ->where('tenant_id', $tenantId)
                     ->first();
                 if ($updatedIncident) {
-                    $this->notifyOrganisationOfIncident($tenantId, $updatedIncident);
+                    $this->notifyOrganisationOfIncident($tenantId, $updatedIncident, [$adminId]);
                 }
             }
 
-            // Only a status that actually changed is news to the reporter.
+            // Only a status that actually changed is news to the reporter. The
+            // handler told is the one AFTER this save, and only while they may
+            // still see the incident (staff, and not someone it is about).
             if (isset($changes['status'])) {
+                $handlerId = array_key_exists('assigned_to', $changes) ? $changes['assigned_to'] : $before['assigned_to'];
+                if ($handlerId !== null && !\App\Services\Volunteering\IncidentAccess::staffCanSee($currentIncident, $tenantId, (int) $handlerId)) {
+                    $handlerId = null;
+                }
                 $this->notifyIncidentStatusChange(
                     $tenantId,
                     $incidentId,
                     (int) $currentIncident->reported_by,
-                    $currentIncident->assigned_to ? (int) $currentIncident->assigned_to : null,
+                    $handlerId !== null ? (int) $handlerId : null,
                     $changes['status']
                 );
             }
@@ -1881,8 +1892,8 @@ class SafeguardingService
         }
     }
 
-    /** Staff sent a message: tell its audience that there is one to read. */
-    public function notifyIncidentMessage(int $tenantId, object $incident, string $audience): void
+    /** Staff sent a message: tell its audience that there is one to read — never the sender. */
+    public function notifyIncidentMessage(int $tenantId, object $incident, string $audience, ?int $senderId = null): void
     {
         if ($audience === 'reporter') {
             foreach ($this->noticeRecipients($tenantId, [(int) ($incident->reported_by ?? 0)]) as $reporter) {
@@ -1896,7 +1907,8 @@ class SafeguardingService
         }
 
         $organisation = (string) ($this->incidentContext($tenantId, $incident)['organisation'] ?? '');
-        foreach ($this->noticeRecipients($tenantId, $this->organisationNoticeIds($tenantId, $incident)) as $contact) {
+        $ids = array_values(array_filter($this->organisationNoticeIds($tenantId, $incident), fn (int $id) => $id !== (int) $senderId));
+        foreach ($this->noticeRecipients($tenantId, $ids) as $contact) {
             $this->sendIncidentNotice($tenantId, $contact, $incident, self::organisationIncidentLink($incident), [
                 'bell' => 'message_org_bell', 'subject' => 'message_org_subject',
                 'title' => 'message_org_title', 'body' => 'message_org_body', 'cta' => 'message_org_cta',
@@ -1921,7 +1933,16 @@ class SafeguardingService
                 SafeguardingStaff::scope(DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active'))->pluck('id')->map(fn ($id) => (int) $id)->all(),
                 fn (int $id) => $access::staffCanSee($incident, $tenantId, $id)
             ));
-        $ids = array_values(array_filter($ids, fn (int $id) => $id !== (int) $writerId && $id !== (int) ($incident->reported_by ?? 0)));
+        $notWriterOrReporter = fn (int $id) => $id !== (int) $writerId && $id !== (int) ($incident->reported_by ?? 0);
+        $ids = array_values(array_filter($ids, $notWriterOrReporter));
+        // The handler was the writer or the reporter: tell the rest of the team
+        // rather than nobody.
+        if ($ids === [] && $handler > 0) {
+            $ids = array_values(array_filter(
+                SafeguardingStaff::scope(DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active'))->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                fn (int $id) => $access::staffCanSee($incident, $tenantId, $id) && $notWriterOrReporter($id)
+            ));
+        }
 
         $bell = $kind === 'org_update' ? 'contribution_bell_update' : 'contribution_bell_addition';
         $body = $kind === 'org_update' ? 'contribution_body_update' : 'contribution_body_addition';
@@ -2010,14 +2031,6 @@ class SafeguardingService
     private function notifyIncidentStatusChange(int $tenantId, int $incidentId, int $reporterId, ?int $dlpUserId, string $newStatus): void
     {
         try {
-            $statusLabels = [
-                'open' => __('emails_misc.safeguarding.status_open'),
-                'investigating' => __('emails_misc.safeguarding.status_investigating'),
-                'escalated' => __('emails_misc.safeguarding.status_escalated'),
-                'resolved' => __('emails_misc.safeguarding.status_resolved'),
-                'closed' => __('emails_misc.safeguarding.status_closed'),
-            ];
-            $label = $statusLabels[$newStatus] ?? $newStatus;
             // The reporter is told in the same plain words as their report page,
             // rendered in their own language (spec §5.2).
             $plainKey = 'emails_misc.safeguarding.member_status_' . ([
@@ -2046,7 +2059,8 @@ class SafeguardingService
                 $dlpForBell = User::where('tenant_id', $tenantId)
                     ->where('id', $dlpUserId)
                     ->first(['id', 'preferred_language']);
-                LocaleContext::withLocale($dlpForBell, function () use ($dlpForBell, $tenantId, $dlpUserId, $incidentId, $label) {
+                LocaleContext::withLocale($dlpForBell, function () use ($dlpForBell, $tenantId, $dlpUserId, $incidentId, $newStatus) {
+                    $label = __('emails_misc.safeguarding.status_' . $newStatus);
                     \App\Models\Notification::create([
                         'tenant_id' => $tenantId,
                         'user_id' => $dlpUserId,
@@ -2112,9 +2126,11 @@ class SafeguardingService
             if ($incident && in_array($incident->severity, ['high', 'critical'])) {
                 $severityLabel = strtoupper($incident->severity);
                 $safeSeverity = htmlspecialchars($severityLabel, ENT_QUOTES, 'UTF-8');
-                $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
 
-                $renderForRecipient = function () use ($severityLabel, $safeSeverity, $safeLabel, $incidentId, $label) {
+                // Rendered inside the recipient's locale, so the status word is theirs.
+                $renderForRecipient = function () use ($severityLabel, $safeSeverity, $incidentId, $newStatus) {
+                    $label = __('emails_misc.safeguarding.status_' . $newStatus);
+                    $safeLabel = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
                     $emailBody = EmailTemplateBuilder::make()
                         ->theme('danger')
                         ->title(__('emails_misc.safeguarding.incident_updated_title'))

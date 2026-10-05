@@ -260,6 +260,8 @@ describe('safeguarding report page', () => {
 
     expect(res.text).toContain(`href="${MOUNT}/incidents/7"`);
     expect(res.text).toContain('#7');
+    // The same plain status words as the report page.
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.member_status_received'));
   });
 });
 

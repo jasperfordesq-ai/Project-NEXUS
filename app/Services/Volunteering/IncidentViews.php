@@ -40,6 +40,17 @@ final class IncidentViews
     {
         $names = self::names($incident);
 
+        return self::summaryWithNames($incident, $names['organisation'], $names['opportunity']);
+    }
+
+    /**
+     * The same summary, from organisation and opportunity names the caller has
+     * already looked up — so a list does not query per row.
+     */
+    public static function summaryWithNames(object $incident, ?string $organisationName, ?string $opportunityTitle): array
+    {
+        $names = ['organisation' => $organisationName, 'opportunity' => $opportunityTitle];
+
         return [
             'id' => (int) $incident->id,
             'type' => (string) $incident->incident_type,

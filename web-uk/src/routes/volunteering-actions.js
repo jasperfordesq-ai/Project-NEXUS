@@ -141,6 +141,14 @@ const SAFEGUARDING_SEVERITY_CLASSES = {
   high: 'govuk-tag--orange',
   critical: 'govuk-tag--red'
 };
+/** Plain words the member sees for each status (keys under safeguarding.member_status_*). */
+const MEMBER_STATUS_WORDS = {
+  open: 'received',
+  investigating: 'looking_into',
+  escalated: 'specialist',
+  resolved: 'dealt_with',
+  closed: 'closed'
+};
 const SAFEGUARDING_INCIDENT_STATUS_LABELS = {
   open: 'Open',
   investigating: 'Under review',
@@ -1324,8 +1332,9 @@ function normalizeSafeguardingIncident(row, t = null) {
     },
     status: {
       ...statusPresentation(statusValue, SAFEGUARDING_INCIDENT_STATUS_LABELS, SAFEGUARDING_INCIDENT_STATUS_CLASSES, 'open'),
+      // The same plain words as the report's own page (volunteering-incidents.js).
       label: t
-        ? t(`govuk_alpha_volunteering.safeguarding.incident_status_${statusValue}`)
+        ? t(`govuk_alpha_volunteering.safeguarding.member_status_${MEMBER_STATUS_WORDS[statusValue] || 'received'}`)
         : SAFEGUARDING_INCIDENT_STATUS_LABELS[statusValue]
     },
     category: trimmed(incident.category),
