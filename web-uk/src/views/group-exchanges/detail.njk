@@ -11,6 +11,30 @@
 {% endblock %}
 
 {% block content %}
+  {# One line per person, the community time fund's share when it has one, and the totals.
+     Used for what Laravel says a draft would do and for the saved split alike, so the two
+     are always worded the same. #}
+  {% macro hoursSummary(summary, totalsLabel) %}
+    <dl class="govuk-summary-list">
+      {% for row in summary.rows %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ row.roleLabel }}</dt>
+          <dd class="govuk-summary-list__value">{{ row.text }}</dd>
+        </div>
+      {% endfor %}
+      {% if summary.fund %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ summary.fund.label }}</dt>
+          <dd class="govuk-summary-list__value">{{ summary.fund.text }}</dd>
+        </div>
+      {% endif %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ totalsLabel }}</dt>
+        <dd class="govuk-summary-list__value">{{ summary.totals }}</dd>
+      </div>
+    </dl>
+  {% endmacro %}
+
   <span class="govuk-caption-xl" id="group-exchange-top">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ exchange.title }}</h1>
@@ -28,12 +52,20 @@
     </div>
   {% endif %}
 
-  {% if errorMessage %}
+  {# A split that cannot go ahead is explained in the server's own words. #}
+  {% if errorMessage or (check and check.problem) %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
         <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
         <div class="govuk-error-summary__body">
-          <p class="govuk-body">{{ errorMessage }}</p>
+          <ul class="govuk-list govuk-error-summary__list">
+            {% if check and check.problem %}
+              <li><a href="#hours-check">{{ check.problem }}</a></li>
+            {% endif %}
+            {% if errorMessage %}
+              <li>{{ errorMessage }}</li>
+            {% endif %}
+          </ul>
         </div>
       </div>
     </div>
@@ -44,8 +76,14 @@
   {% endif %}
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-8">
+    {% if exchange.kindLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("group_exchanges.kind_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ exchange.kindLabel }}</dd>
+      </div>
+    {% endif %}
     <div class="govuk-summary-list__row">
-      <dt class="govuk-summary-list__key">{{ t("group_exchanges.total_hours_label") }}</dt>
+      <dt class="govuk-summary-list__key">{{ exchange.hoursLabel }}</dt>
       <dd class="govuk-summary-list__value">{{ exchange.totalHours }}</dd>
     </div>
     <div class="govuk-summary-list__row">
@@ -96,6 +134,37 @@
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.no_participants") }}</p></div>
   {% endif %}
 
+  {# What everyone will earn or pay. After "Check the hours" this is Laravel's answer for the
+     exchange as it would be with the person being added; otherwise it is the saved split.
+     The preview is the only thing carrying id="hours-check", so the link in the error
+     summary has somewhere to land and a refresh (the preview is used once) drops it. #}
+  {% if participants and participants.length %}
+    <section aria-labelledby="hours-heading" class="govuk-!-margin-top-6">
+      <div{% if check %} id="hours-check"{% endif %}>
+        <h2 class="govuk-heading-l" id="hours-heading">{{ t("group_exchanges.summary.heading") }}</h2>
+        {% if check %}
+          <p class="govuk-body">{{ t("group_exchanges.check_result_hint") }}</p>
+          {% if check.summary %}
+            {{ hoursSummary(check.summary, t("group_exchanges.summary.totals_label")) }}
+          {% elif check.problem %}
+            <div class="govuk-inset-text"><p class="govuk-body">{{ check.problem }}</p></div>
+          {% endif %}
+        {% elif savedSplit %}
+          {{ hoursSummary(savedSplit, t("group_exchanges.summary.totals_label")) }}
+        {% endif %}
+      </div>
+
+      {% if editable %}
+        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/participants') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="participant_q" value="{{ participantQuery }}">
+          <p class="govuk-body">{{ t("group_exchanges.check_body") }}</p>
+          <button class="govuk-button govuk-button--secondary" name="action" value="preview" data-module="govuk-button">{{ t("group_exchanges.check_button") }}</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+
   {# 🔴 Start was missing entirely, so the exchange never left draft and nobody was ever
      notified to confirm. Offered only while the organiser can still change who is taking
      part, and only once both roles have somebody in them — the same rule React uses. When
@@ -117,7 +186,8 @@
 
   {# Confirm belongs only to a STARTED exchange. This block used to render on a draft,
      asking people to confirm something not yet under way — and their confirmation could
-     not lead anywhere, because Complete also requires the exchange to have started. #}
+     not lead anywhere, because Complete also requires the exchange to have started. The
+     sentence above the button says what confirming means for THIS person. #}
   {% if isParticipant and isStarted %}
     <section aria-labelledby="confirm-heading" class="govuk-!-margin-top-6">
       <h2 class="govuk-heading-l" id="confirm-heading">{{ t("group_exchanges.confirm_title") }}</h2>
@@ -125,6 +195,9 @@
         <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.confirmed_already") }}</p></div>
       {% else %}
         <p class="govuk-body">{{ t("group_exchanges.confirm_body") }}</p>
+        {% if viewerWill %}
+          <p class="govuk-body govuk-!-font-weight-bold">{{ viewerWill }}</p>
+        {% endif %}
         <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/confirm') }}">
           <input type="hidden" name="terms_token" value="{{ exchange.terms_token }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -149,23 +222,43 @@
       {% if participantQuery %}
         {% if participantResults and participantResults.length %}
           {% for candidate in participantResults %}
+            {# After "Check the hours" the person being added comes back as it was typed. #}
+            {% set typed = check.candidate if (check and check.candidate and check.candidate.id == candidate.id) else null %}
             <div class="nexus-alpha-card govuk-!-margin-bottom-4">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ candidate.name }}</h3>
               <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/participants') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="participant_id" value="{{ candidate.id }}">
+                <input type="hidden" name="participant_q" value="{{ participantQuery }}">
                 <div class="govuk-form-group govuk-!-margin-bottom-3">
                   <label class="govuk-label" for="role-{{ candidate.id }}">{{ t("group_exchanges.add_role_label") }}</label>
                   <select class="govuk-select" id="role-{{ candidate.id }}" name="role">
-                    <option value="provider">{{ t("group_exchanges.role_provider") }}</option>
-                    <option value="receiver">{{ t("group_exchanges.role_receiver") }}</option>
+                    <option value="provider"{% if typed and typed.role == "provider" %} selected{% endif %}>{{ t("group_exchanges.role_provider") }}</option>
+                    <option value="receiver"{% if typed and typed.role == "receiver" %} selected{% endif %}>{{ t("group_exchanges.role_receiver") }}</option>
                   </select>
                 </div>
-                <div class="govuk-form-group govuk-!-margin-bottom-3">
-                  <label class="govuk-label" for="hours-{{ candidate.id }}">{{ t("group_exchanges.add_hours_label") }}</label>
-                  <input class="govuk-input govuk-input--width-5" id="hours-{{ candidate.id }}" name="hours" type="number" min="0" max="1000" step="0.25" inputmode="decimal" value="0">
+                {# Only the number this kind of exchange needs: hours (a workshop and a team
+                   start from the number already given), a weight, or nothing at all. #}
+                {% if addForm.askHours %}
+                  <div class="govuk-form-group govuk-!-margin-bottom-3">
+                    <label class="govuk-label" for="hours-{{ candidate.id }}">{{ t("group_exchanges.add_hours_label") }}</label>
+                    {% if addForm.hoursHintKey %}
+                      <div id="hours-{{ candidate.id }}-hint" class="govuk-hint">{{ t(addForm.hoursHintKey) }}</div>
+                    {% endif %}
+                    <input class="govuk-input govuk-input--width-5" id="hours-{{ candidate.id }}" name="hours" type="number" min="0" max="1000" step="0.25" inputmode="decimal" value="{{ typed.hours if typed else addForm.hoursPrefill }}"{% if addForm.hoursRequired %} required{% endif %}{% if addForm.hoursHintKey %} aria-describedby="hours-{{ candidate.id }}-hint"{% endif %}>
+                  </div>
+                {% endif %}
+                {% if addForm.askWeight %}
+                  <div class="govuk-form-group govuk-!-margin-bottom-3">
+                    <label class="govuk-label" for="weight-{{ candidate.id }}">{{ t("group_exchanges.weight_label", { name: candidate.name }) }}</label>
+                    <div id="weight-{{ candidate.id }}-hint" class="govuk-hint">{{ t("group_exchanges.weight_hint") }}</div>
+                    <input class="govuk-input govuk-input--width-5" id="weight-{{ candidate.id }}" name="weight" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" value="{{ typed.weight if (typed and typed.weight) else 1 }}" aria-describedby="weight-{{ candidate.id }}-hint">
+                  </div>
+                {% endif %}
+                <div class="nexus-alpha-actions">
+                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.add_button") }}</button>
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="preview" data-module="govuk-button">{{ t("group_exchanges.check_button") }}</button>
                 </div>
-                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.add_button") }}</button>
               </form>
             </div>
           {% endfor %}

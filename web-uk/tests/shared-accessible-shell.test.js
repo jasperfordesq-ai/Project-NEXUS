@@ -22049,7 +22049,9 @@ describe('shared accessible frontend shell', () => {
     expect(create.status).toBe(200);
     expect(create.text).toContain('Start a group exchange');
     expect(create.text).toContain('name="title"');
-    expect(create.text).toContain('name="total_hours"');
+    // One number box per kind, so the form works without JavaScript.
+    expect(create.text).toContain('name="total_hours_workshop"');
+    expect(create.text).toContain('name="total_hours_custom"');
     expect(create.text).toContain('name="split_type"');
     expect(create.text).toContain('Create group exchange');
     expect(create.text).toContain('Something went wrong. Please try again.');
@@ -36159,12 +36161,12 @@ describe('shared accessible frontend shell', () => {
     expect(free.text).toContain('Frei');
   });
 
-  it('gives a new participant the share the organiser typed on a weighted exchange', async () => {
-    // 🔴 `weight` was hardcoded to 1. On a WEIGHTED exchange the service pays each
-    // participant (weight / role-total-weight) * total_hours, so the hours the organiser
-    // typed were discarded AND every existing participant's share moved, because adding
-    // a weight changes the divisor. Equal and custom never read weight, so 1 is right
-    // there and must stay 1.
+  it('gives a new participant the weight the organiser typed on a weighted exchange', async () => {
+    // 🔴 `weight` was hardcoded to 1, then (for a while) borrowed from the hours box because
+    // the form had no weight box. On a WEIGHTED exchange the service pays each participant
+    // (weight / role-total-weight) * total_hours, so the form now asks for the weight itself
+    // ("1 is a normal share, 2 is twice as much") and sends it. Equal and custom never read
+    // weight, so a weight posted for them is ignored and 1 is sent.
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -36186,11 +36188,11 @@ describe('shared accessible frontend shell', () => {
         .post('/group-exchanges/7/participants')
         .set('Cookie', cookie)
         .type('form')
-        .send({ _csrf: csrf, participant_id: '55', role: 'receiver', hours: '3.5' });
+        .send({ _csrf: csrf, participant_id: '55', role: 'receiver', weight: '3.5' });
 
       const add = api.callGroupExchangeApi.mock.calls.find((call) => call[1] === 'POST');
       expect(add).toBeTruthy();
-      expect(add[3]).toEqual({ user_id: 55, role: 'receiver', hours: 3.5, weight: expectedWeight });
+      expect(add[3]).toEqual({ user_id: 55, role: 'receiver', hours: 0, weight: expectedWeight });
     }
   });
 

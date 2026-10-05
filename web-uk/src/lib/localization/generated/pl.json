@@ -2904,9 +2904,65 @@
                 "form_description_label": "Opis (opcjonalnie)",
                 "form_hours_label": "Łączna liczba godzin",
                 "form_hours_hint": "Łączna liczba wymienianych godzin.",
-                "form_split_label": "Jak podzielone są godziny?",
-                "split_equal": "Podziel równo między osoby w każdej roli",
-                "split_custom": "Sam ustalam godziny dla każdej osoby",
+                "form_split_label": "Jaki to rodzaj wymiany grupowej?",
+                "kinds_rule": "Jedna godzina czasu to jeden kredyt czasowy. Osoby dające czas zdobywają kredyty, a osoby otrzymujące czas za nie płacą.",
+                "kinds": {
+                    "workshop": {
+                        "title": "Warsztat lub zajęcia",
+                        "description": "Ktoś prowadzi spotkanie dla grupy. Osoba prowadząca zdobywa godziny, które w to włożyła. Każdy uczestnik płaci za godziny, w których brał udział. Pozostałe godziny trafiają do funduszu społeczności.",
+                        "example": "Maria prowadzi 2-godzinne zajęcia dla 4 osób. Maria zdobywa 2 godziny. Każda osoba płaci 2 godziny. Pozostałe 6 godzin trafia do funduszu społeczności."
+                    },
+                    "team": {
+                        "title": "Zespół pomaga komuś",
+                        "description": "Kilka osób poświęca swój czas jednej osobie. Każdy pomocnik zdobywa godziny, które poświęcił, a osoba, której pomagano, płaci za wszystko.",
+                        "example": "Dwoje wolontariuszy poświęca 1 godzinę na przeniesienie mebli dla Toma. Każdy wolontariusz zdobywa 1 godzinę. Tom płaci 2 godziny."
+                    },
+                    "equal": {
+                        "title": "Podziel po równo",
+                        "description": "Ustal jedną sumę. Każda osoba dająca czas zdobywa równą jej część, a każda osoba otrzymująca czas płaci równą część.",
+                        "example": "6 godzin, 2 osoby dają, a 3 otrzymują: każda osoba dająca zdobywa 3 godziny, a każda otrzymująca płaci 2."
+                    },
+                    "weighted": {
+                        "title": "Podziel według włożonego wysiłku",
+                        "description": "Jak podział po równo, ale zaznaczasz, kto zrobił więcej. Osoba oznaczona liczbą 2 dostaje dwa razy większą część niż osoba oznaczona liczbą 1.",
+                        "example": "Z 6 godzin Ann (oznaczona 2) zdobywa 4, a Ben (oznaczony 1) zdobywa 2."
+                    },
+                    "custom": {
+                        "title": "Wpisz godziny każdej osoby",
+                        "description": "Wpisujesz dokładnie, ile każda osoba zdobywa lub płaci. Suma zdobytych godzin musi być równa sumie zapłaconych.",
+                        "example": "Ann zdobywa 3, Ben zdobywa 1, a Cara płaci 4."
+                    }
+                },
+                "kind_label": "Rodzaj wymiany",
+                "session_hours_label": "Jak długo trwało spotkanie (w godzinach)?",
+                "session_hours_hint": "Wypełniamy to dla wszystkich. Zmień dla osób, które były krócej.",
+                "helper_hours_label": "Ile godzin poświęcił każdy pomocnik?",
+                "helper_hours_hint": "Wypełniamy to dla każdego pomocnika. Zmień dla osób, które poświęciły więcej lub mniej czasu.",
+                "weight_label": "Udział wysiłku dla: :name",
+                "weight_hint": "1 to zwykły udział. 2 to dwa razy tyle.",
+                "add_hours_hint": {
+                    "workshop": "Wpisaliśmy długość spotkania. Zmień ją, jeśli ta osoba dawała czas lub uczestniczyła krócej.",
+                    "team": "Wpisaliśmy godziny poświęcone przez każdego pomocnika. Zmień je dla osoby, która poświęciła więcej lub mniej czasu. Nie są używane dla osoby, której pomagano.",
+                    "custom": "Godziny, które ta osoba zdobywa (jeśli daje czas) lub płaci (jeśli go otrzymuje)."
+                },
+                "session_length_label": "Długość spotkania (godziny)",
+                "hours_per_helper_label": "Godziny na pomocnika",
+                "check_body": "Zobacz, ile każda osoba zdobędzie lub zapłaci i co trafi do funduszu społeczności, zanim rozpoczniesz wymianę.",
+                "check_button": "Sprawdź godziny",
+                "check_result_hint": "Tak rozłożyłyby się godziny przy tym, co wpisano. Nic jeszcze nie zapisano.",
+                "summary": {
+                    "heading": "Ile każda osoba zdobędzie lub zapłaci",
+                    "earns": "{1} :name zdobywa :hours godzinę|[5,*] :name zdobywa :hours godzin|[2,4] :name zdobywa :hours godziny",
+                    "pays": "{1} :name płaci :hours godzinę|[5,*] :name płaci :hours godzin|[2,4] :name płaci :hours godziny",
+                    "to_fund": "{1} :hours godzina trafia do funduszu społeczności|[5,*] :hours godzin trafia do funduszu społeczności|[2,4] :hours godziny trafiają do funduszu społeczności",
+                    "totals": "Zapłacono: :paid godz. · Zdobyto: :earned godz.",
+                    "totals_with_fund": "Zapłacono: :paid godz. · Zdobyto: :earned godz. · Do funduszu społeczności: :fund godz.",
+                    "you_earn": "{1} Zdobędziesz :hours godzinę|[5,*] Zdobędziesz :hours godzin|[2,4] Zdobędziesz :hours godziny",
+                    "you_pay": "{1} Zapłacisz :hours godzinę|[5,*] Zapłacisz :hours godzin|[2,4] Zapłacisz :hours godziny",
+                    "unknown_member": "Członek",
+                    "fund_label": "Fundusz społeczności",
+                    "totals_label": "Razem"
+                },
                 "create_submit": "Utwórz wymianę grupową",
                 "participants_title": "Osoby w tej wymianie",
                 "no_participants": "Nie dodano jeszcze żadnej osoby.",
@@ -2935,7 +2991,7 @@
                 "start_button": "Rozpocznij i poproś wszystkich o potwierdzenie",
                 "complete_title": "Ukończ wymianę",
                 "complete_body": "Gdy wszyscy potwierdzą, ukończenie wymiany przenosi kredyty czasowe. Tej operacji nie można cofnąć.",
-                "complete_warning": "Ukończenie tej wymiany natychmiast przenosi kredyty czasowe i nie można tego cofnąć.",
+                "complete_warning": "Ukończenie tej wymiany natychmiast przesuwa kredyty czasowe i nie można tego cofnąć.",
                 "complete_button": "Ukończ i przenieś kredyty",
                 "cancel_button": "Anuluj tę wymianę",
                 "split_preview_title": "Godziny, które każda osoba da lub otrzyma",

@@ -4,12 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { ApiError, callGroupExchangeApi } = require('../lib/api');
+const { ApiError, callGroupExchangeApi, previewGroupExchange } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
 const GROUP_EXCHANGES_PATH = '/group-exchanges';
+
+// The five kinds, in the order every form offers them. A new form starts on the first.
+// This list only decides which number box on the create form belongs to the chosen kind -
+// it is NOT a validator. Laravel is the one that refuses a kind it does not know.
+const KINDS = ['workshop', 'team', 'equal', 'weighted', 'custom'];
+const DEFAULT_KIND = KINDS[0];
 
 function tokenFrom(req) {
   return req.signedCookies.token || '';
@@ -104,88 +110,185 @@ function exchangeCreatedRedirect(result) {
   return `${GROUP_EXCHANGES_PATH}/${resultId(result) || 'new'}?status=created`;
 }
 
+/** The kind the member chose, exactly as chosen. A blank value is the form's own default. */
+function kindFrom(body) {
+  return trimmed(body.split_type) || DEFAULT_KIND;
+}
+
+// 🔴 Every kind has its OWN number box on the create form (`total_hours_workshop`,
+// `total_hours_team`, ...) because the question differs - session length, hours per
+// helper, or one total - and without JavaScript all five boxes are in the page at once.
+// Reading the chosen kind's box is what stops a number typed for one kind being used for
+// another. `total_hours` stays as the fallback for any caller that still posts it.
+function totalHoursFrom(body, kind) {
+  const own = KINDS.includes(kind) ? trimmed(body[`total_hours_${kind}`]) : '';
+  const raw = own !== '' ? own : trimmed(body.total_hours);
+  return { raw, number: decimalNumber(raw) };
+}
+
 function exchangePayload(body) {
-  const splitType = trimmed(body.split_type) === 'custom' ? 'custom' : 'equal';
+  const kind = kindFrom(body);
   return {
     title: trimmed(body.title, 150),
     description: trimmed(body.description, 2000),
-    total_hours: decimalNumber(body.total_hours),
-    split_type: splitType,
+    total_hours: totalHoursFrom(body, kind).number,
+    // 🔴 This used to be `custom` or else `equal`, which would have saved a workshop or a
+    // team as "equal" without telling anyone. The kind goes to Laravel as chosen; it
+    // answers 422 SPLIT_TYPE_INVALID for one it does not know.
+    split_type: kind,
     status: 'draft'
   };
 }
 
-// 🔴 `weight` is not decoration on a WEIGHTED exchange — GroupExchangeService gives each
-// participant `(weight / sum-of-weights-in-role) * total_hours`. Sending a hardcoded
-// `weight: 1` therefore did two silent wrong things at once: the hours the organiser
-// typed were ignored, AND every existing participant's share moved, because adding a
-// weight changes the divisor. Mapping weight to the hours asked for is what "weighted"
-// means: when the role's requests sum to total_hours everyone gets exactly what was
-// typed, and otherwise they scale proportionally. `equal` and `custom` never read
-// weight, so 1 stays right there.
+// Laravel's message for a kind it refuses is already in the member's language, so it is
+// shown as it arrives rather than replaced by "something went wrong".
+function kindRefusal(error) {
+  if (!(error instanceof ApiError) || error.status !== 422) return '';
+  const errors = error.data && Array.isArray(error.data.errors) ? error.data.errors : [];
+  const refusal = errors.find((item) => item && item.code === 'SPLIT_TYPE_INVALID');
+  return refusal ? trimmed(refusal.message || error.message) : '';
+}
+
+// 🔴 `hours` and `weight` mean different things in different kinds, and the add-a-person
+// form only asks for the one that applies. What is sent:
+//   workshop / custom  each person's own hours
+//   team               helpers' own hours; the person helped pays the total, so a
+//                      receiver's hours are not asked for and are sent as 0
+//   equal              nothing per person (hours are sent only if somebody typed them)
+//   weighted           a weight: 1 is a normal share, 2 is twice as much.
+//                      GroupExchangeService shares the total by `weight`, so hours play no
+//                      part. (This used to send the hours AS the weight, because there
+//                      was no weight box.)
 function participantPayload(body, splitType = 'equal') {
   const role = trimmed(body.role) === 'receiver' ? 'receiver' : 'provider';
-  const hours = Math.max(0, decimalNumber(body.hours));
+  const typedHours = Math.max(0, decimalNumber(body.hours));
+  const typedWeight = decimalNumber(body.weight);
   return {
     user_id: positiveInteger(body.participant_id || body.user_id) || 0,
     role,
-    hours,
-    weight: splitType === 'weighted' ? (hours > 0 ? hours : 1) : 1
+    hours: splitType === 'team' && role === 'receiver' ? 0 : typedHours,
+    weight: splitType === 'weighted' && typedWeight > 0 ? typedWeight : 1
   };
 }
 
 function splitTypeOf(result) {
   const data = dataFrom(result);
   const value = trimmed(data && typeof data === 'object' ? data.split_type : '');
-  return ['equal', 'custom', 'weighted'].includes(value) ? value : 'equal';
+  return KINDS.includes(value) ? value : 'equal';
 }
 
 router.post('/new', asyncRoute(async (req, res) => {
-  if (!tokenFrom(req)) return redirectTo(res, loginRedirect());
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
   const payload = exchangePayload(req.body);
   // The single validation gate is title-or-hours, and it used to throw away the
   // 2,000-character description along with them.
-  rememberFormReplay(req, 'groupExchange', 'create', {
+  const replay = {
     title: trimmed(req.body.title, 150),
     description: trimmed(req.body.description, 2000),
-    totalHours: trimmed(req.body.total_hours),
+    totalHours: totalHoursFrom(req.body, payload.split_type).raw,
     splitType: trimmed(req.body.split_type)
-  });
+  };
+  rememberFormReplay(req, 'groupExchange', 'create', replay);
 
   if (payload.title === '' || payload.total_hours <= 0) {
     return redirectTo(res, exchangeCreateRedirect('create-invalid'));
   }
 
-  return runAction(
-    req,
-    res,
-    'POST',
-    '',
-    payload,
-    exchangeCreatedRedirect,
-    exchangeCreateRedirect('create-failed')
-  );
+  try {
+    const result = await callApi(token, 'POST', '', payload);
+    return redirectTo(res, exchangeCreatedRedirect(result));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    const problem = kindRefusal(error);
+    if (problem) rememberFormReplay(req, 'groupExchange', 'create', { ...replay, problem });
+    return redirectTo(res, exchangeCreateRedirect('create-failed'));
+  }
 }));
+
+// What the preview needs from a person already in the exchange.
+function previewParticipantOf(row) {
+  const item = row && typeof row === 'object' ? row : {};
+  const weight = decimalNumber(item.weight);
+  return {
+    user_id: positiveInteger(item.user_id ?? item.userId ?? item.id) || 0,
+    role: trimmed(item.role) === 'receiver' ? 'receiver' : 'provider',
+    hours: Math.max(0, decimalNumber(item.hours)),
+    weight: weight > 0 ? weight : 1
+  };
+}
+
+// "Check the hours". Laravel works out what everyone would earn or pay; nothing is saved.
+// The people already in the exchange are sent together with the person being added (if
+// the organiser has typed one), so the answer is what the exchange WOULD look like.
+//
+// Like every form here it answers with a redirect, and the result rides the session to the
+// page that shows it (consumed once), so a refresh never re-asks and a back button never
+// resubmits. What the organiser typed for the person comes back in the same stash.
+async function checkTheHours(req, res, id, token, exchange) {
+  const kind = splitTypeOf(exchange);
+  const participants = (Array.isArray(exchange.participants) ? exchange.participants : [])
+    .map(previewParticipantOf)
+    .filter((participant) => participant.user_id > 0);
+
+  const candidate = participantPayload(req.body, kind);
+  if (candidate.user_id > 0) {
+    const at = participants.findIndex((participant) => participant.user_id === candidate.user_id);
+    if (at >= 0) participants[at] = candidate;
+    else participants.push(candidate);
+  }
+
+  let result;
+  try {
+    result = await previewGroupExchange(token, {
+      split_type: kind,
+      total_hours: decimalNumber(exchange.total_hours),
+      participants
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, exchangeRedirect(id, 'check-failed'));
+  }
+
+  const query = trimmed(req.body.participant_q, 100);
+  rememberFormReplay(req, 'groupExchange', `preview-${id}`, {
+    result: dataFrom(result),
+    candidate: candidate.user_id > 0
+      ? {
+        id: candidate.user_id,
+        role: candidate.role,
+        hours: trimmed(req.body.hours, 12),
+        weight: trimmed(req.body.weight, 12)
+      }
+      : null
+  });
+  const search = query === '' ? '' : `&participant_q=${encodeURIComponent(query)}`;
+  return redirectTo(res, `${GROUP_EXCHANGES_PATH}/${id}?status=checked${search}#hours-check`);
+}
 
 router.post('/:id(\\d+)/participants', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  let splitType = 'equal';
+  const checking = trimmed(req.body.action) === 'preview';
+  let exchange = null;
   try {
-    splitType = splitTypeOf(await callApi(token, 'GET', `/${encodeURIComponent(id)}`));
+    exchange = dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    return redirectTo(res, exchangeRedirect(id, 'add-failed'));
+    return redirectTo(res, exchangeRedirect(id, checking ? 'check-failed' : 'add-failed'));
   }
+  exchange = exchange && typeof exchange === 'object' ? exchange : {};
+
+  if (checking) return checkTheHours(req, res, id, token, exchange);
 
   return runAction(
     req,
     res,
     'POST',
     `/${id}/participants`,
-    participantPayload(req.body, splitType),
+    participantPayload(req.body, splitTypeOf(exchange)),
     exchangeRedirect(id, 'participant-added'),
     exchangeRedirect(id, 'add-failed')
   );

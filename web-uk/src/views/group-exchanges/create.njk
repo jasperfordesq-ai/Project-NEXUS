@@ -7,18 +7,19 @@
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
+  {% set summaryMessage = kindProblem or errorMessage %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-xl">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t("group_exchanges.create_title") }}</h1>
 
-      {% if errorMessage %}
+      {% if summaryMessage %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
           <div role="alert">
             <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
             <div class="govuk-error-summary__body">
               <ul class="govuk-list govuk-error-summary__list">
-                <li><a href="#title">{{ errorMessage }}</a></li>
+                <li><a href="#{{ 'split-' + kinds[0] if kindProblem else 'title' }}">{{ summaryMessage }}</a></li>
               </ul>
             </div>
           </div>
@@ -27,13 +28,13 @@
 
       <form method="post" action="{{ urlFor('/group-exchanges/new') }}" class="govuk-!-margin-top-2">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <div class="govuk-form-group{% if errorMessage %} govuk-form-group--error{% endif %}">
+        <div class="govuk-form-group{% if errorMessage and not kindProblem %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--m" for="title">{{ t("group_exchanges.form_title_label") }}</label>
           <div id="title-hint" class="govuk-hint">{{ t("group_exchanges.form_title_hint") }}</div>
-          {% if errorMessage %}
+          {% if errorMessage and not kindProblem %}
             <p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errorMessage }}</p>
           {% endif %}
-          <input class="govuk-input" id="title" name="title" type="text" maxlength="150" value="{{ exchangeForm.title if exchangeForm else '' }}" required aria-describedby="title-hint{% if errorMessage %} title-error{% endif %}">
+          <input class="govuk-input" id="title" name="title" type="text" maxlength="150" value="{{ exchangeForm.title if exchangeForm else '' }}" required aria-describedby="title-hint{% if errorMessage and not kindProblem %} title-error{% endif %}">
         </div>
 
         {% call characterCount(2000, characterCountMessages, "description") %}
@@ -44,25 +45,48 @@
         </div>
         {% endcall %}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label--m" for="total_hours">{{ t("group_exchanges.form_hours_label") }}</label>
-          <div id="hours-hint" class="govuk-hint">{{ t("group_exchanges.form_hours_hint") }}</div>
-          <input class="govuk-input govuk-input--width-5" id="total_hours" name="total_hours" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" value="{{ exchangeForm.totalHours if exchangeForm else '' }}" required aria-describedby="hours-hint">
+        {# The five kinds, in this order, with workshop chosen unless the member had chosen
+           another. Each kind carries its own number box inside its reveal. Without
+           JavaScript every reveal is open, so every box is in the page: the server reads the
+           box that belongs to the chosen kind and ignores the rest. None of them is
+           `required` - a required box inside a closed reveal would stop the whole form
+           submitting. #}
+        <div class="govuk-form-group{% if kindProblem %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset" aria-describedby="kinds-rule{% if kindProblem %} kinds-error{% endif %}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("group_exchanges.form_split_label") }}</legend>
+            <div id="kinds-rule" class="govuk-hint">{{ t("group_exchanges.kinds_rule") }}</div>
+            {% if kindProblem %}
+              <p id="kinds-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ kindProblem }}</p>
+            {% endif %}
+            <div class="govuk-radios" data-module="govuk-radios">
+              {% for kind in kinds %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="split-{{ kind }}" name="split_type" type="radio" value="{{ kind }}"{% if selectedKind == kind %} checked{% endif %} data-aria-controls="conditional-split-{{ kind }}" aria-describedby="split-{{ kind }}-item-hint">
+                  <label class="govuk-label govuk-radios__label" for="split-{{ kind }}">{{ t("group_exchanges.kinds." + kind + ".title") }}</label>
+                  <div id="split-{{ kind }}-item-hint" class="govuk-hint govuk-radios__hint">{{ t("group_exchanges.kinds." + kind + ".description") }}</div>
+                </div>
+                <div class="govuk-radios__conditional" id="conditional-split-{{ kind }}">
+                  <div class="govuk-inset-text">{{ t("group_exchanges.kinds." + kind + ".example") }}</div>
+                  <div class="govuk-form-group">
+                    {% if kind == "workshop" %}
+                      {% set hoursLabelKey = "group_exchanges.session_hours_label" %}
+                      {% set hoursHintKey = "group_exchanges.session_hours_hint" %}
+                    {% elif kind == "team" %}
+                      {% set hoursLabelKey = "group_exchanges.helper_hours_label" %}
+                      {% set hoursHintKey = "group_exchanges.helper_hours_hint" %}
+                    {% else %}
+                      {% set hoursLabelKey = "group_exchanges.form_hours_label" %}
+                      {% set hoursHintKey = "group_exchanges.form_hours_hint" %}
+                    {% endif %}
+                    <label class="govuk-label" for="total-hours-{{ kind }}">{{ t(hoursLabelKey) }}</label>
+                    <div id="total-hours-{{ kind }}-hint" class="govuk-hint">{{ t(hoursHintKey) }}</div>
+                    <input class="govuk-input govuk-input--width-5" id="total-hours-{{ kind }}" name="total_hours_{{ kind }}" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" value="{{ exchangeForm.totalHours if (exchangeForm and selectedKind == kind) else '' }}" aria-describedby="total-hours-{{ kind }}-hint">
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
         </div>
-
-        <fieldset class="govuk-fieldset govuk-form-group">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("group_exchanges.form_split_label") }}</legend>
-          <div class="govuk-radios" data-module="govuk-radios">
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="split-equal" name="split_type" type="radio" value="equal" checked>
-              <label class="govuk-label govuk-radios__label" for="split-equal">{{ t("group_exchanges.split_equal") }}</label>
-            </div>
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" id="split-custom" name="split_type" type="radio" value="custom">
-              <label class="govuk-label govuk-radios__label" for="split-custom">{{ t("group_exchanges.split_custom") }}</label>
-            </div>
-          </div>
-        </fieldset>
 
         <button class="govuk-button" data-module="govuk-button">{{ t("group_exchanges.create_submit") }}</button>
       </form>

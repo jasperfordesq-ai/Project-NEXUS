@@ -1191,6 +1191,16 @@ async function callGroupExchangeApi(token, method, path = '', data = undefined) 
   return request(`/api/v2/group-exchanges${normalizedPath}`, options);
 }
 
+/**
+ * What every person in a group exchange would earn or pay, and what goes to the
+ * community time fund. Laravel works it out and writes nothing, so web-uk never carries
+ * its own copy of the five sharing rules. A split that cannot go ahead is a 200 with
+ * `data.problem` set, not an error.
+ */
+async function previewGroupExchange(token, data) {
+  return callGroupExchangeApi(token, 'POST', '/preview', data);
+}
+
 async function callEventApi(token, method, path = '', data = undefined, requestOptions = {}) {
   const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
   const options = {
@@ -4221,6 +4231,7 @@ module.exports = {
   downloadGroupFile,
   callIdeationApi,
   callGroupExchangeApi,
+  previewGroupExchange,
   callEventApi,
   callEventBroadcastApi,
   callAdminEventApi,

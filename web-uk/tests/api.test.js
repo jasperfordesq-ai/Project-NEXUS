@@ -2861,6 +2861,35 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('previewGroupExchange', () => {
+    it('should ask Laravel what everyone would earn or pay without writing anything', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { lines: [], community_fund_hours: 0, totals: {}, problem: null } })
+      });
+
+      const payload = {
+        split_type: 'team',
+        total_hours: 1,
+        participants: [{ user_id: 55, role: 'provider', hours: 1, weight: 1 }]
+      };
+      const result = await api.previewGroupExchange('test-token', payload);
+
+      expect(result.data.problem).toBeNull();
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/group-exchanges/preview',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token'
+          }),
+          body: JSON.stringify(payload)
+        })
+      );
+    });
+  });
+
   describe('callEventApi', () => {
     it('should fetch event details through the Laravel v2 event endpoint', async () => {
       mockFetch.mockResolvedValueOnce({

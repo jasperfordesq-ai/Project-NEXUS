@@ -167,7 +167,9 @@ describe('group exchange create form keeps title, hours and description', () => 
     const page = await agent.get(`${MOUNT}/new?status=create-invalid`);
     expect(page.status).toBe(200);
     expect(textareaValue(page.text, 'description')).toBe(DESCRIPTION);
-    expect(valueOf(page.text, 'total_hours')).toBe('6');
+    // With no kind posted the form is on its default, workshop, and the number comes back in
+    // that kind's own box.
+    expect(valueOf(page.text, 'total-hours-workshop')).toBe('6');
   });
 
   it('refills the form after the API refuses it', async () => {

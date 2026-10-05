@@ -9,6 +9,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { consumeFormReplay } = require('../lib/form-replay');
 const { getRequestProfile } = require('../lib/request-profile');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { createChoiceTranslator } = require('../lib/localization');
 
 const router = express.Router();
 
@@ -42,6 +43,37 @@ function numberValue(value) {
 
 function formatHours(value) {
   return numberValue(value).toLocaleString(getRequestIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Inside a sentence ("Tom pays 2 hours") a trailing ".00" reads as noise.
+function formatHoursInSentence(value) {
+  return numberValue(value).toLocaleString(getRequestIntlLocale(), { maximumFractionDigits: 2 });
+}
+
+// A number as it goes back into an input: 2, not 2.00.
+function plainNumber(value) {
+  const number = numberValue(value);
+  return number > 0 ? String(number) : '';
+}
+
+// The five kinds, in the order every form offers them. Anything else (there should be
+// nothing else) is shown as a headline of its stored value rather than hidden.
+const KINDS = ['workshop', 'team', 'equal', 'weighted', 'custom'];
+const KINDS_ASKING_HOURS_PER_PERSON = ['workshop', 'team', 'custom'];
+const KINDS_PRE_FILLING_HOURS = ['workshop', 'team'];
+const HOURS_LABEL_KEYS = {
+  workshop: 'group_exchanges.session_length_label',
+  team: 'group_exchanges.hours_per_helper_label'
+};
+
+function kindDetails(value, t) {
+  const key = trimmed(value).toLowerCase();
+  if (KINDS.includes(key)) return { key, label: t(`group_exchanges.kinds.${key}.title`) };
+  return { key: '', label: key ? headline(key) : '' };
+}
+
+function choiceTranslatorFor(res) {
+  return typeof res.locals.tc === 'function' ? res.locals.tc : createChoiceTranslator('en');
 }
 
 function dataFrom(result) {
@@ -129,6 +161,7 @@ function normalizeExchange(item, t) {
   const row = item && typeof item === 'object' ? item : {};
   const id = positiveInteger(row.id);
   const status = statusDetails(row.status, t);
+  const kind = kindDetails(row.split_type ?? row.splitType, t);
   return {
     ...row,
     id,
@@ -137,7 +170,12 @@ function normalizeExchange(item, t) {
     statusKey: status.key,
     statusLabel: status.label,
     statusClass: status.className,
+    kindKey: kind.key,
+    kindLabel: kind.label,
+    hoursLabel: t(HOURS_LABEL_KEYS[kind.key] || 'group_exchanges.total_hours_label'),
     totalHours: formatHours(row.total_hours ?? row.totalHours),
+    totalHoursPlain: plainNumber(row.total_hours ?? row.totalHours),
+    communityFundHours: numberValue(row.community_fund_hours ?? row.communityFundHours),
     organizerId: positiveInteger(row.organizer_id ?? row.organizerId),
     participants: Array.isArray(row.participants) ? row.participants.map((participant) => normalizeParticipant(participant, t)) : [],
     calculatedSplit: Array.isArray(row.calculated_split ?? row.calculatedSplit)
@@ -160,6 +198,7 @@ function normalizeParticipant(item, t) {
     role,
     roleLabel: t(role === 'receiver' ? 'group_exchanges.role_receiver' : 'group_exchanges.role_provider'),
     hours: formatHours(row.hours),
+    hoursEntered: row.hours,
     confirmed: row.confirmed === true,
     confirmedLabel: t(row.confirmed === true ? 'group_exchanges.confirmed_yes' : 'group_exchanges.confirmed_no')
   };
@@ -188,13 +227,74 @@ function stateMessage(status, t) {
 
 function errorMessage(status, t) {
   const key = trimmed(status);
-  if (['create-invalid', 'create-failed'].includes(key)) return t('group_exchanges.states.failed');
+  if (['create-invalid', 'create-failed', 'check-failed'].includes(key)) return t('group_exchanges.states.failed');
   // `start-failed` names the two things start() actually rejects for — a role with nobody
   // in it, and a split that does not balance — so the organiser can act on it rather than
   // being told "something went wrong".
   return ['add-failed', 'start-failed', 'complete-failed', 'failed'].includes(key)
     ? t(`group_exchanges.states.${key}`)
     : '';
+}
+
+/**
+ * One line per person, a line for the community time fund when it gets a share, and one
+ * line of totals. The same shape serves a preview from Laravel and the saved split of an
+ * exchange, so the two can never be worded differently.
+ *
+ * `lines` are `{ role, name, hours }`; a giver earns, a receiver pays.
+ */
+function buildHoursSummary({ lines, fundHours }, t, tc) {
+  let earned = 0;
+  let paid = 0;
+  const rows = lines.map((line) => {
+    const hours = numberValue(line.hours);
+    const earning = line.role !== 'receiver';
+    if (earning) earned += hours;
+    else paid += hours;
+    return {
+      roleLabel: t(earning ? 'group_exchanges.role_provider' : 'group_exchanges.role_receiver'),
+      text: tc(
+        earning ? 'group_exchanges.summary.earns' : 'group_exchanges.summary.pays',
+        hours,
+        // A "|" in a name would be read as a plural separator, so it is shown as "/".
+        { name: String(line.name || t('group_exchanges.summary.unknown_member')).replace(/\|/g, '/'), hours: formatHoursInSentence(hours) }
+      )
+    };
+  });
+
+  const fund = numberValue(fundHours);
+  const figures = { paid: formatHoursInSentence(paid), earned: formatHoursInSentence(earned), fund: formatHoursInSentence(fund) };
+  return {
+    rows,
+    fund: fund > 0
+      ? {
+        label: t('group_exchanges.summary.fund_label'),
+        text: tc('group_exchanges.summary.to_fund', fund, { hours: figures.fund })
+      }
+      : null,
+    totals: t(fund > 0 ? 'group_exchanges.summary.totals_with_fund' : 'group_exchanges.summary.totals', figures)
+  };
+}
+
+/** What Laravel's preview said, ready to show. A split that cannot go ahead has a problem and no lines. */
+function previewView(stash, t, tc) {
+  const result = stash && stash.result && typeof stash.result === 'object' ? stash.result : {};
+  const problem = result.problem && typeof result.problem === 'object' ? trimmed(result.problem.message) : '';
+  const lines = Array.isArray(result.lines) ? result.lines : [];
+  return {
+    problem,
+    summary: problem === ''
+      ? buildHoursSummary({
+        lines: lines.map((line) => ({
+          role: trimmed(line && line.role),
+          name: trimmed(line && line.name),
+          hours: line && line.hours
+        })),
+        fundHours: result.community_fund_hours ?? (result.totals && result.totals.to_fund)
+      }, t, tc)
+      : null,
+    candidate: stash && stash.candidate && typeof stash.candidate === 'object' ? stash.candidate : null
+  };
 }
 
 router.get('/', asyncRoute(async (req, res) => {
@@ -227,12 +327,19 @@ router.get('/new', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const status = trimmed(req.query.status);
+  const exchangeForm = consumeFormReplay(req, 'groupExchange', 'create');
+  const replayedKind = exchangeForm ? trimmed(exchangeForm.splitType) : '';
   return res.render('group-exchanges/create', {
     title: 'Start a group exchange',
     titleKey: 'group_exchanges.create_title',
     activeNav: 'group_exchanges',
     status,
-    exchangeForm: consumeFormReplay(req, 'groupExchange', 'create'),
+    kinds: KINDS,
+    // Workshop unless the member had chosen another of the five and the form is coming back.
+    selectedKind: KINDS.includes(replayedKind) ? replayedKind : KINDS[0],
+    exchangeForm,
+    // Laravel's own words when it refused the kind; otherwise the plain "try again".
+    kindProblem: exchangeForm && exchangeForm.problem ? trimmed(exchangeForm.problem) : '',
     errorMessage: errorMessage(status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));
@@ -252,9 +359,17 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     positiveInteger(row.user_id ?? row.userId),
     formatHours(row.hours)
   ]));
+  const rawSplitByUser = new Map(exchange.calculatedSplit.map((row) => [
+    positiveInteger(row.user_id ?? row.userId),
+    numberValue(row.hours)
+  ]));
   const participants = exchange.participants.map((participant) => ({
     ...participant,
-    hours: splitByUser.get(participant.userId) || participant.hours
+    hours: splitByUser.get(participant.userId) || participant.hours,
+    // What this person earns or pays: the split when there is one, else what was entered.
+    hoursValue: rawSplitByUser.has(participant.userId)
+      ? rawSplitByUser.get(participant.userId)
+      : numberValue(participant.hoursEntered)
   }));
   const isOrganizer = exchange.organizerId !== null && exchange.organizerId === viewerId;
   const viewerRow = participants.find((participant) => participant.userId === viewerId) || null;
@@ -302,12 +417,57 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       .filter((candidate) => candidate.id !== null && !existingIds.has(candidate.id));
   }
 
+  // The saved split: what each person earns or pays once the exchange settles. Shown only
+  // when it says something (an equal or weighted exchange with nobody in it has no lines
+  // worth reading).
+  const tc = choiceTranslatorFor(res);
+  const savedSplit = buildHoursSummary({
+    lines: participants.map((participant) => ({
+      role: participant.role,
+      name: participant.name,
+      hours: participant.hoursValue
+    })),
+    fundHours: exchange.communityFundHours
+  }, res.locals.t, tc);
+  const savedSplitHasHours = participants.some((participant) => participant.hoursValue > 0);
+
+  // 🔴 "You will earn / pay N hours" is the sentence that has to be right before Confirm.
+  const viewerHours = viewerRow ? viewerRow.hoursValue : 0;
+  const viewerWill = viewerRow && viewerHours > 0
+    ? tc(
+      viewerRow.role === 'receiver' ? 'group_exchanges.summary.you_pay' : 'group_exchanges.summary.you_earn',
+      viewerHours,
+      { hours: formatHoursInSentence(viewerHours) }
+    )
+    : '';
+
+  // "Check the hours" comes back through the session, once.
+  const stash = consumeFormReplay(req, 'groupExchange', `preview-${id}`);
+  const check = stash ? previewView(stash, res.locals.t, tc) : null;
+
+  // What the add-a-person form asks for depends on the kind, and nothing else:
+  // hours for a workshop, a team's helpers or a typed-out exchange; a weight for a
+  // weighted one; nothing at all for equal. A workshop and a team start from the number
+  // already given for the exchange, so the organiser only changes the exceptions.
+  const kind = exchange.kindKey;
+  const addForm = {
+    askHours: kind === '' || KINDS_ASKING_HOURS_PER_PERSON.includes(kind),
+    hoursRequired: kind === 'custom',
+    hoursPrefill: KINDS_PRE_FILLING_HOURS.includes(kind) ? exchange.totalHoursPlain : '',
+    hoursHintKey: KINDS_ASKING_HOURS_PER_PERSON.includes(kind) ? `group_exchanges.add_hours_hint.${kind}` : '',
+    askWeight: kind === 'weighted'
+  };
+
   const status = trimmed(req.query.status);
   return res.render('group-exchanges/detail', {
     title: exchange.title,
     activeNav: 'group_exchanges',
     exchange,
     participants,
+    savedSplit: savedSplitHasHours ? savedSplit : null,
+    viewerWill,
+    check,
+    addForm,
     isOrganizer,
     isParticipant,
     isClosed,
