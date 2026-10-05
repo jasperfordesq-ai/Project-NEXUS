@@ -23,18 +23,17 @@ import { Input } from '@/components/ui/Input';
 import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
-import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { ReportIncidentModal } from './ReportIncidentModal';
 
 interface Training { id: number; training_type: 'children_first' | 'vulnerable_adults' | 'first_aid' | 'manual_handling' | 'other'; training_name: string; provider: string | null; completed_at: string; expires_at: string | null; status: 'pending' | 'verified' | 'expired' | 'rejected'; created_at: string; }
-interface Incident { id: number; title: string; description: string; severity: 'low' | 'medium' | 'high' | 'critical'; category: string; status: 'open' | 'investigating' | 'resolved' | 'escalated' | 'closed'; created_at: string; }
+interface Incident { id: number; title: string; description: string; severity: 'low' | 'medium' | 'high' | 'critical'; category: string; status: 'open' | 'investigating' | 'resolved' | 'escalated' | 'closed'; created_at: string; incident_date?: string | null; organization_name?: string | null; }
 type SubView = 'training' | 'incidents';
 
 const TRAINING_TYPE_KEYS = ['children_first', 'vulnerable_adults', 'first_aid', 'manual_handling', 'other'] as const;
-const SEVERITY_KEYS = ['low', 'medium', 'high', 'critical'] as const;
 
 function trainingStatusColor(s: Training['status']): 'warning'|'success'|'danger' { if (s==='pending') return 'warning'; if (s==='verified') return 'success'; return 'danger'; }
 function severityColor(s: Incident['severity']): 'default'|'warning'|'danger' { if (s==='low') return 'default'; if (s==='medium') return 'warning'; return 'danger'; }
@@ -55,8 +54,6 @@ export function SafeguardingTab() {
   const [trainingForm, setTrainingForm] = useState({ training_type: 'children_first', training_name: '', provider: '', completed_at: '', expires_at: '' });
   const [isSubmittingTraining, setIsSubmittingTraining] = useState(false);
   const incidentModal = useDisclosure();
-  const [incidentForm, setIncidentForm] = useState({ title: '', description: '', severity: 'low', category: '' });
-  const [isSubmittingIncident, setIsSubmittingIncident] = useState(false);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -110,18 +107,6 @@ export function SafeguardingTab() {
     finally { setIsSubmittingTraining(false); }
   };
 
-  const handleSubmitIncident = async () => {
-    if (!incidentForm.title.trim() || !incidentForm.description.trim()) { toastRef.current.error(tRef.current('safeguarding.fill_required')); return; }
-    if (incidentForm.description.trim().length < 20) { toastRef.current.error(tRef.current('safeguarding.description_min')); return; }
-    try {
-      setIsSubmittingIncident(true);
-      const res = await api.post('/v2/volunteering/incidents', { title: incidentForm.title.trim(), description: incidentForm.description.trim(), severity: incidentForm.severity, category: incidentForm.category.trim() || undefined });
-      if (res.success) { incidentModal.onClose(); setIncidentForm({ title: '', description: '', severity: 'low', category: '' }); toastRef.current.success(tRef.current('safeguarding.incident_reported')); load(); }
-      else { toastRef.current.error(tRef.current('safeguarding.incident_failed')); }
-    } catch (err) { logError('Failed to report incident', err); toastRef.current.error(tRef.current('safeguarding.incident_failed')); }
-    finally { setIsSubmittingIncident(false); }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -145,10 +130,10 @@ export function SafeguardingTab() {
         </motion.div>))}
       {!error && !isLoading && subView === 'incidents' && (incidents.length === 0 ? (<EmptyState icon={<FileWarning className="w-12 h-12" aria-hidden="true" />} title={t('safeguarding.no_incidents_title')} description={t('safeguarding.no_incidents_desc')} />) : (
         <motion.div variants={cV} initial="hidden" animate="visible" className="space-y-3">
-          {incidents.map((inc) => (<motion.div key={inc.id} variants={iV}><GlassCard className="p-4"><div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="text-sm font-semibold text-theme-primary">{inc.title}</span><Chip size="sm" color={severityColor(inc.severity)} variant="soft" className={inc.severity === 'critical' ? 'font-bold' : ''}>{t(`safeguarding.severity_options.${inc.severity}`)}</Chip><Chip size="sm" color={incidentStatusColor(inc.status)} variant="soft">{t(`safeguarding.incident_status.${inc.status}`)}</Chip></div><p className="text-xs text-theme-muted line-clamp-2">{inc.description}</p><div className="flex items-center gap-3 mt-1 text-xs text-theme-subtle">{inc.category && <span>{inc.category}</span>}<span>{new Date(inc.created_at).toLocaleDateString(getFormattingLocale())}</span></div></div></div></GlassCard></motion.div>))}
+          {incidents.map((inc) => (<motion.div key={inc.id} variants={iV}><GlassCard className="p-4"><div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="text-sm font-semibold text-theme-primary">{inc.title}</span><Chip size="sm" color={severityColor(inc.severity)} variant="soft" className={inc.severity === 'critical' ? 'font-bold' : ''}>{t(`safeguarding.severity_options.${inc.severity}`)}</Chip><Chip size="sm" color={incidentStatusColor(inc.status)} variant="soft">{t(`safeguarding.incident_status.${inc.status}`)}</Chip></div><p className="text-xs text-theme-muted line-clamp-2">{inc.description}</p><div className="flex items-center gap-3 mt-1 text-xs text-theme-subtle">{inc.organization_name && <span>{inc.organization_name}</span>}{inc.category && <span>{inc.category}</span>}<span>{new Date(inc.incident_date || inc.created_at).toLocaleDateString(getFormattingLocale())}</span></div></div></div></GlassCard></motion.div>))}
         </motion.div>))}
       <Modal isOpen={trainingModal.isOpen} onClose={() => { setTrainingForm({ training_type: 'children_first', training_name: '', provider: '', completed_at: '', expires_at: '' }); trainingModal.onClose(); }} size="lg" classNames={{ base: 'bg-overlay border border-theme-default' }}><ModalContent><ModalHeader className="text-theme-primary"><ModalHeading className="flex items-center gap-2"><GraduationCap className="w-5 h-5 text-rose-400" aria-hidden="true" />{t('safeguarding.add_training_title')}</ModalHeading></ModalHeader><ModalBody className="space-y-4"><Select label={t('safeguarding.training_type')} selectedKeys={new Set([trainingForm.training_type])} onSelectionChange={(keys) => { const val = Array.from(keys)[0] as string; if (val) setTrainingForm((f) => ({ ...f, training_type: val })); }} classNames={{ trigger: 'bg-theme-elevated border-theme-default' }}>{TRAINING_TYPE_KEYS.map((key) => (<SelectItem key={key} id={key}>{t(`safeguarding.training_types.${key}`)}</SelectItem>))}</Select><Input label={t('safeguarding.training_name')} isRequired value={trainingForm.training_name} onChange={(e) => setTrainingForm((f) => ({ ...f, training_name: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /><Input label={t('safeguarding.provider')} value={trainingForm.provider} onChange={(e) => setTrainingForm((f) => ({ ...f, provider: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /><Input label={t('safeguarding.completed_at')} type="date" isRequired value={trainingForm.completed_at} onChange={(e) => setTrainingForm((f) => ({ ...f, completed_at: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /><Input label={t('safeguarding.expires_at')} type="date" value={trainingForm.expires_at} onChange={(e) => setTrainingForm((f) => ({ ...f, expires_at: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /></ModalBody><ModalFooter><Button variant="tertiary" onPress={() => { setTrainingForm({ training_type: 'children_first', training_name: '', provider: '', completed_at: '', expires_at: '' }); trainingModal.onClose(); }}>{t('safeguarding.cancel')}</Button><Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={handleSubmitTraining} isLoading={isSubmittingTraining} startContent={!isSubmittingTraining ? <Plus className="w-4 h-4" aria-hidden="true" /> : undefined}>{t('safeguarding.submit_training')}</Button></ModalFooter></ModalContent></Modal>
-      <Modal isOpen={incidentModal.isOpen} onClose={() => { setIncidentForm({ title: '', description: '', severity: 'low', category: '' }); incidentModal.onClose(); }} size="lg" classNames={{ base: 'bg-overlay border border-theme-default' }}><ModalContent><ModalHeader className="text-theme-primary"><ModalHeading className="flex items-center gap-2"><FileWarning className="w-5 h-5 text-amber-400" aria-hidden="true" />{t('safeguarding.report_incident_title')}</ModalHeading></ModalHeader><ModalBody className="space-y-4"><Input label={t('safeguarding.incident_title')} isRequired value={incidentForm.title} onChange={(e) => setIncidentForm((f) => ({ ...f, title: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /><Textarea label={t('safeguarding.incident_description')} isRequired value={incidentForm.description} onChange={(e) => setIncidentForm((f) => ({ ...f, description: e.target.value }))} maxLength={2000} classNames={{ input: 'bg-transparent text-theme-primary', inputWrapper: 'bg-theme-elevated border-theme-default' }} /><Select label={t('safeguarding.severity')} selectedKeys={new Set([incidentForm.severity])} onSelectionChange={(keys) => { const val = Array.from(keys)[0] as string; if (val) setIncidentForm((f) => ({ ...f, severity: val })); }} classNames={{ trigger: 'bg-theme-elevated border-theme-default' }}>{SEVERITY_KEYS.map((key) => (<SelectItem key={key} id={key}>{t(`safeguarding.severity_options.${key}`)}</SelectItem>))}</Select><Input label={t('safeguarding.category')} value={incidentForm.category} onChange={(e) => setIncidentForm((f) => ({ ...f, category: e.target.value }))} classNames={{ inputWrapper: 'bg-theme-elevated border-theme-default' }} /></ModalBody><ModalFooter><Button variant="tertiary" onPress={() => { setIncidentForm({ title: '', description: '', severity: 'low', category: '' }); incidentModal.onClose(); }}>{t('safeguarding.cancel')}</Button><Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white" onPress={handleSubmitIncident} isLoading={isSubmittingIncident} startContent={!isSubmittingIncident ? <AlertTriangle className="w-4 h-4" aria-hidden="true" /> : undefined}>{t('safeguarding.submit_incident')}</Button></ModalFooter></ModalContent></Modal>
+      <ReportIncidentModal isOpen={incidentModal.isOpen} onClose={incidentModal.onClose} onReported={load} />
     </div>
   );
 }

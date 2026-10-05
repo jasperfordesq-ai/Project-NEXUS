@@ -793,7 +793,11 @@
     "orgs_no_match": "このフィルターに一致する団体はありません。",
     "expense_already_reviewed": "この経費はすでに審査済みのため、再度承認または却下することはできません。",
     "expense_not_approved": "支払済みにできるのは承認済みの経費のみです。",
-    "expense_paid_by_org_hint": "支払いは団体が自身のダッシュボードで記録します。"
+    "expense_paid_by_org_hint": "支払いは団体が自身のダッシュボードで記録します。",
+    "col_handled_by": "担当者",
+    "handled_by_label": "誰が対応しますか？",
+    "handled_by_nobody": "まだいません",
+    "handled_by_help": "担当者には、担当になったことを知らせる通知とメールが届きます。"
   },
   "donation_refunds": {
     "page_title": "寄付の返金",

@@ -70,6 +70,11 @@ vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
 }));
 
+// The report form has its own tests (ReportIncidentModal.test.tsx).
+vi.mock('./ReportIncidentModal', () => ({
+  ReportIncidentModal: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div data-testid="report-incident-modal" /> : null),
+}));
+
 import { SafeguardingTab } from './SafeguardingTab';
 import { api } from '@/lib/api';
 

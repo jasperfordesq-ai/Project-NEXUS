@@ -598,7 +598,30 @@
       "resolved": "تم الحل",
       "escalated": "تصاعدت",
       "closed": "مغلق"
-    }
+    },
+    "incident_type": "ما نوع الحادثة؟",
+    "incident_types": {
+      "concern": "قلق بشأن سلامة شخص ما",
+      "allegation": "ادعاء بشأن سلوك شخص ما",
+      "disclosure": "أخبرني أحدهم بشيء مقلق",
+      "near_miss": "حادث وشيك (لم يتأذَّ أحد)",
+      "other": "شيء آخر"
+    },
+    "incident_date": "متى حدث ذلك؟ (اختياري)",
+    "incident_date_hint": "اتركه فارغًا إذا كان اليوم.",
+    "incident_date_future": "لا يمكن أن يكون التاريخ في المستقبل.",
+    "incident_organisation": "مع أي منظمة كان ذلك؟ (اختياري)",
+    "incident_organisation_placeholder": "لا يتعلق بمنظمة معينة",
+    "incident_organisation_search": "البحث عن منظمات",
+    "incident_opportunity": "أي فرصة تطوع؟ (اختياري)",
+    "incident_opportunity_placeholder": "لا يتعلق بفرصة معينة",
+    "incident_opportunity_search": "البحث عن فرص",
+    "incident_person": "بمن يتعلق الأمر؟ (اختياري)",
+    "incident_person_hint": "فقط إذا كان عضوًا في هذا المجتمع. وإلا فصِفه في الوصف.",
+    "incident_person_search": "البحث عن الأعضاء بالاسم",
+    "incident_person_empty": "لم يتم العثور على أعضاء.",
+    "incident_person_clear": "إزالة",
+    "incident_options_unavailable": "تعذّر تحميل قائمة المنظمات. لا يزال بإمكانك إرسال بلاغك وذكر مكان حدوثه في الوصف."
   },
   "accessibility": {
     "heading": "إمكانية الوصول والإقامة",

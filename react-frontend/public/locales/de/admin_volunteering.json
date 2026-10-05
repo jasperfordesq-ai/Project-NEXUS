@@ -793,7 +793,11 @@
     "orgs_no_match": "Keine Organisation entspricht diesem Filter.",
     "expense_already_reviewed": "Diese Ausgabe wurde bereits geprüft und kann daher nicht erneut genehmigt oder abgelehnt werden.",
     "expense_not_approved": "Nur eine genehmigte Ausgabe kann als bezahlt markiert werden.",
-    "expense_paid_by_org_hint": "Die Organisation erfasst die Zahlung in ihrem eigenen Dashboard."
+    "expense_paid_by_org_hint": "Die Organisation erfasst die Zahlung in ihrem eigenen Dashboard.",
+    "col_handled_by": "Bearbeitet von",
+    "handled_by_label": "Wer bearbeitet das?",
+    "handled_by_nobody": "Noch niemand",
+    "handled_by_help": "Die Person erhält eine Benachrichtigung und eine E-Mail, dass der Fall ihr zugewiesen ist."
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

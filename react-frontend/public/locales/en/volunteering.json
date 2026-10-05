@@ -574,7 +574,30 @@
       "resolved": "Resolved",
       "escalated": "Escalated",
       "closed": "Closed"
-    }
+    },
+    "incident_type": "What kind of incident is it?",
+    "incident_types": {
+      "concern": "A concern about someone's welfare",
+      "allegation": "An allegation about someone's behaviour",
+      "disclosure": "Someone told me something worrying",
+      "near_miss": "A near miss (nobody was harmed)",
+      "other": "Something else"
+    },
+    "incident_date": "When did it happen? (optional)",
+    "incident_date_hint": "Leave blank if it was today.",
+    "incident_date_future": "The date can't be in the future.",
+    "incident_organisation": "Which organisation was this with? (optional)",
+    "incident_organisation_placeholder": "Not about a particular organisation",
+    "incident_organisation_search": "Search organisations",
+    "incident_opportunity": "Which volunteering opportunity? (optional)",
+    "incident_opportunity_placeholder": "Not about a particular opportunity",
+    "incident_opportunity_search": "Search opportunities",
+    "incident_person": "Who is it about? (optional)",
+    "incident_person_hint": "Only if they are a member of this community. Otherwise, describe them in the description.",
+    "incident_person_search": "Search members by name",
+    "incident_person_empty": "No members found.",
+    "incident_person_clear": "Remove",
+    "incident_options_unavailable": "We couldn't load the list of organisations. You can still send your report and say where it happened in the description."
   },
   "accessibility": {
     "heading": "Accessibility & Accommodations",

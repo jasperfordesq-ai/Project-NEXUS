@@ -580,7 +580,30 @@
       "resolved": "Resolvido",
       "escalated": "Escalado",
       "closed": "Encerrado"
-    }
+    },
+    "incident_type": "Que tipo de incidente é?",
+    "incident_types": {
+      "concern": "Uma preocupação com o bem-estar de alguém",
+      "allegation": "Uma alegação sobre o comportamento de alguém",
+      "disclosure": "Alguém me contou algo preocupante",
+      "near_miss": "Um quase acidente (ninguém ficou ferido)",
+      "other": "Outra coisa"
+    },
+    "incident_date": "Quando aconteceu? (opcional)",
+    "incident_date_hint": "Deixe em branco se foi hoje.",
+    "incident_date_future": "A data não pode ser no futuro.",
+    "incident_organisation": "Com que organização foi? (opcional)",
+    "incident_organisation_placeholder": "Não diz respeito a uma organização específica",
+    "incident_organisation_search": "Pesquisar organizações",
+    "incident_opportunity": "Em que oportunidade de voluntariado? (opcional)",
+    "incident_opportunity_placeholder": "Não diz respeito a uma oportunidade específica",
+    "incident_opportunity_search": "Pesquisar oportunidades",
+    "incident_person": "Sobre quem é? (opcional)",
+    "incident_person_hint": "Apenas se for membro desta comunidade. Caso contrário, descreva a pessoa na descrição.",
+    "incident_person_search": "Pesquisar membros por nome",
+    "incident_person_empty": "Nenhum membro encontrado.",
+    "incident_person_clear": "Remover",
+    "incident_options_unavailable": "Não foi possível carregar a lista de organizações. Pode enviar o seu relatório na mesma e indicar na descrição onde aconteceu."
   },
   "accessibility": {
     "heading": "Acessibilidade e Adaptações",

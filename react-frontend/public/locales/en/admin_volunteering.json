@@ -793,7 +793,11 @@
     "orgs_no_match": "No organisations match this filter.",
     "expense_already_reviewed": "This expense has already been reviewed, so it cannot be approved or rejected again.",
     "expense_not_approved": "Only an approved expense can be marked as paid.",
-    "expense_paid_by_org_hint": "The organisation records payment from its own dashboard."
+    "expense_paid_by_org_hint": "The organisation records payment from its own dashboard.",
+    "col_handled_by": "Handled by",
+    "handled_by_label": "Who is handling this?",
+    "handled_by_nobody": "Nobody yet",
+    "handled_by_help": "They'll get a notification and an email saying it's theirs."
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",

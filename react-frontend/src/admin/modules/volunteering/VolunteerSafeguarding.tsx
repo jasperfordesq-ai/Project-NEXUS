@@ -52,6 +52,7 @@ import {
 
 interface Incident {
   id: number;
+  title?: string | null;
   type: 'concern' | 'allegation' | 'disclosure' | 'near_miss' | 'other';
   severity: 'low' | 'medium' | 'high' | 'critical';
   reporter_name: string;
@@ -62,7 +63,21 @@ interface Incident {
   description?: string;
   action_taken?: string;
   resolution_notes?: string;
+  opportunity_title?: string | null;
+  assigned_to?: number | null;
+  assigned_to_name?: string | null;
+  subject_user_id?: number | null;
+  involved_user_id?: number | null;
 }
+
+/** Someone an incident can be handed to — active broker-tier staff. */
+interface IncidentHandler {
+  id: number;
+  name: string;
+}
+
+/** Sentinel for "nobody is handling this yet" in the handler picker. */
+const NO_HANDLER = 'none';
 
 interface IncidentStats {
   total_incidents: number;
@@ -130,6 +145,8 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
   const [updateStatus, setUpdateStatus] = useState<string>('open');
   const [actionTaken, setActionTaken] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
+  const [handlerId, setHandlerId] = useState<string>(NO_HANDLER);
+  const [handlers, setHandlers] = useState<IncidentHandler[]>([]);
 
   // DLP assignments
   const [dlpAssignments, setDlpAssignments] = useState<DlpAssignment[]>([]);
@@ -154,10 +171,12 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
           incidents?: Incident[];
           stats?: IncidentStats;
           dlp_assignments?: DlpAssignment[];
+          handlers?: IncidentHandler[];
         }>(res.data);
         setIncidents(payload.incidents || []);
         setStats(payload.stats || null);
         setDlpAssignments(payload.dlp_assignments || []);
+        setHandlers(payload.handlers || []);
       }
     } catch {
       toast.error(t('volunteering.failed_to_load_incidents'));
@@ -177,6 +196,7 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
     setUpdateStatus(incident.status);
     setActionTaken(incident.action_taken || '');
     setResolutionNotes(incident.resolution_notes || '');
+    setHandlerId(incident.assigned_to ? String(incident.assigned_to) : NO_HANDLER);
     setUpdateModal(true);
   };
 
@@ -184,11 +204,16 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
     if (!selectedIncident) return;
     setActionLoading(true);
     try {
-      const data: { status: string; action_taken?: string; resolution_notes?: string } = {
+      const data: { status: string; action_taken?: string; resolution_notes?: string; assigned_to?: number | null } = {
         status: updateStatus,
       };
       if (actionTaken.trim()) data.action_taken = actionTaken.trim();
       if (resolutionNotes.trim()) data.resolution_notes = resolutionNotes.trim();
+      // Send the handler only when it changed: a new handler is notified.
+      const currentHandler = selectedIncident.assigned_to ? String(selectedIncident.assigned_to) : NO_HANDLER;
+      if (handlerId !== currentHandler) {
+        data.assigned_to = handlerId === NO_HANDLER ? null : Number(handlerId);
+      }
 
       const res = await adminVolunteering.updateIncident(selectedIncident.id, data);
       if (res.success) {
@@ -246,6 +271,12 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
 
   const columns: Column<Incident>[] = [
     {
+      key: 'title',
+      label: t('volunteering.col_title'),
+      sortable: true,
+      render: (item) => <span className="font-medium">{item.title || '--'}</span>,
+    },
+    {
       key: 'type',
       label: t('volunteering.col_incident_type'),
       sortable: true,
@@ -294,6 +325,14 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
           {t(`volunteering.status_${item.status}`)}
         </Chip>
       ),
+    },
+    {
+      key: 'assigned_to_name',
+      label: t('volunteering.col_handled_by'),
+      sortable: true,
+      render: (item) => item.assigned_to_name
+        ? <span className="text-sm">{item.assigned_to_name}</span>
+        : <span className="text-sm text-warning">{t('volunteering.handled_by_nobody')}</span>,
     },
     {
       key: 'date',
@@ -528,6 +567,9 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
           <ModalBody>
             {selectedIncident && (
               <div className="space-y-4">
+                {selectedIncident.title && (
+                  <p className="text-base font-semibold">{selectedIncident.title}</p>
+                )}
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-muted">{t('volunteering.col_incident_type')}:</span>
@@ -552,7 +594,21 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                   </div>
                   <div>
                     <span className="text-muted">{t('volunteering.col_subject')}:</span>
-                    <p className="font-medium">{selectedIncident.subject_name}</p>
+                    <p className="font-medium">{selectedIncident.subject_name || '--'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted">{t('volunteering.col_organization')}:</span>
+                    <p className="font-medium">{selectedIncident.organization_name || '--'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted">{t('volunteering.col_opportunity')}:</span>
+                    <p className="font-medium">{selectedIncident.opportunity_title || '--'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted">{t('volunteering.col_date')}:</span>
+                    <p className="font-medium">
+                      {selectedIncident.date ? new Date(selectedIncident.date).toLocaleDateString(getFormattingLocale()) : '--'}
+                    </p>
                   </div>
                 </div>
 
@@ -573,6 +629,21 @@ export function VolunteerSafeguarding({ canAssignDlp = true }: VolunteerSafeguar
                   <SelectItem key="resolved" id="resolved">{t('volunteering.status_resolved')}</SelectItem>
                   <SelectItem key="escalated" id="escalated">{t('volunteering.status_escalated')}</SelectItem>
                   <SelectItem key="closed" id="closed">{t('volunteering.status_closed')}</SelectItem>
+                </Select>
+
+                <Select
+                  label={t('volunteering.handled_by_label')}
+                  description={t('volunteering.handled_by_help')}
+                  selectedKeys={[handlerId]}
+                  onSelectionChange={(keys) => setHandlerId((Array.from(keys)[0] as string) || NO_HANDLER)}
+                >
+                  {[
+                    <SelectItem key={NO_HANDLER} id={NO_HANDLER}>{t('volunteering.handled_by_nobody')}</SelectItem>,
+                    // Nobody handles an incident about themselves (F-507).
+                    ...handlers
+                      .filter((h) => h.id !== selectedIncident.subject_user_id && h.id !== selectedIncident.involved_user_id)
+                      .map((h) => <SelectItem key={String(h.id)} id={String(h.id)}>{h.name}</SelectItem>),
+                  ]}
                 </Select>
 
                 <Textarea

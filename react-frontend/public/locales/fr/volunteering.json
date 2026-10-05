@@ -580,7 +580,30 @@
       "resolved": "Résolu",
       "escalated": "Escaladé",
       "closed": "Fermé"
-    }
+    },
+    "incident_type": "De quel type d'incident s'agit-il ?",
+    "incident_types": {
+      "concern": "Une inquiétude pour le bien-être d'une personne",
+      "allegation": "Une allégation sur le comportement d'une personne",
+      "disclosure": "Quelqu'un m'a confié quelque chose d'inquiétant",
+      "near_miss": "Un incident évité de justesse (personne n'a été blessé)",
+      "other": "Autre chose"
+    },
+    "incident_date": "Quand cela s'est-il produit ? (facultatif)",
+    "incident_date_hint": "Laissez vide si c'était aujourd'hui.",
+    "incident_date_future": "La date ne peut pas être dans le futur.",
+    "incident_organisation": "Avec quelle organisation ? (facultatif)",
+    "incident_organisation_placeholder": "Ne concerne pas une organisation en particulier",
+    "incident_organisation_search": "Rechercher des organisations",
+    "incident_opportunity": "Quelle mission de bénévolat ? (facultatif)",
+    "incident_opportunity_placeholder": "Ne concerne pas une mission en particulier",
+    "incident_opportunity_search": "Rechercher des missions",
+    "incident_person": "Qui est concerné ? (facultatif)",
+    "incident_person_hint": "Seulement si la personne est membre de cette communauté. Sinon, décrivez-la dans la description.",
+    "incident_person_search": "Rechercher des membres par nom",
+    "incident_person_empty": "Aucun membre trouvé.",
+    "incident_person_clear": "Retirer",
+    "incident_options_unavailable": "Impossible de charger la liste des organisations. Vous pouvez quand même envoyer votre signalement et indiquer dans la description où cela s'est produit."
   },
   "accessibility": {
     "heading": "Accessibilité et aménagements",

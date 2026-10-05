@@ -586,7 +586,30 @@
       "resolved": "Rozwiązany",
       "escalated": "Eskalacja",
       "closed": "Zamknięte"
-    }
+    },
+    "incident_type": "Jakiego rodzaju jest to zdarzenie?",
+    "incident_types": {
+      "concern": "Obawa o czyjś dobrostan",
+      "allegation": "Zarzut dotyczący czyjegoś zachowania",
+      "disclosure": "Ktoś powiedział mi coś niepokojącego",
+      "near_miss": "Zdarzenie potencjalnie niebezpieczne (nikt nie ucierpiał)",
+      "other": "Coś innego"
+    },
+    "incident_date": "Kiedy to się stało? (opcjonalnie)",
+    "incident_date_hint": "Zostaw puste, jeśli to było dzisiaj.",
+    "incident_date_future": "Data nie może być w przyszłości.",
+    "incident_organisation": "W jakiej organizacji to było? (opcjonalnie)",
+    "incident_organisation_placeholder": "Nie dotyczy konkretnej organizacji",
+    "incident_organisation_search": "Szukaj organizacji",
+    "incident_opportunity": "Przy jakiej ofercie wolontariatu? (opcjonalnie)",
+    "incident_opportunity_placeholder": "Nie dotyczy konkretnej oferty",
+    "incident_opportunity_search": "Szukaj ofert",
+    "incident_person": "Kogo to dotyczy? (opcjonalnie)",
+    "incident_person_hint": "Tylko jeśli ta osoba jest członkiem tej społeczności. W przeciwnym razie opisz ją w opisie.",
+    "incident_person_search": "Szukaj członków po imieniu",
+    "incident_person_empty": "Nie znaleziono członków.",
+    "incident_person_clear": "Usuń",
+    "incident_options_unavailable": "Nie udało się wczytać listy organizacji. Nadal możesz wysłać zgłoszenie i podać w opisie, gdzie to się stało."
   },
   "accessibility": {
     "heading": "Dostępność i zakwaterowanie",

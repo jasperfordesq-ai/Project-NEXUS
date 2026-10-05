@@ -793,7 +793,11 @@
     "orgs_no_match": "Geen organisaties voldoen aan dit filter.",
     "expense_already_reviewed": "Deze uitgave is al beoordeeld en kan daarom niet opnieuw worden goedgekeurd of afgewezen.",
     "expense_not_approved": "Alleen een goedgekeurde uitgave kan als betaald worden gemarkeerd.",
-    "expense_paid_by_org_hint": "De organisatie registreert de betaling via haar eigen dashboard."
+    "expense_paid_by_org_hint": "De organisatie registreert de betaling via haar eigen dashboard.",
+    "col_handled_by": "Behandeld door",
+    "handled_by_label": "Wie behandelt dit?",
+    "handled_by_nobody": "Nog niemand",
+    "handled_by_help": "Diegene krijgt een melding en een e-mail dat het incident aan hem of haar is toegewezen."
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -36,7 +36,11 @@ vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 // module body, so a const factory is still uninitialised when they run.
 function adminComponentsMock() {
   return {
-    DataTable: ({ data, isLoading }: { data: { id: number; reporter_name: string }[]; isLoading?: boolean }) =>
+    DataTable: ({ data, isLoading, columns }: {
+      data: { id: number; reporter_name: string }[];
+      isLoading?: boolean;
+      columns?: { key: string; render?: (row: unknown) => React.ReactNode }[];
+    }) =>
       isLoading ? (
         <div role="status" aria-busy="true" aria-label="loading" />
       ) : (
@@ -45,6 +49,7 @@ function adminComponentsMock() {
             {data.map((row) => (
               <tr key={row.id} data-testid={`incident-row-${row.id}`}>
                 <td>{row.reporter_name}</td>
+                <td>{columns?.find((c) => c.key === 'actions')?.render?.(row)}</td>
               </tr>
             ))}
           </tbody>
@@ -325,6 +330,41 @@ describe('VolunteerSafeguarding', () => {
     // The DataTable stub doesn't render the action button; we test the handler directly
     // by verifying the component loads correctly and the mock is wired up
     expect(mockAdminVolunteering.getIncidents).toHaveBeenCalled();
+  });
+
+  it('hands an incident to a named handler, never to the person it is about', async () => {
+    const user = userEvent.setup();
+    mockAdminVolunteering.getIncidents.mockResolvedValue(
+      makeGetIncidentsResponse({
+        incidents: [makeIncident({ title: 'Left alone on shift', assigned_to: null, subject_user_id: 7 })],
+        handlers: [{ id: 5, name: 'Hana Handler' }, { id: 7, name: 'Sid Subject' }],
+      })
+    );
+    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
+
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    const row = await screen.findByTestId('incident-row-1');
+    await user.click(within(row).getByRole('button'));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Left alone on shift')).toBeInTheDocument();
+
+    const trigger = within(dialog).getAllByRole('button').find((b) => b.textContent?.includes('Nobody yet'));
+    expect(trigger).toBeTruthy();
+    await user.click(trigger as HTMLElement);
+
+    expect(await screen.findByRole('option', { name: 'Hana Handler' })).toBeInTheDocument();
+    // F-507: the person the incident is about is never offered as its handler.
+    expect(screen.queryByRole('option', { name: 'Sid Subject' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: 'Hana Handler' }));
+
+    const UPDATE_LABEL = 'Update Incident';
+    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === UPDATE_LABEL);
+    await user.click(save as HTMLElement);
+
+    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, { status: 'open', assigned_to: 5 }));
   });
 
   it('renders audit log timeline when incidents are present', async () => {

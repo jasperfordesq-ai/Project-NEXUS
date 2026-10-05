@@ -809,7 +809,11 @@
     "orgs_no_match": "Ninguna organización coincide con este filtro.",
     "expense_already_reviewed": "Este gasto ya ha sido revisado, por lo que no se puede aprobar ni rechazar de nuevo.",
     "expense_not_approved": "Solo un gasto aprobado se puede marcar como pagado.",
-    "expense_paid_by_org_hint": "La organización registra el pago desde su propio panel."
+    "expense_paid_by_org_hint": "La organización registra el pago desde su propio panel.",
+    "col_handled_by": "Gestionado por",
+    "handled_by_label": "¿Quién se encarga?",
+    "handled_by_nobody": "Nadie todavía",
+    "handled_by_help": "Recibirá una notificación y un correo electrónico indicando que le corresponde."
   },
   "donation_refunds": {
     "page_title": "Reembolsos de donaciones",

@@ -592,7 +592,30 @@
       "resolved": "Réitithe",
       "escalated": "Ardaithe",
       "closed": "Dúnta"
-    }
+    },
+    "incident_type": "Cén cineál teagmhais atá ann?",
+    "incident_types": {
+      "concern": "Imní faoi leas duine",
+      "allegation": "Líomhain faoi iompar duine",
+      "disclosure": "D’inis duine rud imníoch dom",
+      "near_miss": "Dainséar a seachnaíodh (níor gortaíodh aon duine)",
+      "other": "Rud éigin eile"
+    },
+    "incident_date": "Cathain a tharla sé? (roghnach)",
+    "incident_date_hint": "Fág bán é más inniu a tharla sé.",
+    "incident_date_future": "Ní féidir leis an dáta a bheith sa todhchaí.",
+    "incident_organisation": "Cén eagraíocht lena raibh sé? (roghnach)",
+    "incident_organisation_placeholder": "Ní bhaineann sé le heagraíocht ar leith",
+    "incident_organisation_search": "Cuardaigh eagraíochtaí",
+    "incident_opportunity": "Cén deis oibre deonaí? (roghnach)",
+    "incident_opportunity_placeholder": "Ní bhaineann sé le deis ar leith",
+    "incident_opportunity_search": "Cuardaigh deiseanna",
+    "incident_person": "Cé faoi a bhfuil sé? (roghnach)",
+    "incident_person_hint": "Ach amháin más ball den phobal seo é an duine. Seachas sin, déan cur síos air sa chur síos.",
+    "incident_person_search": "Cuardaigh baill de réir ainm",
+    "incident_person_empty": "Níor aimsíodh aon bhall.",
+    "incident_person_clear": "Bain",
+    "incident_options_unavailable": "Níorbh fhéidir liosta na n-eagraíochtaí a lódáil. Is féidir leat do thuairisc a sheoladh fós agus a rá sa chur síos cá háit ar tharla sé."
   },
   "accessibility": {
     "heading": "Inrochtaineacht agus Oiriúnuithe",

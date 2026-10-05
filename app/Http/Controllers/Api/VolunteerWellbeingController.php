@@ -441,6 +441,22 @@ class VolunteerWellbeingController extends BaseApiController
         }
     }
 
+    /**
+     * What a member may tie an incident report to: this community's active
+     * organisations and their opportunities. Names only — the form needs
+     * nothing else.
+     */
+    public function incidentReportOptions(): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->getUserId();
+        $this->rateLimit('vol_incident_report_options', 30, 60);
+
+        return $this->respondWithData(
+            $this->safeguardingService->getIncidentReportOptions(TenantContext::getId())
+        );
+    }
+
     public function getIncidents(): JsonResponse
     {
         $this->ensureFeature();
@@ -523,6 +539,7 @@ class VolunteerWellbeingController extends BaseApiController
             'items' => $incidents,
             'stats' => $this->safeguardingService->getIncidentStats($tenantId),
             'dlp_assignments' => $this->safeguardingService->getDlpAssignments($tenantId),
+            'handlers' => $this->safeguardingService->getIncidentHandlers($tenantId),
             'total' => $result['total'] ?? 0,
             'page' => $result['page'] ?? $page,
             'per_page' => $result['per_page'] ?? $perPage,

@@ -574,7 +574,30 @@
       "resolved": "Gelöst",
       "escalated": "Eskaliert",
       "closed": "Geschlossen"
-    }
+    },
+    "incident_type": "Um welche Art von Vorfall handelt es sich?",
+    "incident_types": {
+      "concern": "Sorge um das Wohlergehen einer Person",
+      "allegation": "Ein Vorwurf zum Verhalten einer Person",
+      "disclosure": "Jemand hat mir etwas Besorgniserregendes erzählt",
+      "near_miss": "Ein Beinahe-Vorfall (niemand wurde verletzt)",
+      "other": "Etwas anderes"
+    },
+    "incident_date": "Wann ist es passiert? (optional)",
+    "incident_date_hint": "Leer lassen, wenn es heute war.",
+    "incident_date_future": "Das Datum darf nicht in der Zukunft liegen.",
+    "incident_organisation": "Bei welcher Organisation war das? (optional)",
+    "incident_organisation_placeholder": "Betrifft keine bestimmte Organisation",
+    "incident_organisation_search": "Organisationen suchen",
+    "incident_opportunity": "Bei welchem Ehrenamtsangebot? (optional)",
+    "incident_opportunity_placeholder": "Betrifft kein bestimmtes Angebot",
+    "incident_opportunity_search": "Angebote suchen",
+    "incident_person": "Um wen geht es? (optional)",
+    "incident_person_hint": "Nur wenn die Person Mitglied dieser Gemeinschaft ist. Andernfalls beschreiben Sie sie in der Beschreibung.",
+    "incident_person_search": "Mitglieder nach Namen suchen",
+    "incident_person_empty": "Keine Mitglieder gefunden.",
+    "incident_person_clear": "Entfernen",
+    "incident_options_unavailable": "Die Liste der Organisationen konnte nicht geladen werden. Sie können Ihre Meldung trotzdem senden und in der Beschreibung angeben, wo es passiert ist."
   },
   "accessibility": {
     "heading": "Barrierefreiheit & Anpassungen",

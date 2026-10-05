@@ -574,7 +574,30 @@
       "resolved": "Opgelost",
       "escalated": "Geëscaleerd",
       "closed": "Gesloten"
-    }
+    },
+    "incident_type": "Wat voor soort incident is het?",
+    "incident_types": {
+      "concern": "Een zorg over iemands welzijn",
+      "allegation": "Een beschuldiging over iemands gedrag",
+      "disclosure": "Iemand vertelde me iets zorgwekkends",
+      "near_miss": "Een bijna-ongeluk (niemand raakte gewond)",
+      "other": "Iets anders"
+    },
+    "incident_date": "Wanneer is het gebeurd? (optioneel)",
+    "incident_date_hint": "Laat leeg als het vandaag was.",
+    "incident_date_future": "De datum mag niet in de toekomst liggen.",
+    "incident_organisation": "Bij welke organisatie was dit? (optioneel)",
+    "incident_organisation_placeholder": "Gaat niet over een bepaalde organisatie",
+    "incident_organisation_search": "Organisaties zoeken",
+    "incident_opportunity": "Bij welke vrijwilligersvacature? (optioneel)",
+    "incident_opportunity_placeholder": "Gaat niet over een bepaalde vacature",
+    "incident_opportunity_search": "Vacatures zoeken",
+    "incident_person": "Over wie gaat het? (optioneel)",
+    "incident_person_hint": "Alleen als diegene lid is van deze gemeenschap. Beschrijf de persoon anders in de beschrijving.",
+    "incident_person_search": "Leden zoeken op naam",
+    "incident_person_empty": "Geen leden gevonden.",
+    "incident_person_clear": "Verwijderen",
+    "incident_options_unavailable": "De lijst met organisaties kon niet worden geladen. Je kunt je melding toch versturen en in de beschrijving aangeven waar het gebeurde."
   },
   "accessibility": {
     "heading": "Bereikbaarheid & Accommodaties",

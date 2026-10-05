@@ -26,6 +26,9 @@ class ReportIncidentRequest extends FormRequest
             'description' => ['required', 'string', 'min:20'],
             'severity' => ['required', 'in:low,medium,high,critical'],
             'category' => ['nullable', 'string', 'max:100'],
+            // When it happened. Blank means today; a date that has not
+            // happened yet is a typing mistake, not a report.
+            'incident_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'organization_id' => ['nullable', 'integer', 'min:1'],
             'opportunity_id' => ['nullable', 'integer', 'min:1'],
             'shift_id' => ['nullable', 'integer', 'min:1'],

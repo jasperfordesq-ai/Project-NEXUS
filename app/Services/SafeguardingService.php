@@ -619,7 +619,7 @@ class SafeguardingService
                 'description' => $data['description'] ?? '',
                 'severity' => $severity,
                 'incident_type' => $incidentType,
-                'incident_date' => $data['incident_date'] ?? now()->toDateString(),
+                'incident_date' => !empty($data['incident_date']) ? $data['incident_date'] : now()->toDateString(),
                 'subject_user_id' => $subjectUserId,
                 'involved_user_id' => $involvedUserId,
                 'organization_id' => $organizationId,
@@ -718,6 +718,10 @@ class SafeguardingService
                     $join->on('si.assigned_to', '=', 'au.id')
                         ->where('au.tenant_id', '=', $tenantId);
                 })
+                ->leftJoin('vol_opportunities as opp', function ($join) use ($tenantId) {
+                    $join->on('si.opportunity_id', '=', 'opp.id')
+                        ->where('opp.tenant_id', '=', $tenantId);
+                })
                 ->select(
                     'si.*',
                     'u.name as reported_by_name',
@@ -725,7 +729,8 @@ class SafeguardingService
                     'iu.name as involved_user_name',
                     'su.name as subject_user_name',
                     'org.name as organization_name',
-                    'au.name as assigned_to_name'
+                    'au.name as assigned_to_name',
+                    'opp.title as opportunity_title'
                 )
                 ->orderByDesc('si.created_at')
                 ->offset($offset)
@@ -826,6 +831,10 @@ class SafeguardingService
                     $join->on('si.assigned_to', '=', 'au.id')
                         ->where('au.tenant_id', '=', $tenantId);
                 })
+                ->leftJoin('vol_opportunities as opp', function ($join) use ($tenantId) {
+                    $join->on('si.opportunity_id', '=', 'opp.id')
+                        ->where('opp.tenant_id', '=', $tenantId);
+                })
                 ->where('si.id', $incidentId)
                 ->where('si.tenant_id', $tenantId)
                 ->select(
@@ -836,7 +845,8 @@ class SafeguardingService
                     'iu.avatar_url as involved_user_avatar',
                     'su.name as subject_user_name',
                     'org.name as organization_name',
-                    'au.name as assigned_to_name'
+                    'au.name as assigned_to_name',
+                    'opp.title as opportunity_title'
                 )
                 ->first();
 
@@ -874,6 +884,11 @@ class SafeguardingService
                 return false;
             }
 
+            // A form sends the handler as a string; "nobody" is empty or null.
+            if (array_key_exists('assigned_to', $updates)) {
+                $updates['assigned_to'] = !empty($updates['assigned_to']) ? (int) $updates['assigned_to'] : null;
+            }
+
             if (isset($data['status']) && in_array($data['status'], ['resolved', 'closed'])) {
                 $updates['resolved_at'] = now();
             }
@@ -909,14 +924,15 @@ class SafeguardingService
                 }
             }
 
+            $newAssignee = null;
             if (isset($updates['assigned_to']) && $updates['assigned_to'] !== null) {
-                $assigneeExists = User::where('id', (int) $updates['assigned_to'])
+                $newAssignee = User::where('id', (int) $updates['assigned_to'])
                     ->where('tenant_id', $tenantId)
                     ->where('status', 'active')
                     ->where(fn ($q) => self::scopeToBrokerTier($q))
-                    ->exists();
+                    ->first();
 
-                if (!$assigneeExists) {
+                if (!$newAssignee) {
                     return false;
                 }
             }
@@ -927,6 +943,12 @@ class SafeguardingService
                 ->update($updates);
 
             $this->logActivity($adminId, 'safeguarding_incident_updated', 'safeguarding_incident', $incidentId, $updates);
+
+            // A newly named handler is told the incident is theirs, exactly as
+            // assignDlp() tells them. Re-saving the same handler stays quiet.
+            if ($newAssignee && (int) ($currentIncident->assigned_to ?? 0) !== (int) $newAssignee->id) {
+                $this->notifyIncidentAssignee($newAssignee, $tenantId, $incidentId, $currentIncident);
+            }
 
             // Notify reporter and assigned DLP of status changes
             if (isset($data['status']) && $currentIncident) {
@@ -976,6 +998,79 @@ class SafeguardingService
                 'resolved' => 0,
                 'escalated' => 0,
             ];
+        }
+    }
+
+    /**
+     * What an incident report may be tied to: the community's active
+     * organisations and their opportunities, by name only. Statuses match the
+     * public organisation directory (VolunteerService::getOrganisations()).
+     *
+     * @return array{organisations: list<array{id:int,name:string}>, opportunities: list<array{id:int,title:string,organization_id:int,organization_name:string}>}
+     */
+    public function getIncidentReportOptions(int $tenantId): array
+    {
+        try {
+            $organisations = DB::table('vol_organizations')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('status', ['approved', 'active'])
+                ->orderBy('name')
+                ->limit(500)
+                ->get(['id', 'name'])
+                ->map(fn ($row) => ['id' => (int) $row->id, 'name' => (string) $row->name])
+                ->all();
+
+            $opportunities = DB::table('vol_opportunities as opp')
+                ->join('vol_organizations as org', function ($join) use ($tenantId) {
+                    $join->on('opp.organization_id', '=', 'org.id')
+                        ->where('org.tenant_id', '=', $tenantId);
+                })
+                ->where('opp.tenant_id', $tenantId)
+                ->whereIn('org.status', ['approved', 'active'])
+                ->orderBy('org.name')
+                ->orderBy('opp.title')
+                ->limit(1000)
+                ->get(['opp.id', 'opp.title', 'opp.organization_id', 'org.name as organization_name'])
+                ->map(fn ($row) => [
+                    'id' => (int) $row->id,
+                    'title' => (string) $row->title,
+                    'organization_id' => (int) $row->organization_id,
+                    'organization_name' => (string) $row->organization_name,
+                ])
+                ->all();
+
+            return ['organisations' => array_values($organisations), 'opportunities' => array_values($opportunities)];
+        } catch (\Throwable $e) {
+            Log::error('SafeguardingService::getIncidentReportOptions error: ' . $e->getMessage());
+            return ['organisations' => [], 'opportunities' => []];
+        }
+    }
+
+    /**
+     * Everyone an incident may be handed to: active broker-tier staff, the same
+     * rule updateIncident() enforces on `assigned_to`.
+     *
+     * @return list<array{id:int,name:string}>
+     */
+    public function getIncidentHandlers(int $tenantId): array
+    {
+        try {
+            return User::where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->where(fn ($q) => self::scopeToBrokerTier($q))
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->limit(200)
+                ->get(['id', 'first_name', 'last_name', 'name', 'profile_type', 'organization_name'])
+                ->map(fn (User $user) => [
+                    'id' => (int) $user->id,
+                    'name' => (string) (UserDisplayName::resolve($user) ?: ($user->name ?? '')),
+                ])
+                ->values()
+                ->all();
+        } catch (\Throwable $e) {
+            Log::error('SafeguardingService::getIncidentHandlers error: ' . $e->getMessage());
+            return [];
         }
     }
 
@@ -1126,76 +1221,89 @@ class SafeguardingService
                 'dlp_user_id' => $dlpUserId,
             ]);
 
-            // Notify the assigned DLP (bell notification + email) — render in DLP's preferred locale
-            LocaleContext::withLocale($dlpUser, function () use ($dlpUser, $dlpUserId, $tenantId, $incidentId, $incident) {
-                try {
-                    \App\Models\Notification::create([
-                        'tenant_id' => $tenantId,
-                        'user_id' => $dlpUserId,
-                        'type' => 'safeguarding_assignment',
-                        'message' => __('emails_misc.safeguarding.dlp_assigned_bell', ['incident_id' => $incidentId]),
-                        'link' => '/broker/safeguarding/volunteering',
-                        'is_read' => false,
-                    ]);
-                } catch (\Throwable $notifError) {
-                    Log::critical('SafeguardingService::assignDlp: failed to create DLP bell notification', [
-                        'dlp_user_id' => $dlpUserId,
-                        'incident_id' => $incidentId,
-                        'error' => $notifError->getMessage(),
-                    ]);
-                }
-
-                // Email the assigned DLP — DLP assignment is critical and time-sensitive
-                // Safeguarding emails bypass user preferences — always send
-                if (!empty($dlpUser->email)) {
-                    try {
-                        $severityLabel = strtoupper($incident->severity ?? 'UNKNOWN');
-                        $dlpName = UserDisplayName::resolve($dlpUser) ?: ($dlpUser->name ?? 'Team member');
-
-                        $safeDlpName = htmlspecialchars($dlpName, ENT_QUOTES, 'UTF-8');
-                        $safeTitle = htmlspecialchars($incident->title ?? 'N/A', ENT_QUOTES, 'UTF-8');
-                        $safeSeverity = htmlspecialchars($severityLabel, ENT_QUOTES, 'UTF-8');
-
-                        $emailBody = EmailTemplateBuilder::make()
-                            ->theme('danger')
-                            ->title(__('emails_misc.safeguarding.dlp_assigned_title', ['incident_id' => $incidentId]))
-                            ->previewText(__('emails_misc.safeguarding.dlp_assigned_preview', ['severity' => $safeSeverity, 'incident_id' => $incidentId]))
-                            ->greeting($safeDlpName)
-                            ->highlight(__('emails_misc.safeguarding.dlp_assigned_highlight'), '🚨')
-                            ->infoCard([
-                                __('emails_misc.safeguarding.info_card_incident') => "#{$incidentId}",
-                                __('emails_misc.safeguarding.info_card_severity') => $safeSeverity,
-                                __('emails_misc.safeguarding.info_card_title')    => $safeTitle,
-                            ], __('emails_misc.safeguarding.info_card_incident_details'))
-                            ->paragraph(__('emails_misc.safeguarding.dlp_assigned_body'))
-                            ->paragraph(__('emails_misc.safeguarding.dlp_assigned_audit_note'))
-                            ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
-                            ->render();
-
-                        $subject = __('emails_misc.safeguarding.dlp_assigned_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId]);
-                        $sent = EmailDispatchService::sendRaw($dlpUser->email, $subject, $emailBody, null, null, null, 'safeguarding', ['tenant_id' => $tenantId]);
-                        if (!$sent) {
-                            Log::critical('SafeguardingService::assignDlp: DLP assignment email failed to send', [
-                                'dlp_user_id' => $dlpUserId,
-                                'dlp_email' => $dlpUser->email,
-                                'incident_id' => $incidentId,
-                            ]);
-                        }
-                    } catch (\Throwable $emailError) {
-                        Log::critical('SafeguardingService::assignDlp: DLP assignment email exception', [
-                            'dlp_user_id' => $dlpUserId,
-                            'incident_id' => $incidentId,
-                            'error' => $emailError->getMessage(),
-                        ]);
-                    }
-                }
-            });
+            $this->notifyIncidentAssignee($dlpUser, $tenantId, $incidentId, $incident);
 
             return true;
         } catch (\Throwable $e) {
             Log::error('SafeguardingService::assignDlp error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Tell the person an incident has just been handed to (bell + email), in
+     * their own language. Used by assignDlp() and by updateIncident() when staff
+     * choose a handler. Failures are logged critically and never undo the
+     * assignment.
+     */
+    private function notifyIncidentAssignee(User $dlpUser, int $tenantId, int $incidentId, object $incident): void
+    {
+        $dlpUserId = (int) $dlpUser->id;
+
+        // Notify the assigned DLP (bell notification + email) — render in DLP's preferred locale
+        LocaleContext::withLocale($dlpUser, function () use ($dlpUser, $dlpUserId, $tenantId, $incidentId, $incident) {
+            try {
+                \App\Models\Notification::create([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $dlpUserId,
+                    'type' => 'safeguarding_assignment',
+                    'message' => __('emails_misc.safeguarding.dlp_assigned_bell', ['incident_id' => $incidentId]),
+                    'link' => '/broker/safeguarding/volunteering',
+                    'is_read' => false,
+                ]);
+            } catch (\Throwable $notifError) {
+                Log::critical('SafeguardingService::assignDlp: failed to create DLP bell notification', [
+                    'dlp_user_id' => $dlpUserId,
+                    'incident_id' => $incidentId,
+                    'error' => $notifError->getMessage(),
+                ]);
+            }
+
+            // Email the assigned DLP — DLP assignment is critical and time-sensitive
+            // Safeguarding emails bypass user preferences — always send
+            if (!empty($dlpUser->email)) {
+                try {
+                    $severityLabel = strtoupper($incident->severity ?? 'UNKNOWN');
+                    $dlpName = UserDisplayName::resolve($dlpUser) ?: ($dlpUser->name ?? 'Team member');
+
+                    $safeDlpName = htmlspecialchars($dlpName, ENT_QUOTES, 'UTF-8');
+                    $safeTitle = htmlspecialchars($incident->title ?? 'N/A', ENT_QUOTES, 'UTF-8');
+                    $safeSeverity = htmlspecialchars($severityLabel, ENT_QUOTES, 'UTF-8');
+
+                    $emailBody = EmailTemplateBuilder::make()
+                        ->theme('danger')
+                        ->title(__('emails_misc.safeguarding.dlp_assigned_title', ['incident_id' => $incidentId]))
+                        ->previewText(__('emails_misc.safeguarding.dlp_assigned_preview', ['severity' => $safeSeverity, 'incident_id' => $incidentId]))
+                        ->greeting($safeDlpName)
+                        ->highlight(__('emails_misc.safeguarding.dlp_assigned_highlight'), '🚨')
+                        ->infoCard([
+                            __('emails_misc.safeguarding.info_card_incident') => "#{$incidentId}",
+                            __('emails_misc.safeguarding.info_card_severity') => $safeSeverity,
+                            __('emails_misc.safeguarding.info_card_title')    => $safeTitle,
+                        ], __('emails_misc.safeguarding.info_card_incident_details'))
+                        ->paragraph(__('emails_misc.safeguarding.dlp_assigned_body'))
+                        ->paragraph(__('emails_misc.safeguarding.dlp_assigned_audit_note'))
+                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
+                        ->render();
+
+                    $subject = __('emails_misc.safeguarding.dlp_assigned_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId]);
+                    $sent = EmailDispatchService::sendRaw($dlpUser->email, $subject, $emailBody, null, null, null, 'safeguarding', ['tenant_id' => $tenantId]);
+                    if (!$sent) {
+                        Log::critical('SafeguardingService::assignDlp: DLP assignment email failed to send', [
+                            'dlp_user_id' => $dlpUserId,
+                            'dlp_email' => $dlpUser->email,
+                            'incident_id' => $incidentId,
+                        ]);
+                    }
+                } catch (\Throwable $emailError) {
+                    Log::critical('SafeguardingService::assignDlp: DLP assignment email exception', [
+                        'dlp_user_id' => $dlpUserId,
+                        'incident_id' => $incidentId,
+                        'error' => $emailError->getMessage(),
+                    ]);
+                }
+            }
+        });
     }
 
     // =========================================================================
