@@ -301,6 +301,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   'social-value': 'breadcrumbs.social_value',
   projects: 'breadcrumbs.projects',
   training: 'breadcrumbs.training',
+  qualifications: 'breadcrumbs.qualifications',
   expenses: 'breadcrumbs.expenses',
 
   // Logs

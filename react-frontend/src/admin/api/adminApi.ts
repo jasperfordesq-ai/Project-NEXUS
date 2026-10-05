@@ -152,6 +152,11 @@ import type {
   CrmAdmin,
   TimelineEntry,
   SeoAuditResult,
+  AdminVolunteerQualification,
+  AdminVolunteerQualificationsParams,
+  AdminVolunteerQualificationsResponse,
+  QualificationConfirmationMethod,
+  QualificationWithdrawalReason,
 } from './types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1755,6 +1760,21 @@ export const adminVolunteering = {
 
   getActivityFeed: (limit: number = 20, days: number = 30) =>
     api.get(`/v2/admin/volunteering/activity-feed?limit=${limit}&days=${days}`),
+
+  // Qualifications register (training and qualifications volunteers record).
+  // Confirm/withdraw share the member routes; staff send no organization_id.
+  listQualifications: (params: AdminVolunteerQualificationsParams = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    }
+    const qs = query.toString();
+    return api.get<AdminVolunteerQualificationsResponse>(`/v2/admin/volunteering/qualifications${qs ? `?${qs}` : ''}`);
+  },
+  confirmQualification: (id: number, method: QualificationConfirmationMethod) =>
+    api.post<AdminVolunteerQualification>(`/v2/volunteering/qualifications/${id}/confirm`, { method }),
+  withdrawQualification: (id: number, reason: QualificationWithdrawalReason) =>
+    api.post<AdminVolunteerQualification>(`/v2/volunteering/qualifications/${id}/withdraw`, { reason }),
 
   // Training
   getTraining: () => api.get('/v2/admin/volunteering/training'),

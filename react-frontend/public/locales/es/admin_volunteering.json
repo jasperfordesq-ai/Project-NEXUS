@@ -265,7 +265,7 @@
     "field_type_label": "Tipo de campo",
     "filter_all": "Todos",
     "filter_channel": "canal",
-    "filter_credential_expiry": "Caducidad de la credencial",
+    "filter_credential_expiry": "Caducidad de cualificaciones",
     "filter_email": "Correo electrónico",
     "filter_lapsed_volunteer": "Voluntario caducado",
     "filter_opportunity": "Oportunidad",
@@ -311,7 +311,7 @@
     "reminder_pre_shift": "Recordatorio previo al turno",
     "reminder_post_shift_feedback": "Comentarios posteriores al turno",
     "reminder_lapsed_volunteer": "Voluntario caducado",
-    "reminder_credential_expiry": "Caducidad de la credencial",
+    "reminder_credential_expiry": "Caducidad de cualificaciones",
     "reminder_training_expiry": "Caducidad de la formación",
     "run_reminder_job_confirm": "¿Enviar recordatorios de turnos para oportunidades activas en esta comunidad?",
     "reminder_job_sent_plural": "Trabajo recordatorio enviado notificaciones{{count}}",
@@ -948,5 +948,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Cualificaciones",
+    "page_desc": "Formación y cualificaciones registradas por los voluntarios. Confírmalas tras comprobar el original y ve lo que está a punto de caducar. Aquí no se sube nada.",
+    "tiles": {
+      "expiring": "Caducan pronto",
+      "recorded": "Pendientes de confirmar",
+      "confirmed": "Confirmadas",
+      "expired": "Caducadas"
+    },
+    "filters": {
+      "attention": "Necesitan atención",
+      "confirmed": "Confirmadas",
+      "expired": "Caducadas",
+      "all": "Todas",
+      "withdrawn": "Retiradas",
+      "type": "Tipo",
+      "all_types": "Todos los tipos"
+    },
+    "search_placeholder": "Buscar voluntarios",
+    "results": "{{number}} cualificaciones",
+    "col": {
+      "volunteer": "Voluntario",
+      "qualification": "Cualificación",
+      "expires": "Caduca",
+      "status": "Estado",
+      "confirmed_for": "Confirmada para"
+    },
+    "community": "Equipo de la comunidad",
+    "empty_title": "Ninguna cualificación coincide",
+    "empty_body": "Prueba otro filtro o borra la búsqueda.",
+    "clear_filters": "Borrar filtros",
+    "confirm": {
+      "title": "Confirmar cualificación",
+      "body": "Estás confirmando que {{name}} tiene esta cualificación.",
+      "method": "¿Cómo la has comprobado?",
+      "submit": "Confirmar",
+      "done": "Cualificación confirmada.",
+      "expired_hint": "Pide primero al voluntario que actualice la fecha de caducidad.",
+      "self": "No puedes confirmar tu propia cualificación.",
+      "methods": {
+        "saw_original": "Vi el certificado original",
+        "online_register": "Consulté un registro en línea",
+        "issuer_confirmed": "La entidad emisora lo confirmó"
+      }
+    },
+    "withdraw": {
+      "title": "Retirar cualificación",
+      "body": "El voluntario verá que se ha retirado y por qué.",
+      "reason": "Motivo",
+      "confirm": "Retirar",
+      "done": "Cualificación retirada.",
+      "reasons": {
+        "volunteer_request": "El voluntario pidió que se retirara",
+        "no_longer_held": "Ya no la tiene",
+        "entered_in_error": "Introducida por error",
+        "replaced": "Sustituida por una más reciente"
+      },
+      "already": "Esta cualificación se ha retirado y ya no se puede modificar.",
+      "failed": "No se ha podido retirar la cualificación. Inténtelo de nuevo."
+    },
+    "actions": {
+      "confirm": "Confirmar",
+      "withdraw": "Retirar"
+    },
+    "load_error": "No se pudieron cargar las cualificaciones.",
+    "retry": "Reintentar"
   }
 }

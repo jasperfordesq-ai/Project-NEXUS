@@ -71,6 +71,7 @@ vi.mock('./OrgHoursReviewTab', () => ({ default: () => <div data-testid="hours-r
 vi.mock('./OrgExpensesTab', () => ({ default: () => <div data-testid="expenses-tab">Expenses</div> }));
 vi.mock('./OrgFundraisingTab', () => ({ default: () => <div data-testid="fundraising-tab">Fundraising</div> }));
 vi.mock('./OrgVolunteersTab', () => ({ default: () => <div data-testid="volunteers-tab">Volunteers</div> }));
+vi.mock('./OrgQualificationsTab', () => ({ default: () => <div data-testid="qualifications-tab">Qualifications</div> }));
 vi.mock('./OrgWalletTab', () => ({ default: () => <div data-testid="wallet-tab">Wallet</div> }));
 vi.mock('./OrgSettingsTab', () => ({ default: () => <div data-testid="settings-tab">Settings</div> }));
 
@@ -215,6 +216,28 @@ describe('VolOrgDashboardPage', () => {
     const expensesIdx = labels.findIndex((l) => l.includes('Expenses'));
     expect(expensesIdx).toBeGreaterThan(-1);
     expect(labels[expensesIdx + 1]).toContain('Fundraising');
+  });
+
+  // The qualifications register is its own tab; the expiry-reminder emails
+  // deep-link to it with ?tab=qualifications.
+  it('opens the qualifications tab from the ?tab=qualifications deep link', async () => {
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams('tab=qualifications'), vi.fn()]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('qualifications-tab')).toBeInTheDocument();
+    });
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
+  });
+
+  it('shows a Qualifications tab button directly after Volunteers', async () => {
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getAllByText('Community Helpers').length).toBeGreaterThan(0));
+    const labels = screen.getAllByRole('button').map((b) => b.textContent ?? '');
+    const volunteersIdx = labels.findIndex((l) => l.includes('Volunteers'));
+    const qualificationsIdx = labels.findIndex((l) => l.includes('Qualifications'));
+    expect(volunteersIdx).toBeGreaterThan(-1);
+    expect(qualificationsIdx).toBe(volunteersIdx + 1);
   });
 
   it('renders org description', async () => {

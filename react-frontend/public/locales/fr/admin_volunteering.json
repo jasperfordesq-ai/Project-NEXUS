@@ -265,7 +265,7 @@
     "field_type_label": "Type de champ",
     "filter_all": "Tout",
     "filter_channel": "Chaîne",
-    "filter_credential_expiry": "Expiration des informations d'identification",
+    "filter_credential_expiry": "Expiration des qualifications",
     "filter_email": "Courriel",
     "filter_lapsed_volunteer": "Bénévole décédé",
     "filter_opportunity": "Opportunité",
@@ -308,7 +308,7 @@
     "reminder_pre_shift": "Rappel avant le quart de travail",
     "reminder_post_shift_feedback": "Commentaires après le quart de travail",
     "reminder_lapsed_volunteer": "Bénévole décédé",
-    "reminder_credential_expiry": "Expiration des informations d'identification",
+    "reminder_credential_expiry": "Expiration des qualifications",
     "reminder_training_expiry": "Expiration de la formation",
     "run_reminder_job_confirm": "Envoyer des rappels de quart de travail pour les opportunités actives dans cette communauté ?",
     "reminder_job_sent_plural": "Tâche de rappel envoyée aux notifications{{count}}",
@@ -948,5 +948,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Qualifications",
+    "page_desc": "Formations et qualifications enregistrées par les bénévoles. Confirmez-les après avoir vérifié l'original et voyez ce qui va bientôt expirer. Rien n'est téléversé ici.",
+    "tiles": {
+      "expiring": "Expirent bientôt",
+      "recorded": "En attente de confirmation",
+      "confirmed": "Confirmées",
+      "expired": "Expirées"
+    },
+    "filters": {
+      "attention": "À traiter",
+      "confirmed": "Confirmées",
+      "expired": "Expirées",
+      "all": "Toutes",
+      "withdrawn": "Retirées",
+      "type": "Type",
+      "all_types": "Tous les types"
+    },
+    "search_placeholder": "Rechercher des bénévoles",
+    "results": "Qualifications trouvées : {{number}}",
+    "col": {
+      "volunteer": "Bénévole",
+      "qualification": "Qualification",
+      "expires": "Expire",
+      "status": "Statut",
+      "confirmed_for": "Confirmée pour"
+    },
+    "community": "Équipe de la communauté",
+    "empty_title": "Aucune qualification ne correspond",
+    "empty_body": "Essayez un autre filtre ou effacez la recherche.",
+    "clear_filters": "Effacer les filtres",
+    "confirm": {
+      "title": "Confirmer la qualification",
+      "body": "Vous confirmez que {{name}} détient cette qualification.",
+      "method": "Comment l'avez-vous vérifiée ?",
+      "submit": "Confirmer",
+      "done": "Qualification confirmée.",
+      "expired_hint": "Demandez d'abord au ou à la bénévole de mettre à jour la date d'expiration.",
+      "self": "Vous ne pouvez pas confirmer votre propre qualification.",
+      "methods": {
+        "saw_original": "J'ai vu le certificat original",
+        "online_register": "J'ai vérifié un registre en ligne",
+        "issuer_confirmed": "L'organisme émetteur l'a confirmé"
+      }
+    },
+    "withdraw": {
+      "title": "Retirer la qualification",
+      "body": "Le ou la bénévole verra qu'elle a été retirée et pourquoi.",
+      "reason": "Motif",
+      "confirm": "Retirer",
+      "done": "Qualification retirée.",
+      "reasons": {
+        "volunteer_request": "Le ou la bénévole a demandé son retrait",
+        "no_longer_held": "N'est plus détenue",
+        "entered_in_error": "Saisie par erreur",
+        "replaced": "Remplacée par une plus récente"
+      },
+      "already": "Cette qualification a été retirée et ne peut plus être modifiée.",
+      "failed": "La qualification n'a pas pu être retirée. Veuillez réessayer."
+    },
+    "actions": {
+      "confirm": "Confirmer",
+      "withdraw": "Retirer"
+    },
+    "load_error": "Impossible de charger les qualifications.",
+    "retry": "Réessayer"
   }
 }

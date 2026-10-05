@@ -155,6 +155,9 @@ const SIMPLE_NO_TRANSLATE_PATTERNS = [
 // Keep these explicit so the summary reports actionable translation debt rather
 // than repeatedly sending invariant values to a translation provider.
 const IDENTICAL_VALUE_ALLOWLIST = new Set([
+  // Official names of an Irish programme and course (volunteer qualification types).
+  'Children First (Tusla)',
+  'First Aid Response (PHECC)',
   '65+',
   '% MRR',
   'Ad hoc',

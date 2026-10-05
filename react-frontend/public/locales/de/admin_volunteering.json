@@ -264,7 +264,7 @@
     "field_type_label": "Feldtyp",
     "filter_all": "Alle",
     "filter_channel": "Kanal",
-    "filter_credential_expiry": "Ablauf des Berechtigungsnachweises",
+    "filter_credential_expiry": "Ablauf von Qualifikationen",
     "filter_email": "E-Mail",
     "filter_lapsed_volunteer": "Abgelaufener Freiwilliger",
     "filter_opportunity": "Gelegenheit",
@@ -307,7 +307,7 @@
     "reminder_pre_shift": "Erinnerung vor der Schicht",
     "reminder_post_shift_feedback": "Feedback nach der Schicht",
     "reminder_lapsed_volunteer": "Abgelaufener Freiwilliger",
-    "reminder_credential_expiry": "Ablauf des Berechtigungsnachweises",
+    "reminder_credential_expiry": "Ablauf von Qualifikationen",
     "reminder_training_expiry": "Ablauf der Ausbildung",
     "run_reminder_job_confirm": "Fällige Schichterinnerungen für aktive Möglichkeiten in dieser Community senden?",
     "reminder_job_sent_plural": "Der Erinnerungsjob hat{{count}}-Benachrichtigungen gesendet",
@@ -932,5 +932,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Qualifikationen",
+    "page_desc": "Schulungen und Qualifikationen, die Freiwillige eingetragen haben. Bestätigen Sie sie nach Prüfung des Originals und sehen Sie, was bald abläuft. Hier wird nichts hochgeladen.",
+    "tiles": {
+      "expiring": "Läuft bald ab",
+      "recorded": "Bestätigung ausstehend",
+      "confirmed": "Bestätigt",
+      "expired": "Abgelaufen"
+    },
+    "filters": {
+      "attention": "Braucht Aufmerksamkeit",
+      "confirmed": "Bestätigt",
+      "expired": "Abgelaufen",
+      "all": "Alle",
+      "withdrawn": "Zurückgezogen",
+      "type": "Typ",
+      "all_types": "Alle Typen"
+    },
+    "search_placeholder": "Freiwillige suchen",
+    "results": "{{number}} Qualifikationen",
+    "col": {
+      "volunteer": "Freiwillige/r",
+      "qualification": "Qualifikation",
+      "expires": "Läuft ab",
+      "status": "Status",
+      "confirmed_for": "Bestätigt für"
+    },
+    "community": "Gemeinschaftsteam",
+    "empty_title": "Keine passenden Qualifikationen",
+    "empty_body": "Versuchen Sie einen anderen Filter oder leeren Sie die Suche.",
+    "clear_filters": "Filter zurücksetzen",
+    "confirm": {
+      "title": "Qualifikation bestätigen",
+      "body": "Sie bestätigen, dass {{name}} diese Qualifikation besitzt.",
+      "method": "Wie haben Sie es geprüft?",
+      "submit": "Bestätigen",
+      "done": "Qualifikation bestätigt.",
+      "expired_hint": "Bitten Sie die freiwillige Person, zuerst das Ablaufdatum zu aktualisieren.",
+      "self": "Sie können Ihre eigene Qualifikation nicht bestätigen.",
+      "methods": {
+        "saw_original": "Ich habe das Originalzertifikat gesehen",
+        "online_register": "Ich habe ein Online-Register geprüft",
+        "issuer_confirmed": "Die ausstellende Stelle hat es bestätigt"
+      }
+    },
+    "withdraw": {
+      "title": "Qualifikation zurückziehen",
+      "body": "Die freiwillige Person sieht, dass sie zurückgezogen wurde und warum.",
+      "reason": "Grund",
+      "confirm": "Zurückziehen",
+      "done": "Qualifikation zurückgezogen.",
+      "reasons": {
+        "volunteer_request": "Die freiwillige Person hat um Entfernung gebeten",
+        "no_longer_held": "Nicht mehr vorhanden",
+        "entered_in_error": "Versehentlich eingetragen",
+        "replaced": "Durch eine neuere ersetzt"
+      },
+      "already": "Diese Qualifikation wurde zurückgezogen und kann nicht mehr geändert werden.",
+      "failed": "Die Qualifikation konnte nicht zurückgezogen werden. Bitte versuchen Sie es erneut."
+    },
+    "actions": {
+      "confirm": "Bestätigen",
+      "withdraw": "Zurückziehen"
+    },
+    "load_error": "Qualifikationen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen"
   }
 }

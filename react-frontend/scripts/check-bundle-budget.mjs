@@ -210,7 +210,7 @@ const startupImportBudgets = [
   },
   {
     file: 'src/pages/volunteering/VolunteeringPage.tsx',
-    pattern: /^import\s+(?!type\b).*from ['"]\.\/(?:RecommendedShiftsTab|EmergencyAlertsTab|CertificatesTab|WellbeingTab|CredentialVerificationTab|WaitlistTab|ShiftSwapsTab|GroupSignUpTab|VolunteeringWelcome)['"]/m,
+    pattern: /^import\s+(?!type\b).*from ['"]\.\/(?:RecommendedShiftsTab|EmergencyAlertsTab|CertificatesTab|WellbeingTab|QualificationsTab|WaitlistTab|ShiftSwapsTab|GroupSignUpTab|VolunteeringWelcome)['"]/m,
     message: 'VolunteeringPage.tsx must lazy-load signed-in/tab-specific volunteering modules so the public opportunities route stays light.',
   },
   {

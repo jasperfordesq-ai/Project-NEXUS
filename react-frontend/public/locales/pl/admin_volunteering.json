@@ -264,7 +264,7 @@
     "field_type_label": "Typ pola",
     "filter_all": "Wszystko",
     "filter_channel": "Kanał",
-    "filter_credential_expiry": "Wygaśnięcie poświadczenia",
+    "filter_credential_expiry": "Wygasanie kwalifikacji",
     "filter_email": "E-mail",
     "filter_lapsed_volunteer": "Zaniedbany wolontariusz",
     "filter_opportunity": "Okazja",
@@ -310,7 +310,7 @@
     "reminder_pre_shift": "Przypomnienie przed zmianą",
     "reminder_post_shift_feedback": "Informacje zwrotne po zmianie",
     "reminder_lapsed_volunteer": "Zaniedbany wolontariusz",
-    "reminder_credential_expiry": "Wygaśnięcie poświadczenia",
+    "reminder_credential_expiry": "Wygasanie kwalifikacji",
     "reminder_training_expiry": "Wygaśnięcie szkolenia",
     "run_reminder_job_confirm": "Wysyłać przypomnienia o zbliżającej się zmianie w przypadku aktywnych możliwości w tej społeczności?",
     "reminder_job_sent_plural": "Zadanie przypomnienia wysłało powiadomienia{{count}}",
@@ -964,5 +964,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Kwalifikacje",
+    "page_desc": "Szkolenia i kwalifikacje zapisane przez wolontariuszy. Potwierdzaj je po sprawdzeniu oryginału i zobacz, co wkrótce wygaśnie. Nic nie jest tu przesyłane.",
+    "tiles": {
+      "expiring": "Wkrótce wygasają",
+      "recorded": "Oczekują na potwierdzenie",
+      "confirmed": "Potwierdzone",
+      "expired": "Wygasłe"
+    },
+    "filters": {
+      "attention": "Wymagają uwagi",
+      "confirmed": "Potwierdzone",
+      "expired": "Wygasłe",
+      "all": "Wszystkie",
+      "withdrawn": "Wycofane",
+      "type": "Rodzaj",
+      "all_types": "Wszystkie rodzaje"
+    },
+    "search_placeholder": "Szukaj wolontariuszy",
+    "results": "Kwalifikacje: {{number}}",
+    "col": {
+      "volunteer": "Wolontariusz",
+      "qualification": "Kwalifikacja",
+      "expires": "Wygasa",
+      "status": "Status",
+      "confirmed_for": "Potwierdzona dla"
+    },
+    "community": "Zespół społeczności",
+    "empty_title": "Brak pasujących kwalifikacji",
+    "empty_body": "Wypróbuj inny filtr lub wyczyść wyszukiwanie.",
+    "clear_filters": "Wyczyść filtry",
+    "confirm": {
+      "title": "Potwierdź kwalifikację",
+      "body": "Potwierdzasz, że {{name}} posiada tę kwalifikację.",
+      "method": "Jak to sprawdzono?",
+      "submit": "Potwierdź",
+      "done": "Kwalifikacja potwierdzona.",
+      "expired_hint": "Poproś najpierw wolontariusza o aktualizację daty ważności.",
+      "self": "Nie możesz potwierdzić własnej kwalifikacji.",
+      "methods": {
+        "saw_original": "Widziałem(-am) oryginał certyfikatu",
+        "online_register": "Sprawdziłem(-am) rejestr online",
+        "issuer_confirmed": "Wystawca potwierdził"
+      }
+    },
+    "withdraw": {
+      "title": "Wycofaj kwalifikację",
+      "body": "Wolontariusz zobaczy, że została wycofana i dlaczego.",
+      "reason": "Powód",
+      "confirm": "Wycofaj",
+      "done": "Kwalifikacja wycofana.",
+      "reasons": {
+        "volunteer_request": "Wolontariusz poprosił o usunięcie",
+        "no_longer_held": "Już nieposiadana",
+        "entered_in_error": "Wpisana przez pomyłkę",
+        "replaced": "Zastąpiona nowszą"
+      },
+      "already": "Ta kwalifikacja została wycofana i nie można jej już zmienić.",
+      "failed": "Nie udało się wycofać kwalifikacji. Spróbuj ponownie."
+    },
+    "actions": {
+      "confirm": "Potwierdź",
+      "withdraw": "Wycofaj"
+    },
+    "load_error": "Nie udało się wczytać kwalifikacji.",
+    "retry": "Spróbuj ponownie"
   }
 }

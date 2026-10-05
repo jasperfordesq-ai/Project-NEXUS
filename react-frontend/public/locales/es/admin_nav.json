@@ -512,7 +512,8 @@
     "podcasts": "Podcasts",
     "ai": "AI",
     "kiss": "Comunidad Solidaria",
-    "roles": "Roles"
+    "roles": "Roles",
+    "qualifications": "Cualificaciones"
   },
   "aria": {
     "breadcrumbs": "Pan rallado"
@@ -775,8 +776,10 @@
       "training": "certificados|acreditaciones|cualificaciones|cumplimiento",
       "safeguarding": "incidentes|preocupaciones|denuncias|responsable de protección",
       "giving_days": "recaudación de fondos|donaciones|campañas|llamamientos",
-      "settings": "campos personalizados|recordatorios|webhooks|configuración"
-    }
+      "settings": "campos personalizados|recordatorios|webhooks|configuración",
+      "qualifications": "formación|primeros auxilios|certificados|caducidad|cualificaciones"
+    },
+    "qualifications": "Cualificaciones"
   },
   "group_join_requests": "Solicitudes para unirse a grupos",
   "group_moderation": "Moderación de grupos",

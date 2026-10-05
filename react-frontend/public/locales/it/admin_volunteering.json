@@ -264,7 +264,7 @@
     "field_type_label": "Tipo di campo",
     "filter_all": "Tutto",
     "filter_channel": "Canale",
-    "filter_credential_expiry": "Scadenza credenziali",
+    "filter_credential_expiry": "Scadenza delle qualifiche",
     "filter_email": "E-mail",
     "filter_lapsed_volunteer": "Volontario decaduto",
     "filter_opportunity": "Opportunità",
@@ -310,7 +310,7 @@
     "reminder_pre_shift": "Promemoria prima del turno",
     "reminder_post_shift_feedback": "Feedback post-turno",
     "reminder_lapsed_volunteer": "Volontario decaduto",
-    "reminder_credential_expiry": "Scadenza credenziali",
+    "reminder_credential_expiry": "Scadenza delle qualifiche",
     "reminder_training_expiry": "Scadenza della formazione",
     "run_reminder_job_confirm": "Inviare promemoria di turno per opportunità attive in questa comunità?",
     "reminder_job_sent_plural": "Il lavoro di promemoria ha inviato notifiche{{count}}",
@@ -948,5 +948,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Qualifiche",
+    "page_desc": "Formazioni e qualifiche registrate dai volontari. Confermale dopo aver controllato l'originale e vedi cosa sta per scadere. Qui non viene caricato nulla.",
+    "tiles": {
+      "expiring": "In scadenza",
+      "recorded": "In attesa di conferma",
+      "confirmed": "Confermate",
+      "expired": "Scadute"
+    },
+    "filters": {
+      "attention": "Da gestire",
+      "confirmed": "Confermate",
+      "expired": "Scadute",
+      "all": "Tutte",
+      "withdrawn": "Ritirate",
+      "type": "Tipo",
+      "all_types": "Tutti i tipi"
+    },
+    "search_placeholder": "Cerca volontari",
+    "results": "{{number}} qualifiche",
+    "col": {
+      "volunteer": "Volontario",
+      "qualification": "Qualifica",
+      "expires": "Scade",
+      "status": "Stato",
+      "confirmed_for": "Confermata per"
+    },
+    "community": "Staff della comunità",
+    "empty_title": "Nessuna qualifica corrisponde",
+    "empty_body": "Prova un altro filtro o cancella la ricerca.",
+    "clear_filters": "Cancella filtri",
+    "confirm": {
+      "title": "Conferma qualifica",
+      "body": "Stai confermando che {{name}} possiede questa qualifica.",
+      "method": "Come l'hai verificata?",
+      "submit": "Conferma",
+      "done": "Qualifica confermata.",
+      "expired_hint": "Chiedi prima al volontario di aggiornare la data di scadenza.",
+      "self": "Non puoi confermare la tua stessa qualifica.",
+      "methods": {
+        "saw_original": "Ho visto il certificato originale",
+        "online_register": "Ho controllato un registro online",
+        "issuer_confirmed": "L'ente emittente lo ha confermato"
+      }
+    },
+    "withdraw": {
+      "title": "Ritira qualifica",
+      "body": "Il volontario vedrà che è stata ritirata e perché.",
+      "reason": "Motivo",
+      "confirm": "Ritira",
+      "done": "Qualifica ritirata.",
+      "reasons": {
+        "volunteer_request": "Il volontario ha chiesto di rimuoverla",
+        "no_longer_held": "Non più posseduta",
+        "entered_in_error": "Inserita per errore",
+        "replaced": "Sostituita da una più recente"
+      },
+      "already": "Questa qualifica è stata ritirata e non può più essere modificata.",
+      "failed": "Non è stato possibile ritirare la qualifica. Riprova."
+    },
+    "actions": {
+      "confirm": "Conferma",
+      "withdraw": "Ritira"
+    },
+    "load_error": "Impossibile caricare le qualifiche.",
+    "retry": "Riprova"
   }
 }

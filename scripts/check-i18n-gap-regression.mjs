@@ -50,6 +50,11 @@ const NO_TRANSLATE_VALUES = new Set([
   // a volunteer safeguarding training type. A proper name, not copy: a locale
   // that "translates" it names a programme that does not exist. Added 2026-09-26.
   'Children First',
+  // The same programme and an Irish first-aid course, as volunteer qualification
+  // types. Official names: only Irish has official translations of them, so
+  // every other locale keeps the English name. Added 2026-10-05.
+  'Children First (Tusla)',
+  'First Aid Response (PHECC)',
   // The published data-protection / child-safety contact address on the Google
   // Play compliance pages. A mailbox is an identifier, not copy: a locale that
   // "translated" it would publish an address that does not deliver, and Play

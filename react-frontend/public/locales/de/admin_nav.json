@@ -512,7 +512,8 @@
     "tests": "Tests",
     "regional": "Regional",
     "national": "National",
-    "whitelist": "Weiße Liste"
+    "whitelist": "Weiße Liste",
+    "qualifications": "Qualifikationen"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"
@@ -771,8 +772,10 @@
       "training": "Zertifikate|Nachweise|Qualifikationen|Compliance",
       "safeguarding": "Vorfälle|Bedenken|Meldungen|Schutzbeauftragte",
       "giving_days": "Spendenaktionen|Spenden|Kampagnen|Aufrufe",
-      "settings": "benutzerdefinierte Felder|Erinnerungen|Webhooks|Konfiguration"
-    }
+      "settings": "benutzerdefinierte Felder|Erinnerungen|Webhooks|Konfiguration",
+      "qualifications": "schulung|erste hilfe|zertifikate|ablauf|qualifikationen"
+    },
+    "qualifications": "Qualifikationen"
   },
   "group_join_requests": "Beitrittsanfragen für Gruppen",
   "group_moderation": "Gruppenmoderation",

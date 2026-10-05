@@ -512,7 +512,8 @@
     "kiss": "Pobal Cúramach",
     "feed": "Fotha",
     "logs": "Loganna",
-    "match_debug": "Debug Comhfhreagra"
+    "match_debug": "Debug Comhfhreagra",
+    "qualifications": "Cáilíochtaí"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"
@@ -783,8 +784,10 @@
       "training": "teastais|deimhnithe|cáilíochtaí|comhlíonadh",
       "safeguarding": "teagmhais|imní|tuairiscí|oifigeach cosanta",
       "giving_days": "tiomsú airgid|síntiúis|feachtais|achomhairc",
-      "settings": "réimsí saincheaptha|meabhrúcháin|webhooks|cumraíocht"
-    }
+      "settings": "réimsí saincheaptha|meabhrúcháin|webhooks|cumraíocht",
+      "qualifications": "oiliúint|garchabhair|teastais|éag|cáilíochtaí"
+    },
+    "qualifications": "Cáilíochtaí"
   },
   "group_join_requests": "Iarratais ar ghrúpaí a cheangal",
   "group_moderation": "Modhnóireacht grúpaí",

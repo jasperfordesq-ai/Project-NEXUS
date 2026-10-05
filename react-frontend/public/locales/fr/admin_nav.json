@@ -512,7 +512,8 @@
     "support_reports": "Rapports de support",
     "podcasts": "Podcasts",
     "ai": "AI",
-    "kiss": "Communauté bienveillante"
+    "kiss": "Communauté bienveillante",
+    "qualifications": "Qualifications"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"
@@ -775,8 +776,10 @@
       "training": "certificats|attestations|qualifications|conformité",
       "safeguarding": "incidents|signalements|préoccupations|référent protection",
       "giving_days": "collecte de fonds|dons|appels aux dons|campagnes",
-      "settings": "champs personnalisés|rappels|webhooks|configuration"
-    }
+      "settings": "champs personnalisés|rappels|webhooks|configuration",
+      "qualifications": "formation|premiers secours|certificats|expiration|qualifications"
+    },
+    "qualifications": "Qualifications"
   },
   "group_join_requests": "Demandes d'adhésion aux groupes",
   "group_moderation": "Modération des groupes",

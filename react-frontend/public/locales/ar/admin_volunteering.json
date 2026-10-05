@@ -265,7 +265,7 @@
     "field_type_label": "نوع الحقل",
     "filter_all": "الجميع",
     "filter_channel": "قناة",
-    "filter_credential_expiry": "انتهاء صلاحية الاعتماد",
+    "filter_credential_expiry": "انتهاء صلاحية المؤهلات",
     "filter_email": "بريد إلكتروني",
     "filter_lapsed_volunteer": "المتطوع المنقضي",
     "filter_opportunity": "فرصة",
@@ -311,7 +311,7 @@
     "reminder_pre_shift": "تذكير ما قبل التحول",
     "reminder_post_shift_feedback": "ردود الفعل بعد التحول",
     "reminder_lapsed_volunteer": "المتطوع المنقضي",
-    "reminder_credential_expiry": "انتهاء صلاحية الاعتماد",
+    "reminder_credential_expiry": "انتهاء صلاحية المؤهلات",
     "reminder_training_expiry": "انتهاء التدريب",
     "run_reminder_job_confirm": "هل تريد إرسال تذكيرات بالمناوبة المقررة للفرص النشطة في هذا المجتمع؟",
     "reminder_job_sent_plural": "أرسلت مهمة التذكير إشعارات{{count}}",
@@ -996,5 +996,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "المؤهلات",
+    "page_desc": "التدريبات والمؤهلات التي سجلها المتطوعون. أكدها بعد التحقق من الأصل واطلع على ما يوشك على الانتهاء. لا يُرفع أي شيء هنا.",
+    "tiles": {
+      "expiring": "تنتهي قريباً",
+      "recorded": "بانتظار التأكيد",
+      "confirmed": "مؤكدة",
+      "expired": "منتهية"
+    },
+    "filters": {
+      "attention": "تحتاج إلى انتباه",
+      "confirmed": "مؤكدة",
+      "expired": "منتهية",
+      "all": "الكل",
+      "withdrawn": "مسحوبة",
+      "type": "النوع",
+      "all_types": "كل الأنواع"
+    },
+    "search_placeholder": "البحث عن متطوعين",
+    "results": "{{number}} مؤهلات",
+    "col": {
+      "volunteer": "المتطوع",
+      "qualification": "المؤهل",
+      "expires": "ينتهي",
+      "status": "الحالة",
+      "confirmed_for": "مؤكد لصالح"
+    },
+    "community": "فريق المجتمع",
+    "empty_title": "لا توجد مؤهلات مطابقة",
+    "empty_body": "جرّب مرشحاً آخر أو امسح البحث.",
+    "clear_filters": "مسح المرشحات",
+    "confirm": {
+      "title": "تأكيد المؤهل",
+      "body": "أنت تؤكد أن {{name}} يحمل هذا المؤهل.",
+      "method": "كيف تحققت منه؟",
+      "submit": "تأكيد",
+      "done": "تم تأكيد المؤهل.",
+      "expired_hint": "اطلب من المتطوع تحديث تاريخ الانتهاء أولاً.",
+      "self": "لا يمكنك تأكيد مؤهلك الخاص.",
+      "methods": {
+        "saw_original": "رأيت الشهادة الأصلية",
+        "online_register": "تحققت من سجل إلكتروني",
+        "issuer_confirmed": "أكدتها الجهة المُصدِرة"
+      }
+    },
+    "withdraw": {
+      "title": "سحب المؤهل",
+      "body": "سيرى المتطوع أنه سُحب ولماذا.",
+      "reason": "السبب",
+      "confirm": "سحب",
+      "done": "تم سحب المؤهل.",
+      "reasons": {
+        "volunteer_request": "طلب المتطوع إزالتها",
+        "no_longer_held": "لم يعد يحملها",
+        "entered_in_error": "أُدخلت عن طريق الخطأ",
+        "replaced": "استُبدلت بأحدث منها"
+      },
+      "already": "تم سحب هذا المؤهل ولم يعد من الممكن تغييره.",
+      "failed": "تعذّر سحب المؤهل. يُرجى المحاولة مرة أخرى."
+    },
+    "actions": {
+      "confirm": "تأكيد",
+      "withdraw": "سحب"
+    },
+    "load_error": "تعذر تحميل المؤهلات.",
+    "retry": "إعادة المحاولة"
   }
 }

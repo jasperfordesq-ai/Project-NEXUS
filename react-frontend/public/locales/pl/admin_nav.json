@@ -512,7 +512,8 @@
     "ai": "AI",
     "kiss": "Troskliwa społeczność",
     "prerender": "Prerender",
-    "ranking": "Ranking"
+    "ranking": "Ranking",
+    "qualifications": "Kwalifikacje"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"
@@ -779,8 +780,10 @@
       "training": "certyfikaty|zaświadczenia|kwalifikacje|zgodność",
       "safeguarding": "incydenty|zgłoszenia|obawy|osoba ds. ochrony",
       "giving_days": "zbiórki|darowizny|kampanie|apele",
-      "settings": "pola niestandardowe|przypomnienia|webhooki|konfiguracja"
-    }
+      "settings": "pola niestandardowe|przypomnienia|webhooki|konfiguracja",
+      "qualifications": "szkolenie|pierwsza pomoc|certyfikaty|ważność|kwalifikacje"
+    },
+    "qualifications": "Kwalifikacje"
   },
   "group_join_requests": "Prośby o dołączenie do grup",
   "group_moderation": "Moderacja grup",

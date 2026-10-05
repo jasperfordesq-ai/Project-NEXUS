@@ -512,7 +512,8 @@
     "podcasts": "البودكاست",
     "ai": "AI",
     "kiss": "مجتمع مهتم",
-    "webp_converter": "WebP المحول"
+    "webp_converter": "WebP المحول",
+    "qualifications": "المؤهلات"
   },
   "aria": {
     "breadcrumbs": "فتات الخبز"
@@ -787,8 +788,10 @@
       "training": "شهادات|اعتمادات|مؤهلات|امتثال",
       "safeguarding": "حوادث|مخاوف|بلاغات|مسؤول الحماية",
       "giving_days": "جمع التبرعات|تبرعات|حملات|نداءات",
-      "settings": "حقول مخصصة|تذكيرات|webhooks|تهيئة"
-    }
+      "settings": "حقول مخصصة|تذكيرات|webhooks|تهيئة",
+      "qualifications": "تدريب|إسعافات أولية|شهادات|انتهاء|مؤهلات"
+    },
+    "qualifications": "المؤهلات"
   },
   "group_join_requests": "طلبات الانضمام إلى المجموعات",
   "group_moderation": "إشراف المجموعات",

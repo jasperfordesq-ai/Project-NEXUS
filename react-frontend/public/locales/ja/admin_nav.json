@@ -512,7 +512,8 @@
     "support_reports": "サポートレポート",
     "podcasts": "ポッドキャスト",
     "ai": "AI",
-    "kiss": "思いやりのあるコミュニティ"
+    "kiss": "思いやりのあるコミュニティ",
+    "qualifications": "資格"
   },
   "aria": {
     "breadcrumbs": "ブレッドクラム"
@@ -771,8 +772,10 @@
       "training": "修了証|資格証明|資格|コンプライアンス",
       "safeguarding": "インシデント|懸念|報告|安全管理責任者",
       "giving_days": "募金|寄付|キャンペーン|呼びかけ",
-      "settings": "カスタムフィールド|リマインダー|Webhook|構成"
-    }
+      "settings": "カスタムフィールド|リマインダー|Webhook|構成",
+      "qualifications": "研修|応急手当|証明書|有効期限|資格"
+    },
+    "qualifications": "資格"
   },
   "group_join_requests": "グループ参加申請",
   "group_moderation": "グループのモデレーション",

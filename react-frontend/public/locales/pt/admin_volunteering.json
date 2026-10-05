@@ -265,7 +265,7 @@
     "field_type_label": "Tipo de campo",
     "filter_all": "Todos",
     "filter_channel": "Canal",
-    "filter_credential_expiry": "Expiração da credencial",
+    "filter_credential_expiry": "Caducidade das qualificações",
     "filter_email": "E-mail",
     "filter_lapsed_volunteer": "Voluntário caducado",
     "filter_opportunity": "Oportunidade",
@@ -311,7 +311,7 @@
     "reminder_pre_shift": "Lembrete pré-turno",
     "reminder_post_shift_feedback": "Feedback pós-turno",
     "reminder_lapsed_volunteer": "Voluntário caducado",
-    "reminder_credential_expiry": "Expiração da credencial",
+    "reminder_credential_expiry": "Caducidade das qualificações",
     "reminder_training_expiry": "Expiração do treinamento",
     "run_reminder_job_confirm": "Enviar lembretes de turno para oportunidades ativas nesta comunidade?",
     "reminder_job_sent_plural": "O trabalho de lembrete enviou notificações{{count}}",
@@ -948,5 +948,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Qualificações",
+    "page_desc": "Formações e qualificações registadas pelos voluntários. Confirme-as depois de verificar o original e veja o que está prestes a caducar. Nada é carregado aqui.",
+    "tiles": {
+      "expiring": "A caducar em breve",
+      "recorded": "A aguardar confirmação",
+      "confirmed": "Confirmadas",
+      "expired": "Caducadas"
+    },
+    "filters": {
+      "attention": "Precisa de atenção",
+      "confirmed": "Confirmadas",
+      "expired": "Caducadas",
+      "all": "Todas",
+      "withdrawn": "Retiradas",
+      "type": "Tipo",
+      "all_types": "Todos os tipos"
+    },
+    "search_placeholder": "Pesquisar voluntários",
+    "results": "{{number}} qualificações",
+    "col": {
+      "volunteer": "Voluntário",
+      "qualification": "Qualificação",
+      "expires": "Caduca",
+      "status": "Estado",
+      "confirmed_for": "Confirmada para"
+    },
+    "community": "Equipa da comunidade",
+    "empty_title": "Nenhuma qualificação corresponde",
+    "empty_body": "Experimente outro filtro ou limpe a pesquisa.",
+    "clear_filters": "Limpar filtros",
+    "confirm": {
+      "title": "Confirmar qualificação",
+      "body": "Está a confirmar que {{name}} possui esta qualificação.",
+      "method": "Como a verificou?",
+      "submit": "Confirmar",
+      "done": "Qualificação confirmada.",
+      "expired_hint": "Peça primeiro ao voluntário para atualizar a data de validade.",
+      "self": "Não pode confirmar a sua própria qualificação.",
+      "methods": {
+        "saw_original": "Vi o certificado original",
+        "online_register": "Consultei um registo online",
+        "issuer_confirmed": "A entidade emissora confirmou"
+      }
+    },
+    "withdraw": {
+      "title": "Retirar qualificação",
+      "body": "O voluntário verá que foi retirada e porquê.",
+      "reason": "Motivo",
+      "confirm": "Retirar",
+      "done": "Qualificação retirada.",
+      "reasons": {
+        "volunteer_request": "O voluntário pediu a remoção",
+        "no_longer_held": "Já não a possui",
+        "entered_in_error": "Inserida por engano",
+        "replaced": "Substituída por uma mais recente"
+      },
+      "already": "Esta qualificação foi retirada e já não pode ser alterada.",
+      "failed": "Não foi possível retirar a qualificação. Tente novamente."
+    },
+    "actions": {
+      "confirm": "Confirmar",
+      "withdraw": "Retirar"
+    },
+    "load_error": "Não foi possível carregar as qualificações.",
+    "retry": "Tentar novamente"
   }
 }

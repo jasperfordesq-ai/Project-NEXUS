@@ -263,7 +263,7 @@
     "field_type_label": "Veldtype",
     "filter_all": "Allemaal",
     "filter_channel": "Kanaal",
-    "filter_credential_expiry": "Vervaldatum van legitimatie",
+    "filter_credential_expiry": "Verlopen van kwalificaties",
     "filter_email": "E-mail",
     "filter_lapsed_volunteer": "Vervallen vrijwilliger",
     "filter_opportunity": "Gelegenheid",
@@ -309,7 +309,7 @@
     "reminder_pre_shift": "Herinnering vóór dienst",
     "reminder_post_shift_feedback": "Feedback na de dienst",
     "reminder_lapsed_volunteer": "Vervallen vrijwilliger",
-    "reminder_credential_expiry": "Vervaldatum van legitimatie",
+    "reminder_credential_expiry": "Verlopen van kwalificaties",
     "reminder_training_expiry": "Vervaldatum van de opleiding",
     "run_reminder_job_confirm": "Herinneringen voor geplande dienst verzenden voor actieve kansen in deze community?",
     "reminder_job_sent_plural": "Herinneringstaak verzonden{{count}}-meldingen",
@@ -932,5 +932,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Kwalificaties",
+    "page_desc": "Trainingen en kwalificaties die vrijwilligers hebben geregistreerd. Bevestig ze na controle van het origineel en zie wat bijna verloopt. Hier wordt niets geüpload.",
+    "tiles": {
+      "expiring": "Verloopt binnenkort",
+      "recorded": "Wacht op bevestiging",
+      "confirmed": "Bevestigd",
+      "expired": "Verlopen"
+    },
+    "filters": {
+      "attention": "Aandacht nodig",
+      "confirmed": "Bevestigd",
+      "expired": "Verlopen",
+      "all": "Alle",
+      "withdrawn": "Ingetrokken",
+      "type": "Type",
+      "all_types": "Alle typen"
+    },
+    "search_placeholder": "Vrijwilligers zoeken",
+    "results": "{{number}} kwalificaties",
+    "col": {
+      "volunteer": "Vrijwilliger",
+      "qualification": "Kwalificatie",
+      "expires": "Verloopt",
+      "status": "Status",
+      "confirmed_for": "Bevestigd voor"
+    },
+    "community": "Gemeenschapsteam",
+    "empty_title": "Geen kwalificaties gevonden",
+    "empty_body": "Probeer een ander filter of wis de zoekopdracht.",
+    "clear_filters": "Filters wissen",
+    "confirm": {
+      "title": "Kwalificatie bevestigen",
+      "body": "Je bevestigt dat {{name}} deze kwalificatie heeft.",
+      "method": "Hoe heb je het gecontroleerd?",
+      "submit": "Bevestigen",
+      "done": "Kwalificatie bevestigd.",
+      "expired_hint": "Vraag de vrijwilliger eerst de vervaldatum bij te werken.",
+      "self": "Je kunt je eigen kwalificatie niet bevestigen.",
+      "methods": {
+        "saw_original": "Ik heb het originele certificaat gezien",
+        "online_register": "Ik heb een online register gecontroleerd",
+        "issuer_confirmed": "De uitgevende instantie heeft het bevestigd"
+      }
+    },
+    "withdraw": {
+      "title": "Kwalificatie intrekken",
+      "body": "De vrijwilliger ziet dat ze is ingetrokken en waarom.",
+      "reason": "Reden",
+      "confirm": "Intrekken",
+      "done": "Kwalificatie ingetrokken.",
+      "reasons": {
+        "volunteer_request": "De vrijwilliger vroeg om verwijdering",
+        "no_longer_held": "Niet meer in bezit",
+        "entered_in_error": "Per ongeluk ingevoerd",
+        "replaced": "Vervangen door een nieuwere"
+      },
+      "already": "Deze kwalificatie is ingetrokken en kan niet meer worden gewijzigd.",
+      "failed": "De kwalificatie kon niet worden ingetrokken. Probeer het opnieuw."
+    },
+    "actions": {
+      "confirm": "Bevestigen",
+      "withdraw": "Intrekken"
+    },
+    "load_error": "Kwalificaties konden niet worden geladen.",
+    "retry": "Opnieuw proberen"
   }
 }

@@ -512,7 +512,8 @@
     "support_reports": "Relatórios de Suporte",
     "podcasts": "Podcasts",
     "ai": "AI",
-    "kiss": "Comunidade Presente"
+    "kiss": "Comunidade Presente",
+    "qualifications": "Qualificações"
   },
   "aria": {
     "breadcrumbs": "Pão ralado"
@@ -775,8 +776,10 @@
       "training": "certificados|certificações|qualificações|conformidade",
       "safeguarding": "incidentes|preocupações|denúncias|responsável pela proteção",
       "giving_days": "angariação de fundos|doações|campanhas|apelos",
-      "settings": "campos personalizados|lembretes|webhooks|configuração"
-    }
+      "settings": "campos personalizados|lembretes|webhooks|configuração",
+      "qualifications": "formação|primeiros socorros|certificados|validade|qualificações"
+    },
+    "qualifications": "Qualificações"
   },
   "group_join_requests": "Pedidos de adesão a grupos",
   "group_moderation": "Moderação de grupos",

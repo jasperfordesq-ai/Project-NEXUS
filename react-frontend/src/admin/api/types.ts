@@ -2847,3 +2847,53 @@ export interface TimelineEntry {
   metadata: Record<string, unknown> | null;
   created_at: string;
 }
+
+// ── Volunteer qualifications register ────────────────────────────────────────
+
+export type AdminQualificationStatus = 'recorded' | 'confirmed' | 'expired' | 'withdrawn';
+export type QualificationConfirmationMethod = 'saw_original' | 'online_register' | 'issuer_confirmed';
+export type QualificationWithdrawalReason = 'volunteer_request' | 'no_longer_held' | 'entered_in_error' | 'replaced';
+
+/** One row of GET /v2/admin/volunteering/qualifications. */
+export interface AdminVolunteerQualification {
+  id: number;
+  user_id: number;
+  qualification_type: string;
+  /** `qualifications.types.<code>` in the volunteering namespace. */
+  type_label_key?: string;
+  title: string | null;
+  issuer: string | null;
+  reference_number: string | null;
+  obtained_at: string | null;
+  expires_at: string | null;
+  status: AdminQualificationStatus;
+  is_expiring: boolean;
+  days_until_expiry: number | null;
+  confirmed_by: { id: number; name: string } | null;
+  confirmed_at: string | null;
+  confirmation_method: QualificationConfirmationMethod | null;
+  /** Null when community staff confirmed it rather than an organisation. */
+  confirmed_for_organization: { id: number; name: string } | null;
+  withdrawn_at: string | null;
+  withdrawal_reason: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  volunteer: { id: number; name: string; avatar_url: string | null };
+}
+
+export interface AdminVolunteerQualificationsParams {
+  /** `attention` = expiring + awaiting confirmation. Omit for every status. */
+  status?: 'attention' | 'confirmed' | 'expired' | 'withdrawn';
+  q?: string;
+  expiring?: 1;
+  type?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AdminVolunteerQualificationsResponse {
+  items: AdminVolunteerQualification[];
+  total: number;
+  counts: { expiring: number; recorded: number; confirmed: number; expired: number };
+}

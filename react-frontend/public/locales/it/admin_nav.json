@@ -512,7 +512,8 @@
     "podcasts": "Podcast",
     "ai": "AI",
     "kiss": "Comunità premurosa",
-    "prerender": "Prerender"
+    "prerender": "Prerender",
+    "qualifications": "Qualifiche"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"
@@ -775,8 +776,10 @@
       "training": "certificati|attestati|qualifiche|conformità",
       "safeguarding": "incidenti|segnalazioni|preoccupazioni|referente tutela",
       "giving_days": "raccolta fondi|donazioni|campagne|appelli",
-      "settings": "campi personalizzati|promemoria|webhook|configurazione"
-    }
+      "settings": "campi personalizzati|promemoria|webhook|configurazione",
+      "qualifications": "formazione|primo soccorso|certificati|scadenza|qualifiche"
+    },
+    "qualifications": "Qualifiche"
   },
   "group_join_requests": "Richieste di adesione ai gruppi",
   "group_moderation": "Moderazione dei gruppi",

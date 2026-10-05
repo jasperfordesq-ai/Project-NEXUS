@@ -265,7 +265,7 @@
     "field_type_label": "Cineál Réimse",
     "filter_all": "Gach",
     "filter_channel": "Cainéal",
-    "filter_credential_expiry": "Éaga Dintiúir",
+    "filter_credential_expiry": "Dul in éag cáilíochtaí",
     "filter_email": "Ríomhphost",
     "filter_lapsed_volunteer": "Oibrí Deonach i léig",
     "filter_opportunity": "deis",
@@ -311,7 +311,7 @@
     "reminder_pre_shift": "Meabhrúchán Réamhshift",
     "reminder_post_shift_feedback": "Aiseolas Iar-aistrithe",
     "reminder_lapsed_volunteer": "Oibrí Deonach i léig",
-    "reminder_credential_expiry": "Éaga Dintiúir",
+    "reminder_credential_expiry": "Dul in éag cáilíochtaí",
     "reminder_training_expiry": "Éaga Traenála",
     "run_reminder_job_confirm": "An bhfuil fonn ort meabhrúcháin aistrithe cuí a sheoladh le haghaidh deiseanna gníomhacha sa phobal seo?",
     "reminder_job_sent_plural": "Post meabhrúcháin seolta fógraí{{count}}",
@@ -980,5 +980,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Cáilíochtaí",
+    "page_desc": "Oiliúint agus cáilíochtaí atá taifeadta ag oibrithe deonacha. Deimhnigh iad tar éis an bunchóip a sheiceáil, agus féach cad atá ar tí dul in éag. Ní uaslódáiltear aon rud anseo.",
+    "tiles": {
+      "expiring": "Ag dul in éag go luath",
+      "recorded": "Ag fanacht le deimhniú",
+      "confirmed": "Deimhnithe",
+      "expired": "Imithe in éag"
+    },
+    "filters": {
+      "attention": "Aird ag teastáil",
+      "confirmed": "Deimhnithe",
+      "expired": "Imithe in éag",
+      "all": "Uile",
+      "withdrawn": "Tarraingthe siar",
+      "type": "Cineál",
+      "all_types": "Gach cineál"
+    },
+    "search_placeholder": "Cuardaigh oibrithe deonacha",
+    "results": "{{number}} cáilíocht",
+    "col": {
+      "volunteer": "Oibrí deonach",
+      "qualification": "Cáilíocht",
+      "expires": "Téann in éag",
+      "status": "Stádas",
+      "confirmed_for": "Deimhnithe do"
+    },
+    "community": "Foireann an phobail",
+    "empty_title": "Níl aon cháilíocht ag teacht leis",
+    "empty_body": "Bain triail as scagaire eile, nó glan an cuardach.",
+    "clear_filters": "Glan scagairí",
+    "confirm": {
+      "title": "Deimhnigh cáilíocht",
+      "body": "Tá tú ag deimhniú go bhfuil an cháilíocht seo ag {{name}}.",
+      "method": "Conas a sheiceáil tú é?",
+      "submit": "Deimhnigh",
+      "done": "Cáilíocht deimhnithe.",
+      "expired_hint": "Iarr ar an oibrí deonach an dáta éaga a nuashonrú ar dtús.",
+      "self": "Ní féidir leat do cháilíocht féin a dheimhniú.",
+      "methods": {
+        "saw_original": "Chonaic mé an teastas bunaidh",
+        "online_register": "Sheiceáil mé clár ar líne",
+        "issuer_confirmed": "Dheimhnigh an t-eisitheoir é"
+      }
+    },
+    "withdraw": {
+      "title": "Tarraing cáilíocht siar",
+      "body": "Feicfidh an t-oibrí deonach gur tarraingíodh siar í agus cén fáth.",
+      "reason": "Cúis",
+      "confirm": "Tarraing siar",
+      "done": "Cáilíocht tarraingthe siar.",
+      "reasons": {
+        "volunteer_request": "D'iarr an t-oibrí deonach é a bhaint",
+        "no_longer_held": "Níl sé aige/aici a thuilleadh",
+        "entered_in_error": "Iontráilte trí dhearmad",
+        "replaced": "Ceann níos nuaí ina áit"
+      },
+      "already": "Tarraingíodh siar an cháilíocht seo agus ní féidir í a athrú a thuilleadh.",
+      "failed": "Níorbh fhéidir an cháilíocht a tharraingt siar. Bain triail eile as."
+    },
+    "actions": {
+      "confirm": "Deimhnigh",
+      "withdraw": "Tarraing siar"
+    },
+    "load_error": "Ní féidir cáilíochtaí a lódáil.",
+    "retry": "Bain triail eile as"
   }
 }

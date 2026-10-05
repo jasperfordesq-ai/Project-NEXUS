@@ -40,6 +40,7 @@
     "review_applications_other": "{{count}} アプリケーションを確認する",
     "review_hours_one": "{{count}} 時間のレビュー",
     "review_hours_other": "{{count}} 時間を確認する",
+    "tab_qualifications": "資格",
     "tab_safeguarding": "セーフガーディング"
   },
   "page_title": "ボランティア活動",
@@ -679,65 +680,6 @@
     "volunteering_sections": "ボランティアセクション"
   },
   "filter_by_status": "ステータスでフィルタリングする",
-  "credentials": {
-    "heading": "資格情報の検証",
-    "upload_new": "新しい認証情報をアップロードする",
-    "try_again": "もう一度やり直してください",
-    "no_credentials_title": "認証情報がアップロードされていません",
-    "no_credentials_desc": "ボランティアの資格情報をアップロードして認証を受け、プロフィールを強化します。",
-    "status_pending": "審査待ち",
-    "status_verified": "確認済み",
-    "status_expired": "期限切れ",
-    "status_rejected": "拒否されました",
-    "load_failed": "認証情報のロードに失敗しました。",
-    "load_error": "資格情報をロードできません。もう一度試してください。",
-    "file_too_large": "ファイルサイズは10MB未満である必要があります。",
-    "invalid_file_type": "PDFまたは画像ファイル(JPG、PNG、WebP)をアップロードしてください。",
-    "upload_success": "認証情報が正常にアップロードされました。",
-    "upload_failed": "認証情報のアップロードに失敗しました。もう一度試してください。",
-    "upload_error": "アップロード中にエラーが発生しました。もう一度試してください。",
-    "expiring_soon": "まもなく期限切れになります",
-    "expiring_soon_title": "資格情報の有効期限が間もなく切れます",
-    "expiring_soon_desc": "{{count}} 認証情報は 30 日以内に期限切れになります。",
-    "uploaded": "アップロードされました",
-    "expires": "有効期限が切れます",
-    "reason": "理由",
-    "re_upload": "再アップロード",
-    "upload_instructions": "資格情報を確認するための文書をアップロードします。受け入れられる形式: PDF、JPG、PNG、WebP (最大 10MB)。",
-    "type_label": "資格情報の種類",
-    "type_placeholder": "認証情報の種類を選択してください",
-    "type_first_aid": "応急処置",
-    "type_safeguarding": "保護",
-    "type_manual_handling": "手動による取り扱い",
-    "type_food_hygiene": "食品衛生",
-    "type_driving_licence": "運転免許証",
-    "type_professional_registration": "専門家登録",
-    "type_other": "他の",
-    "document_label": "書類",
-    "click_to_browse": "クリックして参照",
-    "file_types": "PDF、JPG、PNG、WebP 最大 10MB",
-    "expiry_label": "有効期限 (オプション)",
-    "expiry_placeholder": "有効期限がない場合は空白のままにしてください",
-    "cancel": "キャンセル",
-    "upload_credential": "認証情報のアップロード",
-    "aria_remove_file": "選択したファイルを削除",
-    "aria_upload_document": "資格証明書をアップロード",
-    "vetting_documents_notice_title": "警察のチェック文書をアップロードしないでください",
-    "vetting_documents_notice_body": "DBS、警察検査、Garda 審査、AccessNI、および PVG の書類はここでは受け付けられません。代わりに、コミュニティブローカーに個人保護の確認を確認するよう依頼してください。",
-    "legacy_vetting_evidence_title": "古い警察チェック文書は削除する必要があります",
-    "legacy_vetting_evidence_body": "この過去のアップロードは編集されています。 NEXUS では、ファイル名、日付、ステータス、コンテンツ、またはダウンロード リンクは表示されません。プラットフォームから削除し、NEXUS の外部でコミュニティの承認されたプロセスを使用してください。",
-    "legacy_vetting_evidence_delete": "レガシードキュメントを削除する",
-    "legacy_vetting_evidence_delete_success": "従来の警察チェック文書は削除されました。",
-    "legacy_vetting_evidence_delete_failed": "レガシードキュメントを削除できませんでした。もう一度試してください。",
-    "status_manual_review": "手動確認が必要です",
-    "manual_review_title": "サポート対象外の過去の資格情報",
-    "manual_review_body": "この過去の資格情報の種類はサポートされていません。書類の詳細は非表示であり、確認済みまたは身元調査の証明として扱われません。削除できます。",
-    "manual_review_delete": "資格情報を削除",
-    "manual_review_delete_success": "資格情報を削除しました。",
-    "manual_review_delete_failed": "資格情報を削除できませんでした。もう一度お試しください。",
-    "expiring_soon_desc_one": "{{count}} 認証情報は 30 日以内に期限切れになります。",
-    "expiring_soon_desc_other": "{{count}} 認証情報は 30 日以内に期限切れになります。"
-  },
   "waitlist": {
     "heading": "私の順番待ちリスト",
     "refresh": "リフレッシュ",
@@ -1172,6 +1114,164 @@
   "org_callout_you_manage_many_other": "あなたは {{count}} 組織を管理しています",
   "more_sections_one": "さらに ({{count}})",
   "more_sections_other": "詳細 ({{count}})",
+  "qualifications": {
+    "heading": "資格",
+    "add": "資格を追加",
+    "refresh": "更新",
+    "intro_title": "これは何か",
+    "intro_body": "あなたの研修と資格の記録です。ボランティア先の団体が、あなたが何を持ち、いつ期限が切れるかを確認できます。ここには何もアップロードも保存もされません。",
+    "intro_show_or_send": "証明書はご自身で保管してください。団体から求められたら、原本を見せるか、メールや郵送でコピーを直接送ってください。このサイト経由では送らないでください。",
+    "intro_vetting": "警察による身元確認（DBS、AccessNI、PVG、Garda vetting）は、コミュニティのセーフガーディング担当チームが別途対応します。",
+    "vetting_link": "私の審査状況",
+    "tiles": {
+      "confirmed": "確認済み",
+      "recorded": "確認待ち",
+      "expiring": "まもなく期限切れ",
+      "expiring_hint": "{{days}} 日以内",
+      "expired": "期限切れ"
+    },
+    "attention_title": "対応が必要: {{number}} 件",
+    "attention_body": "更新したら有効期限を更新してください。もう保有していない場合は記録を取り下げてください。",
+    "group": {
+      "attention": "対応が必要",
+      "recorded": "確認待ち",
+      "confirmed": "確認済み",
+      "withdrawn": "取り下げ済みを表示（{{number}}）"
+    },
+    "status": {
+      "recorded": "確認待ち",
+      "confirmed": "確認済み",
+      "expired": "期限切れ",
+      "withdrawn": "取り下げ済み",
+      "expiring": "まもなく期限切れ"
+    },
+    "expires_on": "{{date}} に期限切れ",
+    "expired_on": "{{date}} に期限切れになりました",
+    "obtained_on": "{{date}} に取得",
+    "no_expiry": "有効期限なし",
+    "reference": "番号 {{ref}}",
+    "confirmed_line": "{{date}} に {{name}} が確認",
+    "confirmed_line_org": "{{date}} に {{name}} が {{org}} のために確認",
+    "method": {
+      "saw_original": "原本を確認",
+      "online_register": "オンライン登録簿を確認",
+      "issuer_confirmed": "発行元が確認"
+    },
+    "withdrawn_line": "{{date}} に取り下げ",
+    "empty_title": "まだ資格が記録されていません",
+    "empty_body": "応急手当、セーフガーディング研修などの研修をここに追加すると、団体が確認でき、期限切れ前にお知らせが届きます。",
+    "load_error": "資格を読み込めませんでした。",
+    "form": {
+      "title_add": "資格を追加",
+      "title_edit": "資格を編集",
+      "type": "資格",
+      "type_placeholder": "資格を選択",
+      "expiry_hint": "通常 {{years}} 年間有効",
+      "title": "名称またはコース（任意）",
+      "title_required": "名称",
+      "issuer": "発行元または提供者（任意）",
+      "reference": "証明書番号または登録番号（任意）",
+      "obtained": "取得日",
+      "expires": "有効期限",
+      "expires_hint": "期限がない場合は空欄のままにしてください。",
+      "notes": "メモ（任意）",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "saved": "資格を保存しました。",
+      "save_error": "資格を保存できませんでした。もう一度お試しください。",
+      "edit_clears_confirmation": "確認済みの資格を変更すると確認が取り消され、団体が再度確認する必要があります。"
+    },
+    "errors": {
+      "title_required": "資格に名称を付けてください。",
+      "expiry_before_obtained": "有効期限が取得日より前になっています。",
+      "vetting": "警察による身元確認はここには記録しません。コミュニティのセーフガーディング担当チームが対応します。",
+      "unsupported_type": "この資格の種類はこのコミュニティでは利用できません。"
+    },
+    "withdraw": {
+      "title": "資格を取り下げる",
+      "body": "記録は履歴に残りますが、団体には表示されなくなります。",
+      "reason": "理由",
+      "reasons": {
+        "volunteer_request": "もう表示したくない",
+        "no_longer_held": "もう保有していない",
+        "entered_in_error": "誤って入力した",
+        "replaced": "新しいものに置き換えた"
+      },
+      "confirm": "取り下げる",
+      "done": "資格を取り下げました。"
+    },
+    "actions": {
+      "edit": "編集",
+      "withdraw": "取り下げる"
+    },
+    "types": {
+      "first_aid": "応急手当",
+      "safeguarding_training": "セーフガーディング研修",
+      "manual_handling": "手作業による運搬",
+      "food_hygiene": "食品衛生",
+      "driving_licence": "運転免許",
+      "professional_registration": "専門職登録",
+      "other": "その他",
+      "children_first": "Children First（Tusla）",
+      "first_aid_response": "First Aid Response（PHECC）",
+      "safeguarding_adults": "成人のセーフガーディング",
+      "efaw": "職場での緊急応急手当",
+      "faw": "職場での応急手当"
+    }
+  },
+  "org_qualifications": {
+    "heading": "ボランティアの資格",
+    "intro": "証明書の原本を見る、オンライン登録簿を確認する、または発行元の確認を得たうえで資格を確認してください。ここにコピーをアップロードしたり保存したりしないでください。",
+    "tiles": {
+      "expiring": "まもなく期限切れ",
+      "recorded": "確認待ち",
+      "confirmed": "確認済み",
+      "expired": "期限切れ"
+    },
+    "filters": {
+      "attention": "対応が必要",
+      "confirmed": "確認済み",
+      "expired": "期限切れ",
+      "all": "すべて"
+    },
+    "search_placeholder": "ボランティアを検索",
+    "results": "{{number}} 件の資格",
+    "empty_title": "対応が必要なものはありません",
+    "empty_body": "ボランティアが記録した資格がここに表示されます。",
+    "confirm": {
+      "title": "資格を確認",
+      "body": "{{name}} がこの資格を保有していることを確認します。",
+      "method": "どのように確認しましたか？",
+      "submit": "確認",
+      "done": "資格を確認しました。",
+      "expired_hint": "先にボランティアに有効期限の更新を依頼してください。",
+      "self": "自分自身の資格は確認できません。",
+      "methods": {
+        "saw_original": "証明書の原本を確認した",
+        "online_register": "オンライン登録簿を確認した",
+        "issuer_confirmed": "発行元が確認した"
+      }
+    },
+    "withdraw": {
+      "title": "資格を取り下げる",
+      "body": "ボランティアには取り下げられたことと理由が表示されます。",
+      "reason": "理由",
+      "confirm": "取り下げる",
+      "done": "資格を取り下げました。",
+      "reasons": {
+        "volunteer_request": "ボランティアから削除の依頼があった",
+        "no_longer_held": "もう保有していない",
+        "entered_in_error": "誤って入力された",
+        "replaced": "新しいものに置き換えられた"
+      }
+    },
+    "actions": {
+      "confirm": "確認",
+      "withdraw": "取り下げる"
+    },
+    "load_more": "さらに読み込む",
+    "load_error": "資格を読み込めませんでした。"
+  },
   "org_safeguarding": {
     "title": "セーフガーディング報告",
     "intro": "あなたの団体に紐づく報告です。各報告にはコミュニティのセーフガーディングチームが対応します。ここでは概要が表示されます。チームが共有した場合は、団体のセーフガーディング責任者が報告の全文を確認できます。誰が報告したかは、ここでは誰にも知らされません。",

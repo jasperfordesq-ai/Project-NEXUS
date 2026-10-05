@@ -540,7 +540,8 @@
     "kiss": "Caring Community",
     "regional_analytics": "Regional Analytics",
     "help": "Help",
-    "whitelist": "Whitelist"
+    "whitelist": "Whitelist",
+    "qualifications": "Qualifications"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"
@@ -771,8 +772,10 @@
       "training": "certificates|certifications|qualifications|compliance",
       "safeguarding": "incidents|concerns|DLP|designated liaison person|reports",
       "giving_days": "fundraising|donations|appeals|campaigns|giving days",
-      "settings": "custom fields|reminders|webhooks|configuration"
-    }
+      "settings": "custom fields|reminders|webhooks|configuration",
+      "qualifications": "training|first aid|certificates|expiry|credentials"
+    },
+    "qualifications": "Qualifications"
   },
   "group_join_requests": "Group join requests",
   "group_moderation": "Group moderation",

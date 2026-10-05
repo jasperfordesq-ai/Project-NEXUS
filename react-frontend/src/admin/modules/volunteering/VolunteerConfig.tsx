@@ -686,7 +686,9 @@ const defaultReminders: ReminderSetting[] = [
   { key: 'pre_shift', enabled: true, timing_value: 24, email_enabled: true, push_enabled: true, sms_enabled: false },
   { key: 'post_shift_feedback', enabled: true, timing_value: 2, email_enabled: true, push_enabled: true, sms_enabled: false },
   { key: 'lapsed_volunteer', enabled: true, timing_value: 30, email_enabled: true, push_enabled: false, sms_enabled: false },
-  { key: 'credential_expiry', enabled: true, timing_value: 14, email_enabled: true, push_enabled: true, sms_enabled: false },
+  // Qualification expiry: the register's nightly job reminds 30 days ahead by
+  // default, so the setting shows the same figure until the community changes it.
+  { key: 'credential_expiry', enabled: true, timing_value: 30, email_enabled: true, push_enabled: true, sms_enabled: false },
   { key: 'training_expiry', enabled: true, timing_value: 14, email_enabled: true, push_enabled: true, sms_enabled: false },
 ];
 

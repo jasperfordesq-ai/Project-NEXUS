@@ -370,7 +370,7 @@
     "filter_all": "All",
     "filter_by_status": "Filter by status",
     "filter_channel": "Channel",
-    "filter_credential_expiry": "Credential Expiry",
+    "filter_credential_expiry": "Qualification expiry",
     "filter_email": "Email",
     "filter_lapsed_volunteer": "Lapsed Volunteer",
     "filter_logs": "Filter by event or status code...",
@@ -486,7 +486,7 @@
     "reminder_pre_shift": "Pre-shift Reminder",
     "reminder_post_shift_feedback": "Post-shift Feedback",
     "reminder_lapsed_volunteer": "Lapsed Volunteer",
-    "reminder_credential_expiry": "Credential Expiry",
+    "reminder_credential_expiry": "Qualification expiry",
     "reminder_training_expiry": "Training Expiry",
     "reminders_heading": "Reminder settings",
     "reminders_saved": "Reminder settings saved",
@@ -932,5 +932,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "Qualifications",
+    "page_desc": "Training and qualifications volunteers have recorded. Confirm them after checking the original, and see what is about to run out. Nothing is uploaded here.",
+    "tiles": {
+      "expiring": "Expiring soon",
+      "recorded": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "expired": "Expired"
+    },
+    "filters": {
+      "attention": "Needs attention",
+      "confirmed": "Confirmed",
+      "expired": "Expired",
+      "withdrawn": "Withdrawn",
+      "all": "All",
+      "type": "Type",
+      "all_types": "All types"
+    },
+    "search_placeholder": "Search volunteers",
+    "results": "{{number}} qualifications",
+    "col": {
+      "volunteer": "Volunteer",
+      "qualification": "Qualification",
+      "expires": "Expires",
+      "status": "Status",
+      "confirmed_for": "Confirmed for"
+    },
+    "community": "Community staff",
+    "empty_title": "No qualifications match",
+    "empty_body": "Try another filter, or clear the search.",
+    "clear_filters": "Clear filters",
+    "confirm": {
+      "title": "Confirm qualification",
+      "body": "You are confirming that {{name}} holds this qualification.",
+      "method": "How did you check it?",
+      "methods": {
+        "saw_original": "I saw the original certificate",
+        "online_register": "I checked an online register",
+        "issuer_confirmed": "The issuer confirmed it"
+      },
+      "submit": "Confirm",
+      "done": "Qualification confirmed.",
+      "expired_hint": "Ask the volunteer to update the expiry date first.",
+      "self": "You cannot confirm your own qualification."
+    },
+    "withdraw": {
+      "title": "Withdraw qualification",
+      "body": "The volunteer will see that it was withdrawn and why.",
+      "reason": "Reason",
+      "reasons": {
+        "volunteer_request": "The volunteer asked for it to be removed",
+        "no_longer_held": "No longer held",
+        "entered_in_error": "Entered by mistake",
+        "replaced": "Replaced by a newer one"
+      },
+      "confirm": "Withdraw",
+      "done": "Qualification withdrawn.",
+      "already": "This qualification has been withdrawn and can no longer be changed.",
+      "failed": "The qualification could not be withdrawn. Please try again."
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "withdraw": "Withdraw"
+    },
+    "load_error": "Unable to load qualifications.",
+    "retry": "Try again"
   }
 }

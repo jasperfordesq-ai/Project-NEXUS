@@ -265,7 +265,7 @@
     "field_type_label": "フィールドタイプ",
     "filter_all": "すべて",
     "filter_channel": "チャンネル",
-    "filter_credential_expiry": "資格情報の有効期限",
+    "filter_credential_expiry": "資格の有効期限",
     "filter_email": "電子メール",
     "filter_lapsed_volunteer": "失効したボランティア",
     "filter_opportunity": "機会",
@@ -311,7 +311,7 @@
     "reminder_pre_shift": "シフト前のリマインダー",
     "reminder_post_shift_feedback": "シフト後のフィードバック",
     "reminder_lapsed_volunteer": "失効したボランティア",
-    "reminder_credential_expiry": "資格情報の有効期限",
+    "reminder_credential_expiry": "資格の有効期限",
     "reminder_training_expiry": "トレーニングの有効期限",
     "run_reminder_job_confirm": "このコミュニティでのアクティブな機会について、シフトのリマインダーを送信しますか?",
     "reminder_job_sent_plural": "リマインダー ジョブが{{count}}通知を送信しました",
@@ -932,5 +932,72 @@
   },
   "giving_days": {
     "hours_target": "/ {{target}}"
+  },
+  "qualifications": {
+    "page_title": "資格",
+    "page_desc": "ボランティアが記録した研修と資格です。原本を確認したうえで確認し、まもなく期限切れになるものを把握できます。ここには何もアップロードされません。",
+    "tiles": {
+      "expiring": "まもなく期限切れ",
+      "recorded": "確認待ち",
+      "confirmed": "確認済み",
+      "expired": "期限切れ"
+    },
+    "filters": {
+      "attention": "対応が必要",
+      "confirmed": "確認済み",
+      "expired": "期限切れ",
+      "all": "すべて",
+      "withdrawn": "取り下げ済み",
+      "type": "種類",
+      "all_types": "すべての種類"
+    },
+    "search_placeholder": "ボランティアを検索",
+    "results": "{{number}} 件の資格",
+    "col": {
+      "volunteer": "ボランティア",
+      "qualification": "資格",
+      "expires": "有効期限",
+      "status": "状態",
+      "confirmed_for": "確認先"
+    },
+    "community": "コミュニティスタッフ",
+    "empty_title": "該当する資格はありません",
+    "empty_body": "別のフィルターを試すか、検索をクリアしてください。",
+    "clear_filters": "フィルターをクリア",
+    "confirm": {
+      "title": "資格を確認",
+      "body": "{{name}} がこの資格を保有していることを確認します。",
+      "method": "どのように確認しましたか？",
+      "submit": "確認",
+      "done": "資格を確認しました。",
+      "expired_hint": "先にボランティアに有効期限の更新を依頼してください。",
+      "self": "自分自身の資格は確認できません。",
+      "methods": {
+        "saw_original": "証明書の原本を確認した",
+        "online_register": "オンライン登録簿を確認した",
+        "issuer_confirmed": "発行元が確認した"
+      }
+    },
+    "withdraw": {
+      "title": "資格を取り下げる",
+      "body": "ボランティアには取り下げられたことと理由が表示されます。",
+      "reason": "理由",
+      "confirm": "取り下げる",
+      "done": "資格を取り下げました。",
+      "reasons": {
+        "volunteer_request": "ボランティアから削除の依頼があった",
+        "no_longer_held": "もう保有していない",
+        "entered_in_error": "誤って入力された",
+        "replaced": "新しいものに置き換えられた"
+      },
+      "already": "この資格は取り下げられているため、変更できません。",
+      "failed": "資格を取り下げられませんでした。もう一度お試しください。"
+    },
+    "actions": {
+      "confirm": "確認",
+      "withdraw": "取り下げる"
+    },
+    "load_error": "資格を読み込めませんでした。",
+    "retry": "再試行"
   }
 }

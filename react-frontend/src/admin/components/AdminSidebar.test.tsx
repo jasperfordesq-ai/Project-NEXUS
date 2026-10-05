@@ -419,6 +419,7 @@ describe('AdminSidebar', () => {
     ['Community projects', '/test/admin/volunteering/projects'],
     ['Organisations', '/test/admin/volunteering/organizations'],
     ['Training', '/test/admin/volunteering/training'],
+    ['Qualifications', '/test/admin/volunteering/qualifications'],
     ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
     ['Fundraising campaigns', '/test/admin/volunteering/giving-days'],
     ['Donation Refunds', '/test/admin/volunteering/donations'],

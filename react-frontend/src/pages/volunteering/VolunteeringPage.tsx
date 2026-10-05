@@ -66,7 +66,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import Award from 'lucide-react/icons/award';
 import Siren from 'lucide-react/icons/siren';
 import Smile from 'lucide-react/icons/smile';
-import ShieldCheck from 'lucide-react/icons/shield-check';
+import BadgeCheck from 'lucide-react/icons/badge-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import Users from 'lucide-react/icons/users';
 import MessageSquare from 'lucide-react/icons/message-square';
@@ -99,7 +99,7 @@ const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
 const CertificatesTab = React.lazy(() => import('./CertificatesTab'));
 const WellbeingTab = React.lazy(() => import('./WellbeingTab'));
-const CredentialVerificationTab = React.lazy(() => import('./CredentialVerificationTab'));
+const QualificationsTab = React.lazy(() => import('./QualificationsTab'));
 const WaitlistTab = React.lazy(() => import('./WaitlistTab'));
 const ShiftSwapsTab = React.lazy(() => import('./ShiftSwapsTab'));
 const GroupSignUpTab = React.lazy(() => import('./GroupSignUpTab'));
@@ -611,7 +611,8 @@ export function VolunteeringPage() {
           { key: 'certificates', icon: Award, label: t('tab_certificates'), authOnly: true },
           { key: 'alerts', icon: Siren, label: t('tab_alerts'), authOnly: true },
           { key: 'wellbeing', icon: Smile, label: t('tab_wellbeing'), authOnly: true },
-          { key: 'credentials', icon: ShieldCheck, label: t('tab_credentials'), authOnly: true },
+          // Tab key stays `credentials` so existing links keep working; the label reads "Qualifications".
+          { key: 'credentials', icon: BadgeCheck, label: t('tab_credentials'), authOnly: true },
           { key: 'waitlist', icon: Clock, label: t('tab_waitlist'), authOnly: true },
           { key: 'swaps', icon: ArrowLeftRight, label: t('tab_swap_requests'), authOnly: true },
           { key: 'group-signups', icon: Users, label: t('tab_group_signups'), authOnly: true },
@@ -744,7 +745,7 @@ export function VolunteeringPage() {
                 {activeTab === 'certificates' && isTabEnabled('certificates') && <CertificatesTab />}
                 {activeTab === 'alerts' && isTabEnabled('alerts') && <EmergencyAlertsTab />}
                 {activeTab === 'wellbeing' && isTabEnabled('wellbeing') && <WellbeingTab />}
-                {activeTab === 'credentials' && isTabEnabled('credentials') && <CredentialVerificationTab />}
+                {activeTab === 'credentials' && isTabEnabled('credentials') && <QualificationsTab />}
                 {activeTab === 'waitlist' && isTabEnabled('waitlist') && <WaitlistTab />}
                 {activeTab === 'swaps' && isTabEnabled('swaps') && <ShiftSwapsTab />}
                 {activeTab === 'group-signups' && isTabEnabled('group-signups') && <GroupSignUpTab />}

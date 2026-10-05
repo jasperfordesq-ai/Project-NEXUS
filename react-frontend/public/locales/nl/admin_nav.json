@@ -512,7 +512,8 @@
     "kiss": "Zorgzame Gemeenschap",
     "directory": "Directory",
     "prerender": "Vooraf weergeven",
-    "coupons": "Kortingsbonnen"
+    "coupons": "Kortingsbonnen",
+    "qualifications": "Kwalificaties"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
@@ -771,8 +772,10 @@
       "training": "certificaten|diploma's|kwalificaties|naleving",
       "safeguarding": "incidenten|zorgen|meldingen|vertrouwenspersoon",
       "giving_days": "fondsenwerving|donaties|campagnes|acties",
-      "settings": "aangepaste velden|herinneringen|webhooks|configuratie"
-    }
+      "settings": "aangepaste velden|herinneringen|webhooks|configuratie",
+      "qualifications": "training|ehbo|certificaten|vervaldatum|kwalificaties"
+    },
+    "qualifications": "Kwalificaties"
   },
   "group_join_requests": "Lidmaatschapsverzoeken voor groepen",
   "group_moderation": "Groepsmoderatie",

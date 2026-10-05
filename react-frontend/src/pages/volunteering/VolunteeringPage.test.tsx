@@ -120,7 +120,7 @@ vi.mock("react-i18next", () => ({
         "volunteering.tab_certificates": "Certificates",
         "volunteering.tab_alerts": "Alerts",
         "volunteering.tab_wellbeing": "Wellbeing",
-        "volunteering.tab_credentials": "Credentials",
+        "volunteering.tab_credentials": "Qualifications",
         "volunteering.tab_waitlist": "Waitlist",
         "volunteering.tab_swap_requests": "Swap Requests",
         "volunteering.tab_group_signups": "Group Sign-ups",
