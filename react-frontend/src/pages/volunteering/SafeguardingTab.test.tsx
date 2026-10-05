@@ -54,6 +54,8 @@ vi.mock('@/contexts/ToastContext', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock('@/contexts', async () => (await import('@/test/mock-contexts')).createMockContexts());
+
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
 vi.mock('@/components/feedback', () => ({
@@ -211,4 +213,27 @@ describe('SafeguardingTab', () => {
       expect(callCount).toBeGreaterThanOrEqual(3);
     });
   });
+
+  it('links each report to its own page, with its reference and a plain status word', async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [] })
+      .mockResolvedValueOnce({ success: true, data: [{ ...mockIncident, id: 5, status: 'investigating' }] });
+    render(<SafeguardingTab />);
+    await waitFor(() => expect(screen.queryByText('Safeguarding')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Incident Reports/i }));
+
+    const link = await screen.findByRole('link', { name: /Near miss at community garden/ });
+    expect(link).toHaveAttribute('href', '/test/volunteering/incidents/5');
+    expect(screen.getByText('#5')).toBeInTheDocument();
+    expect(screen.getByText('safeguarding.member_status.looking_into')).toBeInTheDocument();
+  });
+
+  it('opens the report form straight away when the address asks for it', async () => {
+    window.history.pushState({}, '', '/volunteering?tab=safeguarding&report=1');
+    render(<SafeguardingTab />);
+
+    expect(await screen.findByTestId('report-incident-modal')).toBeInTheDocument();
+    window.history.pushState({}, '', '/');
+  });
+
 });

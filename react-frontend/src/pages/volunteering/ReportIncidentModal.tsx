@@ -13,8 +13,10 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
+import CheckCircle from 'lucide-react/icons/circle-check-big';
 import FileWarning from 'lucide-react/icons/file-warning';
 import Search from 'lucide-react/icons/search';
 import X from 'lucide-react/icons/x';
@@ -26,7 +28,7 @@ import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter 
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
-import { useAuth, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -59,7 +61,8 @@ function todayIso(): string {
 interface ReportIncidentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onReported: () => void;
+  /** Called once the report is saved, with its reference (null if the server did not send one). */
+  onReported: (incidentId: number | null) => void;
 }
 
 export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncidentModalProps) {
@@ -70,6 +73,10 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
   const [form, setForm] = useState(EMPTY_FORM);
   const [person, setPerson] = useState<MemberResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Once sent, the dialog shows the report's reference and a link to follow it.
+  const [sentId, setSentId] = useState<number | null>(null);
+  const [sent, setSent] = useState(false);
+  const { tenantPath } = useTenant();
   const [dateError, setDateError] = useState<string | null>(null);
 
   const [organisations, setOrganisations] = useState<ReportOptionOrganisation[]>([]);
@@ -141,7 +148,7 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
     setDateError(null);
   };
 
-  const close = () => { reset(); onClose(); };
+  const close = () => { reset(); setSent(false); setSentId(null); onClose(); };
 
   const visibleOpportunities = form.organization_id
     ? opportunities.filter((o) => String(o.organization_id) === form.organization_id)
@@ -179,12 +186,13 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
 
     try {
       setIsSubmitting(true);
-      const res = await api.post('/v2/volunteering/incidents', payload);
+      const res = await api.post<{ id?: number }>('/v2/volunteering/incidents', payload);
       if (res.success) {
+        const id = typeof res.data?.id === 'number' ? res.data.id : null;
         reset();
-        onClose();
-        toast.success(t('safeguarding.incident_reported'));
-        onReported();
+        setSentId(id);
+        setSent(true);
+        onReported(id);
       } else {
         toast.error(t('safeguarding.incident_failed'));
       }
@@ -201,6 +209,29 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
 
   return (
     <Modal isOpen={isOpen} onClose={close} size="lg" scrollBehavior="inside" classNames={{ base: 'bg-overlay border border-theme-default' }}>
+      {sent ? (
+      <ModalContent>
+        <ModalHeader className="text-theme-primary">
+          <ModalHeading className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-[var(--color-success)]" aria-hidden="true" />
+            {t('safeguarding.report_sent_heading')}
+          </ModalHeading>
+        </ModalHeader>
+        <ModalBody className="space-y-3">
+          <p className="text-sm text-theme-primary" role="status">
+            {sentId !== null ? t('safeguarding.report_sent_reference', { id: sentId }) : t('safeguarding.incident_reported')}
+          </p>
+          {sentId !== null && (
+            <Link to={tenantPath(`/volunteering/incidents/${sentId}`)} className="text-sm font-medium text-[var(--color-primary)] hover:underline">
+              {t('safeguarding.report_view_link')}
+            </Link>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="tertiary" onPress={close}>{t('safeguarding.close')}</Button>
+        </ModalFooter>
+      </ModalContent>
+      ) : (
       <ModalContent>
         <ModalHeader className="text-theme-primary">
           <ModalHeading className="flex items-center gap-2">
@@ -348,6 +379,7 @@ export function ReportIncidentModal({ isOpen, onClose, onReported }: ReportIncid
           </Button>
         </ModalFooter>
       </ModalContent>
+      )}
     </Modal>
   );
 }

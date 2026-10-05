@@ -170,4 +170,24 @@ describe('ReportIncidentModal', () => {
     await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
     expect(vi.mocked(api.post).mock.calls[0]?.[1]).not.toHaveProperty('organization_id');
   });
+
+  it('after sending, shows the reference and a link to the report instead of closing', async () => {
+    mockGet();
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { id: 41 } });
+    const { onClose, onReported } = renderModal();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
+
+    fillRequired();
+    fireEvent.click(screen.getByRole('button', { name: /safeguarding\.submit_incident/ }));
+
+    expect(await screen.findByText('safeguarding.report_sent_heading')).toBeInTheDocument();
+    expect(screen.getByText('safeguarding.report_sent_reference')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'safeguarding.report_view_link' })).toHaveAttribute('href', '/test/volunteering/incidents/41');
+    expect(onReported).toHaveBeenCalledWith(41);
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'safeguarding.close' }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
 });
