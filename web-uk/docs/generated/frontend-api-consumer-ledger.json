@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-05T18:44:15.396Z",
+  "generatedAt": "2026-10-05T19:06:46.609Z",
   "provenance": {
-    "generatedAt": "2026-10-05T18:44:15.396Z",
+    "generatedAt": "2026-10-05T19:06:46.609Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "1ac93e6173cf6139aacaac127d070e7fc22ebcde",
+    "laravelCommitSha": "47b7aa16708ad627a1be1148b54accc24e2844da",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "1ac93e6173cf6139aacaac127d070e7fc22ebcde",
+    "webUkRepositoryCommitSha": "47b7aa16708ad627a1be1148b54accc24e2844da",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -21,13 +21,13 @@
     "laravelApiRoutesSha256": "ddcbc296a38d51b18ae12144095e09c1f21248e20d4d2de96b596a02b296ea5b"
   },
   "summary": {
-    "contracts": 717,
+    "contracts": 720,
     "matchedOpenApi": 470,
-    "missingOpenApi": 247,
-    "routeDeclaredOpenApiOmissions": 247,
+    "missingOpenApi": 250,
+    "routeDeclaredOpenApiOmissions": 250,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 394,
+    "stateChanging": 395,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -26372,7 +26372,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/incidents/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-incidents.js:119",
+      "source": "src/routes/volunteering-incidents.js:128",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -26412,7 +26412,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/incidents/{param}/additions",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-incidents.js:155",
+      "source": "src/routes/volunteering-incidents.js:164",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON object: body",
@@ -27078,6 +27078,123 @@
       },
       "frontendConsumers": [
         "src/routes/volunteering-actions.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/incidents [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/incidents",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-incidents.js:260",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-incidents.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{orgId}/incidents",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-incidents.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/incidents/{param} [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/incidents/{param}",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-incidents.js:289",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-incidents.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{orgId}/incidents/{id}",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-incidents.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/volunteering/organisations/{param}/incidents/{param}/updates [callVolunteeringApi]",
+      "method": "POST",
+      "path": "/api/v2/volunteering/organisations/{param}/incidents/{param}/updates",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-incidents.js:324",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: body",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-incidents.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{orgId}/incidents/{id}/updates",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-incidents.js"
       ],
       "tests": [
         "tests/api-locale-context.test.js",

@@ -1,0 +1,52 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_safeguarding.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_safeguarding.title") }}</h1>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.intro") }}</p>
+
+  {% if not items.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_safeguarding.empty") }}</div>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_safeguarding.title') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_safeguarding.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_reference") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_kind") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_severity") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_date") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_opportunity") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_safeguarding.col_status") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for item in items %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/safeguarding/' ~ item.id) }}">#{{ item.id }}</a>
+            </td>
+            <td class="govuk-table__cell">{{ item.kindLabel }}</td>
+            <td class="govuk-table__cell">{{ item.severityLabel }}</td>
+            <td class="govuk-table__cell">{{ item.dateLabel or "—" }}</td>
+            <td class="govuk-table__cell">{{ item.opportunityTitle or "—" }}</td>
+            <td class="govuk-table__cell">
+              {{ govukTag({ text: item.statusLabel, classes: "govuk-tag--grey" }) }}
+              {% if item.fullReportShared %}<br>{{ govukTag({ text: t("govuk_alpha_volunteering.org_safeguarding.shared_chip"), classes: "govuk-tag--green" }) }}{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+{% endblock %}

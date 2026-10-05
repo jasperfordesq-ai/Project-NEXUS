@@ -1,0 +1,104 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_character-count.njk" import characterCount %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/safeguarding') }}">{{ t("govuk_alpha_volunteering.org_safeguarding.back_to_list") }}</a>
+{% endblock %}
+
+{% block content %}
+  {% if status and status.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-incident-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="org-incident-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% elif status %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#body">{{ status.message }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.org_safeguarding.reference", { id: incident.id }) }}</span>
+  <h1 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_safeguarding.detail_title") }}</h1>
+  <p class="govuk-body">
+    {{ govukTag({ text: incident.statusLabel, classes: "govuk-tag--grey" }) }}
+    {% if incident.fullReportShared %}{{ govukTag({ text: t("govuk_alpha_volunteering.org_safeguarding.shared_chip"), classes: "govuk-tag--green" }) }}{% endif %}
+  </p>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.team_handling") }}</p>
+
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_safeguarding.col_kind") }}</dt>
+      <dd class="govuk-summary-list__value">{{ incident.kindLabel }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_safeguarding.col_severity") }}</dt>
+      <dd class="govuk-summary-list__value">{{ incident.severityLabel }}</dd>
+    </div>
+    {% if incident.dateLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_safeguarding.col_date") }}</dt>
+        <dd class="govuk-summary-list__value">{{ incident.dateLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if incident.opportunityTitle %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_safeguarding.col_opportunity") }}</dt>
+        <dd class="govuk-summary-list__value">{{ incident.opportunityTitle }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if incident.fullReport %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_safeguarding.full_report_heading") }}</h2>
+    <p class="govuk-body govuk-!-font-weight-bold">{{ incident.fullReport.title }}</p>
+    <p class="govuk-body app-formatted-text">{{ incident.fullReport.description }}</p>
+    {% if incident.fullReport.subjectName %}
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.about_label") }}: {{ incident.fullReport.subjectName }}</p>
+    {% endif %}
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_safeguarding.history_heading") }}</h2>
+  <ol class="govuk-list">
+    {% for event in incident.timeline %}
+      <li class="govuk-!-margin-bottom-4">
+        <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ event.label }}{% if event.detail %} — {{ event.detail }}{% endif %}</p>
+        <p class="govuk-hint govuk-!-margin-bottom-1">{% if event.actorName %}{{ event.actorName }} · {% endif %}{{ event.dateLabel }}</p>
+        {% if event.body %}<p class="govuk-body app-formatted-text">{{ event.body }}</p>{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+
+  {% set bodyError = status and status.field == "body" %}
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/safeguarding/' ~ incident.id ~ '/updates') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {% call characterCount(updateMax, characterCountMessages, "body") %}
+      <div class="govuk-form-group{% if bodyError %} govuk-form-group--error{% endif %}">
+        <h2 class="govuk-label-wrapper">
+          <label class="govuk-label govuk-label--m" for="body">{{ t("govuk_alpha_volunteering.org_safeguarding.updates_heading") }}</label>
+        </h2>
+        <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_safeguarding.update_hint") }}</div>
+        {% if bodyError %}
+          <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <textarea class="govuk-textarea govuk-js-character-count{% if bodyError %} govuk-textarea--error{% endif %}" id="body" name="body" rows="6" maxlength="{{ updateMax }}" aria-describedby="body-hint{% if bodyError %} body-error{% endif %}">{{ updateBody }}</textarea>
+      </div>
+    {% endcall %}
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_safeguarding.update_send") }}</button>
+  </form>
+{% endblock %}

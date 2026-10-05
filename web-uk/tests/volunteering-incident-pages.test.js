@@ -259,3 +259,129 @@ describe('safeguarding report page', () => {
     expect(res.text).toContain('#7');
   });
 });
+
+describe('organisation safeguarding pages', () => {
+  const SUMMARY = {
+    id: 12, type: 'allegation', severity: 'high', status: 'investigating', incident_date: '2026-10-01',
+    created_at: '2026-10-02 09:00:00', opportunity_title: 'Sorting donations', full_report_shared: false
+  };
+  const DETAIL = {
+    ...SUMMARY,
+    relation: 'org_contact',
+    timeline: [
+      { id: 1, type: 'reported', created_at: '2026-10-02 09:00:00' },
+      { id: 2, type: 'message_to_organisation', created_at: '2026-10-02 10:00:00', body: 'Please call the team.' },
+      { id: 3, type: 'org_update', created_at: '2026-10-02 11:00:00', body: 'We stood the volunteer down.', actor_name: 'Olive Owner' }
+    ]
+  };
+
+  function mockOrgApi({ list = { items: [SUMMARY, { ...SUMMARY, id: 13, full_report_shared: true }] }, detail = DETAIL, listError = null, updateError = null } = {}) {
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (method === 'GET' && apiPath === '/organisations/3/incidents') {
+        if (listError) throw listError;
+        return { data: list };
+      }
+      if (method === 'GET' && apiPath === '/organisations/3/incidents/12') {
+        if (detail === null) throw new api.ApiError('Incident not found', 404, {});
+        return { data: detail };
+      }
+      if (method === 'POST' && apiPath === '/organisations/3/incidents/12/updates') {
+        if (updateError) throw updateError;
+        return { data: { event_id: 30 } };
+      }
+      throw new api.ApiError('unexpected call', 500, {});
+    });
+  }
+
+  function updatePosts() {
+    return api.callVolunteeringApi.mock.calls.filter(([, method, apiPath]) => method === 'POST' && apiPath === '/organisations/3/incidents/12/updates');
+  }
+
+  it('lists the reports linked to the organisation, with reference, plain status and which are shared', async () => {
+    mockOrgApi();
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(`href="${MOUNT}/organisations/3/safeguarding/12"`);
+    expect(res.text).toContain('#12');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.incident_type_allegation'));
+    expect(res.text).toContain(t('govuk_alpha_volunteering.safeguarding.member_status_looking_into'));
+    expect(res.text).toContain('Sorting donations');
+    expect(res.text.split(t('govuk_alpha_volunteering.org_safeguarding.shared_chip')).length - 1).toBe(1);
+  });
+
+  it('answers 403 with no reports for someone with no part in the organisation', async () => {
+    mockOrgApi({ listError: new api.ApiError('No access', 403, { errors: [{ code: 'NOT_ORGANISATION_CONTACT' }] }) });
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding`);
+
+    expect(res.status).toBe(403);
+    expect(res.text).not.toContain('/safeguarding/12');
+  });
+
+  it('shows the summary and history without the report while it is not shared', async () => {
+    mockOrgApi();
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding/12`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.reference', { id: 12 }));
+    // Nunjucks escapes the apostrophe in "community's".
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.team_handling').replace(/'/g, '&#39;'));
+    expect(res.text).not.toContain(t('govuk_alpha_volunteering.org_safeguarding.full_report_heading'));
+    expect(res.text).toContain('Please call the team.');
+    expect(res.text).toContain('We stood the volunteer down.');
+    expect(res.text).toContain('name="body"');
+  });
+
+  it('shows the full report once shared, and never who made it', async () => {
+    mockOrgApi({
+      detail: {
+        ...DETAIL,
+        relation: 'org_lead',
+        full_report_shared: true,
+        title: 'Left alone on shift',
+        description: 'A volunteer was left alone with a client.',
+        subject_name: 'Sid Subject',
+        reporter_name: 'Rita Reporter',
+        timeline: [{ id: 4, type: 'reporter_addition', created_at: '2026-10-02 12:00:00', body: 'It happened again on Tuesday.' }]
+      }
+    });
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding/12`);
+
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.full_report_heading'));
+    expect(res.text).toContain('Left alone on shift');
+    expect(res.text).toContain('Sid Subject');
+    expect(res.text).toContain('It happened again on Tuesday.');
+    expect(res.text).not.toContain('Rita Reporter');
+  });
+
+  it('sends an update and comes back with a confirmation', async () => {
+    mockOrgApi();
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/organisations/3/safeguarding/12/updates`).type('form')
+      .send({ _csrf: 'test-csrf-token', body: '  We have spoken to the volunteer today.  ' });
+
+    expect(post.headers.location).toBe(`${MOUNT}/organisations/3/safeguarding/12?status=update-sent`);
+    expect(updatePosts()[0][3]).toEqual({ body: 'We have spoken to the volunteer today.' });
+    const page = await agent.get(post.headers.location);
+    expect(page.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.update_sent'));
+  });
+
+  it('refuses an update under 20 characters without sending, keeping the text', async () => {
+    mockOrgApi();
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/organisations/3/safeguarding/12/updates`).type('form')
+      .send({ _csrf: 'test-csrf-token', body: 'Too short.' });
+
+    expect(post.headers.location).toBe(`${MOUNT}/organisations/3/safeguarding/12?status=update-too-short#body`);
+    expect(updatePosts()).toHaveLength(0);
+    const page = await agent.get(`${MOUNT}/organisations/3/safeguarding/12?status=update-too-short`);
+    expect(page.text).toMatch(/<textarea[^>]*name="body"[^>]*>Too short\.<\/textarea>/);
+  });
+
+  it('answers not found for a report no longer linked to the organisation', async () => {
+    mockOrgApi({ detail: null });
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding/12`);
+
+    expect(res.status).toBe(404);
+  });
+});

@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-10-05T18:44:15.396Z
-- Laravel commit SHA: `1ac93e6173cf6139aacaac127d070e7fc22ebcde`
-- Web UK repository commit SHA: `1ac93e6173cf6139aacaac127d070e7fc22ebcde`
+- Generated: 2026-10-05T19:06:46.609Z
+- Laravel commit SHA: `47b7aa16708ad627a1be1148b54accc24e2844da`
+- Web UK repository commit SHA: `47b7aa16708ad627a1be1148b54accc24e2844da`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 717
+- Contracts: 720
 - Laravel OpenAPI matches: 470
-- Missing OpenAPI matches: 247
-- Direct Laravel route declarations omitted from OpenAPI: 247
+- Missing OpenAPI matches: 250
+- Direct Laravel route declarations omitted from OpenAPI: 250
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 394
+- State-changing contracts: 395
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
@@ -727,6 +727,9 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/volunteering/organisations/{param}?include=public_contract` | `getVolunteerOrganisation` | documented | read-only by HTTP method<br>not applicable | src/server.js | tests/accessibility/public-pages.spec.js<br>tests/api.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/volunteering/organisations/{param}/applications?status=pending&per_page=20` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
 | GET | `/api/v2/volunteering/organisations/{param}/hours/pending?per_page=20` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
+| GET | `/api/v2/volunteering/organisations/{param}/incidents` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-incidents.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
+| GET | `/api/v2/volunteering/organisations/{param}/incidents/{param}` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-incidents.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
+| POST | `/api/v2/volunteering/organisations/{param}/incidents/{param}/updates` | `callVolunteeringApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/volunteering-incidents.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
 | GET | `/api/v2/volunteering/organisations/{param}/stats` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
 | GET | `/api/v2/volunteering/organisations/{param}/volunteers?{query}` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |
 | GET | `/api/v2/volunteering/organisations/{param}/wallet` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js |

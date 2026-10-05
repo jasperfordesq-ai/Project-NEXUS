@@ -11,9 +11,18 @@
  *   GET  /volunteering/incidents/:id            — the report, its plain status and history
  *   POST /volunteering/incidents/:id/additions  — add information while it is not closed
  *
- * The API decides who may see a report and sends only the reporter's own view: the
- * team's notes, the reasons for decisions and the organisation's messages never reach
- * this page. Anyone else's report is "not found".
+ * and, for an organisation's owner, administrators and safeguarding lead:
+ *
+ *   GET  /volunteering/organisations/:id/safeguarding                    — reports linked to it
+ *   GET  /volunteering/organisations/:id/safeguarding/:incidentId         — one report
+ *   POST /volunteering/organisations/:id/safeguarding/:incidentId/updates — tell the team
+ *
+ * The API decides who may see a report and sends only that viewer's part of it: the
+ * reporter never sees the team's notes or the organisation's messages; the organisation
+ * sees a summary, and its lead the full report only while the team shares it — never
+ * who made it. The organisation pages copy only the fields they show, so a reporter's
+ * name could not appear even if a response carried one. A report the caller may not
+ * see is "not found".
  *
  * Mounted before routes/volunteering-actions.js, which keeps the list and the report
  * form at /volunteering/incidents.
@@ -165,6 +174,163 @@ router.post('/incidents/:id(\\d+)/additions', asyncRoute(async (req, res) => {
   }
 
   return back('information-added');
+}));
+
+// ── The organisation the report is linked to ─────────────────────────────────
+
+const ORG_KEY = 'govuk_alpha_volunteering.org_safeguarding.';
+
+const ORG_EVENT_LABELS = {
+  reported: 'timeline_reported',
+  status_changed: 'timeline_status_changed',
+  message_to_organisation: 'message_from_team',
+  org_update: 'timeline_org_update',
+  reporter_addition: 'timeline_reporter_addition',
+  shared_with_organisation: 'timeline_shared',
+  share_withdrawn: 'timeline_share_withdrawn'
+};
+
+const ORG_STATUSES = {
+  'update-sent': { type: 'success', key: 'update_sent' },
+  'update-too-short': { type: 'error', key: 'update_too_short', field: 'body' },
+  'update-failed': { type: 'error', key: 'update_failed', field: 'body' }
+};
+
+function orgReplayKey(orgId, incidentId) {
+  return `org-incident-update-${orgId}-${incidentId}`;
+}
+
+function dateFormatter(res) {
+  return (value) => (value ? String(res.locals.formatLocaleDate(value) || value) : '');
+}
+
+/** Only the summary fields the organisation may see. */
+function presentOrgSummary(row, t, formatDate) {
+  const item = row && typeof row === 'object' ? row : {};
+  const status = typeof item.status === 'string' ? item.status : 'open';
+  return {
+    id: Number(item.id) || 0,
+    kindLabel: t(`${KEY}incident_type_${typeof item.type === 'string' ? item.type : 'other'}`),
+    severityLabel: t(`${KEY}severity_${typeof item.severity === 'string' ? item.severity : 'medium'}`),
+    statusLabel: memberStatusLabel(t, status),
+    dateLabel: formatDate(item.incident_date || item.created_at),
+    opportunityTitle: typeof item.opportunity_title === 'string' ? item.opportunity_title : '',
+    fullReportShared: item.full_report_shared === true
+  };
+}
+
+function presentOrgDetail(row, t, formatDate) {
+  const item = row && typeof row === 'object' ? row : {};
+  const shared = item.full_report_shared === true;
+  const timeline = (Array.isArray(item.timeline) ? item.timeline : [])
+    .filter((event) => event && Object.hasOwn(ORG_EVENT_LABELS, event.type))
+    .map((event) => ({
+      label: t(ORG_KEY + ORG_EVENT_LABELS[event.type]),
+      detail: event.type === 'status_changed' && event.to ? memberStatusLabel(t, event.to) : '',
+      body: typeof event.body === 'string' ? event.body : '',
+      // The organisation's own updates name who in the organisation wrote them.
+      actorName: event.type === 'org_update' && typeof event.actor_name === 'string' ? event.actor_name : '',
+      dateLabel: formatDate(event.created_at)
+    }))
+    .reverse();
+
+  return {
+    ...presentOrgSummary(item, t, formatDate),
+    fullReport: shared ? {
+      title: String(item.title || ''),
+      description: String(item.description || ''),
+      subjectName: typeof item.subject_name === 'string' ? item.subject_name : ''
+    } : null,
+    timeline
+  };
+}
+
+function orgIncidentNotFound(res) {
+  return res.status(404).render('errors/404', { title: res.locals.t(`${ORG_KEY}not_found`) });
+}
+
+router.get('/organisations/:id(\\d+)/safeguarding', asyncRoute(async (req, res) => {
+  const orgId = Number(req.params.id);
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, '/login?status=auth-required');
+  const t = res.locals.t;
+
+  let result;
+  try {
+    result = await callVolunteeringApi(token, 'GET', `/organisations/${encodeURIComponent(orgId)}/incidents`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && error.status === 403) {
+      return res.status(403).render('errors/403', { title: t(`${ORG_KEY}forbidden`) });
+    }
+    if (error instanceof ApiError && error.status === 404) return orgIncidentNotFound(res);
+    throw error;
+  }
+
+  const data = result && result.data !== undefined ? result.data : result;
+  const rows = data && Array.isArray(data.items) ? data.items : [];
+  const formatDate = dateFormatter(res);
+  return res.render('volunteering/organisation-safeguarding', {
+    title: t(`${ORG_KEY}title`),
+    orgId,
+    items: rows.map((row) => presentOrgSummary(row, t, formatDate)).filter((row) => row.id > 0)
+  });
+}));
+
+router.get('/organisations/:id(\\d+)/safeguarding/:incidentId(\\d+)', asyncRoute(async (req, res) => {
+  const orgId = Number(req.params.id);
+  const incidentId = Number(req.params.incidentId);
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, '/login?status=auth-required');
+  const t = res.locals.t;
+
+  let result;
+  try {
+    result = await callVolunteeringApi(token, 'GET', `/organisations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return orgIncidentNotFound(res);
+    throw error;
+  }
+
+  const statusKey = typeof req.query.status === 'string' ? req.query.status : '';
+  const known = Object.hasOwn(ORG_STATUSES, statusKey) ? ORG_STATUSES[statusKey] : null;
+  const replay = consumeFormReplay(req, 'volunteering', orgReplayKey(orgId, incidentId)) || {};
+
+  return res.render('volunteering/organisation-safeguarding-incident', {
+    title: t(`${ORG_KEY}detail_title`),
+    orgId,
+    incident: presentOrgDetail(result && result.data !== undefined ? result.data : result, t, dateFormatter(res)),
+    status: known ? { ...known, message: t(ORG_KEY + known.key) } : null,
+    updateBody: typeof replay.body === 'string' ? replay.body : '',
+    updateMax: ADDITION_MAX
+  });
+}));
+
+router.post('/organisations/:id(\\d+)/safeguarding/:incidentId(\\d+)/updates', asyncRoute(async (req, res) => {
+  const orgId = Number(req.params.id);
+  const incidentId = Number(req.params.incidentId);
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, '/login?status=auth-required');
+  const body = String((req.body && req.body.body) || '').trim().slice(0, ADDITION_MAX);
+  const back = (status, anchor = '') => redirectTo(res, `/volunteering/organisations/${orgId}/safeguarding/${incidentId}?status=${status}${anchor}`);
+
+  if (body.length < ADDITION_MIN) {
+    rememberFormReplay(req, 'volunteering', orgReplayKey(orgId, incidentId), { body });
+    return back('update-too-short', '#body');
+  }
+
+  try {
+    await callVolunteeringApi(token, 'POST', `/organisations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/updates`, { body });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return orgIncidentNotFound(res);
+    rememberFormReplay(req, 'volunteering', orgReplayKey(orgId, incidentId), { body });
+    if (error instanceof ApiError && error.status === 422) return back('update-too-short', '#body');
+    return back('update-failed', '#body');
+  }
+
+  return back('update-sent');
 }));
 
 module.exports = router;
