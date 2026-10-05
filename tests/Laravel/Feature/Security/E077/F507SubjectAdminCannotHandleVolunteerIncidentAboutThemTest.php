@@ -76,18 +76,22 @@ final class F507SubjectAdminCannotHandleVolunteerIncidentAboutThemTest extends T
             $list = $this->apiGet($uri);
             $this->assertSame(200, $list->getStatusCode(), $uri . ' ' . $list->getContent());
             $this->assertStringNotContainsString('F507-ABOUT-SUBJECT', (string) $list->getContent(), "F-507: {$uri} lists the incident about the caller");
-            // Control: the same administrator still sees other incidents.
-            $this->assertStringContainsString('F507-ABOUT-OTHER', (string) $list->getContent(), "CONTROL: {$uri} still lists other incidents");
         }
+        // Control: the same administrator still sees other incidents in the staff
+        // list. (The member list holds only the caller's own reports since the
+        // incident case record, 2026-10-05, so it has no control to offer.)
+        $this->assertStringContainsString('F507-ABOUT-OTHER', (string) $this->apiGet('/v2/admin/volunteering/incidents')->getContent(), 'CONTROL: the staff list still lists other incidents');
     }
 
     public function test_the_subject_cannot_open_the_incident_about_them(): void
     {
         Sanctum::actingAs($this->subjectAdmin, ['*']);
 
-        $res = $this->apiGet("/v2/volunteering/incidents/{$this->aboutSubject}");
-        $this->assertSame(404, $res->getStatusCode(), 'F-507: ' . $res->getContent());
-        $this->assertStringNotContainsString('F507-ABOUT-SUBJECT', (string) $res->getContent());
+        foreach (["/v2/volunteering/incidents/{$this->aboutSubject}", "/v2/admin/volunteering/incidents/{$this->aboutSubject}"] as $uri) {
+            $res = $this->apiGet($uri);
+            $this->assertSame(404, $res->getStatusCode(), "F-507 {$uri}: " . $res->getContent());
+            $this->assertStringNotContainsString('F507-ABOUT-SUBJECT', (string) $res->getContent());
+        }
     }
 
     public function test_the_subject_cannot_rewrite_reassign_or_close_the_incident_about_them(): void
@@ -133,7 +137,7 @@ final class F507SubjectAdminCannotHandleVolunteerIncidentAboutThemTest extends T
     {
         Sanctum::actingAs($this->otherAdmin, ['*']);
 
-        $this->apiGet("/v2/volunteering/incidents/{$this->aboutSubject}")->assertStatus(200);
+        $this->apiGet("/v2/admin/volunteering/incidents/{$this->aboutSubject}")->assertStatus(200);
         // Escalating needs a reason since the incident timeline was added.
         $this->apiPut("/v2/admin/volunteering/incidents/{$this->aboutSubject}", ['status' => 'escalated', 'reason' => 'Referred to the statutory service.'])->assertStatus(200);
         $this->assertSame('escalated', (string) DB::table('vol_safeguarding_incidents')->where('id', $this->aboutSubject)->value('status'));

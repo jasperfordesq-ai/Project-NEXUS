@@ -457,66 +457,19 @@ class VolunteerWellbeingController extends BaseApiController
         );
     }
 
+    /**
+     * GET /v2/volunteering/incidents � the reports the caller made. Staff see
+     * every incident through the admin list; here everyone sees only their own.
+     */
     public function getIncidents(): JsonResponse
     {
         $this->ensureFeature();
         $userId = $this->getUserId();
         $this->rateLimit('vol_incidents_list', 30, 60);
 
-        $tenantId = TenantContext::getId();
-
-        // Non-admin users can only see incidents they reported.
-        // Full list is available via adminIncidents() which requires admin role.
-        $isAdmin = $this->isModuleAdmin();
-
-        if ($isAdmin) {
-            $status = $this->query('status');
-            $page = $this->queryInt('page', 1, 1, 1000);
-            $perPage = $this->queryInt('per_page', 20, 1, 50);
-            // F-507: an administrator never sees an incident about themselves.
-            $result = $this->safeguardingService->getIncidents($tenantId, $status, $page, $perPage, $userId);
-        } else {
-            $result = $this->safeguardingService->getIncidentsByReporter($userId, $tenantId);
-        }
-
-        return $this->respondWithData($result);
-    }
-
-    public function getIncident($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $userId = $this->getUserId();
-        $this->rateLimit('vol_incident_get', 30, 60);
-
-        $tenantId = TenantContext::getId();
-        $incident = $this->safeguardingService->getIncident((int) $id, $tenantId);
-        if (!$incident) {
-            return $this->respondWithError('NOT_FOUND', __('api.vol_incident_not_found'), null, 404);
-        }
-
-        // Ownership check: only the reporter or an admin can view
-        $isAdmin = $this->isModuleAdmin();
-
-        // F-507: an incident about the viewer is not found for them, admin or
-        // not — unless they reported it, in which case they get the reporter's
-        // whitelisted view below, never the investigators' record.
-        if (\App\Services\SafeguardingService::isIncidentAboutUser($incident, $userId)) {
-            if ((int) ($incident['reported_by'] ?? 0) !== $userId) {
-                return $this->respondWithError('NOT_FOUND', __('api.vol_incident_not_found'), null, 404);
-            }
-            $isAdmin = false;
-        }
-        if ((int) ($incident['reported_by'] ?? 0) !== $userId && !$isAdmin) {
-            return $this->respondWithError('FORBIDDEN', __('api.vol_incident_view_forbidden'), null, 403);
-        }
-
-        // A reporter sees the same whitelist as their list view — never the
-        // investigators' record (E-035 F-159).
-        if (!$isAdmin) {
-            $incident = $this->safeguardingService->toReporterView($incident);
-        }
-
-        return $this->respondWithData($incident);
+        return $this->respondWithData(
+            $this->safeguardingService->getIncidentsByReporter($userId, TenantContext::getId())
+        );
     }
 
     public function adminIncidents(): JsonResponse

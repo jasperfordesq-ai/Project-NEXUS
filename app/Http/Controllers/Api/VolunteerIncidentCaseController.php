@@ -29,6 +29,9 @@ class VolunteerIncidentCaseController extends BaseApiController
 
     private const TEXT_MAX = 5000;
 
+    /** Information added by a reporter or an organisation must say something. */
+    private const CONTRIBUTION_MIN = 20;
+
     public function __construct(
         private readonly IncidentTimelineService $timeline,
         private readonly IncidentShareService $shares,
@@ -147,7 +150,56 @@ class VolunteerIncidentCaseController extends BaseApiController
         return $this->respondWithData(['shared' => false]);
     }
 
+    // ── The person who reported it ───────────────────────────────────────────
+
+    /** GET /v2/volunteering/incidents/{id} — the reporter's own report and its history. */
+    public function reporterCase(int $id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_incident_get', 30, 60);
+        $tenantId = TenantContext::getId();
+        $incident = $this->reporterIncident($id, $tenantId, $userId);
+        if (!$incident) {
+            return $this->notFound();
+        }
+
+        return $this->respondWithData(IncidentViews::reporter($incident, $this->timeline->forIncident($tenantId, $id)));
+    }
+
+    /** POST /v2/volunteering/incidents/{id}/additions {body} — more information from the reporter. */
+    public function addReporterInformation(int $id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_incident_case_write', 30, 60);
+        $tenantId = TenantContext::getId();
+        $incident = $this->reporterIncident($id, $tenantId, $userId);
+        if (!$incident) {
+            return $this->notFound();
+        }
+        if ($incident->status === 'closed') {
+            return $this->respondWithError('INCIDENT_CLOSED', __('api.vol_incident_closed'), null, 409);
+        }
+        $body = $this->text('body', self::CONTRIBUTION_MIN);
+        if ($body === null) {
+            return $this->invalidText('body', self::CONTRIBUTION_MIN);
+        }
+
+        $eventId = $this->timeline->record($tenantId, $id, 'reporter_addition', $userId, 'reporter', $body);
+
+        return $this->respondWithData(['event_id' => $eventId], null, 201);
+    }
+
     // ── Shared helpers ───────────────────────────────────────────────────────
+
+    /** The incident when the caller reported it (including about themselves); otherwise null. */
+    private function reporterIncident(int $id, int $tenantId, int $userId): ?object
+    {
+        $incident = $this->loadIncident($id, $tenantId);
+
+        return $incident && IncidentAccess::reporterCanSee($incident, $userId) ? $incident : null;
+    }
 
     private function ensureFeature(): void
     {

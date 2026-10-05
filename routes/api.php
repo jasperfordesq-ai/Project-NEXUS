@@ -3885,7 +3885,8 @@ Route::post('/v2/volunteering/training', [\App\Http\Controllers\Api\VolunteerWel
 Route::post('/v2/volunteering/incidents', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'reportIncident']);
 Route::get('/v2/volunteering/incidents', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'getIncidents']);
 Route::get('/v2/volunteering/incidents/report-options', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'incidentReportOptions']);
-Route::get('/v2/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'getIncident'])->whereNumber('id');
+Route::get('/v2/volunteering/incidents/{id}', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'reporterCase'])->whereNumber('id');
+Route::post('/v2/volunteering/incidents/{id}/additions', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'addReporterInformation'])->whereNumber('id');
 Route::get('/v2/volunteering/custom-fields', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getCustomFields']);
 Route::get('/v2/volunteering/accessibility-needs', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'myAccessibilityNeeds']);
 Route::put('/v2/volunteering/accessibility-needs', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateAccessibilityNeeds']);

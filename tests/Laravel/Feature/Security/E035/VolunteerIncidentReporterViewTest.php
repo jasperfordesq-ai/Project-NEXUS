@@ -107,18 +107,21 @@ class VolunteerIncidentReporterViewTest extends TestCase
         $body = (string) $response->getContent();
         $this->assertStringNotContainsString('SECRET-', $body);
         $this->assertStringNotContainsString('E035 Investigator', $body);
-        $this->assertStringNotContainsString('E035 Subject Person', $body);
+        // The name of the person the reporter themselves reported is shown back to
+        // them (incident case record spec §3); nobody can change it after reporting.
+        $this->assertSame('E035 Subject Person', $data['subject_name']);
     }
 
     public function test_admin_detail_keeps_investigator_fields(): void
     {
+        // Staff read the case file on the admin route; the member route is the
+        // reporter's alone since the incident case record (2026-10-05).
         Sanctum::actingAs($this->admin, ['*']);
-        $response = $this->apiGet("/v2/volunteering/incidents/{$this->incidentId}");
+        $this->apiGet("/v2/volunteering/incidents/{$this->incidentId}")->assertStatus(404);
+        $response = $this->apiGet("/v2/admin/volunteering/incidents/{$this->incidentId}");
 
         $response->assertStatus(200);
         $data = $response->json('data');
-        $this->assertSame('SECRET-ACTION-TAKEN', $data['action_taken']);
-        $this->assertSame('SECRET-RESOLUTION-NOTES', $data['resolution_notes']);
         $this->assertSame('SECRET-AUTH-REF', $data['authority_reference']);
         $this->assertSame('E035 Investigator', $data['assigned_to_name']);
     }
@@ -129,6 +132,7 @@ class VolunteerIncidentReporterViewTest extends TestCase
             'status' => 'active', 'is_approved' => true, 'role' => 'member',
         ]);
         Sanctum::actingAs($other, ['*']);
-        $this->apiGet("/v2/volunteering/incidents/{$this->incidentId}")->assertStatus(403);
+        // Not found, not forbidden: a stranger learns nothing about whether it exists.
+        $this->apiGet("/v2/volunteering/incidents/{$this->incidentId}")->assertStatus(404);
     }
 }
