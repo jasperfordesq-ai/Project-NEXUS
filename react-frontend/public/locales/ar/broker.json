@@ -529,7 +529,8 @@
     "guardians_title": "الأوصياء",
     "guardians_description": "ترتيبات الوصاية للأعضاء الذين يرغبون في دعم إضافي.",
     "support_actions_title": "إجراءات الدعم",
-    "support_actions_description": "ما أعدّه داعم لعضو وينتظر موافقته، وإثبات أن الداعم يمكنه التصرف بمفرده."
+    "support_actions_description": "ما أعدّه داعم لعضو وينتظر موافقته، وإثبات أن الداعم يمكنه التصرف بمفرده.",
+    "volunteering_case_title": "حادثة تطوعية"
   },
   "vetting": {
     "title": "تأكيدات الفحص",

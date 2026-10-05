@@ -493,7 +493,8 @@
     "guardians_title": "Tuteurs",
     "guardians_description": "Dispositifs de tutelle pour les membres qui souhaitent un accompagnement supplémentaire.",
     "support_actions_title": "Actions d’accompagnement",
-    "support_actions_description": "Ce qu’une personne de soutien a préparé pour un membre et qui attend son oui, et la preuve qu’une personne de soutien peut agir seule."
+    "support_actions_description": "Ce qu’une personne de soutien a préparé pour un membre et qui attend son oui, et la preuve qu’une personne de soutien peut agir seule.",
+    "volunteering_case_title": "Incident de bénévolat"
   },
   "vetting": {
     "title": "Confirmations de vérification",

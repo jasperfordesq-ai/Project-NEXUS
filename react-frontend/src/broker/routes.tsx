@@ -116,6 +116,7 @@ const SafeguardingSupportNeedsPage = lazy(() => import('./pages/SafeguardingSupp
 const SafeguardingGuardiansPage = lazy(() => import('./pages/SafeguardingGuardiansPage'));
 const SafeguardingSupportActionsPage = lazy(() => import('./pages/SafeguardingSupportActionsPage'));
 const SafeguardingVolunteeringPage = lazy(() => import('./pages/SafeguardingVolunteeringPage'));
+const SafeguardingVolunteeringCasePage = lazy(() => import('./pages/SafeguardingVolunteeringCasePage'));
 
 // Compliance & oversight pages (ported from admin/broker-controls)
 const RiskTagsPage = lazy(() => import('./pages/RiskTagsPage'));
@@ -160,6 +161,7 @@ export function BrokerRoutes() {
       <Route path="safeguarding/guardians" element={<Lazy><SafeguardingGuardiansPage /></Lazy>} />
       <Route path="safeguarding/support-actions" element={<Lazy><SafeguardingSupportActionsPage /></Lazy>} />
       <Route path="safeguarding/volunteering" element={<VolunteeringFeatureRoute><Lazy><SafeguardingVolunteeringPage /></Lazy></VolunteeringFeatureRoute>} />
+      <Route path="safeguarding/volunteering/:id" element={<VolunteeringFeatureRoute><Lazy><SafeguardingVolunteeringCasePage /></Lazy></VolunteeringFeatureRoute>} />
 
       {/* Exchanges — gated on the exchange_workflow feature */}
       <Route path="exchanges" element={<ExchangeFeatureRoute><Lazy><ExchangesPage /></Lazy></ExchangeFeatureRoute>} />

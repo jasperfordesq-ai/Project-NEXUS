@@ -493,7 +493,8 @@
     "guardians_title": "Tutores",
     "guardians_description": "Acordos de tutela para membros que querem apoio adicional.",
     "support_actions_title": "Ações de apoio",
-    "support_actions_description": "O que uma pessoa de apoio preparou para um membro e aguarda o seu sim, e a prova de que uma pessoa de apoio pode agir sozinha."
+    "support_actions_description": "O que uma pessoa de apoio preparou para um membro e aguarda o seu sim, e a prova de que uma pessoa de apoio pode agir sozinha.",
+    "volunteering_case_title": "Incidente de voluntariado"
   },
   "vetting": {
     "title": "Confirmações de verificação",

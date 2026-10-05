@@ -1762,7 +1762,7 @@ export const adminVolunteering = {
   rejectTraining: (id: number, reason: string) => api.put(`/v2/admin/volunteering/training/${id}/reject`, { reason }),
 
   // Incidents
-  getIncidents: (params: { page?: number; per_page?: number; search?: string; status?: string } = {}) => {
+  getIncidents: (params: { page?: number; per_page?: number; search?: string; status?: string; handler?: 'none' } = {}) => {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== '') query.set(key, String(value));
@@ -1771,9 +1771,9 @@ export const adminVolunteering = {
     return api.get(`/v2/admin/volunteering/incidents${suffix ? `?${suffix}` : ''}`);
   },
   updateIncident: (id: number, data: {
-    status: string;
-    action_taken?: string;
-    resolution_notes?: string;
+    status?: string;
+    /** Why — required by the server when resolving, escalating or closing. */
+    reason?: string;
     assigned_to?: number | null;
     incident_type?: string;
     severity?: string;
@@ -1784,6 +1784,14 @@ export const adminVolunteering = {
     authority_reference?: string;
   }) =>
     api.put(`/v2/admin/volunteering/incidents/${id}`, data),
+  /** The staff case file: the report, who handles it, sharing, and its full history. */
+  getIncidentCase: (id: number) => api.get(`/v2/admin/volunteering/incidents/${id}`),
+  addIncidentNote: (id: number, body: string) => api.post(`/v2/admin/volunteering/incidents/${id}/notes`, { body }),
+  sendIncidentMessage: (id: number, audience: 'reporter' | 'organisation', body: string) =>
+    api.post(`/v2/admin/volunteering/incidents/${id}/messages`, { audience, body }),
+  /** Share the full report with the linked organisation's safeguarding lead(s). */
+  shareIncident: (id: number) => api.post(`/v2/admin/volunteering/incidents/${id}/share`, {}),
+  withdrawIncidentShare: (id: number) => api.delete(`/v2/admin/volunteering/incidents/${id}/share`),
   /** The community's organisations and their opportunities, for filing an incident. */
   getIncidentReportOptions: () => api.get('/v2/volunteering/incidents/report-options'),
 

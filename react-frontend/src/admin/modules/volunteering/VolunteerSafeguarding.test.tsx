@@ -10,13 +10,17 @@ import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
 // ─── Hoisted mock data ────────────────────────────────────────────────────────
-const { mockAdminVolunteering } = vi.hoisted(() => ({
+const { mockAdminVolunteering, mockNavigate } = vi.hoisted(() => ({
   mockAdminVolunteering: {
     getIncidents: vi.fn(),
-    getIncidentReportOptions: vi.fn(),
-    updateIncident: vi.fn(),
     assignDlp: vi.fn(),
   },
+  mockNavigate: vi.fn(),
+}));
+
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useNavigate: () => mockNavigate,
 }));
 
 vi.mock('../../api/adminApi', () => ({
@@ -27,31 +31,6 @@ vi.mock('../../api/adminApi', () => ({
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// The organisation and opportunity pickers are React Aria Autocompletes, whose
-// popover cannot open in jsdom ("Cannot set property focus"). Stub just those two
-// as a native select — the same approach as GroupSelector.test.tsx. The DLP
-// member picker is a ComboBox and stays real.
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Autocomplete: ({ label, placeholder, value, onChange, children }: {
-      label?: string;
-      placeholder?: string;
-      value?: string | null;
-      onChange?: (key: string | null) => void;
-      children?: React.ReactNode;
-    }) => (
-      <select aria-label={label} value={value ?? ''} onChange={(e) => onChange?.(e.target.value || null)}>
-        <option value="">{placeholder}</option>
-        {children}
-      </select>
-    ),
-    AutocompleteItem: ({ id, children }: { id?: string; children?: React.ReactNode }) => (
-      <option value={id}>{typeof children === 'string' ? children : id}</option>
-    ),
-  };
-});
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // Stub DataTable — render a simple list of row keys so we can detect rows.
@@ -63,7 +42,7 @@ vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 // module body, so a const factory is still uninitialised when they run.
 function adminComponentsMock() {
   return {
-    DataTable: ({ data, isLoading, columns, totalItems, page, pageSize, onPageChange, onSearch, searchValue, topContent, emptyContent }: {
+    DataTable: ({ data, isLoading, columns, totalItems, page, pageSize, onPageChange, onSearch, searchValue, topContent, emptyContent, onRowClick }: {
       data: { id: number; reporter_name: string }[];
       isLoading?: boolean;
       columns?: { key: string; render?: (row: unknown) => React.ReactNode }[];
@@ -75,6 +54,7 @@ function adminComponentsMock() {
       searchValue?: string;
       topContent?: React.ReactNode;
       emptyContent?: React.ReactNode;
+      onRowClick?: (row: { id: number; reporter_name: string }) => void;
     }) =>
       isLoading ? (
         <div role="status" aria-busy="true" aria-label="loading" />
@@ -87,7 +67,7 @@ function adminComponentsMock() {
           <table>
             <tbody>
               {data.map((row) => (
-                <tr key={row.id} data-testid={`incident-row-${row.id}`}>
+                <tr key={row.id} data-testid={`incident-row-${row.id}`} onClick={() => onRowClick?.(row)}>
                   <td>{row.reporter_name}</td>
                   <td>{columns?.find((c) => c.key === 'actions')?.render?.(row)}</td>
                 </tr>
@@ -133,8 +113,6 @@ const makeIncident = (overrides = {}) => ({
   status: 'open' as const,
   date: '2025-03-01T10:00:00Z',
   description: 'Something concerning happened',
-  action_taken: undefined,
-  resolution_notes: undefined,
   ...overrides,
 });
 
@@ -358,60 +336,6 @@ describe('VolunteerSafeguarding', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(reason);
   });
 
-  it('shows success toast after successful incident update', async () => {
-    mockAdminVolunteering.getIncidents.mockResolvedValue(
-      makeGetIncidentsResponse({ incidents: [makeIncident()] })
-    );
-    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
-    // reload after update
-    mockAdminVolunteering.getIncidents.mockResolvedValueOnce(makeGetIncidentsResponse({ incidents: [makeIncident()] }));
-    mockAdminVolunteering.getIncidents.mockResolvedValueOnce(makeGetIncidentsResponse());
-
-    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
-    render(<VolunteerSafeguarding />);
-
-    await waitFor(() => screen.getByTestId('incident-row-1'));
-
-    // The DataTable stub doesn't render the action button; we test the handler directly
-    // by verifying the component loads correctly and the mock is wired up
-    expect(mockAdminVolunteering.getIncidents).toHaveBeenCalled();
-  });
-
-  it('hands an incident to a named handler, never to the person it is about', async () => {
-    const user = userEvent.setup();
-    mockAdminVolunteering.getIncidents.mockResolvedValue(
-      makeGetIncidentsResponse({
-        incidents: [makeIncident({ title: 'Left alone on shift', assigned_to: null, subject_user_id: 7 })],
-        handlers: [{ id: 5, name: 'Hana Handler' }, { id: 7, name: 'Sid Subject' }],
-      })
-    );
-    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
-
-    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
-    render(<VolunteerSafeguarding />);
-
-    const row = await screen.findByTestId('incident-row-1');
-    await user.click(within(row).getByRole('button'));
-
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Left alone on shift')).toBeInTheDocument();
-
-    const trigger = within(dialog).getAllByRole('button').find((b) => b.textContent?.includes('Nobody yet'));
-    expect(trigger).toBeTruthy();
-    await user.click(trigger as HTMLElement);
-
-    expect(await screen.findByRole('option', { name: 'Hana Handler' })).toBeInTheDocument();
-    // F-507: the person the incident is about is never offered as its handler.
-    expect(screen.queryByRole('option', { name: 'Sid Subject' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('option', { name: 'Hana Handler' }));
-
-    const UPDATE_LABEL = 'Update Incident';
-    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === UPDATE_LABEL);
-    await user.click(save as HTMLElement);
-
-    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, { status: 'open', assigned_to: 5 }));
-  });
-
   it('asks the server for the first page of 20', async () => {
     const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
     render(<VolunteerSafeguarding />);
@@ -476,105 +400,55 @@ describe('VolunteerSafeguarding', () => {
     );
   });
 
-  it('lets staff correct how an incident is filed, sending only what changed', async () => {
-    const user = userEvent.setup();
+  it('opens the case file for a row, by its link or by clicking the row', async () => {
     mockAdminVolunteering.getIncidents.mockResolvedValue(
-      makeGetIncidentsResponse({
-        incidents: [makeIncident({ title: 'Filed wrongly', type: 'concern', severity: 'medium', incident_date: '2026-09-01' })],
-      })
+      makeGetIncidentsResponse({ incidents: [makeIncident({ id: 12 })] })
     );
-    mockAdminVolunteering.getIncidentReportOptions.mockResolvedValue({
-      success: true,
-      data: {
-        organisations: [{ id: 3, name: 'Food Bank' }],
-        opportunities: [{ id: 9, title: 'Sorting donations', organization_id: 3, organization_name: 'Food Bank' }],
-      },
-    });
-    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
-
     const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
     render(<VolunteerSafeguarding />);
 
-    const row = await screen.findByTestId('incident-row-1');
-    await user.click(within(row).getByRole('button'));
-    const dialog = await screen.findByRole('dialog');
-    await waitFor(() => expect(mockAdminVolunteering.getIncidentReportOptions).toHaveBeenCalled());
-    expect(within(dialog).getByRole('heading', { name: 'How this incident is filed' })).toBeInTheDocument();
-
-    // Correct the kind of incident.
-    const typeTrigger = within(dialog).getAllByRole('button').find((b) => b.textContent?.includes('Concern'));
-    await user.click(typeTrigger as HTMLElement);
-    await user.click(await screen.findByRole('option', { name: 'Allegation' }));
-
-    // Record that the authorities were told, with their reference.
-    await user.click(within(dialog).getByRole('switch'));
-    await user.type(await within(dialog).findByLabelText('Their reference (optional)'), 'POL-42');
-
-    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === 'Update Incident');
-    await user.click(save as HTMLElement);
-
-    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, {
-      status: 'open',
-      incident_type: 'allegation',
-      authority_notified: true,
-      authority_reference: 'POL-42',
-    }));
+    const row = await screen.findByTestId('incident-row-12');
+    expect(within(row).getByRole('link', { name: 'Open incident #12' })).toHaveAttribute('href', '/test/admin/volunteering/safeguarding/12');
+    fireEvent.click(row);
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering/safeguarding/12');
+    // The old update dialog is gone: work on an incident happens in its case file.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('files an incident under an organisation by choosing it, and says the organisation will be told', async () => {
-    const user = userEvent.setup();
+  it('links to the broker case file when embedded in the broker panel', async () => {
     mockAdminVolunteering.getIncidents.mockResolvedValue(
-      makeGetIncidentsResponse({ incidents: [makeIncident({ organization_name: '', organization_id: null })] })
+      makeGetIncidentsResponse({ incidents: [makeIncident({ id: 12 })] })
     );
-    mockAdminVolunteering.getIncidentReportOptions.mockResolvedValue({
-      success: true,
-      data: {
-        organisations: [{ id: 3, name: 'Food Bank' }],
-        opportunities: [{ id: 9, title: 'Sorting donations', organization_id: 3, organization_name: 'Food Bank' }],
-      },
-    });
-    mockAdminVolunteering.updateIncident.mockResolvedValue({ success: true });
-
     const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
-    render(<VolunteerSafeguarding />);
-    const row = await screen.findByTestId('incident-row-1');
-    await user.click(within(row).getByRole('button'));
-    const dialog = await screen.findByRole('dialog');
-    await waitFor(() => expect(mockAdminVolunteering.getIncidentReportOptions).toHaveBeenCalled());
+    render(<VolunteerSafeguarding caseBasePath="/broker/safeguarding/volunteering" />);
 
-    // Choosing the opportunity files it under that opportunity's organisation too.
-    const opportunityPicker = await within(dialog).findByRole('combobox', { name: 'Opportunity' });
-    await waitFor(() => expect(within(opportunityPicker).getAllByRole('option')).toHaveLength(2));
-    await user.selectOptions(opportunityPicker, '9');
-    // ...and that filled in the organisation.
-    expect(within(dialog).getByRole('combobox', { name: 'Organization' })).toHaveValue('3');
-
-    expect(await within(dialog).findByRole('note')).toHaveTextContent(/emailed a short notice/);
-
-    const save = within(dialog).getAllByRole('button').find((b) => b.textContent?.trim() === 'Update Incident');
-    await user.click(save as HTMLElement);
-    await waitFor(() => expect(mockAdminVolunteering.updateIncident).toHaveBeenCalledWith(1, {
-      status: 'open',
-      organization_id: 3,
-      opportunity_id: 9,
-    }));
+    const row = await screen.findByTestId('incident-row-12');
+    expect(within(row).getByRole('link')).toHaveAttribute('href', '/test/broker/safeguarding/volunteering/12');
   });
 
-  it('renders audit log timeline when incidents are present', async () => {
+  it('shows only incidents nobody is handling yet', async () => {
     mockAdminVolunteering.getIncidents.mockResolvedValue(
       makeGetIncidentsResponse({ incidents: [makeIncident()] })
     );
-
     const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
     render(<VolunteerSafeguarding />);
 
-    await waitFor(() => {
-      // The incident row appears in the DataTable stub
-      expect(screen.getByTestId('incident-row-1')).toBeInTheDocument();
-    });
-
-    // subject_name appears in the audit log timeline paragraph
-    // (may be combined with organization_name as "Bob Subject — Good Org")
-    expect(document.body.textContent).toContain('Bob Subject');
+    fireEvent.click(await screen.findByRole('switch', { name: 'Nobody handling yet' }));
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20, handler: 'none' })
+    );
   });
+
+  it('filters by status from the stat tiles', async () => {
+    const { VolunteerSafeguarding } = await import('./VolunteerSafeguarding');
+    render(<VolunteerSafeguarding />);
+
+    const openTile = await screen.findByRole('button', { name: 'Show: Open' });
+    fireEvent.click(openTile);
+    await waitFor(() =>
+      expect(mockAdminVolunteering.getIncidents).toHaveBeenLastCalledWith({ page: 1, per_page: 20, status: 'open' })
+    );
+    expect(openTile).toHaveAttribute('aria-pressed', 'true');
+  });
+
 });

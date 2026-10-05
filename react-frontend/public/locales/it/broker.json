@@ -493,7 +493,8 @@
     "guardians_title": "Tutori",
     "guardians_description": "Accordi di tutela per i membri che desiderano un supporto aggiuntivo.",
     "support_actions_title": "Azioni di supporto",
-    "support_actions_description": "Ciò che una persona di supporto ha preparato per un membro in attesa del suo sì, e la prova che una persona di supporto può agire da sola."
+    "support_actions_description": "Ciò che una persona di supporto ha preparato per un membro in attesa del suo sì, e la prova che una persona di supporto può agire da sola.",
+    "volunteering_case_title": "Incidente di volontariato"
   },
   "vetting": {
     "title": "Conferme di controllo",
