@@ -59,9 +59,10 @@ final class F536BrokersHandleVolunteeringIncidentsTest extends TestCase
         $this->assertSame(200, $list->getStatusCode(), $list->getContent());
         $this->assertStringContainsString('F536-INCIDENT', (string) $list->getContent());
 
+        // action_taken was retired for the incident timeline (staff notes); sending
+        // it is now refused, so the broker's update is the status change alone.
         $this->apiPut("/v2/admin/volunteering/incidents/{$this->incidentId}", [
             'status' => 'investigating',
-            'action_taken' => 'F536-BROKER-ACTION',
         ])->assertStatus(200);
         $this->assertSame('investigating', DB::table('vol_safeguarding_incidents')->where('id', $this->incidentId)->value('status'));
     }
@@ -97,7 +98,11 @@ final class F536BrokersHandleVolunteeringIncidentsTest extends TestCase
         Sanctum::actingAs($this->user('coordinator'), ['*']);
 
         $this->apiGet('/v2/admin/volunteering/incidents')->assertStatus(200);
-        $this->apiPut("/v2/admin/volunteering/incidents/{$this->incidentId}", ['status' => 'escalated'])->assertStatus(200);
+        // Escalating is a decision, so it needs a reason.
+        $this->apiPut("/v2/admin/volunteering/incidents/{$this->incidentId}", [
+            'status' => 'escalated',
+            'reason' => 'F536 coordinator escalation',
+        ])->assertStatus(200);
         $this->assertSame('escalated', DB::table('vol_safeguarding_incidents')->where('id', $this->incidentId)->value('status'));
     }
 
