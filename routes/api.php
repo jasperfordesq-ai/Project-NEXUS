@@ -2814,6 +2814,10 @@ Route::get('/v2/admin/volunteering/webhooks/{id}/logs', [\App\Http\Controllers\A
 Route::get('/v2/admin/volunteering/giving-days', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminGivingDays']);
 Route::post('/v2/admin/volunteering/giving-days', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createGivingDay']);
 Route::put('/v2/admin/volunteering/giving-days/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateGivingDay']);
+Route::get('/v2/admin/volunteering/giving-days/{id}/history', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'givingDayHistory'])->whereNumber('id');
+Route::get('/v2/admin/volunteering/giving-days/{id}/handovers', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'givingDayHandovers'])->whereNumber('id');
+Route::post('/v2/admin/volunteering/giving-days/{id}/handovers', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'recordHandover'])->whereNumber('id');
+Route::post('/v2/admin/volunteering/handovers/{handoverId}/cancel', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'cancelHandover'])->whereNumber('handoverId');
 Route::get('/v2/admin/volunteering/donations', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'listDonations']);
 Route::get('/v2/admin/volunteering/donations/export', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'exportDonations']);
 Route::post('/v2/admin/volunteering/donations/{id}/complete', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'completeDonation']);

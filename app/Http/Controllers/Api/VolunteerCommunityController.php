@@ -6,7 +6,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\FundraisingNotFoundException;
 use App\Exceptions\SafeguardingPolicyException;
+use App\Services\FundraisingHandoverService;
+use App\Services\FundraisingHistoryService;
 use App\Support\CsvExportSanitizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -1001,6 +1004,68 @@ class VolunteerCommunityController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         }
         return $this->respondWithData(['success' => $result]);
+    }
+
+    /** GET /v2/admin/volunteering/giving-days/{id}/history — the campaign's audit trail. */
+    public function givingDayHistory($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        if (! \App\Models\VolGivingDay::query()->whereKey((int) $id)->where('tenant_id', $tenantId)->exists()) {
+            return $this->respondWithError('NOT_FOUND', __('fundraising.campaign_not_found'), null, 404);
+        }
+
+        return $this->respondWithData([
+            'items' => FundraisingHistoryService::forCampaign($tenantId, (int) $id, false),
+        ]);
+    }
+
+    /** GET /v2/admin/volunteering/giving-days/{id}/handovers — hand-overs and what is still held. */
+    public function givingDayHandovers($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->requireAdmin();
+
+        return $this->fundraisingCall(
+            fn () => FundraisingHandoverService::listForCampaign(TenantContext::getId(), (int) $id),
+        );
+    }
+
+    /** POST /v2/admin/volunteering/giving-days/{id}/handovers — record money passed on to the organisation. */
+    public function recordHandover($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $adminId = $this->requireAdmin();
+
+        return $this->fundraisingCall(
+            fn () => FundraisingHandoverService::record(TenantContext::getId(), (int) $id, $adminId, $this->getAllInput()),
+            201,
+        );
+    }
+
+    /** POST /v2/admin/volunteering/handovers/{handoverId}/cancel — cancel a mistaken hand-over, with a reason. */
+    public function cancelHandover($handoverId): JsonResponse
+    {
+        $this->ensureFeature();
+        $adminId = $this->requireAdmin();
+        $reason = (string) ($this->getAllInput()['reason'] ?? '');
+
+        return $this->fundraisingCall(
+            fn () => FundraisingHandoverService::cancel(TenantContext::getId(), (int) $handoverId, $adminId, $reason),
+        );
+    }
+
+    private function fundraisingCall(callable $call, int $status = 200): JsonResponse
+    {
+        try {
+            return $this->respondWithData($call(), null, $status);
+        } catch (FundraisingNotFoundException $e) {
+            return $this->respondWithError('NOT_FOUND', $e->getMessage(), null, 404);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        }
     }
 
     // ========================================
