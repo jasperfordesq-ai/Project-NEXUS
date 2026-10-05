@@ -69,6 +69,7 @@ vi.mock('./OrgOverviewTab', () => ({ default: () => <div data-testid="overview-t
 vi.mock('./OrgApplicationsTab', () => ({ default: () => <div data-testid="applications-tab">Applications</div> }));
 vi.mock('./OrgHoursReviewTab', () => ({ default: () => <div data-testid="hours-review-tab">Hours Review</div> }));
 vi.mock('./OrgExpensesTab', () => ({ default: () => <div data-testid="expenses-tab">Expenses</div> }));
+vi.mock('./OrgFundraisingTab', () => ({ default: () => <div data-testid="fundraising-tab">Fundraising</div> }));
 vi.mock('./OrgVolunteersTab', () => ({ default: () => <div data-testid="volunteers-tab">Volunteers</div> }));
 vi.mock('./OrgWalletTab', () => ({ default: () => <div data-testid="wallet-tab">Wallet</div> }));
 vi.mock('./OrgSettingsTab', () => ({ default: () => <div data-testid="settings-tab">Settings</div> }));
@@ -194,6 +195,26 @@ describe('VolOrgDashboardPage', () => {
       expect(screen.getByTestId('expenses-tab')).toBeInTheDocument();
     });
     vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
+  });
+
+  // Hand-over emails link to /volunteering/org/{id}/dashboard?tab=fundraising.
+  it('opens the fundraising tab from the ?tab=fundraising deep link', async () => {
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams('tab=fundraising'), vi.fn()]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('fundraising-tab')).toBeInTheDocument();
+    });
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
+  });
+
+  it('shows a Fundraising tab button directly after Expenses', async () => {
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    const labels = screen.getAllByRole('button').map((b) => b.textContent ?? '');
+    const expensesIdx = labels.findIndex((l) => l.includes('Expenses'));
+    expect(expensesIdx).toBeGreaterThan(-1);
+    expect(labels[expensesIdx + 1]).toContain('Fundraising');
   });
 
   it('renders org description', async () => {

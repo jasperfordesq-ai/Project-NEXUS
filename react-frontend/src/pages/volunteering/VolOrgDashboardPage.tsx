@@ -6,7 +6,7 @@
 /**
  * VolOrgDashboardPage — Organization management dashboard for volunteer orgs.
  *
- * Tabs: Overview | Applications | Hours Review | Expenses | Volunteers | Wallet | Settings
+ * Tabs: Overview | Applications | Hours Review | Expenses | Fundraising | Volunteers | Wallet | Settings
  *
  * API: GET /api/v2/volunteering/organisations/{id}/stats
  *      GET /api/v2/volunteering/organisations/{id} (org details)
@@ -20,6 +20,7 @@ import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import ClipboardList from 'lucide-react/icons/clipboard-list';
 import Clock from 'lucide-react/icons/clock';
 import Receipt from 'lucide-react/icons/receipt';
+import HandCoins from 'lucide-react/icons/hand-coins';
 import Users from 'lucide-react/icons/users';
 import Wallet from 'lucide-react/icons/wallet';
 import Settings from 'lucide-react/icons/settings';
@@ -45,11 +46,12 @@ const OrgOverviewTab = React.lazy(() => import('./OrgOverviewTab'));
 const OrgApplicationsTab = React.lazy(() => import('./OrgApplicationsTab'));
 const OrgHoursReviewTab = React.lazy(() => import('./OrgHoursReviewTab'));
 const OrgExpensesTab = React.lazy(() => import('./OrgExpensesTab'));
+const OrgFundraisingTab = React.lazy(() => import('./OrgFundraisingTab'));
 const OrgVolunteersTab = React.lazy(() => import('./OrgVolunteersTab'));
 const OrgWalletTab = React.lazy(() => import('./OrgWalletTab'));
 const OrgSettingsTab = React.lazy(() => import('./OrgSettingsTab'));
 
-type OrgDashTab = 'overview' | 'applications' | 'hours-review' | 'expenses' | 'volunteers' | 'wallet' | 'settings';
+type OrgDashTab = 'overview' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'wallet' | 'settings';
 
 interface OrgDetails {
   id: number;
@@ -82,6 +84,7 @@ const TAB_DEFS: { key: OrgDashTab; icon: typeof LayoutDashboard }[] = [
   { key: 'applications', icon: ClipboardList },
   { key: 'hours-review', icon: Clock },
   { key: 'expenses', icon: Receipt },
+  { key: 'fundraising', icon: HandCoins },
   { key: 'volunteers', icon: Users },
   { key: 'wallet', icon: Wallet },
   { key: 'settings', icon: Settings },
@@ -123,6 +126,7 @@ export default function VolOrgDashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation('volunteering');
+  const { t: tf } = useTranslation('fundraising');
   const { isAuthenticated } = useAuth();
   const { tenantPath } = useTenant();
 
@@ -311,6 +315,7 @@ export default function VolOrgDashboardPage() {
     applications: t('org_dashboard.tab_applications'),
     'hours-review': t('org_dashboard.tab_hours_review'),
     expenses: t('org_dashboard.tab_expenses'),
+    fundraising: tf('tab'),
     volunteers: t('org_dashboard.tab_volunteers'),
     wallet: t('org_dashboard.tab_wallet'),
     settings: t('org_dashboard.tab_settings'),
@@ -395,6 +400,9 @@ export default function VolOrgDashboardPage() {
         )}
         {tab === 'expenses' && (
           <OrgExpensesTab orgId={orgId} />
+        )}
+        {tab === 'fundraising' && (
+          <OrgFundraisingTab orgId={orgId} />
         )}
         {tab === 'volunteers' && (
           <OrgVolunteersTab orgId={orgId} />
