@@ -156,6 +156,7 @@ const RESERVED_CHILD_SEGMENTS = new Set([
   'uploads',
   'users',
   'v2',
+  'verify-certificate',
   'verify-email',
   'verify-identity',
   'verify-identity-optional',
