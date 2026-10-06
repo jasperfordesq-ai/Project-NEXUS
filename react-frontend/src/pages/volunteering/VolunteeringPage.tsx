@@ -991,7 +991,7 @@ function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps
     <>
       {/* Search + Proximity (desktop and tablet — phones use the sticky bar + sheet) */}
       {!isPhone && (
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px] max-w-md">
           <SearchField
             placeholder={t('search_placeholder')}
