@@ -355,12 +355,12 @@
     },
     "143385289": {
       "title": "Error: Error encountered while fetching Expo token: TypeError: Network request failed.",
-      "culprit": "tryCallOne(index.android)",
+      "culprit": "_construct(index.android)",
       "decision": "watching",
-      "note": "Flagged sensitive only because the word \"token\" appears in the title; it is a push-registration network error, not a credential leak. One event, one user, 2026-08-28, release ie.project.nexus@1.2.0+5, tagged module=push-notifications: \"Error encountered while fetching Expo token: TypeError: Network request failed.\" That is a transient failure reaching Expo's push service, so that device simply did not register for push. A single sample is not a signal, and the app has no offline retry to test against. Watching: if this becomes common, members would silently stop receiving push notifications with nothing to show for it, and registration should gain a bounded retry.",
+      "note": "Second single event (5 Oct, app 1.8.1): every request on the device had status 0, so the phone was offline; Expo token fetch failed with it. Not a credential issue. Still rare; if it grows, push registration needs a bounded retry.",
       "sha": null,
-      "decidedAt": "2026-09-01T10:56:51.121Z",
-      "decidedAtRelease": "ie.project.nexus@1.2.0+5"
+      "decidedAt": "2026-10-06T05:24:43.452Z",
+      "decidedAtRelease": "ie.project.nexus@1.8.1+20"
     },
     "143390111": {
       "title": "GDPR ALERT: 4 data-subject request(s) pending past 25 days (GDPR Art.12(3) requires a response within 1 month). 4 already exceed the 30-day statutory deadline. These need manual action in the admin GDPR queue — there is no automated processor. Sample: #...",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Still firing every day at 08:05 (14 days running). Owner action still not done: set the safeguarding jurisdiction for hour-timebank (broker panel -> Vetting -> Jurisdiction). Until then members who asked for vetted-only contact are dropped from matches and cannot be contacted.",
+      "note": "Still firing daily at 08:05 (35 events, live release). Owner action still not done: set the safeguarding jurisdiction for hour-timebank in the broker panel. Until then members who asked for vetted-only contact are dropped from matches and cannot be contacted.",
       "sha": null,
-      "decidedAt": "2026-10-01T18:47:50.601Z",
-      "decidedAtRelease": "nexus-php@d137f9989171"
+      "decidedAt": "2026-10-06T05:24:46.136Z",
+      "decidedAtRelease": "nexus-php@4b139d21633f"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -717,28 +717,28 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "Unchanged: the ~7 ms hourly tenant re-read in nexus:run-all. Still not worth touching TenantContext for. Re-recorded so the ongoing events are not flagged as a return.",
+      "note": "Unchanged: the ~7 ms hourly tenant re-read (select * from tenants where id=?) in nexus:run-all, now 51 events. Cheap; still not worth touching TenantContext for.",
       "sha": null,
-      "decidedAt": "2026-10-01T18:47:49.311Z",
-      "decidedAtRelease": "nexus-php@a2f09dd1d594"
+      "decidedAt": "2026-10-06T05:24:44.948Z",
+      "decidedAtRelease": "nexus-php@4b139d21633f"
     },
     "145943666": {
       "title": "ApiResponseError: Your session has expired. Please log in again.",
       "culprit": "_construct(index.android)",
-      "decision": "watching",
-      "note": "One Android user (app 1.7.4) on 18 Sep: the push-notifications module got 'session expired' and reported it as an error. Expected when a login lapses; arguably should not be reported. Too rare to change a mobile build for.",
-      "sha": null,
-      "decidedAt": "2026-10-01T18:47:57.554Z",
-      "decidedAtRelease": "ie.project.nexus@1.7.4+17"
+      "decision": "fixed",
+      "note": "registerForPushNotifications() reported the expected 401 from register-device after a lapsed login; 401 ApiResponseError is now skipped, other failures still reported. Needs a mobile build/OTA to ship.",
+      "sha": "240c1e2e1",
+      "decidedAt": "2026-10-06T05:23:34.069Z",
+      "decidedAtRelease": "ie.project.nexus@1.8.1+20"
     },
     "146574974": {
-      "title": "[APP LOG] Event: mobile_error | Version: 1.7.4 | Platform: mobile | Data: {\"message\":\"Your session has expired. Please log in again.\",\"name\":\"ApiResponseError\",\"tags\":\"{\\\"module\\\":\\\"push-notifications\\\"}\"}",
+      "title": "[APP LOG] Event: mobile_error | Version: 1.8.1 | Platform: mobile | Data: {\"message\":\"Your session has expired. Please log in again.\",\"name\":\"ApiResponseError\",\"tags\":\"{\\\"module\\\":\\\"push-notifications\\\"}\"}",
       "culprit": "http://api.project-nexus.ie/api/app/log",
-      "decision": "watching",
-      "note": "Server-side copy of NEXUS-MOBILE-5 (same event relayed via /api/app/log).",
-      "sha": null,
-      "decidedAt": "2026-10-01T18:47:58.711Z",
-      "decidedAtRelease": "nexus-php@0c38709d6e8f"
+      "decision": "fixed",
+      "note": "registerForPushNotifications() reported the expected 401 from register-device after a lapsed login; 401 ApiResponseError is now skipped, other failures still reported. Needs a mobile build/OTA to ship.",
+      "sha": "240c1e2e1",
+      "decidedAt": "2026-10-06T05:23:38.588Z",
+      "decidedAtRelease": "nexus-php@9b5554191318"
     },
     "148854497": {
       "title": "RuntimeException: Password reset email dispatch failed.",
@@ -802,6 +802,105 @@
       "sha": null,
       "decidedAt": "2026-10-01T18:47:51.720Z",
       "decidedAtRelease": "nexus-php@ed24cb94480b"
+    },
+    "151010394": {
+      "title": "Nexus support report NXR-261002-ITID6O: How does smart matching work?",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "wont-fix",
+      "note": "A member's question ('How does smart matching work?') sent through Help & support; copied to Sentry by design. Belongs in the help desk, not a code fault.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:37.262Z",
+      "decidedAtRelease": "nexus-php@c8a414eeeffc"
+    },
+    "151061458": {
+      "title": "Nexus support report NXR-261003-O50I8C: Testing 123456789.",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "wont-fix",
+      "note": "Owner's own test of the Help & support form on 3 Oct ('testing, please ignore'). Support reports are copied to Sentry on purpose; not a fault.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:32.379Z",
+      "decidedAtRelease": "nexus-php@ca56d9fbde49"
+    },
+    "151061459": {
+      "title": "RuntimeException: Jira: could not find or create the help-desk customer (HTTP 403)",
+      "culprit": "/app/Services/SupportJiraTicketService.php in App\\Services\\SupportJiraTicketService::customerAccountId",
+      "decision": "fixed",
+      "note": "Jira 403 on POST /servicedeskapi/customer (admins only). Already fixed by 594c627af (an earlier session, not this nightly run): tickets are raised by the member's email; live since the 4 Oct deploy (4b139d216); no events since 3 Oct 07:02. Report 11 (tenant 2) was saved without a Jira ticket at the time. Not resolved in Sentry by the nightly run because it did not make the fix.",
+      "sha": "594c627af",
+      "decidedAt": "2026-10-06T05:24:28.132Z",
+      "decidedAtRelease": "nexus-php@ca56d9fbde49"
+    },
+    "151061460": {
+      "title": "[CreateSupportJiraTicket] Jira ticket creation failed",
+      "culprit": null,
+      "decision": "fixed",
+      "note": "Jira 403 on POST /servicedeskapi/customer (admins only). Already fixed by 594c627af (an earlier session, not this nightly run): tickets are raised by the member's email; live since the 4 Oct deploy (4b139d216); no events since 3 Oct 07:02. Report 11 (tenant 2) was saved without a Jira ticket at the time. Not resolved in Sentry by the nightly run because it did not make the fix.",
+      "sha": "594c627af",
+      "decidedAt": "2026-10-06T05:24:29.571Z",
+      "decidedAtRelease": "nexus-php@ca56d9fbde49"
+    },
+    "151061950": {
+      "title": "Nexus support report NXR-261003-5JBB1O: Testing 4321.",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "wont-fix",
+      "note": "Owner's own test of the Help & support form on 3 Oct ('testing, please ignore'). Support reports are copied to Sentry on purpose; not a fault.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:33.510Z",
+      "decidedAtRelease": "nexus-php@ca56d9fbde49"
+    },
+    "151067334": {
+      "title": "[CreateSupportJiraTicket] gave up after all retries; the report is saved but has no Jira ticket",
+      "culprit": null,
+      "decision": "fixed",
+      "note": "Jira 403 on POST /servicedeskapi/customer (admins only). Already fixed by 594c627af (an earlier session, not this nightly run): tickets are raised by the member's email; live since the 4 Oct deploy (4b139d216); no events since 3 Oct 07:02. Report 11 (tenant 2) was saved without a Jira ticket at the time. Not resolved in Sentry by the nightly run because it did not make the fix.",
+      "sha": "594c627af",
+      "decidedAt": "2026-10-06T05:24:30.842Z",
+      "decidedAtRelease": "nexus-php@ca56d9fbde49"
+    },
+    "151082533": {
+      "title": "Nexus support report NXR-261003-PQQ8U5: 10:27 am, testing. Please ignore.",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "wont-fix",
+      "note": "Owner's own test of the Help & support form on 3 Oct ('testing, please ignore'). Support reports are copied to Sentry on purpose; not a fault.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:34.557Z",
+      "decidedAtRelease": "nexus-php@421e7c92349b"
+    },
+    "151088378": {
+      "title": "Nexus support report NXR-261003-WILJ2L: I'm having problems signing in. This is a test support.",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "wont-fix",
+      "note": "Owner's own test of the Help & support form on 3 Oct ('testing, please ignore'). Support reports are copied to Sentry on purpose; not a fault.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:35.905Z",
+      "decidedAtRelease": "nexus-php@421e7c92349b"
+    },
+    "151138162": {
+      "title": "Nexus support report NXR-261003-J7AJRB: Poll content not aligned",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "needs-owner",
+      "note": "Member support report (hour-timebank, 3 Oct): poll content not aligned. A visual report, not a crash; no screenshot in Sentry and no matching fix found in git. Needs someone to look at the polls page on the member's device size.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:38.684Z",
+      "decidedAtRelease": "nexus-php@9b5554191318"
+    },
+    "151138319": {
+      "title": "Nexus support report NXR-261003-DJV9WO: Can't upload attachment while raising a bug",
+      "culprit": "http://hour-timebank.ie/api/v2/support/reports",
+      "decision": "watching",
+      "note": "Member support report (3 Oct 17:53): could not attach a file to a bug report. Screenshot attachments were added in bbce86375 (3 Oct 20:45), live since 4 Oct. Probably answered; worth confirming with the member.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:40.008Z",
+      "decidedAtRelease": "nexus-php@9b5554191318"
+    },
+    "151433592": {
+      "title": "Nexus support report NXR-261005-AXA8CJ: Group exchange",
+      "culprit": "http://awid.timebank.global/api/v2/support/reports",
+      "decision": "needs-owner",
+      "note": "Member support report (awid tenant, 5 Oct 12:14): 'Group exchange'. Very likely the HELP-12 problem (group exchanges hidden when Groups is off); fix b68fecac5 is on main but NOT deployed yet.",
+      "sha": null,
+      "decidedAt": "2026-10-06T05:24:41.323Z",
+      "decidedAtRelease": "nexus-php@4b139d21633f"
     }
   }
 }
