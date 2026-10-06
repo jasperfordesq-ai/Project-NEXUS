@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 232,
+    "producer_count": 233,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -1473,9 +1473,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/DonationAdminNotificationService.php:186:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/DonationAdminNotificationService.php:189:NotificationDispatcher::fanOutPush",
             "file": "app/Services/DonationAdminNotificationService.php",
-            "line": 186,
+            "line": 189,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -1863,15 +1863,28 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/FundraisingHandoverService.php:265:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/FundraisingHandoverService.php:262:NotificationDispatcher::fanOutPush",
             "file": "app/Services/FundraisingHandoverService.php",
-            "line": 265,
+            "line": 262,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $recipient->id",
             "title_expression": null,
             "body_expression": "$bell",
             "type_expression": "vol_fundraising_handover",
+            "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/FundraisingNotificationService.php:239:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/FundraisingNotificationService.php",
+            "line": 239,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $recipient->id",
+            "title_expression": null,
+            "body_expression": "$bell",
+            "type_expression": "self::BELL_TYPE",
             "link_expression": "$link",
             "data_expression": null
         },

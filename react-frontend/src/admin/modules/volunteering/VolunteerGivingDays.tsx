@@ -6,6 +6,7 @@
 import { formatNumber, getFormattingLocale } from '@/lib/helpers';
 import { Button, Chip, Card, CardBody, CardHeader, Input, Textarea, Spinner, Progress, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tab, Tabs, Select, SelectItem } from '@/components/ui';
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import Gift from 'lucide-react/icons/gift';
 import Building2 from 'lucide-react/icons/building-2';
@@ -206,6 +207,21 @@ export default function VolunteerGivingDays() {
 
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // "Review or pause this campaign" in the email an organisation's new campaign
+  // sends to community admins links here with ?pause=<id>: open that campaign's
+  // pause confirmation once the list has loaded. Nothing is paused until the
+  // admin confirms (a link in an email must never change anything by itself).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pauseParam = searchParams.get('pause');
+  useEffect(() => {
+    if (!pauseParam || loading) return;
+    const target = givingDays.find((d) => d.id === Number(pauseParam));
+    if (target?.is_active) setDeactivateTarget(target);
+    const next = new URLSearchParams(searchParams);
+    next.delete('pause');
+    setSearchParams(next, { replace: true });
+  }, [pauseParam, loading, givingDays, searchParams, setSearchParams]);
 
   // The organisation picker is optional: if the list cannot load, the form
   // still works and the campaign is for the whole community.

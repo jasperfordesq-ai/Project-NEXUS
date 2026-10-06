@@ -64,9 +64,12 @@ class DonationAdminNotificationService
     }
 
     /**
+     * The community's active admins. Shared with FundraisingNotificationService
+     * so both agree on who "the community's admins" are.
+     *
      * @return \Illuminate\Support\Collection<int, User>
      */
-    private static function adminRecipients(int $tenantId)
+    public static function adminRecipients(int $tenantId)
     {
         return User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)

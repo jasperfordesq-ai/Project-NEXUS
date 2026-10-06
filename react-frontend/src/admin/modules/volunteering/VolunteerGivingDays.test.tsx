@@ -444,6 +444,36 @@ describe('VolunteerGivingDays', () => {
     }
   });
 
+  it('opens the pause confirmation for the campaign named in an emailed ?pause= link, without pausing it', async () => {
+    window.history.pushState({}, '', '/admin/volunteering/giving-days?pause=1');
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([makeGivingDay({ id: 1, is_active: true })]));
+    mockAdminVolunteering.updateGivingDay.mockResolvedValue({ success: true });
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+
+    await waitFor(() => {
+      expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+    });
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Spring Giving Day');
+    expect(mockAdminVolunteering.updateGivingDay).not.toHaveBeenCalled();
+    await waitFor(() => expect(window.location.search).toBe(''));
+    window.history.pushState({}, '', '/');
+  });
+
+  it('ignores a ?pause= link for a campaign that is already paused', async () => {
+    window.history.pushState({}, '', '/admin/volunteering/giving-days?pause=1');
+    mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([makeGivingDay({ id: 1, is_active: false })]));
+
+    const { default: VolunteerGivingDays } = await import('./VolunteerGivingDays');
+    render(<VolunteerGivingDays />);
+
+    await waitFor(() => screen.getByText('Spring Giving Day'));
+    await waitFor(() => expect(window.location.search).toBe(''));
+    expect(document.querySelector('[role="dialog"]')).toBeFalsy();
+    window.history.pushState({}, '', '/');
+  });
+
   it('cancelling the deactivate confirmation does not call updateGivingDay', async () => {
     mockAdminVolunteering.getGivingDays.mockResolvedValue(successGivingDays([makeGivingDay({ is_active: true })]));
     mockAdminVolunteering.updateGivingDay.mockResolvedValue({ success: true });

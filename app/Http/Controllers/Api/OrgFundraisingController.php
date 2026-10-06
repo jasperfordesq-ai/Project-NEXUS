@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Exceptions\FundraisingNotFoundException;
 use App\Services\FundraisingHandoverService;
 use App\Services\FundraisingHistoryService;
+use App\Services\FundraisingNotificationService;
 use App\Services\VolunteerDonationService;
 use App\Services\VolunteerExpenseService;
 use App\Services\VolunteerService;
@@ -88,6 +89,9 @@ class OrgFundraisingController extends BaseApiController
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
         }
+        // No approval step (D3): the campaign is live now, so the community's
+        // admins hear about it straight away, with a link to pause it.
+        FundraisingNotificationService::campaignCreatedByOrganisation(TenantContext::getId(), (int) $created['id'], $userId);
         return $this->respondWithData($created, null, 201);
     }
 

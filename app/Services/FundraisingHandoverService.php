@@ -135,6 +135,8 @@ final class FundraisingHandoverService
             ], (float) $row->amount, $row->currency);
         });
 
+        FundraisingNotificationService::handoverConfirmed($tenantId, $handoverId, $userId);
+
         return self::format(self::find($tenantId, $handoverId));
     }
 
@@ -238,15 +240,10 @@ final class FundraisingHandoverService
             $org = DB::table('vol_organizations')->where('id', $handover->organization_id)->where('tenant_id', $tenantId)->first(['user_id', 'name']);
             $campaign = (string) DB::table('vol_giving_days')->where('id', $handover->giving_day_id)->where('tenant_id', $tenantId)->value('title');
             $community = (string) DB::table('tenants')->where('id', $tenantId)->value('name');
-            $ids = DB::table('org_members')->where('tenant_id', $tenantId)->where('organization_id', $handover->organization_id)
-                ->where('org_type', 'volunteer')->where('status', 'active')->whereIn('role', ['owner', 'admin'])
-                ->pluck('user_id')->map(fn ($id) => (int) $id)->push((int) ($org->user_id ?? 0))
-                ->filter()->unique()->values()->all();
-            if ($ids === []) {
+            $recipients = FundraisingNotificationService::organisationAdmins($tenantId, (int) $handover->organization_id);
+            if ($recipients->isEmpty()) {
                 return;
             }
-            $recipients = DB::table('users')->where('tenant_id', $tenantId)->whereIn('id', $ids)
-                ->get(['id', 'email', 'first_name', 'name', 'preferred_language']);
             $link = '/volunteering/org/' . (int) $handover->organization_id . '/dashboard?tab=fundraising';
             $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
             $params = [

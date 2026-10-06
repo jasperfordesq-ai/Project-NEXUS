@@ -330,7 +330,7 @@ class VolunteerDonationService
      */
     public static function markCompleted(int $donationId, int $tenantId, ?int $actorUserId = null): array
     {
-        return DB::transaction(function () use ($donationId, $tenantId, $actorUserId) {
+        $result = DB::transaction(function () use ($donationId, $tenantId, $actorUserId) {
             $donation = DB::table('vol_donations')
                 ->where('id', $donationId)
                 ->where('tenant_id', $tenantId)
@@ -373,6 +373,13 @@ class VolunteerDonationService
 
             return ['id' => (int) $donation->id, 'status' => 'completed', 'already_completed' => false];
         });
+
+        // Only on the first completion, after commit; ignored for gifts with no organisation.
+        if (! $result['already_completed']) {
+            FundraisingNotificationService::giftReceived($tenantId, $result['id']);
+        }
+
+        return $result;
     }
 
     /**
@@ -712,7 +719,11 @@ class VolunteerDonationService
             return false;
         }
 
-        return DB::transaction(function () use ($givingDay, $updates, $tenantId, $actorUserId, $actorKind) {
+        // Set inside the transaction, acted on only after it commits.
+        $stopEvent = null;
+        $stoppedOrganisation = null;
+
+        $result = DB::transaction(function () use ($givingDay, $updates, $tenantId, $actorUserId, $actorKind, &$stopEvent, &$stoppedOrganisation) {
             $locked = DB::table('vol_giving_days')
                 ->where('id', $givingDay->id)
                 ->where('tenant_id', $tenantId)
@@ -787,6 +798,10 @@ class VolunteerDonationService
                     ? 'campaign_resumed'
                     : ($endReached ? 'campaign_ended' : 'campaign_paused');
                 FundraisingHistory::record($tenantId, $event, $actorKind, $actorUserId, $refs);
+                if ($event !== 'campaign_resumed' && $actorKind === FundraisingHistory::ACTOR_COMMUNITY_ADMIN) {
+                    $stopEvent = $event;
+                    $stoppedOrganisation = $orgAfter;
+                }
                 unset($changes['is_active']);
             }
             if ($changes !== []) {
@@ -796,6 +811,13 @@ class VolunteerDonationService
 
             return true;
         });
+
+        // The organisation hears when the community pauses or ends its campaign.
+        if ($stopEvent !== null && $stoppedOrganisation !== null) {
+            FundraisingNotificationService::campaignStoppedByCommunity($tenantId, (int) $givingDay->id, $stopEvent, $actorUserId);
+        }
+
+        return $result;
     }
 
     /**

@@ -628,6 +628,9 @@ class StripeDonationService
                 'error' => $e->getMessage(),
             ]);
         }
+        // The organisation a campaign raises money for hears about each gift.
+        // Self-isolating: never throws.
+        FundraisingNotificationService::giftReceived((int) $donation->tenant_id, (int) $donation->id);
     }
 
     private static function sendDonationReceiptEmail(object $donation): bool
