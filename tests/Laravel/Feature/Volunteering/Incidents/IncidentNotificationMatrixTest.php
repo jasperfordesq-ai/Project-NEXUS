@@ -102,9 +102,16 @@ final class IncidentNotificationMatrixTest extends TestCase
         $this->assertNoFreeTextEmailed();
     }
 
-    public function test_staff_who_report_get_the_confirmation_not_the_staff_alert(): void
+    /**
+     * Owner, 6 Oct 2026: an administrator who files a report is still one of the
+     * people responsible for it, so they get the staff alert every other
+     * administrator gets — as well as the reporter's confirmation. (It used to
+     * leave them out of the staff alert; the owner reported that as a bug.)
+     */
+    public function test_staff_who_report_get_the_staff_alert_as_well_as_the_confirmation(): void
     {
         $admin = $this->user('admin');
+        $otherBroker = $this->user('broker');
         Sanctum::actingAs($admin, ['*']);
         $this->apiPost('/v2/volunteering/incidents', [
             'title' => 'INCMATRIX staff report', 'description' => 'A description long enough to be accepted here.',
@@ -112,9 +119,13 @@ final class IncidentNotificationMatrixTest extends TestCase
         ])->assertStatus(201);
 
         $mails = $this->mailsTo($admin);
-        $this->assertCount(1, $mails, 'one email: the reporter confirmation');
-        $this->assertStringNotContainsString('INCMATRIX staff report', $mails[0]['subject'], 'not the staff alert, which carries the title');
-        $this->assertNotContains('/broker/safeguarding/volunteering', $this->bellLinks($admin));
+        $this->assertCount(2, $mails, 'the staff alert and the reporter confirmation');
+        $subjects = array_column($mails, 'subject');
+        $this->assertNotEmpty(array_filter($subjects, fn ($s) => str_contains($s, 'INCMATRIX staff report')), 'the staff alert, which carries the title');
+        $this->assertNotEmpty(array_filter($subjects, fn ($s) => str_contains($s, 'We have received your safeguarding report')), 'the reporter confirmation');
+        $this->assertContains('/broker/safeguarding/volunteering', $this->bellLinks($admin));
+        // Everyone else on the staff is told exactly as before.
+        $this->assertCount(1, $this->mailsTo($otherBroker));
     }
 
     public function test_a_status_change_emails_the_reporter_once_and_bells_the_organisation(): void

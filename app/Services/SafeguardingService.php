@@ -1542,11 +1542,9 @@ class SafeguardingService
                 if (self::isIncidentAboutUser($incident, (int) $staff->id)) {
                     continue;
                 }
-                // A staff member who reported it gets the reporter's confirmation
-                // instead (spec §6: the reporter never gets staff notices).
-                if ((int) $staff->id === $reporterId) {
-                    continue;
-                }
+                // A staff member who reported it is told too: they are still one
+                // of the people responsible for it (owner, 6 Oct 2026). They also
+                // get the reporter's confirmation, sent separately.
                 $notified[] = (int) $staff->id;
 
                 LocaleContext::withLocale($staff, function () use ($staff, $tenantId, $incident, $incidentId, $reporterName, $title, $severity, $severityLabel, $context) {
