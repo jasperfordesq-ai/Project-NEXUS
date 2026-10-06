@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
+import { useTenant } from '@/contexts';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -145,6 +146,8 @@ vi.mock("react-i18next", () => ({
         "volunteering.log_hours": "Log Hours",
         "volunteering.manage_organisation": "Manage organisation",
         "volunteering.register_organisation": "Register organisation",
+        "volunteering.org_pending_setup": "Set it up while you wait",
+        "volunteering.org_pending_see_all": "See your organisations",
         "volunteering.hero_eyebrow": "Volunteer & earn time credits",
         "volunteering.aria.volunteering_sections": "Volunteering sections",
         // Phone filter sheet sections.
@@ -210,6 +213,39 @@ describe('VolunteeringPage', () => {
     render(<VolunteeringPage />);
     expect(screen.getByText('My Applications')).toBeInTheDocument();
     expect(screen.getByText('My Hours')).toBeInTheDocument();
+  });
+
+  // Gap A7 (6 Oct 2026): the "awaiting approval" card was plain text; the dashboard
+  // already works for a pending organisation, so the card now leads there.
+  describe('organisation awaiting approval', () => {
+    const mockOrgs = (orgs: unknown[]) => {
+      vi.mocked(api.get).mockImplementation((async (endpoint: string) => (
+        endpoint === '/v2/volunteering/my-organisations'
+          ? { success: true, data: orgs, meta: { cursor: null, has_more: false } }
+          : { success: true, data: [], meta: {} }
+      )) as unknown as typeof api.get);
+    };
+
+    it('links the single pending organisation to its dashboard', async () => {
+      mockOrgs([{ id: 21, name: 'Waiting Org', status: 'pending', member_role: 'owner' }]);
+      render(<VolunteeringPage />);
+
+      const link = await screen.findByTestId('org-pending-open');
+      expect(link).toHaveAttribute('href', '/test/volunteering/org/21/dashboard');
+      expect(link).toHaveTextContent('Set it up while you wait');
+    });
+
+    it('sends the owner of several pending organisations to the list', async () => {
+      mockOrgs([
+        { id: 21, name: 'Waiting Org', status: 'pending', member_role: 'owner' },
+        { id: 22, name: 'Second Org', status: 'pending', member_role: 'admin' },
+      ]);
+      render(<VolunteeringPage />);
+
+      const link = await screen.findByTestId('org-pending-open');
+      expect(link).toHaveAttribute('href', '/test/volunteering/my-organisations');
+      expect(link).toHaveTextContent('See your organisations');
+    });
   });
 
   describe('ask to swap (My Applications)', () => {
@@ -507,6 +543,46 @@ describe('VolunteeringPage', () => {
       const refetched = opportunityCalls();
       expect(refetched.length).toBeGreaterThan(0);
       expect(refetched.every((url) => !url.includes('is_remote'))).toBe(true);
+    });
+  });
+
+  // Group sign-ups is alpha and switched off for every community by default
+  // (owner decision 2026-10-06). The tab only appears when a community admin
+  // has deliberately turned it on, and a saved link to it falls back to
+  // Opportunities instead of opening a hidden screen.
+  describe('group sign-ups tab (alpha, off by default)', () => {
+    const baseTenant = vi.mocked(useTenant).getMockImplementation();
+
+    const withVolunteeringConfig = (config: Record<string, unknown>) => {
+      vi.mocked(useTenant).mockImplementation(() => ({
+        ...(baseTenant ? baseTenant() : {}),
+        volunteeringConfig: config,
+      }) as ReturnType<typeof useTenant>);
+    };
+
+    afterEach(() => {
+      if (baseTenant) vi.mocked(useTenant).mockImplementation(baseTenant);
+      window.history.replaceState({}, '', '/');
+    });
+
+    it('does not offer the tab, and a ?tab=group-signups link falls back to Opportunities, when the community has it off', async () => {
+      withVolunteeringConfig({ 'volunteering.tab_group_signups': false });
+      window.history.replaceState({}, '', '/?tab=group-signups');
+      render(<VolunteeringPage />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'Volunteering sections' })).toBeInTheDocument();
+      });
+      expect(screen.queryByRole('radio', { name: 'Group Sign-ups' })).not.toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Opportunities' })).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it('offers the tab when a community admin has turned it on', async () => {
+      withVolunteeringConfig({ 'volunteering.tab_group_signups': true });
+      window.history.replaceState({}, '', '/?tab=group-signups');
+      render(<VolunteeringPage />);
+
+      expect(await screen.findByRole('radio', { name: 'Group Sign-ups' })).toHaveAttribute('aria-checked', 'true');
     });
   });
 });

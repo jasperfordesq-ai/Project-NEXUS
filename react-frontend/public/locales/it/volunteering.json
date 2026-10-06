@@ -1490,5 +1490,8 @@
   "form_save_changes": "Salva le modifiche",
   "form_update_success": "Opportunità aggiornata.",
   "edit_not_allowed_title": "Non puoi modificare questa opportunità",
-  "edit_not_allowed_description": "Potrebbe essere stata rimossa, oppure solo la sua organizzazione e gli amministratori della comunità possono cambiarla."
+  "edit_not_allowed_description": "Potrebbe essere stata rimossa, oppure solo la sua organizzazione e gli amministratori della comunità possono cambiarla.",
+  "org_pending_setup": "Preparala nell’attesa",
+  "org_pending_see_all": "Vedi le tue organizzazioni",
+  "my_organisations_open_dashboard": "Apri la dashboard"
 }

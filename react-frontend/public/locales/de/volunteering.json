@@ -1474,5 +1474,8 @@
   "form_save_changes": "Änderungen speichern",
   "form_update_success": "Angebot aktualisiert.",
   "edit_not_allowed_title": "Sie können dieses Angebot nicht bearbeiten",
-  "edit_not_allowed_description": "Es wurde möglicherweise entfernt, oder nur die Organisation und die Community-Admins können es ändern."
+  "edit_not_allowed_description": "Es wurde möglicherweise entfernt, oder nur die Organisation und die Community-Admins können es ändern.",
+  "org_pending_setup": "Schon jetzt einrichten",
+  "org_pending_see_all": "Ihre Organisationen ansehen",
+  "my_organisations_open_dashboard": "Dashboard öffnen"
 }

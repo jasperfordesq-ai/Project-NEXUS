@@ -52,6 +52,7 @@ vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 const translations: Record<string, string> = {
+  my_organisations_open_dashboard: 'Open dashboard',
   breadcrumb_volunteering: 'Volunteering',
   my_organisations: 'My Organisations',
   my_organisations_title: 'My Organisations',
@@ -118,6 +119,23 @@ describe('MyOrganisationsPage', () => {
 
     expect(screen.getByText('Owner')).toBeInTheDocument();
     expect(screen.queryByText('owner')).not.toBeInTheDocument();
+  });
+
+  // Gap A7 (6 Oct 2026): a pending organisation's dashboard already works, but the
+  // pending row was plain text, so its owner could not reach it.
+  it('links a pending organisation to its dashboard', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [
+        { id: 12, name: 'Waiting Org', description: null, status: 'pending', member_role: 'owner', contact_email: null, website: null },
+      ],
+      meta: { cursor: null, has_more: false, per_page: 20 },
+    });
+
+    render(<MyOrganisationsPage />);
+
+    expect(await screen.findByTestId('pending-org-open-12')).toHaveAttribute('href', '/test/volunteering/org/12/dashboard');
+    expect(screen.getByTestId('pending-org-open-12')).toHaveTextContent('Open dashboard');
   });
 
   // Fix 13: an org whose only status is 'declined' previously rendered blank

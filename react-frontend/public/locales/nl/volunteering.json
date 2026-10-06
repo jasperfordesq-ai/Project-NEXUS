@@ -1474,5 +1474,8 @@
   "form_save_changes": "Wijzigingen opslaan",
   "form_update_success": "Vacature bijgewerkt.",
   "edit_not_allowed_title": "Je kunt deze vacature niet bewerken",
-  "edit_not_allowed_description": "Hij is misschien verwijderd, of alleen de organisatie en de communitybeheerders kunnen hem wijzigen."
+  "edit_not_allowed_description": "Hij is misschien verwijderd, of alleen de organisatie en de communitybeheerders kunnen hem wijzigen.",
+  "org_pending_setup": "Richt hem alvast in",
+  "org_pending_see_all": "Je organisaties bekijken",
+  "my_organisations_open_dashboard": "Dashboard openen"
 }

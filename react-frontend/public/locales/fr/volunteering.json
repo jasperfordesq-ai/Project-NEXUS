@@ -1490,5 +1490,8 @@
   "form_save_changes": "Enregistrer les modifications",
   "form_update_success": "Mission mise à jour.",
   "edit_not_allowed_title": "Vous ne pouvez pas modifier cette mission",
-  "edit_not_allowed_description": "Elle a peut-être été supprimée, ou seuls son organisation et les administrateurs de la communauté peuvent la modifier."
+  "edit_not_allowed_description": "Elle a peut-être été supprimée, ou seuls son organisation et les administrateurs de la communauté peuvent la modifier.",
+  "org_pending_setup": "La préparer en attendant",
+  "org_pending_see_all": "Voir vos organisations",
+  "my_organisations_open_dashboard": "Ouvrir le tableau de bord"
 }

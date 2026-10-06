@@ -1522,5 +1522,8 @@
   "form_save_changes": "Sábháil na hathruithe",
   "form_update_success": "Nuashonraíodh an deis.",
   "edit_not_allowed_title": "Ní féidir leat an deis seo a chur in eagar",
-  "edit_not_allowed_description": "B’fhéidir gur baineadh í, nó ní féidir ach lena heagraíocht agus le riarthóirí an phobail í a athrú."
+  "edit_not_allowed_description": "B’fhéidir gur baineadh í, nó ní féidir ach lena heagraíocht agus le riarthóirí an phobail í a athrú.",
+  "org_pending_setup": "Socraigh í agus tú ag fanacht",
+  "org_pending_see_all": "Féach ar d’eagraíochtaí",
+  "my_organisations_open_dashboard": "Oscail an painéal"
 }

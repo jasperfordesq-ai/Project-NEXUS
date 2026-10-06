@@ -183,6 +183,16 @@ export default function MyOrganisationsPage() {
                     <p className="text-xs text-theme-muted">{t('my_organisations_pending_desc')}</p>
                   </div>
                   <Chip size="sm" color="warning" variant="soft">{t('status_pending')}</Chip>
+                  {/* The dashboard works while pending (gap A7, 6 Oct 2026). */}
+                  <Button
+                    as={Link}
+                    to={tenantPath(`/volunteering/org/${org.id}/dashboard`)}
+                    size="sm"
+                    variant="tertiary"
+                    data-testid={`pending-org-open-${org.id}`}
+                  >
+                    {t('my_organisations_open_dashboard')}
+                  </Button>
                 </div>
               ))}
             </GlassCard>

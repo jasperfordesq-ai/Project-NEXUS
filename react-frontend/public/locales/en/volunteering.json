@@ -1474,5 +1474,8 @@
   "form_save_changes": "Save changes",
   "form_update_success": "Opportunity updated.",
   "edit_not_allowed_title": "You cannot edit this opportunity",
-  "edit_not_allowed_description": "It may have been removed, or only its organisation and community admins can change it."
+  "edit_not_allowed_description": "It may have been removed, or only its organisation and community admins can change it.",
+  "org_pending_setup": "Set it up while you wait",
+  "org_pending_see_all": "See your organisations",
+  "my_organisations_open_dashboard": "Open dashboard"
 }

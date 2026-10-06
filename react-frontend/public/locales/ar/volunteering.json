@@ -1538,5 +1538,8 @@
   "form_save_changes": "حفظ التغييرات",
   "form_update_success": "تم تحديث الفرصة.",
   "edit_not_allowed_title": "لا يمكنك تعديل هذه الفرصة",
-  "edit_not_allowed_description": "ربما حُذفت، أو أن منظمتها ومسؤولي المجتمع وحدهم يمكنهم تغييرها."
+  "edit_not_allowed_description": "ربما حُذفت، أو أن منظمتها ومسؤولي المجتمع وحدهم يمكنهم تغييرها.",
+  "org_pending_setup": "جهّزها أثناء الانتظار",
+  "org_pending_see_all": "عرض منظماتك",
+  "my_organisations_open_dashboard": "فتح لوحة التحكم"
 }

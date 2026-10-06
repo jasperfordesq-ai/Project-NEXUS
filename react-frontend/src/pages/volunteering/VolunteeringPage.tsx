@@ -495,9 +495,25 @@ export function VolunteeringPage() {
             <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400 shrink-0">
               <Hourglass className="w-5 h-5" aria-hidden="true" />
             </div>
-            <div className="min-w-0">
-              <h2 className="text-base font-semibold text-theme-primary">{t('org_pending_title')}</h2>
-              <p className="text-sm text-theme-muted">{t('org_pending_desc', { name: firstPendingOrg?.name ?? '' })}</p>
+            <div className="min-w-0 space-y-3">
+              <div>
+                <h2 className="text-base font-semibold text-theme-primary">{t('org_pending_title')}</h2>
+                <p className="text-sm text-theme-muted">{t('org_pending_desc', { name: firstPendingOrg?.name ?? '' })}</p>
+              </div>
+              {/* The dashboard works while the organisation is pending (gap A7, 6 Oct 2026):
+                  the owner can fill in its details and settings while they wait. */}
+              <Button
+                as={Link}
+                to={pendingOrgs.length === 1 && firstPendingOrg
+                  ? tenantPath(`/volunteering/org/${firstPendingOrg.id}/dashboard`)
+                  : tenantPath('/volunteering/my-organisations')}
+                size="sm"
+                variant="secondary"
+                startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
+                data-testid="org-pending-open"
+              >
+                {pendingOrgs.length === 1 ? t('org_pending_setup') : t('org_pending_see_all')}
+              </Button>
             </div>
           </div>
         </GlassCard>

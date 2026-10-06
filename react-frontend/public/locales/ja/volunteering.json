@@ -1474,5 +1474,8 @@
   "form_save_changes": "変更を保存",
   "form_update_success": "募集を更新しました。",
   "edit_not_allowed_title": "この募集は編集できません",
-  "edit_not_allowed_description": "削除された可能性があります。または、団体とコミュニティ管理者のみが変更できます。"
+  "edit_not_allowed_description": "削除された可能性があります。または、団体とコミュニティ管理者のみが変更できます。",
+  "org_pending_setup": "承認を待つ間に準備する",
+  "org_pending_see_all": "あなたの団体を見る",
+  "my_organisations_open_dashboard": "ダッシュボードを開く"
 }

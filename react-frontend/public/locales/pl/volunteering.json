@@ -1506,5 +1506,8 @@
   "form_save_changes": "Zapisz zmiany",
   "form_update_success": "Oferta zaktualizowana.",
   "edit_not_allowed_title": "Nie możesz edytować tej oferty",
-  "edit_not_allowed_description": "Mogła zostać usunięta albo zmieniać ją mogą tylko jej organizacja i administratorzy społeczności."
+  "edit_not_allowed_description": "Mogła zostać usunięta albo zmieniać ją mogą tylko jej organizacja i administratorzy społeczności.",
+  "org_pending_setup": "Przygotuj ją w czasie oczekiwania",
+  "org_pending_see_all": "Zobacz swoje organizacje",
+  "my_organisations_open_dashboard": "Otwórz panel"
 }

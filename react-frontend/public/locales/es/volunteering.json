@@ -1490,5 +1490,8 @@
   "form_save_changes": "Guardar cambios",
   "form_update_success": "Oportunidad actualizada.",
   "edit_not_allowed_title": "No puedes editar esta oportunidad",
-  "edit_not_allowed_description": "Puede que se haya eliminado, o solo su organización y los administradores de la comunidad pueden cambiarla."
+  "edit_not_allowed_description": "Puede que se haya eliminado, o solo su organización y los administradores de la comunidad pueden cambiarla.",
+  "org_pending_setup": "Prepárala mientras esperas",
+  "org_pending_see_all": "Ver tus organizaciones",
+  "my_organisations_open_dashboard": "Abrir el panel"
 }
