@@ -607,6 +607,8 @@
   color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 2px;
+  /* F-562 (E-092): member links are full addresses now; let them wrap. */
+  overflow-wrap: anywhere;
 }
 
 .feed-content a:hover {

@@ -52,6 +52,17 @@ describe('SafeHtml', () => {
     expect(container.textContent).toBe('Link https://example.com');
   });
 
+  it('styles the address links in member rich text as links that wrap', async () => {
+    const { SafeHtml } = await import('./SafeHtml');
+    const { container } = render(
+      <SafeHtml content='<a href="https://example.com/a/very/long/path">Read this</a>' className="text-xs" />
+    );
+    const wrapper = container.firstElementChild;
+    expect(wrapper?.className).toContain('[&_a]:underline');
+    expect(wrapper?.className).toContain('[&_a]:break-all');
+    expect(wrapper?.className).toContain('text-xs');
+  });
+
   it('strips <script> tags completely', async () => {
     const { SafeHtml } = await import('./SafeHtml');
     const { container } = render(

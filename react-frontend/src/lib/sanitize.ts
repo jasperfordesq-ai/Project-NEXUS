@@ -176,7 +176,9 @@ function installHooksOnce(): void {
  */
 function disarmMemberLinks(cleanHtml: string): string {
   if (!cleanHtml.includes('<a')) return cleanHtml;
-  if (typeof document === 'undefined') return cleanHtml;
+  // No DOM to work with (never the case in the browser or jsdom): fail closed —
+  // drop the anchor tags and keep the words, rather than let a labelled link through.
+  if (typeof document === 'undefined') return cleanHtml.replace(/<\/?a\b[^>]*>/gi, '');
 
   // <template> content is inert: nothing loads or runs. The markup is already
   // DOMPurify output, so parsing it again changes nothing.
