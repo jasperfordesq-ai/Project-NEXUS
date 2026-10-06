@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Authorization\AdminTier;
 use App\Support\UserDisplayName;
 
 /**
@@ -3157,8 +3158,7 @@ class VolunteerService
             return true;
         }
 
-        $siteRole = DB::selectOne("SELECT role FROM users WHERE id = ? AND tenant_id = ?", [$userId, self::getTenantId()]);
-        if ($siteRole && in_array($siteRole->role, ['super_admin', 'admin', 'tenant_admin'], true)) {
+        if (self::isCommunityAdmin($userId, self::getTenantId())) {
             return true;
         }
 
@@ -3211,6 +3211,24 @@ class VolunteerService
         ], $userId);
     }
 
+    /**
+     * Is this person an administrator of the community (tenant)? Admin
+     * authority is the four boolean flags as well as the role string — the API
+     * grants it by flag and leaves role at 'member' — so AdminTier decides.
+     * Brokers and coordinators are refused, even with a stale admin flag.
+     * Until 6 Oct 2026 canManageOpportunity() and canManageOrganization() read
+     * only the role string and refused every flag-granted administrator.
+     */
+    private static function isCommunityAdmin(int $userId, int $tenantId): bool
+    {
+        $user = DB::selectOne(
+            'SELECT role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ? AND tenant_id = ?',
+            [$userId, $tenantId]
+        );
+
+        return $user !== null && AdminTier::allows($user);
+    }
+
     private static function canManageOrganization(array $org, int $userId): bool
     {
         if ((int) ($org['user_id'] ?? 0) === $userId) {
@@ -3218,8 +3236,7 @@ class VolunteerService
         }
 
         $tenantId = self::getTenantId();
-        $siteRole = DB::selectOne("SELECT role FROM users WHERE id = ? AND tenant_id = ?", [$userId, $tenantId]);
-        if ($siteRole && in_array($siteRole->role, ['super_admin', 'admin', 'tenant_admin'], true)) {
+        if (self::isCommunityAdmin($userId, $tenantId)) {
             return true;
         }
 

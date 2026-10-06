@@ -15,6 +15,7 @@ use App\Services\VolunteerWellbeingService;
 use App\Services\VolunteerEmergencyAlertService;
 use App\Services\SafeguardingService;
 use App\Core\TenantContext;
+use App\Support\Authorization\AdminTier;
 use Carbon\Carbon;
 
 /**
@@ -23,14 +24,6 @@ use Carbon\Carbon;
 class VolunteerWellbeingController extends BaseApiController
 {
     protected bool $isV2Api = true;
-
-    /**
-     * Full admin role set for the volunteering module — includes
-     * tenant_super_admin, matching VolunteerCheckInController.
-     *
-     * @var list<string>
-     */
-    private const ADMIN_ROLES = ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin', 'god'];
 
     /** Wellbeing alert lifecycle statuses (vol_wellbeing_alerts.status enum). */
     private const ALERT_STATUSES = ['active', 'acknowledged', 'resolved', 'dismissed'];
@@ -50,11 +43,16 @@ class VolunteerWellbeingController extends BaseApiController
         }
     }
 
+    /**
+     * A community administrator, decided by AdminTier: the four boolean admin
+     * flags as well as the role string, with brokers and coordinators refused.
+     * Until 6 Oct 2026 this read only the role string, so an administrator
+     * granted by flag (role 'member') passed the admin route middleware and
+     * was then refused here.
+     */
     private function isModuleAdmin(): bool
     {
-        $user = Auth::user();
-
-        return in_array($user->role ?? 'member', self::ADMIN_ROLES, true);
+        return AdminTier::allows(Auth::user());
     }
 
     /**

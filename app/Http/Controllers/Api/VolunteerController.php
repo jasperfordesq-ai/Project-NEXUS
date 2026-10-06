@@ -821,17 +821,17 @@ class VolunteerController extends BaseApiController
             return $org;
         }
 
-        // Platform/tenant admins can access any org dashboard. Uses the
-        // volunteering module's full tenant-admin taxonomy (mirrors
-        // VolunteerCheckInController / VolunteerEmergencyAlertService and the
-        // canManageOpportunity() grant) — previously only super_admin/god were
-        // recognised here, so admin/tenant_admin could decide applications but
-        // not open the org dashboard.
-        $user = $this->resolveUser();
-        $role = $user->role ?? 'member';
-        if (in_array($role, ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin', 'god'], true)
-            || ($user->is_super_admin ?? false)
-            || ($user->is_tenant_super_admin ?? false)) {
+        // Community administrators can open any organisation dashboard. Admin
+        // authority is the four boolean flags as well as the role string (the
+        // API grants it by flag and leaves role at 'member'), so AdminTier
+        // decides, as in canManageOpportunity(). Brokers and coordinators are
+        // refused. Until 6 Oct 2026 this read the role string and only two of
+        // the flags, so an is_admin or is_god administrator was refused.
+        $admin = DB::selectOne(
+            'SELECT role, is_admin, is_super_admin, is_tenant_super_admin, is_god FROM users WHERE id = ? AND tenant_id = ?',
+            [$userId, $tenantId]
+        );
+        if ($admin !== null && \App\Support\Authorization\AdminTier::allows($admin)) {
             return $org;
         }
 
