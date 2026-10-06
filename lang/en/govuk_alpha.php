@@ -195,6 +195,7 @@ return [
         'community_partner' => 'Community Partner',
         'open_source' => 'Open Source',
         'powered_by' => 'Powered by',
+        'provided_by' => 'Provided by',
         // The heading above the badge is just "Powered by", matching the React
         // footer. The IMAGE needs to name what it is, because "Powered by" alone
         // is a useless accessible name for a logo.

@@ -90,12 +90,14 @@ class AdminConfigController extends BaseApiController
         'powered_by_url',
         'powered_by_image_light',
         'powered_by_image_dark',
+        'powered_by_wording',
         // The badge a hub hands down to every community under it
         // (PoweredByBadgeService). Platform-god only, like the four above.
         'network_powered_by_label',
         'network_powered_by_url',
         'network_powered_by_image_light',
         'network_powered_by_image_dark',
+        'network_powered_by_wording',
         'map_provider', 'geocoding_provider',
         'google_maps_api_key', 'google_maps_map_id', 'maptiler_api_key',
         'os_maps_api_key',
@@ -1414,6 +1416,14 @@ class AdminConfigController extends BaseApiController
                 // clear one (the admin form's "Remove"), never point it elsewhere.
                 if ($badgeValue !== '') {
                     return $this->respondWithError('VALIDATION_ERROR', __('api.powered_by_image_upload_only'), $badgeKey, 422);
+                }
+            } elseif (str_ends_with($badgeKey, '_wording')) {
+                // '' and 'powered_by' both mean the default, translated "Powered by".
+                if ($badgeValue === 'powered_by') {
+                    $badgeValue = '';
+                }
+                if (!in_array($badgeValue, ['', PoweredByBadgeService::WORDING_PROVIDED_BY, PoweredByBadgeService::WORDING_CUSTOM], true)) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.powered_by_wording_invalid'), $badgeKey, 422);
                 }
             } elseif (str_ends_with($badgeKey, '_url') && $badgeValue !== '') {
                 $scheme = strtolower((string) parse_url($badgeValue, PHP_URL_SCHEME));

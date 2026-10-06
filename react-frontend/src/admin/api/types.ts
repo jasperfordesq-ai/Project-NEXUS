@@ -2232,7 +2232,10 @@ export interface AdminSettingsResponse {
     powered_by_image_light: string | null;
     powered_by_image_dark: string | null;
     powered_by_url: string | null;
+    /** '' (Powered by) | 'provided_by' | 'custom' (label shown as typed). */
+    powered_by_wording?: string | null;
     /** The badge this community hands down to every community under it. */
+    network_powered_by_wording?: string | null;
     network_powered_by_label?: string | null;
     network_powered_by_image_light?: string | null;
     network_powered_by_image_dark?: string | null;

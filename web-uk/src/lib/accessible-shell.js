@@ -801,6 +801,9 @@ function buildShellLocals(req, isAuthenticated) {
   );
   const poweredByUrl = String(tenantConfig.powered_by_url || DEFAULT_POWERED_BY_URL).trim();
   const poweredByLabel = String(tenantConfig.powered_by_label || '').trim();
+  // 'provided_by' selects the translated "Provided by" heading; the API
+  // (PoweredByBadgeService) never sends a label alongside it.
+  const poweredByWording = tenantConfig.powered_by_wording === 'provided_by' ? 'provided_by' : '';
 
   // No dashed "logo goes here" placeholder, unlike the React footer. An empty
   // bordered box is a useful authoring hint on an admin-facing surface and pure
@@ -871,6 +874,7 @@ function buildShellLocals(req, isAuthenticated) {
     poweredByImageUrl,
     poweredByUrl,
     poweredByLabel,
+    poweredByWording,
     partnerLogoUrl,
     partnerLogoLabel,
     partnerLogoLinkUrl,

@@ -64,8 +64,8 @@ const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
   [HEADER_LOGO_SECTION_ID]: [],
   [HEADER_COLORS_SECTION_ID]: ['header_bg_color', 'header_accent_color'],
   [POWERED_BY_SECTION_ID]: [
-    'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
-    'network_powered_by_label', 'network_powered_by_url', 'network_powered_by_image_light', 'network_powered_by_image_dark',
+    'powered_by_wording', 'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
+    'network_powered_by_wording', 'network_powered_by_label', 'network_powered_by_url', 'network_powered_by_image_light', 'network_powered_by_image_dark',
   ],
   [REGISTRATION_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'inactivity_timeout_minutes'],
 };

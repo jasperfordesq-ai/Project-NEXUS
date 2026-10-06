@@ -321,6 +321,7 @@
     "tenant_logo_placeholder": "Your logo here",
     "open_source": "Open Source",
     "powered_by": "Powered by",
+    "provided_by": "Provided by",
     "agpl_short": "Free and open-source software. Licensed under AGPL-3.0.",
     "nexus_link_label": "Visit the Project NEXUS website"
   },

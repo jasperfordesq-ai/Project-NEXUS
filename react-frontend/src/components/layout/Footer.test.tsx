@@ -310,6 +310,32 @@ describe('Footer', () => {
       }
     });
 
+    it('shows the translated "Provided by" heading when that wording is chosen', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 2,
+            name: 'Test',
+            slug: 'test',
+            contact: null,
+            config: {
+              powered_by_wording: 'provided_by',
+              powered_by_url: 'https://timebanking.org/',
+              powered_by_image_light: '/uploads/powered-by-images/tbuk.png',
+            },
+          },
+        },
+      });
+
+      render(<Footer />);
+
+      expect(screen.getByText('Provided by')).toBeInTheDocument();
+      const links = screen.getAllByRole('link', { name: 'Provided by' });
+      expect(links.length).toBeGreaterThan(0);
+      links.forEach((link) => expect(link.getAttribute('href')).toBe('https://timebanking.org/'));
+      expect(screen.queryByText('Powered by')).not.toBeInTheDocument();
+    });
+
     it('still shows the NEXUS dark badge in dark mode when nothing is configured', () => {
       mockTheme.resolvedTheme = 'dark';
       try {

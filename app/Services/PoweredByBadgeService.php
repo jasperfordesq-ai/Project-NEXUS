@@ -37,11 +37,22 @@ final class PoweredByBadgeService
 {
     /** Public config keys the footers read, in bootstrap `config`. */
     public const BADGE_FIELDS = [
+        'powered_by_wording',
         'powered_by_label',
         'powered_by_url',
         'powered_by_image_light',
         'powered_by_image_dark',
     ];
+
+    /**
+     * Stored values of `*_powered_by_wording`. Empty (unset) means the default,
+     * translated "Powered by". `provided_by` is the translated "Provided by".
+     * `custom` shows `*_powered_by_label` verbatim — free text, so it is NOT
+     * translated. A label with no wording (rows written before 2026-10-06)
+     * behaves as `custom`.
+     */
+    public const WORDING_PROVIDED_BY = 'provided_by';
+    public const WORDING_CUSTOM = 'custom';
 
     /** Prefix that turns a badge field into its network (inherited) twin. */
     public const NETWORK_PREFIX = 'network_';
@@ -78,7 +89,7 @@ final class PoweredByBadgeService
         try {
             $own = self::readFields($tenantId, self::BADGE_FIELDS);
             if ($own !== []) {
-                return $own;
+                return self::normaliseWording($own);
             }
 
             $ancestors = TenantSubtree::ancestorIds($tenantId);
@@ -104,7 +115,7 @@ final class PoweredByBadgeService
 
             foreach ($ancestors as $ancestorId) {
                 if (!empty($byTenant[$ancestorId])) {
-                    return self::ordered($byTenant[$ancestorId]);
+                    return self::normaliseWording(self::ordered($byTenant[$ancestorId]));
                 }
             }
 
@@ -119,6 +130,29 @@ final class PoweredByBadgeService
 
             return [];
         }
+    }
+
+    /**
+     * Publish exactly what the footers need, so both frontends apply one rule:
+     * `powered_by_wording === 'provided_by'` → translated "Provided by"; else
+     * `powered_by_label` if present; else translated "Powered by".
+     *
+     * @param array<string, string> $fields
+     * @return array<string, string>
+     */
+    private static function normaliseWording(array $fields): array
+    {
+        $wording = $fields['powered_by_wording'] ?? '';
+        if ($wording === self::WORDING_PROVIDED_BY) {
+            // A stale label left behind by an earlier custom choice must not win.
+            unset($fields['powered_by_label']);
+        } elseif ($wording !== '') {
+            // `custom` (or anything unrecognised): the label is the wording, so
+            // the flag itself is noise to the footers.
+            unset($fields['powered_by_wording']);
+        }
+
+        return $fields;
     }
 
     /**

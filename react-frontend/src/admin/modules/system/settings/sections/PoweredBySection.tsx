@@ -5,15 +5,16 @@
 
 import { useTranslation } from 'react-i18next';
 import Lock from 'lucide-react/icons/lock';
-import { Chip, Input, Separator } from '@/components/ui';
+import { Chip, Input, Select, SelectItem, Separator } from '@/components/ui';
 import { SettingsSection } from '../SettingsSection';
 import { LogoUploadField } from '../LogoUploadField';
 import type { AdminSettingsFormState, UploadSlot } from '../useAdminSettingsForm';
-import type { SettingsFormKey } from '../settingsForm';
+import { BADGE_WORDING_OPTIONS, type BadgeWording, type SettingsFormKey } from '../settingsForm';
 
 export const POWERED_BY_SECTION_ID = 'powered-by';
 
 interface BadgeFieldNames {
+  wording: 'powered_by_wording' | 'network_powered_by_wording';
   label: SettingsFormKey;
   url: SettingsFormKey;
   imageLight: SettingsFormKey;
@@ -24,6 +25,7 @@ interface BadgeFieldNames {
 }
 
 const OWN_BADGE: BadgeFieldNames = {
+  wording: 'powered_by_wording',
   label: 'powered_by_label',
   url: 'powered_by_url',
   imageLight: 'powered_by_image_light',
@@ -34,6 +36,7 @@ const OWN_BADGE: BadgeFieldNames = {
 };
 
 const NETWORK_BADGE: BadgeFieldNames = {
+  wording: 'network_powered_by_wording',
   label: 'network_powered_by_label',
   url: 'network_powered_by_url',
   imageLight: 'network_powered_by_image_light',
@@ -49,18 +52,40 @@ function BadgeFields({ state, names }: { state: AdminSettingsFormState; names: B
   const { form, originalForm, setField, uploading, upload, remove } = state;
   const text = (key: SettingsFormKey) => String(form[key] ?? '');
   const pendingRemoval = (key: SettingsFormKey) => form[key] === '' && originalForm[key] !== '';
+  const wording = form[names.wording];
 
   return (
     <>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Input
-          label={t('system.label_powered_by_label')}
-          placeholder={t('system.placeholder_powered_by_label')}
-          description={t('system.desc_powered_by_label')}
-          variant="secondary"
-          value={text(names.label)}
-          onValueChange={(val) => setField(names.label, val)}
-        />
+        <div className="flex flex-col gap-3">
+          <Select
+            label={t('system.label_powered_by_wording')}
+            description={t('system.desc_powered_by_wording')}
+            variant="secondary"
+            selectedKeys={[wording]}
+            onSelectionChange={(keys) => {
+              const val = Array.from(keys)[0] as BadgeWording | undefined;
+              if (!val) return;
+              setField(names.wording, val);
+              // Only custom wording uses the text field; never leave a stale one.
+              if (val !== 'custom') setField(names.label, '');
+            }}
+          >
+            {BADGE_WORDING_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} id={opt.value}>{t(opt.labelKey)}</SelectItem>
+            ))}
+          </Select>
+          {wording === 'custom' && (
+            <Input
+              label={t('system.label_powered_by_label')}
+              placeholder={t('system.placeholder_powered_by_label')}
+              description={t('system.desc_powered_by_label')}
+              variant="secondary"
+              value={text(names.label)}
+              onValueChange={(val) => setField(names.label, val)}
+            />
+          )}
+        </div>
         <Input
           label={t('system.label_powered_by_url')}
           placeholder={t('system.placeholder_powered_by_url')}

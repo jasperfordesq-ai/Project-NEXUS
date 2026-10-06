@@ -194,6 +194,7 @@ return [
         'community_partner' => 'Comhpháirtí Pobail',
         'open_source' => 'Foinse Oscailte',
         'powered_by' => 'Á chumhachtú ag',
+        'provided_by' => 'Arna sholáthar ag',
         'powered_by_alt' => 'Á chumhachtú ag Project NEXUS',
         'tenant_logo_placeholder' => 'Do lógó anseo',
         'source_repo' => 'Stór GitHub',

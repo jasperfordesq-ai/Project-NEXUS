@@ -470,19 +470,52 @@ describe('AdminSettings', () => {
   // community under it; its own footer keeps the separate badge above.
   it('lets a platform god set the badge for communities under this one', async () => {
     mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
-    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ network_powered_by_label: 'Powered by' }));
     await renderPage();
 
     expect(screen.getByText("This community's badge")).toBeInTheDocument();
     expect(screen.getByText('Badge for communities under this one')).toBeInTheDocument();
 
-    const networkLabel = await screen.findByDisplayValue('Powered by');
-    await userEvent.clear(networkLabel);
-    await userEvent.type(networkLabel, 'Provided by');
+    // Two wording choices: this community's own, then the network badge.
+    const [, networkWording] = screen.getAllByRole('combobox', { name: 'Wording' });
+    fireEvent.change(networkWording!, { target: { value: 'provided_by' } });
+    await userEvent.click(getSaveButton());
+
+    // The translated choice is stored as a key, never as English text.
+    await waitFor(() => {
+      expect(mockAdminSettings.update).toHaveBeenCalledWith({ network_powered_by_wording: 'provided_by' });
+    });
+  });
+
+  it('treats a label saved before the wording choice as custom text, and clears it on switching', async () => {
+    mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ powered_by_label: 'Provided By' }));
+    await renderPage();
+
+    const [ownWording] = screen.getAllByRole('combobox', { name: 'Wording' });
+    expect(ownWording).toHaveValue('custom');
+    expect(screen.getByDisplayValue('Provided By')).toBeInTheDocument();
+
+    fireEvent.change(ownWording!, { target: { value: 'provided_by' } });
+    expect(screen.queryByDisplayValue('Provided By')).not.toBeInTheDocument();
     await userEvent.click(getSaveButton());
 
     await waitFor(() => {
-      expect(mockAdminSettings.update).toHaveBeenCalledWith({ network_powered_by_label: 'Provided by' });
+      expect(mockAdminSettings.update).toHaveBeenCalledWith({ powered_by_wording: 'provided_by', powered_by_label: '' });
+    });
+  });
+
+  it('stores the default "Powered by" choice as an empty value', async () => {
+    mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ network_powered_by_wording: 'provided_by' }));
+    await renderPage();
+
+    const [, networkWording] = screen.getAllByRole('combobox', { name: 'Wording' });
+    expect(networkWording).toHaveValue('provided_by');
+    fireEvent.change(networkWording!, { target: { value: 'powered_by' } });
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => {
+      expect(mockAdminSettings.update).toHaveBeenCalledWith({ network_powered_by_wording: '' });
     });
   });
 

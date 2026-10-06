@@ -234,6 +234,7 @@ return [
     'region_invalid' => 'De regio moet een landcode van twee letters zijn, bijvoorbeeld IE of GB',
     'powered_by_image_upload_only' => 'De \'Mogelijk gemaakt door\'-afbeelding kan alleen worden ingesteld door een bestand te uploaden.',
     'powered_by_url_invalid' => 'De \'Mogelijk gemaakt door\'-link moet een volledig webadres zijn dat begint met http:// of https://',
+    'powered_by_wording_invalid' => 'Kies "Aangedreven door", "Aangeboden door" of eigen tekst voor de tekst.',
     'registration_closed' => 'Registratie is gesloten voor deze community. Neem contact op met een communitybeheerder als u een account nodig hebt of een uitnodiging hebt gekregen.',
     'default_currency_invalid' => 'default_currency moet een drieletterige ISO 4217-valutacode zijn (bijvoorbeeld eur, usd, gbp)',
     'map_provider_invalid' => 'map_provider moet een van de volgende zijn: google, openstreetmap, ordnance_survey',

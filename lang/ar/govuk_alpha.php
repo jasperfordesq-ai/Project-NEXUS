@@ -194,6 +194,7 @@ return [
         'community_partner' => 'شريك المجتمع',
         'open_source' => 'المصدر المفتوح',
         'powered_by' => 'مدعوم بواسطة',
+        'provided_by' => 'مقدَّم من',
         'powered_by_alt' => 'مدعوم بواسطة Project NEXUS',
         'tenant_logo_placeholder' => 'شعارك هنا',
         'source_repo' => 'مستودع GitHub',

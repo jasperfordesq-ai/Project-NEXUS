@@ -159,6 +159,54 @@ class PoweredByBadgeInheritanceTest extends TestCase
     }
 
     // ----------------------------------------------------------------
+    // Wording: a translated choice, not English text in the database.
+    // ----------------------------------------------------------------
+
+    public function test_a_hub_can_hand_down_the_translated_provided_by_wording(): void
+    {
+        $this->setting(self::HUB, 'network_powered_by_wording', 'provided_by');
+
+        $config = $this->bootstrapConfig('badge-child-test');
+
+        $this->assertSame('provided_by', $config['powered_by_wording'] ?? null);
+        // The choice replaces typed text: a leftover label must not be sent,
+        // or a frontend could show untranslated English instead.
+        $this->assertArrayNotHasKey('powered_by_label', $config);
+        $this->assertSame('/uploads/powered-by-images/tbuk.png', $config['powered_by_image_light'] ?? null);
+    }
+
+    public function test_custom_wording_publishes_the_typed_label_only(): void
+    {
+        $this->setting(self::HUB, 'network_powered_by_wording', 'custom');
+
+        $config = $this->bootstrapConfig('badge-child-test');
+
+        $this->assertSame('Provided by', $config['powered_by_label'] ?? null);
+        $this->assertArrayNotHasKey('powered_by_wording', $config);
+    }
+
+    public function test_wording_must_be_one_of_the_offered_choices(): void
+    {
+        $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
+            $mock->shouldReceive('refreshTenantOrFail')->andReturn(1);
+        });
+        $this->actAs($this->admin(true));
+
+        foreach (['powered_by_wording', 'network_powered_by_wording'] as $key) {
+            $this->apiPut('/v2/admin/settings', [$key => 'Sponsored by'])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.0.field', $key);
+        }
+
+        $this->apiPut('/v2/admin/settings', ['network_powered_by_wording' => 'provided_by'])->assertStatus(200);
+        $this->assertSame('provided_by', $this->storedSetting('network_powered_by_wording'));
+
+        // "Powered by" is the default, so it is stored as nothing at all.
+        $this->apiPut('/v2/admin/settings', ['network_powered_by_wording' => 'powered_by'])->assertStatus(200);
+        $this->assertSame('', $this->storedSetting('network_powered_by_wording'));
+    }
+
+    // ----------------------------------------------------------------
     // Admin settings: who may change the badge, and what saving it clears.
     // ----------------------------------------------------------------
 
@@ -262,6 +310,16 @@ class PoweredByBadgeInheritanceTest extends TestCase
                 'updated_at' => now(),
             ]
         );
+    }
+
+    private function storedSetting(string $key): ?string
+    {
+        $value = DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'general.' . $key)
+            ->value('setting_value');
+
+        return $value === null ? null : (string) $value;
     }
 
     private function setting(int $tenantId, string $key, string $value): void

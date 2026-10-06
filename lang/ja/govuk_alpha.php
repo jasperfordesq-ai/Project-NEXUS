@@ -194,6 +194,7 @@ return [
         'community_partner' => 'コミュニティパートナー',
         'open_source' => 'オープンソース',
         'powered_by' => '提供元',
+        'provided_by' => '提供',
         'powered_by_alt' => 'Project NEXUS を利用しています',
         'tenant_logo_placeholder' => 'ここにロゴを表示',
         'source_repo' => 'GitHub リポジトリ',

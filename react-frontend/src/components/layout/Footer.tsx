@@ -67,7 +67,13 @@ export function Footer({ children, copyright }: FooterProps) {
   const pbImageDark  = pbConfigDark  || pbConfigLight || DEFAULT_PB_IMAGE_DARK;
   const pbImage = resolveBrandingImageUrl(resolvedTheme === 'dark' ? pbImageDark : pbImageLight);
   const pbUrl   = (tenant?.config?.powered_by_url   as string | undefined) || DEFAULT_PB_URL;
+  // Wording: translated "Provided by" when chosen, else the community's custom
+  // text (shown as typed, untranslated), else translated "Powered by".
+  // PoweredByBadgeService publishes only what applies.
   const pbLabel = tenant?.config?.powered_by_label as string | undefined;
+  const pbHeading = tenant?.config?.powered_by_wording === 'provided_by'
+    ? t('footer.provided_by')
+    : pbLabel || t('footer.powered_by');
 
   const partnerLogoUrl  = resolveBrandingImageUrl(tenant?.config?.partner_logo_url as string | undefined);
   const partnerLogoLabel = tenant?.config?.partner_logo_label   as string | undefined;
@@ -90,10 +96,10 @@ export function Footer({ children, copyright }: FooterProps) {
             href={pbUrl}
             target="_blank"
             rel="noopener noreferrer"
-            title={pbLabel || t('footer.powered_by')}
+            title={pbHeading}
             className="max-w-full transition-opacity hover:opacity-80"
           >
-            <img src={pbImage} alt={pbLabel || t('footer.powered_by')} className="h-auto max-h-24 w-auto max-w-[15rem] object-contain" />
+            <img src={pbImage} alt={pbHeading} className="h-auto max-h-24 w-auto max-w-[15rem] object-contain" />
           </a>
           <SourceRepositoryLink compact className="w-full max-w-[18rem] justify-center" />
           {/* Tenant partner logo — real or placeholder */}
@@ -316,14 +322,14 @@ export function Footer({ children, copyright }: FooterProps) {
                 {/* COL 3: Powered by — always shown; defaults to NEXUS branding, overridable by God */}
                 <div className="flex min-w-0 flex-col items-start sm:items-end gap-2">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-theme-subtle/50">
-                    {pbLabel || t('footer.powered_by')}
+                    {pbHeading}
                   </span>
                   <a
                     href={pbUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title={pbLabel || t('footer.powered_by')}
-                    aria-label={pbLabel || t('footer.powered_by')}
+                    title={pbHeading}
+                    aria-label={pbHeading}
                     className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
                   >
                     {/*
@@ -333,7 +339,7 @@ export function Footer({ children, copyright }: FooterProps) {
                     */}
                     <img
                       src={pbImage}
-                      alt={pbLabel || t('footer.powered_by')}
+                      alt={pbHeading}
                       className="h-auto max-h-28 w-auto max-w-[15rem] object-contain sm:max-w-[17rem]"
                     />
                   </a>

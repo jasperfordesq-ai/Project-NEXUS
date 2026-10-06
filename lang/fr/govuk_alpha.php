@@ -194,6 +194,7 @@ return [
         'community_partner' => 'Partenaire de la communauté',
         'open_source' => 'Open source',
         'powered_by' => 'Propulsé par',
+        'provided_by' => 'Fourni par',
         'powered_by_alt' => 'Propulsé par Project NEXUS',
         'tenant_logo_placeholder' => 'Votre logo ici',
         'source_repo' => 'Dépôt GitHub',

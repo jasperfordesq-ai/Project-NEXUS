@@ -144,6 +144,49 @@ describe('resolveBrandingImageUrl', () => {
   });
 });
 
+describe('footer badge wording', () => {
+  it('passes the "Provided by" choice through to the template', () => {
+    const locals = buildShellLocals(shellRequest({ powered_by_wording: 'provided_by' }), false);
+    expect(locals.poweredByWording).toBe('provided_by');
+  });
+
+  it('ignores an unknown wording value', () => {
+    const locals = buildShellLocals(shellRequest({ powered_by_wording: 'sponsored_by' }), false);
+    expect(locals.poweredByWording).toBe('');
+  });
+
+  it('shows the translated "Provided by" heading and image name', () => {
+    const html = renderFooter({
+      poweredByImageUrl: '/uploads/branding/tbuk.png',
+      poweredByUrl: 'https://timebanking.org/',
+      poweredByWording: 'provided_by'
+    });
+    expect(html).toContain('>Provided by</h3>');
+    expect(html).toContain('alt="Provided by"');
+    expect(html).not.toContain('Powered by');
+  });
+
+  it('translates "Provided by" for a member reading in Irish', () => {
+    const html = renderFooter({
+      t: createTranslator('ga'),
+      tc: createChoiceTranslator('ga'),
+      poweredByImageUrl: '/uploads/branding/tbuk.png',
+      poweredByUrl: 'https://timebanking.org/',
+      poweredByWording: 'provided_by'
+    });
+    expect(html).toContain('>Arna sholáthar ag</h3>');
+  });
+
+  it('keeps "Powered by" when no wording is chosen', () => {
+    const html = renderFooter({
+      poweredByImageUrl: '/images/powered-by-nexus-light.png',
+      poweredByUrl: 'https://project-nexus.net'
+    });
+    expect(html).toContain('>Powered by</h3>');
+    expect(html).toContain('alt="Powered by Project NEXUS"');
+  });
+});
+
 describe('footer branding markup', () => {
   it('renders the powered-by badge as a link with an accessible name', () => {
     const html = renderFooter({

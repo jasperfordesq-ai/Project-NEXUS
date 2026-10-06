@@ -383,6 +383,7 @@ return [
     'region_invalid' => 'Region must be a two-letter country code, for example IE or GB',
     'powered_by_image_upload_only' => 'The powered-by image can only be set by uploading a file.',
     'powered_by_url_invalid' => 'The powered-by link must be a full web address starting with http:// or https://',
+    'powered_by_wording_invalid' => 'Choose "Powered by", "Provided by" or custom text for the badge wording.',
     'registration_closed'                  => 'Registration is closed for this community. Contact a community administrator if you need an account or were given an invitation.',
     'default_currency_invalid'             => 'default_currency must be a 3-letter ISO 4217 currency code (e.g. eur, usd, gbp)',
     'map_provider_invalid'                 => 'map_provider must be one of: google, openstreetmap, ordnance_survey',

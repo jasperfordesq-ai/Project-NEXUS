@@ -14,6 +14,28 @@ import type { AdminSettingsResponse } from '../../../api/types';
 
 export type RegistrationMode = 'open' | 'invite_only' | 'closed';
 
+/**
+ * Footer badge wording. 'powered_by' and 'provided_by' render translated text;
+ * 'custom' renders the label field as typed (not translated). Stored on the
+ * server as '' / 'provided_by' / 'custom' (PoweredByBadgeService).
+ */
+export type BadgeWording = 'powered_by' | 'provided_by' | 'custom';
+
+export const BADGE_WORDING_OPTIONS: Array<{ value: BadgeWording; labelKey: string }> = [
+  { value: 'powered_by', labelKey: 'system.option_wording_powered_by' },
+  { value: 'provided_by', labelKey: 'system.option_wording_provided_by' },
+  { value: 'custom', labelKey: 'system.option_wording_custom' },
+];
+
+/** A label saved before the wording choice existed counts as custom text. */
+export function badgeWordingFromResponse(wording: unknown, label: unknown): BadgeWording {
+  if (wording === 'provided_by') return 'provided_by';
+  if (wording === 'custom') return 'custom';
+  return typeof label === 'string' && label.trim() !== '' ? 'custom' : 'powered_by';
+}
+
+const serialiseWording = (v: string | boolean) => (v === 'powered_by' ? '' : v);
+
 export interface SettingsForm {
   name: string;               // tenants.name
   description: string;        // tenants.description
@@ -27,12 +49,14 @@ export interface SettingsForm {
   partner_logo_url: string;      // general.partner_logo_url (footer left slot)
   partner_logo_label: string;    // general.partner_logo_label
   partner_logo_link_url: string; // general.partner_logo_link_url
-  powered_by_label: string;      // general.powered_by_label (platform god only — footer right slot)
+  powered_by_wording: BadgeWording; // general.powered_by_wording (platform god only — footer right slot)
+  powered_by_label: string;      // general.powered_by_label (custom wording only)
   powered_by_image_light: string; // general.powered_by_image_light
   powered_by_image_dark: string;  // general.powered_by_image_dark
   powered_by_url: string;         // general.powered_by_url
   // The badge handed down to every community UNDER this one (platform god only).
   // This community's own footer keeps using the four fields above.
+  network_powered_by_wording: BadgeWording; // general.network_powered_by_wording
   network_powered_by_label: string;       // general.network_powered_by_label
   network_powered_by_image_light: string; // general.network_powered_by_image_light
   network_powered_by_image_dark: string;  // general.network_powered_by_image_dark
@@ -89,10 +113,12 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   partner_logo_url: '',
   partner_logo_label: '',
   partner_logo_link_url: '',
+  powered_by_wording: 'powered_by',
   powered_by_label: '',
   powered_by_image_light: '',
   powered_by_image_dark: '',
   powered_by_url: '',
+  network_powered_by_wording: 'powered_by',
   network_powered_by_label: '',
   network_powered_by_image_light: '',
   network_powered_by_image_dark: '',
@@ -151,10 +177,12 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     partner_logo_url: str(settings.partner_logo_url),
     partner_logo_label: str(settings.partner_logo_label),
     partner_logo_link_url: str(settings.partner_logo_link_url),
+    powered_by_wording: badgeWordingFromResponse(settings.powered_by_wording, settings.powered_by_label),
     powered_by_label: str(settings.powered_by_label),
     powered_by_image_light: str(settings.powered_by_image_light),
     powered_by_image_dark: str(settings.powered_by_image_dark),
     powered_by_url: str(settings.powered_by_url),
+    network_powered_by_wording: badgeWordingFromResponse(settings.network_powered_by_wording, settings.network_powered_by_label),
     network_powered_by_label: str(settings.network_powered_by_label),
     network_powered_by_image_light: str(settings.network_powered_by_image_light),
     network_powered_by_image_dark: str(settings.network_powered_by_image_dark),
@@ -193,6 +221,7 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   email_verification: { gate: 'god', serialise: String },
   admin_approval: { gate: 'god', serialise: String },
   maintenance_mode: { gate: 'never' },
+  powered_by_wording: { gate: 'platformGod', serialise: serialiseWording },
   powered_by_label: { gate: 'platformGod' },
   powered_by_url: { gate: 'platformGod' },
   // Powered-by images are uploaded via dedicated endpoints (which persist
@@ -200,6 +229,7 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   // persisted here as an empty value.
   powered_by_image_light: { gate: 'platformGod' },
   powered_by_image_dark: { gate: 'platformGod' },
+  network_powered_by_wording: { gate: 'platformGod', serialise: serialiseWording },
   network_powered_by_label: { gate: 'platformGod' },
   network_powered_by_url: { gate: 'platformGod' },
   network_powered_by_image_light: { gate: 'platformGod' },

@@ -234,6 +234,7 @@ return [
     'region_invalid' => '地域は2文字の国コードで指定してください（例：IE、GB）',
     'powered_by_image_upload_only' => '「Powered by」の画像はファイルをアップロードすることでのみ設定できます。',
     'powered_by_url_invalid' => '「Powered by」のリンクは http:// または https:// で始まる完全なウェブアドレスである必要があります',
+    'powered_by_wording_invalid' => '表示文言は「搭載」「提供」またはカスタムテキストから選んでください。',
     'registration_closed' => 'このコミュニティでは登録を受け付けていません。アカウントが必要な場合、または招待を受けている場合は、コミュニティ管理者にお問い合わせください。',
     'default_currency_invalid' => 'default_currency は 3 文字の ISO 4217 通貨コード (例: eur、usd、gbp) である必要があります。',
     'map_provider_invalid' => 'map_provider は次のいずれかである必要があります: google、openstreetmap、ordnance_survey',

@@ -234,6 +234,7 @@ return [
     'region_invalid' => 'La región debe ser un código de país de dos letras, por ejemplo IE o GB',
     'powered_by_image_upload_only' => 'La imagen «Con la tecnología de» solo se puede establecer subiendo un archivo.',
     'powered_by_url_invalid' => 'El enlace «Con la tecnología de» debe ser una dirección web completa que empiece por http:// o https://',
+    'powered_by_wording_invalid' => 'Elige «Desarrollado por», «Proporcionado por» o un texto personalizado para el texto.',
     'registration_closed' => 'El registro está cerrado para esta comunidad. Ponte en contacto con un administrador de la comunidad si necesitas una cuenta o si recibiste una invitación.',
     'no_recognized_settings' => 'No se proporcionan configuraciones reconocidas. Claves desconocidas: :keys',
     'no_recognized_ai_settings' => 'No se proporcionan configuraciones de IA reconocidas',

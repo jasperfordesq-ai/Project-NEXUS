@@ -177,11 +177,18 @@
             </div>
 
             <div class="nexus-alpha-footer__mark nexus-alpha-footer__mark--end">
-              <h3 class="nexus-alpha-footer__mark-heading">{{ poweredByLabel or t("footer.powered_by") }}</h3>
+              {% if poweredByWording == "provided_by" %}
+                {% set poweredByHeading = t("footer.provided_by") %}
+                {% set poweredByAlt = poweredByHeading %}
+              {% else %}
+                {% set poweredByHeading = poweredByLabel or t("footer.powered_by") %}
+                {% set poweredByAlt = poweredByLabel or t("footer.powered_by_alt") %}
+              {% endif %}
+              <h3 class="nexus-alpha-footer__mark-heading">{{ poweredByHeading }}</h3>
               {% if poweredByImageUrl %}
                 <a class="govuk-footer__link nexus-alpha-footer__brand-link" href="{{ poweredByUrl }}" rel="noopener noreferrer">
                   <span class="nexus-alpha-footer__brand-plate">
-                    <img class="nexus-alpha-footer__mark-image nexus-alpha-footer__mark-image--wide" src="{{ poweredByImageUrl }}" alt="{{ poweredByLabel or t('footer.powered_by_alt') }}" loading="lazy" decoding="async">
+                    <img class="nexus-alpha-footer__mark-image nexus-alpha-footer__mark-image--wide" src="{{ poweredByImageUrl }}" alt="{{ poweredByAlt }}" loading="lazy" decoding="async">
                   </span>
                 </a>
               {% endif %}
