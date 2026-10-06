@@ -37,12 +37,24 @@ import { useDisclosure } from '@/components/ui/useDisclosure';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { extractCollectionItems } from './extractCollectionItems';
 
 interface Organisation {
   id: number;
   name: string;
+  status?: string;
+}
+
+interface ApprovedApplication {
   status: string;
-  member_role: string;
+  opportunity?: { id: number; title: string } | null;
+  organization?: { id: number; name: string } | null;
+}
+
+interface ClaimableOpportunity {
+  id: number;
+  title: string;
+  organisationId: number;
 }
 
 /* ───────────────────────── Types ───────────────────────── */
@@ -96,12 +108,13 @@ export function ExpensesTab() {
 
   // Organisation state
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [opportunities, setOpportunities] = useState<ClaimableOpportunity[]>([]);
   const [formOrgId, setFormOrgId] = useState('');
+  const [formOpportunityId, setFormOpportunityId] = useState('');
 
   // Form state
   const [formType, setFormType] = useState<ExpenseType>('travel');
   const [formAmount, setFormAmount] = useState('');
-  const [formCurrency, setFormCurrency] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formReceipt, setFormReceipt] = useState<File | null>(null);
   const tRef = useRef(t);
@@ -142,14 +155,40 @@ export function ExpensesTab() {
 
   useEffect(() => {
     loadRef.current();
-    // Load organisations for the expense form
-    api.get<Organisation[]>('/v2/volunteering/my-organisations').then((res) => {
-      if (res.success && res.data) {
-        const orgs = Array.isArray(res.data) ? res.data : [];
-        setOrganisations(orgs);
-        if (orgs.length === 1) {
-          setFormOrgId((orgs[0]?.id ?? '').toString());
-        }
+    // Who a volunteer may claim from mirrors the server's rule
+    // (VolunteerExpenseService::userCanClaimAgainstOrganization): an organisation
+    // that accepted them onto an opportunity, or one they belong to. Being accepted
+    // does not make someone a member, so "my organisations" alone hid the
+    // organisation most volunteers claim from. Same merge as the Hours tab.
+    Promise.all([
+      api.get<unknown>('/v2/volunteering/applications?status=approved&per_page=50'),
+      api.get<unknown>('/v2/volunteering/my-organisations?per_page=50'),
+    ]).then(([applicationsRes, myOrgsRes]) => {
+      const eligible = new Map<number, Organisation>();
+      const claimable: ClaimableOpportunity[] = [];
+
+      if (applicationsRes.success && applicationsRes.data) {
+        extractCollectionItems<ApprovedApplication>(applicationsRes.data).forEach((application) => {
+          const org = application.organization;
+          if (application.status !== 'approved' || !org?.id) return;
+          eligible.set(org.id, { id: org.id, name: org.name });
+          const opp = application.opportunity;
+          if (opp?.id && !claimable.some((c) => c.id === opp.id)) {
+            claimable.push({ id: opp.id, title: opp.title, organisationId: org.id });
+          }
+        });
+      }
+      if (myOrgsRes.success && myOrgsRes.data) {
+        extractCollectionItems<Organisation>(myOrgsRes.data)
+          .filter((org) => ['approved', 'active'].includes(org.status ?? ''))
+          .forEach((org) => eligible.set(org.id, org));
+      }
+
+      const orgs = Array.from(eligible.values()).sort((a, b) => a.name.localeCompare(b.name));
+      setOrganisations(orgs);
+      setOpportunities(claimable.sort((a, b) => a.title.localeCompare(b.title)));
+      if (orgs.length === 1) {
+        setFormOrgId((orgs[0]?.id ?? '').toString());
       }
     }).catch((err) => logError('Failed to load organisations', err));
     return () => { abortRef.current?.abort(); };
@@ -167,19 +206,23 @@ export function ExpensesTab() {
     };
   }, [items]);
 
+  const orgOpportunities = useMemo(
+    () => opportunities.filter((o) => o.organisationId.toString() === formOrgId),
+    [opportunities, formOrgId],
+  );
+
   const resetForm = () => {
     setFormType('travel');
     setFormAmount('');
-    setFormCurrency('');
     setFormDescription('');
     setFormReceipt(null);
+    setFormOpportunityId('');
     if (organisations.length !== 1) setFormOrgId('');
   };
 
+  // No currency field: the server always records the community's own currency
+  // (VolunteerExpenseService::submitExpense), so a box here could only mislead.
   const handleOpenForm = () => {
-    // Default the currency from a previously-submitted expense so returning
-    // claimants don't retype it. Backend applies its own default when omitted.
-    setFormCurrency((cur) => cur || (items.find((e) => e.currency)?.currency?.toUpperCase() ?? ''));
     onOpen();
   };
 
@@ -198,21 +241,16 @@ export function ExpensesTab() {
       return;
     }
 
-    // Currency is optional, but when supplied it must be a 3-letter ISO code.
-    const currency = formCurrency.trim().toUpperCase();
-    if (currency && !/^[A-Z]{3}$/.test(currency)) {
-      toast.error(t('expenses.invalid_currency'));
-      return;
-    }
-
     try {
       setIsSubmitting(true);
       const payload = new FormData();
       payload.append('organization_id', formOrgId);
+      if (formOpportunityId && orgOpportunities.some((o) => o.id.toString() === formOpportunityId)) {
+        payload.append('opportunity_id', formOpportunityId);
+      }
       payload.append('expense_type', formType);
       payload.append('amount', String(amountNum));
       payload.append('description', formDescription);
-      if (currency) payload.append('currency', currency);
       if (formReceipt) payload.append('receipt', formReceipt);
 
       const response = await api.upload('/v2/volunteering/expenses', payload);
@@ -361,7 +399,10 @@ export function ExpensesTab() {
                     selectedKeys={formOrgId ? [formOrgId] : []}
                     onSelectionChange={(keys) => {
                       const val = Array.from(keys)[0] as string;
-                      if (val) setFormOrgId(val);
+                      if (val) {
+                        setFormOrgId(val);
+                        setFormOpportunityId('');
+                      }
                     }}
                     variant="secondary"
                     isRequired
@@ -369,6 +410,25 @@ export function ExpensesTab() {
                     {organisations.map((org) => (
                       <SelectItem key={org.id.toString()} id={org.id.toString()}>{org.name}</SelectItem>
                     ))}
+                  </Select>
+                )}
+                {orgOpportunities.length > 0 && (
+                  <Select
+                    label={t('expenses.form.opportunity')}
+                    description={t('expenses.form.opportunity_hint')}
+                    selectedKeys={[formOpportunityId || 'none']}
+                    onSelectionChange={(keys) => {
+                      const val = Array.from(keys)[0] as string | undefined;
+                      setFormOpportunityId(!val || val === 'none' ? '' : val);
+                    }}
+                    variant="secondary"
+                  >
+                    {[
+                      <SelectItem key="none" id="none">{t('expenses.form.opportunity_none')}</SelectItem>,
+                      ...orgOpportunities.map((opp) => (
+                        <SelectItem key={opp.id.toString()} id={opp.id.toString()}>{opp.title}</SelectItem>
+                      )),
+                    ]}
                   </Select>
                 )}
                 <Select
@@ -386,28 +446,16 @@ export function ExpensesTab() {
                     </SelectItem>
                   ))}
                 </Select>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    label={t('expenses.form.amount')}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={formAmount}
-                    onValueChange={setFormAmount}
-                    variant="secondary"
-                    className="sm:flex-1"
-                    isRequired
-                  />
-                  <Input
-                    label={t('expenses.form.currency')}
-                    value={formCurrency}
-                    onValueChange={(v) => setFormCurrency(v.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3))}
-                    variant="secondary"
-                    className="sm:w-28"
-                    maxLength={3}
-                    placeholder={t('expenses.form.currency_placeholder')}
-                  />
-                </div>
+                <Input
+                  label={t('expenses.form.amount')}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={formAmount}
+                  onValueChange={setFormAmount}
+                  variant="secondary"
+                  isRequired
+                />
                 <Textarea
                   label={t('expenses.form.description')}
                   value={formDescription}

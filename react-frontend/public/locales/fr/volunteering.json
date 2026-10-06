@@ -286,7 +286,6 @@
       "organisation": "Organisation",
       "type": "Type de dépense",
       "amount": "Montant",
-      "currency": "Devise",
       "description": "Description",
       "receipt": "Receipt",
       "receipt_none": "Aucun reçu joint",
@@ -294,7 +293,9 @@
       "receipt_attach": "Joindre le reçu",
       "receipt_replace": "Replace",
       "receipt_remove": "Supprimer le reçu",
-      "currency_placeholder": "EUR"
+      "opportunity": "Mission (facultatif)",
+      "opportunity_hint": "Choisissez la mission à laquelle ce coût se rapporte, le cas échéant.",
+      "opportunity_none": "Pas pour une mission précise"
     },
     "no_organisation": "Aucune organisation bénévole approuvée n'est encore disponible pour les dépenses.",
     "cancel": "Annuler",
@@ -316,8 +317,7 @@
       "rejected": "Refusé",
       "paid": "Payé"
     },
-    "invalid_amount": "Saisissez un montant valide (jusqu'à 2 décimales).",
-    "invalid_currency": "Utilisez un code de devise à 3 lettres (par ex. EUR)."
+    "invalid_amount": "Saisissez un montant valide (jusqu'à 2 décimales)."
   },
   "org_expenses": {
     "intro": "Demandes de remboursement de frais que vos bénévoles ont soumises à cette organisation. Approuvez ou refusez les nouvelles demandes, puis marquez les demandes approuvées comme payées une fois le paiement effectué.",

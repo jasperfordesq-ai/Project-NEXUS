@@ -15,6 +15,7 @@ use App\Models\VolExpensePolicy;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Authorization\AdminTier;
 use App\Support\UserDisplayName;
 
 /**
@@ -314,7 +315,13 @@ class VolunteerExpenseService
     /**
      * Bell, push and email to every organisation admin (creator plus active
      * owner/admin members) when a claim arrives, each in their own language.
-     * The claimant is never notified about their own claim.
+     * The claimant is never notified about their own claim, and a closed or
+     * suspended account is never notified at all.
+     *
+     * When no organisation admin can be told — the claimant is the only one, or
+     * every other one's account is closed — the claim would otherwise sit unseen,
+     * so the community's admins are told instead, pointed at the admin screen
+     * (owner decision, 6 October 2026: community admins as fallback only).
      */
     private static function notifyOrganisationOfNewClaim(array $expense): void
     {
@@ -342,16 +349,35 @@ class VolunteerExpenseService
                 array_merge([$creatorId], $adminIds),
                 fn ($id) => $id > 0 && $id !== $claimantId
             )));
-            if ($recipientIds === []) {
+
+            $recipients = $recipientIds === [] ? collect() : DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('id', $recipientIds)
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->get(['id', 'email', 'first_name', 'name', 'preferred_language']);
+
+            $isFallback = $recipients->isEmpty();
+            if ($isFallback) {
+                $recipients = DB::table('users')
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'active')
+                    ->whereNull('deleted_at')
+                    ->where('id', '!=', $claimantId)
+                    ->where(fn ($q) => AdminTier::scopeRecipients($q))
+                    ->get(['id', 'email', 'first_name', 'name', 'preferred_language']);
+            }
+            if ($recipients->isEmpty()) {
+                Log::warning('[VolunteerExpenseService] new claim reached nobody', [
+                    'tenant_id' => $tenantId,
+                    'expense_id' => $expense['id'] ?? null,
+                ]);
                 return;
             }
 
-            $recipients = DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->whereIn('id', $recipientIds)
-                ->get(['id', 'email', 'first_name', 'name', 'preferred_language']);
-
-            $link = '/volunteering/org/' . $organizationId . '/dashboard?tab=expenses';
+            $link = $isFallback
+                ? '/admin/volunteering/expenses'
+                : '/volunteering/org/' . $organizationId . '/dashboard?tab=expenses';
             $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
             $volunteerName = (string) ($expense['volunteer_name'] ?? '') !== ''
                 ? (string) $expense['volunteer_name']
@@ -365,7 +391,7 @@ class VolunteerExpenseService
             ];
 
             foreach ($recipients as $recipient) {
-                LocaleContext::withLocale($recipient, function () use ($recipient, $params, $link, $fullUrl, $tenantId) {
+                LocaleContext::withLocale($recipient, function () use ($recipient, $params, $link, $fullUrl, $tenantId, $isFallback) {
                     $bell = __('emails_misc.expense.new_claim_bell', $params);
                     \App\Models\Notification::createNotification((int) $recipient->id, $bell, $link, 'vol_expense_submitted');
                     \App\Services\NotificationDispatcher::fanOutPush((int) $recipient->id, 'vol_expense_submitted', $bell, $link);
@@ -374,12 +400,18 @@ class VolunteerExpenseService
                         return;
                     }
                     $escaped = array_map(fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'), $params);
-                    $html = EmailTemplateBuilder::make()
+                    $builder = EmailTemplateBuilder::make()
                         ->title(__('emails_misc.expense.new_claim_title'))
                         ->greeting($recipient->first_name ?? $recipient->name ?? __('emails.common.fallback_name'))
-                        ->paragraph(__('emails_misc.expense.new_claim_body', $escaped))
-                        ->button(__('emails_misc.expense.new_claim_cta'), $fullUrl)
-                        ->render();
+                        ->paragraph(__('emails_misc.expense.new_claim_body', $escaped));
+                    if ($isFallback) {
+                        $builder->paragraph(htmlspecialchars(
+                            __('emails_misc.expense.new_claim_fallback_note', ['organisation' => $params['organisation']]),
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ));
+                    }
+                    $html = $builder->button(__('emails_misc.expense.new_claim_cta'), $fullUrl)->render();
                     if (!\App\Services\EmailDispatchService::sendRaw($recipient->email, __('emails_misc.expense.new_claim_subject', $params), $html, null, null, null, 'volunteer_expense', ['tenant_id' => $tenantId])) {
                         Log::warning('[VolunteerExpenseService] new claim email failed', ['user_id' => $recipient->id]);
                     }
@@ -578,16 +610,26 @@ class VolunteerExpenseService
 
                     $link    = '/volunteering?tab=expenses'; // no per-expense route exists — deep-link to the Expenses tab
                     $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
-                    $user = DB::table('users')->where('id', $expense->user_id)->where('tenant_id', TenantContext::getId())->select(['email', 'first_name', 'name', 'preferred_language'])->first();
-                    if ($user && !empty($user->email)) {
+                    $user = DB::table('users')->where('id', $expense->user_id)->where('tenant_id', TenantContext::getId())->select(['id', 'email', 'first_name', 'name', 'preferred_language'])->first();
+                    if ($user) {
                         $tenantId = TenantContext::getId();
-                        LocaleContext::withLocale($user, function () use ($user, $expense, $isApproved, $subjectKey, $titleKey, $bodyKey, $params, $fullUrl, $notes, $tenantId) {
+                        LocaleContext::withLocale($user, function () use ($user, $expense, $isApproved, $subjectKey, $titleKey, $bodyKey, $params, $link, $fullUrl, $notes, $tenantId) {
+                            // In the app as well as by email: the decision is about their money.
+                            $bell = __('emails_misc.expense.' . ($isApproved ? 'approved' : 'rejected') . '_bell', $params);
+                            \App\Models\Notification::createNotification((int) $user->id, $bell, $link, 'vol_expense_reviewed');
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $user->id, 'vol_expense_reviewed', $bell, $link);
+
+                            if (empty($user->email)) {
+                                return;
+                            }
                             $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
                             $builder = EmailTemplateBuilder::make()
                                 ->title(__($titleKey))
                                 ->greeting($firstName)
                                 ->paragraph(__($bodyKey, $params));
-                            if (!$isApproved && !empty($notes)) {
+                            // The reviewer's note goes with either decision ("paid next run" is as
+                            // useful to hear as "no receipt").
+                            if (!empty($notes)) {
                                 $builder->paragraph('<strong>' . __('emails_misc.expense.rejected_notes_label') . ':</strong> ' . htmlspecialchars($notes, ENT_QUOTES, 'UTF-8'));
                             }
                             $renderedHtml = $builder->button(__('emails_misc.expense.' . ($isApproved ? 'approved' : 'rejected') . '_cta'), $fullUrl)->render();
@@ -637,8 +679,8 @@ class VolunteerExpenseService
                 $expense = VolExpense::where('tenant_id', TenantContext::getId())->find($id);
                 if ($expense) {
                     $tenantId  = TenantContext::getId();
-                    $user      = DB::table('users')->where('id', $expense->user_id)->where('tenant_id', $tenantId)->select(['email', 'first_name', 'name', 'preferred_language'])->first();
-                    if ($user && !empty($user->email)) {
+                    $user      = DB::table('users')->where('id', $expense->user_id)->where('tenant_id', $tenantId)->select(['id', 'email', 'first_name', 'name', 'preferred_language'])->first();
+                    if ($user) {
                         LocaleContext::withLocale($user, function () use ($user, $expense, $id, $paymentReference, $tenantId) {
                             $firstName = $user->first_name ?? $user->name ?? __('emails.common.fallback_name');
                             $params    = [
@@ -648,6 +690,14 @@ class VolunteerExpenseService
                             ];
                             $link    = '/volunteering?tab=expenses'; // no per-expense route exists — deep-link to the Expenses tab
                             $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
+
+                            $bell = __('emails_misc.expense.paid_bell', $params);
+                            \App\Models\Notification::createNotification((int) $user->id, $bell, $link, 'vol_expense_paid');
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $user->id, 'vol_expense_paid', $bell, $link);
+
+                            if (empty($user->email)) {
+                                return;
+                            }
 
                             $builder = EmailTemplateBuilder::make()
                                 ->title(__('emails_misc.expense.paid_title'))

@@ -37511,7 +37511,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="travel"');
     expect(response.text).toContain('Travel');
     expect(response.text).toContain('id="amount" name="amount" type="number"');
-    expect(response.text).toContain('id="currency" name="currency" type="text"');
+    expect(response.text).not.toContain('name="currency"');
     expect(response.text).toContain('id="description" name="description"');
     expect(response.text).toContain('Submit claim');
     expect(response.text).toContain('Your claims');
@@ -38759,8 +38759,7 @@ describe('shared accessible frontend shell', () => {
       organization_id: 42,
       expense_type: 'travel',
       amount: 12.5,
-      description: 'Bus fare',
-      currency: 'GBP'
+      description: 'Bus fare'
     });
 
     const trainingResponse = await agent

@@ -286,7 +286,6 @@
       "organisation": "Organización",
       "type": "Tipo de Gasto",
       "amount": "Cantidad",
-      "currency": "Moneda",
       "description": "Descripción",
       "receipt": "Receipt",
       "receipt_none": "No se adjunta recibo",
@@ -294,7 +293,9 @@
       "receipt_attach": "Adjuntar recibo",
       "receipt_replace": "Replace",
       "receipt_remove": "Quitar recibo",
-      "currency_placeholder": "EUR"
+      "opportunity": "Oportunidad (opcional)",
+      "opportunity_hint": "Elija la oportunidad para la que fue este gasto, si corresponde.",
+      "opportunity_none": "No es para una oportunidad concreta"
     },
     "no_organisation": "Aún no hay organizaciones de voluntarios aprobadas disponibles para cubrir gastos.",
     "cancel": "Cancelar",
@@ -316,8 +317,7 @@
       "rejected": "Rechazado",
       "paid": "Pagado"
     },
-    "invalid_amount": "Introduce un importe válido (hasta 2 decimales).",
-    "invalid_currency": "Usa un código de moneda de 3 letras (p. ej. EUR)."
+    "invalid_amount": "Introduce un importe válido (hasta 2 decimales)."
   },
   "org_expenses": {
     "intro": "Solicitudes de reembolso de gastos que tus voluntarios han presentado a esta organización. Aprueba o rechaza las nuevas solicitudes y marca como pagadas las aprobadas una vez que las hayas abonado.",

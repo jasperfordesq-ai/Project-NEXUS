@@ -607,7 +607,9 @@ describe('tenant-aware template helper conversion', () => {
     expect(donations).toContain('<div class="govuk-input__prefix">{{ tenantCurrency }}</div>');
     expect(donations).not.toMatch(/aria-hidden="true">(?:&euro;|€)/i);
     expect(donations).not.toMatch(/\beuro\b/i);
-    expect(expenses).toContain('{{ t("govuk_alpha_volunteering.expenses.currency_hint") }}');
+    // The API always records the community's own currency, so the claim form no
+    // longer offers a currency box at all (it did nothing).
+    expect(expenses).not.toContain('name="currency"');
     expect(expenses).not.toMatch(/\buse euro\b/i);
   });
 

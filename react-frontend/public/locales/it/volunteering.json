@@ -286,7 +286,6 @@
       "organisation": "Organizzazione",
       "type": "Tipo di Spesa",
       "amount": "Importo",
-      "currency": "Valuta",
       "description": "Descrizione",
       "receipt": "Receipt",
       "receipt_none": "Nessuna ricevuta allegata",
@@ -294,7 +293,9 @@
       "receipt_attach": "Allega ricevuta",
       "receipt_replace": "Replace",
       "receipt_remove": "Rimuovi la ricevuta",
-      "currency_placeholder": "EUR"
+      "opportunity": "Opportunità (facoltativo)",
+      "opportunity_hint": "Scegli l’opportunità a cui si riferisce questa spesa, se applicabile.",
+      "opportunity_none": "Non per un’opportunità specifica"
     },
     "no_organisation": "Nessuna organizzazione di volontariato approvata è ancora disponibile per le spese.",
     "cancel": "Annulla",
@@ -316,8 +317,7 @@
       "rejected": "Rifiutato",
       "paid": "Pagato"
     },
-    "invalid_amount": "Inserisci un importo valido (fino a 2 decimali).",
-    "invalid_currency": "Usa un codice valuta di 3 lettere (es. EUR)."
+    "invalid_amount": "Inserisci un importo valido (fino a 2 decimali)."
   },
   "org_expenses": {
     "intro": "Richieste di rimborso spese che i tuoi volontari hanno inviato a questa organizzazione. Approva o rifiuta le nuove richieste, poi segna come pagate quelle approvate dopo averle saldate.",

@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 230,
+    "producer_count": 232,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -2890,15 +2890,41 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerExpenseService.php:371:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerExpenseService.php:397:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerExpenseService.php",
-            "line": 371,
+            "line": 397,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $recipient->id",
             "title_expression": null,
             "body_expression": "$bell",
             "type_expression": "vol_expense_submitted",
+            "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerExpenseService.php:620:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/VolunteerExpenseService.php",
+            "line": 620,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $user->id",
+            "title_expression": null,
+            "body_expression": "$bell",
+            "type_expression": "vol_expense_reviewed",
+            "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerExpenseService.php:696:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/VolunteerExpenseService.php",
+            "line": 696,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $user->id",
+            "title_expression": null,
+            "body_expression": "$bell",
+            "type_expression": "vol_expense_paid",
             "link_expression": "$link",
             "data_expression": null
         },

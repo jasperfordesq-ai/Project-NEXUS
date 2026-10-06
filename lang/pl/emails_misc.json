@@ -633,7 +633,11 @@
     "new_claim_title": "Nowy wniosek o zwrot kosztów",
     "new_claim_body": "<strong>{{volunteer}}</strong> wnioskuje o zwrot <strong>{{amount}} {{currency}}</strong> za <strong>{{type}}</strong> od <strong>{{organisation}}</strong>. Prosimy o jego rozpatrzenie.",
     "new_claim_bell": "{{volunteer}} złożył(a) w {{organisation}} wniosek o zwrot kosztów na kwotę {{amount}} {{currency}}",
-    "new_claim_cta": "Rozpatrz wniosek"
+    "new_claim_cta": "Rozpatrz wniosek",
+    "approved_bell": "Twój wniosek o zwrot wydatków na kwotę {{amount}} {{currency}} został zatwierdzony",
+    "rejected_bell": "Twój wniosek o zwrot wydatków na kwotę {{amount}} {{currency}} nie został zatwierdzony",
+    "paid_bell": "Twój wniosek o zwrot wydatków na kwotę {{amount}} {{currency}} został opłacony",
+    "new_claim_fallback_note": "Otrzymujesz tę wiadomość, ponieważ {{organisation}} nie ma innego administratora, który mógłby go rozpatrzyć."
   },
   "listing_moderation": {
     "approved_subject": "Twoje ogłoszenie zostało zatwierdzone — {{title}}",

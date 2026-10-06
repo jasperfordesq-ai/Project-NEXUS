@@ -284,7 +284,6 @@
       "organisation": "Organisation",
       "type": "Ausgabentyp",
       "amount": "Betrag",
-      "currency": "Währung",
       "description": "Beschreibung",
       "receipt": "Receipt",
       "receipt_none": "Keine Quittung beigefügt",
@@ -292,7 +291,9 @@
       "receipt_attach": "Quittung beifügen",
       "receipt_replace": "Replace",
       "receipt_remove": "Quittung entfernen",
-      "currency_placeholder": "EUR"
+      "opportunity": "Einsatz (optional)",
+      "opportunity_hint": "Wählen Sie den Einsatz, für den diese Kosten angefallen sind, falls zutreffend.",
+      "opportunity_none": "Nicht für einen bestimmten Einsatz"
     },
     "no_organisation": "Es stehen noch keine zugelassenen Freiwilligenorganisationen für Spesen zur Verfügung.",
     "cancel": "Abbrechen",
@@ -314,8 +315,7 @@
       "rejected": "Abgelehnt",
       "paid": "Bezahlt"
     },
-    "invalid_amount": "Geben Sie einen gültigen Betrag ein (bis zu 2 Dezimalstellen).",
-    "invalid_currency": "Verwenden Sie einen 3-stelligen Währungscode (z. B. EUR)."
+    "invalid_amount": "Geben Sie einen gültigen Betrag ein (bis zu 2 Dezimalstellen)."
   },
   "org_expenses": {
     "intro": "Auslagenerstattungen, die Ihre Freiwilligen bei dieser Organisation eingereicht haben. Genehmigen oder lehnen Sie neue Anträge ab und markieren Sie genehmigte Anträge als bezahlt, sobald Sie sie ausgezahlt haben.",

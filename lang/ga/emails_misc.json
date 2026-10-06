@@ -633,7 +633,11 @@
     "new_claim_title": "Éileamh costais nua",
     "new_claim_body": "D’éiligh <strong>{{volunteer}}</strong> <strong>{{amount}} {{currency}}</strong> ar <strong>{{type}}</strong> ó <strong>{{organisation}}</strong>. Déan athbhreithniú air, le do thoil.",
     "new_claim_bell": "Chuir {{volunteer}} éileamh costais {{amount}} {{currency}} faoi bhráid {{organisation}}",
-    "new_claim_cta": "Athbhreithnigh an t-éileamh"
+    "new_claim_cta": "Athbhreithnigh an t-éileamh",
+    "approved_bell": "Ceadaíodh d’éileamh ar chostais de {{amount}} {{currency}}",
+    "rejected_bell": "Níor ceadaíodh d’éileamh ar chostais de {{amount}} {{currency}}",
+    "paid_bell": "Íocadh d’éileamh ar chostais de {{amount}} {{currency}}",
+    "new_claim_fallback_note": "Tá sé seo á fháil agat toisc nach bhfuil aon riarthóir eile ag {{organisation}} atá in ann é a athbhreithniú."
   },
   "listing_moderation": {
     "approved_subject": "Tá do liosta formheasta — {{title}}",

@@ -633,7 +633,11 @@
     "new_claim_title": "新しい経費精算",
     "new_claim_body": "<strong>{{volunteer}}</strong>さんが<strong>{{organisation}}</strong>に<strong>{{type}}</strong>の経費<strong>{{amount}} {{currency}}</strong>を申請しました。内容をご確認ください。",
     "new_claim_bell": "{{volunteer}}さんが{{organisation}}に{{amount}} {{currency}}の経費精算を申請しました",
-    "new_claim_cta": "申請を確認"
+    "new_claim_cta": "申請を確認",
+    "approved_bell": "{{amount}} {{currency}} の経費申請が承認されました",
+    "rejected_bell": "{{amount}} {{currency}} の経費申請は承認されませんでした",
+    "paid_bell": "{{amount}} {{currency}} の経費申請が支払われました",
+    "new_claim_fallback_note": "{{organisation}} にはこの申請を審査できる他の管理者がいないため、このメッセージが送信されています。"
   },
   "listing_moderation": {
     "approved_subject": "掲載が承認されました — {{title}}",

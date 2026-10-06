@@ -813,6 +813,7 @@ function expenseStatus(status, t = null) {
   const messages = {
     'expense-submitted': { type: 'success', key: 'success_submitted' },
     'expense-org-required': { type: 'error', key: 'error_org_required', field: 'organization_id' },
+    'expense-opportunity-mismatch': { type: 'error', key: 'error_opportunity_mismatch', field: 'opportunity_id' },
     'expense-amount-invalid': { type: 'error', key: 'error_amount_invalid', field: 'amount' },
     'expense-description-required': { type: 'error', key: 'error_description_required', field: 'description' },
     'expense-validation': { type: 'error', key: 'error_validation' },
@@ -1803,6 +1804,33 @@ function hoursOrganizations(organizations, applications) {
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
 }
 
+/**
+ * The opportunities a volunteer may name on an expense claim: ones they were
+ * accepted onto, grouped by organisation. The page works without JavaScript, so
+ * it is one list (an optgroup per organisation) checked again on submit.
+ */
+function expenseOpportunityGroups(applications) {
+  const groups = new Map();
+  for (const application of applications) {
+    if (application.status !== 'approved' || !application.organization || !application.opportunity.id) continue;
+    const org = application.organization;
+    if (!groups.has(org.id)) groups.set(org.id, { organization: org, opportunities: [] });
+    const group = groups.get(org.id);
+    if (!group.opportunities.some((opp) => opp.id === application.opportunity.id)) {
+      group.opportunities.push({
+        id: application.opportunity.id,
+        title: application.opportunity.title || `#${application.opportunity.id}`
+      });
+    }
+  }
+  return [...groups.values()]
+    .map((group) => ({
+      ...group,
+      opportunities: group.opportunities.sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }))
+    }))
+    .sort((a, b) => a.organization.name.localeCompare(b.organization.name, 'en', { sensitivity: 'base' }));
+}
+
 function hourStatusPresentation(status, t = null) {
   const value = trimmed(status) || 'pending';
   if (value === 'pending') {
@@ -2756,7 +2784,16 @@ router.get('/expenses', asyncRoute(async (req, res) => {
   try {
     const expenses = await callApi(token, 'GET', '/expenses?per_page=50');
     const organizations = await callApi(token, 'GET', '/my-organisations?per_page=50');
+    const applications = collectionFrom(
+      await callApi(token, 'GET', '/applications?status=approved&per_page=50')
+    ).map(normalizeApplication);
     dashboard = normalizeExpenseDashboard(expenses, organizations, res.locals.t);
+    // The API accepts a claim from an organisation that accepted the volunteer onto
+    // an opportunity, or one they belong to (userCanClaimAgainstOrganization). Being
+    // accepted does not make someone a member, so the member list alone hid the
+    // organisation most volunteers claim from. Same merge as the hours page.
+    dashboard.organizations = hoursOrganizations(collectionFrom(organizations), applications);
+    dashboard.opportunityGroups = expenseOpportunityGroups(applications);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load your expenses. Please try again.';
@@ -3303,15 +3340,16 @@ router.post('/group-signups/:id(\\d+)/cancel', asyncRoute(async (req, res) => {
 
 router.post('/expenses', asyncRoute(async (req, res) => {
   const organizationId = positiveInteger(req.body.organization_id);
+  const opportunityId = positiveInteger(req.body.opportunity_id);
   const amount = decimalNumber(req.body.amount);
   const description = trimmed(req.body.description);
-  // Both selects and all three typed fields came back blank on any of the four failure
-  // exits, so a bad amount made the member retype the whole claim.
+  // Every select and typed field came back blank on any failure exit, so a bad
+  // amount made the member retype the whole claim.
   rememberFormReplay(req, 'volunteering', 'expenses', {
     organizationId: trimmed(req.body.organization_id),
+    opportunityId: trimmed(req.body.opportunity_id),
     expenseType: trimmed(req.body.expense_type),
     amount: trimmed(req.body.amount),
-    currency: trimmed(req.body.currency, 10),
     description
   });
 
@@ -3325,6 +3363,24 @@ router.post('/expenses', asyncRoute(async (req, res) => {
     return redirectTo(res, '/volunteering/expenses?status=expense-description-required');
   }
 
+  // One list holds every organisation's opportunities, so the member can pick one
+  // from a different organisation. Catch that here with a message that names the
+  // field, rather than letting the API answer a bare "not found".
+  if (opportunityId !== null) {
+    const token = tokenFrom(req);
+    const applications = token
+      ? collectionFrom(await callApi(token, 'GET', '/applications?status=approved&per_page=50')).map(normalizeApplication)
+      : [];
+    const belongs = applications.some((application) => application.status === 'approved'
+      && application.opportunity.id === opportunityId
+      && application.organization
+      && application.organization.id === organizationId);
+    if (!belongs) {
+      return redirectTo(res, '/volunteering/expenses?status=expense-opportunity-mismatch');
+    }
+  }
+
+  // No currency: the API always records the community's own currency.
   const expenseType = trimmed(req.body.expense_type);
   return runAction(
     req,
@@ -3333,12 +3389,12 @@ router.post('/expenses', asyncRoute(async (req, res) => {
     '/expenses',
     {
       organization_id: organizationId,
+      ...(opportunityId !== null ? { opportunity_id: opportunityId } : {}),
       expense_type: ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'].includes(expenseType)
         ? expenseType
         : 'travel',
       amount,
-      description,
-      currency: trimmed(req.body.currency, 10)
+      description
     },
     '/volunteering/expenses?status=expense-submitted',
     '/volunteering/expenses?status=expense-failed'

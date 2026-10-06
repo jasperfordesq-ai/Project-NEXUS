@@ -284,7 +284,6 @@
       "organisation": "Organisatie",
       "type": "Soort uitgaven",
       "amount": "Hoeveelheid",
-      "currency": "Munteenheid",
       "description": "Beschrijving",
       "receipt": "Receipt",
       "receipt_none": "Geen ontvangstbewijs bijgevoegd",
@@ -292,7 +291,9 @@
       "receipt_attach": "Bon bijvoegen",
       "receipt_replace": "Replace",
       "receipt_remove": "Ontvangstbewijs verwijderen",
-      "currency_placeholder": "EUR"
+      "opportunity": "Vrijwilligersplek (optioneel)",
+      "opportunity_hint": "Kies de vrijwilligersplek waarvoor deze kosten zijn gemaakt, als dat zo is.",
+      "opportunity_none": "Niet voor een specifieke vrijwilligersplek"
     },
     "no_organisation": "Er zijn nog geen goedgekeurde vrijwilligersorganisaties beschikbaar voor onkosten.",
     "cancel": "Annuleren",
@@ -314,8 +315,7 @@
       "rejected": "Afgewezen",
       "paid": "Betaald"
     },
-    "invalid_amount": "Voer een geldig bedrag in (maximaal 2 decimalen).",
-    "invalid_currency": "Gebruik een valutacode van 3 letters (bijv. EUR)."
+    "invalid_amount": "Voer een geldig bedrag in (maximaal 2 decimalen)."
   },
   "org_expenses": {
     "intro": "Onkostendeclaraties die je vrijwilligers bij deze organisatie hebben ingediend. Keur nieuwe declaraties goed of af en markeer goedgekeurde declaraties als betaald zodra je ze hebt uitbetaald.",

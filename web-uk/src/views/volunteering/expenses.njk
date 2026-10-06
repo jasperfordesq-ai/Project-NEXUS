@@ -97,6 +97,29 @@
         </select>
       </div>
 
+      {% if dashboard.opportunityGroups and dashboard.opportunityGroups.length %}
+        <div class="govuk-form-group{% if status and status.field == 'opportunity_id' %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label" for="opportunity_id">{{ t("govuk_alpha_volunteering.expenses.opportunity_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
+          <div id="opportunity_id-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.expenses.opportunity_hint") }}</div>
+          {% if status and status.field == 'opportunity_id' %}
+            <p id="opportunity_id-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.shared.error_title") }}:</span>
+              {{ status.message }}
+            </p>
+          {% endif %}
+          <select class="govuk-select" id="opportunity_id" name="opportunity_id" aria-describedby="opportunity_id-hint{% if status and status.field == 'opportunity_id' %} opportunity_id-error{% endif %}">
+            <option value="">{{ t("govuk_alpha_volunteering.expenses.opportunity_none") }}</option>
+            {% for group in dashboard.opportunityGroups %}
+              <optgroup label="{{ group.organization.name }}">
+                {% for opportunity in group.opportunities %}
+                  <option value="{{ opportunity.id }}"{% if expenseForm and expenseForm.opportunityId == (opportunity.id | string) %} selected{% endif %}>{{ opportunity.title }}</option>
+                {% endfor %}
+              </optgroup>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
       <div class="govuk-form-group">
         <label class="govuk-label" for="expense_type">{{ t("govuk_alpha_volunteering.expenses.type_label") }}</label>
         <select class="govuk-select" id="expense_type" name="expense_type">
@@ -118,11 +141,6 @@
         <input class="govuk-input govuk-input--width-10" id="amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" aria-describedby="amount-hint{% if status and status.field == 'amount' %} amount-error{% endif %}" value="{{ expenseForm.amount if expenseForm else '' }}" required>
       </div>
 
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="currency">{{ t("govuk_alpha_volunteering.expenses.currency_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
-        <div id="currency-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.expenses.currency_hint") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="currency" name="currency" type="text" maxlength="10" value="{{ expenseForm.currency if expenseForm else '' }}" aria-describedby="currency-hint">
-      </div>
 
       <div class="govuk-form-group{% if status and status.field == 'description' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="description">{{ t("govuk_alpha_volunteering.expenses.description_label") }}</label>

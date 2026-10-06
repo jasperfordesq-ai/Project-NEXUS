@@ -633,7 +633,11 @@
     "new_claim_title": "Nuova richiesta di rimborso",
     "new_claim_body": "<strong>{{volunteer}}</strong> ha chiesto il rimborso di <strong>{{amount}} {{currency}}</strong> per <strong>{{type}}</strong> a <strong>{{organisation}}</strong>. Ti preghiamo di esaminarla.",
     "new_claim_bell": "{{volunteer}} ha inviato una richiesta di rimborso di {{amount}} {{currency}} a {{organisation}}",
-    "new_claim_cta": "Esamina la richiesta"
+    "new_claim_cta": "Esamina la richiesta",
+    "approved_bell": "La tua richiesta di rimborso spese di {{amount}} {{currency}} è stata approvata",
+    "rejected_bell": "La tua richiesta di rimborso spese di {{amount}} {{currency}} non è stata approvata",
+    "paid_bell": "La tua richiesta di rimborso spese di {{amount}} {{currency}} è stata pagata",
+    "new_claim_fallback_note": "Ricevi questo messaggio perché {{organisation}} non ha altri amministratori che possano esaminarla."
   },
   "listing_moderation": {
     "approved_subject": "Il tuo annuncio è stato approvato — {{title}}",

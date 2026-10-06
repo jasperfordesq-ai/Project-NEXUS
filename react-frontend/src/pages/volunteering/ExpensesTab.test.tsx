@@ -37,7 +37,49 @@ vi.mock('@/lib/api', () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: { items: [], has_more: false } }),
     post: vi.fn().mockResolvedValue({ success: true }),
+    upload: vi.fn().mockResolvedValue({ success: true }),
   },
+}));
+
+// Native stand-ins for the claim form's controls (HeroUI's Select does not run
+// in jsdom). The component imports these from their subpaths.
+vi.mock('@/components/ui/Select', () => ({
+  Select: ({ label, children, onSelectionChange, selectedKeys }: {
+    label?: string;
+    children?: React.ReactNode;
+    onSelectionChange?: (keys: Set<string>) => void;
+    selectedKeys?: string[];
+  }) => (
+    <select
+      aria-label={label}
+      value={selectedKeys?.[0] ?? ''}
+      onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
+    >
+      <option value="" />
+      {children}
+    </select>
+  ),
+  SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
+    <option value={id}>{children}</option>
+  ),
+}));
+vi.mock('@/components/ui/Modal', () => ({
+  Modal: ({ children, isOpen }: { children?: React.ReactNode; isOpen?: boolean }) => (isOpen ? <div role="dialog">{children}</div> : null),
+  ModalContent: ({ children }: { children?: React.ReactNode | ((close: () => void) => React.ReactNode) }) =>
+    <>{typeof children === 'function' ? children(() => {}) : children}</>,
+  ModalHeader: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  ModalBody: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  ModalFooter: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock('@/components/ui/Input', () => ({
+  Input: ({ label, value, onValueChange }: { label?: string; value?: string; onValueChange?: (v: string) => void }) => (
+    <input aria-label={label} value={value ?? ''} onChange={(e) => onValueChange?.(e.target.value)} />
+  ),
+}));
+vi.mock('@/components/ui/Textarea', () => ({
+  Textarea: ({ label, value, onValueChange }: { label?: string; value?: string; onValueChange?: (v: string) => void }) => (
+    <textarea aria-label={label} value={value ?? ''} onChange={(e) => onValueChange?.(e.target.value)} />
+  ),
 }));
 
 vi.mock('@/contexts/ToastContext', () => ({
@@ -171,6 +213,99 @@ describe('ExpensesTab', () => {
     const buttons = screen.getAllByRole('button');
     const tryAgainBtn = buttons.find((btn) => btn.textContent?.includes('Try Again'));
     expect(tryAgainBtn).toBeTruthy();
+  });
+
+  // ── The claim form ──────────────────────────────────────────────────
+  // A volunteer may claim from an organisation they belong to OR one that
+  // accepted them onto an opportunity (VolunteerExpenseService::
+  // userCanClaimAgainstOrganization). Being accepted does not make someone a
+  // member, so listing only "my organisations" hid the organisation most
+  // volunteers claim from.
+
+  const approvedApplications = [
+    { id: 11, status: 'approved', opportunity: { id: 501, title: 'Garden clean-up' }, organization: { id: 7, name: 'Riverside Garden' } },
+    { id: 12, status: 'approved', opportunity: { id: 502, title: 'Seed swap stall' }, organization: { id: 7, name: 'Riverside Garden' } },
+    { id: 13, status: 'approved', opportunity: { id: 601, title: 'Food bank shift' }, organization: { id: 8, name: 'Food Bank' } },
+    { id: 14, status: 'pending', opportunity: { id: 701, title: 'Pending thing' }, organization: { id: 9, name: 'Not yet' } },
+  ];
+
+  function mockFormData(myOrgs: unknown[] = []) {
+    vi.mocked(api.get).mockImplementation((endpoint: string) => {
+      if (endpoint.startsWith('/v2/volunteering/applications')) {
+        return Promise.resolve({ success: true, data: approvedApplications });
+      }
+      if (endpoint.startsWith('/v2/volunteering/my-organisations')) {
+        return Promise.resolve({ success: true, data: myOrgs });
+      }
+      return Promise.resolve({ success: true, data: { items: [], has_more: false } });
+    });
+  }
+
+  async function openForm() {
+    render(<ExpensesTab />);
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/volunteering/applications')));
+    fireEvent.click(screen.getByRole('button', { name: /Submit Expense/i }));
+    return screen.findByRole('dialog');
+  }
+
+  function fillRequired(dialog: HTMLElement) {
+    fireEvent.change(dialog.querySelector('input[aria-label="expenses.form.amount"]')!, { target: { value: '8.50' } });
+    fireEvent.change(dialog.querySelector('textarea')!, { target: { value: 'Bus fare' } });
+  }
+
+  it('offers organisations the volunteer was accepted by, not only ones they belong to', async () => {
+    mockFormData([{ id: 3, name: 'My Own Club', status: 'active', member_role: 'owner' }]);
+    const dialog = await openForm();
+    const orgSelect = dialog.querySelector('select[aria-label="expenses.form.organisation"]') as HTMLSelectElement;
+    await waitFor(() => {
+      const names = Array.from(orgSelect.options).map((o) => o.textContent);
+      expect(names).toEqual(expect.arrayContaining(['Riverside Garden', 'Food Bank', 'My Own Club']));
+      expect(names).not.toContain('Not yet');
+    });
+  });
+
+  it('offers only the chosen organisation\'s accepted opportunities and sends the one picked', async () => {
+    mockFormData();
+    const dialog = await openForm();
+    const orgSelect = dialog.querySelector('select[aria-label="expenses.form.organisation"]') as HTMLSelectElement;
+    await waitFor(() => expect(orgSelect.options.length).toBeGreaterThan(2));
+    fireEvent.change(orgSelect, { target: { value: '7' } });
+
+    const oppSelect = await waitFor(() => {
+      const el = dialog.querySelector('select[aria-label="expenses.form.opportunity"]') as HTMLSelectElement | null;
+      expect(el).not.toBeNull();
+      return el!;
+    });
+    const titles = Array.from(oppSelect.options).map((o) => o.textContent).filter(Boolean);
+    expect(titles).toEqual(['expenses.form.opportunity_none', 'Garden clean-up', 'Seed swap stall']);
+
+    fireEvent.change(oppSelect, { target: { value: '502' } });
+    fillRequired(dialog);
+    fireEvent.click(screen.getByRole('button', { name: 'expenses.submit_button' }));
+
+    await waitFor(() => expect(api.upload).toHaveBeenCalled());
+    const payload = vi.mocked(api.upload).mock.calls[0]![1] as FormData;
+    expect(payload.get('organization_id')).toBe('7');
+    expect(payload.get('opportunity_id')).toBe('502');
+  });
+
+  it('sends no opportunity when none is chosen, and has no currency box', async () => {
+    mockFormData();
+    const dialog = await openForm();
+    const orgSelect = dialog.querySelector('select[aria-label="expenses.form.organisation"]') as HTMLSelectElement;
+    await waitFor(() => expect(orgSelect.options.length).toBeGreaterThan(2));
+    fireEvent.change(orgSelect, { target: { value: '8' } });
+
+    expect(dialog.querySelector('input[aria-label="expenses.form.currency"]')).toBeNull();
+
+    fillRequired(dialog);
+    fireEvent.click(screen.getByRole('button', { name: 'expenses.submit_button' }));
+
+    await waitFor(() => expect(api.upload).toHaveBeenCalled());
+    const payload = vi.mocked(api.upload).mock.calls[0]![1] as FormData;
+    expect(payload.get('organization_id')).toBe('8');
+    expect(payload.has('opportunity_id')).toBe(false);
+    expect(payload.has('currency')).toBe(false);
   });
 
   it('retries loading when Try Again is clicked', async () => {

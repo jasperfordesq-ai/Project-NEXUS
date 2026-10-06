@@ -633,7 +633,11 @@
     "new_claim_title": "Nouvelle note de frais",
     "new_claim_body": "<strong>{{volunteer}}</strong> demande le remboursement de <strong>{{amount}} {{currency}}</strong> pour <strong>{{type}}</strong> auprès de <strong>{{organisation}}</strong>. Merci de l’examiner.",
     "new_claim_bell": "{{volunteer}} a soumis une note de frais de {{amount}} {{currency}} à {{organisation}}",
-    "new_claim_cta": "Examiner la note"
+    "new_claim_cta": "Examiner la note",
+    "approved_bell": "Votre note de frais de {{amount}} {{currency}} a été approuvée",
+    "rejected_bell": "Votre note de frais de {{amount}} {{currency}} n’a pas été approuvée",
+    "paid_bell": "Votre note de frais de {{amount}} {{currency}} a été remboursée",
+    "new_claim_fallback_note": "Vous recevez ce message parce que {{organisation}} n’a aucun autre administrateur pouvant l’examiner."
   },
   "listing_moderation": {
     "approved_subject": "Votre annonce a été approuvée — {{title}}",

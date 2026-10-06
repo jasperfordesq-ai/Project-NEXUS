@@ -633,7 +633,11 @@
     "new_claim_title": "Nueva solicitud de gastos",
     "new_claim_body": "<strong>{{volunteer}}</strong> ha solicitado <strong>{{amount}} {{currency}}</strong> por <strong>{{type}}</strong> a <strong>{{organisation}}</strong>. Revísala, por favor.",
     "new_claim_bell": "{{volunteer}} ha enviado una solicitud de gastos de {{amount}} {{currency}} a {{organisation}}",
-    "new_claim_cta": "Revisar solicitud"
+    "new_claim_cta": "Revisar solicitud",
+    "approved_bell": "Su solicitud de reembolso de gastos de {{amount}} {{currency}} ha sido aprobada",
+    "rejected_bell": "Su solicitud de reembolso de gastos de {{amount}} {{currency}} no ha sido aprobada",
+    "paid_bell": "Su solicitud de reembolso de gastos de {{amount}} {{currency}} ha sido pagada",
+    "new_claim_fallback_note": "Recibe este mensaje porque {{organisation}} no tiene ningún otro administrador que pueda revisarla."
   },
   "listing_moderation": {
     "approved_subject": "Tu anuncio ha sido aprobado — {{title}}",

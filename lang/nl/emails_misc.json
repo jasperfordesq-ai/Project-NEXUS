@@ -633,7 +633,11 @@
     "new_claim_title": "Nieuwe onkostendeclaratie",
     "new_claim_body": "<strong>{{volunteer}}</strong> heeft <strong>{{amount}} {{currency}}</strong> voor <strong>{{type}}</strong> gedeclareerd bij <strong>{{organisation}}</strong>. Beoordeel de declaratie alstublieft.",
     "new_claim_bell": "{{volunteer}} heeft een onkostendeclaratie van {{amount}} {{currency}} ingediend bij {{organisation}}",
-    "new_claim_cta": "Declaratie beoordelen"
+    "new_claim_cta": "Declaratie beoordelen",
+    "approved_bell": "Uw onkostendeclaratie van {{amount}} {{currency}} is goedgekeurd",
+    "rejected_bell": "Uw onkostendeclaratie van {{amount}} {{currency}} is niet goedgekeurd",
+    "paid_bell": "Uw onkostendeclaratie van {{amount}} {{currency}} is uitbetaald",
+    "new_claim_fallback_note": "U ontvangt dit bericht omdat {{organisation}} geen andere beheerder heeft die de declaratie kan beoordelen."
   },
   "listing_moderation": {
     "approved_subject": "Je advertentie is goedgekeurd — {{title}}",

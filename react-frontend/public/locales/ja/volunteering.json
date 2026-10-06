@@ -284,7 +284,6 @@
       "organisation": "組織",
       "type": "費用の種類",
       "amount": "額",
-      "currency": "通貨",
       "description": "説明",
       "receipt": "Receipt",
       "receipt_none": "領収書は添付されていません",
@@ -292,7 +291,9 @@
       "receipt_attach": "領収書添付",
       "receipt_replace": "Replace",
       "receipt_remove": "レシートを削除する",
-      "currency_placeholder": "EUR"
+      "opportunity": "ボランティア機会（任意）",
+      "opportunity_hint": "この費用が特定の機会のためのものであれば、その機会を選んでください。",
+      "opportunity_none": "特定の機会のためではない"
     },
     "no_organisation": "費用を負担できる承認されたボランティア団体はまだありません。",
     "cancel": "キャンセル",
@@ -314,8 +315,7 @@
       "rejected": "拒否されました",
       "paid": "有料"
     },
-    "invalid_amount": "有効な金額を入力してください（小数点以下2桁まで）。",
-    "invalid_currency": "3文字の通貨コードを使用してください（例：EUR）。"
+    "invalid_amount": "有効な金額を入力してください（小数点以下2桁まで）。"
   },
   "org_expenses": {
     "intro": "ボランティアがこの団体に提出した経費精算の申請です。新しい申請を承認または却下し、承認済みの申請は支払いが完了したら支払い済みにしてください。",

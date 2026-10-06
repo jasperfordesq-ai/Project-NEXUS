@@ -288,7 +288,6 @@
       "organisation": "Organizacja",
       "type": "Rodzaj wydatku",
       "amount": "Kwota",
-      "currency": "Waluta",
       "description": "Opis",
       "receipt": "Paragon",
       "receipt_none": "Brak dołączonego rachunku",
@@ -296,7 +295,9 @@
       "receipt_attach": "Dołącz paragon",
       "receipt_replace": "Zastąp",
       "receipt_remove": "Usuń paragon",
-      "currency_placeholder": "EUR"
+      "opportunity": "Okazja do wolontariatu (opcjonalnie)",
+      "opportunity_hint": "Wybierz okazję do wolontariatu, której dotyczył ten koszt, jeśli dotyczył.",
+      "opportunity_none": "Nie dotyczy konkretnej okazji"
     },
     "no_organisation": "Żadne zatwierdzone organizacje wolontariackie nie są jeszcze dostępne w celu pokrycia wydatków.",
     "cancel": "Anuluj",
@@ -318,8 +319,7 @@
       "rejected": "Odrzucony",
       "paid": "Płatny"
     },
-    "invalid_amount": "Wprowadź prawidłową kwotę (maksymalnie 2 miejsca po przecinku).",
-    "invalid_currency": "Użyj 3-literowego kodu waluty (np. EUR)."
+    "invalid_amount": "Wprowadź prawidłową kwotę (maksymalnie 2 miejsca po przecinku)."
   },
   "org_expenses": {
     "intro": "Wnioski o zwrot wydatków, które Twoi wolontariusze złożyli w tej organizacji. Zatwierdzaj lub odrzucaj nowe wnioski, a zatwierdzone oznaczaj jako opłacone, gdy już je wypłacisz.",

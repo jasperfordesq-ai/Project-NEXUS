@@ -633,7 +633,11 @@
     "new_claim_title": "New expense claim",
     "new_claim_body": "<strong>{{volunteer}}</strong> has claimed <strong>{{amount}} {{currency}}</strong> for <strong>{{type}}</strong> from <strong>{{organisation}}</strong>. Please review it.",
     "new_claim_bell": "{{volunteer}} submitted an expense claim of {{amount}} {{currency}} to {{organisation}}",
-    "new_claim_cta": "Review claim"
+    "new_claim_cta": "Review claim",
+    "approved_bell": "Your expense claim of {{amount}} {{currency}} was approved",
+    "rejected_bell": "Your expense claim of {{amount}} {{currency}} was not approved",
+    "paid_bell": "Your expense claim of {{amount}} {{currency}} has been paid",
+    "new_claim_fallback_note": "You are receiving this because {{organisation}} has no other administrator who can review it."
   },
   "listing_moderation": {
     "approved_subject": "Your listing has been approved — {{title}}",

@@ -284,7 +284,6 @@
       "organisation": "Organisation",
       "type": "Expense Type",
       "amount": "Amount",
-      "currency": "Currency",
       "description": "Description",
       "receipt": "Receipt",
       "receipt_none": "No receipt attached",
@@ -292,7 +291,9 @@
       "receipt_attach": "Attach receipt",
       "receipt_replace": "Replace",
       "receipt_remove": "Remove receipt",
-      "currency_placeholder": "EUR"
+      "opportunity": "Opportunity (optional)",
+      "opportunity_hint": "Choose the opportunity this cost was for, if it was for one.",
+      "opportunity_none": "Not for a specific opportunity"
     },
     "no_organisation": "No approved volunteer organisations are available for expenses yet.",
     "cancel": "Cancel",
@@ -314,8 +315,7 @@
       "rejected": "Rejected",
       "paid": "Paid"
     },
-    "invalid_amount": "Enter a valid amount (up to 2 decimal places).",
-    "invalid_currency": "Use a 3-letter currency code (e.g. EUR)."
+    "invalid_amount": "Enter a valid amount (up to 2 decimal places)."
   },
   "org_expenses": {
     "intro": "Expense claims your volunteers have submitted to this organisation. Approve or reject new claims, then mark approved claims as paid once you have paid them.",

@@ -290,7 +290,6 @@
       "organisation": "Eagraíocht",
       "type": "Cineál Costais",
       "amount": "Méid",
-      "currency": "Airgeadra",
       "description": "Cur Síos",
       "receipt": "Admháil",
       "receipt_none": "Níl aon admháil ceangailte",
@@ -298,7 +297,9 @@
       "receipt_attach": "Cuir admháil leis",
       "receipt_replace": "Ionadaigh",
       "receipt_remove": "Bain admháil",
-      "currency_placeholder": "EUR"
+      "opportunity": "Deis (roghnach)",
+      "opportunity_hint": "Roghnaigh an deis a raibh an costas seo ar a son, más ann di.",
+      "opportunity_none": "Ní le haghaidh deise ar leith"
     },
     "no_organisation": "Níl aon eagraíocht oibre deonaí cheadaithe ar fáil le haghaidh costas go fóill.",
     "cancel": "Cealaigh",
@@ -320,8 +321,7 @@
       "rejected": "Diúltaithe",
       "paid": "Íoctha"
     },
-    "invalid_amount": "Cuir isteach méid bailí (suas le 2 ionad deachúlach).",
-    "invalid_currency": "Úsáid cód airgeadra 3 litir (m.sh. EUR)."
+    "invalid_amount": "Cuir isteach méid bailí (suas le 2 ionad deachúlach)."
   },
   "org_expenses": {
     "intro": "Éilimh ar chostais atá curtha isteach ag d’oibrithe deonacha chuig an eagraíocht seo. Faomh nó diúltaigh d’éilimh nua, ansin marcáil éilimh fhaofa mar íoctha nuair a bheidh siad íoctha agat.",

@@ -633,7 +633,11 @@
     "new_claim_title": "Neue Spesenabrechnung",
     "new_claim_body": "<strong>{{volunteer}}</strong> hat <strong>{{amount}} {{currency}}</strong> für <strong>{{type}}</strong> bei <strong>{{organisation}}</strong> geltend gemacht. Bitte prüfen Sie die Abrechnung.",
     "new_claim_bell": "{{volunteer}} hat bei {{organisation}} eine Spesenabrechnung über {{amount}} {{currency}} eingereicht",
-    "new_claim_cta": "Abrechnung prüfen"
+    "new_claim_cta": "Abrechnung prüfen",
+    "approved_bell": "Ihre Spesenabrechnung über {{amount}} {{currency}} wurde genehmigt",
+    "rejected_bell": "Ihre Spesenabrechnung über {{amount}} {{currency}} wurde nicht genehmigt",
+    "paid_bell": "Ihre Spesenabrechnung über {{amount}} {{currency}} wurde ausgezahlt",
+    "new_claim_fallback_note": "Sie erhalten diese Nachricht, weil {{organisation}} keine andere Verwaltungsperson hat, die sie prüfen kann."
   },
   "listing_moderation": {
     "approved_subject": "Ihr Angebot wurde genehmigt — {{title}}",

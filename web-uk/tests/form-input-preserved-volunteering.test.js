@@ -235,7 +235,6 @@ describe('expense claim keeps every typed field', () => {
     const page = await agent.get(`${MOUNT}/expenses?status=expense-amount-invalid`);
     expect(page.status).toBe(200);
     expect(valueOf(page.text, 'amount')).toBe('0');
-    expect(valueOf(page.text, 'currency')).toBe('EUR');
     expect(textareaValue(page.text, 'description')).toBe(DESCRIPTION);
     expect(isSelected(page.text, '4')).toBe(true);
   });
