@@ -167,6 +167,7 @@ class SupportJiraTicketService
             $fallbackNote,
             $this->setPriorityAndLabels($issueKey, $report, $requestType, $tenant),
             $this->assignIssue($issueKey, $report),
+            $this->addWatchers($issueKey, $report),
             $this->attachDiagnostics($serviceDeskId, $issueKey, $report),
             $screenshotWarning,
         ]);
@@ -576,6 +577,36 @@ class SupportJiraTicketService
         }
 
         return $response->successful() ? null : $this->warn($report, 'assign the ticket', 'HTTP ' . $response->status());
+    }
+
+    /**
+     * Adds every support_jira.watcher_account_ids account as a watcher on the
+     * new ticket, so other support staff get Jira's emails about it as well.
+     * Returns a warning string naming each failure, null on success or when unset.
+     */
+    private function addWatchers(string $issueKey, SupportReport $report): ?string
+    {
+        $failures = [];
+        foreach ((array) config('support_jira.watcher_account_ids', []) as $accountId) {
+            $accountId = trim((string) $accountId);
+            if ($accountId === '') {
+                continue;
+            }
+
+            try {
+                // Jira takes the account id as a bare JSON string, not an object.
+                $response = $this->client()
+                    ->withBody((string) json_encode($accountId), 'application/json')
+                    ->post('/rest/api/3/issue/' . rawurlencode($issueKey) . '/watchers');
+                if (!$response->successful()) {
+                    $failures[] = 'HTTP ' . $response->status();
+                }
+            } catch (\Throwable $e) {
+                $failures[] = $e->getMessage();
+            }
+        }
+
+        return $failures === [] ? null : $this->warn($report, 'add a watcher', implode('; ', $failures));
     }
 
     /**

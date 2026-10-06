@@ -28,6 +28,8 @@ class SupportJiraMemberFlowTest extends TestCase
 
     private const SITE = 'https://helpdesk.example.test';
     private const OWNER = '712020:owner-account-id';
+    private const WATCHER = '712020:watcher-account-id';
+    private const SECOND_WATCHER = '712020:second-watcher-id';
 
     private SupportJiraFlowRecordingMailer $mailer;
 
@@ -83,6 +85,59 @@ class SupportJiraMemberFlowTest extends TestCase
         $row = DB::table('support_reports')->where('id', $reportId)->first();
         $this->assertSame('HELP-50', $row->jira_issue_key);
         $this->assertStringContainsString('assign', (string) $row->jira_last_error);
+    }
+
+    public function test_every_configured_watcher_is_added_to_each_new_ticket(): void
+    {
+        config(['support_jira.watcher_account_ids' => [self::WATCHER, self::SECOND_WATCHER]]);
+        $reportId = $this->insertReport($this->member());
+        $this->fakeJira();
+
+        $this->runJob($reportId);
+
+        // Jira's add-watcher call takes the account id as a bare JSON string.
+        foreach ([self::WATCHER, self::SECOND_WATCHER] as $accountId) {
+            Http::assertSent(fn (Request $r) => $r->method() === 'POST'
+                && parse_url($r->url(), PHP_URL_PATH) === '/rest/api/3/issue/HELP-50/watchers'
+                && $r->body() === json_encode($accountId));
+        }
+        $this->assertNull(DB::table('support_reports')->where('id', $reportId)->value('jira_last_error'));
+    }
+
+    public function test_no_watcher_is_added_when_none_is_configured(): void
+    {
+        config(['support_jira.watcher_account_ids' => []]);
+        $reportId = $this->insertReport($this->member());
+        $this->fakeJira();
+
+        $this->runJob($reportId);
+
+        Http::assertNotSent(fn (Request $r) => str_ends_with($r->url(), '/watchers'));
+    }
+
+    public function test_a_failed_watcher_keeps_the_ticket_and_records_a_warning(): void
+    {
+        config(['support_jira.watcher_account_ids' => [self::WATCHER]]);
+        $reportId = $this->insertReport($this->member());
+        $this->fakeJira(watchStatus: 400);
+
+        $this->runJob($reportId);
+
+        $row = DB::table('support_reports')->where('id', $reportId)->first();
+        $this->assertSame('HELP-50', $row->jira_issue_key);
+        $this->assertStringContainsString('watcher', (string) $row->jira_last_error);
+    }
+
+    public function test_watcher_ids_are_read_from_a_comma_separated_setting(): void
+    {
+        putenv('SUPPORT_JIRA_WATCHER_ACCOUNT_IDS= ' . self::WATCHER . ' ,, ' . self::SECOND_WATCHER . ' ,' . self::WATCHER);
+        try {
+            $config = require base_path('config/support_jira.php');
+        } finally {
+            putenv('SUPPORT_JIRA_WATCHER_ACCOUNT_IDS');
+        }
+
+        $this->assertSame([self::WATCHER, self::SECOND_WATCHER], $config['watcher_account_ids']);
     }
 
     public function test_with_member_email_on_the_ticket_names_the_member(): void
@@ -183,7 +238,7 @@ class SupportJiraMemberFlowTest extends TestCase
         (new CreateSupportJiraTicket($reportId, $this->testTenantId))->handle();
     }
 
-    private function fakeJira(bool $customerExists = false, int $assignStatus = 204): void
+    private function fakeJira(bool $customerExists = false, int $assignStatus = 204, int $watchStatus = 204): void
     {
         Http::fake([
             self::SITE . '/rest/servicedeskapi/customer' => $customerExists
@@ -197,6 +252,7 @@ class SupportJiraMemberFlowTest extends TestCase
             self::SITE . '/rest/api/3/user/search*' => Http::response([['accountId' => 'acct-from-search']], 200),
             self::SITE . '/rest/servicedeskapi/request' => Http::response(['issueKey' => 'HELP-50'], 201),
             self::SITE . '/rest/api/3/issue/HELP-50/assignee' => Http::response(null, $assignStatus),
+            self::SITE . '/rest/api/3/issue/HELP-50/watchers' => Http::response(null, $watchStatus),
             self::SITE . '/rest/api/3/issue/HELP-50' => Http::response(null, 204),
         ]);
     }

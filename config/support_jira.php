@@ -64,6 +64,15 @@ return [
     // Empty = tickets stay unassigned.
     'assignee_account_id' => trim((string) env('SUPPORT_JIRA_ASSIGNEE_ACCOUNT_ID', '')),
 
+    // Atlassian account ids (comma-separated) added as watchers on every new
+    // ticket, so other support staff are emailed about it too: the help desk's
+    // notification scheme emails only the assignee, watchers and reporter.
+    // Empty = no watchers added.
+    'watcher_account_ids' => array_values(array_unique(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('SUPPORT_JIRA_WATCHER_ACCOUNT_IDS', ''))
+    ), fn (string $id): bool => $id !== ''))),
+
     // Address Jira's customer notifications are sent from (named in the
     // platform receipt so members know where to look). Empty = jira@<site
     // host>, Jira Cloud's default. Set it once a custom sender domain is
