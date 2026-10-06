@@ -199,7 +199,8 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'home', href: '/', labelKey: 'nav.home', icon: Home, placements: { mobile: [{ section: 'main' }] } },
   { id: 'feed', href: '/feed', labelKey: 'nav.feed', descriptionKey: 'nav_desc.feed', icon: Newspaper, auth: 'authenticated', module: 'feed', placements: both('primary', 'main') },
   { id: 'dashboard', href: '/dashboard', labelKey: 'nav.dashboard', descriptionKey: 'nav_desc.dashboard', icon: LayoutDashboard, auth: 'authenticated', module: 'dashboard', placements: both('community-main', 'main') },
-  { id: 'explore', href: '/explore', labelKey: 'nav.explore', descriptionKey: 'nav_desc.explore', icon: Compass, feature: 'explore', placements: both('primary', 'main') },
+  // /explore sits inside ProtectedRoute (member identity-bearing discovery), so visitors are not offered it.
+  { id: 'explore', href: '/explore', labelKey: 'nav.explore', descriptionKey: 'nav_desc.explore', icon: Compass, auth: 'authenticated', feature: 'explore', placements: both('primary', 'main') },
   { id: 'messages', href: '/messages', labelKey: 'nav.messages', descriptionKey: 'nav_desc.messages', icon: MessageSquare, auth: 'authenticated', module: 'messages', placements: both('primary', 'main') },
   { id: 'saved', href: '/saved', labelKey: 'nav.saved', descriptionKey: 'nav_desc.saved', icon: Bookmark, auth: 'authenticated', placements: both('tools', 'main') },
   { id: 'activity', href: '/activity', labelKey: 'nav.activity', descriptionKey: 'nav_desc.activity', icon: Activity, auth: 'authenticated', placements: both('tools', 'main') },

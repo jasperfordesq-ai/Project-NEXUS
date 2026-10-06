@@ -146,6 +146,7 @@ describe('navigationRegistry', () => {
       'activity',
       'ai-chat',
       'dashboard',
+      'explore',
       'federation-events',
       'federation-hub',
       'federation-listings',
