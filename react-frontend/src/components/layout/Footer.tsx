@@ -53,8 +53,11 @@ export function Footer({ children, copyright }: FooterProps) {
   // Communities that set their own general.powered_by_url are unaffected by it;
   // everyone else — including communities with only a custom badge image — uses this.
   // God-uploaded images take priority; otherwise the built-in assets ship with every fork/clone.
-  const DEFAULT_PB_IMAGE_LIGHT = '/images/powered-by-nexus-light.png';
-  const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-nexus-dark.png';
+  // 🔴 A new artwork needs a NEW file name. /images/* is served `immutable` for
+  // a year, so replacing the bytes under the old name (powered-by-nexus-*.png,
+  // 2026-10-06) left every returning browser showing the old badge.
+  const DEFAULT_PB_IMAGE_LIGHT = '/images/powered-by-project-nexus-light.png';
+  const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-project-nexus-dark.png';
   const DEFAULT_PB_URL         = 'https://project-nexus.net';
 
   // The API resolves which badge applies — the community's own, or the network

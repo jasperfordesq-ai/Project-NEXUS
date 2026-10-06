@@ -22,11 +22,11 @@ DRY_RUN = "--dry-run" in sys.argv
 # ---------------------------------------------------------------------------
 IMAGES = {
     # react-frontend
-    "react-frontend/public/images/powered-by-nexus-dark.png": {
+    "react-frontend/public/images/powered-by-project-nexus-dark.png": {
         "title": "Project NEXUS – Powered By (Dark Mode)",
         "description": "Official Project NEXUS 'Powered By' attribution logo, dark-mode variant.",
     },
-    "react-frontend/public/images/powered-by-nexus-light.png": {
+    "react-frontend/public/images/powered-by-project-nexus-light.png": {
         "title": "Project NEXUS – Powered By (Light Mode)",
         "description": "Official Project NEXUS 'Powered By' attribution logo, light-mode variant.",
     },

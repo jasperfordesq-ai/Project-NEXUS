@@ -234,7 +234,7 @@ describe('Footer', () => {
       const images = screen.getAllByRole('img', { name: 'Powered by' });
       expect(images.length).toBeGreaterThan(0);
       images.forEach((img) => {
-        expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-light.png');
+        expect(img.getAttribute('src')).toBe('/images/powered-by-project-nexus-light.png');
       });
     });
 
@@ -305,7 +305,7 @@ describe('Footer', () => {
 
         const images = screen.getAllByRole('img', { name: 'Provided by' });
         expect(images.length).toBeGreaterThan(0);
-        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-dark.png'));
+        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-project-nexus-dark.png'));
       } finally {
         mockTheme.resolvedTheme = 'light';
       }
@@ -344,7 +344,7 @@ describe('Footer', () => {
 
         const images = screen.getAllByRole('img', { name: 'Powered by' });
         expect(images.length).toBeGreaterThan(0);
-        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-dark.png'));
+        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-project-nexus-dark.png'));
       } finally {
         mockTheme.resolvedTheme = 'light';
       }

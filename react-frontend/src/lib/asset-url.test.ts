@@ -219,7 +219,7 @@ describe('responsiveThumbnailProps', () => {
 
 describe('resolveBrandingImageUrl', () => {
   it('leaves frontend static image paths on the app origin', () => {
-    expect(resolveBrandingImageUrl('/images/powered-by-nexus-light.png')).toBe('/images/powered-by-nexus-light.png');
+    expect(resolveBrandingImageUrl('/images/powered-by-project-nexus-light.png')).toBe('/images/powered-by-project-nexus-light.png');
   });
 
   it('routes uploaded branding paths through the API asset base', () => {

@@ -59,7 +59,7 @@ describe('footer branding locals', () => {
   it('falls back to the built-in powered-by badge and marketing URL', () => {
     const locals = buildShellLocals(shellRequest(), false);
 
-    expect(locals.poweredByImageUrl).toBe('/images/powered-by-nexus-light.png');
+    expect(locals.poweredByImageUrl).toBe('/images/powered-by-project-nexus-light.png');
     expect(locals.poweredByUrl).toBe('https://project-nexus.net');
   });
 
@@ -122,8 +122,8 @@ describe('resolveBrandingImageUrl', () => {
     // The regression this guards: resolving it against the API origin sends the
     // browser to the API host for a file that only exists in web-uk/public,
     // breaking the badge for every community that has not uploaded its own.
-    expect(resolveBrandingImageUrl('/images/powered-by-nexus-light.png'))
-      .toBe('/images/powered-by-nexus-light.png');
+    expect(resolveBrandingImageUrl('/images/powered-by-project-nexus-light.png'))
+      .toBe('/images/powered-by-project-nexus-light.png');
   });
 
   it('points an admin upload at the API origin', () => {
@@ -179,7 +179,7 @@ describe('footer badge wording', () => {
 
   it('keeps "Powered by" when no wording is chosen', () => {
     const html = renderFooter({
-      poweredByImageUrl: '/images/powered-by-nexus-light.png',
+      poweredByImageUrl: '/images/powered-by-project-nexus-light.png',
       poweredByUrl: 'https://project-nexus.net'
     });
     expect(html).toContain('>Powered by</h3>');
@@ -190,12 +190,12 @@ describe('footer badge wording', () => {
 describe('footer branding markup', () => {
   it('renders the powered-by badge as a link with an accessible name', () => {
     const html = renderFooter({
-      poweredByImageUrl: '/images/powered-by-nexus-light.png',
+      poweredByImageUrl: '/images/powered-by-project-nexus-light.png',
       poweredByUrl: 'https://project-nexus.net'
     });
 
     expect(html).toContain('href="https://project-nexus.net"');
-    expect(html).toContain('src="/images/powered-by-nexus-light.png"');
+    expect(html).toContain('src="/images/powered-by-project-nexus-light.png"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toMatch(/alt="[^"]+"/);
   });
@@ -205,7 +205,7 @@ describe('footer branding markup', () => {
     // Reusing the class for our own badge would render the GOV.UK crown, which this
     // service is forbidden from displaying.
     const html = renderFooter({
-      poweredByImageUrl: '/images/powered-by-nexus-light.png',
+      poweredByImageUrl: '/images/powered-by-project-nexus-light.png',
       poweredByUrl: 'https://project-nexus.net'
     });
 
@@ -276,7 +276,7 @@ describe('footer branding markup', () => {
   });
 
   it('renders the three brand headings in React’s order', () => {
-    const html = renderFooter({ poweredByImageUrl: '/images/powered-by-nexus-light.png' });
+    const html = renderFooter({ poweredByImageUrl: '/images/powered-by-project-nexus-light.png' });
 
     const partner = html.indexOf('Community Partner');
     const openSource = html.indexOf('Open Source');
