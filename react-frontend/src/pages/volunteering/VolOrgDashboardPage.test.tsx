@@ -67,6 +67,7 @@ vi.mock('@/components/feedback', () => ({
 // ── lazy tab stubs ────────────────────────────────────────────────────────────
 vi.mock('./OrgOverviewTab', () => ({ default: () => <div data-testid="overview-tab">Overview</div> }));
 vi.mock('./OrgApplicationsTab', () => ({ default: () => <div data-testid="applications-tab">Applications</div> }));
+vi.mock('./OrgOpportunitiesTab', () => ({ default: () => <div data-testid="opportunities-tab">Opportunities</div> }));
 vi.mock('./OrgHoursReviewTab', () => ({ default: () => <div data-testid="hours-review-tab">Hours Review</div> }));
 vi.mock('./OrgExpensesTab', () => ({ default: () => <div data-testid="expenses-tab">Expenses</div> }));
 vi.mock('./OrgFundraisingTab', () => ({ default: () => <div data-testid="fundraising-tab">Fundraising</div> }));
@@ -194,6 +195,17 @@ describe('VolOrgDashboardPage', () => {
     render(<VolOrgDashboardPage />);
     await waitFor(() => {
       expect(screen.getByTestId('expenses-tab')).toBeInTheDocument();
+    });
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
+  });
+
+  // The organisation's own opportunities, including closed and cancelled ones (gap A6, 6 Oct 2026).
+  it('opens the opportunities tab from the ?tab=opportunities link', async () => {
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams('tab=opportunities'), vi.fn()]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('opportunities-tab')).toBeInTheDocument();
     });
     vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
   });

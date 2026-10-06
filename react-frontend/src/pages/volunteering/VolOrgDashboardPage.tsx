@@ -18,6 +18,7 @@ import { extractCollectionItems } from './extractCollectionItems';
 import { motion } from '@/lib/motion';
 import LayoutDashboard from 'lucide-react/icons/layout-dashboard';
 import ClipboardList from 'lucide-react/icons/clipboard-list';
+import Briefcase from 'lucide-react/icons/briefcase';
 import Clock from 'lucide-react/icons/clock';
 import Receipt from 'lucide-react/icons/receipt';
 import HandCoins from 'lucide-react/icons/hand-coins';
@@ -46,6 +47,7 @@ import { useTranslation } from 'react-i18next';
 // Lazy-loaded tab components
 const OrgOverviewTab = React.lazy(() => import('./OrgOverviewTab'));
 const OrgApplicationsTab = React.lazy(() => import('./OrgApplicationsTab'));
+const OrgOpportunitiesTab = React.lazy(() => import('./OrgOpportunitiesTab'));
 const OrgHoursReviewTab = React.lazy(() => import('./OrgHoursReviewTab'));
 const OrgExpensesTab = React.lazy(() => import('./OrgExpensesTab'));
 const OrgFundraisingTab = React.lazy(() => import('./OrgFundraisingTab'));
@@ -55,7 +57,7 @@ const OrgSafeguardingPage = React.lazy(() => import('./OrgSafeguardingPage'));
 const OrgWalletTab = React.lazy(() => import('./OrgWalletTab'));
 const OrgSettingsTab = React.lazy(() => import('./OrgSettingsTab'));
 
-type OrgDashTab = 'overview' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'qualifications' | 'safeguarding' | 'wallet' | 'settings';
+type OrgDashTab = 'overview' | 'opportunities' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'qualifications' | 'safeguarding' | 'wallet' | 'settings';
 
 interface OrgDetails {
   id: number;
@@ -85,6 +87,7 @@ interface ManagedOrg {
 
 const TAB_DEFS: { key: OrgDashTab; icon: typeof LayoutDashboard }[] = [
   { key: 'overview', icon: LayoutDashboard },
+  { key: 'opportunities', icon: Briefcase },
   { key: 'applications', icon: ClipboardList },
   { key: 'hours-review', icon: Clock },
   { key: 'expenses', icon: Receipt },
@@ -318,6 +321,7 @@ export default function VolOrgDashboardPage() {
 
   const tabLabels: Record<OrgDashTab, string> = {
     overview: t('org_dashboard.tab_overview'),
+    opportunities: t('org_dashboard.tab_opportunities'),
     applications: t('org_dashboard.tab_applications'),
     'hours-review': t('org_dashboard.tab_hours_review'),
     expenses: t('org_dashboard.tab_expenses'),
@@ -394,6 +398,9 @@ export default function VolOrgDashboardPage() {
       <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-16"><Spinner size="lg" /></div>}>
         {tab === 'overview' && (
           <OrgOverviewTab orgId={orgId} onTabChange={(t) => setTab(t as OrgDashTab)} />
+        )}
+        {tab === 'opportunities' && (
+          <OrgOpportunitiesTab orgId={orgId} />
         )}
         {tab === 'applications' && (
           <OrgApplicationsTab orgId={orgId} />

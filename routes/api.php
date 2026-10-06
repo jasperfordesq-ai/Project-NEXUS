@@ -1331,6 +1331,7 @@ Route::middleware(['feature:volunteering', 'feature:organisations'])->group(func
     Route::post('/v2/volunteering/organisations/{id}/wallet/deposit', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletDeposit']);
     Route::get('/v2/volunteering/organisations/{id}/volunteers', [\App\Http\Controllers\Api\VolunteerController::class, 'orgVolunteers']);
     Route::get('/v2/volunteering/organisations/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'orgApplications']);
+    Route::get('/v2/volunteering/organisations/{id}/opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'orgOpportunities'])->whereNumber('id');
     Route::get('/v2/volunteering/organisations/{id}/hours/pending', [\App\Http\Controllers\Api\VolunteerController::class, 'orgHoursPending']);
     // Expense claims made to the organisation. Gated in the controller by
     // VolunteerExpenseService::isOrganisationAdmin() (creator or active

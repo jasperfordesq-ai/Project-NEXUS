@@ -1073,6 +1073,76 @@ class VolunteerController extends BaseApiController
         return $this->respondWithCollection($items, $hasMore ? $nextCursor : null, $limit, $hasMore);
     }
 
+    /**
+     * GET /v2/volunteering/organisations/{id}/opportunities - every opportunity
+     * the organisation has posted, for its dashboard: open, closed to new
+     * volunteers, and cancelled (the public list shows only open ones), newest
+     * first, each with what needs attention. Same access as the rest of the
+     * dashboard (ensureOrgAccess).
+     */
+    public function orgOpportunities($id): JsonResponse
+    {
+        $this->ensureOrganisationFeature();
+        $this->rateLimit('vol_org_opportunities', 60, 60);
+        $org = $this->ensureOrgAccess((int) $id);
+        if (!$org) return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
+
+        $tenantId = TenantContext::getId();
+        $orgId = (int) $id;
+
+        $rows = DB::table('vol_opportunities as o')
+            ->where('o.organization_id', $orgId)
+            ->where('o.tenant_id', $tenantId)
+            ->orderByDesc('o.created_at')
+            ->orderByDesc('o.id')
+            ->limit(200)
+            ->get(['o.id', 'o.title', 'o.status', 'o.is_active', 'o.location', 'o.is_remote', 'o.start_date', 'o.end_date', 'o.created_at']);
+
+        $ids = $rows->pluck('id')->map(static fn ($v) => (int) $v)->all();
+        $applications = [];
+        $upcomingShifts = [];
+        if ($ids !== []) {
+            foreach (DB::table('vol_applications')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('opportunity_id', $ids)
+                ->whereIn('status', ['pending', 'approved'])
+                ->groupBy('opportunity_id', 'status')
+                ->get(['opportunity_id', 'status', DB::raw('COUNT(*) as n')]) as $r) {
+                $applications[(int) $r->opportunity_id][$r->status] = (int) $r->n;
+            }
+            foreach (DB::table('vol_shifts')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('opportunity_id', $ids)
+                ->where('start_time', '>', now())
+                ->groupBy('opportunity_id')
+                ->get(['opportunity_id', DB::raw('COUNT(*) as n')]) as $r) {
+                $upcomingShifts[(int) $r->opportunity_id] = (int) $r->n;
+            }
+        }
+
+        $items = $rows->map(static function ($o) use ($applications, $upcomingShifts): array {
+            $id = (int) $o->id;
+            // 'cancelled' = deleted (is_active 0); 'closed' = no new volunteers; otherwise open.
+            $state = !(int) $o->is_active ? 'cancelled' : ((string) $o->status === 'closed' ? 'closed' : 'open');
+
+            return [
+                'id' => $id,
+                'title' => $o->title,
+                'state' => $state,
+                'location' => $o->location,
+                'is_remote' => (bool) $o->is_remote,
+                'start_date' => $o->start_date,
+                'end_date' => $o->end_date,
+                'created_at' => $o->created_at,
+                'pending_applications' => $applications[$id]['pending'] ?? 0,
+                'approved_volunteers' => $applications[$id]['approved'] ?? 0,
+                'upcoming_shifts' => $upcomingShifts[$id] ?? 0,
+            ];
+        })->values()->all();
+
+        return $this->respondWithData(['items' => $items]);
+    }
+
     public function orgHoursPending($id): JsonResponse
     {
         $this->ensureOrganisationFeature();
