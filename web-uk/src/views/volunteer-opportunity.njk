@@ -96,6 +96,9 @@
   </dl>
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha.volunteering.shifts_title") }}</h2>
+  {% if opportunity.canManage %}
+    <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_volunteering.shift_manager.manage_link") }}</a>
+  {% endif %}
   {% if opportunity.shifts and opportunity.shifts.length %}
     <div class="nexus-alpha-card-list">
       {% for shift in opportunity.shifts %}
@@ -115,6 +118,12 @@
               </div>
             {% endif %}
           </dl>
+
+          {% if opportunity.canManage and shift.id %}
+            <p class="govuk-body govuk-!-margin-bottom-2">
+              <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/roster') }}">{{ t("govuk_alpha_volunteering.shift_manager.roster_open") }}<span class="govuk-visually-hidden">: {{ shift.start_time | formatEventDate }}</span></a>
+            </p>
+          {% endif %}
 
           {% if opportunity.isApprovedApplicant and shift.id and not shift.isPast %}
             {% if opportunity.signedUpShiftId == shift.id %}
@@ -152,6 +161,8 @@
         </div>
       </div>
     </div>
+  {% elif opportunity.canManage %}
+    <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha_volunteering.shift_manager.manager_notice") }}</div>
   {% elif opportunity.hasApplied %}
     <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.already_applied") }}</div>
   {% else %}

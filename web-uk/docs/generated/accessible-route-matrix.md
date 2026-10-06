@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-05T19:06:45.810Z
-Laravel commit SHA: `47b7aa16708ad627a1be1148b54accc24e2844da`
-Web UK repository commit SHA: `47b7aa16708ad627a1be1148b54accc24e2844da`
+Generated: 2026-10-06T17:12:52.008Z
+Laravel commit SHA: `c87e98f8d6613853253250694dbdac44626f5fa2`
+Web UK repository commit SHA: `c87e98f8d6613853253250694dbdac44626f5fa2`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 754 |
+| web-uk routes | 766 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 44 |
+| Extra web-uk routes | 56 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -99,7 +99,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | venues | 5 | 0 | 0 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 6 | 0 |
+| volunteering | 52 | 0 | 18 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -153,9 +153,21 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
+| GET | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering | volunteering/shift-pattern-stop | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/repeating/new` | volunteering | volunteering/shift-pattern-form | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts` | volunteering | volunteering/shift-manage | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts/{param}/remove` | volunteering | volunteering/shift-remove | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts/{param}/roster` | volunteering | volunteering/shift-roster | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/organisations/{param}/safeguarding` | volunteering | volunteering/organisation-safeguarding | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/organisations/{param}/safeguarding/{param}` | volunteering | volunteering/organisation-safeguarding-incident | web-uk/src/routes/volunteering-incidents.js |
 | POST | `/volunteering/incidents/{param}/additions` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
+| POST | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/repeating/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/shifts/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/shifts/{param}/remove` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/shifts/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/organisations/{param}/safeguarding/{param}/updates` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
 
 ## Ignored Web UK Infrastructure Routes

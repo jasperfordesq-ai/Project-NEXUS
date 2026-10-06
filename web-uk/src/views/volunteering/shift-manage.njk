@@ -1,0 +1,141 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An opportunity's shifts, for the people who run it (routes/volunteering-shifts.js).
+  Adding, changing, removing and stopping each live on their own page; this one lists
+  what there is and links to them.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t(K ~ "back_to_opportunity") }}</a>
+{% endblock %}
+
+{% macro shiftTable(shifts, caption, captionClasses, opportunityBase, withActions, t, K, urlFor) %}
+  {% from "govuk/components/tag/macro.njk" import govukTag %}
+  <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ caption }}">
+  <table class="govuk-table">
+    <caption class="govuk-table__caption {{ captionClasses }}">{{ caption }}</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">{{ t(K ~ "col_date") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t(K ~ "col_time") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t(K ~ "col_places") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t(K ~ "col_actions") }}</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {% for shift in shifts %}
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header">
+            {{ shift.dayLabel }}
+            {% if shift.isRepeating %}
+              <br>{{ govukTag({ text: t(K ~ "repeating_tag"), classes: "govuk-tag--blue govuk-!-margin-top-1" }) }}
+            {% endif %}
+          </th>
+          <td class="govuk-table__cell">{{ shift.timeLabel }}</td>
+          <td class="govuk-table__cell">{{ shift.placesLabel }}</td>
+          <td class="govuk-table__cell">
+            <ul class="govuk-list govuk-!-margin-bottom-0">
+              <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/roster') }}">{{ t(K ~ "roster_open") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
+              {% if withActions %}
+                <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/edit') }}">{{ t(K ~ "change") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
+                <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/remove') }}">{{ t(K ~ "remove") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
+              {% endif %}
+            </ul>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endmacro %}
+
+{% block mainContent %}
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="shift-status-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="shift-status-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ status.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+      <p class="govuk-body">{{ t(K ~ "intro") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ urlFor(base ~ '/shifts/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t(K ~ "add_shift") }}</a>
+        {% if repeatingAvailable %}
+          <a class="govuk-button govuk-button--secondary" href="{{ urlFor(base ~ '/repeating/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t(K ~ "add_repeating") }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if loadError %}
+    <div class="govuk-inset-text">{{ t(K ~ "load_error") }}</div>
+  {% else %}
+    {% if upcoming.length %}
+      {{ shiftTable(upcoming, t(K ~ "upcoming_heading"), "govuk-table__caption--m", base, true, t, K, urlFor) }}
+    {% else %}
+      <h2 class="govuk-heading-m">{{ t(K ~ "upcoming_heading") }}</h2>
+      <p class="govuk-body">{{ t(K ~ "no_upcoming") }}</p>
+    {% endif %}
+
+    {% if past.length %}
+      <details class="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">{{ t(K ~ "past_heading", { count: past.length }) }}</span>
+        </summary>
+        <div class="govuk-details__text">
+          {{ shiftTable(past, t(K ~ "past_heading", { count: past.length }), "govuk-visually-hidden", base, false, t, K, urlFor) }}
+        </div>
+      </details>
+    {% endif %}
+  {% endif %}
+
+  {% if repeatingAvailable %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t(K ~ "patterns_heading") }}</h2>
+    {% if patternsFailed %}
+      <div class="govuk-inset-text">{{ t(K ~ "patterns_load_error") }}</div>
+    {% elif patterns.length %}
+      {% for pattern in patterns %}
+        <div class="govuk-summary-card">
+          <div class="govuk-summary-card__title-wrapper">
+            <h3 class="govuk-summary-card__title">{{ pattern.frequencyLabel }}</h3>
+            <ul class="govuk-summary-card__actions">
+              <li class="govuk-summary-card__action">
+                <a class="govuk-link" href="{{ urlFor(base ~ '/repeating/' ~ pattern.id ~ '/stop') }}">{{ t(K ~ "stop_pattern") }}<span class="govuk-visually-hidden">: {{ pattern.frequencyLabel }}{% if pattern.daysLabel %}, {{ pattern.daysLabel }}{% endif %}, {{ pattern.timeLabel }}</span></a>
+              </li>
+            </ul>
+          </div>
+          <div class="govuk-summary-card__content">
+            {% include "volunteering/_shift-pattern-rows.njk" %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="govuk-body">{{ t(K ~ "no_patterns") }}</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

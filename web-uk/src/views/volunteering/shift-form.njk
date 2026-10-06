@@ -1,0 +1,90 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Add a one-off shift, or change one that has not started (routes/volunteering-shifts.js). #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+{% set hiddenErrorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t(K ~ "back_to_shifts") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha_volunteering.shared.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-xl">{{ t(K ~ ("edit_shift_title" if mode == "edit" else "new_shift_title")) }}</h1>
+
+      <form method="post" action="{{ urlFor(action) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ nexusDateInput({
+          name: "date",
+          legend: t(K ~ "date_label"),
+          legendClasses: "govuk-fieldset__legend--m",
+          hint: t("web_uk.date_input.hint"),
+          value: values.date,
+          errorMessage: fieldErrors.date.text if fieldErrors.date else undefined,
+          errorFields: (fieldErrors.date.parts if (fieldErrors.date and fieldErrors.date.parts.length) else (["day", "month", "year"] if fieldErrors.date else []))
+        }, t) }}
+
+        {{ govukInput({
+          id: "start_time",
+          name: "start_time",
+          label: { text: t(K ~ "start_label"), classes: "govuk-label--m" },
+          hint: { text: t("web_uk.date_input.time_hint") },
+          value: values.startTime,
+          classes: "govuk-input--width-5",
+          autocomplete: "off",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.start_time.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.start_time else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "end_time",
+          name: "end_time",
+          label: { text: t(K ~ "end_label"), classes: "govuk-label--m" },
+          hint: { text: t("web_uk.date_input.time_hint") },
+          value: values.endTime,
+          classes: "govuk-input--width-5",
+          autocomplete: "off",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.end_time.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.end_time else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "capacity",
+          name: "capacity",
+          label: { text: t(K ~ "places_label"), classes: "govuk-label--m" },
+          hint: { text: t(K ~ "places_hint") },
+          value: values.capacity,
+          classes: "govuk-input--width-4",
+          inputmode: "numeric",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.capacity.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.capacity else undefined
+        }) }}
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ ("save_changes" if mode == "edit" else "save_shift")) }}</button>
+          <a class="govuk-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

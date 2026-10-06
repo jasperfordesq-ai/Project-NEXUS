@@ -1,0 +1,41 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# "Are you sure?" before a repeating pattern is stopped (routes/volunteering-shifts.js). #}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t(K ~ "back_to_shifts") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-l">{{ t(K ~ "stop_title") }}</h1>
+
+      {% include "volunteering/_shift-pattern-rows.njk" %}
+
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          {{ t(K ~ "stop_body") }}
+        </strong>
+      </div>
+
+      <div class="govuk-button-group">
+        <form method="post" action="{{ urlFor(base ~ '/repeating/' ~ pattern.id ~ '/stop') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "stop_confirm") }}</button>
+        </form>
+        <a class="govuk-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t("actions.cancel") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# The facts of one repeating pattern. Expects `pattern` (presentPattern) and `K`. #}
+<dl class="govuk-summary-list">
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_repeats") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.frequencyLabel }}</dd>
+  </div>
+  {% if pattern.daysLabel %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t(K ~ "row_days") }}</dt>
+      <dd class="govuk-summary-list__value">{{ pattern.daysLabel }}</dd>
+    </div>
+  {% endif %}
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_time") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.timeLabel }}</dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_places") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.capacity }}</dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_from") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.fromLabel }}</dd>
+  </div>
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_until") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.untilLabel }}</dd>
+  </div>
+  {% if pattern.maxOccurrences %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t(K ~ "row_max") }}</dt>
+      <dd class="govuk-summary-list__value">{{ pattern.maxOccurrences }}</dd>
+    </div>
+  {% endif %}
+  <div class="govuk-summary-list__row">
+    <dt class="govuk-summary-list__key">{{ t(K ~ "row_created") }}</dt>
+    <dd class="govuk-summary-list__value">{{ pattern.generated }}</dd>
+  </div>
+</dl>

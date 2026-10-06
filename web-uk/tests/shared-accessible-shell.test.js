@@ -20601,6 +20601,38 @@ describe('shared accessible frontend shell', () => {
     expect(safeguardingPage.text).toContain('We cannot confirm the community safeguarding policy right now.');
   });
 
+  it('shows the people who run an opportunity Manage shifts instead of the Apply form', async () => {
+    // routes/volunteering-shifts.js: the API's can_manage (or is_owner) decides it.
+    const api = require('../src/lib/api');
+    const opportunity = {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [{ id: 501, start_time: '2027-08-03 09:00:00', end_time: '2027-08-03 12:00:00', capacity: 10, spots_available: 3 }],
+      has_applied: false
+    };
+
+    for (const flags of [{ can_manage: true, is_owner: false }, { can_manage: false, is_owner: true }]) {
+      api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, ...flags } });
+      const managerPage = await request(app)
+        .get('/volunteering/opportunities/77')
+        .set('Cookie', signedAuthCookieHeader());
+
+      expect(managerPage.status).toBe(200);
+      expect(managerPage.text).toContain('href="/volunteering/opportunities/77/shifts"');
+      expect(managerPage.text).toContain('Manage shifts');
+      expect(managerPage.text).toContain('href="/volunteering/opportunities/77/shifts/501/roster"');
+      expect(managerPage.text).not.toContain('method="post" action="/volunteering/opportunities/77/apply"');
+    }
+
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, can_manage: false, is_owner: false } });
+    const volunteerPage = await request(app)
+      .get('/volunteering/opportunities/77')
+      .set('Cookie', signedAuthCookieHeader());
+    expect(volunteerPage.text).toContain('method="post" action="/volunteering/opportunities/77/apply"');
+    expect(volunteerPage.text).not.toContain('href="/volunteering/opportunities/77/shifts"');
+  });
+
   it('returns the shared 404 page when a Laravel volunteering opportunity is missing', async () => {
     const api = require('../src/lib/api');
     api.getVolunteerOpportunity.mockRejectedValueOnce(new api.ApiError('Not found', 404));

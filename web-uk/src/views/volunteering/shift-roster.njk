@@ -1,0 +1,149 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Who is on one shift, and who turned up (routes/volunteering-shifts.js). Before the
+  shift starts nobody is "missing": a volunteer without a check-in reads "Coming".
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t(K ~ "back_to_shifts") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ shift.dayLabel }}, {{ shift.timeLabel }}</span>
+      <h1 class="govuk-heading-xl">{{ t(K ~ "roster_title") }}</h1>
+      {% if opportunityTitle %}<p class="govuk-body-l">{{ opportunityTitle }}</p>{% endif %}
+
+      {% if loadError %}
+        <div class="govuk-inset-text">{{ t(K ~ "roster_load_error") }}</div>
+      {% elif roster.isEmpty %}
+        <p class="govuk-body">{{ t(K ~ "roster_empty") }}</p>
+      {% else %}
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "summary_signed_up") }}</dt>
+            <dd class="govuk-summary-list__value">{{ roster.summary.signedUp }}</dd>
+          </div>
+          {% if shift.hasStarted %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "status_checked_in") }}</dt>
+              <dd class="govuk-summary-list__value">{{ roster.summary.checkedIn }}</dd>
+            </div>
+          {% endif %}
+          {% if roster.summary.noShow > 0 %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "status_no_show") }}</dt>
+              <dd class="govuk-summary-list__value">{{ roster.summary.noShow }}</dd>
+            </div>
+          {% endif %}
+          {% if roster.summary.groupPlaces > 0 %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "summary_group_places") }}</dt>
+              <dd class="govuk-summary-list__value">{{ roster.summary.groupPlaces }}</dd>
+            </div>
+          {% endif %}
+          {% if roster.summary.waiting > 0 %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "summary_waiting") }}</dt>
+              <dd class="govuk-summary-list__value">{{ roster.summary.waiting }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        {% if roster.volunteers.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(K ~ "volunteers_heading") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ t(K ~ "volunteers_heading") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t(K ~ "col_name") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t(K ~ "col_status") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for volunteer in roster.volunteers %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ volunteer.name }}</th>
+                  <td class="govuk-table__cell">{{ govukTag({ text: volunteer.statusLabel, classes: volunteer.tagClass }) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <h2 class="govuk-heading-m">{{ t(K ~ "volunteers_heading") }}</h2>
+          <p class="govuk-body">{{ t(K ~ "no_volunteers") }}</p>
+        {% endif %}
+
+        {% if roster.groups.length %}
+          <h2 class="govuk-heading-m">{{ t(K ~ "groups_heading") }}</h2>
+          {% for group in roster.groups %}
+            <div class="govuk-summary-card">
+              <div class="govuk-summary-card__title-wrapper">
+                <h3 class="govuk-summary-card__title">{{ group.name }}</h3>
+              </div>
+              <div class="govuk-summary-card__content">
+                <dl class="govuk-summary-list">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t(K ~ "group_places") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ group.places }}</dd>
+                  </div>
+                  {% if group.leaderName %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">{{ t(K ~ "group_leader") }}</dt>
+                      <dd class="govuk-summary-list__value">{{ group.leaderName }}</dd>
+                    </div>
+                  {% endif %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t(K ~ "group_members") }}</dt>
+                    <dd class="govuk-summary-list__value">
+                      {% if group.members.length %}
+                        <ul class="govuk-list">
+                          {% for member in group.members %}<li>{{ member }}</li>{% endfor %}
+                        </ul>
+                      {% else %}
+                        {{ t(K ~ "group_no_members") }}
+                      {% endif %}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        {% if roster.waitlist.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(K ~ "waitlist_heading") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ t(K ~ "waitlist_heading") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t(K ~ "col_position") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t(K ~ "col_name") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for entry in roster.waitlist %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ entry.position }}</td>
+                  <td class="govuk-table__cell">{{ entry.name }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -56,6 +56,7 @@ const marketplaceActionRoutes = require('./routes/marketplace-actions');
 const marketplaceRoutes = require('./routes/marketplace');
 const volunteeringActionRoutes = require('./routes/volunteering-actions');
 const volunteeringIncidentRoutes = require('./routes/volunteering-incidents');
+const volunteeringShiftRoutes = require('./routes/volunteering-shifts');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
 const groupExchangeRoutes = require('./routes/group-exchanges');
@@ -1384,7 +1385,10 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       hasApplied: Boolean(opportunity.has_applied),
       application,
       isApprovedApplicant,
-      signedUpShiftId: isApprovedApplicant ? Number(application.shift_id) || 0 : 0
+      signedUpShiftId: isApprovedApplicant ? Number(application.shift_id) || 0 : 0,
+      // The people who run this opportunity manage its shifts instead of applying to
+      // it (routes/volunteering-shifts.js). The API decides who they are.
+      canManage: opportunity.can_manage === true || opportunity.is_owner === true
     };
   };
 
@@ -2342,6 +2346,7 @@ app.use('/marketplace', doubleCsrfProtection, postOnly(formLimiter), marketplace
 // A safeguarding report's own page and its "add information" form, ahead of the
 // volunteering actions that own the incident list and report form.
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringIncidentRoutes);
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringShiftRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);

@@ -1,0 +1,138 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Set up repeating shifts (routes/volunteering-shifts.js).
+
+  The weekday checkboxes are always on the page rather than revealed by the "every week"
+  and "every two weeks" radios: GOV.UK conditional reveal belongs to ONE radio, and two
+  copies of the same seven boxes would both show without JavaScript. The hint says they
+  are only used for those two, and the route requires at least one day for them.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+{% set hiddenErrorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t(K ~ "back_to_shifts") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha_volunteering.shared.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-xl">{{ t(K ~ "pattern_title") }}</h1>
+      <p class="govuk-body">{{ t(K ~ "pattern_intro") }}</p>
+
+      <form method="post" action="{{ urlFor(action) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukRadios({
+          idPrefix: "frequency",
+          name: "frequency",
+          fieldset: { legend: { text: t(K ~ "frequency_label"), classes: "govuk-fieldset__legend--m" } },
+          items: frequencyItems,
+          errorMessage: { text: fieldErrors.frequency.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.frequency else undefined
+        }) }}
+
+        {{ govukCheckboxes({
+          idPrefix: "days_of_week",
+          name: "days_of_week",
+          fieldset: { legend: { text: t(K ~ "days_label"), classes: "govuk-fieldset__legend--m" } },
+          hint: { text: t(K ~ "days_hint") },
+          items: dayItems,
+          errorMessage: { text: fieldErrors.days_of_week.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.days_of_week else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "start_time",
+          name: "start_time",
+          label: { text: t(K ~ "start_label"), classes: "govuk-label--m" },
+          hint: { text: t("web_uk.date_input.time_hint") },
+          value: values.startTime,
+          classes: "govuk-input--width-5",
+          autocomplete: "off",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.start_time.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.start_time else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "end_time",
+          name: "end_time",
+          label: { text: t(K ~ "end_label"), classes: "govuk-label--m" },
+          hint: { text: t("web_uk.date_input.time_hint") },
+          value: values.endTime,
+          classes: "govuk-input--width-5",
+          autocomplete: "off",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.end_time.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.end_time else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "capacity",
+          name: "capacity",
+          label: { text: t(K ~ "pattern_places_label"), classes: "govuk-label--m" },
+          value: values.capacity,
+          classes: "govuk-input--width-4",
+          inputmode: "numeric",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.capacity.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.capacity else undefined
+        }) }}
+
+        {{ nexusDateInput({
+          name: "start_date",
+          legend: t(K ~ "start_date_label"),
+          legendClasses: "govuk-fieldset__legend--m",
+          hint: t(K ~ "start_date_hint"),
+          value: values.startDate,
+          errorMessage: fieldErrors.start_date.text if fieldErrors.start_date else undefined,
+          errorFields: (fieldErrors.start_date.parts if (fieldErrors.start_date and fieldErrors.start_date.parts.length) else (["day", "month", "year"] if fieldErrors.start_date else []))
+        }, t) }}
+
+        {{ nexusDateInput({
+          name: "end_date",
+          legend: t(K ~ "end_date_label"),
+          legendClasses: "govuk-fieldset__legend--m",
+          hint: t(K ~ "end_date_hint"),
+          value: values.endDate,
+          errorMessage: fieldErrors.end_date.text if fieldErrors.end_date else undefined,
+          errorFields: (fieldErrors.end_date.parts if (fieldErrors.end_date and fieldErrors.end_date.parts.length) else (["day", "month", "year"] if fieldErrors.end_date else []))
+        }, t) }}
+
+        {{ govukInput({
+          id: "max_occurrences",
+          name: "max_occurrences",
+          label: { text: t(K ~ "max_label"), classes: "govuk-label--m" },
+          hint: { text: t(K ~ "max_hint") },
+          value: values.maxOccurrences,
+          classes: "govuk-input--width-4",
+          inputmode: "numeric",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.max_occurrences.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.max_occurrences else undefined
+        }) }}
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "pattern_save") }}</button>
+          <a class="govuk-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
