@@ -144,6 +144,7 @@ describe('navigationRegistry', () => {
 
     expect(sorted(protectedIds)).toEqual(sorted([
       'activity',
+      'ai-chat',
       'dashboard',
       'federation-events',
       'federation-hub',
@@ -153,9 +154,11 @@ describe('navigationRegistry', () => {
       'federation-partners',
       'federation-settings',
       'feed',
+      'matches',
       'messages',
       'my-listings',
       'saved',
+      'skills',
       'venues',
       'wallet',
     ]));

@@ -815,15 +815,17 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                 />
               )}
 
-              {/* More — Multi-column mega menu */}
-              <MegaMenu
-                isOpen={moreOpen}
-                onOpenChange={handleMoreOpenChange}
-                isActive={isActiveGroup(morePaths)}
-                leftSections={leftSections}
-                rightSections={rightSections}
-                onNavigate={dropdownNavigate}
-              />
+              {/* More — Multi-column mega menu; hidden when every section is gated away */}
+              {morePaths.length > 0 && (
+                <MegaMenu
+                  isOpen={moreOpen}
+                  onOpenChange={handleMoreOpenChange}
+                  isActive={isActiveGroup(morePaths)}
+                  leftSections={leftSections}
+                  rightSections={rightSections}
+                  onNavigate={dropdownNavigate}
+                />
+              )}
               </>
               )}
             </nav>

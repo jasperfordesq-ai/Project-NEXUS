@@ -246,9 +246,11 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'achievements', href: '/achievements', labelKey: 'nav.achievements', descriptionKey: 'nav_desc.achievements', icon: Trophy, feature: 'gamification', placements: both('progress', 'explore') },
   { id: 'leaderboard', href: '/leaderboard', labelKey: 'nav.leaderboard', descriptionKey: 'nav_desc.leaderboard', icon: Medal, feature: 'gamification', placements: both('progress', 'explore') },
   { id: 'nexus-score', href: '/nexus-score', labelKey: 'nav.nexus_score', descriptionKey: 'nav_desc.nexus_score', icon: BarChart3, feature: 'gamification', placements: both('progress', 'explore') },
-  { id: 'matches', href: '/matches', labelKey: 'nav.matches', descriptionKey: 'nav_desc.matches', icon: Handshake, module: 'listings', placements: both('tools', 'explore') },
-  { id: 'skills', href: '/skills', labelKey: 'nav.skills', descriptionKey: 'nav_desc.skills', icon: GraduationCap, placements: both('tools', 'explore') },
-  { id: 'ai-chat', href: '/chat', labelKey: 'nav.ai_chat', descriptionKey: 'nav_desc.ai_chat', icon: Bot, feature: 'ai_chat', placements: both('tools', 'explore') },
+  // The three Tools destinations are member-only routes (inside ProtectedRoute in
+  // AppRoutes.tsx), so signed-out visitors must not be offered them.
+  { id: 'matches', href: '/matches', labelKey: 'nav.matches', descriptionKey: 'nav_desc.matches', icon: Handshake, auth: 'authenticated', module: 'listings', placements: both('tools', 'explore') },
+  { id: 'skills', href: '/skills', labelKey: 'nav.skills', descriptionKey: 'nav_desc.skills', icon: GraduationCap, auth: 'authenticated', placements: both('tools', 'explore') },
+  { id: 'ai-chat', href: '/chat', labelKey: 'nav.ai_chat', descriptionKey: 'nav_desc.ai_chat', icon: Bot, auth: 'authenticated', feature: 'ai_chat', placements: both('tools', 'explore') },
 
   {
     id: 'federation-partners', href: '/federation/partners', labelKey: 'nav.partner_communities', descriptionKey: 'nav_desc.partner_communities', icon: Building2,

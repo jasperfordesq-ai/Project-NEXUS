@@ -57,19 +57,38 @@ function visibleSections(sections: DesktopNavPanelSection[]) {
   return sections.filter(section => section.items.length > 0);
 }
 
+/**
+ * A column made only of collapsible sections would render as bare headings
+ * and look empty, so its first section opens by default. The chevron stays,
+ * so the reader can still collapse it.
+ */
+function withLoneSectionOpen(sections: DesktopNavPanelSection[]): DesktopNavPanelSection[] {
+  const visible = visibleSections(sections);
+  const first = visible[0];
+  if (!first || visible.some(section => !section.collapsible)) {
+    return sections;
+  }
+
+  return sections.map(section => (
+    section.key === first.key ? { ...section, defaultExpanded: true } : section
+  ));
+}
+
 export function DesktopNavPanel({
   ariaLabel,
   isActive,
   isOpen,
-  leftSections,
+  leftSections: rawLeftSections,
   onNavigate,
   onOpenChange,
-  rightSections = [],
+  rightSections: rawRightSections = [],
   triggerIcon: TriggerIcon,
   triggerLabel,
 }: DesktopNavPanelProps) {
   const location = useLocation();
   const menuRef = useRef<HTMLElement>(null);
+  const leftSections = useMemo(() => withLoneSectionOpen(rawLeftSections), [rawLeftSections]);
+  const rightSections = useMemo(() => withLoneSectionOpen(rawRightSections), [rawRightSections]);
   const allSections = useMemo(() => [...leftSections, ...rightSections], [leftSections, rightSections]);
   const hasRightColumn = visibleSections(rightSections).length > 0;
 

@@ -420,4 +420,61 @@ describe('MegaMenu', () => {
       expect(screen.getByText('Visible Item')).toBeTruthy();
     });
   });
+
+  describe('Lone collapsible section in a column', () => {
+    const loneToolsColumn: MegaMenuSection[] = [{
+      key: 'tools',
+      title: 'Tools',
+      collapsible: true,
+      defaultExpanded: false,
+      items: [
+        { label: 'Skills', href: '/skills', icon: StubIcon },
+        { label: 'Matches', href: '/matches', icon: StubIcon },
+      ],
+    }];
+
+    it('opens by default so the column never looks blank', () => {
+      renderMegaMenu({ leftSections: loneToolsColumn });
+      expect(screen.getByText('Skills')).toBeTruthy();
+      expect(screen.getByText('Tools').closest('button')!.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('opens only the first section when every section in the column is collapsible', () => {
+      renderMegaMenu({
+        leftSections: [
+          ...loneToolsColumn,
+          {
+            key: 'progress',
+            title: 'Progress',
+            collapsible: true,
+            defaultExpanded: false,
+            items: [{ label: 'Achievements', href: '/achievements', icon: StubIcon }],
+          },
+        ],
+      });
+      expect(screen.getByText('Skills')).toBeTruthy();
+      expect(screen.queryByText('Achievements')).toBeNull();
+    });
+
+    it('stays closed when the column also has an always-open section', () => {
+      renderMegaMenu();
+      expect(screen.queryByText('Achievements')).toBeNull();
+      expect(screen.getByText('Progress').closest('button')!.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('can still be collapsed by its toggle', () => {
+      renderMegaMenu({ leftSections: loneToolsColumn });
+      fireEvent.click(screen.getByText('Tools').closest('button')!);
+      expect(screen.queryByText('Skills')).toBeNull();
+      expect(screen.getByText('Tools').closest('button')!.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('ArrowRight from the auto-opened column lands on the first right-column item', () => {
+      renderMegaMenu({ leftSections: loneToolsColumn });
+      const items = screen.getAllByRole('button').filter(b => b.hasAttribute('data-mega-item'));
+      items[0].focus();
+      fireEvent.keyDown(screen.getByRole('navigation'), { key: 'ArrowRight' });
+      expect(document.activeElement?.textContent).toContain('About Us');
+    });
+  });
 });
