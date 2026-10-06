@@ -574,4 +574,105 @@ class CommentsControllerTest extends TestCase
             'link' => "/feed/posts/{$postId}#comment-{$commentId}",
         ]);
     }
+
+    // ------------------------------------------------------------------
+    //  F-568 (E-093): the comment box is a plain text box, so what a
+    //  member types is stored and returned as words — never as markup.
+    //  Cyphere's retest payload (F-562) and its tag variants.
+    // ------------------------------------------------------------------
+
+    public function test_store_keeps_cypheres_payload_as_words_never_a_link(): void
+    {
+        $user = $this->authenticatedUser();
+        $postId = $this->createPost($user->id);
+
+        $response = $this->apiPost('/v2/comments', [
+            'target_type' => 'post',
+            'target_id' => $postId,
+            'content' => '<a href="https://google.com">Click here to re-authenticate</a>',
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('data.content', 'Click here to re-authenticate');
+
+        $stored = (string) DB::table('comments')
+            ->where('id', (int) $response->json('data.id'))
+            ->where('tenant_id', $this->testTenantId)
+            ->value('content');
+        $this->assertSame('Click here to re-authenticate', $stored);
+    }
+
+    public function test_event_comment_create_read_and_edit_keep_payload_as_plain_text(): void
+    {
+        $user = $this->authenticatedUser();
+        $event = \App\Models\Event::factory()->forTenant($this->testTenantId)->create(['user_id' => $user->id]);
+        $response = $this->apiPost('/v2/comments', [
+            'target_type' => 'event',
+            'target_id' => $event->id,
+            'content' => '<a href="https://google.com">Click here to re-authenticate</a>',
+        ]);
+        $response->assertStatus(201)->assertJsonPath('data.content', 'Click here to re-authenticate');
+        $id = (int) $response->json('data.id');
+        $this->apiGet('/v2/comments?target_type=event&target_id=' . $event->id)
+            ->assertStatus(200)->assertJsonFragment(['content' => 'Click here to re-authenticate']);
+        $this->apiPut('/v2/comments/' . $id, [
+            'content' => '<a href="https://evil.example"><img src="https://evil.example/sign-in.png" alt="Sign in">https://evil.example</a>',
+        ])->assertStatus(200)->assertJsonPath('data.content', 'https://evil.example');
+        $this->assertSame('https://evil.example', DB::table('comments')->where('id', $id)->value('content'));
+        $ordinary = "I <3 timebanking & 2 > 1\nSee you tomorrow";
+        $this->apiPut('/v2/comments/' . $id, ['content' => $ordinary])
+            ->assertStatus(200)->assertJsonPath('data.content', $ordinary);
+    }
+
+    public function test_markup_only_comment_is_rejected_without_creating_or_erasing_content(): void
+    {
+        $user = $this->authenticatedUser();
+        $postId = $this->createPost($user->id);
+        $id = $this->createComment($postId, $user->id);
+        $before = DB::table('comments')->where('target_type', 'post')->where('target_id', $postId)->count();
+        $payload = '<img src="https://evil.example/sign-in.png">';
+        $this->apiPost('/v2/comments', [
+            'target_type' => 'post', 'target_id' => $postId, 'content' => $payload,
+        ])->assertStatus(400);
+        $this->assertSame($before, DB::table('comments')->where('target_type', 'post')->where('target_id', $postId)->count());
+        $this->apiPut('/v2/comments/' . $id, ['content' => $payload])->assertStatus(400);
+        $this->assertSame('Parent comment', DB::table('comments')->where('id', $id)->value('content'));
+    }
+
+    public function test_store_turns_any_markup_in_a_comment_into_words(): void
+    {
+        $user = $this->authenticatedUser();
+        $postId = $this->createPost($user->id);
+
+        $response = $this->apiPost('/v2/comments', [
+            'target_type' => 'post',
+            'target_id' => $postId,
+            'content' => "<h1>Your session has expired</h1>\n<img src=\"https://evil.example/login.png\" alt=\"Sign in\"><b>now</b>",
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertSame("Your session has expired\nnow", $response->json('data.content'));
+        $this->assertStringNotContainsString('<', (string) DB::table('comments')
+            ->where('id', (int) $response->json('data.id'))
+            ->where('tenant_id', $this->testTenantId)
+            ->value('content'));
+    }
+
+    public function test_update_keeps_a_comment_as_words_never_markup(): void
+    {
+        $owner = $this->authenticatedUser();
+        $postId = $this->createPost($owner->id);
+        $commentId = $this->createComment($postId, $owner->id);
+
+        $response = $this->apiPut("/v2/comments/{$commentId}", [
+            'content' => '<strong>Edited</strong> <a href="https://google.com">Click here to re-authenticate</a>',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame('Edited Click here to re-authenticate', $response->json('data.content'));
+        $this->assertSame('Edited Click here to re-authenticate', (string) DB::table('comments')
+            ->where('id', $commentId)
+            ->where('tenant_id', $this->testTenantId)
+            ->value('content'));
+    }
 }

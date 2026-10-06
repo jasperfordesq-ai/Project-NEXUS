@@ -1119,4 +1119,31 @@ class ListingsControllerTest extends TestCase
             }
         }
     }
+
+    // F-568 (E-093): the listing description box is a plain text box — markup
+    // typed into it is stored as words, never as HTML (Cyphere F-562 variant).
+    public function test_store_keeps_the_description_as_words_never_markup(): void
+    {
+        Event::fake([ListingCreated::class]);
+        $this->authenticatedUser(['email' => '']);
+        $this->ensureListingCategory();
+        $title = 'Plain text description ' . uniqid();
+
+        $response = $this->apiPost('/v2/listings', [
+            'title' => $title,
+            'description' => '<a href="https://google.com">Click here to re-authenticate</a> and I can help with your garden every weekend.',
+            'type' => 'offer',
+            'category_id' => 1,
+            'location' => 'Dublin',
+            'price' => 2.0,
+            'service_type' => 'physical_only',
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+        $stored = (string) DB::table('listings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('title', $title)
+            ->value('description');
+        $this->assertSame('Click here to re-authenticate and I can help with your garden every weekend.', $stored);
+    }
 }

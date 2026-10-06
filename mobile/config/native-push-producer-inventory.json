@@ -511,9 +511,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/CommentsController.php:235:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/CommentsController.php:241:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/CommentsController.php",
-            "line": 235,
+            "line": 241,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $comment->user_id",
@@ -2292,9 +2292,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/JobVacancyService.php:945:NotificationDispatcher::notifyModerationAdmins",
+            "id": "app/Services/JobVacancyService.php:946:NotificationDispatcher::notifyModerationAdmins",
             "file": "app/Services/JobVacancyService.php",
-            "line": 945,
+            "line": 946,
             "transport": "NotificationDispatcher::notifyModerationAdmins",
             "role": "producer",
             "recipient_expression": null,

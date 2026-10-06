@@ -28,7 +28,7 @@ import Edit from 'lucide-react/icons/square-pen';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { EmptyState } from '@/components/feedback';
 import { useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
@@ -250,7 +250,7 @@ export function GroupAnnouncementsTab({ groupId, isAdmin }: GroupAnnouncementsTa
                         </Chip>
                       )}
                     </div>
-                    <SafeHtml content={announcement.content} className="break-words text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
+                    <MemberPlainText content={announcement.content} className="break-words text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
                     <div className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-theme-subtle">
                       <span className="min-w-0 break-words">{announcement.author.name}</span>
                       <span className="text-theme-muted" aria-hidden="true">&middot;</span>

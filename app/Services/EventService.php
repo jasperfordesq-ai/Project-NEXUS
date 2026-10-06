@@ -1481,8 +1481,9 @@ class EventService
             'title' => array_key_exists('title', $input)
                 ? $input['title']
                 : ($event !== null ? $existing($event, 'title') : null),
+            // F-568 (E-093): the description box is a plain text box — markup is stored as words.
             'description' => array_key_exists('description', $input)
-                ? $input['description']
+                ? (is_string($input['description']) ? \App\Helpers\HtmlSanitizer::toPlainText($input['description']) : $input['description'])
                 : ($event !== null ? $existing($event, 'description') : null),
             'start_time' => array_key_exists('start_time', $input)
                 ? $input['start_time']

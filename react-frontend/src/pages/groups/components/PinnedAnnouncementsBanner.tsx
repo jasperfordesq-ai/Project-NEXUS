@@ -12,7 +12,7 @@ import { Chip } from '@/components/ui/Chip';
 
 import { useEffect, useState } from 'react';
 import Megaphone from 'lucide-react/icons/megaphone';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { useTranslation } from 'react-i18next';
 import {
   GROUP_ANNOUNCEMENTS_CHANGED_EVENT,
@@ -87,7 +87,7 @@ export function PinnedAnnouncementsBanner({ groupId, isMember = true }: PinnedAn
           <Megaphone className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <p className="break-words text-sm font-medium text-theme-primary">{announcement.title}</p>
-            <SafeHtml content={announcement.content} className="mt-0.5 line-clamp-2 break-words text-xs text-theme-subtle" as="p" />
+            <MemberPlainText content={announcement.content} className="mt-0.5 line-clamp-2 break-words text-xs text-theme-subtle" as="p" />
           </div>
           <Chip size="sm" variant="flat" color="primary" className="flex-shrink-0">{t('announcements.pinned')}</Chip>
         </div>

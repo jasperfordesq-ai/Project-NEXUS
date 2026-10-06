@@ -456,4 +456,41 @@ describe('CommentsSection', () => {
       expect(emojiButtons.length).toBeGreaterThan(0);
     });
   });
+
+  // F-568 (E-093): the comment box is a plain text box. Cyphere's F-562 retest
+  // payload and any other tag a member types must come out as words, never as
+  // a link, heading or image. The SafeHtml mock above renders raw HTML, so this
+  // only passes when CommentsSection no longer hands comment text to SafeHtml.
+  describe('comments are words, never markup (F-568)', () => {
+    it("shows Cyphere's payload as plain words with no link", async () => {
+      const { CommentsSection } = await import('./CommentsSection');
+      const { container } = render(
+        <CommentsSection
+          {...makeProps({
+            comments: [makeComment({ content: '<a href="https://google.com">Click here to re-authenticate</a>' })],
+            commentsCount: 1,
+            commentsLoaded: true,
+          })}
+        />
+      );
+      expect(screen.getByText('Click here to re-authenticate')).toBeInTheDocument();
+      expect(container.querySelector('a[href="https://google.com"]')).toBeNull();
+    });
+
+    it('shows a heading and an image as words only', async () => {
+      const { CommentsSection } = await import('./CommentsSection');
+      const { container } = render(
+        <CommentsSection
+          {...makeProps({
+            comments: [makeComment({ content: '<h1>Your session has expired</h1><img src="https://evil.example/x.png" alt="Sign in">' })],
+            commentsCount: 1,
+            commentsLoaded: true,
+          })}
+        />
+      );
+      expect(screen.getByText('Your session has expired')).toBeInTheDocument();
+      expect(container.querySelector('h1')).toBeNull();
+      expect(container.querySelector('img[src="https://evil.example/x.png"]')).toBeNull();
+    });
+  });
 });

@@ -61,7 +61,7 @@ import Rocket from 'lucide-react/icons/rocket';
 import ArrowUpDown from 'lucide-react/icons/arrow-up-down';
 import TrendingUp from 'lucide-react/icons/trending-up';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -1101,7 +1101,7 @@ const JobCard = memo(function JobCard({ vacancy }: JobCardProps) {
                 {vacancy.organization?.name || vacancy.creator?.name || t('unknown')}
               </p>
 
-              <SafeHtml content={vacancy.description} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />
+              <MemberPlainText content={vacancy.description} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />
 
               <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-theme-subtle">
                 {vacancy.is_remote ? (

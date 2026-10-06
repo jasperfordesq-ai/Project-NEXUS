@@ -55,7 +55,7 @@ import Ticket from 'lucide-react/icons/ticket';
 import Download from 'lucide-react/icons/download';
 import Send from 'lucide-react/icons/send';
 import { Helmet } from 'react-helmet-async';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { Breadcrumbs } from '@/components/navigation';
 import { EmptyState } from '@/components/feedback';
@@ -1332,7 +1332,7 @@ export function EventDetailPage() {
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-theme-primary mb-3">{t('detail.about')}</h2>
                 <div className="prose prose-invert max-w-none">
-                  <SafeHtml content={translatedEventDesc ?? event.description ?? ''} className="text-theme-muted whitespace-pre-wrap" as="div" />
+                  <MemberPlainText content={translatedEventDesc ?? event.description ?? ''} className="text-theme-muted whitespace-pre-wrap" as="div" />
                 </div>
                 {event.description && (
                   <TranslateButton

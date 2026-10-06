@@ -30,7 +30,7 @@ import { AVAILABLE_REACTIONS, COMMENT_REACTION_EMOJI_MAP } from '@/hooks/useSoci
 import type { MentionUser } from '@/hooks/useSocialInteractions';
 import { MentionRenderer } from './MentionRenderer';
 import { UserHoverCard } from './UserHoverCard';
-import { SafeHtml, containsHtml } from '@/components/ui/SafeHtml';
+import { memberPlainText } from '@/components/ui/MemberPlainText';
 import { Button, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tooltip, Skeleton } from '@/components/ui';
 
 /* ─── Props ─────────────────────────────────────────────────── */
@@ -216,18 +216,17 @@ function CommentItemInner({
                   isIconOnly
                   variant="flat"
                   className="w-6 h-6 min-w-0 bg-red-500/10 text-[var(--color-error)]"
-                  onPress={() => { setIsEditing(false); setEditContent(comment.content); }}
+                  onPress={() => { setIsEditing(false); setEditContent(memberPlainText(comment.content)); }}
                   aria-label={tr('cancel', 'Cancel')}
                 >
                   <X className="w-3 h-3" />
                 </Button>
               </div>
             </div>
-          ) : containsHtml(comment.content) ? (
-            <SafeHtml content={comment.content} className="text-xs text-[var(--text-secondary)] mt-0.5 whitespace-pre-wrap leading-relaxed" as="div" />
           ) : (
             <p className="text-xs text-[var(--text-secondary)] mt-0.5 whitespace-pre-wrap leading-relaxed">
-              <MentionRenderer text={comment.content} showUserCard={false} />
+              {/* F-568 (E-093): the comment box is a plain text box — what was typed is shown as words, never as markup. */}
+              <MentionRenderer text={memberPlainText(comment.content)} showUserCard={false} />
             </p>
           )}
         </div>
@@ -267,7 +266,7 @@ function CommentItemInner({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onPress={() => { setIsEditing(true); setEditContent(comment.content); }}
+                    onPress={() => { setIsEditing(true); setEditContent(memberPlainText(comment.content)); }}
                     className="flex min-h-[24px] items-center gap-0.5 px-0 py-0 text-[10px] text-[var(--text-subtle)] hover:text-[var(--text-primary)]"
                     startContent={<Pencil className="w-2.5 h-2.5" aria-hidden="true" />}
                   >

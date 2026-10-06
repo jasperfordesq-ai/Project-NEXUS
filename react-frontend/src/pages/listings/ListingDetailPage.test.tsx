@@ -252,6 +252,23 @@ describe('ListingDetailPage', () => {
     });
   });
 
+
+  // F-568 (E-093): the description box is a plain text box, so markup in it is shown as words.
+  it('shows markup in the description as words, never as a link or heading', async () => {
+    const injected = { ...mockListing, description: '<h1>Your session has expired</h1><a href="https://google.com">Click here to re-authenticate</a>' };
+    api.get.mockImplementation((url: string) => {
+      if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
+      if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
+      return Promise.resolve({ success: true, data: injected });
+    });
+    const { container } = render(<ListingDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/Click here to re-authenticate/)).toBeInTheDocument();
+    });
+    expect(container.querySelector('a[href="https://google.com"]')).toBeNull();
+    expect(container.querySelector('h1')?.textContent).not.toContain('Your session has expired');
+  });
+
   it('renders owner info card when user data is present', async () => {
     render(<ListingDetailPage />);
     await waitFor(() => {

@@ -472,6 +472,24 @@ describe('EventDetailPage', () => {
     expect(screen.getByText('Join us for a community garden event')).toBeInTheDocument();
   });
 
+
+  // F-568 (E-093): the description box is a plain text box, so markup in it is shown as words.
+  it('shows markup in the description as words, never as a link or heading', async () => {
+    const injected = createCanonicalEventFixture({
+      description: '<h1>Your session has expired</h1><a href="https://google.com">Click here to re-authenticate</a>',
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees')) return Promise.resolve({ success: true, data: [] });
+      if (url.startsWith('/v2/polls?') || url.includes('series_id=')) return Promise.resolve({ success: true, data: [] });
+      return Promise.resolve({ success: true, data: injected });
+    });
+    const { container } = await renderLoadedEvent();
+
+    expect(screen.getByText(/Click here to re-authenticate/)).toBeInTheDocument();
+    expect(container.querySelector('a[href="https://google.com"]')).toBeNull();
+    expect(container.querySelector('h1')?.textContent).not.toContain('Your session has expired');
+  });
+
   it('renders the event location', async () => {
     await renderLoadedEvent();
 

@@ -41,7 +41,7 @@ import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import ShieldOff from 'lucide-react/icons/shield-off';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ExternalLink from 'lucide-react/icons/external-link';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { ReviewModal } from '@/components/reviews';
@@ -977,7 +977,7 @@ export function ProfilePage() {
               <h2 className="text-lg font-semibold text-theme-primary mb-4">{t('about.heading')}</h2>
               {profile.bio ? (
                 <div>
-                  <SafeHtml
+                  <MemberPlainText
                     content={translatedBio ?? profile.bio}
                     as="div"
                     className={`text-theme-muted whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert${!isOwnProfile && !bioExpanded && profile.bio.length > 300 ? ' line-clamp-4' : ''}`}
@@ -1119,7 +1119,7 @@ export function ProfilePage() {
                               </Chip>
                             </div>
                             <h3 className="mb-1 min-w-0 truncate font-medium text-theme-primary">{listing.title}</h3>
-                            <SafeHtml content={listing.description} className="text-sm text-theme-subtle line-clamp-2" as="p" />
+                            <MemberPlainText content={listing.description} className="text-sm text-theme-subtle line-clamp-2" as="p" />
                             <div className="flex items-center gap-2 mt-3 text-xs text-theme-subtle">
                               <Clock className="w-3 h-3" aria-hidden="true" />
                               {t('hours_abbrev', { hours: listing.hours_estimate ?? listing.estimated_hours ?? t('not_available_abbrev') })}

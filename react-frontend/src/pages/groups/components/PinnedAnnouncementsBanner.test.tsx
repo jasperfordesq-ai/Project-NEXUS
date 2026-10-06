@@ -55,10 +55,11 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// Stub SafeHtml to avoid DOMPurify in jsdom
-vi.mock('@/components/ui/SafeHtml', () => ({
-  SafeHtml: ({ content, className }: { content: string; className?: string }) => (
-    <p className={className} data-testid="safe-html">{content}</p>
+// F-568 (E-093): announcements are a plain text box, rendered via MemberPlainText.
+// Stub it so we can assert on the text without the real conversion in jsdom.
+vi.mock('@/components/ui/MemberPlainText', () => ({
+  MemberPlainText: ({ content, className }: { content: string | null | undefined; className?: string }) => (
+    <p className={className} data-testid="member-plain-text">{content}</p>
   ),
 }));
 
@@ -94,7 +95,7 @@ describe('PinnedAnnouncementsBanner', () => {
     const { container } = render(<PinnedAnnouncementsBanner groupId={5} />);
     await waitFor(() => {
       // Should return null → no announcement content
-      expect(container.querySelector('[data-testid="safe-html"]')).toBeNull();
+      expect(container.querySelector('[data-testid="member-plain-text"]')).toBeNull();
     });
   });
 
@@ -104,7 +105,7 @@ describe('PinnedAnnouncementsBanner', () => {
     // Should not call API and render nothing
     await waitFor(() => {
       expect(mockApi.get).not.toHaveBeenCalled();
-      expect(container.querySelector('[data-testid="safe-html"]')).toBeNull();
+      expect(container.querySelector('[data-testid="member-plain-text"]')).toBeNull();
     });
   });
 
@@ -178,7 +179,7 @@ describe('PinnedAnnouncementsBanner', () => {
     });
   });
 
-  it('renders announcement content via SafeHtml', async () => {
+  it('renders announcement content as plain text (F-568)', async () => {
     mockApi.get.mockResolvedValue({
       success: true,
       data: [makeAnnouncement({ content: 'Check the noticeboard.' })],
@@ -186,7 +187,7 @@ describe('PinnedAnnouncementsBanner', () => {
     const { PinnedAnnouncementsBanner } = await import('./PinnedAnnouncementsBanner');
     render(<PinnedAnnouncementsBanner groupId={5} />);
     await waitFor(() => {
-      expect(screen.getByTestId('safe-html')).toHaveTextContent('Check the noticeboard.');
+      expect(screen.getByTestId('member-plain-text')).toHaveTextContent('Check the noticeboard.');
     });
   });
 
@@ -265,7 +266,7 @@ describe('PinnedAnnouncementsBanner', () => {
     const { container } = render(<PinnedAnnouncementsBanner groupId={5} />);
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledOnce();
-      expect(container.querySelector('[data-testid="safe-html"]')).toBeNull();
+      expect(container.querySelector('[data-testid="member-plain-text"]')).toBeNull();
     });
     expect(mockToast.error).not.toHaveBeenCalled();
   });
@@ -307,7 +308,7 @@ describe('PinnedAnnouncementsBanner', () => {
 
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledOnce();
-      expect(container.querySelector('[data-testid="safe-html"]')).toBeNull();
+      expect(container.querySelector('[data-testid="member-plain-text"]')).toBeNull();
     });
     expect(mockToast.error).not.toHaveBeenCalled();
   });
@@ -318,7 +319,7 @@ describe('PinnedAnnouncementsBanner', () => {
     const { container } = render(<PinnedAnnouncementsBanner groupId={5} />);
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledOnce();
-      expect(container.querySelector('[data-testid="safe-html"]')).toBeNull();
+      expect(container.querySelector('[data-testid="member-plain-text"]')).toBeNull();
     });
   });
 });

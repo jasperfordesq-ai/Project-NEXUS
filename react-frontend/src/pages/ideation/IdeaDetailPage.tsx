@@ -43,7 +43,7 @@ import Send from 'lucide-react/icons/send';
 import Users from 'lucide-react/icons/users';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -498,7 +498,7 @@ export function IdeaDetailPage() {
             </div>
 
             {/* Description */}
-            <SafeHtml content={idea.description} className="text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
+            <MemberPlainText content={idea.description} className="text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
 
             {/* Convert to Group Button */}
             {canConvertToGroup && (
@@ -661,7 +661,7 @@ export function IdeaDetailPage() {
                       </Button>
                     )}
                   </div>
-                  <SafeHtml content={comment.body} className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
+                  <MemberPlainText content={comment.body} className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap" as="div" />
                 </div>
               </div>
             </GlassCard>

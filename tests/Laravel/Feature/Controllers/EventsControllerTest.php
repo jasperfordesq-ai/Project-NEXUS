@@ -1319,4 +1319,29 @@ class EventsControllerTest extends TestCase
             ->where('type', 'event_update')
             ->count());
     }
+
+    // F-568 (E-093): the event description box is a plain text box — markup
+    // typed into it is stored as words, never as HTML (Cyphere F-562 variant).
+    public function test_store_keeps_the_description_as_words_never_markup(): void
+    {
+        $this->authenticatedUser();
+        $categoryId = $this->seedCategory();
+        $title = 'Plain text description ' . uniqid();
+
+        $response = $this->apiPost('/v2/events', [
+            'title' => $title,
+            'description' => "<h1>Your session has expired</h1>\n<a href=\"https://google.com\">Click here to re-authenticate</a>",
+            'location' => 'Community Hall',
+            'start_time' => now()->addDays(14)->format('Y-m-d H:i:s'),
+            'end_time' => now()->addDays(14)->addHours(3)->format('Y-m-d H:i:s'),
+            'category_id' => $categoryId,
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+        $stored = (string) DB::table('events')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('title', $title)
+            ->value('description');
+        $this->assertSame("Your session has expired\nClick here to re-authenticate", $stored);
+    }
 }

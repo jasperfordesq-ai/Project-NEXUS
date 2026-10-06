@@ -2042,6 +2042,10 @@ class EventsController extends BaseApiController
 
         $title = $this->input('title');
         $description = $this->input('description');
+        if (is_string($description)) {
+            // F-568 (E-093): plain text box — markup is stored as words.
+            $description = \App\Helpers\HtmlSanitizer::toPlainText($description);
+        }
 
         if (empty($title)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.event_series_title_required'), 'title', 400);

@@ -15,7 +15,7 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import Check from 'lucide-react/icons/check';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { buildVideoEmbedSrc, VIDEO_EMBED_SANDBOX } from '@/lib/videoEmbed';
 import type { JobVacancy, MatchResult, QualificationData } from './JobDetailTypes';
 
@@ -47,7 +47,7 @@ export function JobDescriptionCard({
       {/* Description */}
       <GlassCard className="p-6">
         <h2 className="text-lg font-semibold text-theme-primary mb-4">{t('detail.about')}</h2>
-        <SafeHtml content={vacancy.description} className="text-theme-secondary whitespace-pre-wrap" as="div" />
+        <MemberPlainText content={vacancy.description} className="text-theme-secondary whitespace-pre-wrap" as="div" />
       </GlassCard>
 
       {/* Match Explanation Card — "Why You Match" */}

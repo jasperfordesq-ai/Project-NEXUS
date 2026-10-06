@@ -31,7 +31,7 @@ import CheckCircle2 from 'lucide-react/icons/circle-check';
 import CircleX from 'lucide-react/icons/circle-x';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { EmptyState } from '@/components/feedback';
 import { useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
@@ -375,7 +375,7 @@ export function GroupChallengesTab({ groupId, isAdmin }: GroupChallengesTabProps
                 {statusLabel}
               </Chip>
             </div>
-            <SafeHtml content={challenge.description} className="text-sm text-theme-secondary line-clamp-2" as="p" />
+            <MemberPlainText content={challenge.description} className="text-sm text-theme-secondary line-clamp-2" as="p" />
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">

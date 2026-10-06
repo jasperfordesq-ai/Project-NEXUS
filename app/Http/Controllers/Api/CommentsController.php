@@ -96,6 +96,12 @@ class CommentsController extends BaseApiController
             return $this->respondWithError('VALIDATION_INVALID_VALUE', __('api.comment_too_long'), 'content', 422);
         }
 
+        // Validate what will actually be stored: markup-only input becomes empty.
+        $content = \App\Helpers\HtmlSanitizer::toPlainText($content);
+        if ($content === '') {
+            return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.comment_text_required'), 'content', 400);
+        }
+
         $targetType = CommentService::normalizeTargetType((string) $targetType);
         if (!FeedItemTables::isCommentable($targetType) || !FeedItemTables::canView($targetType, $targetId, $userId)) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.target_not_found'), null, 404);
@@ -140,7 +146,7 @@ class CommentsController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('comments_edit', 30, 60);
 
-        $content = trim($this->input('content', ''));
+        $content = \App\Helpers\HtmlSanitizer::toPlainText(trim($this->input('content', '')));
 
         if (empty($content)) {
             return $this->respondWithError('VALIDATION_REQUIRED_FIELD', __('api.comment_text_required'), 'content', 400);

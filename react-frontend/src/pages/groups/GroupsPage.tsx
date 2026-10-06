@@ -30,7 +30,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Star from 'lucide-react/icons/star';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
@@ -739,7 +739,7 @@ const GroupCard = memo(function GroupCard({ group, featured }: GroupCardProps) {
             )}
             <h3 className="mb-3 line-clamp-2 text-lg font-semibold text-theme-primary">{group.name}</h3>
 
-            <SafeHtml content={group.description || t('no_description')} className="text-theme-muted text-sm line-clamp-2 flex-1 mb-2" as="p" />
+            <MemberPlainText content={group.description || t('no_description')} className="text-theme-muted text-sm line-clamp-2 flex-1 mb-2" as="p" />
 
             {/* Tags */}
             {group.tags && group.tags.length > 0 && (

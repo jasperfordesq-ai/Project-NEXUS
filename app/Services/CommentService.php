@@ -165,8 +165,8 @@ class CommentService
     {
         $targetType = self::normalizeTargetType($targetType);
 
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $content = \App\Helpers\HtmlSanitizer::sanitize(trim($data['content']));
+        // F-568 (E-093): the comment box is a plain text box — store words, never markup.
+        $content = \App\Helpers\HtmlSanitizer::toPlainText(trim($data['content']));
 
         $parentId = isset($data['parent_id']) && $data['parent_id'] !== null
             ? (int) $data['parent_id']
@@ -296,8 +296,8 @@ class CommentService
             return null;
         }
 
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $trimmedContent = \App\Helpers\HtmlSanitizer::sanitize(trim($content));
+        // F-568 (E-093): the comment box is a plain text box — store words, never markup.
+        $trimmedContent = \App\Helpers\HtmlSanitizer::toPlainText(trim($content));
 
         return DB::transaction(function () use ($comment, $commentId, $userId, $tenantId, $trimmedContent): string {
             $mentionedUserIds = self::resolveMentionRecipientIds($trimmedContent, $tenantId);
@@ -471,8 +471,8 @@ class CommentService
     {
         $targetType = self::normalizeTargetType($targetType);
 
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $content = \App\Helpers\HtmlSanitizer::sanitize(trim($content));
+        // F-568 (E-093): the comment box is a plain text box — store words, never markup.
+        $content = \App\Helpers\HtmlSanitizer::toPlainText(trim($content));
         if (empty($content)) {
             return ['success' => false, 'error' => __('api.comment_cannot_be_empty')];
         }
@@ -591,8 +591,8 @@ class CommentService
     public static function editComment(int $commentId, int $userId, string $newContent): array
     {
         $tenantId = TenantContext::getId();
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $newContent = \App\Helpers\HtmlSanitizer::sanitize(trim($newContent));
+        // F-568 (E-093): the comment box is a plain text box — store words, never markup.
+        $newContent = \App\Helpers\HtmlSanitizer::toPlainText(trim($newContent));
 
         if (empty($newContent)) {
             return ['success' => false, 'error' => __('api.comment_cannot_be_empty')];

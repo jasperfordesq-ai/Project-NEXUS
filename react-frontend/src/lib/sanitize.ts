@@ -194,7 +194,9 @@ function disarmMemberLinks(cleanHtml: string): string {
     if (!parent) return;
 
     const destination = canonicalDestination(anchor.getAttribute('href') ?? '');
-    if (destination && labelIsDestination(anchor.textContent ?? '', destination)) return;
+    // textContent omits images and their alt text. Only a text-only anchor can
+    // qualify: otherwise a matching URL could keep a phishing image clickable.
+    if (destination && anchor.childElementCount === 0 && labelIsDestination(anchor.textContent ?? '', destination)) return;
 
     // The author's words (or image) stay, as ordinary content outside any link.
     const replacement = document.createDocumentFragment();

@@ -245,4 +245,34 @@ class HtmlSanitizerTest extends TestCase
         $result = HtmlSanitizer::excerpt($html, 160);
         $this->assertStringNotContainsString('<', $result);
     }
+
+    // -------------------------------------------------------
+    // toPlainText() — F-568 (E-093): plain-text boxes never carry markup
+    // -------------------------------------------------------
+
+    public function test_toPlainText_turns_an_injected_link_into_its_words(): void
+    {
+        $this->assertSame(
+            'Click here to re-authenticate',
+            HtmlSanitizer::toPlainText('<a href="https://google.com">Click here to re-authenticate</a>')
+        );
+    }
+
+    public function test_toPlainText_removes_every_tag_but_keeps_the_members_line_breaks(): void
+    {
+        $in = "<h1>Your session has expired</h1>\n<img src=\"https://evil.example/x.png\" alt=\"Sign in\"><table><tr><td>Username</td></tr></table>\nThanks";
+        $out = HtmlSanitizer::toPlainText($in);
+        $this->assertStringNotContainsString('<', $out);
+        $this->assertSame("Your session has expired\nUsername\nThanks", $out);
+    }
+
+    public function test_toPlainText_drops_script_and_style_bodies_entirely(): void
+    {
+        $this->assertSame('Hello', HtmlSanitizer::toPlainText('<script>alert(1)</script>Hello<style>p{}</style>'));
+    }
+
+    public function test_toPlainText_leaves_ordinary_prose_with_angle_brackets_alone(): void
+    {
+        $this->assertSame('I <3 timebanking & 2 > 1', HtmlSanitizer::toPlainText('I <3 timebanking & 2 > 1'));
+    }
 }

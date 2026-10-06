@@ -431,6 +431,14 @@ describe("sanitizeMemberRichText — a member's own words are never a link (F-56
       .toEqual([{ href: 'https://evil.example/x', text: 'https://evil.example/x' }]);
   });
 
+  it('unwraps a clickable image even when accompanying text matches the destination', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/"><img src="https://evil.example/sign-in.png" alt="Click here to re-authenticate">https://evil.example</a>');
+    const doc = new DOMParser().parseFromString(out, 'text/html');
+    expect(doc.querySelector('img')?.getAttribute('alt')).toBe('Click here to re-authenticate');
+    expect(doc.querySelector('a img')).toBeNull();
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
+  });
+
   it('never lets a label that looks like the platform point elsewhere', () => {
     const out = sanitizeMemberRichText('<a href="https://app.project-nexus.ie.evil.example/">https://app.project-nexus.ie/login</a>');
     expect(anchorsOf(out)).toEqual([{ href: 'https://app.project-nexus.ie.evil.example', text: 'https://app.project-nexus.ie.evil.example' }]);

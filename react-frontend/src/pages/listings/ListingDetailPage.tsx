@@ -40,7 +40,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/comp
 import { RadioGroup, Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { Breadcrumbs } from '@/components/navigation';
 import { LoadingScreen, EmptyState, ErrorBoundary } from '@/components/feedback';
 import { PageMeta } from '@/components/seo/PageMeta';
@@ -736,7 +736,7 @@ export function ListingDetailPage() {
               return (
                 <>
                   <div className={isLongDesc && !showFullDesc ? 'line-clamp-6 overflow-hidden' : ''}>
-                    <SafeHtml content={translatedDesc ?? listing.description} className="text-theme-muted whitespace-pre-wrap wrap-break-word" as="div" />
+                    <MemberPlainText content={translatedDesc ?? listing.description} className="text-theme-muted whitespace-pre-wrap wrap-break-word" as="div" />
                   </div>
                   {listing.description && (
                     <TranslateButton

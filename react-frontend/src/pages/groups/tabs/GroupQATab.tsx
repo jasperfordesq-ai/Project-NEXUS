@@ -28,7 +28,7 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import MessageSquare from 'lucide-react/icons/message-square';
 import Plus from 'lucide-react/icons/plus';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { EmptyState } from '@/components/feedback';
 import { useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
@@ -657,7 +657,7 @@ export function GroupQATab({ groupId, isAdmin, isMember = true }: GroupQATabProp
                   ) : expandedDetail ? (
                     <>
                       {/* Question body */}
-                      <SafeHtml content={expandedDetail.body} className="text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
+                      <MemberPlainText content={expandedDetail.body} className="text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
 
                       {/* Answers */}
                       {expandedDetail.answers.length > 0 && (
@@ -691,7 +691,7 @@ export function GroupQATab({ groupId, isAdmin, isMember = true }: GroupQATabProp
 
                               {/* Answer content */}
                               <div className="flex-1 min-w-0">
-                                <SafeHtml content={answer.body} className="text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
+                                <MemberPlainText content={answer.body} className="text-sm text-theme-secondary whitespace-pre-wrap" as="div" />
                                 <div className="flex items-center gap-2 mt-2 text-xs text-theme-subtle">
                                   <span>{answer.author.name}</span>
                                   <span aria-hidden="true">&#183;</span>

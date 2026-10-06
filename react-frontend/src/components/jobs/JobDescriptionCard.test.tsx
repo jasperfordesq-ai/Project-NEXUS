@@ -17,13 +17,8 @@ vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
 }));
 
-// SafeHtml renders sanitized HTML — mock it to a simple passthrough div so
-// we can assert on the text content without needing DOMPurify in jsdom.
-vi.mock('@/components/ui/SafeHtml', () => ({
-  SafeHtml: ({ content, className }: { content: string; className?: string }) => (
-    <div className={className} data-testid="safe-html" dangerouslySetInnerHTML={{ __html: content }} />
-  ),
-}));
+// F-568 (E-093): the job description box is a plain text box, so the card renders
+// the description through the real MemberPlainText — markup comes out as words.
 
 import { JobDescriptionCard } from './JobDescriptionCard';
 import type { JobVacancy, MatchResult, QualificationData } from './JobDetailTypes';
@@ -91,10 +86,10 @@ describe('JobDescriptionCard', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the vacancy description via SafeHtml', () => {
+  it('renders the vacancy description as plain text, never as markup (F-568)', () => {
     render(
       <JobDescriptionCard
-        vacancy={BASE_VACANCY}
+        vacancy={{ ...BASE_VACANCY, description: '<a href="https://google.com">Click here to re-authenticate</a> and join our team.' }}
         isOwner={false}
         isAuthenticated={false}
         matchResult={null}
@@ -102,9 +97,9 @@ describe('JobDescriptionCard', () => {
         onCheckQualification={onCheckQualification}
       />
     );
-    const html = screen.getByTestId('safe-html');
-    expect(html).toBeInTheDocument();
-    expect(html.innerHTML).toContain('Join our team');
+    // The box is plain text: no anchor renders, and the member's words are shown as text.
+    expect(screen.getByText(/Click here to re-authenticate and join our team\./)).toBeInTheDocument();
+    expect(document.querySelector('a[href="https://google.com"]')).toBeNull();
   });
 
   it('renders required skills as chips', () => {

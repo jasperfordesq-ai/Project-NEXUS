@@ -1310,7 +1310,8 @@ class ListingService
                 'user_id'               => $userId,
                 'acting_user_id'        => $actingUserId,
                 'title'                 => trim($data['title']),
-                'description'           => trim($data['description']),
+                // F-568 (E-093): the description box is a plain text box — markup is stored as words.
+                'description'           => \App\Helpers\HtmlSanitizer::toPlainText(trim($data['description'])),
                 'type'                  => $data['type'] ?? 'offer',
                 'category_id'           => $data['category_id'] ?? null,
                 'image_url'             => $data['image_url'] ?? null,
@@ -1453,6 +1454,11 @@ class ListingService
         ];
 
         $updates = collect($data)->only($allowed)->all();
+
+        // F-568 (E-093): the description box is a plain text box — markup is stored as words.
+        if (isset($updates['description']) && is_string($updates['description'])) {
+            $updates['description'] = \App\Helpers\HtmlSanitizer::toPlainText($updates['description']);
+        }
 
         // Clearing the cap field must remove the cap. Without this an empty
         // string would be cast to 0.00 by the decimal cast, silently turning

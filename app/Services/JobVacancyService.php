@@ -877,7 +877,8 @@ class JobVacancyService
             'creation_idempotency_key_hash' => $keyHash,
             'creation_request_hash' => $requestHash,
             'title'          => trim($data['title']),
-            'description'    => trim($data['description'] ?? ''),
+            // F-568 (E-093): the description box is a plain text box — markup is stored as words.
+            'description'    => \App\Helpers\HtmlSanitizer::toPlainText(trim($data['description'] ?? '')),
             'type'           => $type,
             'commitment'     => $data['commitment'] ?? 'flexible',
             'location'       => $data['location'] ?? null,
@@ -1028,6 +1029,11 @@ class JobVacancyService
 
         if (array_key_exists('skills_required', $updates)) {
             $updates['skills_required'] = $this->normalizeSkillsInput($updates['skills_required']);
+        }
+
+        // F-568 (E-093): the description box is a plain text box — markup is stored as words.
+        if (array_key_exists('description', $updates) && is_string($updates['description'])) {
+            $updates['description'] = \App\Helpers\HtmlSanitizer::toPlainText($updates['description']);
         }
 
         if (empty($updates)) {

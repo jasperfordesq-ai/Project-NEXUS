@@ -44,7 +44,7 @@ import Repeat from 'lucide-react/icons/repeat';
 import List from 'lucide-react/icons/list';
 import Rows3 from 'lucide-react/icons/rows-3';
 import { useTranslation } from 'react-i18next';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { useAuth } from '@/contexts/AuthContext';
 import { canCreateEvents } from '@/lib/access';
 import { useToast } from '@/contexts/ToastContext';
@@ -990,7 +990,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                       </Chip>
                     )}
                   </div>
-                  <SafeHtml content={event.description ?? ''} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />
+                  <MemberPlainText content={event.description ?? ''} className="text-theme-muted text-sm line-clamp-2 mt-1" as="p" />
                 </div>
                 {coverImageProps && (
                   <img

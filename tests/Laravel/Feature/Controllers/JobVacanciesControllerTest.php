@@ -2142,4 +2142,29 @@ class JobVacanciesControllerTest extends TestCase
         $returnedIds = array_column($data, 'id');
         $this->assertNotContains($theirs->id, $returnedIds, 'Other tenant vacancy leaked into tenant-scoped listing');
     }
+
+    // F-568 (E-093): the job description box is a plain text box — markup typed
+    // into it is stored as words, never as HTML (Cyphere F-562 variant).
+    public function test_store_keeps_the_description_as_words_never_markup(): void
+    {
+        $this->authenticatedUser();
+        $title = 'Plain text job ' . uniqid();
+
+        $response = $this->apiPost('/v2/jobs', [
+            'title' => $title,
+            'description' => '<a href="https://google.com">Click here to re-authenticate</a> to keep helping the garden.',
+            'type' => 'volunteer',
+            'commitment' => 'flexible',
+            'category' => 'community',
+            'location' => 'Dublin',
+            'contact_email' => 'jobs@example.test',
+        ]);
+
+        $response->assertStatus(201);
+        $stored = (string) DB::table('job_vacancies')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('title', $title)
+            ->value('description');
+        $this->assertSame('Click here to re-authenticate to keep helping the garden.', $stored);
+    }
 }

@@ -23,7 +23,7 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import Trash2 from 'lucide-react/icons/trash-2';
 import Megaphone from 'lucide-react/icons/megaphone';
-import { SafeHtml } from '@/components/ui/SafeHtml';
+import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { resolveAvatarUrl, responsiveThumbnailProps, formatDateValue, formatRelativeTime } from '@/lib/helpers';
 import type { Group } from '@/types/api';
@@ -305,7 +305,7 @@ export function GroupHeader({
       )}
 
       {/* Description */}
-      <SafeHtml
+      <MemberPlainText
         content={group.description || t('detail.no_description')}
         className="mt-5 text-theme-muted [&_*]:break-words"
         as="div"

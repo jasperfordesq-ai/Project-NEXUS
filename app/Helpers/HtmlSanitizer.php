@@ -223,6 +223,44 @@ class HtmlSanitizer
         return strip_tags($html);
     }
 
+    /**
+     * What a member typed into a PLAIN text box, kept as words only.
+     *
+     * F-568 (E-093, Cyphere stored-HTML-injection retest of F-562, 6 Oct 2026).
+     * Comments and listing / event descriptions are typed into boxes with no
+     * formatting toolbar, so markup in them is never intentional and must never
+     * be stored as markup: `<a href="https://google.com">Click here to
+     * re-authenticate</a>` is stored as "Click here to re-authenticate", `<h1>`
+     * and `<img>` vanish and their words stay. Line breaks are kept — they are
+     * the only formatting these boxes have.
+     *
+     * Deliberately NOT strip_tags(): that eats "<3" and "2 < 3 > 1" as if they
+     * opened a tag. Only tag-shaped runs (`<x…>`, `</x…>`, `<!…>`, `<?…>`) and
+     * comments are removed, repeatedly, so `<<a>a href=…>` cannot survive one
+     * pass as a fresh tag. Script and style bodies go with their tags.
+     *
+     * @param string $html The text as submitted
+     * @return string Plain text, trimmed
+     */
+    public static function toPlainText(string $html): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        $text = str_replace("\0", '', $html);
+        $text = (string) preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $text);
+        $text = (string) preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $text);
+
+        do {
+            $before = $text;
+            $text = (string) preg_replace('/<!--.*?-->/s', '', $text);
+            $text = (string) preg_replace('/<(?:\/?[a-zA-Z]|!|\?)[^>]*>/', '', $text);
+        } while ($text !== $before);
+
+        return trim($text);
+    }
+
     // =========================================================================
     // CMS / Page Builder methods (formerly in Nexus\Core\HtmlSanitizer)
     // =========================================================================
