@@ -684,11 +684,11 @@
 // The footer sits on a pale blue tint, and the marks that land here are opaque
 // far more often than not:
 //
-//   - The built-in powered-by badge (`powered-by-nexus-light.png`) is RGB with NO
-//     alpha channel at all — a white background is baked into the file. Measured,
-//     not assumed. Without a plate it renders as a stray white rectangle against
-//     the tint. (The DARK variant is the transparent one, and it is unusable here:
-//     see the note in accessible-shell.js.)
+//   - The built-in powered-by badge (`powered-by-nexus-light.png`) was, until
+//     2026-10-06, RGB with NO alpha channel — a white background baked into the
+//     file — and rendered as a stray white rectangle without a plate. Its
+//     replacement is transparent (navy and teal artwork with a thin white
+//     outline), and still reads best on white: the plate stays.
 //   - A community's partner logo is whatever their partner supplied, and council
 //     and funder logos arrive as opaque JPEGs as a matter of course.
 //
