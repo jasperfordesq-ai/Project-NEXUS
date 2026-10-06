@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2789,
-  "api_route_rows": 2754,
-  "distinct_api_paths": 2295,
+  "total_registered_routes": 2791,
+  "api_route_rows": 2756,
+  "distinct_api_paths": 2297,
   "route_source_fingerprint": {
-    "digest": "2c6d6ba5f716960736585a846f760ed63789a43c2af9006c572b020fafcbbe0d",
+    "digest": "2b4758d3a48678131bee9ba605c63af918bd9951aee6ba3a7be251ac537cad9b",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "c95dbbb0010d405068bcf5b333075c901a7e6a6b1d0a27273f86540c7c9cc5ab"
+        "sha256": "297a14ea4104db9bb79812a6f8be39fd21eceaf69632503ffac1db13025e8015"
       },
       {
         "file": "routes/channels.php",
@@ -2921,6 +2921,12 @@
     ],
     "/api/v2/admin/settings/header-logo-dark": [
       "DELETE",
+      "POST"
+    ],
+    "/api/v2/admin/settings/network-powered-by-image-dark": [
+      "POST"
+    ],
+    "/api/v2/admin/settings/network-powered-by-image-light": [
       "POST"
     ],
     "/api/v2/admin/settings/partner-logo": [
