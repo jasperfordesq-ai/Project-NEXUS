@@ -22,7 +22,7 @@ import Constants from 'expo-constants';
 
 import { reportSentryMessage, reportException } from '@/lib/observability/report';
 
-import { api } from '@/lib/api/client';
+import { api, ApiResponseError } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import i18n from 'i18next';
@@ -297,7 +297,12 @@ export async function registerForPushNotifications(
   } catch (err) {
     // Non-critical — app works fine without push notifications
     console.warn('[Notifications] Failed to register device:', err);
-    reportException(err, { tags: { module: 'push-notifications' } });
+    // A lapsed login (401 after the client's own refresh failed) is an expected
+    // outcome, not a fault: the member is signed out and registration runs again
+    // on the next login. Reporting it filled Sentry from every signed-out device.
+    if (!(err instanceof ApiResponseError && err.status === 401)) {
+      reportException(err, { tags: { module: 'push-notifications' } });
+    }
     return 'failed';
   }
 }

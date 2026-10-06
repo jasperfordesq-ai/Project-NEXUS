@@ -44,6 +44,14 @@ jest.mock('@sentry/react-native', () => ({
 }));
 
 jest.mock('@/lib/api/client', () => ({
+  ApiResponseError: class ApiResponseError extends Error {
+    status: number;
+    constructor(status: number, message: string) {
+      super(message);
+      this.name = 'ApiResponseError';
+      this.status = status;
+    }
+  },
   api: {
     post: (...args: unknown[]) => mockPost(...args),
   },
@@ -412,5 +420,32 @@ describe('push notification registration', () => {
       token_type: 'expo',
     });
     expect(mockStorageRemove).toHaveBeenCalledWith('nexus_expo_push_token');
+  });
+
+  // Sentry NEXUS-MOBILE-5 / NEXUS-PHP-6F: a lapsed login answered register-device
+  // with 401 and was reported as a crash, from every signed-out device.
+  it('does not report an expired session as an error', async () => {
+    const { ApiResponseError } = jest.requireMock('@/lib/api/client');
+    const Sentry = jest.requireMock('@sentry/react-native');
+    mockPost.mockRejectedValueOnce(
+      new ApiResponseError(401, 'Your session has expired. Please log in again.'),
+    );
+
+    const result = await registerForPushNotifications();
+
+    expect(result).toBe('failed');
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+    expect(mockStorageSet).not.toHaveBeenCalled();
+  });
+
+  it('still reports a registration failure that is not an expired session', async () => {
+    const { ApiResponseError } = jest.requireMock('@/lib/api/client');
+    const Sentry = jest.requireMock('@sentry/react-native');
+    mockPost.mockRejectedValueOnce(new ApiResponseError(500, 'Server error'));
+
+    const result = await registerForPushNotifications();
+
+    expect(result).toBe('failed');
+    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
   });
 });
