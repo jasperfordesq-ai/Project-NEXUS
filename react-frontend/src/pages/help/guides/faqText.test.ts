@@ -15,8 +15,10 @@ describe('faqAnswerText', () => {
   });
 
   it('drops tags and attributes, keeping only the visible words', () => {
+    // Since F-562 (E-092) SafeHtml shows a link's words as plain text followed by
+    // its address, so the address is part of what a reader sees — and searches.
     const text = faqAnswerText('<p><strong>Bring</strong> your <a href="/library" class="x">card</a></p>');
-    expect(text).toBe('Bring your card');
+    expect(text).toBe('Bring your card /library');
   });
 
   it('decodes entities', () => {

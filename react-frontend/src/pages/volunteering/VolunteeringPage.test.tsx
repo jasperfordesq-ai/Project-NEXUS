@@ -557,7 +557,7 @@ describe('VolunteeringPage', () => {
       vi.mocked(useTenant).mockImplementation(() => ({
         ...(baseTenant ? baseTenant() : {}),
         volunteeringConfig: config,
-      }) as ReturnType<typeof useTenant>);
+      }) as unknown as ReturnType<typeof useTenant>);
     };
 
     afterEach(() => {

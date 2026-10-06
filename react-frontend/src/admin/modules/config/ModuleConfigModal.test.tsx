@@ -232,25 +232,19 @@ const makeComingSoonModule = (): ModuleDefinition => ({
 // (the volunteering Group Sign-ups tab is the real case).
 const makeAlphaOptionModule = (): ModuleDefinition => ({
   id: 'wallet',
-  name: 'Wallet',
-  description: 'Time credits',
   icon: ListChecks,
   type: 'core',
   configSource: 'tenant_modules',
   configOptions: [
     {
-      key: 'wallet.group_booking',
-      label: 'Group booking',
-      description: 'Half-built',
+      key: 'wallet.group_booking',
       type: 'boolean',
       defaultValue: false,
       category: 'Limits',
       stage: 'alpha',
     },
     {
-      key: 'wallet.min_transfer',
-      label: 'Min Transfer',
-      description: 'Minimum time credits',
+      key: 'wallet.min_transfer',
       type: 'number',
       defaultValue: 0.25,
       category: 'Limits',

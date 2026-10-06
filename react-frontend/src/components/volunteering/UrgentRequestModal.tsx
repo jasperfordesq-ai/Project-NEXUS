@@ -28,6 +28,10 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
+/** The server's own validation message when it sent one, else the translated fallback (same shape as ShiftManager). */
+const errorMessage = (response: { errors?: Array<{ message?: string }>; error?: string }, fallback: string) =>
+  response.errors?.[0]?.message || response.error || fallback;
+
 const PRIORITIES = ['normal', 'urgent', 'critical'] as const;
 const EXPIRY_CHOICES = [
   { hours: 6, key: 'urgent_expires_6h' },
@@ -91,7 +95,7 @@ export function UrgentRequestModal({ shiftId, shiftLabel, onClose, onSent }: Urg
         onSent();
         onClose();
       } else {
-        setError(res.errors?.[0]?.message || res.error || t('shift_manager.urgent_failed'));
+        setError(errorMessage(res, t('shift_manager.urgent_failed')));
       }
     } catch (err) {
       logError('Failed to send urgent shift request', err);
