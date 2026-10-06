@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { languageDisplayName } from '@/lib/languageDisplayName';
-import { PlaceAutocompleteInput } from '@/components/location';
+import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { SuperAdminTenant, SuperAdminTenantDetail, CreateTenantPayload } from '../../api/types';

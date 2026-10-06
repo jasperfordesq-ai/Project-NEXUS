@@ -68,7 +68,7 @@ vi.mock('../../components/PageHeader', () => ({
 
 // Stub the place search: a plain text box plus a button that "picks" a fixed place,
 // so the test proves the form fills itself from a selection without a live geocoder.
-vi.mock('@/components/location', () => ({
+vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
   PlaceAutocompleteInput: ({ label, value, onChange, onPlaceSelect }: {
     label?: string; value: string;
     onChange?: (v: string) => void;

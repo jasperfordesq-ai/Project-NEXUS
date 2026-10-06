@@ -148,6 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Super-admin tenant form: place search imported directly.** The 6 Oct place-search change imported it through the location component barrel, which the bundle-budget check forbids because it can pull Google Maps into unrelated screens; CI failed on that check. Same behaviour, direct import.
 - **Checking a certificate by its code works on every community address (accessible site).** The main app reserved the new `verify-certificate` page address on 6 Oct 2026 but the accessible site's copy of that list was not updated, so its routing test failed in CI. The two lists match again.
 - **The phone app opens the right screen from a cancelled-shift alert.** The alert points volunteers at their Applications tab; the phone app's route contract did not list that destination yet and its test failed in CI. Added.
 - **Urgent shift request: the error message shown when the request cannot be sent** now goes through the same server-message helper the shift manager uses, so the admin text check passes and the server's own validation message is still shown when there is one.
