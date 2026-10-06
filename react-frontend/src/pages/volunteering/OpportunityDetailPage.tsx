@@ -1013,6 +1013,8 @@ export function OpportunityDetailPage() {
   const canManage = Boolean(opp.can_manage || opp.is_owner);
   const canManageShifts = canManage;
   const isClosed = opp.status === 'closed';
+  // The shift this volunteer is on (one per opportunity) — the only one with a check-in code.
+  const heldShifts = (opp.shifts ?? []).filter((shift) => shift.id === opp.application?.shift_id);
   const approvedApplication = opp.application?.status === 'approved' ? opp.application : null;
   const currentShiftId = approvedApplication?.shift_id ?? null;
   const cleanDescription = opp.description?.replace(/\s+/g, ' ').trim();
@@ -1252,6 +1254,14 @@ export function OpportunityDetailPage() {
         </GlassCard>
       </motion.div>
 
+      {/* QR check-in — only for the shift the approved volunteer is on, and above the
+          shift list (gap C2, 6 Oct 2026). It used to request a code for every shift,
+          get refused for each one the volunteer was not on, then say codes were "not
+          yet available", and sat below the whole list where it was easy to miss. */}
+      {qrCheckinEnabled && opp.has_applied && opp.application?.status === 'approved' && heldShifts.length > 0 && (
+        <ShiftCheckinPanel shifts={heldShifts} />
+      )}
+
       {/* Shift management — organisers (creator, organisation owner/admin) and community admins.
           Replaces the read-only list below for them: one list, with the controls on it. */}
       {canManageShifts && (
@@ -1347,10 +1357,6 @@ export function OpportunityDetailPage() {
         </motion.div>
       )}
 
-      {/* QR Check-in — approved volunteers only */}
-      {qrCheckinEnabled && opp.has_applied && opp.application?.status === 'approved' && opp.shifts && opp.shifts.length > 0 && (
-        <ShiftCheckinPanel shifts={opp.shifts} />
-      )}
 
       {/* Applications management — owner only */}
       {/* Applicants — everyone who may manage the opportunity, not only its creator (gap A4, 6 Oct 2026). */}

@@ -409,3 +409,55 @@ describe('OpportunityDetailPage', () => {
     });
   });
 });
+
+// Gap C2 (6 Oct 2026): the panel asked for a check-in code for EVERY shift of the
+// opportunity, got a refusal for each shift the volunteer is not on, then said
+// "QR codes are not yet available for some shifts". It also sat below the whole
+// shift list, where a volunteer with many shifts never saw it.
+describe('OpportunityDetailPage — shift check-in', () => {
+  const later = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+  const shift = (id: number, days: number) => ({
+    id, start_time: later(days), end_time: later(days + 0.1), capacity: 3, signup_count: 0, spots_available: 3,
+  });
+  const approvedOn = (shiftId: number | null) => ({
+    ...mockOpportunity,
+    shifts: [shift(1, 2), shift(2, 3), shift(3, 4)],
+    has_applied: true,
+    application: { id: 99, status: 'approved', message: null, shift_id: shiftId, created_at: '2026-02-01T00:00:00Z' },
+  });
+  const mockGets = (opp: unknown) => {
+    vi.mocked(api.get).mockImplementation(((endpoint: string) => {
+      if (endpoint.endsWith('/checkin')) {
+        return Promise.resolve({
+          success: true,
+          data: { qr_token: 'tok', qr_url: 'https://example.test/volunteering/checkin/tok', status: 'pending', checked_in_at: null, checked_out_at: null },
+        });
+      }
+      return Promise.resolve({ success: true, data: opp });
+    }) as unknown as typeof api.get);
+  };
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it("asks only for the volunteer's own shift and shows it above the shift list", async () => {
+    mockGets(approvedOn(2));
+    render(<OpportunityDetailPage />);
+
+    const title = await screen.findByText('check_in.title');
+    const checkinCalls = vi.mocked(api.get).mock.calls.map((c) => String(c[0])).filter((u) => u.endsWith('/checkin'));
+    expect(checkinCalls).toEqual(['/v2/volunteering/shifts/2/checkin']);
+    expect(screen.queryByText('check_in.some_unavailable')).not.toBeInTheDocument();
+
+    const shiftsHeading = screen.getByText('opportunity.upcoming_shifts');
+    expect(title.compareDocumentPosition(shiftsHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows no check-in panel and asks for nothing when the volunteer holds no shift', async () => {
+    mockGets(approvedOn(null));
+    render(<OpportunityDetailPage />);
+
+    await screen.findByText('opportunity.upcoming_shifts');
+    expect(vi.mocked(api.get).mock.calls.some((c) => String(c[0]).endsWith('/checkin'))).toBe(false);
+    expect(screen.queryByText('check_in.title')).not.toBeInTheDocument();
+  });
+});
