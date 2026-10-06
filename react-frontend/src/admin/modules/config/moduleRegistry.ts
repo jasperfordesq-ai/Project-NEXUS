@@ -87,6 +87,8 @@ export interface ConfigOption {
   defaultValue: boolean | number | string;
   category: string;
   comingSoon?: boolean;
+  /** Maturity of this one option when it differs from the module's. Rendered as a chip beside the label. */
+  stage?: ModuleStage;
   min?: number;
   max?: number;
   choices?: SelectChoice[];
@@ -382,7 +384,9 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       { key: 'volunteering.tab_credentials', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_waitlist', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_swaps', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
-      { key: 'volunteering.tab_group_signups', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
+      // Alpha and off by default (owner decision 2026-10-06): members added to a
+      // group booking are never told and are not real shift sign-ups yet.
+      { key: 'volunteering.tab_group_signups', type: 'boolean', defaultValue: false, category: 'tab_visibility', stage: 'alpha' },
       { key: 'volunteering.tab_hours_review', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_expenses', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_safeguarding', type: 'boolean', defaultValue: true, category: 'tab_visibility' },

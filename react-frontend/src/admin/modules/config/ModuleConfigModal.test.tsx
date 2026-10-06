@@ -228,6 +228,36 @@ const makeComingSoonModule = (): ModuleDefinition => ({
   ],
 });
 
+// One option inside an otherwise-stable module carries its own maturity stage
+// (the volunteering Group Sign-ups tab is the real case).
+const makeAlphaOptionModule = (): ModuleDefinition => ({
+  id: 'wallet',
+  name: 'Wallet',
+  description: 'Time credits',
+  icon: ListChecks,
+  type: 'core',
+  configSource: 'tenant_modules',
+  configOptions: [
+    {
+      key: 'wallet.group_booking',
+      label: 'Group booking',
+      description: 'Half-built',
+      type: 'boolean',
+      defaultValue: false,
+      category: 'Limits',
+      stage: 'alpha',
+    },
+    {
+      key: 'wallet.min_transfer',
+      label: 'Min Transfer',
+      description: 'Minimum time credits',
+      type: 'number',
+      defaultValue: 0.25,
+      category: 'Limits',
+    },
+  ],
+});
+
 const makeOnboardingModule = (): ModuleDefinition => ({
   id: 'onboarding',
   name: 'Onboarding',
@@ -519,6 +549,21 @@ describe('ModuleConfigModal', () => {
       );
       expect(text.length).toBeGreaterThan(0);
     });
+  });
+
+  it('badges an option marked stage alpha, and only that option', async () => {
+    const { default: ModuleConfigModal } = await import('./ModuleConfigModal');
+    render(
+      <ModuleConfigModal
+        module={makeAlphaOptionModule()}
+        isOpen={true}
+        onClose={vi.fn()}
+      />
+    );
+
+    const chip = await screen.findByTestId('option-stage-wallet.group_booking');
+    expect(chip).toHaveTextContent(/alpha/i);
+    expect(screen.queryByTestId('option-stage-wallet.min_transfer')).not.toBeInTheDocument();
   });
 
   it('renders onboarding link-out view instead of config options', async () => {

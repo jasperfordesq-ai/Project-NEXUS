@@ -90,7 +90,9 @@
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/certificates') }}">{{ t("vol_depth.certificates_link") }}</a></li>
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/waitlist') }}">{{ t("vol_depth.waitlist_link") }}</a></li>
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/swaps') }}">{{ t("vol_depth.swaps_link") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t("govuk_alpha_volunteering.group_signups.nav_link") }}</a></li>
+      {# Group sign-ups is alpha and hidden on every community (owner decision
+         2026-10-06). The page and its routes stay for the frozen route
+         inventory; only the way in is removed. #}
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/expenses') }}">{{ t("govuk_alpha_volunteering.expenses.nav_link") }}</a></li>
       <li><a class="govuk-link" href="{{ urlFor('/volunteering/donations') }}">{{ t("govuk_alpha_volunteering.donations.nav_link") }}</a></li>
     </ul>

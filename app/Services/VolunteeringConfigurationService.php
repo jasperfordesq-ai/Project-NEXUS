@@ -106,7 +106,12 @@ class VolunteeringConfigurationService
         self::CONFIG_TAB_CREDENTIALS        => true,
         self::CONFIG_TAB_WAITLIST           => true,
         self::CONFIG_TAB_SWAPS              => true,
-        self::CONFIG_TAB_GROUP_SIGNUPS      => true,
+        // Group sign-ups is alpha (owner decision 2026-10-06): a group leader can
+        // block out places on a shift, but the people added are never told, are
+        // not real shift sign-ups, cannot check in and earn no hours. Hidden on
+        // every community until finished. The admin switch stays, badged Alpha,
+        // so a community can opt in deliberately.
+        self::CONFIG_TAB_GROUP_SIGNUPS      => false,
         self::CONFIG_TAB_HOURS_REVIEW       => true,
         self::CONFIG_TAB_EXPENSES           => true,
         self::CONFIG_TAB_SAFEGUARDING       => true,

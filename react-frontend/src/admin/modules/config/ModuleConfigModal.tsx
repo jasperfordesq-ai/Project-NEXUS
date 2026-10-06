@@ -725,6 +725,11 @@ function ConfigOptionRow({ option, value, onChange, disabled }: ConfigOptionRowP
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium">{label}</span>
+          {option.stage && (
+            <Chip size="sm" variant="soft" color={option.stage === 'alpha' ? 'warning' : 'secondary'} data-testid={`option-stage-${option.key}`}>
+              {t(`config.stage_${option.stage}`)}
+            </Chip>
+          )}
           {option.comingSoon && (
             <Chip size="sm" variant="soft" color="warning">{t('config.coming_soon')}</Chip>
           )}
