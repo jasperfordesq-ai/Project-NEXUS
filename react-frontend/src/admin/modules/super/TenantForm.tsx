@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { languageDisplayName } from '@/lib/languageDisplayName';
+import { PlaceAutocompleteInput } from '@/components/location';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { SuperAdminTenant, SuperAdminTenantDetail, CreateTenantPayload } from '../../api/types';
@@ -115,6 +116,12 @@ export function TenantForm() {
   const [initialForm, setInitialForm] = useState<typeof form | null>(null);
 
   const [slugAutoGen, setSlugAutoGen] = useState(!isEdit);
+
+  // A geocoded place may sit outside the short curated list; keep its code
+  // selectable rather than silently showing the dropdown as empty.
+  const countryOptions = form.country_code && !COUNTRY_CODES.includes(form.country_code)
+    ? [...COUNTRY_CODES, form.country_code]
+    : COUNTRY_CODES;
 
   const updateField = (field: string, value: unknown) => {
     setForm((prev) => {
@@ -585,12 +592,28 @@ export function TenantForm() {
         <Tab key="location" title={t('tenant_form.tab_location')}>
           <Card>
             <CardBody className="space-y-4 p-6">
-              <Input
+              <PlaceAutocompleteInput
                 label={t('tenant_form.location_name_label')}
                 placeholder={t('tenant_form.location_name_placeholder')}
                 value={form.location_name}
-                onValueChange={(v) => updateField('location_name', v)}
+                onChange={(v) => updateField('location_name', v)}
+                onPlaceSelect={(place) => {
+                  // One pick fills every location field; the coordinate boxes
+                  // below stay editable as a manual fallback.
+                  const countryCode = place.addressComponents?.countryCode?.toUpperCase() ?? '';
+                  setForm((prev) => ({
+                    ...prev,
+                    location_name: place.formattedAddress,
+                    latitude: String(place.lat),
+                    longitude: String(place.lng),
+                    country_code: countryCode || prev.country_code,
+                  }));
+                }}
+                onClear={() => {
+                  setForm((prev) => ({ ...prev, location_name: '', latitude: '', longitude: '' }));
+                }}
               />
+              <p className="text-sm text-theme-muted">{t('tenant_form.location_name_help')}</p>
               <Select
                 label={t('tenant_form.country_label')}
                 placeholder={t('tenant_form.country_placeholder')}
@@ -601,8 +624,8 @@ export function TenantForm() {
                 }}
                 className="max-w-xs"
               >
-                {COUNTRY_CODES.map((code) => (
-                  <SelectItem key={code} id={code}>{t(`tenant_form.countries.${code}`)} ({code})</SelectItem>
+                {countryOptions.map((code) => (
+                  <SelectItem key={code} id={code}>{t(`tenant_form.countries.${code}`, { defaultValue: code })} ({code})</SelectItem>
                 ))}
               </Select>
               <Select

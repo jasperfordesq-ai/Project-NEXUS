@@ -66,6 +66,35 @@ vi.mock('../../components/PageHeader', () => ({
   ),
 }));
 
+// Stub the place search: a plain text box plus a button that "picks" a fixed place,
+// so the test proves the form fills itself from a selection without a live geocoder.
+vi.mock('@/components/location', () => ({
+  PlaceAutocompleteInput: ({ label, value, onChange, onPlaceSelect }: {
+    label?: string; value: string;
+    onChange?: (v: string) => void;
+    onPlaceSelect?: (place: {
+      placeId: string; formattedAddress: string; lat: number; lng: number;
+      addressComponents?: { countryCode?: string };
+    }) => void;
+  }) => (
+    <div>
+      <input aria-label={label} value={value} onChange={(e) => onChange?.(e.target.value)} />
+      <button
+        type="button"
+        onClick={() => onPlaceSelect?.({
+          placeId: 'place-coventry',
+          formattedAddress: 'Coventry, UK',
+          lat: 52.4068,
+          lng: -1.5197,
+          addressComponents: { countryCode: 'GB' },
+        })}
+      >
+        pick coventry
+      </button>
+    </div>
+  ),
+}));
+
 // Stub Switch and Select to avoid HeroUI infinite loops in jsdom
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
@@ -395,5 +424,46 @@ describe('TenantForm — additional create-mode checks', () => {
     if (saveBtn) fireEvent.click(saveBtn);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+  });
+});
+
+describe('TenantForm — location tab geocoding', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockRouteParams.current = {};
+    mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [] });
+    mockAdminSuper.createTenant.mockResolvedValue({ success: true, data: { tenant_id: 7 } });
+  });
+
+  it('fills name, coordinates and country from a chosen place and sends them on create', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'Coventry Timebank');
+
+    await userEvent.click(screen.getByRole('tab', { name: /location/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'pick coventry' }));
+
+    expect(screen.getByRole('textbox', { name: /location/i })).toHaveValue('Coventry, UK');
+    expect(screen.getByRole('textbox', { name: /latitude/i })).toHaveValue('52.4068');
+    expect(screen.getByRole('textbox', { name: /longitude/i })).toHaveValue('-1.5197');
+    expect(screen.getByRole('combobox', { name: /country/i })).toHaveValue('GB');
+
+    const saveBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('create') || b.textContent?.toLowerCase().includes('save')
+    );
+    fireEvent.click(saveBtn!);
+
+    await waitFor(() => {
+      expect(mockAdminSuper.createTenant).toHaveBeenCalledWith(
+        expect.objectContaining({
+          location_name: 'Coventry, UK',
+          latitude: '52.4068',
+          longitude: '-1.5197',
+          country_code: 'GB',
+        })
+      );
+    });
   });
 });
