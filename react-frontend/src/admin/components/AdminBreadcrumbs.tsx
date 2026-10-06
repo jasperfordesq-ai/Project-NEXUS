@@ -165,6 +165,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   // Community / Groups
   groups: 'breadcrumbs.groups',
   approvals: 'breadcrumbs.approvals',
+  opportunities: 'breadcrumbs.opportunities',
   types: 'breadcrumbs.types',
   recommendations: 'breadcrumbs.recommendations',
   ranking: 'breadcrumbs.ranking',

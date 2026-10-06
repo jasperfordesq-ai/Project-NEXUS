@@ -878,7 +878,19 @@
     "filter_nobody_handling": "Nog niemand behandelt het",
     "open_case": "Openen",
     "open_case_for": "Incident #{{id}} openen",
-    "stat_filter_label": "Tonen: {{label}}"
+    "stat_filter_label": "Tonen: {{label}}",
+    "opportunities_title": "Kansen & diensten",
+    "opportunities_desc": "Alle kansen in de gemeenschap. Open er een om diensten toe te voegen, te wijzigen of te verwijderen.",
+    "opportunities_search": "Kansen zoeken",
+    "no_opportunities": "Nog geen kansen",
+    "no_opportunities_desc": "Organisaties plaatsen kansen vanuit hun dashboard; ze verschijnen dan hier.",
+    "failed_to_load_opportunities": "De kansen konden niet worden geladen.",
+    "manage_shifts": "Diensten beheren",
+    "hide_shifts": "Diensten verbergen",
+    "opportunity_status_open": "Open",
+    "opportunity_status_active": "Actief",
+    "opportunity_status_closed": "Gesloten",
+    "opportunity_status_draft": "Concept"
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

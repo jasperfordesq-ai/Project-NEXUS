@@ -541,7 +541,8 @@
     "regional_analytics": "Regional Analytics",
     "help": "Help",
     "whitelist": "Whitelist",
-    "qualifications": "Qualifications"
+    "qualifications": "Qualifications",
+    "opportunities": "Opportunities & shifts"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"
@@ -773,9 +774,11 @@
       "safeguarding": "incidents|concerns|DLP|designated liaison person|reports",
       "giving_days": "fundraising|donations|appeals|campaigns|giving days",
       "settings": "custom fields|reminders|webhooks|configuration",
-      "qualifications": "training|first aid|certificates|expiry|credentials"
+      "qualifications": "training|first aid|certificates|expiry|credentials",
+      "opportunities": "shifts rota schedule opportunities timetable"
     },
-    "qualifications": "Qualifications"
+    "qualifications": "Qualifications",
+    "opportunities": "Opportunities & shifts"
   },
   "group_join_requests": "Group join requests",
   "group_moderation": "Group moderation",

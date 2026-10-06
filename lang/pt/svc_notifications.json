@@ -40,6 +40,9 @@
     "approved_by_admin": "A sua troca de turno foi aprovada por um administrador",
     "accepted_swap_approved_by_admin": "Uma troca de turno que aceitou foi aprovada por um administrador"
   },
+  "shift": {
+    "cancelled": "Um turno em :title (:date) foi cancelado pelo organizador"
+  },
   "user_security": {
     "email_changed": "O seu endereço de e-mail foi alterado. Se não foi você, contacte o suporte imediatamente."
   },

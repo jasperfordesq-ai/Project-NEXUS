@@ -513,7 +513,8 @@
     "directory": "Directory",
     "prerender": "Vooraf weergeven",
     "coupons": "Kortingsbonnen",
-    "qualifications": "Kwalificaties"
+    "qualifications": "Kwalificaties",
+    "opportunities": "Kansen & diensten"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
@@ -773,9 +774,11 @@
       "safeguarding": "incidenten|zorgen|meldingen|vertrouwenspersoon",
       "giving_days": "fondsenwerving|donaties|campagnes|acties",
       "settings": "aangepaste velden|herinneringen|webhooks|configuratie",
-      "qualifications": "training|ehbo|certificaten|vervaldatum|kwalificaties"
+      "qualifications": "training|ehbo|certificaten|vervaldatum|kwalificaties",
+      "opportunities": "diensten rooster schema kansen"
     },
-    "qualifications": "Kwalificaties"
+    "qualifications": "Kwalificaties",
+    "opportunities": "Kansen & diensten"
   },
   "group_join_requests": "Lidmaatschapsverzoeken voor groepen",
   "group_moderation": "Groepsmoderatie",

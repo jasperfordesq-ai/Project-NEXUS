@@ -256,6 +256,31 @@ describe('OpportunityDetailPage', () => {
     });
   });
 
+  it('shows the shift manager instead of the read-only shift list when the server says can_manage', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/applications')) return Promise.resolve(mockApplicationsResponse);
+      if (url.endsWith('/shifts')) return Promise.resolve({ success: true, data: mockOpportunity.shifts });
+      if (url.endsWith('/recurring-patterns')) return Promise.resolve({ success: true, data: { patterns: [] } });
+      // A community admin: not the creator, but allowed to manage.
+      return Promise.resolve({ success: true, data: { ...mockOpportunity, is_owner: false, can_manage: true } });
+    });
+    render(<OpportunityDetailPage />);
+    expect(await screen.findByTestId('shift-manager')).toBeInTheDocument();
+    expect(screen.queryByText('opportunity.upcoming_shifts')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('/v2/volunteering/opportunities/42/shifts');
+    });
+  });
+
+  it('keeps the read-only shift list for a volunteer who cannot manage', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockOpportunity, can_manage: false } });
+    render(<OpportunityDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByText('opportunity.upcoming_shifts')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('shift-manager')).not.toBeInTheDocument();
+  });
+
   it('does not show Applications panel for non-owner', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: mockOpportunity });
     render(<OpportunityDetailPage />);

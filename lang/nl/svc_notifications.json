@@ -40,6 +40,9 @@
     "approved_by_admin": "Uw dienstruil is goedgekeurd door een beheerder",
     "accepted_swap_approved_by_admin": "Een dienstruil die u heeft geaccepteerd is goedgekeurd door een beheerder"
   },
+  "shift": {
+    "cancelled": "Een dienst bij :title (:date) is door de organisator geannuleerd"
+  },
   "user_security": {
     "email_changed": "Uw e-mailadres is gewijzigd. Als u dit niet heeft gedaan, neem dan onmiddellijk contact op met de ondersteuning."
   },

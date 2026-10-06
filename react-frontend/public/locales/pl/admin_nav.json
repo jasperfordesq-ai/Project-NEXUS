@@ -513,7 +513,8 @@
     "kiss": "Troskliwa społeczność",
     "prerender": "Prerender",
     "ranking": "Ranking",
-    "qualifications": "Kwalifikacje"
+    "qualifications": "Kwalifikacje",
+    "opportunities": "Oferty i zmiany"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"
@@ -781,9 +782,11 @@
       "safeguarding": "incydenty|zgłoszenia|obawy|osoba ds. ochrony",
       "giving_days": "zbiórki|darowizny|kampanie|apele",
       "settings": "pola niestandardowe|przypomnienia|webhooki|konfiguracja",
-      "qualifications": "szkolenie|pierwsza pomoc|certyfikaty|ważność|kwalifikacje"
+      "qualifications": "szkolenie|pierwsza pomoc|certyfikaty|ważność|kwalifikacje",
+      "opportunities": "zmiany grafik harmonogram oferty"
     },
-    "qualifications": "Kwalifikacje"
+    "qualifications": "Kwalifikacje",
+    "opportunities": "Oferty i zmiany"
   },
   "group_join_requests": "Prośby o dołączenie do grup",
   "group_moderation": "Moderacja grup",

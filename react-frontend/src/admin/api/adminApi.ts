@@ -1673,6 +1673,21 @@ export const adminBuilderAssets = {
 // Volunteering
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** One row of GET /v2/admin/volunteering/opportunities (raw `vol_opportunities` columns plus the organisation's name). */
+export interface AdminOpportunityRow {
+  id: number;
+  title: string;
+  status: string | null;
+  is_active: number | boolean;
+  organization_id: number | null;
+  org_name: string | null;
+  org_status: string | null;
+  category_name: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+}
+
 export const adminVolunteering = {
   getOverview: () => api.get<{ total_opportunities: number; active_volunteers: number; pending_approvals: number; total_hours: number }>('/v2/admin/volunteering'),
 
@@ -1685,6 +1700,14 @@ export const adminVolunteering = {
     api.post<{ success: boolean }>(`/v2/admin/volunteering/approvals/${id}/decline`, {}),
 
   getOrganizations: () => api.get<Array<{ id: number; name: string; opportunity_count: number; volunteer_count: number }>>('/v2/admin/volunteering/organizations'),
+  /** Every opportunity in the community, newest first, for the Opportunities & shifts page. */
+  getOpportunities: (params: { search?: string; status?: string; cursor?: string | null } = {}) => {
+    const query = new URLSearchParams({ per_page: '20' });
+    if (params.search) query.set('search', params.search);
+    if (params.status) query.set('status', params.status);
+    if (params.cursor) query.set('cursor', params.cursor);
+    return api.get<AdminOpportunityRow[]>(`/v2/admin/volunteering/opportunities?${query.toString()}`);
+  },
 
   // Organization wallet management
   adjustOrgWallet: (orgId: number, amount: number, reason: string) =>

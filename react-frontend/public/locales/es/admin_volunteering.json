@@ -894,7 +894,19 @@
     "filter_nobody_handling": "Nadie se encarga todavía",
     "open_case": "Abrir",
     "open_case_for": "Abrir el incidente n.º {{id}}",
-    "stat_filter_label": "Mostrar: {{label}}"
+    "stat_filter_label": "Mostrar: {{label}}",
+    "opportunities_title": "Oportunidades y turnos",
+    "opportunities_desc": "Todas las oportunidades de la comunidad. Abre una para añadir, cambiar o quitar sus turnos.",
+    "opportunities_search": "Buscar oportunidades",
+    "no_opportunities": "Todavía no hay oportunidades",
+    "no_opportunities_desc": "Las organizaciones publican oportunidades desde su panel; aparecerán aquí.",
+    "failed_to_load_opportunities": "No se han podido cargar las oportunidades.",
+    "manage_shifts": "Gestionar turnos",
+    "hide_shifts": "Ocultar turnos",
+    "opportunity_status_open": "Abierta",
+    "opportunity_status_active": "Activa",
+    "opportunity_status_closed": "Cerrada",
+    "opportunity_status_draft": "Borrador"
   },
   "donation_refunds": {
     "page_title": "Reembolsos de donaciones",

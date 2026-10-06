@@ -910,7 +910,19 @@
     "filter_nobody_handling": "Nikt się jeszcze nie zajmuje",
     "open_case": "Otwórz",
     "open_case_for": "Otwórz zdarzenie nr {{id}}",
-    "stat_filter_label": "Pokaż: {{label}}"
+    "stat_filter_label": "Pokaż: {{label}}",
+    "opportunities_title": "Oferty i zmiany",
+    "opportunities_desc": "Wszystkie oferty w społeczności. Otwórz jedną, aby dodać, zmienić lub usunąć jej zmiany.",
+    "opportunities_search": "Szukaj ofert",
+    "no_opportunities": "Brak ofert",
+    "no_opportunities_desc": "Organizacje publikują oferty ze swojego panelu; pojawią się tutaj.",
+    "failed_to_load_opportunities": "Nie udało się wczytać ofert.",
+    "manage_shifts": "Zarządzaj zmianami",
+    "hide_shifts": "Ukryj zmiany",
+    "opportunity_status_open": "Otwarta",
+    "opportunity_status_active": "Aktywna",
+    "opportunity_status_closed": "Zamknięta",
+    "opportunity_status_draft": "Szkic"
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

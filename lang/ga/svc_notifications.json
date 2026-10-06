@@ -40,6 +40,9 @@
     "approved_by_admin": "D'fhormhuinigh riarthóir do mhalartú sealaíochta",
     "accepted_swap_approved_by_admin": "D'fhormhuinigh riarthóir malartú sealaíochta a ghlac tú leis"
   },
+  "shift": {
+    "cancelled": "Chuir an t-eagraí seal ar :title (:date) ar ceal"
+  },
   "user_security": {
     "email_changed": "Athraíodh do sheoladh ríomhphoist. Mura ndearna tú seo, déan teagmháil le tacaíocht láithreach."
   },

@@ -513,7 +513,8 @@
     "regional": "Regional",
     "national": "National",
     "whitelist": "Weiße Liste",
-    "qualifications": "Qualifikationen"
+    "qualifications": "Qualifikationen",
+    "opportunities": "Gelegenheiten & Schichten"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"
@@ -773,9 +774,11 @@
       "safeguarding": "Vorfälle|Bedenken|Meldungen|Schutzbeauftragte",
       "giving_days": "Spendenaktionen|Spenden|Kampagnen|Aufrufe",
       "settings": "benutzerdefinierte Felder|Erinnerungen|Webhooks|Konfiguration",
-      "qualifications": "schulung|erste hilfe|zertifikate|ablauf|qualifikationen"
+      "qualifications": "schulung|erste hilfe|zertifikate|ablauf|qualifikationen",
+      "opportunities": "Schichten Dienstplan Zeitplan Gelegenheiten"
     },
-    "qualifications": "Qualifikationen"
+    "qualifications": "Qualifikationen",
+    "opportunities": "Gelegenheiten & Schichten"
   },
   "group_join_requests": "Beitrittsanfragen für Gruppen",
   "group_moderation": "Gruppenmoderation",

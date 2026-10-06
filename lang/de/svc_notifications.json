@@ -40,6 +40,9 @@
     "approved_by_admin": "Ihr Schichttausch wurde von einem Administrator genehmigt",
     "accepted_swap_approved_by_admin": "Ein von Ihnen angenommener Schichttausch wurde von einem Administrator genehmigt"
   },
+  "shift": {
+    "cancelled": "Eine Schicht bei :title (:date) wurde vom Organisator abgesagt"
+  },
   "user_security": {
     "email_changed": "Ihre E-Mail-Adresse wurde geändert. Falls Sie dies nicht veranlasst haben, kontaktieren Sie sofort den Support."
   },

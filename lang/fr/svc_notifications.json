@@ -40,6 +40,9 @@
     "approved_by_admin": "Votre échange de poste a été approuvé par un administrateur",
     "accepted_swap_approved_by_admin": "Un échange de poste que vous avez accepté a été approuvé par un administrateur"
   },
+  "shift": {
+    "cancelled": "Un créneau sur :title (:date) a été annulé par l’organisateur"
+  },
   "user_security": {
     "email_changed": "Votre adresse e-mail a été modifiée. Si vous n'êtes pas à l'origine de cette action, contactez le support immédiatement."
   },

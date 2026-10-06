@@ -20,6 +20,7 @@ use App\Services\ShiftSwapService;
 use App\Services\ShiftWaitlistService;
 use App\Services\ShiftGroupReservationService;
 use App\Services\RecurringShiftService;
+use App\Services\VolunteerShiftManagementService;
 use App\Services\VolunteerFormService;
 use App\Services\CommunityProjectService;
 use App\Services\VolunteerDonationService;
@@ -44,6 +45,7 @@ class VolunteerCommunityController extends BaseApiController
         private readonly ShiftWaitlistService $shiftWaitlistService,
         private readonly ShiftGroupReservationService $shiftGroupReservationService,
         private readonly RecurringShiftService $recurringShiftService,
+        private readonly VolunteerShiftManagementService $shiftManagementService,
         private readonly VolunteerFormService $volunteerFormService,
         private readonly CommunityProjectService $communityProjectService,
         private readonly VolunteerDonationService $volunteerDonationService,
@@ -462,8 +464,66 @@ class VolunteerCommunityController extends BaseApiController
             return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
 
-        $pattern = $this->recurringShiftService->getPattern($patternId);
+        // The cron (CronJobRunner → processAllPatterns) tops patterns up 14 days
+        // ahead, but it runs on its own clock: without this the organiser saved a
+        // pattern and saw no shifts at all until the next run.
+        $generated = $this->recurringShiftService->generateOccurrences($patternId, 14);
+
+        $pattern = $this->recurringShiftService->getPattern($patternId) ?? [];
+        $pattern['shifts_generated'] = $generated;
         return $this->respondWithData($pattern, null, 201);
+    }
+
+    // ========================================
+    // ONE-OFF SHIFTS (organisers and admins)
+    // ========================================
+
+    /** POST /v2/volunteering/opportunities/{id}/shifts */
+    public function createShift($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_shift_create', 30, 60);
+
+        $shift = $this->shiftManagementService->createShift((int) $id, $userId, $this->getAllInput());
+        if ($shift === null) {
+            $errors = $this->shiftManagementService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
+        }
+
+        return $this->respondWithData($shift, null, 201);
+    }
+
+    /** PUT /v2/volunteering/shifts/{id} */
+    public function updateShift($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_shift_update', 30, 60);
+
+        $shift = $this->shiftManagementService->updateShift((int) $id, $userId, $this->getAllInput());
+        if ($shift === null) {
+            $errors = $this->shiftManagementService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
+        }
+
+        return $this->respondWithData($shift);
+    }
+
+    /** DELETE /v2/volunteering/shifts/{id} */
+    public function deleteShift($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_shift_delete', 30, 60);
+
+        $result = $this->shiftManagementService->deleteShift((int) $id, $userId);
+        if ($result === null) {
+            $errors = $this->shiftManagementService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
+        }
+
+        return $this->respondWithData($result);
     }
 
     public function updateRecurringPattern($id): JsonResponse

@@ -878,7 +878,19 @@
     "filter_nobody_handling": "担当者未定",
     "open_case": "開く",
     "open_case_for": "インシデント #{{id}} を開く",
-    "stat_filter_label": "表示: {{label}}"
+    "stat_filter_label": "表示: {{label}}",
+    "opportunities_title": "活動とシフト",
+    "opportunities_desc": "コミュニティのすべての活動です。開くとシフトの追加・変更・削除ができます。",
+    "opportunities_search": "活動を検索",
+    "no_opportunities": "まだ活動はありません",
+    "no_opportunities_desc": "団体がダッシュボードから活動を投稿すると、ここに表示されます。",
+    "failed_to_load_opportunities": "活動を読み込めませんでした。",
+    "manage_shifts": "シフトを管理",
+    "hide_shifts": "シフトを隠す",
+    "opportunity_status_open": "募集中",
+    "opportunity_status_active": "進行中",
+    "opportunity_status_closed": "終了",
+    "opportunity_status_draft": "下書き"
   },
   "donation_refunds": {
     "page_title": "寄付の返金",

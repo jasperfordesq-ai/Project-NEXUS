@@ -878,7 +878,19 @@
     "filter_nobody_handling": "Noch niemand zuständig",
     "open_case": "Öffnen",
     "open_case_for": "Vorfall #{{id}} öffnen",
-    "stat_filter_label": "Anzeigen: {{label}}"
+    "stat_filter_label": "Anzeigen: {{label}}",
+    "opportunities_title": "Gelegenheiten & Schichten",
+    "opportunities_desc": "Alle Gelegenheiten der Gemeinschaft. Öffnen Sie eine, um ihre Schichten hinzuzufügen, zu ändern oder zu entfernen.",
+    "opportunities_search": "Gelegenheiten durchsuchen",
+    "no_opportunities": "Noch keine Gelegenheiten",
+    "no_opportunities_desc": "Organisationen veröffentlichen Gelegenheiten über ihr Dashboard; sie erscheinen dann hier.",
+    "failed_to_load_opportunities": "Die Gelegenheiten konnten nicht geladen werden.",
+    "manage_shifts": "Schichten verwalten",
+    "hide_shifts": "Schichten ausblenden",
+    "opportunity_status_open": "Offen",
+    "opportunity_status_active": "Aktiv",
+    "opportunity_status_closed": "Geschlossen",
+    "opportunity_status_draft": "Entwurf"
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

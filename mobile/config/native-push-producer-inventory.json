@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 233,
+    "producer_count": 234,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -2955,9 +2955,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:1755:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerService.php:1757:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerService.php",
-            "line": 1755,
+            "line": 1757,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -2968,9 +2968,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:1830:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerService.php:1832:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerService.php",
-            "line": 1830,
+            "line": 1832,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -2981,9 +2981,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2532:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2534:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2532,
+            "line": 2534,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -2994,9 +2994,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2545:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2547:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2545,
+            "line": 2547,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3007,9 +3007,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2554:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2556:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2554,
+            "line": 2556,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3020,9 +3020,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2563:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2565:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2563,
+            "line": 2565,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3030,6 +3030,19 @@
             "body_expression": "__('notifications.vol_hours_declined_body', ['hours' => $hours])",
             "type_expression": "vol_hours_declined",
             "link_expression": "/volunteering?tab=hours",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerShiftManagementService.php:378:NotificationDispatcher::dispatch",
+            "file": "app/Services/VolunteerShiftManagementService.php",
+            "line": 378,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "$userId",
+            "title_expression": null,
+            "body_expression": "$content",
+            "type_expression": "vol_shift_cancelled",
+            "link_expression": "/volunteering?tab=applications",
             "data_expression": null
         }
     ]

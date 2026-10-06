@@ -1583,6 +1583,8 @@ class VolunteerService
                 'signup_count'    => $signupCount,
                 'reserved_count'  => $reservedCount,
                 'spots_available' => $shift->capacity ? max(0, (int) $shift->capacity - $signupCount - $reservedCount) : null,
+                // Lets an organiser's shift list tell a repeating shift from a one-off one.
+                'recurring_pattern_id' => $shift->recurring_pattern_id ? (int) $shift->recurring_pattern_id : null,
             ];
         }, $shifts);
     }

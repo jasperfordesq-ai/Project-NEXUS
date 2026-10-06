@@ -89,6 +89,7 @@ import HelpCircle from 'lucide-react/icons/help-circle';
 import HandCoins from 'lucide-react/icons/hand-coins';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
+import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Receipt from 'lucide-react/icons/receipt';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
@@ -366,6 +367,7 @@ function useAdminNav(): NavSection[] {
           { label: t('volunteering_nav.overview'), href: '/admin/volunteering', icon: LayoutDashboard, group: t('volunteering_nav.group_day_to_day') },
           { label: t('volunteering_nav.applications'), href: '/admin/volunteering/approvals', icon: ClipboardCheck, keywords: keyword(t('volunteering_nav.keywords.applications')) },
           { label: t('volunteering_nav.hours'), href: '/admin/volunteering/hours', icon: Clock, keywords: keyword(t('volunteering_nav.keywords.hours')) },
+          { label: t('volunteering_nav.opportunities'), href: '/admin/volunteering/opportunities', icon: CalendarClock, keywords: keyword(t('volunteering_nav.keywords.opportunities')) },
           { label: t('volunteering_nav.shift_swaps'), href: '/admin/volunteering/swaps', icon: ArrowLeftRight, keywords: keyword(t('volunteering_nav.keywords.shift_swaps')) },
           { label: t('volunteering_nav.expenses'), href: '/admin/volunteering/expenses', icon: Receipt, keywords: keyword(t('volunteering_nav.keywords.expenses')) },
           { label: t('volunteering_nav.projects'), href: '/admin/volunteering/projects', icon: FolderKanban, keywords: keyword(t('volunteering_nav.keywords.projects')) },

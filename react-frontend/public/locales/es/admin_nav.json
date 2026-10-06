@@ -513,7 +513,8 @@
     "ai": "AI",
     "kiss": "Comunidad Solidaria",
     "roles": "Roles",
-    "qualifications": "Cualificaciones"
+    "qualifications": "Cualificaciones",
+    "opportunities": "Oportunidades y turnos"
   },
   "aria": {
     "breadcrumbs": "Pan rallado"
@@ -777,9 +778,11 @@
       "safeguarding": "incidentes|preocupaciones|denuncias|responsable de protección",
       "giving_days": "recaudación de fondos|donaciones|campañas|llamamientos",
       "settings": "campos personalizados|recordatorios|webhooks|configuración",
-      "qualifications": "formación|primeros auxilios|certificados|caducidad|cualificaciones"
+      "qualifications": "formación|primeros auxilios|certificados|caducidad|cualificaciones",
+      "opportunities": "turnos horario calendario oportunidades"
     },
-    "qualifications": "Cualificaciones"
+    "qualifications": "Cualificaciones",
+    "opportunities": "Oportunidades y turnos"
   },
   "group_join_requests": "Solicitudes para unirse a grupos",
   "group_moderation": "Moderación de grupos",

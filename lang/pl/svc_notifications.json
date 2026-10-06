@@ -40,6 +40,9 @@
     "approved_by_admin": "Twoja zamiana zmian została zatwierdzona przez administratora",
     "accepted_swap_approved_by_admin": "Zamiana zmian, którą zaakceptowałeś/aś, została zatwierdzona przez administratora"
   },
+  "shift": {
+    "cancelled": "Organizator odwołał zmianę w :title (:date)"
+  },
   "user_security": {
     "email_changed": "Twój adres e-mail został zmieniony. Jeśli to nie byłeś/aś Ty, skontaktuj się natychmiast z pomocą techniczną."
   },

@@ -942,7 +942,19 @@
     "filter_nobody_handling": "لا أحد يتولاها بعد",
     "open_case": "فتح",
     "open_case_for": "فتح الحادثة رقم {{id}}",
-    "stat_filter_label": "عرض: {{label}}"
+    "stat_filter_label": "عرض: {{label}}",
+    "opportunities_title": "الفرص والمناوبات",
+    "opportunities_desc": "كل الفرص في المجتمع. افتح إحداها لإضافة مناوباتها أو تغييرها أو إزالتها.",
+    "opportunities_search": "البحث في الفرص",
+    "no_opportunities": "لا توجد فرص بعد",
+    "no_opportunities_desc": "تنشر المنظمات الفرص من لوحة تحكمها، وستظهر هنا.",
+    "failed_to_load_opportunities": "تعذّر تحميل الفرص.",
+    "manage_shifts": "إدارة المناوبات",
+    "hide_shifts": "إخفاء المناوبات",
+    "opportunity_status_open": "مفتوحة",
+    "opportunity_status_active": "نشطة",
+    "opportunity_status_closed": "مغلقة",
+    "opportunity_status_draft": "مسودة"
   },
   "donation_refunds": {
     "page_title": "استرداد التبرعات",

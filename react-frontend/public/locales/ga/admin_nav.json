@@ -513,7 +513,8 @@
     "feed": "Fotha",
     "logs": "Loganna",
     "match_debug": "Debug Comhfhreagra",
-    "qualifications": "Cáilíochtaí"
+    "qualifications": "Cáilíochtaí",
+    "opportunities": "Deiseanna & sealanna"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"
@@ -785,9 +786,11 @@
       "safeguarding": "teagmhais|imní|tuairiscí|oifigeach cosanta",
       "giving_days": "tiomsú airgid|síntiúis|feachtais|achomhairc",
       "settings": "réimsí saincheaptha|meabhrúcháin|webhooks|cumraíocht",
-      "qualifications": "oiliúint|garchabhair|teastais|éag|cáilíochtaí"
+      "qualifications": "oiliúint|garchabhair|teastais|éag|cáilíochtaí",
+      "opportunities": "sealanna sceideal clár ama deiseanna"
     },
-    "qualifications": "Cáilíochtaí"
+    "qualifications": "Cáilíochtaí",
+    "opportunities": "Deiseanna & sealanna"
   },
   "group_join_requests": "Iarratais ar ghrúpaí a cheangal",
   "group_moderation": "Modhnóireacht grúpaí",

@@ -40,6 +40,9 @@
     "approved_by_admin": "シフト交換が管理者によって承認されました",
     "accepted_swap_approved_by_admin": "承認したシフト交換が管理者によって承認されました"
   },
+  "shift": {
+    "cancelled": ":title のシフト（:date）が主催者により取り消されました"
+  },
   "user_security": {
     "email_changed": "メールアドレスが変更されました。ご自身で変更していない場合は、直ちにサポートにお問い合わせください。"
   },

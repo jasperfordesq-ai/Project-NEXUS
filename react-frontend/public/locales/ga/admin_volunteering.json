@@ -926,7 +926,19 @@
     "filter_nobody_handling": "Níl éinne á láimhseáil fós",
     "open_case": "Oscail",
     "open_case_for": "Oscail teagmhas #{{id}}",
-    "stat_filter_label": "Taispeáin: {{label}}"
+    "stat_filter_label": "Taispeáin: {{label}}",
+    "opportunities_title": "Deiseanna & sealanna",
+    "opportunities_desc": "Gach deis sa phobal. Oscail ceann chun a sealanna a chur leis, a athrú nó a bhaint.",
+    "opportunities_search": "Cuardaigh deiseanna",
+    "no_opportunities": "Níl aon deis ann go fóill",
+    "no_opportunities_desc": "Postálann eagraíochtaí deiseanna óna bpainéal; beidh siad le feiceáil anseo.",
+    "failed_to_load_opportunities": "Níorbh fhéidir na deiseanna a lódáil.",
+    "manage_shifts": "Bainistigh sealanna",
+    "hide_shifts": "Folaigh sealanna",
+    "opportunity_status_open": "Oscailte",
+    "opportunity_status_active": "Gníomhach",
+    "opportunity_status_closed": "Dúnta",
+    "opportunity_status_draft": "Dréacht"
   },
   "donation_refunds": {
     "page_title": "Aisíocaíochtaí Síntiús",

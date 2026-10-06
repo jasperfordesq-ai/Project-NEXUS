@@ -513,7 +513,8 @@
     "podcasts": "Podcasts",
     "ai": "AI",
     "kiss": "Communauté bienveillante",
-    "qualifications": "Qualifications"
+    "qualifications": "Qualifications",
+    "opportunities": "Missions et créneaux"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"
@@ -777,9 +778,11 @@
       "safeguarding": "incidents|signalements|préoccupations|référent protection",
       "giving_days": "collecte de fonds|dons|appels aux dons|campagnes",
       "settings": "champs personnalisés|rappels|webhooks|configuration",
-      "qualifications": "formation|premiers secours|certificats|expiration|qualifications"
+      "qualifications": "formation|premiers secours|certificats|expiration|qualifications",
+      "opportunities": "créneaux planning horaires missions"
     },
-    "qualifications": "Qualifications"
+    "qualifications": "Qualifications",
+    "opportunities": "Missions et créneaux"
   },
   "group_join_requests": "Demandes d'adhésion aux groupes",
   "group_moderation": "Modération des groupes",

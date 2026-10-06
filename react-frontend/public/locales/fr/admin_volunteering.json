@@ -894,7 +894,19 @@
     "filter_nobody_handling": "Personne ne s'en occupe encore",
     "open_case": "Ouvrir",
     "open_case_for": "Ouvrir l'incident n° {{id}}",
-    "stat_filter_label": "Afficher : {{label}}"
+    "stat_filter_label": "Afficher : {{label}}",
+    "opportunities_title": "Missions et créneaux",
+    "opportunities_desc": "Toutes les missions de la communauté. Ouvrez-en une pour ajouter, modifier ou retirer ses créneaux.",
+    "opportunities_search": "Rechercher des missions",
+    "no_opportunities": "Aucune mission pour l’instant",
+    "no_opportunities_desc": "Les organisations publient des missions depuis leur tableau de bord ; elles apparaîtront ici.",
+    "failed_to_load_opportunities": "Impossible de charger les missions.",
+    "manage_shifts": "Gérer les créneaux",
+    "hide_shifts": "Masquer les créneaux",
+    "opportunity_status_open": "Ouverte",
+    "opportunity_status_active": "Active",
+    "opportunity_status_closed": "Fermée",
+    "opportunity_status_draft": "Brouillon"
   },
   "donation_refunds": {
     "page_title": "Remboursements de dons",

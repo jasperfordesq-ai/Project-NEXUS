@@ -878,7 +878,19 @@
     "filter_nobody_handling": "Nobody handling yet",
     "open_case": "Open",
     "open_case_for": "Open incident #{{id}}",
-    "stat_filter_label": "Show: {{label}}"
+    "stat_filter_label": "Show: {{label}}",
+    "opportunities_title": "Opportunities & shifts",
+    "opportunities_desc": "Every opportunity in the community. Open one to add, change or remove its shifts.",
+    "opportunities_search": "Search opportunities",
+    "no_opportunities": "No opportunities yet",
+    "no_opportunities_desc": "Organisations post opportunities from their dashboard; they will appear here.",
+    "failed_to_load_opportunities": "Could not load the opportunities.",
+    "manage_shifts": "Manage shifts",
+    "hide_shifts": "Hide shifts",
+    "opportunity_status_open": "Open",
+    "opportunity_status_active": "Active",
+    "opportunity_status_closed": "Closed",
+    "opportunity_status_draft": "Draft"
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",

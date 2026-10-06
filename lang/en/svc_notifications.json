@@ -42,6 +42,9 @@
     "approved_by_admin": "Your shift swap was approved by an admin",
     "accepted_swap_approved_by_admin": "A shift swap you accepted was approved by an admin"
   },
+  "shift": {
+    "cancelled": "A shift on :title (:date) has been cancelled by the organiser"
+  },
   "user_security": {
     "email_changed": "Your email address has been changed. If you did not do this, contact support immediately."
   },

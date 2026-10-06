@@ -513,7 +513,8 @@
     "podcasts": "Podcasts",
     "ai": "AI",
     "kiss": "Comunidade Presente",
-    "qualifications": "Qualificações"
+    "qualifications": "Qualificações",
+    "opportunities": "Oportunidades e turnos"
   },
   "aria": {
     "breadcrumbs": "Pão ralado"
@@ -777,9 +778,11 @@
       "safeguarding": "incidentes|preocupações|denúncias|responsável pela proteção",
       "giving_days": "angariação de fundos|doações|campanhas|apelos",
       "settings": "campos personalizados|lembretes|webhooks|configuração",
-      "qualifications": "formação|primeiros socorros|certificados|validade|qualificações"
+      "qualifications": "formação|primeiros socorros|certificados|validade|qualificações",
+      "opportunities": "turnos escala horário oportunidades"
     },
-    "qualifications": "Qualificações"
+    "qualifications": "Qualificações",
+    "opportunities": "Oportunidades e turnos"
   },
   "group_join_requests": "Pedidos de adesão a grupos",
   "group_moderation": "Moderação de grupos",

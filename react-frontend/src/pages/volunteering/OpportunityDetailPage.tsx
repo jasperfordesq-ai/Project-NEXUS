@@ -59,6 +59,7 @@ import { usePageTitle } from '@/hooks';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
+import { ShiftManager } from '@/components/volunteering/ShiftManager';
 
 import { useTranslation } from 'react-i18next';
 
@@ -99,6 +100,8 @@ interface OpportunityDetail {
   has_applied?: boolean;
   application?: Application | null;
   is_owner?: boolean;
+  /** Creator, owning organisation's owner/admin, or a community admin: may manage shifts. */
+  can_manage?: boolean;
   is_liked?: boolean;
   likes_count?: number;
   comments_count?: number;
@@ -955,6 +958,8 @@ export function OpportunityDetailPage() {
 
   const opp = opportunity;
   const upcomingShifts = (opp.shifts || []).filter((s) => new Date(s.start_time) >= new Date());
+  // The server decides who may manage; `is_owner` is the older creator-only flag kept as a fallback.
+  const canManageShifts = opp.can_manage ?? opp.is_owner ?? false;
   const approvedApplication = opp.application?.status === 'approved' ? opp.application : null;
   const currentShiftId = approvedApplication?.shift_id ?? null;
   const cleanDescription = opp.description?.replace(/\s+/g, ' ').trim();
@@ -1147,8 +1152,16 @@ export function OpportunityDetailPage() {
         </GlassCard>
       </motion.div>
 
+      {/* Shift management — organisers (creator, organisation owner/admin) and community admins.
+          Replaces the read-only list below for them: one list, with the controls on it. */}
+      {canManageShifts && (
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <ShiftManager opportunityId={opp.id} onChanged={() => { void loadRef.current(); }} />
+        </motion.div>
+      )}
+
       {/* Shifts */}
-      {upcomingShifts.length > 0 && (
+      {!canManageShifts && upcomingShifts.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <GlassCard className="p-6 space-y-4">
             <h2 className="text-lg font-semibold text-theme-primary flex items-center gap-2">

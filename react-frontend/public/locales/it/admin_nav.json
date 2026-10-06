@@ -513,7 +513,8 @@
     "ai": "AI",
     "kiss": "Comunità premurosa",
     "prerender": "Prerender",
-    "qualifications": "Qualifiche"
+    "qualifications": "Qualifiche",
+    "opportunities": "Opportunità e turni"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"
@@ -777,9 +778,11 @@
       "safeguarding": "incidenti|segnalazioni|preoccupazioni|referente tutela",
       "giving_days": "raccolta fondi|donazioni|campagne|appelli",
       "settings": "campi personalizzati|promemoria|webhook|configurazione",
-      "qualifications": "formazione|primo soccorso|certificati|scadenza|qualifiche"
+      "qualifications": "formazione|primo soccorso|certificati|scadenza|qualifiche",
+      "opportunities": "turni orario calendario opportunità"
     },
-    "qualifications": "Qualifiche"
+    "qualifications": "Qualifiche",
+    "opportunities": "Opportunità e turni"
   },
   "group_join_requests": "Richieste di adesione ai gruppi",
   "group_moderation": "Moderazione dei gruppi",
