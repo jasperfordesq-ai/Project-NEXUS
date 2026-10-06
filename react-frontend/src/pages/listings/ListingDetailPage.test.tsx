@@ -256,7 +256,7 @@ describe('ListingDetailPage', () => {
   // F-568 (E-093): the description box is a plain text box, so markup in it is shown as words.
   it('shows markup in the description as words, never as a link or heading', async () => {
     const injected = { ...mockListing, description: '<h1>Your session has expired</h1><a href="https://google.com">Click here to re-authenticate</a>' };
-    api.get.mockImplementation((url: string) => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/config')) return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true } });
       if (url.includes('/check')) return Promise.resolve({ success: true, data: null });
       return Promise.resolve({ success: true, data: injected });

@@ -467,7 +467,7 @@ describe('CommentsSection', () => {
       const { container } = render(
         <CommentsSection
           {...makeProps({
-            comments: [makeComment({ content: '<a href="https://google.com">Click here to re-authenticate</a>' })],
+            comments: [makeComment({ content: '<a href="https://google.com">Click here to re-authenticate</a>' })] as CommentsSectionProps['comments'],
             commentsCount: 1,
             commentsLoaded: true,
           })}
@@ -482,7 +482,7 @@ describe('CommentsSection', () => {
       const { container } = render(
         <CommentsSection
           {...makeProps({
-            comments: [makeComment({ content: '<h1>Your session has expired</h1><img src="https://evil.example/x.png" alt="Sign in">' })],
+            comments: [makeComment({ content: '<h1>Your session has expired</h1><img src="https://evil.example/x.png" alt="Sign in">' })] as CommentsSectionProps['comments'],
             commentsCount: 1,
             commentsLoaded: true,
           })}
