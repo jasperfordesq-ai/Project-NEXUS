@@ -45,8 +45,11 @@ describe('SafeHtml', () => {
     );
     const anchor = container.querySelector('a');
     expect(anchor).not.toBeNull();
-    // F-562: member links that leave the origin show their destination.
-    expect(anchor?.textContent).toBe('Link (example.com)');
+    // F-562 (E-092): a member's own words are never a link. The words stay as
+    // text and the only clickable thing is the address itself.
+    expect(anchor?.textContent).toBe('https://example.com');
+    expect(anchor?.getAttribute('href')).toBe('https://example.com');
+    expect(container.textContent).toBe('Link https://example.com');
   });
 
   it('strips <script> tags completely', async () => {

@@ -392,83 +392,120 @@ describe('sanitizeMemberRichText (F-075)', () => {
   });
 });
 
-describe('sanitizeMemberRichText — link labels show their destination (F-562)', () => {
-  it('appends the destination host when the visible text hides it', () => {
-    const out = sanitizeMemberRichText('<p><a href="https://evil.example/login">Click here to re-authenticate</a></p>');
-    expect(out).toContain('Click here to re-authenticate');
-    expect(out).toContain('(evil.example)');
-    expect(out).toMatch(/<a [^>]*href="https:\/\/evil\.example\/login"[^>]*>Click here to re-authenticate \(evil\.example\)<\/a>/);
+/**
+ * Every anchor in the output as { href, text }. The rule under test is that a
+ * member's own words are never a link, so each anchor's text must be its own
+ * destination — nothing else may be clickable.
+ */
+function anchorsOf(html: string): Array<{ href: string; text: string }> {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return Array.from(doc.querySelectorAll('a')).map((a) => ({
+    href: a.getAttribute('href') ?? '',
+    text: (a.textContent ?? '').trim(),
+  }));
+}
+
+function plainTextOf(html: string): string {
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
+}
+
+describe("sanitizeMemberRichText — a member's own words are never a link (F-562, E-092)", () => {
+  it("renders Cyphere's retest payload as plain words followed by a link that is its own address", () => {
+    const out = sanitizeMemberRichText('<p><a href="https://google.com">Click here to re-authenticate</a></p>');
+    expect(plainTextOf(out)).toContain('Click here to re-authenticate');
+    expect(anchorsOf(out)).toEqual([{ href: 'https://google.com', text: 'https://google.com' }]);
+    expect(out).not.toMatch(/<a [^>]*>[^<]*Click here/);
   });
 
-  it('leaves a link alone when its text already names the host', () => {
-    const out = sanitizeMemberRichText('<a href="https://example.org/page">example.org/page</a>');
-    expect(out).toContain('>example.org/page</a>');
-    expect(out).not.toContain('(example.org)');
+  it('leaves a link alone when its text already is its destination', () => {
+    expect(anchorsOf(sanitizeMemberRichText('<a href="https://example.org/page">example.org/page</a>')))
+      .toEqual([{ href: 'https://example.org/page', text: 'example.org/page' }]);
+    expect(anchorsOf(sanitizeMemberRichText('<a href="https://example.org/">https://example.org</a>')))
+      .toEqual([{ href: 'https://example.org/', text: 'https://example.org' }]);
+    expect(anchorsOf(sanitizeMemberRichText('<a href="https://example.org/">example.org</a>')))
+      .toEqual([{ href: 'https://example.org/', text: 'example.org' }]);
   });
 
-  it('uses the address itself when the link has no text', () => {
-    const out = sanitizeMemberRichText('<a href="https://evil.example/x"></a>');
-    expect(out).toContain('>https://evil.example/x</a>');
+  it('shows the address itself when the link has no text', () => {
+    expect(anchorsOf(sanitizeMemberRichText('<a href="https://evil.example/x"></a>')))
+      .toEqual([{ href: 'https://evil.example/x', text: 'https://evil.example/x' }]);
   });
 
-  it('labels a link that looks like the platform but points elsewhere', () => {
+  it('never lets a label that looks like the platform point elsewhere', () => {
     const out = sanitizeMemberRichText('<a href="https://app.project-nexus.ie.evil.example/">https://app.project-nexus.ie/login</a>');
-    expect(out).toContain('(app.project-nexus.ie.evil.example)');
+    expect(anchorsOf(out)).toEqual([{ href: 'https://app.project-nexus.ie.evil.example', text: 'https://app.project-nexus.ie.evil.example' }]);
+    expect(plainTextOf(out)).toContain('https://app.project-nexus.ie/login');
   });
 
-  it('does not label relative or same-origin links', () => {
-    expect(sanitizeMemberRichText('<a href="/listings/1">My listing</a>')).toContain('>My listing</a>');
+  it('applies the same rule to relative and same-origin links', () => {
+    const relative = sanitizeMemberRichText('<a href="/listings/1">My listing</a>');
+    expect(anchorsOf(relative)).toEqual([{ href: '/listings/1', text: '/listings/1' }]);
+    expect(plainTextOf(relative)).toContain('My listing');
     const sameOrigin = `${window.location.origin}/events/2`;
-    expect(sanitizeMemberRichText(`<a href="${sameOrigin}">Event</a>`)).toContain('>Event</a>');
+    expect(anchorsOf(sanitizeMemberRichText(`<a href="${sameOrigin}">Event</a>`)))
+      .toEqual([{ href: sameOrigin, text: sameOrigin }]);
   });
 
-  it('shows the mailbox for a mailto link whose text hides it', () => {
-    const out = sanitizeMemberRichText('<a href="mailto:scam@evil.example">Contact support</a>');
-    expect(out).toContain('Contact support (scam@evil.example)');
+  it('shows the mailbox for a mailto link, dropping any pre-filled subject', () => {
+    const out = sanitizeMemberRichText('<a href="mailto:scam@evil.example?subject=Reset">Contact support</a>');
+    expect(plainTextOf(out)).toContain('Contact support');
+    expect(anchorsOf(out)).toEqual([{ href: 'mailto:scam@evil.example', text: 'scam@evil.example' }]);
   });
 
-  it('keeps nested formatting inside the label', () => {
+  it('keeps nested formatting as text outside the link', () => {
     const out = sanitizeMemberRichText('<a href="https://evil.example/"><strong>Sign in</strong></a>');
-    expect(out).toContain('<strong>Sign in</strong> (evil.example)</a>');
+    expect(out).toContain('<strong>Sign in</strong>');
+    expect(out).not.toMatch(/<a [^>]*>\s*<strong>/);
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
   });
 
   it('does not touch administrator rich text', () => {
-    const out = sanitizeRichText('<a href="https://evil.example/">Click here</a>');
-    expect(out).not.toContain('(evil.example)');
+    expect(sanitizeRichText('<a href="https://evil.example/">Click here</a>')).toContain('>Click here</a>');
   });
-});
 
-describe('sanitizeMemberRichText — link label edge cases (F-562 audit)', () => {
-  it('keeps an image inside a link and still names the destination', () => {
+  it('keeps an image but the image itself is no longer the link', () => {
     const out = sanitizeMemberRichText('<a href="https://evil.example/"><img src="https://img.example/a.png" alt=""></a>');
     expect(out).toContain('<img');
-    expect(out).toContain('(evil.example)');
+    expect(out).not.toMatch(/<a [^>]*>\s*<img/);
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
   });
 
-  it('names the real host when the address carries fake credentials', () => {
+  it('strips fake credentials out of the address it shows and links', () => {
     const out = sanitizeMemberRichText('<a href="https://app.project-nexus.ie@evil.example/">app.project-nexus.ie</a>');
-    expect(out).toContain('(evil.example)');
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
+    expect(out).not.toContain('app.project-nexus.ie@');
   });
 
   it('shows a look-alike international domain in its punycode form', () => {
-    const out = sanitizeMemberRichText('<a href="https://аpp.example/">app.example</a>');
-    expect(out).toMatch(/\(xn--[a-z0-9-]+\.example\)/);
+    const [link] = anchorsOf(sanitizeMemberRichText('<a href="https://аpp.example/">app.example</a>'));
+    expect(link?.text).toMatch(/^https:\/\/xn--[a-z0-9-]+\.example$/);
+    expect(link?.href).toBe(link?.text);
   });
 
-  it('includes a non-default port in the destination', () => {
-    const out = sanitizeMemberRichText('<a href="https://evil.example:8443/">Login</a>');
-    expect(out).toContain('(evil.example:8443)');
+  it('includes a non-default port in the address', () => {
+    expect(anchorsOf(sanitizeMemberRichText('<a href="https://evil.example:8443/">Login</a>')))
+      .toEqual([{ href: 'https://evil.example:8443', text: 'https://evil.example:8443' }]);
   });
 
-  it('labels every link when several appear in one block', () => {
+  it('disarms every link when several appear in one block', () => {
     const out = sanitizeMemberRichText('<p><a href="https://a.example/">one</a> and <a href="https://b.example/">two</a></p>');
-    expect(out).toContain('one (a.example)');
-    expect(out).toContain('two (b.example)');
+    expect(anchorsOf(out)).toEqual([
+      { href: 'https://a.example', text: 'https://a.example' },
+      { href: 'https://b.example', text: 'https://b.example' },
+    ]);
+    expect(plainTextOf(out)).toBe('one https://a.example and two https://b.example');
   });
 
-  it('cannot be satisfied by host text inside a stripped element', () => {
-    const out = sanitizeMemberRichText('<a href="https://evil.example/"><script>evil.example</script>Click here</a>');
+  it('cannot be satisfied by address text inside a stripped element', () => {
+    const out = sanitizeMemberRichText('<a href="https://evil.example/"><script>https://evil.example</script>Click here</a>');
     expect(out).not.toContain('<script');
-    expect(out).toContain('(evil.example)');
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
+    expect(out).not.toMatch(/<a [^>]*>[^<]*Click here/);
+  });
+
+  it('turns an anchor whose address was refused into plain words', () => {
+    const out = sanitizeMemberRichText('<a href="javascript:alert(1)">Click here</a>');
+    expect(anchorsOf(out)).toEqual([]);
+    expect(plainTextOf(out)).toBe('Click here');
   });
 });

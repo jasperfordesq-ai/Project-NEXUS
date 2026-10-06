@@ -140,28 +140,42 @@ function installHooksOnce(): void {
   });
 }
 
-/* ───────────────── Member links: the label must show where it goes ───────────────── */
+/* ───────────── Member links: a member's own words are never a link ───────────── */
 
 /**
- * F-562 (Cyphere pen test, 4 Oct 2026). A member could write
- * `<a href="https://evil.example/login">Click here to re-authenticate</a>`
- * into a listing or event description and it rendered as a perfectly ordinary
- * platform link — not script, so the sanitiser was content, but a convincing
- * phishing lure in another member's feed.
+ * F-562 (Cyphere pen test, 4 Oct 2026; retest FAILED 6 Oct — E-092). A member
+ * could write `<a href="https://evil.example/login">Click here to re-authenticate</a>`
+ * into a listing or event description, a post or a comment and it rendered as
+ * a perfectly ordinary platform link — not script, so the sanitiser was content,
+ * but a convincing phishing lure in another member's feed.
  *
- * Rule: in member-authored content every link that leaves this origin shows
- * its real destination. If the visible text already names the host (or the
- * mailbox, for `mailto:`) it is left alone; otherwise the host is appended in
- * brackets as a plain text node the author cannot style or hide (member
- * content has no `class`, `id` or `style`). A link with no text at all shows
- * its full address. Relative and same-origin links are not touched.
+ * The first fix (4 Oct) kept the author's words clickable and appended the
+ * destination host beside them: "Click here to re-authenticate (evil.example)".
+ * Cyphere retested and failed it: the words a member chose were still a link.
+ * Their bar is the standard one for a stored-HTML-injection finding, and this
+ * is the rule that meets it:
  *
- * Runs on the sanitiser's OUTPUT, not inside a DOMPurify hook: a hook sees
- * the anchor before its children are cleaned, so `<script>evil.example</script>`
- * inside the label would satisfy the host check and then vanish.
+ *   In member-authored content, the only clickable text is an address.
+ *
+ * Every anchor is unwrapped — its words (or image) stay as ordinary content —
+ * and is followed by ONE link whose text and `href` are both the destination
+ * written out in full, canonical form: scheme, host (punycode for look-alike
+ * international names), port, path, query and fragment; user-info stripped, so
+ * `https://app.project-nexus.ie@evil.example/` shows as `https://evil.example`.
+ * `mailto:` shows the mailbox alone. An anchor whose visible text already is
+ * its destination (the post composer's link button on a pasted URL,
+ * `example.org/page`) is left exactly as it was. An anchor whose address the
+ * scheme guard refused becomes plain words. Relative and same-origin links
+ * follow the same rule — a lure needs no third-party host.
+ *
+ * Administrator rich text (`sanitizeRichText`) is not touched.
+ *
+ * Runs on the sanitiser's OUTPUT, not inside a DOMPurify hook: a hook sees the
+ * anchor before its children are cleaned, so `<script>https://evil.example</script>`
+ * inside the label would read as a self-describing link and then vanish.
  */
-function labelExternalLinks(cleanHtml: string): string {
-  if (!cleanHtml.includes('<a ')) return cleanHtml;
+function disarmMemberLinks(cleanHtml: string): string {
+  if (!cleanHtml.includes('<a')) return cleanHtml;
   if (typeof document === 'undefined') return cleanHtml;
 
   // <template> content is inert: nothing loads or runs. The markup is already
@@ -169,23 +183,33 @@ function labelExternalLinks(cleanHtml: string): string {
   const tpl = document.createElement('template');
   tpl.innerHTML = cleanHtml;
 
-  const anchors = tpl.content.querySelectorAll('a[href]');
+  const anchors = Array.from(tpl.content.querySelectorAll('a'));
   if (anchors.length === 0) return cleanHtml;
 
   let changed = false;
   anchors.forEach((anchor) => {
-    const href = anchor.getAttribute('href') ?? '';
-    const destination = describeDestination(href);
-    if (!destination) return;
+    const parent = anchor.parentNode;
+    if (!parent) return;
 
-    const label = (anchor.textContent ?? '').trim();
-    if (label.toLowerCase().includes(destination.toLowerCase())) return;
+    const destination = canonicalDestination(anchor.getAttribute('href') ?? '');
+    if (destination && labelIsDestination(anchor.textContent ?? '', destination)) return;
 
-    // No text at all: an empty anchor shows its full address; one that wraps
-    // only an image keeps the image and gains the host beside it (replacing
-    // the content would delete the image — caught by the F-562 audit tests).
-    const suffix = label === '' && anchor.childElementCount === 0 ? href : ` (${destination})`;
-    anchor.appendChild(document.createTextNode(suffix));
+    // The author's words (or image) stay, as ordinary content outside any link.
+    const replacement = document.createDocumentFragment();
+    while (anchor.firstChild) replacement.appendChild(anchor.firstChild);
+
+    if (destination) {
+      const hasWords = (replacement.textContent ?? '').trim() !== '' || replacement.childNodes.length > 0;
+      if (hasWords) replacement.appendChild(document.createTextNode(' '));
+      const link = document.createElement('a');
+      link.setAttribute('href', destination);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer nofollow');
+      link.textContent = destination.replace(/^mailto:/, '');
+      replacement.appendChild(link);
+    }
+
+    parent.replaceChild(replacement, anchor);
     changed = true;
   });
 
@@ -193,23 +217,46 @@ function labelExternalLinks(cleanHtml: string): string {
 }
 
 /**
- * The part of a link's destination a reader needs to see: the host for
- * http(s), the mailbox for mailto. Empty string = nothing to show (relative,
- * same-origin, or unparseable — the scheme guard has already run).
+ * The destination a reader is shown and sent to, in one canonical spelling —
+ * or '' when the address is unusable (empty, refused by the scheme guard, or
+ * unparseable).
  */
-function describeDestination(href: string): string {
+function canonicalDestination(href: string): string {
+  const raw = href.trim();
+  if (!raw) return '';
+
   let url: URL;
   try {
-    url = new URL(href, window.location.origin);
+    url = new URL(raw, window.location.origin);
   } catch {
     return '';
   }
+
   if (url.protocol === 'mailto:') {
-    return url.pathname.split('?')[0] ?? '';
+    const mailbox = (url.pathname.split('?')[0] ?? '').trim();
+    return mailbox ? `mailto:${mailbox}` : '';
   }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
-  if (url.host.toLowerCase() === window.location.host.toLowerCase()) return '';
-  return url.host;
+
+  // A relative address is shown as the member wrote it: "/listings/1".
+  const isRelative = !/^[a-z][a-z0-9+.-]*:/i.test(raw) && !raw.startsWith('//');
+  if (isRelative) return raw;
+
+  const path = `${url.pathname}${url.search}${url.hash}`;
+  return `${url.protocol}//${url.host}${path === '/' ? '' : path}`;
+}
+
+/** True when the visible text already is the destination, so the anchor can stay. */
+function labelIsDestination(label: string, destination: string): boolean {
+  const norm = (value: string) => value.trim().toLowerCase().replace(/\/+$/, '');
+  const shown = norm(label);
+  if (!shown) return false;
+  const target = norm(destination);
+  return (
+    shown === target
+    || shown === target.replace(/^https?:\/\//, '')
+    || shown === target.replace(/^mailto:/, '')
+  );
 }
 
 /* ───────────────────────── Public API ───────────────────────── */
@@ -236,7 +283,8 @@ export function sanitizeRichText(html: string | null | undefined): string {
  * Sanitize MEMBER-authored rich HTML: the rich-text profile without `class`
  * or `id` (see MEMBER_RICH_TEXT_ALLOWED_ATTR). Use for anything a member
  * wrote — feed posts, comments, bios, listing / event / group descriptions.
- * Every link that leaves this origin also shows its destination (F-562).
+ * A member's own words are never a link: every anchor is unwrapped and
+ * followed by one link that is its own address (F-562, E-092).
  * Administrator-authored content (blog, KB, legal, custom pages) keeps
  * `sanitizeRichText`.
  */
@@ -250,7 +298,7 @@ export function sanitizeMemberRichText(html: string | null | undefined): string 
     ALLOW_UNKNOWN_PROTOCOLS: false,
     KEEP_CONTENT: true,
   });
-  return labelExternalLinks(clean);
+  return disarmMemberLinks(clean);
 }
 
 /**
