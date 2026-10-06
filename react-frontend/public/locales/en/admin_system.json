@@ -935,7 +935,7 @@
     "placeholder_powered_by_url": "https://example.com",
     "desc_powered_by_url": "Makes the image clickable. Leave blank for no link.",
     "label_powered_by_image_light": "Light mode image",
-    "label_powered_by_image_dark": "Dark mode image (optional — falls back to light image if not set)",
+    "label_powered_by_image_dark": "Dark mode image (optional — the built-in Project NEXUS dark badge is shown if not set)",
     "upload_image": "Upload image",
     "replace_image": "Replace image",
     "upload_failed": "Upload failed",

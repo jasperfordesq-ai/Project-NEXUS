@@ -916,7 +916,7 @@
     "placeholder_powered_by_url": "https://example.com",
     "desc_powered_by_url": "Macht das Bild anklickbar. Für keinen Link leer lassen.",
     "label_powered_by_image_light": "Bild im Lichtmodus",
-    "label_powered_by_image_dark": "Bild im Dunkelmodus (optional – fällt auf helles Bild zurück, wenn nicht eingestellt)",
+    "label_powered_by_image_dark": "Bild im Dunkelmodus (optional – ohne eigenes Bild wird das eingebaute Project-NEXUS-Abzeichen für den Dunkelmodus gezeigt)",
     "upload_image": "Bild hochladen",
     "replace_image": "Bild ersetzen",
     "upload_failed": "Der Upload ist fehlgeschlagen",

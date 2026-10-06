@@ -924,7 +924,7 @@
     "placeholder_powered_by_url": "https://example.com",
     "desc_powered_by_url": "Torna a imagem clicável. Deixe em branco para nenhum link.",
     "label_powered_by_image_light": "Imagem em modo claro",
-    "label_powered_by_image_dark": "Imagem em modo escuro (opcional – volta para imagem clara se não estiver definida)",
+    "label_powered_by_image_dark": "Imagem em modo escuro (opcional – se não estiver definida, é mostrado o distintivo integrado do Project NEXUS para o modo escuro)",
     "upload_image": "Carregar imagem",
     "replace_image": "Substituir imagem",
     "upload_failed": "Falha no upload",

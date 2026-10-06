@@ -58,13 +58,14 @@ export function Footer({ children, copyright }: FooterProps) {
   const DEFAULT_PB_URL         = 'https://project-nexus.net';
 
   // The API resolves which badge applies — the community's own, or the network
-  // badge of the hub above it (PoweredByBadgeService). A badge with only one
-  // image uploaded uses it in both modes: falling through to the NEXUS default
-  // for the missing mode would swap brands when the reader toggles dark mode.
-  const pbConfigLight = tenant?.config?.powered_by_image_light as string | undefined;
-  const pbConfigDark  = tenant?.config?.powered_by_image_dark  as string | undefined;
-  const pbImageLight = pbConfigLight || pbConfigDark || DEFAULT_PB_IMAGE_LIGHT;
-  const pbImageDark  = pbConfigDark  || pbConfigLight || DEFAULT_PB_IMAGE_DARK;
+  // badge of the hub above it (PoweredByBadgeService). Each mode has its own
+  // slot and its own built-in default, exactly as the admin label promises:
+  // removing the dark image must take it out of the dark footer. (For one
+  // afternoon the dark slot fell back to the light upload instead, and a
+  // removed image kept showing.) A badge that should look the same in both
+  // modes uploads the same file to both slots — the TBUK network badge does.
+  const pbImageLight = (tenant?.config?.powered_by_image_light as string | undefined) || DEFAULT_PB_IMAGE_LIGHT;
+  const pbImageDark  = (tenant?.config?.powered_by_image_dark  as string | undefined) || DEFAULT_PB_IMAGE_DARK;
   const pbImage = resolveBrandingImageUrl(resolvedTheme === 'dark' ? pbImageDark : pbImageLight);
   const pbUrl   = (tenant?.config?.powered_by_url   as string | undefined) || DEFAULT_PB_URL;
   // Wording: translated "Provided by" when chosen, else the community's custom

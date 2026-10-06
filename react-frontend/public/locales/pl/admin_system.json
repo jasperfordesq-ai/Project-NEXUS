@@ -930,7 +930,7 @@
     "placeholder_powered_by_url": "https://example.com",
     "desc_powered_by_url": "Sprawia, że ​​obraz jest klikalny. Pozostaw puste, jeśli nie ma linku.",
     "label_powered_by_image_light": "Obraz w trybie jasnym",
-    "label_powered_by_image_dark": "Obraz w trybie ciemnym (opcjonalnie — powraca do jasnego obrazu, jeśli nie jest ustawiony)",
+    "label_powered_by_image_dark": "Obraz w trybie ciemnym (opcjonalnie — jeśli nie jest ustawiony, wyświetlana jest wbudowana odznaka Project NEXUS dla trybu ciemnego)",
     "upload_image": "Prześlij obraz",
     "replace_image": "Zamień obraz",
     "upload_failed": "Przesyłanie nie powiodło się",

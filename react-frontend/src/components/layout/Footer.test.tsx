@@ -277,12 +277,13 @@ describe('Footer', () => {
     });
 
     /*
-     * A badge with only one image uploaded (typical for a network badge handed
-     * down from a hub) must use that image in BOTH modes. Falling through to the
-     * built-in Project NEXUS dark image swapped brands whenever a reader turned
-     * dark mode on.
+     * Each mode has its own image slot and its own built-in default. Removing
+     * the dark image in Admin → Settings must take it out of the dark footer:
+     * for one afternoon on 2026-10-06 the dark slot fell back to the LIGHT
+     * upload instead, so the owner removed the dark image and the footer kept
+     * showing an uploaded badge. The admin label promises the built-in badge.
      */
-    it('uses a single uploaded badge image in dark mode instead of the NEXUS default', () => {
+    it('shows the NEXUS dark badge in dark mode when only a light image is uploaded', () => {
       mockTheme.resolvedTheme = 'dark';
       try {
         setupDefaultMocks({
@@ -304,7 +305,7 @@ describe('Footer', () => {
 
         const images = screen.getAllByRole('img', { name: 'Provided by' });
         expect(images.length).toBeGreaterThan(0);
-        images.forEach((img) => expect(img.getAttribute('src')).toMatch(/\/uploads\/powered-by-images\/tbuk\.png$/));
+        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-dark.png'));
       } finally {
         mockTheme.resolvedTheme = 'light';
       }

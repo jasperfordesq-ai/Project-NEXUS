@@ -931,7 +931,7 @@
     "placeholder_powered_by_url": "https://example.com",
     "desc_powered_by_url": "Rend l'image cliquable. Laissez vide s'il n'y a pas de lien.",
     "label_powered_by_image_light": "Image en mode lumière",
-    "label_powered_by_image_dark": "Image en mode sombre (facultatif – revient à l'image claire si elle n'est pas définie)",
+    "label_powered_by_image_dark": "Image en mode sombre (facultatif – si elle n'est pas définie, le badge Project NEXUS intégré pour le mode sombre est affiché)",
     "upload_image": "Télécharger une image",
     "replace_image": "Remplacer l'image",
     "upload_failed": "Échec du téléchargement",
