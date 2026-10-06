@@ -22,6 +22,7 @@
  *   GET    /v2/volunteering/opportunities/{id}/recurring-patterns
  *   POST   /v2/volunteering/opportunities/{id}/recurring-patterns
  *   DELETE /v2/volunteering/recurring-patterns/{id}          (stops it, removes future shifts)
+ *   GET    /v2/volunteering/shifts/{id}/roster               (who is on it, who checked in — ShiftRosterModal)
  * Times are sent and stored as the community's local wall-clock time
  * ("YYYY-MM-DD HH:mm:ss"), the same form every existing shift uses.
  */
@@ -51,6 +52,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { ShiftRosterModal } from './ShiftRosterModal';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -146,6 +148,7 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
   const [showPast, setShowPast] = useState(false);
   const [modal, setModal] = useState<ModalState>(null);
   const [busy, setBusy] = useState(false);
+  const [rosterShift, setRosterShift] = useState<{ shift: ManagedShift; started: boolean } | null>(null);
 
   const tRef = useRef(t);
   tRef.current = t;
@@ -274,6 +277,17 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
               {t('shift_manager.repeating_chip')}
             </Chip>
           ) : null}
+          <Button
+            size="sm"
+            variant="tertiary"
+            className="bg-theme-elevated text-theme-muted"
+            startContent={<Users className="w-3.5 h-3.5" aria-hidden="true" />}
+            onPress={() => setRosterShift({ shift, started: isPast })}
+            aria-label={`${t('shift_manager.roster_open')}: ${formatDay(shift.start_time)}`}
+            data-testid={`managed-shift-roster-${shift.id}`}
+          >
+            {t('shift_manager.roster_open')}
+          </Button>
           {isPast ? (
             <Chip size="sm" variant="soft" color="default">{t('shift_manager.started_chip')}</Chip>
           ) : (
@@ -514,6 +528,13 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
           )}
         </ModalContent>
       </Modal>
+
+      <ShiftRosterModal
+        shiftId={rosterShift?.shift.id ?? null}
+        shiftLabel={rosterShift ? `${formatDay(rosterShift.shift.start_time)}, ${formatTimeRange(rosterShift.shift.start_time, rosterShift.shift.end_time)}` : ''}
+        hasStarted={rosterShift?.started ?? false}
+        onClose={() => setRosterShift(null)}
+      />
     </GlassCard>
   );
 }

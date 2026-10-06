@@ -510,6 +510,22 @@ class VolunteerCommunityController extends BaseApiController
         return $this->respondWithData($shift);
     }
 
+    /** GET /v2/volunteering/shifts/{id}/roster — who is on the shift and who checked in (managers only). */
+    public function shiftRoster($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_shift_roster', 60, 60);
+
+        $roster = $this->shiftManagementService->getShiftRoster((int) $id, $userId);
+        if ($roster === null) {
+            $errors = $this->shiftManagementService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
+        }
+
+        return $this->respondWithData($roster);
+    }
+
     /** DELETE /v2/volunteering/shifts/{id} */
     public function deleteShift($id): JsonResponse
     {

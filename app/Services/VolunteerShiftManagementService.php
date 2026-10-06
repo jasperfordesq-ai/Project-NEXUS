@@ -223,6 +223,137 @@ class VolunteerShiftManagementService
 
     /* ───────────────────────── helpers ───────────────────────── */
 
+    /**
+     * Who is on a shift and who turned up — for the people who may manage the
+     * opportunity (same gate as changing the shift).
+     *
+     * Volunteers are the approved applications placed on the shift (the live
+     * record; `vol_shift_signups` is no longer written), each with their
+     * check-in state from `vol_shift_checkins` (null = no check-in row yet).
+     * Group bookings list their leader and confirmed members; the waitlist
+     * lists those still waiting or notified, in queue order.
+     *
+     * @return array{shift: array<string, mixed>, summary: array<string, int>, volunteers: list<array<string, mixed>>, groups: list<array<string, mixed>>, waitlist: list<array<string, mixed>>}|null
+     */
+    public function getShiftRoster(int $shiftId, int $userId): ?array
+    {
+        $this->errors = [];
+        $tenantId = TenantContext::getId();
+
+        if ($this->loadManagedShift($shiftId, $userId, $tenantId) === null) {
+            return null;
+        }
+
+        $person = static fn (object $row, string $prefix = ''): array => [
+            'id' => (int) $row->{$prefix . 'id'},
+            'name' => (string) ($row->{$prefix . 'name'} ?? ''),
+            'avatar_url' => $row->{$prefix . 'avatar_url'} ?? null,
+        ];
+
+        $volunteers = DB::table('vol_applications as a')
+            ->join('users as u', function ($join) use ($tenantId) {
+                $join->on('a.user_id', '=', 'u.id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->leftJoin('vol_shift_checkins as c', function ($join) use ($tenantId) {
+                $join->on('c.shift_id', '=', 'a.shift_id')
+                    ->on('c.user_id', '=', 'a.user_id')
+                    ->where('c.tenant_id', '=', $tenantId);
+            })
+            ->where('a.shift_id', $shiftId)
+            ->where('a.tenant_id', $tenantId)
+            ->where('a.status', 'approved')
+            ->orderBy('u.first_name')
+            ->orderBy('u.last_name')
+            ->get([
+                'u.id',
+                DB::raw(\App\Support\UserDisplayName::sql('u', 'name')),
+                'u.avatar_url',
+                'c.status as check_in_status',
+                'c.checked_in_at',
+                'c.checked_out_at',
+            ])
+            ->map(static fn (object $row): array => [
+                'user' => $person($row),
+                'check_in_status' => $row->check_in_status,
+                'checked_in_at' => $row->checked_in_at ? (string) $row->checked_in_at : null,
+                'checked_out_at' => $row->checked_out_at ? (string) $row->checked_out_at : null,
+            ])
+            ->values()
+            ->all();
+
+        $reservations = DB::table('vol_shift_group_reservations as r')
+            ->leftJoin('groups as g', function ($join) use ($tenantId) {
+                $join->on('r.group_id', '=', 'g.id')->where('g.tenant_id', '=', $tenantId);
+            })
+            ->leftJoin('users as l', function ($join) use ($tenantId) {
+                $join->on('r.reserved_by', '=', 'l.id')->where('l.tenant_id', '=', $tenantId);
+            })
+            ->where('r.shift_id', $shiftId)
+            ->where('r.tenant_id', $tenantId)
+            ->where('r.status', 'active')
+            ->orderBy('r.id')
+            ->get([
+                'r.id', 'r.reserved_slots', 'g.name as group_name',
+                'l.id as leader_id', DB::raw(\App\Support\UserDisplayName::sql('l', 'leader_name')), 'l.avatar_url as leader_avatar_url',
+            ]);
+
+        $membersByReservation = DB::table('vol_shift_group_members as m')
+            ->join('users as u', function ($join) use ($tenantId) {
+                $join->on('m.user_id', '=', 'u.id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->whereIn('m.reservation_id', $reservations->pluck('id')->all())
+            ->where('m.tenant_id', $tenantId)
+            ->where('m.status', 'confirmed')
+            ->orderBy('u.first_name')
+            ->get(['m.reservation_id', 'u.id', DB::raw(\App\Support\UserDisplayName::sql('u', 'name')), 'u.avatar_url'])
+            ->groupBy('reservation_id');
+
+        $groups = $reservations->map(static fn (object $r): array => [
+            'id' => (int) $r->id,
+            'group_name' => (string) ($r->group_name ?? ''),
+            'reserved_slots' => (int) $r->reserved_slots,
+            'leader' => $r->leader_id ? ['id' => (int) $r->leader_id, 'name' => (string) $r->leader_name, 'avatar_url' => $r->leader_avatar_url] : null,
+            'members' => ($membersByReservation->get($r->id) ?? collect())->map(static fn (object $m): array => $person($m))->values()->all(),
+        ])->values()->all();
+
+        $waitlist = DB::table('vol_shift_waitlist as w')
+            ->join('users as u', function ($join) use ($tenantId) {
+                $join->on('w.user_id', '=', 'u.id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->where('w.shift_id', $shiftId)
+            ->where('w.tenant_id', $tenantId)
+            ->whereIn('w.status', ['waiting', 'notified'])
+            ->orderBy('w.position')
+            ->orderBy('w.id')
+            ->get(['u.id', DB::raw(\App\Support\UserDisplayName::sql('u', 'name')), 'u.avatar_url', 'w.position', 'w.status'])
+            ->map(static fn (object $row): array => [
+                'user' => $person($row),
+                'position' => (int) $row->position,
+                'status' => $row->status,
+            ])
+            ->values()
+            ->all();
+
+        $checkedIn = count(array_filter(
+            $volunteers,
+            static fn (array $v): bool => in_array($v['check_in_status'], ['checked_in', 'checked_out'], true)
+        ));
+
+        return [
+            'shift' => $this->formatShift($shiftId, $tenantId) ?? ['id' => $shiftId],
+            'summary' => [
+                'signed_up' => count($volunteers),
+                'checked_in' => $checkedIn,
+                'no_show' => count(array_filter($volunteers, static fn (array $v): bool => $v['check_in_status'] === 'no_show')),
+                'group_places' => array_sum(array_column($groups, 'reserved_slots')),
+                'waiting' => count($waitlist),
+            ],
+            'volunteers' => $volunteers,
+            'groups' => $groups,
+            'waitlist' => $waitlist,
+        ];
+    }
+
     private function loadManagedShift(int $shiftId, int $userId, int $tenantId): ?object
     {
         $shift = DB::table('vol_shifts')

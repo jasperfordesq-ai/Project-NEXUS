@@ -3033,9 +3033,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerShiftManagementService.php:378:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerShiftManagementService.php:509:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerShiftManagementService.php",
-            "line": 378,
+            "line": 509,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$userId",

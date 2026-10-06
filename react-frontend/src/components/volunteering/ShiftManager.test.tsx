@@ -228,4 +228,32 @@ describe('ShiftManager', () => {
     expect(body.days_of_week).toEqual([6]);
     expect(toastSuccess).toHaveBeenCalledWith('shift_manager.pattern_created:count=2');
   });
+
+  it('opens who is on a shift from any row, past or upcoming', async () => {
+    mockLists();
+    const base = vi.mocked(api.get).getMockImplementation();
+    vi.mocked(api.get).mockImplementation((async (endpoint: string) => {
+      if (endpoint === '/v2/volunteering/shifts/3/roster') {
+        return {
+          success: true,
+          data: {
+            summary: { signed_up: 1, checked_in: 1, no_show: 0, group_places: 0, waiting: 0 },
+            volunteers: [{ user: { id: 9, name: 'Ada Arrived' }, check_in_status: 'checked_in', checked_in_at: null, checked_out_at: null }],
+            groups: [],
+            waitlist: [],
+          },
+        };
+      }
+      return base?.(endpoint);
+    }) as unknown as typeof api.get);
+    render(<ShiftManager opportunityId={5} />);
+
+    expect(await screen.findByTestId('managed-shift-roster-1')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('shift-manager-toggle-past'));
+    fireEvent.click(screen.getByTestId('managed-shift-roster-3'));
+
+    expect(await screen.findByText('Ada Arrived')).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith('/v2/volunteering/shifts/3/roster');
+    expect(screen.getByText('shift_manager.roster_checked_in')).toBeInTheDocument();
+  });
 });

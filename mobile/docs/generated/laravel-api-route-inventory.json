@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2791,
-  "api_route_rows": 2756,
-  "distinct_api_paths": 2297,
+  "total_registered_routes": 2795,
+  "api_route_rows": 2760,
+  "distinct_api_paths": 2299,
   "route_source_fingerprint": {
-    "digest": "2b4758d3a48678131bee9ba605c63af918bd9951aee6ba3a7be251ac537cad9b",
+    "digest": "70bc4d313eb33d11f3ed57c8edbeccf01ec39d51058b03e1a6df39ac407564bc",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "297a14ea4104db9bb79812a6f8be39fd21eceaf69632503ffac1db13025e8015"
+        "sha256": "1f406b1ea926e03aecff4f3100452064e254ddac6470083c412dd8794e5e6325"
       },
       {
         "file": "routes/channels.php",
@@ -7118,7 +7118,8 @@
       "POST"
     ],
     "/api/v2/volunteering/opportunities/{id}/shifts": [
-      "GET"
+      "GET",
+      "POST"
     ],
     "/api/v2/volunteering/organisations": [
       "GET",
@@ -7221,6 +7222,10 @@
     "/api/v2/volunteering/shifts": [
       "GET"
     ],
+    "/api/v2/volunteering/shifts/{id}": [
+      "DELETE",
+      "PUT"
+    ],
     "/api/v2/volunteering/shifts/{id}/checkin": [
       "GET"
     ],
@@ -7229,6 +7234,9 @@
     ],
     "/api/v2/volunteering/shifts/{id}/group-reserve": [
       "POST"
+    ],
+    "/api/v2/volunteering/shifts/{id}/roster": [
+      "GET"
     ],
     "/api/v2/volunteering/shifts/{id}/signup": [
       "DELETE",

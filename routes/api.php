@@ -3874,6 +3874,7 @@ Route::put('/v2/volunteering/recurring-patterns/{id}', [\App\Http\Controllers\Ap
 Route::delete('/v2/volunteering/recurring-patterns/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'deleteRecurringPattern']);
 // One-off shifts, managed by the opportunity's organisers or a community admin.
 Route::post('/v2/volunteering/opportunities/{id}/shifts', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createShift']);
+Route::get('/v2/volunteering/shifts/{id}/roster', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'shiftRoster']);
 Route::put('/v2/volunteering/shifts/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateShift']);
 Route::delete('/v2/volunteering/shifts/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'deleteShift']);
 Route::get('/v2/volunteering/expenses', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'myExpenses']);
