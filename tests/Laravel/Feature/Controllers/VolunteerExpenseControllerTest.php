@@ -231,6 +231,36 @@ class VolunteerExpenseControllerTest extends TestCase
         // mark claims paid at all.
     }
 
+    /**
+     * An admin cannot review their own claim. The refusal carries its own code so
+     * the admin screen can say why instead of a generic "Failed to update".
+     */
+    public function test_admin_reviewing_own_expense_is_refused_with_its_own_code(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $org = VolOrganization::factory()->forTenant($this->testTenantId)->create();
+        $expense = VolExpense::factory()->forTenant($this->testTenantId)->create([
+            'user_id' => $admin->id,
+            'organization_id' => $org->id,
+            'opportunity_id' => null,
+            'status' => 'pending',
+            'amount' => 10,
+            'submitted_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPut("/v2/admin/volunteering/expenses/{$expense->id}", [
+            'status' => 'approved',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertSame('SELF_REVIEW_FORBIDDEN', $response->json('errors.0.code'));
+        $this->assertSame('pending', VolExpense::query()->whereKey($expense->id)->value('status'));
+    }
+
     public function test_review_expense_that_does_not_exist_is_404(): void
     {
         $this->enableVolunteeringFeature($this->testTenantId);

@@ -455,6 +455,24 @@ describe('VolunteerExpenses', () => {
     expect(mockToast.error).not.toHaveBeenCalledWith('RAW SERVER TEXT MUST NOT RENDER');
   });
 
+  it('explains that an admin cannot review their own claim', async () => {
+    mockAdminVolunteering.reviewExpense.mockResolvedValue({
+      success: false,
+      code: 'SELF_REVIEW_FORBIDDEN',
+      error: 'RAW SERVER TEXT MUST NOT RENDER',
+    });
+    const dialog = await openReviewFor(makeExpense({ id: 8, status: 'pending' }));
+    const confirmBtn = Array.from(dialog.querySelectorAll('button')).find((b) =>
+      /^\s*approve\s*$/i.test(b.textContent ?? ''),
+    );
+    fireEvent.click(confirmBtn!);
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'You cannot approve or reject your own expense claim. Ask another administrator to review it.',
+      );
+    });
+  });
+
   it('refreshes the list when the claim was already handled by someone else', async () => {
     mockAdminVolunteering.reviewExpense.mockResolvedValue({
       success: false,

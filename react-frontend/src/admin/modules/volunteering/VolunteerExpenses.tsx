@@ -354,6 +354,8 @@ export function VolunteerExpenses() {
         // the now-stale dialog and show the claim as it now stands.
         if (res.code === 'INVALID_STATE') {
           toast.error(t('volunteering.expense_already_reviewed'));
+        } else if (res.code === 'SELF_REVIEW_FORBIDDEN') {
+          toast.error(t('volunteering.expense_review_own_forbidden'));
         } else {
           toast.error(t('volunteering.failed_to_update_expense'));
         }

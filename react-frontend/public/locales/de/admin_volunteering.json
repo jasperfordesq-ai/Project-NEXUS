@@ -796,6 +796,7 @@
     "orgs_stat_hours": "Erfasste Stunden: {{value}}",
     "orgs_no_match": "Keine Organisation entspricht diesem Filter.",
     "expense_already_reviewed": "Diese Ausgabe wurde bereits geprüft und kann daher nicht erneut genehmigt oder abgelehnt werden.",
+    "expense_review_own_forbidden": "Sie können Ihre eigene Ausgabe nicht genehmigen oder ablehnen. Bitten Sie eine andere Administratorin oder einen anderen Administrator, sie zu prüfen.",
     "expense_not_approved": "Nur eine genehmigte Ausgabe kann als bezahlt markiert werden.",
     "expense_paid_by_org_hint": "Die Organisation erfasst die Zahlung in ihrem eigenen Dashboard.",
     "col_handled_by": "Bearbeitet von",

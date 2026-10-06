@@ -264,7 +264,9 @@ class VolunteerExpenseController extends BaseApiController
         try {
             $result = $this->volunteerExpenseService->reviewExpense((int) $id, $adminId, $status, $data['review_notes'] ?? null);
         } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('FORBIDDEN', $e->getMessage(), null, 403);
+            // The only refusal the service raises here is "this is your own claim".
+            // A distinct code lets the admin screen say so instead of a generic failure.
+            return $this->respondWithError('SELF_REVIEW_FORBIDDEN', $e->getMessage(), null, 403);
         }
 
         if (!$result) {

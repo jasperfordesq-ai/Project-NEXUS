@@ -844,6 +844,7 @@
     "orgs_stat_hours": "Uaireanta logáilte: {{value}}",
     "orgs_no_match": "Níl aon eagraíocht ag teacht leis an scagaire seo.",
     "expense_already_reviewed": "Rinneadh athbhreithniú ar an gcostas seo cheana, mar sin ní féidir é a cheadú ná a dhiúltú arís.",
+    "expense_review_own_forbidden": "Ní féidir leat do chostas féin a cheadú ná a dhiúltú. Iarr ar riarthóir eile é a athbhreithniú.",
     "expense_not_approved": "Ní féidir ach costas ceadaithe a mharcáil mar íoctha.",
     "expense_paid_by_org_hint": "Taifeadann an eagraíocht an íocaíocht óna painéal féin.",
     "col_handled_by": "Á láimhseáil ag",

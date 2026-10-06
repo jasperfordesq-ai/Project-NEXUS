@@ -828,6 +828,7 @@
     "orgs_stat_hours": "Zarejestrowane godziny: {{value}}",
     "orgs_no_match": "Żadna organizacja nie pasuje do tego filtra.",
     "expense_already_reviewed": "Ten wydatek został już rozpatrzony, więc nie można go ponownie zatwierdzić ani odrzucić.",
+    "expense_review_own_forbidden": "Nie możesz zatwierdzić ani odrzucić własnego wydatku. Poproś innego administratora o jego rozpatrzenie.",
     "expense_not_approved": "Jako opłacony można oznaczyć tylko zatwierdzony wydatek.",
     "expense_paid_by_org_hint": "Organizacja odnotowuje płatność we własnym panelu.",
     "col_handled_by": "Prowadzi",

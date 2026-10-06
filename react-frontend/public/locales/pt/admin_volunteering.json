@@ -812,6 +812,7 @@
     "orgs_stat_hours": "Horas registradas: {{value}}",
     "orgs_no_match": "Nenhuma organização corresponde a este filtro.",
     "expense_already_reviewed": "Esta despesa já foi analisada, por isso não pode ser aprovada nem rejeitada novamente.",
+    "expense_review_own_forbidden": "Não pode aprovar nem rejeitar a sua própria despesa. Peça a outro administrador que a analise.",
     "expense_not_approved": "Apenas uma despesa aprovada pode ser marcada como paga.",
     "expense_paid_by_org_hint": "A organização regista o pagamento no seu próprio painel.",
     "col_handled_by": "Tratado por",

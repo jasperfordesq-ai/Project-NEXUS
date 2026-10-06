@@ -796,6 +796,7 @@
     "orgs_stat_hours": "Hours logged: {{value}}",
     "orgs_no_match": "No organisations match this filter.",
     "expense_already_reviewed": "This expense has already been reviewed, so it cannot be approved or rejected again.",
+    "expense_review_own_forbidden": "You cannot approve or reject your own expense claim. Ask another administrator to review it.",
     "expense_not_approved": "Only an approved expense can be marked as paid.",
     "expense_paid_by_org_hint": "The organisation records payment from its own dashboard.",
     "col_handled_by": "Handled by",

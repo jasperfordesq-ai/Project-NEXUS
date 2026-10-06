@@ -796,6 +796,7 @@
     "orgs_stat_hours": "記録された時間: {{value}}",
     "orgs_no_match": "このフィルターに一致する団体はありません。",
     "expense_already_reviewed": "この経費はすでに審査済みのため、再度承認または却下することはできません。",
+    "expense_review_own_forbidden": "自分自身の経費申請を承認または却下することはできません。別の管理者に審査を依頼してください。",
     "expense_not_approved": "支払済みにできるのは承認済みの経費のみです。",
     "expense_paid_by_org_hint": "支払いは団体が自身のダッシュボードで記録します。",
     "col_handled_by": "担当者",
