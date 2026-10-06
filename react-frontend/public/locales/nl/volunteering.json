@@ -1477,5 +1477,24 @@
   "edit_not_allowed_description": "Hij is misschien verwijderd, of alleen de organisatie en de communitybeheerders kunnen hem wijzigen.",
   "org_pending_setup": "Richt hem alvast in",
   "org_pending_see_all": "Je organisaties bekijken",
-  "my_organisations_open_dashboard": "Dashboard openen"
+  "my_organisations_open_dashboard": "Dashboard openen",
+  "certificate_check": {
+    "title": "Een vrijwilligerscertificaat controleren",
+    "meta_description": "Controleer of een vrijwilligerscertificaat van deze gemeenschap echt is.",
+    "intro": "Vul de code in die op het certificaat staat en de naam van de vrijwilliger zoals die erop vermeld staat. We laten alleen weten of ze overeenkomen met onze gegevens.",
+    "code_label": "Certificaatcode",
+    "name_label": "Naam van de vrijwilliger",
+    "name_hint": "Zoals gedrukt op het certificaat. Hoofdletters en accenten maken niet uit.",
+    "submit": "Certificaat controleren",
+    "valid_title": "Dit certificaat is echt",
+    "valid_body": "Het komt overeen met een certificaat dat deze gemeenschap aan {{name}} heeft uitgegeven.",
+    "hours": "Vrijwilligersuren",
+    "period": "Periode",
+    "issued": "Uitgegeven",
+    "organisations": "Organisaties",
+    "organisation_hours": "{{name}} — uren: {{hours}}",
+    "invalid_title": "We konden dit certificaat niet bevestigen",
+    "invalid_body": "De code en naam komen niet overeen met een certificaat van deze gemeenschap. Controleer beide op typefouten. Komen ze nog steeds niet overeen, vraag de vrijwilliger dan om een nieuw exemplaar.",
+    "error": "We konden het certificaat nu niet controleren. Probeer het over een minuut opnieuw."
+  }
 }

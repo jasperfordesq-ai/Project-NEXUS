@@ -1477,5 +1477,24 @@
   "edit_not_allowed_description": "Es wurde möglicherweise entfernt, oder nur die Organisation und die Community-Admins können es ändern.",
   "org_pending_setup": "Schon jetzt einrichten",
   "org_pending_see_all": "Ihre Organisationen ansehen",
-  "my_organisations_open_dashboard": "Dashboard öffnen"
+  "my_organisations_open_dashboard": "Dashboard öffnen",
+  "certificate_check": {
+    "title": "Ehrenamtszertifikat prüfen",
+    "meta_description": "Bestätigen Sie, dass ein von dieser Gemeinschaft ausgestelltes Ehrenamtszertifikat echt ist.",
+    "intro": "Geben Sie den auf dem Zertifikat aufgedruckten Code und den Namen der freiwilligen Person so ein, wie er dort steht. Wir teilen Ihnen nur mit, ob beides mit unseren Unterlagen übereinstimmt.",
+    "code_label": "Zertifikatscode",
+    "name_label": "Name der freiwilligen Person",
+    "name_hint": "Wie auf dem Zertifikat gedruckt. Groß- und Kleinschreibung sowie Akzente spielen keine Rolle.",
+    "submit": "Zertifikat prüfen",
+    "valid_title": "Dieses Zertifikat ist echt",
+    "valid_body": "Es stimmt mit einem Zertifikat überein, das diese Gemeinschaft für {{name}} ausgestellt hat.",
+    "hours": "Geleistete Stunden",
+    "period": "Zeitraum",
+    "issued": "Ausgestellt",
+    "organisations": "Organisationen",
+    "organisation_hours": "{{name}} – Stunden: {{hours}}",
+    "invalid_title": "Wir konnten dieses Zertifikat nicht bestätigen",
+    "invalid_body": "Code und Name passen zu keinem Zertifikat dieser Gemeinschaft. Prüfen Sie beides auf Tippfehler. Wenn es weiterhin nicht passt, bitten Sie die freiwillige Person um eine neue Kopie.",
+    "error": "Das Zertifikat konnte gerade nicht geprüft werden. Bitte versuchen Sie es in einer Minute erneut."
+  }
 }

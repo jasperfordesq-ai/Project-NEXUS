@@ -1493,5 +1493,24 @@
   "edit_not_allowed_description": "Elle a peut-être été supprimée, ou seuls son organisation et les administrateurs de la communauté peuvent la modifier.",
   "org_pending_setup": "La préparer en attendant",
   "org_pending_see_all": "Voir vos organisations",
-  "my_organisations_open_dashboard": "Ouvrir le tableau de bord"
+  "my_organisations_open_dashboard": "Ouvrir le tableau de bord",
+  "certificate_check": {
+    "title": "Vérifier un certificat de bénévolat",
+    "meta_description": "Confirmez qu’un certificat de bénévolat délivré par cette communauté est authentique.",
+    "intro": "Saisissez le code imprimé sur le certificat et le nom du ou de la bénévole tel qu’il y figure. Nous vous indiquerons uniquement s’ils correspondent à nos dossiers.",
+    "code_label": "Code du certificat",
+    "name_label": "Nom du ou de la bénévole",
+    "name_hint": "Tel qu’imprimé sur le certificat. Les majuscules et les accents n’ont pas d’importance.",
+    "submit": "Vérifier le certificat",
+    "valid_title": "Ce certificat est authentique",
+    "valid_body": "Il correspond à un certificat délivré par cette communauté à {{name}}.",
+    "hours": "Heures de bénévolat",
+    "period": "Période",
+    "issued": "Délivré le",
+    "organisations": "Organismes",
+    "organisation_hours": "{{name}} — heures : {{hours}}",
+    "invalid_title": "Nous n’avons pas pu confirmer ce certificat",
+    "invalid_body": "Le code et le nom ne correspondent à aucun certificat délivré par cette communauté. Vérifiez qu’il n’y a pas de faute de frappe. Si cela ne correspond toujours pas, demandez une nouvelle copie au ou à la bénévole.",
+    "error": "Impossible de vérifier le certificat pour le moment. Veuillez réessayer dans une minute."
+  }
 }

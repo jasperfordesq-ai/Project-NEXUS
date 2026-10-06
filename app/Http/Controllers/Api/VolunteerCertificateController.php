@@ -116,6 +116,29 @@ class VolunteerCertificateController extends BaseApiController
         return $this->respondWithData($cert);
     }
 
+    /**
+     * POST /v2/volunteering/certificates/check — public, no account needed.
+     *
+     * Confirms a certificate only when the caller already knows both its code
+     * and the name printed on it (gap C1, owner decision 6 Oct 2026). POST so
+     * the name never lands in a URL or an access log. A mismatch and an unknown
+     * code answer identically; the limit is per network address for anonymous
+     * callers, which keeps guessing names against a code impractical.
+     */
+    public function checkCertificate(): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->rateLimit('volunteering_cert_check', 20, 60);
+
+        $code = trim((string) $this->input('code', ''));
+        $name = trim((string) $this->input('name', ''));
+        if ($code === '' || $name === '' || mb_strlen($code) > 64 || mb_strlen($name) > 200) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.validation_failed'), null, 422);
+        }
+
+        return $this->respondWithData($this->volunteerCertificateService->check($code, $name));
+    }
+
     /** Returns raw HTML for certificate printing/PDF -- not JSON */
     public function certificateHtml($code): Response|JsonResponse
     {

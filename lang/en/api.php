@@ -2895,6 +2895,7 @@ return [
     'vol_certificate_html_org_hours' => 'Hours',
     'vol_certificate_html_verification_code' => 'Verification Code',
     'vol_certificate_html_verification_note' => 'This certificate can be verified online.',
+    'vol_certificate_html_check_at' => 'To check this certificate, go to :url and enter the code above and the volunteer\'s name.',
     'vol_donation_amount_positive' => 'Donation amount must be greater than zero.',
     'vol_donation_amount_max' => 'Donation amount exceeds the maximum allowed.',
     'vol_donation_currency_invalid' => 'Currency must be a 3-letter ISO code.',

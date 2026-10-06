@@ -1525,5 +1525,24 @@
   "edit_not_allowed_description": "B’fhéidir gur baineadh í, nó ní féidir ach lena heagraíocht agus le riarthóirí an phobail í a athrú.",
   "org_pending_setup": "Socraigh í agus tú ag fanacht",
   "org_pending_see_all": "Féach ar d’eagraíochtaí",
-  "my_organisations_open_dashboard": "Oscail an painéal"
+  "my_organisations_open_dashboard": "Oscail an painéal",
+  "certificate_check": {
+    "title": "Seiceáil teastas obair dheonach",
+    "meta_description": "Deimhnigh gur teastas barántúil é teastas obair dheonach a d’eisigh an pobal seo.",
+    "intro": "Cuir isteach an cód atá clóite ar an teastas agus ainm an oibrí dheonaigh mar atá sé air. Ní inseoimid duit ach an bhfuil siad ag teacht lenár dtaifid.",
+    "code_label": "Cód an teastais",
+    "name_label": "Ainm an oibrí dheonaigh",
+    "name_hint": "Mar atá sé clóite ar an teastas. Is cuma faoi cheannlitreacha agus faoi shínte fada.",
+    "submit": "Seiceáil an teastas",
+    "valid_title": "Is teastas barántúil é seo",
+    "valid_body": "Tagann sé le teastas a d’eisigh an pobal seo do {{name}}.",
+    "hours": "Uaireanta obair dheonach",
+    "period": "Tréimhse",
+    "issued": "Eisithe",
+    "organisations": "Eagraíochtaí",
+    "organisation_hours": "{{name}} — uaireanta: {{hours}}",
+    "invalid_title": "Níorbh fhéidir linn an teastas seo a dheimhniú",
+    "invalid_body": "Ní thagann an cód agus an t-ainm le teastas ar bith a d’eisigh an pobal seo. Seiceáil an bhfuil botúin chlóscríofa iontu. Mura dtagann siad le chéile fós, iarr cóip nua ar an oibrí deonach.",
+    "error": "Níorbh fhéidir linn an teastas a sheiceáil faoi láthair. Bain triail eile as i gceann nóiméid."
+  }
 }

@@ -1477,5 +1477,24 @@
   "edit_not_allowed_description": "削除された可能性があります。または、団体とコミュニティ管理者のみが変更できます。",
   "org_pending_setup": "承認を待つ間に準備する",
   "org_pending_see_all": "あなたの団体を見る",
-  "my_organisations_open_dashboard": "ダッシュボードを開く"
+  "my_organisations_open_dashboard": "ダッシュボードを開く",
+  "certificate_check": {
+    "title": "ボランティア証明書を確認する",
+    "meta_description": "このコミュニティが発行したボランティア証明書が本物かどうかを確認します。",
+    "intro": "証明書に印刷されているコードと、記載どおりのボランティアの氏名を入力してください。当方の記録と一致するかどうかのみをお知らせします。",
+    "code_label": "証明書コード",
+    "name_label": "ボランティアの氏名",
+    "name_hint": "証明書に印刷されているとおりに入力してください。大文字・小文字やアクセント記号は区別しません。",
+    "submit": "証明書を確認",
+    "valid_title": "この証明書は本物です",
+    "valid_body": "このコミュニティが{{name}}さんに発行した証明書と一致します。",
+    "hours": "ボランティア時間",
+    "period": "期間",
+    "issued": "発行日",
+    "organisations": "団体",
+    "organisation_hours": "{{name}} — 時間: {{hours}}",
+    "invalid_title": "この証明書を確認できませんでした",
+    "invalid_body": "コードと氏名が、このコミュニティが発行した証明書と一致しません。入力ミスがないか確認してください。それでも一致しない場合は、ボランティア本人に新しいコピーを依頼してください。",
+    "error": "現在、証明書を確認できませんでした。1分ほどしてからもう一度お試しください。"
+  }
 }

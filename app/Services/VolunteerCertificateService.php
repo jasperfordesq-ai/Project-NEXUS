@@ -204,7 +204,7 @@ class VolunteerCertificateService
             'verification_code' => $verificationCode,
             'total_hours' => round($totalHours, 2),
             'date_range' => ['start' => $dateRangeStart, 'end' => $dateRangeEnd],
-            'verification_url' => config('app.url', 'https://api.project-nexus.ie') . '/api/v2/volunteering/certificates/verify/' . $verificationCode,
+            'verification_url' => self::publicCheckUrl($verificationCode),
             'organizations' => $orgs,
             'user_name' => $user ? UserDisplayName::resolve($user) : __('api.vol_certificate_volunteer_fallback'),
             'generated_at' => now()->toIso8601String(),
@@ -216,7 +216,7 @@ class VolunteerCertificateService
             if ($userRow && !empty($userRow->email)) {
                 LocaleContext::withLocale($userRow, function () use ($userRow, $id, $totalHours, $userId, $tenantId) {
                     $firstName = $userRow->first_name ?? $userRow->name ?? __('emails.common.fallback_name');
-                    $certUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/volunteering/certificates/' . $id;
+                    $certUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/volunteering?tab=certificates';
                     $html = EmailTemplateBuilder::make()
                         ->title(__('emails_misc.vol_certificate.ready_title'))
                         ->greeting($firstName)
@@ -283,12 +283,72 @@ class VolunteerCertificateService
             'verification_code' => $cert->verification_code,
             'total_hours' => round((float) $cert->total_hours, 2),
             'date_range' => ['start' => $cert->date_range_start, 'end' => $cert->date_range_end],
-            'verification_url' => config('app.url', 'https://api.project-nexus.ie') . '/api/v2/volunteering/certificates/verify/' . $cert->verification_code,
+            'verification_url' => self::publicCheckUrl((string) $cert->verification_code),
             'organizations' => json_decode($cert->organizations, true) ?? [],
             'user_name' => UserDisplayName::resolve($cert),
             'generated_at' => $cert->generated_at,
             'verified' => true,
         ];
+    }
+
+    /**
+     * Public check of a certificate by its code AND the name printed on it.
+     *
+     * Gap C1 (owner decision, 6 Oct 2026). Anyone holding a certificate — an
+     * employer, a college — can confirm it is genuine without an account. It
+     * only confirms what is already printed: the caller must supply the name,
+     * and a wrong name returns exactly what an unknown code returns, so the
+     * code alone discloses nothing about who holds it. The signed-in
+     * {@see self::verify()} lookup is unchanged.
+     *
+     * @return array{valid: bool, name?: string, total_hours?: float, date_range?: array, organizations?: array, generated_at?: mixed}
+     */
+    public static function check(string $code, string $name): array
+    {
+        $cert = self::verify(strtoupper(trim($code)));
+        if ($cert === null) {
+            return ['valid' => false];
+        }
+
+        $expected = self::normaliseName((string) $cert['user_name']);
+        if ($expected === '' || !hash_equals($expected, self::normaliseName($name))) {
+            return ['valid' => false];
+        }
+
+        return [
+            'valid' => true,
+            'name' => $cert['user_name'],
+            'total_hours' => $cert['total_hours'],
+            'date_range' => $cert['date_range'],
+            'organizations' => $cert['organizations'],
+            'generated_at' => $cert['generated_at'],
+        ];
+    }
+
+    /** Case-, spacing- and accent-insensitive form of a name, for comparison only. */
+    private static function normaliseName(string $name): string
+    {
+        $name = trim((string) preg_replace('/\s+/u', ' ', $name));
+        if (class_exists(\Normalizer::class)) {
+            $decomposed = \Normalizer::normalize($name, \Normalizer::FORM_D);
+            if (is_string($decomposed)) {
+                $name = (string) preg_replace('/\p{Mn}+/u', '', $decomposed);
+            }
+        }
+
+        return mb_strtolower($name, 'UTF-8');
+    }
+
+    /**
+     * The website page where anyone can check a certificate (code prefilled
+     * when given). Printed on the certificate and returned as verification_url;
+     * it used to be the signed-in API address, which no employer could open.
+     */
+    public static function publicCheckUrl(?string $code = null): string
+    {
+        $url = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/verify-certificate';
+
+        return $code === null || $code === '' ? $url : $url . '/' . rawurlencode($code);
     }
 
     /**
@@ -322,7 +382,7 @@ class VolunteerCertificateService
             'verification_code' => $row->verification_code,
             'total_hours' => round((float) $row->total_hours, 2),
             'date_range' => ['start' => $row->date_range_start, 'end' => $row->date_range_end],
-            'verification_url' => config('app.url', 'https://api.project-nexus.ie') . '/api/v2/volunteering/certificates/verify/' . $row->verification_code,
+            'verification_url' => self::publicCheckUrl((string) $row->verification_code),
             'organizations' => json_decode($row->organizations, true) ?? [],
             'generated_at' => $row->generated_at,
             'downloaded_at' => $row->downloaded_at,
@@ -347,6 +407,7 @@ class VolunteerCertificateService
             return null;
         }
 
+        $checkNote = htmlspecialchars(__('api.vol_certificate_html_check_at', ['url' => self::publicCheckUrl()]), ENT_QUOTES, 'UTF-8');
         $userName = htmlspecialchars($cert['user_name'], ENT_QUOTES, 'UTF-8');
         $hours = $cert['total_hours'];
         $dateFrom = htmlspecialchars($cert['date_range']['start'], ENT_QUOTES, 'UTF-8');
@@ -402,7 +463,7 @@ class VolunteerCertificateService
   </table>
   <div class="verify">
     <p>{$verificationLabel}: <code>{$verifyCode}</code></p>
-    <p style="font-size:12px;color:#9ca3af;">{$verificationNote}</p>
+    <p style="font-size:12px;color:#9ca3af;">{$verificationNote} {$checkNote}</p>
   </div>
 </body>
 </html>

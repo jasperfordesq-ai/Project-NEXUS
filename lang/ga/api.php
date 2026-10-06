@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => 'Uaireanta',
     'vol_certificate_html_verification_code' => 'Cód Fíoraithe',
     'vol_certificate_html_verification_note' => 'Is féidir an teastas seo a fhíorú ar líne.',
+    'vol_certificate_html_check_at' => 'Chun an teastas seo a sheiceáil, téigh go :url agus cuir isteach an cód thuas agus ainm an oibrí dheonaigh.',
     'vol_donation_amount_positive' => 'Caithfidh méid an tsíntiúis a bheith níos mó ná nialas.',
     'vol_donation_amount_max' => 'Sáraíonn méid an tsíntiúis an t-uasmhéid a cheadaítear.',
     'vol_donation_currency_invalid' => 'Ní mór gur cód ISO 3 litir é airgeadra.',

@@ -1018,6 +1018,14 @@
       "status": "out-of-scope",
       "reason": "Sales and onboarding funnel."
     },
+    "verify-certificate": {
+      "status": "out-of-scope",
+      "reason": "Public page for employers and colleges checking a volunteer's certificate; not a member journey. The app opens it in the browser from the certificate."
+    },
+    "verify-certificate/:code": {
+      "status": "out-of-scope",
+      "reason": "Same public certificate check, with the code prefilled from the printed link."
+    },
     "pilot-inquiry": {
       "status": "out-of-scope",
       "reason": "Sales and onboarding funnel."

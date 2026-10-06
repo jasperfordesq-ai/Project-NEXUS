@@ -1,10 +1,10 @@
 {
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
-    "react_member_routes": 264,
+    "react_member_routes": 266,
     "mobile_routes": 189,
     "native": 174,
-    "out_of_scope": 86,
+    "out_of_scope": 88,
     "gap": 4,
     "needs_review": 0,
     "needs_review_budget": 31,
@@ -2358,6 +2358,24 @@
       "reason": null,
       "sources": [
         "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-certificate",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Public page for employers and colleges checking a volunteer's certificate; not a member journey. The app opens it in the browser from the certificate.",
+      "sources": [
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "verify-certificate/:code",
+      "status": "out-of-scope",
+      "mobile": null,
+      "reason": "Same public certificate check, with the code prefilled from the printed link.",
+      "sources": [
+        "PublicAppRoutes.tsx"
       ]
     },
     {

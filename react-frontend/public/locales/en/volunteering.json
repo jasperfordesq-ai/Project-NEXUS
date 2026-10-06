@@ -1477,5 +1477,24 @@
   "edit_not_allowed_description": "It may have been removed, or only its organisation and community admins can change it.",
   "org_pending_setup": "Set it up while you wait",
   "org_pending_see_all": "See your organisations",
-  "my_organisations_open_dashboard": "Open dashboard"
+  "my_organisations_open_dashboard": "Open dashboard",
+  "certificate_check": {
+    "title": "Check a volunteering certificate",
+    "meta_description": "Confirm that a volunteering certificate issued by this community is genuine.",
+    "intro": "Enter the code printed on the certificate and the volunteer's name as it appears on it. We will only tell you whether they match our records.",
+    "code_label": "Certificate code",
+    "name_label": "Volunteer's name",
+    "name_hint": "As printed on the certificate. Capital letters and accents do not matter.",
+    "submit": "Check certificate",
+    "valid_title": "This certificate is genuine",
+    "valid_body": "It matches a certificate this community issued to {{name}}.",
+    "hours": "Hours volunteered",
+    "period": "Period",
+    "issued": "Issued",
+    "organisations": "Organisations",
+    "organisation_hours": "{{name}} — hours: {{hours}}",
+    "invalid_title": "We could not confirm this certificate",
+    "invalid_body": "The code and name do not match a certificate issued by this community. Check both for typing mistakes. If they still do not match, ask the volunteer for a new copy.",
+    "error": "We could not check the certificate just now. Please try again in a minute."
+  }
 }

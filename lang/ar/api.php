@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => 'ساعات',
     'vol_certificate_html_verification_code' => 'رمز التحقق',
     'vol_certificate_html_verification_note' => 'ويمكن التحقق من هذه الشهادة عبر الإنترنت.',
+    'vol_certificate_html_check_at' => 'للتحقق من هذه الشهادة، انتقل إلى :url وأدخل الرمز أعلاه واسم المتطوع.',
     'vol_donation_amount_positive' => 'يجب أن يكون مبلغ التبرع أكبر من الصفر.',
     'vol_donation_amount_max' => 'مبلغ التبرع يتجاوز الحد الأقصى المسموح به.',
     'vol_donation_currency_invalid' => 'يجب أن تكون العملة رمز ISO مكونًا من 3 أحرف.',

@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => 'Horas',
     'vol_certificate_html_verification_code' => 'Código de verificación',
     'vol_certificate_html_verification_note' => 'Este certificado se puede verificar en línea.',
+    'vol_certificate_html_check_at' => 'Para comprobar este certificado, visite :url e introduzca el código anterior y el nombre de la persona voluntaria.',
     'vol_donation_amount_positive' => 'El monto de la donación debe ser mayor que cero.',
     'vol_donation_amount_max' => 'El monto de la donación excede el máximo permitido.',
     'vol_donation_currency_invalid' => 'La moneda debe ser un código ISO de 3 letras.',

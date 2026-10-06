@@ -268,6 +268,7 @@ const HelpArticlePage = lazyWithRetry(() => import('@/pages/help/HelpArticlePage
 const PilotInquiryPage = lazyWithRetry(() => import('@/pages/public/PilotInquiryPage'));
 const PilotApplyPage = lazyWithRetry(() => import('@/pages/public/PilotApplyPage'));
 const PilotApplyStatusPage = lazyWithRetry(() => import('@/pages/public/PilotApplyStatusPage'));
+const CertificateCheckPage = lazyWithRetry(() => import('@/pages/public/CertificateCheckPage'));
 
 // Platform Legal Pages (provider-level, distinct from tenant legal docs)
 const PlatformTermsPage = lazyWithRetry(() => import('@/pages/platform/PlatformTermsPage'));
@@ -325,6 +326,9 @@ export function AppRoutes() {
         <Route path="pilot-inquiry" element={<ErrorBoundary><PilotInquiryPage /></ErrorBoundary>} />
         <Route path="pilot-apply" element={<ErrorBoundary><PilotApplyPage /></ErrorBoundary>} />
         <Route path="pilot-apply/status/:token" element={<ErrorBoundary><PilotApplyStatusPage /></ErrorBoundary>} />
+        {/* Public certificate check by code + printed name (gap C1, 6 Oct 2026). */}
+        <Route path="verify-certificate" element={<ErrorBoundary><CertificateCheckPage /></ErrorBoundary>} />
+        <Route path="verify-certificate/:code" element={<ErrorBoundary><CertificateCheckPage /></ErrorBoundary>} />
         <Route path="help" element={<ErrorBoundary><HelpCenterPage /></ErrorBoundary>} />
         <Route path="help/:audience" element={<ErrorBoundary><HelpCenterPage /></ErrorBoundary>} />
         <Route path="help/:audience/:sectionId" element={<ErrorBoundary><HelpSectionPage /></ErrorBoundary>} />

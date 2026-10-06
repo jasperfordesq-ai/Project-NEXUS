@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => 'Std',
     'vol_certificate_html_verification_code' => 'Bestätigungscode',
     'vol_certificate_html_verification_note' => 'Dieses Zertifikat kann online überprüft werden.',
+    'vol_certificate_html_check_at' => 'Zum Überprüfen rufen Sie :url auf und geben Sie den obigen Code und den Namen der freiwilligen Person ein.',
     'vol_donation_amount_positive' => 'Der Spendenbetrag muss größer als Null sein.',
     'vol_donation_amount_max' => 'Der Spendenbetrag übersteigt den zulässigen Höchstbetrag.',
     'vol_donation_currency_invalid' => 'Die Währung muss ein dreibuchstabiger ISO-Code sein.',

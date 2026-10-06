@@ -1493,5 +1493,24 @@
   "edit_not_allowed_description": "Potrebbe essere stata rimossa, oppure solo la sua organizzazione e gli amministratori della comunità possono cambiarla.",
   "org_pending_setup": "Preparala nell’attesa",
   "org_pending_see_all": "Vedi le tue organizzazioni",
-  "my_organisations_open_dashboard": "Apri la dashboard"
+  "my_organisations_open_dashboard": "Apri la dashboard",
+  "certificate_check": {
+    "title": "Verifica un certificato di volontariato",
+    "meta_description": "Conferma che un certificato di volontariato rilasciato da questa comunità è autentico.",
+    "intro": "Inserisci il codice stampato sul certificato e il nome della persona volontaria come compare sul certificato. Ti diremo solo se corrispondono ai nostri registri.",
+    "code_label": "Codice del certificato",
+    "name_label": "Nome della persona volontaria",
+    "name_hint": "Come stampato sul certificato. Maiuscole e accenti non contano.",
+    "submit": "Verifica certificato",
+    "valid_title": "Questo certificato è autentico",
+    "valid_body": "Corrisponde a un certificato rilasciato da questa comunità a {{name}}.",
+    "hours": "Ore di volontariato",
+    "period": "Periodo",
+    "issued": "Rilasciato",
+    "organisations": "Organizzazioni",
+    "organisation_hours": "{{name}} — ore: {{hours}}",
+    "invalid_title": "Non è stato possibile confermare questo certificato",
+    "invalid_body": "Il codice e il nome non corrispondono a nessun certificato rilasciato da questa comunità. Controlla che non ci siano errori di battitura. Se continuano a non corrispondere, chiedi alla persona volontaria una nuova copia.",
+    "error": "Non è stato possibile verificare il certificato in questo momento. Riprova tra un minuto."
+  }
 }

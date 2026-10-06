@@ -1509,5 +1509,24 @@
   "edit_not_allowed_description": "Mogła zostać usunięta albo zmieniać ją mogą tylko jej organizacja i administratorzy społeczności.",
   "org_pending_setup": "Przygotuj ją w czasie oczekiwania",
   "org_pending_see_all": "Zobacz swoje organizacje",
-  "my_organisations_open_dashboard": "Otwórz panel"
+  "my_organisations_open_dashboard": "Otwórz panel",
+  "certificate_check": {
+    "title": "Sprawdź certyfikat wolontariusza",
+    "meta_description": "Potwierdź, że certyfikat wolontariusza wydany przez tę społeczność jest autentyczny.",
+    "intro": "Wpisz kod wydrukowany na certyfikacie oraz imię i nazwisko wolontariusza w takiej formie, w jakiej na nim widnieje. Powiemy tylko, czy zgadzają się z naszymi danymi.",
+    "code_label": "Kod certyfikatu",
+    "name_label": "Imię i nazwisko wolontariusza",
+    "name_hint": "Tak jak na wydruku certyfikatu. Wielkość liter i znaki diakrytyczne nie mają znaczenia.",
+    "submit": "Sprawdź certyfikat",
+    "valid_title": "Ten certyfikat jest autentyczny",
+    "valid_body": "Zgadza się z certyfikatem wydanym przez tę społeczność dla: {{name}}.",
+    "hours": "Godziny wolontariatu",
+    "period": "Okres",
+    "issued": "Wydano",
+    "organisations": "Organizacje",
+    "organisation_hours": "{{name}} — godziny: {{hours}}",
+    "invalid_title": "Nie udało się potwierdzić tego certyfikatu",
+    "invalid_body": "Kod oraz imię i nazwisko nie pasują do żadnego certyfikatu wydanego przez tę społeczność. Sprawdź, czy nie ma literówek. Jeśli nadal się nie zgadzają, poproś wolontariusza o nową kopię.",
+    "error": "Nie udało się teraz sprawdzić certyfikatu. Spróbuj ponownie za minutę."
+  }
 }

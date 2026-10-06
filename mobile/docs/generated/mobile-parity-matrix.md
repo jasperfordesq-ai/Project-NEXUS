@@ -17,10 +17,10 @@ when a React member route exists that nobody has classified for mobile.
 
 | Measure | Count |
 | --- | --- |
-| React member routes | 264 |
+| React member routes | 266 |
 | Mobile routes (Expo Router screens) | 189 |
 | Covered natively | 174 |
-| Deliberately out of scope | 86 |
+| Deliberately out of scope | 88 |
 | **Known gaps** | **4** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
@@ -285,6 +285,8 @@ when a React member route exists that nobody has classified for mobile.
 | `venues` | native | `venues` | — |
 | `venues/checkin/:token` | native | `venue-checkin` | Venue staff get a confirmation screen; scanning alone never records a visit. |
 | `venues/pass` | native | `venue-pass` | — |
+| `verify-certificate` | out-of-scope | — | Public page for employers and colleges checking a volunteer's certificate; not a member journey. The app opens it in the browser from the certificate. |
+| `verify-certificate/:code` | out-of-scope | — | Same public certificate check, with the code prefilled from the printed link. |
 | `verify-email` | native | `verify-email` | — |
 | `verify-identity` | native | `verify-identity` | — |
 | `verify-identity-optional` | native | `verify-identity` | — |

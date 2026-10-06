@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2797,
-  "api_route_rows": 2762,
-  "distinct_api_paths": 2301,
+  "total_registered_routes": 2798,
+  "api_route_rows": 2763,
+  "distinct_api_paths": 2302,
   "route_source_fingerprint": {
-    "digest": "a469010b6108ff499f10b02caf398acd8afb79b8981d13c5a66dc00cad0c24b7",
+    "digest": "25d4df880e7aad28e787c6c5c320580d2739c44e23d19e261a097395621acbb9",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "702d1a6b9de4e541af15e20b71835cda4727782b33d0286d4a748bc00837de5d"
+        "sha256": "13efc0b3ae6ee451e401630f24b01af0fc509921538a4ea6c677d3c02b4237b6"
       },
       {
         "file": "routes/channels.php",
@@ -6979,6 +6979,9 @@
     ],
     "/api/v2/volunteering/certificates": [
       "GET",
+      "POST"
+    ],
+    "/api/v2/volunteering/certificates/check": [
       "POST"
     ],
     "/api/v2/volunteering/certificates/verify/{code}": [

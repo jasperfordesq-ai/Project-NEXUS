@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => 'Uur',
     'vol_certificate_html_verification_code' => 'Verificatiecode',
     'vol_certificate_html_verification_note' => 'Dit certificaat kan online worden geverifieerd.',
+    'vol_certificate_html_check_at' => 'Ga om dit certificaat te controleren naar :url en vul de code hierboven en de naam van de vrijwilliger in.',
     'vol_donation_amount_positive' => 'Het donatiebedrag moet groter zijn dan nul.',
     'vol_donation_amount_max' => 'Het donatiebedrag overschrijdt het maximaal toegestane bedrag.',
     'vol_donation_currency_invalid' => 'Valuta moet een ISO-code van drie letters zijn.',

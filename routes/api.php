@@ -3794,6 +3794,8 @@ Route::get('/v2/volunteering/recommended-shifts', [\App\Http\Controllers\Api\Vol
 Route::get('/v2/volunteering/certificates', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'myCertificates']);
 Route::post('/v2/volunteering/certificates', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'generateCertificate']);
 Route::get('/v2/volunteering/certificates/verify/{code}', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'verifyCertificate'])->middleware('auth:sanctum');
+// Public: confirms a certificate only for a caller who already has its code AND printed name (gap C1, 6 Oct 2026).
+Route::post('/v2/volunteering/certificates/check', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'checkCertificate'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/volunteering/certificates/{code}/html', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'certificateHtml'])->middleware('auth:sanctum');
 Route::get('/v2/volunteering/credentials', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'myCredentials']);
 Route::post('/v2/volunteering/credentials', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'uploadCredential'])->middleware('throttle:nexus-route-20-per-1m');

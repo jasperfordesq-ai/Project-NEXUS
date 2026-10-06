@@ -2273,6 +2273,7 @@ return [
     'vol_certificate_html_org_hours' => '営業時間',
     'vol_certificate_html_verification_code' => '検証コード',
     'vol_certificate_html_verification_note' => 'この証明書はオンラインで検証できます。',
+    'vol_certificate_html_check_at' => 'この証明書を確認するには、:url にアクセスし、上記のコードとボランティアの氏名を入力してください。',
     'vol_donation_amount_positive' => '寄付額はゼロより大きくなければなりません。',
     'vol_donation_amount_max' => '寄付金額が上限を超えています。',
     'vol_donation_currency_invalid' => '通貨は 3 文字の ISO コードである必要があります。',
