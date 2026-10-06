@@ -29,6 +29,18 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
 }));
 
+// TenantForm imports PlaceAutocompleteInput directly (bundle budget), and that component reads
+// useTenant from the direct module, so the barrel mock above would not reach it.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: vi.fn(() => ({
+    tenant: { id: 2, name: 'Test Community', slug: 'test', configuration: {} },
+    tenantSlug: 'test',
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+    tenantPath: (p: string) => `/test${p}`,
+  })),
+}));
+
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Admin', last_name: 'User', name: 'Admin User', role: 'admin', is_super_admin: true, tenant_id: 2 },
