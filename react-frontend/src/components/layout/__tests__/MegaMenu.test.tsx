@@ -472,7 +472,7 @@ describe('MegaMenu', () => {
     it('ArrowRight from the auto-opened column lands on the first right-column item', () => {
       renderMegaMenu({ leftSections: loneToolsColumn });
       const items = screen.getAllByRole('button').filter(b => b.hasAttribute('data-mega-item'));
-      items[0].focus();
+      items[0]?.focus();
       fireEvent.keyDown(screen.getByRole('navigation'), { key: 'ArrowRight' });
       expect(document.activeElement?.textContent).toContain('About Us');
     });
