@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'تم تغيير تعيين ورديتك على جهاز آخر. حدّث الصفحة وحاول مرة أخرى.',
     'volunteer_shift_not_full' => 'لا تزال هناك أماكن مفتوحة لهذا التحول، لذا لا تحتاج إلى قائمة الانتظار بعد.',
     'volunteer_shift_end_before_start' => 'يجب أن تنتهي المناوبة بعد بدايتها.',
+    'volunteer_pattern_days_required' => 'اختر يومًا واحدًا على الأقل من أيام الأسبوع للنمط الأسبوعي أو نصف الشهري.',
+    'volunteer_pattern_days_invalid' => 'يجب أن تكون أيام الأسبوع أرقامًا من 1 (الاثنين) إلى 7 (الأحد).',
     'volunteer_shift_in_past' => 'يجب أن تبدأ المناوبة في المستقبل.',
     'volunteer_shift_capacity_below_signups' => 'هذه المناوبة فيها بالفعل :count متطوعين، لذا لا يمكن أن يكون عدد الأماكن أقل من ذلك.',
     'volunteer_approved_application_required' => 'أنت بحاجة إلى طلب معتمد قبل استخدام هذه الفرصة',

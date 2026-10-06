@@ -1466,7 +1466,8 @@
     "roster_group_leader": "Curtha in áirithe ag {{name}}",
     "roster_waitlist_heading": "Liosta feithimh",
     "roster_waitlist_position": "Áit sa scuaine: {{position}}",
-    "roster_close": "Dún"
+    "roster_close": "Dún",
+    "days_required": "Roghnaigh lá amháin ar a laghad."
   },
   "edit_opportunity_title": "Cuir an deis in eagar",
   "edit_opportunity_subtitle": "Athraigh na sonraí a fheiceann oibrithe deonacha. Ní féidir an eagraíocht a athrú.",

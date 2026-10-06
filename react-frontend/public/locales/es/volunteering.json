@@ -1434,7 +1434,8 @@
     "roster_group_leader": "Reservado por {{name}}",
     "roster_waitlist_heading": "Lista de espera",
     "roster_waitlist_position": "Puesto en la cola: {{position}}",
-    "roster_close": "Cerrar"
+    "roster_close": "Cerrar",
+    "days_required": "Elige al menos un día."
   },
   "edit_opportunity_title": "Editar oportunidad",
   "edit_opportunity_subtitle": "Cambia los datos que ven los voluntarios. La organización no se puede cambiar.",

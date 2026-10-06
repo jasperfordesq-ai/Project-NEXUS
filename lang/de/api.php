@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Ihre Schichtzuordnung wurde auf einem anderen Gerät geändert. Aktualisieren Sie die Seite und versuchen Sie es erneut.',
     'volunteer_shift_not_full' => 'In dieser Schicht gibt es noch freie Plätze, sodass Sie die Warteliste noch nicht benötigen.',
     'volunteer_shift_end_before_start' => 'Die Schicht muss nach ihrem Beginn enden.',
+    'volunteer_pattern_days_required' => 'Wählen Sie für ein wöchentliches oder zweiwöchentliches Muster mindestens einen Wochentag.',
+    'volunteer_pattern_days_invalid' => 'Wochentage müssen Zahlen von 1 (Montag) bis 7 (Sonntag) sein.',
     'volunteer_shift_in_past' => 'Die Schicht muss in der Zukunft beginnen.',
     'volunteer_shift_capacity_below_signups' => 'Auf dieser Schicht sind bereits :count Freiwillige eingetragen, daher kann sie nicht weniger Plätze haben.',
     'volunteer_approved_application_required' => 'Sie benötigen einen genehmigten Antrag, bevor Sie diese Möglichkeit nutzen können',

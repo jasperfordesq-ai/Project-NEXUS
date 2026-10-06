@@ -77,10 +77,20 @@ class RecurringShiftService
 
         $startDate = $data['start_date'] ?? date('Y-m-d');
 
-        $daysOfWeek = $data['days_of_week'] ?? null;
-        if (is_array($daysOfWeek)) {
-            $daysOfWeek = json_encode($daysOfWeek);
+        // Weekly and fortnightly patterns repeat on chosen weekdays (1 = Monday …
+        // 7 = Sunday). Until 6 Oct 2026 a weekly pattern with none was accepted
+        // and generated a shift EVERY day; text weekdays ("2") were stored but
+        // never matched, so they generated nothing.
+        $days = self::normaliseDaysOfWeek($data['days_of_week'] ?? null);
+        if ($days === null) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_pattern_days_invalid'), 'field' => 'days_of_week'];
+            return null;
         }
+        if (self::usesWeekdays($frequency) && $days === []) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_pattern_days_required'), 'field' => 'days_of_week'];
+            return null;
+        }
+        $daysOfWeek = $days === [] ? null : json_encode($days);
 
         try {
             DB::insert(
@@ -141,15 +151,19 @@ class RecurringShiftService
                 return 0;
             }
 
-            $daysOfWeek = is_string($pattern->days_of_week)
-                ? (json_decode($pattern->days_of_week, true) ?: [])
-                : [];
-
             // Recurrence anchor: ALWAYS the pattern's original start date.
             // Clamping the anchor to today made monthly patterns match
             // "today's day-of-month" on every daily cron run (a shift per day)
             // and rolled biweekly week-parity so it fired on the wrong weeks.
             $anchorDate = new \DateTime($pattern->start_date);
+
+            // Integers, so the strict in_array() below matches text weekdays too.
+            // A weekly/fortnightly row stored with none (accepted before 6 Oct
+            // 2026) repeats on its start date's weekday — never on every day.
+            $daysOfWeek = self::normaliseDaysOfWeek($pattern->days_of_week) ?? [];
+            if ($daysOfWeek === [] && self::usesWeekdays((string) $pattern->frequency)) {
+                $daysOfWeek = [(int) $anchorDate->format('N')];
+            }
             // Iteration window: never generate before today or the pattern start.
             $startDate = new \DateTime(max($pattern->start_date, date('Y-m-d')));
             $endDate = new \DateTime(date('Y-m-d', strtotime("+{$daysAhead} days")));
@@ -179,11 +193,11 @@ class RecurringShiftService
                         $shouldGenerate = true;
                         break;
                     case 'weekly':
-                        $shouldGenerate = empty($daysOfWeek) || in_array($dayOfWeek, $daysOfWeek, true);
+                        $shouldGenerate = in_array($dayOfWeek, $daysOfWeek, true);
                         break;
                     case 'biweekly':
                         $weekDiff = intdiv((int) $anchorDate->diff($current)->days, 7);
-                        $shouldGenerate = ($weekDiff % 2 === 0) && (empty($daysOfWeek) || in_array($dayOfWeek, $daysOfWeek, true));
+                        $shouldGenerate = ($weekDiff % 2 === 0) && in_array($dayOfWeek, $daysOfWeek, true);
                         break;
                     case 'monthly':
                         // Clamp the anchor day to the last valid day of the current
@@ -400,7 +414,7 @@ class RecurringShiftService
         $tenantId = TenantContext::getId();
 
         $pattern = DB::selectOne(
-            "SELECT id, created_by, opportunity_id FROM recurring_shift_patterns WHERE id = ? AND tenant_id = ?",
+            "SELECT id, created_by, opportunity_id, frequency, days_of_week FROM recurring_shift_patterns WHERE id = ? AND tenant_id = ?",
             [$patternId, $tenantId]
         );
 
@@ -445,9 +459,25 @@ class RecurringShiftService
             }
         }
 
+        $resultingDays = self::normaliseDaysOfWeek($pattern->days_of_week ?? null) ?? [];
         if (array_key_exists('days_of_week', $data)) {
+            $newDays = self::normaliseDaysOfWeek($data['days_of_week']);
+            if ($newDays === null) {
+                $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_pattern_days_invalid'), 'field' => 'days_of_week'];
+                return false;
+            }
+            $resultingDays = $newDays;
             $updates[] = 'days_of_week = ?';
-            $params[] = is_array($data['days_of_week']) ? json_encode($data['days_of_week']) : $data['days_of_week'];
+            $params[] = $newDays === [] ? null : json_encode($newDays);
+        }
+        // Only an update that touches the weekdays or the frequency is held to the
+        // weekday rule; an old row is otherwise left alone (generation falls back
+        // to its start weekday).
+        $resultingFrequency = (string) ($data['frequency'] ?? $pattern->frequency ?? '');
+        $touchesRepeat = array_key_exists('days_of_week', $data) || array_key_exists('frequency', $data);
+        if ($touchesRepeat && self::usesWeekdays($resultingFrequency) && $resultingDays === []) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_pattern_days_required'), 'field' => 'days_of_week'];
+            return false;
         }
 
         if (empty($updates)) {
@@ -574,5 +604,45 @@ class RecurringShiftService
             $this->errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.server_error')];
             return 0;
         }
+    }
+
+    /** Weekly and fortnightly patterns repeat on chosen weekdays; daily and monthly do not. */
+    private static function usesWeekdays(string $frequency): bool
+    {
+        return in_array($frequency, ['weekly', 'biweekly'], true);
+    }
+
+    /**
+     * Weekdays as sorted, distinct ISO numbers (1 = Monday … 7 = Sunday).
+     * Accepts a list or its JSON text, with numbers or numeric strings.
+     * Returns [] for none, or null when any value is not a weekday.
+     *
+     * @return list<int>|null
+     */
+    private static function normaliseDaysOfWeek(mixed $value): ?array
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return [];
+        }
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+        if (!is_array($value)) {
+            return null;
+        }
+        $days = [];
+        foreach ($value as $day) {
+            if (is_int($day) || (is_string($day) && ctype_digit($day))) {
+                $day = (int) $day;
+                if ($day >= 1 && $day <= 7) {
+                    $days[$day] = $day;
+                    continue;
+                }
+            }
+            return null;
+        }
+        ksort($days);
+
+        return array_values($days);
     }
 }

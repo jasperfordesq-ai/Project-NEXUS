@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Athraíodh do shannadh seala oibre ar ghléas eile. Athlódáil an leathanach agus bain triail eile as.',
     'volunteer_shift_not_full' => 'Tá áiteanna oscailte fós ag an athrú seo, mar sin ní gá duit an liosta feithimh fós.',
     'volunteer_shift_end_before_start' => 'Caithfidh an seal críochnú tar éis dó tosú.',
+    'volunteer_pattern_days_required' => 'Roghnaigh lá amháin den tseachtain ar a laghad do phatrún seachtainiúil nó coicísiúil.',
+    'volunteer_pattern_days_invalid' => 'Caithfidh laethanta na seachtaine a bheith ina n-uimhreacha ó 1 (Luan) go 7 (Domhnach).',
     'volunteer_shift_in_past' => 'Caithfidh an seal tosú amach anseo.',
     'volunteer_shift_capacity_below_signups' => 'Tá :count oibrí deonach ar an seal seo cheana féin, mar sin ní féidir níos lú áiteanna ná sin a bheith aige.',
     'volunteer_approved_application_required' => 'Teastaíonn iarratas ceadaithe uait sula n-úsáideann tú an deis seo',

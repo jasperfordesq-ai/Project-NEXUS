@@ -1482,7 +1482,8 @@
     "roster_group_leader": "حجزها {{name}}",
     "roster_waitlist_heading": "قائمة الانتظار",
     "roster_waitlist_position": "الترتيب في القائمة: {{position}}",
-    "roster_close": "إغلاق"
+    "roster_close": "إغلاق",
+    "days_required": "اختر يومًا واحدًا على الأقل."
   },
   "edit_opportunity_title": "تعديل الفرصة",
   "edit_opportunity_subtitle": "غيّر التفاصيل التي يراها المتطوعون. لا يمكن تغيير المنظمة.",

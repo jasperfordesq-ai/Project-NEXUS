@@ -1418,7 +1418,8 @@
     "roster_group_leader": "Gereserveerd door {{name}}",
     "roster_waitlist_heading": "Wachtlijst",
     "roster_waitlist_position": "Plaats in de rij: {{position}}",
-    "roster_close": "Sluiten"
+    "roster_close": "Sluiten",
+    "days_required": "Kies ten minste één dag."
   },
   "edit_opportunity_title": "Vacature bewerken",
   "edit_opportunity_subtitle": "Wijzig de gegevens die vrijwilligers zien. De organisatie kan niet worden gewijzigd.",

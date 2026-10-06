@@ -717,6 +717,12 @@ function PatternFormModal({ opportunityId, onClose, onSaved }: PatternFormModalP
       setError(t('shift_manager.invalid_places'));
       return;
     }
+    // Weekly and fortnightly repeat on chosen days; with none the server refuses
+    // (before 6 Oct 2026 it made a shift every day instead).
+    if (usesDays && days.length === 0) {
+      setError(t('shift_manager.days_required'));
+      return;
+    }
     setError(null);
     setSaving(true);
     const payload: Record<string, unknown> = {

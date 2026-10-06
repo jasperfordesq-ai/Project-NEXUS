@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Je diensttoewijzing is op een ander apparaat gewijzigd. Vernieuw de pagina en probeer het opnieuw.',
     'volunteer_shift_not_full' => 'Deze dienst heeft nog open plekken, je hebt dus nog geen wachtlijst nodig.',
     'volunteer_shift_end_before_start' => 'De dienst moet eindigen na het begin.',
+    'volunteer_pattern_days_required' => 'Kies ten minste één dag van de week voor een wekelijks of tweewekelijks patroon.',
+    'volunteer_pattern_days_invalid' => 'Dagen van de week moeten getallen zijn van 1 (maandag) tot 7 (zondag).',
     'volunteer_shift_in_past' => 'De dienst moet in de toekomst beginnen.',
     'volunteer_shift_capacity_below_signups' => 'Op deze dienst staan al :count vrijwilligers, dus er kunnen niet minder plekken zijn dan dat.',
     'volunteer_approved_application_required' => 'Voordat u van deze mogelijkheid gebruik kunt maken, heeft u een goedgekeurde aanvraag nodig',

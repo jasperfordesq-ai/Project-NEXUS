@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => '別の端末でシフトの割り当てが変更されました。更新してもう一度お試しください。',
     'volunteer_shift_not_full' => 'このシフトにはまだ空きがあるため、まだ順番待ちリストは必要ありません。',
     'volunteer_shift_end_before_start' => 'シフトの終了は開始より後でなければなりません。',
+    'volunteer_pattern_days_required' => '毎週または隔週のパターンには、曜日を1つ以上選んでください。',
+    'volunteer_pattern_days_invalid' => '曜日は1（月曜日）から7（日曜日）までの数字で指定してください。',
     'volunteer_shift_in_past' => 'シフトは将来の日時に開始する必要があります。',
     'volunteer_shift_capacity_below_signups' => 'このシフトにはすでに:count人のボランティアが登録されているため、それより少ない人数にはできません。',
     'volunteer_approved_application_required' => 'この機会を利用するには承認された申請が必要です',

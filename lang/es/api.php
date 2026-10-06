@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Su turno cambió en otro dispositivo. Actualice la página y vuelva a intentarlo.',
     'volunteer_shift_not_full' => 'Este turno aún tiene plazas abiertas, por lo que no necesitas la lista de espera todavía.',
     'volunteer_shift_end_before_start' => 'El turno debe terminar después de empezar.',
+    'volunteer_pattern_days_required' => 'Elige al menos un día de la semana para un patrón semanal o quincenal.',
+    'volunteer_pattern_days_invalid' => 'Los días de la semana deben ser números del 1 (lunes) al 7 (domingo).',
     'volunteer_shift_in_past' => 'El turno debe empezar en el futuro.',
     'volunteer_shift_capacity_below_signups' => 'Este turno ya tiene :count voluntarios apuntados, así que no puede tener menos plazas que eso.',
     'volunteer_approved_application_required' => 'Necesita una solicitud aprobada antes de aprovechar esta oportunidad.',

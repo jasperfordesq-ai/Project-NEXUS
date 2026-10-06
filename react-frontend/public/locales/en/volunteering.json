@@ -1418,7 +1418,8 @@
     "roster_group_leader": "Booked by {{name}}",
     "roster_waitlist_heading": "Waitlist",
     "roster_waitlist_position": "Place in queue: {{position}}",
-    "roster_close": "Close"
+    "roster_close": "Close",
+    "days_required": "Choose at least one day."
   },
   "edit_opportunity_title": "Edit opportunity",
   "edit_opportunity_subtitle": "Change the details volunteers see. The organisation cannot be changed.",

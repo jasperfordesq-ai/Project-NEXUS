@@ -2007,6 +2007,8 @@ return [
     'volunteer_shift_assignment_changed'   => 'Your shift assignment changed on another device. Refresh and try again.',
     'volunteer_shift_not_full'             => 'This shift still has open places, so you do not need the waitlist yet.',
     'volunteer_shift_end_before_start' => 'The shift must end after it starts.',
+    'volunteer_pattern_days_required' => 'Choose at least one day of the week for a weekly or fortnightly pattern.',
+    'volunteer_pattern_days_invalid' => 'Days of the week must be numbers from 1 (Monday) to 7 (Sunday).',
     'volunteer_shift_in_past' => 'The shift must start in the future.',
     'volunteer_shift_capacity_below_signups' => 'This shift already has :count volunteers on it, so it cannot have fewer places than that.',
     'volunteer_approved_application_required' => 'You need an approved application before using this opportunity',

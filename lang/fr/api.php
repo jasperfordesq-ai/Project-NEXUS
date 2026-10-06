@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Votre créneau a été modifié sur un autre appareil. Actualisez la page et réessayez.',
     'volunteer_shift_not_full' => 'Cette équipe a encore des places libres, vous n\'avez donc pas encore besoin de la liste d\'attente.',
     'volunteer_shift_end_before_start' => 'Le créneau doit se terminer après son début.',
+    'volunteer_pattern_days_required' => 'Choisissez au moins un jour de la semaine pour un modèle hebdomadaire ou bimensuel.',
+    'volunteer_pattern_days_invalid' => 'Les jours de la semaine doivent être des nombres de 1 (lundi) à 7 (dimanche).',
     'volunteer_shift_in_past' => 'Le créneau doit commencer dans le futur.',
     'volunteer_shift_capacity_below_signups' => 'Ce créneau compte déjà :count bénévoles inscrits ; il ne peut donc pas avoir moins de places que cela.',
     'volunteer_approved_application_required' => 'Vous avez besoin d\'une demande approuvée avant d\'utiliser cette opportunité',

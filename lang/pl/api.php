@@ -1860,6 +1860,8 @@ return [
     'volunteer_shift_assignment_changed' => 'Przydział zmiany został zmieniony na innym urządzeniu. Odśwież stronę i spróbuj ponownie.',
     'volunteer_shift_not_full' => 'Na tę zmianę są jeszcze wolne miejsca, więc nie potrzebujesz jeszcze listy oczekujących.',
     'volunteer_shift_end_before_start' => 'Zmiana musi kończyć się po swoim rozpoczęciu.',
+    'volunteer_pattern_days_required' => 'Wybierz co najmniej jeden dzień tygodnia dla wzorca cotygodniowego lub co dwa tygodnie.',
+    'volunteer_pattern_days_invalid' => 'Dni tygodnia muszą być liczbami od 1 (poniedziałek) do 7 (niedziela).',
     'volunteer_shift_in_past' => 'Zmiana musi rozpoczynać się w przyszłości.',
     'volunteer_shift_capacity_below_signups' => 'Na tę zmianę zapisanych jest już :count wolontariuszy, więc nie może mieć mniej miejsc.',
     'volunteer_approved_application_required' => 'Zanim skorzystasz z tej możliwości, potrzebujesz zatwierdzonego wniosku',

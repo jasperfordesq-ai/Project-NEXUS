@@ -1418,7 +1418,8 @@
     "roster_group_leader": "{{name}}さんが予約",
     "roster_waitlist_heading": "キャンセル待ち",
     "roster_waitlist_position": "順番：{{position}}",
-    "roster_close": "閉じる"
+    "roster_close": "閉じる",
+    "days_required": "曜日を1つ以上選んでください。"
   },
   "edit_opportunity_title": "募集を編集",
   "edit_opportunity_subtitle": "ボランティアに表示される内容を変更します。団体は変更できません。",

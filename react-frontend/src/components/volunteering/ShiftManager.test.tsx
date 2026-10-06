@@ -256,4 +256,19 @@ describe('ShiftManager', () => {
     expect(api.get).toHaveBeenCalledWith('/v2/volunteering/shifts/3/roster');
     expect(screen.getByText('shift_manager.roster_checked_in')).toBeInTheDocument();
   });
+
+  it('will not set up weekly shifts until at least one day is chosen', async () => {
+    mockLists();
+    render(<ShiftManager opportunityId={5} />);
+    await screen.findByTestId('managed-shift-1');
+
+    fireEvent.click(screen.getByTestId('shift-manager-add-repeating'));
+    expect(await screen.findByTestId('pattern-form')).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('pattern-form-start'), { target: { value: '10:00' } });
+    fireEvent.change(screen.getByTestId('pattern-form-end'), { target: { value: '13:00' } });
+    fireEvent.click(screen.getByTestId('pattern-form-save'));
+
+    expect(await screen.findByText('shift_manager.days_required')).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
 });

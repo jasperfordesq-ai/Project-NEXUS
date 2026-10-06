@@ -1434,7 +1434,8 @@
     "roster_group_leader": "Réservé par {{name}}",
     "roster_waitlist_heading": "Liste d'attente",
     "roster_waitlist_position": "Rang dans la file : {{position}}",
-    "roster_close": "Fermer"
+    "roster_close": "Fermer",
+    "days_required": "Choisissez au moins un jour."
   },
   "edit_opportunity_title": "Modifier la mission",
   "edit_opportunity_subtitle": "Modifiez les informations que voient les bénévoles. L'organisation ne peut pas être changée.",

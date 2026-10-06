@@ -1450,7 +1450,8 @@
     "roster_group_leader": "Zarezerwował(a): {{name}}",
     "roster_waitlist_heading": "Lista oczekujących",
     "roster_waitlist_position": "Miejsce w kolejce: {{position}}",
-    "roster_close": "Zamknij"
+    "roster_close": "Zamknij",
+    "days_required": "Wybierz co najmniej jeden dzień."
   },
   "edit_opportunity_title": "Edytuj ofertę",
   "edit_opportunity_subtitle": "Zmień informacje, które widzą wolontariusze. Organizacji nie można zmienić.",

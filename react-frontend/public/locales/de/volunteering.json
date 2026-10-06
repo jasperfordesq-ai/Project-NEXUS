@@ -1418,7 +1418,8 @@
     "roster_group_leader": "Reserviert von {{name}}",
     "roster_waitlist_heading": "Warteliste",
     "roster_waitlist_position": "Platz in der Warteschlange: {{position}}",
-    "roster_close": "Schließen"
+    "roster_close": "Schließen",
+    "days_required": "Wählen Sie mindestens einen Tag."
   },
   "edit_opportunity_title": "Angebot bearbeiten",
   "edit_opportunity_subtitle": "Ändern Sie die Angaben, die Freiwillige sehen. Die Organisation kann nicht geändert werden.",
