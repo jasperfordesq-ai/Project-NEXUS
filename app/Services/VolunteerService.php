@@ -1274,7 +1274,7 @@ class VolunteerService
             return null;
         }
 
-        if (!self::canManageOpportunity((array) $opp, $adminUserId)) {
+        if (!self::viewerManagesOpportunity($opp, $adminUserId)) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_opportunity_manage_forbidden')];
             return null;
         }
@@ -1356,7 +1356,7 @@ class VolunteerService
         $tenantId = self::getTenantId();
 
         $app = DB::selectOne("
-            SELECT a.*, opp.title, opp.organization_id, org.user_id as org_owner_id
+            SELECT a.*, opp.title, opp.organization_id, opp.created_by, org.user_id as org_owner_id
             FROM vol_applications a
             JOIN vol_opportunities opp ON a.opportunity_id = opp.id AND opp.tenant_id = a.tenant_id
             JOIN vol_organizations org ON opp.organization_id = org.id AND org.tenant_id = a.tenant_id
@@ -1368,7 +1368,10 @@ class VolunteerService
             return false;
         }
 
-        if (!self::canManageOpportunity((array) $app, $adminUserId)) {
+        // Nobody decides their own application, however senior they are in
+        // the organisation (before 6 Oct 2026 an organisation admin could
+        // approve themselves).
+        if (!self::viewerManagesOpportunity($app, $adminUserId) || (int) $app->user_id === $adminUserId) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_opportunity_manage_forbidden')];
             return false;
         }

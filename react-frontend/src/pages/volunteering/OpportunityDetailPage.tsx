@@ -1353,7 +1353,8 @@ export function OpportunityDetailPage() {
       )}
 
       {/* Applications management — owner only */}
-      {opp.is_owner && <ApplicationsPanel opportunityId={opp.id} />}
+      {/* Applicants — everyone who may manage the opportunity, not only its creator (gap A4, 6 Oct 2026). */}
+      {canManage && <ApplicationsPanel opportunityId={opp.id} />}
 
       {/* Apply Modal */}
       <Modal isOpen={applyModal.isOpen} onOpenChange={applyModal.onOpenChange}>

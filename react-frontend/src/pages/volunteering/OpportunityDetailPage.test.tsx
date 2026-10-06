@@ -322,9 +322,15 @@ describe('OpportunityDetailPage', () => {
 
   describe('managing the opportunity', () => {
     const managed = { ...mockOpportunity, status: 'open', is_owner: false, can_manage: true };
+    /** Answers the opportunity, the applicants panel and the shift panel each with their own shape. */
+    const serve = (data: unknown) => vi.mocked(api.get).mockImplementation((async (url: string) => (
+      url === '/v2/volunteering/opportunities/42' ? { success: true, data }
+        : url.includes('/applications') ? { success: true, data: { items: [], cursor: null, has_more: false } }
+          : { success: true, data: [] }
+    )) as unknown as typeof api.get);
 
     it('a manager can close it to new volunteers', async () => {
-      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      serve(managed);
       vi.mocked(api.put).mockResolvedValue({ success: true, data: {} });
       render(<OpportunityDetailPage />);
 
@@ -335,14 +341,14 @@ describe('OpportunityDetailPage', () => {
     });
 
     it('links to the edit page', async () => {
-      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      serve(managed);
       render(<OpportunityDetailPage />);
 
       expect(await screen.findByTestId('opportunity-manage-edit')).toHaveAttribute('href', '/test/volunteering/opportunities/42/edit');
     });
 
     it('asks before cancelling, then cancels', async () => {
-      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      serve(managed);
       vi.mocked(api.delete).mockResolvedValue({ success: true, data: null });
       render(<OpportunityDetailPage />);
 
@@ -363,6 +369,17 @@ describe('OpportunityDetailPage', () => {
       render(<OpportunityDetailPage />);
 
       expect(await screen.findByTestId('opportunity-manage-bar')).toBeInTheDocument();
+    });
+
+    it('shows an organisation admin who did not create it the applicants', async () => {
+      vi.mocked(api.get).mockImplementation((async (url: string) => (
+        url === '/v2/volunteering/opportunities/42' ? { success: true, data: managed }
+          : url.includes('/applications') ? { success: true, data: { items: [], cursor: null, has_more: false } }
+            : { success: true, data: [] }
+      )) as unknown as typeof api.get);
+      render(<OpportunityDetailPage />);
+
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/volunteering/opportunities/42/applications')));
     });
 
     it('shows a volunteer no controls, and no Apply button once it is closed', async () => {
