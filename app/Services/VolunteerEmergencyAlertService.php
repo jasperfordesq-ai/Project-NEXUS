@@ -95,9 +95,18 @@ class VolunteerEmergencyAlertService
             return null;
         }
 
-        // Allow org owner or tenant admin
-        if (!self::isAdminOrOrgOwner($createdBy, (int) $opportunity->organization->user_id)) {
+        // The people who may manage the opportunity: its creator, the
+        // organisation's owner and admins, community admins. Until 6 Oct 2026
+        // only the organisation owner or a role-string admin could send one,
+        // and no screen offered it at all.
+        if (!VolunteerService::userCanManageOpportunityById((int) $opportunity->id, $createdBy)) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.vol_alert_create_forbidden')];
+            return null;
+        }
+
+        // Asking for cover only makes sense before the shift starts.
+        if (strtotime((string) $shift->start_time) <= time()) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_shift_started'), 'field' => 'shift_id'];
             return null;
         }
 
@@ -369,12 +378,13 @@ class VolunteerEmergencyAlertService
     }
 
     /**
-     * Get alerts created by a coordinator.
-     *
-     * @param int $coordinatorId Coordinator user ID
-     * @return array Alerts with response stats
+     * Every urgent request for an opportunity's shifts, whoever of its managers
+     * sent it, newest first, with how many volunteers were asked and replied.
+     * The caller checks the viewer may manage the opportunity.
+     * (Replaces getCoordinatorAlerts(), which listed one sender's requests and
+     * had no caller.)
      */
-    public static function getCoordinatorAlerts(int $coordinatorId): array
+    public static function getOpportunityAlerts(int $opportunityId): array
     {
         $tenantId = TenantContext::getId();
         $alerts = VolEmergencyAlert::query()
@@ -387,7 +397,7 @@ class VolunteerEmergencyAlertService
                     ->on('s.tenant_id', '=', 'o.tenant_id');
             })
             ->where('vol_emergency_alerts.tenant_id', $tenantId)
-            ->where('vol_emergency_alerts.created_by', $coordinatorId)
+            ->where('o.id', $opportunityId)
             ->orderByDesc('vol_emergency_alerts.created_at')
             ->limit(50)
             ->select([
@@ -397,10 +407,6 @@ class VolunteerEmergencyAlertService
                 'o.title as opp_title',
             ])
             ->get();
-
-        // Aggregate response stats for all alerts in a single grouped query
-        // instead of 3 COUNT round-trips per alert (N+1 — up to 150 queries for
-        // a coordinator with 50 alerts).
         $alertIds = $alerts->pluck('id')->map(static fn ($id) => (int) $id)->all();
         $statsByAlert = [];
         if ($alertIds !== []) {
@@ -463,9 +469,21 @@ class VolunteerEmergencyAlertService
 
         $alert = VolEmergencyAlert::where('id', $alertId)
             ->where('tenant_id', $tenantId)
-            ->where('created_by', $userId)
             ->where('status', 'active')
             ->first();
+
+        // The sender, or any other manager of the opportunity (so a request
+        // can be withdrawn while its sender is away). Anyone else is told it
+        // does not exist.
+        if ($alert && (int) $alert->created_by !== $userId) {
+            $opportunityId = (int) DB::table('vol_shifts')
+                ->where('id', (int) $alert->shift_id)
+                ->where('tenant_id', $tenantId)
+                ->value('opportunity_id');
+            if ($opportunityId <= 0 || !VolunteerService::userCanManageOpportunityById($opportunityId, $userId)) {
+                $alert = null;
+            }
+        }
 
         if (!$alert) {
             self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.vol_alert_cancel_not_found')];
@@ -616,22 +634,5 @@ class VolunteerEmergencyAlertService
         }
 
         return $notifiedCount;
-    }
-
-    /**
-     * Check if user is admin or org owner.
-     */
-    private static function isAdminOrOrgOwner(int $userId, int $orgOwnerId): bool
-    {
-        if ($userId === $orgOwnerId) {
-            return true;
-        }
-
-        $user = User::where('tenant_id', TenantContext::getId())->where('id', $userId)->first();
-        if ($user && in_array($user->role ?? '', ['admin', 'tenant_admin', 'tenant_super_admin', 'super_admin'])) {
-            return true;
-        }
-
-        return false;
     }
 }

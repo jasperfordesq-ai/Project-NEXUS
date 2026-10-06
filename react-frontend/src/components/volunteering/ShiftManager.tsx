@@ -23,6 +23,8 @@
  *   POST   /v2/volunteering/opportunities/{id}/recurring-patterns
  *   DELETE /v2/volunteering/recurring-patterns/{id}          (stops it, removes future shifts)
  *   GET    /v2/volunteering/shifts/{id}/roster               (who is on it, who checked in — ShiftRosterModal)
+ *   POST   /v2/volunteering/emergency-alerts                 (ask for help with a shift — UrgentRequestModal)
+ *   GET    /v2/volunteering/opportunities/{id}/emergency-alerts, DELETE /v2/volunteering/emergency-alerts/{id}
  * Times are sent and stored as the community's local wall-clock time
  * ("YYYY-MM-DD HH:mm:ss"), the same form every existing shift uses.
  */
@@ -39,6 +41,7 @@ import Pencil from 'lucide-react/icons/pencil';
 import Trash2 from 'lucide-react/icons/trash-2';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
+import Megaphone from 'lucide-react/icons/megaphone';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Checkbox, CheckboxGroup } from '@/components/ui/Checkbox';
@@ -53,6 +56,7 @@ import { api } from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { ShiftRosterModal } from './ShiftRosterModal';
+import { UrgentRequestModal } from './UrgentRequestModal';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -82,6 +86,17 @@ export interface RecurringPattern {
   max_occurrences: number | null;
   occurrences_generated: number;
   is_active: boolean;
+}
+
+/** An urgent request ("emergency alert") for one of the opportunity's shifts. */
+export interface UrgentRequest {
+  id: number;
+  priority: 'normal' | 'urgent' | 'critical';
+  message: string;
+  status: 'active' | 'filled' | 'expired' | 'cancelled';
+  shift: { id: number; start_time: string; end_time: string };
+  stats: { total_notified: number; total_accepted: number; total_declined: number };
+  expires_at: string | null;
 }
 
 export interface ShiftManagerProps {
@@ -149,6 +164,9 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
   const [modal, setModal] = useState<ModalState>(null);
   const [busy, setBusy] = useState(false);
   const [rosterShift, setRosterShift] = useState<{ shift: ManagedShift; started: boolean } | null>(null);
+  const [urgentShift, setUrgentShift] = useState<ManagedShift | null>(null);
+  const [urgentRequests, setUrgentRequests] = useState<UrgentRequest[]>([]);
+  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
 
   const tRef = useRef(t);
   tRef.current = t;
@@ -162,11 +180,13 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
     const request = ++loadRequest.current;
     setLoadError(null);
     try {
-      const [shiftsRes, patternsRes] = await Promise.all([
+      const [shiftsRes, patternsRes, urgentRes] = await Promise.all([
         api.get<ManagedShift[]>(`/v2/volunteering/opportunities/${opportunityId}/shifts`),
         api.get<{ patterns?: RecurringPattern[] }>(`/v2/volunteering/opportunities/${opportunityId}/recurring-patterns`),
+        api.get<{ alerts?: UrgentRequest[] }>(`/v2/volunteering/opportunities/${opportunityId}/emergency-alerts`).catch(() => null),
       ]);
       if (request !== loadRequest.current) return;
+      setUrgentRequests(urgentRes?.success ? unwrapList<UrgentRequest>(urgentRes.data, 'alerts') : []);
       if (!shiftsRes.success) {
         setLoadError(tRef.current('shift_manager.load_error'));
         setShifts([]);
@@ -250,6 +270,27 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
     }
   };
 
+  /* ───── withdraw an urgent request ───── */
+  const withdrawUrgent = async (request: UrgentRequest) => {
+    setWithdrawingId(request.id);
+    try {
+      const res = await api.delete(`/v2/volunteering/emergency-alerts/${request.id}`);
+      if (res.success) {
+        toastRef.current.success(tRef.current('shift_manager.urgent_withdrawn'));
+        void load();
+      } else {
+        toastRef.current.error(errorMessage(res, tRef.current('shift_manager.urgent_withdraw_failed')));
+      }
+    } catch (err) {
+      logError('Failed to withdraw urgent request', err);
+      toastRef.current.error(tRef.current('shift_manager.urgent_withdraw_failed'));
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
+  const activeUrgent = urgentRequests.filter((r) => r.status === 'active');
+
   const renderShiftRow = (shift: ManagedShift, isPast: boolean) => {
     const taken = shift.signup_count + (shift.reserved_count ?? 0);
     return (
@@ -292,6 +333,17 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
             <Chip size="sm" variant="soft" color="default">{t('shift_manager.started_chip')}</Chip>
           ) : (
             <>
+              <Button
+                size="sm"
+                variant="tertiary"
+                className="bg-theme-elevated text-theme-muted"
+                startContent={<Megaphone className="w-3.5 h-3.5" aria-hidden="true" />}
+                onPress={() => setUrgentShift(shift)}
+                aria-label={`${t('shift_manager.urgent_open')}: ${formatDay(shift.start_time)}`}
+                data-testid={`managed-shift-urgent-${shift.id}`}
+              >
+                {t('shift_manager.urgent_open')}
+              </Button>
               <Button
                 size="sm"
                 variant="tertiary"
@@ -373,6 +425,50 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
       {shifts === null && !loadError && (
         <div className="flex justify-center py-6" role="status" aria-busy="true">
           <Spinner size="sm" />
+        </div>
+      )}
+
+      {activeUrgent.length > 0 && (
+        <div className="space-y-2" data-testid="shift-manager-urgent-list">
+          <h3 className="text-sm font-medium text-theme-muted flex items-center gap-2">
+            <Megaphone className="w-4 h-4 text-accent" aria-hidden="true" />
+            {t('shift_manager.urgent_list_heading')}
+          </h3>
+          {activeUrgent.map((request) => (
+            <div
+              key={request.id}
+              data-testid={`urgent-request-${request.id}`}
+              className="flex flex-col gap-2 p-3 rounded-xl border border-theme-default bg-theme-elevated sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Chip size="sm" variant="soft" color={request.priority === 'normal' ? 'default' : 'danger'}>
+                    {t(`shift_manager.urgent_priority_${request.priority}`)}
+                  </Chip>
+                  <span className="text-sm font-medium text-theme-primary">
+                    {formatDay(request.shift.start_time)}, {formatTimeRange(request.shift.start_time, request.shift.end_time)}
+                  </span>
+                </div>
+                <p className="text-sm text-theme-secondary line-clamp-2">{request.message}</p>
+                <p className="text-xs text-theme-subtle">
+                  {t('shift_manager.urgent_list_counts', {
+                    asked: request.stats.total_notified,
+                    accepted: request.stats.total_accepted,
+                    declined: request.stats.total_declined,
+                  })}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="danger-soft"
+                isLoading={withdrawingId === request.id}
+                onPress={() => void withdrawUrgent(request)}
+                data-testid={`urgent-request-withdraw-${request.id}`}
+              >
+                {t('shift_manager.urgent_withdraw')}
+              </Button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -528,6 +624,13 @@ export function ShiftManager({ opportunityId, onChanged, className }: ShiftManag
           )}
         </ModalContent>
       </Modal>
+
+      <UrgentRequestModal
+        shiftId={urgentShift?.id ?? null}
+        shiftLabel={urgentShift ? `${formatDay(urgentShift.start_time)}, ${formatTimeRange(urgentShift.start_time, urgentShift.end_time)}` : ''}
+        onClose={() => setUrgentShift(null)}
+        onSent={() => { void load(); }}
+      />
 
       <ShiftRosterModal
         shiftId={rosterShift?.shift.id ?? null}

@@ -3802,6 +3802,7 @@ Route::get('/v2/volunteering/emergency-alerts', [\App\Http\Controllers\Api\Volun
 Route::post('/v2/volunteering/emergency-alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'createEmergencyAlert']);
 Route::put('/v2/volunteering/emergency-alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'respondToEmergencyAlert']);
 Route::delete('/v2/volunteering/emergency-alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'cancelEmergencyAlert']);
+Route::get('/v2/volunteering/opportunities/{id}/emergency-alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'opportunityEmergencyAlerts'])->whereNumber('id');
 Route::get('/v2/volunteering/wellbeing', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'wellbeingDashboard']);
 Route::post('/v2/volunteering/wellbeing/checkin', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'wellbeingCheckin']);
 Route::get('/v2/volunteering/wellbeing/my-status', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'myWellbeingStatus']);

@@ -26,8 +26,7 @@ class VolunteerWellbeingController extends BaseApiController
 
     /**
      * Full admin role set for the volunteering module — includes
-     * tenant_super_admin, matching VolunteerCheckInController and
-     * VolunteerEmergencyAlertService::isAdminOrOrgOwner().
+     * tenant_super_admin, matching VolunteerCheckInController.
      *
      * @var list<string>
      */
@@ -371,7 +370,44 @@ class VolunteerWellbeingController extends BaseApiController
             return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
 
-        return $this->respondWithData(['id' => $alertId, 'message' => __('api_controllers_2.volunteer_wellbeing.emergency_alert_sent')], null, 201);
+        // How many volunteers were asked, so the organiser knows whether anyone was reached.
+        $notified = (int) \App\Models\VolEmergencyAlertRecipient::query()
+            ->where('tenant_id', TenantContext::getId())
+            ->where('alert_id', $alertId)
+            ->count();
+
+        return $this->respondWithData([
+            'id' => $alertId,
+            'notified' => $notified,
+            'message' => __('api_controllers_2.volunteer_wellbeing.emergency_alert_sent'),
+        ], null, 201);
+    }
+
+    /**
+     * GET /v2/volunteering/opportunities/{id}/emergency-alerts - the urgent
+     * requests for this opportunity's shifts, for the people who may manage it.
+     */
+    public function opportunityEmergencyAlerts($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_emergency_opportunity_list', 60, 60);
+
+        $opportunityId = (int) $id;
+        $exists = \Illuminate\Support\Facades\DB::table('vol_opportunities')
+            ->where('id', $opportunityId)
+            ->where('tenant_id', TenantContext::getId())
+            ->exists();
+        if (!$exists) {
+            return $this->respondWithError('NOT_FOUND', __('api.opportunity_not_found'), null, 404);
+        }
+        if (!\App\Services\VolunteerService::userCanManageOpportunityById($opportunityId, $userId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
+        }
+
+        return $this->respondWithData([
+            'alerts' => $this->volunteerEmergencyAlertService->getOpportunityAlerts($opportunityId),
+        ]);
     }
 
     public function respondToEmergencyAlert($id): JsonResponse

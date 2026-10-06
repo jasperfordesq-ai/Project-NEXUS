@@ -2877,9 +2877,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerEmergencyAlertService.php:246:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerEmergencyAlertService.php:255:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerEmergencyAlertService.php",
-            "line": 246,
+            "line": 255,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $alert->created_by",
@@ -2890,9 +2890,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerEmergencyAlertService.php:594:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerEmergencyAlertService.php:612:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerEmergencyAlertService.php",
-            "line": 594,
+            "line": 612,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $candidate->user_id",

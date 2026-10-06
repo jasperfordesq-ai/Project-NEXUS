@@ -271,4 +271,43 @@ describe('ShiftManager', () => {
     expect(await screen.findByText('shift_manager.days_required')).toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
   });
+
+  it('offers "Ask for help" on upcoming shifts only, and opens the request form', async () => {
+    mockLists();
+    render(<ShiftManager opportunityId={5} />);
+    expect(await screen.findByTestId('managed-shift-urgent-1')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('shift-manager-toggle-past'));
+    expect(screen.queryByTestId('managed-shift-urgent-3')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('managed-shift-urgent-1'));
+    expect(await screen.findByTestId('urgent-request-form')).toBeInTheDocument();
+  });
+
+  it('lists active urgent requests with their replies and withdraws one', async () => {
+    mockLists();
+    const base = vi.mocked(api.get).getMockImplementation();
+    vi.mocked(api.get).mockImplementation((async (endpoint: string) => {
+      if (endpoint === '/v2/volunteering/opportunities/5/emergency-alerts') {
+        return {
+          success: true,
+          data: {
+            alerts: [
+              { id: 41, priority: 'urgent', message: 'Cover needed', status: 'active', shift: { id: 1, start_time: '2099-03-15 10:00:00', end_time: '2099-03-15 13:00:00' }, stats: { total_notified: 6, total_accepted: 1, total_declined: 2 }, expires_at: null },
+              { id: 42, priority: 'normal', message: 'Old one', status: 'cancelled', shift: { id: 1, start_time: '2099-03-15 10:00:00', end_time: '2099-03-15 13:00:00' }, stats: { total_notified: 1, total_accepted: 0, total_declined: 0 }, expires_at: null },
+            ],
+          },
+        };
+      }
+      return base?.(endpoint);
+    }) as unknown as typeof api.get);
+    vi.mocked(api.delete).mockResolvedValue({ success: true, data: null });
+    render(<ShiftManager opportunityId={5} />);
+
+    expect(await screen.findByTestId('urgent-request-41')).toHaveTextContent('shift_manager.urgent_list_counts:asked=6,accepted=1,declined=2');
+    expect(screen.queryByTestId('urgent-request-42')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('urgent-request-withdraw-41'));
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/volunteering/emergency-alerts/41'));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('shift_manager.urgent_withdrawn'));
+  });
 });
