@@ -1574,6 +1574,14 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Edit an opportunity — the same form; the page itself checks the viewer may manage it. */}
+          <Route path="volunteering/opportunities/:id/edit" element={
+            <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
+              <FeatureErrorBoundary featureName="Volunteering">
+                <CreateOpportunityPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
           <Route path="volunteering/org/:orgId/dashboard" element={
             <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Volunteering">

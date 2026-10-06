@@ -787,7 +787,23 @@
     "shift_cancel_success": "Schichtanmeldung abgebrochen.",
     "shift_cancel_failed": "Diese Schichtanmeldung kann nicht abgebrochen werden.",
     "shift_waitlist_success": "Sie haben sich auf die Warteliste eingetragen.",
-    "shift_waitlist_failed": "Der Eintrag in diese Warteliste ist nicht möglich."
+    "shift_waitlist_failed": "Der Eintrag in diese Warteliste ist nicht möglich.",
+    "status_cancelled": "Abgesagt",
+    "status_closed_to_new": "Keine neuen Freiwilligen",
+    "manage_open_hint": "Sie verwalten dieses Angebot.",
+    "manage_closed_hint": "Geschlossen: Es steht nicht mehr in der Liste und nimmt keine neuen Bewerbungen an. Bereits eingeteilte Freiwillige behalten ihre Plätze.",
+    "manage_edit": "Bearbeiten",
+    "manage_close": "Für neue Freiwillige schließen",
+    "manage_reopen": "Wieder öffnen",
+    "manage_cancel": "Angebot absagen",
+    "manage_cancel_title": "Dieses Angebot absagen?",
+    "manage_cancel_body": "Es verschwindet endgültig aus der Liste, und Freiwillige mit angenommener Bewerbung werden über die Absage informiert. Das kann nicht rückgängig gemacht werden. Um nur keine neuen Bewerbungen mehr anzunehmen, schließen Sie es stattdessen.",
+    "manage_cancel_keep": "Behalten",
+    "manage_cancel_confirm": "Angebot absagen",
+    "manage_closed_toast": "Für neue Freiwillige geschlossen.",
+    "manage_reopened_toast": "Wieder für neue Freiwillige geöffnet.",
+    "manage_cancelled_toast": "Angebot abgesagt.",
+    "manage_failed": "Das Angebot konnte nicht geändert werden. Bitte versuchen Sie es erneut."
   },
   "org_settings": {
     "heading": "Organisationseinstellungen",
@@ -1403,5 +1419,11 @@
     "roster_waitlist_heading": "Warteliste",
     "roster_waitlist_position": "Platz in der Warteschlange: {{position}}",
     "roster_close": "Schließen"
-  }
+  },
+  "edit_opportunity_title": "Angebot bearbeiten",
+  "edit_opportunity_subtitle": "Ändern Sie die Angaben, die Freiwillige sehen. Die Organisation kann nicht geändert werden.",
+  "form_save_changes": "Änderungen speichern",
+  "form_update_success": "Angebot aktualisiert.",
+  "edit_not_allowed_title": "Sie können dieses Angebot nicht bearbeiten",
+  "edit_not_allowed_description": "Es wurde möglicherweise entfernt, oder nur die Organisation und die Community-Admins können es ändern."
 }

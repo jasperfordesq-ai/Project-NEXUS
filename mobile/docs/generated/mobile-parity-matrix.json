@@ -1,26 +1,62 @@
 {
   "generated_by": "mobile/scripts/generate-parity-matrix.mjs",
   "summary": {
-    "react_member_routes": 257,
-    "mobile_routes": 186,
-    "native": 170,
-    "out_of_scope": 87,
-    "gap": 0,
+    "react_member_routes": 264,
+    "mobile_routes": 189,
+    "native": 174,
+    "out_of_scope": 86,
+    "gap": 4,
     "needs_review": 0,
     "needs_review_budget": 31,
     "undeclared": 0,
-    "mobile_routes_not_claimed_by_any_react_route": 45,
+    "mobile_routes_not_claimed_by_any_react_route": 46,
     "broken_declarations": 0
   },
   "undeclared": [],
   "broken_declarations": [],
-  "gaps": [],
+  "gaps": [
+    {
+      "route": "listings/mine",
+      "status": "gap",
+      "mobile": null,
+      "reason": "My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/incidents/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/org/:orgId/safeguarding",
+      "status": "gap",
+      "mobile": null,
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/org/:orgId/safeguarding/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    }
+  ],
   "needs_review": [],
   "mobile_only": [
     "select-tenant",
     "change-password",
     "edit-profile",
-    "edit-volunteering",
     "endorsements",
     "event-agenda",
     "event-analytics",
@@ -45,6 +81,8 @@
     "exchange-requests",
     "gamification",
     "group-discussion",
+    "group-invitations",
+    "help-support",
     "image-viewer",
     "legal-acceptance",
     "marketplace-coupon-redemptions",
@@ -751,16 +789,6 @@
       ]
     },
     {
-      "route": "events/:id/guardian-consent",
-      "status": "out-of-scope",
-      "mobile": null,
-      "reason": "Both native apps are adults-only. Guardian consent remains an exceptional staffed web/operator workflow and must not become a native child-access journey.",
-      "sources": [
-        "AppRoutes.tsx",
-        "PublicAppRoutes.tsx"
-      ]
-    },
-    {
       "route": "events/:id/manage/:section?",
       "status": "native",
       "mobile": "event-manage",
@@ -1081,6 +1109,36 @@
       "route": "help",
       "status": "native",
       "mobile": "support",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "help/:audience",
+      "status": "native",
+      "mobile": "help-faqs",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "help/:audience/:sectionId",
+      "status": "native",
+      "mobile": "help-guide",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx",
+        "PublicAppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "help/:audience/:sectionId/:articleId",
+      "status": "native",
+      "mobile": "help-guide",
       "reason": null,
       "sources": [
         "AppRoutes.tsx",
@@ -1423,6 +1481,15 @@
       "status": "native",
       "mobile": "edit-exchange",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "listings/mine",
+      "status": "gap",
+      "mobile": null,
+      "reason": "My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile.",
       "sources": [
         "AppRoutes.tsx"
       ]
@@ -2357,6 +2424,15 @@
       ]
     },
     {
+      "route": "volunteering/incidents/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "volunteering/my-applications",
       "status": "native",
       "mobile": "volunteering",
@@ -2384,10 +2460,37 @@
       ]
     },
     {
+      "route": "volunteering/opportunities/:id/edit",
+      "status": "native",
+      "mobile": "edit-volunteering",
+      "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
       "route": "volunteering/org/:orgId/dashboard",
       "status": "native",
       "mobile": "volunteering-org-dashboard",
       "reason": null,
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/org/:orgId/safeguarding",
+      "status": "gap",
+      "mobile": null,
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab.",
+      "sources": [
+        "AppRoutes.tsx"
+      ]
+    },
+    {
+      "route": "volunteering/org/:orgId/safeguarding/:id",
+      "status": "gap",
+      "mobile": null,
+      "reason": "An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab.",
       "sources": [
         "AppRoutes.tsx"
       ]

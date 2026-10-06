@@ -815,7 +815,23 @@
     "shift_cancel_success": "تم إلغاء الاشتراك في Shift.",
     "shift_cancel_failed": "غير قادر على إلغاء الاشتراك في التحول هذا.",
     "shift_waitlist_success": "لقد انضممت إلى قائمة الانتظار.",
-    "shift_waitlist_failed": "غير قادر على الانضمام إلى قائمة الانتظار هذه."
+    "shift_waitlist_failed": "غير قادر على الانضمام إلى قائمة الانتظار هذه.",
+    "status_cancelled": "ملغاة",
+    "status_closed_to_new": "مغلقة أمام متطوعين جدد",
+    "manage_open_hint": "أنت تدير هذه الفرصة.",
+    "manage_closed_hint": "مغلقة: لم تعد في القائمة ولا تقبل طلبات جديدة. يحتفظ المتطوعون الموجودون بأماكنهم.",
+    "manage_edit": "تعديل",
+    "manage_close": "إغلاق أمام متطوعين جدد",
+    "manage_reopen": "إعادة الفتح",
+    "manage_cancel": "إلغاء الفرصة",
+    "manage_cancel_title": "إلغاء هذه الفرصة؟",
+    "manage_cancel_body": "ستُحذف من القائمة نهائيًا، وسيُبلَّغ المتطوعون المقبولة طلباتهم بإلغائها. لا يمكن التراجع عن ذلك. لإيقاف الطلبات الجديدة فقط دون إلغائها، أغلقها بدلًا من ذلك.",
+    "manage_cancel_keep": "الإبقاء عليها",
+    "manage_cancel_confirm": "إلغاء الفرصة",
+    "manage_closed_toast": "أُغلقت أمام متطوعين جدد.",
+    "manage_reopened_toast": "أُعيد فتحها أمام متطوعين جدد.",
+    "manage_cancelled_toast": "أُلغيت الفرصة.",
+    "manage_failed": "تعذّر تغيير الفرصة. يُرجى المحاولة مرة أخرى."
   },
   "org_settings": {
     "heading": "إعدادات المنظمة",
@@ -1467,5 +1483,11 @@
     "roster_waitlist_heading": "قائمة الانتظار",
     "roster_waitlist_position": "الترتيب في القائمة: {{position}}",
     "roster_close": "إغلاق"
-  }
+  },
+  "edit_opportunity_title": "تعديل الفرصة",
+  "edit_opportunity_subtitle": "غيّر التفاصيل التي يراها المتطوعون. لا يمكن تغيير المنظمة.",
+  "form_save_changes": "حفظ التغييرات",
+  "form_update_success": "تم تحديث الفرصة.",
+  "edit_not_allowed_title": "لا يمكنك تعديل هذه الفرصة",
+  "edit_not_allowed_description": "ربما حُذفت، أو أن منظمتها ومسؤولي المجتمع وحدهم يمكنهم تغييرها."
 }

@@ -1009,8 +1009,8 @@ class VolunteerService
             return null;
         }
 
-        $viewerCanManage = $viewerId ? self::canManageOpportunity((array) $opp, $viewerId) : false;
-        if (!$viewerCanManage) {
+        $viewerCanManage = $viewerId ? self::viewerManagesOpportunity($opp, $viewerId) : false;
+        if (!$viewerCanManage && !($viewerId && self::viewerHasLiveApplication($id, $viewerId, $tenantId))) {
             $isPublicStatus = ((int) ($opp->is_active ?? 0) === 1)
                 && in_array((string) ($opp->status ?? ''), ['open', 'active'], true)
                 && self::isApprovedOrganizationStatus($opp->org_status ?? null);
@@ -1081,8 +1081,13 @@ class VolunteerService
             return false;
         }
 
-        if (!self::canManageOpportunity((array) $opp, $userId)) {
+        if (!self::viewerManagesOpportunity($opp, $userId)) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_opportunity_manage_forbidden')];
+            return false;
+        }
+
+        if (array_key_exists('status', $data) && !in_array($data['status'], ['open', 'closed'], true)) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.validation_failed'), 'field' => 'status'];
             return false;
         }
 
@@ -1104,7 +1109,7 @@ class VolunteerService
         try {
             $fields = [];
             $params = [];
-            foreach (['title', 'description', 'location', 'skills_needed', 'start_date', 'end_date', 'category_id', 'is_remote', 'latitude', 'longitude'] as $field) {
+            foreach (['title', 'description', 'location', 'skills_needed', 'start_date', 'end_date', 'category_id', 'is_remote', 'latitude', 'longitude', 'status'] as $field) {
                 if (array_key_exists($field, $data)) {
                     $fields[] = "{$field} = ?";
                     if ($field === 'is_remote') {
@@ -1179,7 +1184,7 @@ class VolunteerService
             return false;
         }
 
-        if (!self::canManageOpportunity((array) $opp, $userId)) {
+        if (!self::viewerManagesOpportunity($opp, $userId)) {
             self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_opportunity_manage_forbidden')];
             return false;
         }
@@ -3111,6 +3116,38 @@ class VolunteerService
     /**
      * Check if a user can manage an opportunity.
      */
+    /**
+     * May this person manage the opportunity: its creator, or anyone
+     * canManageOpportunity() allows (organisation owner/admins, community
+     * admins) — the same people userCanManageOpportunityById() lets change
+     * its shifts. Before 6 Oct 2026 a creator who was not an organisation
+     * admin could change shifts but was refused editing, closing or
+     * cancelling the opportunity, and was not shown its management panel.
+     */
+    private static function viewerManagesOpportunity(object $opp, int $userId): bool
+    {
+        if ($userId > 0 && (int) ($opp->created_by ?? 0) === $userId) {
+            return true;
+        }
+
+        return self::canManageOpportunity((array) $opp, $userId);
+    }
+
+    /**
+     * A volunteer with a pending or approved application keeps sight of an
+     * opportunity after it is closed to new volunteers, so they can still
+     * see their shift and their application.
+     */
+    private static function viewerHasLiveApplication(int $opportunityId, int $userId, int $tenantId): bool
+    {
+        return DB::table('vol_applications')
+            ->where('opportunity_id', $opportunityId)
+            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->exists();
+    }
+
     private static function canManageOpportunity(array $opp, int $userId): bool
     {
         if ((int) ($opp['org_owner_id'] ?? 0) === $userId) {

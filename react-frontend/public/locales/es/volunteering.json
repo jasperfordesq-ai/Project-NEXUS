@@ -794,7 +794,23 @@
     "shift_cancel_success": "Registro de turno cancelado.",
     "shift_cancel_failed": "No se puede cancelar el registro de este turno.",
     "shift_waitlist_success": "Te has unido a la lista de espera.",
-    "shift_waitlist_failed": "No se puede unir a esta lista de espera."
+    "shift_waitlist_failed": "No se puede unir a esta lista de espera.",
+    "status_cancelled": "Cancelada",
+    "status_closed_to_new": "Cerrada a nuevos voluntarios",
+    "manage_open_hint": "Gestionas esta oportunidad.",
+    "manage_closed_hint": "Cerrada: no aparece en la lista y no acepta nuevas solicitudes. Los voluntarios que ya están conservan su plaza.",
+    "manage_edit": "Editar",
+    "manage_close": "Cerrar a nuevos voluntarios",
+    "manage_reopen": "Reabrir",
+    "manage_cancel": "Cancelar oportunidad",
+    "manage_cancel_title": "¿Cancelar esta oportunidad?",
+    "manage_cancel_body": "Desaparece de la lista para siempre y se avisa de la cancelación a los voluntarios con solicitud aprobada. No se puede deshacer. Para dejar de aceptar solicitudes sin cancelarla, ciérrala.",
+    "manage_cancel_keep": "Mantenerla",
+    "manage_cancel_confirm": "Cancelar oportunidad",
+    "manage_closed_toast": "Cerrada a nuevos voluntarios.",
+    "manage_reopened_toast": "Reabierta a nuevos voluntarios.",
+    "manage_cancelled_toast": "Oportunidad cancelada.",
+    "manage_failed": "No se pudo cambiar la oportunidad. Inténtalo de nuevo."
   },
   "org_settings": {
     "heading": "Configuración de la organización",
@@ -1419,5 +1435,11 @@
     "roster_waitlist_heading": "Lista de espera",
     "roster_waitlist_position": "Puesto en la cola: {{position}}",
     "roster_close": "Cerrar"
-  }
+  },
+  "edit_opportunity_title": "Editar oportunidad",
+  "edit_opportunity_subtitle": "Cambia los datos que ven los voluntarios. La organización no se puede cambiar.",
+  "form_save_changes": "Guardar cambios",
+  "form_update_success": "Oportunidad actualizada.",
+  "edit_not_allowed_title": "No puedes editar esta oportunidad",
+  "edit_not_allowed_description": "Puede que se haya eliminado, o solo su organización y los administradores de la comunidad pueden cambiarla."
 }

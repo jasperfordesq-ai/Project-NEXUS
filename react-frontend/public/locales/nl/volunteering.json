@@ -787,7 +787,23 @@
     "shift_cancel_success": "Shift-aanmelding geannuleerd.",
     "shift_cancel_failed": "Kan deze ploegaanmelding niet annuleren.",
     "shift_waitlist_success": "U bent op de wachtlijst geplaatst.",
-    "shift_waitlist_failed": "Kan niet deelnemen aan deze wachtlijst."
+    "shift_waitlist_failed": "Kan niet deelnemen aan deze wachtlijst.",
+    "status_cancelled": "Geannuleerd",
+    "status_closed_to_new": "Gesloten voor nieuwe vrijwilligers",
+    "manage_open_hint": "Je beheert deze vacature.",
+    "manage_closed_hint": "Gesloten: hij staat niet meer in de lijst en neemt geen nieuwe aanmeldingen aan. Vrijwilligers die al meedoen houden hun plek.",
+    "manage_edit": "Bewerken",
+    "manage_close": "Sluiten voor nieuwe vrijwilligers",
+    "manage_reopen": "Heropenen",
+    "manage_cancel": "Vacature annuleren",
+    "manage_cancel_title": "Deze vacature annuleren?",
+    "manage_cancel_body": "Hij verdwijnt definitief uit de lijst en vrijwilligers met een goedgekeurde aanmelding horen dat hij is geannuleerd. Dit kan niet ongedaan worden gemaakt. Wil je alleen geen nieuwe aanmeldingen meer, sluit hem dan.",
+    "manage_cancel_keep": "Behouden",
+    "manage_cancel_confirm": "Vacature annuleren",
+    "manage_closed_toast": "Gesloten voor nieuwe vrijwilligers.",
+    "manage_reopened_toast": "Heropend voor nieuwe vrijwilligers.",
+    "manage_cancelled_toast": "Vacature geannuleerd.",
+    "manage_failed": "Kon de vacature niet wijzigen. Probeer het opnieuw."
   },
   "org_settings": {
     "heading": "Organisatie-instellingen",
@@ -1403,5 +1419,11 @@
     "roster_waitlist_heading": "Wachtlijst",
     "roster_waitlist_position": "Plaats in de rij: {{position}}",
     "roster_close": "Sluiten"
-  }
+  },
+  "edit_opportunity_title": "Vacature bewerken",
+  "edit_opportunity_subtitle": "Wijzig de gegevens die vrijwilligers zien. De organisatie kan niet worden gewijzigd.",
+  "form_save_changes": "Wijzigingen opslaan",
+  "form_update_success": "Vacature bijgewerkt.",
+  "edit_not_allowed_title": "Je kunt deze vacature niet bewerken",
+  "edit_not_allowed_description": "Hij is misschien verwijderd, of alleen de organisatie en de communitybeheerders kunnen hem wijzigen."
 }

@@ -4,15 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Create Volunteer Opportunity Page
+ * Create / Edit Volunteer Opportunity Page
  *
- * Allows organisation owners/admins to post new volunteer opportunities.
- * Requires the user to own at least one approved organisation.
+ * Create: organisation owners/admins post a new volunteer opportunity
+ * (needs at least one approved organisation).
+ * Edit (/volunteering/opportunities/:id/edit): anyone the server says may
+ * manage the opportunity changes its details; the organisation is fixed.
+ * Until 6 Oct 2026 nothing on the website could edit an opportunity.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import type { DateInputValue } from '@/components/ui/DatePicker';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 import { Autocomplete } from '@/components/ui/Autocomplete';
@@ -23,7 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { ListBoxItem as AutocompleteItem } from '@/components/ui/ListBox';
 import { Switch } from '@/components/ui/Switch';
 import { Textarea } from '@/components/ui/Textarea';
-import { today, getLocalTimeZone } from '@internationalized/date';
+import { today, getLocalTimeZone, parseDate } from '@internationalized/date';
 import Save from 'lucide-react/icons/save';
 import Heart from 'lucide-react/icons/heart';
 import Building2 from 'lucide-react/icons/building-2';
@@ -60,6 +63,34 @@ interface FormData {
   end_date: DateInputValue | null;
 }
 
+/** The fields of GET /v2/volunteering/opportunities/{id} the edit form reads. */
+interface EditableOpportunity {
+  id: number;
+  title: string;
+  description: string;
+  location: string | null;
+  is_remote: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  skills_needed: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  federated_visibility?: 'none' | 'listed';
+  organization: { id: number; name: string };
+  is_owner?: boolean;
+  can_manage?: boolean;
+}
+
+/** "2026-10-06" or "2026-10-06 00:00:00" → a calendar date, or null if unparseable. */
+function toDateValue(value: string | null): DateInputValue | null {
+  if (!value) return null;
+  try {
+    return parseDate(value.slice(0, 10));
+  } catch {
+    return null;
+  }
+}
+
 const initialFormData: FormData = {
   organization_id: '',
   title: '',
@@ -75,7 +106,11 @@ const initialFormData: FormData = {
 
 export default function CreateOpportunityPage() {
   const { t } = useTranslation('volunteering');
-  usePageTitle(t('create_opportunity_title'));
+  const { id: routeId } = useParams<{ id?: string }>();
+  const editId = routeId && /^\d+$/.test(routeId) ? Number(routeId) : null;
+  const isEdit = editId !== null;
+  const pageTitle = isEdit ? t('edit_opportunity_title') : t('create_opportunity_title');
+  usePageTitle(pageTitle);
   const navigate = useNavigate();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
@@ -84,6 +119,9 @@ export default function CreateOpportunityPage() {
   const [shareFederated, setShareFederated] = useState(false);
   const [approvedOrgs, setApprovedOrgs] = useState<MyOrganisation[]>([]);
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
+  /** Edit mode: the organisation's name (fixed), and whether the viewer may edit at all. */
+  const [editOrgName, setEditOrgName] = useState('');
+  const [editAllowed, setEditAllowed] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   // Synchronous re-entry guard: isSubmitting is async state, so a double-Enter (the
@@ -92,8 +130,47 @@ export default function CreateOpportunityPage() {
   const submittingRef = useRef(false);
 
   useEffect(() => {
-    loadMyOrganisations();
-  }, []);
+    if (editId !== null) {
+      void loadOpportunity(editId);
+    } else {
+      void loadMyOrganisations();
+    }
+  }, [editId]);
+
+  async function loadOpportunity(id: number) {
+    try {
+      setIsLoadingOrgs(true);
+      const response = await api.get<EditableOpportunity>(`/v2/volunteering/opportunities/${id}`);
+      if (!response.success || !response.data) {
+        setEditAllowed(false);
+        return;
+      }
+      const opp = response.data;
+      if (!(opp.can_manage || opp.is_owner)) {
+        setEditAllowed(false);
+        return;
+      }
+      setEditOrgName(opp.organization?.name ?? '');
+      setShareFederated(opp.federated_visibility === 'listed');
+      setFormData({
+        organization_id: String(opp.organization?.id ?? ''),
+        title: opp.title ?? '',
+        description: opp.description ?? '',
+        location: opp.location ?? '',
+        is_remote: !!opp.is_remote,
+        latitude: opp.latitude ?? null,
+        longitude: opp.longitude ?? null,
+        skills_needed: opp.skills_needed ?? '',
+        start_date: toDateValue(opp.start_date),
+        end_date: toDateValue(opp.end_date),
+      });
+    } catch (error) {
+      logError('Failed to load opportunity for editing', error);
+      setEditAllowed(false);
+    } finally {
+      setIsLoadingOrgs(false);
+    }
+  }
 
   async function loadMyOrganisations() {
     try {
@@ -195,16 +272,28 @@ export default function CreateOpportunityPage() {
         payload.federated_visibility = shareFederated ? 'listed' : 'none';
       }
 
-      const response = await api.post('/v2/volunteering/opportunities', payload);
+      if (isEdit) {
+        // The organisation cannot change, and a cleared place must be sent as
+        // empty so the server drops the old pin instead of keeping it.
+        delete payload.organization_id;
+        if (payload.latitude === undefined) {
+          payload.latitude = '';
+          payload.longitude = '';
+        }
+      }
+
+      const response = isEdit
+        ? await api.put(`/v2/volunteering/opportunities/${editId}`, payload)
+        : await api.post('/v2/volunteering/opportunities', payload);
 
       if (response.success) {
-        toast.success(t('form_success'));
-        navigate(tenantPath('/volunteering'));
+        toast.success(isEdit ? t('form_update_success') : t('form_success'));
+        navigate(tenantPath(isEdit ? `/volunteering/opportunities/${editId}` : '/volunteering'));
       } else {
         toast.error(t('form_save_error'));
       }
     } catch (error) {
-      logError('Failed to create opportunity', error);
+      logError(isEdit ? 'Failed to update opportunity' : 'Failed to create opportunity', error);
       toast.error(t('form_save_error'));
     } finally {
       setIsSubmitting(false);
@@ -216,8 +305,22 @@ export default function CreateOpportunityPage() {
     return <LoadingScreen />;
   }
 
+  // Edit mode: the opportunity could not be loaded, or this person may not change it.
+  if (isEdit && !editAllowed) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <GlassCard className="p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
+          <h1 className="text-lg font-semibold text-theme-primary mb-2">{t('edit_not_allowed_title')}</h1>
+          <p className="text-theme-muted mb-6">{t('edit_not_allowed_description')}</p>
+          <Button as={Link} to={tenantPath('/volunteering')} variant="tertiary">{t('form_cancel')}</Button>
+        </GlassCard>
+      </div>
+    );
+  }
+
   // No approved organisations — show message
-  if (approvedOrgs.length === 0) {
+  if (!isEdit && approvedOrgs.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -258,11 +361,12 @@ export default function CreateOpportunityPage() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto space-y-6"
     >
-      <PageMeta title={t('page_meta.create_opportunity.title')} noIndex />
+      <PageMeta title={isEdit ? pageTitle : t('page_meta.create_opportunity.title')} noIndex />
       {/* Breadcrumbs */}
       <Breadcrumbs items={[
         { label: t('heading'), href: tenantPath('/volunteering') },
-        { label: t('create_opportunity_title') },
+        ...(isEdit ? [{ label: formData.title || pageTitle, href: tenantPath(`/volunteering/opportunities/${editId}`) }] : []),
+        { label: pageTitle },
       ]} />
 
       {/* Form */}
@@ -270,16 +374,16 @@ export default function CreateOpportunityPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-3">
             <Heart className="w-7 h-7 text-rose-500" aria-hidden="true" />
-            {t('create_opportunity_title')}
+            {pageTitle}
           </h1>
           <p className="text-theme-muted mt-1">
-            {t('create_opportunity_subtitle')}
+            {isEdit ? t('edit_opportunity_subtitle') : t('create_opportunity_subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Organisation Selector */}
-          {approvedOrgs.length > 1 ? (
+          {!isEdit && approvedOrgs.length > 1 ? (
             <Autocomplete
               label={t('form_org_label')}
               placeholder={t('form_org_placeholder')}
@@ -303,7 +407,7 @@ export default function CreateOpportunityPage() {
           ) : (
             <Input
               label={t('form_org_label')}
-              value={approvedOrgs[0]?.name ?? ''}
+              value={isEdit ? editOrgName : (approvedOrgs[0]?.name ?? '')}
               isReadOnly
               startContent={<Building2 className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
               classNames={{
@@ -426,7 +530,7 @@ export default function CreateOpportunityPage() {
                 label={t('form_start_date_label')}
                 value={formData.start_date}
                 onChange={(val) => updateField('start_date', val)}
-                minValue={today(getLocalTimeZone())}
+                minValue={isEdit ? undefined : today(getLocalTimeZone())}
                 classNames={{
                   inputWrapper: 'bg-theme-elevated border-theme-default',
                   label: 'text-theme-muted',
@@ -438,7 +542,7 @@ export default function CreateOpportunityPage() {
                 label={t('form_end_date_label')}
                 value={formData.end_date}
                 onChange={(val) => updateField('end_date', val)}
-                minValue={formData.start_date || today(getLocalTimeZone())}
+                minValue={formData.start_date || (isEdit ? undefined : today(getLocalTimeZone()))}
                 isInvalid={!!errors.end_date}
                 errorMessage={errors.end_date}
                 classNames={{
@@ -484,11 +588,11 @@ export default function CreateOpportunityPage() {
               startContent={<Save className="w-4 h-4" aria-hidden="true" />}
               isLoading={isSubmitting}
             >
-              {t('form_submit_opportunity')}
+              {isEdit ? t('form_save_changes') : t('form_submit_opportunity')}
             </Button>
             <Button
               as={Link}
-              to={tenantPath('/volunteering')}
+              to={tenantPath(isEdit ? `/volunteering/opportunities/${editId}` : '/volunteering')}
               type="button"
               variant="tertiary"
             >

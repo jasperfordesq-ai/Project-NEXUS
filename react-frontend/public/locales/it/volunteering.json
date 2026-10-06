@@ -794,7 +794,23 @@
     "shift_cancel_success": "Iscrizione al turno annullata.",
     "shift_cancel_failed": "Impossibile annullare l'iscrizione al turno.",
     "shift_waitlist_success": "Ti sei iscritto alla lista d'attesa.",
-    "shift_waitlist_failed": "Impossibile iscriversi a questa lista d'attesa."
+    "shift_waitlist_failed": "Impossibile iscriversi a questa lista d'attesa.",
+    "status_cancelled": "Annullata",
+    "status_closed_to_new": "Chiusa a nuovi volontari",
+    "manage_open_hint": "Gestisci questa opportunità.",
+    "manage_closed_hint": "Chiusa: non è più nell’elenco e non accetta nuove candidature. I volontari già presenti mantengono il loro posto.",
+    "manage_edit": "Modifica",
+    "manage_close": "Chiudi a nuovi volontari",
+    "manage_reopen": "Riapri",
+    "manage_cancel": "Annulla opportunità",
+    "manage_cancel_title": "Annullare questa opportunità?",
+    "manage_cancel_body": "Lascia l’elenco per sempre e i volontari con candidatura approvata vengono avvisati dell’annullamento. Non si può tornare indietro. Per non accettare più candidature senza annullarla, chiudila.",
+    "manage_cancel_keep": "Tienila",
+    "manage_cancel_confirm": "Annulla opportunità",
+    "manage_closed_toast": "Chiusa a nuovi volontari.",
+    "manage_reopened_toast": "Riaperta a nuovi volontari.",
+    "manage_cancelled_toast": "Opportunità annullata.",
+    "manage_failed": "Impossibile modificare l’opportunità. Riprova."
   },
   "org_settings": {
     "heading": "Impostazioni dell'organizzazione",
@@ -1419,5 +1435,11 @@
     "roster_waitlist_heading": "Lista d’attesa",
     "roster_waitlist_position": "Posizione in coda: {{position}}",
     "roster_close": "Chiudi"
-  }
+  },
+  "edit_opportunity_title": "Modifica opportunità",
+  "edit_opportunity_subtitle": "Cambia i dettagli che vedono i volontari. L’organizzazione non si può cambiare.",
+  "form_save_changes": "Salva le modifiche",
+  "form_update_success": "Opportunità aggiornata.",
+  "edit_not_allowed_title": "Non puoi modificare questa opportunità",
+  "edit_not_allowed_description": "Potrebbe essere stata rimossa, oppure solo la sua organizzazione e gli amministratori della comunità possono cambiarla."
 }

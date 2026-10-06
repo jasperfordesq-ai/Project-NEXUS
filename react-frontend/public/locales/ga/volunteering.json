@@ -808,7 +808,23 @@
     "shift_cancel_success": "Cealaíodh an clárú don seal.",
     "shift_cancel_failed": "Ní féidir an clárú don seal seo a chealú.",
     "shift_waitlist_success": "Chuaigh tú isteach sa liosta feithimh.",
-    "shift_waitlist_failed": "Ní féidir páirt a ghlacadh sa liosta feithimh."
+    "shift_waitlist_failed": "Ní féidir páirt a ghlacadh sa liosta feithimh.",
+    "status_cancelled": "Curtha ar ceal",
+    "status_closed_to_new": "Dúnta d’oibrithe deonacha nua",
+    "manage_open_hint": "Tá tú i mbun na deise seo.",
+    "manage_closed_hint": "Dúnta: níl sí ar an liosta agus ní ghlacann sí le hiarratais nua. Coinníonn na hoibrithe deonacha atá uirthi cheana a n-áiteanna.",
+    "manage_edit": "Cuir in eagar",
+    "manage_close": "Dún d’oibrithe deonacha nua",
+    "manage_reopen": "Athoscail",
+    "manage_cancel": "Cuir an deis ar ceal",
+    "manage_cancel_title": "An deis seo a chur ar ceal?",
+    "manage_cancel_body": "Imíonn sí ón liosta go buan, agus cuirtear in iúl do na hoibrithe deonacha a nglacadh lena n-iarratas go bhfuil sí curtha ar ceal. Ní féidir é seo a chealú. Chun stop a chur le hiarratais nua gan í a chur ar ceal, dún í ina ionad.",
+    "manage_cancel_keep": "Coinnigh í",
+    "manage_cancel_confirm": "Cuir an deis ar ceal",
+    "manage_closed_toast": "Dúnta d’oibrithe deonacha nua.",
+    "manage_reopened_toast": "Athoscailte d’oibrithe deonacha nua.",
+    "manage_cancelled_toast": "Cuireadh an deis ar ceal.",
+    "manage_failed": "Níorbh fhéidir an deis a athrú. Bain triail eile as."
   },
   "org_settings": {
     "heading": "Socruithe Eagraíochta",
@@ -1451,5 +1467,11 @@
     "roster_waitlist_heading": "Liosta feithimh",
     "roster_waitlist_position": "Áit sa scuaine: {{position}}",
     "roster_close": "Dún"
-  }
+  },
+  "edit_opportunity_title": "Cuir an deis in eagar",
+  "edit_opportunity_subtitle": "Athraigh na sonraí a fheiceann oibrithe deonacha. Ní féidir an eagraíocht a athrú.",
+  "form_save_changes": "Sábháil na hathruithe",
+  "form_update_success": "Nuashonraíodh an deis.",
+  "edit_not_allowed_title": "Ní féidir leat an deis seo a chur in eagar",
+  "edit_not_allowed_description": "B’fhéidir gur baineadh í, nó ní féidir ach lena heagraíocht agus le riarthóirí an phobail í a athrú."
 }

@@ -794,7 +794,23 @@
     "shift_cancel_success": "Inscrição de turno cancelada.",
     "shift_cancel_failed": "Não foi possível cancelar a inscrição neste turno.",
     "shift_waitlist_success": "Você entrou na lista de espera.",
-    "shift_waitlist_failed": "Não é possível entrar nesta lista de espera."
+    "shift_waitlist_failed": "Não é possível entrar nesta lista de espera.",
+    "status_cancelled": "Cancelada",
+    "status_closed_to_new": "Fechada a novos voluntários",
+    "manage_open_hint": "Gere esta oportunidade.",
+    "manage_closed_hint": "Fechada: saiu da lista e não aceita novas candidaturas. Os voluntários que já participam mantêm o lugar.",
+    "manage_edit": "Editar",
+    "manage_close": "Fechar a novos voluntários",
+    "manage_reopen": "Reabrir",
+    "manage_cancel": "Cancelar oportunidade",
+    "manage_cancel_title": "Cancelar esta oportunidade?",
+    "manage_cancel_body": "Sai da lista para sempre e os voluntários com candidatura aprovada são avisados do cancelamento. Não pode ser desfeito. Para deixar de aceitar candidaturas sem a cancelar, feche-a.",
+    "manage_cancel_keep": "Manter",
+    "manage_cancel_confirm": "Cancelar oportunidade",
+    "manage_closed_toast": "Fechada a novos voluntários.",
+    "manage_reopened_toast": "Reaberta a novos voluntários.",
+    "manage_cancelled_toast": "Oportunidade cancelada.",
+    "manage_failed": "Não foi possível alterar a oportunidade. Tente novamente."
   },
   "org_settings": {
     "heading": "Configurações da organização",
@@ -1419,5 +1435,11 @@
     "roster_waitlist_heading": "Lista de espera",
     "roster_waitlist_position": "Lugar na fila: {{position}}",
     "roster_close": "Fechar"
-  }
+  },
+  "edit_opportunity_title": "Editar oportunidade",
+  "edit_opportunity_subtitle": "Altere os detalhes que os voluntários veem. A organização não pode ser alterada.",
+  "form_save_changes": "Guardar alterações",
+  "form_update_success": "Oportunidade atualizada.",
+  "edit_not_allowed_title": "Não pode editar esta oportunidade",
+  "edit_not_allowed_description": "Pode ter sido removida, ou só a sua organização e os administradores da comunidade a podem alterar."
 }

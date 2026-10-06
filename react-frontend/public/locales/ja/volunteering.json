@@ -787,7 +787,23 @@
     "shift_cancel_success": "シフト登録がキャンセルされました。",
     "shift_cancel_failed": "このシフトの登録をキャンセルできません。",
     "shift_waitlist_success": "待機リストに登録されました。",
-    "shift_waitlist_failed": "この待機リストに参加できません。"
+    "shift_waitlist_failed": "この待機リストに参加できません。",
+    "status_cancelled": "中止",
+    "status_closed_to_new": "新規募集を終了",
+    "manage_open_hint": "この募集を管理しています。",
+    "manage_closed_hint": "募集終了：一覧に表示されず、新しい応募は受け付けません。すでに参加しているボランティアの枠はそのままです。",
+    "manage_edit": "編集",
+    "manage_close": "新規募集を終了する",
+    "manage_reopen": "募集を再開",
+    "manage_cancel": "募集を中止",
+    "manage_cancel_title": "この募集を中止しますか？",
+    "manage_cancel_body": "一覧から完全に削除され、応募が承認されたボランティアに中止が通知されます。元に戻せません。続けたまま新しい応募だけを止めたい場合は、募集を終了してください。",
+    "manage_cancel_keep": "中止しない",
+    "manage_cancel_confirm": "募集を中止",
+    "manage_closed_toast": "新規募集を終了しました。",
+    "manage_reopened_toast": "新規募集を再開しました。",
+    "manage_cancelled_toast": "募集を中止しました。",
+    "manage_failed": "募集を変更できませんでした。もう一度お試しください。"
   },
   "org_settings": {
     "heading": "組織の設定",
@@ -1403,5 +1419,11 @@
     "roster_waitlist_heading": "キャンセル待ち",
     "roster_waitlist_position": "順番：{{position}}",
     "roster_close": "閉じる"
-  }
+  },
+  "edit_opportunity_title": "募集を編集",
+  "edit_opportunity_subtitle": "ボランティアに表示される内容を変更します。団体は変更できません。",
+  "form_save_changes": "変更を保存",
+  "form_update_success": "募集を更新しました。",
+  "edit_not_allowed_title": "この募集は編集できません",
+  "edit_not_allowed_description": "削除された可能性があります。または、団体とコミュニティ管理者のみが変更できます。"
 }

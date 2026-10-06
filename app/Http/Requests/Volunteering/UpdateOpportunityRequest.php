@@ -32,6 +32,9 @@ class UpdateOpportunityRequest extends FormRequest
             'end_date' => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
             // Strict enum — MariaDB strict=false silently corrupts invalid enum writes to ''.
+            // Closing stops new applications and takes it off the public list;
+            // cancelling is DELETE. Anything else is refused.
+            'status' => ['sometimes', 'in:open,closed'],
             'federated_visibility' => ['sometimes', 'nullable', 'in:none,listed'],
         ];
     }

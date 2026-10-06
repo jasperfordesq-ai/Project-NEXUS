@@ -801,7 +801,23 @@
     "shift_cancel_success": "Rejestracja na zmianę została anulowana.",
     "shift_cancel_failed": "Nie można anulować rejestracji na tę zmianę.",
     "shift_waitlist_success": "Dołączyłeś do listy oczekujących.",
-    "shift_waitlist_failed": "Nie można dołączyć do tej listy oczekujących."
+    "shift_waitlist_failed": "Nie można dołączyć do tej listy oczekujących.",
+    "status_cancelled": "Odwołana",
+    "status_closed_to_new": "Zamknięta dla nowych wolontariuszy",
+    "manage_open_hint": "Zarządzasz tą ofertą.",
+    "manage_closed_hint": "Zamknięta: nie ma jej na liście i nie przyjmuje nowych zgłoszeń. Wolontariusze, którzy już w niej są, zachowują swoje miejsca.",
+    "manage_edit": "Edytuj",
+    "manage_close": "Zamknij dla nowych wolontariuszy",
+    "manage_reopen": "Otwórz ponownie",
+    "manage_cancel": "Odwołaj ofertę",
+    "manage_cancel_title": "Odwołać tę ofertę?",
+    "manage_cancel_body": "Zniknie z listy na stałe, a wolontariusze z zaakceptowanym zgłoszeniem dostaną informację o odwołaniu. Tego nie da się cofnąć. Aby tylko przestać przyjmować zgłoszenia, zamknij ją.",
+    "manage_cancel_keep": "Zostaw",
+    "manage_cancel_confirm": "Odwołaj ofertę",
+    "manage_closed_toast": "Zamknięta dla nowych wolontariuszy.",
+    "manage_reopened_toast": "Ponownie otwarta dla nowych wolontariuszy.",
+    "manage_cancelled_toast": "Oferta odwołana.",
+    "manage_failed": "Nie udało się zmienić oferty. Spróbuj ponownie."
   },
   "org_settings": {
     "heading": "Ustawienia organizacji",
@@ -1435,5 +1451,11 @@
     "roster_waitlist_heading": "Lista oczekujących",
     "roster_waitlist_position": "Miejsce w kolejce: {{position}}",
     "roster_close": "Zamknij"
-  }
+  },
+  "edit_opportunity_title": "Edytuj ofertę",
+  "edit_opportunity_subtitle": "Zmień informacje, które widzą wolontariusze. Organizacji nie można zmienić.",
+  "form_save_changes": "Zapisz zmiany",
+  "form_update_success": "Oferta zaktualizowana.",
+  "edit_not_allowed_title": "Nie możesz edytować tej oferty",
+  "edit_not_allowed_description": "Mogła zostać usunięta albo zmieniać ją mogą tylko jej organizacja i administratorzy społeczności."
 }

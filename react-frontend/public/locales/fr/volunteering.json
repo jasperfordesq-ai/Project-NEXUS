@@ -794,7 +794,23 @@
     "shift_cancel_success": "Inscription à l'équipe annulée.",
     "shift_cancel_failed": "Impossible d'annuler cette inscription à l'équipe.",
     "shift_waitlist_success": "Vous avez rejoint la liste d'attente.",
-    "shift_waitlist_failed": "Impossible de rejoindre cette liste d'attente."
+    "shift_waitlist_failed": "Impossible de rejoindre cette liste d'attente.",
+    "status_cancelled": "Annulée",
+    "status_closed_to_new": "Fermée aux nouveaux bénévoles",
+    "manage_open_hint": "Vous gérez cette mission.",
+    "manage_closed_hint": "Fermée : elle n'apparaît plus dans la liste et n'accepte plus de candidatures. Les bénévoles déjà inscrits gardent leur place.",
+    "manage_edit": "Modifier",
+    "manage_close": "Fermer aux nouveaux bénévoles",
+    "manage_reopen": "Rouvrir",
+    "manage_cancel": "Annuler la mission",
+    "manage_cancel_title": "Annuler cette mission ?",
+    "manage_cancel_body": "Elle quitte définitivement la liste et les bénévoles dont la candidature a été acceptée sont prévenus de l'annulation. C'est irréversible. Pour ne plus accepter de candidatures sans l'annuler, fermez-la plutôt.",
+    "manage_cancel_keep": "La garder",
+    "manage_cancel_confirm": "Annuler la mission",
+    "manage_closed_toast": "Fermée aux nouveaux bénévoles.",
+    "manage_reopened_toast": "Rouverte aux nouveaux bénévoles.",
+    "manage_cancelled_toast": "Mission annulée.",
+    "manage_failed": "Impossible de modifier la mission. Veuillez réessayer."
   },
   "org_settings": {
     "heading": "Paramètres de l'organisation",
@@ -1419,5 +1435,11 @@
     "roster_waitlist_heading": "Liste d'attente",
     "roster_waitlist_position": "Rang dans la file : {{position}}",
     "roster_close": "Fermer"
-  }
+  },
+  "edit_opportunity_title": "Modifier la mission",
+  "edit_opportunity_subtitle": "Modifiez les informations que voient les bénévoles. L'organisation ne peut pas être changée.",
+  "form_save_changes": "Enregistrer les modifications",
+  "form_update_success": "Mission mise à jour.",
+  "edit_not_allowed_title": "Vous ne pouvez pas modifier cette mission",
+  "edit_not_allowed_description": "Elle a peut-être été supprimée, ou seuls son organisation et les administrateurs de la communauté peuvent la modifier."
 }

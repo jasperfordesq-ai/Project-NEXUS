@@ -787,7 +787,23 @@
     "shift_cancel_success": "Shift signup cancelled.",
     "shift_cancel_failed": "Unable to cancel this shift signup.",
     "shift_waitlist_success": "You have joined the waitlist.",
-    "shift_waitlist_failed": "Unable to join this waitlist."
+    "shift_waitlist_failed": "Unable to join this waitlist.",
+    "status_cancelled": "Cancelled",
+    "status_closed_to_new": "Closed to new volunteers",
+    "manage_open_hint": "You manage this opportunity.",
+    "manage_closed_hint": "Closed: it is off the volunteering list and takes no new applications. Volunteers already on it keep their places.",
+    "manage_edit": "Edit",
+    "manage_close": "Close to new volunteers",
+    "manage_reopen": "Reopen",
+    "manage_cancel": "Cancel opportunity",
+    "manage_cancel_title": "Cancel this opportunity?",
+    "manage_cancel_body": "It leaves the volunteering list for good, and volunteers whose applications were approved are told it has been cancelled. This cannot be undone. To stop new applications but keep it running, close it instead.",
+    "manage_cancel_keep": "Keep it",
+    "manage_cancel_confirm": "Cancel opportunity",
+    "manage_closed_toast": "Closed to new volunteers.",
+    "manage_reopened_toast": "Reopened to new volunteers.",
+    "manage_cancelled_toast": "Opportunity cancelled.",
+    "manage_failed": "Could not change the opportunity. Please try again."
   },
   "org_settings": {
     "heading": "Organization Settings",
@@ -1403,5 +1419,11 @@
     "roster_waitlist_heading": "Waitlist",
     "roster_waitlist_position": "Place in queue: {{position}}",
     "roster_close": "Close"
-  }
+  },
+  "edit_opportunity_title": "Edit opportunity",
+  "edit_opportunity_subtitle": "Change the details volunteers see. The organisation cannot be changed.",
+  "form_save_changes": "Save changes",
+  "form_update_success": "Opportunity updated.",
+  "edit_not_allowed_title": "You cannot edit this opportunity",
+  "edit_not_allowed_description": "It may have been removed, or only its organisation and community admins can change it."
 }

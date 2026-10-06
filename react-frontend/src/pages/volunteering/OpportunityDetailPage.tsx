@@ -47,6 +47,10 @@ import MessageSquare from 'lucide-react/icons/message-square';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import QrCode from 'lucide-react/icons/qr-code';
 import Globe from 'lucide-react/icons/globe';
+import Pencil from 'lucide-react/icons/pencil';
+import Lock from 'lucide-react/icons/lock';
+import LockOpen from 'lucide-react/icons/lock-open';
+import Ban from 'lucide-react/icons/ban';
 import { Helmet } from 'react-helmet-async';
 import { PageMeta } from '@/components/seo';
 import { LoadingScreen } from '@/components/feedback';
@@ -91,6 +95,8 @@ interface OpportunityDetail {
   start_date: string | null;
   end_date: string | null;
   is_active: boolean;
+  /** 'open' takes new volunteers; 'closed' does not (and is off the public list). Legacy rows say 'active'. */
+  status?: string | null;
   is_remote: boolean;
   /** String on some endpoints, { id, name, color } object on others — always unwrap via getOpportunityCategoryName(). */
   category: OpportunityCategory;
@@ -808,6 +814,9 @@ export function OpportunityDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingShare, setIsUpdatingShare] = useState(false);
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const cancelModal = useDisclosure();
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Apply modal
   const applyModal = useDisclosure();
@@ -905,6 +914,47 @@ export function OpportunityDetailPage() {
     }
   }
 
+  /** Close the opportunity to new volunteers, or reopen it. Volunteers already on it keep their places. */
+  async function handleSetStatus(next: 'open' | 'closed') {
+    if (!id) return;
+    try {
+      setIsChangingStatus(true);
+      const response = await api.put(`/v2/volunteering/opportunities/${id}`, { status: next });
+      if (response.success) {
+        setOpportunity((prev) => (prev ? { ...prev, status: next } : prev));
+        toast.success(next === 'closed' ? t('opportunity.manage_closed_toast') : t('opportunity.manage_reopened_toast'));
+      } else {
+        toast.error(response.error || t('opportunity.manage_failed'));
+      }
+    } catch (err) {
+      logError('Failed to change opportunity status', err);
+      toast.error(t('opportunity.manage_failed'));
+    } finally {
+      setIsChangingStatus(false);
+    }
+  }
+
+  /** Cancel for good: it leaves the list and approved volunteers are told. */
+  async function handleCancelOpportunity() {
+    if (!id) return;
+    try {
+      setIsCancelling(true);
+      const response = await api.delete(`/v2/volunteering/opportunities/${id}`);
+      if (response.success) {
+        toast.success(t('opportunity.manage_cancelled_toast'));
+        cancelModal.onClose();
+        void load();
+      } else {
+        toast.error(response.error || t('opportunity.manage_failed'));
+      }
+    } catch (err) {
+      logError('Failed to cancel opportunity', err);
+      toast.error(t('opportunity.manage_failed'));
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
   async function handleFederatedShareChange(share: boolean) {
     if (!id) return;
     const visibility = share ? 'listed' : 'none';
@@ -958,8 +1008,11 @@ export function OpportunityDetailPage() {
 
   const opp = opportunity;
   const upcomingShifts = (opp.shifts || []).filter((s) => new Date(s.start_time) >= new Date());
-  // The server decides who may manage; `is_owner` is the older creator-only flag kept as a fallback.
-  const canManageShifts = opp.can_manage ?? opp.is_owner ?? false;
+  // The server decides who may manage. `can_manage` covers the creator since 6 Oct 2026; `is_owner`
+  // (creator only) stays as a fallback. Not `??`: a false can_manage must not hide the creator's panel.
+  const canManage = Boolean(opp.can_manage || opp.is_owner);
+  const canManageShifts = canManage;
+  const isClosed = opp.status === 'closed';
   const approvedApplication = opp.application?.status === 'approved' ? opp.application : null;
   const currentShiftId = approvedApplication?.shift_id ?? null;
   const cleanDescription = opp.description?.replace(/\s+/g, ' ').trim();
@@ -1030,9 +1083,14 @@ export function OpportunityDetailPage() {
             <Chip
               size="sm"
               variant="soft"
-              color={opp.is_active ? 'success' : 'danger'}
+              color={!opp.is_active ? 'danger' : isClosed ? 'warning' : 'success'}
+              data-testid="opportunity-status-chip"
             >
-              {opp.is_active ? t('opportunity.status_active') : t('opportunity.status_closed')}
+              {!opp.is_active
+                ? t('opportunity.status_cancelled')
+                : isClosed
+                  ? t('opportunity.status_closed_to_new')
+                  : t('opportunity.status_active')}
             </Chip>
             {opp.is_remote && (
               <Chip size="sm" variant="soft" color="default" startContent={<Wifi className="w-3 h-3" aria-hidden="true" />}>
@@ -1087,7 +1145,7 @@ export function OpportunityDetailPage() {
           )}
 
           {/* Apply button */}
-          {isAuthenticated && opp.is_active && !opp.has_applied && !opp.is_owner && (
+          {isAuthenticated && opp.is_active && !isClosed && !opp.has_applied && !opp.is_owner && (
             <Button
               className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
@@ -1107,6 +1165,48 @@ export function OpportunityDetailPage() {
                 <p className="text-xs text-theme-subtle">
                   {t('opportunity.application_status', { status: t(statusLabelKey(opp.application.status)) })} &middot; {t('opportunity.applied_on', { date: formatDate(opp.application.created_at) })}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Managing the opportunity — creator, organisation owner/admins, community admins */}
+          {canManage && opp.is_active && (
+            <div className="flex flex-col gap-3 p-4 rounded-xl bg-theme-elevated border border-theme-default" data-testid="opportunity-manage-bar">
+              <p className="text-sm text-theme-muted">
+                {isClosed ? t('opportunity.manage_closed_hint') : t('opportunity.manage_open_hint')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  as={Link}
+                  to={tenantPath(`/volunteering/opportunities/${opp.id}/edit`)}
+                  size="sm"
+                  variant="tertiary"
+                  startContent={<Pencil className="w-4 h-4" aria-hidden="true" />}
+                  data-testid="opportunity-manage-edit"
+                >
+                  {t('opportunity.manage_edit')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="tertiary"
+                  isLoading={isChangingStatus}
+                  startContent={isChangingStatus ? undefined : isClosed
+                    ? <LockOpen className="w-4 h-4" aria-hidden="true" />
+                    : <Lock className="w-4 h-4" aria-hidden="true" />}
+                  onPress={() => void handleSetStatus(isClosed ? 'open' : 'closed')}
+                  data-testid="opportunity-manage-toggle-status"
+                >
+                  {isClosed ? t('opportunity.manage_reopen') : t('opportunity.manage_close')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger-soft"
+                  startContent={<Ban className="w-4 h-4" aria-hidden="true" />}
+                  onPress={cancelModal.onOpen}
+                  data-testid="opportunity-manage-cancel"
+                >
+                  {t('opportunity.manage_cancel')}
+                </Button>
               </div>
             </div>
           )}
@@ -1305,6 +1405,28 @@ export function OpportunityDetailPage() {
               </ModalFooter>
             </>
           )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={cancelModal.isOpen} onClose={cancelModal.onClose} size="md">
+        <ModalContent>
+          <ModalHeader className="text-theme-primary">{t('opportunity.manage_cancel_title')}</ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-theme-secondary">{t('opportunity.manage_cancel_body')}</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={cancelModal.onClose} isDisabled={isCancelling}>
+              {t('opportunity.manage_cancel_keep')}
+            </Button>
+            <Button
+              variant="danger"
+              isLoading={isCancelling}
+              onPress={() => void handleCancelOpportunity()}
+              data-testid="opportunity-manage-cancel-confirm"
+            >
+              {t('opportunity.manage_cancel_confirm')}
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </div>

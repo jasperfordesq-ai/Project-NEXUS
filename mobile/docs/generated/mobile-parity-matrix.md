@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile Route Parity Matrix
 
-Last reviewed: 2026-09-23
+Last reviewed: 2026-10-06
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run parity:matrix` from `mobile/`.
@@ -17,15 +17,24 @@ when a React member route exists that nobody has classified for mobile.
 
 | Measure | Count |
 | --- | --- |
-| React member routes | 257 |
-| Mobile routes (Expo Router screens) | 186 |
-| Covered natively | 170 |
-| Deliberately out of scope | 87 |
-| **Known gaps** | **0** |
+| React member routes | 264 |
+| Mobile routes (Expo Router screens) | 189 |
+| Covered natively | 174 |
+| Deliberately out of scope | 86 |
+| **Known gaps** | **4** |
 | Awaiting review (shrink-only, budget 31) | 0 |
 | **Undeclared (blocks `--check`)** | **0** |
-| Mobile routes not claimed by a React route | 45 |
+| Mobile routes not claimed by a React route | 46 |
 | Broken declarations | 0 |
+
+## Known gaps (member-facing, wanted, not built)
+
+| React route | Note |
+| --- | --- |
+| `listings/mine` | My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile. |
+| `volunteering/incidents/:id` | A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web. |
+| `volunteering/org/:orgId/safeguarding` | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
+| `volunteering/org/:orgId/safeguarding/:id` | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
 
 ## Full matrix
 
@@ -105,7 +114,6 @@ when a React member route exists that nobody has classified for mobile.
 | `events` | native | `events` | — |
 | `events/:id` | native | `event-detail` | — |
 | `events/:id/edit` | native | `edit-event` | — |
-| `events/:id/guardian-consent` | out-of-scope | — | Both native apps are adults-only. Guardian consent remains an exceptional staffed web/operator workflow and must not become a native child-access journey. |
 | `events/:id/manage/:section?` | native | `event-manage` | Permission-aware native operations hub routes organisers to the implemented event people, check-in, agenda, analytics, registration, ticket, communications, template, recurrence, and lifecycle workspaces. |
 | `events/create` | native | `new-event` | — |
 | `events/edit/:id` | native | `edit-event` | — |
@@ -142,6 +150,9 @@ when a React member route exists that nobody has classified for mobile.
 | `groups/edit/:id` | native | `edit-group` | — |
 | `groups/invite/:token` | native | `group-invite` | Authenticated adults can preview and explicitly accept an ordinary group invitation in the native app. |
 | `help` | native | `support` | — |
+| `help/:audience` | native | `help-faqs` | — |
+| `help/:audience/:sectionId` | native | `help-guide` | — |
+| `help/:audience/:sectionId/:articleId` | native | `help-guide` | — |
 | `ideation` | native | `ideation` | — |
 | `ideation/:challengeId/ideas/:id` | native | `ideation-idea` | — |
 | `ideation/:id` | native | `ideation-detail` | — |
@@ -179,6 +190,7 @@ when a React member route exists that nobody has classified for mobile.
 | `listings/:id/request-exchange` | native | `exchange-detail` | — |
 | `listings/create` | native | `new-exchange` | — |
 | `listings/edit/:id` | native | `edit-exchange` | — |
+| `listings/mine` | gap | — | My listings (a member's own offers and requests, grouped by state) has no native screen yet; wanted on mobile. |
 | `login` | native | `login` | — |
 | `marketplace` | native | `marketplace` | — |
 | `marketplace/:id` | native | `marketplace-detail` | — |
@@ -280,10 +292,14 @@ when a React member route exists that nobody has classified for mobile.
 | `volunteering` | native | `volunteering` | — |
 | `volunteering/checkin/:token` | native | `volunteer-checkin` | Authorised coordinators explicitly confirm check-in and check-out; opening the link causes no mutation. |
 | `volunteering/create` | native | `new-volunteering` | — |
+| `volunteering/incidents/:id` | gap | — | A reporter's page for their own volunteering safeguarding report (status, timeline, adding information) has no native screen yet; reports and their emails currently open on the web. |
 | `volunteering/my-applications` | native | `volunteering` | — |
 | `volunteering/my-organisations` | native | `volunteering` | — |
 | `volunteering/opportunities/:id` | native | `volunteering-detail` | — |
+| `volunteering/opportunities/:id/edit` | native | `edit-volunteering` | — |
 | `volunteering/org/:orgId/dashboard` | native | `volunteering-org-dashboard` | — |
+| `volunteering/org/:orgId/safeguarding` | gap | — | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
+| `volunteering/org/:orgId/safeguarding/:id` | gap | — | An organisation's safeguarding reports (summary list and case page for owners, admins and the safeguarding lead) have no native screen yet; the native organisation dashboard has no Safeguarding tab. |
 | `wallet` | native | `wallet` | — |
 | `wallet/regional-points` | out-of-scope | — | Regional points are implemented by the Care in Community feature and are excluded from both native apps by the product-owner decision of 2026-08-28. |
 | `whats-on` | out-of-scope | — | What's On is the anonymous public advertising twin of Events; the adults-only native clients are authenticated member products and keep anonymous public discovery on the web. |
@@ -297,7 +313,6 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `select-tenant`
 - `change-password`
 - `edit-profile`
-- `edit-volunteering`
 - `endorsements`
 - `event-agenda`
 - `event-analytics`
@@ -322,6 +337,8 @@ A surprise here can also mean a `native` declaration names the wrong screen.
 - `exchange-requests`
 - `gamification`
 - `group-discussion`
+- `group-invitations`
+- `help-support`
 - `image-viewer`
 - `legal-acceptance`
 - `marketplace-coupon-redemptions`

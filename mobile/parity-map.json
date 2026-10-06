@@ -540,6 +540,10 @@
       "status": "native",
       "mobile": "volunteering-detail"
     },
+    "volunteering/opportunities/:id/edit": {
+      "status": "native",
+      "mobile": "edit-volunteering"
+    },
     "volunteering/org/:orgId/dashboard": {
       "status": "native",
       "mobile": "volunteering-org-dashboard"

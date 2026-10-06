@@ -208,6 +208,7 @@ class VolunteerController extends BaseApiController
             }
         }
         if ($this->input('federated_visibility') !== null) $data['federated_visibility'] = $this->input('federated_visibility');
+        if ($this->input('status') !== null) $data['status'] = (string) $this->input('status');
 
         $success = $this->volunteerService->updateOpportunity((int) $id, $userId, $data);
         if (!$success) {

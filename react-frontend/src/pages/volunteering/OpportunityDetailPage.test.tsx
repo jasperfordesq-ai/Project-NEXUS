@@ -310,14 +310,72 @@ describe('OpportunityDetailPage', () => {
     expect(screen.getByText('opportunity.remote')).toBeInTheDocument();
   });
 
-  it('shows inactive badge for inactive opportunities', async () => {
+  it('shows a cancelled badge for a cancelled (inactive) opportunity', async () => {
     const inactive = { ...mockOpportunity, is_active: false };
     vi.mocked(api.get).mockResolvedValue({ success: true, data: inactive });
     render(<OpportunityDetailPage />);
     await waitFor(() => {
       expect(screen.getAllByText('Park Cleanup Drive')[0]).toBeInTheDocument();
     });
-    expect(screen.getByText('opportunity.status_closed')).toBeInTheDocument();
+    expect(screen.getByTestId('opportunity-status-chip')).toHaveTextContent('opportunity.status_cancelled');
+  });
+
+  describe('managing the opportunity', () => {
+    const managed = { ...mockOpportunity, status: 'open', is_owner: false, can_manage: true };
+
+    it('a manager can close it to new volunteers', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      vi.mocked(api.put).mockResolvedValue({ success: true, data: {} });
+      render(<OpportunityDetailPage />);
+
+      fireEvent.click(await screen.findByTestId('opportunity-manage-toggle-status'));
+      await waitFor(() => expect(api.put).toHaveBeenCalledWith('/v2/volunteering/opportunities/42', { status: 'closed' }));
+      expect(await screen.findByText('opportunity.status_closed_to_new')).toBeInTheDocument();
+      expect(screen.getByTestId('opportunity-manage-toggle-status')).toHaveTextContent('opportunity.manage_reopen');
+    });
+
+    it('links to the edit page', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      render(<OpportunityDetailPage />);
+
+      expect(await screen.findByTestId('opportunity-manage-edit')).toHaveAttribute('href', '/test/volunteering/opportunities/42/edit');
+    });
+
+    it('asks before cancelling, then cancels', async () => {
+      vi.mocked(api.get).mockResolvedValue({ success: true, data: managed });
+      vi.mocked(api.delete).mockResolvedValue({ success: true, data: null });
+      render(<OpportunityDetailPage />);
+
+      fireEvent.click(await screen.findByTestId('opportunity-manage-cancel'));
+      expect(api.delete).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByTestId('opportunity-manage-cancel-confirm'));
+      await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/volunteering/opportunities/42'));
+    });
+
+    it('shows the creator the controls even when can_manage is false', async () => {
+      const asCreator = { ...managed, can_manage: false, is_owner: true };
+      // The creator also gets the applicants panel and the shift panel, which load their own lists.
+      vi.mocked(api.get).mockImplementation((async (url: string) => (
+        url === '/v2/volunteering/opportunities/42' ? { success: true, data: asCreator }
+          : url.includes('/applications') ? { success: true, data: { items: [], cursor: null, has_more: false } }
+            : { success: true, data: [] }
+      )) as unknown as typeof api.get);
+      render(<OpportunityDetailPage />);
+
+      expect(await screen.findByTestId('opportunity-manage-bar')).toBeInTheDocument();
+    });
+
+    it('shows a volunteer no controls, and no Apply button once it is closed', async () => {
+      vi.mocked(api.get).mockResolvedValue({
+        success: true,
+        data: { ...mockOpportunity, status: 'closed', is_owner: false, can_manage: false, has_applied: false },
+      });
+      render(<OpportunityDetailPage />);
+
+      expect(await screen.findByText('opportunity.status_closed_to_new')).toBeInTheDocument();
+      expect(screen.queryByTestId('opportunity-manage-bar')).not.toBeInTheDocument();
+      expect(screen.queryByText('opportunity.apply_now')).not.toBeInTheDocument();
+    });
   });
 
   it('retry button refetches data after error', async () => {
