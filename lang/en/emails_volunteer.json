@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "Your {{type}} qualification expires on {{date}}",
     "expired": "Your {{type}} qualification expired on {{date}}",
-    "org_attention": "{{number}} volunteer qualifications at {{org}} need attention"
+    "org_attention": "Volunteer qualifications needing attention at {{org}}: {{number}}"
   },
   "qualification_types": {
     "first_aid": "First aid",

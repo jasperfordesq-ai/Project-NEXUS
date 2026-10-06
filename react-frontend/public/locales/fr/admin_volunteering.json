@@ -968,11 +968,12 @@
       "all_types": "Tous les types"
     },
     "search_placeholder": "Rechercher des bénévoles",
-    "results": "Qualifications trouvées : {{number}}",
+    "results_one": "Qualifications trouvées : {{number}}",
+    "results_many": "Qualifications trouvées : {{number}}",
+    "results_other": "Qualifications trouvées : {{number}}",
     "col": {
       "volunteer": "Bénévole",
       "qualification": "Qualification",
-      "expires": "Expire",
       "status": "Statut",
       "confirmed_for": "Confirmée pour"
     },

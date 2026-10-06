@@ -1130,7 +1130,8 @@
       "expiring_hint": "Innerhalb von {{days}} Tagen",
       "expired": "Abgelaufen"
     },
-    "attention_title": "{{number}} brauchen Aufmerksamkeit",
+    "attention_title_one": "{{number}} braucht Aufmerksamkeit",
+    "attention_title_other": "{{number}} brauchen Aufmerksamkeit",
     "attention_body": "Aktualisieren Sie das Ablaufdatum, sobald Sie verlängert haben, oder ziehen Sie den Eintrag zurück, wenn Sie die Qualifikation nicht mehr besitzen.",
     "group": {
       "attention": "Braucht Aufmerksamkeit",
@@ -1235,7 +1236,8 @@
       "all": "Alle"
     },
     "search_placeholder": "Freiwillige suchen",
-    "results": "{{number}} Qualifikationen",
+    "results_one": "{{number}} Qualifikation",
+    "results_other": "{{number}} Qualifikationen",
     "empty_title": "Nichts braucht Ihre Aufmerksamkeit",
     "empty_body": "Qualifikationen, die Ihre Freiwilligen eintragen, erscheinen hier.",
     "confirm": {

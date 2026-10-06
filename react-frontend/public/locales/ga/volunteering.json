@@ -1172,7 +1172,11 @@
       "expiring_hint": "Laistigh de {{days}} lá",
       "expired": "Imithe in éag"
     },
-    "attention_title": "{{number}} a dteastaíonn aird uathu",
+    "attention_title_one": "{{number}} a dteastaíonn aird uathu",
+    "attention_title_two": "{{number}} a dteastaíonn aird uathu",
+    "attention_title_few": "{{number}} a dteastaíonn aird uathu",
+    "attention_title_many": "{{number}} a dteastaíonn aird uathu",
+    "attention_title_other": "{{number}} a dteastaíonn aird uathu",
     "attention_body": "Nuashonraigh an dáta éaga nuair a bheidh sé athnuaite agat, nó tarraing siar an taifead mura bhfuil sé agat a thuilleadh.",
     "group": {
       "attention": "Aird ag teastáil",
@@ -1277,7 +1281,11 @@
       "all": "Uile"
     },
     "search_placeholder": "Cuardaigh oibrithe deonacha",
-    "results": "{{number}} cáilíocht",
+    "results_one": "{{number}} cáilíocht",
+    "results_two": "{{number}} cáilíocht",
+    "results_few": "{{number}} cáilíocht",
+    "results_many": "{{number}} cáilíocht",
+    "results_other": "{{number}} cáilíocht",
     "empty_title": "Níl aon rud ag teastáil uait",
     "empty_body": "Taispeánfar anseo na cáilíochtaí a thaifeadann do chuid oibrithe deonacha.",
     "confirm": {

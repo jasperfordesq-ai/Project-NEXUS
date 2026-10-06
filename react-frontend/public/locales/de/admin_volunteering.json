@@ -952,11 +952,11 @@
       "all_types": "Alle Typen"
     },
     "search_placeholder": "Freiwillige suchen",
-    "results": "{{number}} Qualifikationen",
+    "results_one": "{{number}} Qualifikation",
+    "results_other": "{{number}} Qualifikationen",
     "col": {
       "volunteer": "Freiwillige/r",
       "qualification": "Qualifikation",
-      "expires": "Läuft ab",
       "status": "Status",
       "confirmed_for": "Bestätigt für"
     },

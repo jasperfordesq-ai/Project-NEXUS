@@ -1016,11 +1016,15 @@
       "all_types": "كل الأنواع"
     },
     "search_placeholder": "البحث عن متطوعين",
-    "results": "{{number}} مؤهلات",
+    "results_zero": "{{number}} مؤهلات",
+    "results_one": "{{number}} مؤهل",
+    "results_two": "{{number}} مؤهلات",
+    "results_few": "{{number}} مؤهلات",
+    "results_many": "{{number}} مؤهلًا",
+    "results_other": "{{number}} مؤهلات",
     "col": {
       "volunteer": "المتطوع",
       "qualification": "المؤهل",
-      "expires": "ينتهي",
       "status": "الحالة",
       "confirmed_for": "مؤكد لصالح"
     },

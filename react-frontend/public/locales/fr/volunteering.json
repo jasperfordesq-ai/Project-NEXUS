@@ -1144,7 +1144,9 @@
       "expiring_hint": "Dans les {{days}} jours",
       "expired": "Expirées"
     },
-    "attention_title": "{{number}} demandent votre attention",
+    "attention_title_one": "{{number}} demande votre attention",
+    "attention_title_many": "{{number}} demandent votre attention",
+    "attention_title_other": "{{number}} demandent votre attention",
     "attention_body": "Mettez à jour la date d'expiration une fois renouvelée, ou retirez la fiche si vous ne détenez plus la qualification.",
     "group": {
       "attention": "À traiter",
@@ -1249,7 +1251,9 @@
       "all": "Toutes"
     },
     "search_placeholder": "Rechercher des bénévoles",
-    "results": "Qualifications trouvées : {{number}}",
+    "results_one": "Qualifications trouvées : {{number}}",
+    "results_many": "Qualifications trouvées : {{number}}",
+    "results_other": "Qualifications trouvées : {{number}}",
     "empty_title": "Rien ne demande votre attention",
     "empty_body": "Les qualifications enregistrées par vos bénévoles apparaîtront ici.",
     "confirm": {

@@ -952,11 +952,11 @@
       "all_types": "All types"
     },
     "search_placeholder": "Search volunteers",
-    "results": "{{number}} qualifications",
+    "results_one": "{{number}} qualification",
+    "results_other": "{{number}} qualifications",
     "col": {
       "volunteer": "Volunteer",
       "qualification": "Qualification",
-      "expires": "Expires",
       "status": "Status",
       "confirmed_for": "Confirmed for"
     },

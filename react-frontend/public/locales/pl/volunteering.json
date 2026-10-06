@@ -1158,7 +1158,10 @@
       "expiring_hint": "W ciągu {{days}} dni",
       "expired": "Wygasłe"
     },
-    "attention_title": "Wymagają uwagi: {{number}}",
+    "attention_title_one": "Wymaga uwagi: {{number}}",
+    "attention_title_few": "Wymagają uwagi: {{number}}",
+    "attention_title_many": "Wymagają uwagi: {{number}}",
+    "attention_title_other": "Wymagają uwagi: {{number}}",
     "attention_body": "Zaktualizuj datę ważności po odnowieniu albo wycofaj wpis, jeśli nie posiadasz już tej kwalifikacji.",
     "group": {
       "attention": "Wymagają uwagi",
@@ -1263,7 +1266,10 @@
       "all": "Wszystkie"
     },
     "search_placeholder": "Szukaj wolontariuszy",
-    "results": "Kwalifikacje: {{number}}",
+    "results_one": "Kwalifikacje: {{number}}",
+    "results_few": "Kwalifikacje: {{number}}",
+    "results_many": "Kwalifikacje: {{number}}",
+    "results_other": "Kwalifikacje: {{number}}",
     "empty_title": "Nic nie wymaga twojej uwagi",
     "empty_body": "Kwalifikacje zapisane przez twoich wolontariuszy pojawią się tutaj.",
     "confirm": {

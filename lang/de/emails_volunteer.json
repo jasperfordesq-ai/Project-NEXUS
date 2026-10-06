@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "Ihre Qualifikation „{{type}}“ läuft am {{date}} ab",
     "expired": "Ihre Qualifikation „{{type}}“ ist am {{date}} abgelaufen",
-    "org_attention": "{{number}} Qualifikationen von Freiwilligen bei {{org}} brauchen Aufmerksamkeit"
+    "org_attention": "Qualifikationen von Freiwilligen bei {{org}} brauchen Aufmerksamkeit: {{number}}"
   },
   "qualification_types": {
     "first_aid": "Erste Hilfe",

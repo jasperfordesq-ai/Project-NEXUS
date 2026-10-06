@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "A sua qualificação {{type}} caduca em {{date}}",
     "expired": "A sua qualificação {{type}} caducou em {{date}}",
-    "org_attention": "{{number}} qualificações de voluntários em {{org}} precisam de atenção"
+    "org_attention": "Qualificações de voluntários que precisam de atenção em {{org}}: {{number}}"
   },
   "qualification_types": {
     "first_aid": "Primeiros socorros",

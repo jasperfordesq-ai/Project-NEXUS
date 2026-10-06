@@ -952,11 +952,11 @@
       "all_types": "Alle typen"
     },
     "search_placeholder": "Vrijwilligers zoeken",
-    "results": "{{number}} kwalificaties",
+    "results_one": "{{number}} kwalificatie",
+    "results_other": "{{number}} kwalificaties",
     "col": {
       "volunteer": "Vrijwilliger",
       "qualification": "Kwalificatie",
-      "expires": "Verloopt",
       "status": "Status",
       "confirmed_for": "Bevestigd voor"
     },

@@ -984,11 +984,13 @@
       "all_types": "Wszystkie rodzaje"
     },
     "search_placeholder": "Szukaj wolontariuszy",
-    "results": "Kwalifikacje: {{number}}",
+    "results_one": "Kwalifikacje: {{number}}",
+    "results_few": "Kwalifikacje: {{number}}",
+    "results_many": "Kwalifikacje: {{number}}",
+    "results_other": "Kwalifikacje: {{number}}",
     "col": {
       "volunteer": "Wolontariusz",
       "qualification": "Kwalifikacja",
-      "expires": "Wygasa",
       "status": "Status",
       "confirmed_for": "Potwierdzona dla"
     },

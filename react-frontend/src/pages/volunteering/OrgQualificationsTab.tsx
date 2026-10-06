@@ -357,7 +357,7 @@ export default function OrgQualificationsTab({ orgId }: OrgQualificationsTabProp
 
   const filterSelection = useMemo(() => new Set<Key>([statusFilter]), [statusFilter]);
   const showSkeleton = isLoading && !hasLoaded;
-  const resultsLabel = t('org_qualifications.results', { number: items.length.toLocaleString(getFormattingLocale()) });
+  const resultsLabel = t('org_qualifications.results', { count: items.length, number: items.length.toLocaleString(getFormattingLocale()) });
 
   const tiles: Array<{ key: keyof Counts; icon: typeof Clock; tone: string }> = [
     { key: 'expiring', icon: Hourglass, tone: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },

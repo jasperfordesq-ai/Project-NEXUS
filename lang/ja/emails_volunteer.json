@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "{{type}}の資格が{{date}}に期限切れになります",
     "expired": "{{type}}の資格が{{date}}に期限切れになりました",
-    "org_attention": "{{org}}のボランティア資格{{number}}件に対応が必要です"
+    "org_attention": "{{org}}のボランティア資格に対応が必要です（{{number}}件）"
   },
   "qualification_types": {
     "first_aid": "救急法",

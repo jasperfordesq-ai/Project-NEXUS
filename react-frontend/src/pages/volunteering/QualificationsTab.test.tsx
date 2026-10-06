@@ -42,9 +42,13 @@ const translations: Record<string, string> = {
   ...flatten(en.qualifications, 'qualifications.', {}),
   try_again: en.try_again,
 };
+const enPlural = new Intl.PluralRules('en');
 const stableT = (key: string, fallbackOrOpts?: string | Record<string, unknown>, opts?: Record<string, unknown>) => {
-  const fallback = typeof fallbackOrOpts === 'string' ? fallbackOrOpts : translations[key] ?? key;
   const vars = typeof fallbackOrOpts === 'object' ? fallbackOrOpts : opts;
+  // i18next plural keys: `key_one` / `key_other`, chosen by `count`.
+  const pluralKey = typeof vars?.count === 'number' ? `${key}_${enPlural.select(vars.count)}` : null;
+  const fallback = typeof fallbackOrOpts === 'string' ? fallbackOrOpts
+    : (pluralKey !== null ? translations[pluralKey] : undefined) ?? translations[key] ?? key;
   return fallback.replace(/\{\{(\w+)\}\}/g, (_, k) => String(vars?.[k] ?? ''));
 };
 vi.mock('react-i18next', () => ({
@@ -284,6 +288,12 @@ describe('QualificationsTab', () => {
     // expiring + expired
     expect(screen.getByText('2 need attention')).toBeInTheDocument();
     expect(screen.getByText(/Update the expiry date once you have renewed/)).toBeInTheDocument();
+  });
+
+  it('says "1 needs attention" for a single record, not "1 need attention"', async () => {
+    mockLoad([expiringSafeguarding]);
+    render(<QualificationsTab />);
+    expect(await screen.findByText('1 needs attention')).toBeInTheDocument();
   });
 
   it('adds a qualification: title required for "other", then posts the body', async () => {

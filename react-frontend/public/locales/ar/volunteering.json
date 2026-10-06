@@ -1186,7 +1186,12 @@
       "expiring_hint": "خلال {{days}} يوماً",
       "expired": "منتهية"
     },
-    "attention_title": "{{number}} تحتاج إلى انتباه",
+    "attention_title_zero": "{{number}} تحتاج إلى انتباه",
+    "attention_title_one": "{{number}} تحتاج إلى انتباه",
+    "attention_title_two": "{{number}} تحتاج إلى انتباه",
+    "attention_title_few": "{{number}} تحتاج إلى انتباه",
+    "attention_title_many": "{{number}} تحتاج إلى انتباه",
+    "attention_title_other": "{{number}} تحتاج إلى انتباه",
     "attention_body": "حدّث تاريخ الانتهاء بعد التجديد، أو اسحب السجل إذا لم تعد تحمل المؤهل.",
     "group": {
       "attention": "تحتاج إلى انتباه",
@@ -1291,7 +1296,12 @@
       "all": "الكل"
     },
     "search_placeholder": "البحث عن متطوعين",
-    "results": "{{number}} مؤهلات",
+    "results_zero": "{{number}} مؤهلات",
+    "results_one": "{{number}} مؤهل",
+    "results_two": "{{number}} مؤهلات",
+    "results_few": "{{number}} مؤهلات",
+    "results_many": "{{number}} مؤهلًا",
+    "results_other": "{{number}} مؤهلات",
     "empty_title": "لا شيء يحتاج إلى انتباهك",
     "empty_body": "ستظهر هنا المؤهلات التي يسجلها متطوعوك.",
     "confirm": {

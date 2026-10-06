@@ -700,7 +700,7 @@ export function QualificationsTab() {
           {attentionCount > 0 && (
             <Alert
               color={counts.expired > 0 ? 'danger' : 'warning'}
-              title={t('qualifications.attention_title', { number: attentionCount })}
+              title={t('qualifications.attention_title', { count: attentionCount, number: attentionCount.toLocaleString(getFormattingLocale()) })}
               description={t('qualifications.attention_body')}
             />
           )}

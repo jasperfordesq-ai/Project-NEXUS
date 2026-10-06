@@ -1130,7 +1130,8 @@
       "expiring_hint": "Within {{days}} days",
       "expired": "Expired"
     },
-    "attention_title": "{{number}} need attention",
+    "attention_title_one": "{{number}} needs attention",
+    "attention_title_other": "{{number}} need attention",
     "attention_body": "Update the expiry date once you have renewed, or withdraw the record if you no longer hold it.",
     "group": {
       "attention": "Needs attention",
@@ -1235,7 +1236,8 @@
       "all": "All"
     },
     "search_placeholder": "Search volunteers",
-    "results": "{{number}} qualifications",
+    "results_one": "{{number}} qualification",
+    "results_other": "{{number}} qualifications",
     "empty_title": "Nothing needs your attention",
     "empty_body": "Qualifications your volunteers record will appear here.",
     "confirm": {

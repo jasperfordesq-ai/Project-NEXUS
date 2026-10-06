@@ -1000,11 +1000,14 @@
       "all_types": "Gach cineál"
     },
     "search_placeholder": "Cuardaigh oibrithe deonacha",
-    "results": "{{number}} cáilíocht",
+    "results_one": "{{number}} cáilíocht",
+    "results_two": "{{number}} cáilíocht",
+    "results_few": "{{number}} cáilíocht",
+    "results_many": "{{number}} cáilíocht",
+    "results_other": "{{number}} cáilíocht",
     "col": {
       "volunteer": "Oibrí deonach",
       "qualification": "Cáilíocht",
-      "expires": "Téann in éag",
       "status": "Stádas",
       "confirmed_for": "Deimhnithe do"
     },

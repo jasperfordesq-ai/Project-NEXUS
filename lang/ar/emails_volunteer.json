@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "مؤهلك {{type}} ينتهي في {{date}}",
     "expired": "انتهت صلاحية مؤهلك {{type}} في {{date}}",
-    "org_attention": "{{number}} من مؤهلات المتطوعين في {{org}} تحتاج إلى اهتمام"
+    "org_attention": "مؤهلات متطوعين تحتاج إلى اهتمام في {{org}}: {{number}}"
   },
   "qualification_types": {
     "first_aid": "الإسعافات الأولية",

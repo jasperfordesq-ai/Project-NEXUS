@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "Je kwalificatie {{type}} verloopt op {{date}}",
     "expired": "Je kwalificatie {{type}} is op {{date}} verlopen",
-    "org_attention": "{{number}} kwalificaties van vrijwilligers bij {{org}} vragen aandacht"
+    "org_attention": "Kwalificaties van vrijwilligers bij {{org}} vragen aandacht: {{number}}"
   },
   "qualification_types": {
     "first_aid": "EHBO",

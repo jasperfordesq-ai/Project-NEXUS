@@ -1130,7 +1130,8 @@
       "expiring_hint": "Binnen {{days}} dagen",
       "expired": "Verlopen"
     },
-    "attention_title": "{{number}} hebben aandacht nodig",
+    "attention_title_one": "{{number}} heeft aandacht nodig",
+    "attention_title_other": "{{number}} hebben aandacht nodig",
     "attention_body": "Werk de vervaldatum bij zodra je hebt verlengd, of trek de registratie in als je de kwalificatie niet meer hebt.",
     "group": {
       "attention": "Aandacht nodig",
@@ -1235,7 +1236,8 @@
       "all": "Alle"
     },
     "search_placeholder": "Vrijwilligers zoeken",
-    "results": "{{number}} kwalificaties",
+    "results_one": "{{number}} kwalificatie",
+    "results_other": "{{number}} kwalificaties",
     "empty_title": "Niets heeft je aandacht nodig",
     "empty_body": "Kwalificaties die je vrijwilligers registreren verschijnen hier.",
     "confirm": {

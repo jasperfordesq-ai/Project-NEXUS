@@ -968,11 +968,12 @@
       "all_types": "Tutti i tipi"
     },
     "search_placeholder": "Cerca volontari",
-    "results": "{{number}} qualifiche",
+    "results_one": "{{number}} qualifica",
+    "results_many": "{{number}} qualifiche",
+    "results_other": "{{number}} qualifiche",
     "col": {
       "volunteer": "Volontario",
       "qualification": "Qualifica",
-      "expires": "Scade",
       "status": "Stato",
       "confirmed_for": "Confermata per"
     },

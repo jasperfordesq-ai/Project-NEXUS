@@ -968,11 +968,12 @@
       "all_types": "Todos os tipos"
     },
     "search_placeholder": "Pesquisar voluntários",
-    "results": "{{number}} qualificações",
+    "results_one": "{{number}} qualificação",
+    "results_many": "{{number}} qualificações",
+    "results_other": "{{number}} qualificações",
     "col": {
       "volunteer": "Voluntário",
       "qualification": "Qualificação",
-      "expires": "Caduca",
       "status": "Estado",
       "confirmed_for": "Confirmada para"
     },

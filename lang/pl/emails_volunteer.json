@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "Twoja kwalifikacja {{type}} traci ważność {{date}}",
     "expired": "Twoja kwalifikacja {{type}} straciła ważność {{date}}",
-    "org_attention": "{{number}} kwalifikacji wolontariuszy w {{org}} wymaga uwagi"
+    "org_attention": "Kwalifikacje wolontariuszy w {{org}} wymagają uwagi: {{number}}"
   },
   "qualification_types": {
     "first_aid": "Pierwsza pomoc",

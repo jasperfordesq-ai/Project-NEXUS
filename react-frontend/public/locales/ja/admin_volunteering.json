@@ -952,11 +952,11 @@
       "all_types": "すべての種類"
     },
     "search_placeholder": "ボランティアを検索",
-    "results": "{{number}} 件の資格",
+    "results_one": "{{number}} 件の資格",
+    "results_other": "{{number}} 件の資格",
     "col": {
       "volunteer": "ボランティア",
       "qualification": "資格",
-      "expires": "有効期限",
       "status": "状態",
       "confirmed_for": "確認先"
     },

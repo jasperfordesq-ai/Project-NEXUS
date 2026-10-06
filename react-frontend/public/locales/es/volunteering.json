@@ -1144,7 +1144,9 @@
       "expiring_hint": "En los próximos {{days}} días",
       "expired": "Caducadas"
     },
-    "attention_title": "{{number}} necesitan atención",
+    "attention_title_one": "{{number}} necesita atención",
+    "attention_title_many": "{{number}} necesitan atención",
+    "attention_title_other": "{{number}} necesitan atención",
     "attention_body": "Actualiza la fecha de caducidad cuando la hayas renovado, o retira el registro si ya no tienes la cualificación.",
     "group": {
       "attention": "Necesitan atención",
@@ -1249,7 +1251,9 @@
       "all": "Todas"
     },
     "search_placeholder": "Buscar voluntarios",
-    "results": "{{number}} cualificaciones",
+    "results_one": "{{number}} cualificación",
+    "results_many": "{{number}} cualificaciones",
+    "results_other": "{{number}} cualificaciones",
     "empty_title": "Nada necesita tu atención",
     "empty_body": "Las cualificaciones que registren tus voluntarios aparecerán aquí.",
     "confirm": {

@@ -121,6 +121,7 @@ describe('OrgQualificationsTab', () => {
     expect(screen.getByText('Awaiting confirmation', { selector: 'p' })).toBeInTheDocument();
     expect(screen.getByText('First aid')).toBeInTheDocument();
     expect(screen.getByText(/Ref\. FA-123/)).toBeInTheDocument();
+    expect(screen.getByText('1 qualification')).toBeInTheDocument();
     // Volunteer name links to the profile.
     expect(screen.getByRole('link', { name: /Alice Brown/ })).toHaveAttribute('href', '/test/profile/10');
   });

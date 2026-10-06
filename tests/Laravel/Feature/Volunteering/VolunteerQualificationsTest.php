@@ -660,7 +660,9 @@ class VolunteerQualificationsTest extends TestCase
         $ownerBells = DB::table('notifications')->where('tenant_id', $this->testTenantId)->where('user_id', $owner->id)->where('type', 'qualification_expiry')->get();
         $this->assertCount(1, $ownerBells, 'one digest per confirmer, not one per record');
         $this->assertSame("/volunteering/org/{$orgId}/dashboard?tab=qualifications", $ownerBells[0]->link);
-        $this->assertStringContainsString('2 ', $ownerBells[0]->message);
+        // Worded so the number never needs a plural: "...needing attention at <org>: 2".
+        $this->assertStringEndsWith(': 2', $ownerBells[0]->message);
+        $this->assertStringContainsString('needing attention at', $ownerBells[0]->message);
 
         // Second run: nothing is sent twice.
         $this->artisan('volunteering:qualification-expiry', ['--tenant' => $this->testTenantId])

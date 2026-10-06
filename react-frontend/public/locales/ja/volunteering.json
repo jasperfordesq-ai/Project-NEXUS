@@ -1130,7 +1130,8 @@
       "expiring_hint": "{{days}} 日以内",
       "expired": "期限切れ"
     },
-    "attention_title": "対応が必要: {{number}} 件",
+    "attention_title_one": "対応が必要: {{number}} 件",
+    "attention_title_other": "対応が必要: {{number}} 件",
     "attention_body": "更新したら有効期限を更新してください。もう保有していない場合は記録を取り下げてください。",
     "group": {
       "attention": "対応が必要",
@@ -1235,7 +1236,8 @@
       "all": "すべて"
     },
     "search_placeholder": "ボランティアを検索",
-    "results": "{{number}} 件の資格",
+    "results_one": "{{number}} 件の資格",
+    "results_other": "{{number}} 件の資格",
     "empty_title": "対応が必要なものはありません",
     "empty_body": "ボランティアが記録した資格がここに表示されます。",
     "confirm": {

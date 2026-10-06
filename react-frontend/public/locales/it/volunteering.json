@@ -1144,7 +1144,9 @@
       "expiring_hint": "Entro {{days}} giorni",
       "expired": "Scadute"
     },
-    "attention_title": "{{number}} richiedono attenzione",
+    "attention_title_one": "{{number}} richiede attenzione",
+    "attention_title_many": "{{number}} richiedono attenzione",
+    "attention_title_other": "{{number}} richiedono attenzione",
     "attention_body": "Aggiorna la data di scadenza dopo il rinnovo, oppure ritira la voce se non possiedi più la qualifica.",
     "group": {
       "attention": "Da gestire",
@@ -1249,7 +1251,9 @@
       "all": "Tutte"
     },
     "search_placeholder": "Cerca volontari",
-    "results": "{{number}} qualifiche",
+    "results_one": "{{number}} qualifica",
+    "results_many": "{{number}} qualifiche",
+    "results_other": "{{number}} qualifiche",
     "empty_title": "Niente richiede la tua attenzione",
     "empty_body": "Le qualifiche registrate dai tuoi volontari compariranno qui.",
     "confirm": {

@@ -429,7 +429,7 @@ export function VolunteerQualifications() {
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted" aria-live="polite">
-              {t('qualifications.results', { number: numberFmt(total) })}
+              {t('qualifications.results', { count: total, number: numberFmt(total) })}
             </p>
 
             {items.map((item) => {
@@ -446,8 +446,10 @@ export function VolunteerQualifications() {
               const label = typeLabel(item.qualification_type, item.title);
               const showTitle = Boolean(item.title) && item.title !== label;
               const confirmation = confirmationLine(item);
-              const confirmedFor = item.status === 'confirmed'
-                ? (item.confirmed_for_organization?.name ?? t('qualifications.community'))
+              // An organisation's confirmation is already named in the
+              // confirmation line; only a community-staff one needs saying.
+              const confirmedFor = item.status === 'confirmed' && !item.confirmed_for_organization
+                ? t('qualifications.community')
                 : null;
 
               return (
@@ -493,7 +495,6 @@ export function VolunteerQualifications() {
                           ].filter(Boolean).join(' · ')}
                         </p>
                         <p className={`text-xs ${item.status === 'expired' ? 'font-semibold text-danger' : item.is_expiring ? 'font-semibold text-warning' : 'text-muted'}`}>
-                          <span className="sr-only">{t('qualifications.col.expires')}: </span>
                           {expiryLine(item)}
                         </p>
                         {confirmedFor && (

@@ -80,7 +80,7 @@
   "qualification_bell": {
     "expiring": "Rachaidh do cháilíocht {{type}} in éag ar {{date}}",
     "expired": "Chuaigh do cháilíocht {{type}} in éag ar {{date}}",
-    "org_attention": "Teastaíonn aird ar {{number}} cáilíocht oibrithe deonacha ag {{org}}"
+    "org_attention": "Cáilíochtaí oibrithe deonacha a dteastaíonn aird orthu ag {{org}}: {{number}}"
   },
   "qualification_types": {
     "first_aid": "Garchabhair",

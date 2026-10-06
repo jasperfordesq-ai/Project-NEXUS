@@ -140,7 +140,7 @@ describe('VolunteerQualifications', () => {
     expect(screen.getByRole('heading', { name: 'First aid' })).toBeInTheDocument();
     expect(screen.getByText(/Ref\. FA-123/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Alice Brown/ })).toHaveAttribute('href', '/test/admin/users/10/edit');
-    expect(screen.getByText('1 qualifications')).toBeInTheDocument();
+    expect(screen.getByText('1 qualification')).toBeInTheDocument();
   });
 
   it('reads the filters from the address', async () => {
@@ -251,7 +251,11 @@ describe('VolunteerQualifications', () => {
       }),
     ]));
     await renderPage();
-    await screen.findByText(/Confirmed for: Community Helpers/);
+    // An organisation's confirmation is named once, in the confirmation line —
+    // not again in a separate "Confirmed for" line.
+    await screen.findByText(/Confirmed by Bea Coordinator for Community Helpers/);
+    expect(screen.queryByText(/Confirmed for: Community Helpers/)).not.toBeInTheDocument();
+    // A confirmation by community staff still says so.
     expect(screen.getByText(/Confirmed for: Community staff/)).toBeInTheDocument();
     expect(screen.getByText('No expiry date')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument();

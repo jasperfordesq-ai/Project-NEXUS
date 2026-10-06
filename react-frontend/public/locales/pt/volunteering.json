@@ -1144,7 +1144,9 @@
       "expiring_hint": "Nos próximos {{days}} dias",
       "expired": "Caducadas"
     },
-    "attention_title": "{{number}} precisam de atenção",
+    "attention_title_one": "{{number}} precisa de atenção",
+    "attention_title_many": "{{number}} precisam de atenção",
+    "attention_title_other": "{{number}} precisam de atenção",
     "attention_body": "Atualize a data de validade depois de renovar, ou retire o registo se já não tiver a qualificação.",
     "group": {
       "attention": "Precisa de atenção",
@@ -1249,7 +1251,9 @@
       "all": "Todas"
     },
     "search_placeholder": "Pesquisar voluntários",
-    "results": "{{number}} qualificações",
+    "results_one": "{{number}} qualificação",
+    "results_many": "{{number}} qualificações",
+    "results_other": "{{number}} qualificações",
     "empty_title": "Nada precisa da sua atenção",
     "empty_body": "As qualificações registadas pelos seus voluntários aparecerão aqui.",
     "confirm": {
