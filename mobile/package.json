@@ -156,6 +156,7 @@
     "typescript": "^5.3.3"
   },
   "overrides": {
+    "shell-quote": "^1.11.0",
     "@humanfs/node": "0.16.8",
     "@istanbuljs/load-nyc-config": {
       "js-yaml": "^4.3.2"

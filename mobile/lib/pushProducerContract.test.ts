@@ -53,6 +53,7 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/settings/verification': { notification_link: '/settings/verification', native_href: '/(modals)/verify-identity' },
   '/volunteering': { notification_link: '/volunteering', native_href: '/(modals)/volunteering' },
   '/volunteering/opportunities/1': { notification_link: '/volunteering/opportunities/1', native_href: '/(modals)/volunteering-detail?id=1' },
+  '/volunteering?tab=applications': { notification_link: '/volunteering?tab=applications', native_href: '/(modals)/volunteering?tab=applications' },
   '/volunteering?tab=hours': { notification_link: '/volunteering?tab=hours', native_href: '/(modals)/volunteering?tab=hours' },
   '/volunteering?tab=waitlist': { notification_link: '/volunteering?tab=waitlist', native_href: '/(modals)/volunteering?tab=waitlist' },
   '/wallet': { notification_link: '/wallet', native_href: '/(modals)/wallet' },
