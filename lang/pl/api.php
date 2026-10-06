@@ -232,6 +232,8 @@ return [
     'maintenance_mode_boolean' => 'tryb_konserwacji musi być wartością logiczną',
     'registration_mode_invalid' => 'tryb_rejestracji musi być jednym z: otwarty, zamknięty, tylko dla zaproszonych',
     'region_invalid' => 'Region musi być dwuliterowym kodem kraju, na przykład IE lub GB',
+    'powered_by_image_upload_only' => 'Obraz „Obsługiwane przez” można ustawić wyłącznie przez przesłanie pliku.',
+    'powered_by_url_invalid' => 'Link „Obsługiwane przez” musi być pełnym adresem internetowym zaczynającym się od http:// lub https://',
     'registration_closed' => 'Rejestracja w tej społeczności jest zamknięta. Skontaktuj się z administratorem społeczności, jeśli potrzebujesz konta lub otrzymałeś zaproszenie.',
     'default_currency_invalid' => 'default_currency musi być trzyliterowym kodem waluty zgodnym z ISO 4217 (np. eur, usd, gbp)',
     'map_provider_invalid' => 'map_provider musi być jednym z: google, openstreetmap, ordnance_survey',

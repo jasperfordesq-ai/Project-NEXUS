@@ -232,6 +232,8 @@ return [
     'maintenance_mode_boolean' => 'cothabhála_mode ní mór luach boolean',
     'registration_mode_invalid' => 'Ní mór clárú_mode a bheith mar cheann de: oscailte, dúnta, cuireadh_amháin',
     'region_invalid' => 'Caithfidh an réigiún a bheith ina chód tíre dhá litir, mar shampla IE nó GB',
+    'powered_by_image_upload_only' => 'Ní féidir an íomhá \'cumhachtaithe ag\' a shocrú ach trí chomhad a uaslódáil.',
+    'powered_by_url_invalid' => 'Caithfidh an nasc \'cumhachtaithe ag\' a bheith ina sheoladh gréasáin iomlán a thosaíonn le http:// nó https://',
     'registration_closed' => 'Tá clárú dúnta don phobal seo. Déan teagmháil le riarthóir pobail má theastaíonn cuntas uait nó má fuair tú cuireadh.',
     'no_recognized_settings' => 'Níor soláthraíodh aon socruithe aitheanta. Eochracha anaithnid: :keys',
     'no_recognized_ai_settings' => 'Níor soláthraíodh aon socruithe AI ​​aitheanta',

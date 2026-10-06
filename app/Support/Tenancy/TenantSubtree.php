@@ -85,6 +85,79 @@ final class TenantSubtree
     }
 
     /**
+     * Ancestor tenant IDs of $tenantId, NEAREST FIRST, excluding $tenantId itself.
+     *
+     * Read from the materialised `tenants.path` (`/1/4/11/` → [4, 1] for 11).
+     * `path` is nullable, so fall back to a depth-capped `parent_id` walk. Never
+     * throws: an empty list means "no ancestors", which is the safe answer for
+     * every caller that uses this to inherit something.
+     *
+     * @return list<int>
+     */
+    public static function ancestorIds(?int $tenantId): array
+    {
+        if ($tenantId === null || $tenantId <= 0) {
+            return [];
+        }
+
+        try {
+            $row = DB::table('tenants')
+                ->select('path', 'parent_id')
+                ->where('id', $tenantId)
+                ->first();
+
+            if ($row === null) {
+                return [];
+            }
+
+            $path = is_string($row->path ?? null) ? trim($row->path) : '';
+            $ids = array_values(array_filter(
+                array_map('intval', explode('/', trim($path, '/'))),
+                static fn (int $id): bool => $id > 0
+            ));
+
+            // A usable path ends in the tenant itself. Anything else is stale or
+            // hand-edited, so trust parent_id instead.
+            if ($ids !== [] && end($ids) === $tenantId) {
+                array_pop($ids);
+
+                return array_values(array_unique(array_reverse($ids)));
+            }
+
+            return self::walkParents((int) ($row->parent_id ?? 0), $tenantId);
+        } catch (\Throwable $e) {
+            Log::warning('[TenantSubtree] ancestor lookup failed', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    /**
+     * `parent_id` walk upwards, nearest first. Depth-capped and cycle-guarded
+     * for the same reason as walkChildren().
+     *
+     * @return list<int>
+     */
+    private static function walkParents(int $parentId, int $tenantId, int $maxDepth = 6): array
+    {
+        $found = [];
+        $current = $parentId;
+
+        for ($depth = 0; $depth < $maxDepth && $current > 0; $depth++) {
+            if ($current === $tenantId || in_array($current, $found, true)) {
+                break;
+            }
+            $found[] = $current;
+            $current = (int) (DB::table('tenants')->where('id', $current)->value('parent_id') ?? 0);
+        }
+
+        return $found;
+    }
+
+    /**
      * Breadth-first `parent_id` walk, used only when the hub has no
      * materialised path. Depth-capped because a cycle in `parent_id` would
      * otherwise spin forever.

@@ -2232,6 +2232,11 @@ export interface AdminSettingsResponse {
     powered_by_image_light: string | null;
     powered_by_image_dark: string | null;
     powered_by_url: string | null;
+    /** The badge this community hands down to every community under it. */
+    network_powered_by_label?: string | null;
+    network_powered_by_image_light?: string | null;
+    network_powered_by_image_dark?: string | null;
+    network_powered_by_url?: string | null;
     default_currency: string | null;
     /** ISO 3166-1 alpha-2. Drives date/number formatting; absent = inherit. */
     region?: string | null;

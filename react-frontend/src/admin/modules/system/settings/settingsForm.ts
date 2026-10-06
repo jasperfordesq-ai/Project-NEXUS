@@ -31,6 +31,12 @@ export interface SettingsForm {
   powered_by_image_light: string; // general.powered_by_image_light
   powered_by_image_dark: string;  // general.powered_by_image_dark
   powered_by_url: string;         // general.powered_by_url
+  // The badge handed down to every community UNDER this one (platform god only).
+  // This community's own footer keeps using the four fields above.
+  network_powered_by_label: string;       // general.network_powered_by_label
+  network_powered_by_image_light: string; // general.network_powered_by_image_light
+  network_powered_by_image_dark: string;  // general.network_powered_by_image_dark
+  network_powered_by_url: string;         // general.network_powered_by_url
   default_currency: string;       // general.default_currency (ISO 4217 lowercase)
   region: string;                 // general.region (ISO 3166-1 alpha-2, drives date/number formatting)
   inactivity_timeout_minutes: string; // general.inactivity_timeout_minutes ('0' = disabled, 5–480)
@@ -87,6 +93,10 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   powered_by_image_light: '',
   powered_by_image_dark: '',
   powered_by_url: '',
+  network_powered_by_label: '',
+  network_powered_by_image_light: '',
+  network_powered_by_image_dark: '',
+  network_powered_by_url: '',
   default_currency: 'eur',
   region: 'IE',
   inactivity_timeout_minutes: '0',
@@ -145,6 +155,10 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     powered_by_image_light: str(settings.powered_by_image_light),
     powered_by_image_dark: str(settings.powered_by_image_dark),
     powered_by_url: str(settings.powered_by_url),
+    network_powered_by_label: str(settings.network_powered_by_label),
+    network_powered_by_image_light: str(settings.network_powered_by_image_light),
+    network_powered_by_image_dark: str(settings.network_powered_by_image_dark),
+    network_powered_by_url: str(settings.network_powered_by_url),
     default_currency: str(settings.default_currency).toLowerCase() || 'eur',
     region: str(settings.region).toUpperCase() || 'IE',
     inactivity_timeout_minutes: String(settings.inactivity_timeout_minutes ?? '0'),
@@ -186,6 +200,10 @@ export const PAYLOAD_RULES: Partial<Record<SettingsFormKey, PayloadRule>> = {
   // persisted here as an empty value.
   powered_by_image_light: { gate: 'platformGod' },
   powered_by_image_dark: { gate: 'platformGod' },
+  network_powered_by_label: { gate: 'platformGod' },
+  network_powered_by_url: { gate: 'platformGod' },
+  network_powered_by_image_light: { gate: 'platformGod' },
+  network_powered_by_image_dark: { gate: 'platformGod' },
   inactivity_timeout_minutes: { serialise: (v) => String(parseInt(String(v), 10) || 0) },
   header_bg_color: { endpoint: 'colors' },
   header_accent_color: { endpoint: 'colors' },

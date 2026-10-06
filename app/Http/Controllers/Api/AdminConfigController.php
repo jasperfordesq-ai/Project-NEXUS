@@ -17,6 +17,7 @@ use App\Services\JobConfigurationService;
 use App\Services\ListingConfigurationService;
 use App\Services\ListingRankingService;
 use App\Services\PodcastConfigurationService;
+use App\Services\PoweredByBadgeService;
 use App\Services\PrerenderContentInvalidator;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\MemberRankingService;
@@ -89,6 +90,12 @@ class AdminConfigController extends BaseApiController
         'powered_by_url',
         'powered_by_image_light',
         'powered_by_image_dark',
+        // The badge a hub hands down to every community under it
+        // (PoweredByBadgeService). Platform-god only, like the four above.
+        'network_powered_by_label',
+        'network_powered_by_url',
+        'network_powered_by_image_light',
+        'network_powered_by_image_dark',
         'map_provider', 'geocoding_provider',
         'google_maps_api_key', 'google_maps_map_id', 'maptiler_api_key',
         'os_maps_api_key',
@@ -1041,7 +1048,24 @@ class AdminConfigController extends BaseApiController
         return $this->uploadPoweredByImage('dark');
     }
 
-    private function uploadPoweredByImage(string $variant): JsonResponse
+    /** POST /api/v2/admin/settings/network-powered-by-image-light */
+    public function uploadNetworkPoweredByImageLight(): JsonResponse
+    {
+        return $this->uploadPoweredByImage('light', true);
+    }
+
+    /** POST /api/v2/admin/settings/network-powered-by-image-dark */
+    public function uploadNetworkPoweredByImageDark(): JsonResponse
+    {
+        return $this->uploadPoweredByImage('dark', true);
+    }
+
+    /**
+     * @param bool $network true for the badge this tenant hands down to the
+     *                      communities under it (PoweredByBadgeService), false
+     *                      for its own footer badge.
+     */
+    private function uploadPoweredByImage(string $variant, bool $network = false): JsonResponse
     {
         $adminId  = $this->requireAdmin();
         $tenantId = TenantContext::getId();
@@ -1076,7 +1100,7 @@ class AdminConfigController extends BaseApiController
             ];
 
             $imageUrl   = \App\Core\ImageUploader::upload($fileArray, 'powered-by-images');
-            $settingKey = "general.powered_by_image_{$variant}";
+            $settingKey = 'general.' . ($network ? PoweredByBadgeService::NETWORK_PREFIX : '') . "powered_by_image_{$variant}";
 
             DB::transaction(function () use ($tenantId, $settingKey, $imageUrl): void {
                 DB::table('tenant_settings')->updateOrInsert(
@@ -1089,13 +1113,20 @@ class AdminConfigController extends BaseApiController
             // Bust the cached bootstrap payload so the footer (and the SPA's
             // refreshTenant()) pick up the new image immediately instead of
             // serving the stale cached config for up to the 10-minute TTL.
+            // A network badge shows in every descendant's footer instead.
             $this->redisCache->delete('tenant_bootstrap', $tenantId);
+            if ($network) {
+                foreach (PoweredByBadgeService::inheritingTenantIds($tenantId) as $descendantId) {
+                    $this->redisCache->delete('tenant_bootstrap', $descendantId);
+                }
+            }
             $this->tenantSettingsService->clearCacheForTenant($tenantId);
 
             return $this->respondWithData(['url' => $imageUrl]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Powered-by image upload failed', [
                 'variant'   => $variant,
+                'network'   => $network,
                 'error'     => $e->getMessage(),
                 'tenant_id' => $tenantId,
             ]);
@@ -1365,6 +1396,32 @@ class AdminConfigController extends BaseApiController
                     403
                 );
             }
+        }
+
+        // "Powered by" badge keys — own and network — belong to the platform
+        // owner (`users.is_god`), the same gate as the badge image uploads. The
+        // admin UI never sent these for anyone else, but until 2026-10-06 the
+        // server did not check, so a community admin could rewrite the badge's
+        // label and link with a direct request.
+        $badgeKeys = array_intersect(array_keys($kvUpdates), PoweredByBadgeService::allSettingKeys());
+        if ($badgeKeys !== [] && !\App\Models\User::isGod($adminId)) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.god_level_access_required'), null, 403);
+        }
+        foreach ($badgeKeys as $badgeKey) {
+            $badgeValue = trim((string) ($kvUpdates[$badgeKey] ?? ''));
+            if (str_ends_with($badgeKey, '_image_light') || str_ends_with($badgeKey, '_image_dark')) {
+                // Images arrive through the upload endpoints only. This PUT may
+                // clear one (the admin form's "Remove"), never point it elsewhere.
+                if ($badgeValue !== '') {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.powered_by_image_upload_only'), $badgeKey, 422);
+                }
+            } elseif (str_ends_with($badgeKey, '_url') && $badgeValue !== '') {
+                $scheme = strtolower((string) parse_url($badgeValue, PHP_URL_SCHEME));
+                if (!in_array($scheme, ['http', 'https'], true) || filter_var($badgeValue, FILTER_VALIDATE_URL) === false) {
+                    return $this->respondWithError('VALIDATION_ERROR', __('api.powered_by_url_invalid'), $badgeKey, 422);
+                }
+            }
+            $kvUpdates[$badgeKey] = $badgeValue;
         }
 
         // Super-admin-only keys (e.g. maintenance_mode takes the whole tenant offline) —
@@ -1637,7 +1694,11 @@ class AdminConfigController extends BaseApiController
             return $response;
         }
 
-        foreach ($childIdsToBust as $childId) {
+        // A hub's network badge appears in every descendant's cached bootstrap.
+        if (array_intersect(array_keys($kvUpdates), PoweredByBadgeService::networkSettingKeys()) !== []) {
+            $childIdsToBust = array_merge($childIdsToBust, PoweredByBadgeService::inheritingTenantIds($tenantId));
+        }
+        foreach (array_unique($childIdsToBust) as $childId) {
             $this->redisCache->delete('tenant_bootstrap', $childId);
         }
 

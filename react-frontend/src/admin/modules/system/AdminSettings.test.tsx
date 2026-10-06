@@ -17,6 +17,8 @@ const { mockAdminSettings, mockAdminEnterprise } = vi.hoisted(() => ({
     uploadPartnerLogo: vi.fn(),
     uploadPoweredByImageLight: vi.fn(),
     uploadPoweredByImageDark: vi.fn(),
+    uploadNetworkPoweredByImageLight: vi.fn(),
+    uploadNetworkPoweredByImageDark: vi.fn(),
     uploadHeaderLogo: vi.fn(),
     uploadHeaderLogoDark: vi.fn(),
     removeHeaderLogo: vi.fn(),
@@ -462,6 +464,41 @@ describe('AdminSettings', () => {
     mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
     await renderPage();
     expect(screen.getByText('God only')).toBeInTheDocument();
+  });
+
+  // The network badge is what a hub (e.g. Timebanking UK) hands down to every
+  // community under it; its own footer keeps the separate badge above.
+  it('lets a platform god set the badge for communities under this one', async () => {
+    mockAuthState.user = { id: 1, name: 'Platform', role: 'admin', is_god: true };
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ network_powered_by_label: 'Powered by' }));
+    await renderPage();
+
+    expect(screen.getByText("This community's badge")).toBeInTheDocument();
+    expect(screen.getByText('Badge for communities under this one')).toBeInTheDocument();
+
+    const networkLabel = await screen.findByDisplayValue('Powered by');
+    await userEvent.clear(networkLabel);
+    await userEvent.type(networkLabel, 'Provided by');
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => {
+      expect(mockAdminSettings.update).toHaveBeenCalledWith({ network_powered_by_label: 'Provided by' });
+    });
+  });
+
+  it('never sends network badge settings for a non-god admin', async () => {
+    mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
+    mockAdminSettings.get.mockResolvedValue(makeSettingsData({ partner_logo_label: 'Sponsor', network_powered_by_label: 'X' }));
+    await renderPage();
+
+    expect(screen.queryByText('Badge for communities under this one')).not.toBeInTheDocument();
+    const labelInput = await screen.findByDisplayValue('Sponsor');
+    await userEvent.clear(labelInput);
+    await userEvent.type(labelInput, 'Partner');
+    await userEvent.click(getSaveButton());
+
+    await waitFor(() => expect(mockAdminSettings.update).toHaveBeenCalledTimes(1));
+    expect(mockAdminSettings.update.mock.calls[0]?.[0]).toEqual({ partner_logo_label: 'Partner' });
   });
 
   // F-054: email verification and member approval are platform-super-admin-only

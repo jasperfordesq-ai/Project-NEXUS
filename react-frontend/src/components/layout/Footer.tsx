@@ -57,8 +57,14 @@ export function Footer({ children, copyright }: FooterProps) {
   const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-nexus-dark.png';
   const DEFAULT_PB_URL         = 'https://project-nexus.net';
 
-  const pbImageLight = (tenant?.config?.powered_by_image_light as string | undefined) || DEFAULT_PB_IMAGE_LIGHT;
-  const pbImageDark  = (tenant?.config?.powered_by_image_dark  as string | undefined) || DEFAULT_PB_IMAGE_DARK;
+  // The API resolves which badge applies — the community's own, or the network
+  // badge of the hub above it (PoweredByBadgeService). A badge with only one
+  // image uploaded uses it in both modes: falling through to the NEXUS default
+  // for the missing mode would swap brands when the reader toggles dark mode.
+  const pbConfigLight = tenant?.config?.powered_by_image_light as string | undefined;
+  const pbConfigDark  = tenant?.config?.powered_by_image_dark  as string | undefined;
+  const pbImageLight = pbConfigLight || pbConfigDark || DEFAULT_PB_IMAGE_LIGHT;
+  const pbImageDark  = pbConfigDark  || pbConfigLight || DEFAULT_PB_IMAGE_DARK;
   const pbImage = resolveBrandingImageUrl(resolvedTheme === 'dark' ? pbImageDark : pbImageLight);
   const pbUrl   = (tenant?.config?.powered_by_url   as string | undefined) || DEFAULT_PB_URL;
   const pbLabel = tenant?.config?.powered_by_label as string | undefined;

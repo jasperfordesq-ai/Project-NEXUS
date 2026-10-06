@@ -232,6 +232,8 @@ return [
     'maintenance_mode_boolean' => 'maintenance_mode doit être une valeur booléenne',
     'registration_mode_invalid' => 'Registration_mode doit être l\'un des suivants : ouvert, fermé, invite_only',
     'region_invalid' => 'La région doit être un code pays à deux lettres, par exemple IE ou GB',
+    'powered_by_image_upload_only' => 'L\'image « Propulsé par » ne peut être définie qu\'en téléversant un fichier.',
+    'powered_by_url_invalid' => 'Le lien « Propulsé par » doit être une adresse web complète commençant par http:// ou https://',
     'registration_closed' => 'Les inscriptions sont closes pour cette communauté. Contactez un administrateur de la communauté si vous avez besoin d\'un compte ou si vous avez reçu une invitation.',
     'no_recognized_settings' => 'Aucun paramètre reconnu fourni. Clés inconnues : :keys',
     'no_recognized_ai_settings' => 'Aucun paramètre d\'IA reconnu fourni',

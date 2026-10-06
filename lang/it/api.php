@@ -232,6 +232,8 @@ return [
     'maintenance_mode_boolean' => 'Maintenance_mode deve essere un valore booleano',
     'registration_mode_invalid' => 'Registration_mode deve essere uno tra: open, closed, invite_only',
     'region_invalid' => 'La regione deve essere un codice paese di due lettere, ad esempio IE o GB',
+    'powered_by_image_upload_only' => 'L\'immagine "Powered by" può essere impostata solo caricando un file.',
+    'powered_by_url_invalid' => 'Il link "Powered by" deve essere un indirizzo web completo che inizia con http:// o https://',
     'registration_closed' => 'La registrazione è chiusa per questa community. Contatta un amministratore della community se hai bisogno di un account o hai ricevuto un invito.',
     'no_recognized_settings' => 'Nessuna impostazione riconosciuta fornita. Chiavi sconosciute: :keys',
     'no_recognized_ai_settings' => 'Nessuna impostazione AI riconosciuta fornita',

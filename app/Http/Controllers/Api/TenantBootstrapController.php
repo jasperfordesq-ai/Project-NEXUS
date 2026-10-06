@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use App\Services\GroupConfigurationService;
 use App\Services\JobConfigurationService;
 use App\Services\ListingConfigurationService;
+use App\Services\PoweredByBadgeService;
 use App\Services\RedisCache;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\TenantFeatureConfig;
@@ -908,17 +909,13 @@ class TenantBootstrapController extends BaseApiController
             $publicConfig['footer_text'] = $footerText;
         }
 
-        // Partner logo + powered-by settings (shown in footer)
+        // Partner logo (shown in footer)
         if ($tenantId > 0) {
             try {
                 $footerSettingKeys = [
                     'general.partner_logo_url',
                     'general.partner_logo_label',
                     'general.partner_logo_link_url',
-                    'general.powered_by_label',
-                    'general.powered_by_image_light',
-                    'general.powered_by_image_dark',
-                    'general.powered_by_url',
                 ];
                 $rows = DB::table('tenant_settings')
                     ->where('tenant_id', $tenantId)
@@ -933,6 +930,13 @@ class TenantBootstrapController extends BaseApiController
                 }
             } catch (\Exception $e) {
                 // table may not exist yet
+            }
+
+            // "Powered by" badge: the community's own, else the network badge of
+            // the nearest hub above it, else nothing (the footers then show the
+            // built-in Project NEXUS badge). See PoweredByBadgeService.
+            foreach (PoweredByBadgeService::resolveForTenant($tenantId) as $field => $value) {
+                $publicConfig[$field] = $value;
             }
         }
 

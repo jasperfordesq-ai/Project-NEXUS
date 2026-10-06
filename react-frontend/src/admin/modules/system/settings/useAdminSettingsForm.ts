@@ -30,7 +30,22 @@ import {
 
 export type SaveOutcome = { ok: true; changed: boolean } | { ok: false; error?: string };
 
-export type UploadSlot = 'partner' | 'header_light' | 'header_dark' | 'powered_light' | 'powered_dark';
+export type UploadSlot =
+  | 'partner'
+  | 'header_light'
+  | 'header_dark'
+  | 'powered_light'
+  | 'powered_dark'
+  | 'network_powered_light'
+  | 'network_powered_dark';
+
+/** Powered-by image slots: the upload call and the form field each one fills. */
+const POWERED_BY_SLOTS = {
+  powered_light: { field: 'powered_by_image_light', upload: adminSettings.uploadPoweredByImageLight },
+  powered_dark: { field: 'powered_by_image_dark', upload: adminSettings.uploadPoweredByImageDark },
+  network_powered_light: { field: 'network_powered_by_image_light', upload: adminSettings.uploadNetworkPoweredByImageLight },
+  network_powered_dark: { field: 'network_powered_by_image_dark', upload: adminSettings.uploadNetworkPoweredByImageDark },
+} as const satisfies Record<string, { field: SettingsFormKey; upload: (file: File) => Promise<{ data?: { url: string } }> }>;
 
 export interface AdminSettingsFormState {
   form: SettingsForm;
@@ -78,6 +93,8 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
     header_dark: false,
     powered_light: false,
     powered_dark: false,
+    network_powered_light: false,
+    network_powered_dark: false,
   });
 
   const refetch = useCallback(async () => {
@@ -174,10 +191,11 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
             break;
           }
           case 'powered_light':
-          case 'powered_dark': {
-            const fn = slot === 'powered_light' ? adminSettings.uploadPoweredByImageLight : adminSettings.uploadPoweredByImageDark;
-            const field: SettingsFormKey = slot === 'powered_light' ? 'powered_by_image_light' : 'powered_by_image_dark';
-            const res = await fn(file);
+          case 'powered_dark':
+          case 'network_powered_light':
+          case 'network_powered_dark': {
+            const { field, upload: uploadImage } = POWERED_BY_SLOTS[slot];
+            const res = await uploadImage(file);
             if (!res.data?.url) throw new Error('upload failed');
             const url = res.data.url;
             setForm((prev) => ({ ...prev, [field]: url }));
@@ -215,11 +233,14 @@ export function useAdminSettingsForm(): AdminSettingsFormState {
           setForm((prev) => ({ ...prev, partner_logo_url: '' }));
           return;
         case 'powered_light':
-          setForm((prev) => ({ ...prev, powered_by_image_light: '' }));
-          return;
         case 'powered_dark':
-          setForm((prev) => ({ ...prev, powered_by_image_dark: '' }));
+        case 'network_powered_light':
+        case 'network_powered_dark': {
+          // No delete endpoint: the empty value is persisted on Save.
+          const { field } = POWERED_BY_SLOTS[slot];
+          setForm((prev) => ({ ...prev, [field]: '' }));
           return;
+        }
         case 'header_light':
         case 'header_dark': {
           const fn = slot === 'header_light' ? adminSettings.removeHeaderLogo : adminSettings.removeHeaderLogoDark;

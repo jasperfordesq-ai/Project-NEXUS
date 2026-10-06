@@ -14,12 +14,13 @@ import { render, screen } from '@/test/test-utils';
 
 const mockUseTenant = vi.fn();
 const mockUseFeature = vi.fn();
+const mockTheme = vi.hoisted(() => ({ resolvedTheme: 'light' as 'light' | 'dark' }));
 
 vi.mock('@/contexts', () => ({
   useTenant: (...args: unknown[]) => mockUseTenant(...args),
   useFeature: (...args: unknown[]) => mockUseFeature(...args),
 
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
+  useTheme: () => ({ resolvedTheme: mockTheme.resolvedTheme, toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
   usePusher: () => ({ channel: null, isConnected: false }),
   usePusherOptional: () => null,
@@ -37,7 +38,7 @@ vi.mock('@/contexts/TenantContext', () => ({
 }));
 
 vi.mock('@/contexts/ThemeContext', () => ({
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
+  useTheme: () => ({ resolvedTheme: mockTheme.resolvedTheme, toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
 }));
 
 vi.mock('@/contexts/CookieConsentContext', () => ({
@@ -273,6 +274,53 @@ describe('Footer', () => {
       links.forEach((link) => {
         expect(link.getAttribute('href')).toBe('https://timebanking.org/');
       });
+    });
+
+    /*
+     * A badge with only one image uploaded (typical for a network badge handed
+     * down from a hub) must use that image in BOTH modes. Falling through to the
+     * built-in Project NEXUS dark image swapped brands whenever a reader turned
+     * dark mode on.
+     */
+    it('uses a single uploaded badge image in dark mode instead of the NEXUS default', () => {
+      mockTheme.resolvedTheme = 'dark';
+      try {
+        setupDefaultMocks({
+          tenant: {
+            tenant: {
+              id: 2,
+              name: 'Test',
+              slug: 'test',
+              contact: null,
+              config: {
+                powered_by_label: 'Provided by',
+                powered_by_image_light: '/uploads/powered-by-images/tbuk.png',
+              },
+            },
+          },
+        });
+
+        render(<Footer />);
+
+        const images = screen.getAllByRole('img', { name: 'Provided by' });
+        expect(images.length).toBeGreaterThan(0);
+        images.forEach((img) => expect(img.getAttribute('src')).toMatch(/\/uploads\/powered-by-images\/tbuk\.png$/));
+      } finally {
+        mockTheme.resolvedTheme = 'light';
+      }
+    });
+
+    it('still shows the NEXUS dark badge in dark mode when nothing is configured', () => {
+      mockTheme.resolvedTheme = 'dark';
+      try {
+        render(<Footer />);
+
+        const images = screen.getAllByRole('img', { name: 'Powered by' });
+        expect(images.length).toBeGreaterThan(0);
+        images.forEach((img) => expect(img.getAttribute('src')).toBe('/images/powered-by-nexus-dark.png'));
+      } finally {
+        mockTheme.resolvedTheme = 'light';
+      }
     });
   });
 
