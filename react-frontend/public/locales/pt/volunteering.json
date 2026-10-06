@@ -726,7 +726,7 @@
     "no_swaps_title": "Nenhuma solicitação de troca",
     "no_sent": "Você ainda não enviou nenhuma solicitação de troca de turno.",
     "no_received": "Você não recebeu nenhuma solicitação de troca de turno.",
-    "no_swaps_desc": "Nenhuma solicitação de troca de turno encontrada. Você pode solicitar uma troca na página de detalhes do turno.",
+    "no_swaps_desc": "Nenhum pedido de troca de turno encontrado. Para pedir uma troca, abra Candidaturas e escolha um dos seus turnos confirmados.",
     "status_pending": "Pendente",
     "status_accepted": "Aceito",
     "status_rejected": "Rejeitado",
@@ -745,7 +745,17 @@
     "reject": "Rejeitar",
     "cancel": "Cancelar",
     "reject_confirm": "Tem certeza de que deseja rejeitar esta solicitação de troca?",
-    "accept_pending_admin": "Troca aceite — a aguardar aprovação do administrador antes de alterar os turnos."
+    "accept_pending_admin": "Troca aceite — a aguardar aprovação do administrador antes de alterar os turnos.",
+    "ask": "Pedir troca",
+    "ask_label": "Pedir para trocar o seu turno em {{title}}",
+    "ask_title": "Trocar este turno",
+    "ask_body": "Escolha o turno que preferia fazer. Vamos perguntar a quem está inscrito. Só verá o nome dessa pessoa se ela aceitar.",
+    "ask_empty": "Nenhum outro turno desta oportunidade tem inscritos, por isso ainda não há com quem trocar.",
+    "ask_option_label": "Pedir troca para o turno de {{date}}",
+    "options_error": "Não foi possível carregar os outros turnos.",
+    "request_sent": "Pedido de troca enviado. Perguntámos à outra pessoa e será avisado quando responder.",
+    "request_error": "Não foi possível enviar esse pedido de troca.",
+    "to_unnamed": "Para: a pessoa nesse turno (o nome aparece quando aceitar)"
   },
   "opportunity": {
     "search_placeholder": "Pesquise por nome...",

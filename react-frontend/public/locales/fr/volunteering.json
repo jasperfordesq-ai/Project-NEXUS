@@ -726,7 +726,7 @@
     "no_swaps_title": "Aucune demande d'échange",
     "no_sent": "Vous n'avez pas encore envoyé de demandes d'échange d'équipe.",
     "no_received": "Vous n'avez reçu aucune demande d'échange d'équipe.",
-    "no_swaps_desc": "Aucune demande d'échange d'équipe trouvée. Vous pouvez demander un échange à partir de la page des détails de l'équipe.",
+    "no_swaps_desc": "Aucune demande d’échange de créneau trouvée. Pour proposer un échange, ouvrez Candidatures et choisissez l’un de vos créneaux confirmés.",
     "status_pending": "En attente",
     "status_accepted": "Accepté",
     "status_rejected": "Rejeté",
@@ -745,7 +745,17 @@
     "reject": "Rejeter",
     "cancel": "Annuler",
     "reject_confirm": "Etes-vous sûr de vouloir rejeter cette demande d'échange ?",
-    "accept_pending_admin": "Échange accepté — en attente de l'approbation d'un administrateur avant le changement des créneaux."
+    "accept_pending_admin": "Échange accepté — en attente de l'approbation d'un administrateur avant le changement des créneaux.",
+    "ask": "Proposer un échange",
+    "ask_label": "Proposer d’échanger votre créneau sur {{title}}",
+    "ask_title": "Échanger ce créneau",
+    "ask_body": "Choisissez le créneau que vous préférez. Nous demanderons à la personne qui y est inscrite. Vous ne verrez son nom que si elle accepte.",
+    "ask_empty": "Aucun autre créneau de cette mission n’a d’inscrit : il n’y a donc encore personne avec qui échanger.",
+    "ask_option_label": "Proposer un échange pour le créneau du {{date}}",
+    "options_error": "Impossible de charger les autres créneaux.",
+    "request_sent": "Demande d’échange envoyée. Nous avons interrogé l’autre bénévole et vous serez informé de sa réponse.",
+    "request_error": "Impossible d’envoyer cette demande d’échange.",
+    "to_unnamed": "À : la personne inscrite sur ce créneau (nom affiché après son accord)"
   },
   "opportunity": {
     "search_placeholder": "Rechercher par nom...",

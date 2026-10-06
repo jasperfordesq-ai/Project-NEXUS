@@ -719,7 +719,7 @@
     "no_swaps_title": "Keine Tauschanfragen",
     "no_sent": "Sie haben noch keine Schichttauschanfragen gesendet.",
     "no_received": "Sie haben keine Schichttauschanfragen erhalten.",
-    "no_swaps_desc": "Keine Schichttauschanfragen gefunden. Sie können einen Tausch über die Schichtdetails anfragen.",
+    "no_swaps_desc": "Keine Schichttauschanfragen gefunden. Um einen Tausch anzufragen, öffnen Sie Bewerbungen und wählen Sie eine Ihrer bestätigten Schichten.",
     "status_pending": "Ausstehend",
     "status_accepted": "Angenommen",
     "status_rejected": "Abgelehnt",
@@ -738,7 +738,17 @@
     "reject": "Ablehnen",
     "cancel": "Abbrechen",
     "reject_confirm": "Möchten Sie diese Tauschanfrage wirklich ablehnen?",
-    "accept_pending_admin": "Tausch angenommen — wartet auf Admin-Freigabe, bevor die Schichten wechseln."
+    "accept_pending_admin": "Tausch angenommen — wartet auf Admin-Freigabe, bevor die Schichten wechseln.",
+    "ask": "Tausch anfragen",
+    "ask_label": "Ihre Schicht bei {{title}} zum Tausch anbieten",
+    "ask_title": "Diese Schicht tauschen",
+    "ask_body": "Wählen Sie die Schicht, die Sie lieber übernehmen würden. Wir fragen die Person, die darauf eingetragen ist. Deren Namen sehen Sie nur, wenn sie zustimmt.",
+    "ask_empty": "Bei dieser Gelegenheit ist auf keiner anderen Schicht jemand eingetragen, es gibt also noch niemanden zum Tauschen.",
+    "ask_option_label": "Tausch für die Schicht am {{date}} anfragen",
+    "options_error": "Die anderen Schichten konnten nicht geladen werden.",
+    "request_sent": "Tauschanfrage gesendet. Wir haben die andere Person gefragt. Sie erfahren es, sobald sie antwortet.",
+    "request_error": "Diese Tauschanfrage konnte nicht gesendet werden.",
+    "to_unnamed": "An: die Person auf dieser Schicht (Name erst nach Zustimmung)"
   },
   "opportunity": {
     "search_placeholder": "Nach Name suchen...",

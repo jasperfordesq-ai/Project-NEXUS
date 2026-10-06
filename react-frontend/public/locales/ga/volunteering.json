@@ -740,7 +740,7 @@
     "no_swaps_title": "Gan aon iarratas babhtála",
     "no_sent": "Níor sheol tú aon iarratas ar mhalartú sealaíochta fós.",
     "no_received": "Níl aon iarratas ar mhalartú sealaíochta faighte agat.",
-    "no_swaps_desc": "Níor aimsíodh aon iarratas ar mhalartú sealaíochta. Is féidir leat babhtáil a iarraidh ón leathanach sonraí seala.",
+    "no_swaps_desc": "Níor aimsíodh aon iarratas babhtála seala. Chun babhtáil a iarraidh, oscail Iarratais agus roghnaigh ceann de do shealanna deimhnithe.",
     "status_pending": "Ar feitheamh",
     "status_accepted": "Glactha",
     "status_rejected": "Diúltaithe",
@@ -759,7 +759,17 @@
     "reject": "Diúltaigh",
     "cancel": "Cealaigh",
     "reject_confirm": "An bhfuil tú cinnte gur mhaith leat diúltú don iarratas babhtála seo?",
-    "accept_pending_admin": "Glacadh leis an mbabhtáil — ag fanacht le ceadú riarthóra sula n-athraítear na sealanna."
+    "accept_pending_admin": "Glacadh leis an mbabhtáil — ag fanacht le ceadú riarthóra sula n-athraítear na sealanna.",
+    "ask": "Iarr babhtáil",
+    "ask_label": "Iarr do sheal ar {{title}} a bhabhtáil",
+    "ask_title": "Iarr an seal seo a bhabhtáil",
+    "ask_body": "Roghnaigh an seal ba mhaith leat a dhéanamh. Fiafróimid den duine atá air. Ní fheicfidh tú a ainm mura n-aontaíonn sé.",
+    "ask_empty": "Níl aon seal eile ar an deis seo ina bhfuil duine, mar sin níl aon duine le babhtáil leis go fóill.",
+    "ask_option_label": "Iarr babhtáil don seal ar {{date}}",
+    "options_error": "Níorbh fhéidir na sealanna eile a lódáil.",
+    "request_sent": "Iarratas babhtála seolta. D’iarr muid ar an oibrí deonach eile agus cuirfear in iúl duit nuair a fhreagraíonn sé.",
+    "request_error": "Níorbh fhéidir an iarratas babhtála sin a sheoladh.",
+    "to_unnamed": "Chuig: an duine atá ar an seal sin (ainm le feiceáil nuair a aontaíonn sé)"
   },
   "opportunity": {
     "search_placeholder": "Cuardaigh de réir ainm...",

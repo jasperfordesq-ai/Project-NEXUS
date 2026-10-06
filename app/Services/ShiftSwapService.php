@@ -651,9 +651,23 @@ class ShiftSwapService
         $requests = $rows;
 
         return $requests->map(function ($r) use ($userId) {
+            $direction = (int) $r->from_user_id === $userId ? 'sent' : 'received';
+
+            /*
+              The requester asked for a SHIFT, not a person, and every client tells them
+              "you will not see their name unless they agree" (see requestSwap()). Until
+              2026-10-06 this list then named the recipient on the requester's own "sent"
+              card from the moment the request was created, on all three clients. Only
+              the recipient's answer reveals them: an accepted request, or one that has
+              gone to admin review because they accepted. The recipient always sees who
+              is asking — that is the point of the request.
+            */
+            $recipientRevealed = $direction === 'received'
+                || self::recipientHasAgreed((string) $r->status);
+
             return [
                 'id'                       => (int) $r->id,
-                'direction'                => (int) $r->from_user_id === $userId ? 'sent' : 'received',
+                'direction'                => $direction,
                 'status'                   => $r->status,
                 'message'                  => $r->message,
                 'requires_admin_approval'  => (bool) $r->requires_admin_approval,
@@ -662,10 +676,14 @@ class ShiftSwapService
                     'name'       => $r->from_user_name,
                     'avatar_url' => $r->from_user_avatar,
                 ],
-                'recipient' => [
+                'recipient' => $recipientRevealed ? [
                     'id'         => (int) $r->to_user_id,
                     'name'       => $r->to_user_name,
                     'avatar_url' => $r->to_user_avatar,
+                ] : [
+                    'id'         => null,
+                    'name'       => null,
+                    'avatar_url' => null,
                 ],
                 'original_shift' => [
                     'id'                => (int) $r->from_shift_id,
@@ -684,6 +702,15 @@ class ShiftSwapService
                 'created_at' => $r->created_at,
             ];
         })->all();
+    }
+
+    /**
+     * Has the recipient said yes? Every status after their acceptance counts, including
+     * the admin's later refusal: they agreed, so the requester may know who they were.
+     */
+    public static function recipientHasAgreed(string $status): bool
+    {
+        return in_array($status, ['accepted', 'admin_pending', 'admin_approved', 'admin_rejected'], true);
     }
 
     /**

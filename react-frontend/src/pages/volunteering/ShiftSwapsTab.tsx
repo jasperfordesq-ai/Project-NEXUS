@@ -51,9 +51,13 @@ interface ShiftSwap {
     name: string;
     avatar_url: string | null;
   };
+  /**
+   * On a request you SENT, the recipient stays anonymous (all three fields null) until
+   * they agree — you asked for a shift, not a person. Always filled in on received ones.
+   */
   recipient: {
-    id: number;
-    name: string;
+    id: number | null;
+    name: string | null;
     avatar_url: string | null;
   };
   original_shift: SwapShift;
@@ -363,8 +367,8 @@ export function ShiftSwapsTab() {
                         {t(`swaps.status_${swap.status}`)}
                       </Chip>
                       {swap.direction === 'sent' && (
-                        <span className="text-xs text-theme-subtle">
-                          {t('swaps.to')} {swap.recipient.name}
+                        <span className="text-xs text-theme-subtle" data-testid={`swap-recipient-${swap.id}`}>
+                          {swap.recipient.name ? `${t('swaps.to')} ${swap.recipient.name}` : t('swaps.to_unnamed')}
                         </span>
                       )}
                       {swap.direction === 'received' && (

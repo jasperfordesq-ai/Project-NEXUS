@@ -94,6 +94,7 @@ import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volu
 import type { VolunteeringConfig } from '@/types';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import { extractCollectionItems } from './extractCollectionItems';
+import { ShiftSwapRequestModal, type SwapSourceShift } from './ShiftSwapRequestModal';
 const VolunteeringWelcome = React.lazy(() => import('./VolunteeringWelcome'));
 const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
@@ -1298,6 +1299,9 @@ function ApplicationsTab() {
   const tRef = useRef(t);
   tRef.current = t;
   const abortApplicationsRef = useRef<AbortController | null>(null);
+  // "Ask to swap" — the confirmed shift the member wants to give up. Matches the
+  // phone app: they pick a shift to move onto, never a person.
+  const [swapFor, setSwapFor] = useState<SwapSourceShift | null>(null);
 
   const loadApplications = useCallback(async (append = false) => {
     abortApplicationsRef.current?.abort();
@@ -1520,10 +1524,34 @@ function ApplicationsTab() {
                           {t('withdraw')}
                         </Button>
                       )}
+
+                      {/* A confirmed shift that has not started yet can be offered for a swap. */}
+                      {app.status === 'approved' && app.shift && new Date(app.shift.start_time).getTime() > Date.now() && (
+                        <Button
+                          size="sm"
+                          variant="tertiary"
+                          className="bg-theme-elevated text-theme-muted sm:flex-shrink-0"
+                          startContent={<ArrowLeftRight className="w-4 h-4" aria-hidden="true" />}
+                          aria-label={t('swaps.ask_label', { title: app.opportunity.title })}
+                          data-testid={`shift-swap-ask-${app.shift.id}`}
+                          onPress={() => setSwapFor({
+                            id: app.shift!.id,
+                            opportunity_id: app.opportunity.id,
+                            opportunity_title: app.opportunity.title,
+                            start_time: app.shift!.start_time,
+                            end_time: app.shift!.end_time,
+                          })}
+                        >
+                          {t('swaps.ask')}
+                        </Button>
+                      )}
                     </div>
                   </GlassCard>
                 </motion.div>
               ))}
+
+              <ShiftSwapRequestModal shift={swapFor} onClose={() => setSwapFor(null)} />
+
 
               {hasMore && (
                 <div className="pt-4 text-center">

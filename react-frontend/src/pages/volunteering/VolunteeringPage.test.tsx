@@ -7,7 +7,7 @@
  * Tests for VolunteeringPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
@@ -210,6 +210,88 @@ describe('VolunteeringPage', () => {
     render(<VolunteeringPage />);
     expect(screen.getByText('My Applications')).toBeInTheDocument();
     expect(screen.getByText('My Hours')).toBeInTheDocument();
+  });
+
+  describe('ask to swap (My Applications)', () => {
+    const futureShift = { id: 10, start_time: '2099-03-15T10:00:00Z', end_time: '2099-03-15T14:00:00Z' };
+    const pastShift = { id: 11, start_time: '2020-03-15T10:00:00Z', end_time: '2020-03-15T14:00:00Z' };
+    const application = (overrides: Record<string, unknown>) => ({
+      id: 1,
+      status: 'approved',
+      message: '',
+      opportunity: { id: 5, title: 'Food Bank', location: 'Town Hall' },
+      organization: { id: 7, name: 'Food For All', logo_url: null },
+      shift: futureShift,
+      org_note: null,
+      created_at: '2026-01-01T00:00:00Z',
+      ...overrides,
+    });
+
+    // Switching tab writes `?tab=applications` to the shared jsdom URL; put it
+    // back so the tests after this block still open on Opportunities.
+    afterEach(() => {
+      window.history.replaceState({}, '', '/');
+    });
+
+    const mockApplications = (apps: unknown[]) => {
+      const handler = async (endpoint: string) => {
+        if (endpoint.startsWith('/v2/volunteering/applications')) {
+          return { success: true, data: apps, meta: { cursor: null, has_more: false } };
+        }
+        if (endpoint === '/v2/volunteering/opportunities/5/shifts') {
+          return {
+            success: true,
+            data: [
+              { ...futureShift, signup_count: 1 },
+              { id: 13, start_time: '2099-03-17T09:00:00Z', end_time: '2099-03-17T12:00:00Z', signup_count: 2 },
+            ],
+          };
+        }
+        return { success: true, data: [], meta: {} };
+      };
+      vi.mocked(api.get).mockImplementation(handler as unknown as typeof api.get);
+    };
+
+    it('offers "Ask to swap" only on a confirmed shift that has not started', async () => {
+      mockApplications([
+        application({ id: 1, shift: futureShift }),
+        application({ id: 2, shift: pastShift }),
+        application({ id: 3, status: 'pending', shift: { ...futureShift, id: 12 } }),
+        application({ id: 4, shift: null }),
+      ]);
+      render(<VolunteeringPage />);
+      fireEvent.click(screen.getByText('My Applications'));
+
+      expect(await screen.findByTestId('shift-swap-ask-10')).toBeInTheDocument();
+      expect(screen.queryByTestId('shift-swap-ask-11')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('shift-swap-ask-12')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId(/^shift-swap-ask-/)).toHaveLength(1);
+    });
+
+    it('opens the shift picker for that opportunity and asks for the chosen shift', async () => {
+      mockApplications([application({ id: 1, shift: futureShift })]);
+      vi.mocked(api.post).mockResolvedValue({ success: true, data: { id: 99 } });
+      render(<VolunteeringPage />);
+      fireEvent.click(screen.getByText('My Applications'));
+      fireEvent.click(await screen.findByTestId('shift-swap-ask-10'));
+
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith('/v2/volunteering/opportunities/5/shifts');
+      });
+      // The member's own shift is never offered; only the other future shift with someone on it.
+      const option = await screen.findByTestId('shift-swap-option-13');
+      expect(screen.queryByTestId('shift-swap-option-10')).not.toBeInTheDocument();
+
+      fireEvent.click(option);
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith(
+          '/v2/volunteering/swaps',
+          expect.objectContaining({ from_shift_id: 10, to_shift_id: 13 }),
+        );
+      });
+      const body = vi.mocked(api.post).mock.calls[0]?.[1] as Record<string, unknown>;
+      expect(body).not.toHaveProperty('to_user_id');
+    });
   });
 
   it('shows Browse Organisations button', () => {

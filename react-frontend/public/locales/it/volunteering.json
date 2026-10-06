@@ -726,7 +726,7 @@
     "no_swaps_title": "Nessuna richiesta di scambio",
     "no_sent": "Non hai ancora inviato alcuna richiesta di cambio turno.",
     "no_received": "Non hai ricevuto alcuna richiesta di cambio turno.",
-    "no_swaps_desc": "Nessuna richiesta di scambio turno trovata. Puoi richiedere uno scambio dalla pagina dei dettagli del turno.",
+    "no_swaps_desc": "Nessuna richiesta di scambio turno trovata. Per proporre uno scambio, apri Applicazioni e scegli uno dei tuoi turni confermati.",
     "status_pending": "In attesa di",
     "status_accepted": "Accettato",
     "status_rejected": "Respinto",
@@ -745,7 +745,17 @@
     "reject": "Rifiutare",
     "cancel": "Cancellare",
     "reject_confirm": "Sei sicuro di voler rifiutare questa richiesta di scambio?",
-    "accept_pending_admin": "Scambio accettato: in attesa dell'approvazione dell'amministratore prima del cambio turni."
+    "accept_pending_admin": "Scambio accettato: in attesa dell'approvazione dell'amministratore prima del cambio turni.",
+    "ask": "Proponi uno scambio",
+    "ask_label": "Proponi di scambiare il tuo turno su {{title}}",
+    "ask_title": "Scambia questo turno",
+    "ask_body": "Scegli il turno che preferiresti fare. Lo chiederemo a chi è iscritto. Vedrai il suo nome solo se accetta.",
+    "ask_empty": "Nessun altro turno di questa opportunità ha iscritti, quindi non c’è ancora nessuno con cui scambiare.",
+    "ask_option_label": "Proponi uno scambio per il turno del {{date}}",
+    "options_error": "Non è stato possibile caricare gli altri turni.",
+    "request_sent": "Richiesta di scambio inviata. Abbiamo chiesto all’altro volontario e ti avviseremo quando risponde.",
+    "request_error": "Non è stato possibile inviare la richiesta di scambio.",
+    "to_unnamed": "A: la persona su quel turno (il nome compare quando accetta)"
   },
   "opportunity": {
     "search_placeholder": "Cerca per nome...",

@@ -733,7 +733,7 @@
     "no_swaps_title": "Żadnych próśb o zamianę",
     "no_sent": "Nie wysłałeś jeszcze żadnych próśb o zamianę zmian.",
     "no_received": "Nie otrzymałeś żadnych próśb o zamianę zmian.",
-    "no_swaps_desc": "Nie znaleziono żądań zamiany zmian. Możesz poprosić o wymianę na stronie szczegółów zmiany.",
+    "no_swaps_desc": "Nie znaleziono próśb o zamianę zmiany. Aby poprosić o zamianę, otwórz Aplikacje i wybierz jedną ze swoich potwierdzonych zmian.",
     "status_pending": "Oczekujące",
     "status_accepted": "Przyjęty",
     "status_rejected": "Odrzucony",
@@ -752,7 +752,17 @@
     "reject": "Odrzuć",
     "cancel": "Anuluj",
     "reject_confirm": "Czy na pewno chcesz odrzucić tę prośbę o wymianę?",
-    "accept_pending_admin": "Zamiana zaakceptowana — oczekuje na zatwierdzenie przez administratora przed zmianą zmian."
+    "accept_pending_admin": "Zamiana zaakceptowana — oczekuje na zatwierdzenie przez administratora przed zmianą zmian.",
+    "ask": "Poproś o zamianę",
+    "ask_label": "Poproś o zamianę swojej zmiany w {{title}}",
+    "ask_title": "Poproś o zamianę tej zmiany",
+    "ask_body": "Wybierz zmianę, którą wolisz. Zapytamy osobę, która jest na nią zapisana. Jej imię zobaczysz tylko wtedy, gdy się zgodzi.",
+    "ask_empty": "Na żadnej innej zmianie w tej ofercie nikt nie jest zapisany, więc nie ma jeszcze z kim się zamienić.",
+    "ask_option_label": "Poproś o zamianę na zmianę w dniu {{date}}",
+    "options_error": "Nie udało się wczytać pozostałych zmian.",
+    "request_sent": "Prośba o zamianę wysłana. Zapytaliśmy drugiego wolontariusza i powiadomimy Cię, gdy odpowie.",
+    "request_error": "Nie udało się wysłać tej prośby o zamianę.",
+    "to_unnamed": "Do: osoby na tej zmianie (imię pojawi się, gdy się zgodzi)"
   },
   "opportunity": {
     "search_placeholder": "Szukaj według nazwy...",

@@ -46,6 +46,8 @@ vi.mock("react-i18next", () => ({
         "swaps.your_shift": "Your Shift",
         "swaps.their_shift": "Their Shift",
         "swaps.proposed_shift": "Proposed Shift",
+        "swaps.to": "To:",
+        "swaps.to_unnamed": "To: the volunteer on that shift (named once they agree)",
       };
       if (typeof fallbackOrOptions === "string") return fallbackOrOptions;
       return translations[key] ?? key;
@@ -162,6 +164,17 @@ describe("ShiftSwapsTab", () => {
     expect(screen.getByText(/Can we swap please/, { exact: false })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Accept/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Reject/i })).toBeInTheDocument();
+  });
+
+  it("keeps the recipient anonymous on a sent request until they agree", async () => {
+    const pending = { ...makeSwap("sent", "pending"), recipient: { id: null, name: null, avatar_url: null } };
+    const accepted = { ...makeSwap("sent", "accepted"), id: 2 };
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { swaps: [pending, accepted] } });
+    render(<ShiftSwapsTab />);
+
+    await waitFor(() => screen.getByTestId("swap-recipient-1"));
+    expect(screen.getByTestId("swap-recipient-1")).toHaveTextContent("To: the volunteer on that shift (named once they agree)");
+    expect(screen.getByTestId("swap-recipient-2")).toHaveTextContent("To: Bob Lee");
   });
 
   it("hides accept/reject buttons for sent swaps", async () => {

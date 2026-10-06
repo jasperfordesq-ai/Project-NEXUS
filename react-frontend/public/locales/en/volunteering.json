@@ -719,7 +719,7 @@
     "no_swaps_title": "No swap requests",
     "no_sent": "You have not sent any shift swap requests yet.",
     "no_received": "You have not received any shift swap requests.",
-    "no_swaps_desc": "No shift swap requests found. You can request a swap from the shift details page.",
+    "no_swaps_desc": "No shift swap requests found. To ask for a swap, open Applications and choose one of your confirmed shifts.",
     "status_pending": "Pending",
     "status_accepted": "Accepted",
     "status_rejected": "Rejected",
@@ -738,7 +738,17 @@
     "reject": "Reject",
     "cancel": "Cancel",
     "reject_confirm": "Are you sure you want to reject this swap request?",
-    "accept_pending_admin": "Swap accepted — awaiting admin approval before the shifts change."
+    "accept_pending_admin": "Swap accepted — awaiting admin approval before the shifts change.",
+    "ask": "Ask to swap",
+    "ask_label": "Ask to swap your shift on {{title}}",
+    "ask_title": "Ask to swap this shift",
+    "ask_body": "Pick the shift you would rather do. We will ask whoever is on it. You will not see their name unless they agree.",
+    "ask_empty": "There is no other shift on this opportunity with someone on it, so there is nobody to swap with yet.",
+    "ask_option_label": "Ask to swap for the shift on {{date}}",
+    "options_error": "Could not load the other shifts.",
+    "request_sent": "Swap request sent. We have asked the other volunteer and you will be told when they answer.",
+    "request_error": "Could not send that swap request.",
+    "to_unnamed": "To: the volunteer on that shift (named once they agree)"
   },
   "opportunity": {
     "search_placeholder": "Search by name...",

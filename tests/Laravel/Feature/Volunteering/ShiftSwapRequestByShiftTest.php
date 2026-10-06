@@ -322,4 +322,62 @@ class ShiftSwapRequestByShiftTest extends TestCase
 
         $this->assertNotNull($swapId, json_encode(ShiftSwapService::getErrors()));
     }
+
+    /**
+     * The promise made when asking is "you will not see their name unless they agree".
+     * Until 2026-10-06 the requester's own list then named the recipient immediately.
+     */
+    public function test_the_requester_is_not_told_who_holds_the_shift_until_they_agree(): void
+    {
+        [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();
+        $asker = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $holder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->approveOnShift($asker->id, $opportunityId, $shiftA);
+        $this->approveOnShift($holder->id, $opportunityId, $shiftB);
+
+        $swapId = ShiftSwapService::requestSwap($asker->id, [
+            'from_shift_id' => $shiftA,
+            'to_shift_id' => $shiftB,
+        ]);
+        $this->assertNotNull($swapId, json_encode(ShiftSwapService::getErrors()));
+
+        // The asker's own "sent" card: who holds the shift stays hidden, in every field.
+        $sent = collect(ShiftSwapService::getSwapRequests($asker->id))->firstWhere('id', $swapId);
+        $this->assertSame('sent', $sent['direction']);
+        $this->assertSame('pending', $sent['status']);
+        $this->assertNull($sent['recipient']['id']);
+        $this->assertNull($sent['recipient']['name']);
+        $this->assertNull($sent['recipient']['avatar_url']);
+
+        // The holder must know who is asking — that is the point of the request.
+        $received = collect(ShiftSwapService::getSwapRequests($holder->id))->firstWhere('id', $swapId);
+        $this->assertSame('received', $received['direction']);
+        $this->assertSame((int) $asker->id, $received['requester']['id']);
+        $this->assertSame($asker->name, $received['requester']['name']);
+
+        // Once the holder agrees, the asker is told who they swapped with.
+        $this->assertTrue(ShiftSwapService::respond($swapId, $holder->id, 'accept'), json_encode(ShiftSwapService::getErrors()));
+        $sentAfter = collect(ShiftSwapService::getSwapRequests($asker->id))->firstWhere('id', $swapId);
+        $this->assertContains($sentAfter['status'], ['accepted', 'admin_pending']);
+        $this->assertSame((int) $holder->id, $sentAfter['recipient']['id']);
+        $this->assertSame($holder->name, $sentAfter['recipient']['name']);
+    }
+
+    public function test_a_rejected_or_cancelled_request_never_reveals_the_holder(): void
+    {
+        [$opportunityId, $shiftA, $shiftB] = $this->makeOpportunityWithTwoShifts();
+        $asker = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $holder = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->approveOnShift($asker->id, $opportunityId, $shiftA);
+        $this->approveOnShift($holder->id, $opportunityId, $shiftB);
+
+        $swapId = ShiftSwapService::requestSwap($asker->id, ['from_shift_id' => $shiftA, 'to_shift_id' => $shiftB]);
+        $this->assertNotNull($swapId, json_encode(ShiftSwapService::getErrors()));
+        $this->assertTrue(ShiftSwapService::respond($swapId, $holder->id, 'reject'), json_encode(ShiftSwapService::getErrors()));
+
+        $sent = collect(ShiftSwapService::getSwapRequests($asker->id))->firstWhere('id', $swapId);
+        $this->assertSame('rejected', $sent['status']);
+        $this->assertNull($sent['recipient']['id']);
+        $this->assertNull($sent['recipient']['name']);
+    }
 }

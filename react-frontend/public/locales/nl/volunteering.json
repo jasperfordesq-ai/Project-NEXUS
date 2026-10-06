@@ -719,7 +719,7 @@
     "no_swaps_title": "Geen ruilverzoeken",
     "no_sent": "Je hebt nog geen ploegenruilverzoeken verzonden.",
     "no_received": "U heeft geen verzoeken tot ploegenruil ontvangen.",
-    "no_swaps_desc": "Geen ploegwisselverzoeken gevonden. Je kunt een ruil aanvragen via de pagina met dienstdetails.",
+    "no_swaps_desc": "Geen ruilverzoeken gevonden. Om een ruil aan te vragen, open Toepassingen en kies een van je bevestigde diensten.",
     "status_pending": "In behandeling",
     "status_accepted": "Geaccepteerd",
     "status_rejected": "Afgewezen",
@@ -738,7 +738,17 @@
     "reject": "Afwijzen",
     "cancel": "Annuleren",
     "reject_confirm": "Weet u zeker dat u dit ruilverzoek wilt afwijzen?",
-    "accept_pending_admin": "Ruil geaccepteerd — wacht op goedkeuring van een beheerder voordat de diensten wisselen."
+    "accept_pending_admin": "Ruil geaccepteerd — wacht op goedkeuring van een beheerder voordat de diensten wisselen.",
+    "ask": "Ruil aanvragen",
+    "ask_label": "Vraag om je dienst bij {{title}} te ruilen",
+    "ask_title": "Deze dienst ruilen",
+    "ask_body": "Kies de dienst die je liever doet. We vragen het aan degene die erop staat. Je ziet die naam alleen als die persoon akkoord gaat.",
+    "ask_empty": "Op geen enkele andere dienst van deze kans staat iemand ingeschreven, dus er is nog niemand om mee te ruilen.",
+    "ask_option_label": "Ruil aanvragen voor de dienst op {{date}}",
+    "options_error": "De andere diensten konden niet worden geladen.",
+    "request_sent": "Ruilverzoek verzonden. We hebben de andere vrijwilliger gevraagd en je hoort het zodra die antwoordt.",
+    "request_error": "Dat ruilverzoek kon niet worden verzonden.",
+    "to_unnamed": "Aan: de persoon op die dienst (naam zichtbaar zodra die akkoord gaat)"
   },
   "opportunity": {
     "search_placeholder": "Zoek op naam...",
