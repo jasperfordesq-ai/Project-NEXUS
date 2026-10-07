@@ -17883,6 +17883,37 @@ describe('shared accessible frontend shell', () => {
     expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/recommended-shifts?limit=10');
   });
 
+  // Gap list section 5 (7 Oct 2026): empty pages that named an action without linking to it.
+  it('links each empty volunteering page to the action its text describes', async () => {
+    const api = require('../src/lib/api');
+    const empty = async () => ({ data: [] });
+    api.callVolunteeringApi.mockImplementation(empty);
+    api.getVolunteeringOpportunities.mockResolvedValue({ data: [], meta: {} });
+    const get = (path) => request(app).get(path).set('Cookie', signedCookieHeader());
+
+    expect((await get('/volunteering/waitlist')).text).toContain('href="/volunteering">Browse opportunities</a>');
+    expect((await get('/volunteering/recommended-shifts')).text).toContain('href="/profile/settings#skills">Your skills</a>');
+    expect((await get('/volunteering/my-organisations')).text).toContain('href="/organisations/register">Register an organisation</a>');
+    expect((await get('/volunteering/opportunities/create')).text).toContain('href="/organisations/register">Register an organisation</a>');
+
+    // "follow the community feed" links the feed only where the community has it on.
+    const withFeed = await get('/acme/accessible/volunteering');
+    expect(withFeed.text).toContain('href="/acme/accessible/feed">Feed</a>');
+    api.getTenantBootstrap.mockReset().mockResolvedValue(tenantBootstrap('acme', { modules: { feed: false }, features: { volunteering: true } }));
+    const noFeed = await get('/acme/accessible/volunteering');
+    expect(noFeed.text).not.toContain('/acme/accessible/feed">Feed</a>');
+
+    // "No one has applied yet" only while it is true.
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => (
+      apiPath === '/organisations/42/stats' ? { data: { org_name: 'Food Share', total_volunteers: 3 } } : { data: { items: [], has_more: false } }
+    ));
+    expect((await get('/volunteering/organisations/42/manage')).text).not.toContain('No one has applied yet');
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => (
+      apiPath === '/organisations/42/stats' ? { data: { org_name: 'Food Share', total_volunteers: 0 } } : { data: { items: [], has_more: false } }
+    ));
+    expect((await get('/volunteering/organisations/42/manage')).text).toContain('No one has applied yet');
+  });
+
   // Gap B10 (7 Oct 2026): notification links use the website's section names, and every
   // one this page did not know landed on Opportunities.
   it('opens the page a notification link names, instead of Opportunities', async () => {

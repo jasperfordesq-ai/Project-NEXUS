@@ -1310,6 +1310,7 @@ app.get('/volunteering', requireAuth, (req, res) => {
         communityProjects,
         selectedTab,
         volunteerTools: sections.tools,
+        feedEnabled: featureEnabled(req.accessibleRouting?.tenant || {}, 'feed', false),
         volunteerTabs: {
           applications: sections.enabled('applications'),
           recommended: sections.enabled('recommended'),
@@ -1355,6 +1356,7 @@ app.get('/volunteering', requireAuth, (req, res) => {
         communityProjects: [],
         selectedTab,
         volunteerTools: sections.tools,
+        feedEnabled: featureEnabled(req.accessibleRouting?.tenant || {}, 'feed', false),
         volunteerTabs: {
           applications: sections.enabled('applications'),
           recommended: sections.enabled('recommended'),

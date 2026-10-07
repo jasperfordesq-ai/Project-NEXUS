@@ -2588,6 +2588,8 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     orgId: id,
     orgName: dashboard.orgName,
+    // "No one has applied yet" is shown only while that is true (gap list section 5).
+    totalVolunteers: dashboard.totalVolunteers,
     applications,
     hours,
     appStatus,

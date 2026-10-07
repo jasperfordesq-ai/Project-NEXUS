@@ -61,7 +61,7 @@
     <div class="govuk-inset-text" data-testid="org-applications-empty">
       {% if appStatus == "pending" %}
         <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_empty") }}</p>
-        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_applications_empty_cta") }}</p>
+        {% if not totalVolunteers %}<p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_applications_empty_cta") }}</p>{% endif %}
       {% else %}
         <p class="govuk-body govuk-!-margin-bottom-0">{{ t(OM ~ "applications_empty_filtered") }}</p>
       {% endif %}

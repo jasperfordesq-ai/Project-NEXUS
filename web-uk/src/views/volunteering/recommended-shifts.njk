@@ -24,7 +24,11 @@
       </div>
     </div>
   {% elif not shifts.length %}
-    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.recommended.empty") }}</div>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.recommended.empty") }}</p>
+      {# The text asks for skills; this is where they are added (gap list section 5). #}
+      <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/profile/settings#skills') }}">{{ t("profile_settings.skills.title") }}</a></p>
+    </div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for shift in shifts %}

@@ -49,6 +49,8 @@
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m">{{ t("vol_depth.waitlist_empty_title") }}</h2>
       <p class="govuk-body">{{ t("vol_depth.waitlist_empty") }}</p>
+      {# A waitlist is joined from a full shift on an opportunity (gap list section 5). #}
+      <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("vol_clarity.browse_opportunities") }}</a></p>
     </div>
   {% else %}
     <div class="nexus-alpha-card-list">

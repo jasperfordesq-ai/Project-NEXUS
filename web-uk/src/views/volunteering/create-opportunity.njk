@@ -47,7 +47,8 @@
   {% if not organizations.length %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha_volunteering.create_opp.no_orgs") }}</p>
-      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.create_opp.no_orgs_cta") }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.create_opp.no_orgs_cta") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/organisations/register') }}">{{ t("govuk_alpha_volunteering.create_opp.register_link") }}</a></p>
     </div>
   {% else %}
     <form method="post" action="{{ urlFor('/volunteering/opportunities/create') }}">

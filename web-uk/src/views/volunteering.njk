@@ -337,6 +337,7 @@
           {{ t("vol_clarity.empty_opportunities_filtered_cta") }} <a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.clear_filters") }}</a>.
         {% else %}
           {{ t("vol_clarity.empty_opportunities_cta") }}
+          {% if feedEnabled %}<a class="govuk-link" href="{{ urlFor('/feed') }}">{{ t("nav.feed") }}</a>{% endif %}
         {% endif %}
       </p>
     </div>
