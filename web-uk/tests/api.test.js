@@ -2277,6 +2277,25 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('downloadOrgExpenseReceipt', () => {
+    it('downloads an organisation\'s claim receipt with the member token (gap B7)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: { get: (name) => ({ 'content-type': 'application/pdf', 'content-disposition': 'attachment; filename="r.pdf"' })[name.toLowerCase()] || null },
+        arrayBuffer: async () => new ArrayBuffer(4)
+      });
+
+      const result = await api.downloadOrgExpenseReceipt('member-token', 114, 9);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/volunteering/organisations/114/expenses/9/receipt',
+        expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer member-token' }) })
+      );
+      expect(result.headers['content-disposition']).toBe('attachment; filename="r.pdf"');
+    });
+  });
+
   describe('checkVolunteerCertificate', () => {
     it('posts the code and name in the body with no bearer token (gap C1)', async () => {
       mockFetch.mockResolvedValueOnce({

@@ -1,0 +1,168 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An organisation's expense claims (routes/volunteering-org-expenses.js, gap B7). Each
+  claim offers only the next step the API accepts. Reject and Mark as paid sit inside a
+  details component, so their optional fields need no JavaScript.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
+
+{% set K = "govuk_alpha_volunteering.org_expenses." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/expenses' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if outcome %}
+    {% if outcome.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-expenses-outcome-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="org-expenses-outcome-title">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ outcome.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ outcome.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if orgName %}<span class="govuk-caption-xl">{{ orgName }}</span>{% endif %}
+  <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+  <p class="govuk-body-l">{{ t(K ~ "intro") }}</p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-8" data-testid="org-expense-totals">
+    {% for stat in stats %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ stat.label }}</dt>
+        <dd class="govuk-summary-list__value">{{ stat.value }}</dd>
+      </div>
+    {% endfor %}
+  </dl>
+
+  {# The same tab-style navigation as jobs/_nav.njk: links, so each filter has its own
+     address and works without JavaScript. #}
+  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'filter_label') }}">
+    <h2 class="govuk-tabs__title">{{ t(K ~ "filter_label") }}</h2>
+    <ul class="govuk-tabs__list">
+      {% for filter in filters %}
+        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% if not claims.length %}
+    <div class="govuk-inset-text" data-testid="org-expenses-empty">{{ t(K ~ ("empty_pending" if show == "pending" else "empty")) }}</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for claim in claims %}
+        <article class="nexus-alpha-card" id="expense-{{ claim.id }}" data-testid="org-expense-{{ claim.id }}">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ t(K ~ "claim_heading", { name: claim.volunteerName, amount: claim.amountLabel }) }}</h2>
+          <p class="govuk-!-margin-bottom-3">{{ govukTag({ text: claim.statusLabel, classes: claim.statusClass }) }}</p>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.expenses.type_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ claim.typeLabel }}</dd>
+            </div>
+            {% if claim.description %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "description") }}</dt>
+                <dd class="govuk-summary-list__value">{{ claim.description }}</dd>
+              </div>
+            {% endif %}
+            {% if claim.submittedLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "submitted") }}</dt>
+                <dd class="govuk-summary-list__value">{{ claim.submittedLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if claim.reviewNotes %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "review_note") }}</dt>
+                <dd class="govuk-summary-list__value">{{ claim.reviewNotes }}</dd>
+              </div>
+            {% endif %}
+            {% if claim.paymentReference %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "payment_reference") }}</dt>
+                <dd class="govuk-summary-list__value">{{ claim.paymentReference }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if claim.hasReceipt %}
+            <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(base ~ '/' ~ claim.id ~ '/receipt') }}">{{ t(K ~ "view_receipt") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></a></p>
+          {% endif %}
+
+          {% if claim.isOwn and claim.status in ["pending", "approved"] %}
+            <div class="govuk-inset-text govuk-!-margin-bottom-0">{{ t(K ~ "own_claim_note") }}</div>
+          {% endif %}
+
+          {% if "approved" in claim.nextSteps %}
+            <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}" class="govuk-!-margin-bottom-4">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="show" value="{{ show }}">
+              <input type="hidden" name="decision" value="approved">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "approve") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></button>
+            </form>
+          {% endif %}
+
+          {% if "rejected" in claim.nextSteps %}
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "reject_open") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></span></summary>
+              <div class="govuk-details__text">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="show" value="{{ show }}">
+                  <input type="hidden" name="decision" value="rejected">
+                  <div class="govuk-form-group">
+                    <label class="govuk-label" for="review_notes-{{ claim.id }}">{{ t(K ~ "reject_reason_label") }}</label>
+                    <div id="review_notes-{{ claim.id }}-hint" class="govuk-hint">{{ t(K ~ "reject_reason_hint") }}</div>
+                    <textarea class="govuk-textarea" id="review_notes-{{ claim.id }}" name="review_notes" rows="3" maxlength="{{ maxNote }}" aria-describedby="review_notes-{{ claim.id }}-hint"></textarea>
+                  </div>
+                  <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "reject_confirm") }}</button>
+                </form>
+              </div>
+            </details>
+          {% endif %}
+
+          {% if "paid" in claim.nextSteps %}
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "paid_open") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></span></summary>
+              <div class="govuk-details__text">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="show" value="{{ show }}">
+                  <input type="hidden" name="decision" value="paid">
+                  <p class="govuk-body">{{ t(K ~ "paid_intro") }}</p>
+                  <div class="govuk-form-group">
+                    <label class="govuk-label" for="payment_reference-{{ claim.id }}">{{ t(K ~ "payment_reference_label") }}</label>
+                    <div id="payment_reference-{{ claim.id }}-hint" class="govuk-hint">{{ t(K ~ "payment_reference_hint") }}</div>
+                    <input class="govuk-input govuk-!-width-two-thirds" id="payment_reference-{{ claim.id }}" name="payment_reference" type="text" maxlength="{{ maxReference }}" aria-describedby="payment_reference-{{ claim.id }}-hint">
+                  </div>
+                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "paid_confirm") }}</button>
+                </form>
+              </div>
+            </details>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t(K ~ "load_more")) }}{% endif %}
+  {% endif %}
+{% endblock %}

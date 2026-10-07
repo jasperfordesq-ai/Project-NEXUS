@@ -1278,6 +1278,14 @@ async function downloadVolunteerCredential(token, id) {
   });
 }
 
+// An expense receipt, for the organisation reviewing the claim (gap B7). The API checks
+// the caller administers that organisation and that the claim was made to it.
+async function downloadOrgExpenseReceipt(token, orgId, expenseId) {
+  return downloadRequest(`/api/v2/volunteering/organisations/${encodeURIComponent(orgId)}/expenses/${encodeURIComponent(expenseId)}/receipt`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function getVolunteeringCategories(token = '') {
   const options = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
   const results = await Promise.all([
@@ -4230,6 +4238,7 @@ module.exports = {
   callVolunteeringApi,
   uploadVolunteerCredential,
   downloadVolunteerCredential,
+  downloadOrgExpenseReceipt,
   callMarketplaceApi,
   callMerchantOnboardingApi,
   callCouponApi,
