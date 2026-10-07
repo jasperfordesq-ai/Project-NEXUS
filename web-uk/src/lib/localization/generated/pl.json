@@ -11508,6 +11508,9 @@
                 "hint": "Dołącz paragon w formacie PDF, JPG, PNG lub WebP o rozmiarze do 10 MB.",
                 "invalid": "Paragon musi być plikiem PDF, JPG, PNG lub WebP.",
                 "too_large": "Paragon nie może być większy niż 10 MB."
+            },
+            "own_hours": {
+                "note": "To są Twoje własne godziny. Musi je zatwierdzić inna osoba zarządzająca tą organizacją."
             }
         },
         "govuk_alpha_wallet": {

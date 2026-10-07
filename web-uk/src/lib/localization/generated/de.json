@@ -11508,6 +11508,9 @@
                 "hint": "Hängen Sie einen Beleg als PDF, JPG, PNG oder WebP mit bis zu 10 MB an.",
                 "invalid": "Der Beleg muss eine PDF-, JPG-, PNG- oder WebP-Datei sein.",
                 "too_large": "Der Beleg darf höchstens 10 MB groß sein."
+            },
+            "own_hours": {
+                "note": "Das sind Ihre eigenen Stunden. Eine andere Person, die diese Organisation leitet, muss sie genehmigen."
             }
         },
         "govuk_alpha_wallet": {

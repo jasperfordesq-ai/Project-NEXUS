@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'La ricevuta deve essere un file PDF, JPG, PNG o WebP.',
         'too_large' => 'La ricevuta non può superare i 10 MB.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'Queste sono le tue ore. Un’altra persona che gestisce questa organizzazione deve approvarle.',
+    ],
 ];

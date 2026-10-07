@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'يجب أن يكون الإيصال ملف PDF أو JPG أو PNG أو WebP.',
         'too_large' => 'يجب ألا يتجاوز حجم الإيصال 10 ميجابايت.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'هذه ساعاتك أنت. يجب أن يوافق عليها شخص آخر يدير هذه المنظمة.',
+    ],
 ];

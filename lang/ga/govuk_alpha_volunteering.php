@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'Caithfidh an admháil a bheith ina comhad PDF, JPG, PNG nó WebP.',
         'too_large' => 'Ní féidir leis an admháil a bheith níos mó ná 10 MB.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'Is iad seo do chuid uaireanta féin. Caithfidh duine eile a ritheann an eagraíocht seo iad a cheadú.',
+    ],
 ];

@@ -11508,6 +11508,9 @@
                 "hint": "Anexe um recibo em PDF, JPG, PNG ou WebP até 10 MB.",
                 "invalid": "O recibo tem de ser um ficheiro PDF, JPG, PNG ou WebP.",
                 "too_large": "O recibo não pode ter mais de 10 MB."
+            },
+            "own_hours": {
+                "note": "Estas são as suas próprias horas. Outra pessoa que gere esta organização tem de as aprovar."
             }
         },
         "govuk_alpha_wallet": {

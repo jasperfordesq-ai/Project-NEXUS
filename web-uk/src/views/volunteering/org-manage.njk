@@ -171,6 +171,9 @@
           {% if log.description %}
             <p class="govuk-body govuk-!-margin-top-3">{{ log.description }}</p>
           {% endif %}
+          {% if log.isOwn %}
+            <div class="govuk-inset-text govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="org-hours-own-{{ log.id }}">{{ t("govuk_alpha_volunteering.own_hours.note") }}</div>
+          {% else %}
           <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/hours/' ~ log.id) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-1">{{ t("govuk_alpha.vol_clarity.org_hours_action_hint") }}</p>
@@ -179,6 +182,7 @@
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="decline" data-module="govuk-button">{{ t("govuk_alpha.vol_org.decline") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.hours_for", { name: log.volunteer.name }) }}</span></button>
             </div>
           </form>
+          {% endif %}
         </article>
       {% endfor %}
     </div>

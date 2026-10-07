@@ -2560,8 +2560,13 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
     applications = collectionFrom(applicationsResult)
       .map((application) => normalizeOrgApplication(application, res.locals.t)).filter((application) => application.id);
     const hoursResult = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/hours/pending?${hoursQuery.toString()}`);
+    // Gap B14: nobody may approve their own hours (VolunteerService refuses with
+    // FORBIDDEN), so an organiser's own entry shows a note instead of the buttons.
+    const viewer = await getRequestProfile(req, token).catch(() => null);
+    const viewerId = positiveInteger((dataFrom(viewer) || {}).id);
     hours = collectionFrom(hoursResult)
-      .map((log) => normalizeOrgPendingHour(log, res.locals.t)).filter((log) => log.id);
+      .map((log) => normalizeOrgPendingHour(log, res.locals.t)).filter((log) => log.id)
+      .map((log) => ({ ...log, isOwn: viewerId !== null && log.volunteer.id === viewerId }));
     const applicationsMeta = collectionMetaFrom(applicationsResult);
     const hoursMeta = collectionMetaFrom(hoursResult);
     const nextApplications = applicationsMeta.has_more ? positiveInteger(applicationsMeta.cursor ?? applicationsMeta.next_cursor) : null;

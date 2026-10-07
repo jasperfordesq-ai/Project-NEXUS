@@ -11508,6 +11508,9 @@
                 "hint": "Voeg een bon toe als PDF, JPG, PNG of WebP van maximaal 10 MB.",
                 "invalid": "De bon moet een PDF-, JPG-, PNG- of WebP-bestand zijn.",
                 "too_large": "De bon mag niet groter zijn dan 10 MB."
+            },
+            "own_hours": {
+                "note": "Dit zijn uw eigen uren. Iemand anders die deze organisatie beheert, moet ze goedkeuren."
             }
         },
         "govuk_alpha_wallet": {

@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'De bon moet een PDF-, JPG-, PNG- of WebP-bestand zijn.',
         'too_large' => 'De bon mag niet groter zijn dan 10 MB.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'Dit zijn uw eigen uren. Iemand anders die deze organisatie beheert, moet ze goedkeuren.',
+    ],
 ];

@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'Paragon musi być plikiem PDF, JPG, PNG lub WebP.',
         'too_large' => 'Paragon nie może być większy niż 10 MB.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'To są Twoje własne godziny. Musi je zatwierdzić inna osoba zarządzająca tą organizacją.',
+    ],
 ];

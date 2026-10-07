@@ -38531,6 +38531,32 @@ describe('shared accessible frontend shell', () => {
     expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/42/applications?per_page=20&status=pending');
   });
 
+  // Gap B14 (7 Oct 2026): nobody may approve their own hours, but an organiser's own
+  // entry was offered Approve and Decline, which the API then refused.
+  it('shows an organiser a note instead of approve buttons on their own logged hours', async () => {
+    const api = require('../src/lib/api');
+    api.getProfile.mockResolvedValue({ data: { id: 55 } });
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (apiPath === '/organisations/42/stats') return { data: { org_name: 'Food Share' } };
+      if (apiPath.startsWith('/organisations/42/hours/pending?')) {
+        return { data: { items: [
+          { id: 15, hours: 1, date: '2026-08-03', status: 'pending', user: { id: 55, name: 'Me Myself' } },
+          { id: 16, hours: 2, date: '2026-08-04', status: 'pending', user: { id: 57, name: 'Someone Else' } }
+        ], has_more: false } };
+      }
+      return { data: { items: [], has_more: false } };
+    });
+
+    const page = await request(app).get('/volunteering/organisations/42/manage').set('Cookie', signedAuthCookieHeader());
+    api.getProfile.mockReset();
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('data-testid="org-hours-own-15"');
+    expect(page.text).toContain('These are your own hours. Someone else who runs this organisation must approve them.');
+    expect(page.text).not.toContain('action="/volunteering/organisations/42/hours/15"');
+    expect(page.text).toContain('action="/volunteering/organisations/42/hours/16"');
+  });
+
   it('renders Laravel volunteering organisation owner pages for signed-in managers', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');

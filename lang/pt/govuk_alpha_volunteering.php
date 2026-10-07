@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'O recibo tem de ser um ficheiro PDF, JPG, PNG ou WebP.',
         'too_large' => 'O recibo não pode ter mais de 10 MB.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'Estas são as suas próprias horas. Outra pessoa que gere esta organização tem de as aprovar.',
+    ],
 ];

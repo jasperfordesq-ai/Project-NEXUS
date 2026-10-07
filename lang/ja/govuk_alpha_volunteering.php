@@ -1109,4 +1109,8 @@ return [
         'invalid' => '領収書は PDF、JPG、PNG、または WebP ファイルである必要があります。',
         'too_large' => '領収書は 10 MB 以下にしてください。',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'これはあなた自身の時間です。この団体を運営する別の人が承認する必要があります。',
+    ],
 ];

@@ -1152,4 +1152,8 @@ return [
         'invalid' => 'The receipt must be a PDF, JPG, PNG or WebP file.',
         'too_large' => 'The receipt must be 10 MB or smaller.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'These are your own hours. Someone else who runs this organisation must approve them.',
+    ],
 ];

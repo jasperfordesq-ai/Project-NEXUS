@@ -11508,6 +11508,9 @@
                 "hint": "Attach a PDF, JPG, PNG or WebP receipt up to 10 MB.",
                 "invalid": "The receipt must be a PDF, JPG, PNG or WebP file.",
                 "too_large": "The receipt must be 10 MB or smaller."
+            },
+            "own_hours": {
+                "note": "These are your own hours. Someone else who runs this organisation must approve them."
             }
         },
         "govuk_alpha_wallet": {

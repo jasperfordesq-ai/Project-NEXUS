@@ -1109,4 +1109,8 @@ return [
         'invalid' => 'Der Beleg muss eine PDF-, JPG-, PNG- oder WebP-Datei sein.',
         'too_large' => 'Der Beleg darf höchstens 10 MB groß sein.',
     ],
+    // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
+    'own_hours' => [
+        'note' => 'Das sind Ihre eigenen Stunden. Eine andere Person, die diese Organisation leitet, muss sie genehmigen.',
+    ],
 ];

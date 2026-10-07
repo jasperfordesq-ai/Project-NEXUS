@@ -11508,6 +11508,9 @@
                 "hint": "Joignez un reçu PDF, JPG, PNG ou WebP de 10 Mo maximum.",
                 "invalid": "Le reçu doit être un fichier PDF, JPG, PNG ou WebP.",
                 "too_large": "Le reçu ne doit pas dépasser 10 Mo."
+            },
+            "own_hours": {
+                "note": "Ce sont vos propres heures. Une autre personne qui gère cette organisation doit les approuver."
             }
         },
         "govuk_alpha_wallet": {

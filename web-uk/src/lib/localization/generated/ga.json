@@ -11508,6 +11508,9 @@
                 "hint": "Ceangail admháil PDF, JPG, PNG nó WebP suas go dtí 10 MB.",
                 "invalid": "Caithfidh an admháil a bheith ina comhad PDF, JPG, PNG nó WebP.",
                 "too_large": "Ní féidir leis an admháil a bheith níos mó ná 10 MB."
+            },
+            "own_hours": {
+                "note": "Is iad seo do chuid uaireanta féin. Caithfidh duine eile a ritheann an eagraíocht seo iad a cheadú."
             }
         },
         "govuk_alpha_wallet": {
