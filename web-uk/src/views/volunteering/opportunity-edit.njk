@@ -1,0 +1,140 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Change an opportunity's details (routes/volunteering-opportunity-manage.js, gap B2).
+  The same questions as the create form, already filled in. The organisation cannot be
+  changed, so it is shown, not asked.
+#}
+{% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set K = "govuk_alpha_volunteering.opp_manage." %}
+{% set C = "govuk_alpha_volunteering.create_opp." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t(K ~ "back_to_opportunity") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% elif failure %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p class="govuk-body">{{ t(K ~ ("update_invalid" if failure == "validation" else "update_failed")) }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-xl">{{ t(K ~ "edit_title") }}</h1>
+      <p class="govuk-body">{{ t(K ~ "edit_description") }}</p>
+
+      <dl class="govuk-summary-list govuk-summary-list--no-border">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(C ~ "org_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ organisationName }}</dd>
+        </div>
+      </dl>
+
+      <form method="post" action="{{ urlFor(base ~ '/edit') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="original_location" value="{{ form.originalLocation }}">
+        {% if form.originalRemote %}<input type="hidden" name="original_remote" value="1">{% endif %}
+
+        <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="title">{{ t(C ~ "opp_title_label") }}</label>
+          <div id="title-hint" class="govuk-hint">{{ t(C ~ "opp_title_hint") }}</div>
+          {% if fieldErrors.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.title }}</p>{% endif %}
+          <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" value="{{ form.title }}" aria-describedby="title-hint{% if fieldErrors.title %} title-error{% endif %}">
+        </div>
+
+        <div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="description">{{ t(C ~ "opp_description_label") }}</label>
+          <div id="description-hint" class="govuk-hint">{{ t(C ~ "opp_description_hint") }}</div>
+          {% if fieldErrors.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.description }}</p>{% endif %}
+          <textarea class="govuk-textarea{% if fieldErrors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" aria-describedby="description-hint{% if fieldErrors.description %} description-error{% endif %}">{{ form.description }}</textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="location">{{ t(C ~ "location_label") }}</label>
+          <div id="location-hint" class="govuk-hint">{{ t(C ~ "location_hint") }}</div>
+          <input class="govuk-input" id="location" name="location" type="text" maxlength="255" value="{{ form.location }}" aria-describedby="location-hint">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="skills_needed">{{ t(C ~ "skills_label") }}</label>
+          <div id="skills_needed-hint" class="govuk-hint">{{ t(C ~ "skills_hint") }}</div>
+          <input class="govuk-input" id="skills_needed" name="skills_needed" type="text" maxlength="1000" value="{{ form.skillsNeeded }}" aria-describedby="skills_needed-hint">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="category_id">{{ t(C ~ "category_label") }}</label>
+          <select class="govuk-select" id="category_id" name="category_id">
+            {% if form.categoryId == keepCategory %}
+              <option value="{{ keepCategory }}" selected>{{ currentCategoryName }}</option>
+            {% endif %}
+            <option value="">{{ t(C ~ "category_select") }}</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}"{% if (category.id | string) == form.categoryId %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {{ nexusDateInput({
+          name: "start_date",
+          legend: t(C ~ "start_date_label"),
+          hint: t(C ~ "start_date_hint"),
+          value: form.startDateParts,
+          errorMessage: fieldErrors.startDate
+        }, t) }}
+
+        {{ nexusDateInput({
+          name: "end_date",
+          legend: t(C ~ "end_date_label"),
+          hint: t("web_uk.date_input.hint"),
+          value: form.endDateParts,
+          errorMessage: fieldErrors.endDate
+        }, t) }}
+
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t(C ~ "visibility_legend") }}</legend>
+          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="is_remote" name="is_remote" type="checkbox" value="1"{% if form.isRemote %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="is_remote">{{ t(C ~ "remote_label") }}</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="federated_visibility" name="federated_visibility" type="checkbox" value="1" aria-describedby="federated-hint"{% if form.federatedVisibility %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="federated_visibility">{{ t(C ~ "federated_label") }}</label>
+              <div id="federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t(C ~ "federated_hint") }}</div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "save") }}</button>
+          <a class="govuk-link" href="{{ urlFor(base) }}">{{ t(K ~ "back_without_saving") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

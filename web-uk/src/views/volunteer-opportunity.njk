@@ -37,6 +37,11 @@
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-xl">{{ t("govuk_alpha.volunteering.detail_title") }}</span>
       <h1 class="govuk-heading-xl">{{ opportunityTitle }}</h1>
+      {% if opportunity.isCancelled %}
+        <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_volunteering.opp_manage.status_cancelled"), classes: "govuk-tag--red" }) }}</p>
+      {% elif opportunity.isClosed %}
+        <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_volunteering.opp_manage.status_closed"), classes: "govuk-tag--yellow" }) }}</p>
+      {% endif %}
       {% if opportunity.is_remote %}
         {{ govukTag({ text: t("govuk_alpha.volunteering.remote"), classes: "govuk-tag--turquoise" }) }}
       {% endif %}
@@ -54,6 +59,28 @@
       </div>
     </div>
   </div>
+
+  {% if opportunity.canManage %}
+    {# Gap B2: the people who run this opportunity can change, close, reopen or cancel it. #}
+    {% set M = "govuk_alpha_volunteering.opp_manage." %}
+    {% set oppBase = '/volunteering/opportunities/' ~ opportunityId %}
+    <section class="govuk-!-margin-bottom-8" aria-labelledby="opportunity-manage-heading" data-testid="opportunity-manage">
+      <h2 class="govuk-heading-m" id="opportunity-manage-heading">{{ t(M ~ "heading") }}</h2>
+      {% if opportunity.isCancelled %}
+        <div class="govuk-inset-text">{{ t(M ~ "cancelled_hint") }}</div>
+      {% else %}
+        <p class="govuk-body">{{ t(M ~ ("closed_hint" if opportunity.isClosed else "open_hint")) }}</p>
+        <div class="govuk-button-group">
+          <a class="govuk-button govuk-button--secondary" href="{{ urlFor(oppBase ~ '/edit') }}" role="button" draggable="false" data-module="govuk-button">{{ t(M ~ "edit") }}</a>
+          <form method="post" action="{{ urlFor(oppBase ~ ('/reopen' if opportunity.isClosed else '/close')) }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(M ~ ("reopen" if opportunity.isClosed else "close")) }}</button>
+          </form>
+          <a class="govuk-link" href="{{ urlFor(oppBase ~ '/cancel') }}">{{ t(M ~ "cancel") }}</a>
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha.polish_gamify.vol_about_heading") }}</h2>
   <dl class="govuk-summary-list">
@@ -96,7 +123,7 @@
   </dl>
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha.volunteering.shifts_title") }}</h2>
-  {% if opportunity.canManage %}
+  {% if opportunity.canManage and not opportunity.isCancelled %}
     <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_volunteering.shift_manager.manage_link") }}</a>
   {% endif %}
   {% if opportunity.shifts and opportunity.shifts.length %}
@@ -165,6 +192,8 @@
     <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha_volunteering.shift_manager.manager_notice") }}</div>
   {% elif opportunity.hasApplied %}
     <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.already_applied") }}</div>
+  {% elif opportunity.isCancelled or opportunity.isClosed %}
+    <div class="govuk-inset-text govuk-!-margin-top-7" data-testid="opportunity-not-taking-applications">{{ t("govuk_alpha_volunteering.opp_manage." ~ ("volunteer_cancelled" if opportunity.isCancelled else "volunteer_closed")) }}</div>
   {% else %}
     <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/apply') }}" class="govuk-!-margin-top-7">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">

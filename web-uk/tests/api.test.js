@@ -2277,6 +2277,28 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('checkVolunteerCertificate', () => {
+    it('posts the code and name in the body with no bearer token (gap C1)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { valid: false } })
+      });
+
+      await api.checkVolunteerCertificate('I2MST0GPZLQ47DIX', 'Ada Lovelace');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/volunteering/certificates/check',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ code: 'I2MST0GPZLQ47DIX', name: 'Ada Lovelace' })
+        })
+      );
+      const [, init] = mockFetch.mock.calls[mockFetch.mock.calls.length - 1];
+      expect(Object.keys(init.headers).map((name) => name.toLowerCase())).not.toContain('authorization');
+    });
+  });
+
   describe('submitContact', () => {
     it('should call the Laravel v2 contact endpoint', async () => {
       mockFetch.mockResolvedValueOnce({

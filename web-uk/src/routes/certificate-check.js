@@ -26,7 +26,8 @@ const { flagEnabled } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
-const PATH = '/verify-certificate';
+// Paths are written out literally on each route: the route matrix generator
+// (scripts/generate-accessible-route-matrix.js) cannot see a template literal.
 const K = 'govuk_alpha_volunteering.certificate_check.';
 // The API's own limits (VolunteerCertificateController::checkCertificate).
 const MAX_CODE = 64;
@@ -100,11 +101,11 @@ function showForm(req, res) {
   return render(res, { values: { code, name: '' } });
 }
 
-router.get(PATH, showForm);
+router.get('/verify-certificate', showForm);
 // Constrained inline (F-113/F-306 route guard): only a code-shaped value matches.
-router.get(`${PATH}/:code([A-Za-z0-9-]+)`, showForm);
+router.get('/verify-certificate/:code([A-Za-z0-9-]+)', showForm);
 
-router.post(PATH, asyncRoute(async (req, res) => {
+router.post('/verify-certificate', asyncRoute(async (req, res) => {
   if (!volunteeringEnabled(req)) return notFound(res);
   const t = res.locals.t;
   const values = { code: asString(req.body.code), name: asString(req.body.name) };

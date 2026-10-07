@@ -57,6 +57,7 @@ const marketplaceRoutes = require('./routes/marketplace');
 const volunteeringActionRoutes = require('./routes/volunteering-actions');
 const volunteeringIncidentRoutes = require('./routes/volunteering-incidents');
 const volunteeringShiftRoutes = require('./routes/volunteering-shifts');
+const volunteeringOpportunityManageRoutes = require('./routes/volunteering-opportunity-manage');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
 const groupExchangeRoutes = require('./routes/group-exchanges');
@@ -1389,7 +1390,11 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       signedUpShiftId: isApprovedApplicant ? Number(application.shift_id) || 0 : 0,
       // The people who run this opportunity manage its shifts instead of applying to
       // it (routes/volunteering-shifts.js). The API decides who they are.
-      canManage: opportunity.can_manage === true || opportunity.is_owner === true
+      canManage: opportunity.can_manage === true || opportunity.is_owner === true,
+      // Closed: off the list and taking no new applications. Cancelled: withdrawn for
+      // good (the API keeps the row, is_active = 0). routes/volunteering-opportunity-manage.js
+      isClosed: opportunity.status === 'closed',
+      isCancelled: opportunity.is_active === false
     };
   };
 
@@ -1412,6 +1417,14 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
           'safeguarding.errors.policy_unavailable',
           'We cannot confirm the community safeguarding policy right now. No message has been sent. Please try again shortly.'
         )],
+        // Posting and managing the opportunity itself (gap B2).
+        'opp-created': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.created')],
+        'opp-updated': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.updated')],
+        'opp-closed': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.closed_done')],
+        'opp-reopened': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.reopened_done')],
+        'opp-cancelled': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.cancelled_done')],
+        'opp-manage-failed': ['error', res.locals.t('govuk_alpha_volunteering.opp_manage.failed')],
+        'opp-is-cancelled': ['error', res.locals.t('govuk_alpha_volunteering.opp_manage.is_cancelled')],
         'shift-signed-up': ['success', res.locals.t('govuk_alpha.volunteering.shift_signed_up_detail')],
         'shift-cancelled': ['success', res.locals.t('govuk_alpha.volunteering.shift_cancelled_detail')],
         'shift-signup-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_signup_failed')],
@@ -2354,6 +2367,7 @@ app.use('/marketplace', doubleCsrfProtection, postOnly(formLimiter), marketplace
 // volunteering actions that own the incident list and report form.
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringIncidentRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringShiftRoutes);
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOpportunityManageRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);

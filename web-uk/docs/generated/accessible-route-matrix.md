@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-07T09:49:57.441Z
-Laravel commit SHA: `fadb1da29a952a6288678e483d2597368e66db29`
-Web UK repository commit SHA: `fadb1da29a952a6288678e483d2597368e66db29`
+Generated: 2026-10-07T10:07:15.899Z
+Laravel commit SHA: `986529965107e3b38bf38270ac0ce46ba607898a`
+Web UK repository commit SHA: `986529965107e3b38bf38270ac0ce46ba607898a`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 766 |
+| web-uk routes | 775 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 56 |
+| Extra web-uk routes | 65 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -97,9 +97,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
 | venues | 5 | 0 | 0 | 0 |
+| verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 18 | 0 |
+| volunteering | 52 | 0 | 24 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -151,8 +152,13 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
+| GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
+| GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
+| POST | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
+| GET | `/volunteering/opportunities/{param}/cancel` | volunteering | volunteering/opportunity-cancel | web-uk/src/routes/volunteering-opportunity-manage.js |
+| GET | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | GET | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering | volunteering/shift-pattern-stop | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/repeating/new` | volunteering | volunteering/shift-pattern-form | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/shifts` | volunteering | volunteering/shift-manage | web-uk/src/routes/volunteering-shifts.js |
@@ -163,6 +169,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/organisations/{param}/safeguarding` | volunteering | volunteering/organisation-safeguarding | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/organisations/{param}/safeguarding/{param}` | volunteering | volunteering/organisation-safeguarding-incident | web-uk/src/routes/volunteering-incidents.js |
 | POST | `/volunteering/incidents/{param}/additions` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
+| POST | `/volunteering/opportunities/{param}/cancel` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
+| POST | `/volunteering/opportunities/{param}/close` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
+| POST | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
+| POST | `/volunteering/opportunities/{param}/reopen` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | POST | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/repeating/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/shifts/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
