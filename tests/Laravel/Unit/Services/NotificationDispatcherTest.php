@@ -164,37 +164,6 @@ class NotificationDispatcherTest extends TestCase
     }
 
     /**
-     * Found walking the shift-swap journey (7 Oct 2026): the 60-second duplicate
-     * guard keyed only on recipient + type + link, so two DIFFERENT notifications
-     * sharing a link — "your swap was accepted" then "approved by an admin" — lost
-     * the second one when the admin approved within a minute. Only a true repeat
-     * (same message too) is a duplicate.
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function test_a_different_message_on_the_same_link_is_not_swallowed_as_a_duplicate(): void
-    {
-        $this->stubPushServices();
-        \Illuminate\Support\Facades\Cache::flush();
-
-        $notification = Mockery::mock('alias:App\Models\Notification');
-        $notification->shouldReceive('createNotification')
-            ->once()
-            ->with($this->userId, 'Your swap was accepted', '/volunteering/swaps', 'new_topic')
-            ->andReturn(201);
-        $notification->shouldReceive('createNotification')
-            ->once()
-            ->with($this->userId, 'Your swap was approved', '/volunteering/swaps', 'new_topic')
-            ->andReturn(202);
-
-        NotificationDispatcher::dispatch($this->userId, 'global', null, 'new_topic', 'Your swap was accepted', '/volunteering/swaps', '<p>a</p>');
-        NotificationDispatcher::dispatch($this->userId, 'global', null, 'new_topic', 'Your swap was approved', '/volunteering/swaps', '<p>b</p>');
-        // A genuine repeat inside the window is still dropped (createNotification is ->once() per message).
-        NotificationDispatcher::dispatch($this->userId, 'global', null, 'new_topic', 'Your swap was approved', '/volunteering/swaps', '<p>b</p>');
-    }
-
-    /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */

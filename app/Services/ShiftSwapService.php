@@ -281,7 +281,7 @@ class ShiftSwapService
             if ($swapId === 0) return null;
 
             if ($created) {
-                self::notifySwap($toUserId, 'vol_swap_requested', 'svc_notifications.shift_swap.requested', '/volunteering?tab=swaps');
+                self::notifySwap($toUserId, 'vol_swap_requested', 'svc_notifications.shift_swap.requested', self::swapLink((int) $swapId));
             }
             return $swapId;
         } catch (\Exception $e) {
@@ -431,7 +431,7 @@ class ShiftSwapService
                     $requesterId,
                     $action === 'accept' ? 'vol_swap_approved' : 'vol_swap_declined',
                     $action === 'accept' ? 'svc_notifications.shift_swap.accepted' : 'svc_notifications.shift_swap.declined',
-                    '/volunteering?tab=swaps'
+                    self::swapLink($swapId)
                 );
             }
             return $result;
@@ -536,11 +536,11 @@ class ShiftSwapService
 
             if ($result && $transitioned) {
                 if ($action === 'approve') {
-                    self::notifySwap($fromUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.approved_by_admin', '/volunteering?tab=swaps');
-                    self::notifySwap($toUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted_swap_approved_by_admin', '/volunteering?tab=swaps');
+                    self::notifySwap($fromUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.approved_by_admin', self::swapLink($swapId, 'admin'));
+                    self::notifySwap($toUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted_swap_approved_by_admin', self::swapLink($swapId, 'admin'));
                 } else {
-                    self::notifySwap($fromUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.declined_by_admin', '/volunteering?tab=swaps');
-                    self::notifySwap($toUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.accepted_swap_declined_by_admin', '/volunteering?tab=swaps');
+                    self::notifySwap($fromUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.declined_by_admin', self::swapLink($swapId, 'admin'));
+                    self::notifySwap($toUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.accepted_swap_declined_by_admin', self::swapLink($swapId, 'admin'));
                 }
             }
 
@@ -962,6 +962,20 @@ class ShiftSwapService
      * preferred_language, so the persisted bell text lands in the recipient's
      * locale rather than the admin caller's or cron worker's.
      */
+    /**
+     * Where a swap notification points. The swap id (and the admin step) are part of
+     * the link because NotificationDispatcher treats the same type + link within 60
+     * seconds as a duplicate — deliberately, so a burst of chat messages makes one
+     * bell. With one shared "/volunteering?tab=swaps" link, a second swap request, or
+     * the admin's approval arriving within a minute of "accepted" (same type), was
+     * silently dropped (found walking the swap journey, 7 Oct 2026). Every client
+     * reads only `tab` and ignores the rest.
+     */
+    private static function swapLink(int $swapId, ?string $step = null): string
+    {
+        return '/volunteering?tab=swaps&swap=' . $swapId . ($step !== null ? '&step=' . $step : '');
+    }
+
     private static function notifySwap(int $userId, string $activityType, string $contentKey, string $link, array $contentParams = []): void
     {
         try {

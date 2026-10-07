@@ -139,11 +139,7 @@ class NotificationDispatcher
         $inAppEnabled = (bool) ($deliveryPolicy['in_app_enabled'] ?? true);
         $emailEnabled = (bool) ($deliveryPolicy['email_enabled'] ?? true);
         $pushEnabled = (bool) ($deliveryPolicy['push_enabled'] ?? true);
-        // A duplicate is the SAME notification again — same recipient, type, link
-        // AND message. Keyed without the message, "your swap was accepted" followed
-        // within a minute by "approved by an admin" (same type and link) lost the
-        // second one (found walking the swap journey, 7 Oct 2026).
-        $dedupKey = "notif_dedup:{$tenantId}:{$userId}:{$activityType}:" . md5(($link ?? '') . '|' . (string) $content);
+        $dedupKey = "notif_dedup:{$tenantId}:{$userId}:{$activityType}:" . md5($link ?? '');
         $isDuplicateBell = false;
         $bellCreated = false;
         $bellId = null;
@@ -551,7 +547,7 @@ class NotificationDispatcher
         }
 
         // Dedup so a retry / double-dispatch within the window can't double-push.
-        $dedupKey = 'push_dedup:' . $userId . ':' . $activityType . ':' . md5((string) ($link ?? '') . '|' . $content);
+        $dedupKey = 'push_dedup:' . $userId . ':' . $activityType . ':' . md5((string) ($link ?? ''));
         if (!Cache::add($dedupKey, 1, now()->addSeconds(60))) {
             return;
         }
