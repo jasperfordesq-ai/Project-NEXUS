@@ -1111,5 +1111,31 @@
       "done": "Cúlghaireadh an teastas.",
       "failed": "Níorbh fhéidir an teastas a chúlghairm. B’fhéidir go bhfuil sé cúlghairthe cheana."
     }
+  },
+  "org_team": {
+    "add_title": "Cuir duine leis an bhfoireann",
+    "member_label": "Ball",
+    "member_placeholder": "Cuardaigh de réir ainm nó ríomhphoist",
+    "no_results": "Níor aimsíodh aon bhaill",
+    "clear": "Glan",
+    "role_label": "Ról",
+    "roles": {
+      "owner": "Úinéir",
+      "admin": "Riarthóir",
+      "member": "Ball"
+    },
+    "role_help": "Bainistíonn úinéirí an fhoireann. Déanann riarthóirí obair laethúil na heagraíochta. Baineann baill léi. Cuirtear in iúl do gach duine nuair a chuirtear leis an bhfoireann é, nuair a athraítear a ról nó nuair a bhaintear é.",
+    "add": "Cuir leis",
+    "added": "Curtha leis an bhfoireann.",
+    "role_changed": "Athraíodh an ról.",
+    "removed": "Bainte den fhoireann.",
+    "failed": "Níorbh fhéidir an t-athrú sin a dhéanamh.",
+    "remove": "Bain",
+    "remove_named": "Bain {{name}}",
+    "remove_title": "Bain den fhoireann?",
+    "remove_body": "Ní bheidh {{name}} ar fhoireann {{org}} a thuilleadh. Cuirfear in iúl dóibh é.",
+    "creator": "Chláraigh sé/sí an eagraíocht",
+    "you": "Tusa",
+    "role_for": "Ról {{name}}"
   }
 }

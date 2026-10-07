@@ -472,9 +472,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminVolunteerController.php:1052:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminVolunteerController.php:1058:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminVolunteerController.php",
-            "line": 1052,
+            "line": 1058,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $applicantId",
@@ -485,9 +485,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminVolunteerController.php:1165:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminVolunteerController.php:1171:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminVolunteerController.php",
-            "line": 1165,
+            "line": 1171,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $applicantId",

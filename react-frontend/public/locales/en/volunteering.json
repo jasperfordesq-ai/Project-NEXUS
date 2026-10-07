@@ -62,7 +62,8 @@
     "opps_empty_open": "No open opportunities. Post one to start finding volunteers.",
     "opps_empty_other": "Nothing here.",
     "opps_load_error": "Could not load your opportunities.",
-    "opps_retry": "Try again"
+    "opps_retry": "Try again",
+    "tab_team": "Team"
   },
   "page_title": "Volunteering",
   "heading": "Volunteering",
@@ -1506,5 +1507,39 @@
     "invalid_title": "We could not confirm this certificate",
     "invalid_body": "The code and name do not match a certificate issued by this community. Check both for typing mistakes. If they still do not match, ask the volunteer for a new copy.",
     "error": "We could not check the certificate just now. Please try again in a minute."
+  },
+  "org_team": {
+    "title": "Team",
+    "intro_owner": "The people who run this organisation with you. Owners manage the team, admins run its day-to-day work, members belong to it. Each person is told when they are added, moved or removed.",
+    "intro_viewer": "The people who run this organisation. Only its owners and community admins can change the team.",
+    "add_title": "Add someone to the team",
+    "search_label": "Find a member of the community",
+    "search_placeholder": "Type at least two letters of their name",
+    "searching": "Searching…",
+    "no_results": "No one found who is not already on the team.",
+    "results_label": "People found",
+    "choose": "Choose {{name}}",
+    "role_label": "Role",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "role_help": "Owners can add and remove people. Admins can manage opportunities, applications and hours, but not the team.",
+    "add": "Add to team",
+    "added": "{{name}} has been added to the team.",
+    "role_changed": "{{name}}’s role has been changed.",
+    "removed": "{{name}} has been removed from the team.",
+    "failed": "That change could not be made.",
+    "load_failed": "The team could not be loaded.",
+    "empty": "No one is on the team yet.",
+    "remove": "Remove",
+    "remove_named": "Remove {{name}}",
+    "remove_confirm": "Remove {{name}} from the team?",
+    "remove_yes": "Yes, remove",
+    "remove_no": "Keep",
+    "creator": "Registered the organisation",
+    "you": "You",
+    "role_for": "Role for {{name}}"
   }
 }

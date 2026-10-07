@@ -924,12 +924,13 @@ class AdminVolunteerController extends BaseApiController
         }
 
         $tenantId = $this->getTenantId();
-        if (!DB::selectOne("SELECT id FROM vol_organizations WHERE id = ? AND tenant_id = ?", [$id, $tenantId])) {
+        $org = DB::selectOne("SELECT id, user_id FROM vol_organizations WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+        if (!$org) {
             return $this->respondWithError('NOT_FOUND', __('api.organization_not_found'), null, 404);
         }
 
         $rows = DB::select(
-            "SELECT om.id, om.user_id,
+            "SELECT om.id, om.user_id, u.avatar_url,
                     COALESCE(u.first_name, SUBSTRING_INDEX(u.name, ' ', 1), '') as first_name,
                     COALESCE(u.last_name, TRIM(SUBSTRING(u.name, LENGTH(SUBSTRING_INDEX(u.name, ' ', 1)) + 1)), '') as last_name,
                     u.profile_type,
@@ -942,13 +943,18 @@ class AdminVolunteerController extends BaseApiController
                 AND vl.organization_id = om.organization_id
                 AND vl.tenant_id = om.tenant_id
              WHERE om.organization_id = ? AND om.org_type = 'volunteer' AND om.tenant_id = ? AND om.status = 'active'
-             GROUP BY om.id, om.user_id, u.first_name, u.last_name, u.name, om.role
-             ORDER BY om.id DESC
+             GROUP BY om.id, om.user_id, u.first_name, u.last_name, u.name, u.avatar_url, om.role
+             ORDER BY FIELD(om.role, 'owner', 'admin', 'member'), om.id ASC
              LIMIT 100",
             [$id, $tenantId]
         );
 
-        return $this->respondWithData(array_map(fn ($row) => (array) $row, $rows));
+        // is_creator: the person who registered the organisation, who cannot be
+        // removed or demoted (gap D7).
+        return $this->respondWithData(array_map(
+            fn ($row) => (array) $row + ['is_creator' => (int) $row->user_id === (int) $org->user_id],
+            $rows
+        ));
     }
 
     /** POST /api/v2/admin/volunteering/applications/{id}/approve */

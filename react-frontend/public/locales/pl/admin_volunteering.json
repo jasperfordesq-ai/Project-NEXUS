@@ -1094,5 +1094,31 @@
       "done": "Certyfikat unieważniony.",
       "failed": "Nie udało się unieważnić certyfikatu. Być może został już unieważniony."
     }
+  },
+  "org_team": {
+    "add_title": "Dodaj osobę do zespołu",
+    "member_label": "Członek",
+    "member_placeholder": "Szukaj po imieniu, nazwisku lub e-mailu",
+    "no_results": "Nie znaleziono członków",
+    "clear": "Wyczyść",
+    "role_label": "Rola",
+    "roles": {
+      "owner": "Właściciel",
+      "admin": "Administrator",
+      "member": "Członek"
+    },
+    "role_help": "Właściciele zarządzają zespołem. Administratorzy prowadzą codzienną pracę organizacji. Członkowie do niej należą. Każda osoba jest powiadamiana, gdy zostanie dodana, zmieni rolę lub zostanie usunięta.",
+    "add": "Dodaj",
+    "added": "Dodano do zespołu.",
+    "role_changed": "Zmieniono rolę.",
+    "removed": "Usunięto z zespołu.",
+    "failed": "Nie udało się wprowadzić tej zmiany.",
+    "remove": "Usuń",
+    "remove_named": "Usuń: {{name}}",
+    "remove_title": "Usunąć z zespołu?",
+    "remove_body": "{{name}} nie będzie już w zespole {{org}}. Ta osoba zostanie powiadomiona.",
+    "creator": "Zarejestrował(a) organizację",
+    "you": "Ty",
+    "role_for": "Rola: {{name}}"
   }
 }

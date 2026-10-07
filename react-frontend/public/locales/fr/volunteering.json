@@ -64,7 +64,8 @@
     "opps_empty_open": "Aucune mission ouverte. Publiez-en une pour trouver des bénévoles.",
     "opps_empty_other": "Rien ici.",
     "opps_load_error": "Impossible de charger vos missions.",
-    "opps_retry": "Réessayer"
+    "opps_retry": "Réessayer",
+    "tab_team": "Équipe"
   },
   "page_title": "Bénévolat",
   "heading": "Bénévolat",
@@ -1522,5 +1523,39 @@
     "invalid_title": "Nous n’avons pas pu confirmer ce certificat",
     "invalid_body": "Le code et le nom ne correspondent à aucun certificat délivré par cette communauté. Vérifiez qu’il n’y a pas de faute de frappe. Si cela ne correspond toujours pas, demandez une nouvelle copie au ou à la bénévole.",
     "error": "Impossible de vérifier le certificat pour le moment. Veuillez réessayer dans une minute."
+  },
+  "org_team": {
+    "title": "Équipe",
+    "intro_owner": "Les personnes qui gèrent cette organisation avec vous. Les propriétaires gèrent l’équipe, les administrateurs assurent le travail quotidien et les membres en font partie. Chaque personne est prévenue lorsqu’elle est ajoutée, change de rôle ou est retirée.",
+    "intro_viewer": "Les personnes qui gèrent cette organisation. Seuls ses propriétaires et les administrateurs de la communauté peuvent modifier l’équipe.",
+    "add_title": "Ajouter quelqu’un à l’équipe",
+    "search_label": "Trouver un membre de la communauté",
+    "search_placeholder": "Saisissez au moins deux lettres de son nom",
+    "searching": "Recherche…",
+    "no_results": "Personne trouvé qui ne fasse pas déjà partie de l’équipe.",
+    "results_label": "Personnes trouvées",
+    "choose": "Choisir {{name}}",
+    "role_label": "Rôle",
+    "roles": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "member": "Membre"
+    },
+    "role_help": "Les propriétaires peuvent ajouter et retirer des personnes. Les administrateurs peuvent gérer les missions, les candidatures et les heures, mais pas l’équipe.",
+    "add": "Ajouter à l’équipe",
+    "added": "{{name}} a été ajouté à l’équipe.",
+    "role_changed": "Le rôle de {{name}} a été modifié.",
+    "removed": "{{name}} a été retiré de l’équipe.",
+    "failed": "Cette modification n’a pas pu être effectuée.",
+    "load_failed": "Impossible de charger l’équipe.",
+    "empty": "Personne ne fait encore partie de l’équipe.",
+    "remove": "Retirer",
+    "remove_named": "Retirer {{name}}",
+    "remove_confirm": "Retirer {{name}} de l’équipe ?",
+    "remove_yes": "Oui, retirer",
+    "remove_no": "Garder",
+    "creator": "A enregistré l’organisation",
+    "you": "Vous",
+    "role_for": "Rôle de {{name}}"
   }
 }

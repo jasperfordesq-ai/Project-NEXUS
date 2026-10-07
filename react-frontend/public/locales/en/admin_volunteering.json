@@ -1060,5 +1060,31 @@
       "done": "Certificate revoked.",
       "failed": "The certificate could not be revoked. It may already have been revoked."
     }
+  },
+  "org_team": {
+    "add_title": "Add someone to the team",
+    "member_label": "Member",
+    "member_placeholder": "Search by name or email",
+    "no_results": "No members found",
+    "clear": "Clear",
+    "role_label": "Role",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "role_help": "Owners manage the team. Admins run the organisation’s day-to-day work. Members belong to it. Each person is told when they are added, moved or removed.",
+    "add": "Add",
+    "added": "Added to the team.",
+    "role_changed": "Role changed.",
+    "removed": "Removed from the team.",
+    "failed": "That change could not be made.",
+    "remove": "Remove",
+    "remove_named": "Remove {{name}}",
+    "remove_title": "Remove from the team?",
+    "remove_body": "{{name}} will no longer be on the team of {{org}}. They will be told.",
+    "creator": "Registered the organisation",
+    "you": "You",
+    "role_for": "Role for {{name}}"
   }
 }

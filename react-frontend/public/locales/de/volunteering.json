@@ -62,7 +62,8 @@
     "opps_empty_open": "Keine offenen Angebote. Veröffentlichen Sie eins, um Freiwillige zu finden.",
     "opps_empty_other": "Hier ist nichts.",
     "opps_load_error": "Ihre Angebote konnten nicht geladen werden.",
-    "opps_retry": "Erneut versuchen"
+    "opps_retry": "Erneut versuchen",
+    "tab_team": "Team"
   },
   "page_title": "Freiwilligenarbeit",
   "heading": "Freiwilligenarbeit",
@@ -1506,5 +1507,39 @@
     "invalid_title": "Wir konnten dieses Zertifikat nicht bestätigen",
     "invalid_body": "Code und Name passen zu keinem Zertifikat dieser Gemeinschaft. Prüfen Sie beides auf Tippfehler. Wenn es weiterhin nicht passt, bitten Sie die freiwillige Person um eine neue Kopie.",
     "error": "Das Zertifikat konnte gerade nicht geprüft werden. Bitte versuchen Sie es in einer Minute erneut."
+  },
+  "org_team": {
+    "title": "Team",
+    "intro_owner": "Die Personen, die diese Organisation mit Ihnen führen. Inhaber verwalten das Team, Admins erledigen die tägliche Arbeit, Mitglieder gehören dazu. Jede Person wird informiert, wenn sie hinzugefügt, umgestellt oder entfernt wird.",
+    "intro_viewer": "Die Personen, die diese Organisation führen. Nur ihre Inhaber und die Gemeinschafts-Admins können das Team ändern.",
+    "add_title": "Jemanden zum Team hinzufügen",
+    "search_label": "Mitglied der Gemeinschaft finden",
+    "search_placeholder": "Mindestens zwei Buchstaben des Namens eingeben",
+    "searching": "Suche läuft…",
+    "no_results": "Niemand gefunden, der nicht schon zum Team gehört.",
+    "results_label": "Gefundene Personen",
+    "choose": "{{name}} auswählen",
+    "role_label": "Rolle",
+    "roles": {
+      "owner": "Inhaber",
+      "admin": "Admin",
+      "member": "Mitglied"
+    },
+    "role_help": "Inhaber können Personen hinzufügen und entfernen. Admins können Einsätze, Bewerbungen und Stunden verwalten, aber nicht das Team.",
+    "add": "Zum Team hinzufügen",
+    "added": "{{name}} wurde zum Team hinzugefügt.",
+    "role_changed": "Die Rolle von {{name}} wurde geändert.",
+    "removed": "{{name}} wurde aus dem Team entfernt.",
+    "failed": "Diese Änderung konnte nicht vorgenommen werden.",
+    "load_failed": "Das Team konnte nicht geladen werden.",
+    "empty": "Noch niemand im Team.",
+    "remove": "Entfernen",
+    "remove_named": "Entfernen: {{name}}",
+    "remove_confirm": "{{name}} aus dem Team entfernen?",
+    "remove_yes": "Ja, entfernen",
+    "remove_no": "Behalten",
+    "creator": "Hat die Organisation registriert",
+    "you": "Sie",
+    "role_for": "Rolle von {{name}}"
   }
 }

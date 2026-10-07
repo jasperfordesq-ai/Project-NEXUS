@@ -6,7 +6,7 @@
 /**
  * VolOrgDashboardPage — Organization management dashboard for volunteer orgs.
  *
- * Tabs: Overview | Applications | Hours Review | Expenses | Fundraising | Volunteers | Qualifications | Wallet | Settings
+ * Tabs: Overview | Applications | Hours Review | Expenses | Fundraising | Volunteers | Qualifications | Team | Wallet | Settings
  *
  * API: GET /api/v2/volunteering/organisations/{id}/stats
  *      GET /api/v2/volunteering/organisations/{id} (org details)
@@ -23,6 +23,7 @@ import Clock from 'lucide-react/icons/clock';
 import Receipt from 'lucide-react/icons/receipt';
 import HandCoins from 'lucide-react/icons/hand-coins';
 import Users from 'lucide-react/icons/users';
+import UserCog from 'lucide-react/icons/user-cog';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import Wallet from 'lucide-react/icons/wallet';
 import Settings from 'lucide-react/icons/settings';
@@ -52,12 +53,13 @@ const OrgHoursReviewTab = React.lazy(() => import('./OrgHoursReviewTab'));
 const OrgExpensesTab = React.lazy(() => import('./OrgExpensesTab'));
 const OrgFundraisingTab = React.lazy(() => import('./OrgFundraisingTab'));
 const OrgVolunteersTab = React.lazy(() => import('./OrgVolunteersTab'));
+const OrgTeamTab = React.lazy(() => import('./OrgTeamTab'));
 const OrgQualificationsTab = React.lazy(() => import('./OrgQualificationsTab'));
 const OrgSafeguardingPage = React.lazy(() => import('./OrgSafeguardingPage'));
 const OrgWalletTab = React.lazy(() => import('./OrgWalletTab'));
 const OrgSettingsTab = React.lazy(() => import('./OrgSettingsTab'));
 
-type OrgDashTab = 'overview' | 'opportunities' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'qualifications' | 'safeguarding' | 'wallet' | 'settings';
+type OrgDashTab = 'overview' | 'opportunities' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'team' | 'qualifications' | 'safeguarding' | 'wallet' | 'settings';
 
 interface OrgDetails {
   id: number;
@@ -94,6 +96,7 @@ const TAB_DEFS: { key: OrgDashTab; icon: typeof LayoutDashboard }[] = [
   { key: 'fundraising', icon: HandCoins },
   { key: 'volunteers', icon: Users },
   { key: 'qualifications', icon: BadgeCheck },
+  { key: 'team', icon: UserCog },
   { key: 'safeguarding', icon: ShieldAlert },
   { key: 'wallet', icon: Wallet },
   { key: 'settings', icon: Settings },
@@ -327,6 +330,7 @@ export default function VolOrgDashboardPage() {
     expenses: t('org_dashboard.tab_expenses'),
     fundraising: tf('tab'),
     volunteers: t('org_dashboard.tab_volunteers'),
+    team: t('org_dashboard.tab_team'),
     qualifications: t('org_dashboard.tab_qualifications'),
     safeguarding: t('org_dashboard.tab_safeguarding'),
     wallet: t('org_dashboard.tab_wallet'),
@@ -421,6 +425,9 @@ export default function VolOrgDashboardPage() {
         )}
         {tab === 'volunteers' && (
           <OrgVolunteersTab orgId={orgId} />
+        )}
+        {tab === 'team' && (
+          <OrgTeamTab orgId={orgId} />
         )}
         {tab === 'qualifications' && (
           <OrgQualificationsTab orgId={orgId} />

@@ -64,7 +64,8 @@
     "opps_empty_open": "No hay oportunidades abiertas. Publica una para empezar a encontrar voluntarios.",
     "opps_empty_other": "No hay nada aquí.",
     "opps_load_error": "No se pudieron cargar tus oportunidades.",
-    "opps_retry": "Reintentar"
+    "opps_retry": "Reintentar",
+    "tab_team": "Equipo"
   },
   "page_title": "Voluntariado",
   "heading": "Voluntariado",
@@ -1522,5 +1523,39 @@
     "invalid_title": "No hemos podido confirmar este certificado",
     "invalid_body": "El código y el nombre no coinciden con ningún certificado emitido por esta comunidad. Revise ambos por si hay errores de escritura. Si siguen sin coincidir, pida a la persona voluntaria una copia nueva.",
     "error": "No hemos podido comprobar el certificado en este momento. Inténtelo de nuevo dentro de un minuto."
+  },
+  "org_team": {
+    "title": "Equipo",
+    "intro_owner": "Las personas que dirigen esta organización con usted. Los propietarios gestionan el equipo, los administradores llevan el trabajo diario y los miembros forman parte de ella. Se avisa a cada persona cuando se la añade, se le cambia el rol o se la elimina.",
+    "intro_viewer": "Las personas que dirigen esta organización. Solo sus propietarios y los administradores de la comunidad pueden cambiar el equipo.",
+    "add_title": "Añadir a alguien al equipo",
+    "search_label": "Buscar a un miembro de la comunidad",
+    "search_placeholder": "Escriba al menos dos letras de su nombre",
+    "searching": "Buscando…",
+    "no_results": "No se encontró a nadie que no esté ya en el equipo.",
+    "results_label": "Personas encontradas",
+    "choose": "Elegir a {{name}}",
+    "role_label": "Rol",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "role_help": "Los propietarios pueden añadir y eliminar personas. Los administradores pueden gestionar oportunidades, solicitudes y horas, pero no el equipo.",
+    "add": "Añadir al equipo",
+    "added": "{{name}} se ha añadido al equipo.",
+    "role_changed": "Se ha cambiado el rol de {{name}}.",
+    "removed": "{{name}} se ha eliminado del equipo.",
+    "failed": "No se pudo hacer ese cambio.",
+    "load_failed": "No se pudo cargar el equipo.",
+    "empty": "Todavía no hay nadie en el equipo.",
+    "remove": "Eliminar",
+    "remove_named": "Eliminar a {{name}}",
+    "remove_confirm": "¿Eliminar a {{name}} del equipo?",
+    "remove_yes": "Sí, eliminar",
+    "remove_no": "Mantener",
+    "creator": "Registró la organización",
+    "you": "Usted",
+    "role_for": "Rol de {{name}}"
   }
 }

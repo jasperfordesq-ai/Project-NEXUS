@@ -1077,5 +1077,31 @@
       "done": "Certificato revocato.",
       "failed": "Impossibile revocare il certificato. Potrebbe essere già stato revocato."
     }
+  },
+  "org_team": {
+    "add_title": "Aggiungi qualcuno al team",
+    "member_label": "Membro",
+    "member_placeholder": "Cerca per nome o email",
+    "no_results": "Nessun membro trovato",
+    "clear": "Cancella",
+    "role_label": "Ruolo",
+    "roles": {
+      "owner": "Proprietario",
+      "admin": "Amministratore",
+      "member": "Membro"
+    },
+    "role_help": "I proprietari gestiscono il team. Gli amministratori seguono il lavoro quotidiano dell’organizzazione. I membri ne fanno parte. Ogni persona viene avvisata quando viene aggiunta, cambia ruolo o viene rimossa.",
+    "add": "Aggiungi",
+    "added": "Aggiunto al team.",
+    "role_changed": "Ruolo modificato.",
+    "removed": "Rimosso dal team.",
+    "failed": "Impossibile effettuare questa modifica.",
+    "remove": "Rimuovi",
+    "remove_named": "Rimuovi {{name}}",
+    "remove_title": "Rimuovere dal team?",
+    "remove_body": "{{name}} non farà più parte del team di {{org}}. Verrà avvisato/a.",
+    "creator": "Ha registrato l’organizzazione",
+    "you": "Tu",
+    "role_for": "Ruolo di {{name}}"
   }
 }

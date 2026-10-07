@@ -66,7 +66,8 @@
     "opps_empty_open": "Brak otwartych ofert. Opublikuj ofertę, aby znaleźć wolontariuszy.",
     "opps_empty_other": "Nic tu nie ma.",
     "opps_load_error": "Nie udało się wczytać Twoich ofert.",
-    "opps_retry": "Spróbuj ponownie"
+    "opps_retry": "Spróbuj ponownie",
+    "tab_team": "Zespół"
   },
   "page_title": "Zgłaszanie się na ochotnika",
   "heading": "Zgłaszanie się na ochotnika",
@@ -1538,5 +1539,39 @@
     "invalid_title": "Nie udało się potwierdzić tego certyfikatu",
     "invalid_body": "Kod oraz imię i nazwisko nie pasują do żadnego certyfikatu wydanego przez tę społeczność. Sprawdź, czy nie ma literówek. Jeśli nadal się nie zgadzają, poproś wolontariusza o nową kopię.",
     "error": "Nie udało się teraz sprawdzić certyfikatu. Spróbuj ponownie za minutę."
+  },
+  "org_team": {
+    "title": "Zespół",
+    "intro_owner": "Osoby, które prowadzą tę organizację razem z Tobą. Właściciele zarządzają zespołem, administratorzy prowadzą codzienną pracę, a członkowie do niej należą. Każda osoba jest powiadamiana, gdy zostanie dodana, zmieni rolę lub zostanie usunięta.",
+    "intro_viewer": "Osoby, które prowadzą tę organizację. Zespół mogą zmieniać tylko jej właściciele i administratorzy społeczności.",
+    "add_title": "Dodaj osobę do zespołu",
+    "search_label": "Znajdź członka społeczności",
+    "search_placeholder": "Wpisz co najmniej dwie litery imienia lub nazwiska",
+    "searching": "Wyszukiwanie…",
+    "no_results": "Nie znaleziono nikogo spoza zespołu.",
+    "results_label": "Znalezione osoby",
+    "choose": "Wybierz: {{name}}",
+    "role_label": "Rola",
+    "roles": {
+      "owner": "Właściciel",
+      "admin": "Administrator",
+      "member": "Członek"
+    },
+    "role_help": "Właściciele mogą dodawać i usuwać osoby. Administratorzy mogą zarządzać ofertami, zgłoszeniami i godzinami, ale nie zespołem.",
+    "add": "Dodaj do zespołu",
+    "added": "Dodano {{name}} do zespołu.",
+    "role_changed": "Zmieniono rolę: {{name}}.",
+    "removed": "Usunięto {{name}} z zespołu.",
+    "failed": "Nie udało się wprowadzić tej zmiany.",
+    "load_failed": "Nie udało się wczytać zespołu.",
+    "empty": "W zespole nie ma jeszcze nikogo.",
+    "remove": "Usuń",
+    "remove_named": "Usuń: {{name}}",
+    "remove_confirm": "Usunąć {{name}} z zespołu?",
+    "remove_yes": "Tak, usuń",
+    "remove_no": "Zostaw",
+    "creator": "Zarejestrował(a) organizację",
+    "you": "Ty",
+    "role_for": "Rola: {{name}}"
   }
 }

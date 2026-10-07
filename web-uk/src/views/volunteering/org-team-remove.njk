@@ -1,0 +1,22 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Confirm removing someone from an organisation's team (gap D7, 7 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team') }}">{{ t("govuk_alpha_volunteering.org_team.back_to_team") }}</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_team.remove_title", { name: member.name }) }}</h1>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_team.remove_body") }}</p>
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team/' ~ member.id ~ '/remove') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_team.remove_confirm") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team') }}">{{ t("govuk_alpha_volunteering.org_team.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

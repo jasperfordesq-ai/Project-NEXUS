@@ -1060,5 +1060,31 @@
       "done": "Certificaat ingetrokken.",
       "failed": "Het certificaat kon niet worden ingetrokken. Mogelijk is het al ingetrokken."
     }
+  },
+  "org_team": {
+    "add_title": "Iemand aan het team toevoegen",
+    "member_label": "Lid",
+    "member_placeholder": "Zoeken op naam of e-mail",
+    "no_results": "Geen leden gevonden",
+    "clear": "Wissen",
+    "role_label": "Rol",
+    "roles": {
+      "owner": "Eigenaar",
+      "admin": "Beheerder",
+      "member": "Lid"
+    },
+    "role_help": "Eigenaren beheren het team. Beheerders doen het dagelijkse werk van de organisatie. Leden horen erbij. Iedereen krijgt bericht wanneer die wordt toegevoegd, een andere rol krijgt of wordt verwijderd.",
+    "add": "Toevoegen",
+    "added": "Aan het team toegevoegd.",
+    "role_changed": "Rol gewijzigd.",
+    "removed": "Uit het team verwijderd.",
+    "failed": "Die wijziging kon niet worden doorgevoerd.",
+    "remove": "Verwijderen",
+    "remove_named": "Verwijderen: {{name}}",
+    "remove_title": "Uit het team verwijderen?",
+    "remove_body": "{{name}} zit dan niet meer in het team van {{org}}. Diegene krijgt bericht.",
+    "creator": "Heeft de organisatie geregistreerd",
+    "you": "U",
+    "role_for": "Rol van {{name}}"
   }
 }

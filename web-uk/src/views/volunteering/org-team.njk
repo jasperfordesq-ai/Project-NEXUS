@@ -1,0 +1,149 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# The organisation's team (gap D7, 7 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_team.back_link") }}</a>
+{% endblock %}
+
+{% block content %}
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="team-status-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="team-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{% if status.field == "user_id" %}<a href="#team-person">{{ status.message }}</a>{% else %}{{ status.message }}{% endif %}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_team.title") }}</h1>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% else %}
+    <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_team.description_owner") if canManage else t("govuk_alpha_volunteering.org_team.description_viewer") }}</p>
+
+    {% if not members.length %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_volunteering.org_team.empty") }}</p></div>
+    {% else %}
+      <table class="govuk-table" data-testid="org-team-table">
+        <caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_team.title") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_team.table_name") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_team.table_role") }}</th>
+            {% if canManage %}<th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_team.table_actions") }}</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for member in members %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">
+                <a class="govuk-link" href="{{ urlFor('/members/' ~ member.id) }}">{{ member.name }}</a>
+                {% if member.isCreator %}<br><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.org_team.creator") }}</strong>{% endif %}
+                {% if member.isSelf %}<br><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.org_team.you") }}</strong>{% endif %}
+              </th>
+              <td class="govuk-table__cell">{{ member.roleLabel }}</td>
+              {% if canManage %}
+                <td class="govuk-table__cell">
+                  {% if member.locked %}
+                    <span class="govuk-body-s">{{ t("govuk_alpha_volunteering.org_team.locked") }}</span>
+                  {% else %}
+                    <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team/' ~ member.id ~ '/role') }}" class="govuk-!-margin-bottom-2">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <div class="govuk-form-group govuk-!-margin-bottom-2">
+                        <label class="govuk-label govuk-label--s" for="role-{{ member.id }}">{{ t("govuk_alpha_volunteering.org_team.role_for", { name: member.name }) }}</label>
+                        <select class="govuk-select" id="role-{{ member.id }}" name="role">
+                          {% for role in roles %}
+                            <option value="{{ role }}"{% if role == member.role %} selected{% endif %}>{{ t("govuk_alpha_volunteering.org_team.role_" ~ role) }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_team.change_role") }}<span class="govuk-visually-hidden"> {{ member.name }}</span></button>
+                    </form>
+                    <a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team/' ~ member.id ~ '/remove') }}">{{ t("govuk_alpha_volunteering.org_team.remove") }}<span class="govuk-visually-hidden"> {{ member.name }}</span></a>
+                  {% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if canManage %}
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_team.add_title") }}</h2>
+      <form method="get" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team') }}" novalidate>
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="team-search">{{ t("govuk_alpha_volunteering.org_team.search_label") }}</label>
+          <div id="team-search-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_team.search_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="team-search" name="q" type="search" value="{{ query }}" aria-describedby="team-search-hint" autocomplete="off">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_team.search_button") }}</button>
+      </form>
+
+      {% if searched %}
+        {% if not results.length %}
+          <p class="govuk-body" data-testid="org-team-no-results">{{ t("govuk_alpha_volunteering.org_team.no_results") }}</p>
+        {% else %}
+          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team') }}" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="q" value="{{ query }}">
+            <div class="govuk-form-group">
+              <fieldset class="govuk-fieldset" id="team-person">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_volunteering.org_team.person_legend") }}</legend>
+                <div class="govuk-radios" data-module="govuk-radios">
+                  {% for person in results %}
+                    <div class="govuk-radios__item">
+                      <input class="govuk-radios__input" id="person-{{ person.id }}" name="user_id" type="radio" value="{{ person.id }}">
+                      <label class="govuk-label govuk-radios__label" for="person-{{ person.id }}">{{ person.name }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+            <div class="govuk-form-group">
+              <fieldset class="govuk-fieldset" aria-describedby="team-role-hint">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_volunteering.org_team.role_legend") }}</legend>
+                <div id="team-role-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_team.role_help") }}</div>
+                <div class="govuk-radios" data-module="govuk-radios">
+                  {% for role in roles %}
+                    <div class="govuk-radios__item">
+                      <input class="govuk-radios__input" id="new-role-{{ role }}" name="role" type="radio" value="{{ role }}"{% if role == "member" %} checked{% endif %}>
+                      <label class="govuk-label govuk-radios__label" for="new-role-{{ role }}">{{ t("govuk_alpha_volunteering.org_team.role_" ~ role) }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+            <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_team.add_button") }}</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endblock %}

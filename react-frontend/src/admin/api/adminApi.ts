@@ -1881,6 +1881,13 @@ export const adminVolunteering = {
 
   // Organization CRUD + Members
   getOrgMembers: (orgId: number) => api.get(`/v2/admin/volunteering/organizations/${orgId}/members`),
+  // Manage an organisation's team (gap D7): roles are owner, admin or member.
+  addOrgMember: (orgId: number, userId: number, role: string) =>
+    api.post(`/v2/admin/volunteering/organizations/${orgId}/members`, { user_id: userId, role }),
+  updateOrgMemberRole: (orgId: number, userId: number, role: string) =>
+    api.put(`/v2/admin/volunteering/organizations/${orgId}/members/${userId}`, { role }),
+  removeOrgMember: (orgId: number, userId: number) =>
+    api.delete(`/v2/admin/volunteering/organizations/${orgId}/members/${userId}`),
   createOrganization: (data: Record<string, unknown>) => api.post('/v2/admin/volunteering/organizations', data),
   updateOrganization: (orgId: number, data: Record<string, unknown>) => api.put(`/v2/admin/volunteering/organizations/${orgId}`, data),
 

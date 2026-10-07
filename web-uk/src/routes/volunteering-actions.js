@@ -798,6 +798,66 @@ function orgSettingsStatus(status, t = null) {
   };
 }
 
+/*
+ * The organisation's team (gap D7, 7 Oct 2026). Owners and community admins
+ * add, move and remove people; the organisation's admins see the team only.
+ * The API decides who may (`can_manage`) and keeps the safeguards.
+ */
+const ORG_TEAM_ROLES = ['owner', 'admin', 'member'];
+
+function orgTeamRedirect(orgId, status, extra = '') {
+  return `/volunteering/organisations/${orgId}/team?status=${encodeURIComponent(status)}${extra}`;
+}
+
+/** Which refusal is this? Each safeguard gets its own sentence. */
+function orgTeamFailureStatus(error) {
+  const statuses = {
+    SELF: 'self',
+    CREATOR: 'creator',
+    LAST_OWNER: 'last-owner',
+    ALREADY_MEMBER: 'already',
+    USER_NOT_FOUND: 'user-not-found',
+    FORBIDDEN: 'forbidden'
+  };
+  return statuses[apiErrorCode(error)] || 'failed';
+}
+
+function orgTeamStatus(status, t = null) {
+  const messages = {
+    added: { type: 'success', key: 'govuk_alpha_volunteering.org_team.status_added' },
+    'role-changed': { type: 'success', key: 'govuk_alpha_volunteering.org_team.status_role_changed' },
+    removed: { type: 'success', key: 'govuk_alpha_volunteering.org_team.status_removed' },
+    'choose-person': { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_choose_person', field: 'user_id' },
+    self: { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_self' },
+    creator: { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_creator' },
+    'last-owner': { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_last_owner' },
+    already: { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_already' },
+    'user-not-found': { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_user_not_found' },
+    forbidden: { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_forbidden' },
+    failed: { type: 'error', key: 'govuk_alpha_volunteering.org_team.status_failed' }
+  };
+  const config = messages[status] || null;
+  if (!config) return null;
+  return { ...config, message: typeof t === 'function' ? t(config.key) : config.key };
+}
+
+function normalizeOrgTeamMember(row, selfId, t = null) {
+  const member = row && typeof row === 'object' ? row : {};
+  const id = positiveInteger(member.user_id);
+  const role = ORG_TEAM_ROLES.includes(member.role) ? member.role : 'member';
+  const isCreator = member.is_creator === true;
+  const isSelf = Boolean(id && selfId && id === selfId);
+  return {
+    id,
+    name: trimmed(member.name) || `#${id}`,
+    role,
+    roleLabel: t ? t(`govuk_alpha_volunteering.org_team.role_${role}`) : role,
+    isCreator,
+    isSelf,
+    locked: isCreator || isSelf
+  };
+}
+
 function orgWalletStatus(status, t = null) {
   const messages = {
     'deposit-made': { type: 'success', key: 'govuk_alpha_volunteering.org_wallet.deposit_made' },
@@ -2673,6 +2733,90 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
   });
 }, { redirectOn401: loginRedirect() }));
 
+router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, loginRedirect());
+  }
+
+  const id = Number(req.params.id);
+  const t = res.locals.t;
+  const query = trimmed(req.query.q);
+  let orgName = '';
+  let members = [];
+  let canManage = false;
+  let results = [];
+  let loadError = null;
+  try {
+    const [team, dashboard, profile] = await Promise.all([
+      callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/members`),
+      callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`).catch(() => ({})),
+      getRequestProfile(req, token).catch(() => null)
+    ]);
+    const selfId = positiveInteger(dataFrom(profile)?.id);
+    const teamData = dataFrom(team) || {};
+    members = collectionFrom(team).map((row) => normalizeOrgTeamMember(row, selfId, t)).filter((member) => member.id);
+    canManage = teamData.can_manage === true;
+    orgName = normalizeOrgStats(dashboard).orgName;
+
+    // People to add: anyone found who is not on the team already.
+    if (canManage && query.length >= 2) {
+      const onTeam = new Set(members.map((member) => member.id));
+      results = collectionFrom(await searchUsers(token, query, { limit: 10 }))
+        .map((row) => ({
+          id: positiveInteger(row?.id),
+          name: trimmed(row?.name) || [trimmed(row?.first_name), trimmed(row?.last_name)].filter(Boolean).join(' ')
+        }))
+        .filter((row) => row.id && row.name && !onTeam.has(row.id));
+    }
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    loadError = t('govuk_alpha_volunteering.org_team.load_error');
+  }
+
+  return res.render('volunteering/org-team', {
+    title: t('govuk_alpha_volunteering.org_team.title'),
+    activeNav: 'volunteering',
+    orgId: id,
+    orgName: orgName || res.locals.tenantName,
+    members,
+    canManage,
+    query,
+    searched: query.length >= 2,
+    results,
+    roles: ORG_TEAM_ROLES,
+    loadError,
+    status: orgTeamStatus(trimmed(req.query.status), t),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+router.get('/organisations/:id(\\d+)/team/:memberId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, loginRedirect());
+  }
+
+  const id = Number(req.params.id);
+  const memberId = Number(req.params.memberId);
+  const t = res.locals.t;
+  const team = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/members`);
+  const member = collectionFrom(team)
+    .map((row) => normalizeOrgTeamMember(row, null, t))
+    .find((row) => row.id === memberId);
+  if (!member || dataFrom(team)?.can_manage !== true) {
+    return res.status(404).render('errors/404', { title: t('govuk_alpha.error_pages.404_title') });
+  }
+
+  return res.render('volunteering/org-team-remove', {
+    title: t('govuk_alpha_volunteering.org_team.remove_title', { name: member.name }),
+    activeNav: 'volunteering',
+    orgId: id,
+    member,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
 router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
@@ -3889,6 +4033,60 @@ router.post('/organisations/:id(\\d+)/hours/:logId(\\d+)', asyncRoute(async (req
     { action },
     orgManageRedirect(id, status),
     orgManageRedirect(id, 'hours-verify-failed')
+  );
+}));
+
+router.post('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const userId = positiveInteger(req.body.user_id);
+  const role = ORG_TEAM_ROLES.includes(req.body.role) ? req.body.role : 'member';
+  if (!userId) {
+    const q = trimmed(req.body.q);
+    return redirectTo(res, orgTeamRedirect(id, 'choose-person', q ? `&q=${encodeURIComponent(q)}` : ''));
+  }
+
+  return runAction(
+    req,
+    res,
+    'POST',
+    `/organisations/${id}/members`,
+    { user_id: userId, role },
+    orgTeamRedirect(id, 'added'),
+    (error) => orgTeamRedirect(id, orgTeamFailureStatus(error))
+  );
+}));
+
+router.post('/organisations/:id(\\d+)/team/:memberId(\\d+)/role', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const memberId = Number(req.params.memberId);
+  const role = ORG_TEAM_ROLES.includes(req.body.role) ? req.body.role : '';
+  if (!role) {
+    return redirectTo(res, orgTeamRedirect(id, 'failed'));
+  }
+
+  return runAction(
+    req,
+    res,
+    'PUT',
+    `/organisations/${id}/members/${memberId}`,
+    { role },
+    orgTeamRedirect(id, 'role-changed'),
+    (error) => orgTeamRedirect(id, orgTeamFailureStatus(error))
+  );
+}));
+
+router.post('/organisations/:id(\\d+)/team/:memberId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const memberId = Number(req.params.memberId);
+
+  return runAction(
+    req,
+    res,
+    'DELETE',
+    `/organisations/${id}/members/${memberId}`,
+    {},
+    orgTeamRedirect(id, 'removed'),
+    (error) => orgTeamRedirect(id, orgTeamFailureStatus(error))
   );
 }));
 

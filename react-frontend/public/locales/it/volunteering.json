@@ -64,7 +64,8 @@
     "opps_empty_open": "Nessuna opportunità aperta. Pubblicane una per trovare volontari.",
     "opps_empty_other": "Qui non c’è niente.",
     "opps_load_error": "Impossibile caricare le tue opportunità.",
-    "opps_retry": "Riprova"
+    "opps_retry": "Riprova",
+    "tab_team": "Team"
   },
   "page_title": "Volontariato",
   "heading": "Volontariato",
@@ -1522,5 +1523,39 @@
     "invalid_title": "Non è stato possibile confermare questo certificato",
     "invalid_body": "Il codice e il nome non corrispondono a nessun certificato rilasciato da questa comunità. Controlla che non ci siano errori di battitura. Se continuano a non corrispondere, chiedi alla persona volontaria una nuova copia.",
     "error": "Non è stato possibile verificare il certificato in questo momento. Riprova tra un minuto."
+  },
+  "org_team": {
+    "title": "Team",
+    "intro_owner": "Le persone che gestiscono questa organizzazione con te. I proprietari gestiscono il team, gli amministratori seguono il lavoro quotidiano e i membri ne fanno parte. Ogni persona viene avvisata quando viene aggiunta, cambia ruolo o viene rimossa.",
+    "intro_viewer": "Le persone che gestiscono questa organizzazione. Solo i suoi proprietari e gli amministratori della comunità possono modificare il team.",
+    "add_title": "Aggiungi qualcuno al team",
+    "search_label": "Trova un membro della comunità",
+    "search_placeholder": "Digita almeno due lettere del nome",
+    "searching": "Ricerca in corso…",
+    "no_results": "Nessuno trovato che non sia già nel team.",
+    "results_label": "Persone trovate",
+    "choose": "Scegli {{name}}",
+    "role_label": "Ruolo",
+    "roles": {
+      "owner": "Proprietario",
+      "admin": "Amministratore",
+      "member": "Membro"
+    },
+    "role_help": "I proprietari possono aggiungere e rimuovere persone. Gli amministratori possono gestire opportunità, candidature e ore, ma non il team.",
+    "add": "Aggiungi al team",
+    "added": "{{name}} è stato aggiunto al team.",
+    "role_changed": "Il ruolo di {{name}} è stato modificato.",
+    "removed": "{{name}} è stato rimosso dal team.",
+    "failed": "Impossibile effettuare questa modifica.",
+    "load_failed": "Impossibile caricare il team.",
+    "empty": "Nessuno fa ancora parte del team.",
+    "remove": "Rimuovi",
+    "remove_named": "Rimuovi {{name}}",
+    "remove_confirm": "Rimuovere {{name}} dal team?",
+    "remove_yes": "Sì, rimuovi",
+    "remove_no": "Mantieni",
+    "creator": "Ha registrato l’organizzazione",
+    "you": "Tu",
+    "role_for": "Ruolo di {{name}}"
   }
 }

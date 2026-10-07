@@ -68,7 +68,8 @@
     "opps_empty_open": "Níl aon deis oscailte. Foilsigh ceann chun oibrithe deonacha a aimsiú.",
     "opps_empty_other": "Níl aon rud anseo.",
     "opps_load_error": "Níorbh fhéidir do dheiseanna a lódáil.",
-    "opps_retry": "Bain triail eile as"
+    "opps_retry": "Bain triail eile as",
+    "tab_team": "Foireann"
   },
   "page_title": "Obair Dheonach",
   "heading": "Obair Dheonach",
@@ -1554,5 +1555,39 @@
     "invalid_title": "Níorbh fhéidir linn an teastas seo a dheimhniú",
     "invalid_body": "Ní thagann an cód agus an t-ainm le teastas ar bith a d’eisigh an pobal seo. Seiceáil an bhfuil botúin chlóscríofa iontu. Mura dtagann siad le chéile fós, iarr cóip nua ar an oibrí deonach.",
     "error": "Níorbh fhéidir linn an teastas a sheiceáil faoi láthair. Bain triail eile as i gceann nóiméid."
+  },
+  "org_team": {
+    "title": "Foireann",
+    "intro_owner": "Na daoine a ritheann an eagraíocht seo leat. Bainistíonn úinéirí an fhoireann, déanann riarthóirí an obair laethúil, agus baineann baill léi. Cuirtear in iúl do gach duine nuair a chuirtear leis an bhfoireann é, nuair a athraítear a ról nó nuair a bhaintear é.",
+    "intro_viewer": "Na daoine a ritheann an eagraíocht seo. Ní féidir ach lena húinéirí agus le riarthóirí an phobail an fhoireann a athrú.",
+    "add_title": "Cuir duine leis an bhfoireann",
+    "search_label": "Aimsigh ball den phobal",
+    "search_placeholder": "Clóscríobh dhá litir ar a laghad dá n-ainm",
+    "searching": "Ag cuardach…",
+    "no_results": "Níor aimsíodh aon duine nach bhfuil ar an bhfoireann cheana.",
+    "results_label": "Daoine a aimsíodh",
+    "choose": "Roghnaigh {{name}}",
+    "role_label": "Ról",
+    "roles": {
+      "owner": "Úinéir",
+      "admin": "Riarthóir",
+      "member": "Ball"
+    },
+    "role_help": "Is féidir le húinéirí daoine a chur leis agus a bhaint. Is féidir le riarthóirí deiseanna, iarratais agus uaireanta a bhainistiú, ach ní an fhoireann.",
+    "add": "Cuir leis an bhfoireann",
+    "added": "Cuireadh {{name}} leis an bhfoireann.",
+    "role_changed": "Athraíodh ról {{name}}.",
+    "removed": "Baineadh {{name}} den fhoireann.",
+    "failed": "Níorbh fhéidir an t-athrú sin a dhéanamh.",
+    "load_failed": "Níorbh fhéidir an fhoireann a lódáil.",
+    "empty": "Níl aon duine ar an bhfoireann fós.",
+    "remove": "Bain",
+    "remove_named": "Bain {{name}}",
+    "remove_confirm": "An mbainfear {{name}} den fhoireann?",
+    "remove_yes": "Bain, le do thoil",
+    "remove_no": "Coinnigh",
+    "creator": "Chláraigh sé/sí an eagraíocht",
+    "you": "Tusa",
+    "role_for": "Ról {{name}}"
   }
 }

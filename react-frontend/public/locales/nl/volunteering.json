@@ -62,7 +62,8 @@
     "opps_empty_open": "Geen open vacatures. Plaats er een om vrijwilligers te vinden.",
     "opps_empty_other": "Hier staat niets.",
     "opps_load_error": "Kon je vacatures niet laden.",
-    "opps_retry": "Opnieuw proberen"
+    "opps_retry": "Opnieuw proberen",
+    "tab_team": "Team"
   },
   "page_title": "Vrijwilligerswerk",
   "heading": "Vrijwilligerswerk",
@@ -1506,5 +1507,39 @@
     "invalid_title": "We konden dit certificaat niet bevestigen",
     "invalid_body": "De code en naam komen niet overeen met een certificaat van deze gemeenschap. Controleer beide op typefouten. Komen ze nog steeds niet overeen, vraag de vrijwilliger dan om een nieuw exemplaar.",
     "error": "We konden het certificaat nu niet controleren. Probeer het over een minuut opnieuw."
+  },
+  "org_team": {
+    "title": "Team",
+    "intro_owner": "De mensen die deze organisatie met u leiden. Eigenaren beheren het team, beheerders doen het dagelijkse werk en leden horen erbij. Iedereen krijgt bericht wanneer die wordt toegevoegd, een andere rol krijgt of wordt verwijderd.",
+    "intro_viewer": "De mensen die deze organisatie leiden. Alleen de eigenaren en de beheerders van de gemeenschap kunnen het team wijzigen.",
+    "add_title": "Iemand aan het team toevoegen",
+    "search_label": "Een lid van de gemeenschap zoeken",
+    "search_placeholder": "Typ minstens twee letters van de naam",
+    "searching": "Zoeken…",
+    "no_results": "Niemand gevonden die nog niet in het team zit.",
+    "results_label": "Gevonden personen",
+    "choose": "{{name}} kiezen",
+    "role_label": "Rol",
+    "roles": {
+      "owner": "Eigenaar",
+      "admin": "Beheerder",
+      "member": "Lid"
+    },
+    "role_help": "Eigenaren kunnen mensen toevoegen en verwijderen. Beheerders kunnen kansen, aanmeldingen en uren beheren, maar niet het team.",
+    "add": "Aan team toevoegen",
+    "added": "{{name}} is aan het team toegevoegd.",
+    "role_changed": "De rol van {{name}} is gewijzigd.",
+    "removed": "{{name}} is uit het team verwijderd.",
+    "failed": "Die wijziging kon niet worden doorgevoerd.",
+    "load_failed": "Het team kon niet worden geladen.",
+    "empty": "Er zit nog niemand in het team.",
+    "remove": "Verwijderen",
+    "remove_named": "Verwijderen: {{name}}",
+    "remove_confirm": "{{name}} uit het team verwijderen?",
+    "remove_yes": "Ja, verwijderen",
+    "remove_no": "Behouden",
+    "creator": "Heeft de organisatie geregistreerd",
+    "you": "U",
+    "role_for": "Rol van {{name}}"
   }
 }

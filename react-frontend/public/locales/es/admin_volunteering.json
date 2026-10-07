@@ -1077,5 +1077,31 @@
       "done": "Certificado revocado.",
       "failed": "No se pudo revocar el certificado. Puede que ya estuviera revocado."
     }
+  },
+  "org_team": {
+    "add_title": "Añadir a alguien al equipo",
+    "member_label": "Miembro",
+    "member_placeholder": "Buscar por nombre o correo electrónico",
+    "no_results": "No se encontraron miembros",
+    "clear": "Borrar",
+    "role_label": "Rol",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "role_help": "Los propietarios gestionan el equipo. Los administradores llevan el trabajo diario de la organización. Los miembros forman parte de ella. Se avisa a cada persona cuando se la añade, se le cambia el rol o se la elimina.",
+    "add": "Añadir",
+    "added": "Añadido al equipo.",
+    "role_changed": "Rol cambiado.",
+    "removed": "Eliminado del equipo.",
+    "failed": "No se pudo hacer ese cambio.",
+    "remove": "Eliminar",
+    "remove_named": "Eliminar a {{name}}",
+    "remove_title": "¿Eliminar del equipo?",
+    "remove_body": "{{name}} dejará de formar parte del equipo de {{org}}. Se le avisará.",
+    "creator": "Registró la organización",
+    "you": "Usted",
+    "role_for": "Rol de {{name}}"
   }
 }

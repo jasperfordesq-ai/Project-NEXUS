@@ -1077,5 +1077,31 @@
       "done": "Certificado revogado.",
       "failed": "Não foi possível revogar o certificado. Pode já ter sido revogado."
     }
+  },
+  "org_team": {
+    "add_title": "Adicionar alguém à equipa",
+    "member_label": "Membro",
+    "member_placeholder": "Pesquisar por nome ou email",
+    "no_results": "Nenhum membro encontrado",
+    "clear": "Limpar",
+    "role_label": "Função",
+    "roles": {
+      "owner": "Proprietário",
+      "admin": "Administrador",
+      "member": "Membro"
+    },
+    "role_help": "Os proprietários gerem a equipa. Os administradores asseguram o trabalho diário da organização. Os membros fazem parte dela. Cada pessoa é avisada quando é adicionada, muda de função ou é removida.",
+    "add": "Adicionar",
+    "added": "Adicionado à equipa.",
+    "role_changed": "Função alterada.",
+    "removed": "Removido da equipa.",
+    "failed": "Não foi possível fazer essa alteração.",
+    "remove": "Remover",
+    "remove_named": "Remover {{name}}",
+    "remove_title": "Remover da equipa?",
+    "remove_body": "{{name}} deixará de fazer parte da equipa de {{org}}. Será avisado/a.",
+    "creator": "Registou a organização",
+    "you": "Você",
+    "role_for": "Função de {{name}}"
   }
 }

@@ -1351,6 +1351,11 @@ Route::middleware(['feature:volunteering', 'feature:organisations'])->group(func
     Route::get('/v2/volunteering/organisations/{id}/campaigns/{campaignId}/handovers', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'handovers'])->whereNumber(['id', 'campaignId']);
     Route::post('/v2/volunteering/organisations/{id}/handovers/{handoverId}/confirm', [\App\Http\Controllers\Api\OrgFundraisingController::class, 'confirmHandover'])->whereNumber(['id', 'handoverId']);
     Route::put('/v2/volunteering/organisations/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'updateOrganisation']);
+    // The organisation's team: owners add, remove and change roles (gap D7, 7 Oct 2026).
+    Route::get('/v2/volunteering/organisations/{id}/members', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'index'])->whereNumber('id');
+    Route::post('/v2/volunteering/organisations/{id}/members', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'store'])->whereNumber('id');
+    Route::put('/v2/volunteering/organisations/{id}/members/{memberId}', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'update'])->whereNumber(['id', 'memberId']);
+    Route::delete('/v2/volunteering/organisations/{id}/members/{memberId}', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'destroy'])->whereNumber(['id', 'memberId']);
     Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
 });
 Route::post('/v2/volunteering/reviews', [\App\Http\Controllers\Api\VolunteerController::class, 'createReview']);
@@ -2774,6 +2779,10 @@ Route::get('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\Ad
 Route::post('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'createOrganization']);
 Route::put('/v2/admin/volunteering/organizations/{id}', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'updateOrganization']);
 Route::get('/v2/admin/volunteering/organizations/{id}/members', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'organizationMembers']);
+// Admins manage any organisation's team (gap D7); same rules as the owners' own routes.
+Route::post('/v2/admin/volunteering/organizations/{id}/members', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'store'])->whereNumber('id');
+Route::put('/v2/admin/volunteering/organizations/{id}/members/{memberId}', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'update'])->whereNumber(['id', 'memberId']);
+Route::delete('/v2/admin/volunteering/organizations/{id}/members/{memberId}', [\App\Http\Controllers\Api\VolunteerOrgMemberController::class, 'destroy'])->whereNumber(['id', 'memberId']);
 // Volunteer certificates issued in the community; revoke one issued in error (gap D8, 7 Oct 2026).
 Route::get('/v2/admin/volunteering/certificates', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'index']);
 Route::get('/v2/admin/volunteering/certificates/{id}/html', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'html'])->whereNumber('id');

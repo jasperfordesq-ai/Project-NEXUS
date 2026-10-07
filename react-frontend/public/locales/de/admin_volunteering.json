@@ -1060,5 +1060,31 @@
       "done": "Bescheinigung widerrufen.",
       "failed": "Die Bescheinigung konnte nicht widerrufen werden. Möglicherweise wurde sie bereits widerrufen."
     }
+  },
+  "org_team": {
+    "add_title": "Jemanden zum Team hinzufügen",
+    "member_label": "Mitglied",
+    "member_placeholder": "Nach Name oder E-Mail suchen",
+    "no_results": "Keine Mitglieder gefunden",
+    "clear": "Leeren",
+    "role_label": "Rolle",
+    "roles": {
+      "owner": "Inhaber",
+      "admin": "Admin",
+      "member": "Mitglied"
+    },
+    "role_help": "Inhaber verwalten das Team. Admins erledigen die tägliche Arbeit der Organisation. Mitglieder gehören ihr an. Jede Person wird informiert, wenn sie hinzugefügt, umgestellt oder entfernt wird.",
+    "add": "Hinzufügen",
+    "added": "Zum Team hinzugefügt.",
+    "role_changed": "Rolle geändert.",
+    "removed": "Aus dem Team entfernt.",
+    "failed": "Diese Änderung konnte nicht vorgenommen werden.",
+    "remove": "Entfernen",
+    "remove_named": "Entfernen: {{name}}",
+    "remove_title": "Aus dem Team entfernen?",
+    "remove_body": "{{name}} gehört dann nicht mehr zum Team von {{org}}. Die Person wird informiert.",
+    "creator": "Hat die Organisation registriert",
+    "you": "Sie",
+    "role_for": "Rolle von {{name}}"
   }
 }

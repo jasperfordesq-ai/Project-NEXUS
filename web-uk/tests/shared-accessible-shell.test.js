@@ -37098,6 +37098,117 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  // Gap D7: an organisation's team. Owners add, move and remove people; the
+  // creator and your own place are not offered for change.
+  describe('organisation team (gap D7)', () => {
+    const team = (canManage) => ({
+      data: {
+        items: [
+          { user_id: 101, name: 'Cara Creator', role: 'owner', is_creator: true },
+          { user_id: 11, name: 'Bob Helper', role: 'admin', is_creator: false }
+        ],
+        can_manage: canManage
+      }
+    });
+    const signed = () => {
+      const cookieSignature = require('cookie-signature');
+      return `token=${encodeURIComponent(`s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`)}`;
+    };
+    const routeApi = (api, canManage) => api.callVolunteeringApi.mockImplementation(async (token, method, path) => {
+      if (path === '/organisations/5/members') return team(canManage);
+      if (path === '/organisations/5/stats') return { data: { organization: { name: 'Food Bank' } } };
+      return { data: {} };
+    });
+
+    it('shows an owner the team, locks the creator, and finds people not yet on it', async () => {
+      const api = require('../src/lib/api');
+      routeApi(api, true);
+      api.searchUsers.mockResolvedValueOnce({ data: { items: [{ id: 11, name: 'Bob Helper' }, { id: 42, name: 'Dee New' }] } });
+
+      const response = await request(app).get('/volunteering/organisations/5/team?q=de').set('Cookie', signed());
+
+      expect(response.status).toBe(200);
+      expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/5/members');
+      expect(api.searchUsers).toHaveBeenCalledWith('test-token', 'de', { limit: 10 });
+      expect(response.text).toContain('data-testid="org-team-table"');
+      expect(response.text).toContain('Registered the organisation');
+      expect(response.text).toContain('This place cannot be changed here.');
+      expect(response.text).toContain('action="/volunteering/organisations/5/team/11/role"');
+      expect(response.text).not.toContain('/team/101/role');
+      expect(response.text).toContain('href="/volunteering/organisations/5/team/11/remove"');
+      // Bob is already on the team, so only Dee is offered.
+      expect(response.text).toContain('id="person-42"');
+      expect(response.text).not.toContain('id="person-11"');
+    });
+
+    it('shows an org admin the team without any way to change it', async () => {
+      const api = require('../src/lib/api');
+      routeApi(api, false);
+
+      const response = await request(app).get('/volunteering/organisations/5/team').set('Cookie', signed());
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('Bob Helper');
+      expect(response.text).not.toContain('/team/11/role');
+      expect(response.text).not.toContain('Add someone to the team');
+    });
+
+    // POSTs carry the CSRF token from the page, as a browser's would.
+    const csrfAgent = async (api) => {
+      routeApi(api, true);
+      const agent = request.agent(app);
+      const page = await agent.get('/volunteering/organisations/5/team').set('Cookie', signed());
+      const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];
+      return { agent, csrf };
+    };
+
+    it('adds, changes and removes through the Laravel team routes', async () => {
+      const api = require('../src/lib/api');
+      const { agent, csrf } = await csrfAgent(api);
+      api.callVolunteeringApi.mockReset().mockResolvedValue({ data: { ok: true } });
+
+      const added = await agent.post('/volunteering/organisations/5/team')
+        .set('Cookie', signed()).type('form').send({ _csrf: csrf, user_id: '42', role: 'admin' });
+      expect(added.headers.location).toBe('/volunteering/organisations/5/team?status=added');
+      expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'POST', '/organisations/5/members', { user_id: 42, role: 'admin' });
+
+      const moved = await agent.post('/volunteering/organisations/5/team/11/role')
+        .set('Cookie', signed()).type('form').send({ _csrf: csrf, role: 'owner' });
+      expect(moved.headers.location).toBe('/volunteering/organisations/5/team?status=role-changed');
+      expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/organisations/5/members/11', { role: 'owner' });
+
+      const removed = await agent.post('/volunteering/organisations/5/team/11/remove')
+        .set('Cookie', signed()).type('form').send({ _csrf: csrf });
+      expect(removed.headers.location).toBe('/volunteering/organisations/5/team?status=removed');
+      expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/organisations/5/members/11', {});
+    });
+
+    it('turns each refusal into its own sentence', async () => {
+      const api = require('../src/lib/api');
+      const { agent, csrf } = await csrfAgent(api);
+      api.callVolunteeringApi.mockRejectedValueOnce(new api.ApiError('refused', 422, { errors: [{ code: 'LAST_OWNER' }] }));
+
+      const refused = await agent.post('/volunteering/organisations/5/team/11/remove')
+        .set('Cookie', signed()).type('form').send({ _csrf: csrf });
+      expect(refused.headers.location).toBe('/volunteering/organisations/5/team?status=last-owner');
+
+      routeApi(api, true);
+      const page = await request(app).get('/volunteering/organisations/5/team?status=last-owner').set('Cookie', signed());
+      expect(page.text).toContain('An organisation must keep at least one owner. Make someone else an owner first.');
+    });
+
+    it('asks before removing someone', async () => {
+      const api = require('../src/lib/api');
+      routeApi(api, true);
+
+      const page = await request(app).get('/volunteering/organisations/5/team/11/remove').set('Cookie', signed());
+
+      expect(page.status).toBe(200);
+      expect(page.text).toContain('Remove Bob Helper from the team?');
+      expect(page.text).toContain('action="/volunteering/organisations/5/team/11/remove"');
+    });
+  });
+
   // Gap D8: a certificate the community revoked is marked as such, with no
   // download or public-check link, and its download address is refused.
   it('marks a revoked certificate and offers neither download nor check', async () => {

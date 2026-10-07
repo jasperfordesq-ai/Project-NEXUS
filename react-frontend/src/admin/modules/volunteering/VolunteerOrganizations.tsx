@@ -47,6 +47,7 @@ import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { EmptyState } from '../../components/EmptyState';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { OrgTeamModal } from './OrgTeamModal';
 import { useTranslation } from 'react-i18next';
 
 interface VolOrg {
@@ -75,15 +76,6 @@ interface Transaction {
   description: string;
   created_at: string;
   admin_name?: string;
-}
-
-interface OrgMember {
-  id: number;
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  role: string;
-  total_hours: number;
 }
 
 interface OrgFormData {
@@ -161,8 +153,6 @@ export function VolunteerOrganizations() {
   // Members modal
   const membersModal = useDisclosure();
   const [membersOrg, setMembersOrg] = useState<VolOrg | null>(null);
-  const [members, setMembers] = useState<OrgMember[]>([]);
-  const [membersLoading, setMembersLoading] = useState(false);
 
   // Create org modal
   const createModal = useDisclosure();
@@ -419,28 +409,11 @@ export function VolunteerOrganizations() {
     setEditSubmitting(false);
   }, [editOrg, editForm, toast, t, editModal, loadData]);
 
-  // --- View Members ---
-  const openMembersModal = useCallback(async (org: VolOrg) => {
+  // --- Team (gap D7: the window now adds, removes and changes roles) ---
+  const openMembersModal = useCallback((org: VolOrg) => {
     setMembersOrg(org);
-    setMembers([]);
     membersModal.onOpen();
-    setMembersLoading(true);
-    try {
-      const res = await adminVolunteering.getOrgMembers(org.org_id || org.id);
-      if (res.success && res.data) {
-        const payload = res.data as unknown;
-        if (Array.isArray(payload)) {
-          setMembers(payload as OrgMember[]);
-        } else if (payload && typeof payload === 'object' && 'data' in payload) {
-          setMembers((payload as { data: OrgMember[] }).data || []);
-        }
-      }
-    } catch {
-      toast.error(t('volunteering.failed_load_members'));
-    }
-    setMembersLoading(false);
-  }, [membersModal, toast, t]);
-
+  }, [membersModal]);
 
   // --- Create Organization ---
   const openCreateModal = useCallback(() => {
@@ -935,62 +908,13 @@ export function VolunteerOrganizations() {
         </ModalContent>
       </Modal>
 
-      {/* Members Modal */}
-      <Modal isOpen={membersModal.isOpen} onOpenChange={membersModal.onOpenChange} size="2xl" scrollBehavior="inside">
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>
-                {t('volunteering.organization_members')}
-                {membersOrg && (
-                  <span className="mt-1 block text-sm font-normal text-muted">
-                    {membersOrg.org_name} - {t('volunteering.members_count', { count: membersOrg.member_count ?? 0 })}
-                  </span>
-                )}
-              </ModalHeader>
-              <ModalBody>
-                {membersLoading ? (
-                  <div className="flex justify-center py-8">
-                    <span className="text-muted">{t('volunteering.loading')}</span>
-                  </div>
-                ) : members.length === 0 ? (
-                  <div className="flex flex-col items-center py-8 text-muted">
-                    <Users size={40} className="mb-2" />
-                    <p>{t('volunteering.no_members')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {members.map((m) => (
-                      <div
-                        key={m.id || m.user_id}
-                        className="flex items-center justify-between rounded-xl border border-divider/70 bg-surface-secondary/30 p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary text-xs font-semibold text-foreground">
-                            {(m.first_name?.[0] || '').toUpperCase()}{(m.last_name?.[0] || '').toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{m.first_name} {m.last_name}</p>
-                            <p className="text-xs text-muted capitalize">{m.role || t('volunteering.volunteer')}</p>
-                          </div>
-                        </div>
-                        <span className="font-mono text-sm text-muted">
-                          {t('volunteering.hours_value', { value: (m.total_hours ?? 0).toLocaleString(getFormattingLocale()) })}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="tertiary" onPress={onClose}>
-                  {t('volunteering.close')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      {/* Team */}
+      <OrgTeamModal
+        isOpen={membersModal.isOpen}
+        onClose={membersModal.onClose}
+        org={membersOrg ? { id: membersOrg.org_id || membersOrg.id, name: membersOrg.org_name } : null}
+        onChanged={() => void loadData()}
+      />
 
       {/* Create Organization Modal */}
       <Modal isOpen={createModal.isOpen} onOpenChange={createModal.onOpenChange} size="lg">
