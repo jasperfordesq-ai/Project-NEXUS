@@ -24,7 +24,9 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import TrendingDown from 'lucide-react/icons/trending-down';
 import Coffee from 'lucide-react/icons/coffee';
 import Sun from 'lucide-react/icons/sun';
+import MessageSquare from 'lucide-react/icons/message-square';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -35,7 +37,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { EmptyState } from '@/components/feedback';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -121,6 +123,7 @@ const itemVariants = {
 export function WellbeingTab() {
   const { t } = useTranslation('volunteering');
   const toast = useToast();
+  const { tenantPath } = useTenant();
   const moodOptions = getMoodOptions((key) => t(key));
   const [data, setData] = useState<WellbeingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -455,15 +458,29 @@ export function WellbeingTab() {
                     <p className="text-sm text-theme-muted mb-3">
                       {t('wellbeing.needs_attention_desc')}
                     </p>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="bg-theme-elevated text-theme-muted"
-                      startContent={<Coffee className="w-4 h-4" aria-hidden="true" />}
-                      onPress={() => setShowTips(!showTips)}
-                    >
-                      {showTips ? t('wellbeing.hide_tips') : t('wellbeing.view_tips')}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-theme-elevated text-theme-muted"
+                        startContent={<Coffee className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => setShowTips(!showTips)}
+                      >
+                        {showTips ? t('wellbeing.hide_tips') : t('wellbeing.view_tips')}
+                      </Button>
+                      {/* The text above suggests reaching out to the community; this is
+                          the way to do it (gap C5). The contact form goes to the
+                          community's own team. */}
+                      <Button
+                        as={Link}
+                        to={tenantPath('/contact')}
+                        size="sm"
+                        variant="secondary"
+                        startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}
+                      >
+                        {t('common:footer.contact_us')}
+                      </Button>
+                    </div>
                     {showTips && (
                       <div className="mt-4 space-y-2">
                         <p className="text-sm text-muted">&#8226; {t('wellbeing.tip_breaks')}</p>

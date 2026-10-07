@@ -42,6 +42,7 @@ const stableT = (
 ) => {
   const translations: Record<string, string> = {
     hours_abbrev: "{{hours}}h",
+    "common:footer.contact_us": "Contact Us",
     "wellbeing.burnout_warning": "Burnout Warning",
     "wellbeing.heading": "Volunteer Wellbeing",
     "wellbeing.hide_tips": "Hide Self-Care Tips",
@@ -202,6 +203,17 @@ describe("WellbeingTab", () => {
       expect(screen.getByText("Your Wellbeing Needs Attention")).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /View Self-Care Tips/i })).toBeInTheDocument();
+  });
+
+  // Gap C5: the text suggests reaching out to the community, with no way to do it.
+  it("offers a way to contact the community team when wellbeing needs attention", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, score: 25 },
+    });
+    render(<WellbeingTab />);
+    const link = await screen.findByRole("link", { name: /Contact Us/ });
+    expect(link).toHaveAttribute("href", "/test/contact");
   });
 
   it("shows self-care tips when the toggle button is clicked", async () => {
