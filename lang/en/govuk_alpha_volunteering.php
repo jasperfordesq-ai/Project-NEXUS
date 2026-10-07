@@ -868,4 +868,17 @@ return [
         'failed' => 'We could not add you to the waitlist. Please try again.',
         'view_opportunity' => 'View the opportunity',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Check in at your shift',
+        'your_shift' => 'Your shift',
+        'instructions' => 'When you arrive, show this QR code to the person running the shift. They scan it to check you in.',
+        'qr_alt' => 'QR code to check in to your shift',
+        'status_pending' => 'Not checked in yet',
+        'status_checked_in' => 'Checked in',
+        'status_checked_out' => 'Checked out',
+        'checked_in_at' => 'Arrived at :time',
+        'checked_out_at' => 'Left at :time',
+        'load_error' => 'We could not load your check-in code. Reload the page to try again.',
+    ],
 ];

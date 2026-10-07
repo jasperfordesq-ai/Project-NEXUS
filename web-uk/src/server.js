@@ -102,6 +102,7 @@ const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
+const { qrSvg } = require('./lib/qr-svg');
 const { getRequestIntlLocale } = require('./lib/request-intl-locale');
 const { nl2br } = require('./lib/nl2br');
 const { humanizeLabel } = require('./lib/humanize-label');
@@ -1367,6 +1368,54 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
     }
   };
 
+  // Shift times are the platform's naive UTC wall-clock ("YYYY-MM-DD HH:mm:ss"); a value
+  // carrying its own zone is honoured. A shift with no end time ends when it starts.
+  const shiftEpoch = (value) => {
+    const text = String(value ?? '').trim();
+    if (/(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(text) && text.includes('T')) {
+      const parsed = Date.parse(text);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    return match
+      ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6] || 0))
+      : null;
+  };
+  const shiftHasEnded = (shift) => {
+    const end = shiftEpoch(shift?.end_time) ?? shiftEpoch(shift?.start_time);
+    return end !== null && end < Date.now();
+  };
+  const clockLabel = (value) => {
+    const epoch = shiftEpoch(value);
+    if (epoch === null) return '';
+    return new Intl.DateTimeFormat(localeForIntl(getRequestLocale() || 'en'), {
+      hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+    }).format(new Date(epoch));
+  };
+
+  // Gap B6 (7 Oct 2026): the QR a volunteer shows when they arrive. Same code, same
+  // encoded URL (the API's qr_url) as the website and phone app, so whoever scans it
+  // lands on the one check-in page. A community with QR check-in switched off (403)
+  // or no code yet (404) shows nothing; any other failure says so.
+  const loadShiftCheckin = async (shift) => {
+    try {
+      const result = await callVolunteeringApi(token, 'GET', `/shifts/${encodeURIComponent(Number(shift.id))}/checkin`);
+      const data = result && typeof result === 'object' && result.data !== undefined ? result.data : result;
+      const status = ['checked_in', 'checked_out'].includes(data?.status) ? data.status : 'pending';
+      return {
+        shift,
+        status,
+        qrSvg: status === 'checked_out' ? null : qrSvg(data?.qr_url),
+        checkedInAt: clockLabel(data?.checked_in_at),
+        checkedOutAt: clockLabel(data?.checked_out_at),
+        failed: false
+      };
+    } catch (error) {
+      if (error instanceof ApiError && [403, 404].includes(error.status)) return null;
+      return { shift, failed: true };
+    }
+  };
+
   const normalizeOpportunity = (result) => {
     const opportunity = result?.data && typeof result.data === 'object' ? result.data : {};
     const organization = opportunity.organization && typeof opportunity.organization === 'object'
@@ -1429,6 +1478,13 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
           waitlistPlace: places.has(Number(shift.id)) ? places.get(Number(shift.id)) : null
         }));
       }
+      // Gap B6: the volunteer's QR check-in for the one shift they hold, until it ends.
+      const heldShift = opportunity.signedUpShiftId
+        ? opportunity.shifts.find((shift) => Number(shift.id) === opportunity.signedUpShiftId)
+        : null;
+      opportunity.checkin = heldShift && !shiftHasEnded(heldShift)
+        ? await loadShiftCheckin(heldShift)
+        : null;
       const status = typeof req.query.status === 'string' ? req.query.status : '';
       const safeguardingMessage = (key, fallback) => {
         const translated = res.locals.t(key);

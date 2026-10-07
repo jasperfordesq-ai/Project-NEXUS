@@ -76,6 +76,13 @@ const REVIEWED_RAW_SITES = {
     why: 'system-generated QR SVG; the pass URL is encoded into rectangles, never emitted as text',
     guard: ['src/routes/venues.js', 'qrSvg: passQrSvg(pass.qr_url),'],
   },
+  // Gap B6 (7 Oct 2026): the volunteer's shift check-in QR. Same renderer as the venue
+  // pass (src/lib/qr-svg.js, fixed colours and sizes); the API's qr_url is encoded into
+  // rectangles and never emitted as text (tests/qr-svg.test.js pins that).
+  'volunteer-opportunity.njk {{ opportunity.checkin.qrSvg | safe }}': {
+    why: 'system-generated QR SVG from src/lib/qr-svg.js; the check-in URL is encoded into rectangles, never emitted as text',
+    guard: ['src/server.js', "qrSvg: status === 'checked_out' ? null : qrSvg(data?.qr_url),"],
+  },
   'public-info/changelog-release.njk {{ release.html | safe }}': {
     why: "build artefact from the repository's own CHANGELOG.md, sanitised at build time",
     guard: ['scripts/build-changelog.js', 'const html = sanitizeCmsHtml('],

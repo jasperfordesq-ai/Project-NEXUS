@@ -825,4 +825,17 @@ return [
         'failed' => 'キャンセル待ちに登録できませんでした。もう一度お試しください。',
         'view_opportunity' => '募集を見る',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'シフトのチェックイン',
+        'your_shift' => 'あなたのシフト',
+        'instructions' => '到着したら、このQRコードをシフトの担当者に見せてください。担当者が読み取ってチェックインします。',
+        'qr_alt' => 'シフトにチェックインするためのQRコード',
+        'status_pending' => 'まだチェックインしていません',
+        'status_checked_in' => 'チェックイン済み',
+        'status_checked_out' => 'チェックアウト済み',
+        'checked_in_at' => ':time に到着',
+        'checked_out_at' => ':time に退出',
+        'load_error' => 'チェックイン用のコードを読み込めませんでした。ページを再読み込みしてもう一度お試しください。',
+    ],
 ];

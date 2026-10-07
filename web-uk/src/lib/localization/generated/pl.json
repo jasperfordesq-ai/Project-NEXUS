@@ -11231,6 +11231,18 @@
                 "not_available": "Nie możesz zapisać się na listę oczekujących na ten dyżur. Być może jest już wolne miejsce albo dyżur już się zaczął. Strona pokazuje aktualne miejsca.",
                 "failed": "Nie udało się zapisać Cię na listę oczekujących. Spróbuj ponownie.",
                 "view_opportunity": "Zobacz ofertę"
+            },
+            "shift_checkin": {
+                "title": "Zamelduj się na dyżurze",
+                "your_shift": "Twój dyżur",
+                "instructions": "Po przybyciu pokaż ten kod QR osobie prowadzącej dyżur. Zeskanuje go, aby Cię zameldować.",
+                "qr_alt": "Kod QR do zameldowania się na dyżurze",
+                "status_pending": "Jeszcze nie zameldowano",
+                "status_checked_in": "Zameldowano",
+                "status_checked_out": "Wymeldowano",
+                "checked_in_at": "Przybycie o :time",
+                "checked_out_at": "Wyjście o :time",
+                "load_error": "Nie udało się wczytać Twojego kodu meldunkowego. Odśwież stronę, aby spróbować ponownie."
             }
         },
         "govuk_alpha_wallet": {

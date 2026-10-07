@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const QRCode = require('qrcode-svg');
+const { qrSvg } = require('../lib/qr-svg');
 const {
   ApiError,
   getPartnerVenues,
@@ -23,39 +23,16 @@ const router = express.Router();
 const PASS_TOKEN = /^[A-Za-z0-9]+$/;
 
 /**
- * Render the member pass QR as inline SVG, server-side.
+ * Render the member pass QR as inline SVG, server-side (lib/qr-svg.js).
  *
  * The Blade page does this with endroid/qr-code's SvgWriter because the
- * accessible frontend must work with no JavaScript and no external request —
- * a client-side QR renderer or a third-party image URL would break both. This
- * is the Node equivalent (qrcode-svg, MIT, zero dependencies).
- *
- * Error correction is Medium to match Blade. The quiet zone is expressed in
- * MODULES here (4, the QR specification minimum) where endroid takes pixels
- * (12), so the border is equivalent in purpose rather than identical in width.
+ * accessible frontend must work with no JavaScript and no external request.
  * The encoded content is the same check-in URL the React pass encodes, so staff
- * scanning either pass land on one canonical flow.
+ * scanning either pass land on one canonical flow. A pass whose QR cannot be
+ * encoded still renders its page: the rotate control is how a member recovers.
  */
 function passQrSvg(qrUrl) {
-  const content = typeof qrUrl === 'string' ? qrUrl.trim() : '';
-  if (content === '') return null;
-
-  try {
-    return new QRCode({
-      content,
-      padding: 4,
-      width: 260,
-      height: 260,
-      color: '#0b0c0c',
-      background: '#ffffff',
-      ecl: 'M',
-      join: true
-    }).svg();
-  } catch {
-    // A pass whose QR cannot be encoded must still render its page — the
-    // rotate control is how a member recovers.
-    return null;
-  }
+  return qrSvg(qrUrl);
 }
 
 function unwrap(result) {

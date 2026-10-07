@@ -825,4 +825,17 @@ return [
         'failed' => 'Níorbh fhéidir thú a chur ar an liosta feithimh. Bain triail eile as.',
         'view_opportunity' => 'Féach ar an deis',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Seiceáil isteach ag do shealaíocht',
+        'your_shift' => 'Do shealaíocht',
+        'instructions' => 'Nuair a thagann tú, taispeáin an cód QR seo don duine atá i bhfeighil na sealaíochta. Scanfaidh siad é chun tú a sheiceáil isteach.',
+        'qr_alt' => 'Cód QR chun seiceáil isteach ag do shealaíocht',
+        'status_pending' => 'Níl tú seiceáilte isteach fós',
+        'status_checked_in' => 'Seiceáilte isteach',
+        'status_checked_out' => 'Seiceáilte amach',
+        'checked_in_at' => 'Tháinig tú ag :time',
+        'checked_out_at' => 'D’imigh tú ag :time',
+        'load_error' => 'Níorbh fhéidir do chód seiceála isteach a lódáil. Athlódáil an leathanach chun triail eile a bhaint as.',
+    ],
 ];

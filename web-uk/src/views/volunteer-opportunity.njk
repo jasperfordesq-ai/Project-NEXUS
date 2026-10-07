@@ -122,6 +122,36 @@
     {% endif %}
   </dl>
 
+  {% if opportunity.checkin %}
+    {# Gap B6: the QR the volunteer shows on arrival, for the shift they hold. Server-
+       rendered SVG (works with no JavaScript). The label describes its purpose and the
+       encoded token is never printed: it is the credential. #}
+    {% set C = "govuk_alpha_volunteering.shift_checkin." %}
+    <section class="govuk-!-margin-bottom-8" aria-labelledby="shift-checkin-heading" data-testid="shift-checkin">
+      <h2 class="govuk-heading-l" id="shift-checkin-heading">{{ t(C ~ "title") }}</h2>
+      <p class="govuk-body"><span class="govuk-!-font-weight-bold">{{ t(C ~ "your_shift") }}:</span> {{ opportunity.checkin.shift.start_time | formatEventDate }}</p>
+      {% if opportunity.checkin.failed %}
+        <div class="govuk-inset-text">{{ t(C ~ "load_error") }}</div>
+      {% else %}
+        {% if opportunity.checkin.status == "checked_in" %}
+          <p class="govuk-body">{{ govukTag({ text: t(C ~ "status_checked_in"), classes: "govuk-tag--green" }) }}
+            {% if opportunity.checkin.checkedInAt %} {{ t(C ~ "checked_in_at", { time: opportunity.checkin.checkedInAt }) }}{% endif %}</p>
+        {% elif opportunity.checkin.status == "checked_out" %}
+          <p class="govuk-body">{{ govukTag({ text: t(C ~ "status_checked_out"), classes: "govuk-tag--grey" }) }}
+            {% if opportunity.checkin.checkedOutAt %} {{ t(C ~ "checked_out_at", { time: opportunity.checkin.checkedOutAt }) }}{% endif %}</p>
+        {% else %}
+          <p class="govuk-body">{{ govukTag({ text: t(C ~ "status_pending"), classes: "govuk-tag--blue" }) }}</p>
+        {% endif %}
+        {% if opportunity.checkin.qrSvg %}
+          <p class="govuk-body">{{ t(C ~ "instructions") }}</p>
+          <figure class="govuk-!-margin-0" role="img" aria-label="{{ t(C ~ 'qr_alt') }}">
+            {{ opportunity.checkin.qrSvg | safe }}
+          </figure>
+        {% endif %}
+      {% endif %}
+    </section>
+  {% endif %}
+
   <h2 class="govuk-heading-l">{{ t("govuk_alpha.volunteering.shifts_title") }}</h2>
   {% if opportunity.canManage and not opportunity.isCancelled %}
     <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_volunteering.shift_manager.manage_link") }}</a>

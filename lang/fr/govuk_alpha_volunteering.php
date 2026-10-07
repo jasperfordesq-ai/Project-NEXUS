@@ -825,4 +825,17 @@ return [
         'failed' => 'Nous n’avons pas pu vous inscrire sur la liste d’attente. Veuillez réessayer.',
         'view_opportunity' => 'Voir la mission',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Pointer à votre créneau',
+        'your_shift' => 'Votre créneau',
+        'instructions' => 'À votre arrivée, montrez ce code QR à la personne qui gère le créneau. Elle le scanne pour enregistrer votre arrivée.',
+        'qr_alt' => 'Code QR pour pointer à votre créneau',
+        'status_pending' => 'Arrivée pas encore enregistrée',
+        'status_checked_in' => 'Arrivée enregistrée',
+        'status_checked_out' => 'Départ enregistré',
+        'checked_in_at' => 'Arrivé(e) à :time',
+        'checked_out_at' => 'Parti(e) à :time',
+        'load_error' => 'Nous n’avons pas pu charger votre code de pointage. Rechargez la page pour réessayer.',
+    ],
 ];

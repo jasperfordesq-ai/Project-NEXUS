@@ -825,4 +825,17 @@ return [
         'failed' => 'Nie udało się zapisać Cię na listę oczekujących. Spróbuj ponownie.',
         'view_opportunity' => 'Zobacz ofertę',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Zamelduj się na dyżurze',
+        'your_shift' => 'Twój dyżur',
+        'instructions' => 'Po przybyciu pokaż ten kod QR osobie prowadzącej dyżur. Zeskanuje go, aby Cię zameldować.',
+        'qr_alt' => 'Kod QR do zameldowania się na dyżurze',
+        'status_pending' => 'Jeszcze nie zameldowano',
+        'status_checked_in' => 'Zameldowano',
+        'status_checked_out' => 'Wymeldowano',
+        'checked_in_at' => 'Przybycie o :time',
+        'checked_out_at' => 'Wyjście o :time',
+        'load_error' => 'Nie udało się wczytać Twojego kodu meldunkowego. Odśwież stronę, aby spróbować ponownie.',
+    ],
 ];

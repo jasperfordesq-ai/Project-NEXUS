@@ -825,4 +825,17 @@ return [
         'failed' => 'We konden u niet op de wachtlijst zetten. Probeer het opnieuw.',
         'view_opportunity' => 'Vacature bekijken',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Inchecken bij uw dienst',
+        'your_shift' => 'Uw dienst',
+        'instructions' => 'Laat deze QR-code bij aankomst zien aan degene die de dienst leidt. Die scant hem om u in te checken.',
+        'qr_alt' => 'QR-code om in te checken bij uw dienst',
+        'status_pending' => 'Nog niet ingecheckt',
+        'status_checked_in' => 'Ingecheckt',
+        'status_checked_out' => 'Uitgecheckt',
+        'checked_in_at' => 'Aangekomen om :time',
+        'checked_out_at' => 'Vertrokken om :time',
+        'load_error' => 'We konden uw incheckcode niet laden. Laad de pagina opnieuw om het nog eens te proberen.',
+    ],
 ];

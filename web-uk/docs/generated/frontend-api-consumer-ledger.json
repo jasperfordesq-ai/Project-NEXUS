@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-07T10:55:04.958Z",
+  "generatedAt": "2026-10-07T11:22:38.344Z",
   "provenance": {
-    "generatedAt": "2026-10-07T10:55:04.958Z",
+    "generatedAt": "2026-10-07T11:22:38.344Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "372ee937ff32a0491f50df17f789d7dc4afd2631",
+    "laravelCommitSha": "3c7be0ef01f84627ad1d6726ff5a43b9381b5320",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "372ee937ff32a0491f50df17f789d7dc4afd2631",
+    "webUkRepositoryCommitSha": "3c7be0ef01f84627ad1d6726ff5a43b9381b5320",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -21,8 +21,8 @@
     "laravelApiRoutesSha256": "a88d1d15167d2ffa18bba1e4a35226db8e536bff79a6e2368a6c23ef441d681b"
   },
   "summary": {
-    "contracts": 733,
-    "matchedOpenApi": 478,
+    "contracts": 734,
+    "matchedOpenApi": 479,
     "missingOpenApi": 255,
     "routeDeclaredOpenApiOmissions": 255,
     "withoutLaravelRouteDeclaration": 0,
@@ -25534,7 +25534,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?public=true&limit=12",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1199",
+      "source": "src/server.js:1200",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -28280,6 +28280,54 @@
       },
       "frontendConsumers": [
         "src/routes/volunteering-shifts.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/shifts/{param}/checkin [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/shifts/{param}/checkin",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/server.js:1402",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "path:id",
+      "responseShape": "successful Laravel response envelope",
+      "statusCodes": [
+        "200"
+      ],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/server.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "matched-openapi",
+        "path": "/api/v2/volunteering/shifts/{id}/checkin",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": [
+          "Volunteering"
+        ]
+      },
+      "frontendConsumers": [
+        "src/server.js"
       ],
       "tests": [
         "tests/api-locale-context.test.js",

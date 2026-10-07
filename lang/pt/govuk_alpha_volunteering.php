@@ -825,4 +825,17 @@ return [
         'failed' => 'Não foi possível pô-lo na lista de espera. Tente novamente.',
         'view_opportunity' => 'Ver a oportunidade',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Registar a chegada ao seu turno',
+        'your_shift' => 'O seu turno',
+        'instructions' => 'Quando chegar, mostre este código QR à pessoa responsável pelo turno. Ela vai lê-lo para registar a sua chegada.',
+        'qr_alt' => 'Código QR para registar a chegada ao seu turno',
+        'status_pending' => 'Chegada ainda não registada',
+        'status_checked_in' => 'Chegada registada',
+        'status_checked_out' => 'Saída registada',
+        'checked_in_at' => 'Chegada às :time',
+        'checked_out_at' => 'Saída às :time',
+        'load_error' => 'Não foi possível carregar o seu código de registo. Volte a carregar a página para tentar novamente.',
+    ],
 ];

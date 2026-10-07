@@ -825,4 +825,17 @@ return [
         'failed' => 'Wir konnten Sie nicht auf die Warteliste setzen. Bitte versuchen Sie es erneut.',
         'view_opportunity' => 'Angebot ansehen',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Bei Ihrer Schicht einchecken',
+        'your_shift' => 'Ihre Schicht',
+        'instructions' => 'Zeigen Sie diesen QR-Code bei Ihrer Ankunft der Person, die die Schicht leitet. Sie scannt ihn, um Sie einzuchecken.',
+        'qr_alt' => 'QR-Code zum Einchecken bei Ihrer Schicht',
+        'status_pending' => 'Noch nicht eingecheckt',
+        'status_checked_in' => 'Eingecheckt',
+        'status_checked_out' => 'Ausgecheckt',
+        'checked_in_at' => 'Angekommen um :time',
+        'checked_out_at' => 'Gegangen um :time',
+        'load_error' => 'Ihr Check-in-Code konnte nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen.',
+    ],
 ];

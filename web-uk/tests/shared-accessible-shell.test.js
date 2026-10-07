@@ -20595,6 +20595,75 @@ describe('shared accessible frontend shell', () => {
     expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/my-waitlists');
   });
 
+  // Gap B6 (7 Oct 2026): the accessible site had no check-in at all. A volunteer holding
+  // an upcoming shift now sees the same QR the website shows, for that shift only.
+  it('shows an approved volunteer the QR check-in for the shift they hold, and never the token as text', async () => {
+    const api = require('../src/lib/api');
+    const TOKEN = 'a'.repeat(64);
+    const opportunity = {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [
+        { id: 501, start_time: '2099-08-03 09:00:00', end_time: '2099-08-03 12:00:00', capacity: 10, spots_available: 3 },
+        { id: 502, start_time: '2099-08-04 09:00:00', end_time: '2099-08-04 12:00:00', capacity: 10, spots_available: 3 }
+      ],
+      has_applied: true,
+      application: { status: 'approved', shift_id: 501 }
+    };
+    let checkin = { status: 'pending', qr_url: `https://app.example/acme/volunteering/checkin/${TOKEN}` };
+    let checkinError = null;
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (method === 'GET' && apiPath === '/shifts/501/checkin') {
+        if (checkinError) throw checkinError;
+        return { data: checkin };
+      }
+      return { data: {} };
+    });
+    const page = async (data = opportunity) => {
+      api.getVolunteerOpportunity.mockResolvedValueOnce({ data });
+      return request(app).get('/volunteering/opportunities/77').set('Cookie', signedAuthCookieHeader());
+    };
+
+    const pending = await page();
+    expect(pending.status).toBe(200);
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/shifts/501/checkin');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/shifts/502/checkin');
+    expect(pending.text).toContain('data-testid="shift-checkin"');
+    expect(pending.text).toContain('Check in at your shift');
+    expect(pending.text).toContain('Not checked in yet');
+    expect(pending.text).toContain('aria-label="QR code to check in to your shift"');
+    expect(pending.text).toMatch(/<figure[^>]*role="img"[^>]*>\s*<svg/);
+    expect(pending.text).not.toContain(TOKEN);
+
+    checkin = { status: 'checked_in', checked_in_at: '2099-08-03 09:04:00', qr_url: checkin.qr_url };
+    const arrived = await page();
+    expect(arrived.text).toContain('Checked in');
+    expect(arrived.text).toContain('Arrived at 09:04');
+
+    checkin = { status: 'checked_out', checked_in_at: '2099-08-03 09:04:00', checked_out_at: '2099-08-03 12:01:00', qr_url: checkin.qr_url };
+    const left = await page();
+    expect(left.text).toContain('Left at 12:01');
+    expect(left.text).not.toContain('aria-label="QR code to check in to your shift"');
+
+    // QR check-in switched off for the community: nothing shown.
+    checkinError = new api.ApiError('Disabled', 403, { errors: [{ code: 'FEATURE_DISABLED' }] });
+    const off = await page();
+    expect(off.text).not.toContain('data-testid="shift-checkin"');
+
+    // Anything else: say so rather than vanish.
+    checkinError = new api.ApiError('Broken', 500, {});
+    const broken = await page();
+    expect(broken.text).toContain('We could not load your check-in code.');
+
+    // A shift that has ended, or a visitor who holds no shift: nothing is asked for.
+    checkinError = null;
+    api.callVolunteeringApi.mockClear();
+    await page({ ...opportunity, shifts: [{ ...opportunity.shifts[0], start_time: '2020-08-03 09:00:00', end_time: '2020-08-03 12:00:00' }] });
+    await page({ ...opportunity, has_applied: false, application: null });
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/shifts/501/checkin');
+  });
+
   it('renders Blade inline apply and approved-applicant shift controls on opportunity detail', async () => {
     const api = require('../src/lib/api');
     const opportunity = {

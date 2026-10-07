@@ -825,4 +825,17 @@ return [
         'failed' => 'Non è stato possibile iscriverti alla lista d’attesa. Riprova.',
         'view_opportunity' => 'Vedi l’opportunità',
     ],
+    // The volunteer's QR check-in on the opportunity page (gap B6, 7 Oct 2026).
+    'shift_checkin' => [
+        'title' => 'Registra l’arrivo al tuo turno',
+        'your_shift' => 'Il tuo turno',
+        'instructions' => 'Quando arrivi, mostra questo codice QR alla persona che coordina il turno. Lo scansionerà per registrare il tuo arrivo.',
+        'qr_alt' => 'Codice QR per registrare l’arrivo al tuo turno',
+        'status_pending' => 'Arrivo non ancora registrato',
+        'status_checked_in' => 'Arrivo registrato',
+        'status_checked_out' => 'Uscita registrata',
+        'checked_in_at' => 'Arrivo alle :time',
+        'checked_out_at' => 'Uscita alle :time',
+        'load_error' => 'Non è stato possibile caricare il tuo codice di registrazione. Ricarica la pagina per riprovare.',
+    ],
 ];
