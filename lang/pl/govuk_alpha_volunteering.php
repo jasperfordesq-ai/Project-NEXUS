@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'Nie udało się zaktualizować kwalifikacji. Spróbuj ponownie.',
         'unknown_volunteer' => 'Wolontariusz',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Przejdź na tę zmianę',
+        'hint' => 'Zwolnisz w ten sposób swoje miejsce na zmianie :date.',
+        'done' => 'Zmieniono zmianę. Twoje miejsce na poprzedniej zmianie zostało zwolnione.',
+        'conflict' => 'Twoja zmiana zmieniła się po załadowaniu tej strony, więc nic nie zostało zmienione. Sprawdź swoją zmianę poniżej i spróbuj ponownie.',
+    ],
 ];

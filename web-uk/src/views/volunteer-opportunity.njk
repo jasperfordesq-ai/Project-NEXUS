@@ -192,7 +192,15 @@
             {% elif shift.hasSpace %}
               <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/signup') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.sign_up_shift") }}</button>
+                {# Gap B11: one shift per opportunity, so with a shift already held this
+                   button MOVES the volunteer. Say so, and name the place they give up. #}
+                {% if opportunity.signedUpShiftId %}
+                  <input type="hidden" name="expected_shift_id" value="{{ opportunity.signedUpShiftId }}">
+                  {% if opportunity.heldShiftStart %}<p class="govuk-body govuk-!-margin-bottom-2" data-testid="shift-switch-hint-{{ shift.id }}">{{ t("govuk_alpha_volunteering.shift_switch.hint", { date: opportunity.heldShiftStart | formatEventDate }) }}</p>{% endif %}
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_volunteering.shift_switch.button") }}<span class="govuk-visually-hidden">: {{ shift.start_time | formatEventDate }}</span></button>
+                {% else %}
+                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.sign_up_shift") }}</button>
+                {% endif %}
               </form>
             {% else %}
               {{ govukTag({ text: t("govuk_alpha.volunteering.shift_full"), classes: "govuk-tag--red" }) }}

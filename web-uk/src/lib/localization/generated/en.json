@@ -11491,6 +11491,12 @@
                 "expiry": "Expiry",
                 "update_failed": "We could not update the qualification. Please try again.",
                 "unknown_volunteer": "A volunteer"
+            },
+            "shift_switch": {
+                "button": "Switch to this shift",
+                "hint": "This gives up your place on the shift on :date.",
+                "done": "You have switched shifts. Your place on your previous shift has been given up.",
+                "conflict": "Your shift changed after this page was loaded, so nothing was switched. Check your shift below and try again."
             }
         },
         "govuk_alpha_wallet": {

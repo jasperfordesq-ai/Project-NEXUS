@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'No hemos podido actualizar la cualificación. Inténtelo de nuevo.',
         'unknown_volunteer' => 'Una persona voluntaria',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Cambiar a este turno',
+        'hint' => 'Así dejará su plaza en el turno del :date.',
+        'done' => 'Ha cambiado de turno. Ha dejado su plaza en el turno anterior.',
+        'conflict' => 'Su turno cambió después de cargar esta página, así que no se ha cambiado nada. Compruebe su turno más abajo e inténtelo de nuevo.',
+    ],
 ];

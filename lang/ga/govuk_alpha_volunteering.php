@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'Níorbh fhéidir an cháilíocht a nuashonrú. Bain triail eile as.',
         'unknown_volunteer' => 'Oibrí deonach',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Athraigh go dtí an seal seo',
+        'hint' => 'Tabharfaidh tú suas d’áit ar an seal ar :date.',
+        'done' => 'D’athraigh tú seal. Tugadh suas d’áit ar do sheal roimhe seo.',
+        'conflict' => 'D’athraigh do sheal tar éis don leathanach seo lódáil, mar sin níor athraíodh aon rud. Seiceáil do sheal thíos agus bain triail eile as.',
+    ],
 ];

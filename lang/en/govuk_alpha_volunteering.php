@@ -1132,4 +1132,11 @@ return [
         'update_failed' => 'We could not update the qualification. Please try again.',
         'unknown_volunteer' => 'A volunteer',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Switch to this shift',
+        'hint' => 'This gives up your place on the shift on :date.',
+        'done' => 'You have switched shifts. Your place on your previous shift has been given up.',
+        'conflict' => 'Your shift changed after this page was loaded, so nothing was switched. Check your shift below and try again.',
+    ],
 ];

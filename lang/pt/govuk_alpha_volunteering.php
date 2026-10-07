@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'Não foi possível atualizar a qualificação. Tente novamente.',
         'unknown_volunteer' => 'Um voluntário',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Mudar para este turno',
+        'hint' => 'Assim deixa o seu lugar no turno de :date.',
+        'done' => 'Mudou de turno. O seu lugar no turno anterior foi libertado.',
+        'conflict' => 'O seu turno mudou depois de esta página ser carregada, por isso nada foi alterado. Verifique o seu turno abaixo e tente novamente.',
+    ],
 ];

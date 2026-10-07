@@ -1089,4 +1089,11 @@ return [
         'update_failed' => '資格を更新できませんでした。もう一度お試しください。',
         'unknown_volunteer' => 'ボランティア',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'このシフトに変更',
+        'hint' => 'これにより、:date のシフトの枠を手放します。',
+        'done' => 'シフトを変更しました。以前のシフトの枠は手放されました。',
+        'conflict' => 'このページを読み込んだ後にシフトが変わったため、何も変更されていません。下のシフトを確認して、もう一度お試しください。',
+    ],
 ];

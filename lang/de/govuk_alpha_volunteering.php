@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'Die Qualifikation konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.',
         'unknown_volunteer' => 'Eine freiwillige Person',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Zu dieser Schicht wechseln',
+        'hint' => 'Damit geben Sie Ihren Platz in der Schicht am :date auf.',
+        'done' => 'Sie haben die Schicht gewechselt. Ihr Platz in der vorherigen Schicht wurde freigegeben.',
+        'conflict' => 'Ihre Schicht hat sich geändert, nachdem diese Seite geladen wurde, daher wurde nichts gewechselt. Prüfen Sie Ihre Schicht unten und versuchen Sie es erneut.',
+    ],
 ];

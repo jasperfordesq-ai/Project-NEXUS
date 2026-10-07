@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'Nous n’avons pas pu mettre à jour la qualification. Veuillez réessayer.',
         'unknown_volunteer' => 'Un ou une bénévole',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Passer à ce créneau',
+        'hint' => 'Vous libérerez ainsi votre place sur le créneau du :date.',
+        'done' => 'Vous avez changé de créneau. Votre place sur le créneau précédent a été libérée.',
+        'conflict' => 'Votre créneau a changé après le chargement de cette page, donc rien n’a été modifié. Vérifiez votre créneau ci-dessous et réessayez.',
+    ],
 ];

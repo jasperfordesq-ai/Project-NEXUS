@@ -1513,6 +1513,8 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       const heldShift = opportunity.signedUpShiftId
         ? opportunity.shifts.find((shift) => Number(shift.id) === opportunity.signedUpShiftId)
         : null;
+      // Gap B11: the shift a "Switch shift" button would give up, named beside it.
+      opportunity.heldShiftStart = heldShift && !heldShift.isPast ? heldShift.start_time : '';
       opportunity.checkin = heldShift && !shiftHasEnded(heldShift)
         ? await loadShiftCheckin(heldShift)
         : null;
@@ -1546,6 +1548,9 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
         'waitlist-not-available': ['error', res.locals.t('govuk_alpha_volunteering.shift_waitlist.not_available')],
         'waitlist-join-failed': ['error', res.locals.t('govuk_alpha_volunteering.shift_waitlist.failed')],
         'shift-signed-up': ['success', res.locals.t('govuk_alpha.volunteering.shift_signed_up_detail')],
+        // Moving to another shift of the same opportunity (gap B11).
+        'shift-switched': ['success', res.locals.t('govuk_alpha_volunteering.shift_switch.done')],
+        'shift-switch-conflict': ['error', res.locals.t('govuk_alpha_volunteering.shift_switch.conflict')],
         'shift-cancelled': ['success', res.locals.t('govuk_alpha.volunteering.shift_cancelled_detail')],
         'shift-signup-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_signup_failed')],
         'shift-cancel-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_cancel_failed')],

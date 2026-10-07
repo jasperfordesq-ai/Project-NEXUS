@@ -38710,6 +38710,59 @@ describe('shared accessible frontend shell', () => {
     expect(walletResponse.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  // Gap B11 (7 Oct 2026): a volunteer holds one shift per opportunity, so "Sign up" on
+  // another shift silently moved them off the one they held.
+  it('offers a volunteer who holds a shift "Switch to this shift", naming the place they give up', async () => {
+    const api = require('../src/lib/api');
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [
+        { id: 501, start_time: '2099-08-03T09:00:00Z', capacity: 10, spots_available: 3 },
+        { id: 502, start_time: '2099-08-04T09:00:00Z', capacity: 10, spots_available: 5 }
+      ],
+      has_applied: true,
+      application: { status: 'approved', shift_id: 501 }
+    } });
+    api.callVolunteeringApi.mockResolvedValue({ data: {} });
+
+    const page = await request(app).get('/volunteering/opportunities/77').set('Cookie', signedAuthCookieHeader());
+
+    expect(page.status).toBe(200);
+    const start = page.text.indexOf('action="/volunteering/opportunities/77/shifts/502/signup"');
+    const form = page.text.slice(start, page.text.indexOf('</form>', start));
+    expect(form).toContain('name="expected_shift_id" value="501"');
+    expect(form).toContain('Switch to this shift');
+    expect(form).not.toContain('Sign up for this shift');
+    expect(page.text).toContain('data-testid="shift-switch-hint-502"');
+    expect(page.text).toContain('This gives up your place on the shift on');
+    expect(page.text).toContain('action="/volunteering/opportunities/77/shifts/501/cancel"');
+  });
+
+  it('switches shifts only if the volunteer still holds the shift they were shown', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const switchTo = () => agent
+      .post('/volunteering/opportunities/77/shifts/502/signup')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrf, expected_shift_id: '501' });
+
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: { success: true } });
+    const moved = await switchTo();
+    expect(moved.headers.location).toBe('/volunteering/opportunities/77?status=shift-switched');
+    expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'POST', '/shifts/502/signup', { expected_shift_id: 501 });
+
+    api.callVolunteeringApi.mockRejectedValueOnce(new api.ApiError('changed', 409, { errors: [{ code: 'DECISION_CONFLICT' }] }));
+    const stale = await switchTo();
+    expect(stale.headers.location).toBe('/volunteering/opportunities/77?status=shift-switch-conflict');
+  });
+
   it('submits core Laravel volunteering member action aliases', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');

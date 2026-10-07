@@ -1089,4 +1089,11 @@ return [
         'update_failed' => 'We konden de kwalificatie niet bijwerken. Probeer het opnieuw.',
         'unknown_volunteer' => 'Een vrijwilliger',
     ],
+    // A volunteer moves to another shift of the same opportunity (gap B11, 7 Oct 2026).
+    'shift_switch' => [
+        'button' => 'Naar deze dienst wisselen',
+        'hint' => 'Hiermee geeft u uw plaats in de dienst van :date op.',
+        'done' => 'U bent van dienst gewisseld. Uw plaats in de vorige dienst is vrijgegeven.',
+        'conflict' => 'Uw dienst is gewijzigd nadat deze pagina was geladen, dus er is niets gewisseld. Controleer uw dienst hieronder en probeer het opnieuw.',
+    ],
 ];

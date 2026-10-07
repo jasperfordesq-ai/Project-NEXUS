@@ -2984,12 +2984,20 @@ router.post('/opportunities/:id(\\d+)/apply', asyncRoute(async (req, res) => {
 router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/signup', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const shiftId = Number(req.params.shiftId);
+  // A volunteer holds one shift per opportunity, so signing up for another MOVES them
+  // (VolunteerService::signUpForShift). The page offers that as "Switch shift" and
+  // sends the shift it showed them holding; the API refuses with DECISION_CONFLICT if
+  // that has changed since, rather than moving them off a shift they never saw (B11).
+  const expectedShiftId = Number(req.body && req.body.expected_shift_id);
+  const switching = Number.isInteger(expectedShiftId) && expectedShiftId > 0 && expectedShiftId !== shiftId;
 
   return runOpportunityAction(req, res, {
     method: 'POST',
     path: `/shifts/${shiftId}/signup`,
+    data: switching ? { expected_shift_id: expectedShiftId } : undefined,
     opportunityId: id,
-    successStatus: 'shift-signed-up',
+    successStatus: switching ? 'shift-switched' : 'shift-signed-up',
+    codeStatuses: { DECISION_CONFLICT: 'shift-switch-conflict' },
     failureStatus: 'shift-signup-failed',
     restrictedStatus: 'shift-safeguarding-restricted',
     unavailableStatus: 'shift-safeguarding-unavailable'
