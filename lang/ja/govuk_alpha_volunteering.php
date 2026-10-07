@@ -1096,4 +1096,10 @@ return [
         'done' => 'シフトを変更しました。以前のシフトの枠は手放されました。',
         'conflict' => 'このページを読み込んだ後にシフトが変わったため、何も変更されていません。下のシフトを確認して、もう一度お試しください。',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => '応募',
+        'applications_empty_filtered' => 'この絞り込みに一致する応募はありません。',
+        'hours_more' => '確認待ちの時間をさらに表示',
+    ],
 ];

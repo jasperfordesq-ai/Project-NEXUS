@@ -1139,4 +1139,10 @@ return [
         'done' => 'You have switched shifts. Your place on your previous shift has been given up.',
         'conflict' => 'Your shift changed after this page was loaded, so nothing was switched. Check your shift below and try again.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Applications',
+        'applications_empty_filtered' => 'No applications match this filter.',
+        'hours_more' => 'More hours to review',
+    ],
 ];

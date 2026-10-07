@@ -1096,4 +1096,10 @@ return [
         'done' => 'Zmieniono zmianę. Twoje miejsce na poprzedniej zmianie zostało zwolnione.',
         'conflict' => 'Twoja zmiana zmieniła się po załadowaniu tej strony, więc nic nie zostało zmienione. Sprawdź swoją zmianę poniżej i spróbuj ponownie.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Zgłoszenia',
+        'applications_empty_filtered' => 'Żadne zgłoszenie nie pasuje do tego filtra.',
+        'hours_more' => 'Więcej godzin do sprawdzenia',
+    ],
 ];

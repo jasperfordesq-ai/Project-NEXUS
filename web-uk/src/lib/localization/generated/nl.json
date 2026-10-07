@@ -11497,6 +11497,11 @@
                 "hint": "Hiermee geeft u uw plaats in de dienst van :date op.",
                 "done": "U bent van dienst gewisseld. Uw plaats in de vorige dienst is vrijgegeven.",
                 "conflict": "Uw dienst is gewijzigd nadat deze pagina was geladen, dus er is niets gewisseld. Controleer uw dienst hieronder en probeer het opnieuw."
+            },
+            "org_manage": {
+                "applications_heading": "Aanmeldingen",
+                "applications_empty_filtered": "Geen aanmeldingen komen overeen met dit filter.",
+                "hours_more": "Meer uren om te beoordelen"
             }
         },
         "govuk_alpha_wallet": {

@@ -2532,18 +2532,44 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
   }
 
   const id = Number(req.params.id);
+  // Gap B12 (7 Oct 2026): the queue showed the first 20 pending applications and hours
+  // and nothing else. Applications can now be filtered by status (the API accepts
+  // pending, approved and declined) and both lists page on with the API's cursor.
+  const appStatus = ['pending', 'approved', 'declined', 'all'].includes(trimmed(req.query.app_status))
+    ? trimmed(req.query.app_status)
+    : 'pending';
+  const appCursor = positiveInteger(req.query.app_cursor);
+  const hoursCursor = positiveInteger(req.query.hours_cursor);
+  const applicationsQuery = new URLSearchParams({ per_page: '20' });
+  if (appStatus !== 'all') applicationsQuery.set('status', appStatus);
+  if (appCursor) applicationsQuery.set('cursor', String(appCursor));
+  const hoursQuery = new URLSearchParams({ per_page: '20' });
+  if (hoursCursor) hoursQuery.set('cursor', String(hoursCursor));
   let dashboard = normalizeOrgStats({});
   let applications = [];
   let hours = [];
+  let applicationsMore = '';
+  let hoursMore = '';
   let loadError = null;
   try {
     dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
-    applications = collectionFrom(
-      await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/applications?status=pending&per_page=20`)
-    ).map((application) => normalizeOrgApplication(application, res.locals.t)).filter((application) => application.id);
-    hours = collectionFrom(
-      await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/hours/pending?per_page=20`)
-    ).map((log) => normalizeOrgPendingHour(log, res.locals.t)).filter((log) => log.id);
+    const applicationsResult = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/applications?${applicationsQuery.toString()}`);
+    applications = collectionFrom(applicationsResult)
+      .map((application) => normalizeOrgApplication(application, res.locals.t)).filter((application) => application.id);
+    const hoursResult = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/hours/pending?${hoursQuery.toString()}`);
+    hours = collectionFrom(hoursResult)
+      .map((log) => normalizeOrgPendingHour(log, res.locals.t)).filter((log) => log.id);
+    const applicationsMeta = collectionMetaFrom(applicationsResult);
+    const hoursMeta = collectionMetaFrom(hoursResult);
+    const nextApplications = applicationsMeta.has_more ? positiveInteger(applicationsMeta.cursor ?? applicationsMeta.next_cursor) : null;
+    const nextHours = hoursMeta.has_more ? positiveInteger(hoursMeta.cursor ?? hoursMeta.next_cursor) : null;
+    const managePath = (params) => `/volunteering/organisations/${id}/manage?${new URLSearchParams(params).toString()}`;
+    if (nextApplications) {
+      applicationsMore = managePath({ ...(appStatus !== 'pending' ? { app_status: appStatus } : {}), app_cursor: String(nextApplications) });
+    }
+    if (nextHours) {
+      hoursMore = `${managePath({ ...(appStatus !== 'pending' ? { app_status: appStatus } : {}), hours_cursor: String(nextHours) })}#hours`;
+    }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load the organisation management queue. Check that you manage this organisation and try again.';
@@ -2556,6 +2582,9 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
     orgName: dashboard.orgName,
     applications,
     hours,
+    appStatus,
+    applicationsMore,
+    hoursMore,
     loadError,
     status: orgManageStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''

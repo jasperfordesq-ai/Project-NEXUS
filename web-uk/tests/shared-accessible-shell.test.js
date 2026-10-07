@@ -38450,6 +38450,42 @@ describe('shared accessible frontend shell', () => {
     expect(recommendedResponse.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  // Gap B12 (7 Oct 2026): the queue showed the first 20 pending applications and hours,
+  // with no way to see past decisions or anything beyond the first page.
+  it('lets an organisation look back at decided applications and page through both lists', async () => {
+    const api = require('../src/lib/api');
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (apiPath === '/organisations/42/stats') return { data: { org_name: 'Food Share' } };
+      if (apiPath.startsWith('/organisations/42/applications?')) {
+        return { data: { items: [{ id: 92, status: 'approved', created_at: '2026-06-20T09:00:00Z', user: { id: 56, name: 'Bea Approved' }, opportunity: { id: 77, title: 'Kitchen helper' } }], cursor: '92', has_more: true } };
+      }
+      if (apiPath.startsWith('/organisations/42/hours/pending?')) {
+        return { data: { items: [{ id: 15, hours: 1, date: '2026-08-03', status: 'pending', user: { id: 55, name: 'Alex Applicant' } }], cursor: '15', has_more: true } };
+      }
+      return { data: {} };
+    });
+
+    const page = await request(app).get('/volunteering/organisations/42/manage?app_status=approved').set('Cookie', signedAuthCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/42/applications?per_page=20&status=approved');
+    expect(page.text).toContain('data-testid="org-application-status-92"');
+    expect(page.text).not.toContain('action="/volunteering/organisations/42/applications/92"');
+    expect(page.text).toContain('<option value="approved" selected>');
+    expect(page.text).toContain('href="/volunteering/organisations/42/manage?app_status=approved&amp;app_cursor=92"');
+    expect(page.text).toContain('href="/volunteering/organisations/42/manage?app_status=approved&amp;hours_cursor=15#hours"');
+
+    api.callVolunteeringApi.mockClear();
+    await request(app).get('/volunteering/organisations/42/manage?app_status=all&app_cursor=92&hours_cursor=15').set('Cookie', signedAuthCookieHeader());
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/42/applications?per_page=20&cursor=92');
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/42/hours/pending?per_page=20&cursor=15');
+
+    // An unknown filter falls back to what is waiting.
+    api.callVolunteeringApi.mockClear();
+    await request(app).get('/volunteering/organisations/42/manage?app_status=everything').set('Cookie', signedAuthCookieHeader());
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/organisations/42/applications?per_page=20&status=pending');
+  });
+
   it('renders Laravel volunteering organisation owner pages for signed-in managers', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
@@ -38607,7 +38643,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(manageResponse.status).toBe(200);
     expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/organisations/42/stats');
-    expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/organisations/42/applications?status=pending&per_page=20');
+    expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/organisations/42/applications?per_page=20&status=pending');
     expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(4, 'test-token', 'GET', '/organisations/42/hours/pending?per_page=20');
     expect(manageResponse.text).toContain('The application has been approved.');
     expect(manageResponse.text).toContain('Manage your organisation');

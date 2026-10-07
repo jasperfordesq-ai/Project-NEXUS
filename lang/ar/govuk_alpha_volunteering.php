@@ -1096,4 +1096,10 @@ return [
         'done' => 'لقد غيّرت مناوبتك. تم التخلي عن مكانك في مناوبتك السابقة.',
         'conflict' => 'تغيّرت مناوبتك بعد تحميل هذه الصفحة، لذلك لم يتم تغيير أي شيء. تحقّق من مناوبتك أدناه وحاول مرة أخرى.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'الطلبات',
+        'applications_empty_filtered' => 'لا توجد طلبات تطابق هذه التصفية.',
+        'hours_more' => 'مزيد من الساعات للمراجعة',
+    ],
 ];

@@ -1096,4 +1096,10 @@ return [
         'done' => 'Vous avez changé de créneau. Votre place sur le créneau précédent a été libérée.',
         'conflict' => 'Votre créneau a changé après le chargement de cette page, donc rien n’a été modifié. Vérifiez votre créneau ci-dessous et réessayez.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Candidatures',
+        'applications_empty_filtered' => 'Aucune candidature ne correspond à ce filtre.',
+        'hours_more' => 'Plus d’heures à examiner',
+    ],
 ];

@@ -11497,6 +11497,11 @@
                 "hint": "Assim deixa o seu lugar no turno de :date.",
                 "done": "Mudou de turno. O seu lugar no turno anterior foi libertado.",
                 "conflict": "O seu turno mudou depois de esta página ser carregada, por isso nada foi alterado. Verifique o seu turno abaixo e tente novamente."
+            },
+            "org_manage": {
+                "applications_heading": "Candidaturas",
+                "applications_empty_filtered": "Nenhuma candidatura corresponde a este filtro.",
+                "hours_more": "Mais horas para rever"
             }
         },
         "govuk_alpha_wallet": {

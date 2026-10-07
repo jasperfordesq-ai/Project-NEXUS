@@ -3,6 +3,8 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=organisations') }}">{{ t("govuk_alpha.vol_org.back_to_organisations") }}</a>
@@ -40,11 +42,29 @@
     </div>
   {% endif %}
 
-  <h2 class="govuk-heading-l">{{ t("govuk_alpha.vol_org.applications_title") }}</h2>
+  {# Gap B12: past decisions can be looked back at, by status, and every list pages on. #}
+  {% set OM = "govuk_alpha_volunteering.org_manage." %}
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha.vol_org.applications_title") if appStatus == "pending" else t(OM ~ "applications_heading") }}</h2>
+  <form method="get" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/manage') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="app_status">{{ t("volunteering.application_status_label") }}</label>
+      <select class="govuk-select" id="app_status" name="app_status">
+        {% for value in ["pending", "approved", "declined"] %}
+          <option value="{{ value }}"{% if appStatus == value %} selected{% endif %}>{{ t("volunteering.status_values." ~ value) }}</option>
+        {% endfor %}
+        <option value="all"{% if appStatus == "all" %} selected{% endif %}>{{ t("volunteering.application_status_all") }}</option>
+      </select>
+    </div>
+    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+  </form>
   {% if not applications.length %}
-    <div class="govuk-inset-text">
-      <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_empty") }}</p>
-      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_applications_empty_cta") }}</p>
+    <div class="govuk-inset-text" data-testid="org-applications-empty">
+      {% if appStatus == "pending" %}
+        <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_empty") }}</p>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_applications_empty_cta") }}</p>
+      {% else %}
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t(OM ~ "applications_empty_filtered") }}</p>
+      {% endif %}
     </div>
   {% else %}
     <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_description") }}</p>
@@ -86,6 +106,9 @@
             <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha.vol_org.applicant_message") }}</strong></p>
             <div class="govuk-inset-text govuk-!-margin-top-0">{{ application.message }}</div>
           {% endif %}
+          {% if application.status != "pending" %}
+            <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="org-application-status-{{ application.id }}">{{ govukTag({ text: t("volunteering.status_values." ~ application.status), classes: ("govuk-tag--green" if application.status == "approved" else "govuk-tag--grey") }) }}</p>
+          {% else %}
           <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             {# The handler has always sent org_note with the decision (and the
@@ -101,12 +124,14 @@
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="decline" data-module="govuk-button">{{ t("govuk_alpha.vol_org.decline") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.application_for", { name: application.applicant.name }) }}</span></button>
             </div>
           </form>
+          {% endif %}
         </article>
       {% endfor %}
     </div>
+    {% if applicationsMore %}{{ loadMoreNext(urlFor(applicationsMore), t("actions.load_more"), t("volunteering.applications_more_label")) }}{% endif %}
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha.vol_org.hours_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="hours">{{ t("govuk_alpha.vol_org.hours_title") }}</h2>
   <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.vol_org.hours_credit_notice") }}</p></div>
   {% if not hours.length %}
     <div class="govuk-inset-text">
@@ -157,5 +182,6 @@
         </article>
       {% endfor %}
     </div>
+    {% if hoursMore %}{{ loadMoreNext(urlFor(hoursMore), t("actions.load_more"), t(OM ~ "hours_more")) }}{% endif %}
   {% endif %}
 {% endblock %}

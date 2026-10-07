@@ -1096,4 +1096,10 @@ return [
         'done' => 'D’athraigh tú seal. Tugadh suas d’áit ar do sheal roimhe seo.',
         'conflict' => 'D’athraigh do sheal tar éis don leathanach seo lódáil, mar sin níor athraíodh aon rud. Seiceáil do sheal thíos agus bain triail eile as.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Iarratais',
+        'applications_empty_filtered' => 'Níl aon iarratas ag teacht leis an scagaire seo.',
+        'hours_more' => 'Tuilleadh uaireanta le hathbhreithniú',
+    ],
 ];

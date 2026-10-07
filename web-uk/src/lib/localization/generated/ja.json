@@ -11497,6 +11497,11 @@
                 "hint": "これにより、:date のシフトの枠を手放します。",
                 "done": "シフトを変更しました。以前のシフトの枠は手放されました。",
                 "conflict": "このページを読み込んだ後にシフトが変わったため、何も変更されていません。下のシフトを確認して、もう一度お試しください。"
+            },
+            "org_manage": {
+                "applications_heading": "応募",
+                "applications_empty_filtered": "この絞り込みに一致する応募はありません。",
+                "hours_more": "確認待ちの時間をさらに表示"
             }
         },
         "govuk_alpha_wallet": {

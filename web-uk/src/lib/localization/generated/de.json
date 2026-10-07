@@ -11497,6 +11497,11 @@
                 "hint": "Damit geben Sie Ihren Platz in der Schicht am :date auf.",
                 "done": "Sie haben die Schicht gewechselt. Ihr Platz in der vorherigen Schicht wurde freigegeben.",
                 "conflict": "Ihre Schicht hat sich geändert, nachdem diese Seite geladen wurde, daher wurde nichts gewechselt. Prüfen Sie Ihre Schicht unten und versuchen Sie es erneut."
+            },
+            "org_manage": {
+                "applications_heading": "Bewerbungen",
+                "applications_empty_filtered": "Keine Bewerbungen entsprechen diesem Filter.",
+                "hours_more": "Weitere Stunden zur Prüfung"
             }
         },
         "govuk_alpha_wallet": {

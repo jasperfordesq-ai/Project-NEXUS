@@ -1096,4 +1096,10 @@ return [
         'done' => 'Ha cambiado de turno. Ha dejado su plaza en el turno anterior.',
         'conflict' => 'Su turno cambió después de cargar esta página, así que no se ha cambiado nada. Compruebe su turno más abajo e inténtelo de nuevo.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Solicitudes',
+        'applications_empty_filtered' => 'Ninguna solicitud coincide con este filtro.',
+        'hours_more' => 'Más horas por revisar',
+    ],
 ];

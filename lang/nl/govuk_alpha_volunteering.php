@@ -1096,4 +1096,10 @@ return [
         'done' => 'U bent van dienst gewisseld. Uw plaats in de vorige dienst is vrijgegeven.',
         'conflict' => 'Uw dienst is gewijzigd nadat deze pagina was geladen, dus er is niets gewisseld. Controleer uw dienst hieronder en probeer het opnieuw.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Aanmeldingen',
+        'applications_empty_filtered' => 'Geen aanmeldingen komen overeen met dit filter.',
+        'hours_more' => 'Meer uren om te beoordelen',
+    ],
 ];

@@ -1096,4 +1096,10 @@ return [
         'done' => 'Sie haben die Schicht gewechselt. Ihr Platz in der vorherigen Schicht wurde freigegeben.',
         'conflict' => 'Ihre Schicht hat sich geändert, nachdem diese Seite geladen wurde, daher wurde nichts gewechselt. Prüfen Sie Ihre Schicht unten und versuchen Sie es erneut.',
     ],
+    // An organisation looks back at its applications by status and pages through hours (gap B12, 7 Oct 2026).
+    'org_manage' => [
+        'applications_heading' => 'Bewerbungen',
+        'applications_empty_filtered' => 'Keine Bewerbungen entsprechen diesem Filter.',
+        'hours_more' => 'Weitere Stunden zur Prüfung',
+    ],
 ];
