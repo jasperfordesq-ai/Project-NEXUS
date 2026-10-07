@@ -136,7 +136,8 @@ if [ -n "$STAGED_APP_PHP" ]; then
   if command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' 2>/dev/null | grep -q '^nexus-php-app$'; then
     # Relative path deliberately: an absolute /var/www/... argument gets mangled
     # by MSYS path conversion when the hook runs under Git Bash on Windows.
-    PUSH_OUT=$(docker exec nexus-php-app php mobile/scripts/audit-native-push-producers.php --check 2>&1)
+    # -u www-data: see "Run as the web user" under gate (B) below.
+    PUSH_OUT=$(docker exec -u www-data nexus-php-app php mobile/scripts/audit-native-push-producers.php --check 2>&1)
     PUSH_STATUS=$?
     # The scan reads the WORKING TREE, so another session's uncommitted edit
     # to some other app/ file made this block a commit that never touched it
@@ -254,6 +255,29 @@ if ! docker exec "$CONTAINER" test -f vendor/bin/phpunit >/dev/null 2>&1; then
   exit 1
 fi
 
+# 🔴 Run as the web user (www-data), never as the container default (root).
+#
+# The container bind-mounts the working tree, so anything PHPUnit creates lands
+# in the owner's checkout with the creating user's ownership. Until 2026-10-07
+# this gate ran as root, and three times that day it left root-owned
+# directories behind: Storage::fake('local') creates
+# storage/framework/testing/disks/local/<subdir> (volunteer-credentials,
+# volunteer-expenses, …), and PHPUnit rewrites .phpunit.cache/test-results.
+# Every later run as www-data — the documented way — then failed those tests
+# with "FilesystemIterator::__construct(...): Failed to open directory:
+# Permission denied", in files the next person had not touched. Same class of
+# trap as a root-owned storage/logs/laravel-<date>.log 500ing php-fpm.
+#
+# Running as www-data alone cannot undo damage a root run already did, and
+# root runs from elsewhere (an ad-hoc `docker exec` without -u) will keep
+# happening. So first hand back anything root-owned in the two test-only
+# scratch locations PHPUnit writes to. chown only — nothing is deleted.
+TEST_SCRATCH=".phpunit.cache storage/framework/testing"
+if docker exec -u root "$CONTAINER" sh -c "find $TEST_SCRATCH -user root -print -quit 2>/dev/null" | grep -q .; then
+  echo "pre-commit: handing root-owned PHPUnit scratch files back to www-data ($TEST_SCRATCH)"
+  docker exec -u root "$CONTAINER" chown -R www-data:www-data $TEST_SCRATCH 2>/dev/null || true
+fi
+
 echo "pre-commit: verifying staged test file(s) in $CONTAINER..."
 echo "$STAGED_TESTS" | sed 's/^/  - /'
 # APP_KEY: the container .env ships a dev placeholder that is NOT a valid
@@ -268,6 +292,7 @@ echo "$STAGED_TESTS" | sed 's/^/  - /'
 # listing in RegistrationOnboardingTest) sat in a network wait indefinitely
 # and the commit never finished (2026-10-02).
 docker exec \
+  -u www-data \
   -e MAIL_MAILER=array \
   -e MAIL_HOST=127.0.0.1 \
   -e BROADCAST_CONNECTION=null \
