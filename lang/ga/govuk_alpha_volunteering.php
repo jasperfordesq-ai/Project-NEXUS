@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'Níl oibrithe deonacha nua á nglacadh ag an deis seo faoi láthair.',
         'volunteer_cancelled' => 'Cuireadh an deis seo ar ceal.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Cuir ar an liosta feithimh mé',
+        'on_list' => 'Ar an liosta feithimh: áit :position',
+        'view_list' => 'Do liostaí feithimh',
+        'joined' => 'Tá tú ar an liosta feithimh don tsealaíocht seo anois. Inseoimid duit má thagann áit saor.',
+        'already' => 'Tá tú ar an liosta feithimh don tsealaíocht seo cheana féin.',
+        'not_available' => 'Ní féidir leat dul ar an liosta feithimh don tsealaíocht seo. B’fhéidir go bhfuil áit saor inti anois, nó gur thosaigh sí. Taispeánann an leathanach na háiteanna atá ann faoi láthair.',
+        'failed' => 'Níorbh fhéidir thú a chur ar an liosta feithimh. Bain triail eile as.',
+        'view_opportunity' => 'Féach ar an deis',
+    ],
 ];

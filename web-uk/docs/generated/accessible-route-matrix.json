@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-07T10:41:54.493Z",
+  "generatedAt": "2026-10-07T10:55:04.270Z",
   "provenance": {
-    "generatedAt": "2026-10-07T10:41:54.493Z",
+    "generatedAt": "2026-10-07T10:55:04.270Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "6c3bd33a0c2c2e71395f9105b1d9af66fa8c76fa",
+    "laravelCommitSha": "372ee937ff32a0491f50df17f789d7dc4afd2631",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "6c3bd33a0c2c2e71395f9105b1d9af66fa8c76fa",
+    "webUkRepositoryCommitSha": "372ee937ff32a0491f50df17f789d7dc4afd2631",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-07T10:41:54.493Z",
+    "generatedAt": "2026-10-07T10:55:04.270Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 777,
+    "webUkRoutes": 778,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 67,
+    "extraWebUkRoutes": 68,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -145,7 +145,7 @@
       "volunteering": {
         "matched": 52,
         "missing": 0,
-        "extraWebUk": 26,
+        "extraWebUk": 27,
         "ignoredInfrastructure": 0
       },
       "health": {
@@ -1853,6 +1853,27 @@
       "webUkPath": "/volunteering/opportunities/{param}/shifts/{param}/remove",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/volunteering-shifts.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/volunteering/opportunities/{param}/shifts/{param}/waitlist",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/opportunities/{param}/shifts/{param}/waitlist",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/volunteering-actions.js",
       "webUkRouteKind": ""
     },
     {

@@ -166,6 +166,18 @@
               </form>
             {% else %}
               {{ govukTag({ text: t("govuk_alpha.volunteering.shift_full"), classes: "govuk-tag--red" }) }}
+              {# Gap B4: a full shift can be waited for. #}
+              {% if shift.waitlistPlace %}
+                <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0" data-testid="shift-waitlist-place-{{ shift.id }}">
+                  {{ t("govuk_alpha_volunteering.shift_waitlist.on_list", { position: shift.waitlistPlace }) }}.
+                  <a class="govuk-link" href="{{ urlFor('/volunteering/waitlist') }}">{{ t("govuk_alpha_volunteering.shift_waitlist.view_list") }}</a>
+                </p>
+              {% else %}
+                <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/waitlist') }}" class="govuk-!-margin-top-2">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_volunteering.shift_waitlist.join") }}<span class="govuk-visually-hidden">: {{ shift.start_time | formatEventDate }}</span></button>
+                </form>
+              {% endif %}
             {% endif %}
           {% endif %}
         </article>

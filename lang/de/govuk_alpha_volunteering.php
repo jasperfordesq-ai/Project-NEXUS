@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'Dieses Angebot nimmt derzeit keine neuen Freiwilligen auf.',
         'volunteer_cancelled' => 'Dieses Angebot wurde abgesagt.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Auf die Warteliste setzen',
+        'on_list' => 'Auf der Warteliste: Platz :position',
+        'view_list' => 'Ihre Wartelisten',
+        'joined' => 'Sie stehen jetzt auf der Warteliste für diese Schicht. Wir sagen Ihnen Bescheid, wenn ein Platz frei wird.',
+        'already' => 'Sie stehen bereits auf der Warteliste für diese Schicht.',
+        'not_available' => 'Sie können sich für diese Schicht nicht auf die Warteliste setzen. Vielleicht ist wieder ein Platz frei oder die Schicht hat schon begonnen. Die Seite zeigt die aktuellen Plätze.',
+        'failed' => 'Wir konnten Sie nicht auf die Warteliste setzen. Bitte versuchen Sie es erneut.',
+        'view_opportunity' => 'Angebot ansehen',
+    ],
 ];

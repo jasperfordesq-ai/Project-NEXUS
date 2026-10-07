@@ -11221,6 +11221,16 @@
                 "is_cancelled": "Cette mission a été annulée et ne peut donc plus être modifiée.",
                 "volunteer_closed": "Cette mission n’accepte pas de nouveaux bénévoles pour le moment.",
                 "volunteer_cancelled": "Cette mission a été annulée."
+            },
+            "shift_waitlist": {
+                "join": "S’inscrire sur la liste d’attente",
+                "on_list": "Sur la liste d’attente : place :position",
+                "view_list": "Vos listes d’attente",
+                "joined": "Vous êtes inscrit(e) sur la liste d’attente de ce créneau. Nous vous préviendrons si une place se libère.",
+                "already": "Vous êtes déjà sur la liste d’attente de ce créneau.",
+                "not_available": "Vous ne pouvez pas vous inscrire sur la liste d’attente de ce créneau. Une place s’est peut-être libérée, ou le créneau a peut-être commencé. La page affiche les places actuelles.",
+                "failed": "Nous n’avons pas pu vous inscrire sur la liste d’attente. Veuillez réessayer.",
+                "view_opportunity": "Voir la mission"
             }
         },
         "govuk_alpha_wallet": {

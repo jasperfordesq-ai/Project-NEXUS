@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'Ta oferta nie przyjmuje obecnie nowych wolontariuszy.',
         'volunteer_cancelled' => 'Ta oferta została odwołana.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Zapisz się na listę oczekujących',
+        'on_list' => 'Na liście oczekujących: miejsce :position',
+        'view_list' => 'Twoje listy oczekujących',
+        'joined' => 'Jesteś na liście oczekujących na ten dyżur. Damy Ci znać, jeśli zwolni się miejsce.',
+        'already' => 'Już jesteś na liście oczekujących na ten dyżur.',
+        'not_available' => 'Nie możesz zapisać się na listę oczekujących na ten dyżur. Być może jest już wolne miejsce albo dyżur już się zaczął. Strona pokazuje aktualne miejsca.',
+        'failed' => 'Nie udało się zapisać Cię na listę oczekujących. Spróbuj ponownie.',
+        'view_opportunity' => 'Zobacz ofertę',
+    ],
 ];

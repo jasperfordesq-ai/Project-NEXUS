@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'Esta oportunidade não está a aceitar novos voluntários neste momento.',
         'volunteer_cancelled' => 'Esta oportunidade foi cancelada.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Entrar na lista de espera',
+        'on_list' => 'Na lista de espera: lugar :position',
+        'view_list' => 'As suas listas de espera',
+        'joined' => 'Entrou na lista de espera deste turno. Avisamos se ficar um lugar livre.',
+        'already' => 'Já está na lista de espera deste turno.',
+        'not_available' => 'Não pode entrar na lista de espera deste turno. Talvez já tenha um lugar livre, ou talvez já tenha começado. A página mostra os lugares atuais.',
+        'failed' => 'Não foi possível pô-lo na lista de espera. Tente novamente.',
+        'view_opportunity' => 'Ver a oportunidade',
+    ],
 ];

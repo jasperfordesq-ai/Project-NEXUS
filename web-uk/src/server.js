@@ -1344,7 +1344,28 @@ app.get('/volunteering', requireAuth, (req, res) => {
 
 app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
   const token = req.signedCookies.token || '';
-  const { ApiError, getVolunteerOpportunity } = require('./lib/api');
+  const { ApiError, getVolunteerOpportunity, callVolunteeringApi } = require('./lib/api');
+
+  // Where the member already waits for a full shift (gap B4): shift id -> place.
+  // Read only for an approved applicant, the one person who can join a waitlist;
+  // a failure here just leaves the "Join the waitlist" button showing.
+  const loadWaitlistPlaces = async () => {
+    try {
+      const result = await callVolunteeringApi(token, 'GET', '/my-waitlists');
+      const data = result && typeof result === 'object' && result.data !== undefined ? result.data : result;
+      const rows = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+      const places = new Map();
+      for (const row of rows) {
+        const shiftId = Number(row?.shift?.id ?? row?.shift_id);
+        if (Number.isInteger(shiftId) && shiftId > 0 && ['waiting', 'notified'].includes(String(row?.status || 'waiting'))) {
+          places.set(shiftId, Number(row?.position) || 0);
+        }
+      }
+      return places;
+    } catch {
+      return new Map();
+    }
+  };
 
   const normalizeOpportunity = (result) => {
     const opportunity = result?.data && typeof result.data === 'object' ? result.data : {};
@@ -1399,8 +1420,15 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
   };
 
   return getVolunteerOpportunity(req.params.id, token)
-    .then((result) => {
+    .then(async (result) => {
       const opportunity = normalizeOpportunity(result);
+      if (opportunity.isApprovedApplicant && opportunity.shifts.some((shift) => !shift.isPast && !shift.hasSpace)) {
+        const places = await loadWaitlistPlaces();
+        opportunity.shifts = opportunity.shifts.map((shift) => ({
+          ...shift,
+          waitlistPlace: places.has(Number(shift.id)) ? places.get(Number(shift.id)) : null
+        }));
+      }
       const status = typeof req.query.status === 'string' ? req.query.status : '';
       const safeguardingMessage = (key, fallback) => {
         const translated = res.locals.t(key);
@@ -1425,6 +1453,11 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
         'opp-cancelled': ['success', res.locals.t('govuk_alpha_volunteering.opp_manage.cancelled_done')],
         'opp-manage-failed': ['error', res.locals.t('govuk_alpha_volunteering.opp_manage.failed')],
         'opp-is-cancelled': ['error', res.locals.t('govuk_alpha_volunteering.opp_manage.is_cancelled')],
+        // Joining a full shift's waitlist (gap B4).
+        'waitlist-joined': ['success', res.locals.t('govuk_alpha_volunteering.shift_waitlist.joined')],
+        'waitlist-already': ['error', res.locals.t('govuk_alpha_volunteering.shift_waitlist.already')],
+        'waitlist-not-available': ['error', res.locals.t('govuk_alpha_volunteering.shift_waitlist.not_available')],
+        'waitlist-join-failed': ['error', res.locals.t('govuk_alpha_volunteering.shift_waitlist.failed')],
         'shift-signed-up': ['success', res.locals.t('govuk_alpha.volunteering.shift_signed_up_detail')],
         'shift-cancelled': ['success', res.locals.t('govuk_alpha.volunteering.shift_cancelled_detail')],
         'shift-signup-failed': ['error', res.locals.t('govuk_alpha.volunteering.shift_signup_failed')],

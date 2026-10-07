@@ -63,6 +63,7 @@ extra-web-uk,POST,/volunteering/opportunities/{param}/repeating/{param}/stop,vol
 extra-web-uk,POST,/volunteering/opportunities/{param}/repeating/new,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-shifts.js,
 extra-web-uk,POST,/volunteering/opportunities/{param}/shifts/{param}/edit,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-shifts.js,
 extra-web-uk,POST,/volunteering/opportunities/{param}/shifts/{param}/remove,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-shifts.js,
+extra-web-uk,POST,/volunteering/opportunities/{param}/shifts/{param}/waitlist,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-actions.js,
 extra-web-uk,POST,/volunteering/opportunities/{param}/shifts/new,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-shifts.js,
 extra-web-uk,POST,/volunteering/organisations/{param}/safeguarding/{param}/updates,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-incidents.js,
 extra-web-uk,POST,/volunteering/swaps/new/{param},volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-actions.js,

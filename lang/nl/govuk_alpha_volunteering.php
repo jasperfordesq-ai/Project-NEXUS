@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'Deze vacature neemt op dit moment geen nieuwe vrijwilligers aan.',
         'volunteer_cancelled' => 'Deze vacature is geannuleerd.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Op de wachtlijst zetten',
+        'on_list' => 'Op de wachtlijst: plaats :position',
+        'view_list' => 'Uw wachtlijsten',
+        'joined' => 'U staat op de wachtlijst voor deze dienst. We laten het u weten als er een plaats vrijkomt.',
+        'already' => 'U staat al op de wachtlijst voor deze dienst.',
+        'not_available' => 'U kunt niet op de wachtlijst voor deze dienst. Misschien is er nu een plaats vrij, of is de dienst al begonnen. De pagina toont de huidige plaatsen.',
+        'failed' => 'We konden u niet op de wachtlijst zetten. Probeer het opnieuw.',
+        'view_opportunity' => 'Vacature bekijken',
+    ],
 ];

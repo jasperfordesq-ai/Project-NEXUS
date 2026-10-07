@@ -61,6 +61,13 @@
           {% else %}
             {{ govukTag({ text: t("vol_depth.waitlist_position", { position: entry.position }), classes: "govuk-tag--yellow" }) }}
           {% endif %}
+          {% if entry.opportunityId %}
+            {# A freed place is claimed by signing up there (gap B4); the hint above used to
+               name "the opportunity page" without linking to it. #}
+            <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+              <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ entry.opportunityId) }}">{{ t("govuk_alpha_volunteering.shift_waitlist.view_opportunity") }}<span class="govuk-visually-hidden">: {{ entry.title }}</span></a>
+            </p>
+          {% endif %}
 
           <dl class="govuk-summary-list govuk-!-margin-top-4 govuk-!-margin-bottom-3">
             {% if entry.organizationName %}

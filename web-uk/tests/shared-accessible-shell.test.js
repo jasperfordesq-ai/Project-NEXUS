@@ -20549,6 +20549,52 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('method="post" action="/volunteering/opportunities/77/apply"');
   });
 
+  // Gap B4 (7 Oct 2026): a full shift showed only a "full" tag. An approved applicant can
+  // now join its waitlist, and a shift they already wait for says so instead.
+  it('offers an approved applicant the waitlist on a full shift, and shows the place they already hold', async () => {
+    const api = require('../src/lib/api');
+    const opportunity = {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [
+        { id: 501, start_time: '2099-08-03T09:00:00Z', capacity: 10, spots_available: 3 },
+        { id: 503, start_time: '2099-08-05T09:00:00Z', capacity: 2, spots_available: 0 },
+        { id: 504, start_time: '2099-08-06T09:00:00Z', capacity: 2, spots_available: 0 }
+      ],
+      has_applied: true,
+      application: { status: 'approved', shift_id: 501 }
+    };
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: opportunity });
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => (
+      method === 'GET' && apiPath === '/my-waitlists'
+        ? { data: [{ id: 9, position: 2, status: 'waiting', shift: { id: 504 }, opportunity: { id: 77 } }] }
+        : { data: {} }
+    ));
+
+    const page = await request(app)
+      .get('/volunteering/opportunities/77?status=waitlist-joined')
+      .set('Cookie', signedAuthCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/my-waitlists');
+    expect(page.text).toContain('You have joined the waitlist for this shift.');
+    expect(page.text).toContain('method="post" action="/volunteering/opportunities/77/shifts/503/waitlist"');
+    expect(page.text).not.toContain('action="/volunteering/opportunities/77/shifts/504/waitlist"');
+    expect(page.text).toContain('data-testid="shift-waitlist-place-504"');
+    expect(page.text).toContain('On the waitlist: place 2');
+    expect(page.text).toContain('href="/volunteering/waitlist"');
+
+    // Someone who has not been approved cannot join one, so nothing is offered or read.
+    api.callVolunteeringApi.mockClear();
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, has_applied: false, application: null } });
+    const visitor = await request(app)
+      .get('/volunteering/opportunities/77')
+      .set('Cookie', signedAuthCookieHeader());
+    expect(visitor.text).not.toContain('/waitlist"');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/my-waitlists');
+  });
+
   it('renders Blade inline apply and approved-applicant shift controls on opportunity detail', async () => {
     const api = require('../src/lib/api');
     const opportunity = {

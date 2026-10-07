@@ -814,4 +814,15 @@ return [
         'volunteer_closed' => 'この募集は現在、新しいボランティアを受け付けていません。',
         'volunteer_cancelled' => 'この募集は中止されました。',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'キャンセル待ちに登録',
+        'on_list' => 'キャンセル待ち: :position 番目',
+        'view_list' => 'あなたのキャンセル待ち',
+        'joined' => 'このシフトのキャンセル待ちに登録しました。空きが出たらお知らせします。',
+        'already' => 'このシフトのキャンセル待ちにすでに登録しています。',
+        'not_available' => 'このシフトのキャンセル待ちには登録できません。空きが出たか、すでに始まっている可能性があります。ページに現在の空き状況が表示されています。',
+        'failed' => 'キャンセル待ちに登録できませんでした。もう一度お試しください。',
+        'view_opportunity' => '募集を見る',
+    ],
 ];

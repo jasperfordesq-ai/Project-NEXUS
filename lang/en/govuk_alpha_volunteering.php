@@ -857,4 +857,15 @@ return [
         'volunteer_closed' => 'This opportunity is not taking new volunteers at the moment.',
         'volunteer_cancelled' => 'This opportunity has been cancelled.',
     ],
+    // Joining a full shift's waitlist from the opportunity page (gap B4, 7 Oct 2026).
+    'shift_waitlist' => [
+        'join' => 'Join the waitlist',
+        'on_list' => 'On the waitlist: place :position',
+        'view_list' => 'Your waitlists',
+        'joined' => 'You have joined the waitlist for this shift. We will tell you if a place frees up.',
+        'already' => 'You are already on the waitlist for this shift.',
+        'not_available' => 'You cannot join the waitlist for this shift. It may have a free place now, or it may have started. The page shows its current places.',
+        'failed' => 'We could not add you to the waitlist. Please try again.',
+        'view_opportunity' => 'View the opportunity',
+    ],
 ];

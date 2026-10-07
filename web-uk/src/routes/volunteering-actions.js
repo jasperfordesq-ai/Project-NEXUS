@@ -406,6 +406,9 @@ async function runOpportunityAction(req, res, options) {
     if (['SAFEGUARDING_CONTACT_RESTRICTED', 'SAFEGUARDING_INTERACTION_NOT_ALLOWED', 'VETTING_REQUIRED'].includes(code)) {
       return redirectTo(res, opportunityRedirect(options.opportunityId, options.restrictedStatus));
     }
+    if (options.codeStatuses && Object.hasOwn(options.codeStatuses, code)) {
+      return redirectTo(res, opportunityRedirect(options.opportunityId, options.codeStatuses[code]));
+    }
     return redirectTo(res, opportunityRedirect(options.opportunityId, options.failureStatus));
   }
 }
@@ -1441,6 +1444,7 @@ function normalizeWaitlistEntry(row, t = null) {
     status,
     isNotified: status === 'notified',
     shiftId: positiveInteger(shift.id ?? entry.shift_id ?? entry.shiftId),
+    opportunityId: positiveInteger(opportunity.id ?? entry.opportunity_id ?? entry.opportunityId),
     title: trimmed(opportunity.title)
       || (t ? t('govuk_alpha.volunteering.detail_title') : 'Volunteering opportunity'),
     location: trimmed(opportunity.location),
@@ -2989,6 +2993,28 @@ router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/signup', asyncRoute(
     failureStatus: 'shift-signup-failed',
     restrictedStatus: 'shift-safeguarding-restricted',
     unavailableStatus: 'shift-safeguarding-unavailable'
+  });
+}));
+
+// Join a full shift's waitlist (gap B4, 7 Oct 2026). Offered on the opportunity page
+// for a full, upcoming shift to a volunteer whose application is approved, which is
+// exactly who ShiftWaitlistService::join() accepts. Until now the page showed only a
+// "full" tag, and the waitlist page told volunteers they could join one.
+router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/waitlist', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const shiftId = Number(req.params.shiftId);
+
+  return runOpportunityAction(req, res, {
+    method: 'POST',
+    path: `/shifts/${shiftId}/waitlist`,
+    opportunityId: id,
+    successStatus: 'waitlist-joined',
+    failureStatus: 'waitlist-join-failed',
+    restrictedStatus: 'shift-safeguarding-restricted',
+    unavailableStatus: 'shift-safeguarding-unavailable',
+    // ALREADY_EXISTS: already waiting, or already holds this shift. VALIDATION_ERROR:
+    // a place has come free, or the shift has started — the page then shows which.
+    codeStatuses: { ALREADY_EXISTS: 'waitlist-already', VALIDATION_ERROR: 'waitlist-not-available' }
   });
 }));
 
