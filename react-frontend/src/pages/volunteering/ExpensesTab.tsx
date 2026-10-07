@@ -24,6 +24,9 @@ import MoreHorizontal from 'lucide-react/icons/ellipsis';
 import Upload from 'lucide-react/icons/upload';
 import X from 'lucide-react/icons/x';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import Briefcase from 'lucide-react/icons/briefcase';
+import Send from 'lucide-react/icons/send';
 import { EmptyState } from '@/components/feedback';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -34,7 +37,7 @@ import { Select, SelectItem } from '@/components/ui/Select';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { extractCollectionItems } from './extractCollectionItems';
@@ -99,6 +102,7 @@ const fmt = (val: number) =>
 
 export function ExpensesTab() {
   const { t } = useTranslation('volunteering');
+  const { tenantPath } = useTenant();
   const toast = useToast();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [items, setItems] = useState<Expense[]>([]);
@@ -399,9 +403,32 @@ export function ExpensesTab() {
               <ModalHeader className="text-theme-primary">{t('expenses.modal_title')}</ModalHeader>
               <ModalBody className="gap-4">
                 {organisations.length === 0 && (
-                  <p className="text-sm text-danger">
-                    {t('expenses.no_organisation')}
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-danger">
+                      {t('expenses.no_organisation')}
+                    </p>
+                    {/* Gap C8: say where a claim becomes possible, as the Hours tab does (C3). */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        as={Link}
+                        to={tenantPath('/volunteering')}
+                        size="sm"
+                        variant="secondary"
+                        startContent={<Briefcase className="w-4 h-4" aria-hidden="true" />}
+                      >
+                        {t('no_loggable_organisations_find')}
+                      </Button>
+                      <Button
+                        as={Link}
+                        to={tenantPath('/volunteering?tab=applications')}
+                        size="sm"
+                        variant="secondary"
+                        startContent={<Send className="w-4 h-4" aria-hidden="true" />}
+                      >
+                        {t('no_loggable_organisations_applications')}
+                      </Button>
+                    </div>
+                  </div>
                 )}
                 {organisations.length > 1 && (
                   <Select

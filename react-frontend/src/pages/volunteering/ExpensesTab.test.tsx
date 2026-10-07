@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { framerMotionMock } from '@/test/mocks';
 
 vi.mock('@/lib/motion', () => framerMotionMock);
@@ -90,6 +90,15 @@ vi.mock('@/contexts/ToastContext', () => ({
     warning: vi.fn(),
   })),
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenantPath: (path: string) => `/test${path}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
+  TenantProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
@@ -263,6 +272,19 @@ describe('ExpensesTab', () => {
     fireEvent.change(dialog.querySelector('input[aria-label="expenses.form.amount"]')!, { target: { value: '8.50' } });
     fireEvent.change(dialog.querySelector('textarea')!, { target: { value: 'Bus fare' } });
   }
+
+  // Gap C8: with nowhere to claim from, the form showed a notice and a disabled button.
+  it('shows where a claim becomes possible when there is no organisation to claim from', async () => {
+    vi.mocked(api.get).mockImplementation((endpoint: string) => (
+      Promise.resolve({ success: true, data: endpoint.includes('/expenses') ? { items: [], has_more: false } : [] })
+    ));
+    const dialog = await openForm();
+    const links = within(dialog).getAllByRole('link');
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/test/volunteering',
+      '/test/volunteering?tab=applications',
+    ]);
+  });
 
   it('offers organisations the volunteer was accepted by, not only ones they belong to', async () => {
     mockFormData([{ id: 3, name: 'My Own Club', status: 'active', member_role: 'owner' }]);
