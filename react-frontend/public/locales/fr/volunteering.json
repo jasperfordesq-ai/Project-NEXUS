@@ -161,6 +161,8 @@
   "no_hours_logged": "Aucune heure enregistrée",
   "no_hours_description": "Commencez à enregistrer vos heures de bénévolat pour suivre votre impact",
   "no_loggable_organisations_description": "Vous pouvez vous connecter des heures après qu'une organisation ait approuvé votre candidature ou vous ait ajouté en tant que membre.",
+  "no_loggable_organisations_find": "Trouver des opportunités",
+  "no_loggable_organisations_applications": "Voir mes candidatures",
   "log_volunteering_hours": "Enregistrer des heures de bénévolat",
   "organisation_label": "Organisation",
   "select_organisation": "Sélectionner une organisation",

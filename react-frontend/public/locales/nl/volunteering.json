@@ -159,6 +159,8 @@
   "no_hours_logged": "Nog geen uren geregistreerd",
   "no_hours_description": "Begin met het registreren van uw vrijwilligerswerkuren om uw impact bij te houden",
   "no_loggable_organisations_description": "U kunt uren registreren nadat een organisatie uw aanvraag heeft goedgekeurd of u als lid heeft toegevoegd.",
+  "no_loggable_organisations_find": "Mogelijkheden zoeken",
+  "no_loggable_organisations_applications": "Mijn aanmeldingen bekijken",
   "log_volunteering_hours": "Registreer vrijwilligersuren",
   "organisation_label": "Organisatie",
   "select_organisation": "Selecteer organisatie",

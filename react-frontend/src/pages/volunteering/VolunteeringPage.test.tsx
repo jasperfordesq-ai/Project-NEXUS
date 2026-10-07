@@ -144,6 +144,8 @@ vi.mock("react-i18next", () => ({
         "volunteering.applied_on": "Applied",
         // Phone layout: re-homed hero / org-door actions.
         "volunteering.log_hours": "Log Hours",
+        "volunteering.no_loggable_organisations_find": "Find opportunities",
+        "volunteering.no_loggable_organisations_applications": "Check my applications",
         "volunteering.manage_organisation": "Manage organisation",
         "volunteering.register_organisation": "Register organisation",
         "volunteering.org_pending_setup": "Set it up while you wait",
@@ -327,6 +329,39 @@ describe('VolunteeringPage', () => {
       });
       const body = vi.mocked(api.post).mock.calls[0]?.[1] as Record<string, unknown>;
       expect(body).not.toHaveProperty('to_user_id');
+    });
+  });
+
+  // Gap C3 (7 Oct 2026): a volunteer with no organisation to log hours for saw a
+  // disabled "Log Hours" button and a sentence, with nowhere to go from there.
+  describe('My Hours with no organisation to log hours for', () => {
+    afterEach(() => {
+      window.history.replaceState({}, '', '/');
+    });
+
+    it('offers a way to find opportunities and to check applications', async () => {
+      // No approved application and no organisation membership.
+      vi.mocked(api.get).mockImplementation((async () => (
+        { success: true, data: [], meta: { cursor: null, has_more: false } }
+      )) as unknown as typeof api.get);
+      render(<VolunteeringPage />);
+      fireEvent.click(screen.getByText('My Hours'));
+
+      const find = await screen.findByTestId('hours-no-org-find');
+      const apps = screen.getByTestId('hours-no-org-applications');
+      expect(find).toHaveTextContent('Find opportunities');
+      expect(apps).toHaveTextContent('Check my applications');
+
+      fireEvent.click(apps);
+      await waitFor(() => {
+        expect(window.location.search).toBe('?tab=applications');
+      });
+
+      fireEvent.click(screen.getByText('My Hours'));
+      fireEvent.click(await screen.findByTestId('hours-no-org-find'));
+      await waitFor(() => {
+        expect(window.location.search).toBe('');
+      });
     });
   });
 

@@ -161,6 +161,8 @@
   "no_hours_logged": "Sem horas registradas",
   "no_hours_description": "Comece a registrar as suas horas de voluntariado para acompanhar o seu impacto",
   "no_loggable_organisations_description": "Você pode registrar horas depois que uma organização aprovar sua inscrição ou adicionar você como membro.",
+  "no_loggable_organisations_find": "Encontrar oportunidades",
+  "no_loggable_organisations_applications": "Ver as minhas candidaturas",
   "log_volunteering_hours": "Registrar Horas de Voluntariado",
   "organisation_label": "Organização",
   "select_organisation": "Selecionar organização",

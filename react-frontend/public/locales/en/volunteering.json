@@ -159,6 +159,8 @@
   "no_hours_logged": "No hours logged yet",
   "no_hours_description": "Start logging your volunteering hours to track your impact",
   "no_loggable_organisations_description": "You can log hours after an organisation approves your application or adds you as a member.",
+  "no_loggable_organisations_find": "Find opportunities",
+  "no_loggable_organisations_applications": "Check my applications",
   "log_volunteering_hours": "Log Volunteering Hours",
   "organisation_label": "Organisation",
   "select_organisation": "Select organisation",

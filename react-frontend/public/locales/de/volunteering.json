@@ -159,6 +159,8 @@
   "no_hours_logged": "Noch keine Stunden erfasst",
   "no_hours_description": "Beginnen Sie mit der Erfassung Ihrer Freiwilligenstunden, um Ihre Wirkung zu verfolgen",
   "no_loggable_organisations_description": "Sie können Stunden protokollieren, nachdem eine Organisation Ihren Antrag genehmigt oder Sie als Mitglied hinzugefügt hat.",
+  "no_loggable_organisations_find": "Möglichkeiten finden",
+  "no_loggable_organisations_applications": "Meine Bewerbungen ansehen",
   "log_volunteering_hours": "Freiwilligenstunden erfassen",
   "organisation_label": "Organisation",
   "select_organisation": "Organisation auswählen",

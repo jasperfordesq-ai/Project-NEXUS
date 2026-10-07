@@ -756,7 +756,7 @@ export function VolunteeringPage() {
             {activeTab && <ErrorBoundary key={activeTab}><div>
               {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} />}
               {activeTab === 'applications' && isTabEnabled('applications') && <ApplicationsTab />}
-              {activeTab === 'hours' && isTabEnabled('hours') && <HoursTab />}
+              {activeTab === 'hours' && isTabEnabled('hours') && <HoursTab onNavigateTab={setTab} canOpenApplications={isTabAllowed('applications')} />}
               <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>}>
                 {activeTab === 'recommended' && isTabEnabled('recommended') && <RecommendedShiftsTab />}
                 {activeTab === 'certificates' && isTabEnabled('certificates') && <CertificatesTab />}
@@ -1591,7 +1591,10 @@ function ApplicationsTab() {
 
 /* ───────────────────────── Hours Tab ───────────────────────── */
 
-function HoursTab() {
+function HoursTab({ onNavigateTab, canOpenApplications }: {
+  onNavigateTab: (tab: VolunteerTab) => void;
+  canOpenApplications: boolean;
+}) {
   const { t } = useTranslation('volunteering');
   const toast = useToast();
   const [summary, setSummary] = useState<HoursSummary | null>(null);
@@ -1740,8 +1743,30 @@ function HoursTab() {
       </div>
 
       {!isLoading && !error && organisations.length === 0 && (
-        <GlassCard className="p-4">
+        <GlassCard className="p-4 space-y-3">
           <p className="text-sm text-theme-muted">{t('no_loggable_organisations_description')}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              className={VOL_GRADIENT}
+              startContent={<Briefcase className="w-4 h-4" aria-hidden="true" />}
+              onPress={() => onNavigateTab('opportunities')}
+              data-testid="hours-no-org-find"
+            >
+              {t('no_loggable_organisations_find')}
+            </Button>
+            {canOpenApplications && (
+              <Button
+                size="sm"
+                variant="secondary"
+                startContent={<Send className="w-4 h-4" aria-hidden="true" />}
+                onPress={() => onNavigateTab('applications')}
+                data-testid="hours-no-org-applications"
+              >
+                {t('no_loggable_organisations_applications')}
+              </Button>
+            )}
+          </div>
         </GlassCard>
       )}
 

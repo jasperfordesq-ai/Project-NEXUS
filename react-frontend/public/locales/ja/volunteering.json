@@ -159,6 +159,8 @@
   "no_hours_logged": "まだ記録された時間はありません",
   "no_hours_description": "ボランティアの時間を記録して、あなたの影響を追跡しましょう",
   "no_loggable_organisations_description": "組織がアプリケーションを承認した後、またはメンバーとして追加した後、何時間も記録できます。",
+  "no_loggable_organisations_find": "機会を探す",
+  "no_loggable_organisations_applications": "自分の応募を確認",
   "log_volunteering_hours": "ボランティア時間を記録する",
   "organisation_label": "組織",
   "select_organisation": "組織を選択",

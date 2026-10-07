@@ -167,6 +167,8 @@
   "no_hours_logged": "لم يتم تسجيل أي ساعات حتى الآن",
   "no_hours_description": "ابدأ بتسجيل ساعات العمل التطوعي لتتبع تأثيرك",
   "no_loggable_organisations_description": "يمكنك تسجيل الساعات بعد موافقة المنظمة على طلبك أو إضافتك كعضو.",
+  "no_loggable_organisations_find": "ابحث عن فرص",
+  "no_loggable_organisations_applications": "تحقق من طلباتي",
   "log_volunteering_hours": "تسجيل ساعات العمل التطوعي",
   "organisation_label": "منظمة",
   "select_organisation": "اختر المنظمة",

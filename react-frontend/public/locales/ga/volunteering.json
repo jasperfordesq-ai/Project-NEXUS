@@ -165,6 +165,8 @@
   "no_hours_logged": "Níl aon uaireanta taifeadta fós",
   "no_hours_description": "Tosaigh ag clárú do chuid uaireanta oibre deonaí chun do thionchar a rianú",
   "no_loggable_organisations_description": "Is féidir leat uaireanta a logáil tar éis d’eagraíocht d’iarratas a fhaomhadh nó tú a chur leis mar bhall.",
+  "no_loggable_organisations_find": "Aimsigh deiseanna",
+  "no_loggable_organisations_applications": "Seiceáil m’iarratais",
   "log_volunteering_hours": "Cláraigh Uaireanta Oibre Deonaí",
   "organisation_label": "Eagras",
   "select_organisation": "Roghnaigh eagras",
