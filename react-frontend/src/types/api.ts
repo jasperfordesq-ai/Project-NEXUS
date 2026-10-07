@@ -1480,7 +1480,6 @@ export interface VolunteeringConfig {
   'volunteering.tab_waitlist': boolean;
   'volunteering.tab_swaps': boolean;
   'volunteering.tab_group_signups': boolean;
-  'volunteering.tab_hours_review': boolean;
   'volunteering.tab_expenses': boolean;
   'volunteering.tab_safeguarding': boolean;
   'volunteering.tab_community_projects': boolean;

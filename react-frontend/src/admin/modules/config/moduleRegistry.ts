@@ -387,7 +387,6 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       // Alpha and off by default (owner decision 2026-10-06): members added to a
       // group booking are never told and are not real shift sign-ups yet.
       { key: 'volunteering.tab_group_signups', type: 'boolean', defaultValue: false, category: 'tab_visibility', stage: 'alpha' },
-      { key: 'volunteering.tab_hours_review', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_expenses', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_safeguarding', type: 'boolean', defaultValue: true, category: 'tab_visibility' },
       { key: 'volunteering.tab_community_projects', type: 'boolean', defaultValue: true, category: 'tab_visibility' },

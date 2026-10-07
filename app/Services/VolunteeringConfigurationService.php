@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Log;
 class VolunteeringConfigurationService
 {
     // =========================================================================
-    // Tab visibility keys (17 tabs)
+    // Tab visibility keys (16 tabs)
     // =========================================================================
 
     public const CONFIG_TAB_OPPORTUNITIES = 'volunteering.tab_opportunities';
@@ -35,7 +35,6 @@ class VolunteeringConfigurationService
     public const CONFIG_TAB_WAITLIST = 'volunteering.tab_waitlist';
     public const CONFIG_TAB_SWAPS = 'volunteering.tab_swaps';
     public const CONFIG_TAB_GROUP_SIGNUPS = 'volunteering.tab_group_signups';
-    public const CONFIG_TAB_HOURS_REVIEW = 'volunteering.tab_hours_review';
     public const CONFIG_TAB_EXPENSES = 'volunteering.tab_expenses';
     public const CONFIG_TAB_SAFEGUARDING = 'volunteering.tab_safeguarding';
     public const CONFIG_TAB_COMMUNITY_PROJECTS = 'volunteering.tab_community_projects';
@@ -112,7 +111,6 @@ class VolunteeringConfigurationService
         // every community until finished. The admin switch stays, badged Alpha,
         // so a community can opt in deliberately.
         self::CONFIG_TAB_GROUP_SIGNUPS      => false,
-        self::CONFIG_TAB_HOURS_REVIEW       => true,
         self::CONFIG_TAB_EXPENSES           => true,
         self::CONFIG_TAB_SAFEGUARDING       => true,
         self::CONFIG_TAB_COMMUNITY_PROJECTS => true,

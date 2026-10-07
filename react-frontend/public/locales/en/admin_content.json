@@ -745,8 +745,6 @@
     "option_volunteering_tab_swaps_desc": "Manage shift swap requests between volunteers",
     "option_volunteering_tab_group_signups_label": "Group Sign-ups Tab",
     "option_volunteering_tab_group_signups_desc": "Group shift reservations with team members",
-    "option_volunteering_tab_hours_review_label": "Hours Review Tab",
-    "option_volunteering_tab_hours_review_desc": "Org owners approve/decline logged hours",
     "option_volunteering_tab_expenses_label": "Expenses Tab",
     "option_volunteering_tab_expenses_desc": "Submit and track expense claims",
     "option_volunteering_tab_safeguarding_label": "Safeguarding Tab",

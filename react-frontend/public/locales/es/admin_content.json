@@ -719,8 +719,6 @@
     "option_volunteering_tab_swaps_desc": "Gestionar solicitudes de intercambio de turnos entre voluntarios.",
     "option_volunteering_tab_group_signups_label": "Pestaña de inscripciones grupales",
     "option_volunteering_tab_group_signups_desc": "Reservas de turnos grupales con miembros del equipo.",
-    "option_volunteering_tab_hours_review_label": "Pestaña de revisión de horas",
-    "option_volunteering_tab_hours_review_desc": "Los propietarios de la organización aprueban/rechazan las horas registradas",
     "option_volunteering_tab_expenses_label": "Pestaña de gastos",
     "option_volunteering_tab_expenses_desc": "Enviar y realizar un seguimiento de las reclamaciones de gastos",
     "option_volunteering_tab_safeguarding_label": "Pestaña de protección",

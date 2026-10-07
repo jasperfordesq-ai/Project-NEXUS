@@ -745,8 +745,6 @@
     "option_volunteering_tab_swaps_desc": "Gestire le richieste di scambio turno tra volontari",
     "option_volunteering_tab_group_signups_label": "Scheda Iscrizioni di gruppo",
     "option_volunteering_tab_group_signups_desc": "Prenotazione turni di gruppo con i membri del team",
-    "option_volunteering_tab_hours_review_label": "Scheda Revisione orari",
-    "option_volunteering_tab_hours_review_desc": "I proprietari dell'organizzazione approvano/rifiutano le ore registrate",
     "option_volunteering_tab_expenses_label": "Scheda Spese",
     "option_volunteering_tab_expenses_desc": "Invia e monitora le richieste di spesa",
     "option_volunteering_tab_safeguarding_label": "Scheda Salvaguardia",

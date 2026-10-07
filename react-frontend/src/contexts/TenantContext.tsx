@@ -226,7 +226,6 @@ const defaultVolunteeringConfig: VolunteeringConfig = {
   // Alpha, hidden everywhere by default (owner decision 2026-10-06). Mirrors
   // VolunteeringConfigurationService::DEFAULTS; an admin can opt a community in.
   'volunteering.tab_group_signups': false,
-  'volunteering.tab_hours_review': true,
   'volunteering.tab_expenses': true,
   'volunteering.tab_safeguarding': true,
   'volunteering.tab_community_projects': true,

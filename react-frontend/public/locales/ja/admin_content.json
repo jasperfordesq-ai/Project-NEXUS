@@ -719,8 +719,6 @@
     "option_volunteering_tab_swaps_desc": "ボランティア間のシフト交換リクエストを管理する",
     "option_volunteering_tab_group_signups_label": "グループサインアップタブ",
     "option_volunteering_tab_group_signups_desc": "チームメンバーとのグループシフト予約",
-    "option_volunteering_tab_hours_review_label": "「時間の確認」タブ",
-    "option_volunteering_tab_hours_review_desc": "組織所有者が記録された時間を承認/拒否する",
     "option_volunteering_tab_expenses_label": "「経費」タブ",
     "option_volunteering_tab_expenses_desc": "経費請求の提出と追跡",
     "option_volunteering_tab_safeguarding_label": "「保護」タブ",
