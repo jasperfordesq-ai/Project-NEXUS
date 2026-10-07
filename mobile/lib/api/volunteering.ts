@@ -233,9 +233,10 @@ export interface VolunteerShiftSwap {
     name: string;
     avatar_url?: string | null;
   };
+  /** All null on a request you sent until the other volunteer agrees: the server withholds who they are. */
   recipient: {
-    id: number;
-    name: string;
+    id: number | null;
+    name: string | null;
     avatar_url?: string | null;
   };
   original_shift: VolunteerSwapShift;

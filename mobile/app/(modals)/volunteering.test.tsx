@@ -106,6 +106,7 @@ jest.mock('react-i18next', () => ({
         'swaps.received': opts ? `Received (${String(opts.count ?? 0)})` : 'Received (0)',
         'swaps.emptyTitle': 'No shift swaps yet',
         'swaps.sentTo': opts ? `Sent to ${String(opts.name ?? '')}` : 'Sent to',
+        'swaps.sentToUnnamed': 'Sent to the volunteer on that shift (named once they agree)',
         'swaps.receivedFrom': opts ? `From ${String(opts.name ?? '')}` : 'From',
         'swaps.requested': opts ? `Requested ${String(opts.date ?? '')}` : 'Requested',
         'swaps.yourShift': 'Your shift',
@@ -1560,14 +1561,17 @@ describe('VolunteeringScreen', () => {
    * The two fixtures below deliberately give the shifts different opportunity titles so
    * a swapped pairing cannot pass by coincidence.
    */
-  function swapPanelApi(direction: 'sent' | 'received') {
+  function swapPanelApi(
+    direction: 'sent' | 'received',
+    recipient: { id: number | null; name: string | null; avatar_url: null } = { id: 1, name: 'Current User', avatar_url: null },
+  ) {
     let apiCall = 0;
     const swap = {
       id: 77,
       status: 'pending',
       direction,
       requester: { id: 12, name: 'Alex Volunteer', avatar_url: null },
-      recipient: { id: 1, name: 'Current User', avatar_url: null },
+      recipient,
       original_shift: {
         id: 42,
         start_time: '2026-06-01T10:00:00Z',
@@ -1626,6 +1630,27 @@ describe('VolunteeringScreen', () => {
     expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Green Spaces');
     expect(getByTestId('swap-other-label-77').props.children).toBe('Proposed shift');
     expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
+  });
+
+  // M1 (7 Oct 2026): the server withholds the recipient of a sent request until they
+  // agree, and the card read "Sent to " with nothing after it.
+  it('says the other volunteer is named once they agree, instead of a blank name, on a sent swap', () => {
+    swapPanelApi('sent', { id: null, name: null, avatar_url: null });
+
+    const { getByText, queryByText } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    expect(getByText('Sent to the volunteer on that shift (named once they agree)')).toBeTruthy();
+    expect(queryByText('Sent to ')).toBeNull();
+  });
+
+  it('names the other volunteer on a sent swap once they have agreed', () => {
+    swapPanelApi('sent', { id: 5, name: 'Jordan Helper', avatar_url: null });
+
+    const { getByText } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    expect(getByText('Sent to Jordan Helper')).toBeTruthy();
   });
 
   it('serializes rapid conflicting responses to one received shift swap', async () => {

@@ -1315,7 +1315,10 @@ function SwapsPanel({
                 <View testID={`volunteering-swap-identity-${swap.id}`} className={`${largeText ? '' : 'flex-row items-start justify-between'} gap-3`} style={largeText ? { flexDirection: 'column' } : undefined}>
                   <View className="min-w-0 flex-1">
                     <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
-                      {t(swap.direction === 'sent' ? 'swaps.sentTo' : 'swaps.receivedFrom', { name: actorName })}
+                      {swap.direction === 'sent' && !actorName
+                        // The server names the other volunteer only once they agree (shift swap privacy, 6 Oct 2026).
+                        ? t('swaps.sentToUnnamed')
+                        : t(swap.direction === 'sent' ? 'swaps.sentTo' : 'swaps.receivedFrom', { name: actorName })}
                     </Text>
                     <Text className="mt-1 text-xs" style={{ color: theme.textMuted }}>
                       {t('swaps.requested', { date: formatDate(swap.created_at) ?? '' })}
