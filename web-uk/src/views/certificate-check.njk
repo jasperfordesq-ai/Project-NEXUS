@@ -1,0 +1,120 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Public certificate check (routes/certificate-check.js). The result is shown
+  above the form, which stays filled in so a typing mistake can be corrected.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.certificate_check." %}
+
+{% block mainContent %}
+  {% set hasErrors = errors and (errors.code or errors.name) %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if hasErrors %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% if errors.code %}<li><a href="#code">{{ errors.code }}</a></li>{% endif %}
+                {% if errors.name %}<li><a href="#name">{{ errors.name }}</a></li>{% endif %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+
+      {% if outcome == 'valid' and match %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-valid">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="certificate-check-result-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t(K ~ "valid_title") }}</p>
+            <p class="govuk-body">{{ t(K ~ "valid_body", { name: match.name }) }}</p>
+          </div>
+        </div>
+        <dl class="govuk-summary-list govuk-!-margin-bottom-9">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "hours") }}</dt>
+            <dd class="govuk-summary-list__value">{{ match.hoursLabel }}</dd>
+          </div>
+          {% if match.startLabel and match.endLabel %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "period") }}</dt>
+              <dd class="govuk-summary-list__value">{{ t(K ~ "period_range", { start: match.startLabel, end: match.endLabel }) }}</dd>
+            </div>
+          {% endif %}
+          {% if match.issuedLabel %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "issued") }}</dt>
+              <dd class="govuk-summary-list__value">{{ match.issuedLabel }}</dd>
+            </div>
+          {% endif %}
+          {% if match.organisations.length %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "organisations") }}</dt>
+              <dd class="govuk-summary-list__value">
+                <ul class="govuk-list">
+                  {% for organisation in match.organisations %}<li>{{ organisation }}</li>{% endfor %}
+                </ul>
+              </dd>
+            </div>
+          {% endif %}
+        </dl>
+      {% elif outcome == 'invalid' %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-invalid">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="certificate-check-result-title">{{ t(K ~ "result_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t(K ~ "invalid_title") }}</p>
+            <p class="govuk-body">{{ t(K ~ "invalid_body") }}</p>
+          </div>
+        </div>
+      {% elif outcome == 'rate-limited' or outcome == 'error' %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-error">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="certificate-check-result-title">{{ t("states.error_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t(K ~ ("rate_limited" if outcome == 'rate-limited' else "error")) }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <p class="govuk-body">{{ t(K ~ "intro") }}</p>
+
+      <form method="post" action="{{ urlFor('/verify-certificate') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if errors.code %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="code">{{ t(K ~ "code_label") }}</label>
+          <div id="code-hint" class="govuk-hint">{{ t(K ~ "code_hint") }}</div>
+          {% if errors.code %}
+            <p id="code-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.code }}</p>
+          {% endif %}
+          <input class="govuk-input govuk-input--width-20{% if errors.code %} govuk-input--error{% endif %}" id="code" name="code" type="text" spellcheck="false" autocomplete="off" autocapitalize="characters" value="{{ values.code or '' }}" aria-describedby="code-hint{% if errors.code %} code-error{% endif %}">
+        </div>
+
+        <div class="govuk-form-group{% if errors.name %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="name">{{ t(K ~ "name_label") }}</label>
+          <div id="name-hint" class="govuk-hint">{{ t(K ~ "name_hint") }}</div>
+          {% if errors.name %}
+            <p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.name }}</p>
+          {% endif %}
+          <input class="govuk-input{% if errors.name %} govuk-input--error{% endif %}" id="name" name="name" type="text" spellcheck="false" autocomplete="off" value="{{ values.name or '' }}" aria-describedby="name-hint{% if errors.name %} name-error{% endif %}">
+        </div>
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">{{ t(K ~ "submit") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

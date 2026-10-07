@@ -5,25 +5,25 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-10-06T17:12:52.692Z
-- Laravel commit SHA: `c87e98f8d6613853253250694dbdac44626f5fa2`
-- Web UK repository commit SHA: `c87e98f8d6613853253250694dbdac44626f5fa2`
+- Generated: 2026-10-07T09:49:58.147Z
+- Laravel commit SHA: `fadb1da29a952a6288678e483d2597368e66db29`
+- Web UK repository commit SHA: `fadb1da29a952a6288678e483d2597368e66db29`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 729
+- Contracts: 730
 - Laravel OpenAPI matches: 475
-- Missing OpenAPI matches: 254
-- Direct Laravel route declarations omitted from OpenAPI: 254
+- Missing OpenAPI matches: 255
+- Direct Laravel route declarations omitted from OpenAPI: 255
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 400
+- State-changing contracts: 401
 - Rows without detected tests: 0
-- Rows without direct API-helper assertions: 0
-- Unique helpers without direct API-helper assertions: 0
-- State-changing rows without direct API-helper assertions: 0
-- Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `8615a57a5706ec8956655ddb142f313f27f26fa3554c179792b2ccd045e2c3e6`
+- Rows without direct API-helper assertions: 1
+- Unique helpers without direct API-helper assertions: 1
+- State-changing rows without direct API-helper assertions: 1
+- Unique OpenAPI-omitted helpers without direct API-client assertions: 1
+- API source SHA-256: `8b29728d50284f7671ddaed7f3f87712aa18b985bdd37b8d86d87429fa56df34`
 - Laravel OpenAPI SHA-256: `e60992f5ac21058988b49e3c96375ebc43f3d570d1b52b18d699aaa4e2b3ba7b`
 - Laravel API routes SHA-256: `a88d1d15167d2ffa18bba1e4a35226db8e536bff79a6e2368a6c23ef441d681b`
 
@@ -35,7 +35,7 @@ Rows below have test references but no test that directly names and exercises th
 
 | Method | Path | Helper | Source | Side effects |
 |---|---|---|---|---|
-| - | - | - | - | Complete |
+| POST | `/api/v2/volunteering/certificates/check` | `checkVolunteerCertificate` | `src/lib/api.js:359` | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work |
 
 ## Complete consumer inventory
 
@@ -687,6 +687,7 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/volunteering/certificates` | `callVolunteeringApi` | documented | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |
 | POST | `/api/v2/volunteering/certificates` | `callVolunteeringApi` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |
 | GET | `/api/v2/volunteering/certificates/{param}/html` | `callVolunteeringApi` | documented | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |
+| POST | `/api/v2/volunteering/certificates/check` | `checkVolunteerCertificate` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/certificate-check.js | tests/certificate-check.test.js |
 | GET | `/api/v2/volunteering/community-projects?public=true&limit=12` | `callVolunteeringApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/server.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |
 | GET | `/api/v2/volunteering/credentials` | `callVolunteeringApi` | documented | read-only by HTTP method<br>not applicable | src/routes/volunteering-actions.js | tests/api-locale-context.test.js<br>tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-hours-approval-refusals.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |
 | POST | `/api/v2/volunteering/credentials` | `uploadVolunteerCredential` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/volunteering-actions.js | tests/api.test.js<br>tests/form-input-preserved-volunteering.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/volunteering-expense-form.test.js<br>tests/volunteering-incident-pages.test.js<br>tests/volunteering-incident-report-fields.test.js<br>tests/volunteering-shift-management.test.js |

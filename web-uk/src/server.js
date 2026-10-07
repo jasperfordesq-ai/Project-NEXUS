@@ -73,6 +73,7 @@ const legalRoutes = require('./routes/legal');
 const legalAcceptanceRoutes = require('./routes/legal-acceptance');
 const publicInfoRoutes = require('./routes/public-info');
 const contactSupportRoutes = require('./routes/contact-support');
+const certificateCheckRoutes = require('./routes/certificate-check');
 const onboardingPostRoutes = require('./routes/onboarding-posts');
 const savedCollectionRoutes = require('./routes/saved-collections');
 const savedSocialRoutes = require('./routes/saved-social');
@@ -2162,6 +2163,12 @@ app.use(['/contact', '/report-a-problem'], postOnly(formLimiter));
 // parser-refusal redirect live in src/lib/support-screenshots.js.
 app.use('/report-a-problem', ...reportProblemUploadMiddleware);
 app.use(doubleCsrfProtection, contactSupportRoutes);
+// Public certificate check (gap C1): anyone a volunteering certificate is shown
+// to can confirm it by code and printed name, without an account. Same limiter
+// and CSRF arrangement as the contact form; the volunteering feature gate is a
+// 404 inside the router (see the note there).
+app.use('/verify-certificate', postOnly(formLimiter));
+app.use(doubleCsrfProtection, certificateCheckRoutes);
 app.use('/jobs', doubleCsrfProtection, postOnly(formLimiter), jobsRoutes);
 app.use('/podcasts', doubleCsrfProtection, podcastRoutes);
 app.use('/marketplace', doubleCsrfProtection, marketplaceRoutes);

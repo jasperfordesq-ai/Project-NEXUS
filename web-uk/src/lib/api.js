@@ -352,6 +352,16 @@ async function submitContact(data) {
   });
 }
 
+// Public certificate check (gap C1). No bearer token, even for a signed-in
+// visitor: the API answers only whether the code and printed name match, and the
+// name goes in the body so it never reaches a URL or an access log.
+async function checkVolunteerCertificate(code, name) {
+  return request('/api/v2/volunteering/certificates/check', {
+    method: 'POST',
+    body: JSON.stringify({ code, name })
+  });
+}
+
 async function getTenants(options = {}) {
   const query = new URLSearchParams();
   if (options.includeMaster) {
@@ -4151,6 +4161,7 @@ module.exports = {
   refreshToken,
   logout,
   submitContact,
+  checkVolunteerCertificate,
   getTenants,
   getTenantBootstrap,
   getCustomPage,

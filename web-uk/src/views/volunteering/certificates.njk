@@ -90,6 +90,12 @@
           {% if certificate.downloadPath %}
             <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor(certificate.downloadPath) }}">{{ t("govuk_alpha.vol_depth.certificate_download") }}</a>
           {% endif %}
+          {% if certificate.verificationCode %}
+            {# The public check page (gap C1): what someone shown this certificate uses. #}
+            <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+              <a class="govuk-link" href="{{ urlFor('/verify-certificate/' ~ (certificate.verificationCode | urlencode)) }}" data-testid="certificate-check-link">{{ t("govuk_alpha_volunteering.certificate_check.check_link") }}</a>
+            </p>
+          {% endif %}
         </article>
       {% endfor %}
     </div>
