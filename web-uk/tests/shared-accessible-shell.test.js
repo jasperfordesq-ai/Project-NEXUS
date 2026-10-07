@@ -17776,6 +17776,68 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('No volunteering opportunities match your filters.');
   });
 
+  // Gap B9 (7 Oct 2026): urgent shift requests, wellbeing and safeguarding worked but
+  // nothing linked to them, and the list ignored the community's section switches.
+  it('links every volunteer section the community has on, including the three that had no way in', async () => {
+    const page = await request(app).get('/volunteering').set('Cookie', signedCookieHeader());
+
+    expect(page.status).toBe(200);
+    const start = page.text.indexOf('data-testid="volunteer-tools"');
+    const tools = page.text.slice(start, page.text.indexOf('</ul>', start));
+    for (const href of ['/volunteering/hours', '/volunteering/emergency-alerts', '/volunteering/wellbeing',
+      '/volunteering/training', '/volunteering/accessibility', '/volunteering/certificates', '/volunteering/waitlist',
+      '/volunteering/swaps', '/volunteering/expenses', '/volunteering/donations']) {
+      expect(tools).toContain(`href="${href}"`);
+    }
+    expect(tools).toContain('Urgent shift requests');
+    expect(tools).toContain('My wellbeing');
+    expect(tools).toContain('Safeguarding');
+    // The old document-upload page is not a way in (qualifications take no uploads), and
+    // group sign-ups stays hidden.
+    expect(tools).not.toContain('/volunteering/credentials');
+    expect(tools).not.toContain('/volunteering/group-signups');
+    expect(page.text).toContain('href="/volunteering?tab=recommended"');
+  });
+
+  it('leaves out the sections a community has switched off, as the website does', async () => {
+    const api = require('../src/lib/api');
+    api.getTenantBootstrap.mockReset().mockResolvedValue(tenantBootstrap('acme', {
+      volunteering_config: {
+        'volunteering.tab_wellbeing': false,
+        'volunteering.tab_alerts': false,
+        'volunteering.tab_safeguarding': false,
+        'volunteering.expenses_enabled': false,
+        'volunteering.enable_matching': false,
+        'volunteering.tab_community_projects': false,
+        'volunteering.tab_swaps': true
+      }
+    }));
+
+    // Community settings reach the page through the community's own address.
+    const page = await request(app).get('/acme/accessible/volunteering').set('Cookie', signedCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('href="/acme/accessible/volunteering/swaps"');
+    expect(page.text).toContain('href="/acme/accessible/volunteering/donations"');
+    for (const href of ['/volunteering/wellbeing', '/volunteering/emergency-alerts', '/volunteering/training',
+      '/volunteering/expenses', '/volunteering?tab=recommended', '/volunteering?tab=community_projects']) {
+      expect(page.text).not.toContain(`href="/acme/accessible${href}"`);
+    }
+  });
+
+  it('shows opportunities instead of a tab the community has switched off', async () => {
+    const api = require('../src/lib/api');
+    api.getTenantBootstrap.mockReset().mockResolvedValue(tenantBootstrap('acme', {
+      volunteering_config: { 'volunteering.enable_matching': false }
+    }));
+
+    const page = await request(app).get('/acme/accessible/volunteering?tab=recommended').set('Cookie', signedCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('href="/acme/accessible/volunteering"');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/recommended-shifts?limit=10');
+  });
+
   it('redirects the volunteering list to login when the opportunities API returns 401', async () => {
     const api = require('../src/lib/api');
     api.getVolunteeringOpportunities.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));

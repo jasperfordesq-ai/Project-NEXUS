@@ -5,8 +5,8 @@
 
 /**
  * An organisation confirms its volunteers' qualifications on the accessible site
- * (routes/volunteering-org-qualifications.js, gap B7 part 3, 7 Oct 2026). Before this a
- * volunteer could record a qualification here but nobody could confirm it here.
+ * (routes/volunteering-org-qualifications.js, gap B7 part 3, 7 Oct 2026). Before this
+ * nobody could confirm a qualification here.
  *
  * Pinned here:
  * - the register shows qualifications needing attention by default, the counts, and

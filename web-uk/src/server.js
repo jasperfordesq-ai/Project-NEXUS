@@ -1111,6 +1111,8 @@ app.get('/account', async (req, res) => {
 
 app.use('/explore', exploreRoutes);
 
+const { volunteeringSections } = require('./lib/volunteering-sections');
+
 app.get('/volunteering', requireAuth, (req, res) => {
   const { ApiError, callVolunteeringApi, getVolunteeringCategories, getVolunteeringOpportunities } = require('./lib/api');
   const token = req.signedCookies.token || '';
@@ -1122,7 +1124,12 @@ app.get('/volunteering', requireAuth, (req, res) => {
       authRequired: !token
     });
   }
+  // The community's own section switches, read the way the website reads them
+  // (lib/volunteering-sections.js). A switched-off tab in the address falls back
+  // to opportunities rather than showing a section the community has turned off.
+  const sections = volunteeringSections(req.accessibleRouting?.tenant);
   const requestedTab = ['applications', 'recommended', 'community_projects'].includes(req.query.tab)
+    && sections.enabled(req.query.tab === 'community_projects' ? 'community-projects' : req.query.tab)
     ? req.query.tab
     : 'opportunities';
   const selectedTab = token ? requestedTab : 'opportunities';
@@ -1295,6 +1302,13 @@ app.get('/volunteering', requireAuth, (req, res) => {
         recommendedShifts,
         communityProjects,
         selectedTab,
+        volunteerTools: sections.tools,
+        volunteerTabs: {
+          applications: sections.enabled('applications'),
+          recommended: sections.enabled('recommended'),
+          communityProjects: sections.enabled('community-projects'),
+          hours: sections.enabled('hours')
+        },
         status: typeof req.query.status === 'string' ? req.query.status : '',
         volunteeringQuery,
         categoryId,
@@ -1333,6 +1347,13 @@ app.get('/volunteering', requireAuth, (req, res) => {
         recommendedShifts: [],
         communityProjects: [],
         selectedTab,
+        volunteerTools: sections.tools,
+        volunteerTabs: {
+          applications: sections.enabled('applications'),
+          recommended: sections.enabled('recommended'),
+          communityProjects: sections.enabled('community-projects'),
+          hours: sections.enabled('hours')
+        },
         status: typeof req.query.status === 'string' ? req.query.status : '',
         volunteeringQuery,
         categoryId,

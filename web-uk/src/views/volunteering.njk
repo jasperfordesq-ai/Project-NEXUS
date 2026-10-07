@@ -84,25 +84,24 @@
       <div class="nexus-alpha-stat"><dt>{{ t("volunteering.this_month_hours") }}</dt><dd>{{ hoursSummaryLabels.thisMonth }}</dd></div>
     </dl>
     <h2 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-2">{{ t("vol_org.tools_title") }}</h2>
-    <ul class="govuk-list nexus-alpha-filter-nav govuk-!-margin-bottom-4">
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/hours') }}">{{ t("volunteering.log_hours_title") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/accessibility') }}">{{ t("volunteering.accessibility_link") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/certificates') }}">{{ t("vol_depth.certificates_link") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/waitlist') }}">{{ t("vol_depth.waitlist_link") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/swaps') }}">{{ t("vol_depth.swaps_link") }}</a></li>
-      {# Group sign-ups is alpha and hidden on every community (owner decision
-         2026-10-06). The page and its routes stay for the frozen route
-         inventory; only the way in is removed. #}
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/expenses') }}">{{ t("govuk_alpha_volunteering.expenses.nav_link") }}</a></li>
-      <li><a class="govuk-link" href="{{ urlFor('/volunteering/donations') }}">{{ t("govuk_alpha_volunteering.donations.nav_link") }}</a></li>
+    {# Built from lib/volunteering-sections.js, which follows the community's own
+       section switches as the website does. Group sign-ups is alpha and hidden on
+       every community (owner decision 2026-10-06); the old document-upload page
+       /volunteering/credentials is not listed (qualifications take no uploads
+       since 2026-10-05). Both pages and their routes stay for the frozen route
+       inventory; only the way in is absent. #}
+    <ul class="govuk-list nexus-alpha-filter-nav govuk-!-margin-bottom-4" data-testid="volunteer-tools">
+      {% for tool in volunteerTools %}
+        <li><a class="govuk-link" href="{{ urlFor(tool.href) }}">{{ t(tool.labelKey) }}</a></li>
+      {% endfor %}
     </ul>
     <nav class="govuk-!-margin-top-6 govuk-!-margin-bottom-4" aria-label="{{ t('volunteering.tabs_title') }}">
       <ul class="govuk-list nexus-alpha-filter-nav">
         <li><a class="govuk-link{% if selectedTab == 'opportunities' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering') }}"{% if selectedTab == 'opportunities' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.opportunities") }}</a></li>
-        <li><a class="govuk-link{% if selectedTab == 'applications' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=applications') }}"{% if selectedTab == 'applications' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.applications") }}</a></li>
-        <li><a class="govuk-link{% if selectedTab == 'recommended' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=recommended') }}"{% if selectedTab == 'recommended' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.recommended") }}</a></li>
-        <li><a class="govuk-link{% if selectedTab == 'community_projects' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=community_projects') }}"{% if selectedTab == 'community_projects' %} aria-current="page"{% endif %}>{{ t("volunteering.community_projects_tab") }}</a></li>
-        <li><a class="govuk-link" href="{{ urlFor('/volunteering/hours') }}">{{ t("volunteering.tabs.hours") }}</a></li>
+        {% if volunteerTabs.applications %}<li><a class="govuk-link{% if selectedTab == 'applications' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=applications') }}"{% if selectedTab == 'applications' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.applications") }}</a></li>{% endif %}
+        {% if volunteerTabs.recommended %}<li><a class="govuk-link{% if selectedTab == 'recommended' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=recommended') }}"{% if selectedTab == 'recommended' %} aria-current="page"{% endif %}>{{ t("volunteering.tabs.recommended") }}</a></li>{% endif %}
+        {% if volunteerTabs.communityProjects %}<li><a class="govuk-link{% if selectedTab == 'community_projects' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering?tab=community_projects') }}"{% if selectedTab == 'community_projects' %} aria-current="page"{% endif %}>{{ t("volunteering.community_projects_tab") }}</a></li>{% endif %}
+        {% if volunteerTabs.hours %}<li><a class="govuk-link" href="{{ urlFor('/volunteering/hours') }}">{{ t("volunteering.tabs.hours") }}</a></li>{% endif %}
       </ul>
     </nav>
   {% endif %}
