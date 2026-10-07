@@ -156,9 +156,12 @@
   {% if opportunity.canManage and not opportunity.isCancelled %}
     <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_volunteering.shift_manager.manage_link") }}</a>
   {% endif %}
-  {% if opportunity.shifts and opportunity.shifts.length %}
+  {# Gap B16: volunteers see upcoming shifts only, as on the website; the people who
+     run the opportunity still see past ones, whose roster shows who came. #}
+  {% set listedShifts = (opportunity.shifts or []) if opportunity.canManage else ((opportunity.shifts or []) | rejectattr("isPast")) %}
+  {% if listedShifts | length %}
     <div class="nexus-alpha-card-list">
-      {% for shift in opportunity.shifts %}
+      {% for shift in listedShifts %}
         <article class="nexus-alpha-card">
           <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ shift.start_time | formatEventDate }}</h3>
           <dl class="nexus-alpha-inline-list">
@@ -252,12 +255,14 @@
           <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.volunteering.apply_title") }}</h2>
         </legend>
         <div id="apply-hint" class="govuk-hint">{{ t("govuk_alpha.volunteering.apply_message_hint") }}</div>
-        {% if opportunity.shifts and opportunity.shifts.length %}
+        {# Gap B16: only shifts that are still ahead and have a place, as on the website. #}
+        {% set choosableShifts = (opportunity.shifts or []) | rejectattr("isPast") | selectattr("hasSpace") %}
+        {% if choosableShifts | length %}
           <div class="govuk-form-group">
             <label class="govuk-label" for="shift_id">{{ t("govuk_alpha.volunteering.shift_label") }}</label>
             <select class="govuk-select" id="shift_id" name="shift_id">
               <option value="">{{ t("govuk_alpha.volunteering.no_shift_preference") }}</option>
-              {% for shift in opportunity.shifts %}
+              {% for shift in choosableShifts %}
                 <option value="{{ shift.id }}">{{ shift.start_time | formatEventDate }}</option>
               {% endfor %}
             </select>

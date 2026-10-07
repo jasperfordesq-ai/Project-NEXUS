@@ -20612,8 +20612,8 @@ describe('shared accessible frontend shell', () => {
         shifts: [
           {
             id: 501,
-            start_time: '2026-08-03T09:00:00Z',
-            end_time: '2026-08-03T12:00:00Z',
+            start_time: '2099-08-03T09:00:00Z',
+            end_time: '2099-08-03T12:00:00Z',
             capacity: 10,
             spots_available: 3
           }
@@ -38738,6 +38738,40 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('data-testid="shift-switch-hint-502"');
     expect(page.text).toContain('This gives up your place on the shift on');
     expect(page.text).toContain('action="/volunteering/opportunities/77/shifts/501/cancel"');
+  });
+
+  // Gap B16 (7 Oct 2026): shifts that had already happened were listed as available,
+  // and could be chosen when applying.
+  it('lists only upcoming shifts to volunteers, and offers only open upcoming ones when applying', async () => {
+    const api = require('../src/lib/api');
+    const opportunity = {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [
+        { id: 400, start_time: '2020-01-01T09:00:00Z', capacity: 10, spots_available: 9 },
+        { id: 501, start_time: '2099-08-03T09:00:00Z', capacity: 10, spots_available: 3 },
+        { id: 503, start_time: '2099-08-05T09:00:00Z', capacity: 2, spots_available: 0 }
+      ],
+      has_applied: false
+    };
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: opportunity });
+    api.callVolunteeringApi.mockResolvedValue({ data: {} });
+
+    const page = await request(app).get('/volunteering/opportunities/77').set('Cookie', signedAuthCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(page.text).not.toContain('2020');
+    const selectStart = page.text.indexOf('id="shift_id"');
+    const select = page.text.slice(selectStart, page.text.indexOf('</select>', selectStart));
+    expect(select).toContain('value="501"');
+    expect(select).not.toContain('value="400"');
+    expect(select).not.toContain('value="503"');
+
+    // Someone who runs the opportunity still sees the past shift, and its roster.
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, can_manage: true, is_owner: true } });
+    const manager = await request(app).get('/volunteering/opportunities/77').set('Cookie', signedAuthCookieHeader());
+    expect(manager.text).toContain('/shifts/400/roster');
   });
 
   it('switches shifts only if the volunteer still holds the shift they were shown', async () => {
