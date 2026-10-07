@@ -173,6 +173,7 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'POST api/v2/feed/posts/{id}/impression' => 'records that the caller saw a post',
         'POST api/v2/feed/posts/{id}/hide' => 'hides a post from the caller\'s own feed',
         'POST api/v2/feed/posts/{id}/not-interested' => 'the caller\'s own feed preference',
+        'POST api/v2/comments/{id}/reactions' => 'the caller reacts to another member\'s comment; toggles the caller\'s own reaction row and leaves the comment untouched (exercised every run since E-093 pinned the comment fixture to a real public post)',
         'POST api/v2/feed/posts/{id}/report' => 'the caller reports another member\'s post',
         'DELETE api/v2/marketplace/listings/{id}/save' => 'removes a marketplace listing from the caller\'s saved list (idempotent)',
         'PUT api/v2/goals/{id}/reminder' => 'sets the CALLER\'s own reminder for a public goal (GoalReminderService scopes by user_id)',
@@ -679,6 +680,17 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
             if ($present !== []) {
                 DB::table($table)->where('id', $ids[$key])->update($present);
             }
+        }
+
+        // 🔴 The comment factory points at a RANDOM target (one of four types, id 1–500).
+        // On a fresh CI database that id was sometimes a real public record and
+        // sometimes not, so every comment route flapped between "exercised" and
+        // "not found" (CI run 37581922576, 7 Oct 2026: the reactions probe answered
+        // 200 there and 404 locally). Point the seeded comment at the same owner's
+        // pinned public feed post so the comment routes are exercised every run (E-093).
+        if (isset($ids['comment'], $ids['feed_post'])) {
+            DB::table('comments')->where('id', $ids['comment'])
+                ->update(['target_type' => 'post', 'target_id' => $ids['feed_post']]);
         }
     }
 
