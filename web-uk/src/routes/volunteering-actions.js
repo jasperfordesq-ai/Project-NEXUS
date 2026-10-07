@@ -1450,15 +1450,62 @@ function normalizeWaitlistEntry(row, t = null) {
   };
 }
 
-function normalizeMyShift(row) {
+/**
+ * A shift time as a UTC epoch. The API sends the platform's naive wall-clock time
+ * ("YYYY-MM-DD HH:mm:ss", UTC); a value carrying its own zone or offset is honoured.
+ * The same reading as routes/volunteering-shifts.js.
+ */
+function shiftEpoch(value) {
+  const text = trimmed(value);
+  if (/(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(text) && text.includes('T')) {
+    const parsed = Date.parse(text);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6] || 0));
+}
+
+/** "Saturday 14 March 2099, 09:00 to 12:00" for a shift, in the member's language. */
+function shiftWhenLabel(startValue, endValue, t = null) {
+  const start = shiftEpoch(startValue);
+  if (start === null) return '';
+  const locale = getRequestIntlLocale();
+  const day = new Intl.DateTimeFormat(locale, {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+  }).format(new Date(start));
+  const clock = (epoch) => new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+    .format(new Date(epoch));
+  const end = shiftEpoch(endValue);
+  if (end === null) return `${day}, ${clock(start)}`;
+  const range = t
+    ? t('govuk_alpha.vol_depth.swap_time_range', { start: clock(start), end: clock(end) })
+    : `${clock(start)} to ${clock(end)}`;
+  return `${day}, ${range}`;
+}
+
+function normalizeMyShift(row, t = null) {
   const shift = row && typeof row === 'object' ? row : {};
   const id = positiveInteger(shift.id ?? shift.shift_id ?? shift.shiftId);
   const title = trimmed(shift.opportunity_title ?? shift.opportunityTitle ?? shift.title) || 'Volunteering opportunity';
-  const when = dateTimeLabel(shift.start_time ?? shift.startTime);
+  const startValue = shift.start_time ?? shift.startTime;
+  const when = shiftWhenLabel(startValue, shift.end_time ?? shift.endTime, t);
   return {
     id,
+    opportunityId: positiveInteger(shift.opportunity_id ?? shift.opportunityId),
+    title,
+    whenLabel: when,
+    start: shiftEpoch(startValue),
     label: when ? `${title} — ${when}` : title
   };
+}
+
+/** The member's own shifts that have not started yet, soonest first. */
+function upcomingOwnShifts(rows, t = null, now = Date.now()) {
+  return rows
+    .map((row) => normalizeMyShift(row, t))
+    .filter((shift) => shift.id && shift.start !== null && shift.start > now)
+    .sort((a, b) => a.start - b.start);
 }
 
 function normalizeSwapShift(row, t = null) {
@@ -1493,7 +1540,17 @@ function normalizeSwapRequest(row, t = null) {
     requesterName: trimmed(requester.name),
     recipientName: trimmed(recipient.name),
     originalShift: normalizeSwapShift(swap.original_shift ?? swap.originalShift, t),
-    proposedShift: normalizeSwapShift(swap.proposed_shift ?? swap.proposedShift, t)
+    proposedShift: normalizeSwapShift(swap.proposed_shift ?? swap.proposedShift, t),
+    // `original_shift` is always the requester's own and `proposed_shift` the one they
+    // asked for, so which is "yours" depends on the direction (as on the website's
+    // ShiftSwapsTab). Labelling the original "Their shift" on a request you SENT named
+    // your own shift as someone else's.
+    ownShift: normalizeSwapShift(direction === 'received'
+      ? (swap.proposed_shift ?? swap.proposedShift)
+      : (swap.original_shift ?? swap.originalShift), t),
+    otherShift: normalizeSwapShift(direction === 'received'
+      ? (swap.original_shift ?? swap.originalShift)
+      : (swap.proposed_shift ?? swap.proposedShift), t)
   };
 }
 
@@ -2357,9 +2414,9 @@ router.get('/swaps', asyncRoute(async (req, res) => {
     swaps = collectionFrom(await callApi(token, 'GET', '/swaps'))
       .map((swap) => normalizeSwapRequest(swap, res.locals.t))
       .filter((swap) => swap.id);
-    myShifts = collectionFrom(await callApi(token, 'GET', '/shifts?limit=50'))
-      .map(normalizeMyShift)
-      .filter((shift) => shift.id);
+    // `per_page`, not `limit`: VolunteerController::myShifts reads per_page (max 50) and
+    // ignored `limit`, so only the newest 20 shifts ever reached this page.
+    myShifts = upcomingOwnShifts(collectionFrom(await callApi(token, 'GET', '/shifts?per_page=50')), res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = res.locals.t('govuk_alpha.vol_depth.swaps_error');
@@ -3079,11 +3136,14 @@ router.post('/waitlist/:shiftId(\\d+)/leave', asyncRoute(async (req, res) => {
   );
 }));
 
+// The original numeric form posted here. Kept so an old open page still works, but a
+// member is never asked for a member number any more: the API resolves who holds the
+// shift itself (ShiftSwapService::requestSwap), so to_user_id is passed only if given.
 router.post('/swaps', asyncRoute(async (req, res) => {
   const fromShiftId = positiveInteger(req.body.from_shift_id);
   const toShiftId = positiveInteger(req.body.to_shift_id);
   const toUserId = positiveInteger(req.body.to_user_id);
-  if (fromShiftId === null || toShiftId === null || toUserId === null) {
+  if (fromShiftId === null || toShiftId === null) {
     return redirectTo(res, '/volunteering/swaps?status=swap-invalid');
   }
 
@@ -3093,7 +3153,7 @@ router.post('/swaps', asyncRoute(async (req, res) => {
     await callApi(token, 'POST', '/swaps', {
       from_shift_id: fromShiftId,
       to_shift_id: toShiftId,
-      to_user_id: toUserId,
+      ...(toUserId !== null ? { to_user_id: toUserId } : {}),
       message: trimmed(req.body.message)
     });
     return redirectTo(res, '/volunteering/swaps?status=swap-requested');
@@ -3109,6 +3169,107 @@ router.post('/swaps', asyncRoute(async (req, res) => {
     return redirectTo(res, '/volunteering/swaps?status=swap-request-failed');
   }
 }));
+
+// ── Ask to swap one of your shifts (gap B3, 7 Oct 2026) ───────────────────────
+//
+// The member picks one of their own upcoming shifts on /volunteering/swaps, then on
+// this page picks the shift they would rather do: another upcoming shift on the same
+// opportunity that has someone on it. They never choose (or see) a person: the API
+// resolves who holds that shift and names them to the requester only once they agree.
+// The same rule as the website's ShiftSwapRequestModal.
+
+/** The member's own upcoming shift and the shifts they could swap it for, or null. */
+async function loadSwapChoices(token, shiftId, t) {
+  const own = upcomingOwnShifts(collectionFrom(await callApi(token, 'GET', '/shifts?per_page=50')), t)
+    .find((shift) => shift.id === shiftId);
+  if (!own || !own.opportunityId) return null;
+  const now = Date.now();
+  const rows = collectionFrom(await callApi(token, 'GET', `/opportunities/${encodeURIComponent(own.opportunityId)}/shifts`));
+  const options = rows
+    .map((row) => ({
+      id: positiveInteger(row?.id),
+      start: shiftEpoch(row?.start_time),
+      signedUp: Number(row?.signup_count) || 0,
+      label: shiftWhenLabel(row?.start_time, row?.end_time, t)
+    }))
+    .filter((option) => option.id && option.id !== own.id && option.signedUp > 0 && option.start !== null && option.start > now)
+    .sort((a, b) => a.start - b.start);
+  return { own, options };
+}
+
+function renderSwapRequest(req, res, choices, view = {}) {
+  return res.status(view.statusCode || 200).render('volunteering/swap-request', {
+    title: res.locals.t('govuk_alpha.vol_depth.swap_new_title'),
+    activeNav: 'volunteering',
+    own: choices.own,
+    options: choices.options,
+    selected: view.selected || '',
+    message: view.message || '',
+    error: view.error || '',
+    failure: view.failure || '',
+    idempotencyKey: view.idempotencyKey || randomUUID(),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+function swapNotFound(res) {
+  return res.status(404).render('errors/404', { title: res.locals.t('error_pages.404_title') });
+}
+
+router.get('/swaps/new/:shiftId(\\d+)', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const choices = await loadSwapChoices(token, Number(req.params.shiftId), res.locals.t);
+  if (!choices) return swapNotFound(res);
+  return renderSwapRequest(req, res, choices);
+}, { redirectOn401: loginRedirect() }));
+
+router.post('/swaps/new/:shiftId(\\d+)', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const shiftId = Number(req.params.shiftId);
+  const choices = await loadSwapChoices(token, shiftId, res.locals.t);
+  if (!choices) return swapNotFound(res);
+
+  const toShiftId = positiveInteger(req.body.to_shift_id);
+  const message = trimmed(req.body.message).slice(0, 500);
+  const typedKey = trimmed(req.body.idempotency_key);
+  const idempotencyKey = /^[A-Za-z0-9-]{8,100}$/.test(typedKey) ? typedKey : randomUUID();
+  if (toShiftId === null || !choices.options.some((option) => option.id === toShiftId)) {
+    return renderSwapRequest(req, res, choices, {
+      statusCode: 400,
+      message,
+      idempotencyKey,
+      error: res.locals.t('govuk_alpha.vol_depth.swap_choose_required')
+    });
+  }
+
+  try {
+    await callApi(token, 'POST', '/swaps', {
+      from_shift_id: shiftId,
+      to_shift_id: toShiftId,
+      message,
+      idempotency_key: idempotencyKey
+    });
+    return redirectTo(res, '/volunteering/swaps?status=swap-requested');
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    const code = apiErrorCode(error);
+    if (code === 'SAFEGUARDING_POLICY_UNAVAILABLE') {
+      return redirectTo(res, '/volunteering/swaps?status=swap-safeguarding-unavailable');
+    }
+    if (['SAFEGUARDING_CONTACT_RESTRICTED', 'VETTING_REQUIRED'].includes(code)) {
+      return redirectTo(res, '/volunteering/swaps?status=swap-safeguarding-restricted');
+    }
+    return renderSwapRequest(req, res, choices, {
+      statusCode: 400,
+      selected: String(toShiftId),
+      message,
+      idempotencyKey,
+      failure: res.locals.t('govuk_alpha.vol_depth.swap_request_failed')
+    });
+  }
+}, { redirectOn401: loginRedirect() }));
 
 router.post('/swaps/:id(\\d+)/respond', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);

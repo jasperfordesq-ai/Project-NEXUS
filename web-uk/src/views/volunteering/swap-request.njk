@@ -1,0 +1,98 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Ask to swap one of your shifts (routes/volunteering-actions.js, gap B3). The member
+  picks the shift they would rather do from the same opportunity's upcoming shifts that
+  have someone on them. Never a person: whoever holds the chosen shift is asked, and is
+  named to the requester only once they agree.
+#}
+{% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set D = "vol_depth." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/swaps') }}">{{ t(D ~ "swap_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#to_shift_id{% if options.length %}-{{ options[0].id }}{% endif %}">{{ error }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% elif failure %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ failure }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ own.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t(D ~ "swap_new_title") }}</h1>
+
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(D ~ "swap_your_shift") }}</dt>
+          <dd class="govuk-summary-list__value">{{ own.whenLabel }}</dd>
+        </div>
+      </dl>
+
+      {% if not options.length %}
+        <div class="govuk-inset-text" data-testid="swap-no-options">{{ t(D ~ "swap_none_available") }}</div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/volunteering/swaps') }}">{{ t(D ~ "swap_back") }}</a></p>
+      {% else %}
+        <form method="post" action="{{ urlFor('/volunteering/swaps/new/' ~ own.id) }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+
+          <div class="govuk-form-group{% if error %} govuk-form-group--error{% endif %}">
+            <fieldset class="govuk-fieldset" aria-describedby="to_shift_id-hint{% if error %} to_shift_id-error{% endif %}">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t(D ~ "swap_choose_legend") }}</h2>
+              </legend>
+              <div id="to_shift_id-hint" class="govuk-hint">{{ t(D ~ "swap_new_body") }}</div>
+              {% if error %}
+                <p id="to_shift_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ error }}</p>
+              {% endif %}
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for option in options %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="to_shift_id-{{ option.id }}" name="to_shift_id" type="radio" value="{{ option.id }}"{% if (option.id | string) == selected %} checked{% endif %}>
+                    <label class="govuk-label govuk-radios__label" for="to_shift_id-{{ option.id }}">{{ option.label }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          {% call characterCount(500, characterCountMessages, "message") %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="message">{{ t(D ~ "swap_message_label") }}</label>
+            <div id="message-hint" class="govuk-hint">{{ t(D ~ "swap_message_hint") }}</div>
+            <textarea class="govuk-textarea govuk-js-character-count" id="message" name="message" rows="3" aria-describedby="message-hint message-info" maxlength="500">{{ message }}</textarea>
+          </div>
+          {% endcall %}
+
+          <div class="govuk-button-group">
+            <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(D ~ "swap_request_submit") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/volunteering/swaps') }}">{{ t("actions.cancel") }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

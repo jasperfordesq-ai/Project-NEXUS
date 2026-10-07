@@ -38037,14 +38037,26 @@ describe('shared accessible frontend shell', () => {
         data: {
           items: [
             {
-              id: 701,
-              opportunity_title: 'Food bank reception',
-              start_time: '2026-07-30T09:00:00Z'
+              id: 702,
+              opportunity_id: 41,
+              opportunity_title: 'Community garden lock-up',
+              start_time: '2099-08-01 17:00:00',
+              end_time: '2099-08-01 18:00:00'
             },
             {
-              id: 702,
-              opportunity_title: 'Community garden lock-up',
-              start_time: '2026-08-01T17:00:00Z'
+              id: 701,
+              opportunity_id: 40,
+              opportunity_title: 'Food bank reception',
+              start_time: '2099-07-30 09:00:00',
+              end_time: '2099-07-30 12:00:00'
+            },
+            {
+              // Already happened: nothing to swap, so it is not offered.
+              id: 700,
+              opportunity_id: 40,
+              opportunity_title: 'Food bank reception',
+              start_time: '2020-07-30 09:00:00',
+              end_time: '2020-07-30 12:00:00'
             }
           ],
           cursor: null,
@@ -38082,16 +38094,20 @@ describe('shared accessible frontend shell', () => {
 
     expect(swapsResponse.status).toBe(200);
     expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/swaps');
-    expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/shifts?limit=50');
+    expect(api.callVolunteeringApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/shifts?per_page=50');
     expect(swapsResponse.text).toContain('Your swap request has been sent.');
     expect(swapsResponse.text).toContain('Shift swaps');
     expect(swapsResponse.text).toContain('Ask another volunteer to swap one of your shifts');
     expect(swapsResponse.text).toContain('Request a shift swap');
-    expect(swapsResponse.text).toContain('id="from_shift_id" name="from_shift_id"');
-    expect(swapsResponse.text).toContain('<option value="701">Food bank reception');
-    expect(swapsResponse.text).toContain('id="to_shift_id" name="to_shift_id"');
-    expect(swapsResponse.text).toContain('id="to_user_id" name="to_user_id"');
-    expect(swapsResponse.text).toContain('method="post" action="/volunteering/swaps"');
+    // Gap B3: the shift-number / member-number form is gone. Each upcoming shift of
+    // the member's own, soonest first, links to the page that asks for a swap.
+    expect(swapsResponse.text).not.toContain('name="to_user_id"');
+    expect(swapsResponse.text).not.toContain('method="post" action="/volunteering/swaps"');
+    expect(swapsResponse.text).toContain('href="/volunteering/swaps/new/701"');
+    expect(swapsResponse.text).toContain('href="/volunteering/swaps/new/702"');
+    expect(swapsResponse.text).not.toContain('href="/volunteering/swaps/new/700"');
+    expect(swapsResponse.text.indexOf('/swaps/new/701')).toBeLessThan(swapsResponse.text.indexOf('/swaps/new/702'));
+    expect(swapsResponse.text).toContain('Ask to swap');
     expect(swapsResponse.text).toContain('Received');
     expect(swapsResponse.text).toContain('Pending');
     expect(swapsResponse.text).toContain('From Riley Driver');

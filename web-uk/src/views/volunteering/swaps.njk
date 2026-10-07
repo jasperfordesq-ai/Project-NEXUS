@@ -4,7 +4,6 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
-{% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -37,41 +36,26 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_depth.swaps_title") }}</h1>
   <p class="govuk-body-l">{{ t("vol_depth.swaps_description") }}</p>
 
+  {# Gap B3 (7 Oct 2026): this used to be a form asking for a "shift number" and a
+     "member number", neither of which is shown anywhere on this site. A member now
+     picks one of their own upcoming shifts here, and the shift they would rather do on
+     the next page; they never choose or see a person. #}
   <h2 class="govuk-heading-l">{{ t("vol_depth.swap_request_title") }}</h2>
   {% if not myShifts.length %}
     <div class="govuk-inset-text">{{ t("vol_depth.swap_no_shifts") }}</div>
   {% else %}
-    <form method="post" action="{{ urlFor('/volunteering/swaps') }}" class="govuk-!-margin-bottom-8">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="from_shift_id">{{ t("vol_depth.swap_from_shift_label") }}</label>
-        <div id="from_shift_id-hint" class="govuk-hint">{{ t("vol_depth.swap_from_shift_hint") }}</div>
-        <select class="govuk-select" id="from_shift_id" name="from_shift_id" aria-describedby="from_shift_id-hint" required>
-          <option value="">{{ t("vol_depth.swap_select_shift") }}</option>
-          {% for shift in myShifts %}
-            <option value="{{ shift.id }}">{{ shift.label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="to_shift_id">{{ t("vol_depth.swap_to_shift_label") }}</label>
-        <div id="to_shift_id-hint" class="govuk-hint">{{ t("vol_depth.swap_to_shift_hint") }}</div>
-        <input class="govuk-input govuk-input--width-10" id="to_shift_id" name="to_shift_id" type="text" inputmode="numeric" pattern="[0-9]*" aria-describedby="to_shift_id-hint" required>
-      </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="to_user_id">{{ t("vol_depth.swap_to_user_label") }}</label>
-        <div id="to_user_id-hint" class="govuk-hint">{{ t("vol_depth.swap_to_user_hint") }}</div>
-        <input class="govuk-input govuk-input--width-10" id="to_user_id" name="to_user_id" type="text" inputmode="numeric" pattern="[0-9]*" aria-describedby="to_user_id-hint" required>
-      </div>
-      {% call characterCount(500, characterCountMessages, "message") %}
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="message">{{ t("vol_depth.swap_message_label") }}</label>
-        <div id="message-hint" class="govuk-hint">{{ t("vol_depth.swap_message_hint") }}</div>
-        <textarea class="govuk-textarea govuk-js-character-count" id="message" name="message" rows="3" aria-describedby="message-hint message-info" maxlength="500"></textarea>
-      </div>
-      {% endcall %}
-      <button class="govuk-button" data-module="govuk-button">{{ t("vol_depth.swap_request_submit") }}</button>
-    </form>
+    <p class="govuk-body">{{ t("vol_depth.swap_pick_own") }}</p>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-8" data-testid="swap-own-shifts">
+      {% for shift in myShifts %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ shift.title }}</dt>
+          <dd class="govuk-summary-list__value">{{ shift.whenLabel }}</dd>
+          <dd class="govuk-summary-list__actions">
+            <a class="govuk-link" href="{{ urlFor('/volunteering/swaps/new/' ~ shift.id) }}">{{ t("vol_depth.swap_ask_link") }}<span class="govuk-visually-hidden">: {{ shift.title }}, {{ shift.whenLabel }}</span></a>
+          </dd>
+        </div>
+      {% endfor %}
+    </dl>
   {% endif %}
 
   <h2 class="govuk-heading-l">{{ t("vol_depth.swaps_list_title") }}</h2>
@@ -96,29 +80,32 @@
           </p>
           {% if swap.direction == "sent" and swap.recipientName %}
             <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("vol_depth.swap_to", { name: swap.recipientName }) }}</p>
+          {% elif swap.direction == "sent" %}
+            {# The API names the other volunteer only once they agree (ShiftSwapService). #}
+            <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("vol_depth.swap_to_unnamed") }}</p>
           {% elif swap.direction == "received" and swap.requesterName %}
             <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("vol_depth.swap_from", { name: swap.requesterName }) }}</p>
           {% endif %}
 
           <div class="govuk-grid-row">
             <div class="govuk-grid-column-one-half">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth.swap_original_shift") }}</h3>
-              <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.originalShift.title }}</p>
-              {% if swap.originalShift.organizationName %}
-                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.originalShift.organizationName }}</p>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth.swap_your_shift") }}</h3>
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.ownShift.title }}</p>
+              {% if swap.ownShift.organizationName %}
+                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.ownShift.organizationName }}</p>
               {% endif %}
-              {% if swap.originalShift.startLabel %}
-                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ swap.originalShift.startLabel }}</p>
+              {% if swap.ownShift.startLabel %}
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ swap.ownShift.startLabel }}</p>
               {% endif %}
             </div>
             <div class="govuk-grid-column-one-half">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth.swap_proposed_shift") }}</h3>
-              <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.proposedShift.title }}</p>
-              {% if swap.proposedShift.organizationName %}
-                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.proposedShift.organizationName }}</p>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth." ~ ("swap_original_shift" if swap.direction == "received" else "swap_proposed_shift")) }}</h3>
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.otherShift.title }}</p>
+              {% if swap.otherShift.organizationName %}
+                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.otherShift.organizationName }}</p>
               {% endif %}
-              {% if swap.proposedShift.startLabel %}
-                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ swap.proposedShift.startLabel }}</p>
+              {% if swap.otherShift.startLabel %}
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ swap.otherShift.startLabel }}</p>
               {% endif %}
             </div>
           </div>

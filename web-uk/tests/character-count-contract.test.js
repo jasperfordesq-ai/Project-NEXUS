@@ -143,7 +143,7 @@ describe('the converted fields', () => {
     // bites a member writing a note they cannot see the end of. Ids taken from the
     // real textareas (some are loop/record-scoped, e.g. reason_{{ action.id }}).
     ['saved-social/appreciations.njk', 'appreciation-message'],
-    ['volunteering/swaps.njk', 'message'],
+    ['volunteering/swap-request.njk', 'message'],
     ['volunteering/wellbeing.njk', 'note'],
     ['listings/report.njk', 'details'],
     ['onboarding/index.njk', 'bio'],
