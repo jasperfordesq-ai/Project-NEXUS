@@ -95,6 +95,7 @@ import type { VolunteeringConfig } from '@/types';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import { extractCollectionItems } from './extractCollectionItems';
 import { ShiftSwapRequestModal, type SwapSourceShift } from './ShiftSwapRequestModal';
+import { MyHoursAndShiftsLists } from './MyHoursAndShiftsLists';
 const VolunteeringWelcome = React.lazy(() => import('./VolunteeringWelcome'));
 const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
@@ -1913,6 +1914,8 @@ function HoursTab({ onNavigateTab, canOpenApplications }: {
                 </GlassCard>
               )}
 
+              {/* Gap C10: each logged entry with its status, and the shifts held. */}
+              <MyHoursAndShiftsLists showHours={totalHours > 0} />
               {totalHours === 0 && (
                 <EmptyState
                   icon={<Timer className="w-12 h-12" aria-hidden="true" />}
