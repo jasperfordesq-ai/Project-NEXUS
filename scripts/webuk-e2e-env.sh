@@ -89,12 +89,17 @@ clear_redis_state() {
   # endpoint (3 attempts per hour) was still exhausted from the previous run and the journey
   # reported a working feature as broken. Cache, sessions and throttle keys must go too.
   #
-  # Scoped to this environment's own prefix, so the ordinary local stack is untouched.
-  echo "==> clearing Redis state for prefix webuk_e2e_"
+  # This environment has its own Redis database (REDIS_DB=1 in compose.webuk-e2e.yml,
+  # 7 Oct 2026), so emptying database 1 clears its rate limits, cache, sessions AND
+  # queued jobs, and leaves the ordinary local stack (database 0) untouched. The older
+  # prefix scan below still runs once, for keys written to database 0 before that
+  # change; it never matched the queue, which has no prefix.
+  echo "==> clearing Redis state (database 1, plus old webuk_e2e_* keys in database 0)"
   local n
-  n=$(docker exec nexus-php-redis sh -lc "redis-cli --scan --pattern 'webuk_e2e_*' | wc -l" 2>/dev/null | tr -d '[:space:]')
+  n=$(docker exec nexus-php-redis redis-cli -n 1 dbsize 2>/dev/null | tr -d '[:space:]')
+  docker exec nexus-php-redis redis-cli -n 1 flushdb >/dev/null 2>&1
   docker exec nexus-php-redis sh -lc "redis-cli --scan --pattern 'webuk_e2e_*' | xargs -r redis-cli del >/dev/null" 2>/dev/null
-  echo "    ${n:-0} key(s) removed (rate limits, cache, sessions)"
+  echo "    ${n:-0} key(s) removed from database 1 (rate limits, cache, sessions, queue)"
 }
 
 drop_all_tables() {

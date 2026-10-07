@@ -95,6 +95,14 @@ services:
       # not clear it — so a working feature reported as broken on the next run.
       - CACHE_PREFIX=webuk_e2e_
       - REDIS_PREFIX=webuk_e2e_
+      # 🔴 The QUEUE was still shared after the line above (found 7 Oct 2026): the
+      # redis queue has no prefix, so this environment's jobs and the ordinary local
+      # stack's jobs sat on one `queues:default` list, and a `queue:work` started in
+      # either ran the other's jobs against the wrong database (about 190 were
+      # waiting there, mixed). A separate Redis database isolates the queue, cache,
+      # sessions and rate limits outright. There is only the one `default` redis
+      # connection in config/database.php, so this covers everything that uses Redis.
+      - REDIS_DB=1
       # 🔴 Deliberately NOT `testing`. `APP_ENV=testing` makes Laravel load the repo's
       # `.env.testing`, which points DB_DATABASE at `nexus_test` — PHPUnit's database.
       # Real process environment variables beat dotenv values, so the explicit
