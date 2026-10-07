@@ -265,7 +265,170 @@ class HtmlSanitizer
         $html = (string) preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
         $html = strip_tags($html, '<' . implode('><', $tags) . '>');
 
-        return self::sanitizeAttributes($html, false, false);
+        return self::disarmMemberLinks(self::sanitizeAttributes($html, false, false));
+    }
+
+    /**
+     * A member's own words are never the clickable part of a link — enforced ON SAVE.
+     *
+     * F-569 (E-093), mirroring the web client's rule (F-562, sanitize.ts
+     * disarmMemberLinks): every anchor is unwrapped — its words (and any formatting)
+     * stay as ordinary content — and is followed by ONE link whose href and visible
+     * text are both the destination in canonical form: scheme, punycode host, port,
+     * path, query and fragment, with any user-info removed, so
+     * `https://app.project-nexus.ie@evil.example/` is stored as `https://evil.example`.
+     * `mailto:` shows the mailbox alone. A link whose text already is its destination is
+     * left as it was. A link whose href was refused becomes plain words.
+     *
+     * Doing this on save as well as on display means the stored post — and every API
+     * response that returns it — never carries a link whose visible text the member chose.
+     */
+    private static function disarmMemberLinks(string $html): string
+    {
+        if (stripos($html, '<a') === false) {
+            return $html;
+        }
+
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom->loadHTML(
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' . $html . '</body></html>',
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+        );
+        libxml_clear_errors();
+
+        $body = $dom->getElementsByTagName('body')->item(0);
+        if (!$body) {
+            return htmlspecialchars(strip_tags($html), ENT_QUOTES, 'UTF-8');
+        }
+
+        // Copy first: the node list is live and we replace nodes while walking it.
+        $anchors = [];
+        foreach ($dom->getElementsByTagName('a') as $anchor) {
+            $anchors[] = $anchor;
+        }
+
+        foreach ($anchors as $anchor) {
+            $parent = $anchor->parentNode;
+            if ($parent === null) {
+                continue;
+            }
+
+            $destination = self::canonicalLinkDestination($anchor->getAttribute('href'));
+            $hasElementChild = false;
+            foreach ($anchor->childNodes as $child) {
+                if ($child instanceof \DOMElement) {
+                    $hasElementChild = true;
+                    break;
+                }
+            }
+            if ($destination !== '' && !$hasElementChild && self::linkTextIsDestination($anchor->textContent, $destination)) {
+                continue;
+            }
+
+            $fragment = $dom->createDocumentFragment();
+            while ($anchor->firstChild) {
+                $fragment->appendChild($anchor->firstChild);
+            }
+
+            if ($destination !== '') {
+                if ($fragment->childNodes->length > 0) {
+                    $fragment->appendChild($dom->createTextNode(' '));
+                }
+                $link = $dom->createElement('a');
+                $link->setAttribute('href', $destination);
+                $link->setAttribute('rel', 'noopener noreferrer');
+                $link->appendChild($dom->createTextNode(
+                    str_starts_with($destination, 'mailto:') ? substr($destination, 7) : $destination
+                ));
+                $fragment->appendChild($link);
+            }
+
+            if ($fragment->childNodes->length === 0) {
+                $parent->removeChild($anchor);
+            } else {
+                $parent->replaceChild($fragment, $anchor);
+            }
+        }
+
+        $result = '';
+        foreach ($body->childNodes as $child) {
+            $result .= $dom->saveHTML($child);
+        }
+
+        return $result;
+    }
+
+    /**
+     * The destination a reader is shown and sent to, in one canonical spelling — or
+     * '' when the address is unusable (empty, not http/https/mailto, or unparseable).
+     * Relative addresses are kept as written.
+     */
+    private static function canonicalLinkDestination(string $href): string
+    {
+        $raw = trim($href);
+        if ($raw === '') {
+            return '';
+        }
+
+        if (preg_match('/^mailto:/i', $raw)) {
+            $mailbox = trim(explode('?', substr($raw, 7), 2)[0]);
+
+            return $mailbox !== '' ? 'mailto:' . $mailbox : '';
+        }
+
+        $isRelative = !preg_match('/^[a-z][a-z0-9+.-]*:/i', $raw) && !str_starts_with($raw, '//');
+        if ($isRelative) {
+            return $raw;
+        }
+
+        $parts = parse_url(str_starts_with($raw, '//') ? 'https:' . $raw : $raw);
+        if ($parts === false || empty($parts['host'])) {
+            return '';
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if ($scheme !== 'http' && $scheme !== 'https') {
+            return '';
+        }
+
+        // libxml percent-encodes non-ASCII in href when the markup is re-serialised, so a
+        // look-alike host arrives as "%d0%b0pp.example": decode before converting.
+        $host = mb_strtolower(rawurldecode((string) $parts['host']), 'UTF-8');
+        if (function_exists('idn_to_ascii')) {
+            $ascii = idn_to_ascii($host, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+            if (is_string($ascii) && $ascii !== '') {
+                $host = $ascii;
+            }
+        }
+
+        $port = '';
+        if (isset($parts['port'])) {
+            $isDefault = ($scheme === 'http' && (int) $parts['port'] === 80)
+                || ($scheme === 'https' && (int) $parts['port'] === 443);
+            $port = $isDefault ? '' : ':' . (int) $parts['port'];
+        }
+
+        $path = (string) ($parts['path'] ?? '')
+            . (isset($parts['query']) ? '?' . $parts['query'] : '')
+            . (isset($parts['fragment']) ? '#' . $parts['fragment'] : '');
+
+        return $scheme . '://' . $host . $port . ($path === '/' ? '' : $path);
+    }
+
+    /** True when the link's visible text already is its destination. */
+    private static function linkTextIsDestination(string $label, string $destination): bool
+    {
+        $normalise = static fn (string $value): string => rtrim(strtolower(trim($value)), '/');
+        $shown = $normalise($label);
+        if ($shown === '') {
+            return false;
+        }
+        $target = $normalise($destination);
+
+        return $shown === $target
+            || $shown === (string) preg_replace('#^https?://#', '', $target)
+            || $shown === (string) preg_replace('/^mailto:/', '', $target);
     }
 
     /**

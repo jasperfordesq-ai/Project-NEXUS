@@ -294,7 +294,8 @@ class HtmlSanitizerTest extends TestCase
         }
         $this->assertStringContainsString('<p><strong>Bold</strong> <em>it</em> <u>u</u></p>', $out);
         $this->assertStringContainsString('<ul><li>One</li></ul>', $out);
-        $this->assertStringContainsString('href="https://example.org/"', $out);
+        // The member's link words ("Site") are kept as text; the link is the address itself.
+        $this->assertStringContainsString('<a href="https://example.org" rel="noopener noreferrer">https://example.org</a>', $out);
         $this->assertStringContainsString('Session expired', $out, 'The words of a removed tag are kept.');
         $this->assertStringContainsString('User', $out);
     }
@@ -326,5 +327,96 @@ class HtmlSanitizerTest extends TestCase
         $this->assertStringNotContainsString('<script', $out);
         $this->assertStringNotContainsString('alert(2)', $out);
         $this->assertStringContainsString('Hi', $out);
+    }
+
+    // -------------------------------------------------------
+    // sanitizeMemberPost() — custom link text is disarmed ON SAVE (F-569, E-093).
+    // Same rule as the web client: a member's words are never the clickable part;
+    // the only link left is the destination written out in full.
+    // -------------------------------------------------------
+
+    /** @return list<array{href: string, text: string}> */
+    private static function anchorsOf(string $html): array
+    {
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        libxml_use_internal_errors(true);
+        $dom->loadHTML('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' . $html . '</body></html>');
+        libxml_clear_errors();
+        $out = [];
+        foreach ($dom->getElementsByTagName('a') as $a) {
+            $out[] = ['href' => $a->getAttribute('href'), 'text' => trim($a->textContent)];
+        }
+
+        return $out;
+    }
+
+    public function test_sanitizeMemberPost_stores_cypheres_link_as_words_and_an_address_only_link(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<a href="https://google.com">Click here to re-authenticate</a>');
+
+        $this->assertSame([['href' => 'https://google.com', 'text' => 'https://google.com']], self::anchorsOf($out));
+        $this->assertStringContainsString('Click here to re-authenticate', strip_tags($out));
+        $this->assertDoesNotMatchRegularExpression('/<a [^>]*>[^<]*Click here/', $out);
+    }
+
+    public function test_sanitizeMemberPost_leaves_a_link_whose_text_already_is_its_address(): void
+    {
+        $this->assertSame(
+            [['href' => 'https://example.org/page', 'text' => 'example.org/page']],
+            self::anchorsOf(HtmlSanitizer::sanitizeMemberPost('<a href="https://example.org/page">example.org/page</a>'))
+        );
+    }
+
+    public function test_sanitizeMemberPost_strips_a_fake_user_prefix_from_the_address(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<a href="https://app.project-nexus.ie@evil.example/">app.project-nexus.ie</a>');
+
+        $this->assertSame([['href' => 'https://evil.example', 'text' => 'https://evil.example']], self::anchorsOf($out));
+        $this->assertStringNotContainsString('app.project-nexus.ie@', $out);
+    }
+
+    public function test_sanitizeMemberPost_shows_a_look_alike_domain_in_punycode(): void
+    {
+        $links = self::anchorsOf(HtmlSanitizer::sanitizeMemberPost('<a href="https://аpp.example/">app.example</a>'));
+
+        $this->assertCount(1, $links);
+        $this->assertMatchesRegularExpression('#^https://xn--[a-z0-9-]+\.example$#', $links[0]['text']);
+        $this->assertSame($links[0]['text'], $links[0]['href']);
+    }
+
+    public function test_sanitizeMemberPost_keeps_formatting_inside_a_link_outside_it(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<a href="https://evil.example/"><strong>Sign in</strong></a>');
+
+        $this->assertStringContainsString('<strong>Sign in</strong>', $out);
+        $this->assertDoesNotMatchRegularExpression('/<a [^>]*>\s*<strong>/', $out);
+        $this->assertSame([['href' => 'https://evil.example', 'text' => 'https://evil.example']], self::anchorsOf($out));
+    }
+
+    public function test_sanitizeMemberPost_shows_the_mailbox_for_a_mailto_link(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<a href="mailto:scam@evil.example?subject=Reset">Contact support</a>');
+
+        $this->assertSame([['href' => 'mailto:scam@evil.example', 'text' => 'scam@evil.example']], self::anchorsOf($out));
+        $this->assertStringContainsString('Contact support', strip_tags($out));
+    }
+
+    public function test_sanitizeMemberPost_turns_a_refused_link_into_plain_words(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<p><a href="javascript:alert(1)">Click here</a></p>');
+
+        $this->assertSame([], self::anchorsOf($out));
+        $this->assertSame('Click here', strip_tags($out));
+    }
+
+    public function test_sanitizeMemberPost_disarms_every_link_in_a_post(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<p><a href="https://a.example/">one</a> and <a href="https://b.example/x">two</a></p>');
+
+        $this->assertSame([
+            ['href' => 'https://a.example', 'text' => 'https://a.example'],
+            ['href' => 'https://b.example/x', 'text' => 'https://b.example/x'],
+        ], self::anchorsOf($out));
+        $this->assertSame('one https://a.example and two https://b.example/x', strip_tags($out));
     }
 }

@@ -543,4 +543,27 @@ final class GroupDiscussionControllerTest extends TestCase
         self::assertStringContainsString('Reply head', $storedReply);
         self::assertStringContainsString('<p>ok</p>', $storedReply);
     }
+
+    /** F-569 (E-093): discussion link words are disarmed on save as well. */
+    public function test_discussion_stores_a_members_link_words_as_plain_text(): void
+    {
+        $this->authenticate($this->member);
+        $created = $this->apiPost("/v2/groups/{$this->activeGroupId}/discussions", [
+            'title' => 'Link words',
+            'content' => '<p><a href="https://google.com">Click here to re-authenticate</a></p>',
+        ])->assertCreated();
+
+        $root = (string) $created->json('data.content');
+        self::assertDoesNotMatchRegularExpression('/<a [^>]*>[^<]*Click here/', $root);
+        self::assertStringContainsString('Click here to re-authenticate', strip_tags($root));
+        self::assertMatchesRegularExpression('#<a [^>]*href="https://google.com"[^>]*>https://google.com</a>#', $root);
+
+        $reply = $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/discussions/" . (int) $created->json('data.id') . '/messages',
+            ['content' => '<a href="https://evil.example/login">Sign in again</a>'],
+        )->assertCreated();
+        $storedReply = (string) $reply->json('data.content');
+        self::assertDoesNotMatchRegularExpression('/<a [^>]*>[^<]*Sign in again/', $storedReply);
+        self::assertStringContainsString('Sign in again', strip_tags($storedReply));
+    }
 }

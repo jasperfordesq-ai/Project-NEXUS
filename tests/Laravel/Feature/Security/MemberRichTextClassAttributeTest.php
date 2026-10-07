@@ -100,4 +100,32 @@ class MemberRichTextClassAttributeTest extends TestCase
         $this->assertStringContainsString('Your session has expired', $stored);
         $this->assertStringContainsString('Username', $stored);
     }
+
+    /**
+     * F-569 (E-093): a member's link words are disarmed ON SAVE, not only when shown,
+     * so the stored post (and every API response) never carries a link whose visible
+     * text the member chose. Cyphere's payload, sent straight to the API.
+     */
+    public function test_feed_post_stores_a_members_link_words_as_plain_text(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+
+        $response = $this->apiPost('/v2/feed/posts', [
+            'content' => '<p><a href="https://google.com">Click here to re-authenticate</a></p>',
+            'visibility' => 'public',
+        ]);
+        $response->assertStatus(201);
+
+        // This text is caught by the spam check: the post is saved for review and the
+        // response carries no post, so find it by its author.
+        $stored = (string) DB::table('feed_posts')->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $user->id)->orderByDesc('id')->value('content');
+        $this->assertDoesNotMatchRegularExpression('/<a [^>]*>[^<]*Click here/', $stored);
+        $this->assertStringContainsString('Click here to re-authenticate', strip_tags($stored));
+        $this->assertMatchesRegularExpression('#<a [^>]*href="https://google.com"[^>]*>https://google.com</a>#', $stored);
+    }
 }
