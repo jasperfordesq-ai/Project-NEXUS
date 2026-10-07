@@ -1245,6 +1245,8 @@
       "type": "Qualifica",
       "type_placeholder": "Scegli una qualifica",
       "expiry_hint": "Di solito valida {{years}} anni",
+      "expiry_hint_one": "Di solito valida {{count}} anno",
+      "expiry_hint_other": "Di solito valida {{count}} anni",
       "title": "Nome o corso (facoltativo)",
       "title_required": "Nome",
       "issuer": "Ente o fornitore (facoltativo)",

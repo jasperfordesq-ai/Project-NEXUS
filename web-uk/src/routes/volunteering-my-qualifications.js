@@ -203,7 +203,10 @@ function renderForm(res, { editing, form, types, errors = [], status = 200 }) {
     .map((type) => ({
       code: type.code,
       label: typeLabel(t, type.code, ''),
-      hint: type.years ? t(`${KEY}form.expiry_hint`, { years: type.years }) : ''
+      // "Usually valid for 1 year" / "3 years": a choice string, one form per number.
+      hint: type.years
+        ? (typeof res.locals.tc === 'function' ? res.locals.tc(`${KEY}form.expiry_hint`, type.years, { years: type.years }) : t(`${KEY}form.expiry_hint`, { years: type.years }))
+        : ''
     }));
   return res.status(status).render('volunteering/my-qualification-form', {
     title: editing ? t(`${KEY}form.title_edit`) : t(`${KEY}form.title_add`),

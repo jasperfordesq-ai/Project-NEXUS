@@ -1245,6 +1245,8 @@
       "type": "Cualificación",
       "type_placeholder": "Elige una cualificación",
       "expiry_hint": "Suele ser válida {{years}} años",
+      "expiry_hint_one": "Suele ser válida {{count}} año",
+      "expiry_hint_other": "Suele ser válida {{count}} años",
       "title": "Nombre o curso (opcional)",
       "title_required": "Nombre",
       "issuer": "Entidad o proveedor (opcional)",

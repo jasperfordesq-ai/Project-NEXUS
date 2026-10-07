@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Editar qualificação',
             'type' => 'Qualificação',
             'type_placeholder' => 'Escolha uma qualificação',
-            'expiry_hint' => 'Normalmente válida por :years anos',
+            'expiry_hint' => '{1} Normalmente válida por :count ano|[2,*] Normalmente válida por :count anos',
             'title' => 'Nome ou curso (opcional)',
             'title_required' => 'Nome',
             'issuer' => 'Entidade ou fornecedor (opcional)',

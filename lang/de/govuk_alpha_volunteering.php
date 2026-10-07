@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Qualifikation bearbeiten',
             'type' => 'Qualifikation',
             'type_placeholder' => 'Qualifikation wählen',
-            'expiry_hint' => 'In der Regel :years Jahre gültig',
+            'expiry_hint' => '{1} In der Regel :count Jahr gültig|[2,*] In der Regel :count Jahre gültig',
             'title' => 'Name oder Kurs (optional)',
             'title_required' => 'Name',
             'issuer' => 'Ausstellende Stelle oder Anbieter (optional)',

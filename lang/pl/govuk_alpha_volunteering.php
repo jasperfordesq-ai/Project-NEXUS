@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Edytuj kwalifikację',
             'type' => 'Kwalifikacja',
             'type_placeholder' => 'Wybierz kwalifikację',
-            'expiry_hint' => 'Zwykle ważna :years lat(a)',
+            'expiry_hint' => '{1} Zwykle ważna :count rok|[2,4] Zwykle ważna :count lata|[5,*] Zwykle ważna :count lat',
             'title' => 'Nazwa lub kurs (opcjonalnie)',
             'title_required' => 'Nazwa',
             'issuer' => 'Wystawca lub organizator (opcjonalnie)',

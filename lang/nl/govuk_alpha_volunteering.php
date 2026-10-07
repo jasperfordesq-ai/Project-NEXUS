@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Kwalificatie bewerken',
             'type' => 'Kwalificatie',
             'type_placeholder' => 'Kies een kwalificatie',
-            'expiry_hint' => 'Meestal :years jaar geldig',
+            'expiry_hint' => 'Meestal :count jaar geldig',
             'title' => 'Naam of cursus (optioneel)',
             'title_required' => 'Naam',
             'issuer' => 'Uitgevende instantie of aanbieder (optioneel)',

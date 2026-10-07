@@ -11597,7 +11597,7 @@
                     "title_edit": "資格を編集",
                     "type": "資格",
                     "type_placeholder": "資格を選択",
-                    "expiry_hint": "通常 :years 年間有効",
+                    "expiry_hint": "通常 :count 年間有効",
                     "title": "名称またはコース（任意）",
                     "title_required": "名称",
                     "issuer": "発行元または提供者（任意）",

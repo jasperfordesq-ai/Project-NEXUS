@@ -1230,6 +1230,8 @@
       "type": "Qualifikation",
       "type_placeholder": "Qualifikation wählen",
       "expiry_hint": "In der Regel {{years}} Jahre gültig",
+      "expiry_hint_one": "In der Regel {{count}} Jahr gültig",
+      "expiry_hint_other": "In der Regel {{count}} Jahre gültig",
       "title": "Name oder Kurs (optional)",
       "title_required": "Name",
       "issuer": "Ausstellende Stelle oder Anbieter (optional)",

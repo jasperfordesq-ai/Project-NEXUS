@@ -1244,7 +1244,7 @@ return [
             'title_edit' => 'Edit qualification',
             'type' => 'Qualification',
             'type_placeholder' => 'Choose a qualification',
-            'expiry_hint' => 'Usually valid for :years years',
+            'expiry_hint' => '{1} Usually valid for :count year|[2,*] Usually valid for :count years',
             'title' => 'Name or course (optional)',
             'title_required' => 'Name',
             'issuer' => 'Issuer or provider (optional)',

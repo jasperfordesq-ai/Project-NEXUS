@@ -1230,6 +1230,8 @@
       "type": "Qualification",
       "type_placeholder": "Choose a qualification",
       "expiry_hint": "Usually valid for {{years}} years",
+      "expiry_hint_one": "Usually valid for {{count}} year",
+      "expiry_hint_other": "Usually valid for {{count}} years",
       "title": "Name or course (optional)",
       "title_required": "Name",
       "issuer": "Issuer or provider (optional)",

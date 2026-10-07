@@ -785,7 +785,7 @@ export function QualificationsTab() {
                   }}
                   description={
                     selectedType?.expiry_hint_years
-                      ? t('qualifications.form.expiry_hint', { years: selectedType.expiry_hint_years })
+                      ? t('qualifications.form.expiry_hint', { count: selectedType.expiry_hint_years, years: selectedType.expiry_hint_years })
                       : undefined
                   }
                 >

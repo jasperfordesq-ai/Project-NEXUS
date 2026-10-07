@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Editar cualificación',
             'type' => 'Cualificación',
             'type_placeholder' => 'Elige una cualificación',
-            'expiry_hint' => 'Suele ser válida :years años',
+            'expiry_hint' => '{1} Suele ser válida :count año|[2,*] Suele ser válida :count años',
             'title' => 'Nombre o curso (opcional)',
             'title_required' => 'Nombre',
             'issuer' => 'Entidad o proveedor (opcional)',

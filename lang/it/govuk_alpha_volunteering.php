@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Modifica qualifica',
             'type' => 'Qualifica',
             'type_placeholder' => 'Scegli una qualifica',
-            'expiry_hint' => 'Di solito valida :years anni',
+            'expiry_hint' => '{1} Di solito valida :count anno|[2,*] Di solito valida :count anni',
             'title' => 'Nome o corso (facoltativo)',
             'title_required' => 'Nome',
             'issuer' => 'Ente o fornitore (facoltativo)',

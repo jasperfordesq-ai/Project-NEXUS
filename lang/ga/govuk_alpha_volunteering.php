@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Cuir cáilíocht in eagar',
             'type' => 'Cáilíocht',
             'type_placeholder' => 'Roghnaigh cáilíocht',
-            'expiry_hint' => 'Bailí ar feadh :years bliana de ghnáth',
+            'expiry_hint' => '{1} Bailí ar feadh bliain amháin de ghnáth|{2} Bailí ar feadh :count bhliain de ghnáth|[3,6] Bailí ar feadh :count bliana de ghnáth|[7,10] Bailí ar feadh :count mbliana de ghnáth|[11,*] Bailí ar feadh :count bliain de ghnáth',
             'title' => 'Ainm nó cúrsa (roghnach)',
             'title_required' => 'Ainm',
             'issuer' => 'Eisitheoir nó soláthraí (roghnach)',

@@ -1201,7 +1201,7 @@ return [
             'title_edit' => 'Modifier la qualification',
             'type' => 'Type de qualification',
             'type_placeholder' => 'Choisir une qualification',
-            'expiry_hint' => 'Valable en général :years ans',
+            'expiry_hint' => '{1} Valable en général :count an|[2,*] Valable en général :count ans',
             'title' => 'Nom ou cours (facultatif)',
             'title_required' => 'Nom',
             'issuer' => 'Organisme ou prestataire (facultatif)',

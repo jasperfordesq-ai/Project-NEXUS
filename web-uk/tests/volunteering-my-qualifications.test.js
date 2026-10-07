@@ -24,6 +24,7 @@ jest.mock('../src/lib/api', () => ({
 
 const api = require('../src/lib/api');
 const router = require('../src/routes/volunteering-my-qualifications');
+const { createChoiceTranslator } = require('../src/lib/localization');
 
 const T = {
   'govuk_alpha_volunteering.my_qualifications.heading': 'Qualifications',
@@ -51,6 +52,7 @@ function makeApp() {
       for (const [name, value] of Object.entries(params)) text = text.replace(`:${name}`, value);
       return text;
     };
+    res.locals.tc = createChoiceTranslator('en');
     res.render = (view, locals) => res.json({ view, locals });
     next();
   });
@@ -65,7 +67,7 @@ const REGISTER = {
         obtained_at: '2025-01-10', expires_at: '2028-01-10', status: 'confirmed', is_expiring: false,
         confirmed_by: { id: 3, name: 'Org Admin' }, confirmed_at: '2025-02-01T00:00:00Z' }
     ],
-    types: [{ code: 'first_aid', expiry_hint_years: 3 }, { code: 'other', expiry_hint_years: null }],
+    types: [{ code: 'first_aid', expiry_hint_years: 3 }, { code: 'professional_registration', expiry_hint_years: 1 }, { code: 'other', expiry_hint_years: null }],
     counts: { confirmed: 1 }
   }
 };
@@ -97,7 +99,9 @@ describe('volunteer qualifications register (gap B15)', () => {
     const res = await request(makeApp()).get('/volunteering/qualifications/new');
 
     expect(res.body.view).toBe('volunteering/my-qualification-form');
-    expect(res.body.locals.options.map((o) => o.code)).toEqual(['first_aid', 'other']);
+    expect(res.body.locals.options.map((o) => o.code)).toEqual(['first_aid', 'professional_registration', 'other']);
+    // One year is singular (it read "Usually valid for 1 years").
+    expect(res.body.locals.options.map((o) => o.hint)).toEqual(['Usually valid for 3 years', 'Usually valid for 1 year', '']);
     expect(JSON.stringify(res.body.locals)).not.toMatch(/file|upload/i);
   });
 
