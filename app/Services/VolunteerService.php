@@ -335,75 +335,6 @@ class VolunteerService
     /**
      * Apply to a volunteer opportunity.
      */
-    /**
-     * Return the safeguarding error for this member, or null when participation
-     * is allowed. Unknown or invalid age fails closed while the gate is enabled.
-     *
-     * @return array{code:string,message:string,field?:string}|null
-     */
-    public static function guardianConsentError(int $userId, int $opportunityId): ?array
-    {
-        // Adults-only platform (owner decision 2026-09-25, E-035 F-160): there
-        // are no minors to gate — an under-18 account cannot sign in at all —
-        // so the volunteering guardian-consent gate never demands consent (or a
-        // date of birth). The setting behind it is pinned off in
-        // VolunteeringConfigurationService. The branches below are kept, not
-        // deleted, so the switch-off is a one-line revert if it is ever reversed.
-        if (! VolunteeringConfigurationService::get(VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED, false)) {
-            return null;
-        }
-
-        $classification = GuardianConsentService::classifyAge($userId);
-
-        if ($classification === GuardianConsentService::AGE_ADULT) {
-            return null;
-        }
-
-        if ($classification === GuardianConsentService::AGE_MINOR) {
-            return GuardianConsentService::checkConsent($userId, $opportunityId) ? null : [
-                'code' => 'GUARDIAN_CONSENT_REQUIRED',
-                'message' => __('api.guardian_consent_required'),
-            ];
-        }
-
-        if ($classification === GuardianConsentService::AGE_UNKNOWN) {
-            return [
-                'code' => 'VALIDATION_REQUIRED_FIELD',
-                'message' => __('api_controllers_2.identity.dob_required'),
-                'field' => 'date_of_birth',
-            ];
-        }
-
-        if ($classification === GuardianConsentService::AGE_INVALID) {
-            return [
-                'code' => 'VALIDATION_INVALID_FORMAT',
-                'message' => __('api_controllers_2.identity.dob_invalid'),
-                'field' => 'date_of_birth',
-            ];
-        }
-
-        return [
-            'code' => 'SERVER_ERROR',
-            'message' => __('api.server_error'),
-        ];
-    }
-
-    public static function guardianConsentErrorStatus(array $error): int
-    {
-        return match ($error['code'] ?? '') {
-            'GUARDIAN_CONSENT_REQUIRED' => 403,
-            'VALIDATION_REQUIRED_FIELD', 'VALIDATION_INVALID_FORMAT' => 422,
-            'SERVER_ERROR' => 500,
-            default => 403,
-        };
-    }
-
-    /** Whether the central guardian-consent safeguarding gate blocks participation. */
-    public static function guardianConsentBlocks(int $userId, int $opportunityId): bool
-    {
-        return self::guardianConsentError($userId, $opportunityId) !== null;
-    }
-
     public static function apply(int $opportunityId, int $userId, array $data = []): VolApplication
     {
         self::$errors = [];
@@ -421,16 +352,6 @@ class VolunteerService
 
         if (!$opportunity) {
             throw new \RuntimeException(__('api.volunteer_opportunity_not_active'), 404);
-        }
-
-        // Safeguarding: minors need an active guardian consent. Enforced in the
-        // service so the accessible frontend (which calls apply() directly) and
-        // any other caller cannot bypass the controller-level gate.
-        if ($guardianError = self::guardianConsentError($userId, $opportunityId)) {
-            throw new \RuntimeException(
-                $guardianError['message'],
-                self::guardianConsentErrorStatus($guardianError)
-            );
         }
 
         // Creators cannot apply to their own opportunity
@@ -1641,13 +1562,6 @@ class VolunteerService
                 $tenantId,
                 'volunteer_shift_signup',
             );
-        }
-
-        // Safeguarding re-check: a minor's guardian consent may have expired or
-        // been withdrawn between application approval and shift signup.
-        if ($guardianError = self::guardianConsentError($userId, $opportunityId)) {
-            self::$errors[] = $guardianError;
-            return false;
         }
 
         $app = DB::selectOne(

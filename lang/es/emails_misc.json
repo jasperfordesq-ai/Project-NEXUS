@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Tu oferta de empleo \"{{title}}\" fue revisada y no pudo ser aprobada. Motivo: {{reason}}. Puedes editarla y volver a enviarla para revisión.",
     "posting_not_approved_cta": "Editar oferta"
   },
-  "guardian": {
-    "consent_title": "Solicitud de consentimiento del tutor",
-    "consent_preview": "Un menor a tu cargo necesita tu consentimiento para participar en el voluntariado",
-    "consent_body": "Un menor a tu cargo ha solicitado tu consentimiento para participar en actividades de voluntariado en <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Se requiere tu consentimiento antes de que pueda participar. Revísalo y responde mediante el botón de abajo.",
-    "consent_expires_label": "en {{days}} días",
-    "consent_cta": "Otorgar consentimiento",
-    "consent_ignore": "Si no esperabas esta solicitud, puedes ignorar este correo de forma segura. No se tomará ninguna acción sin tu consentimiento explícito.",
-    "consent_subject": "Solicitud de consentimiento del tutor — Project NEXUS",
-    "info_card_relationship": "Parentesco",
-    "info_card_expires": "Caduca",
-    "consent_granted_minor_bell": "Tu tutor/a ha aprobado el consentimiento para tus actividades de voluntariado.",
-    "consent_withdrawn_minor_bell": "Se ha retirado el consentimiento del tutor para tus actividades de voluntariado.",
-    "consent_withdrawn_admin_bell": "El consentimiento del tutor ha sido retirado por un administrador."
-  },
   "safeguarding": {
     "training_verified": "¡Tu registro de {{training_name}} ha sido verificado!",
     "training_not_approved": "Tu registro de {{training_name}} no fue aprobado. Contacta con soporte para obtener detalles.",

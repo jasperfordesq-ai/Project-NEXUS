@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Your job posting \"{{title}}\" was reviewed and could not be approved. Reason: {{reason}}. You can edit it and resubmit it for review.",
     "posting_not_approved_cta": "Edit posting"
   },
-  "guardian": {
-    "consent_title": "Guardian Consent Request",
-    "consent_preview": "A minor in your care needs your consent to participate in volunteering",
-    "consent_body": "A minor in your care has requested your consent to participate in volunteering activities on <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Your consent is required before they can participate. Please review and respond using the button below.",
-    "consent_expires_label": "in {{days}} days",
-    "consent_cta": "Grant Consent",
-    "consent_ignore": "If you did not expect this request, you can safely ignore this email. No action will be taken without your explicit consent.",
-    "consent_subject": "Guardian Consent Request — Project NEXUS",
-    "info_card_relationship": "Relationship",
-    "info_card_expires": "Expires",
-    "consent_granted_minor_bell": "Your guardian has approved consent for your volunteering activities.",
-    "consent_withdrawn_minor_bell": "Guardian consent has been withdrawn from your volunteering activities.",
-    "consent_withdrawn_admin_bell": "Guardian consent has been withdrawn by an administrator."
-  },
   "safeguarding": {
     "training_verified": "Your {{training_name}} record has been verified!",
     "training_not_approved": "Your {{training_name}} record was not approved. Please contact support for details.",

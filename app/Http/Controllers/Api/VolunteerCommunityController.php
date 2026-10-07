@@ -24,10 +24,8 @@ use App\Services\VolunteerShiftManagementService;
 use App\Services\VolunteerFormService;
 use App\Services\CommunityProjectService;
 use App\Services\VolunteerDonationService;
-use App\Services\GuardianConsentService;
 use App\Services\WebhookDispatchService;
 use App\Services\VolunteerReminderService;
-use App\Services\VolunteerService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
 
@@ -49,7 +47,6 @@ class VolunteerCommunityController extends BaseApiController
         private readonly VolunteerFormService $volunteerFormService,
         private readonly CommunityProjectService $communityProjectService,
         private readonly VolunteerDonationService $volunteerDonationService,
-        private readonly GuardianConsentService $guardianConsentService,
         private readonly WebhookDispatchService $webhookDispatchService,
         private readonly VolunteerReminderService $volunteerReminderService,
     ) {}
@@ -89,19 +86,6 @@ class VolunteerCommunityController extends BaseApiController
         $this->ensureFeature();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_waitlist_join', 20, 60);
-
-        $gateOppId = \Illuminate\Support\Facades\DB::table('vol_shifts')
-            ->where('tenant_id', \App\Core\TenantContext::getId())
-            ->where('id', (int) $id)
-            ->value('opportunity_id');
-        if ($gateOppId && ($guardianError = VolunteerService::guardianConsentError($userId, (int) $gateOppId))) {
-            return $this->respondWithError(
-                $guardianError['code'],
-                $guardianError['message'],
-                $guardianError['field'] ?? null,
-                VolunteerService::guardianConsentErrorStatus($guardianError)
-            );
-        }
 
         try {
             $entryId = $this->shiftWaitlistService->join((int) $id, $userId);
@@ -1236,10 +1220,10 @@ class VolunteerCommunityController extends BaseApiController
     //
     // Adults-only platform (owner decision 2026-09-25, E-035 F-160): under-18
     // participation is removed, not supervised, so guardian consent has no
-    // purpose. Every endpoint refuses with 410 GUARDIAN_CONSENT_RETIRED. The
-    // `vol_guardian_consents` table, its rows and GuardianConsentService are
-    // deliberately left in place so the switch-off is reversible and the
-    // historical records stay available to GDPR export and retention.
+    // purpose. Every endpoint refuses with 410 GUARDIAN_CONSENT_RETIRED, so an
+    // old client gets a clear answer. The `vol_guardian_consents` table and its
+    // rows stay for GDPR export and retention; GuardianConsentService and its
+    // emails were removed on 7 Oct 2026 as unreachable code.
 
     public function myGuardianConsents(): JsonResponse
     {

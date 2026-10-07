@@ -239,15 +239,6 @@ class VolunteerController extends BaseApiController
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_apply', 20, 60);
 
-        if ($guardianError = VolunteerService::guardianConsentError($userId, (int) $id)) {
-            return $this->respondWithError(
-                $guardianError['code'],
-                $guardianError['message'],
-                $guardianError['field'] ?? null,
-                VolunteerService::guardianConsentErrorStatus($guardianError)
-            );
-        }
-
         $data = ['message' => trim($this->input('message', '')), 'shift_id' => $this->inputInt('shift_id') ?: null];
 
         // Check for duplicate application (tenant-scoped to prevent cross-tenant leaks)

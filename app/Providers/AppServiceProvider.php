@@ -173,7 +173,6 @@ use App\Services\GroupModerationService;
 use App\Services\GroupNotificationService;
 use App\Services\GroupPolicyRepository;
 use App\Services\GroupRecommendationEngine;
-use App\Services\GuardianConsentService;
 use App\Services\HoursReportService;
 use App\Services\HtmlSanitizer;
 use App\Services\IdeaMediaService;
@@ -808,9 +807,6 @@ class AppServiceProvider extends ServiceProvider
             return new GroupRecommendationEngine();
         });
 
-        $this->app->singleton(GuardianConsentService::class, function ($app) {
-            return new GuardianConsentService();
-        });
 
         $this->app->singleton(HoursReportService::class, function ($app) {
             return new HoursReportService();

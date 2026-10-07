@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Je vacature \"{{title}}\" is beoordeeld en kon niet worden goedgekeurd. Reden: {{reason}}. Je kunt hem bewerken en opnieuw indienen.",
     "posting_not_approved_cta": "Vacature bewerken"
   },
-  "guardian": {
-    "consent_title": "Toestemmingsverzoek voogd",
-    "consent_preview": "Een minderjarige onder jouw zorg heeft je toestemming nodig om deel te nemen aan vrijwilligerswerk",
-    "consent_body": "Een minderjarige onder jouw zorg heeft je toestemming gevraagd om deel te nemen aan vrijwilligersactiviteiten op <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Je toestemming is vereist voordat zij kunnen deelnemen. Bekijk dit en reageer via de knop hieronder.",
-    "consent_expires_label": "over {{days}} dagen",
-    "consent_cta": "Toestemming geven",
-    "consent_ignore": "Als je dit verzoek niet verwachtte, kun je deze e-mail veilig negeren. Er wordt geen actie ondernomen zonder je uitdrukkelijke toestemming.",
-    "consent_subject": "Toestemmingsverzoek voogd — Project NEXUS",
-    "info_card_relationship": "Relatie",
-    "info_card_expires": "Verloopt",
-    "consent_granted_minor_bell": "Je voogd heeft toestemming gegeven voor je vrijwilligersactiviteiten.",
-    "consent_withdrawn_minor_bell": "De toestemming van de voogd is ingetrokken voor je vrijwilligersactiviteiten.",
-    "consent_withdrawn_admin_bell": "De toestemming van de voogd is door een beheerder ingetrokken."
-  },
   "safeguarding": {
     "training_verified": "Je {{training_name}}-record is geverifieerd!",
     "training_not_approved": "Je {{training_name}}-record is niet goedgekeurd. Neem contact op met support voor details.",

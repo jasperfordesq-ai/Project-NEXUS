@@ -3725,7 +3725,7 @@ class CronJobRunner
         $this->checkAccess();
         $this->startJob('volunteer_expire_consents');
         try {
-            $expired = \App\Services\GuardianConsentService::expireOldConsents();
+            $expired = self::expireLapsedGuardianConsents();
             $this->logJob('success', "Expired {$expired} consents");
             echo json_encode(['success' => true, 'consents_expired' => $expired]);
         } catch (\Throwable $e) {
@@ -3827,11 +3827,29 @@ class CronJobRunner
         });
     }
 
+    /**
+     * Mark historical guardian consents whose expiry date has passed as expired.
+     *
+     * Guardian consent was retired with the adults-only decision (E-035 F-160)
+     * and GuardianConsentService was removed on 7 Oct 2026, but the rows stay for
+     * GDPR export and retention, so their status is still kept accurate here.
+     * Retention itself measures from expires_at, not from this status.
+     * Deliberately NOT tenant-scoped: one sweep for the whole platform.
+     */
+    public static function expireLapsedGuardianConsents(): int
+    {
+        return DB::table('vol_guardian_consents')
+            ->whereIn('status', ['pending', 'active'])
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->update(['status' => 'expired']);
+    }
+
     private function volunteerExpireConsentsInternal(): void
     {
         // Guardian consent expiry is not tenant-scoped (runs across all tenants in one query)
         try {
-            $expired = \App\Services\GuardianConsentService::expireOldConsents();
+            $expired = self::expireLapsedGuardianConsents();
             if ($expired > 0) {
                 echo "   Expired {$expired} guardian consents.\n";
             }

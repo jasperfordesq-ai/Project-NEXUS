@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Rinneadh athbhreithniú ar d’fhógra poist \"{{title}}\" agus níorbh fhéidir é a cheadú. Fáth: {{reason}}. Is féidir leat é a chur in eagar agus a athsheoladh lena athbhreithniú.",
     "posting_not_approved_cta": "Cuir an fógra in eagar"
   },
-  "guardian": {
-    "consent_title": "Iarratas ar Thoiliú Caomhnóra",
-    "consent_preview": "Tá toiliú uait ó mhionaoiseach faoi do chúram chun páirt a ghlacadh in obair dheonach",
-    "consent_body": "Tá toiliú á iarraidh ort ag mionaoiseach faoi do chúram chun páirt a ghlacadh i ngníomhaíochtaí oibre deonaí ar <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Tá do thoiliú riachtanach sular féidir leo páirt a ghlacadh. Athbhreithnigh agus freagair ag baint úsáide as an gcnaipe thíos.",
-    "consent_expires_label": "i gceann {{days}} lá",
-    "consent_cta": "Tabhair Toiliú",
-    "consent_ignore": "Mura raibh tú ag súil leis an iarratas seo, is féidir leat neamhaird a dhéanamh den ríomhphost seo go sábháilte. Ní dhéanfar aon ghníomh gan do thoiliú follasach.",
-    "consent_subject": "Iarratas ar Thoiliú Caomhnóra — Project NEXUS",
-    "info_card_relationship": "Gaol",
-    "info_card_expires": "Téann in éag",
-    "consent_granted_minor_bell": "Tá do chaomhnóir tar éis toiliú a thabhairt do do ghníomhaíochtaí oibre deonaí.",
-    "consent_withdrawn_minor_bell": "Tá toiliú an chaomhnóra tarraingthe siar ó do ghníomhaíochtaí oibre deonaí.",
-    "consent_withdrawn_admin_bell": "Tá toiliú an chaomhnóra tarraingthe siar ag riarthóir."
-  },
   "safeguarding": {
     "training_verified": "Tá do thaifead {{training_name}} fíoraithe!",
     "training_not_approved": "Níor ceadaíodh do thaifead {{training_name}}. Téigh i dteagmháil le tacaíocht le haghaidh sonraí.",

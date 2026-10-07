@@ -15,7 +15,6 @@ use App\Services\EventSafetyEligibilityService;
 use App\Services\EventSafetyRequirementService;
 use App\Services\SafeguardingInteractionPolicy;
 use App\Services\VolunteeringConfigurationService;
-use App\Services\VolunteerService;
 use App\Support\Events\EventSafetyFoundationSupport;
 use App\Support\SafeguardingInteractionDecision;
 use Carbon\CarbonImmutable;
@@ -94,13 +93,10 @@ final class GuardianConsentRetiredTest extends TestCase
         ));
         self::assertFalse((bool) (VolunteeringConfigurationService::getAll()[VolunteeringConfigurationService::CONFIG_GUARDIAN_CONSENT_REQUIRED] ?? false));
 
-        $noDob = $this->member(['date_of_birth' => null]);
-        self::assertNull(VolunteerService::guardianConsentError((int) $noDob->id, 1));
-
-        $recordedMinor = $this->member();
-        DB::table('users')->where('id', $recordedMinor->id)
-            ->update(['date_of_birth' => now()->subYears(15)->toDateString()]);
-        self::assertNull(VolunteerService::guardianConsentError((int) $recordedMinor->id, 1));
+        // The volunteering gate that read this setting (VolunteerService::
+        // guardianConsentError and its seven call sites) was removed on 7 Oct
+        // 2026 as unreachable; nothing on the volunteering side asks for a
+        // guardian or a date of birth any more.
     }
 
     public function test_the_volunteering_guardian_setting_cannot_be_turned_on(): void

@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Votre offre d’emploi « {{title}} » a été examinée et n’a pas pu être approuvée. Motif : {{reason}}. Vous pouvez la modifier et la soumettre à nouveau.",
     "posting_not_approved_cta": "Modifier l’offre"
   },
-  "guardian": {
-    "consent_title": "Demande de consentement du tuteur",
-    "consent_preview": "Un mineur dont vous avez la responsabilité a besoin de votre consentement pour participer au bénévolat",
-    "consent_body": "Un mineur dont vous avez la responsabilité a demandé votre consentement pour participer à des activités de bénévolat sur <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Votre consentement est requis avant qu'il puisse participer. Veuillez examiner et répondre via le bouton ci-dessous.",
-    "consent_expires_label": "dans {{days}} jours",
-    "consent_cta": "Donner mon consentement",
-    "consent_ignore": "Si vous ne vous attendiez pas à cette demande, vous pouvez ignorer cet e-mail en toute sécurité. Aucune action ne sera entreprise sans votre consentement explicite.",
-    "consent_subject": "Demande de consentement du tuteur — Project NEXUS",
-    "info_card_relationship": "Lien de parenté",
-    "info_card_expires": "Expire",
-    "consent_granted_minor_bell": "Votre tuteur a approuvé le consentement pour vos activités de bénévolat.",
-    "consent_withdrawn_minor_bell": "Le consentement du tuteur a été retiré pour vos activités de bénévolat.",
-    "consent_withdrawn_admin_bell": "Le consentement du tuteur a été retiré par un administrateur."
-  },
   "safeguarding": {
     "training_verified": "Votre relevé {{training_name}} a été vérifié !",
     "training_not_approved": "Votre relevé {{training_name}} n'a pas été approuvé. Veuillez contacter le support pour plus de détails.",

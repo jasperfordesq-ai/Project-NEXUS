@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Twoje ogłoszenie o pracę „{{title}}” zostało sprawdzone i nie mogło zostać zatwierdzone. Powód: {{reason}}. Możesz je edytować i ponownie przesłać do weryfikacji.",
     "posting_not_approved_cta": "Edytuj ogłoszenie"
   },
-  "guardian": {
-    "consent_title": "Prośba o zgodę opiekuna",
-    "consent_preview": "Małoletni pod Twoją opieką potrzebuje Twojej zgody na udział w wolontariacie",
-    "consent_body": "Małoletni pod Twoją opieką poprosił o Twoją zgodę na udział w wolontariacie na <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Wymagana jest Twoja zgoda, zanim będzie mógł/mogła wziąć udział. Sprawdź i odpowiedz, korzystając z przycisku poniżej.",
-    "consent_expires_label": "za {{days}} dni",
-    "consent_cta": "Udziel zgody",
-    "consent_ignore": "Jeśli nie spodziewałeś/aś się tej prośby, możesz bezpiecznie zignorować tę wiadomość. Bez Twojej wyraźnej zgody nie zostanie podjęte żadne działanie.",
-    "consent_subject": "Prośba o zgodę opiekuna — Project NEXUS",
-    "info_card_relationship": "Pokrewieństwo",
-    "info_card_expires": "Wygasa",
-    "consent_granted_minor_bell": "Twój opiekun zatwierdził zgodę na Twoje działania wolontariackie.",
-    "consent_withdrawn_minor_bell": "Zgoda opiekuna na Twoje działania wolontariackie została wycofana.",
-    "consent_withdrawn_admin_bell": "Zgoda opiekuna została wycofana przez administratora."
-  },
   "safeguarding": {
     "training_verified": "Twój rekord {{training_name}} został zweryfikowany!",
     "training_not_approved": "Twój rekord {{training_name}} nie został zatwierdzony. Skontaktuj się z pomocą techniczną w celu uzyskania szczegółów.",

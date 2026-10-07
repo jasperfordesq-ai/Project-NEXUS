@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Il tuo annuncio di lavoro \"{{title}}\" è stato esaminato e non è stato possibile approvarlo. Motivo: {{reason}}. Puoi modificarlo e inviarlo di nuovo per la revisione.",
     "posting_not_approved_cta": "Modifica annuncio"
   },
-  "guardian": {
-    "consent_title": "Richiesta di consenso del tutore",
-    "consent_preview": "Un minore sotto la tua tutela ha bisogno del tuo consenso per partecipare al volontariato",
-    "consent_body": "Un minore sotto la tua tutela ha richiesto il tuo consenso per partecipare alle attività di volontariato su <strong>Project NEXUS</strong>.",
-    "consent_highlight": "Il tuo consenso è richiesto prima che possa partecipare. Verifica e rispondi utilizzando il pulsante qui sotto.",
-    "consent_expires_label": "tra {{days}} giorni",
-    "consent_cta": "Concedi consenso",
-    "consent_ignore": "Se non ti aspettavi questa richiesta, puoi ignorare questa email in tutta sicurezza. Nessuna azione verrà intrapresa senza il tuo consenso esplicito.",
-    "consent_subject": "Richiesta di consenso del tutore — Project NEXUS",
-    "info_card_relationship": "Relazione",
-    "info_card_expires": "Scade",
-    "consent_granted_minor_bell": "Il tuo tutore ha approvato il consenso per le tue attività di volontariato.",
-    "consent_withdrawn_minor_bell": "Il consenso del tutore è stato revocato per le tue attività di volontariato.",
-    "consent_withdrawn_admin_bell": "Il consenso del tutore è stato revocato da un amministratore."
-  },
   "safeguarding": {
     "training_verified": "Il tuo record {{training_name}} è stato verificato!",
     "training_not_approved": "Il tuo record {{training_name}} non è stato approvato. Contatta l'assistenza per i dettagli.",

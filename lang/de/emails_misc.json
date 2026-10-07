@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "Ihre Stellenanzeige „{{title}}“ wurde geprüft und konnte nicht genehmigt werden. Grund: {{reason}}. Sie können sie bearbeiten und erneut zur Prüfung einreichen.",
     "posting_not_approved_cta": "Anzeige bearbeiten"
   },
-  "guardian": {
-    "consent_title": "Anfrage zur Zustimmung des Erziehungsberechtigten",
-    "consent_preview": "Ein Minderjähriger in Ihrer Obhut benötigt Ihre Zustimmung zur Teilnahme am Freiwilligendienst",
-    "consent_body": "Ein Minderjähriger in Ihrer Obhut hat Ihre Zustimmung zur Teilnahme an Freiwilligenaktivitäten bei <strong>Project NEXUS</strong> beantragt.",
-    "consent_highlight": "Ihre Zustimmung ist erforderlich, bevor sie teilnehmen können. Bitte prüfen und antworten Sie über die Schaltfläche unten.",
-    "consent_expires_label": "in {{days}} Tagen",
-    "consent_cta": "Zustimmung erteilen",
-    "consent_ignore": "Wenn Sie diese Anfrage nicht erwartet haben, können Sie diese E-Mail bedenkenlos ignorieren. Ohne Ihre ausdrückliche Zustimmung werden keine Maßnahmen ergriffen.",
-    "consent_subject": "Anfrage zur Zustimmung des Erziehungsberechtigten — Project NEXUS",
-    "info_card_relationship": "Beziehung",
-    "info_card_expires": "Läuft ab",
-    "consent_granted_minor_bell": "Ihr Erziehungsberechtigter hat die Zustimmung für Ihre Freiwilligenaktivitäten erteilt.",
-    "consent_withdrawn_minor_bell": "Die Zustimmung des Erziehungsberechtigten für Ihre Freiwilligenaktivitäten wurde widerrufen.",
-    "consent_withdrawn_admin_bell": "Die Zustimmung des Erziehungsberechtigten wurde von einem Administrator widerrufen."
-  },
   "safeguarding": {
     "training_verified": "Ihr {{training_name}}-Datensatz wurde verifiziert!",
     "training_not_approved": "Ihr Datensatz für {{training_name}} wurde nicht genehmigt. Bitte wenden Sie sich für Details an den Support.",

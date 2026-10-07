@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "求人「{{title}}」は審査の結果、承認できませんでした。理由：{{reason}}。編集して再申請できます。",
     "posting_not_approved_cta": "求人を編集"
   },
-  "guardian": {
-    "consent_title": "保護者同意の依頼",
-    "consent_preview": "あなたの保護下の未成年者がボランティア活動への参加にあなたの同意を必要としています",
-    "consent_body": "あなたの保護下の未成年者が、<strong>Project NEXUS</strong>でのボランティア活動への参加についてあなたの同意を求めています。",
-    "consent_highlight": "本人が参加するには、あなたの同意が必要です。下のボタンから内容を確認し、ご回答ください。",
-    "consent_expires_label": "{{days}}日後",
-    "consent_cta": "同意する",
-    "consent_ignore": "この依頼に心当たりがない場合は、このメールを安全に無視できます。あなたの明示的な同意なしに措置が取られることはありません。",
-    "consent_subject": "保護者同意の依頼 — Project NEXUS",
-    "info_card_relationship": "続柄",
-    "info_card_expires": "有効期限",
-    "consent_granted_minor_bell": "保護者があなたのボランティア活動に同意しました。",
-    "consent_withdrawn_minor_bell": "ボランティア活動に対する保護者の同意が取り消されました。",
-    "consent_withdrawn_admin_bell": "保護者の同意が管理者によって取り消されました。"
-  },
   "safeguarding": {
     "training_verified": "あなたの {{training_name}} 記録が認証されました!",
     "training_not_approved": "あなたの {{training_name}} 記録は承認されませんでした。詳細はサポートまでご連絡ください。",

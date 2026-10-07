@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "A sua vaga \"{{title}}\" foi analisada e não pôde ser aprovada. Motivo: {{reason}}. Pode editá-la e submetê-la novamente para análise.",
     "posting_not_approved_cta": "Editar vaga"
   },
-  "guardian": {
-    "consent_title": "Pedido de consentimento do encarregado de educação",
-    "consent_preview": "Um menor à sua guarda precisa do seu consentimento para participar no voluntariado",
-    "consent_body": "Um menor à sua guarda pediu o seu consentimento para participar em atividades de voluntariado no <strong>Project NEXUS</strong>.",
-    "consent_highlight": "É necessário o seu consentimento antes de poder participar. Reveja e responda utilizando o botão abaixo.",
-    "consent_expires_label": "dentro de {{days}} dias",
-    "consent_cta": "Conceder consentimento",
-    "consent_ignore": "Se não estava à espera deste pedido, pode ignorar este e-mail em segurança. Não será tomada qualquer ação sem o seu consentimento explícito.",
-    "consent_subject": "Pedido de consentimento do encarregado de educação — Project NEXUS",
-    "info_card_relationship": "Relação",
-    "info_card_expires": "Expira",
-    "consent_granted_minor_bell": "O seu encarregado de educação aprovou o consentimento para as suas atividades de voluntariado.",
-    "consent_withdrawn_minor_bell": "O consentimento do encarregado de educação foi retirado das suas atividades de voluntariado.",
-    "consent_withdrawn_admin_bell": "O consentimento do encarregado de educação foi retirado por um administrador."
-  },
   "safeguarding": {
     "training_verified": "O seu registo de {{training_name}} foi verificado!",
     "training_not_approved": "O seu registo de {{training_name}} não foi aprovado. Contacte o suporte para mais detalhes.",

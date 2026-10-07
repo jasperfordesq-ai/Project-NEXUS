@@ -198,18 +198,11 @@ class ShiftGroupReservationService
             return false;
         }
 
-        // Safeguarding: a group leader must not be able to add a minor onto a
-        // shift roster without the guardian consent every individual apply/
-        // signup path requires. Resolve the reservation's opportunity and apply
-        // the same centralised gate.
+        // The reservation's opportunity, for the organiser contact check below.
         $opportunityId = (int) DB::table('vol_shifts')
             ->where('id', (int) $reservation->shift_id)
             ->where('tenant_id', $tenantId)
             ->value('opportunity_id');
-        if ($opportunityId > 0 && ($guardianError = VolunteerService::guardianConsentError($userId, $opportunityId))) {
-            self::$errors[] = $guardianError;
-            return false;
-        }
 
         $policy = app(SafeguardingInteractionPolicy::class);
         if ($leaderUserId !== $userId) {

@@ -37,21 +37,6 @@
     "posting_not_approved_email_body": "تمت مراجعة إعلان وظيفتك \"{{title}}\" ولم تتم الموافقة عليه. السبب: {{reason}}. يمكنك تعديله وإعادة إرساله للمراجعة.",
     "posting_not_approved_cta": "تعديل الإعلان"
   },
-  "guardian": {
-    "consent_title": "طلب موافقة وليّ الأمر",
-    "consent_preview": "قاصر تحت رعايتك يحتاج إلى موافقتك للمشاركة في التطوع",
-    "consent_body": "طلب قاصر تحت رعايتك موافقتك للمشاركة في أنشطة تطوعية على <strong>Project NEXUS</strong>.",
-    "consent_highlight": "موافقتك مطلوبة قبل أن يتمكن من المشاركة. يرجى المراجعة والرد باستخدام الزر أدناه.",
-    "consent_expires_label": "خلال {{days}} أيام",
-    "consent_cta": "منح الموافقة",
-    "consent_ignore": "إذا لم تكن تتوقع هذا الطلب، يمكنك تجاهل هذا البريد الإلكتروني بأمان. لن يتم اتخاذ أي إجراء دون موافقتك الصريحة.",
-    "consent_subject": "طلب موافقة وليّ الأمر — Project NEXUS",
-    "info_card_relationship": "صلة القرابة",
-    "info_card_expires": "تنتهي الصلاحية",
-    "consent_granted_minor_bell": "وافق وليّك على أنشطتك التطوعية.",
-    "consent_withdrawn_minor_bell": "تم سحب موافقة وليّ الأمر على أنشطتك التطوعية.",
-    "consent_withdrawn_admin_bell": "تم سحب موافقة وليّ الأمر بواسطة مسؤول."
-  },
   "safeguarding": {
     "training_verified": "تم التحقق من سجل {{training_name}} الخاص بك!",
     "training_not_approved": "لم تتم الموافقة على سجل {{training_name}} الخاص بك. يُرجى التواصل مع الدعم للحصول على التفاصيل.",

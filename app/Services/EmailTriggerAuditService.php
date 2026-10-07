@@ -161,7 +161,6 @@ class EmailTriggerAuditService
             ['module' => 'digests', 'event' => 'group_activity_digest', 'category' => 'group_digest', 'critical' => false, 'source_table' => 'email_log'],
             ['module' => 'events', 'event' => 'event_created_update_cancellation_rsvp_reminder', 'category' => 'event_notification', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'safeguarding', 'event' => 'safeguarding_alerts', 'category' => 'safeguarding', 'critical' => true, 'source_table' => 'email_log'],
-            ['module' => 'safeguarding', 'event' => 'guardian_consent_request', 'category' => 'guardian_consent', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'safeguarding', 'event' => 'vetting_result', 'category' => 'vetting', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'analytics', 'event' => 'regional_monthly_report', 'category' => 'regional_analytics', 'critical' => false, 'source_table' => 'email_log'],
             ['module' => 'billing', 'event' => 'stripe_subscription_billing', 'category' => 'billing', 'critical' => true, 'source_table' => 'email_log'],
