@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-06T05:19:54.822Z",
+  "lastRunAt": "2026-10-07T02:07:54.244Z",
   "issues": {
     "120262618": {
       "title": "ErrorException: Warning: Redis::connect(): php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Still firing daily at 08:05 (35 events, live release). Owner action still not done: set the safeguarding jurisdiction for hour-timebank in the broker panel. Until then members who asked for vetted-only contact are dropped from matches and cannot be contacted.",
+      "note": "Still firing once a day at 08:05 (14 events in the 14-day window, last 2026-10-06 08:05). This is not a failed fix, just the same daily alarm. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Until that is done, members who asked for vetted-only contact are left out of matches and nobody can contact them. The policy is failing safe. No code change applies.",
       "sha": null,
-      "decidedAt": "2026-10-06T05:24:46.136Z",
-      "decidedAtRelease": "nexus-php@4b139d21633f"
+      "decidedAt": "2026-10-07T02:08:19.503Z",
+      "decidedAtRelease": "nexus-php@63d93b0a6f5d"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
