@@ -1128,9 +1128,16 @@ app.get('/volunteering', requireAuth, (req, res) => {
   // (lib/volunteering-sections.js). A switched-off tab in the address falls back
   // to opportunities rather than showing a section the community has turned off.
   const sections = volunteeringSections(req.accessibleRouting?.tenant);
-  const requestedTab = ['applications', 'recommended', 'community_projects'].includes(req.query.tab)
-    && sections.enabled(req.query.tab === 'community_projects' ? 'community-projects' : req.query.tab)
-    ? req.query.tab
+  // Notifications use the website's section names (?tab=hours, swaps, expenses, ...).
+  // A section that is its own page here opens that page (gap B10); the website writes
+  // community projects with a hyphen, this page with an underscore.
+  const tabParam = typeof req.query.tab === 'string' ? req.query.tab.trim() : '';
+  const sectionPage = sections.pageFor(tabParam);
+  if (sectionPage) return redirectTo(res, sectionPage);
+  const tabName = tabParam === 'community-projects' ? 'community_projects' : tabParam;
+  const requestedTab = ['applications', 'recommended', 'community_projects'].includes(tabName)
+    && sections.enabled(tabName === 'community_projects' ? 'community-projects' : tabName)
+    ? tabName
     : 'opportunities';
   const selectedTab = token ? requestedTab : 'opportunities';
   const applicationStatus = ['pending', 'approved', 'declined', 'withdrawn'].includes(req.query.app_status)

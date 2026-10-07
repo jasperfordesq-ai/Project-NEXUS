@@ -38,6 +38,30 @@ describe('volunteering section switches', () => {
     expect(sectionEnabled({ 'volunteering.expenses_enabled': false }, 'donations')).toBe(true);
   });
 
+  // Gap B10: notification links carry the website's section names.
+  it('opens the page a website section name lives on', () => {
+    const { pageFor } = volunteeringSections({});
+    expect(pageFor('hours')).toBe('/volunteering/hours');
+    expect(pageFor('swaps')).toBe('/volunteering/swaps');
+    expect(pageFor('training')).toBe('/volunteering/training');
+    expect(pageFor('safeguarding')).toBe('/volunteering/training');
+    expect(pageFor('alerts')).toBe('/volunteering/emergency-alerts');
+    expect(pageFor('organisations')).toBe('/volunteering/my-organisations');
+    // Tabs of the volunteering page itself, unknown names, and the qualifications
+    // register (not on this site yet) open nothing.
+    expect(pageFor('applications')).toBe('');
+    expect(pageFor('credentials')).toBe('');
+    expect(pageFor('constructor')).toBe('');
+    expect(pageFor('')).toBe('');
+  });
+
+  it('opens nothing for a section the community has switched off', () => {
+    const { pageFor } = volunteeringSections({ volunteering_config: { 'volunteering.tab_safeguarding': false, 'volunteering.expenses_enabled': false } });
+    expect(pageFor('training')).toBe('');
+    expect(pageFor('expenses')).toBe('');
+    expect(pageFor('hours')).toBe('/volunteering/hours');
+  });
+
   it('never lists the old document-upload page', () => {
     expect(volunteeringSections({}).tools.some((tool) => tool.href.includes('credentials'))).toBe(false);
   });

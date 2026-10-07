@@ -17838,6 +17838,46 @@ describe('shared accessible frontend shell', () => {
     expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/recommended-shifts?limit=10');
   });
 
+  // Gap B10 (7 Oct 2026): notification links use the website's section names, and every
+  // one this page did not know landed on Opportunities.
+  it('opens the page a notification link names, instead of Opportunities', async () => {
+    for (const [tab, page] of [['hours', '/volunteering/hours'], ['swaps', '/volunteering/swaps'],
+      ['expenses', '/volunteering/expenses'], ['waitlist', '/volunteering/waitlist'],
+      ['certificates', '/volunteering/certificates'], ['training', '/volunteering/training'],
+      ['safeguarding', '/volunteering/training']]) {
+      const response = await request(app).get(`/volunteering?tab=${tab}`).set('Cookie', signedCookieHeader());
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(page);
+    }
+  });
+
+  it('keeps a notification link inside the community, and on Opportunities when that section is off', async () => {
+    const api = require('../src/lib/api');
+    api.getTenantBootstrap.mockReset().mockResolvedValue(tenantBootstrap('acme', {
+      volunteering_config: { 'volunteering.tab_swaps': false }
+    }));
+
+    const hours = await request(app).get('/acme/accessible/volunteering?tab=hours').set('Cookie', signedCookieHeader());
+    expect(hours.status).toBe(302);
+    expect(hours.headers.location).toBe('/acme/accessible/volunteering/hours');
+
+    const swaps = await request(app).get('/acme/accessible/volunteering?tab=swaps').set('Cookie', signedCookieHeader());
+    expect(swaps.status).toBe(200);
+  });
+
+  it('does not send a qualification reminder to the old document-upload page', async () => {
+    const response = await request(app).get('/volunteering?tab=credentials').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+  });
+
+  it('understands the website\'s hyphenated community-projects tab', async () => {
+    const api = require('../src/lib/api');
+    const response = await request(app).get('/volunteering?tab=community-projects').set('Cookie', signedCookieHeader());
+    expect(response.status).toBe(200);
+    expect(response.text).toMatch(/href="\/volunteering\?tab=community_projects" aria-current="page"/);
+    expect(api.callVolunteeringApi.mock.calls.some(([, , p]) => String(p).startsWith('/community-projects'))).toBe(true);
+  });
+
   it('redirects the volunteering list to login when the opportunities API returns 401', async () => {
     const api = require('../src/lib/api');
     api.getVolunteeringOpportunities.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));

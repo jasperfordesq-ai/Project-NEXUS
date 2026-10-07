@@ -41,6 +41,33 @@ const TOOLS = [
   { section: 'donations', href: '/volunteering/donations', labelKey: 'govuk_alpha_volunteering.donations.nav_link' }
 ];
 
+/**
+ * Where a website section name in `/volunteering?tab=<name>` lives on this site (gap B10,
+ * 7 Oct 2026). Notifications carry the website's section names (the server writes
+ * `?tab=hours`, `swaps`, `expenses`, `waitlist`, `certificates`, `training`, ...), and
+ * this site's volunteering page understood only its own three tabs, so every other link
+ * landed on Opportunities. `training` is the name the reminder service uses for what
+ * the website calls `safeguarding`.
+ *
+ * `credentials` is deliberately absent: on the website it is the qualifications
+ * register, which this site does not have yet, and the old document-upload page here
+ * is not where a qualification reminder should send anyone.
+ */
+const SECTION_PAGES = {
+  hours: { section: 'hours', href: '/volunteering/hours' },
+  swaps: { section: 'swaps', href: '/volunteering/swaps' },
+  expenses: { section: 'expenses', href: '/volunteering/expenses' },
+  waitlist: { section: 'waitlist', href: '/volunteering/waitlist' },
+  certificates: { section: 'certificates', href: '/volunteering/certificates' },
+  alerts: { section: 'alerts', href: '/volunteering/emergency-alerts' },
+  wellbeing: { section: 'wellbeing', href: '/volunteering/wellbeing' },
+  safeguarding: { section: 'safeguarding', href: '/volunteering/training' },
+  training: { section: 'safeguarding', href: '/volunteering/training' },
+  accessibility: { section: 'accessibility', href: '/volunteering/accessibility' },
+  donations: { section: 'donations', href: '/volunteering/donations' },
+  organisations: { section: null, href: '/volunteering/my-organisations' }
+};
+
 function volunteeringConfigFrom(tenant) {
   const config = tenant && typeof tenant === 'object' ? tenant.volunteering_config : null;
   return config && typeof config === 'object' && !Array.isArray(config) ? config : {};
@@ -60,7 +87,14 @@ function volunteeringSections(tenant) {
   const config = volunteeringConfigFrom(tenant);
   return {
     enabled: (section) => sectionEnabled(config, section),
-    tools: TOOLS.filter((tool) => sectionEnabled(config, tool.section))
+    tools: TOOLS.filter((tool) => sectionEnabled(config, tool.section)),
+    // The page a website section name opens here, or '' when it has none or the
+    // community has switched that section off.
+    pageFor: (name) => {
+      const page = Object.prototype.hasOwnProperty.call(SECTION_PAGES, name) ? SECTION_PAGES[name] : null;
+      if (!page || (page.section && !sectionEnabled(config, page.section))) return '';
+      return page.href;
+    }
   };
 }
 
