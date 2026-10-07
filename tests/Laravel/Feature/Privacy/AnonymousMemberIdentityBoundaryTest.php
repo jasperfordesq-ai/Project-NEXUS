@@ -110,7 +110,6 @@ class AnonymousMemberIdentityBoundaryTest extends TestCase
             'marketplace seller shipping' => ['/v2/marketplace/sellers/1/shipping-options'],
             'marketplace pickup slots' => ['/v2/marketplace/listings/1/pickup-slots'],
 
-            'volunteer certificate verification' => ['/v2/volunteering/certificates/verify/example-code'],
             'volunteer certificate html' => ['/v2/volunteering/certificates/example-code/html'],
 
             'municipality surveys' => ['/v2/caring-community/surveys'],

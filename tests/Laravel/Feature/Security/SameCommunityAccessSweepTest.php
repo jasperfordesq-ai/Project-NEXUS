@@ -100,7 +100,6 @@ class SameCommunityAccessSweepTest extends AccessSweepTestCase
         'GET api/v2/feed/posts/{id}/sharers' => 'share count and sharers of a public post',
         'GET api/v2/reviews/{id}' => 'reviews are public reputation content',
         'GET api/v2/users/{id}' => 'public member profile (no e-mail address in the body — GATE R2 checks this every run)',
-        'GET api/v2/volunteering/giving-days/{id}/stats' => 'public campaign progress',
         'GET api/v2/volunteering/organisations/{id}' => 'organisation directory entry',
         'GET api/v2/jobs/{id}' => 'job board posting (status pinned to open — see pinPublicVisibility)',
         'GET api/v2/jobs/{id}/match' => 'how well the CALLER matches a public job posting',

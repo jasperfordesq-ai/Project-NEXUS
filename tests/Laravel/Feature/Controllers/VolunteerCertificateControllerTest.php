@@ -227,14 +227,6 @@ class VolunteerCertificateControllerTest extends TestCase
         ]);
     }
 
-    public function test_verify_certificate_requires_authentication(): void
-    {
-        $response = $this->apiGet('/v2/volunteering/certificates/verify/FAKE-CODE');
-
-        $response->assertUnauthorized()
-            ->assertJsonStructure(['errors' => [['code', 'message']]]);
-    }
-
     /**
      * fix(volunteering): certificate verification codes are now 16-char uppercase
      * alphanumeric. The lookup column collates case-insensitively, so uppercasing
@@ -295,9 +287,16 @@ class VolunteerCertificateControllerTest extends TestCase
             ->count());
     }
 
+    /**
+     * The signed-in lookup this used was removed as dead code on 7 Oct 2026; the
+     * public check is the remaining way to verify a code, so tenancy is pinned there.
+     */
     public function test_verify_certificate_is_tenant_scoped(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Tess',
+            'last_name' => 'Tenant',
+            'name' => 'Tess Tenant',
             'status' => 'active',
             'is_approved' => true,
         ]);
@@ -314,9 +313,9 @@ class VolunteerCertificateControllerTest extends TestCase
             'generated_at' => now(),
         ]);
 
-        $this->apiGet('/v2/volunteering/certificates/verify/TENANT2CERT')
+        $this->apiPost('/v2/volunteering/certificates/check', ['code' => 'TENANT2CERT', 'name' => 'Tess Tenant'])
             ->assertOk()
-            ->assertJsonPath('data.verification_code', 'TENANT2CERT');
+            ->assertJsonPath('data.valid', true);
 
         $otherTenantUser = User::factory()->forTenant(999)->create([
             'status' => 'active',
@@ -324,7 +323,8 @@ class VolunteerCertificateControllerTest extends TestCase
         ]);
         Sanctum::actingAs($otherTenantUser, ['*']);
         $this->withTenant(999);
-        $this->apiGet('/v2/volunteering/certificates/verify/TENANT2CERT')
-            ->assertNotFound();
+        $this->apiPost('/v2/volunteering/certificates/check', ['code' => 'TENANT2CERT', 'name' => 'Tess Tenant'])
+            ->assertOk()
+            ->assertJsonPath('data.valid', false);
     }
 }

@@ -725,67 +725,6 @@ class VolunteerExpenseService
     }
 
     /**
-     * Export expenses as an array of rows for CSV generation.
-     *
-     * @param int $tenantId
-     * @param array|null $filters Optional filters: user_id, organization_id, status, date_from, date_to
-     * @return array Array of associative arrays (one per expense row)
-     */
-    public static function exportExpenses(int $tenantId, ?array $filters): array
-    {
-        $query = VolExpense::query()
-            ->where('vol_expenses.tenant_id', $tenantId)
-            ->join('users as u', function ($join) {
-                $join->on('vol_expenses.user_id', '=', 'u.id')
-                    ->on('vol_expenses.tenant_id', '=', 'u.tenant_id');
-            })
-            ->leftJoin('vol_organizations as org', function ($join) {
-                $join->on('vol_expenses.organization_id', '=', 'org.id')
-                    ->on('vol_expenses.tenant_id', '=', 'org.tenant_id');
-            })
-            ->select([
-                'vol_expenses.id',
-                'u.first_name',
-                'u.last_name', 'u.profile_type', 'u.organization_name',
-                'u.email',
-                'org.name as organization_name',
-                'vol_expenses.expense_type',
-                'vol_expenses.amount',
-                'vol_expenses.currency',
-                'vol_expenses.description',
-                'vol_expenses.submitted_at',
-                'vol_expenses.status',
-                'vol_expenses.reviewed_by',
-                'vol_expenses.review_notes',
-                'vol_expenses.reviewed_at',
-                'vol_expenses.paid_at',
-                'vol_expenses.payment_reference',
-            ]);
-
-        if (!empty($filters['user_id'])) {
-            $query->where('vol_expenses.user_id', (int) $filters['user_id']);
-        }
-        if (!empty($filters['organization_id'])) {
-            $query->where('vol_expenses.organization_id', (int) $filters['organization_id']);
-        }
-        if (!empty($filters['status'])) {
-            $query->where('vol_expenses.status', $filters['status']);
-        }
-        if (!empty($filters['date_from'])) {
-            $query->where('vol_expenses.submitted_at', '>=', $filters['date_from']);
-        }
-        if (!empty($filters['date_to'])) {
-            $query->where('vol_expenses.submitted_at', '<=', $filters['date_to']);
-        }
-
-        return $query->orderByDesc('vol_expenses.submitted_at')
-            ->orderByDesc('vol_expenses.id')
-            ->get()
-            ->map(fn ($row) => (array) $row->getAttributes())
-            ->toArray();
-    }
-
-    /**
      * Get expense policies for a tenant.
      *
      * @param int $tenantId

@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2807,
-  "api_route_rows": 2772,
-  "distinct_api_paths": 2308,
+  "total_registered_routes": 2800,
+  "api_route_rows": 2765,
+  "distinct_api_paths": 2301,
   "route_source_fingerprint": {
-    "digest": "93a6eb114e7b96e9e00ed7c0867261613fdd7ef79722b85e3fd602d8538ce193",
+    "digest": "82eaa859753c468b9ecb1e35e68840b4a06d9c2448eba34bde4ccfa6ddefca2c",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "4fbc1efe414d50158cd9e6399bd30e559ed2335f33b8f3d8002228006b9268e0"
+        "sha256": "831cae0fcd83a44d94b8650a61275974b039fbf0478c10e0e9e7b5aa76ef9218"
       },
       {
         "file": "routes/channels.php",
@@ -3321,9 +3321,6 @@
     "/api/v2/admin/volunteering/activity-feed": [
       "GET"
     ],
-    "/api/v2/admin/volunteering/applications": [
-      "GET"
-    ],
     "/api/v2/admin/volunteering/approvals": [
       "GET"
     ],
@@ -3369,9 +3366,6 @@
       "POST"
     ],
     "/api/v2/admin/volunteering/expenses": [
-      "GET"
-    ],
-    "/api/v2/admin/volunteering/expenses/export": [
       "GET"
     ],
     "/api/v2/admin/volunteering/expenses/policies": [
@@ -6998,9 +6992,6 @@
     "/api/v2/volunteering/certificates/check": [
       "POST"
     ],
-    "/api/v2/volunteering/certificates/verify/{code}": [
-      "GET"
-    ],
     "/api/v2/volunteering/certificates/{code}/html": [
       "GET"
     ],
@@ -7056,9 +7047,6 @@
     "/api/v2/volunteering/giving-days": [
       "GET"
     ],
-    "/api/v2/volunteering/giving-days/{id}/stats": [
-      "GET"
-    ],
     "/api/v2/volunteering/group-reservations": [
       "GET"
     ],
@@ -7085,9 +7073,6 @@
     "/api/v2/volunteering/hours": [
       "GET",
       "POST"
-    ],
-    "/api/v2/volunteering/hours/pending-review": [
-      "GET"
     ],
     "/api/v2/volunteering/hours/summary": [
       "GET"
@@ -7297,9 +7282,6 @@
     "/api/v2/volunteering/wellbeing/checkin": [
       "POST"
     ],
-    "/api/v2/volunteering/wellbeing/my-status": [
-      "GET"
-    ],
     "/api/v2/wallet/balance": [
       "GET"
     ],
@@ -7368,9 +7350,6 @@
     ],
     "/api/v2/webhooks/stripe": [
       "POST"
-    ],
-    "/api/vol_opportunities": [
-      "GET"
     ],
     "/api/wallet/balance": [
       "GET"

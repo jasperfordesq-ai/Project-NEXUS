@@ -416,41 +416,6 @@ class VolunteerDonationService
     }
 
     /**
-     * Get statistics for a giving day.
-     *
-     * @param int $givingDayId Giving day ID (tenant-scoped)
-     * @return array Keys: total_raised, donor_count, goal_amount, progress_percent
-     * @throws \RuntimeException If the giving day is not found
-     */
-    public static function getGivingDayStats(int $givingDayId): array
-    {
-        $givingDay = VolGivingDay::where('tenant_id', TenantContext::getId())->find($givingDayId);
-
-        if (!$givingDay) {
-            throw new \RuntimeException(__('api.vol_giving_day_not_found'));
-        }
-
-        $donorCount = VolDonation::where('giving_day_id', $givingDayId)
-            ->where('tenant_id', TenantContext::getId())
-            ->where('status', 'completed')
-            ->distinct('user_id')
-            ->count('user_id');
-
-        $goalAmount = (float) $givingDay->goal_amount;
-        $totalRaised = (float) $givingDay->raised_amount;
-        $progress = $goalAmount > 0
-            ? min(round(($totalRaised / $goalAmount) * 100, 2), 100.00)
-            : 0.00;
-
-        return [
-            'total_raised' => number_format($totalRaised, 2, '.', ''),
-            'donor_count' => $donorCount,
-            'goal_amount' => number_format($goalAmount, 2, '.', ''),
-            'progress_percent' => $progress,
-        ];
-    }
-
-    /**
      * List all giving days (active and inactive) for admin view.
      */
     public static function adminGetGivingDays(): array
@@ -494,7 +459,7 @@ class VolunteerDonationService
             $day['has_donations'] = $withDonations->has((int) $row->id);
             // raised_amount deliberately serves the STORED vol_giving_days
             // counter — the same source of truth the public getGivingDays()
-            // and getGivingDayStats() paths use. The counter is maintained
+            // path uses. The counter is maintained
             // transactionally across the full donation lifecycle: incremented
             // on completion (markCompleted / Stripe payment_intent.succeeded)
             // and decremented on refund (StripeDonationService::

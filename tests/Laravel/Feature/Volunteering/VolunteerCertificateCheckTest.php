@@ -108,11 +108,6 @@ class VolunteerCertificateCheckTest extends TestCase
         $this->check(['name' => 'Ada Lovelace'])->assertStatus(422);
     }
 
-    public function test_the_signed_in_lookup_still_refuses_anonymous_callers(): void
-    {
-        $this->apiGet('/v2/volunteering/certificates/verify/' . self::CODE)->assertUnauthorized();
-    }
-
     public function test_the_certificate_links_to_the_public_check_page(): void
     {
         $url = \App\Services\VolunteerCertificateService::verify(self::CODE)['verification_url'] ?? '';

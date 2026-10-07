@@ -1309,7 +1309,6 @@ Route::delete('/v2/volunteering/shifts/{id}/signup', [\App\Http\Controllers\Api\
 Route::get('/v2/volunteering/hours', [\App\Http\Controllers\Api\VolunteerController::class, 'myHours']);
 Route::post('/v2/volunteering/hours', [\App\Http\Controllers\Api\VolunteerController::class, 'logHours']);
 Route::get('/v2/volunteering/hours/summary', [\App\Http\Controllers\Api\VolunteerController::class, 'hoursSummary']);
-Route::get('/v2/volunteering/hours/pending-review', [\App\Http\Controllers\Api\VolunteerController::class, 'pendingHoursReview']);
 Route::put('/v2/volunteering/hours/{id}/verify', [\App\Http\Controllers\Api\VolunteerController::class, 'verifyHours']);
 Route::middleware(['feature:volunteering', 'feature:organisations'])->group(function () {
     Route::get('/v2/volunteering/my-organisations', [\App\Http\Controllers\Api\VolunteerController::class, 'myOrganisations']);
@@ -2773,7 +2772,6 @@ Route::put('/v2/admin/newsletters/{id}', [\App\Http\Controllers\Api\AdminNewslet
 Route::delete('/v2/admin/newsletters/{id}', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'destroy']);
 Route::get('/v2/admin/volunteering', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'index']);
 Route::get('/v2/admin/volunteering/opportunities', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'opportunities']);
-Route::get('/v2/admin/volunteering/applications', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'applications']);
 Route::get('/v2/admin/volunteering/approvals', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'approvals']);
 Route::get('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'organizations']);
 Route::post('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'createOrganization']);
@@ -2791,10 +2789,9 @@ Route::post('/v2/admin/volunteering/approvals/{id}/approve', [\App\Http\Controll
 Route::post('/v2/admin/volunteering/approvals/{id}/decline', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'declineApplication']);
 Route::post('/v2/admin/volunteering/send-shift-reminders', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'sendShiftReminders']);
 Route::get('/v2/admin/volunteering/expenses', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'adminExpenses']);
-Route::get('/v2/admin/volunteering/expenses/export', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'exportExpenses']);
 Route::get('/v2/admin/volunteering/expenses/policies', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'getExpensePolicies']);
 Route::put('/v2/admin/volunteering/expenses/policies', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'updateExpensePolicy']);
-// NOTE: the {id} route must stay below the literal /export and /policies routes or it shadows them
+// NOTE: the {id} route must stay below the literal /policies routes or it shadows them
 Route::put('/v2/admin/volunteering/expenses/{id}', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'reviewExpense']);
 Route::get('/v2/admin/volunteering/expenses/{id}/receipt', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'downloadReceipt'])->whereNumber('id');
 Route::get('/v2/admin/volunteering/guardian-consents', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminGuardianConsents']);
@@ -3806,7 +3803,6 @@ Route::get('/v2/users/{id}/rating', [\App\Http\Controllers\Api\WalletFeaturesCon
 Route::get('/v2/volunteering/recommended-shifts', [\App\Http\Controllers\Api\VolunteerController::class, 'recommendedShifts']);
 Route::get('/v2/volunteering/certificates', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'myCertificates']);
 Route::post('/v2/volunteering/certificates', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'generateCertificate']);
-Route::get('/v2/volunteering/certificates/verify/{code}', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'verifyCertificate'])->middleware('auth:sanctum');
 // Public: confirms a certificate only for a caller who already has its code AND printed name (gap C1, 6 Oct 2026).
 Route::post('/v2/volunteering/certificates/check', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'checkCertificate'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/volunteering/certificates/{code}/html', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'certificateHtml'])->middleware('auth:sanctum');
@@ -3821,7 +3817,6 @@ Route::delete('/v2/volunteering/emergency-alerts/{id}', [\App\Http\Controllers\A
 Route::get('/v2/volunteering/opportunities/{id}/emergency-alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'opportunityEmergencyAlerts'])->whereNumber('id');
 Route::get('/v2/volunteering/wellbeing', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'wellbeingDashboard']);
 Route::post('/v2/volunteering/wellbeing/checkin', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'wellbeingCheckin']);
-Route::get('/v2/volunteering/wellbeing/my-status', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'myWellbeingStatus']);
 Route::get('/v2/volunteering/swaps', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getSwapRequests']);
 Route::post('/v2/volunteering/swaps', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'requestSwap']);
 Route::put('/v2/volunteering/swaps/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'respondToSwap']);
@@ -3926,7 +3921,6 @@ Route::delete('/v2/volunteering/community-projects/{id}/support', [\App\Http\Con
 Route::get('/v2/volunteering/donations', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getDonations']);
 Route::post('/v2/volunteering/donations', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createDonation']);
 Route::get('/v2/volunteering/giving-days', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getGivingDays']);
-Route::get('/v2/volunteering/giving-days/{id}/stats', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getGivingDayStats']);
 Route::get('/v2/ideation-categories', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'listCategories']);
 Route::post('/v2/ideation-categories', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'createCategory'])->middleware('admin');
 Route::put('/v2/ideation-categories/{id}', [\App\Http\Controllers\Api\IdeationChallengesController::class, 'updateCategory'])->middleware('admin');
@@ -4030,7 +4024,6 @@ Route::get('/polls', [\App\Http\Controllers\Api\PollsController::class, 'index']
 Route::post('/polls/vote', [\App\Http\Controllers\Api\PollsController::class, 'vote'])->middleware('feature:polls');
 Route::get('/goals', [\App\Http\Controllers\Api\GoalsController::class, 'index'])->middleware('feature:goals');
 // Legacy routes removed: /goals/update and /goals/offer-buddy — use V2 endpoints instead
-Route::get('/vol_opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'index']);
 Route::get('/events', [\App\Http\Controllers\Api\EventsController::class, 'index'])->middleware('feature:events');
 // Legacy POST /events/rsvp removed: it had no {id} route parameter and no callers.
 Route::middleware('module:wallet')->group(function () {

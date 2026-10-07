@@ -102,20 +102,6 @@ class VolunteerCertificateController extends BaseApiController
         return $this->respondWithData($cert, null, 201);
     }
 
-    public function verifyCertificate($code): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->rateLimit('volunteering_cert_verify', 60, 60);
-
-        $cert = $this->volunteerCertificateService->verify($code);
-
-        if ($cert === null) {
-            return $this->respondWithError('NOT_FOUND', __('api.certificate_not_found'), null, 404);
-        }
-
-        return $this->respondWithData($cert);
-    }
-
     /**
      * POST /v2/volunteering/certificates/check — public, no account needed.
      *

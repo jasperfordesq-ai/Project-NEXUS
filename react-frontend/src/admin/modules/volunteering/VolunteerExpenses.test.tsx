@@ -13,7 +13,6 @@ const { mockAdminVolunteering } = vi.hoisted(() => ({
   mockAdminVolunteering: {
     getExpenses: vi.fn(),
     reviewExpense: vi.fn(),
-    exportExpenses: vi.fn(),
     getExpensePolicies: vi.fn(),
     updateExpensePolicies: vi.fn(),
   },
@@ -192,7 +191,6 @@ describe('VolunteerExpenses', () => {
     });
     mockAdminVolunteering.reviewExpense.mockResolvedValue({ success: true });
     mockAdminVolunteering.updateExpensePolicies.mockResolvedValue({ success: true });
-    mockAdminVolunteering.exportExpenses.mockResolvedValue(new Blob(['csv'], { type: 'text/csv' }));
   });
 
   // Gap D6: with no policies there was nothing to press; the API now creates one by type.

@@ -15668,29 +15668,6 @@
         }
       }
     },
-    "/api/v2/volunteering/certificates/verify/{code}": {
-      "get": {
-        "summary": "GET /api/v2/volunteering/certificates/verify/{code}",
-        "tags": [
-          "Volunteering"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        },
-        "parameters": [
-          {
-            "name": "code",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
     "/api/v2/volunteering/certificates/{code}/html": {
       "get": {
         "summary": "GET /api/v2/volunteering/certificates/{code}/html",
@@ -15834,19 +15811,6 @@
     "/api/v2/volunteering/wellbeing/checkin": {
       "post": {
         "summary": "POST /api/v2/volunteering/wellbeing/checkin",
-        "tags": [
-          "Volunteering"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
-    "/api/v2/volunteering/wellbeing/my-status": {
-      "get": {
-        "summary": "GET /api/v2/volunteering/wellbeing/my-status",
         "tags": [
           "Volunteering"
         ],

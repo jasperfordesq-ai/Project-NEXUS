@@ -22,7 +22,7 @@
       "TS2353": 1
     },
     "src/admin/api/adminApi.test.ts": {
-      "TS2345": 4,
+      "TS2345": 3,
       "TS2353": 3,
       "TS2488": 2,
       "TS2532": 1
@@ -1814,10 +1814,6 @@
       "TS2345": 3,
       "TS2769": 1
     },
-    "src/pages/volunteering/HoursReviewTab.test.tsx": {
-      "TS2769": 1,
-      "TS7006": 1
-    },
     "src/pages/volunteering/MyOrganisationsPage.test.tsx": {
       "TS2741": 2
     },
@@ -1888,7 +1884,7 @@
     }
   },
   "totals": {
-    "fileCount": 557,
-    "errorCount": 1697
+    "fileCount": 556,
+    "errorCount": 1694
   }
 }

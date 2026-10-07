@@ -137,11 +137,6 @@ class VolunteerController extends BaseApiController
         return $this->respondWithData($opportunity);
     }
 
-    public function show(int $id): JsonResponse
-    {
-        return $this->showOpportunity($id);
-    }
-
     public function createOpportunity(CreateOpportunityRequest $request): JsonResponse
     {
         $this->ensureFeature();
@@ -576,19 +571,6 @@ class VolunteerController extends BaseApiController
         $this->rateLimit('volunteering_hours_summary', 60, 60);
         $summary = $this->volunteerService->getHoursSummary($userId);
         return $this->respondWithData($summary);
-    }
-
-    public function pendingHoursReview(): JsonResponse
-    {
-        $this->ensureFeature();
-        $userId = $this->getUserId();
-        $this->rateLimit('volunteering_pending_hours', 60, 60);
-
-        $filters = ['limit' => $this->queryInt('per_page', 20, 1, 50)];
-        if ($this->query('cursor')) $filters['cursor'] = $this->query('cursor');
-
-        $result = $this->volunteerService->getPendingHoursForOrgOwner($userId, $filters);
-        return $this->respondWithData(['items' => $result['items'], 'cursor' => $result['cursor'], 'has_more' => $result['has_more']]);
     }
 
     public function verifyHours(VerifyHoursRequest $request, $id): JsonResponse
@@ -1241,17 +1223,4 @@ class VolunteerController extends BaseApiController
     // LEGACY V1 INDEX
     // ========================================
 
-    public function index(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->getUserId();
-        $this->rateLimit('volunteering_legacy_list', 60, 60);
-
-        $opportunities = VolOpportunity::where('tenant_id', TenantContext::getId())
-            ->where('status', 'active')
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get();
-        return $this->respondWithCollection($opportunities->map(fn ($row) => $row->toArray())->all());
-    }
 }

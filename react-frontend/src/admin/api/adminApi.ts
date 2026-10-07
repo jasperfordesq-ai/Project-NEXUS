@@ -1760,21 +1760,11 @@ export const adminVolunteering = {
   decideSwap: (id: number, action: 'approve' | 'reject') =>
     api.put<{ id: number; status: string }>(`/v2/volunteering/admin/swaps/${id}`, { action }),
 
-  // Applications with filters
-  getApplications: (params?: { status?: string; cursor?: string }) => {
-    const search = new URLSearchParams();
-    if (params?.status) search.set('status', params.status);
-    if (params?.cursor) search.set('cursor', params.cursor);
-    const qs = search.toString();
-    return api.get(`/v2/admin/volunteering/applications${qs ? `?${qs}` : ''}`);
-  },
-
   // Expenses
   getExpenses: (cursor?: string) =>
     api.get('/v2/admin/volunteering/expenses' + (cursor ? `?cursor=${encodeURIComponent(cursor)}` : '')),
   reviewExpense: (id: number, data: { status: string; review_notes?: string; payment_reference?: string }) =>
     api.put(`/v2/admin/volunteering/expenses/${id}`, data),
-  exportExpenses: (filename?: string) => api.download('/v2/admin/volunteering/expenses/export', { filename }),
   getReceiptBlob: (id: number) => api.download(`/v2/admin/volunteering/expenses/${id}/receipt`),
   getExpensePolicies: () => api.get('/v2/admin/volunteering/expenses/policies'),
   updateExpensePolicies: (data: Record<string, unknown>) =>

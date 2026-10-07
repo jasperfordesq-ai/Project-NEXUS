@@ -343,7 +343,7 @@ class VolunteerDonationServiceTest extends TestCase
 
         $this->assertNotNull($day);
         // The admin list must serve the SAME stored vol_giving_days counter as
-        // the public getGivingDays()/getGivingDayStats() paths (the counter is
+        // the public getGivingDays() path (the counter is
         // maintained on completion AND refund), not a recomputed SUM(amount)
         // that silently diverges from what members see.
         $this->assertSame(50.0, (float) $day['raised_amount']);

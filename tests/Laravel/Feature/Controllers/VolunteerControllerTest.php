@@ -207,16 +207,6 @@ class VolunteerControllerTest extends TestCase
         }
     }
 
-    public function test_legacy_opportunities_endpoint_returns_collection_without_type_error(): void
-    {
-        $this->authenticatedUser();
-
-        $response = $this->getJson('/api/vol_opportunities', $this->withTenantHeader());
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure(['data']);
-    }
-
     // ------------------------------------------------------------------
     //  POST /v2/volunteering/opportunities
     // ------------------------------------------------------------------

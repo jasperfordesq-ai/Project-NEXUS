@@ -143,68 +143,6 @@ class AdminVolunteerController extends BaseApiController
         }
     }
 
-    /** GET /api/v2/admin/volunteering/applications */
-    public function applications(): JsonResponse
-    {
-        $this->requireAdmin();
-        if (!TenantContext::hasFeature('volunteering')) {
-            return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
-        }
-        $tenantId = $this->getTenantId();
-
-        $perPage = $this->queryInt('per_page', 20, 1, 50);
-        $status = $this->query('status');
-        $cursor = $this->query('cursor');
-
-        if (!$this->tableExists('vol_applications')) {
-            return $this->respondWithCollection([], null, $perPage, false);
-        }
-
-        try {
-            $sql = "SELECT a.*, u.first_name, u.last_name, u.email as user_email, u.avatar_url as user_avatar,
-                           vo.title as opportunity_title
-                    FROM vol_applications a
-                    INNER JOIN vol_opportunities vo ON a.opportunity_id = vo.id
-                    LEFT JOIN users u ON a.user_id = u.id AND u.tenant_id = ?
-                    WHERE vo.tenant_id = ? AND a.tenant_id = ?";
-            $params = [$tenantId, $tenantId, $tenantId];
-
-            if ($status && in_array($status, ['pending', 'approved', 'declined', 'withdrawn'], true)) {
-                $sql .= " AND a.status = ?";
-                $params[] = $status;
-            }
-
-            if ($cursor) {
-                $decoded = base64_decode($cursor, true);
-                if ($decoded && is_numeric($decoded)) {
-                    $sql .= " AND a.id < ?";
-                    $params[] = (int) $decoded;
-                }
-            }
-
-            $sql .= " ORDER BY a.created_at DESC, a.id DESC LIMIT ?";
-            $params[] = $perPage + 1;
-
-            $results = DB::select($sql, $params);
-            $rows = array_map(fn($r) => (array)$r, $results);
-
-            $hasMore = count($rows) > $perPage;
-            if ($hasMore) {
-                array_pop($rows);
-            }
-
-            $nextCursor = null;
-            if ($hasMore && !empty($rows)) {
-                $lastRow = end($rows);
-                $nextCursor = base64_encode((string) $lastRow['id']);
-            }
-
-            return $this->respondWithCollection($rows, $nextCursor, $perPage, $hasMore);
-        } catch (\Exception $e) {
-            return $this->respondWithCollection([], null, $perPage, false);
-        }
-    }
-
     /** GET /api/v2/admin/volunteering/hours */
     public function listHours(): JsonResponse
     {
@@ -957,7 +895,7 @@ class AdminVolunteerController extends BaseApiController
         ));
     }
 
-    /** POST /api/v2/admin/volunteering/applications/{id}/approve */
+    /** POST /api/v2/admin/volunteering/approvals/{id}/approve */
     public function approveApplication($id): JsonResponse
     {
         $this->requireAdmin();
@@ -1108,7 +1046,7 @@ class AdminVolunteerController extends BaseApiController
         }
     }
 
-    /** POST /api/v2/admin/volunteering/applications/{id}/decline */
+    /** POST /api/v2/admin/volunteering/approvals/{id}/decline */
     public function declineApplication($id): JsonResponse
     {
         $this->requireAdmin();

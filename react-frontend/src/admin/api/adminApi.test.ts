@@ -1411,12 +1411,6 @@ describe('adminVolunteering', () => {
     expect(mockGet).toHaveBeenCalledWith('/v2/admin/volunteering/hours?status=pending');
   });
 
-  it('exportExpenses calls download', async () => {
-    mockDownload.mockResolvedValueOnce(undefined);
-    await adminVolunteering.exportExpenses('expenses.csv');
-    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/volunteering/expenses/export', { filename: 'expenses.csv' });
-  });
-
   it('reorderCustomFields posts field_ids', async () => {
     mockPost.mockResolvedValueOnce({ success: true, data: {} });
     await adminVolunteering.reorderCustomFields([3, 1, 2]);

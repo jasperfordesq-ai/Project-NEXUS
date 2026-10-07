@@ -99,7 +99,7 @@ All three pin tenant context with `TenantContext::setById()` / `restoreAfterScop
 
 ## Certificates
 
-`VolunteerCertificateService::generate()` sums a volunteer's **approved** hours (optionally filtered by org/date), writes a `vol_certificates` row with a 12-char `verification_code`, and emails the volunteer in their locale. `verify($code)` is the verification path (tenant-scoped when a tenant context is present); it is **not** anonymous — both `GET /v2/volunteering/certificates/verify/{code}` (`routes/api.php:3343`) and `/certificates/{code}/html` (`routes/api.php:3344`) explicitly carry `->middleware('auth:sanctum')`, so a third party cannot verify a certificate without a signed-in session. `generateHtml()` renders a printable certificate. Optional minimum-hours gate: `volunteering.min_hours_for_certificate`.
+`VolunteerCertificateService::generate()` sums a volunteer's **approved** hours (optionally filtered by org/date), writes a `vol_certificates` row with a 16-character `verification_code`, and emails the volunteer in their locale. Anyone shown a certificate checks it through the public, rate-limited `POST /v2/volunteering/certificates/check`, which needs both the code and the holder's name and answers only whether they match; a revoked certificate fails exactly as an unknown code does. `/certificates/{code}/html` (the printable copy) is for the signed-in holder only. Community admins list certificates and revoke one issued in error under `/v2/admin/volunteering/certificates`. Optional minimum-hours gate: `volunteering.min_hours_for_certificate`.
 
 ## Safeguarding
 

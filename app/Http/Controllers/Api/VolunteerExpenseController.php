@@ -7,12 +7,10 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use App\Http\Requests\Volunteering\SubmitExpenseRequest;
 use App\Services\VolunteerExpenseService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
-use App\Support\CsvExportSanitizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -419,35 +417,6 @@ class VolunteerExpenseController extends BaseApiController
         );
 
         return $this->streamReceipt($expense, $tenantId);
-    }
-
-    /** Returns raw CSV for expense export */
-    public function exportExpenses(): Response
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $filters = [
-            'status' => $this->query('status'),
-            'date_from' => $this->query('date_from'),
-            'date_to' => $this->query('date_to'),
-        ];
-
-        $rows = $this->volunteerExpenseService->exportExpenses(TenantContext::getId(), $filters);
-        $handle = fopen('php://temp', 'r+');
-        if (!empty($rows)) {
-            \App\Support\CsvExportSanitizer::put($handle, array_keys((array) $rows[0]));
-            foreach ($rows as $row) {
-                \App\Support\CsvExportSanitizer::put($handle, CsvExportSanitizer::row(array_values((array) $row)));
-            }
-        }
-        rewind($handle);
-        $csv = stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csv, 200)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="volunteer_expenses_' . date('Y-m-d') . '.csv"');
     }
 
     public function getExpensePolicies(): JsonResponse
