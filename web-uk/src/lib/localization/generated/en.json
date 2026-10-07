@@ -11406,6 +11406,91 @@
                         "cancelled": "Cancelled"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "Volunteer qualifications",
+                "intro": "Confirm a qualification after you have seen the original certificate, checked an online register, or had the issuer confirm it. Do not upload or store copies here.",
+                "tiles": {
+                    "expiring": "Expiring soon",
+                    "recorded": "Awaiting confirmation",
+                    "confirmed": "Confirmed",
+                    "expired": "Expired"
+                },
+                "filters": {
+                    "attention": "Needs attention",
+                    "confirmed": "Confirmed",
+                    "expired": "Expired",
+                    "all": "All"
+                },
+                "search_placeholder": "Search volunteers",
+                "empty_title": "Nothing needs your attention",
+                "empty_body": "Qualifications your volunteers record will appear here.",
+                "confirm": {
+                    "title": "Confirm qualification",
+                    "body": "You are confirming that :name holds this qualification.",
+                    "method": "How did you check it?",
+                    "methods": {
+                        "saw_original": "I saw the original certificate",
+                        "online_register": "I checked an online register",
+                        "issuer_confirmed": "The issuer confirmed it"
+                    },
+                    "submit": "Confirm",
+                    "done": "Qualification confirmed.",
+                    "expired_hint": "Ask the volunteer to update the expiry date first.",
+                    "self": "You cannot confirm your own qualification."
+                },
+                "withdraw": {
+                    "title": "Withdraw qualification",
+                    "body": "The volunteer will see that it was withdrawn and why.",
+                    "reason": "Reason",
+                    "reasons": {
+                        "volunteer_request": "The volunteer asked for it to be removed",
+                        "no_longer_held": "No longer held",
+                        "entered_in_error": "Entered by mistake",
+                        "replaced": "Replaced by a newer one"
+                    },
+                    "confirm": "Withdraw",
+                    "done": "Qualification withdrawn."
+                },
+                "load_more": "Load more",
+                "types": {
+                    "first_aid": "First aid",
+                    "safeguarding_training": "Safeguarding training",
+                    "manual_handling": "Manual handling",
+                    "food_hygiene": "Food hygiene",
+                    "driving_licence": "Driving licence",
+                    "professional_registration": "Professional registration",
+                    "other": "Other",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Safeguarding adults",
+                    "efaw": "Emergency First Aid at Work",
+                    "faw": "First Aid at Work"
+                },
+                "status": {
+                    "recorded": "Awaiting confirmation",
+                    "confirmed": "Confirmed",
+                    "expired": "Expired",
+                    "withdrawn": "Withdrawn",
+                    "expiring": "Expiring soon"
+                },
+                "method_short": {
+                    "saw_original": "saw the original",
+                    "online_register": "checked the online register",
+                    "issuer_confirmed": "issuer confirmed it"
+                },
+                "no_expiry": "No expiry date",
+                "expired_on": "Expired :date",
+                "expires_on": "Expires :date",
+                "confirmed_line": "Confirmed by :name on :date",
+                "confirmed_line_org": "Confirmed by :name for :org on :date",
+                "reference": "Ref. :ref",
+                "search_button": "Search",
+                "issued_by": "Issued by",
+                "obtained": "Obtained",
+                "expiry": "Expiry",
+                "update_failed": "We could not update the qualification. Please try again.",
+                "unknown_volunteer": "A volunteer"
             }
         },
         "govuk_alpha_wallet": {

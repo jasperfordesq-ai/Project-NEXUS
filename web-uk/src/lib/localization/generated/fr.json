@@ -11406,6 +11406,91 @@
                         "cancelled": "Annulé"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "Qualifications des bénévoles",
+                "intro": "Confirmez une qualification après avoir vu le certificat original, vérifié un registre en ligne ou obtenu la confirmation de l'organisme émetteur. Ne téléversez ni ne stockez de copies ici.",
+                "tiles": {
+                    "expiring": "Expirent bientôt",
+                    "recorded": "En attente de confirmation",
+                    "confirmed": "Confirmées",
+                    "expired": "Expirées"
+                },
+                "filters": {
+                    "attention": "À traiter",
+                    "confirmed": "Confirmées",
+                    "expired": "Expirées",
+                    "all": "Toutes"
+                },
+                "search_placeholder": "Rechercher des bénévoles",
+                "empty_title": "Rien ne demande votre attention",
+                "empty_body": "Les qualifications enregistrées par vos bénévoles apparaîtront ici.",
+                "confirm": {
+                    "title": "Confirmer la qualification",
+                    "body": "Vous confirmez que :name détient cette qualification.",
+                    "method": "Comment l'avez-vous vérifiée ?",
+                    "methods": {
+                        "saw_original": "J'ai vu le certificat original",
+                        "online_register": "J'ai vérifié un registre en ligne",
+                        "issuer_confirmed": "L'organisme émetteur l'a confirmé"
+                    },
+                    "submit": "Confirmer",
+                    "done": "Qualification confirmée.",
+                    "expired_hint": "Demandez d'abord au ou à la bénévole de mettre à jour la date d'expiration.",
+                    "self": "Vous ne pouvez pas confirmer votre propre qualification."
+                },
+                "withdraw": {
+                    "title": "Retirer la qualification",
+                    "body": "Le ou la bénévole verra qu'elle a été retirée et pourquoi.",
+                    "reason": "Motif",
+                    "reasons": {
+                        "volunteer_request": "Le ou la bénévole a demandé son retrait",
+                        "no_longer_held": "N'est plus détenue",
+                        "entered_in_error": "Saisie par erreur",
+                        "replaced": "Remplacée par une plus récente"
+                    },
+                    "confirm": "Retirer",
+                    "done": "Qualification retirée."
+                },
+                "load_more": "Charger plus",
+                "types": {
+                    "first_aid": "Premiers secours",
+                    "safeguarding_training": "Formation à la protection",
+                    "manual_handling": "Manutention manuelle",
+                    "food_hygiene": "Hygiène alimentaire",
+                    "driving_licence": "Permis de conduire",
+                    "professional_registration": "Inscription professionnelle",
+                    "other": "Autre",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Protection des adultes",
+                    "efaw": "Premiers secours d'urgence au travail",
+                    "faw": "Premiers secours au travail"
+                },
+                "status": {
+                    "recorded": "En attente de confirmation",
+                    "confirmed": "Confirmée",
+                    "expired": "Expirée",
+                    "withdrawn": "Retirée",
+                    "expiring": "Expire bientôt"
+                },
+                "method_short": {
+                    "saw_original": "a vu l'original",
+                    "online_register": "a vérifié le registre en ligne",
+                    "issuer_confirmed": "l'organisme émetteur l'a confirmé"
+                },
+                "no_expiry": "Pas de date d'expiration",
+                "expired_on": "Expirée le :date",
+                "expires_on": "Expire le :date",
+                "confirmed_line": "Confirmée par :name le :date",
+                "confirmed_line_org": "Confirmée par :name pour :org le :date",
+                "reference": "Réf. :ref",
+                "search_button": "Rechercher",
+                "issued_by": "Délivrée par",
+                "obtained": "Obtenue le",
+                "expiry": "Expiration",
+                "update_failed": "Nous n’avons pas pu mettre à jour la qualification. Veuillez réessayer.",
+                "unknown_volunteer": "Un ou une bénévole"
             }
         },
         "govuk_alpha_wallet": {

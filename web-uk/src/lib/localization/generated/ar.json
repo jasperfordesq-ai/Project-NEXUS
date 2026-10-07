@@ -11406,6 +11406,91 @@
                         "cancelled": "ملغى"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "مؤهلات المتطوعين",
+                "intro": "أكد المؤهل بعد أن ترى الشهادة الأصلية أو تتحقق من سجل إلكتروني أو تحصل على تأكيد الجهة المُصدِرة. لا ترفع أو تخزّن نسخاً هنا.",
+                "tiles": {
+                    "expiring": "تنتهي قريباً",
+                    "recorded": "بانتظار التأكيد",
+                    "confirmed": "مؤكدة",
+                    "expired": "منتهية"
+                },
+                "filters": {
+                    "attention": "تحتاج إلى انتباه",
+                    "confirmed": "مؤكدة",
+                    "expired": "منتهية",
+                    "all": "الكل"
+                },
+                "search_placeholder": "البحث عن متطوعين",
+                "empty_title": "لا شيء يحتاج إلى انتباهك",
+                "empty_body": "ستظهر هنا المؤهلات التي يسجلها متطوعوك.",
+                "confirm": {
+                    "title": "تأكيد المؤهل",
+                    "body": "أنت تؤكد أن :name يحمل هذا المؤهل.",
+                    "method": "كيف تحققت منه؟",
+                    "methods": {
+                        "saw_original": "رأيت الشهادة الأصلية",
+                        "online_register": "تحققت من سجل إلكتروني",
+                        "issuer_confirmed": "أكدتها الجهة المُصدِرة"
+                    },
+                    "submit": "تأكيد",
+                    "done": "تم تأكيد المؤهل.",
+                    "expired_hint": "اطلب من المتطوع تحديث تاريخ الانتهاء أولاً.",
+                    "self": "لا يمكنك تأكيد مؤهلك الخاص."
+                },
+                "withdraw": {
+                    "title": "سحب المؤهل",
+                    "body": "سيرى المتطوع أنه سُحب ولماذا.",
+                    "reason": "السبب",
+                    "reasons": {
+                        "volunteer_request": "طلب المتطوع إزالتها",
+                        "no_longer_held": "لم يعد يحملها",
+                        "entered_in_error": "أُدخلت عن طريق الخطأ",
+                        "replaced": "استُبدلت بأحدث منها"
+                    },
+                    "confirm": "سحب",
+                    "done": "تم سحب المؤهل."
+                },
+                "load_more": "تحميل المزيد",
+                "types": {
+                    "first_aid": "الإسعافات الأولية",
+                    "safeguarding_training": "تدريب الحماية",
+                    "manual_handling": "المناولة اليدوية",
+                    "food_hygiene": "النظافة الغذائية",
+                    "driving_licence": "رخصة القيادة",
+                    "professional_registration": "التسجيل المهني",
+                    "other": "أخرى",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "حماية البالغين",
+                    "efaw": "الإسعافات الأولية الطارئة في العمل",
+                    "faw": "الإسعافات الأولية في العمل"
+                },
+                "status": {
+                    "recorded": "بانتظار التأكيد",
+                    "confirmed": "مؤكد",
+                    "expired": "منتهٍ",
+                    "withdrawn": "مسحوب",
+                    "expiring": "ينتهي قريباً"
+                },
+                "method_short": {
+                    "saw_original": "رأى الأصل",
+                    "online_register": "تحقق من السجل الإلكتروني",
+                    "issuer_confirmed": "أكدته الجهة المُصدِرة"
+                },
+                "no_expiry": "بلا تاريخ انتهاء",
+                "expired_on": "انتهى في :date",
+                "expires_on": "ينتهي في :date",
+                "confirmed_line": "أكده :name في :date",
+                "confirmed_line_org": "أكده :name لصالح :org في :date",
+                "reference": "المرجع :ref",
+                "search_button": "بحث",
+                "issued_by": "جهة الإصدار",
+                "obtained": "تاريخ الحصول",
+                "expiry": "انتهاء الصلاحية",
+                "update_failed": "تعذّر تحديث المؤهل. يرجى المحاولة مرة أخرى.",
+                "unknown_volunteer": "متطوع"
             }
         },
         "govuk_alpha_wallet": {

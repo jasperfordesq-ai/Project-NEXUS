@@ -187,6 +187,31 @@ Route::post('/auth/login', [AuthController::class, 'login']);
     expect(index.has('DELETE|/api/v2/events/{param}')).toBe(false);
   });
 
+  it('reads every route file RouteServiceProvider serves under /api, and only those', () => {
+    writeFile(path.join(laravelRoot, 'routes', 'api-extra.php'), `<?php
+Route::get('/v2/events/legacy', [EventsController::class, 'legacy']);
+`);
+    writeFile(path.join(laravelRoot, 'routes', 'web-extra.php'), `<?php
+Route::get('/v2/events/legacy', [EventsController::class, 'legacy']);
+`);
+    writeFile(path.join(laravelRoot, 'app', 'Providers', 'RouteServiceProvider.php'), `<?php
+Route::middleware('api')->prefix('api')->group(base_path('routes/api.php'));
+Route::middleware('api')
+    ->prefix('api')
+    ->group(base_path('routes/api-extra.php'));
+Route::middleware('web')->group(base_path('routes/web-extra.php'));
+`);
+
+    const report = generateApiConsumerLedger({
+      webUkRoot,
+      laravelRoot,
+      outDir,
+      provenance: { generatedAt: '2026-10-07T00:00:00.000Z' }
+    });
+
+    expect(report.sources.laravelApiRouteFiles).toEqual(['routes/api.php', 'routes/api-extra.php']);
+  });
+
   it('matches direct and wrapper callsites to Laravel and records safety evidence', () => {
     const report = generateApiConsumerLedger({
       webUkRoot,

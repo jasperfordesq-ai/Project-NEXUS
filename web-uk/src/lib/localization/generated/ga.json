@@ -11406,6 +11406,91 @@
                         "cancelled": "Cealaithe"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "Cáilíochtaí na n-oibrithe deonacha",
+                "intro": "Deimhnigh cáilíocht tar éis duit an teastas bunaidh a fheiceáil, clár ar líne a sheiceáil, nó tar éis don eisitheoir é a dheimhniú. Ná huaslódáil ná ná stóráil cóipeanna anseo.",
+                "tiles": {
+                    "expiring": "Ag dul in éag go luath",
+                    "recorded": "Ag fanacht le deimhniú",
+                    "confirmed": "Deimhnithe",
+                    "expired": "Imithe in éag"
+                },
+                "filters": {
+                    "attention": "Aird ag teastáil",
+                    "confirmed": "Deimhnithe",
+                    "expired": "Imithe in éag",
+                    "all": "Uile"
+                },
+                "search_placeholder": "Cuardaigh oibrithe deonacha",
+                "empty_title": "Níl aon rud ag teastáil uait",
+                "empty_body": "Taispeánfar anseo na cáilíochtaí a thaifeadann do chuid oibrithe deonacha.",
+                "confirm": {
+                    "title": "Deimhnigh cáilíocht",
+                    "body": "Tá tú ag deimhniú go bhfuil an cháilíocht seo ag :name.",
+                    "method": "Conas a sheiceáil tú é?",
+                    "methods": {
+                        "saw_original": "Chonaic mé an teastas bunaidh",
+                        "online_register": "Sheiceáil mé clár ar líne",
+                        "issuer_confirmed": "Dheimhnigh an t-eisitheoir é"
+                    },
+                    "submit": "Deimhnigh",
+                    "done": "Cáilíocht deimhnithe.",
+                    "expired_hint": "Iarr ar an oibrí deonach an dáta éaga a nuashonrú ar dtús.",
+                    "self": "Ní féidir leat do cháilíocht féin a dheimhniú."
+                },
+                "withdraw": {
+                    "title": "Tarraing cáilíocht siar",
+                    "body": "Feicfidh an t-oibrí deonach gur tarraingíodh siar í agus cén fáth.",
+                    "reason": "Cúis",
+                    "reasons": {
+                        "volunteer_request": "D'iarr an t-oibrí deonach é a bhaint",
+                        "no_longer_held": "Níl sé aige/aici a thuilleadh",
+                        "entered_in_error": "Iontráilte trí dhearmad",
+                        "replaced": "Ceann níos nuaí ina áit"
+                    },
+                    "confirm": "Tarraing siar",
+                    "done": "Cáilíocht tarraingthe siar."
+                },
+                "load_more": "Lódáil tuilleadh",
+                "types": {
+                    "first_aid": "Garchabhair",
+                    "safeguarding_training": "Oiliúint chosanta",
+                    "manual_handling": "Láimhseáil de láimh",
+                    "food_hygiene": "Sláinteachas bia",
+                    "driving_licence": "Ceadúnas tiomána",
+                    "professional_registration": "Clárú gairmiúil",
+                    "other": "Eile",
+                    "children_first": "Tús Áite do Leanaí (Tusla)",
+                    "first_aid_response": "Freagairt Gharchabhrach (PHECC)",
+                    "safeguarding_adults": "Cosaint daoine fásta",
+                    "efaw": "Garchabhair Éigeandála san Ionad Oibre",
+                    "faw": "Garchabhair san Ionad Oibre"
+                },
+                "status": {
+                    "recorded": "Ag fanacht le deimhniú",
+                    "confirmed": "Deimhnithe",
+                    "expired": "Imithe in éag",
+                    "withdrawn": "Tarraingthe siar",
+                    "expiring": "Ag dul in éag go luath"
+                },
+                "method_short": {
+                    "saw_original": "chonaic an bunchóip",
+                    "online_register": "sheiceáil an clár ar líne",
+                    "issuer_confirmed": "dheimhnigh an t-eisitheoir é"
+                },
+                "no_expiry": "Gan dáta éaga",
+                "expired_on": "Chuaigh in éag :date",
+                "expires_on": "Téann in éag :date",
+                "confirmed_line": "Deimhnithe ag :name ar :date",
+                "confirmed_line_org": "Deimhnithe ag :name do :org ar :date",
+                "reference": "Tag. :ref",
+                "search_button": "Cuardaigh",
+                "issued_by": "Eisithe ag",
+                "obtained": "Faighte",
+                "expiry": "Dáta éaga",
+                "update_failed": "Níorbh fhéidir an cháilíocht a nuashonrú. Bain triail eile as.",
+                "unknown_volunteer": "Oibrí deonach"
             }
         },
         "govuk_alpha_wallet": {

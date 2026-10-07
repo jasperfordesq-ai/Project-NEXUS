@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-07T11:56:24.151Z
-Laravel commit SHA: `d2bfd593ee631078fe0eb0886eaf65fc95179357`
-Web UK repository commit SHA: `d2bfd593ee631078fe0eb0886eaf65fc95179357`
+Generated: 2026-10-07T12:07:15.291Z
+Laravel commit SHA: `16168aab9b8a3ade67fe85dfddba6e5f221d8c05`
+Web UK repository commit SHA: `16168aab9b8a3ade67fe85dfddba6e5f221d8c05`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 792 |
+| web-uk routes | 795 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 82 |
+| Extra web-uk routes | 85 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 41 | 0 |
+| volunteering | 52 | 0 | 44 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -173,6 +173,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/organisations/{param}/fundraising/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |
 | GET | `/volunteering/organisations/{param}/fundraising/{param}/end` | volunteering | volunteering/org-fundraising-end | web-uk/src/routes/volunteering-org-fundraising.js |
 | GET | `/volunteering/organisations/{param}/fundraising/new` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |
+| GET | `/volunteering/organisations/{param}/qualifications` | volunteering | volunteering/org-qualifications | web-uk/src/routes/volunteering-org-qualifications.js |
 | GET | `/volunteering/organisations/{param}/safeguarding` | volunteering | volunteering/organisation-safeguarding | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/organisations/{param}/safeguarding/{param}` | volunteering | volunteering/organisation-safeguarding-incident | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
@@ -194,6 +195,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/volunteering/organisations/{param}/fundraising/{param}/pause` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |
 | POST | `/volunteering/organisations/{param}/fundraising/{param}/resume` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |
 | POST | `/volunteering/organisations/{param}/fundraising/new` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |
+| POST | `/volunteering/organisations/{param}/qualifications/{param}/confirm` | volunteering |  | web-uk/src/routes/volunteering-org-qualifications.js |
+| POST | `/volunteering/organisations/{param}/qualifications/{param}/withdraw` | volunteering |  | web-uk/src/routes/volunteering-org-qualifications.js |
 | POST | `/volunteering/organisations/{param}/safeguarding/{param}/updates` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
 | POST | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 

@@ -11406,6 +11406,91 @@
                         "cancelled": "取り消し済み"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "ボランティアの資格",
+                "intro": "証明書の原本を見る、オンライン登録簿を確認する、または発行元の確認を得たうえで資格を確認してください。ここにコピーをアップロードしたり保存したりしないでください。",
+                "tiles": {
+                    "expiring": "まもなく期限切れ",
+                    "recorded": "確認待ち",
+                    "confirmed": "確認済み",
+                    "expired": "期限切れ"
+                },
+                "filters": {
+                    "attention": "対応が必要",
+                    "confirmed": "確認済み",
+                    "expired": "期限切れ",
+                    "all": "すべて"
+                },
+                "search_placeholder": "ボランティアを検索",
+                "empty_title": "対応が必要なものはありません",
+                "empty_body": "ボランティアが記録した資格がここに表示されます。",
+                "confirm": {
+                    "title": "資格を確認",
+                    "body": ":name がこの資格を保有していることを確認します。",
+                    "method": "どのように確認しましたか？",
+                    "methods": {
+                        "saw_original": "証明書の原本を確認した",
+                        "online_register": "オンライン登録簿を確認した",
+                        "issuer_confirmed": "発行元が確認した"
+                    },
+                    "submit": "確認",
+                    "done": "資格を確認しました。",
+                    "expired_hint": "先にボランティアに有効期限の更新を依頼してください。",
+                    "self": "自分自身の資格は確認できません。"
+                },
+                "withdraw": {
+                    "title": "資格を取り下げる",
+                    "body": "ボランティアには取り下げられたことと理由が表示されます。",
+                    "reason": "理由",
+                    "reasons": {
+                        "volunteer_request": "ボランティアから削除の依頼があった",
+                        "no_longer_held": "もう保有していない",
+                        "entered_in_error": "誤って入力された",
+                        "replaced": "新しいものに置き換えられた"
+                    },
+                    "confirm": "取り下げる",
+                    "done": "資格を取り下げました。"
+                },
+                "load_more": "さらに読み込む",
+                "types": {
+                    "first_aid": "応急手当",
+                    "safeguarding_training": "セーフガーディング研修",
+                    "manual_handling": "手作業による運搬",
+                    "food_hygiene": "食品衛生",
+                    "driving_licence": "運転免許",
+                    "professional_registration": "専門職登録",
+                    "other": "その他",
+                    "children_first": "Children First（Tusla）",
+                    "first_aid_response": "First Aid Response（PHECC）",
+                    "safeguarding_adults": "成人のセーフガーディング",
+                    "efaw": "職場での緊急応急手当",
+                    "faw": "職場での応急手当"
+                },
+                "status": {
+                    "recorded": "確認待ち",
+                    "confirmed": "確認済み",
+                    "expired": "期限切れ",
+                    "withdrawn": "取り下げ済み",
+                    "expiring": "まもなく期限切れ"
+                },
+                "method_short": {
+                    "saw_original": "原本を確認",
+                    "online_register": "オンライン登録簿を確認",
+                    "issuer_confirmed": "発行元が確認"
+                },
+                "no_expiry": "有効期限なし",
+                "expired_on": ":date に期限切れになりました",
+                "expires_on": ":date に期限切れ",
+                "confirmed_line": ":date に :name が確認",
+                "confirmed_line_org": ":date に :name が :org のために確認",
+                "reference": "番号 :ref",
+                "search_button": "検索",
+                "issued_by": "発行元",
+                "obtained": "取得日",
+                "expiry": "有効期限",
+                "update_failed": "資格を更新できませんでした。もう一度お試しください。",
+                "unknown_volunteer": "ボランティア"
             }
         },
         "govuk_alpha_wallet": {

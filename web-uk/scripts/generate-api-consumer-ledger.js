@@ -545,6 +545,28 @@ function laravelApiRouteIndex(source) {
   return index;
 }
 
+// Every route file Laravel loads under the `/api` prefix, not just routes/api.php.
+//
+// 🔴 Until 2026-10-07 only routes/api.php was read. The volunteer qualifications
+// register lives in routes/api-volunteering-qualifications.php, registered in
+// RouteServiceProvider under the same `api` middleware and `/api` prefix, so the
+// first web-uk page to call it showed three correct calls as contracts "without a
+// Laravel route declaration". The list comes from RouteServiceProvider itself, so a
+// file is counted only if Laravel really serves it under `/api`; without the
+// provider (a test fixture) the given routes file is read alone.
+function laravelApiRouteFilesFor(laravelRoot, primaryPath) {
+  const files = fs.existsSync(primaryPath) ? [primaryPath] : [];
+  const providerPath = path.join(laravelRoot, 'app', 'Providers', 'RouteServiceProvider.php');
+  if (!fs.existsSync(providerPath)) return files;
+  const provider = readText(providerPath).replace(/^\s*\/\/.*$/gm, '');
+  const pattern = /->prefix\(\s*['"]api['"]\s*\)\s*->group\(\s*base_path\(\s*['"](routes\/[^'"]+\.php)['"]\s*\)/g;
+  for (const match of provider.matchAll(pattern)) {
+    const file = path.join(laravelRoot, match[1]);
+    if (fs.existsSync(file) && !files.some((known) => path.resolve(known) === path.resolve(file))) files.push(file);
+  }
+  return files;
+}
+
 function describeSchema(schema) {
   if (!schema) return '';
   if (schema.$ref) return schema.$ref.replace('#/components/schemas/', 'schema:');
@@ -742,9 +764,8 @@ function generateApiConsumerLedger(options = {}) {
   });
   const apiSource = readText(apiPath);
   const openApiSource = readText(openApiPath);
-  const laravelApiRoutesSource = fs.existsSync(laravelApiRoutesPath)
-    ? readText(laravelApiRoutesPath)
-    : '';
+  const laravelApiRouteFiles = laravelApiRouteFilesFor(laravelRoot, laravelApiRoutesPath);
+  const laravelApiRoutesSource = laravelApiRouteFiles.map((file) => readText(file)).join('\n');
   const apiAst = parseJavaScript(apiSource, apiPath);
   const { consumers, parsed } = collectConsumers(webUkRoot);
   const testSources = collectTestSources(webUkRoot);
@@ -769,6 +790,7 @@ function generateApiConsumerLedger(options = {}) {
       laravelOpenApi: openApiPath,
       laravelOpenApiSha256: sha256(openApiSource),
       laravelApiRoutes: laravelApiRoutesPath,
+      laravelApiRouteFiles: laravelApiRouteFiles.map((file) => path.relative(laravelRoot, file).replace(/\\/g, '/')),
       laravelApiRoutesSha256: sha256(laravelApiRoutesSource)
     },
     summary: {

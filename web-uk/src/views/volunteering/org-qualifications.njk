@@ -1,0 +1,171 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An organisation's qualifications register (routes/volunteering-org-qualifications.js,
+  gap B7). Confirm and Withdraw sit in details components with their radios, so they
+  need no JavaScript. Nothing is uploaded here.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
+
+{% set K = "govuk_alpha_volunteering.org_qualifications." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/qualifications' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if outcome %}
+    {% if outcome.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="qualifications-outcome-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="qualifications-outcome-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ outcome.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ outcome.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if orgName %}<span class="govuk-caption-xl">{{ orgName }}</span>{% endif %}
+  <h1 class="govuk-heading-xl">{{ t(K ~ "heading") }}</h1>
+  <p class="govuk-body-l">{{ t(K ~ "intro") }}</p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-8" data-testid="qualification-counts">
+    {% for count in counts %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ count.label }}</dt>
+        <dd class="govuk-summary-list__value">{{ count.value }}</dd>
+      </div>
+    {% endfor %}
+  </dl>
+
+  <form method="get" action="{{ urlFor(base) }}" class="govuk-!-margin-bottom-6" role="search">
+    {% if show != "attention" %}<input type="hidden" name="show" value="{{ show }}">{% endif %}
+    <div class="govuk-form-group govuk-!-margin-bottom-2">
+      <label class="govuk-label" for="q">{{ t(K ~ "search_placeholder") }}</label>
+      <input class="govuk-input govuk-!-width-one-half" id="q" name="q" type="search" value="{{ q }}">
+    </div>
+    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(K ~ "search_button") }}</button>
+  </form>
+
+  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'heading') }}">
+    <h2 class="govuk-tabs__title">{{ t(K ~ "heading") }}</h2>
+    <ul class="govuk-tabs__list">
+      {% for filter in filters %}
+        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %}>{{ filter.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% if not qualifications.length %}
+    <div class="govuk-inset-text" data-testid="qualifications-empty">
+      <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t(K ~ "empty_title") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t(K ~ "empty_body") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for item in qualifications %}
+        <article class="nexus-alpha-card" id="qualification-{{ item.id }}" data-testid="qualification-{{ item.id }}">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ item.volunteerName }}</h2>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ item.typeLabel }}{% if item.title %}: {{ item.title }}{% endif %}</p>
+          <p class="govuk-!-margin-bottom-3">
+            {{ govukTag({ text: item.statusLabel, classes: item.statusClass }) }}
+            {% if item.isExpiring %}{{ govukTag({ text: t(K ~ "status.expiring"), classes: "govuk-tag--yellow" }) }}{% endif %}
+          </p>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+            {% if item.issuer %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "issued_by") }}</dt>
+                <dd class="govuk-summary-list__value">{{ item.issuer }}{% if item.reference %} — {{ t(K ~ "reference", { ref: item.reference }) }}{% endif %}</dd>
+              </div>
+            {% endif %}
+            {% if item.obtainedLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "obtained") }}</dt>
+                <dd class="govuk-summary-list__value">{{ item.obtainedLabel }}</dd>
+              </div>
+            {% endif %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "expiry") }}</dt>
+              <dd class="govuk-summary-list__value">{{ item.expiryLabel }}</dd>
+            </div>
+          </dl>
+          {% if item.confirmedLine %}<p class="govuk-body-s">{{ item.confirmedLine }}</p>{% endif %}
+
+          {% if item.isOwn and item.status in ["recorded", "expired"] %}
+            <div class="govuk-inset-text">{{ t(K ~ "confirm.self") }}</div>
+          {% endif %}
+
+          {% if item.canConfirm %}
+            <details class="govuk-details govuk-!-margin-bottom-2">
+              <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "confirm.title") }}<span class="govuk-visually-hidden">: {{ item.volunteerName }}, {{ item.typeLabel }}</span></span></summary>
+              <div class="govuk-details__text">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/confirm') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="show" value="{{ show }}">
+                  <input type="hidden" name="q" value="{{ q }}">
+                  <p class="govuk-body">{{ t(K ~ "confirm.body", { name: item.volunteerName }) }}</p>
+                  <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset">
+                      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t(K ~ "confirm.method") }}</legend>
+                      <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                        {% for method in methods %}
+                          <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="method-{{ item.id }}-{{ method.value }}" name="method" type="radio" value="{{ method.value }}"{% if loop.first %} checked{% endif %}>
+                            <label class="govuk-label govuk-radios__label" for="method-{{ item.id }}-{{ method.value }}">{{ method.label }}</label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </fieldset>
+                  </div>
+                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "confirm.submit") }}</button>
+                </form>
+              </div>
+            </details>
+          {% endif %}
+
+          {% if item.canWithdraw %}
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "withdraw.title") }}<span class="govuk-visually-hidden">: {{ item.volunteerName }}, {{ item.typeLabel }}</span></span></summary>
+              <div class="govuk-details__text">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/withdraw') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="show" value="{{ show }}">
+                  <input type="hidden" name="q" value="{{ q }}">
+                  <p class="govuk-body">{{ t(K ~ "withdraw.body") }}</p>
+                  <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset">
+                      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t(K ~ "withdraw.reason") }}</legend>
+                      <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                        {% for reason in reasons %}
+                          <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="reason-{{ item.id }}-{{ reason.value }}" name="reason" type="radio" value="{{ reason.value }}"{% if loop.first %} checked{% endif %}>
+                            <label class="govuk-label govuk-radios__label" for="reason-{{ item.id }}-{{ reason.value }}">{{ reason.label }}</label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </fieldset>
+                  </div>
+                  <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "withdraw.confirm") }}</button>
+                </form>
+              </div>
+            </details>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t(K ~ "load_more")) }}{% endif %}
+  {% endif %}
+{% endblock %}

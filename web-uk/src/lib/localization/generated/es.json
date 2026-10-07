@@ -11406,6 +11406,91 @@
                         "cancelled": "Cancelada"
                     }
                 }
+            },
+            "org_qualifications": {
+                "heading": "Cualificaciones de los voluntarios",
+                "intro": "Confirme una cualificación después de ver el certificado original, consultar un registro en línea o recibir la confirmación de la entidad emisora. No suba ni guarde copias aquí.",
+                "tiles": {
+                    "expiring": "Caducan pronto",
+                    "recorded": "Pendientes de confirmar",
+                    "confirmed": "Confirmadas",
+                    "expired": "Caducadas"
+                },
+                "filters": {
+                    "attention": "Necesitan atención",
+                    "confirmed": "Confirmadas",
+                    "expired": "Caducadas",
+                    "all": "Todas"
+                },
+                "search_placeholder": "Buscar voluntarios",
+                "empty_title": "Nada necesita tu atención",
+                "empty_body": "Las cualificaciones que registren sus voluntarios aparecerán aquí.",
+                "confirm": {
+                    "title": "Confirmar cualificación",
+                    "body": "Está confirmando que :name tiene esta cualificación.",
+                    "method": "¿Cómo la ha comprobado?",
+                    "methods": {
+                        "saw_original": "Vi el certificado original",
+                        "online_register": "Consulté un registro en línea",
+                        "issuer_confirmed": "La entidad emisora lo confirmó"
+                    },
+                    "submit": "Confirmar",
+                    "done": "Cualificación confirmada.",
+                    "expired_hint": "Pida primero al voluntario que actualice la fecha de caducidad.",
+                    "self": "No puede confirmar su propia cualificación."
+                },
+                "withdraw": {
+                    "title": "Retirar cualificación",
+                    "body": "El voluntario verá que se ha retirado y por qué.",
+                    "reason": "Motivo",
+                    "reasons": {
+                        "volunteer_request": "El voluntario pidió que se retirara",
+                        "no_longer_held": "Ya no la tiene",
+                        "entered_in_error": "Introducida por error",
+                        "replaced": "Sustituida por una más reciente"
+                    },
+                    "confirm": "Retirar",
+                    "done": "Cualificación retirada."
+                },
+                "load_more": "Cargar más",
+                "types": {
+                    "first_aid": "Primeros auxilios",
+                    "safeguarding_training": "Formación en protección",
+                    "manual_handling": "Manipulación manual de cargas",
+                    "food_hygiene": "Higiene alimentaria",
+                    "driving_licence": "Permiso de conducir",
+                    "professional_registration": "Colegiación profesional",
+                    "other": "Otra",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Protección de adultos",
+                    "efaw": "Primeros auxilios de emergencia en el trabajo",
+                    "faw": "Primeros auxilios en el trabajo"
+                },
+                "status": {
+                    "recorded": "Pendiente de confirmar",
+                    "confirmed": "Confirmada",
+                    "expired": "Caducada",
+                    "withdrawn": "Retirada",
+                    "expiring": "Caduca pronto"
+                },
+                "method_short": {
+                    "saw_original": "vio el original",
+                    "online_register": "consultó el registro en línea",
+                    "issuer_confirmed": "la entidad emisora lo confirmó"
+                },
+                "no_expiry": "Sin fecha de caducidad",
+                "expired_on": "Caducó el :date",
+                "expires_on": "Caduca el :date",
+                "confirmed_line": "Confirmada por :name el :date",
+                "confirmed_line_org": "Confirmada por :name para :org el :date",
+                "reference": "Referencia: :ref",
+                "search_button": "Buscar",
+                "issued_by": "Expedida por",
+                "obtained": "Obtenida",
+                "expiry": "Caducidad",
+                "update_failed": "No hemos podido actualizar la cualificación. Inténtelo de nuevo.",
+                "unknown_volunteer": "Una persona voluntaria"
             }
         },
         "govuk_alpha_wallet": {

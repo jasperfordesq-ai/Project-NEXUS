@@ -60,6 +60,7 @@ const volunteeringShiftRoutes = require('./routes/volunteering-shifts');
 const volunteeringOpportunityManageRoutes = require('./routes/volunteering-opportunity-manage');
 const volunteeringOrgExpenseRoutes = require('./routes/volunteering-org-expenses');
 const volunteeringOrgFundraisingRoutes = require('./routes/volunteering-org-fundraising');
+const volunteeringOrgQualificationRoutes = require('./routes/volunteering-org-qualifications');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
 const groupExchangeRoutes = require('./routes/group-exchanges');
@@ -2461,6 +2462,7 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOpportunityManageRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgExpenseRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgFundraisingRoutes);
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgQualificationRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);
