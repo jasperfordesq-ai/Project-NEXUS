@@ -889,10 +889,41 @@ class AdminVolunteerController extends BaseApiController
 
         // is_creator: the person who registered the organisation, who cannot be
         // removed or demoted (gap D7).
-        return $this->respondWithData(array_map(
+        $members = array_map(
             fn ($row) => (array) $row + ['is_creator' => (int) $row->user_id === (int) $org->user_id],
             $rows
-        ));
+        );
+
+        // Older organisations have no team row for their creator, who still
+        // manages them; list them as the owner they are.
+        $creatorId = (int) $org->user_id;
+        if ($creatorId > 0 && !in_array($creatorId, array_map('intval', array_column($members, 'user_id')), true)) {
+            $creator = DB::selectOne(
+                "SELECT u.id, u.avatar_url, u.profile_type, u.organization_name,
+                        COALESCE(u.first_name, SUBSTRING_INDEX(u.name, ' ', 1), '') as first_name,
+                        COALESCE(u.last_name, TRIM(SUBSTRING(u.name, LENGTH(SUBSTRING_INDEX(u.name, ' ', 1)) + 1)), '') as last_name,
+                        (SELECT COALESCE(SUM(vl.hours), 0) FROM vol_logs vl
+                          WHERE vl.user_id = u.id AND vl.organization_id = ? AND vl.tenant_id = u.tenant_id AND vl.status = 'approved') as total_hours
+                 FROM users u WHERE u.id = ? AND u.tenant_id = ?",
+                [$id, $creatorId, $tenantId]
+            );
+            if ($creator) {
+                array_unshift($members, [
+                    'id' => null,
+                    'user_id' => $creatorId,
+                    'avatar_url' => $creator->avatar_url,
+                    'first_name' => $creator->first_name,
+                    'last_name' => $creator->last_name,
+                    'profile_type' => $creator->profile_type,
+                    'organization_name' => $creator->organization_name,
+                    'role' => 'owner',
+                    'total_hours' => $creator->total_hours,
+                    'is_creator' => true,
+                ]);
+            }
+        }
+
+        return $this->respondWithData($members);
     }
 
     /** POST /api/v2/admin/volunteering/approvals/{id}/approve */

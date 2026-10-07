@@ -156,6 +156,28 @@ class VolunteerOrgMembersTest extends TestCase
         $this->assertSame('active', $this->rowFor($this->orgAdmin)->status);
     }
 
+    /**
+     * Found walking the dashboard: older organisations have no team row for the
+     * person who registered them, so the team read "no one yet" while they ran it.
+     */
+    public function test_a_creator_without_a_team_row_is_still_listed_as_owner(): void
+    {
+        DB::table('org_members')->where('organization_id', $this->orgId)->where('user_id', $this->creator->id)->delete();
+
+        Sanctum::actingAs($this->creator);
+        $first = $this->apiGet($this->url())->assertOk()->json('data.items.0');
+        $this->assertSame($this->creator->id, $first['user_id']);
+        $this->assertSame('owner', $first['role']);
+        $this->assertTrue($first['is_creator']);
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $adminFirst = $this->apiGet("/v2/admin/volunteering/organizations/{$this->orgId}/members")->assertOk()->json('data.0');
+        $this->assertSame($this->creator->id, (int) $adminFirst['user_id']);
+        $this->assertSame('owner', $adminFirst['role']);
+        $this->assertTrue($adminFirst['is_creator']);
+    }
+
     public function test_a_community_admin_manages_any_team_from_the_admin_panel(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

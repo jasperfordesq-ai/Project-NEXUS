@@ -86,7 +86,7 @@ class VolunteerOrgMemberService
             [$tenantId, $orgId]
         );
 
-        return array_map(static fn ($row) => [
+        $items = array_map(static fn ($row) => [
             'user_id' => (int) $row->user_id,
             'name' => UserDisplayName::resolve($row),
             'avatar_url' => $row->avatar_url,
@@ -94,6 +94,27 @@ class VolunteerOrgMemberService
             'is_creator' => (int) $row->user_id === $creatorId,
             'joined_at' => $row->created_at,
         ], $rows);
+
+        // Older organisations have no team row for the person who registered
+        // them, though that person manages it. List them as the owner they are.
+        if ($creatorId > 0 && !in_array($creatorId, array_column($items, 'user_id'), true)) {
+            $creator = DB::selectOne(
+                'SELECT id, first_name, last_name, name, organization_name, profile_type, avatar_url FROM users WHERE id = ? AND tenant_id = ?',
+                [$creatorId, $tenantId]
+            );
+            if ($creator !== null) {
+                array_unshift($items, [
+                    'user_id' => $creatorId,
+                    'name' => UserDisplayName::resolve($creator),
+                    'avatar_url' => $creator->avatar_url,
+                    'role' => 'owner',
+                    'is_creator' => true,
+                    'joined_at' => null,
+                ]);
+            }
+        }
+
+        return $items;
     }
 
     /**
