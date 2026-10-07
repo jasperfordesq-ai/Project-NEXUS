@@ -29,6 +29,7 @@
     "OS Places (PSGA)",
     "Ordnance Survey Places (UK, UPRN)",
     "PayPal",
+    "Stripe",
     "Plesk / cPanel / IIS:",
     "Polski",
     "Português",
@@ -152,6 +153,7 @@
       "Jane..."
     ],
     "es": [
+      "Cheque",
       "Actor",
       "Actor:",
       "Blog",
@@ -321,6 +323,8 @@
       "Xxxxappsgoogleusercontentcom..."
     ],
     "nl": [
+      "Cheque",
+      "Platform",
       "A Iza...",
       ":amount :currency per :period",
       ":count direct",
@@ -415,6 +419,7 @@
       "Xxxxappsgoogleusercontentcom..."
     ],
     "pt": [
+      "Cheque",
       "A Iza...",
       "Agenda",
       "Cache",

@@ -11280,6 +11280,132 @@
                 "already_handled": "Cette demande a déjà été traitée par quelqu'un d'autre. La liste a été actualisée.",
                 "review_forbidden": "Vous ne pouvez pas examiner cette demande. Une demande que vous avez faite vous-même doit être examinée par un autre administrateur de l’organisation.",
                 "review_failed": "Nous n’avons pas pu mettre à jour la demande. Veuillez réessayer."
+            },
+            "org_fundraising": {
+                "title": "Collecte de fonds",
+                "load_failed": "Impossible de charger ces informations.",
+                "intro": "Les campagnes que vous lancez ici sont en ligne immédiatement et collectent des fonds pour votre organisation. Les dons sont détenus par la communauté, qui vous les reverse.",
+                "new_campaign": "Nouvelle campagne",
+                "edit_campaign": "Modifier la campagne",
+                "empty": "Votre organisation n’a pas encore de campagne de collecte.",
+                "gifts": "Dons",
+                "no_gifts": "Aucun don pour l’instant.",
+                "anonymous": "Anonyme",
+                "pause": "Mettre en pause",
+                "resume": "Reprendre",
+                "end": "Terminer la campagne",
+                "end_confirm": "Terminer cette campagne ? Les membres ne pourront plus y donner.",
+                "saved": "Campagne enregistrée.",
+                "raised_of_goal": ":raised collectés sur :goal",
+                "save": "Enregistrer la campagne",
+                "show_details": "Afficher les détails",
+                "method": {
+                    "card": "Carte",
+                    "pledge": "Promesse"
+                },
+                "status": {
+                    "active": "En cours",
+                    "upcoming": "À venir",
+                    "paused": "En pause",
+                    "ended": "Terminée"
+                },
+                "paused_done": "Campagne mise en pause",
+                "resumed_done": "Campagne reprise",
+                "ended_done": "Campagne terminée",
+                "dates": "Du :start au :end",
+                "change": "Modifier",
+                "back_to_list": "Retour à la collecte de fonds",
+                "keep_running": "La laisser en cours",
+                "goal_hint": "Le montant que vous espérez collecter, en :currency. Par exemple, 500.",
+                "error_title": "Saisissez un titre pour la campagne",
+                "error_title_long": "Le titre ne doit pas dépasser 255 caractères",
+                "error_start": "Saisissez une date de début valide",
+                "error_end": "Saisissez une date de fin valide",
+                "error_end_before_start": "La date de fin doit être identique ou postérieure à la date de début",
+                "error_goal": "Saisissez l’objectif sous forme de montant, par exemple 500 ou 250.50",
+                "save_failed": "Nous n’avons pas pu enregistrer la campagne. Veuillez réessayer.",
+                "change_failed": "Nous n’avons pas pu modifier la campagne. Veuillez réessayer.",
+                "handover_confirm_failed": "Nous n’avons pas pu confirmer la remise. Elle a peut-être déjà été confirmée ou annulée.",
+                "col_date": "Date",
+                "col_donor": "De la part de",
+                "col_method": "Moyen",
+                "col_status": "Statut",
+                "gift_status": {
+                    "pending": "Pas encore reçu",
+                    "completed": "Reçu",
+                    "refunded": "Remboursé",
+                    "failed": "Échoué"
+                },
+                "history": {
+                    "title": "Historique",
+                    "empty": "Rien n’a encore été enregistré pour cette campagne.",
+                    "by": "par :name",
+                    "change": ":field modifié de :from à :to",
+                    "empty_value": "(aucun)",
+                    "gift_number": "Don n° :number",
+                    "reason": "Raison : :reason",
+                    "actor": {
+                        "community_admin": "Admin de la communauté",
+                        "org_admin": "Admin de l’organisation",
+                        "member": "Donateur",
+                        "stripe": "Stripe",
+                        "system": "Plateforme"
+                    },
+                    "event": {
+                        "campaign_created": "Campagne créée",
+                        "campaign_updated": "Campagne modifiée",
+                        "campaign_paused": "Campagne mise en pause",
+                        "campaign_resumed": "Campagne reprise",
+                        "campaign_ended": "Campagne terminée",
+                        "campaign_organisation_set": "Organisation définie",
+                        "donation_started": "Don commencé",
+                        "donation_paid": "Don payé",
+                        "donation_failed": "Paiement échoué",
+                        "donation_payment_not_started": "Le paiement n’a pas pu démarrer",
+                        "donation_refund_requested": "Remboursement demandé",
+                        "donation_refunded": "Don remboursé",
+                        "donation_partially_refunded": "Don partiellement remboursé",
+                        "handover_recorded": "Versement enregistré",
+                        "handover_confirmed": "Versement confirmé",
+                        "handover_cancelled": "Versement annulé"
+                    },
+                    "field": {
+                        "title": "Titre",
+                        "description": "Description",
+                        "start_date": "Date de début",
+                        "end_date": "Date de fin",
+                        "goal_amount": "Objectif",
+                        "target_hours": "Heures visées",
+                        "organization_id": "Organisation"
+                    }
+                },
+                "handovers": {
+                    "title": "Versements",
+                    "raised": "Collecté",
+                    "handed_over": "Reversé",
+                    "still_held": "Encore détenu",
+                    "empty": "Aucun argent n’a encore été reversé.",
+                    "amount": "Montant",
+                    "date": "Date du versement",
+                    "method": "Mode de versement",
+                    "reference": "Référence de paiement",
+                    "confirm_action": "Confirmer la réception",
+                    "recorded_by": "Enregistré par :name",
+                    "confirmed_by": "Confirmé par :name",
+                    "cancelled_by": "Annulé par :name",
+                    "confirmed": "Merci, réception confirmée.",
+                    "methods": {
+                        "bank_transfer": "Virement bancaire",
+                        "cheque": "Chèque",
+                        "cash": "Espèces",
+                        "other": "Autre"
+                    },
+                    "status": {
+                        "recorded": "En attente de confirmation",
+                        "confirmed": "Confirmé",
+                        "cancelled": "Annulé"
+                    }
+                }
             }
         },
         "govuk_alpha_wallet": {

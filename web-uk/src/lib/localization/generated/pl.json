@@ -11280,6 +11280,132 @@
                 "already_handled": "Ten wniosek został już rozpatrzony przez kogoś innego. Lista została odświeżona.",
                 "review_forbidden": "Nie możesz rozpatrzyć tego wniosku. Wniosek złożony przez Ciebie musi rozpatrzyć inny administrator organizacji.",
                 "review_failed": "Nie udało się zaktualizować wniosku. Spróbuj ponownie."
+            },
+            "org_fundraising": {
+                "title": "Zbiórki",
+                "load_failed": "Nie udało się tego wczytać.",
+                "intro": "Zbiórki uruchomione tutaj są od razu widoczne i zbierają pieniądze dla Twojej organizacji. Darowizny przechowuje społeczność, która przekazuje je Tobie.",
+                "new_campaign": "Nowa zbiórka",
+                "edit_campaign": "Edytuj zbiórkę",
+                "empty": "Twoja organizacja nie ma jeszcze zbiórek.",
+                "gifts": "Darowizny",
+                "no_gifts": "Brak darowizn.",
+                "anonymous": "Anonimowo",
+                "pause": "Wstrzymaj",
+                "resume": "Wznów",
+                "end": "Zakończ zbiórkę",
+                "end_confirm": "Zakończyć tę zbiórkę? Członkowie nie będą mogli już na nią wpłacać.",
+                "saved": "Zapisano zbiórkę.",
+                "raised_of_goal": "Zebrano :raised z :goal",
+                "save": "Zapisz zbiórkę",
+                "show_details": "Pokaż szczegóły",
+                "method": {
+                    "card": "Karta",
+                    "pledge": "Deklaracja"
+                },
+                "status": {
+                    "active": "Trwa",
+                    "upcoming": "Wkrótce",
+                    "paused": "Wstrzymana",
+                    "ended": "Zakończona"
+                },
+                "paused_done": "Wstrzymano zbiórkę",
+                "resumed_done": "Wznowiono zbiórkę",
+                "ended_done": "Zakończono zbiórkę",
+                "dates": "Od :start do :end",
+                "change": "Zmień",
+                "back_to_list": "Wróć do zbiórek",
+                "keep_running": "Pozostaw aktywną",
+                "goal_hint": "Ile chcesz zebrać, w :currency. Na przykład 500.",
+                "error_title": "Wpisz tytuł zbiórki",
+                "error_title_long": "Tytuł może mieć najwyżej 255 znaków",
+                "error_start": "Wpisz prawidłową datę rozpoczęcia",
+                "error_end": "Wpisz prawidłową datę zakończenia",
+                "error_end_before_start": "Data zakończenia musi być taka sama jak data rozpoczęcia lub późniejsza",
+                "error_goal": "Wpisz cel jako kwotę pieniędzy, na przykład 500 lub 250.50",
+                "save_failed": "Nie udało się zapisać zbiórki. Spróbuj ponownie.",
+                "change_failed": "Nie udało się zmienić zbiórki. Spróbuj ponownie.",
+                "handover_confirm_failed": "Nie udało się potwierdzić przekazania. Być może zostało już potwierdzone lub anulowane.",
+                "col_date": "Data",
+                "col_donor": "Od",
+                "col_method": "Sposób",
+                "col_status": "Stan",
+                "gift_status": {
+                    "pending": "Jeszcze nie otrzymano",
+                    "completed": "Otrzymano",
+                    "refunded": "Zwrócono",
+                    "failed": "Nieudana"
+                },
+                "history": {
+                    "title": "Historia",
+                    "empty": "Dla tej zbiórki nic jeszcze nie zarejestrowano.",
+                    "by": "przez :name",
+                    "change": "Zmieniono :field z :from na :to",
+                    "empty_value": "(brak)",
+                    "gift_number": "Darowizna nr :number",
+                    "reason": "Powód: :reason",
+                    "actor": {
+                        "community_admin": "Administrator społeczności",
+                        "org_admin": "Administrator organizacji",
+                        "member": "Darczyńca",
+                        "stripe": "Stripe",
+                        "system": "Platforma"
+                    },
+                    "event": {
+                        "campaign_created": "Utworzono zbiórkę",
+                        "campaign_updated": "Edytowano zbiórkę",
+                        "campaign_paused": "Wstrzymano zbiórkę",
+                        "campaign_resumed": "Wznowiono zbiórkę",
+                        "campaign_ended": "Zakończono zbiórkę",
+                        "campaign_organisation_set": "Ustawiono organizację",
+                        "donation_started": "Rozpoczęto darowiznę",
+                        "donation_paid": "Darowizna opłacona",
+                        "donation_failed": "Płatność nieudana",
+                        "donation_payment_not_started": "Nie udało się rozpocząć płatności",
+                        "donation_refund_requested": "Zlecono zwrot",
+                        "donation_refunded": "Darowizna zwrócona",
+                        "donation_partially_refunded": "Darowizna częściowo zwrócona",
+                        "handover_recorded": "Zarejestrowano przekazanie",
+                        "handover_confirmed": "Potwierdzono przekazanie",
+                        "handover_cancelled": "Anulowano przekazanie"
+                    },
+                    "field": {
+                        "title": "Tytuł",
+                        "description": "Opis",
+                        "start_date": "Data rozpoczęcia",
+                        "end_date": "Data zakończenia",
+                        "goal_amount": "Cel",
+                        "target_hours": "Docelowe godziny",
+                        "organization_id": "Organizacja"
+                    }
+                },
+                "handovers": {
+                    "title": "Przekazania",
+                    "raised": "Zebrano",
+                    "handed_over": "Przekazano",
+                    "still_held": "Jeszcze przechowywane",
+                    "empty": "Nie przekazano jeszcze żadnych pieniędzy.",
+                    "amount": "Kwota",
+                    "date": "Data przekazania",
+                    "method": "Sposób przekazania",
+                    "reference": "Numer referencyjny płatności",
+                    "confirm_action": "Potwierdź odbiór",
+                    "recorded_by": "Zarejestrował(a) :name",
+                    "confirmed_by": "Potwierdził(a) :name",
+                    "cancelled_by": "Anulował(a) :name",
+                    "confirmed": "Dziękujemy, odbiór potwierdzony.",
+                    "methods": {
+                        "bank_transfer": "Przelew bankowy",
+                        "cheque": "Czek",
+                        "cash": "Gotówka",
+                        "other": "Inne"
+                    },
+                    "status": {
+                        "recorded": "Czeka na potwierdzenie",
+                        "confirmed": "Potwierdzone",
+                        "cancelled": "Anulowane"
+                    }
+                }
             }
         },
         "govuk_alpha_wallet": {

@@ -1,0 +1,151 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  One campaign: what has been passed on, the gifts, and the history
+  (routes/volunteering-org-fundraising.js, gap B7). Each section that fails to load
+  says so on its own; the others still show. Donor contact and Gift Aid details are
+  never sent by the API.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set K = "govuk_alpha_volunteering.org_fundraising." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/fundraising' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t(K ~ "back_to_list") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if outcome %}
+    {% if outcome.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="campaign-outcome-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="campaign-outcome-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ outcome.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ outcome.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t(K ~ "title") }}</span>
+  <h1 class="govuk-heading-xl">{{ campaign.title }}</h1>
+  <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: campaign.statusLabel, classes: campaign.statusClass }) }}</p>
+  <p class="govuk-body govuk-!-margin-bottom-1">{{ campaign.raisedLabel }}</p>
+  <p class="govuk-body-s">{{ campaign.datesLabel }}</p>
+  {% if campaign.description %}<p class="govuk-body">{{ campaign.description }}</p>{% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(K ~ "handovers.title") }}</h2>
+  {% if handoversFailed %}
+    <div class="govuk-inset-text">{{ t(K ~ "load_failed") }}</div>
+  {% else %}
+    {% if handoverTotals.length %}
+      <dl class="govuk-summary-list" data-testid="handover-totals">
+        {% for total in handoverTotals %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ total.label }}</dt>
+            <dd class="govuk-summary-list__value">{{ total.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    {% endif %}
+    {% if not handovers.length %}
+      <p class="govuk-body">{{ t(K ~ "handovers.empty") }}</p>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for handover in handovers %}
+          <article class="nexus-alpha-card" data-testid="handover-{{ handover.id }}">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ handover.amountLabel }}</h3>
+            <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: handover.statusLabel, classes: handover.statusClass }) }}</p>
+            <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "handovers.date") }}</dt>
+                <dd class="govuk-summary-list__value">{{ handover.dateLabel }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "handovers.method") }}</dt>
+                <dd class="govuk-summary-list__value">{{ handover.methodLabel }}</dd>
+              </div>
+              {% if handover.reference %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t(K ~ "handovers.reference") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ handover.reference }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+            {% if handover.note %}<p class="govuk-body">{{ handover.note }}</p>{% endif %}
+            {% if handover.recordedBy %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ t(K ~ "handovers.recorded_by", { name: handover.recordedBy }) }}</p>{% endif %}
+            {% if handover.confirmedBy %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ t(K ~ "handovers.confirmed_by", { name: handover.confirmedBy }) }}</p>{% endif %}
+            {% if handover.cancelledBy %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ t(K ~ "handovers.cancelled_by", { name: handover.cancelledBy }) }}</p>{% endif %}
+            {% if handover.cancelReason %}<p class="govuk-body-s">{{ t(K ~ "history.reason", { reason: handover.cancelReason }) }}</p>{% endif %}
+            {% if handover.canConfirm %}
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/handovers/' ~ handover.id ~ '/confirm') }}" class="govuk-!-margin-top-3">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "handovers.confirm_action") }}<span class="govuk-visually-hidden">: {{ handover.amountLabel }}, {{ handover.dateLabel }}</span></button>
+              </form>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(K ~ "gifts") }}</h2>
+  {% if giftsFailed %}
+    <div class="govuk-inset-text">{{ t(K ~ "load_failed") }}</div>
+  {% elif not gifts.length %}
+    <p class="govuk-body">{{ t(K ~ "no_gifts") }}</p>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(K ~ 'gifts') }}">
+      <table class="govuk-table" data-testid="campaign-gifts">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t(K ~ "gifts") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t(K ~ "col_date") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(K ~ "col_donor") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(K ~ "handovers.amount") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(K ~ "col_method") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(K ~ "col_status") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for gift in gifts %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ gift.dateLabel }}</td>
+              <td class="govuk-table__cell">{{ gift.donor }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ gift.amountLabel }}</td>
+              <td class="govuk-table__cell">{{ gift.methodLabel }}</td>
+              <td class="govuk-table__cell">{{ gift.statusLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(K ~ "history.title") }}</h2>
+  {% if historyFailed %}
+    <div class="govuk-inset-text">{{ t(K ~ "load_failed") }}</div>
+  {% elif not history.length %}
+    <p class="govuk-body">{{ t(K ~ "history.empty") }}</p>
+  {% else %}
+    <ol class="govuk-list" data-testid="campaign-history">
+      {% for item in history %}
+        <li class="govuk-!-margin-bottom-4">
+          <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ item.event }}</strong>{% if item.amountLabel %} — {{ item.amountLabel }}{% endif %}</p>
+          <p class="govuk-body-s govuk-!-margin-bottom-1">{{ item.when }} · {{ item.by }}{% if item.giftNumber %} · {{ item.giftNumber }}{% endif %}</p>
+          {% for change in item.changes %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ change }}</p>{% endfor %}
+          {% if item.reason %}<p class="govuk-body-s govuk-!-margin-bottom-0">{{ t(K ~ "history.reason", { reason: item.reason }) }}</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,88 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Start or change a fundraising campaign (routes/volunteering-org-fundraising.js, gap B7). #}
+{% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set K = "govuk_alpha_volunteering.org_fundraising." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/fundraising' %}
+{% set action = base ~ ('/' ~ campaignId ~ '/edit' if campaignId else '/new') %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t(K ~ "back_to_list") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% elif failure %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ failure }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t(K ~ ("edit_campaign" if campaignId else "new_campaign")) }}</h1>
+      {% if not campaignId %}<p class="govuk-body">{{ t(K ~ "intro") }}</p>{% endif %}
+
+      <form method="post" action="{{ urlFor(action) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="title">{{ t(K ~ "history.field.title") }}</label>
+          {% if fieldErrors.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.title }}</p>{% endif %}
+          <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255" value="{{ form.title }}"{% if fieldErrors.title %} aria-describedby="title-error"{% endif %}>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="description">{{ t(K ~ "history.field.description") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
+          <textarea class="govuk-textarea" id="description" name="description" rows="5">{{ form.description }}</textarea>
+        </div>
+
+        {{ nexusDateInput({
+          name: "start_date",
+          legend: t(K ~ "history.field.start_date"),
+          hint: t("web_uk.date_input.hint"),
+          value: form.startDateParts,
+          errorMessage: fieldErrors.startDate
+        }, t) }}
+
+        {{ nexusDateInput({
+          name: "end_date",
+          legend: t(K ~ "history.field.end_date"),
+          hint: t("web_uk.date_input.hint"),
+          value: form.endDateParts,
+          errorMessage: fieldErrors.endDate
+        }, t) }}
+
+        <div class="govuk-form-group{% if fieldErrors.goal %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="goal_amount">{{ t(K ~ "history.field.goal_amount") }}</label>
+          <div id="goal_amount-hint" class="govuk-hint">{{ t(K ~ "goal_hint", { currency: currency }) }}</div>
+          {% if fieldErrors.goal %}<p id="goal_amount-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.goal }}</p>{% endif %}
+          <input class="govuk-input govuk-input--width-10{% if fieldErrors.goal %} govuk-input--error{% endif %}" id="goal_amount" name="goal_amount" type="text" inputmode="decimal" spellcheck="false" value="{{ form.goal }}" aria-describedby="goal_amount-hint{% if fieldErrors.goal %} goal_amount-error{% endif %}">
+        </div>
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "save") }}</button>
+          <a class="govuk-link" href="{{ urlFor(base) }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

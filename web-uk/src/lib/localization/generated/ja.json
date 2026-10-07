@@ -11280,6 +11280,132 @@
                 "already_handled": "この申請はすでに他の人が処理しています。一覧を更新しました。",
                 "review_forbidden": "この申請は審査できません。ご自身の申請は、団体の別の管理者が審査する必要があります。",
                 "review_failed": "申請を更新できませんでした。もう一度お試しください。"
+            },
+            "org_fundraising": {
+                "title": "募金",
+                "load_failed": "読み込めませんでした。",
+                "intro": "ここで始めたキャンペーンはすぐに公開され、あなたの団体のために募金を集めます。寄付はコミュニティが預かり、あなたの団体に引き渡します。",
+                "new_campaign": "新しいキャンペーン",
+                "edit_campaign": "キャンペーンを編集",
+                "empty": "あなたの団体にはまだ募金キャンペーンがありません。",
+                "gifts": "寄付",
+                "no_gifts": "まだ寄付はありません。",
+                "anonymous": "匿名",
+                "pause": "一時停止",
+                "resume": "再開",
+                "end": "キャンペーンを終了",
+                "end_confirm": "このキャンペーンを終了しますか？メンバーは寄付できなくなります。",
+                "saved": "キャンペーンを保存しました。",
+                "raised_of_goal": ":goalのうち:raisedが集まりました",
+                "save": "キャンペーンを保存",
+                "show_details": "詳細を表示",
+                "method": {
+                    "card": "カード",
+                    "pledge": "寄付の約束"
+                },
+                "status": {
+                    "active": "実施中",
+                    "upcoming": "近日開始",
+                    "paused": "一時停止中",
+                    "ended": "終了"
+                },
+                "paused_done": "キャンペーン一時停止",
+                "resumed_done": "キャンペーン再開",
+                "ended_done": "キャンペーン終了",
+                "dates": ":start～:end",
+                "change": "変更",
+                "back_to_list": "募金に戻る",
+                "keep_running": "継続する",
+                "goal_hint": "集めたい金額（:currency）。例: 500",
+                "error_title": "キャンペーンのタイトルを入力してください",
+                "error_title_long": "タイトルは255文字以内で入力してください",
+                "error_start": "正しい開始日を入力してください",
+                "error_end": "正しい終了日を入力してください",
+                "error_end_before_start": "終了日は開始日と同じ日か、それより後にしてください",
+                "error_goal": "目標を金額で入力してください（例: 500、250.50）",
+                "save_failed": "キャンペーンを保存できませんでした。もう一度お試しください。",
+                "change_failed": "キャンペーンを変更できませんでした。もう一度お試しください。",
+                "handover_confirm_failed": "引き渡しを確認できませんでした。すでに確認済みか、取り消されている可能性があります。",
+                "col_date": "日付",
+                "col_donor": "寄付者",
+                "col_method": "方法",
+                "col_status": "状態",
+                "gift_status": {
+                    "pending": "未受領",
+                    "completed": "受領済み",
+                    "refunded": "返金済み",
+                    "failed": "失敗"
+                },
+                "history": {
+                    "title": "履歴",
+                    "empty": "このキャンペーンにはまだ記録がありません。",
+                    "by": ":name",
+                    "change": ":fieldを:fromから:toに変更",
+                    "empty_value": "（なし）",
+                    "gift_number": "寄付 #:number",
+                    "reason": "理由: :reason",
+                    "actor": {
+                        "community_admin": "コミュニティ管理者",
+                        "org_admin": "団体管理者",
+                        "member": "寄付者",
+                        "stripe": "Stripe",
+                        "system": "プラットフォーム"
+                    },
+                    "event": {
+                        "campaign_created": "キャンペーン作成",
+                        "campaign_updated": "キャンペーン編集",
+                        "campaign_paused": "キャンペーン一時停止",
+                        "campaign_resumed": "キャンペーン再開",
+                        "campaign_ended": "キャンペーン終了",
+                        "campaign_organisation_set": "団体を設定",
+                        "donation_started": "寄付開始",
+                        "donation_paid": "寄付支払済み",
+                        "donation_failed": "支払い失敗",
+                        "donation_payment_not_started": "支払いを開始できませんでした",
+                        "donation_refund_requested": "返金を依頼",
+                        "donation_refunded": "寄付を返金",
+                        "donation_partially_refunded": "寄付を一部返金",
+                        "handover_recorded": "引き渡しを記録",
+                        "handover_confirmed": "引き渡しを確認",
+                        "handover_cancelled": "引き渡しを取り消し"
+                    },
+                    "field": {
+                        "title": "タイトル",
+                        "description": "説明",
+                        "start_date": "開始日",
+                        "end_date": "終了日",
+                        "goal_amount": "目標額",
+                        "target_hours": "目標時間",
+                        "organization_id": "団体"
+                    }
+                },
+                "handovers": {
+                    "title": "引き渡し",
+                    "raised": "集まった額",
+                    "handed_over": "引き渡し済み",
+                    "still_held": "保有中",
+                    "empty": "まだお金は引き渡されていません。",
+                    "amount": "金額",
+                    "date": "引き渡し日",
+                    "method": "引き渡し方法",
+                    "reference": "支払い参照番号",
+                    "confirm_action": "受領を確認",
+                    "recorded_by": "記録者: :name",
+                    "confirmed_by": "確認者: :name",
+                    "cancelled_by": "取り消し者: :name",
+                    "confirmed": "ありがとうございます。受領を確認しました。",
+                    "methods": {
+                        "bank_transfer": "銀行振込",
+                        "cheque": "小切手",
+                        "cash": "現金",
+                        "other": "その他"
+                    },
+                    "status": {
+                        "recorded": "確認待ち",
+                        "confirmed": "確認済み",
+                        "cancelled": "取り消し済み"
+                    }
+                }
             }
         },
         "govuk_alpha_wallet": {

@@ -1,0 +1,74 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# An organisation's fundraising campaigns (routes/volunteering-org-fundraising.js, gap B7). #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set K = "govuk_alpha_volunteering.org_fundraising." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/fundraising' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if outcome %}
+    {% if outcome.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="fundraising-outcome-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="fundraising-outcome-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ outcome.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ outcome.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if orgName %}<span class="govuk-caption-xl">{{ orgName }}</span>{% endif %}
+  <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+  <p class="govuk-body-l">{{ t(K ~ "intro") }}</p>
+  <a class="govuk-button" href="{{ urlFor(base ~ '/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t(K ~ "new_campaign") }}</a>
+
+  {% if not campaigns.length %}
+    <div class="govuk-inset-text" data-testid="fundraising-empty">{{ t(K ~ "empty") }}</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for campaign in campaigns %}
+        <article class="nexus-alpha-card" data-testid="fundraising-campaign-{{ campaign.id }}">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id) }}">{{ campaign.title }}</a>
+          </h2>
+          <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: campaign.statusLabel, classes: campaign.statusClass }) }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-1">{{ campaign.raisedLabel }}</p>
+          <p class="govuk-body-s govuk-!-margin-bottom-3">{{ campaign.datesLabel }}</p>
+          <div class="govuk-button-group govuk-!-margin-bottom-0">
+            <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id) }}">{{ t(K ~ "show_details") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></a>
+            <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id ~ '/edit') }}">{{ t(K ~ "change") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></a>
+            {% if campaign.canPause %}
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/pause') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "pause") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></button>
+              </form>
+            {% endif %}
+            {% if campaign.canResume %}
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/resume') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "resume") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></button>
+              </form>
+            {% endif %}
+            {% if campaign.canEnd %}
+              <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id ~ '/end') }}">{{ t(K ~ "end") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

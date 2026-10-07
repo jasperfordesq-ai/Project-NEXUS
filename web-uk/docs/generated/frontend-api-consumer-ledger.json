@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-07T11:38:00.102Z",
+  "generatedAt": "2026-10-07T11:56:24.823Z",
   "provenance": {
-    "generatedAt": "2026-10-07T11:38:00.102Z",
+    "generatedAt": "2026-10-07T11:56:24.823Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "15b9f1cee3105a1a3f5e2e2d03dcb6e0d3c6fe04",
+    "laravelCommitSha": "d2bfd593ee631078fe0eb0886eaf65fc95179357",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "15b9f1cee3105a1a3f5e2e2d03dcb6e0d3c6fe04",
+    "webUkRepositoryCommitSha": "d2bfd593ee631078fe0eb0886eaf65fc95179357",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -21,13 +21,13 @@
     "laravelApiRoutesSha256": "a88d1d15167d2ffa18bba1e4a35226db8e536bff79a6e2368a6c23ef441d681b"
   },
   "summary": {
-    "contracts": 737,
+    "contracts": 743,
     "matchedOpenApi": 479,
-    "missingOpenApi": 258,
-    "routeDeclaredOpenApiOmissions": 258,
+    "missingOpenApi": 264,
+    "routeDeclaredOpenApiOmissions": 264,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 405,
+    "stateChanging": 407,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -25157,6 +25157,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25202,6 +25203,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25252,6 +25254,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25301,6 +25304,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25350,6 +25354,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25400,6 +25405,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25450,6 +25456,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25499,6 +25506,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25543,7 +25551,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?public=true&limit=12",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1201",
+      "source": "src/server.js:1202",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -25576,6 +25584,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25626,6 +25635,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25721,6 +25731,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25808,6 +25819,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25856,6 +25868,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25907,6 +25920,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -25958,6 +25972,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26004,6 +26019,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26050,6 +26066,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26095,6 +26112,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26144,6 +26162,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26193,6 +26212,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26242,6 +26262,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26291,6 +26312,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26341,6 +26363,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26391,6 +26414,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26440,6 +26464,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26490,6 +26515,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26536,6 +26562,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26582,6 +26609,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26628,6 +26656,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26673,6 +26702,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26718,6 +26748,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26770,6 +26801,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26858,6 +26890,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -26909,6 +26942,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27036,6 +27070,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27088,6 +27123,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27177,6 +27213,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27226,6 +27263,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27275,6 +27313,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27324,6 +27363,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27373,6 +27413,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27418,6 +27459,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27546,6 +27588,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27593,6 +27636,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27676,6 +27720,237 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/campaigns [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/campaigns",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:291",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/campaigns",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "PUT /api/v2/volunteering/organisations/{param}/campaigns/{param} [callVolunteeringApi]",
+      "method": "PUT",
+      "path": "/api/v2/volunteering/organisations/{param}/campaigns/{param}",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:425",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:504",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/gifts",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:505",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/handovers",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/organisations/{param}/campaigns/{param}/history [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/history",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:506",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/campaigns/{campaignId}/history",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27721,6 +27996,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27766,6 +28042,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27801,6 +28078,52 @@
       "tests": [
         "tests/api.test.js",
         "tests/volunteering-org-expenses.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/volunteering/organisations/{param}/handovers/{param}/confirm [callVolunteeringApi]",
+      "method": "POST",
+      "path": "/api/v2/volunteering/organisations/{param}/handovers/{param}/confirm",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-org-fundraising.js:537",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON caller payload; validate against Laravel operation",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-org-fundraising.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/organisations/{id}/handovers/{handoverId}/confirm",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-org-fundraising.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/runtime/volunteering-credentials-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27843,6 +28166,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27888,6 +28212,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27933,6 +28258,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27978,6 +28304,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -27997,7 +28324,7 @@
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/volunteering-actions.js, src/routes/volunteering-org-expenses.js",
+      "redirects": "consumer-controlled: src/routes/volunteering-actions.js, src/routes/volunteering-org-expenses.js, src/routes/volunteering-org-fundraising.js",
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
@@ -28009,7 +28336,8 @@
       },
       "frontendConsumers": [
         "src/routes/volunteering-actions.js",
-        "src/routes/volunteering-org-expenses.js"
+        "src/routes/volunteering-org-expenses.js",
+        "src/routes/volunteering-org-fundraising.js"
       ],
       "tests": [
         "tests/api-locale-context.test.js",
@@ -28024,6 +28352,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28069,6 +28398,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28114,6 +28444,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28159,6 +28490,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28205,6 +28537,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28256,6 +28589,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28305,6 +28639,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28386,6 +28721,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28431,6 +28767,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28476,6 +28813,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28488,7 +28826,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts/{param}/checkin",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1403",
+      "source": "src/server.js:1404",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -28525,6 +28863,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28570,6 +28909,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28619,6 +28959,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28668,6 +29009,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28717,6 +29059,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28766,6 +29109,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28816,6 +29160,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28866,6 +29211,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28916,6 +29262,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -28966,6 +29313,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -29012,6 +29360,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -29058,6 +29407,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -29109,6 +29459,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"
@@ -29158,6 +29509,7 @@
         "tests/volunteering-incident-report-fields.test.js",
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js"

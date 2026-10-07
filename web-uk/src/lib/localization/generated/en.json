@@ -11280,6 +11280,132 @@
                 "already_handled": "This claim has already been dealt with by someone else. The list has been refreshed.",
                 "review_forbidden": "You cannot review this claim. A claim you made yourself must be reviewed by another organisation admin.",
                 "review_failed": "We could not update the claim. Please try again."
+            },
+            "org_fundraising": {
+                "title": "Fundraising",
+                "load_failed": "This could not be loaded.",
+                "intro": "Campaigns you run here go live straight away and raise money for your organisation. Gifts are held by the community, which passes them on to you.",
+                "new_campaign": "New campaign",
+                "edit_campaign": "Edit campaign",
+                "empty": "Your organisation has no fundraising campaigns yet.",
+                "gifts": "Gifts",
+                "no_gifts": "No gifts yet.",
+                "anonymous": "Anonymous",
+                "pause": "Pause",
+                "resume": "Resume",
+                "end": "End campaign",
+                "end_confirm": "End this campaign? Members will no longer be able to give to it.",
+                "saved": "Campaign saved.",
+                "raised_of_goal": ":raised raised of :goal",
+                "save": "Save campaign",
+                "show_details": "Show details",
+                "method": {
+                    "card": "Card",
+                    "pledge": "Pledge"
+                },
+                "status": {
+                    "active": "Live",
+                    "upcoming": "Coming up",
+                    "paused": "Paused",
+                    "ended": "Ended"
+                },
+                "paused_done": "Campaign paused",
+                "resumed_done": "Campaign resumed",
+                "ended_done": "Campaign ended",
+                "dates": ":start to :end",
+                "change": "Change",
+                "back_to_list": "Back to fundraising",
+                "keep_running": "Keep it running",
+                "goal_hint": "How much you hope to raise, in :currency. For example, 500.",
+                "error_title": "Enter a title for the campaign",
+                "error_title_long": "The title must be 255 characters or fewer",
+                "error_start": "Enter a real start date",
+                "error_end": "Enter a real end date",
+                "error_end_before_start": "The end date must be the same as or after the start date",
+                "error_goal": "Enter the goal as an amount of money, for example 500 or 250.50",
+                "save_failed": "We could not save the campaign. Please try again.",
+                "change_failed": "We could not change the campaign. Please try again.",
+                "handover_confirm_failed": "We could not confirm the hand-over. It may already have been confirmed or cancelled.",
+                "col_date": "Date",
+                "col_donor": "From",
+                "col_method": "How",
+                "col_status": "Status",
+                "gift_status": {
+                    "pending": "Not yet received",
+                    "completed": "Received",
+                    "refunded": "Refunded",
+                    "failed": "Failed"
+                },
+                "history": {
+                    "title": "History",
+                    "empty": "Nothing has been recorded for this campaign yet.",
+                    "by": "by :name",
+                    "change": ":field changed from :from to :to",
+                    "empty_value": "(none)",
+                    "gift_number": "Gift #:number",
+                    "reason": "Reason: :reason",
+                    "actor": {
+                        "community_admin": "Community admin",
+                        "org_admin": "Organisation admin",
+                        "member": "Donor",
+                        "stripe": "Stripe",
+                        "system": "Platform"
+                    },
+                    "event": {
+                        "campaign_created": "Campaign created",
+                        "campaign_updated": "Campaign edited",
+                        "campaign_paused": "Campaign paused",
+                        "campaign_resumed": "Campaign resumed",
+                        "campaign_ended": "Campaign ended",
+                        "campaign_organisation_set": "Organisation set",
+                        "donation_started": "Gift started",
+                        "donation_paid": "Gift paid",
+                        "donation_failed": "Payment failed",
+                        "donation_payment_not_started": "Payment could not start",
+                        "donation_refund_requested": "Refund requested",
+                        "donation_refunded": "Gift refunded",
+                        "donation_partially_refunded": "Gift partly refunded",
+                        "handover_recorded": "Hand-over recorded",
+                        "handover_confirmed": "Hand-over confirmed",
+                        "handover_cancelled": "Hand-over cancelled"
+                    },
+                    "field": {
+                        "title": "Title",
+                        "description": "Description",
+                        "start_date": "Start date",
+                        "end_date": "End date",
+                        "goal_amount": "Goal",
+                        "target_hours": "Target hours",
+                        "organization_id": "Organisation"
+                    }
+                },
+                "handovers": {
+                    "title": "Hand-overs",
+                    "raised": "Raised",
+                    "handed_over": "Passed on",
+                    "still_held": "Still held",
+                    "empty": "No money has been passed on yet.",
+                    "amount": "Amount",
+                    "date": "Date passed on",
+                    "method": "How it was passed on",
+                    "reference": "Payment reference",
+                    "confirm_action": "Confirm received",
+                    "recorded_by": "Recorded by :name",
+                    "confirmed_by": "Confirmed by :name",
+                    "cancelled_by": "Cancelled by :name",
+                    "confirmed": "Thank you — receipt confirmed.",
+                    "methods": {
+                        "bank_transfer": "Bank transfer",
+                        "cheque": "Cheque",
+                        "cash": "Cash",
+                        "other": "Other"
+                    },
+                    "status": {
+                        "recorded": "Waiting for confirmation",
+                        "confirmed": "Confirmed",
+                        "cancelled": "Cancelled"
+                    }
+                }
             }
         },
         "govuk_alpha_wallet": {
