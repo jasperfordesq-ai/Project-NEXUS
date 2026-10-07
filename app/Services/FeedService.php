@@ -1461,8 +1461,8 @@ class FeedService
         if (!isset($data['content']) && isset($data['body'])) {
             $data['content'] = $data['body'];
         }
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $content = \App\Helpers\HtmlSanitizer::sanitize(trim($data['content'] ?? ''));
+        // Member post: keep only what the feed composer can make (F-568/F-569, E-093).
+        $content = \App\Helpers\HtmlSanitizer::sanitizeMemberPost(trim($data['content'] ?? ''));
         $image = self::platformUploadPathOrNull($data['image_url'] ?? $data['image'] ?? null);
         $visibility = $data['visibility'] ?? 'public';
         if ($visibility === 'connections') {
@@ -1703,7 +1703,7 @@ class FeedService
         }
 
         $content = isset($data['content'])
-            ? \App\Helpers\HtmlSanitizer::sanitize(trim($data['content']))
+            ? \App\Helpers\HtmlSanitizer::sanitizeMemberPost(trim($data['content']))
             : $post->content;
 
         if (empty($content) && empty($post->image_url)) {
@@ -1815,8 +1815,8 @@ class FeedService
         $this->errors = [];
 
         $rawContent = trim($data['content'] ?? '');
-        // Server-side XSS prevention: sanitize HTML content before storage
-        $content = \App\Helpers\HtmlSanitizer::sanitize($rawContent);
+        // Member post: keep only what the feed composer can make (F-569, E-093).
+        $content = \App\Helpers\HtmlSanitizer::sanitizeMemberPost($rawContent);
         $imageUrl = $data['image_url'] ?? null;
         $visibility = $data['visibility'] ?? 'public';
         $groupId = (int) ($data['group_id'] ?? 0);

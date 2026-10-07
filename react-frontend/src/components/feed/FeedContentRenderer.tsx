@@ -10,7 +10,7 @@
  */
 
 import { Fragment } from 'react';
-import { sanitizeMemberRichText } from '@/lib/sanitize';
+import { sanitizeMemberPost } from '@/lib/sanitize';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
@@ -42,7 +42,8 @@ const HTML_TAG_REGEX = /<[a-z][\s\S]*>/i;
  * on every anchor and blocks unsafe URI schemes.
  */
 function sanitizeHtml(html: string): string {
-  return sanitizeMemberRichText(html);
+  // Feed posts keep only what the feed composer can make (F-569, E-093).
+  return sanitizeMemberPost(html);
 }
 
 /* ───────────────────────── Hashtag & Mention Helper ───────────────────────── */
@@ -124,7 +125,7 @@ export function FeedContentRenderer({
       <div>
         <div
           className="feed-content text-sm text-[var(--text-secondary)] leading-relaxed"
-          // nosemgrep: react-dangerouslysetinnerhtml — `sanitized` is DOMPurify output (sanitizeMemberRichText); code-scanning alert 1294
+          // nosemgrep: react-dangerouslysetinnerhtml — `sanitized` is DOMPurify output (sanitizeMemberPost); code-scanning alert 1294
           dangerouslySetInnerHTML={{ __html: sanitized }}
         />
         {truncated && detailPath && (

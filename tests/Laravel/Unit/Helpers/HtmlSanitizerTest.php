@@ -275,4 +275,56 @@ class HtmlSanitizerTest extends TestCase
     {
         $this->assertSame('I <3 timebanking & 2 > 1', HtmlSanitizer::toPlainText('I <3 timebanking & 2 > 1'));
     }
+
+    // -------------------------------------------------------
+    // sanitizeMemberPost() — F-569 (E-093): member posts keep only what
+    // their editor can make; injected headings, images and tables go.
+    // -------------------------------------------------------
+
+    public function test_sanitizeMemberPost_keeps_only_what_the_post_editor_can_make(): void
+    {
+        $in = '<h1>Session expired</h1><h2>Sub</h2><img src="https://evil.example/x.png" alt="Sign in">'
+            . '<table><tr><td>User</td></tr></table><div><hr><blockquote>Q</blockquote></div>'
+            . '<p><strong>Bold</strong> <em>it</em> <u>u</u></p><ul><li>One</li></ul>'
+            . '<a href="https://example.org/">Site</a>';
+        $out = HtmlSanitizer::sanitizeMemberPost($in);
+
+        foreach (['<h1', '<h2', '<img', '<table', '<td', '<div', '<hr', '<blockquote'] as $tag) {
+            $this->assertStringNotContainsString($tag, $out, "$tag must not survive in a member post");
+        }
+        $this->assertStringContainsString('<p><strong>Bold</strong> <em>it</em> <u>u</u></p>', $out);
+        $this->assertStringContainsString('<ul><li>One</li></ul>', $out);
+        $this->assertStringContainsString('href="https://example.org/"', $out);
+        $this->assertStringContainsString('Session expired', $out, 'The words of a removed tag are kept.');
+        $this->assertStringContainsString('User', $out);
+    }
+
+    public function test_sanitizeMemberPost_with_headings_keeps_the_discussion_editors_headings_and_quotes(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost(
+            '<h1>Big</h1><h2>Two</h2><h3>Three</h3><h4>Four</h4><blockquote>Quote</blockquote>'
+            . '<img src="https://evil.example/x.png"><table><tr><td>Cell</td></tr></table>',
+            true
+        );
+
+        $this->assertStringContainsString('<h2>Two</h2>', $out);
+        $this->assertStringContainsString('<h3>Three</h3>', $out);
+        $this->assertStringContainsString('<blockquote>Quote</blockquote>', $out);
+        foreach (['<h1', '<h4', '<img', '<table'] as $tag) {
+            $this->assertStringNotContainsString($tag, $out);
+        }
+        $this->assertStringContainsString('Big', $out);
+        $this->assertStringContainsString('Cell', $out);
+    }
+
+    public function test_sanitizeMemberPost_still_drops_scripts_handlers_and_unsafe_links(): void
+    {
+        $out = HtmlSanitizer::sanitizeMemberPost('<p onclick="x()">Hi <a href="javascript:alert(1)">there</a></p><script>alert(2)</script>');
+
+        $this->assertStringNotContainsString('onclick', $out);
+        $this->assertStringNotContainsString('javascript:', $out);
+        $this->assertStringNotContainsString('<script', $out);
+        $this->assertStringNotContainsString('alert(2)', $out);
+        $this->assertStringContainsString('Hi', $out);
+    }
 }

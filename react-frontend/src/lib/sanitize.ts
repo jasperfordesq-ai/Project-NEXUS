@@ -77,6 +77,27 @@ const MEMBER_RICH_TEXT_ALLOWED_ATTR = RICH_TEXT_ALLOWED_ATTR.filter(
   (attr) => attr !== 'class' && attr !== 'id',
 );
 
+/**
+ * F-569 (E-093). Member rich text keeps only what the member's editor can make.
+ *
+ * The feed composer (ComposeEditor) produces paragraphs, bold, italic, underline,
+ * strike, lists and links. The group-discussion editor (RichTextEditor, also used for
+ * FAQ answers) adds h2, h3 and quotes. A heading, an image from any site, a table or a
+ * figure could only reach member content by being sent straight to the API — and then
+ * rendered. Those tags are now dropped and their words kept. Production had no member
+ * post, discussion or FAQ using any of them when this was introduced (checked 7 Oct 2026).
+ */
+const MEMBER_POST_ALLOWED_TAGS = [
+  'p', 'br', 'span', 'strong', 'b', 'em', 'i', 'u', 's', 'ul', 'ol', 'li', 'a',
+];
+
+const MEMBER_DISCUSSION_ALLOWED_TAGS = [...MEMBER_POST_ALLOWED_TAGS, 'blockquote', 'h2', 'h3'];
+
+/** Only link attributes survive in member rich text; nothing else carries a URL now. */
+const MEMBER_ALLOWED_ATTR = MEMBER_RICH_TEXT_ALLOWED_ATTR.filter(
+  (attr) => attr === 'href' || attr === 'title' || attr === 'target' || attr === 'rel',
+);
+
 const INLINE_ALLOWED_TAGS = [
   'br', 'strong', 'em', 'b', 'i', 'u', 's', 'small', 'mark', 'span', 'a',
 ];
@@ -293,11 +314,24 @@ export function sanitizeRichText(html: string | null | undefined): string {
  * `sanitizeRichText`.
  */
 export function sanitizeMemberRichText(html: string | null | undefined): string {
+  return sanitizeMember(html, MEMBER_DISCUSSION_ALLOWED_TAGS);
+}
+
+/**
+ * Sanitize a member's FEED POST: only what the feed composer can make — paragraphs,
+ * bold, italic, underline, strike, lists and links (F-569). Links follow the
+ * member rule above: the words are never the clickable part.
+ */
+export function sanitizeMemberPost(html: string | null | undefined): string {
+  return sanitizeMember(html, MEMBER_POST_ALLOWED_TAGS);
+}
+
+function sanitizeMember(html: string | null | undefined, allowedTags: string[]): string {
   if (!html) return '';
   installHooksOnce();
   const clean = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: RICH_TEXT_ALLOWED_TAGS,
-    ALLOWED_ATTR: MEMBER_RICH_TEXT_ALLOWED_ATTR,
+    ALLOWED_TAGS: allowedTags,
+    ALLOWED_ATTR: MEMBER_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
     ALLOW_UNKNOWN_PROTOCOLS: false,
     KEEP_CONTENT: true,

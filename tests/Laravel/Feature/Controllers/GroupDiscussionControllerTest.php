@@ -508,4 +508,39 @@ final class GroupDiscussionControllerTest extends TestCase
             'created_at' => $createdAt,
         ]);
     }
+
+    /**
+     * F-569 (E-093): the discussion editor can make two heading sizes, quotes,
+     * lists, emphasis and links. A big heading or a table sent straight to the API
+     * is not stored as markup (its words are kept); images were already refused.
+     */
+    public function test_discussion_keeps_only_what_the_discussion_editor_can_make(): void
+    {
+        $this->authenticate($this->member);
+        $created = $this->apiPost("/v2/groups/{$this->activeGroupId}/discussions", [
+            'title' => 'Editor allowlist',
+            'content' => '<h1>Big</h1><h2>Two</h2><img src="https://evil.example/x.png">'
+                . '<table><tr><td>Cell</td></tr></table><blockquote>Quote</blockquote>',
+        ])->assertCreated();
+
+        $root = (string) $created->json('data.content');
+        self::assertStringContainsString('<h2>Two</h2>', $root);
+        self::assertStringContainsString('<blockquote>Quote</blockquote>', $root);
+        self::assertStringNotContainsString('<h1', $root);
+        self::assertStringNotContainsString('<img', $root);
+        self::assertStringNotContainsString('<table', $root);
+        self::assertStringContainsString('Big', $root);
+        self::assertStringContainsString('Cell', $root);
+
+        $discussionId = (int) $created->json('data.id');
+        $reply = $this->apiPost(
+            "/v2/groups/{$this->activeGroupId}/discussions/{$discussionId}/messages",
+            ['content' => '<h1>Reply head</h1><table><tr><td>T</td></tr></table><p>ok</p>'],
+        )->assertCreated();
+        $storedReply = (string) $reply->json('data.content');
+        self::assertStringNotContainsString('<h1', $storedReply);
+        self::assertStringNotContainsString('<table', $storedReply);
+        self::assertStringContainsString('Reply head', $storedReply);
+        self::assertStringContainsString('<p>ok</p>', $storedReply);
+    }
 }

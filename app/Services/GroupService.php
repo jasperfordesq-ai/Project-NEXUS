@@ -2879,7 +2879,8 @@ class GroupService
 
         // Sanitize to prevent XSS — strip HTML tags from title, allow basic formatting in content
         $title = trim(strip_tags($title));
-        $content = trim(\App\Helpers\HtmlSanitizer::sanitize($content, false));
+        // F-569 (E-093): keep only what the discussion editor can make.
+        $content = trim(\App\Helpers\HtmlSanitizer::sanitizeMemberPost($content, true));
         if ($title === '') {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.title_required'), 'field' => 'title'];
             return null;
@@ -3129,8 +3130,8 @@ class GroupService
             return null;
         }
 
-        // Sanitize to prevent XSS — allow basic formatting tags
-        $content = trim(\App\Helpers\HtmlSanitizer::sanitize($content, false));
+        // F-569 (E-093): keep only what the discussion editor can make.
+        $content = trim(\App\Helpers\HtmlSanitizer::sanitizeMemberPost($content, true));
         if ($content === '') {
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.group_content_required'), 'field' => 'content'];
             return null;

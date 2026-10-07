@@ -72,6 +72,30 @@ describe('FeedContentRenderer', () => {
     expect(screen.queryByText('alert("xss")')).not.toBeInTheDocument();
   });
 
+
+  // F-569 (E-093): a feed post shows only what the feed composer can make. A heading,
+  // an image from another site, a table or a quote sent straight to the API renders as
+  // words only, and an injected link's words are never the clickable part.
+  it('shows injected headings, images and tables in a post as words only', () => {
+    const { container } = render(
+      <FeedContentRenderer content='<h1>Your session has expired</h1><img src="https://evil.example/login.png" alt="Sign in"><table><tr><td>Username</td></tr></table><blockquote>Note</blockquote><p><a href="https://google.com">Click here to re-authenticate</a></p>' />
+    );
+    const feed = container.querySelector('.feed-content') as HTMLElement;
+    expect(feed.querySelector('h1, h2, h3, img, table, blockquote')).toBeNull();
+    expect(feed.textContent).toContain('Your session has expired');
+    expect(feed.textContent).toContain('Username');
+    const links = Array.from(feed.querySelectorAll('a')).map((a) => a.textContent?.trim());
+    expect(links).toEqual(['https://google.com']);
+  });
+
+  it('keeps the formatting the feed composer makes', () => {
+    const { container } = render(
+      <FeedContentRenderer content='<p><strong>Bold</strong> <em>it</em> <u>u</u> <s>s</s></p><ul><li>One</li></ul><ol><li>Two</li></ol>' />
+    );
+    const feed = container.querySelector('.feed-content') as HTMLElement;
+    // strong, em, u, s, ul, ol and two li
+    expect(feed.querySelectorAll('strong, em, u, s, ul, ol, li').length).toBe(8);
+  });
   it('renders "read more" link when truncated with detailPath', () => {
     render(
       <FeedContentRenderer

@@ -224,6 +224,51 @@ class HtmlSanitizer
     }
 
     /**
+     * Tags a member's feed post may keep: exactly what the feed composer
+     * (react-frontend ComposeEditor) can produce — paragraphs, line breaks,
+     * bold, italic, underline, strike, lists and links.
+     */
+    private const MEMBER_POST_TAGS = [
+        'p', 'br', 'span', 'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'ul', 'ol', 'li', 'a',
+    ];
+
+    /** The group-discussion editor (RichTextEditor) also makes two heading sizes and quotes. */
+    private const MEMBER_DISCUSSION_EXTRA_TAGS = ['h2', 'h3', 'blockquote'];
+
+    /**
+     * Member-written rich text (feed posts, group discussions), kept to what the
+     * member's editor can actually make.
+     *
+     * F-569 (E-093, follow-up to Cyphere's stored-HTML-injection finding F-562).
+     * `sanitize()` allows headings, images, tables, figures and divisions, which the
+     * member editors cannot produce — so a heading, a remote image or a table could
+     * only reach a post by being sent straight to the API, and it then rendered. With
+     * this allowlist a member can store nothing the toolbar could not have made; the
+     * words inside a removed tag are kept. Links keep their href (scheme-checked) and
+     * are shown only as their own address by the web client (F-562).
+     *
+     * @param string $html The submitted post body
+     * @param bool $allowHeadings Group discussions: also keep h2, h3 and blockquote
+     * @return string Sanitised HTML
+     */
+    public static function sanitizeMemberPost(string $html, bool $allowHeadings = false): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        $tags = $allowHeadings
+            ? array_merge(self::MEMBER_POST_TAGS, self::MEMBER_DISCUSSION_EXTRA_TAGS)
+            : self::MEMBER_POST_TAGS;
+
+        $html = (string) preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
+        $html = (string) preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
+        $html = strip_tags($html, '<' . implode('><', $tags) . '>');
+
+        return self::sanitizeAttributes($html, false, false);
+    }
+
+    /**
      * What a member typed into a PLAIN text box, kept as words only.
      *
      * F-568 (E-093, Cyphere stored-HTML-injection retest of F-562, 6 Oct 2026).

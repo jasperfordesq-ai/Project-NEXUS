@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { __testing, htmlToPlainText, sanitizeCustomPageHtml, sanitizeInline, sanitizeMemberRichText, sanitizeRichText, stripHtmlToText } from './sanitize';
+import { __testing, htmlToPlainText, sanitizeCustomPageHtml, sanitizeInline, sanitizeMemberPost, sanitizeMemberRichText, sanitizeRichText, stripHtmlToText } from './sanitize';
 
 const { isSafeUrl } = __testing;
 
@@ -431,12 +431,11 @@ describe("sanitizeMemberRichText — a member's own words are never a link (F-56
       .toEqual([{ href: 'https://evil.example/x', text: 'https://evil.example/x' }]);
   });
 
-  it('unwraps a clickable image even when accompanying text matches the destination', () => {
+  it('drops an image inside a link even when the accompanying text matches the destination (F-569)', () => {
     const out = sanitizeMemberRichText('<a href="https://evil.example/"><img src="https://evil.example/sign-in.png" alt="Click here to re-authenticate">https://evil.example</a>');
     const doc = new DOMParser().parseFromString(out, 'text/html');
-    expect(doc.querySelector('img')?.getAttribute('alt')).toBe('Click here to re-authenticate');
-    expect(doc.querySelector('a img')).toBeNull();
-    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
+    expect(doc.querySelector('img')).toBeNull();
+    expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example/', text: 'https://evil.example' }]);
   });
 
   it('never lets a label that looks like the platform point elsewhere', () => {
@@ -471,10 +470,9 @@ describe("sanitizeMemberRichText — a member's own words are never a link (F-56
     expect(sanitizeRichText('<a href="https://evil.example/">Click here</a>')).toContain('>Click here</a>');
   });
 
-  it('keeps an image but the image itself is no longer the link', () => {
+  it('drops an image inside a link; only the address stays clickable (F-569)', () => {
     const out = sanitizeMemberRichText('<a href="https://evil.example/"><img src="https://img.example/a.png" alt=""></a>');
-    expect(out).toContain('<img');
-    expect(out).not.toMatch(/<a [^>]*>\s*<img/);
+    expect(out).not.toContain('<img');
     expect(anchorsOf(out)).toEqual([{ href: 'https://evil.example', text: 'https://evil.example' }]);
   });
 
@@ -515,5 +513,48 @@ describe("sanitizeMemberRichText — a member's own words are never a link (F-56
     const out = sanitizeMemberRichText('<a href="javascript:alert(1)">Click here</a>');
     expect(anchorsOf(out)).toEqual([]);
     expect(plainTextOf(out)).toBe('Click here');
+  });
+});
+
+/**
+ * F-569 (E-093). Member rich text keeps only what the member's editor can make.
+ * Feed posts (ComposeEditor): paragraphs, bold, italic, underline, strike, lists, links.
+ * Group discussions and FAQ answers (RichTextEditor): the same plus h2, h3 and quotes.
+ * Anything else — a big heading, an image from any site, a table — can only arrive by
+ * being sent straight to the API, and is shown as its words, never as markup.
+ */
+describe('member rich text keeps only what its editor can make (F-569)', () => {
+  const injected =
+    '<h1>Session expired</h1><h2>Two</h2><h3>Three</h3><h4>Four</h4>'
+    + '<img src="https://evil.example/login.png" alt="Sign in">'
+    + '<table><tr><td>Username</td></tr></table><blockquote>Quote</blockquote>'
+    + '<div><hr><figure><figcaption>Cap</figcaption></figure><pre>Pre</pre><mark>M</mark></div>';
+
+  it('a feed post keeps none of the tags the feed composer cannot make', () => {
+    const doc = new DOMParser().parseFromString(sanitizeMemberPost(injected), 'text/html');
+    expect(doc.body.querySelector('h1, h2, h3, h4, img, table, td, blockquote, div, hr, figure, pre, mark')).toBeNull();
+    for (const words of ['Session expired', 'Two', 'Three', 'Four', 'Username', 'Quote', 'Cap', 'Pre', 'M']) {
+      expect(doc.body.textContent).toContain(words);
+    }
+  });
+
+  it('a feed post keeps the formatting the feed composer makes', () => {
+    expect(sanitizeMemberPost('<p><strong>B</strong> <em>i</em> <u>u</u> <s>s</s></p><ul><li>x</li></ul><ol><li>y</li></ol>'))
+      .toBe('<p><strong>B</strong> <em>i</em> <u>u</u> <s>s</s></p><ul><li>x</li></ul><ol><li>y</li></ol>');
+  });
+
+  it("a feed post never makes the member's words a link", () => {
+    expect(anchorsOf(sanitizeMemberPost('<a href="https://google.com">Click here to re-authenticate</a>')))
+      .toEqual([{ href: 'https://google.com', text: 'https://google.com' }]);
+  });
+
+  it('a discussion keeps h2, h3 and quotes but nothing else the editor cannot make', () => {
+    const doc = new DOMParser().parseFromString(sanitizeMemberRichText(injected), 'text/html');
+    expect(doc.body.querySelector('h2')?.textContent).toBe('Two');
+    expect(doc.body.querySelector('h3')?.textContent).toBe('Three');
+    expect(doc.body.querySelector('blockquote')?.textContent).toBe('Quote');
+    expect(doc.body.querySelector('h1, h4, img, table, td, div, hr, figure, pre, mark')).toBeNull();
+    expect(doc.body.textContent).toContain('Session expired');
+    expect(doc.body.textContent).toContain('Username');
   });
 });

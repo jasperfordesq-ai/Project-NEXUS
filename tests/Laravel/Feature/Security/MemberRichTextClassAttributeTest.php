@@ -71,4 +71,33 @@ class MemberRichTextClassAttributeTest extends TestCase
 
         $this->assertStringContainsString('class="legal-note"', $clean);
     }
+
+    /**
+     * F-569 (E-093): the feed composer can make bold, italic, underline, lists
+     * and links — nothing else. Headings, images and tables sent straight to the
+     * API are not stored as markup (their words are kept).
+     */
+    public function test_feed_post_keeps_only_what_the_post_editor_can_make(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+
+        $response = $this->apiPost('/v2/feed/posts', [
+            'content' => '<h1>Your session has expired</h1><img src="https://evil.example/login.png" alt="Sign in">'
+                . '<table><tr><td>Username</td></tr></table><p><strong>Hello</strong></p>',
+            'visibility' => 'public',
+        ]);
+        $response->assertStatus(201);
+
+        $stored = (string) DB::table('feed_posts')->where('id', (int) $response->json('data.id'))->value('content');
+        $this->assertStringNotContainsString('<h1', $stored);
+        $this->assertStringNotContainsString('<img', $stored);
+        $this->assertStringNotContainsString('<table', $stored);
+        $this->assertStringContainsString('<strong>Hello</strong>', $stored);
+        $this->assertStringContainsString('Your session has expired', $stored);
+        $this->assertStringContainsString('Username', $stored);
+    }
 }
