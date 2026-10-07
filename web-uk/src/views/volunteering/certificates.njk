@@ -59,6 +59,10 @@
       {% for certificate in certificates %}
         <article class="nexus-alpha-card">
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ certificate.heading }}</h2>
+          {% if certificate.revoked %}
+            <strong class="govuk-tag govuk-tag--red govuk-!-margin-bottom-3" data-testid="certificate-revoked">{{ t("govuk_alpha_volunteering.certificate_revoked.tag") }}</strong>
+            <div class="govuk-inset-text govuk-!-margin-top-0">{{ t("govuk_alpha_volunteering.certificate_revoked.note", { date: certificate.revokedAtLabel }) }}</div>
+          {% endif %}
           <dl class="govuk-summary-list govuk-!-margin-bottom-3">
             {% if certificate.rangeStartLabel and certificate.rangeEndLabel %}
               <div class="govuk-summary-list__row">
@@ -90,7 +94,7 @@
           {% if certificate.downloadPath %}
             <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor(certificate.downloadPath) }}">{{ t("govuk_alpha.vol_depth.certificate_download") }}</a>
           {% endif %}
-          {% if certificate.verificationCode %}
+          {% if certificate.verificationCode and not certificate.revoked %}
             {# The public check page (gap C1): what someone shown this certificate uses. #}
             <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0">
               <a class="govuk-link" href="{{ urlFor('/verify-certificate/' ~ (certificate.verificationCode | urlencode)) }}" data-testid="certificate-check-link">{{ t("govuk_alpha_volunteering.certificate_check.check_link") }}</a>

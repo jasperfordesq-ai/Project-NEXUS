@@ -63,7 +63,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseCreatedTables } from './lib/laravel-migration-tables.mjs';
+import { parseAddedColumns, parseCreatedTables } from './lib/laravel-migration-tables.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -262,8 +262,13 @@ function phpFiles(dir, out = []) {
 const schema = loadSchema(SCHEMA_FILE);
 const dumpTableCount = schema.size;
 for (const migration of phpFiles(path.join(ROOT, 'database', 'migrations'))) {
-  for (const [table, columns] of parseCreatedTables(fs.readFileSync(migration, 'utf8'))) {
+  const source = fs.readFileSync(migration, 'utf8');
+  for (const [table, columns] of parseCreatedTables(source)) {
     if (!schema.has(table)) schema.set(table, columns);
+  }
+  // Columns added to a table the dump already has, by a migration newer than the dump.
+  for (const [table, columns] of parseAddedColumns(source)) {
+    if (schema.has(table)) for (const column of columns) schema.get(table).add(column);
   }
 }
 const files = SCAN_ROOTS.flatMap((r) => phpFiles(path.join(ROOT, r)));

@@ -1019,7 +1019,9 @@
     "verified_hours_one": "{{count}} zweryfikowane godziny",
     "verified_hours_other": "{{count}} zweryfikowane godziny",
     "verified_hours_few": "{{count}} zweryfikowane godziny",
-    "verified_hours_many": "{{count}} zweryfikowane godziny"
+    "verified_hours_many": "{{count}} zweryfikowane godziny",
+    "revoked": "Unieważniony",
+    "revoked_note": "Twoja społeczność wycofała ten certyfikat, więc nie można go już pobrać ani zweryfikować. Jeśli uważasz, że to pomyłka, skontaktuj się ze swoją społecznością."
   },
   "emergency": {
     "title": "Alerty awaryjne",

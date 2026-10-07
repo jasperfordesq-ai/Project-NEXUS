@@ -1014,5 +1014,51 @@
     },
     "load_error": "資格を読み込めませんでした。",
     "retry": "再試行"
+  },
+  "certificates": {
+    "page_title": "証明書",
+    "page_desc": "コミュニティで発行されたボランティア証明書です。雇用主などはコードで確認します。誤って発行された証明書を取り消すと、その確認に通らなくなります。",
+    "load_error": "証明書を読み込めませんでした。",
+    "retry": "再試行",
+    "download_failed": "証明書をダウンロードできませんでした。",
+    "tiles": {
+      "active": "有効",
+      "revoked": "取り消し済み"
+    },
+    "filters": {
+      "label": "ステータス",
+      "all": "すべて",
+      "active": "有効",
+      "revoked": "取り消し済み"
+    },
+    "search_label": "検索",
+    "search_placeholder": "名前、メールアドレス、またはコード",
+    "clear_filters": "フィルターをクリア",
+    "empty_title": "証明書はありません",
+    "empty_body": "ボランティアが確認済みの時間から証明書を作成すると、ここに表示されます。",
+    "results": "見つかった証明書: {{number}}",
+    "volunteer": "ボランティア",
+    "hours": "確認済み時間: {{number}}",
+    "status": {
+      "active": "有効",
+      "revoked": "取り消し済み"
+    },
+    "period": "{{start}}～{{end}}",
+    "issued_on": "発行日 {{date}}",
+    "code": "確認コード {{code}}",
+    "revoked_line": "取り消し日 {{date}}",
+    "actions": {
+      "download": "ダウンロード",
+      "revoke": "取り消す"
+    },
+    "revoke": {
+      "title": "この証明書を取り消しますか？",
+      "body": "{{name}} さんの証明書 {{code}} は今後すべての確認で無効となり、{{name}} さんはダウンロードできなくなります。本人には撤回されたことが通知されます。この操作は元に戻せません。",
+      "reason": "理由",
+      "reason_help": "記録として証明書と一緒に保存されます。ボランティアには表示されません。",
+      "confirm": "証明書を取り消す",
+      "done": "証明書を取り消しました。",
+      "failed": "証明書を取り消せませんでした。すでに取り消されている可能性があります。"
+    }
   }
 }

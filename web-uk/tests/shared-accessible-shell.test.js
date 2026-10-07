@@ -37098,6 +37098,35 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  // Gap D8: a certificate the community revoked is marked as such, with no
+  // download or public-check link, and its download address is refused.
+  it('marks a revoked certificate and offers neither download nor check', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const revoked = { verification_code: 'REV123', total_hours: 4, revoked_at: '2026-10-07T09:00:00Z' };
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: { items: [revoked] } });
+
+    const page = await request(app)
+      .get('/volunteering/certificates')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('data-testid="certificate-revoked"');
+    expect(page.text).toContain('Your community withdrew this certificate on 7 October 2026');
+    expect(page.text).not.toContain('/volunteering/certificates/REV123/download');
+    expect(page.text).not.toContain('data-testid="certificate-check-link"');
+
+    api.callVolunteeringApi.mockReset();
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: { items: [revoked] } });
+    const download = await request(app)
+      .get('/volunteering/certificates/REV123/download')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(download.status).toBe(404);
+    expect(api.callVolunteeringApi).toHaveBeenCalledTimes(1);
+  });
+
   it('downloads a Laravel volunteering certificate after proving signed-in ownership', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');

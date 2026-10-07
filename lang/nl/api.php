@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'Kan certificaat niet genereren',
     'vol_certificate_volunteer_fallback' => 'Vrijwilliger',
     'vol_certificate_html_title' => 'Vrijwilligersimpactcertificaat',
+    'vol_certificate_revoked_notification' => 'Uw vrijwilligerscertificaat :code is door uw gemeenschap ingetrokken. Denkt u dat dit een vergissing is, neem dan contact op met uw gemeenschap.',
     'vol_certificate_html_platform' => 'Project NEXUS Community Platform',
     'vol_certificate_html_total_hours' => 'Totaal aantal vrijwilligersuren',
     'vol_certificate_html_period' => 'Periode',

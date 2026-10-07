@@ -1008,7 +1008,9 @@
     "verify": "Verifica",
     "verified_hours_one": "{{count}} ore verificate",
     "verified_hours_other": "{{count}} ore verificate",
-    "verified_hours_many": "{{count}} ore verificate"
+    "verified_hours_many": "{{count}} ore verificate",
+    "revoked": "Revocato",
+    "revoked_note": "La tua comunità ha ritirato questo certificato, quindi non può più essere scaricato né verificato. Se pensi che sia un errore, contatta la tua comunità."
   },
   "emergency": {
     "title": "Avvisi di emergenza",

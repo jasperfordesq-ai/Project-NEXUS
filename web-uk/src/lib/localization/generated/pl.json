@@ -11511,6 +11511,10 @@
             },
             "own_hours": {
                 "note": "To są Twoje własne godziny. Musi je zatwierdzić inna osoba zarządzająca tą organizacją."
+            },
+            "certificate_revoked": {
+                "tag": "Unieważniony",
+                "note": "Twoja społeczność wycofała ten certyfikat :date, więc nie można go już pobrać ani zweryfikować. Jeśli uważasz, że to pomyłka, skontaktuj się ze swoją społecznością."
             }
         },
         "govuk_alpha_wallet": {

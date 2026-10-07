@@ -2888,6 +2888,7 @@ return [
     'vol_certificate_generate_failed' => 'Failed to generate certificate',
     'vol_certificate_volunteer_fallback' => 'Volunteer',
     'vol_certificate_html_title' => 'Volunteer Impact Certificate',
+    'vol_certificate_revoked_notification' => 'Your volunteer certificate :code has been withdrawn by your community. If you think this is a mistake, please contact your community.',
     'vol_certificate_html_platform' => 'Project NEXUS Community Platform',
     'vol_certificate_html_total_hours' => 'Total Volunteer Hours',
     'vol_certificate_html_period' => 'Period',

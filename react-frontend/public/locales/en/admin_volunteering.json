@@ -1014,5 +1014,51 @@
     },
     "load_error": "Unable to load qualifications.",
     "retry": "Try again"
+  },
+  "certificates": {
+    "page_title": "Certificates",
+    "page_desc": "Volunteer certificates issued in your community. Employers and others check them with the code. Revoke one that was issued in error and it stops passing that check.",
+    "load_error": "The certificates could not be loaded.",
+    "retry": "Try again",
+    "download_failed": "The certificate could not be downloaded.",
+    "tiles": {
+      "active": "Valid",
+      "revoked": "Revoked"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "All",
+      "active": "Valid",
+      "revoked": "Revoked"
+    },
+    "search_label": "Search",
+    "search_placeholder": "Volunteer name, email or code",
+    "clear_filters": "Clear filters",
+    "empty_title": "No certificates",
+    "empty_body": "Certificates appear here once volunteers create them from their verified hours.",
+    "results": "Certificates found: {{number}}",
+    "volunteer": "Volunteer",
+    "hours": "Verified hours: {{number}}",
+    "status": {
+      "active": "Valid",
+      "revoked": "Revoked"
+    },
+    "period": "{{start}} to {{end}}",
+    "issued_on": "Issued {{date}}",
+    "code": "Verification code {{code}}",
+    "revoked_line": "Revoked {{date}}",
+    "actions": {
+      "download": "Download",
+      "revoke": "Revoke"
+    },
+    "revoke": {
+      "title": "Revoke this certificate?",
+      "body": "Certificate {{code}} for {{name}} will fail every check from now on, and {{name}} can no longer download it. They are told it was withdrawn. This cannot be undone.",
+      "reason": "Reason",
+      "reason_help": "Kept with the certificate for your records. The volunteer is not shown it.",
+      "confirm": "Revoke certificate",
+      "done": "Certificate revoked.",
+      "failed": "The certificate could not be revoked. It may already have been revoked."
+    }
   }
 }

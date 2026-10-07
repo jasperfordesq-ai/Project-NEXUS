@@ -41,6 +41,8 @@ interface Certificate {
   organizations: { name: string; hours: number; shifts: number }[];
   generated_at: string;
   downloaded_at: string | null;
+  /** Set when the community withdrew it; it then fails every check. */
+  revoked_at?: string | null;
 }
 
 const containerVariants = {
@@ -223,6 +225,9 @@ export function CertificatesTab() {
                       <h3 className="font-semibold text-theme-primary text-lg">
                         {t('certificates.verified_hours', { count: cert.total_hours })}
                       </h3>
+                      {cert.revoked_at && (
+                        <Chip size="sm" color="danger" variant="soft">{t('certificates.revoked')}</Chip>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-theme-subtle mb-3">
@@ -251,6 +256,9 @@ export function CertificatesTab() {
                     )}
                   </div>
 
+                  {cert.revoked_at ? (
+                    <p className="text-sm text-theme-subtle sm:max-w-xs">{t('certificates.revoked_note')}</p>
+                  ) : (
                   <div className="flex flex-col gap-2 sm:flex-shrink-0">
                     <Button
                       size="sm"
@@ -269,6 +277,7 @@ export function CertificatesTab() {
                       {t('certificates.verify')}
                     </Button>
                   </div>
+                  )}
                 </div>
               </GlassCard>
             </motion.div>

@@ -155,6 +155,8 @@ import type {
   AdminVolunteerQualification,
   AdminVolunteerQualificationsParams,
   AdminVolunteerQualificationsResponse,
+  AdminVolunteerCertificatesParams,
+  AdminVolunteerCertificatesResponse,
   QualificationConfirmationMethod,
   QualificationWithdrawalReason,
 } from './types';
@@ -1798,6 +1800,22 @@ export const adminVolunteering = {
     api.post<AdminVolunteerQualification>(`/v2/volunteering/qualifications/${id}/confirm`, { method }),
   withdrawQualification: (id: number, reason: QualificationWithdrawalReason) =>
     api.post<AdminVolunteerQualification>(`/v2/volunteering/qualifications/${id}/withdraw`, { reason }),
+
+  // Certificates issued in the community (gap D8). Viewing saves the printable
+  // copy as a file, as the volunteer gets it, without marking it downloaded;
+  // revoking makes the public check fail.
+  listCertificates: (params: AdminVolunteerCertificatesParams = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    }
+    const qs = query.toString();
+    return api.get<AdminVolunteerCertificatesResponse>(`/v2/admin/volunteering/certificates${qs ? `?${qs}` : ''}`);
+  },
+  downloadCertificate: (id: number, code: string) =>
+    api.download(`/v2/admin/volunteering/certificates/${id}/html`, { filename: `volunteer-certificate-${code}.html` }),
+  revokeCertificate: (id: number, reason: string) =>
+    api.post<{ revoked: boolean }>(`/v2/admin/volunteering/certificates/${id}/revoke`, { reason }),
 
   // Training
   getTraining: () => api.get('/v2/admin/volunteering/training'),

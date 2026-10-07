@@ -1113,4 +1113,9 @@ return [
     'own_hours' => [
         'note' => 'Das sind Ihre eigenen Stunden. Eine andere Person, die diese Organisation leitet, muss sie genehmigen.',
     ],
+    // A certificate the community revoked (gap D8, 7 Oct 2026)
+    'certificate_revoked' => [
+        'tag' => 'Widerrufen',
+        'note' => 'Ihre Gemeinschaft hat diese Bescheinigung am :date zurückgezogen. Sie kann daher nicht mehr heruntergeladen oder geprüft werden. Wenn Sie glauben, dass dies ein Fehler ist, wenden Sie sich bitte an Ihre Gemeinschaft.',
+    ],
 ];

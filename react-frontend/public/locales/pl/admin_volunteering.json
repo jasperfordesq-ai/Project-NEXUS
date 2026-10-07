@@ -1048,5 +1048,51 @@
     },
     "load_error": "Nie udało się wczytać kwalifikacji.",
     "retry": "Spróbuj ponownie"
+  },
+  "certificates": {
+    "page_title": "Certyfikaty",
+    "page_desc": "Certyfikaty wolontariusza wydane w Twojej społeczności. Pracodawcy i inne osoby sprawdzają je za pomocą kodu. Unieważnij certyfikat wydany przez pomyłkę, a przestanie przechodzić tę weryfikację.",
+    "load_error": "Nie udało się wczytać certyfikatów.",
+    "retry": "Spróbuj ponownie",
+    "download_failed": "Nie udało się pobrać certyfikatu.",
+    "tiles": {
+      "active": "Ważne",
+      "revoked": "Unieważnione"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Wszystkie",
+      "active": "Ważne",
+      "revoked": "Unieważnione"
+    },
+    "search_label": "Szukaj",
+    "search_placeholder": "Imię i nazwisko, e-mail lub kod",
+    "clear_filters": "Wyczyść filtry",
+    "empty_title": "Brak certyfikatów",
+    "empty_body": "Certyfikaty pojawiają się tutaj, gdy wolontariusze utworzą je na podstawie potwierdzonych godzin.",
+    "results": "Znalezione certyfikaty: {{number}}",
+    "volunteer": "Wolontariusz",
+    "hours": "Potwierdzone godziny: {{number}}",
+    "status": {
+      "active": "Ważny",
+      "revoked": "Unieważniony"
+    },
+    "period": "Od {{start}} do {{end}}",
+    "issued_on": "Wydano {{date}}",
+    "code": "Kod weryfikacyjny {{code}}",
+    "revoked_line": "Unieważniono {{date}}",
+    "actions": {
+      "download": "Pobierz",
+      "revoke": "Unieważnij"
+    },
+    "revoke": {
+      "title": "Unieważnić ten certyfikat?",
+      "body": "Certyfikat {{code}} osoby {{name}} od teraz nie przejdzie żadnej weryfikacji, a {{name}} nie będzie mógł/mogła go już pobrać. Osoba ta zostanie poinformowana o wycofaniu. Tej operacji nie można cofnąć.",
+      "reason": "Powód",
+      "reason_help": "Przechowywany z certyfikatem w Twojej dokumentacji. Nie jest pokazywany wolontariuszowi.",
+      "confirm": "Unieważnij certyfikat",
+      "done": "Certyfikat unieważniony.",
+      "failed": "Nie udało się unieważnić certyfikatu. Być może został już unieważniony."
+    }
   }
 }

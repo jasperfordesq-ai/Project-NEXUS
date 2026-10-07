@@ -775,10 +775,12 @@
       "giving_days": "Spendenaktionen|Spenden|Kampagnen|Aufrufe",
       "settings": "benutzerdefinierte Felder|Erinnerungen|Webhooks|Konfiguration",
       "qualifications": "schulung|erste hilfe|zertifikate|ablauf|qualifikationen",
-      "opportunities": "Schichten Dienstplan Zeitplan Gelegenheiten"
+      "opportunities": "Schichten Dienstplan Zeitplan Gelegenheiten",
+      "certificates": "Ehrenamtsbescheinigungen|widerrufen|Bescheinigung zurückziehen|Prüfcode|Stundenbescheinigung"
     },
     "qualifications": "Qualifikationen",
-    "opportunities": "Gelegenheiten & Schichten"
+    "opportunities": "Gelegenheiten & Schichten",
+    "certificates": "Bescheinigungen"
   },
   "group_join_requests": "Beitrittsanfragen für Gruppen",
   "group_moderation": "Gruppenmoderation",

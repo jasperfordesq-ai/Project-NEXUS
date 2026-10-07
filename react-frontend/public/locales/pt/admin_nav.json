@@ -779,10 +779,12 @@
       "giving_days": "angariação de fundos|doações|campanhas|apelos",
       "settings": "campos personalizados|lembretes|webhooks|configuração",
       "qualifications": "formação|primeiros socorros|certificados|validade|qualificações",
-      "opportunities": "turnos escala horário oportunidades"
+      "opportunities": "turnos escala horário oportunidades",
+      "certificates": "certificados de voluntariado|revogar|retirar certificado|código de verificação|certificado de horas"
     },
     "qualifications": "Qualificações",
-    "opportunities": "Oportunidades e turnos"
+    "opportunities": "Oportunidades e turnos",
+    "certificates": "Certificados"
   },
   "group_join_requests": "Pedidos de adesão a grupos",
   "group_moderation": "Moderação de grupos",

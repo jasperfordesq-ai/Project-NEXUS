@@ -35,3 +35,25 @@ export function parseCreatedTables(source) {
 
   return tables;
 }
+
+// Columns a migration ADDS to an existing table, from literal Schema::table
+// declarations (7 Oct 2026). The committed dump comes from production, so a
+// column added by a migration that has not been deployed yet was missing from
+// the check, and code using it failed until the next production dump. Only
+// literal column-creating calls count; drops and renames are ignored, so this
+// can only ever widen what is known, never narrow it.
+export function parseAddedColumns(source) {
+  const tables = new Map();
+  const alter = /^\s*Schema::table\(\s*(['"])([A-Za-z_][A-Za-z0-9_]*)\1\s*,\s*function\s*\([^)]*\)\s*(?::\s*void)?\s*\{([\s\S]*?)^\s*\}\s*\)\s*;/gm;
+
+  for (const match of source.matchAll(alter)) {
+    const columnCall = /^\s*\$table->([A-Za-z][A-Za-z0-9_]*)\(\s*(['"])([A-Za-z_][A-Za-z0-9_]*)\2/gm;
+    for (const call of match[3].matchAll(columnCall)) {
+      if (!COLUMN_METHODS.has(call[1])) continue;
+      if (!tables.has(match[2])) tables.set(match[2], new Set());
+      tables.get(match[2]).add(call[3]);
+    }
+  }
+
+  return tables;
+}

@@ -1031,5 +1031,51 @@
     },
     "load_error": "Impossibile caricare le qualifiche.",
     "retry": "Riprova"
+  },
+  "certificates": {
+    "page_title": "Certificati",
+    "page_desc": "Certificati di volontariato rilasciati nella tua comunità. Datori di lavoro e altri li verificano con il codice. Revoca un certificato rilasciato per errore e non supererà più questa verifica.",
+    "load_error": "Impossibile caricare i certificati.",
+    "retry": "Riprova",
+    "download_failed": "Impossibile scaricare il certificato.",
+    "tiles": {
+      "active": "Validi",
+      "revoked": "Revocati"
+    },
+    "filters": {
+      "label": "Stato",
+      "all": "Tutti",
+      "active": "Validi",
+      "revoked": "Revocati"
+    },
+    "search_label": "Cerca",
+    "search_placeholder": "Nome, email o codice",
+    "clear_filters": "Cancella filtri",
+    "empty_title": "Nessun certificato",
+    "empty_body": "I certificati compaiono qui quando i volontari li creano dalle loro ore verificate.",
+    "results": "Certificati trovati: {{number}}",
+    "volunteer": "Volontario/a",
+    "hours": "Ore verificate: {{number}}",
+    "status": {
+      "active": "Valido",
+      "revoked": "Revocato"
+    },
+    "period": "Dal {{start}} al {{end}}",
+    "issued_on": "Rilasciato il {{date}}",
+    "code": "Codice di verifica {{code}}",
+    "revoked_line": "Revocato il {{date}}",
+    "actions": {
+      "download": "Scarica",
+      "revoke": "Revoca"
+    },
+    "revoke": {
+      "title": "Revocare questo certificato?",
+      "body": "Il certificato {{code}} di {{name}} non supererà più alcuna verifica e {{name}} non potrà più scaricarlo. Verrà informato/a del ritiro. L’operazione non può essere annullata.",
+      "reason": "Motivo",
+      "reason_help": "Conservato con il certificato per i tuoi archivi. Non viene mostrato al volontario.",
+      "confirm": "Revoca certificato",
+      "done": "Certificato revocato.",
+      "failed": "Impossibile revocare il certificato. Potrebbe essere già stato revocato."
+    }
   }
 }

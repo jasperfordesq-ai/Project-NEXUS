@@ -775,10 +775,12 @@
       "giving_days": "fondsenwerving|donaties|campagnes|acties",
       "settings": "aangepaste velden|herinneringen|webhooks|configuratie",
       "qualifications": "training|ehbo|certificaten|vervaldatum|kwalificaties",
-      "opportunities": "diensten rooster schema kansen"
+      "opportunities": "diensten rooster schema kansen",
+      "certificates": "vrijwilligerscertificaten|intrekken|certificaat intrekken|verificatiecode|urencertificaat"
     },
     "qualifications": "Kwalificaties",
-    "opportunities": "Kansen & diensten"
+    "opportunities": "Kansen & diensten",
+    "certificates": "Certificaten"
   },
   "group_join_requests": "Lidmaatschapsverzoeken voor groepen",
   "group_moderation": "Groepsmoderatie",

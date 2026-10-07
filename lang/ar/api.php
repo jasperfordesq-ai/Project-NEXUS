@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'فشل في إنشاء الشهادة',
     'vol_certificate_volunteer_fallback' => 'متطوع',
     'vol_certificate_html_title' => 'شهادة التأثير التطوعي',
+    'vol_certificate_revoked_notification' => 'سحب مجتمعك شهادة التطوع الخاصة بك :code. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مجتمعك.',
     'vol_certificate_html_platform' => 'منصة مجتمع مشروع NEXUS',
     'vol_certificate_html_total_hours' => 'إجمالي ساعات التطوع',
     'vol_certificate_html_period' => 'فترة',

@@ -1065,5 +1065,51 @@
     },
     "load_error": "Ní féidir cáilíochtaí a lódáil.",
     "retry": "Bain triail eile as"
+  },
+  "certificates": {
+    "page_title": "Teastais",
+    "page_desc": "Teastais obair dheonach a eisíodh i do phobal. Seiceálann fostóirí agus daoine eile iad leis an gcód. Cúlghair teastas a eisíodh trí dhearmad agus ní éireoidh leis sa seiceáil sin níos mó.",
+    "load_error": "Níorbh fhéidir na teastais a lódáil.",
+    "retry": "Bain triail eile as",
+    "download_failed": "Níorbh fhéidir an teastas a íoslódáil.",
+    "tiles": {
+      "active": "Bailí",
+      "revoked": "Cúlghairthe"
+    },
+    "filters": {
+      "label": "Stádas",
+      "all": "Uile",
+      "active": "Bailí",
+      "revoked": "Cúlghairthe"
+    },
+    "search_label": "Cuardaigh",
+    "search_placeholder": "Ainm, ríomhphost nó cód",
+    "clear_filters": "Glan na scagairí",
+    "empty_title": "Níl aon teastais ann",
+    "empty_body": "Taispeántar teastais anseo nuair a chruthaíonn oibrithe deonacha iad óna n-uaireanta fíoraithe.",
+    "results": "Teastais a aimsíodh: {{number}}",
+    "volunteer": "Oibrí deonach",
+    "hours": "Uaireanta fíoraithe: {{number}}",
+    "status": {
+      "active": "Bailí",
+      "revoked": "Cúlghairthe"
+    },
+    "period": "{{start}} go {{end}}",
+    "issued_on": "Eisithe {{date}}",
+    "code": "Cód fíoraithe {{code}}",
+    "revoked_line": "Cúlghairthe {{date}}",
+    "actions": {
+      "download": "Íoslódáil",
+      "revoke": "Cúlghair"
+    },
+    "revoke": {
+      "title": "An dteastas seo a chúlghairm?",
+      "body": "Teipfidh teastas {{code}} do {{name}} ar gach seiceáil as seo amach, agus ní bheidh {{name}} in ann é a íoslódáil níos mó. Cuirfear in iúl dóibh gur tarraingíodh siar é. Ní féidir é seo a chealú.",
+      "reason": "Cúis",
+      "reason_help": "Coinnítear leis an teastas é do do thaifid. Ní thaispeántar don oibrí deonach é.",
+      "confirm": "Cúlghair an teastas",
+      "done": "Cúlghaireadh an teastas.",
+      "failed": "Níorbh fhéidir an teastas a chúlghairm. B’fhéidir go bhfuil sé cúlghairthe cheana."
+    }
   }
 }

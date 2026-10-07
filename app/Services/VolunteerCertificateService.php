@@ -263,6 +263,7 @@ class VolunteerCertificateService
                 'vc.date_range_end',
                 'vc.organizations',
                 'vc.generated_at',
+                'vc.revoked_at',
                 'u.first_name',
                 'u.last_name', 'u.profile_type', 'u.organization_name'
             );
@@ -287,7 +288,9 @@ class VolunteerCertificateService
             'organizations' => json_decode($cert->organizations, true) ?? [],
             'user_name' => UserDisplayName::resolve($cert),
             'generated_at' => $cert->generated_at,
-            'verified' => true,
+            'revoked' => $cert->revoked_at !== null,
+            // A revoked certificate (gap D8) is not a verified one.
+            'verified' => $cert->revoked_at === null,
         ];
     }
 
@@ -306,7 +309,8 @@ class VolunteerCertificateService
     public static function check(string $code, string $name): array
     {
         $cert = self::verify(strtoupper(trim($code)));
-        if ($cert === null) {
+        // A revoked certificate answers exactly as an unknown one (gap D8).
+        if ($cert === null || $cert['revoked']) {
             return ['valid' => false];
         }
 
@@ -386,6 +390,7 @@ class VolunteerCertificateService
             'organizations' => json_decode($row->organizations, true) ?? [],
             'generated_at' => $row->generated_at,
             'downloaded_at' => $row->downloaded_at,
+            'revoked_at' => $row->revoked_at ?? null,
         ]);
 
         return [
@@ -400,10 +405,12 @@ class VolunteerCertificateService
      *
      * @return string|null  HTML string or null if certificate not found
      */
-    public static function generateHtml(string $code): ?string
+    public static function generateHtml(string $code, bool $includeRevoked = false): ?string
     {
         $cert = self::verify($code);
-        if (!$cert) {
+        // A revoked certificate is no longer printed for its holder (gap D8); an
+        // admin may still view it ($includeRevoked).
+        if (!$cert || ($cert['revoked'] && !$includeRevoked)) {
             return null;
         }
 
@@ -491,5 +498,139 @@ HTML;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("VolunteerCertificateService::markDownloaded error: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Every certificate issued in the community, for its admins (gap D8, 7 Oct 2026).
+     * Searchable by holder name, email or code; filterable by active / revoked.
+     *
+     * @param array{q?: string|null, status?: string|null, page?: int, per_page?: int} $filters
+     * @return array{items: list<array<string, mixed>>, total: int, counts: array{active: int, revoked: int}}
+     */
+    public static function listForAdmin(int $tenantId, array $filters = []): array
+    {
+        $perPage = max(1, min(100, (int) ($filters['per_page'] ?? 25)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
+        $base = DB::table('vol_certificates as vc')
+            ->join('users as u', 'vc.user_id', '=', 'u.id')
+            ->where('vc.tenant_id', $tenantId);
+
+        $counts = [
+            'active' => (clone $base)->whereNull('vc.revoked_at')->count(),
+            'revoked' => (clone $base)->whereNotNull('vc.revoked_at')->count(),
+        ];
+
+        $q = trim((string) ($filters['q'] ?? ''));
+        if ($q !== '') {
+            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
+            $base->where(function ($query) use ($like) {
+                $query->where('u.first_name', 'like', $like)
+                    ->orWhere('u.last_name', 'like', $like)
+                    ->orWhere('u.name', 'like', $like)
+                    ->orWhere('u.email', 'like', $like)
+                    ->orWhere('vc.verification_code', 'like', $like);
+            });
+        }
+        $status = (string) ($filters['status'] ?? '');
+        if ($status === 'active') {
+            $base->whereNull('vc.revoked_at');
+        } elseif ($status === 'revoked') {
+            $base->whereNotNull('vc.revoked_at');
+        }
+
+        $total = (clone $base)->count();
+        $rows = $base
+            ->select(
+                'vc.id', 'vc.user_id', 'vc.verification_code', 'vc.total_hours', 'vc.date_range_start',
+                'vc.date_range_end', 'vc.organizations', 'vc.generated_at', 'vc.downloaded_at',
+                'vc.revoked_at', 'vc.revoked_by', 'vc.revoke_reason',
+                'u.first_name', 'u.last_name', 'u.name', 'u.email', 'u.avatar_url', 'u.profile_type', 'u.organization_name'
+            )
+            ->orderByDesc('vc.id')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        $items = $rows->map(fn ($row) => [
+            'id' => (int) $row->id,
+            'verification_code' => $row->verification_code,
+            'total_hours' => round((float) $row->total_hours, 2),
+            'date_range' => ['start' => $row->date_range_start, 'end' => $row->date_range_end],
+            'organizations' => json_decode((string) $row->organizations, true) ?? [],
+            'generated_at' => $row->generated_at,
+            'downloaded_at' => $row->downloaded_at,
+            'revoked_at' => $row->revoked_at,
+            'revoke_reason' => $row->revoke_reason,
+            'verification_url' => self::publicCheckUrl((string) $row->verification_code),
+            'volunteer' => [
+                'id' => (int) $row->user_id,
+                'name' => UserDisplayName::resolve($row),
+                'email' => $row->email,
+                'avatar_url' => $row->avatar_url,
+            ],
+        ])->all();
+
+        return ['items' => $items, 'total' => $total, 'counts' => $counts];
+    }
+
+    /** The certificate's code, when it exists in the community; null otherwise. */
+    public static function codeForAdmin(int $tenantId, int $certificateId): ?string
+    {
+        $code = DB::table('vol_certificates')->where('id', $certificateId)->where('tenant_id', $tenantId)->value('verification_code');
+
+        return $code === null ? null : (string) $code;
+    }
+
+    /**
+     * Revoke a certificate issued in error (gap D8). It then fails the public
+     * check and is no longer printed for its holder, who is told in their own
+     * language. Returns false when it does not exist in the community or is
+     * already revoked.
+     */
+    public static function revoke(int $tenantId, int $certificateId, int $adminId, string $reason): bool
+    {
+        $reason = mb_substr(trim($reason), 0, 500);
+        $cert = DB::table('vol_certificates')
+            ->where('id', $certificateId)
+            ->where('tenant_id', $tenantId)
+            ->first(['id', 'user_id', 'verification_code', 'revoked_at']);
+        if (!$cert || $cert->revoked_at !== null) {
+            return false;
+        }
+
+        $changed = DB::table('vol_certificates')
+            ->where('id', $certificateId)
+            ->where('tenant_id', $tenantId)
+            ->whereNull('revoked_at')
+            ->update([
+                'revoked_at' => now(),
+                'revoked_by' => $adminId,
+                'revoke_reason' => $reason !== '' ? $reason : null,
+                'updated_at' => now(),
+            ]);
+        if ($changed === 0) {
+            return false;
+        }
+
+        try {
+            $holder = DB::table('users')
+                ->where('id', (int) $cert->user_id)
+                ->where('tenant_id', $tenantId)
+                ->first(['id', 'preferred_language']);
+            if ($holder) {
+                LocaleContext::withLocale($holder, function () use ($holder, $cert) {
+                    \App\Models\Notification::createNotification(
+                        (int) $holder->id,
+                        __('api.vol_certificate_revoked_notification', ['code' => $cert->verification_code]),
+                        '/volunteering?tab=certificates',
+                        'volunteer_certificate'
+                    );
+                });
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('VolunteerCertificateService::revoke notification failed', ['error' => $e->getMessage()]);
+        }
+
+        return true;
     }
 }

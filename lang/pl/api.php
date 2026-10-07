@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'Nie udało się wygenerować certyfikatu',
     'vol_certificate_volunteer_fallback' => 'Wolontariusz',
     'vol_certificate_html_title' => 'Certyfikat wpływu wolontariusza',
+    'vol_certificate_revoked_notification' => 'Twoja społeczność wycofała Twój certyfikat wolontariusza :code. Jeśli uważasz, że to pomyłka, skontaktuj się ze swoją społecznością.',
     'vol_certificate_html_platform' => 'Platforma społecznościowa projektu NEXUS',
     'vol_certificate_html_total_hours' => 'Łączna liczba godzin wolontariatu',
     'vol_certificate_html_period' => 'Okres',

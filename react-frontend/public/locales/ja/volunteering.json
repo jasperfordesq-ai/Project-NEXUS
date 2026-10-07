@@ -997,7 +997,9 @@
     "download": "ダウンロード",
     "verify": "確認する",
     "verified_hours_one": "{{count}} 確認済み時間",
-    "verified_hours_other": "{{count}} 確認済み時間"
+    "verified_hours_other": "{{count}} 確認済み時間",
+    "revoked": "取り消し済み",
+    "revoked_note": "コミュニティがこの証明書を撤回したため、ダウンロードや確認はできなくなりました。誤りだと思われる場合は、コミュニティにお問い合わせください。"
   },
   "emergency": {
     "title": "緊急アラート",

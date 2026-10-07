@@ -168,6 +168,7 @@ const VolunteerOrganizations = lazy(() => import('./modules/volunteering/Volunte
 const VolunteerExpenses = lazy(() => import('./modules/volunteering/VolunteerExpenses'));
 const VolunteerTraining = lazy(() => import('./modules/volunteering/VolunteerTraining'));
 const VolunteerQualifications = lazy(() => import('./modules/volunteering/VolunteerQualifications'));
+const VolunteerCertificates = lazy(() => import('./modules/volunteering/VolunteerCertificates'));
 const VolunteerSafeguarding = lazy(() => import('./modules/volunteering/VolunteerSafeguarding'));
 const VolunteerIncidentCaseRoute = lazy(() => import('./modules/volunteering/incidents/VolunteerIncidentCase'));
 const VolunteerHoursAudit = lazy(() => import('./modules/volunteering/VolunteerHoursAudit'));
@@ -603,6 +604,7 @@ export function AdminRoutes() {
       <Route path="volunteering/expenses" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerExpenses /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/training" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerTraining /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/qualifications" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerQualifications /></Lazy></FeatureGatedElement>} />
+      <Route path="volunteering/certificates" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerCertificates /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerSafeguarding /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding/:id" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerIncidentCaseRoute /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/hours" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerHoursAudit /></Lazy></FeatureGatedElement>} />
@@ -610,6 +612,17 @@ export function AdminRoutes() {
       <Route path="volunteering/donations" element={<FeatureGatedElement feature="volunteering"><Lazy><DonationRefunds /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/projects" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerProjects /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/config" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerConfig /></Lazy></FeatureGatedElement>} />
+      {/* Guessed volunteering addresses (gap D8): the obvious name for a page
+          that lives under another one lands on it instead of "page not found". */}
+      <Route path="volunteering/applications" element={<TenantRedirect to="/admin/volunteering/approvals" />} />
+      <Route path="volunteering/incidents" element={<TenantRedirect to="/admin/volunteering/safeguarding" />} />
+      <Route path="volunteering/incidents/:id" element={<TenantParamRedirect to="/admin/volunteering/safeguarding/:id" />} />
+      <Route path="volunteering/settings" element={<TenantRedirect to="/admin/volunteering/config" />} />
+      <Route path="volunteering/organisations" element={<TenantRedirect to="/admin/volunteering/organizations" />} />
+      <Route path="volunteering/fundraising" element={<TenantRedirect to="/admin/volunteering/giving-days" />} />
+      <Route path="volunteering/shift-swaps" element={<TenantRedirect to="/admin/volunteering/swaps" />} />
+      <Route path="volunteering/shifts" element={<TenantRedirect to="/admin/volunteering/opportunities" />} />
+      <Route path="volunteering/wellbeing" element={<TenantRedirect to="/admin/volunteering" />} />
       {/* ─── CARING COMMUNITY — retired from /admin, now lives at /caring/* ─── */}
       {/* These redirects preserve bookmarks to the old /admin/caring-community/* URLs. */}
       <Route path="caring-community" element={<TenantRedirect to="/caring" />} />

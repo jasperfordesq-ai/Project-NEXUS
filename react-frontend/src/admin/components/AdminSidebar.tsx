@@ -93,6 +93,7 @@ import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Receipt from 'lucide-react/icons/receipt';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
+import Award from 'lucide-react/icons/award';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Gift from 'lucide-react/icons/gift';
@@ -384,6 +385,7 @@ function useAdminNav(): NavSection[] {
           },
           { label: t('volunteering_nav.training'), href: '/admin/volunteering/training', icon: GraduationCap, keywords: keyword(t('volunteering_nav.keywords.training')) },
           { label: t('volunteering_nav.qualifications'), href: '/admin/volunteering/qualifications', icon: BadgeCheck, keywords: keyword(t('volunteering_nav.keywords.qualifications')) },
+          { label: t('volunteering_nav.certificates'), href: '/admin/volunteering/certificates', icon: Award, keywords: keyword(t('volunteering_nav.keywords.certificates')) },
           { label: t('volunteering_nav.safeguarding'), href: '/admin/volunteering/safeguarding', icon: ShieldAlert, keywords: keyword(t('volunteering_nav.keywords.safeguarding')) },
           { label: t('volunteering_nav.giving_days'), href: '/admin/volunteering/giving-days', icon: Gift, group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.giving_days')) },
           { label: t('donation_refunds'), href: '/admin/volunteering/donations', icon: HandCoins, keywords: keyword(t('search_keywords.donation_refunds')) },

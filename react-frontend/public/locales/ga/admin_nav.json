@@ -787,10 +787,12 @@
       "giving_days": "tiomsú airgid|síntiúis|feachtais|achomhairc",
       "settings": "réimsí saincheaptha|meabhrúcháin|webhooks|cumraíocht",
       "qualifications": "oiliúint|garchabhair|teastais|éag|cáilíochtaí",
-      "opportunities": "sealanna sceideal clár ama deiseanna"
+      "opportunities": "sealanna sceideal clár ama deiseanna",
+      "certificates": "teastais obair dheonach|cúlghairm|teastas a tharraingt siar|cód fíoraithe|teastas uaireanta"
     },
     "qualifications": "Cáilíochtaí",
-    "opportunities": "Deiseanna & sealanna"
+    "opportunities": "Deiseanna & sealanna",
+    "certificates": "Teastais"
   },
   "group_join_requests": "Iarratais ar ghrúpaí a cheangal",
   "group_moderation": "Modhnóireacht grúpaí",

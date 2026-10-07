@@ -1959,9 +1959,15 @@ function normalizeCertificate(row, t = null) {
     ? certificate.organizations
     : (Array.isArray(certificate.organisations) ? certificate.organisations : []);
   const totalHoursLabel = hoursLabel(certificate.total_hours ?? certificate.totalHours);
+  // Withdrawn by the community (gap D8): it fails every check and the server
+  // refuses its printable copy, so neither is offered.
+  const revokedAt = certificate.revoked_at ?? certificate.revokedAt ?? null;
+  const revoked = Boolean(revokedAt);
 
   return {
     verificationCode: code,
+    revoked,
+    revokedAtLabel: revoked ? dateLabel(revokedAt) : '',
     totalHoursLabel,
     heading: t
       ? t('govuk_alpha.vol_depth.certificate_hours', { hours: totalHoursLabel })
@@ -1981,7 +1987,7 @@ function normalizeCertificate(row, t = null) {
           : `${name} (${organizationHoursLabel} hours)`
       };
     }),
-    downloadPath: code ? `/volunteering/certificates/${encodeURIComponent(code)}/download` : ''
+    downloadPath: code && !revoked ? `/volunteering/certificates/${encodeURIComponent(code)}/download` : ''
   };
 }
 
@@ -2181,6 +2187,7 @@ router.get('/certificates/:code([A-Za-z0-9]+)/download', asyncRoute(async (req, 
   const certificates = collectionFrom(await callApi(token, 'GET', '/certificates'));
   const ownsCertificate = certificates.some((certificate) => (
     trimmed(certificate?.verification_code ?? certificate?.verificationCode) === code
+    && !(certificate?.revoked_at ?? certificate?.revokedAt)
   ));
 
   if (!ownsCertificate) {

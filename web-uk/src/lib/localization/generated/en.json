@@ -11511,6 +11511,10 @@
             },
             "own_hours": {
                 "note": "These are your own hours. Someone else who runs this organisation must approve them."
+            },
+            "certificate_revoked": {
+                "tag": "Revoked",
+                "note": "Your community withdrew this certificate on :date, so it can no longer be downloaded or checked. If you think this is a mistake, please contact your community."
             }
         },
         "govuk_alpha_wallet": {

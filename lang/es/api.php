@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'No se pudo generar el certificado',
     'vol_certificate_volunteer_fallback' => 'Voluntario',
     'vol_certificate_html_title' => 'Certificado de Impacto Voluntario',
+    'vol_certificate_revoked_notification' => 'Su comunidad ha retirado su certificado de voluntariado :code. Si cree que se trata de un error, póngase en contacto con su comunidad.',
     'vol_certificate_html_platform' => 'Plataforma Comunitaria Proyecto NEXUS',
     'vol_certificate_html_total_hours' => 'Horas totales de voluntariado',
     'vol_certificate_html_period' => 'Período',

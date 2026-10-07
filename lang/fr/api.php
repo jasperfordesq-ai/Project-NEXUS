@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'Échec de la génération du certificat',
     'vol_certificate_volunteer_fallback' => 'Bénévole',
     'vol_certificate_html_title' => 'Certificat d\'impact bénévole',
+    'vol_certificate_revoked_notification' => 'Votre communauté a retiré votre certificat de bénévolat :code. Si vous pensez qu’il s’agit d’une erreur, veuillez contacter votre communauté.',
     'vol_certificate_html_platform' => 'Plateforme communautaire du projet NEXUS',
     'vol_certificate_html_total_hours' => 'Nombre total d\'heures de bénévolat',
     'vol_certificate_html_period' => 'Période',

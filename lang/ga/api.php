@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'Theip ar ghiniúint teastas',
     'vol_certificate_volunteer_fallback' => 'Deonach',
     'vol_certificate_html_title' => 'Deimhniú Tionchair Oibrithe Deonacha',
+    'vol_certificate_revoked_notification' => 'Tharraing do phobal siar do theastas obair dheonach :code. Má cheapann tú gur botún é seo, déan teagmháil le do phobal.',
     'vol_certificate_html_platform' => 'Ardán Pobail Tionscadal NEXUS',
     'vol_certificate_html_total_hours' => 'Iomlán Uaireanta Oibrithe Deonacha',
     'vol_certificate_html_period' => 'Tréimhse',

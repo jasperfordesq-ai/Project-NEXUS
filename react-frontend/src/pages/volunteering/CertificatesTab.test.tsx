@@ -124,6 +124,22 @@ describe('CertificatesTab', () => {
     openSpy.mockRestore();
   });
 
+  // Gap D8: a certificate the community revoked fails every check, so the
+  // volunteer is told why and offered neither a download nor a check link.
+  it('shows a revoked certificate as revoked with no download or check', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { items: [{ ...mockCertificate, revoked_at: '2026-10-07T09:00:00Z' }] },
+    });
+    render(<CertificatesTab />);
+    await waitFor(() => expect(screen.getByText('CERT-ABC123')).toBeInTheDocument());
+
+    expect(screen.getByText('Revoked')).toBeInTheDocument();
+    expect(screen.getByText(/withdrawn this certificate/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Download/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Verify/i })).not.toBeInTheDocument();
+  });
+
   it('calls POST when Generate Certificate button is pressed', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     vi.mocked(api.post).mockResolvedValue({ success: true });

@@ -1030,7 +1030,9 @@
     "verified_hours_other": "{{count}} Uair Cheadaithe",
     "verified_hours_few": "{{count}} Uair Dheimhnithe",
     "verified_hours_many": "{{count}} Uair Dheimhnithe",
-    "verified_hours_two": "{{count}} Uair Dheimhnithe"
+    "verified_hours_two": "{{count}} Uair Dheimhnithe",
+    "revoked": "Cúlghairthe",
+    "revoked_note": "Tharraing do phobal an teastas seo siar, mar sin ní féidir é a íoslódáil ná a sheiceáil níos mó. Má cheapann tú gur botún é seo, déan teagmháil le do phobal."
   },
   "emergency": {
     "title": "Foláirimh Éigeandála",

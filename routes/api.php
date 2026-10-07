@@ -2774,6 +2774,10 @@ Route::get('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\Ad
 Route::post('/v2/admin/volunteering/organizations', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'createOrganization']);
 Route::put('/v2/admin/volunteering/organizations/{id}', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'updateOrganization']);
 Route::get('/v2/admin/volunteering/organizations/{id}/members', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'organizationMembers']);
+// Volunteer certificates issued in the community; revoke one issued in error (gap D8, 7 Oct 2026).
+Route::get('/v2/admin/volunteering/certificates', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'index']);
+Route::get('/v2/admin/volunteering/certificates/{id}/html', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'html'])->whereNumber('id');
+Route::post('/v2/admin/volunteering/certificates/{id}/revoke', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'revoke'])->whereNumber('id');
 Route::post('/v2/admin/volunteering/approvals/{id}/approve', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'approveApplication']);
 Route::post('/v2/admin/volunteering/approvals/{id}/decline', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'declineApplication']);
 Route::post('/v2/admin/volunteering/send-shift-reminders', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'sendShiftReminders']);

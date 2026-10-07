@@ -5,7 +5,33 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseCreatedTables } from '../lib/laravel-migration-tables.mjs';
+import { parseAddedColumns, parseCreatedTables } from '../lib/laravel-migration-tables.mjs';
+
+test('recognizes columns added to an existing table, including inside hasColumn guards', () => {
+  const migration = `
+    Schema::table('vol_certificates', function (Blueprint $table) {
+        if (!Schema::hasColumn('vol_certificates', 'revoked_at')) {
+            $table->dateTime('revoked_at')->nullable();
+        }
+        $table->unsignedInteger('revoked_by')->nullable();
+        $table->dropColumn('old_column');
+        $table->index(['tenant_id']);
+    });
+  `;
+
+  assert.deepEqual([...parseAddedColumns(migration).get('vol_certificates')], ['revoked_at', 'revoked_by']);
+});
+
+test('reads no added columns from a create or a drop-only alter', () => {
+  assert.equal(parseAddedColumns(`
+    Schema::create('brand_new', function (Blueprint $table): void {
+      $table->id();
+    });
+    Schema::table('users', function (Blueprint $table): void {
+      $table->dropColumn('nickname');
+    });
+  `).size, 0);
+});
 
 test('recognizes literal columns in a pending Laravel table migration', () => {
   const migration = `

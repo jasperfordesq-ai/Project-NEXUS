@@ -997,7 +997,9 @@
     "download": "Downloaden",
     "verify": "Verifiëren",
     "verified_hours_one": "{{count}} Geverifieerde uren",
-    "verified_hours_other": "{{count}} Geverifieerde uren"
+    "verified_hours_other": "{{count}} Geverifieerde uren",
+    "revoked": "Ingetrokken",
+    "revoked_note": "Uw gemeenschap heeft dit certificaat ingetrokken. Het kan daarom niet meer worden gedownload of gecontroleerd. Denkt u dat dit een vergissing is, neem dan contact op met uw gemeenschap."
   },
   "emergency": {
     "title": "Noodwaarschuwingen",

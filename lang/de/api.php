@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => 'Zertifikat konnte nicht generiert werden',
     'vol_certificate_volunteer_fallback' => 'Freiwilliger',
     'vol_certificate_html_title' => 'Volunteer Impact-Zertifikat',
+    'vol_certificate_revoked_notification' => 'Ihre Ehrenamtsbescheinigung :code wurde von Ihrer Gemeinschaft zurückgezogen. Wenn Sie glauben, dass dies ein Fehler ist, wenden Sie sich bitte an Ihre Gemeinschaft.',
     'vol_certificate_html_platform' => 'Projekt NEXUS Community-Plattform',
     'vol_certificate_html_total_hours' => 'Gesamtstundenzahl der Freiwilligen',
     'vol_certificate_html_period' => 'Zeitraum',

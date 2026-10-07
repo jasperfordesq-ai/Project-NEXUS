@@ -1113,4 +1113,9 @@ return [
     'own_hours' => [
         'note' => 'Ce sont vos propres heures. Une autre personne qui gère cette organisation doit les approuver.',
     ],
+    // A certificate the community revoked (gap D8, 7 Oct 2026)
+    'certificate_revoked' => [
+        'tag' => 'Révoqué',
+        'note' => 'Votre communauté a retiré ce certificat le :date : il ne peut plus être téléchargé ni vérifié. Si vous pensez qu’il s’agit d’une erreur, veuillez contacter votre communauté.',
+    ],
 ];

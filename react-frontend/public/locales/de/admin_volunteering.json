@@ -1014,5 +1014,51 @@
     },
     "load_error": "Qualifikationen konnten nicht geladen werden.",
     "retry": "Erneut versuchen"
+  },
+  "certificates": {
+    "page_title": "Bescheinigungen",
+    "page_desc": "In Ihrer Gemeinschaft ausgestellte Ehrenamtsbescheinigungen. Arbeitgeber und andere prüfen sie mit dem Code. Widerrufen Sie eine irrtümlich ausgestellte Bescheinigung, besteht sie diese Prüfung nicht mehr.",
+    "load_error": "Die Bescheinigungen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "download_failed": "Die Bescheinigung konnte nicht heruntergeladen werden.",
+    "tiles": {
+      "active": "Gültig",
+      "revoked": "Widerrufen"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Alle",
+      "active": "Gültig",
+      "revoked": "Widerrufen"
+    },
+    "search_label": "Suche",
+    "search_placeholder": "Name, E-Mail oder Code",
+    "clear_filters": "Filter zurücksetzen",
+    "empty_title": "Keine Bescheinigungen",
+    "empty_body": "Bescheinigungen erscheinen hier, sobald Ehrenamtliche sie aus ihren bestätigten Stunden erstellen.",
+    "results": "Gefundene Bescheinigungen: {{number}}",
+    "volunteer": "Ehrenamtliche Person",
+    "hours": "Bestätigte Stunden: {{number}}",
+    "status": {
+      "active": "Gültig",
+      "revoked": "Widerrufen"
+    },
+    "period": "{{start}} bis {{end}}",
+    "issued_on": "Ausgestellt am {{date}}",
+    "code": "Prüfcode {{code}}",
+    "revoked_line": "Widerrufen am {{date}}",
+    "actions": {
+      "download": "Herunterladen",
+      "revoke": "Widerrufen"
+    },
+    "revoke": {
+      "title": "Diese Bescheinigung widerrufen?",
+      "body": "Die Bescheinigung {{code}} für {{name}} besteht ab sofort keine Prüfung mehr, und {{name}} kann sie nicht mehr herunterladen. Die Person wird über den Widerruf informiert. Dies kann nicht rückgängig gemacht werden.",
+      "reason": "Grund",
+      "reason_help": "Wird für Ihre Unterlagen bei der Bescheinigung gespeichert. Der ehrenamtlichen Person wird er nicht angezeigt.",
+      "confirm": "Bescheinigung widerrufen",
+      "done": "Bescheinigung widerrufen.",
+      "failed": "Die Bescheinigung konnte nicht widerrufen werden. Möglicherweise wurde sie bereits widerrufen."
+    }
   }
 }

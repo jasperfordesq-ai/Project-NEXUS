@@ -1113,4 +1113,9 @@ return [
     'own_hours' => [
         'note' => 'Is iad seo do chuid uaireanta féin. Caithfidh duine eile a ritheann an eagraíocht seo iad a cheadú.',
     ],
+    // A certificate the community revoked (gap D8, 7 Oct 2026)
+    'certificate_revoked' => [
+        'tag' => 'Cúlghairthe',
+        'note' => 'Tharraing do phobal an teastas seo siar ar :date, mar sin ní féidir é a íoslódáil ná a sheiceáil níos mó. Má cheapann tú gur botún é seo, déan teagmháil le do phobal.',
+    ],
 ];

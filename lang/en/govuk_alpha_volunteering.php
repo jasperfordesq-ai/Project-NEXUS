@@ -1156,4 +1156,9 @@ return [
     'own_hours' => [
         'note' => 'These are your own hours. Someone else who runs this organisation must approve them.',
     ],
+    // A certificate the community revoked (gap D8, 7 Oct 2026)
+    'certificate_revoked' => [
+        'tag' => 'Revoked',
+        'note' => 'Your community withdrew this certificate on :date, so it can no longer be downloaded or checked. If you think this is a mistake, please contact your community.',
+    ],
 ];

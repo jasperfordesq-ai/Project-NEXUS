@@ -1031,5 +1031,51 @@
     },
     "load_error": "Não foi possível carregar as qualificações.",
     "retry": "Tentar novamente"
+  },
+  "certificates": {
+    "page_title": "Certificados",
+    "page_desc": "Certificados de voluntariado emitidos na sua comunidade. Empregadores e outras pessoas verificam-nos com o código. Revogue um certificado emitido por engano e ele deixará de passar nessa verificação.",
+    "load_error": "Não foi possível carregar os certificados.",
+    "retry": "Tentar novamente",
+    "download_failed": "Não foi possível transferir o certificado.",
+    "tiles": {
+      "active": "Válidos",
+      "revoked": "Revogados"
+    },
+    "filters": {
+      "label": "Estado",
+      "all": "Todos",
+      "active": "Válidos",
+      "revoked": "Revogados"
+    },
+    "search_label": "Pesquisar",
+    "search_placeholder": "Nome, email ou código",
+    "clear_filters": "Limpar filtros",
+    "empty_title": "Sem certificados",
+    "empty_body": "Os certificados aparecem aqui quando os voluntários os criam a partir das horas verificadas.",
+    "results": "Certificados encontrados: {{number}}",
+    "volunteer": "Voluntário/a",
+    "hours": "Horas verificadas: {{number}}",
+    "status": {
+      "active": "Válido",
+      "revoked": "Revogado"
+    },
+    "period": "De {{start}} a {{end}}",
+    "issued_on": "Emitido a {{date}}",
+    "code": "Código de verificação {{code}}",
+    "revoked_line": "Revogado a {{date}}",
+    "actions": {
+      "download": "Transferir",
+      "revoke": "Revogar"
+    },
+    "revoke": {
+      "title": "Revogar este certificado?",
+      "body": "O certificado {{code}} de {{name}} deixará de passar em qualquer verificação e {{name}} não o poderá voltar a transferir. A pessoa será informada de que foi retirado. Esta ação não pode ser anulada.",
+      "reason": "Motivo",
+      "reason_help": "Guardado com o certificado para os seus registos. Não é mostrado ao voluntário.",
+      "confirm": "Revogar certificado",
+      "done": "Certificado revogado.",
+      "failed": "Não foi possível revogar o certificado. Pode já ter sido revogado."
+    }
   }
 }

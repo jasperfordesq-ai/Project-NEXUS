@@ -1014,5 +1014,51 @@
     },
     "load_error": "Kwalificaties konden niet worden geladen.",
     "retry": "Opnieuw proberen"
+  },
+  "certificates": {
+    "page_title": "Certificaten",
+    "page_desc": "Vrijwilligerscertificaten die in uw gemeenschap zijn uitgegeven. Werkgevers en anderen controleren ze met de code. Trek een certificaat in dat per vergissing is uitgegeven en het slaagt niet meer voor die controle.",
+    "load_error": "De certificaten konden niet worden geladen.",
+    "retry": "Opnieuw proberen",
+    "download_failed": "Het certificaat kon niet worden gedownload.",
+    "tiles": {
+      "active": "Geldig",
+      "revoked": "Ingetrokken"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Alle",
+      "active": "Geldig",
+      "revoked": "Ingetrokken"
+    },
+    "search_label": "Zoeken",
+    "search_placeholder": "Naam, e-mail of code",
+    "clear_filters": "Filters wissen",
+    "empty_title": "Geen certificaten",
+    "empty_body": "Certificaten verschijnen hier zodra vrijwilligers ze maken op basis van hun bevestigde uren.",
+    "results": "Gevonden certificaten: {{number}}",
+    "volunteer": "Vrijwilliger",
+    "hours": "Bevestigde uren: {{number}}",
+    "status": {
+      "active": "Geldig",
+      "revoked": "Ingetrokken"
+    },
+    "period": "{{start}} tot {{end}}",
+    "issued_on": "Uitgegeven op {{date}}",
+    "code": "Verificatiecode {{code}}",
+    "revoked_line": "Ingetrokken op {{date}}",
+    "actions": {
+      "download": "Downloaden",
+      "revoke": "Intrekken"
+    },
+    "revoke": {
+      "title": "Dit certificaat intrekken?",
+      "body": "Certificaat {{code}} van {{name}} slaagt vanaf nu voor geen enkele controle meer en {{name}} kan het niet meer downloaden. Diegene krijgt te horen dat het is ingetrokken. Dit kan niet ongedaan worden gemaakt.",
+      "reason": "Reden",
+      "reason_help": "Wordt voor uw administratie bij het certificaat bewaard. De vrijwilliger ziet dit niet.",
+      "confirm": "Certificaat intrekken",
+      "done": "Certificaat ingetrokken.",
+      "failed": "Het certificaat kon niet worden ingetrokken. Mogelijk is het al ingetrokken."
+    }
   }
 }

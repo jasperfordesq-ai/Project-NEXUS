@@ -2905,3 +2905,32 @@ export interface AdminVolunteerQualificationsResponse {
   total: number;
   counts: { expiring: number; recorded: number; confirmed: number; expired: number };
 }
+
+/** One row of GET /v2/admin/volunteering/certificates (gap D8). */
+export interface AdminVolunteerCertificate {
+  id: number;
+  verification_code: string;
+  total_hours: number;
+  date_range: { start: string; end: string };
+  organizations: { name: string; hours: number; shifts?: number }[];
+  generated_at: string;
+  downloaded_at: string | null;
+  /** Set when an admin withdrew the certificate; it then fails the public check. */
+  revoked_at: string | null;
+  revoke_reason: string | null;
+  verification_url: string;
+  volunteer: { id: number; name: string; email: string | null; avatar_url: string | null };
+}
+
+export interface AdminVolunteerCertificatesParams {
+  status?: 'active' | 'revoked';
+  q?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AdminVolunteerCertificatesResponse {
+  items: AdminVolunteerCertificate[];
+  total: number;
+  counts: { active: number; revoked: number };
+}

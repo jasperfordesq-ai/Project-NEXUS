@@ -1031,5 +1031,51 @@
     },
     "load_error": "Impossible de charger les qualifications.",
     "retry": "Réessayer"
+  },
+  "certificates": {
+    "page_title": "Certificats",
+    "page_desc": "Certificats de bénévolat délivrés dans votre communauté. Les employeurs et d’autres personnes les vérifient avec le code. Révoquez un certificat délivré par erreur et il ne passera plus cette vérification.",
+    "load_error": "Impossible de charger les certificats.",
+    "retry": "Réessayer",
+    "download_failed": "Impossible de télécharger le certificat.",
+    "tiles": {
+      "active": "Valides",
+      "revoked": "Révoqués"
+    },
+    "filters": {
+      "label": "Statut",
+      "all": "Tous",
+      "active": "Valides",
+      "revoked": "Révoqués"
+    },
+    "search_label": "Rechercher",
+    "search_placeholder": "Nom, e-mail ou code",
+    "clear_filters": "Effacer les filtres",
+    "empty_title": "Aucun certificat",
+    "empty_body": "Les certificats apparaissent ici dès que des bénévoles les créent à partir de leurs heures validées.",
+    "results": "Certificats trouvés : {{number}}",
+    "volunteer": "Bénévole",
+    "hours": "Heures validées : {{number}}",
+    "status": {
+      "active": "Valide",
+      "revoked": "Révoqué"
+    },
+    "period": "Du {{start}} au {{end}}",
+    "issued_on": "Délivré le {{date}}",
+    "code": "Code de vérification {{code}}",
+    "revoked_line": "Révoqué le {{date}}",
+    "actions": {
+      "download": "Télécharger",
+      "revoke": "Révoquer"
+    },
+    "revoke": {
+      "title": "Révoquer ce certificat ?",
+      "body": "Le certificat {{code}} de {{name}} échouera désormais à toute vérification, et {{name}} ne pourra plus le télécharger. La personne sera informée de son retrait. Cette action est irréversible.",
+      "reason": "Motif",
+      "reason_help": "Conservé avec le certificat pour vos dossiers. Il n’est pas montré au bénévole.",
+      "confirm": "Révoquer le certificat",
+      "done": "Certificat révoqué.",
+      "failed": "Impossible de révoquer le certificat. Il a peut-être déjà été révoqué."
+    }
   }
 }

@@ -997,7 +997,9 @@
     "download": "Download",
     "verify": "Verify",
     "verified_hours_one": "{{count}} Verified Hours",
-    "verified_hours_other": "{{count}} Verified Hours"
+    "verified_hours_other": "{{count}} Verified Hours",
+    "revoked": "Revoked",
+    "revoked_note": "Your community has withdrawn this certificate, so it can no longer be downloaded or checked. If you think this is a mistake, please contact your community."
   },
   "emergency": {
     "title": "Emergency Alerts",

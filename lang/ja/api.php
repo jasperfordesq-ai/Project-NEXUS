@@ -2266,6 +2266,7 @@ return [
     'vol_certificate_generate_failed' => '証明書の生成に失敗しました',
     'vol_certificate_volunteer_fallback' => 'ボランティア',
     'vol_certificate_html_title' => 'ボランティア影響証明書',
+    'vol_certificate_revoked_notification' => 'あなたのボランティア証明書 :code はコミュニティによって取り消されました。誤りだと思われる場合は、コミュニティにお問い合わせください。',
     'vol_certificate_html_platform' => 'プロジェクトNEXUSコミュニティプラットフォーム',
     'vol_certificate_html_total_hours' => 'ボランティアの合計時間',
     'vol_certificate_html_period' => '期間',

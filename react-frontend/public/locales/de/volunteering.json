@@ -997,7 +997,9 @@
     "download": "Herunterladen",
     "verify": "Überprüfen",
     "verified_hours_one": "{{count}} bestätigte Stunden",
-    "verified_hours_other": "{{count}} bestätigte Stunden"
+    "verified_hours_other": "{{count}} bestätigte Stunden",
+    "revoked": "Widerrufen",
+    "revoked_note": "Ihre Gemeinschaft hat diese Bescheinigung zurückgezogen. Sie kann daher nicht mehr heruntergeladen oder geprüft werden. Wenn Sie glauben, dass dies ein Fehler ist, wenden Sie sich bitte an Ihre Gemeinschaft."
   },
   "emergency": {
     "title": "Notfall-Benachrichtigungen",

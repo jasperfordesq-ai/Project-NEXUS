@@ -791,10 +791,12 @@
       "giving_days": "جمع التبرعات|تبرعات|حملات|نداءات",
       "settings": "حقول مخصصة|تذكيرات|webhooks|تهيئة",
       "qualifications": "تدريب|إسعافات أولية|شهادات|انتهاء|مؤهلات",
-      "opportunities": "مناوبات جدول مواعيد فرص"
+      "opportunities": "مناوبات جدول مواعيد فرص",
+      "certificates": "شهادات التطوع|إلغاء|سحب الشهادة|رمز التحقق|شهادة الساعات"
     },
     "qualifications": "المؤهلات",
-    "opportunities": "الفرص والمناوبات"
+    "opportunities": "الفرص والمناوبات",
+    "certificates": "الشهادات"
   },
   "group_join_requests": "طلبات الانضمام إلى المجموعات",
   "group_moderation": "إشراف المجموعات",
