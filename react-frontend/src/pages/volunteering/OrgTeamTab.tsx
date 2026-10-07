@@ -28,7 +28,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useAuth, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 
 type Role = 'owner' | 'admin' | 'member';
 const ROLES: readonly Role[] = ['owner', 'admin', 'member'];
@@ -54,8 +54,8 @@ interface SearchResult {
 const SEARCH_MIN = 2;
 const SEARCH_DEBOUNCE_MS = 300;
 
-const resultName = (r: SearchResult) =>
-  r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || r.organization_name || `#${r.id}`;
+// An organisation account is named by organization_name, never its contact person.
+const resultName = (r: SearchResult) => resolveUserDisplayName(r, `#${r.id}`);
 
 interface OrgTeamTabProps {
   orgId: number;

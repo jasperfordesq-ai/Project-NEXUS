@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import Users from 'lucide-react/icons/users';
 import UserPlus from 'lucide-react/icons/user-plus';
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import {
   Avatar, Button, Chip, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem,
 } from '@/components/ui';
@@ -50,7 +50,8 @@ interface OrgTeamModalProps {
   onChanged?: () => void;
 }
 
-const memberName = (m: OrgTeamMember) => `${m.first_name ?? ''} ${m.last_name ?? ''}`.trim() || `#${m.user_id}`;
+// An organisation account is named by organization_name, never its contact person.
+const memberName = (m: OrgTeamMember) => resolveUserDisplayName(m, `#${m.user_id}`);
 
 export function OrgTeamModal({ isOpen, onClose, org, onChanged }: OrgTeamModalProps) {
   const { t } = useTranslation('admin_volunteering');

@@ -1275,7 +1275,7 @@
       "type": "Cáilíocht",
       "type_placeholder": "Roghnaigh cáilíocht",
       "expiry_hint": "Bailí ar feadh {{years}} bliana de ghnáth",
-      "expiry_hint_one": "Bailí ar feadh bliain amháin de ghnáth",
+      "expiry_hint_one": "Bailí ar feadh {{count}} bhliain de ghnáth",
       "expiry_hint_two": "Bailí ar feadh {{count}} bhliain de ghnáth",
       "expiry_hint_few": "Bailí ar feadh {{count}} bliana de ghnáth",
       "expiry_hint_many": "Bailí ar feadh {{count}} mbliana de ghnáth",
