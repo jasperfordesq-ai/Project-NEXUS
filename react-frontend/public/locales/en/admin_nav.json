@@ -542,7 +542,8 @@
     "help": "Help",
     "whitelist": "Whitelist",
     "qualifications": "Qualifications",
-    "opportunities": "Opportunities & shifts"
+    "opportunities": "Opportunities & shifts",
+    "certificates": "Certificates"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"

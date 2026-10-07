@@ -165,6 +165,20 @@ describe('AdminBreadcrumbs', () => {
     });
   });
 
+  // Found walking the admin Certificates page (7 Oct 2026): it read "⚠ certificates".
+  it('names every volunteering admin page, including Certificates', async () => {
+    mockLocation.pathname = '/hour-timebank/admin/volunteering/certificates';
+    const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');
+    render(<AdminBreadcrumbs />);
+
+    await waitFor(() => {
+      const nav = document.querySelector('nav');
+      expect(nav).toBeTruthy();
+      expect(nav!.textContent).toContain('Certificates');
+      expect(nav!.textContent).not.toMatch(/⚠/);
+    });
+  });
+
   it('renders an ordered list (<ol>) inside the nav', async () => {
     const items = [
       { label: 'Admin', href: '/hour-timebank/admin' },
