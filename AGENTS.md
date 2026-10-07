@@ -439,6 +439,16 @@ every session and every tool: the Atlassian MCP connector, a browser, the API, o
 Access details (site, connector, fallbacks) are in the private
 `.local-docs-archive/support-helpdesk/README-ATLASSIAN-ACCESS-AND-BOUNDARIES.md`.
 
+#### 🔴 Everything the DPO needs to be told goes in ONE register
+
+`.local-docs-archive/dpo/DPO-REGISTER.md` (private, gitignored — not in a fresh clone; if it is
+missing, say so) lists every open question for the DPO, numbered `DPO-n`, with what the platform
+does today and what the DPO must decide. **Read it before changing anything that shares, keeps or
+deletes personal data**, and **add an item in the same session** when a change creates a new
+data-protection question (who is told about a member, what leaves the platform, how long something
+is kept, what erasure removes). Write the facts and the question, never the answer, and never contact
+the DPO yourself — the owner does.
+
 ---
 
 ### 🔴 SECURITY WORK IS A MAINTAINED RECORD, NOT A ONE-OFF (CRITICAL)
