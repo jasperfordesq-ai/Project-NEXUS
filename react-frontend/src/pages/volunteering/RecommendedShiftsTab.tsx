@@ -14,7 +14,7 @@ import {
   useCallback,
   useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 import Sparkles from 'lucide-react/icons/sparkles';
 import MapPin from 'lucide-react/icons/map-pin';
@@ -26,6 +26,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Target from 'lucide-react/icons/target';
 import Zap from 'lucide-react/icons/zap';
 import ExternalLink from 'lucide-react/icons/external-link';
+import Settings from 'lucide-react/icons/settings';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -136,7 +137,7 @@ const getMatchColor = (score: number): 'success' | 'warning' | 'primary' | 'defa
 export function RecommendedShiftsTab() {
   const { t } = useTranslation('volunteering');
   const navigate = useNavigate();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasModule } = useTenant();
   const [shifts, setShifts] = useState<RecommendedShift[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -229,6 +230,17 @@ export function RecommendedShiftsTab() {
           icon={<Target className="w-12 h-12" aria-hidden="true" />}
           title={t('recommendations.empty_title')}
           description={t('recommendations.empty_description')}
+          action={hasModule('settings') ? (
+            // The description asks the member to add skills; this is where (gap C4).
+            <Button
+              as={Link}
+              to={tenantPath('/settings?tab=skills')}
+              variant="secondary"
+              startContent={<Settings className="w-4 h-4" aria-hidden="true" />}
+            >
+              {t('common:skills.add_your_skills')}
+            </Button>
+          ) : undefined}
         />
       )}
 

@@ -41,10 +41,11 @@ vi.mock("@/lib/api", () => ({
 vi.mock("@/components/ui", async () => (await import("@/test/uiMock")).uiMock);
 
 vi.mock("@/components/feedback", () => ({
-  EmptyState: ({ title, description }: { title: string; description?: string }) => (
+  EmptyState: ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) => (
     <div data-testid="empty-state">
       <div>{title}</div>
       {description && <div>{description}</div>}
+      {action}
     </div>
   ),
 }));
@@ -106,6 +107,14 @@ describe("RecommendedShiftsTab", () => {
     expect(
       screen.getByText(/Add skills to your profile to get personalized shift recommendations/),
     ).toBeInTheDocument();
+  });
+
+  // Gap C4: the empty state asked for skills with no way to add them.
+  it("links the empty state to where skills are added", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { shifts: [] } });
+    render(<RecommendedShiftsTab />);
+    const link = await screen.findByRole("link", { name: /Add your own skills/ });
+    expect(link).toHaveAttribute("href", "/hour-timebank/settings?tab=skills");
   });
 
   it("renders shift cards with opportunity title, org name, and match score", async () => {
