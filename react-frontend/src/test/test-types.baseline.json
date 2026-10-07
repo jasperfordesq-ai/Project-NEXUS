@@ -589,7 +589,7 @@
       "TS2322": 1
     },
     "src/admin/modules/volunteering/VolunteerApprovals.test.tsx": {
-      "TS2345": 4
+      "TS2345": 3
     },
     "src/admin/modules/volunteering/VolunteerGivingDays.test.tsx": {
       "TS2345": 1
@@ -1885,6 +1885,6 @@
   },
   "totals": {
     "fileCount": 556,
-    "errorCount": 1694
+    "errorCount": 1693
   }
 }

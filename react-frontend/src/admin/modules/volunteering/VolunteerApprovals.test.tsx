@@ -252,7 +252,7 @@ describe('VolunteerApprovals', () => {
     const approveBtns = screen.getAllByRole('button').filter(
       (b) => /approve/i.test(b.textContent ?? ''),
     );
-    await userEvent.click(approveBtns[0]);
+    await userEvent.click(approveBtns[0]!);
     await waitFor(() => {
       expect(mockApproveApp).toHaveBeenCalledWith(1); // id of the pending application
       expect(mockToast.success).toHaveBeenCalled();
@@ -300,7 +300,7 @@ describe('VolunteerApprovals', () => {
     const approveBtns = screen.getAllByRole('button').filter(
       (b) => /approve/i.test(b.textContent ?? ''),
     );
-    await userEvent.click(approveBtns[0]);
+    await userEvent.click(approveBtns[0]!);
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
