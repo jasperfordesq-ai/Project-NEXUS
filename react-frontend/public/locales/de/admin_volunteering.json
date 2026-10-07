@@ -575,6 +575,8 @@
     "dlp_explanation": "Die benannte Kontaktperson ist dafür verantwortlich, Schutzbedenken für diese Organisation zu empfangen und zu bearbeiten.",
     "edit_organization": "Organisation bearbeiten",
     "edit_policy": "Ausgabenrichtlinie bearbeiten",
+    "add_policy": "Ausgabenrichtlinie hinzufügen",
+    "policy_expense_type": "Ausgabenart",
     "failed_load_hours": "Fehler beim Laden der Stunden",
     "failed_load_members": "Fehler beim Laden der Mitglieder",
     "failed_load_transactions": "Fehler beim Laden der Transaktionen",

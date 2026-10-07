@@ -645,6 +645,8 @@
     "dlp_explanation": "الشخص المخصص للاتصال مسؤول عن استقبال ومعالجة مسائل الحماية لهذه المؤسسة.",
     "edit_organization": "تعديل المؤسسة",
     "edit_policy": "تحرير سياسة النفقات",
+    "add_policy": "إضافة سياسة نفقات",
+    "policy_expense_type": "نوع النفقة",
     "failed_load_hours": "فشل تحميل الساعات",
     "failed_load_members": "فشل تحميل الأعضاء",
     "failed_load_transactions": "فشل تحميل المعاملات",

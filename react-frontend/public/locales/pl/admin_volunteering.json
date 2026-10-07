@@ -612,6 +612,8 @@
     "dlp_explanation": "Wyznaczona osoba kontaktowa (Designated Liaison Person) jest odpowiedzialna za odbieranie i obsługę zgłoszeń dotyczących ochrony w tej organizacji.",
     "edit_organization": "Edytuj organizację",
     "edit_policy": "Edytuj politykę wydatków",
+    "add_policy": "Dodaj zasadę wydatków",
+    "policy_expense_type": "Rodzaj wydatku",
     "failed_load_hours": "Nie udało się załadować godzin",
     "failed_load_members": "Nie udało się załadować członków",
     "failed_load_transactions": "Nie udało się załadować transakcji",

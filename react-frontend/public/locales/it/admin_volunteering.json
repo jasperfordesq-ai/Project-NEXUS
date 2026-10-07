@@ -595,6 +595,8 @@
     "dlp_explanation": "La Persona di Collegamento Designata è responsabile della ricezione e gestione delle segnalazioni di protezione per questa organizzazione.",
     "edit_organization": "Modifica organizzazione",
     "edit_policy": "Modifica politica delle spese",
+    "add_policy": "Aggiungi regola di spesa",
+    "policy_expense_type": "Tipo di spesa",
     "failed_load_hours": "Impossibile caricare le ore",
     "failed_load_members": "Impossibile caricare i membri",
     "failed_load_transactions": "Impossibile caricare le transazioni",

@@ -576,6 +576,8 @@
     "dlp_explanation": "De Aangewezen Contactpersoon is verantwoordelijk voor het ontvangen en afhandelen van zorgen over bescherming binnen deze organisatie.",
     "edit_organization": "Organisatie bewerken",
     "edit_policy": "Bewerk uitgavenbeleid",
+    "add_policy": "Onkostenbeleid toevoegen",
+    "policy_expense_type": "Soort onkosten",
     "failed_load_hours": "Kan uren niet laden",
     "failed_load_members": "Kan leden niet laden",
     "failed_load_transactions": "Kan transacties niet laden",

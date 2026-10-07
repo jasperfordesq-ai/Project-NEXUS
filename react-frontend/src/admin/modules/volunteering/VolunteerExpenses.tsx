@@ -60,6 +60,9 @@ interface ExpenseStats {
   paid_total: number;
 }
 
+// The expense types a claim can have (VolunteerExpenseService::submitExpense).
+const EXPENSE_TYPES = ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'] as const;
+
 interface ExpensePolicy {
   id?: number;
   type: string;
@@ -199,6 +202,8 @@ export function VolunteerExpenses() {
   const [policiesLoading, setPoliciesLoading] = useState(false);
   const [policyModal, setPolicyModal] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<ExpensePolicy | null>(null);
+  // Gap D6: a type with no policy can be given one (the API creates it).
+  const [newPolicyType, setNewPolicyType] = useState<string>('');
   const [policyForm, setPolicyForm] = useState({
     max_amount: '',
     max_monthly: '',
@@ -455,8 +460,44 @@ export function VolunteerExpenses() {
     setPolicyModal(true);
   };
 
+  const typesWithoutPolicy = EXPENSE_TYPES.filter(
+    (type) => !policies.some((policy) => (policy.expense_type ?? policy.type) === type),
+  );
+
+  const openPolicyCreate = () => {
+    setEditingPolicy(null);
+    setNewPolicyType(typesWithoutPolicy[0] ?? '');
+    setPolicyForm({ max_amount: '', max_monthly: '', requires_receipt_above: '0', requires_approval: true });
+    setPolicyModal(true);
+  };
+
   const handlePolicySave = async () => {
-    if (!editingPolicy) return;
+    if (!editingPolicy) {
+      if (!newPolicyType) return;
+      setActionLoading(true);
+      try {
+        // Blank limits mean "no limit" (null), never 0, which would refuse every claim.
+        const limit = (value: string) => (value.trim() === '' ? null : Number(value));
+        const res = await adminVolunteering.updateExpensePolicies({
+          expense_type: newPolicyType,
+          max_amount: limit(policyForm.max_amount),
+          max_monthly: limit(policyForm.max_monthly),
+          requires_receipt_above: Number(policyForm.requires_receipt_above || 0),
+          requires_approval: policyForm.requires_approval,
+        });
+        if (res.success) {
+          toast.success(t('volunteering.policy_updated'));
+          setPolicyModal(false);
+          loadPolicies();
+        } else {
+          toast.error(t('volunteering.failed_to_update_policy'));
+        }
+      } catch {
+        toast.error(t('volunteering.failed_to_update_policy'));
+      }
+      setActionLoading(false);
+      return;
+    }
     setActionLoading(true);
     try {
       const res = await adminVolunteering.updateExpensePolicies({
@@ -755,6 +796,11 @@ export function VolunteerExpenses() {
               {t('volunteering.expense_policies_title')}
             </span>
           </div>
+          {!policiesLoading && typesWithoutPolicy.length > 0 && (
+            <Button size="sm" variant="secondary" className="ml-auto" onPress={openPolicyCreate}>
+              {t('volunteering.add_policy')}
+            </Button>
+          )}
         </CardHeader>
         <CardBody>
           {policiesLoading ? (
@@ -938,10 +984,26 @@ export function VolunteerExpenses() {
       <Modal isOpen={policyModal} onClose={() => setPolicyModal(false)} size="md">
         <ModalContent>
           <ModalHeader>
-            {t('volunteering.edit_policy')} - {editingPolicy ? t(`volunteering.expense_type_${editingPolicy.type}`) : ''}
+            {editingPolicy
+              ? <>{t('volunteering.edit_policy')} - {t(`volunteering.expense_type_${editingPolicy.type}`)}</>
+              : t('volunteering.add_policy')}
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
+              {!editingPolicy && (
+                <Select
+                  label={t('volunteering.policy_expense_type')}
+                  selectedKeys={newPolicyType ? [newPolicyType] : []}
+                  onSelectionChange={(keys) => {
+                    const val = Array.from(keys)[0] as string;
+                    if (val) setNewPolicyType(val);
+                  }}
+                >
+                  {typesWithoutPolicy.map((type) => (
+                    <SelectItem key={type} id={type}>{t(`volunteering.expense_type_${type}`)}</SelectItem>
+                  ))}
+                </Select>
+              )}
               <Input
                 label={t('volunteering.policy_max_amount')}
                 type="number"

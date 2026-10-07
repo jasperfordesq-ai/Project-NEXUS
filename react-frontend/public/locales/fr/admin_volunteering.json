@@ -592,6 +592,8 @@
     "dlp_explanation": "La personne de liaison désignée est responsable de la réception et du traitement des préoccupations en matière de protection au sein de cette organisation.",
     "edit_organization": "Modifier l'organisation",
     "edit_policy": "Modifier la politique de dépenses",
+    "add_policy": "Ajouter une règle de dépenses",
+    "policy_expense_type": "Type de dépense",
     "failed_load_hours": "Échec du chargement des heures",
     "failed_load_members": "Échec du chargement des membres",
     "failed_load_transactions": "Échec du chargement des transactions",

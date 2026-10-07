@@ -195,6 +195,31 @@ describe('VolunteerExpenses', () => {
     mockAdminVolunteering.exportExpenses.mockResolvedValue(new Blob(['csv'], { type: 'text/csv' }));
   });
 
+  // Gap D6: with no policies there was nothing to press; the API now creates one by type.
+  it('adds an expense policy for a type that has none, with blank limits sent as no limit', async () => {
+    mockAdminVolunteering.getExpensePolicies.mockResolvedValue({
+      success: true,
+      data: [{ id: 1, type: 'travel', expense_type: 'travel', max_amount: 50, max_monthly: 200, requires_receipt_above: 0, requires_approval: true }],
+    });
+    const { VolunteerExpenses } = await import('./VolunteerExpenses');
+    render(<VolunteerExpenses />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add expense policy' }));
+    const typeSelect = await screen.findByRole('combobox', { name: 'Expense type' });
+    // Travel already has a policy, so it is not offered.
+    expect(Array.from((typeSelect as HTMLSelectElement).options).map((o) => o.value)).toEqual(['meals', 'supplies', 'equipment', 'parking', 'other']);
+    fireEvent.change(typeSelect, { target: { value: 'parking' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() => expect(mockAdminVolunteering.updateExpensePolicies).toHaveBeenCalledWith({
+      expense_type: 'parking',
+      max_amount: null,
+      max_monthly: null,
+      requires_receipt_above: 0,
+      requires_approval: true,
+    }));
+  });
+
   it('shows loading state on initial mount', async () => {
     mockAdminVolunteering.getExpenses.mockImplementationOnce(() => new Promise(() => {}));
     const { VolunteerExpenses } = await import('./VolunteerExpenses');

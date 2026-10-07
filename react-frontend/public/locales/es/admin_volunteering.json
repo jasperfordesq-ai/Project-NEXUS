@@ -597,6 +597,8 @@
     "dlp_explanation": "La Persona de Enlace Designada es responsable de recibir y manejar las preocupaciones de protección para esta organización.",
     "edit_organization": "Editar organización",
     "edit_policy": "Editar política de gastos",
+    "add_policy": "Añadir política de gastos",
+    "policy_expense_type": "Tipo de gasto",
     "failed_load_hours": "Error al cargar horas",
     "failed_load_members": "Error al cargar miembros",
     "failed_load_transactions": "Error al cargar transacciones",

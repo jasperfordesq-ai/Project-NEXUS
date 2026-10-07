@@ -400,4 +400,62 @@ class VolunteerExpenseControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    /**
+     * Gap D6 (7 Oct 2026): the policy endpoint only ever updated, so a community with
+     * no policy for an expense type could never get one.
+     */
+    public function test_admin_creates_a_policy_for_an_expense_type_that_has_none(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        DB::table('vol_expense_policies')->where('tenant_id', $this->testTenantId)->where('expense_type', 'parking')->delete();
+
+        $response = $this->apiPut('/v2/admin/volunteering/expenses/policies', [
+            'expense_type' => 'parking',
+            'max_amount' => 15,
+            'requires_approval' => false,
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('vol_expense_policies', [
+            'tenant_id' => $this->testTenantId,
+            'organization_id' => null,
+            'expense_type' => 'parking',
+            'max_amount' => 15.00,
+            'requires_approval' => 0,
+        ]);
+
+        // Sent again, it updates the same policy rather than adding a second.
+        $this->apiPut('/v2/admin/volunteering/expenses/policies', ['expense_type' => 'parking', 'max_amount' => 20])->assertOk();
+        $this->assertSame(1, DB::table('vol_expense_policies')->where('tenant_id', $this->testTenantId)->whereNull('organization_id')->where('expense_type', 'parking')->count());
+        $this->assertDatabaseHas('vol_expense_policies', ['tenant_id' => $this->testTenantId, 'expense_type' => 'parking', 'max_amount' => 20.00]);
+    }
+
+    public function test_admin_policy_create_refuses_unknown_types_missing_ids_and_other_communities_organisations(): void
+    {
+        $this->enableVolunteeringFeature($this->testTenantId);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiPut('/v2/admin/volunteering/expenses/policies', ['expense_type' => 'yachts', 'max_amount' => 5])->assertStatus(404);
+        $this->apiPut('/v2/admin/volunteering/expenses/policies', ['id' => 999999999, 'expense_type' => 'travel', 'max_amount' => 5])->assertStatus(404);
+
+        $otherTenantId = (int) DB::table('tenants')->where('id', '!=', $this->testTenantId)->value('id');
+        $otherOrgId = (int) DB::table('vol_organizations')->insertGetId([
+            'tenant_id' => $otherTenantId,
+            'user_id' => $admin->id,
+            'name' => 'Elsewhere Trust',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->apiPut('/v2/admin/volunteering/expenses/policies', [
+            'expense_type' => 'travel',
+            'organization_id' => $otherOrgId,
+            'max_amount' => 5,
+        ])->assertStatus(404);
+        $this->assertDatabaseMissing('vol_expense_policies', ['organization_id' => $otherOrgId]);
+    }
 }

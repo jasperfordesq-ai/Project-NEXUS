@@ -815,6 +815,7 @@ class VolunteerExpenseService
      */
     public static function updatePolicy(int $policyId, array $data, int $tenantId): bool
     {
+        $byType = $policyId <= 0;
         if ($policyId <= 0 && !empty($data['expense_type'])) {
             $query = VolExpensePolicy::where('tenant_id', $tenantId)
                 ->where('expense_type', $data['expense_type']);
@@ -826,6 +827,33 @@ class VolunteerExpenseService
             }
 
             $policyId = (int) ($query->value('id') ?? 0);
+        }
+
+        // Gap D6 (7 Oct 2026): a community with no policy for an expense type had no
+        // way to get one — this method only ever updated, and the admin page offered
+        // nothing when the list was empty. Asked by type (no id) for a type with no
+        // policy yet, it now creates one. Asking for a specific id that does not exist
+        // is still refused.
+        if ($policyId <= 0 && $byType
+            && in_array($data['expense_type'] ?? null, ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'], true)) {
+            if (!empty($data['organization_id']) && !DB::table('vol_organizations')
+                ->where('id', (int) $data['organization_id'])
+                ->where('tenant_id', $tenantId)
+                ->exists()) {
+                return false;
+            }
+            $policy = new VolExpensePolicy();
+            $policy->forceFill([
+                'tenant_id' => $tenantId,
+                'organization_id' => !empty($data['organization_id']) ? (int) $data['organization_id'] : null,
+                'expense_type' => $data['expense_type'],
+                'max_amount' => isset($data['max_amount']) && $data['max_amount'] !== null ? (float) $data['max_amount'] : null,
+                'max_monthly' => isset($data['max_monthly']) && $data['max_monthly'] !== null ? (float) $data['max_monthly'] : null,
+                'requires_receipt_above' => isset($data['requires_receipt_above']) && $data['requires_receipt_above'] !== null ? (float) $data['requires_receipt_above'] : 0,
+                'requires_approval' => array_key_exists('requires_approval', $data) ? (!empty($data['requires_approval']) ? 1 : 0) : 1,
+            ])->save();
+
+            return true;
         }
 
         if ($policyId <= 0) {

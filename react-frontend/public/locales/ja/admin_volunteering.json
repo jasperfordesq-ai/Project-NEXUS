@@ -581,6 +581,8 @@
     "dlp_explanation": "指定された連絡担当者は、この組織における保護上の懸念の受け取りと対応を担当します。",
     "edit_organization": "組織を編集",
     "edit_policy": "費用ポリシーを編集",
+    "add_policy": "経費ポリシーを追加",
+    "policy_expense_type": "経費の種類",
     "failed_load_hours": "時間の読み込みに失敗しました",
     "failed_load_members": "メンバーの読み込みに失敗しました",
     "failed_load_transactions": "トランザクションの読み込みに失敗しました",

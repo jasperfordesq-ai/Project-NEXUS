@@ -278,6 +278,8 @@
     "edit_giving_day": "Edit campaign",
     "edit_organization": "Edit organisation",
     "edit_policy": "Edit expense policy",
+    "add_policy": "Add expense policy",
+    "policy_expense_type": "Expense type",
     "edit_webhook": "Edit Webhook",
     "enabled": "Enabled",
     "expense_org_breakdown_title": "Expenses by organisation",

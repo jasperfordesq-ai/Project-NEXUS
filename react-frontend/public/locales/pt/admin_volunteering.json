@@ -597,6 +597,8 @@
     "dlp_explanation": "A Pessoa de Contato Designada é responsável por receber e lidar com preocupações de proteção para esta organização.",
     "edit_organization": "Editar organização",
     "edit_policy": "Editar política de despesas",
+    "add_policy": "Adicionar política de despesas",
+    "policy_expense_type": "Tipo de despesa",
     "failed_load_hours": "Falha ao carregar horas",
     "failed_load_members": "Falha ao carregar membros",
     "failed_load_transactions": "Falha ao carregar transações",

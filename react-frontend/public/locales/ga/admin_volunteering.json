@@ -627,6 +627,8 @@
     "dlp_explanation": "Tá freagracht ar an Duine Idirlánaithe Ainmnithe imní sábhála a fháil agus a láimhseáil don eagraíocht seo.",
     "edit_organization": "Eagraíocht a chur in eagar",
     "edit_policy": "Polasaí costais a chur in eagar",
+    "add_policy": "Cuir beartas costas leis",
+    "policy_expense_type": "Cineál costais",
     "failed_load_hours": "Theip ar uaireanta a luchtú",
     "failed_load_members": "Theip ar bhaill a luchtú",
     "failed_load_transactions": "Theipeann ar luchtú idirbheart",
