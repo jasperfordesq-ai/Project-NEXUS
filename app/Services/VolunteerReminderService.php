@@ -1118,7 +1118,10 @@ class VolunteerReminderService
             'vol_safeguarding_training',
             'training_type',
             'training_name',
-            '/volunteering?tab=training',
+            // The website's section is "safeguarding"; "training" was not a tab and
+            // landed on Opportunities (gap C11, 7 Oct 2026). The accessible site maps
+            // both names to its training page.
+            '/volunteering?tab=safeguarding',
             $onlyTenantId
         );
     }

@@ -438,7 +438,10 @@ class CommunityProjectService
                         'rejected'     => 'rejected',
                         default        => 'under_review',
                     };
-                    $link    = '/volunteering/community-projects/' . $proposalId;
+                    // There is no per-project page on the website; this tab is where the
+                    // proposer sees the decision (gap C11, 7 Oct 2026 — it linked to a
+                    // route that does not exist).
+                    $link    = '/volunteering?tab=community-projects';
                     $fullUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
                     $builder = EmailTemplateBuilder::make()
                         ->title(__("emails_misc.community_project.{$prefix}_title"))

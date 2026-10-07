@@ -366,6 +366,9 @@ class VolunteerEmailReliabilityTest extends TestCase
         $this->assertSame(1, $sent);
         $this->assertCount(1, $mailer->calls);
         $this->assertSame($tenantId, $mailer->calls[0]['options']['tenant_id']);
+        // Gap C11: "training" is not a website tab, so the link landed on Opportunities.
+        $this->assertStringContainsString('/volunteering?tab=safeguarding', $mailer->calls[0]['body']);
+        $this->assertStringNotContainsString('tab=training', $mailer->calls[0]['body']);
         $this->assertDatabaseHas('vol_reminders_sent', [
             'tenant_id' => $tenantId,
             'user_id' => $volunteer->id,
@@ -373,6 +376,37 @@ class VolunteerEmailReliabilityTest extends TestCase
             'reference_id' => $trainingId,
             'channel' => 'email',
         ]);
+    }
+
+    // Gap C11 (7 Oct 2026): the decision email linked to /volunteering/community-projects/{id},
+    // a page the website does not have.
+    public function test_community_project_decision_email_links_to_a_page_that_exists(): void
+    {
+        $tenantId = 2;
+        TenantContext::setById($tenantId);
+        $proposer = User::factory()->forTenant($tenantId)->create([
+            'first_name' => 'Proposer',
+            'email' => 'proposer-' . uniqid('', true) . '@example.test',
+            'preferred_language' => 'en',
+        ]);
+        $projectId = (int) DB::table('vol_community_projects')->insertGetId([
+            'tenant_id' => $tenantId,
+            'proposed_by' => $proposer->id,
+            'title' => 'Community orchard',
+            'description' => 'Plant fruit trees in the park.',
+            'status' => 'proposed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mailer = $this->fakeMailer();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $this->assertTrue(app(\App\Services\CommunityProjectService::class)->review($projectId, 'approved', null, 1, $tenantId));
+
+        $this->assertCount(1, $mailer->calls);
+        $this->assertStringContainsString('/volunteering?tab=community-projects', $mailer->calls[0]['body']);
+        $this->assertStringNotContainsString('/volunteering/community-projects/', $mailer->calls[0]['body']);
     }
 
     public function test_admin_hours_verification_notifies_through_dispatcher_not_raw_email(): void
