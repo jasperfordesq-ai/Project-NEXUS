@@ -15,10 +15,10 @@ describe('volunteering section switches', () => {
   it('treats a community with no settings as having every section on', () => {
     const { tools, enabled } = volunteeringSections({});
     expect(tools.map((tool) => tool.section)).toEqual(['hours', 'alerts', 'wellbeing', 'safeguarding',
-      'accessibility', 'certificates', 'waitlist', 'swaps', 'expenses', 'donations']);
+      'accessibility', 'credentials', 'certificates', 'waitlist', 'swaps', 'expenses', 'donations']);
     expect(enabled('recommended')).toBe(true);
-    expect(volunteeringSections(undefined).tools).toHaveLength(10);
-    expect(volunteeringSections({ volunteering_config: [] }).tools).toHaveLength(10);
+    expect(volunteeringSections(undefined).tools).toHaveLength(11);
+    expect(volunteeringSections({ volunteering_config: [] }).tools).toHaveLength(11);
   });
 
   it('turns a section off only when its setting is false', () => {
@@ -47,10 +47,12 @@ describe('volunteering section switches', () => {
     expect(pageFor('safeguarding')).toBe('/volunteering/training');
     expect(pageFor('alerts')).toBe('/volunteering/emergency-alerts');
     expect(pageFor('organisations')).toBe('/volunteering/my-organisations');
-    // Tabs of the volunteering page itself, unknown names, and the qualifications
-    // register (not on this site yet) open nothing.
+    // The website calls the qualifications register "credentials"; it has been on
+    // this site since gap B15 (7 Oct 2026).
+    expect(pageFor('credentials')).toBe('/volunteering/qualifications');
+    expect(pageFor('qualifications')).toBe('/volunteering/qualifications');
+    // Tabs of the volunteering page itself and unknown names open nothing.
     expect(pageFor('applications')).toBe('');
-    expect(pageFor('credentials')).toBe('');
     expect(pageFor('constructor')).toBe('');
     expect(pageFor('')).toBe('');
   });

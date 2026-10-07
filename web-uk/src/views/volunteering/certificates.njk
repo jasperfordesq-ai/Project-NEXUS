@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
@@ -60,7 +61,7 @@
         <article class="nexus-alpha-card">
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ certificate.heading }}</h2>
           {% if certificate.revoked %}
-            <strong class="govuk-tag govuk-tag--red govuk-!-margin-bottom-3" data-testid="certificate-revoked">{{ t("govuk_alpha_volunteering.certificate_revoked.tag") }}</strong>
+            {{ govukTag({ text: t("govuk_alpha_volunteering.certificate_revoked.tag"), classes: "govuk-tag--red govuk-!-margin-bottom-3", attributes: { "data-testid": "certificate-revoked" } }) }}
             <div class="govuk-inset-text govuk-!-margin-top-0">{{ t("govuk_alpha_volunteering.certificate_revoked.note", { date: certificate.revokedAtLabel }) }}</div>
           {% endif %}
           <dl class="govuk-summary-list govuk-!-margin-bottom-3">

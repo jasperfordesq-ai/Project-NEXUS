@@ -631,10 +631,14 @@ describe('tenant-aware template helper conversion', () => {
     expect(groupSignups).not.toContain('<span class="govuk-visually-hidden">There is a problem</span>');
   });
 
-  it('keeps volunteering certificate and credential controls behind urlFor()', () => {
+  // credentials.njk (document uploads) was replaced by the qualifications register
+  // on 7 Oct 2026 (gap B15, owner decision: no uploads); its pages are checked instead.
+  it('keeps volunteering certificate and qualification controls behind urlFor()', () => {
     const templates = [
       path.join('volunteering', 'certificates.njk'),
-      path.join('volunteering', 'credentials.njk')
+      path.join('volunteering', 'my-qualifications.njk'),
+      path.join('volunteering', 'my-qualification-form.njk'),
+      path.join('volunteering', 'my-qualification-withdraw.njk')
     ].map((templatePath) => fs.readFileSync(
       path.join(__dirname, '..', 'src', 'views', templatePath),
       'utf8'

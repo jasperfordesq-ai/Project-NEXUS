@@ -9,6 +9,7 @@
   certificate themselves.
 #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set K = "govuk_alpha_volunteering.my_qualifications." %}
 
@@ -71,8 +72,8 @@
           </div>
           <div class="govuk-summary-card__content">
             <p class="govuk-body">
-              <strong class="govuk-tag {{ item.statusClass }}">{{ item.statusLabel }}</strong>
-              {% if item.isExpiring %}<strong class="govuk-tag govuk-tag--yellow">{{ t(K ~ "status.expiring") }}</strong>{% endif %}
+              {{ govukTag({ text: item.statusLabel, classes: item.statusClass }) }}
+              {% if item.isExpiring %}{{ govukTag({ text: t(K ~ "status.expiring"), classes: "govuk-tag--yellow" }) }}{% endif %}
             </p>
             <ul class="govuk-list">
               {% if item.issuer %}<li>{{ item.issuer }}</li>{% endif %}

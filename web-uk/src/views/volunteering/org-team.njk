@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {# The organisation's team (gap D7, 7 Oct 2026). #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_team.back_link") }}</a>
@@ -50,6 +51,7 @@
     {% if not members.length %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_volunteering.org_team.empty") }}</p></div>
     {% else %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_team.title') }}">
       <table class="govuk-table" data-testid="org-team-table">
         <caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_team.title") }}</caption>
         <thead class="govuk-table__head">
@@ -64,8 +66,8 @@
             <tr class="govuk-table__row">
               <th scope="row" class="govuk-table__header">
                 <a class="govuk-link" href="{{ urlFor('/members/' ~ member.id) }}">{{ member.name }}</a>
-                {% if member.isCreator %}<br><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.org_team.creator") }}</strong>{% endif %}
-                {% if member.isSelf %}<br><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.org_team.you") }}</strong>{% endif %}
+                {% if member.isCreator %}<br>{{ govukTag({ text: t("govuk_alpha_volunteering.org_team.creator"), classes: "govuk-tag--grey" }) }}{% endif %}
+                {% if member.isSelf %}<br>{{ govukTag({ text: t("govuk_alpha_volunteering.org_team.you"), classes: "govuk-tag--grey" }) }}{% endif %}
               </th>
               <td class="govuk-table__cell">{{ member.roleLabel }}</td>
               {% if canManage %}
@@ -93,6 +95,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% endif %}
 
     {% if canManage %}
