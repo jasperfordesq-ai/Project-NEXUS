@@ -160,6 +160,17 @@ describe('ExpensesTab', () => {
     });
   });
 
+  // Gap C6: "Click Submit Expense to get started" — the button is now in the empty state.
+  it('opens the claim form from the empty state', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { items: [], has_more: false } });
+    render(<ExpensesTab />);
+    await waitFor(() => expect(screen.getByTestId('empty-state')).toBeInTheDocument());
+    const inEmptyState = screen.getByTestId('empty-state').querySelector('button');
+    expect(inEmptyState).toHaveTextContent('Submit Expense');
+    fireEvent.click(inEmptyState!);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
   it('shows loading skeleton while data is being fetched', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     render(<ExpensesTab />);
@@ -244,7 +255,7 @@ describe('ExpensesTab', () => {
   async function openForm() {
     render(<ExpensesTab />);
     await waitFor(() => expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/volunteering/applications')));
-    fireEvent.click(screen.getByRole('button', { name: /Submit Expense/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Submit Expense/i })[0]);
     return screen.findByRole('dialog');
   }
 

@@ -37,6 +37,7 @@ vi.mock("react-i18next", () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
       const translations: Record<string, string> = {
         "waitlist.heading": "My Waitlists",
+        applications_empty_cta: "Browse opportunities",
         "waitlist.refresh": "Refresh",
         "waitlist.load_error": "Unable to load your waitlist entries. Please try again.",
         "waitlist.try_again": "Try again",
@@ -109,10 +110,11 @@ vi.mock("@/components/ui", async () => {
 });
 
 vi.mock("@/components/feedback", () => ({
-  EmptyState: ({ title, description }: { title: string; description?: string }) => (
+  EmptyState: ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) => (
     <div data-testid="empty-state">
       <div>{title}</div>
       {description && <div>{description}</div>}
+      {action}
     </div>
   ),
 }));
@@ -155,6 +157,14 @@ describe("WaitlistTab", () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<WaitlistTab />);
     expect(screen.getByText("My Waitlists")).toBeInTheDocument();
+  });
+
+  // Gap C6: the empty state explains how to join a waitlist; it now links to where.
+  it("links an empty waitlist to the opportunities", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<WaitlistTab />);
+    const link = await screen.findByRole("link", { name: /Browse opportunities/ });
+    expect(link).toHaveAttribute("href", "/test/volunteering");
   });
 
   it("shows empty state when there are no waitlist entries", async () => {

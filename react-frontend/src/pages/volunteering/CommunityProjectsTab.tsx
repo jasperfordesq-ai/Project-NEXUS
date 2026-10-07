@@ -246,6 +246,12 @@ export function CommunityProjectsTab() {
           icon={<Lightbulb className="w-12 h-12" aria-hidden="true" />}
           title={t('community_projects.empty_title')}
           description={t('community_projects.empty_description')}
+          action={
+            // "Be the first to propose…": the same form as the header button (gap C6).
+            <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={onOpen}>
+              {t('community_projects.propose')}
+            </Button>
+          }
         />
       )}
 

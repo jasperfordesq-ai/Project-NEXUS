@@ -23,13 +23,14 @@ import Hash from 'lucide-react/icons/hash';
 import Check from 'lucide-react/icons/check';
 import PartyPopper from 'lucide-react/icons/party-popper';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { EmptyState } from '@/components/feedback';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -73,6 +74,7 @@ const itemVariants = {
 
 export function WaitlistTab() {
   const { t } = useTranslation('volunteering');
+  const { tenantPath } = useTenant();
   const toast = useToast();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -215,6 +217,12 @@ export function WaitlistTab() {
           icon={<Clock className="w-12 h-12" aria-hidden="true" />}
           title={t('waitlist.no_entries_title')}
           description={t('waitlist.no_entries_desc')}
+          action={
+            // A waitlist is joined from a full shift on an opportunity (gap C6).
+            <Button as={Link} to={tenantPath('/volunteering')} variant="secondary">
+              {t('applications_empty_cta')}
+            </Button>
+          }
         />
       )}
 

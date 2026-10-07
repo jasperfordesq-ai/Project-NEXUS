@@ -110,6 +110,17 @@ describe('CommunityProjectsTab', () => {
     });
   });
 
+  // Gap C6: "Be the first to propose…" — the button is now in the empty state.
+  it('offers to propose a project from the empty state', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { items: [], has_more: false } });
+    render(<CommunityProjectsTab />);
+    await waitFor(() => expect(screen.getByTestId('empty-state')).toBeInTheDocument());
+    const inEmptyState = screen.getByTestId('empty-state').querySelector('button');
+    expect(inEmptyState).toHaveTextContent('Propose a Project');
+    fireEvent.click(inEmptyState!);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
   it('shows loading skeleton while data is being fetched', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     render(<CommunityProjectsTab />);

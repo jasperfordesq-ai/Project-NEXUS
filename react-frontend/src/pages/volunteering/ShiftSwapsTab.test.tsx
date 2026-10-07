@@ -40,6 +40,7 @@ vi.mock("react-i18next", () => ({
         "swaps.all": "All",
         "swaps.heading": "Shift Swaps",
         "swaps.no_swaps_title": "No swap requests",
+        tab_applications: "My Applications",
         "swaps.received": "Received",
         "swaps.reject": "Reject",
         "swaps.sent": "Sent",
@@ -87,10 +88,11 @@ vi.mock("@/contexts", () => ({
 vi.mock("@/components/ui", async () => (await import("@/test/uiMock")).uiMock);
 
 vi.mock("@/components/feedback", () => ({
-  EmptyState: ({ title, description }: { title: string; description?: string }) => (
+  EmptyState: ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) => (
     <div data-testid="empty-state">
       <div>{title}</div>
       {description && <div>{description}</div>}
+      {action}
     </div>
   ),
 }));
@@ -141,6 +143,14 @@ describe("ShiftSwapsTab", () => {
     expect(screen.getByRole("button", { name: /All \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sent \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Received \(0\)/i })).toBeInTheDocument();
+  });
+
+  // Gap C6: "open Applications and choose one of your confirmed shifts" — linked.
+  it("links an empty swaps list to My Applications, where a swap is asked for", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<ShiftSwapsTab />);
+    const link = await screen.findByRole("link", { name: /My Applications/ });
+    expect(link).toHaveAttribute("href", "/test/volunteering?tab=applications");
   });
 
   it("shows empty state when there are no swaps", async () => {

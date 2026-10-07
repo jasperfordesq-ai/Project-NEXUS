@@ -211,6 +211,10 @@ export default function MyOrganisationsPage() {
                   <div className="flex-1">
                     <p className="font-medium text-theme-primary">{org.name}</p>
                     <p className="text-xs text-theme-muted">{t('my_organisations_declined_desc')}</p>
+                    {/* "Contact your community administrator" — this is how (gap C6). */}
+                    <Link to={tenantPath('/contact')} className="text-xs font-medium text-accent hover:underline">
+                      {t('common:footer.contact_us')}
+                    </Link>
                   </div>
                   <Chip size="sm" color="danger" variant="soft">{t('status_declined')}</Chip>
                 </div>

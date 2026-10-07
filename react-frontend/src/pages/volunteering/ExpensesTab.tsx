@@ -330,6 +330,16 @@ export function ExpensesTab() {
           icon={<Receipt className="w-12 h-12" aria-hidden="true" />}
           title={t('expenses.empty_title')}
           description={t('expenses.empty_description')}
+          action={
+            // The description says "Click Submit Expense"; offer it right here (gap C6).
+            <Button
+              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+              startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+              onPress={handleOpenForm}
+            >
+              {t('expenses.submit')}
+            </Button>
+          }
         />
       )}
 

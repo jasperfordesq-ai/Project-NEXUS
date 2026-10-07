@@ -73,6 +73,7 @@ const translations: Record<string, string> = {
   status_declined: 'Declined',
   my_organisations_declined: 'Declined',
   my_organisations_declined_desc: "This application wasn't approved. Contact your community administrator for details.",
+  'common:footer.contact_us': 'Contact Us',
 };
 
 vi.mock('react-i18next', () => ({
@@ -166,6 +167,8 @@ describe('MyOrganisationsPage', () => {
       screen.getByText("This application wasn't approved. Contact your community administrator for details."),
     ).toBeInTheDocument();
     expect(screen.queryByText('No Organisations Yet')).not.toBeInTheDocument();
+    // Gap C6: the explanation says to contact the community; it now links to how.
+    expect(screen.getByRole('link', { name: /Contact Us/ }).getAttribute('href')).toMatch(/\/contact$/);
   });
 
   it('shows a retryable error instead of the empty state when the fetch fails', async () => {

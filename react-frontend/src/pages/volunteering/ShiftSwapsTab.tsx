@@ -22,13 +22,14 @@ import Send from 'lucide-react/icons/send';
 import Inbox from 'lucide-react/icons/inbox';
 import Ban from 'lucide-react/icons/ban';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { EmptyState } from '@/components/feedback';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -116,6 +117,7 @@ const otherShiftOf = (swap: ShiftSwap): SwapShift =>
 
 export function ShiftSwapsTab() {
   const { t } = useTranslation('volunteering');
+  const { tenantPath } = useTenant();
   const toast = useToast();
   const [swaps, setSwaps] = useState<ShiftSwap[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -330,6 +332,12 @@ export function ShiftSwapsTab() {
                 ? t('swaps.no_received')
                 : t('swaps.no_swaps_desc')
           }
+          action={view === 'received' ? undefined : (
+            // A swap is asked for from a confirmed shift in My Applications (gap C6).
+            <Button as={Link} to={tenantPath('/volunteering?tab=applications')} variant="secondary">
+              {t('tab_applications')}
+            </Button>
+          )}
         />
       )}
 
