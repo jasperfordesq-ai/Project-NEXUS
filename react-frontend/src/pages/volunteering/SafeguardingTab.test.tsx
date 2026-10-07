@@ -166,6 +166,15 @@ describe('SafeguardingTab', () => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole('button', { name: /Incident Reports/i }));
+    // Header and empty state both offer it.
+    expect(screen.getAllByRole('button', { name: /Report Incident/i })).toHaveLength(2);
+  });
+
+  // Gap C9: reporting a concern used to need a switch to Incident Reports first.
+  it('offers Report Incident on the default training view too', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<SafeguardingTab />);
+    await waitFor(() => expect(screen.getByTestId('empty-state')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /Report Incident/i })).toBeInTheDocument();
   });
 

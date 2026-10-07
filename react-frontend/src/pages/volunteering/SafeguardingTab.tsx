@@ -128,9 +128,18 @@ export function SafeguardingTab() {
           <ShieldCheck className="w-5 h-5 text-rose-400" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-theme-primary">{t('safeguarding.heading')}</h2>
         </div>
-        <Button size="sm" className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0" startContent={<Plus className="w-4 h-4" aria-hidden="true" />} onPress={subView === 'training' ? trainingModal.onOpen : incidentModal.onOpen}>
-          {subView === 'training' ? t('safeguarding.add_training') : t('safeguarding.report_incident')}
-        </Button>
+        {/* Gap C9: reporting a concern is one press from either view; it used to
+            appear only after switching to Incident Reports. */}
+        <div className="flex flex-wrap gap-2 sm:shrink-0">
+          {subView === 'training' && (
+            <Button size="sm" variant="secondary" startContent={<Plus className="w-4 h-4" aria-hidden="true" />} onPress={trainingModal.onOpen}>
+              {t('safeguarding.add_training')}
+            </Button>
+          )}
+          <Button size="sm" className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" startContent={<FileWarning className="w-4 h-4" aria-hidden="true" />} onPress={incidentModal.onOpen}>
+            {t('safeguarding.report_incident')}
+          </Button>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant={subView === 'training' ? 'primary' : 'tertiary'} className={subView === 'training' ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white' : 'bg-theme-elevated text-theme-muted'} startContent={<GraduationCap className="w-4 h-4" aria-hidden="true" />} onPress={() => setSubView('training')}>{t('safeguarding.training_records')}</Button>
@@ -142,7 +151,7 @@ export function SafeguardingTab() {
         <motion.div variants={cV} initial="hidden" animate="visible" className="space-y-3">
           {trainings.map((tr) => (<motion.div key={tr.id} variants={iV}><GlassCard className="p-4"><div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><span className="text-sm font-semibold text-theme-primary">{tr.training_name}</span><Chip size="sm" color={trainingStatusColor(tr.status)} variant="soft">{t(`safeguarding.status_${tr.status}`)}</Chip></div><p className="text-xs text-theme-muted">{t(`safeguarding.training_types.${tr.training_type}`)}{tr.provider && ` — ${tr.provider}`}</p><div className="flex items-center gap-3 mt-1 text-xs text-theme-subtle"><span className="flex items-center gap-1"><Calendar className="w-3 h-3" aria-hidden="true" />{t('safeguarding.completed')}: {new Date(tr.completed_at).toLocaleDateString(getFormattingLocale())}</span>{tr.expires_at && (<span>{t('safeguarding.expires')}: {new Date(tr.expires_at).toLocaleDateString(getFormattingLocale())}</span>)}</div></div></div></GlassCard></motion.div>))}
         </motion.div>))}
-      {!error && !isLoading && subView === 'incidents' && (incidents.length === 0 ? (<EmptyState icon={<FileWarning className="w-12 h-12" aria-hidden="true" />} title={t('safeguarding.no_incidents_title')} description={t('safeguarding.no_incidents_desc')} />) : (
+      {!error && !isLoading && subView === 'incidents' && (incidents.length === 0 ? (<EmptyState icon={<FileWarning className="w-12 h-12" aria-hidden="true" />} title={t('safeguarding.no_incidents_title')} description={t('safeguarding.no_incidents_desc')} action={<Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={incidentModal.onOpen}>{t('safeguarding.report_incident')}</Button>} />) : (
         <motion.div variants={cV} initial="hidden" animate="visible" className="space-y-3">
           {incidents.map((inc) => (<motion.div key={inc.id} variants={iV}><GlassCard className="p-4"><div className="flex items-start justify-between gap-3"><div className="flex-1 min-w-0"><div className="flex flex-wrap items-center gap-2 mb-1"><span className="text-xs text-theme-subtle">#{inc.id}</span><Link to={tenantPath(`/volunteering/incidents/${inc.id}`)} className="text-sm font-semibold text-theme-primary hover:underline">{inc.title}</Link><Chip size="sm" color={severityColor(inc.severity)} variant="soft" className={inc.severity === 'critical' ? 'font-bold' : ''}>{t(`safeguarding.severity_options.${inc.severity}`)}</Chip><Chip size="sm" color={incidentStatusColor(inc.status)} variant="soft">{t(memberStatusKey(inc.status))}</Chip></div><p className="text-xs text-theme-muted line-clamp-2">{inc.description}</p><div className="flex items-center gap-3 mt-1 text-xs text-theme-subtle">{inc.organization_name && <span>{inc.organization_name}</span>}{inc.category && <span>{inc.category}</span>}<span>{new Date(inc.incident_date || inc.created_at).toLocaleDateString(getFormattingLocale())}</span></div></div></div></GlassCard></motion.div>))}
         </motion.div>))}
