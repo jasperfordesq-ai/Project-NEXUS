@@ -15,7 +15,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { DateInputValue } from '@/components/ui/DatePicker';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 import { Autocomplete } from '@/components/ui/Autocomplete';
@@ -37,7 +37,8 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { Breadcrumbs } from '@/components/navigation';
 import { LoadingScreen } from '@/components/feedback';
-import { useToast, useTenant } from '@/contexts';
+import { useAuth, useToast, useTenant } from '@/contexts';
+import { isAdminTier } from '@/lib/roles';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { PageMeta } from '@/components/seo';
@@ -104,6 +105,23 @@ const initialFormData: FormData = {
   end_date: null,
 };
 
+// Every approved organisation in the community (public list, 50 a page, capped),
+// offered to community admins alongside their own.
+async function loadCommunityOrganisations(): Promise<MyOrganisation[]> {
+  const found: MyOrganisation[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < 10; page += 1) {
+    const query = new URLSearchParams({ per_page: '50' });
+    if (cursor) query.set('cursor', cursor);
+    const response = await api.get<Array<{ id: number; name: string }>>(`/v2/volunteering/organisations?${query.toString()}`);
+    if (!response.success || !Array.isArray(response.data)) break;
+    found.push(...response.data.map((org) => ({ id: org.id, name: org.name, status: 'approved', member_role: 'admin' })));
+    cursor = response.meta?.cursor ?? null;
+    if (!response.meta?.has_more || !cursor) break;
+  }
+  return found;
+}
+
 export default function CreateOpportunityPage() {
   const { t } = useTranslation('volunteering');
   const { id: routeId } = useParams<{ id?: string }>();
@@ -114,8 +132,17 @@ export default function CreateOpportunityPage() {
   const navigate = useNavigate();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
+  // Gap D2: a community admin may create an opportunity for any approved
+  // organisation (VolunteerService::canManageOrganization grants community admins),
+  // and the admin Community projects page sends the project's title here.
+  const { user } = useAuth();
+  const isCommunityAdmin = isAdminTier(user);
+  const [searchParams] = useSearchParams();
+  const prefillTitle = searchParams.get('title') ?? '';
 
-  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [formData, setFormData] = useState<FormData>(() => (
+    !isEdit && prefillTitle ? { ...initialFormData, title: prefillTitle.slice(0, 255) } : initialFormData
+  ));
   const [shareFederated, setShareFederated] = useState(false);
   const [approvedOrgs, setApprovedOrgs] = useState<MyOrganisation[]>([]);
   const [isLoadingOrgs, setIsLoadingOrgs] = useState(true);
@@ -133,9 +160,10 @@ export default function CreateOpportunityPage() {
     if (editId !== null) {
       void loadOpportunity(editId);
     } else {
-      void loadMyOrganisations();
+      // Re-runs once the signed-in member is known, so an admin sees every organisation.
+      void loadMyOrganisations(isCommunityAdmin);
     }
-  }, [editId]);
+  }, [editId, isCommunityAdmin]);
 
   async function loadOpportunity(id: number) {
     try {
@@ -172,7 +200,7 @@ export default function CreateOpportunityPage() {
     }
   }
 
-  async function loadMyOrganisations() {
+  async function loadMyOrganisations(includeCommunity: boolean) {
     try {
       setIsLoadingOrgs(true);
       const response = await api.get<MyOrganisation[] | { items?: MyOrganisation[] }>('/v2/volunteering/my-organisations');
@@ -181,6 +209,12 @@ export default function CreateOpportunityPage() {
         const approved = orgs.filter(
           (org) => ['approved', 'active'].includes(org.status) && ['owner', 'admin'].includes(org.member_role),
         );
+        if (includeCommunity) {
+          for (const org of await loadCommunityOrganisations()) {
+            if (!approved.some((known) => known.id === org.id)) approved.push(org);
+          }
+          approved.sort((a, b) => a.name.localeCompare(b.name));
+        }
         setApprovedOrgs(approved);
 
         // Auto-select if only one approved org

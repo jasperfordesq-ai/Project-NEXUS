@@ -82,6 +82,9 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+// Gap D2: the signed-in member is switchable (a community admin sees every organisation).
+const authState = vi.hoisted(() => ({ user: null as unknown }));
+
 vi.mock("@/contexts", () => ({
   useToast: vi.fn(() => ({
     success: vi.fn(),
@@ -104,7 +107,7 @@ vi.mock("@/contexts", () => ({
   useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
   useFeature: vi.fn(() => true),
   useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
+  useAuth: () => ({ user: authState.user, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
 }));
 
 vi.mock("@/hooks", () => ({
@@ -292,5 +295,35 @@ describe("CreateOpportunityPage", () => {
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith("/v2/volunteering/my-organisations");
     });
+    // A member who is not a community admin is offered only their own organisations.
+    expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining("/v2/volunteering/organisations?"));
+  });
+
+  // Gap D2: the admin Community projects page sends the project's title, which was ignored.
+  it("starts with the title passed from a community project", async () => {
+    window.history.pushState({}, "", "/volunteering/create?from_project=4&title=Community%20orchard");
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockApprovedOrg] });
+    render(<CreateOpportunityPage />);
+    expect(await screen.findByDisplayValue("Community orchard")).toBeInTheDocument();
+    window.history.pushState({}, "", "/");
+  });
+
+  // Gap D2: a community admin may post for any approved organisation in the community.
+  it("offers a community admin every approved organisation, not only their own", async () => {
+    authState.user = { id: 5, role: "admin" };
+    vi.mocked(api.get).mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith("/v2/volunteering/organisations?")
+        ? { success: true, data: [{ id: 9, name: "Zeta Trust" }], meta: { has_more: false, cursor: null } }
+        : { success: true, data: [mockApprovedOrg] },
+    ));
+    try {
+      render(<CreateOpportunityPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith("/v2/volunteering/organisations?per_page=50");
+      });
+      expect(screen.queryByText("No Approved Organisation")).not.toBeInTheDocument();
+    } finally {
+      authState.user = null;
+    }
   });
 });
