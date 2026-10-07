@@ -184,33 +184,7 @@ class RecurringShiftService
             $current = clone $startDate;
 
             while ($current <= $endDate && ($currentGenerated + $generated) < $maxOccurrences) {
-                $dayOfWeek = (int) $current->format('N'); // 1=Monday, 7=Sunday
-
-                $shouldGenerate = false;
-
-                switch ($pattern->frequency) {
-                    case 'daily':
-                        $shouldGenerate = true;
-                        break;
-                    case 'weekly':
-                        $shouldGenerate = in_array($dayOfWeek, $daysOfWeek, true);
-                        break;
-                    case 'biweekly':
-                        $weekDiff = intdiv((int) $anchorDate->diff($current)->days, 7);
-                        $shouldGenerate = ($weekDiff % 2 === 0) && in_array($dayOfWeek, $daysOfWeek, true);
-                        break;
-                    case 'monthly':
-                        // Clamp the anchor day to the last valid day of the current
-                        // month so a day-29/30/31 anchor still fires in shorter months
-                        // (e.g. a Jan-31 pattern fires on Feb 28/29), matching
-                        // EventService's monthly clamp instead of silently skipping.
-                        $anchorDay = (int) $anchorDate->format('d');
-                        $targetDay = min($anchorDay, (int) $current->format('t'));
-                        $shouldGenerate = ((int) $current->format('d') === $targetDay);
-                        break;
-                }
-
-                if ($shouldGenerate) {
+                if (self::occursOn((string) $pattern->frequency, $anchorDate, $daysOfWeek, $current)) {
                     $shiftDate = $current->format('Y-m-d');
                     $shiftStart = $shiftDate . ' ' . $pattern->start_time;
                     $shiftEnd = $shiftDate . ' ' . $pattern->end_time;
@@ -604,6 +578,146 @@ class RecurringShiftService
             $this->errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.server_error')];
             return 0;
         }
+    }
+
+    /**
+     * Whether a pattern repeats on the given calendar day. One rule for both
+     * generation and reconcileFutureShifts(), so the two can never disagree.
+     *
+     * @param int[] $daysOfWeek ISO weekdays, 1=Monday … 7=Sunday
+     */
+    private static function occursOn(string $frequency, \DateTime $anchorDate, array $daysOfWeek, \DateTime $date): bool
+    {
+        $dayOfWeek = (int) $date->format('N');
+
+        switch ($frequency) {
+            case 'daily':
+                return true;
+            case 'weekly':
+                return in_array($dayOfWeek, $daysOfWeek, true);
+            case 'biweekly':
+                $weekDiff = intdiv((int) $anchorDate->diff($date)->days, 7);
+                return ($weekDiff % 2 === 0) && in_array($dayOfWeek, $daysOfWeek, true);
+            case 'monthly':
+                // Clamp the anchor day to the last valid day of the current
+                // month so a day-29/30/31 anchor still fires in shorter months
+                // (e.g. a Jan-31 pattern fires on Feb 28/29), matching
+                // EventService's monthly clamp instead of silently skipping.
+                $anchorDay = (int) $anchorDate->format('d');
+                $targetDay = min($anchorDay, (int) $date->format('t'));
+                return (int) $date->format('d') === $targetDay;
+        }
+
+        return false;
+    }
+
+    /**
+     * Bring a pattern's future shifts into line after its repeat rules change
+     * (found walking the journey, 7 Oct 2026). Editing the weekdays, times or dates
+     * used to change only the pattern row: shifts on dropped days stayed listed,
+     * and the new days appeared only when the cron next ran.
+     *
+     * A future shift that no longer fits is removed only if nothing refers to it —
+     * no application, sign-up, check-in, waitlist place, group reservation, swap
+     * request, expense, incident or alert. A shift somebody is booked on is kept,
+     * never silently taken away from them, and counted in `kept` so the organiser
+     * can deal with it. Then the next 14 days are generated straight away.
+     *
+     * @return array{removed: int, kept: int, generated: int}
+     */
+    public function reconcileFutureShifts(int $patternId): array
+    {
+        $this->errors = [];
+        $tenantId = TenantContext::getId();
+        $result = ['removed' => 0, 'kept' => 0, 'generated' => 0];
+
+        $pattern = DB::selectOne(
+            "SELECT * FROM recurring_shift_patterns WHERE id = ? AND tenant_id = ? AND is_active = 1",
+            [$patternId, $tenantId]
+        );
+        if (!$pattern) {
+            return $result;
+        }
+
+        $anchorDate = new \DateTime($pattern->start_date);
+        $daysOfWeek = self::normaliseDaysOfWeek($pattern->days_of_week) ?? [];
+        if ($daysOfWeek === [] && self::usesWeekdays((string) $pattern->frequency)) {
+            $daysOfWeek = [(int) $anchorDate->format('N')];
+        }
+        $startDay = substr((string) $pattern->start_date, 0, 10);
+        $endDay = $pattern->end_date ? substr((string) $pattern->end_date, 0, 10) : null;
+
+        $shifts = DB::table('vol_shifts')
+            ->where('recurring_pattern_id', $patternId)
+            ->where('tenant_id', $tenantId)
+            ->where('start_time', '>', now())
+            ->get(['id', 'start_time', 'end_time']);
+
+        $removable = [];
+        foreach ($shifts as $shift) {
+            $day = substr((string) $shift->start_time, 0, 10);
+            $fits = $day >= $startDay
+                && ($endDay === null || $day <= $endDay)
+                && self::occursOn((string) $pattern->frequency, $anchorDate, $daysOfWeek, new \DateTime($day))
+                && strtotime((string) $shift->start_time) === strtotime($day . ' ' . $pattern->start_time)
+                && strtotime((string) $shift->end_time) === strtotime($day . ' ' . $pattern->end_time);
+            if ($fits) {
+                continue;
+            }
+            if (self::shiftIsUntouched((int) $shift->id, $tenantId)) {
+                $removable[] = (int) $shift->id;
+            } else {
+                $result['kept']++;
+            }
+        }
+
+        if ($removable !== []) {
+            DB::transaction(function () use ($removable, $tenantId, $patternId, &$result) {
+                $result['removed'] = DB::table('vol_shifts')
+                    ->whereIn('id', $removable)
+                    ->where('tenant_id', $tenantId)
+                    ->delete();
+                // Removed occurrences no longer count towards max_occurrences.
+                DB::update(
+                    "UPDATE recurring_shift_patterns SET occurrences_generated = GREATEST(0, occurrences_generated - ?) WHERE id = ? AND tenant_id = ?",
+                    [$result['removed'], $patternId, $tenantId]
+                );
+            });
+        }
+
+        $result['generated'] = $this->generateOccurrences($patternId, 14);
+
+        Log::info('[RecurringShift] Future shifts reconciled', ['pattern' => $patternId] + $result);
+
+        return $result;
+    }
+
+    /** True when nothing at all refers to the shift, so removing it loses nobody's booking or record. */
+    private static function shiftIsUntouched(int $shiftId, int $tenantId): bool
+    {
+        foreach ([
+            'vol_applications' => ['shift_id'],
+            'vol_shift_signups' => ['shift_id'],
+            'vol_shift_checkins' => ['shift_id'],
+            'vol_shift_waitlist' => ['shift_id'],
+            'vol_shift_group_reservations' => ['shift_id'],
+            'vol_shift_swap_requests' => ['from_shift_id', 'to_shift_id'],
+            'vol_expenses' => ['shift_id'],
+            'vol_safeguarding_incidents' => ['shift_id'],
+            'vol_emergency_alerts' => ['shift_id'],
+        ] as $table => $columns) {
+            $query = DB::table($table)->where('tenant_id', $tenantId)
+                ->where(function ($q) use ($columns, $shiftId) {
+                    foreach ($columns as $column) {
+                        $q->orWhere($column, $shiftId);
+                    }
+                });
+            if ($query->exists()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** Weekly and fortnightly patterns repeat on chosen weekdays; daily and monthly do not. */

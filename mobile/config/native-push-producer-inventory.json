@@ -2487,9 +2487,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/NotificationDispatcher.php:585:FCMPushService::sendToUser",
+            "id": "app/Services/NotificationDispatcher.php:589:FCMPushService::sendToUser",
             "file": "app/Services/NotificationDispatcher.php",
-            "line": 585,
+            "line": 589,
             "transport": "FCMPushService::sendToUser",
             "role": "transport_boundary",
             "recipient_expression": "$uid",

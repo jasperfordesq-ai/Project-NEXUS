@@ -209,4 +209,50 @@ class RecurringShiftWeekdaysTest extends TestCase
         $this->apiPut("/v2/volunteering/recurring-patterns/{$patternId}", ['days_of_week' => []])->assertStatus(400);
         $this->assertSame([3], json_decode((string) DB::table('recurring_shift_patterns')->where('id', $patternId)->value('days_of_week'), true));
     }
+
+    /**
+     * Found walking the journey (7 Oct 2026): changing a pattern's weekdays changed
+     * only the pattern row. Future shifts on the dropped days stayed listed and the
+     * new day appeared only when the cron next ran. Now the edit applies at once —
+     * except that a shift somebody is booked on is kept, never taken from them.
+     */
+    public function test_changing_the_weekdays_moves_the_future_shifts_but_keeps_a_booked_one(): void
+    {
+        $this->enableVolunteering();
+        [$owner, $oppId] = $this->ownedOpportunity();
+        Sanctum::actingAs($owner, ['*']);
+
+        $patternId = (int) $this->apiPost(
+            "/v2/volunteering/opportunities/{$oppId}/recurring-patterns",
+            $this->weeklyPayload(['days_of_week' => [2, 4]])
+        )->assertCreated()->json('data.id');
+
+        // A volunteer is booked on the first Thursday shift.
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $bookedShift = DB::table('vol_shifts')->where('recurring_pattern_id', $patternId)->get(['id', 'start_time'])
+            ->first(static fn ($row) => (int) (new \DateTimeImmutable((string) $row->start_time))->format('N') === 4);
+        $this->assertNotNull($bookedShift, 'the 14-day window holds at least one Thursday');
+        DB::table('vol_applications')->insert([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'shift_id' => $bookedShift->id,
+            'user_id' => $volunteer->id,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->apiPut("/v2/volunteering/recurring-patterns/{$patternId}", ['days_of_week' => [1]])->assertOk();
+
+        $shifts = DB::table('vol_shifts')->where('recurring_pattern_id', $patternId)->get(['id', 'start_time']);
+        $weekdays = $shifts->map(static fn ($row) => (int) (new \DateTimeImmutable((string) $row->start_time))->format('N'))->all();
+        $this->assertContains(1, $weekdays, 'the new Monday shifts exist straight away, not after the next cron run');
+        $this->assertNotContains(2, $weekdays, 'unbooked Tuesday shifts are gone');
+        $this->assertSame(1, $shifts->filter(static fn ($row) => (int) (new \DateTimeImmutable((string) $row->start_time))->format('N') === 4)->count(),
+            'only the booked Thursday remains; the unbooked Thursdays are gone');
+        $this->assertTrue($shifts->contains('id', $bookedShift->id), 'the booked shift is never taken from the volunteer');
+        $this->assertSame(1, $response->json('data.shifts_kept'));
+        $this->assertGreaterThan(0, $response->json('data.shifts_removed'));
+        $this->assertGreaterThan(0, $response->json('data.shifts_generated'));
+    }
 }

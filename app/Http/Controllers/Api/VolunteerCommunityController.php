@@ -536,14 +536,29 @@ class VolunteerCommunityController extends BaseApiController
         $this->rateLimit('volunteering_recurring_update', 10, 60);
         $patternId = (int) $id;
 
-        $success = $this->recurringShiftService->updatePattern($patternId, $this->getAllInput(), $userId);
+        $input = $this->getAllInput();
+        $success = $this->recurringShiftService->updatePattern($patternId, $input, $userId);
 
         if (!$success) {
             $errors = $this->recurringShiftService->getErrors();
             return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
         }
 
-        $pattern = $this->recurringShiftService->getPattern($patternId);
+        // A change to WHEN the pattern repeats is applied to its future shifts now,
+        // not left for the cron: shifts on dropped days go (unless someone is booked
+        // on them) and the new days appear straight away.
+        $reconciled = null;
+        $repeatFields = ['days_of_week', 'frequency', 'start_time', 'end_time', 'start_date', 'end_date', 'max_occurrences'];
+        if (array_intersect($repeatFields, array_keys($input)) !== []) {
+            $reconciled = $this->recurringShiftService->reconcileFutureShifts($patternId);
+        }
+
+        $pattern = $this->recurringShiftService->getPattern($patternId) ?? [];
+        if ($reconciled !== null) {
+            $pattern['shifts_removed'] = $reconciled['removed'];
+            $pattern['shifts_kept'] = $reconciled['kept'];
+            $pattern['shifts_generated'] = $reconciled['generated'];
+        }
         return $this->respondWithData($pattern);
     }
 
