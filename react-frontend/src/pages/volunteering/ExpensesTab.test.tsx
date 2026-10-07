@@ -264,7 +264,7 @@ describe('ExpensesTab', () => {
   async function openForm() {
     render(<ExpensesTab />);
     await waitFor(() => expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/volunteering/applications')));
-    fireEvent.click(screen.getAllByRole('button', { name: /Submit Expense/i })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: /Submit Expense/i })[0]!);
     return screen.findByRole('dialog');
   }
 

@@ -315,7 +315,7 @@ describe("CreateOpportunityPage", () => {
       endpoint.startsWith("/v2/volunteering/organisations?")
         ? { success: true, data: [{ id: 9, name: "Zeta Trust" }], meta: { has_more: false, cursor: null } }
         : { success: true, data: [mockApprovedOrg] },
-    ));
+    ) as ReturnType<typeof api.get>);
     try {
       render(<CreateOpportunityPage />);
       await waitFor(() => {
