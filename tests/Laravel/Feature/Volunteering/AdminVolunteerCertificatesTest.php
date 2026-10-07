@@ -113,6 +113,16 @@ class AdminVolunteerCertificatesTest extends TestCase
         $this->apiGet('/v2/volunteering/certificates/ADMIND8CODE00001/html')->assertStatus(404);
         $mine = collect($this->apiGet('/v2/volunteering/certificates')->json('data.items'))->firstWhere('id', $this->certificateId);
         $this->assertNotNull($mine['revoked_at'] ?? null);
+
+        // The holder's own data export says the certificate was revoked and why
+        // (a reason recorded about them is their personal data).
+        $export = new \App\Services\Enterprise\GdprService($this->testTenantId);
+        $method = (new \ReflectionClass($export))->getMethod('exportVolunteerData');
+        $method->setAccessible(true);
+        $exported = collect($method->invoke($export, $this->holder->id)['certificates'])
+            ->map(fn ($row) => (array) $row)->firstWhere('id', $this->certificateId);
+        $this->assertNotNull($exported['revoked_at']);
+        $this->assertSame('Hours were logged in error', $exported['revoke_reason']);
     }
 
     public function test_members_cannot_use_the_admin_certificate_endpoints(): void

@@ -553,7 +553,8 @@ class GdprService
         // vol_certificates
         $certificates = $this->query(
             "SELECT id, verification_code, total_hours, date_range_start,
-                    date_range_end, organizations, generated_at, downloaded_at
+                    date_range_end, organizations, generated_at, downloaded_at,
+                    revoked_at, revoke_reason
              FROM vol_certificates
              WHERE user_id = ? AND tenant_id = ?
              ORDER BY generated_at DESC",
