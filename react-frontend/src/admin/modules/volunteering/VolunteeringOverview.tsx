@@ -26,7 +26,7 @@ import X from 'lucide-react/icons/x';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { adminVolunteering } from '../../api/adminApi';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
@@ -199,6 +199,8 @@ export function VolunteeringOverview() {
   usePageTitle(t('volunteering.volunteering_overview_title'));
   const toast = useToast();
   const navigate = useNavigate();
+  // Gap D3: admin paths need the community prefix, as every other admin link has.
+  const { tenantPath } = useTenant();
   const [stats, setStats] = useState<VolStats | null>(null);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -388,10 +390,10 @@ export function VolunteeringOverview() {
             <div
               key={alert.message}
               className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3 cursor-pointer hover:bg-amber-500/15 transition-colors"
-              onClick={() => alert.path && navigate(alert.path)}
+              onClick={() => alert.path && navigate(tenantPath(alert.path))}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && alert.path) { e.preventDefault(); navigate(alert.path); } }}
+              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && alert.path) { e.preventDefault(); navigate(tenantPath(alert.path)); } }}
             >
               <AlertTriangle size={18} className="text-amber-500 shrink-0" />
               <span className="text-sm font-medium flex-1">{alert.message}</span>
@@ -650,7 +652,7 @@ export function VolunteeringOverview() {
             key={action.path}
 
             isPressable
-            onPress={() => navigate(action.path)}
+            onPress={() => navigate(tenantPath(action.path))}
             className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03] transition-transform hover:-translate-y-0.5"
           >
             <CardBody className="flex flex-row items-center gap-3 p-4">

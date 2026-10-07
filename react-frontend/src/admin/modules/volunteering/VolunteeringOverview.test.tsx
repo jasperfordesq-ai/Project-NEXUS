@@ -346,8 +346,18 @@ describe('VolunteeringOverview — refresh', () => {
     );
     if (alertBtn) {
       fireEvent.click(alertBtn);
-      expect(mockNavigate).toHaveBeenCalledWith('/admin/volunteering/approvals');
+      expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering/approvals');
     }
+  });
+
+  // Gap D3: the quick actions navigated without the community prefix, so on a community
+  // reached by its slug they left that community.
+  it('keeps quick-action navigation inside the community', async () => {
+    mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
+
+    render(<VolunteeringOverview />);
+    fireEvent.click(await screen.findByRole('button', { name: /Verify hours/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering/hours');
   });
 });
 
