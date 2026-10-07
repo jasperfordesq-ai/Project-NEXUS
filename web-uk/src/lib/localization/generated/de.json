@@ -11560,6 +11560,97 @@
                 "status_user_not_found": "Diese Person ist kein aktives Mitglied dieser Gemeinschaft.",
                 "status_forbidden": "Nur die Inhaber der Organisation und die Gemeinschafts-Admins können das Team ändern.",
                 "status_failed": "Diese Änderung konnte nicht vorgenommen werden. Versuchen Sie es erneut."
+            },
+            "my_qualifications": {
+                "heading": "Qualifikationen",
+                "add": "Qualifikation hinzufügen",
+                "intro_title": "Worum es geht",
+                "intro_body": "Eine Übersicht Ihrer Schulungen und Qualifikationen, damit die Organisationen, bei denen Sie sich engagieren, sehen, was Sie haben und wann es abläuft. Hier wird nichts hochgeladen oder gespeichert.",
+                "intro_show_or_send": "Behalten Sie das Zertifikat selbst. Wenn eine Organisation danach fragt, zeigen Sie ihr das Original oder schicken Sie ihr direkt eine Kopie per E-Mail oder Post, nicht über diese Website.",
+                "intro_vetting": "Polizeiliche Führungszeugnisse (DBS, AccessNI, PVG, Garda Vetting) bearbeitet das Kinderschutzteam Ihrer Gemeinschaft gesondert.",
+                "vetting_link": "Mein Überprüfungsstatus",
+                "attention_body": "Aktualisieren Sie das Ablaufdatum, sobald Sie verlängert haben, oder ziehen Sie den Eintrag zurück, wenn Sie die Qualifikation nicht mehr besitzen.",
+                "status": {
+                    "recorded": "Bestätigung ausstehend",
+                    "confirmed": "Bestätigt",
+                    "expired": "Abgelaufen",
+                    "withdrawn": "Zurückgezogen",
+                    "expiring": "Läuft bald ab"
+                },
+                "expires_on": "Läuft ab am :date",
+                "expired_on": "Abgelaufen am :date",
+                "obtained_on": "Erworben am :date",
+                "no_expiry": "Kein Ablaufdatum",
+                "reference": "Nr. :ref",
+                "confirmed_line": "Bestätigt von :name am :date",
+                "confirmed_line_org": "Bestätigt von :name für :org am :date",
+                "withdrawn_line": "Zurückgezogen am :date",
+                "empty_title": "Noch keine Qualifikationen eingetragen",
+                "empty_body": "Tragen Sie hier Ihre Erste-Hilfe-, Kinderschutz- oder andere Schulungen ein, damit Organisationen sie sehen und Sie vor dem Ablauf erinnert werden.",
+                "load_error": "Ihre Qualifikationen konnten nicht geladen werden.",
+                "form": {
+                    "title_add": "Qualifikation hinzufügen",
+                    "title_edit": "Qualifikation bearbeiten",
+                    "type": "Qualifikation",
+                    "type_placeholder": "Qualifikation wählen",
+                    "expiry_hint": "In der Regel :years Jahre gültig",
+                    "title": "Name oder Kurs (optional)",
+                    "title_required": "Name",
+                    "issuer": "Ausstellende Stelle oder Anbieter (optional)",
+                    "reference": "Zertifikats- oder Registrierungsnummer (optional)",
+                    "obtained": "Erworben am",
+                    "expires": "Ablaufdatum",
+                    "expires_hint": "Leer lassen, wenn es nicht abläuft.",
+                    "notes": "Notizen (optional)",
+                    "save": "Speichern",
+                    "cancel": "Abbrechen",
+                    "saved": "Qualifikation gespeichert.",
+                    "save_error": "Die Qualifikation konnte nicht gespeichert werden. Bitte erneut versuchen.",
+                    "edit_clears_confirmation": "Wenn Sie eine bestätigte Qualifikation ändern, entfällt die Bestätigung; die Organisation muss sie erneut bestätigen."
+                },
+                "errors": {
+                    "title_required": "Geben Sie der Qualifikation einen Namen.",
+                    "expiry_before_obtained": "Das Ablaufdatum liegt vor dem Erwerbsdatum.",
+                    "vetting": "Polizeiliche Führungszeugnisse werden hier nicht erfasst. Darum kümmert sich das Kinderschutzteam Ihrer Gemeinschaft.",
+                    "unsupported_type": "Dieser Qualifikationstyp ist in dieser Gemeinschaft nicht verfügbar."
+                },
+                "withdraw": {
+                    "title": "Qualifikation zurückziehen",
+                    "body": "Der Eintrag bleibt in Ihrem Verlauf, wird Organisationen aber nicht mehr angezeigt.",
+                    "reason": "Grund",
+                    "reasons": {
+                        "volunteer_request": "Ich möchte das nicht mehr anzeigen",
+                        "no_longer_held": "Ich besitze sie nicht mehr",
+                        "entered_in_error": "Versehentlich eingetragen",
+                        "replaced": "Durch eine neuere ersetzt"
+                    },
+                    "confirm": "Zurückziehen",
+                    "done": "Qualifikation zurückgezogen."
+                },
+                "actions": {
+                    "edit": "Bearbeiten",
+                    "withdraw": "Zurückziehen"
+                },
+                "types": {
+                    "first_aid": "Erste Hilfe",
+                    "safeguarding_training": "Kinderschutzschulung",
+                    "manual_handling": "Heben und Tragen",
+                    "food_hygiene": "Lebensmittelhygiene",
+                    "driving_licence": "Führerschein",
+                    "professional_registration": "Berufliche Registrierung",
+                    "other": "Sonstiges",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Schutz Erwachsener",
+                    "efaw": "Notfall-Erste-Hilfe am Arbeitsplatz",
+                    "faw": "Erste Hilfe am Arbeitsplatz"
+                },
+                "groups": {
+                    "attention": "Braucht Aufmerksamkeit",
+                    "recorded": "Bestätigung ausstehend",
+                    "confirmed": "Bestätigt",
+                    "withdrawn": "Zurückgezogen"
+                }
             }
         },
         "govuk_alpha_wallet": {

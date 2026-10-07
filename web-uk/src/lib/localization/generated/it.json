@@ -11560,6 +11560,97 @@
                 "status_user_not_found": "Questa persona non è un membro attivo di questa comunità.",
                 "status_forbidden": "Solo i proprietari dell’organizzazione e gli amministratori della comunità possono modificare il team.",
                 "status_failed": "Impossibile effettuare questa modifica. Riprova."
+            },
+            "my_qualifications": {
+                "heading": "Qualifiche",
+                "add": "Aggiungi qualifica",
+                "intro_title": "Di cosa si tratta",
+                "intro_body": "Un registro delle tue formazioni e qualifiche, così le organizzazioni con cui fai volontariato vedono cosa possiedi e quando scade. Qui non viene caricato né conservato nulla.",
+                "intro_show_or_send": "Conserva tu il certificato. Se un'organizzazione lo chiede, mostrale l'originale oppure inviale una copia direttamente per e-mail o per posta, non tramite questo sito.",
+                "intro_vetting": "I controlli di polizia (DBS, AccessNI, PVG, Garda vetting) sono gestiti separatamente dal team di tutela della tua comunità.",
+                "vetting_link": "Il mio stato di verifica",
+                "attention_body": "Aggiorna la data di scadenza dopo il rinnovo, oppure ritira la voce se non possiedi più la qualifica.",
+                "status": {
+                    "recorded": "In attesa di conferma",
+                    "confirmed": "Confermata",
+                    "expired": "Scaduta",
+                    "withdrawn": "Ritirata",
+                    "expiring": "In scadenza"
+                },
+                "expires_on": "Scade il :date",
+                "expired_on": "Scaduta il :date",
+                "obtained_on": "Ottenuta il :date",
+                "no_expiry": "Nessuna scadenza",
+                "reference": "Rif. :ref",
+                "confirmed_line": "Confermata da :name il :date",
+                "confirmed_line_org": "Confermata da :name per :org il :date",
+                "withdrawn_line": "Ritirata il :date",
+                "empty_title": "Nessuna qualifica registrata",
+                "empty_body": "Aggiungi qui il primo soccorso, la formazione sulla tutela o altre formazioni, così le organizzazioni le vedono e ricevi un promemoria prima della scadenza.",
+                "load_error": "Impossibile caricare le tue qualifiche.",
+                "form": {
+                    "title_add": "Aggiungi qualifica",
+                    "title_edit": "Modifica qualifica",
+                    "type": "Qualifica",
+                    "type_placeholder": "Scegli una qualifica",
+                    "expiry_hint": "Di solito valida :years anni",
+                    "title": "Nome o corso (facoltativo)",
+                    "title_required": "Nome",
+                    "issuer": "Ente o fornitore (facoltativo)",
+                    "reference": "Numero di certificato o iscrizione (facoltativo)",
+                    "obtained": "Data di conseguimento",
+                    "expires": "Data di scadenza",
+                    "expires_hint": "Lascia vuoto se non scade.",
+                    "notes": "Note (facoltativo)",
+                    "save": "Salva",
+                    "cancel": "Annulla",
+                    "saved": "Qualifica salvata.",
+                    "save_error": "Impossibile salvare la qualifica. Riprova.",
+                    "edit_clears_confirmation": "Modificare una qualifica confermata ne annulla la conferma; l'organizzazione dovrà confermarla di nuovo."
+                },
+                "errors": {
+                    "title_required": "Dai un nome alla qualifica.",
+                    "expiry_before_obtained": "La data di scadenza è precedente alla data di conseguimento.",
+                    "vetting": "I controlli di polizia non si registrano qui. Se ne occupa il team di tutela della tua comunità.",
+                    "unsupported_type": "Questo tipo di qualifica non è disponibile in questa comunità."
+                },
+                "withdraw": {
+                    "title": "Ritira qualifica",
+                    "body": "La voce resta nella tua cronologia ma non viene più mostrata alle organizzazioni.",
+                    "reason": "Motivo",
+                    "reasons": {
+                        "volunteer_request": "Non voglio più mostrarla",
+                        "no_longer_held": "Non la possiedo più",
+                        "entered_in_error": "Inserita per errore",
+                        "replaced": "Sostituita da una più recente"
+                    },
+                    "confirm": "Ritira",
+                    "done": "Qualifica ritirata."
+                },
+                "actions": {
+                    "edit": "Modifica",
+                    "withdraw": "Ritira"
+                },
+                "types": {
+                    "first_aid": "Primo soccorso",
+                    "safeguarding_training": "Formazione sulla tutela",
+                    "manual_handling": "Movimentazione manuale",
+                    "food_hygiene": "Igiene alimentare",
+                    "driving_licence": "Patente di guida",
+                    "professional_registration": "Iscrizione professionale",
+                    "other": "Altro",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Tutela degli adulti",
+                    "efaw": "Primo soccorso d'emergenza sul lavoro",
+                    "faw": "Primo soccorso sul lavoro"
+                },
+                "groups": {
+                    "attention": "Da gestire",
+                    "recorded": "In attesa di conferma",
+                    "confirmed": "Confermate",
+                    "withdrawn": "Ritirata"
+                }
             }
         },
         "govuk_alpha_wallet": {

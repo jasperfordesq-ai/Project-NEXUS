@@ -15725,17 +15725,6 @@
             "description": "Successful operation"
           }
         }
-      },
-      "post": {
-        "summary": "POST /api/v2/volunteering/credentials",
-        "tags": [
-          "Volunteering"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
       }
     },
     "/api/v2/volunteering/credentials/{id}": {

@@ -11560,6 +11560,97 @@
                 "status_user_not_found": "その人はこのコミュニティの有効なメンバーではありません。",
                 "status_forbidden": "チームを変更できるのは団体のオーナーとコミュニティ管理者だけです。",
                 "status_failed": "その変更はできませんでした。もう一度お試しください。"
+            },
+            "my_qualifications": {
+                "heading": "資格",
+                "add": "資格を追加",
+                "intro_title": "これは何か",
+                "intro_body": "あなたの研修と資格の記録です。ボランティア先の団体が、あなたが何を持ち、いつ期限が切れるかを確認できます。ここには何もアップロードも保存もされません。",
+                "intro_show_or_send": "証明書はご自身で保管してください。団体から求められたら、原本を見せるか、メールや郵送でコピーを直接送ってください。このサイト経由では送らないでください。",
+                "intro_vetting": "警察による身元確認（DBS、AccessNI、PVG、Garda vetting）は、コミュニティのセーフガーディング担当チームが別途対応します。",
+                "vetting_link": "私の審査状況",
+                "attention_body": "更新したら有効期限を更新してください。もう保有していない場合は記録を取り下げてください。",
+                "status": {
+                    "recorded": "確認待ち",
+                    "confirmed": "確認済み",
+                    "expired": "期限切れ",
+                    "withdrawn": "取り下げ済み",
+                    "expiring": "まもなく期限切れ"
+                },
+                "expires_on": ":date に期限切れ",
+                "expired_on": ":date に期限切れになりました",
+                "obtained_on": ":date に取得",
+                "no_expiry": "有効期限なし",
+                "reference": "番号 :ref",
+                "confirmed_line": ":date に :name が確認",
+                "confirmed_line_org": ":date に :name が :org のために確認",
+                "withdrawn_line": ":date に取り下げ",
+                "empty_title": "まだ資格が記録されていません",
+                "empty_body": "応急手当、セーフガーディング研修などの研修をここに追加すると、団体が確認でき、期限切れ前にお知らせが届きます。",
+                "load_error": "資格を読み込めませんでした。",
+                "form": {
+                    "title_add": "資格を追加",
+                    "title_edit": "資格を編集",
+                    "type": "資格",
+                    "type_placeholder": "資格を選択",
+                    "expiry_hint": "通常 :years 年間有効",
+                    "title": "名称またはコース（任意）",
+                    "title_required": "名称",
+                    "issuer": "発行元または提供者（任意）",
+                    "reference": "証明書番号または登録番号（任意）",
+                    "obtained": "取得日",
+                    "expires": "有効期限",
+                    "expires_hint": "期限がない場合は空欄のままにしてください。",
+                    "notes": "メモ（任意）",
+                    "save": "保存",
+                    "cancel": "キャンセル",
+                    "saved": "資格を保存しました。",
+                    "save_error": "資格を保存できませんでした。もう一度お試しください。",
+                    "edit_clears_confirmation": "確認済みの資格を変更すると確認が取り消され、団体が再度確認する必要があります。"
+                },
+                "errors": {
+                    "title_required": "資格に名称を付けてください。",
+                    "expiry_before_obtained": "有効期限が取得日より前になっています。",
+                    "vetting": "警察による身元確認はここには記録しません。コミュニティのセーフガーディング担当チームが対応します。",
+                    "unsupported_type": "この資格の種類はこのコミュニティでは利用できません。"
+                },
+                "withdraw": {
+                    "title": "資格を取り下げる",
+                    "body": "記録は履歴に残りますが、団体には表示されなくなります。",
+                    "reason": "理由",
+                    "reasons": {
+                        "volunteer_request": "もう表示したくない",
+                        "no_longer_held": "もう保有していない",
+                        "entered_in_error": "誤って入力した",
+                        "replaced": "新しいものに置き換えた"
+                    },
+                    "confirm": "取り下げる",
+                    "done": "資格を取り下げました。"
+                },
+                "actions": {
+                    "edit": "編集",
+                    "withdraw": "取り下げる"
+                },
+                "types": {
+                    "first_aid": "応急手当",
+                    "safeguarding_training": "セーフガーディング研修",
+                    "manual_handling": "手作業による運搬",
+                    "food_hygiene": "食品衛生",
+                    "driving_licence": "運転免許",
+                    "professional_registration": "専門職登録",
+                    "other": "その他",
+                    "children_first": "Children First（Tusla）",
+                    "first_aid_response": "First Aid Response（PHECC）",
+                    "safeguarding_adults": "成人のセーフガーディング",
+                    "efaw": "職場での緊急応急手当",
+                    "faw": "職場での応急手当"
+                },
+                "groups": {
+                    "attention": "対応が必要",
+                    "recorded": "確認待ち",
+                    "confirmed": "確認済み",
+                    "withdrawn": "取り下げ済み"
+                }
             }
         },
         "govuk_alpha_wallet": {

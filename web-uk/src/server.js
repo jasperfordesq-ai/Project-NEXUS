@@ -61,6 +61,7 @@ const volunteeringOpportunityManageRoutes = require('./routes/volunteering-oppor
 const volunteeringOrgExpenseRoutes = require('./routes/volunteering-org-expenses');
 const volunteeringOrgFundraisingRoutes = require('./routes/volunteering-org-fundraising');
 const volunteeringOrgQualificationRoutes = require('./routes/volunteering-org-qualifications');
+const volunteeringMyQualificationRoutes = require('./routes/volunteering-my-qualifications');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
 const groupExchangeRoutes = require('./routes/group-exchanges');
@@ -2234,7 +2235,6 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
 });
 
 app.use('/resources/upload', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
-app.use('/volunteering/credentials', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
 // Gap B13: an expense claim can carry a receipt (PDF, JPG, PNG or WebP, up to 10 MB —
 // the API's own SubmitExpenseRequest rule). Exact path only: the organisation's
 // review routes under /volunteering/organisations/... are not uploads.
@@ -2506,6 +2506,8 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgExpenseRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgFundraisingRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgQualificationRoutes);
+// A volunteer's own qualifications register; no uploads (gap B15).
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringMyQualificationRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);

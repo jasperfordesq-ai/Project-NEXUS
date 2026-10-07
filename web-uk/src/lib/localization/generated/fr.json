@@ -11560,6 +11560,97 @@
                 "status_user_not_found": "Cette personne n’est pas un membre actif de cette communauté.",
                 "status_forbidden": "Seuls les propriétaires de l’organisation et les administrateurs de la communauté peuvent modifier l’équipe.",
                 "status_failed": "Cette modification n’a pas pu être effectuée. Réessayez."
+            },
+            "my_qualifications": {
+                "heading": "Mes qualifications",
+                "add": "Ajouter une qualification",
+                "intro_title": "De quoi il s'agit",
+                "intro_body": "Un registre de vos formations et qualifications, pour que les organisations avec lesquelles vous faites du bénévolat voient ce que vous détenez et quand cela expire. Rien n'est téléversé ni stocké ici.",
+                "intro_show_or_send": "Gardez le certificat vous-même. Si une organisation le demande, montrez-lui l'original, ou envoyez-lui une copie directement par e-mail ou par courrier, pas via ce site.",
+                "intro_vetting": "Les vérifications d'antécédents (DBS, AccessNI, PVG, Garda vetting) sont traitées séparément par l'équipe de protection de votre communauté.",
+                "vetting_link": "Mon statut de vérification",
+                "attention_body": "Mettez à jour la date d'expiration une fois renouvelée, ou retirez la fiche si vous ne détenez plus la qualification.",
+                "status": {
+                    "recorded": "En attente de confirmation",
+                    "confirmed": "Confirmée",
+                    "expired": "Expirée",
+                    "withdrawn": "Retirée",
+                    "expiring": "Expire bientôt"
+                },
+                "expires_on": "Expire le :date",
+                "expired_on": "Expirée le :date",
+                "obtained_on": "Obtenue le :date",
+                "no_expiry": "Pas de date d'expiration",
+                "reference": "Réf. :ref",
+                "confirmed_line": "Confirmée par :name le :date",
+                "confirmed_line_org": "Confirmée par :name pour :org le :date",
+                "withdrawn_line": "Retirée le :date",
+                "empty_title": "Aucune qualification enregistrée pour le moment",
+                "empty_body": "Ajoutez ici vos premiers secours, votre formation à la protection ou toute autre formation pour que les organisations la voient et que vous soyez prévenu avant son expiration.",
+                "load_error": "Impossible de charger vos qualifications.",
+                "form": {
+                    "title_add": "Ajouter une qualification",
+                    "title_edit": "Modifier la qualification",
+                    "type": "Type de qualification",
+                    "type_placeholder": "Choisir une qualification",
+                    "expiry_hint": "Valable en général :years ans",
+                    "title": "Nom ou cours (facultatif)",
+                    "title_required": "Nom",
+                    "issuer": "Organisme ou prestataire (facultatif)",
+                    "reference": "Numéro de certificat ou d'inscription (facultatif)",
+                    "obtained": "Date d'obtention",
+                    "expires": "Date d'expiration",
+                    "expires_hint": "Laissez vide si elle n'expire pas.",
+                    "notes": "Notes (facultatif)",
+                    "save": "Enregistrer",
+                    "cancel": "Annuler",
+                    "saved": "Qualification enregistrée.",
+                    "save_error": "Impossible d'enregistrer la qualification. Veuillez réessayer.",
+                    "edit_clears_confirmation": "Modifier une qualification confirmée annule sa confirmation ; l'organisation devra la confirmer à nouveau."
+                },
+                "errors": {
+                    "title_required": "Donnez un nom à la qualification.",
+                    "expiry_before_obtained": "La date d'expiration est antérieure à la date d'obtention.",
+                    "vetting": "Les vérifications d'antécédents ne sont pas enregistrées ici. L'équipe de protection de votre communauté s'en charge.",
+                    "unsupported_type": "Ce type de qualification n'est pas disponible dans cette communauté."
+                },
+                "withdraw": {
+                    "title": "Retirer la qualification",
+                    "body": "La fiche reste dans votre historique mais n'est plus montrée aux organisations.",
+                    "reason": "Motif",
+                    "reasons": {
+                        "volunteer_request": "Je ne veux plus l'afficher",
+                        "no_longer_held": "Je ne la détiens plus",
+                        "entered_in_error": "Saisie par erreur",
+                        "replaced": "Remplacée par une plus récente"
+                    },
+                    "confirm": "Retirer",
+                    "done": "Qualification retirée."
+                },
+                "actions": {
+                    "edit": "Modifier",
+                    "withdraw": "Retirer"
+                },
+                "types": {
+                    "first_aid": "Premiers secours",
+                    "safeguarding_training": "Formation à la protection",
+                    "manual_handling": "Manutention manuelle",
+                    "food_hygiene": "Hygiène alimentaire",
+                    "driving_licence": "Permis de conduire",
+                    "professional_registration": "Inscription professionnelle",
+                    "other": "Autre",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Protection des adultes",
+                    "efaw": "Premiers secours d'urgence au travail",
+                    "faw": "Premiers secours au travail"
+                },
+                "groups": {
+                    "attention": "À traiter",
+                    "recorded": "En attente de confirmation",
+                    "confirmed": "Confirmées",
+                    "withdrawn": "Retirée"
+                }
             }
         },
         "govuk_alpha_wallet": {

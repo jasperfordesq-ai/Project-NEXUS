@@ -199,9 +199,7 @@ jest.mock('../src/lib/api', () => ({
   getResourceCategories: jest.fn().mockResolvedValue({ data: [] }),
   getResourceCategoryTree: jest.fn().mockResolvedValue({ data: [] }),
   uploadResource: jest.fn().mockResolvedValue({ data: { id: 42 } }),
-  uploadVolunteerCredential: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   submitVolunteerExpenseWithReceipt: jest.fn().mockResolvedValue({ data: { id: 43 } }),
-  downloadVolunteerCredential: jest.fn(),
   uploadInsuranceCertificate: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   downloadResource: jest.fn(),
   deleteResource: jest.fn().mockResolvedValue({ data: { deleted: true } }),
@@ -514,8 +512,6 @@ describe('shared accessible frontend shell', () => {
     api.getResourceCategories.mockReset().mockResolvedValue({ data: [] });
     api.getResourceCategoryTree.mockReset().mockResolvedValue({ data: [] });
     api.uploadResource.mockReset().mockResolvedValue({ data: { id: 42 } });
-    api.uploadVolunteerCredential.mockReset().mockResolvedValue({ data: { id: 42 } });
-    api.downloadVolunteerCredential.mockReset();
     api.uploadInsuranceCertificate.mockReset().mockResolvedValue({ data: { id: 42 } });
     api.downloadResource.mockReset();
     api.deleteResource.mockReset().mockResolvedValue({ data: { deleted: true } });
@@ -17840,6 +17836,7 @@ describe('shared accessible frontend shell', () => {
     // The old document-upload page is not a way in (qualifications take no uploads), and
     // group sign-ups stays hidden.
     expect(tools).not.toContain('/volunteering/credentials');
+    expect(tools).toContain('href="/volunteering/qualifications"');
     expect(tools).not.toContain('/volunteering/group-signups');
     expect(page.text).toContain('href="/volunteering?tab=recommended"');
   });
@@ -17941,9 +17938,10 @@ describe('shared accessible frontend shell', () => {
     expect(swaps.status).toBe(200);
   });
 
-  it('does not send a qualification reminder to the old document-upload page', async () => {
+  it('sends a qualification reminder (?tab=credentials) to the qualifications register', async () => {
     const response = await request(app).get('/volunteering?tab=credentials').set('Cookie', signedCookieHeader());
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/volunteering/qualifications');
   });
 
   it('understands the website\'s hyphenated community-projects tab', async () => {
@@ -37333,84 +37331,17 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
-  it('renders the Laravel volunteering credentials page for signed-in members', async () => {
-    const cookieSignature = require('cookie-signature');
+  // Gap B15: qualifications are recorded, never uploaded. The old upload page's
+  // address forwards to the register and nothing reaches the credentials API.
+  it('forwards the old credentials page to the qualifications register', async () => {
     const api = require('../src/lib/api');
-    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
-    api.callVolunteeringApi.mockResolvedValueOnce({
-      data: {
-        credentials: [
-          {
-            id: 44,
-            credential_type: 'first_aid',
-            file_name: 'first-aid.pdf',
-            status: 'verified',
-            expires_at: '2027-01-31',
-            created_at: '2026-07-01T09:30:00Z'
-          },
-          {
-            id: 45,
-            credential_type: 'dbs',
-            file_name: 'dbs-check.pdf',
-            status: 'retired',
-            legacy_vetting_evidence: true,
-            created_at: '2026-06-15T09:30:00Z'
-          }
-        ]
-      }
-    });
-
     const response = await request(app)
       .get('/volunteering/credentials?status=credential-uploaded')
-      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+      .set('Cookie', signedCookieHeader());
 
-    expect(response.status).toBe(200);
-    expect(api.callVolunteeringApi).toHaveBeenCalledWith('test-token', 'GET', '/credentials');
-    expect(response.text).toContain('href="/volunteering"');
-    expect(response.text).toContain('Back to volunteering');
-    expect(response.text).toContain('Your credential has been uploaded and is awaiting review.');
-    expect(response.text).toContain('My credentials');
-    expect(response.text).toContain('Upload role credentials such as first aid or food hygiene certificates so organisations can review them.');
-    expect(response.text).toContain('Do not upload or send a DBS, Garda vetting, AccessNI, PVG, police-check or equivalent document');
-    expect(response.text).toContain('Upload a credential');
-    expect(response.text).toContain('method="post" action="/volunteering/credentials" enctype="multipart/form-data"');
-    expect(response.text).toContain('id="credential_type" name="credential_type"');
-    expect(response.text).toContain('value="first_aid"');
-    expect(response.text).toContain('value="manual_handling"');
-    expect(response.text).toContain('value="food_hygiene"');
-    expect(response.text).toContain('value="professional_registration"');
-    expect(response.text).not.toContain('<option value="police_check"');
-    expect(response.text).not.toContain('<option value="dbs"');
-    expect(response.text).toContain('First aid');
-    expect(response.text).toContain('id="document" name="document" type="file"');
-    expect(response.text).toContain('PDF, JPG, PNG or WEBP. Maximum size 10MB.');
-    // 🔴 Was the native `type="date"` input. Converted to the GOV.UK three-field
-    // pattern (GDS: native pickers fail users). What matters is unchanged and still
-    // asserted — the field exists and posts under the same name — via its day field.
-    expect(response.text).toContain('name="expiry_date-day"');
-    expect(response.text).toContain('name="expiry_date-year"');
-    expect(response.text).toContain('Upload credential');
-    expect(response.text).toContain('Your credentials');
-    expect(response.text).toContain('class="nexus-alpha-table-scroll" role="region" aria-label="Your credentials" tabindex="0"');
-    expect(response.text).toContain('Type');
-    expect(response.text).toContain('Status');
-    expect(response.text).toContain('Expires');
-    expect(response.text).toContain('Uploaded');
-    expect(response.text).toContain('Verified');
-    expect(response.text).toContain('nexus-alpha-share-url" href="/volunteering/credentials/44/download" download>first-aid.pdf</a>');
-    expect(response.text).toContain('31 January 2027');
-    expect(response.text).toContain('1 July 2026');
-    expect(response.text).toContain('Retired vetting document');
-    expect(response.text).toContain('Removal required');
-    expect(response.text).toContain('The document details are hidden. Delete this historical upload');
-    expect(response.text).toContain('Not applicable');
-    expect(response.text).not.toContain('dbs-check.pdf');
-    expect(response.text).not.toContain('href="/volunteering/credentials/45/download"');
-    expect(response.text).toContain('Delete historical document');
-    expect(response.text).toContain('15 June 2026');
-    expect(response.text).toContain('method="post" action="/volunteering/credentials/44/delete"');
-    expect(response.text).toContain('Delete the First aid credential');
-    expect(response.text).not.toContain('shared accessible frontend preparation page');
+    expect(response.status).toBe(301);
+    expect(response.headers.location).toBe('/volunteering/qualifications');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'GET', '/credentials');
   });
 
   it('renders the signed Blade-style volunteering applications tab with a withdraw action', async () => {
@@ -37519,36 +37450,14 @@ describe('shared accessible frontend shell', () => {
     expect(projects.text).toContain('4 supporters');
   });
 
-  it('streams an owned Laravel credential download and preserves safe response headers', async () => {
+  it('no longer serves the old credential download address', async () => {
     const api = require('../src/lib/api');
-    const body = Buffer.from('%PDF-1.4\ncredential fixture\n', 'utf8');
-    api.downloadVolunteerCredential.mockResolvedValueOnce({
-      status: 200,
-      body,
-      headers: {
-        'content-type': 'application/pdf',
-        'content-disposition': 'attachment; filename="first-aid.pdf"',
-        'content-length': String(body.length),
-        'cache-control': 'no-cache, private'
-      }
-    });
-
-    const unsigned = await request(app).get('/volunteering/credentials/44/download');
-    expect(unsigned.status).toBe(302);
-    expect(unsigned.headers.location).toBe('/login?status=auth-required');
-    expect(api.downloadVolunteerCredential).not.toHaveBeenCalled();
-
     const response = await request(app)
       .get('/volunteering/credentials/44/download')
       .set('Cookie', signedCookieHeader());
 
-    expect(api.downloadVolunteerCredential).toHaveBeenCalledWith('test-token', 44);
-    expect(response.status).toBe(200);
-    expect(response.headers['content-type']).toContain('application/pdf');
-    expect(response.headers['content-disposition']).toBe('attachment; filename="first-aid.pdf"');
-    expect(response.headers['content-length']).toBe(String(body.length));
-    expect(response.headers['cache-control']).toBe('no-cache, private');
-    expect(response.body.equals(body)).toBe(true);
+    expect(response.status).toBe(404);
+    expect(api.callVolunteeringApi).not.toHaveBeenCalled();
   });
 
   it('renders the Laravel volunteering hours page for signed-in members', async () => {
@@ -39284,13 +39193,14 @@ describe('shared accessible frontend shell', () => {
       .send({ _csrf: csrfMatch[1], response: 'accepted' });
     expect(emergencyUnavailableResponse.headers.location).toBe('/volunteering/emergency-alerts?status=alert-safeguarding-unavailable');
 
+    // Gap B15: the old delete form now only forwards to the register.
     const deleteCredentialResponse = await agent
       .post('/volunteering/credentials/44/delete')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
       .send({ _csrf: csrfMatch[1] });
-    expect(deleteCredentialResponse.headers.location).toBe('/volunteering/credentials?status=credential-deleted');
-    expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/credentials/44');
+    expect(deleteCredentialResponse.headers.location).toBe('/volunteering/qualifications');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'DELETE', '/credentials/44', expect.anything());
 
     const wellbeingResponse = await agent
       .post('/volunteering/wellbeing/checkin')
@@ -39604,38 +39514,21 @@ describe('shared accessible frontend shell', () => {
     }
   });
 
-  it('submits the Laravel volunteering credential upload route with multipart file data', async () => {
-    const cookieSignature = require('cookie-signature');
+  it('forwards a post to the old upload address without uploading anything', async () => {
     const api = require('../src/lib/api');
-    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
     const agent = request.agent(app);
-    const first = await agent
-      .get('/contact')
-      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
-    const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
+    const first = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
 
     const response = await agent
       .post('/volunteering/credentials')
-      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
-      .field('_csrf', csrfMatch[1])
-      .field('credential_type', 'garda_vetting')
-      .field('expires_at', '2026-12-31')
-      .attach('file', Buffer.from('%PDF volunteer credential', 'utf8'), {
-        filename: 'garda-vetting.pdf',
-        contentType: 'application/pdf'
-      });
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, credential_type: 'first_aid' });
 
-    expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/volunteering/credentials?status=credential-uploaded');
-    expect(api.uploadVolunteerCredential).toHaveBeenCalledWith('test-token', expect.objectContaining({
-      credential_type: 'garda_vetting',
-      expires_at: '2026-12-31',
-      file: expect.objectContaining({
-        filename: 'garda-vetting.pdf',
-        contentType: 'application/pdf',
-        buffer: Buffer.from('%PDF volunteer credential', 'utf8')
-      })
-    }));
+    expect(response.status).toBe(303);
+    expect(response.headers.location).toBe('/volunteering/qualifications');
+    expect(api.callVolunteeringApi).not.toHaveBeenCalledWith('test-token', 'POST', '/credentials', expect.anything());
   });
 
   it('redirects signed-out Laravel volunteering POST aliases to login status without calling Laravel APIs', async () => {

@@ -9,10 +9,8 @@ const { randomUUID } = require('crypto');
 const {
   ApiError,
   callVolunteeringApi,
-  downloadVolunteerCredential,
   getVolunteeringCategories,
   searchUsers,
-  uploadVolunteerCredential,
   submitVolunteerExpenseWithReceipt
 } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -25,16 +23,6 @@ const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
-const DOWNLOAD_HEADER_NAMES = [
-  'content-type',
-  'content-disposition',
-  'content-length',
-  'cache-control',
-  'pragma',
-  'expires',
-  'etag',
-  'last-modified'
-];
 const ACCESSIBILITY_NEED_TYPES = [
   { value: 'mobility', label: 'Mobility' },
   { value: 'visual', label: 'Visual or sight' },
@@ -44,29 +32,6 @@ const ACCESSIBILITY_NEED_TYPES = [
   { value: 'language', label: 'Language or communication' },
   { value: 'other', label: 'Other' }
 ];
-const CREDENTIAL_TYPES = [
-  { value: 'first_aid', label: 'First aid' },
-  { value: 'safeguarding', label: 'Safeguarding' },
-  { value: 'manual_handling', label: 'Manual handling' },
-  { value: 'food_hygiene', label: 'Food hygiene' },
-  { value: 'driving_licence', label: 'Driving licence' },
-  { value: 'professional_registration', label: 'Professional registration' },
-  { value: 'other', label: 'Other' }
-];
-const CREDENTIAL_STATUS_LABELS = {
-  pending: 'Awaiting review',
-  verified: 'Verified',
-  rejected: 'Rejected',
-  expired: 'Expired',
-  retired: 'Removal required'
-};
-const CREDENTIAL_STATUS_CLASSES = {
-  pending: 'govuk-tag--yellow',
-  verified: 'govuk-tag--green',
-  rejected: 'govuk-tag--red',
-  expired: 'govuk-tag--grey',
-  retired: 'govuk-tag--red'
-};
 const EXPENSE_TYPES = [
   { value: 'travel', label: 'Travel' },
   { value: 'meals', label: 'Meals' },
@@ -893,23 +858,6 @@ function expenseStatus(status, t = null) {
     : null;
 }
 
-function credentialStatus(status, t = null) {
-  const messages = {
-    'credential-uploaded': { type: 'success', key: 'uploaded' },
-    'credential-deleted': { type: 'success', key: 'deleted' },
-    'credential-type-required': { type: 'error', key: 'type_required', field: 'credential_type' },
-    'credential-vetting-prohibited': { type: 'error', key: 'vetting_prohibited' },
-    'credential-file-required': { type: 'error', key: 'file_required', field: 'document' },
-    'credential-file-type': { type: 'error', key: 'file_type', field: 'document' },
-    'credential-file-size': { type: 'error', key: 'file_size', field: 'document' },
-    'credential-upload-failed': { type: 'error', key: 'upload_failed' },
-    'credential-delete-failed': { type: 'error', key: 'delete_failed' }
-  };
-  const config = messages[status] || null;
-  if (!config) return null;
-  const message = t ? t(`govuk_alpha_volunteering.credentials.${config.key}`) : config.key;
-  return { ...config, message, linkText: message.replace(/[.]$/, '') };
-}
 
 function headline(value) {
   return trimmed(value)
@@ -918,27 +866,7 @@ function headline(value) {
     .replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
-function credentialRowsFrom(result) {
-  const data = dataFrom(result);
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.credentials)) return data.credentials;
-  if (data && Array.isArray(data.items)) return data.items;
-  if (data && Array.isArray(data.data)) return data.data;
-  return [];
-}
 
-function credentialStatusPresentation(status, t = null) {
-  const value = trimmed(status) || 'pending';
-  const key = `govuk_alpha_volunteering.credentials.status_${value}`;
-  const translated = t ? t(key) : key;
-  return {
-    value,
-    label: translated !== key
-      ? translated
-      : (CREDENTIAL_STATUS_LABELS[value] || headline(value) || 'Awaiting review'),
-    className: CREDENTIAL_STATUS_CLASSES[value] || 'govuk-tag--grey'
-  };
-}
 
 function normalizeHourSummary(result) {
   const summary = dataFrom(result);
@@ -2104,59 +2032,6 @@ function createOpportunityStatus(status, t = null) {
     : null;
 }
 
-function normalizeCredential(row, t = null) {
-  const credential = row && typeof row === 'object' ? row : {};
-  const type = trimmed(credential.credential_type ?? credential.type);
-  const isLegacyVettingEvidence = checked(credential.legacy_vetting_evidence ?? credential.legacyVettingEvidence);
-  const manualReviewRequired = checked(credential.manual_review_required ?? credential.manualReviewRequired);
-  const status = manualReviewRequired
-    ? { value: 'manual_review', label: t ? t('govuk_alpha_volunteering.credentials.status_manual_review') : 'Manual review required', className: 'govuk-tag--yellow' }
-    : credentialStatusPresentation(credential.status, t);
-  const typeKey = `govuk_alpha_volunteering.credentials.type_${type}`;
-  const translatedType = t ? t(typeKey) : typeKey;
-  const normalTypeLabel = translatedType !== typeKey
-    ? translatedType
-    : (trimmed(credential.type_label ?? credential.typeLabel) || headline(type) || 'Credential');
-  const typeLabel = isLegacyVettingEvidence && t
-    ? t('govuk_alpha_volunteering.credentials.retired_vetting_label')
-    : normalTypeLabel;
-  const expiry = dateLabel(credential.expires_at ?? credential.expiry_date ?? credential.expiryDate);
-
-  const id = positiveInteger(credential.id);
-
-  return {
-    id,
-    type,
-    typeLabel,
-    fileName: isLegacyVettingEvidence || manualReviewRequired
-      ? ''
-      : trimmed(credential.file_name ?? credential.document_name ?? credential.fileName ?? credential.documentName),
-    downloadPath: id && !isLegacyVettingEvidence && !manualReviewRequired
-      ? `/volunteering/credentials/${id}/download`
-      : '',
-    status,
-    isLegacyVettingEvidence,
-    manualReviewRequired,
-    warning: isLegacyVettingEvidence
-      ? (t ? t('govuk_alpha_volunteering.credentials.retired_vetting_warning') : '')
-      : (manualReviewRequired ? (t ? t('govuk_alpha_volunteering.credentials.manual_review_warning') : '') : ''),
-    expiryLabel: isLegacyVettingEvidence || manualReviewRequired
-      ? (t ? t('govuk_alpha_volunteering.credentials.not_applicable') : 'Not applicable')
-      : (expiry || (t ? t('govuk_alpha_volunteering.credentials.no_expiry') : 'No expiry')),
-    uploadedLabel: dateLabel(
-      credential.created_at
-      ?? credential.upload_date
-      ?? credential.uploadDate
-      ?? credential.createdAt
-    ) || '—',
-    deleteLabel: isLegacyVettingEvidence
-      ? (t ? t('govuk_alpha_volunteering.credentials.delete_vetting_evidence_button') : 'Delete historical document')
-      : (t ? t('govuk_alpha_volunteering.credentials.delete_button') : 'Delete'),
-    deleteAriaLabel: t
-      ? t('govuk_alpha_volunteering.credentials.delete_for', { type: typeLabel })
-      : `Delete the ${typeLabel} credential`
-  };
-}
 
 /**
  * A member's accessibility needs, keyed by need type.
@@ -2856,64 +2731,27 @@ router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
   });
 }, { redirectOn401: loginRedirect() }));
 
-router.get('/credentials', asyncRoute(async (req, res) => {
-  const token = tokenFrom(req);
-  if (!token) {
-    return redirectTo(res, loginRedirect());
-  }
+// The old document-upload page (gap B15, 7 Oct 2026). Qualifications are recorded,
+// never uploaded (owner decision), and the register lives at /volunteering/qualifications.
+// Kept as a permanent redirect: the address is in the frozen route inventory and in
+// bookmarks.
+router.get('/credentials', (req, res) => {
+  const target = res.locals && typeof res.locals.urlFor === 'function'
+    ? res.locals.urlFor('/volunteering/qualifications')
+    : '/volunteering/qualifications';
+  return res.redirect(301, target);
+});
+// The old upload and delete forms post here; both now do nothing but send the
+// member to the register (303 so the browser follows with a GET).
+function toQualificationsRegister(req, res) {
+  const target = res.locals && typeof res.locals.urlFor === 'function'
+    ? res.locals.urlFor('/volunteering/qualifications')
+    : '/volunteering/qualifications';
+  return res.redirect(303, target);
+}
+router.post('/credentials', toQualificationsRegister);
+router.post('/credentials/:id(\\d+)/delete', toQualificationsRegister);
 
-  let credentials = [];
-  let loadError = null;
-  try {
-    credentials = credentialRowsFrom(await callApi(token, 'GET', '/credentials'))
-      .map((credential) => normalizeCredential(credential, res.locals.t));
-  } catch (error) {
-    if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your credentials. Please try again.';
-  }
-
-  return res.render('volunteering/credentials', {
-    title: res.locals.t('govuk_alpha_volunteering.credentials.title'),
-    activeNav: 'volunteering',
-    credentialTypes: CREDENTIAL_TYPES.map((type) => ({
-      ...type,
-      label: res.locals.t(`govuk_alpha_volunteering.credentials.type_${type.value}`)
-    })),
-    credentials,
-    loadError,
-    status: credentialStatus(trimmed(req.query.status), res.locals.t),
-    csrfToken: req.csrfToken ? req.csrfToken() : ''
-  });
-}, { redirectOn401: loginRedirect() }));
-
-router.get('/credentials/:id(\\d+)/download', asyncRoute(async (req, res) => {
-  const token = tokenFrom(req);
-  if (!token) {
-    return redirectTo(res, loginRedirect());
-  }
-
-  let download;
-  try {
-    download = await downloadVolunteerCredential(token, Number(req.params.id));
-  } catch (error) {
-    if (redirectOnAuthError(error, res)) return undefined;
-    if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
-    }
-    if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
-    }
-    return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
-  }
-
-  res.status(download.status || 200);
-  DOWNLOAD_HEADER_NAMES.forEach((header) => {
-    if (download.headers && download.headers[header]) {
-      res.set(header, download.headers[header]);
-    }
-  });
-  return res.send(Buffer.isBuffer(download.body) ? download.body : Buffer.from(download.body || ''));
-}, { redirectOn401: loginRedirect(), notFoundTitle: 'Credential download' }));
 
 router.get('/hours', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
@@ -3553,54 +3391,7 @@ router.post('/emergency-alerts/:id(\\d+)/respond', asyncRoute(async (req, res) =
   }
 }));
 
-router.post('/credentials', asyncRoute(async (req, res) => {
-  const token = tokenFrom(req);
-  if (!token) {
-    return redirectTo(res, loginRedirect());
-  }
 
-  const type = trimmed(req.body.credential_type || req.body.type, 100);
-  const expiresAt = readDate(req.body, 'expires_at').value || readDate(req.body, 'expiry_date').value || '';
-  const file = uploadedFile(req, 'file') || uploadedFile(req, 'document');
-  if (!type || !file) {
-    await removeUploadedFile(file);
-    return redirectTo(res, '/volunteering/credentials?status=credential-upload-failed');
-  }
-
-  try {
-    const buffer = await fs.readFile(file.filepath);
-    await uploadVolunteerCredential(token, {
-      credential_type: type,
-      expires_at: expiresAt,
-      file: {
-        buffer,
-        filename: trimmed(file.originalFilename) || 'credential',
-        contentType: trimmed(file.mimetype) || 'application/octet-stream',
-        size: file.size
-      }
-    });
-  } catch (error) {
-    if (redirectOnAuthError(error, res)) return undefined;
-    return redirectTo(res, '/volunteering/credentials?status=credential-upload-failed');
-  } finally {
-    await removeUploadedFile(file);
-  }
-
-  return redirectTo(res, '/volunteering/credentials?status=credential-uploaded');
-}));
-
-router.post('/credentials/:id(\\d+)/delete', asyncRoute(async (req, res) => {
-  const id = Number(req.params.id);
-  return runAction(
-    req,
-    res,
-    'DELETE',
-    `/credentials/${id}`,
-    undefined,
-    '/volunteering/credentials?status=credential-deleted',
-    '/volunteering/credentials?status=credential-delete-failed'
-  );
-}));
 
 router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
   const mood = positiveInteger(req.body.mood);

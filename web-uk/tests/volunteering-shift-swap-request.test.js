@@ -41,10 +41,8 @@ jest.mock('../src/lib/api', () => {
     ApiError,
     ApiOfflineError: class ApiOfflineError extends Error {},
     callVolunteeringApi: jest.fn(),
-    downloadVolunteerCredential: jest.fn(),
     getVolunteeringCategories: jest.fn(),
     searchUsers: jest.fn(),
-    uploadVolunteerCredential: jest.fn(),
     getProfile: jest.fn(),
     invalidateUserCache: jest.fn()
   };

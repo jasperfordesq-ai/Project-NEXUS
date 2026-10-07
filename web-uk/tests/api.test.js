@@ -2597,36 +2597,6 @@ describe('API Request Functions', () => {
       expect(options.body).toBeUndefined();
     });
 
-    it('should upload volunteer credentials to Laravel with multipart file data', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ data: { id: 42 } })
-      });
-
-      await api.uploadVolunteerCredential('test-token', {
-        credential_type: 'garda_vetting',
-        expires_at: '2026-12-31',
-        file: {
-          buffer: Buffer.from('%PDF volunteer credential', 'utf8'),
-          filename: 'garda-vetting.pdf',
-          contentType: 'application/pdf'
-        }
-      });
-
-      const [, options] = mockFetch.mock.calls[0];
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v2/volunteering/credentials',
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-token'
-          })
-        })
-      );
-      expect(options.body).toBeInstanceOf(FormData);
-    });
-
     // Gap B13: a claim with a receipt goes as one multipart request, as the website sends it.
     it('should submit a volunteer expense claim with its receipt as multipart data', async () => {
       mockFetch.mockResolvedValueOnce({
@@ -2649,34 +2619,6 @@ describe('API Request Functions', () => {
       expect(options.body.get('amount')).toBe('3.2');
       expect(options.body.has('opportunity_id')).toBe(false);
       expect(options.body.get('receipt').name).toBe('bus.pdf');
-    });
-
-    it('should download a volunteer credential from Laravel as binary data', async () => {
-      const body = Buffer.from('%PDF credential download', 'utf8');
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        headers: {
-          get: (name) => ({
-            'content-type': 'application/pdf',
-            'content-disposition': 'attachment; filename="first-aid.pdf"',
-            'content-length': String(body.length)
-          }[name.toLowerCase()] || '')
-        },
-        arrayBuffer: async () => body
-      });
-
-      const result = await api.downloadVolunteerCredential('test-token', 44);
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v2/volunteering/credentials/44/download',
-        expect.objectContaining({
-          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
-        })
-      );
-      expect(result.status).toBe(200);
-      expect(result.headers['content-disposition']).toBe('attachment; filename="first-aid.pdf"');
-      expect(result.body.equals(body)).toBe(true);
     });
 
     it('should upload insurance certificates to Laravel with multipart file data', async () => {

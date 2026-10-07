@@ -11560,6 +11560,97 @@
                 "status_user_not_found": "Ta osoba nie jest aktywnym członkiem tej społeczności.",
                 "status_forbidden": "Zespół mogą zmieniać tylko właściciele organizacji i administratorzy społeczności.",
                 "status_failed": "Nie udało się wprowadzić tej zmiany. Spróbuj ponownie."
+            },
+            "my_qualifications": {
+                "heading": "Kwalifikacje",
+                "add": "Dodaj kwalifikację",
+                "intro_title": "Co to jest",
+                "intro_body": "Rejestr twoich szkoleń i kwalifikacji, dzięki któremu organizacje, w których działasz jako wolontariusz, widzą, co posiadasz i kiedy to wygasa. Nic nie jest tu przesyłane ani przechowywane.",
+                "intro_show_or_send": "Zachowaj certyfikat u siebie. Jeśli organizacja o niego poprosi, pokaż oryginał albo wyślij kopię bezpośrednio e-mailem lub pocztą, a nie przez tę stronę.",
+                "intro_vetting": "Sprawdzenia policyjne (DBS, AccessNI, PVG, Garda vetting) są obsługiwane osobno przez zespół ds. ochrony twojej społeczności.",
+                "vetting_link": "Mój status weryfikacji",
+                "attention_body": "Zaktualizuj datę ważności po odnowieniu albo wycofaj wpis, jeśli nie posiadasz już tej kwalifikacji.",
+                "status": {
+                    "recorded": "Oczekuje na potwierdzenie",
+                    "confirmed": "Potwierdzona",
+                    "expired": "Wygasła",
+                    "withdrawn": "Wycofana",
+                    "expiring": "Wkrótce wygasa"
+                },
+                "expires_on": "Wygasa :date",
+                "expired_on": "Wygasła :date",
+                "obtained_on": "Uzyskana :date",
+                "no_expiry": "Bez daty ważności",
+                "reference": "Nr :ref",
+                "confirmed_line": "Potwierdzona przez :name dnia :date",
+                "confirmed_line_org": "Potwierdzona przez :name dla :org dnia :date",
+                "withdrawn_line": "Wycofana :date",
+                "empty_title": "Nie zapisano jeszcze żadnych kwalifikacji",
+                "empty_body": "Dodaj tu pierwszą pomoc, szkolenie z ochrony podopiecznych lub inne szkolenia, aby organizacje je widziały, a ty dostawał(a) przypomnienie przed wygaśnięciem.",
+                "load_error": "Nie udało się wczytać twoich kwalifikacji.",
+                "form": {
+                    "title_add": "Dodaj kwalifikację",
+                    "title_edit": "Edytuj kwalifikację",
+                    "type": "Kwalifikacja",
+                    "type_placeholder": "Wybierz kwalifikację",
+                    "expiry_hint": "Zwykle ważna :years lat(a)",
+                    "title": "Nazwa lub kurs (opcjonalnie)",
+                    "title_required": "Nazwa",
+                    "issuer": "Wystawca lub organizator (opcjonalnie)",
+                    "reference": "Numer certyfikatu lub rejestracji (opcjonalnie)",
+                    "obtained": "Data uzyskania",
+                    "expires": "Data ważności",
+                    "expires_hint": "Zostaw puste, jeśli nie wygasa.",
+                    "notes": "Uwagi (opcjonalnie)",
+                    "save": "Zapisz",
+                    "cancel": "Anuluj",
+                    "saved": "Kwalifikacja zapisana.",
+                    "save_error": "Nie udało się zapisać kwalifikacji. Spróbuj ponownie.",
+                    "edit_clears_confirmation": "Zmiana potwierdzonej kwalifikacji usuwa potwierdzenie; organizacja będzie musiała potwierdzić ją ponownie."
+                },
+                "errors": {
+                    "title_required": "Nadaj kwalifikacji nazwę.",
+                    "expiry_before_obtained": "Data ważności jest wcześniejsza niż data uzyskania.",
+                    "vetting": "Sprawdzeń policyjnych nie zapisuje się tutaj. Zajmuje się nimi zespół ds. ochrony twojej społeczności.",
+                    "unsupported_type": "Ten rodzaj kwalifikacji nie jest dostępny w tej społeczności."
+                },
+                "withdraw": {
+                    "title": "Wycofaj kwalifikację",
+                    "body": "Wpis pozostaje w twojej historii, ale nie jest już pokazywany organizacjom.",
+                    "reason": "Powód",
+                    "reasons": {
+                        "volunteer_request": "Nie chcę już tego pokazywać",
+                        "no_longer_held": "Już jej nie posiadam",
+                        "entered_in_error": "Wpisana przez pomyłkę",
+                        "replaced": "Zastąpiona nowszą"
+                    },
+                    "confirm": "Wycofaj",
+                    "done": "Kwalifikacja wycofana."
+                },
+                "actions": {
+                    "edit": "Edytuj",
+                    "withdraw": "Wycofaj"
+                },
+                "types": {
+                    "first_aid": "Pierwsza pomoc",
+                    "safeguarding_training": "Szkolenie z ochrony podopiecznych",
+                    "manual_handling": "Ręczne przenoszenie ciężarów",
+                    "food_hygiene": "Higiena żywności",
+                    "driving_licence": "Prawo jazdy",
+                    "professional_registration": "Rejestracja zawodowa",
+                    "other": "Inne",
+                    "children_first": "Children First (Tusla)",
+                    "first_aid_response": "First Aid Response (PHECC)",
+                    "safeguarding_adults": "Ochrona dorosłych",
+                    "efaw": "Pierwsza pomoc w nagłych wypadkach w miejscu pracy",
+                    "faw": "Pierwsza pomoc w miejscu pracy"
+                },
+                "groups": {
+                    "attention": "Wymagają uwagi",
+                    "recorded": "Oczekują na potwierdzenie",
+                    "confirmed": "Potwierdzone",
+                    "withdrawn": "Wycofana"
+                }
             }
         },
         "govuk_alpha_wallet": {

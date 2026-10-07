@@ -1,0 +1,104 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Add or edit one of your own qualifications (gap B15). No file is asked for. #}
+{% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set K = "govuk_alpha_volunteering.my_qualifications." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/qualifications') }}">{{ t(K ~ "form.cancel") }}</a>
+{% endblock %}
+
+{% block content %}
+  {% if errors.length %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for error in errors %}
+              <li>{% if error.href %}<a href="{{ error.href }}">{{ error.message }}</a>{% else %}{{ error.message }}{% endif %}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ t(K ~ "form.title_edit") if editing else t(K ~ "form.title_add") }}</h1>
+
+  {% if editing and editing.wasConfirmed %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t(K ~ "form.edit_clears_confirmation") }}</strong>
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/volunteering/qualifications' ~ ('/' ~ editing.id if editing else '')) }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {% if editing and editing.wasConfirmed %}<input type="hidden" name="was_confirmed" value="1">{% endif %}
+
+    {% set e = fieldErrors.qualification_type %}
+    <div class="govuk-form-group{% if e %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="qualification_type">{{ t(K ~ "form.type") }}</label>
+      {% if e %}<p id="qualification_type-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ e.message }}</p>{% endif %}
+      <select class="govuk-select{% if e %} govuk-select--error{% endif %}" id="qualification_type" name="qualification_type"{% if e %} aria-describedby="qualification_type-error"{% endif %}>
+        <option value="">{{ t(K ~ "form.type_placeholder") }}</option>
+        {% for option in options %}
+          <option value="{{ option.code }}"{% if option.code == form.qualification_type %} selected{% endif %}>{{ option.label }}{% if option.hint %} ({{ option.hint }}){% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% set e = fieldErrors.title %}
+    <div class="govuk-form-group{% if e %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="title">{{ t(K ~ "form.title") }}</label>
+      {% if e %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ e.message }}</p>{% endif %}
+      <input class="govuk-input{% if e %} govuk-input--error{% endif %}" id="title" name="title" type="text" value="{{ form.title }}" maxlength="{{ limits.title }}"{% if e %} aria-describedby="title-error"{% endif %}>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="issuer">{{ t(K ~ "form.issuer") }}</label>
+      <input class="govuk-input" id="issuer" name="issuer" type="text" value="{{ form.issuer }}" maxlength="{{ limits.issuer }}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="reference_number">{{ t(K ~ "form.reference") }}</label>
+      <input class="govuk-input govuk-!-width-one-half" id="reference_number" name="reference_number" type="text" value="{{ form.reference_number }}" maxlength="{{ limits.reference_number }}" spellcheck="false">
+    </div>
+
+    {% set e = fieldErrors.obtained %}
+    {{ nexusDateInput({
+  name: "obtained",
+  legend: t(K ~ "form.obtained"),
+  hint: t("web_uk.date_input.hint"),
+  value: form.obtained,
+  errorMessage: e.message if e else undefined,
+  errorFields: e.parts if e else []
+}, t) }}
+
+    {% set e = fieldErrors.expires %}
+    {{ nexusDateInput({
+  name: "expires",
+  legend: t(K ~ "form.expires"),
+  hint: t(K ~ "form.expires_hint"),
+  value: form.expires,
+  errorMessage: e.message if e else undefined,
+  errorFields: e.parts if e else []
+}, t) }}
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="notes">{{ t(K ~ "form.notes") }}</label>
+      <textarea class="govuk-textarea" id="notes" name="notes" rows="3" maxlength="{{ limits.notes }}">{{ form.notes }}</textarea>
+    </div>
+
+    <div class="govuk-button-group">
+      <button class="govuk-button" data-module="govuk-button">{{ t(K ~ "form.save") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/volunteering/qualifications') }}">{{ t(K ~ "form.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

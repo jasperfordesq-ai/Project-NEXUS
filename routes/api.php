@@ -3811,7 +3811,7 @@ Route::get('/v2/volunteering/certificates/verify/{code}', [\App\Http\Controllers
 Route::post('/v2/volunteering/certificates/check', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'checkCertificate'])->withoutMiddleware('auth:sanctum');
 Route::get('/v2/volunteering/certificates/{code}/html', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'certificateHtml'])->middleware('auth:sanctum');
 Route::get('/v2/volunteering/credentials', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'myCredentials']);
-Route::post('/v2/volunteering/credentials', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'uploadCredential'])->middleware('throttle:nexus-route-20-per-1m');
+// No upload route: qualifications are recorded, never uploaded (owner decision; removed 7 Oct 2026, gap B15).
 Route::get('/v2/volunteering/credentials/{id}/download', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'downloadCredential']);
 Route::delete('/v2/volunteering/credentials/{id}', [\App\Http\Controllers\Api\VolunteerCertificateController::class, 'deleteCredential']);
 Route::get('/v2/volunteering/emergency-alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'myEmergencyAlerts']);

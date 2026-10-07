@@ -18,9 +18,10 @@
  *
  * Before this, the page listed seven tools and ignored the settings, and three
  * working pages (urgent shift requests, wellbeing, safeguarding) had no way in.
- * The old document-upload page `/volunteering/credentials` is deliberately NOT
- * listed: since 5 Oct 2026 the website's "credentials" section is the
- * qualifications register, which takes no uploads (owner decision).
+ * The website's "credentials" section has been the qualifications register since
+ * 5 Oct 2026 (owner decision: no uploads). Since gap B15 (7 Oct 2026) this site has
+ * the same register at /volunteering/qualifications, and the old document-upload
+ * address forwards there.
  */
 
 const FEATURE_GATES = {
@@ -34,6 +35,7 @@ const TOOLS = [
   { section: 'wellbeing', href: '/volunteering/wellbeing', labelKey: 'govuk_alpha_volunteering.wellbeing.title' },
   { section: 'safeguarding', href: '/volunteering/training', labelKey: 'govuk_alpha_volunteering.safeguarding.title' },
   { section: 'accessibility', href: '/volunteering/accessibility', labelKey: 'volunteering.accessibility_link' },
+  { section: 'credentials', href: '/volunteering/qualifications', labelKey: 'govuk_alpha_volunteering.my_qualifications.heading' },
   { section: 'certificates', href: '/volunteering/certificates', labelKey: 'vol_depth.certificates_link' },
   { section: 'waitlist', href: '/volunteering/waitlist', labelKey: 'vol_depth.waitlist_link' },
   { section: 'swaps', href: '/volunteering/swaps', labelKey: 'vol_depth.swaps_link' },
@@ -49,9 +51,7 @@ const TOOLS = [
  * landed on Opportunities. `training` is the name the reminder service uses for what
  * the website calls `safeguarding`.
  *
- * `credentials` is deliberately absent: on the website it is the qualifications
- * register, which this site does not have yet, and the old document-upload page here
- * is not where a qualification reminder should send anyone.
+ * `credentials` is the website's name for the qualifications register (gap B15).
  */
 const SECTION_PAGES = {
   hours: { section: 'hours', href: '/volunteering/hours' },
@@ -59,6 +59,8 @@ const SECTION_PAGES = {
   expenses: { section: 'expenses', href: '/volunteering/expenses' },
   waitlist: { section: 'waitlist', href: '/volunteering/waitlist' },
   certificates: { section: 'certificates', href: '/volunteering/certificates' },
+  credentials: { section: 'credentials', href: '/volunteering/qualifications' },
+  qualifications: { section: 'credentials', href: '/volunteering/qualifications' },
   alerts: { section: 'alerts', href: '/volunteering/emergency-alerts' },
   wellbeing: { section: 'wellbeing', href: '/volunteering/wellbeing' },
   safeguarding: { section: 'safeguarding', href: '/volunteering/training' },

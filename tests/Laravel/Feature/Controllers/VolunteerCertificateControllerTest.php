@@ -67,40 +67,26 @@ class VolunteerCertificateControllerTest extends TestCase
             ->assertJsonStructure(['data' => ['credentials'], 'meta']);
     }
 
-    public function test_generic_credential_upload_rejects_vetting_types_before_storing_a_file(): void
+    /**
+     * Gap B15 (7 Oct 2026): qualifications are recorded, never uploaded (owner
+     * decision), so the document upload endpoint is gone. This replaces two tests
+     * that proved vetting documents and unknown types were refused: now nothing
+     * is accepted, whatever its type, and nothing is stored.
+     */
+    public function test_credential_documents_can_no_longer_be_uploaded(): void
     {
         $user = $this->authenticatedUser();
         Storage::fake('local');
 
-        foreach (['dbs_enhanced', 'garda_vetting', 'pvg_scotland', 'access_ni', 'police_check'] as $type) {
-            $response = $this->post('/api/v2/volunteering/credentials', [
+        foreach (['first_aid', 'dbs_enhanced', 'custom_community_badge'] as $type) {
+            $status = $this->post('/api/v2/volunteering/credentials', [
                 'credential_type' => $type,
                 'file' => UploadedFile::fake()->create('certificate.pdf', 1, 'application/pdf'),
-            ], $this->withTenantHeader());
+            ], $this->withTenantHeader())->getStatusCode();
 
-            $response->assertStatus(422)
-                ->assertJsonPath('errors.0.code', 'VETTING_EVIDENCE_PROHIBITED');
+            $this->assertContains($status, [404, 405], "upload of {$type} answered {$status}");
         }
 
-        $this->assertDatabaseMissing('vol_credentials', [
-            'tenant_id' => $this->testTenantId,
-            'user_id' => $user->id,
-        ]);
-        $this->assertSame([], Storage::disk('local')->allFiles());
-    }
-
-    public function test_unknown_credential_upload_is_unsupported_without_being_labelled_as_vetting(): void
-    {
-        $user = $this->authenticatedUser();
-        Storage::fake('local');
-
-        $response = $this->post('/api/v2/volunteering/credentials', [
-            'credential_type' => 'custom_community_badge',
-            'file' => UploadedFile::fake()->create('badge.pdf', 1, 'application/pdf'),
-        ], $this->withTenantHeader());
-
-        $response->assertStatus(422)
-            ->assertJsonPath('errors.0.code', 'UNSUPPORTED_CREDENTIAL_TYPE');
         $this->assertDatabaseMissing('vol_credentials', [
             'tenant_id' => $this->testTenantId,
             'user_id' => $user->id,

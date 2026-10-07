@@ -1097,27 +1097,6 @@ async function submitVolunteerExpenseWithReceipt(token, data) {
   });
 }
 
-async function uploadVolunteerCredential(token, data) {
-  const form = new globalThis.FormData();
-  form.append('credential_type', data.credential_type || data.type || '');
-  if (data.expires_at) {
-    form.append('expires_at', data.expires_at);
-  }
-
-  if (data.file && data.file.buffer) {
-    const blob = new globalThis.Blob([data.file.buffer], {
-      type: data.file.contentType || 'application/octet-stream'
-    });
-    form.append('file', blob, data.file.filename || 'credential');
-  }
-
-  return request('/api/v2/volunteering/credentials', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form
-  });
-}
-
 async function callMarketplaceApi(token, method, path, data = undefined) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const options = {
@@ -1291,12 +1270,6 @@ async function downloadEventRegistrationSubmissions(token, eventId, data) {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(data)
-  });
-}
-
-async function downloadVolunteerCredential(token, id) {
-  return downloadRequest(`/api/v2/volunteering/credentials/${encodeURIComponent(id)}/download`, {
-    headers: { Authorization: `Bearer ${token}` }
   });
 }
 
@@ -4259,8 +4232,6 @@ module.exports = {
   createVolunteerOrganisation,
   callVolunteeringApi,
   submitVolunteerExpenseWithReceipt,
-  uploadVolunteerCredential,
-  downloadVolunteerCredential,
   downloadOrgExpenseReceipt,
   callMarketplaceApi,
   callMerchantOnboardingApi,

@@ -33,7 +33,6 @@
     "smoke:laravel:saved-collections": "npm run build:css && node scripts/saved-collections-mutation-local-server.js",
     "smoke:laravel:resources-mutation": "npm run build:css && node scripts/resources-mutation-local-server.js",
     "smoke:laravel:marketplace-mutation": "npm run build:css && node scripts/marketplace-mutation-local-server.js",
-    "smoke:laravel:volunteering-credentials-mutation": "npm run build:css && node scripts/volunteering-credentials-mutation-local-server.js",
     "smoke:laravel:podcasts-mutation": "npm run build:css && node scripts/podcasts-mutation-local-server.js",
     "smoke:laravel:listings-mutation": "npm run build:css && node scripts/listings-mutation-local-server.js",
     "smoke:laravel:events-mutation": "npm run build:css && node scripts/events-mutation-local-server.js",
