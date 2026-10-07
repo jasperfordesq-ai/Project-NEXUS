@@ -806,6 +806,7 @@
     "incidents_status_all": "All statuses",
     "incidents_no_match": "No incidents match your search or filter.",
     "incidents_clear_filters": "Clear search and filter",
+    "approvals_no_match": "No applications match your search or filter.",
     "handled_by_label": "Who is handling this?",
     "handled_by_nobody": "Nobody yet",
     "handled_by_help": "They'll get a notification and an email saying it's theirs.",

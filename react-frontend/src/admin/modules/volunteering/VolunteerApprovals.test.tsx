@@ -44,6 +44,27 @@ const MOCK_APPLICATIONS = vi.hoisted(() => [
   },
 ]);
 
+// The server answers one filtered page at a time (gap D5).
+const page = vi.hoisted(() => (items: Array<{ status: string; opportunity_title: string }>, total?: number) => ({
+  success: true,
+  data: {
+    items,
+    total: total ?? items.length,
+    page: 1,
+    per_page: 25,
+    counts: {
+      all: items.length,
+      pending: items.filter((i) => i.status === 'pending').length,
+      approved: items.filter((i) => i.status === 'approved').length,
+      declined: items.filter((i) => i.status === 'declined').length,
+    },
+    opportunities: [
+      { id: 7, title: 'Community Gardening' },
+      { id: 8, title: 'Meals on Wheels' },
+    ],
+  },
+}));
+
 // ── adminApi mock ─────────────────────────────────────────────────────────────
 
 const mockGetApprovals = vi.hoisted(() => vi.fn());
@@ -152,6 +173,8 @@ describe('VolunteerApprovals', () => {
     // resetAllMocks clears both calls AND pending once-implementations,
     // preventing leftover mockResolvedValueOnce from leaking across tests.
     vi.resetAllMocks();
+    // The filters live in the address; start every test without any.
+    window.history.replaceState({}, '', '/');
     mockApproveApp.mockResolvedValue({ success: true });
     mockDeclineApp.mockResolvedValue({ success: true });
   });
@@ -165,7 +188,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders applicant names after load', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     // The column render shows "FirstName LastName" combined — use regex to find
     await waitFor(() => {
@@ -175,7 +198,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders opportunity titles', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       // Multiple elements may contain 'Community Gardening' (rows + filter dropdown)
@@ -185,7 +208,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders status badges', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       const badges = screen.getAllByTestId('status-badge');
@@ -197,7 +220,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders Approve button for pending application', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       const approveBtns = screen.getAllByRole('button').filter(
@@ -208,7 +231,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders Decline button for pending application', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       const declineBtns = screen.getAllByRole('button').filter(
@@ -220,8 +243,8 @@ describe('VolunteerApprovals', () => {
 
   it('calls POST approve endpoint on Approve click and shows success toast', async () => {
     mockGetApprovals
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS })
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS }); // reload after approve
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS))
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS)); // reload after approve
     render(<VolunteerApprovals />);
     await waitFor(() => {
       expect(screen.getAllByRole('button').some((b) => /approve/i.test(b.textContent ?? ''))).toBe(true);
@@ -238,8 +261,8 @@ describe('VolunteerApprovals', () => {
 
   it('confirms before declining, then calls POST decline and shows success toast (VOL-RX-010)', async () => {
     mockGetApprovals
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS })
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS))
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       expect(screen.getAllByRole('button').some((b) => /decline/i.test(b.textContent ?? ''))).toBe(true);
@@ -268,8 +291,8 @@ describe('VolunteerApprovals', () => {
   it('shows error toast when approve fails', async () => {
     mockApproveApp.mockResolvedValueOnce({ success: false });
     mockGetApprovals
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS })
-      .mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS))
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       expect(screen.getAllByRole('button').some((b) => /approve/i.test(b.textContent ?? ''))).toBe(true);
@@ -292,7 +315,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('shows empty state when no applications exist', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: [] });
+    mockGetApprovals.mockResolvedValueOnce(page([]));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
@@ -300,7 +323,7 @@ describe('VolunteerApprovals', () => {
   });
 
   it('renders status tabs (All, Pending, Approved, Declined)', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       const tabs = screen.getAllByRole('tab');
@@ -310,28 +333,66 @@ describe('VolunteerApprovals', () => {
     });
   });
 
-  it('filters to pending only when Pending tab clicked', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+  it('asks the server for one page, and for pending only when the Pending tab is clicked (D5)', async () => {
+    mockGetApprovals
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS))
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS.filter((a) => a.status === 'pending')));
     render(<VolunteerApprovals />);
     await waitFor(() => {
-      expect(screen.getAllByTestId('status-badge').length).toBeGreaterThan(0);
+      expect(screen.getAllByTestId('status-badge').length).toBe(3);
     });
-    const pendingTab = screen.getAllByRole('tab').find(
-      (t) => /pending/i.test(t.textContent ?? ''),
-    );
-    if (pendingTab) {
-      await userEvent.click(pendingTab);
-      await waitFor(() => {
-        // After filtering to pending only, approved/declined rows are hidden
-        const badges = screen.getAllByTestId('status-badge');
-        const shown = badges.map((b) => b.textContent);
-        expect(shown.every((s) => s === 'pending')).toBe(true);
-      });
-    }
+    expect(mockGetApprovals).toHaveBeenLastCalledWith({ page: 1, per_page: 25 });
+
+    const pendingTab = screen.getAllByRole('tab').find((t) => /pending/i.test(t.textContent ?? ''));
+    expect(pendingTab).toBeDefined();
+    await userEvent.click(pendingTab!);
+    await waitFor(() => {
+      expect(mockGetApprovals).toHaveBeenLastCalledWith({ status: 'pending', page: 1, per_page: 25 });
+    });
+    await waitFor(() => {
+      expect(screen.getAllByTestId('status-badge').map((b) => b.textContent)).toEqual(['pending']);
+    });
+  });
+
+  it('tab counts come from the server, not from the rows on this page (D5)', async () => {
+    const response = page(MOCK_APPLICATIONS, 412);
+    response.data.counts = { all: 412, pending: 12, approved: 300, declined: 100 };
+    mockGetApprovals.mockResolvedValueOnce(response);
+    render(<VolunteerApprovals />);
+    await waitFor(() => {
+      const labels = screen.getAllByRole('tab').map((t) => t.textContent ?? '');
+      expect(labels.some((l) => l.includes('412'))).toBe(true);
+      expect(labels.some((l) => l.includes('300'))).toBe(true);
+    });
+  });
+
+  it('exports every matching application across pages, not just the page shown (D5)', async () => {
+    const createObjectURL = vi.fn(() => 'blob:x');
+    const revokeObjectURL = vi.fn();
+    Object.assign(URL, { createObjectURL, revokeObjectURL });
+    const many = Array.from({ length: 100 }, (_, i) => ({ ...MOCK_APPLICATIONS[1], id: 1000 + i }));
+    mockGetApprovals
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS, 103))
+      .mockResolvedValueOnce(page(many, 103))
+      .mockResolvedValueOnce(page(MOCK_APPLICATIONS, 103));
+    render(<VolunteerApprovals />);
+    await waitFor(() => expect(screen.getByText(/Alice Volunteer/i)).toBeInTheDocument());
+    const exportBtn = await waitFor(() => {
+      const btn = screen.getAllByRole('button').find((b) => /export/i.test(b.textContent ?? ''));
+      expect(btn).toBeDefined();
+      return btn!;
+    });
+    await userEvent.click(exportBtn);
+    await waitFor(() => {
+      expect(mockGetApprovals).toHaveBeenCalledWith({ page: 1, per_page: 100 });
+      expect(mockGetApprovals).toHaveBeenCalledWith({ page: 2, per_page: 100 });
+      expect(mockToast.success).toHaveBeenCalled();
+    });
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
   });
 
   it('renders Export button', async () => {
-    mockGetApprovals.mockResolvedValueOnce({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValueOnce(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       const exportBtn = screen.getAllByRole('button').find(
@@ -344,7 +405,7 @@ describe('VolunteerApprovals', () => {
   // ── Bulk actions are gated behind a confirmation modal ──────────────────────
 
   async function selectFirstPendingRow() {
-    mockGetApprovals.mockResolvedValue({ success: true, data: MOCK_APPLICATIONS });
+    mockGetApprovals.mockResolvedValue(page(MOCK_APPLICATIONS));
     render(<VolunteerApprovals />);
     await waitFor(() => {
       expect(screen.getByText(/Alice Volunteer/i)).toBeInTheDocument();

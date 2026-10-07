@@ -854,6 +854,7 @@
     "incidents_status_all": "Gach stádas",
     "incidents_no_match": "Níl aon teagmhas a mheaitseálann do chuardach nó do scagaire.",
     "incidents_clear_filters": "Glan an cuardach agus an scagaire",
+    "approvals_no_match": "Níl aon iarratas ag teacht le do chuardach nó do scagaire.",
     "handled_by_label": "Cé atá á láimhseáil seo?",
     "handled_by_nobody": "Duine ar bith fós",
     "handled_by_help": "Gheobhaidh siad fógra agus ríomhphost ag rá gur leo é.",

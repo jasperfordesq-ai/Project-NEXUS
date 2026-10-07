@@ -650,28 +650,103 @@ class AdminVolunteerController extends BaseApiController
         }
         $tenantId = TenantContext::getId();
 
-        if (!$this->tableExists('vol_applications')) {
-            return $this->respondWithData([]);
+        // One page at a time, filtered and counted in the database (gap D5, 7 Oct
+        // 2026). This used to return every status in one unpaged list capped at 150
+        // rows and the page searched, filtered and counted in the browser, so a
+        // community with more applications silently lost the oldest decided ones
+        // from every tab, count, search and export.
+        $status = (string) $this->query('status', 'all');
+        $perPage = $this->queryInt('per_page', 25, 1, 100);
+        $page = $this->queryInt('page', 1, 1);
+        $opportunityId = $this->queryInt('opportunity_id', 0, 0);
+        $q = trim((string) $this->query('q', ''));
+
+        $base = DB::table('vol_applications as va')
+            ->join('vol_opportunities as vo', function ($join) use ($tenantId) {
+                $join->on('va.opportunity_id', '=', 'vo.id')->where('vo.tenant_id', '=', $tenantId);
+            })
+            ->leftJoin('users as u', function ($join) use ($tenantId) {
+                $join->on('va.user_id', '=', 'u.id')->where('u.tenant_id', '=', $tenantId);
+            })
+            ->where('va.tenant_id', $tenantId);
+
+        // The opportunity filter lists every opportunity that has an application,
+        // not only those on the current page.
+        $opportunities = (clone $base)
+            ->select('vo.id', 'vo.title')
+            ->distinct()
+            ->orderBy('vo.title')
+            ->get()
+            ->map(fn ($row) => ['id' => (int) $row->id, 'title' => (string) $row->title])
+            ->values()
+            ->all();
+
+        if ($opportunityId > 0) {
+            $base->where('va.opportunity_id', $opportunityId);
+        }
+        if ($q !== '') {
+            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $q) . '%';
+            $base->where(function ($query) use ($like) {
+                $query->where('u.first_name', 'like', $like)
+                    ->orWhere('u.last_name', 'like', $like)
+                    ->orWhere('u.name', 'like', $like)
+                    ->orWhere('u.email', 'like', $like)
+                    ->orWhereRaw("CONCAT_WS(' ', u.first_name, u.last_name) LIKE ?", [$like]);
+            });
         }
 
-        try {
-            // The admin UI splits this one response into pending/approved/declined
-            // tabs client-side — returning only 'pending' left the other two tabs
-            // permanently empty. Pending rows sort first so they are never crowded
-            // out by recent decisions.
-            $results = DB::select(
-                "SELECT va.*, u.first_name, u.last_name, u.email, vo.title as opportunity_title
-                 FROM vol_applications va
-                 INNER JOIN vol_opportunities vo ON va.opportunity_id = vo.id
-                 LEFT JOIN users u ON va.user_id = u.id AND u.tenant_id = ?
-                 WHERE vo.tenant_id = ? AND va.tenant_id = ?
-                 ORDER BY (va.status = 'pending') DESC, va.created_at DESC LIMIT 150",
-                [$tenantId, $tenantId, $tenantId]
-            );
-            return $this->respondWithData(array_map(fn($r) => (array)$r, $results));
-        } catch (\Exception $e) {
-            return $this->respondWithData([]);
+        // Tab counts follow the search and opportunity filter, not the status tab.
+        $byStatus = (clone $base)
+            ->select('va.status', DB::raw('COUNT(*) as n'))
+            ->groupBy('va.status')
+            ->pluck('n', 'va.status');
+        $counts = [
+            'pending' => (int) ($byStatus['pending'] ?? 0),
+            'approved' => (int) ($byStatus['approved'] ?? 0),
+            'declined' => (int) ($byStatus['declined'] ?? 0),
+        ];
+        $counts['all'] = $counts['pending'] + $counts['approved'] + $counts['declined'];
+
+        if (in_array($status, ['pending', 'approved', 'declined'], true)) {
+            $base->where('va.status', $status);
+        } else {
+            $status = 'all';
         }
+
+        $rows = $base
+            ->select(
+                'va.id', 'va.user_id', 'va.opportunity_id', 'va.shift_id', 'va.status', 'va.created_at',
+                'u.first_name', 'u.last_name', 'u.name', 'u.email', 'vo.title as opportunity_title'
+            )
+            // Pending first, so nothing awaiting a decision is pushed back a page
+            // by recent decisions.
+            ->orderByRaw("(va.status = 'pending') DESC")
+            ->orderByDesc('va.created_at')
+            ->orderByDesc('va.id')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return $this->respondWithData([
+            'items' => $rows->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'user_id' => (int) $row->user_id,
+                'opportunity_id' => (int) $row->opportunity_id,
+                'shift_id' => $row->shift_id !== null ? (int) $row->shift_id : null,
+                'status' => (string) $row->status,
+                'created_at' => $row->created_at,
+                'first_name' => $row->first_name,
+                'last_name' => $row->last_name,
+                'name' => $row->name,
+                'email' => $row->email,
+                'opportunity_title' => $row->opportunity_title,
+            ])->values()->all(),
+            'total' => $status === 'all' ? $counts['all'] : $counts[$status],
+            'page' => $page,
+            'per_page' => $perPage,
+            'counts' => $counts,
+            'opportunities' => $opportunities,
+        ]);
     }
 
     /** GET /api/v2/admin/volunteering/organizations */

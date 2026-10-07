@@ -822,6 +822,7 @@
     "incidents_status_all": "Todos os estados",
     "incidents_no_match": "Nenhum incidente corresponde à sua pesquisa ou filtro.",
     "incidents_clear_filters": "Limpar pesquisa e filtro",
+    "approvals_no_match": "Nenhuma candidatura corresponde à sua pesquisa ou filtro.",
     "handled_by_label": "Quem está a tratar disto?",
     "handled_by_nobody": "Ainda ninguém",
     "handled_by_help": "A pessoa receberá uma notificação e um e-mail a dizer que o caso é seu.",

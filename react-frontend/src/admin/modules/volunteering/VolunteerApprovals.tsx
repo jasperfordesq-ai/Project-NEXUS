@@ -8,11 +8,16 @@ import { Select, SelectItem, Button, Input, Avatar, Tabs, Tab, Checkbox } from '
 
 /**
  * Volunteer Approvals
- * Lists pending volunteer applications requiring admin review.
- * Parity: PHP VolunteeringController::approvals() + approve() + decline()
+ * The community's volunteer applications, one page at a time. Search, the
+ * status tabs, the opportunity filter and the tab counts all run on the server
+ * (gap D5, 7 Oct 2026): this page used to load one list capped at 150 rows and
+ * filter it here, so a busy community silently lost its oldest applications from
+ * every tab, count, search and export. The filters live in the address so a
+ * reload or a shared link keeps them.
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
@@ -22,13 +27,30 @@ import Search from 'lucide-react/icons/search';
 import Download from 'lucide-react/icons/download';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
-import { adminVolunteering } from '../../api/adminApi';
+import {
+  adminVolunteering,
+  type AdminVolunteerApplication,
+  type VolunteerApplicationsPage,
+  type VolunteerApplicationsQuery,
+} from '../../api/adminApi';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { EmptyState } from '../../components/EmptyState';
 import { ConfirmModal } from '../../components/ConfirmModal';
 
 import { useTranslation } from 'react-i18next';
+
+const PAGE_SIZE = 25;
+const EXPORT_PAGE_SIZE = 100;
+const MAX_EXPORT_PAGES = 200;
+const SEARCH_DEBOUNCE_MS = 350;
+const STATUS_TABS = ['all', 'pending', 'approved', 'declined'] as const;
+type StatusTab = (typeof STATUS_TABS)[number];
+const isStatusTab = (value: string | null): value is StatusTab =>
+  value !== null && (STATUS_TABS as readonly string[]).includes(value);
+
+type Counts = VolunteerApplicationsPage['counts'];
+const EMPTY_COUNTS: Counts = { all: 0, pending: 0, approved: 0, declined: 0 };
 
 // Prefix cells that spreadsheet apps would treat as formulas (=, +, -, @)
 // so member-supplied text can't execute when the CSV is opened in Excel.
@@ -51,85 +73,92 @@ function exportToCsv(headers: string[], rows: unknown[][], filename: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
-interface VolApplication {
-  id: number;
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  opportunity_title: string;
-  status: string;
-  created_at: string;
-}
 
 export function VolunteerApprovals() {
   const { t } = useTranslation('admin_volunteering');
   usePageTitle(t('volunteering.volunteer_approvals_title'));
   const toast = useToast();
-  const [items, setItems] = useState<VolApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionId, setActionId] = useState<number | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Search, filter, and bulk state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusTab, setStatusTab] = useState<string>('all');
+  // ----- Filters: the address is the source of truth -----
+  const rawStatus = searchParams.get('status');
+  const statusTab: StatusTab = isStatusTab(rawStatus) ? rawStatus : 'all';
+  const searchQuery = searchParams.get('q') || '';
+  const opportunityFilter = Math.max(0, parseInt(searchParams.get('opportunity') || '0', 10) || 0);
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const hasFilters = Boolean(searchQuery) || opportunityFilter > 0;
+
+  const updateParams = useCallback((changes: Record<string, string | null>) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value) next.set(key, value);
+        else next.delete(key);
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Every filter change starts from page 1 again.
+  const setFilter = useCallback((changes: Record<string, string | null>) => {
+    updateParams({ ...changes, page: null });
+  }, [updateParams]);
+
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { setSearchInput(searchQuery); }, [searchQuery]);
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchInput(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => setFilter({ q: value.trim() || null }), SEARCH_DEBOUNCE_MS);
+  }, [setFilter]);
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
+
+  // ----- List state -----
+  const [items, setItems] = useState<AdminVolunteerApplication[]>([]);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState<Counts>(EMPTY_COUNTS);
+  const [opportunities, setOpportunities] = useState<VolunteerApplicationsPage['opportunities']>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [actionId, setActionId] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
+
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkConfirmAction, setBulkConfirmAction] = useState<'approve' | 'decline' | null>(null);
   const [declineConfirmId, setDeclineConfirmId] = useState<number | null>(null);
-  const [opportunityFilter, setOpportunityFilter] = useState<string>('all');
+
+  const filterParams = useMemo((): VolunteerApplicationsQuery => {
+    const params: VolunteerApplicationsQuery = {};
+    if (statusTab !== 'all') params.status = statusTab;
+    if (searchQuery) params.q = searchQuery;
+    if (opportunityFilter > 0) params.opportunity_id = opportunityFilter;
+    return params;
+  }, [statusTab, searchQuery, opportunityFilter]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminVolunteering.getApprovals();
+      const res = await adminVolunteering.getApprovals({ ...filterParams, page, per_page: PAGE_SIZE });
       if (res.success && res.data) {
-        const payload = res.data as unknown;
-        if (Array.isArray(payload)) {
-          setItems(payload);
-        } else if (payload && typeof payload === 'object' && 'data' in payload) {
-          setItems((payload as { data: VolApplication[] }).data || []);
-        }
+        const rows = Array.isArray(res.data.items) ? res.data.items : [];
+        setItems(rows);
+        setTotal(Number(res.data.total ?? rows.length) || 0);
+        setCounts({ ...EMPTY_COUNTS, ...(res.data.counts ?? {}) });
+        setOpportunities(Array.isArray(res.data.opportunities) ? res.data.opportunities : []);
+        setHasLoaded(true);
+      } else {
+        toast.error(t('volunteering.failed_to_load_approvals'));
       }
     } catch {
       toast.error(t('volunteering.failed_to_load_approvals'));
-      setItems([]);
     }
     setLoading(false);
     setSelectedIds(new Set());
-  }, [toast, t]);
+  }, [filterParams, page, toast, t]);
 
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  // Derive unique opportunity titles for filter dropdown
-  const opportunityOptions = useMemo(() => {
-    const titles = [...new Set(items.map(i => i.opportunity_title).filter(Boolean))];
-    titles.sort();
-    return titles;
-  }, [items]);
-
-  // Filtered data
-  const filteredItems = useMemo(() => {
-    let result = items;
-    // Status tab filter
-    if (statusTab !== 'all') {
-      result = result.filter(i => i.status === statusTab);
-    }
-    // Search by name
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(i =>
-        resolveUserDisplayName(i).toLowerCase().includes(q) ||
-        i.email?.toLowerCase().includes(q)
-      );
-    }
-    // Opportunity filter
-    if (opportunityFilter !== 'all') {
-      result = result.filter(i => i.opportunity_title === opportunityFilter);
-    }
-    return result;
-  }, [items, statusTab, searchQuery, opportunityFilter]);
+  useEffect(() => { void loadData(); }, [loadData]);
 
   const handleApprove = useCallback(async (id: number) => {
     setActionId(id);
@@ -137,7 +166,7 @@ export function VolunteerApprovals() {
       const res = await adminVolunteering.approveApplication(id);
       if (res.success) {
         toast.success(t('volunteering.application_approved'));
-        loadData();
+        void loadData();
       } else {
         toast.error(t('volunteering.failed_to_approve_application'));
       }
@@ -154,7 +183,7 @@ export function VolunteerApprovals() {
       const res = await adminVolunteering.declineApplication(id);
       if (res.success) {
         toast.success(t('volunteering.application_declined'));
-        loadData();
+        void loadData();
       } else {
         toast.error(t('volunteering.failed_to_decline_application'));
       }
@@ -165,45 +194,33 @@ export function VolunteerApprovals() {
     }
   }, [loadData, toast, t]);
 
-  // Bulk operations — both are gated behind a ConfirmModal (see bulkConfirmAction)
-  const handleBulkApprove = useCallback(async () => {
-    if (selectedIds.size === 0) return;
-    setBulkLoading(true);
-    let successCount = 0;
-    const pendingIds = new Set(items.filter((item) => item.status === 'pending').map((item) => item.id));
-    for (const id of selectedIds) {
-      if (!pendingIds.has(id)) continue;
-      try {
-        const res = await adminVolunteering.approveApplication(id);
-        if (res.success) successCount++;
-      } catch { /* continue */ }
-    }
-    toast.success(t('volunteering.bulk_approved', { count: successCount }));
-    setBulkLoading(false);
-    setBulkConfirmAction(null);
-    loadData();
-  }, [items, loadData, selectedIds, toast, t]);
+  // Pending applications on the page being shown — the only ones that can be selected.
+  const pendingItems = useMemo(() => items.filter((item) => item.status === 'pending'), [items]);
 
-  const handleBulkDecline = useCallback(async () => {
+  // Bulk operations act on the selected rows of this page, and both are gated
+  // behind a ConfirmModal (see bulkConfirmAction).
+  const runBulk = useCallback(async (action: 'approve' | 'decline') => {
     if (selectedIds.size === 0) return;
     setBulkLoading(true);
     let successCount = 0;
-    const pendingIds = new Set(items.filter((item) => item.status === 'pending').map((item) => item.id));
+    const pendingIds = new Set(pendingItems.map((item) => item.id));
     for (const id of selectedIds) {
       if (!pendingIds.has(id)) continue;
       try {
-        const res = await adminVolunteering.declineApplication(id);
+        const res = action === 'approve'
+          ? await adminVolunteering.approveApplication(id)
+          : await adminVolunteering.declineApplication(id);
         if (res.success) successCount++;
-      } catch { /* continue */ }
+      } catch { /* continue with the rest */ }
     }
-    toast.success(t('volunteering.bulk_declined', { count: successCount }));
+    toast.success(t(action === 'approve' ? 'volunteering.bulk_approved' : 'volunteering.bulk_declined', { count: successCount }));
     setBulkLoading(false);
     setBulkConfirmAction(null);
-    loadData();
-  }, [items, loadData, selectedIds, toast, t]);
+    void loadData();
+  }, [loadData, pendingItems, selectedIds, toast, t]);
 
   const handleToggleSelect = useCallback((id: number) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -211,39 +228,56 @@ export function VolunteerApprovals() {
     });
   }, []);
 
-  const pendingFilteredItems = useMemo(
-    () => filteredItems.filter((item) => item.status === 'pending'),
-    [filteredItems],
-  );
-
   const handleSelectAll = useCallback(() => {
-    if (selectedIds.size === pendingFilteredItems.length) {
+    if (selectedIds.size === pendingItems.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(pendingFilteredItems.map(i => i.id)));
+      setSelectedIds(new Set(pendingItems.map((i) => i.id)));
     }
-  }, [pendingFilteredItems, selectedIds.size]);
+  }, [pendingItems, selectedIds.size]);
 
-  const handleExport = useCallback(() => {
-    const headers = [
-      t('volunteering.export_columns.name'),
-      t('volunteering.export_columns.email'),
-      t('volunteering.export_columns.opportunity'),
-      t('volunteering.export_columns.status'),
-      t('volunteering.export_columns.applied'),
-    ];
-    const rows = filteredItems.map((item) => [
-      resolveUserDisplayName(item),
-      item.email,
-      item.opportunity_title,
-      t(`volunteering.status_${item.status}`, { defaultValue: t('volunteering.status_unknown') }),
-      item.created_at ? new Date(item.created_at).toLocaleDateString(getFormattingLocale()) : '',
-    ]);
-    exportToCsv(headers, rows, 'volunteer-approvals.csv');
-    toast.success(t('volunteering.export_success'));
-  }, [filteredItems, toast, t]);
+  // The export covers every application matching the filters, not just this page.
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const all: AdminVolunteerApplication[] = [];
+      let exportPage = 1;
+      let truncated = false;
+      for (;;) {
+        const res = await adminVolunteering.getApprovals({ ...filterParams, page: exportPage, per_page: EXPORT_PAGE_SIZE });
+        if (!res.success || !res.data) throw new Error('export page failed');
+        all.push(...(res.data.items ?? []));
+        if (exportPage * EXPORT_PAGE_SIZE >= (res.data.total ?? 0)) break;
+        if (exportPage >= MAX_EXPORT_PAGES) { truncated = true; break; }
+        exportPage++;
+      }
+      const headers = [
+        t('volunteering.export_columns.name'),
+        t('volunteering.export_columns.email'),
+        t('volunteering.export_columns.opportunity'),
+        t('volunteering.export_columns.status'),
+        t('volunteering.export_columns.applied'),
+      ];
+      const rows = all.map((item) => [
+        resolveUserDisplayName(item),
+        item.email,
+        item.opportunity_title,
+        t(`volunteering.status_${item.status}`, { defaultValue: t('volunteering.status_unknown') }),
+        item.created_at ? new Date(item.created_at).toLocaleDateString(getFormattingLocale()) : '',
+      ]);
+      exportToCsv(headers, rows, 'volunteer-approvals.csv');
+      if (truncated) {
+        toast.warning(t('volunteering.export_truncated', { count: MAX_EXPORT_PAGES }));
+      } else {
+        toast.success(t('volunteering.export_success'));
+      }
+    } catch {
+      toast.error(t('volunteering.export_failed'));
+    }
+    setExporting(false);
+  }, [filterParams, toast, t]);
 
-  const columns: Column<VolApplication>[] = [
+  const columns: Column<AdminVolunteerApplication>[] = [
     {
       key: 'select', label: '',
       render: (item) => (
@@ -257,24 +291,24 @@ export function VolunteerApprovals() {
       ),
     },
     {
-      key: 'applicant', label: t('volunteering.col_applicant'), sortable: true,
+      key: 'applicant', label: t('volunteering.col_applicant'),
       render: (item) => (
         <div className="flex items-center gap-3">
           <Avatar name={resolveUserDisplayName(item)} size="sm" className="ring-2 ring-surface" />
           <div>
-            <p className="font-medium text-foreground">{item.first_name} {item.last_name}</p>
+            <p className="font-medium text-foreground">{resolveUserDisplayName(item)}</p>
             <p className="text-xs text-muted">{item.email}</p>
           </div>
         </div>
       ),
     },
-    { key: 'opportunity_title', label: t('volunteering.col_opportunity'), sortable: true },
+    { key: 'opportunity_title', label: t('volunteering.col_opportunity') },
     {
       key: 'status', label: t('volunteering.col_status'),
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
-      key: 'created_at', label: t('volunteering.col_applied'), sortable: true,
+      key: 'created_at', label: t('volunteering.col_applied'),
       render: (item) => <span className="text-sm text-muted">{item.created_at ? new Date(item.created_at).toLocaleDateString(getFormattingLocale()) : '--'}</span>,
     },
     {
@@ -311,29 +345,26 @@ export function VolunteerApprovals() {
     },
   ];
 
-  // Status tab counts
-  const statusCounts = useMemo(() => ({
-    all: items.length,
-    pending: items.filter(i => i.status === 'pending').length,
-    approved: items.filter(i => i.status === 'approved').length,
-    declined: items.filter(i => i.status === 'declined').length,
-  }), [items]);
+  const opportunityItems = useMemo(() => [
+    { key: '0', label: t('volunteering.tab_all') },
+    ...opportunities.map((o) => ({ key: String(o.id), label: o.title })),
+  ], [opportunities, t]);
 
   // Top content: search + filters + bulk actions
-  const topContent = useMemo(() => (
+  const topContent = (
     <div className="flex flex-col gap-4 rounded-2xl border border-divider/70 bg-surface p-3 shadow-sm shadow-black/[0.03]">
       {/* Status Tabs */}
       <Tabs
         aria-label={t('volunteering.approvals_tabs_aria')}
         selectedKey={statusTab}
-        onSelectionChange={(key) => { setStatusTab(key as string); setSelectedIds(new Set()); }}
+        onSelectionChange={(key) => setFilter({ status: key === 'all' ? null : String(key) })}
         variant="underlined"
         size="sm"
       >
-        <Tab key="all" title={`${t('volunteering.tab_all')} (${statusCounts.all})`} />
-        <Tab key="pending" title={`${t('volunteering.tab_pending')} (${statusCounts.pending})`} />
-        <Tab key="approved" title={`${t('volunteering.tab_approved')} (${statusCounts.approved})`} />
-        <Tab key="declined" title={`${t('volunteering.declined')} (${statusCounts.declined})`} />
+        <Tab key="all" title={`${t('volunteering.tab_all')} (${counts.all})`} />
+        <Tab key="pending" title={`${t('volunteering.tab_pending')} (${counts.pending})`} />
+        <Tab key="approved" title={`${t('volunteering.tab_approved')} (${counts.approved})`} />
+        <Tab key="declined" title={`${t('volunteering.declined')} (${counts.declined})`} />
       </Tabs>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -344,25 +375,25 @@ export function VolunteerApprovals() {
             placeholder={t('volunteering.search_applicants')}
             aria-label={t('volunteering.search_applicants')}
             startContent={<Search size={16} className="text-muted" />}
-            value={searchQuery}
-            onValueChange={setSearchQuery}
+            value={searchInput}
+            onValueChange={handleSearchChange}
             isClearable
-            onClear={() => setSearchQuery('')}
+            onClear={() => { setSearchInput(''); setFilter({ q: null }); }}
             size="sm"
           />
 
           {/* Opportunity filter */}
-          {opportunityOptions.length > 1 && (
+          {opportunities.length > 1 && (
             <Select
               className="max-w-[220px]"
               label={t('volunteering.filter_opportunity')}
               size="sm"
-              selectedKeys={new Set([opportunityFilter])}
+              selectedKeys={new Set([String(opportunityFilter)])}
               onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                setOpportunityFilter(val || 'all');
+                const val = String(Array.from(keys)[0] ?? '0');
+                setFilter({ opportunity: val === '0' ? null : val });
               }}
-              items={[{ key: 'all', label: t('volunteering.tab_all') }, ...opportunityOptions.map(title => ({ key: title, label: title }))]}
+              items={opportunityItems}
             >
               {(item) => <SelectItem key={item.key} id={item.key}>{item.label}</SelectItem>}
             </Select>
@@ -370,11 +401,11 @@ export function VolunteerApprovals() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Select all checkbox */}
-          {pendingFilteredItems.length > 0 && (
+          {/* Select all pending on this page */}
+          {pendingItems.length > 0 && (
             <Checkbox
-              isSelected={selectedIds.size === pendingFilteredItems.length && pendingFilteredItems.length > 0}
-              isIndeterminate={selectedIds.size > 0 && selectedIds.size < pendingFilteredItems.length}
+              isSelected={selectedIds.size === pendingItems.length && pendingItems.length > 0}
+              isIndeterminate={selectedIds.size > 0 && selectedIds.size < pendingItems.length}
               onValueChange={handleSelectAll}
               size="sm"
             >
@@ -411,22 +442,23 @@ export function VolunteerApprovals() {
             </>
           )}
 
-          {/* Export */}
+          {/* Export — every matching application, not just this page */}
           <Button
             size="sm"
             variant="tertiary"
             startContent={<Download size={14} />}
-            onPress={handleExport}
-            isDisabled={filteredItems.length === 0}
+            onPress={() => void handleExport()}
+            isLoading={exporting}
+            isDisabled={total === 0}
           >
             {t('volunteering.export')}
           </Button>
         </div>
       </div>
     </div>
-  ), [statusTab, statusCounts, searchQuery, opportunityFilter, opportunityOptions, selectedIds, pendingFilteredItems.length, filteredItems, bulkLoading, t, handleSelectAll, handleExport]);
+  );
 
-  if (!loading && items.length === 0) {
+  if (hasLoaded && !loading && counts.all === 0 && !hasFilters) {
     return (
       <div className="space-y-6">
         <PageHeader title={t('volunteering.volunteer_approvals_title')} description={t('volunteering.volunteer_approvals_desc')} />
@@ -440,22 +472,27 @@ export function VolunteerApprovals() {
       <PageHeader
         title={t('volunteering.volunteer_approvals_title')}
         description={t('volunteering.volunteer_approvals_desc')}
-        actions={<Button variant="tertiary" startContent={<RefreshCw size={16} />} onPress={loadData} isLoading={loading}>{t('volunteering.refresh')}</Button>}
+        actions={<Button variant="tertiary" startContent={<RefreshCw size={16} />} onPress={() => void loadData()} isLoading={loading}>{t('volunteering.refresh')}</Button>}
       />
       <DataTable
         columns={columns}
-        data={filteredItems}
+        data={items}
         isLoading={loading}
-        onRefresh={loadData}
+        onRefresh={() => void loadData()}
         searchable={false}
         topContent={topContent}
+        totalItems={total}
+        page={page}
+        pageSize={PAGE_SIZE}
+        onPageChange={(next) => updateParams({ page: next > 1 ? String(next) : null })}
+        emptyContent={hasFilters ? t('volunteering.approvals_no_match') : undefined}
       />
 
       {/* Bulk approve/decline confirmation */}
       <ConfirmModal
         isOpen={bulkConfirmAction !== null}
         onClose={() => { if (!bulkLoading) setBulkConfirmAction(null); }}
-        onConfirm={bulkConfirmAction === 'approve' ? handleBulkApprove : handleBulkDecline}
+        onConfirm={() => runBulk(bulkConfirmAction === 'approve' ? 'approve' : 'decline')}
         title={bulkConfirmAction === 'approve'
           ? t('volunteering.bulk_approve_title')
           : t('volunteering.bulk_decline_title')}

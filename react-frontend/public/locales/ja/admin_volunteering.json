@@ -806,6 +806,7 @@
     "incidents_status_all": "すべてのステータス",
     "incidents_no_match": "検索条件または絞り込みに一致するインシデントはありません。",
     "incidents_clear_filters": "検索と絞り込みをクリア",
+    "approvals_no_match": "検索条件またはフィルターに一致する応募はありません。",
     "handled_by_label": "誰が対応しますか？",
     "handled_by_nobody": "まだいません",
     "handled_by_help": "担当者には、担当になったことを知らせる通知とメールが届きます。",

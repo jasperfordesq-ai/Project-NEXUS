@@ -870,6 +870,7 @@
     "incidents_status_all": "جميع الحالات",
     "incidents_no_match": "لا توجد حوادث تطابق بحثك أو عامل التصفية.",
     "incidents_clear_filters": "مسح البحث وعامل التصفية",
+    "approvals_no_match": "لا توجد طلبات تطابق البحث أو عامل التصفية.",
     "handled_by_label": "من يتولى هذه الحادثة؟",
     "handled_by_nobody": "لا أحد بعد",
     "handled_by_help": "سيصله إشعار وبريد إلكتروني يفيد بأن الحادثة أُسندت إليه.",

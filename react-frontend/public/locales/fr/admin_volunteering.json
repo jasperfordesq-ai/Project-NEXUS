@@ -822,6 +822,7 @@
     "incidents_status_all": "Tous les statuts",
     "incidents_no_match": "Aucun incident ne correspond à votre recherche ou à votre filtre.",
     "incidents_clear_filters": "Effacer la recherche et le filtre",
+    "approvals_no_match": "Aucune candidature ne correspond à votre recherche ou à votre filtre.",
     "handled_by_label": "Qui s'en occupe ?",
     "handled_by_nobody": "Personne pour l'instant",
     "handled_by_help": "La personne recevra une notification et un e-mail lui indiquant que le dossier lui est confié.",

@@ -838,6 +838,7 @@
     "incidents_status_all": "Wszystkie statusy",
     "incidents_no_match": "Żadne zdarzenie nie pasuje do wyszukiwania ani filtra.",
     "incidents_clear_filters": "Wyczyść wyszukiwanie i filtr",
+    "approvals_no_match": "Żadne zgłoszenie nie pasuje do wyszukiwania ani filtra.",
     "handled_by_label": "Kto się tym zajmuje?",
     "handled_by_nobody": "Jeszcze nikt",
     "handled_by_help": "Ta osoba otrzyma powiadomienie i e-mail z informacją, że sprawa została jej przydzielona.",

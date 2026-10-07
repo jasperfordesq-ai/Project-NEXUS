@@ -1690,10 +1690,43 @@ export interface AdminOpportunityRow {
   created_at: string;
 }
 
+export interface VolunteerApplicationsQuery {
+  status?: 'all' | 'pending' | 'approved' | 'declined';
+  q?: string;
+  opportunity_id?: number;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AdminVolunteerApplication {
+  id: number;
+  user_id: number;
+  opportunity_id: number;
+  shift_id: number | null;
+  status: 'pending' | 'approved' | 'declined';
+  created_at: string;
+  first_name: string | null;
+  last_name: string | null;
+  name: string | null;
+  email: string | null;
+  opportunity_title: string;
+}
+
+export interface VolunteerApplicationsPage {
+  items: AdminVolunteerApplication[];
+  total: number;
+  page: number;
+  per_page: number;
+  counts: { all: number; pending: number; approved: number; declined: number };
+  opportunities: Array<{ id: number; title: string }>;
+}
+
 export const adminVolunteering = {
   getOverview: () => api.get<{ total_opportunities: number; active_volunteers: number; pending_approvals: number; total_hours: number }>('/v2/admin/volunteering'),
 
-  getApprovals: () => api.get<Array<{ id: number; user_id: number; user_name: string; opportunity_id: number; opportunity_title: string; status: string; created_at: string }>>('/v2/admin/volunteering/approvals'),
+  /** One page of the community's volunteer applications, filtered and counted on the server (gap D5). */
+  getApprovals: (params: VolunteerApplicationsQuery = {}) =>
+    api.get<VolunteerApplicationsPage>(`/v2/admin/volunteering/approvals${buildQuery(params)}`),
 
   approveApplication: (id: number) =>
     api.post<{ success: boolean }>(`/v2/admin/volunteering/approvals/${id}/approve`, {}),
