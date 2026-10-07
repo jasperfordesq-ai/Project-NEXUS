@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'Ninguna solicitud coincide con este filtro.',
         'hours_more' => 'Más horas por revisar',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'Recibo (opcional)',
+        'hint' => 'Adjunte un recibo en PDF, JPG, PNG o WebP de hasta 10 MB.',
+        'invalid' => 'El recibo debe ser un archivo PDF, JPG, PNG o WebP.',
+        'too_large' => 'El recibo no puede superar los 10 MB.',
+    ],
 ];

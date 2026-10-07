@@ -12,7 +12,8 @@ const {
   downloadVolunteerCredential,
   getVolunteeringCategories,
   searchUsers,
-  uploadVolunteerCredential
+  uploadVolunteerCredential,
+  submitVolunteerExpenseWithReceipt
 } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -819,6 +820,8 @@ function expenseStatus(status, t = null) {
     'expense-opportunity-mismatch': { type: 'error', key: 'error_opportunity_mismatch', field: 'opportunity_id' },
     'expense-amount-invalid': { type: 'error', key: 'error_amount_invalid', field: 'amount' },
     'expense-description-required': { type: 'error', key: 'error_description_required', field: 'description' },
+    'expense-receipt-invalid': { type: 'error', fullKey: 'govuk_alpha_volunteering.expense_receipt.invalid', field: 'receipt' },
+    'expense-receipt-large': { type: 'error', fullKey: 'govuk_alpha_volunteering.expense_receipt.too_large', field: 'receipt' },
     'expense-validation': { type: 'error', key: 'error_validation' },
     'expense-forbidden': { type: 'error', key: 'error_forbidden' },
     'expense-not-found': { type: 'error', key: 'error_not_found' },
@@ -826,7 +829,7 @@ function expenseStatus(status, t = null) {
   };
   const config = messages[status] || null;
   return config
-    ? { ...config, message: t ? t(`govuk_alpha_volunteering.expenses.${config.key}`) : config.key }
+    ? { ...config, message: t ? t(config.fullKey || `govuk_alpha_volunteering.expenses.${config.key}`) : (config.fullKey || config.key) }
     : null;
 }
 
@@ -3562,56 +3565,64 @@ router.post('/group-signups/:id(\\d+)/cancel', asyncRoute(async (req, res) => {
   );
 }));
 
+// The receipt types the API accepts (SubmitExpenseRequest: mimes:pdf,jpg,jpeg,png,webp).
+const EXPENSE_RECEIPT_TYPES = {
+  'application/pdf': 'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp'
+};
+
 router.post('/expenses', asyncRoute(async (req, res) => {
-  const organizationId = positiveInteger(req.body.organization_id);
-  const opportunityId = positiveInteger(req.body.opportunity_id);
-  const amount = decimalNumber(req.body.amount);
-  const description = trimmed(req.body.description);
-  // Every select and typed field came back blank on any failure exit, so a bad
-  // amount made the member retype the whole claim.
-  rememberFormReplay(req, 'volunteering', 'expenses', {
-    organizationId: trimmed(req.body.organization_id),
-    opportunityId: trimmed(req.body.opportunity_id),
-    expenseType: trimmed(req.body.expense_type),
-    amount: trimmed(req.body.amount),
-    description
-  });
+  // Gap B13: an optional receipt. The temporary upload is removed however the
+  // request ends.
+  const upload = uploadedFile(req, 'receipt');
+  const receipt = upload && Number(upload.size) > 0 ? upload : null;
+  try {
+    const organizationId = positiveInteger(req.body.organization_id);
+    const opportunityId = positiveInteger(req.body.opportunity_id);
+    const amount = decimalNumber(req.body.amount);
+    const description = trimmed(req.body.description);
+    // Every select and typed field came back blank on any failure exit, so a bad
+    // amount made the member retype the whole claim.
+    rememberFormReplay(req, 'volunteering', 'expenses', {
+      organizationId: trimmed(req.body.organization_id),
+      opportunityId: trimmed(req.body.opportunity_id),
+      expenseType: trimmed(req.body.expense_type),
+      amount: trimmed(req.body.amount),
+      description
+    });
 
-  if (organizationId === null) {
-    return redirectTo(res, '/volunteering/expenses?status=expense-org-required');
-  }
-  if (amount <= 0) {
-    return redirectTo(res, '/volunteering/expenses?status=expense-amount-invalid');
-  }
-  if (description === '') {
-    return redirectTo(res, '/volunteering/expenses?status=expense-description-required');
-  }
-
-  // One list holds every organisation's opportunities, so the member can pick one
-  // from a different organisation. Catch that here with a message that names the
-  // field, rather than letting the API answer a bare "not found".
-  if (opportunityId !== null) {
-    const token = tokenFrom(req);
-    const applications = token
-      ? collectionFrom(await callApi(token, 'GET', '/applications?status=approved&per_page=50')).map(normalizeApplication)
-      : [];
-    const belongs = applications.some((application) => application.status === 'approved'
-      && application.opportunity.id === opportunityId
-      && application.organization
-      && application.organization.id === organizationId);
-    if (!belongs) {
-      return redirectTo(res, '/volunteering/expenses?status=expense-opportunity-mismatch');
+    if (organizationId === null) {
+      return redirectTo(res, '/volunteering/expenses?status=expense-org-required');
     }
-  }
+    if (amount <= 0) {
+      return redirectTo(res, '/volunteering/expenses?status=expense-amount-invalid');
+    }
+    if (description === '') {
+      return redirectTo(res, '/volunteering/expenses?status=expense-description-required');
+    }
 
-  // No currency: the API always records the community's own currency.
-  const expenseType = trimmed(req.body.expense_type);
-  return runAction(
-    req,
-    res,
-    'POST',
-    '/expenses',
-    {
+    // One list holds every organisation's opportunities, so the member can pick one
+    // from a different organisation. Catch that here with a message that names the
+    // field, rather than letting the API answer a bare "not found".
+    if (opportunityId !== null) {
+      const token = tokenFrom(req);
+      const applications = token
+        ? collectionFrom(await callApi(token, 'GET', '/applications?status=approved&per_page=50')).map(normalizeApplication)
+        : [];
+      const belongs = applications.some((application) => application.status === 'approved'
+        && application.opportunity.id === opportunityId
+        && application.organization
+        && application.organization.id === organizationId);
+      if (!belongs) {
+        return redirectTo(res, '/volunteering/expenses?status=expense-opportunity-mismatch');
+      }
+    }
+
+    // No currency: the API always records the community's own currency.
+    const expenseType = trimmed(req.body.expense_type);
+    const fields = {
       organization_id: organizationId,
       ...(opportunityId !== null ? { opportunity_id: opportunityId } : {}),
       expense_type: ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'].includes(expenseType)
@@ -3619,10 +3630,42 @@ router.post('/expenses', asyncRoute(async (req, res) => {
         : 'travel',
       amount,
       description
-    },
-    '/volunteering/expenses?status=expense-submitted',
-    '/volunteering/expenses?status=expense-failed'
-  );
+    };
+    if (!receipt) {
+      return runAction(
+        req,
+        res,
+        'POST',
+        '/expenses',
+        fields,
+        '/volunteering/expenses?status=expense-submitted',
+        '/volunteering/expenses?status=expense-failed'
+      );
+    }
+
+    const contentType = trimmed(receipt.mimetype).toLowerCase();
+    if (!EXPENSE_RECEIPT_TYPES[contentType]) {
+      return redirectTo(res, '/volunteering/expenses?status=expense-receipt-invalid');
+    }
+    const token = tokenFrom(req);
+    if (!token) return redirectTo(res, loginRedirect());
+    try {
+      await submitVolunteerExpenseWithReceipt(token, {
+        fields,
+        receipt: {
+          buffer: await fs.readFile(receipt.filepath),
+          filename: trimmed(receipt.originalFilename) || `receipt.${EXPENSE_RECEIPT_TYPES[contentType]}`,
+          contentType
+        }
+      });
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      return redirectTo(res, '/volunteering/expenses?status=expense-failed');
+    }
+    return redirectTo(res, '/volunteering/expenses?status=expense-submitted');
+  } finally {
+    await removeUploadedFile(upload);
+  }
 }));
 
 router.post('/training', asyncRoute(async (req, res) => {

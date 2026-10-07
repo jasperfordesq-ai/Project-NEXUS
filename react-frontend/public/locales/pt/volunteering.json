@@ -310,7 +310,7 @@
       "type": "Tipo de Despesa",
       "amount": "Montante",
       "description": "Descrição",
-      "receipt": "Receipt",
+      "receipt": "Recibo",
       "receipt_none": "Nenhum recibo anexado",
       "receipt_hint": "Anexe um recibo em PDF, JPG, PNG ou WebP de até 10 MB.",
       "receipt_attach": "Anexar recibo",

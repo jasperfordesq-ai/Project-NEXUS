@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'Níl aon iarratas ag teacht leis an scagaire seo.',
         'hours_more' => 'Tuilleadh uaireanta le hathbhreithniú',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'Admháil (roghnach)',
+        'hint' => 'Ceangail admháil PDF, JPG, PNG nó WebP suas go dtí 10 MB.',
+        'invalid' => 'Caithfidh an admháil a bheith ina comhad PDF, JPG, PNG nó WebP.',
+        'too_large' => 'Ní féidir leis an admháil a bheith níos mó ná 10 MB.',
+    ],
 ];

@@ -308,7 +308,7 @@
       "type": "Ausgabentyp",
       "amount": "Betrag",
       "description": "Beschreibung",
-      "receipt": "Receipt",
+      "receipt": "Beleg",
       "receipt_none": "Keine Quittung beigefügt",
       "receipt_hint": "Hängen Sie eine PDF-, JPG-, PNG- oder WebP-Quittung mit bis zu 10 MB an.",
       "receipt_attach": "Quittung beifügen",

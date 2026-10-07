@@ -2233,6 +2233,14 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
 
 app.use('/resources/upload', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
 app.use('/volunteering/credentials', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
+// Gap B13: an expense claim can carry a receipt (PDF, JPG, PNG or WebP, up to 10 MB —
+// the API's own SubmitExpenseRequest rule). Exact path only: the organisation's
+// review routes under /volunteering/organisations/... are not uploads.
+app.post(
+  '/volunteering/expenses',
+  parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }),
+  multipartStatusErrorRedirect('/volunteering/expenses', 'expense-receipt-large', 'expense-receipt-invalid')
+);
 app.use('/onboarding/avatar', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
 app.use(
   '/settings/insurance',

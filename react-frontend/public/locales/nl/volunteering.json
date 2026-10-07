@@ -308,7 +308,7 @@
       "type": "Soort uitgaven",
       "amount": "Hoeveelheid",
       "description": "Beschrijving",
-      "receipt": "Receipt",
+      "receipt": "Bon",
       "receipt_none": "Geen ontvangstbewijs bijgevoegd",
       "receipt_hint": "Voeg een PDF-, JPG-, PNG- of WebP-bon toe van maximaal 10 MB.",
       "receipt_attach": "Bon bijvoegen",

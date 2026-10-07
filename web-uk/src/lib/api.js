@@ -1075,6 +1075,28 @@ async function callVolunteeringApi(token, method, path, data = undefined) {
   return request(`/api/v2/volunteering${normalizedPath}`, options);
 }
 
+// A volunteer's expense claim WITH a receipt (gap B13, 7 Oct 2026). The website sends
+// the claim and the file together as multipart to the same endpoint; a claim without
+// a receipt still goes as JSON through callVolunteeringApi.
+async function submitVolunteerExpenseWithReceipt(token, data) {
+  const form = new globalThis.FormData();
+  for (const [key, value] of Object.entries(data.fields || {})) {
+    if (value !== undefined && value !== null) form.append(key, String(value));
+  }
+  if (data.receipt && data.receipt.buffer) {
+    const blob = new globalThis.Blob([data.receipt.buffer], {
+      type: data.receipt.contentType || 'application/octet-stream'
+    });
+    form.append('receipt', blob, data.receipt.filename || 'receipt');
+  }
+
+  return request('/api/v2/volunteering/expenses', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+}
+
 async function uploadVolunteerCredential(token, data) {
   const form = new globalThis.FormData();
   form.append('credential_type', data.credential_type || data.type || '');
@@ -4236,6 +4258,7 @@ module.exports = {
   getMyVolunteerOrganisations,
   createVolunteerOrganisation,
   callVolunteeringApi,
+  submitVolunteerExpenseWithReceipt,
   uploadVolunteerCredential,
   downloadVolunteerCredential,
   downloadOrgExpenseReceipt,

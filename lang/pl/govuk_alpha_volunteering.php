@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'Żadne zgłoszenie nie pasuje do tego filtra.',
         'hours_more' => 'Więcej godzin do sprawdzenia',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'Paragon (opcjonalnie)',
+        'hint' => 'Dołącz paragon w formacie PDF, JPG, PNG lub WebP o rozmiarze do 10 MB.',
+        'invalid' => 'Paragon musi być plikiem PDF, JPG, PNG lub WebP.',
+        'too_large' => 'Paragon nie może być większy niż 10 MB.',
+    ],
 ];

@@ -2627,6 +2627,30 @@ describe('API Request Functions', () => {
       expect(options.body).toBeInstanceOf(FormData);
     });
 
+    // Gap B13: a claim with a receipt goes as one multipart request, as the website sends it.
+    it('should submit a volunteer expense claim with its receipt as multipart data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 7 } })
+      });
+
+      await api.submitVolunteerExpenseWithReceipt('test-token', {
+        fields: { organization_id: 114, expense_type: 'travel', amount: 3.2, description: 'Bus fare', opportunity_id: undefined },
+        receipt: { buffer: Buffer.from('%PDF receipt', 'utf8'), filename: 'bus.pdf', contentType: 'application/pdf' }
+      });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/volunteering/expenses');
+      expect(options.method).toBe('POST');
+      expect(options.headers.Authorization).toBe('Bearer test-token');
+      expect(options.body).toBeInstanceOf(FormData);
+      expect(options.body.get('organization_id')).toBe('114');
+      expect(options.body.get('amount')).toBe('3.2');
+      expect(options.body.has('opportunity_id')).toBe(false);
+      expect(options.body.get('receipt').name).toBe('bus.pdf');
+    });
+
     it('should download a volunteer credential from Laravel as binary data', async () => {
       const body = Buffer.from('%PDF credential download', 'utf8');
       mockFetch.mockResolvedValueOnce({

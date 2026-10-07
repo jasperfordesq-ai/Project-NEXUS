@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-10-07T12:52:47.268Z",
+  "generatedAt": "2026-10-07T13:04:28.944Z",
   "provenance": {
-    "generatedAt": "2026-10-07T12:52:47.268Z",
+    "generatedAt": "2026-10-07T13:04:28.944Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "7777666f24674b51216cbf1858b1f880d8bf958b",
+    "laravelCommitSha": "3fd33f68a8270b94cfb937da6d57c8cced9e256e",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "7777666f24674b51216cbf1858b1f880d8bf958b",
+    "webUkRepositoryCommitSha": "3fd33f68a8270b94cfb937da6d57c8cced9e256e",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-07T12:52:47.268Z",
+    "generatedAt": "2026-10-07T13:04:28.944Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
@@ -16846,7 +16846,7 @@
       "apiNeeds": "",
       "webUkPath": "/volunteering/expenses",
       "webUkView": "",
-      "webUkFile": "web-uk/src/routes/volunteering-actions.js"
+      "webUkFile": "web-uk/src/routes/volunteering-actions.js; C:/platforms/htdocs/staging/web-uk/src/server.js"
     },
     {
       "method": "POST",

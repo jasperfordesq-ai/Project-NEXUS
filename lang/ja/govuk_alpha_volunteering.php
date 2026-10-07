@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'この絞り込みに一致する応募はありません。',
         'hours_more' => '確認待ちの時間をさらに表示',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => '領収書（任意）',
+        'hint' => '最大 10 MB の PDF、JPG、PNG、または WebP の領収書を添付してください。',
+        'invalid' => '領収書は PDF、JPG、PNG、または WebP ファイルである必要があります。',
+        'too_large' => '領収書は 10 MB 以下にしてください。',
+    ],
 ];

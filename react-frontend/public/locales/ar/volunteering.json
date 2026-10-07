@@ -316,7 +316,7 @@
       "type": "نوع المصاريف",
       "amount": "كمية",
       "description": "وصف",
-      "receipt": "Receipt",
+      "receipt": "الإيصال",
       "receipt_none": "لا يوجد إيصال مرفق",
       "receipt_hint": "قم بإرفاق إيصال PDF أو JPG أو PNG أو WebP بحجم يصل إلى 10 ميجابايت.",
       "receipt_attach": "إرفاق الإيصال",

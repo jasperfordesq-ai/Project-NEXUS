@@ -308,7 +308,7 @@
       "type": "費用の種類",
       "amount": "額",
       "description": "説明",
-      "receipt": "Receipt",
+      "receipt": "領収書",
       "receipt_none": "領収書は添付されていません",
       "receipt_hint": "最大 10 MB の PDF、JPG、PNG、または WebP の領収書を添付します。",
       "receipt_attach": "領収書添付",

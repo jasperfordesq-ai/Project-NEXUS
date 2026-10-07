@@ -310,7 +310,7 @@
       "type": "Tipo di Spesa",
       "amount": "Importo",
       "description": "Descrizione",
-      "receipt": "Receipt",
+      "receipt": "Ricevuta",
       "receipt_none": "Nessuna ricevuta allegata",
       "receipt_hint": "Allega una ricevuta PDF, JPG, PNG o WebP fino a 10 MB.",
       "receipt_attach": "Allega ricevuta",

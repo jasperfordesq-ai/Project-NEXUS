@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'لا توجد طلبات تطابق هذه التصفية.',
         'hours_more' => 'مزيد من الساعات للمراجعة',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'الإيصال (اختياري)',
+        'hint' => 'قم بإرفاق إيصال PDF أو JPG أو PNG أو WebP بحجم يصل إلى 10 ميجابايت.',
+        'invalid' => 'يجب أن يكون الإيصال ملف PDF أو JPG أو PNG أو WebP.',
+        'too_large' => 'يجب ألا يتجاوز حجم الإيصال 10 ميجابايت.',
+    ],
 ];

@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'Keine Bewerbungen entsprechen diesem Filter.',
         'hours_more' => 'Weitere Stunden zur Prüfung',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'Beleg (optional)',
+        'hint' => 'Hängen Sie einen Beleg als PDF, JPG, PNG oder WebP mit bis zu 10 MB an.',
+        'invalid' => 'Der Beleg muss eine PDF-, JPG-, PNG- oder WebP-Datei sein.',
+        'too_large' => 'Der Beleg darf höchstens 10 MB groß sein.',
+    ],
 ];

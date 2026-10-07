@@ -1102,4 +1102,11 @@ return [
         'applications_empty_filtered' => 'Geen aanmeldingen komen overeen met dit filter.',
         'hours_more' => 'Meer uren om te beoordelen',
     ],
+    // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
+    'expense_receipt' => [
+        'label' => 'Bon (optioneel)',
+        'hint' => 'Voeg een bon toe als PDF, JPG, PNG of WebP van maximaal 10 MB.',
+        'invalid' => 'De bon moet een PDF-, JPG-, PNG- of WebP-bestand zijn.',
+        'too_large' => 'De bon mag niet groter zijn dan 10 MB.',
+    ],
 ];

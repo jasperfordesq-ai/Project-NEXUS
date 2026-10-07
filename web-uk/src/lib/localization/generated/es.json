@@ -11502,6 +11502,12 @@
                 "applications_heading": "Solicitudes",
                 "applications_empty_filtered": "Ninguna solicitud coincide con este filtro.",
                 "hours_more": "Más horas por revisar"
+            },
+            "expense_receipt": {
+                "label": "Recibo (opcional)",
+                "hint": "Adjunte un recibo en PDF, JPG, PNG o WebP de hasta 10 MB.",
+                "invalid": "El recibo debe ser un archivo PDF, JPG, PNG o WebP.",
+                "too_large": "El recibo no puede superar los 10 MB."
             }
         },
         "govuk_alpha_wallet": {

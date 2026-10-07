@@ -310,7 +310,7 @@
       "type": "Tipo de Gasto",
       "amount": "Cantidad",
       "description": "Descripción",
-      "receipt": "Receipt",
+      "receipt": "Recibo",
       "receipt_none": "No se adjunta recibo",
       "receipt_hint": "Adjunte un recibo en PDF, JPG, PNG o WebP de hasta 10 MB.",
       "receipt_attach": "Adjuntar recibo",

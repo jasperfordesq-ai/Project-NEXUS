@@ -310,7 +310,7 @@
       "type": "Type de dépense",
       "amount": "Montant",
       "description": "Description",
-      "receipt": "Receipt",
+      "receipt": "Reçu",
       "receipt_none": "Aucun reçu joint",
       "receipt_hint": "Joignez un reçu PDF, JPG, PNG ou WebP jusqu'à 10 Mo.",
       "receipt_attach": "Joindre le reçu",

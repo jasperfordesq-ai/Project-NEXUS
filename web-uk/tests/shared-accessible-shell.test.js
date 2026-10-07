@@ -200,6 +200,7 @@ jest.mock('../src/lib/api', () => ({
   getResourceCategoryTree: jest.fn().mockResolvedValue({ data: [] }),
   uploadResource: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   uploadVolunteerCredential: jest.fn().mockResolvedValue({ data: { id: 42 } }),
+  submitVolunteerExpenseWithReceipt: jest.fn().mockResolvedValue({ data: { id: 43 } }),
   downloadVolunteerCredential: jest.fn(),
   uploadInsuranceCertificate: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   downloadResource: jest.fn(),
@@ -13069,6 +13070,50 @@ describe('shared accessible frontend shell', () => {
       })
     }));
     expect(api.getResourceCategories).toHaveBeenCalledWith('test-token');
+  });
+
+  // Gap B13 (7 Oct 2026): the accessible expense claim had no receipt, the website's has.
+  it('sends an expense claim with its receipt, and refuses a receipt of the wrong type', async () => {
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const csrfCookies = (first.headers['set-cookie'] || []).map((cookie) => cookie.split(';')[0]);
+    const claim = (file) => agent
+      .post('/volunteering/expenses')
+      .set('Cookie', [`token=${encodeURIComponent(signedToken)}`, ...csrfCookies].join('; '))
+      .field('_csrf', csrf)
+      .field('organization_id', '42')
+      .field('expense_type', 'travel')
+      .field('amount', '3.20')
+      .field('description', 'Bus fare')
+      .attach('receipt', file.buffer, { filename: file.filename, contentType: file.contentType });
+    api.submitVolunteerExpenseWithReceipt.mockClear();
+
+    const sent = await claim({ buffer: Buffer.from('%PDF receipt', 'utf8'), filename: 'bus.pdf', contentType: 'application/pdf' });
+    expect(sent.status).toBe(302);
+    expect(sent.headers.location).toBe('/volunteering/expenses?status=expense-submitted');
+    expect(api.submitVolunteerExpenseWithReceipt).toHaveBeenCalledWith('test-token', {
+      fields: { organization_id: 42, expense_type: 'travel', amount: 3.2, description: 'Bus fare' },
+      receipt: { buffer: Buffer.from('%PDF receipt', 'utf8'), filename: 'bus.pdf', contentType: 'application/pdf' }
+    });
+
+    api.submitVolunteerExpenseWithReceipt.mockClear();
+    const refused = await claim({ buffer: Buffer.from('MZ', 'utf8'), filename: 'bus.exe', contentType: 'application/x-msdownload' });
+    expect(refused.headers.location).toBe('/volunteering/expenses?status=expense-receipt-invalid');
+    expect(api.submitVolunteerExpenseWithReceipt).not.toHaveBeenCalled();
+
+    api.callVolunteeringApi
+      .mockResolvedValueOnce({ data: { items: [] } })
+      .mockResolvedValueOnce({ data: [{ id: 42, name: 'Community Kitchen' }] })
+      .mockResolvedValueOnce({ data: [] });
+    const page = await agent.get('/volunteering/expenses?status=expense-receipt-invalid').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(page.text).toContain('enctype="multipart/form-data"');
+    expect(page.text).toContain('name="receipt" type="file"');
+    expect(page.text).toContain('id="receipt-error"');
+    expect(page.text).toContain('The receipt must be a PDF, JPG, PNG or WebP file.');
   });
 
   it('replays Laravel resource upload field errors and safe input after one submission', async () => {

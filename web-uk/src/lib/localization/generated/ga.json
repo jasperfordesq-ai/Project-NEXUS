@@ -11502,6 +11502,12 @@
                 "applications_heading": "Iarratais",
                 "applications_empty_filtered": "Níl aon iarratas ag teacht leis an scagaire seo.",
                 "hours_more": "Tuilleadh uaireanta le hathbhreithniú"
+            },
+            "expense_receipt": {
+                "label": "Admháil (roghnach)",
+                "hint": "Ceangail admháil PDF, JPG, PNG nó WebP suas go dtí 10 MB.",
+                "invalid": "Caithfidh an admháil a bheith ina comhad PDF, JPG, PNG nó WebP.",
+                "too_large": "Ní féidir leis an admháil a bheith níos mó ná 10 MB."
             }
         },
         "govuk_alpha_wallet": {
