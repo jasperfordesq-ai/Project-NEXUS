@@ -482,7 +482,7 @@ class VolunteerWellbeingController extends BaseApiController
     }
 
     /**
-     * GET /v2/volunteering/incidents ï¿½ the reports the caller made. Staff see
+     * GET /v2/volunteering/incidents — the reports the caller made. Staff see
      * every incident through the admin list; here everyone sees only their own.
      */
     public function getIncidents(): JsonResponse
