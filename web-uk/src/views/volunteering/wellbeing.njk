@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
@@ -109,6 +110,22 @@
       <textarea class="govuk-textarea govuk-js-character-count" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint note-info">{% if checkinForm %}{{ checkinForm.note }}{% endif %}</textarea>
     </div>
     {% endcall %}
+    {# Ticked by default. An unticked checkbox submits nothing, so the replayed choice
+       is the only way to keep an untick across a failed submission. The route decides
+       whether to share: only for Low or Struggling, and only when this is ticked. #}
+    {% set shareChecked = true %}
+    {% if checkinForm and checkinForm.shareWithTeam === false %}{% set shareChecked = false %}{% endif %}
+    {{ govukCheckboxes({
+      idPrefix: "share_with_team",
+      name: "share_with_team",
+      classes: "govuk-checkboxes--small",
+      items: [{
+        value: "1",
+        text: t("govuk_alpha_volunteering.wellbeing.share_label"),
+        hint: { text: t("govuk_alpha_volunteering.wellbeing.share_hint") },
+        checked: shareChecked
+      }]
+    }) }}
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.wellbeing.checkin_button") }}</button>
   </form>
 
@@ -128,7 +145,12 @@
         {% for checkin in wellbeing.recentCheckins %}
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">{{ checkin.createdAtLabel or "—" }}</td>
-            <td class="govuk-table__cell">{{ checkin.moodLabel }}</td>
+            <td class="govuk-table__cell">
+              {{ checkin.moodLabel }}
+              {% if checkin.shared %}
+                <span class="govuk-hint govuk-!-display-block govuk-!-margin-bottom-0 govuk-!-font-size-16">{{ t("govuk_alpha_volunteering.wellbeing.recent_shared") }}</span>
+              {% endif %}
+            </td>
             <td class="govuk-table__cell">{{ checkin.note }}</td>
           </tr>
         {% endfor %}

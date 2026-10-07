@@ -2810,9 +2810,11 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/volunteering/incidents/{id}/messages', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'sendMessage'])->whereNumber('id');
     Route::post('/v2/admin/volunteering/incidents/{id}/share', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'share'])->whereNumber('id');
     Route::delete('/v2/admin/volunteering/incidents/{id}/share', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'withdrawShare'])->whereNumber('id');
+    // Wellbeing alerts: brokers and coordinators are told when a volunteer says
+    // they are struggling (7 Oct 2026), so they handle these here too.
+    Route::get('/v2/admin/volunteering/wellbeing/alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminWellbeingAlerts']);
+    Route::put('/v2/admin/volunteering/wellbeing/alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateWellbeingAlert'])->whereNumber('id');
 });
-Route::get('/v2/admin/volunteering/wellbeing/alerts', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'adminWellbeingAlerts']);
-Route::put('/v2/admin/volunteering/wellbeing/alerts/{id}', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'updateWellbeingAlert'])->whereNumber('id');
 Route::put('/v2/admin/volunteering/organizations/{id}/dlp', [\App\Http\Controllers\Api\VolunteerWellbeingController::class, 'assignDlp']);
 Route::put('/v2/admin/volunteering/organizations/{id}/wallet/adjust', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'adjustOrgWallet']);
 Route::get('/v2/admin/volunteering/organizations/{id}/wallet/transactions', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'orgWalletTransactions']);

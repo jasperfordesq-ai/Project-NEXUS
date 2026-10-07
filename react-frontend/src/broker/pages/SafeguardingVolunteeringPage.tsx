@@ -10,12 +10,17 @@
  * they are handled here. Assigning an organisation's designated liaison person
  * stays admin-only. Only reachable when the tenant has the volunteering
  * feature — the route and the sidebar item are both gated.
+ *
+ * Below the incidents sit the volunteer wellbeing alerts: a volunteer who says
+ * they are Low or Struggling, and lets someone get in touch, lands here for the
+ * community's team to follow up.
  */
 
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import { VolunteerSafeguarding } from '@/admin/modules/volunteering/VolunteerSafeguarding';
+import { WellbeingAlertsPanel } from '@/admin/modules/volunteering/WellbeingAlertsPanel';
 import { AdminEmbed, useAdminEmbedActionsHost } from '@/admin/components/AdminEmbedContext';
 import { BrokerPageShell } from '../components';
 
@@ -38,6 +43,9 @@ export default function SafeguardingVolunteeringPage() {
     >
       <AdminEmbed actionsHost={actionsHost}>
         <VolunteerSafeguarding canAssignDlp={false} />
+        <div className="mt-6">
+          <WellbeingAlertsPanel />
+        </div>
       </AdminEmbed>
     </BrokerPageShell>
   );

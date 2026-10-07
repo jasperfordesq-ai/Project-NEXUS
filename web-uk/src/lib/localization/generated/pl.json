@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "Moje dobre samopoczucie",
-                "description": "Prywatne podsumowanie salda wolontariatu, które pomoże Ci uniknąć wypalenia zawodowego. Tylko ty możesz to zobaczyć.",
+                "description": "Prywatne podsumowanie Twojego wolontariatu, które pomaga uniknąć wypalenia. Widzisz je tylko Ty, chyba że zdecydujesz się powiedzieć zespołowi społeczności, jak się czujesz.",
                 "score_label": "Wynik dobrego samopoczucia",
                 "score_out_of": "na 100",
                 "risk_label": "Ryzyko wypalenia zawodowego",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Data",
                 "mood_invalid": "Wybierz nastrój od 1 do 5.",
                 "checkin_saved": "Twoje zameldowanie zostało zapisane.",
-                "checkin_failed": "Nie można zapisać Twojego zameldowania. Spróbuj ponownie."
+                "checkin_failed": "Nie można zapisać Twojego zameldowania. Spróbuj ponownie.",
+                "share_label": "Chcę, aby ktoś się ze mną skontaktował, jeśli wybiorę „Niski” lub „Walczę”",
+                "share_hint": "Zespół Twojej społeczności zobaczy, jak się czujesz, oraz Twoją notatkę. Organizacje, w których się udzielasz, dowiedzą się, jak się czujesz, ale nie zobaczą Twojej notatki. Jeśli wybierzesz „OK”, „Dobrze” lub „Świetnie”, tylko Ty zobaczysz swoje zameldowanie.",
+                "checkin_saved_shared": "Dziękujemy za tę informację. Ktoś z zespołu Twojej społeczności się z Tobą skontaktuje.",
+                "recent_shared": "Udostępniono zespołowi Twojej społeczności"
             },
             "recommended": {
                 "title": "Polecane dla Ciebie",

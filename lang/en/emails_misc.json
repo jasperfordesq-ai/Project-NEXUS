@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} is live again",
     "reinstated_body": "<strong>{{name}}</strong> is live again on {{community}} and is visible to the community once more.",
     "reinstated_cta": "View Your Organisation"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "struggling",
+    "mood_2": "feeling low",
+    "mood_label_1": "Struggling",
+    "mood_label_2": "Low",
+    "bell_team": "{{name}} said in their wellbeing check-in that they are {{mood}}, and would like someone to get in touch.",
+    "bell_org": "{{name}}, who volunteers with {{organisation}}, said they are {{mood}} and would like someone to get in touch.",
+    "subject": "{{name}} said they are {{mood}}",
+    "preview": "{{name}} said they are {{mood}} and would like someone to get in touch.",
+    "team_title": "A volunteer would like some support",
+    "team_body": "<strong>{{name}}</strong> said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them.",
+    "team_note_hint": "If they wrote a note, you can read it on the wellbeing alerts page after signing in. It is not included in this email, to keep it private.",
+    "team_cta": "View wellbeing alerts",
+    "org_title": "One of your volunteers would like some support",
+    "org_body": "<strong>{{name}}</strong>, who volunteers with {{organisation}}, said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them.",
+    "org_team_told": "The community’s team has been told as well. Please treat this as confidential and share it only with people who need to know.",
+    "org_cta": "View their profile",
+    "info_card_heading": "Wellbeing check-in",
+    "info_card_volunteer": "Volunteer",
+    "info_card_feeling": "How they feel",
+    "info_card_organisation": "Organisation"
   }
 }

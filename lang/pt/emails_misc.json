@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} está publicada novamente",
     "reinstated_body": "<strong>{{name}}</strong> está novamente publicada em {{community}} e volta a estar visível para a comunidade.",
     "reinstated_cta": "Ver a sua organização"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "muito mal",
+    "mood_2": "mal",
+    "mood_label_1": "Muito mal",
+    "mood_label_2": "Mal",
+    "bell_team": "{{name}} informou no check-in de bem-estar: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "bell_org": "{{name}}, que faz voluntariado com {{organisation}}, informou: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "subject": "{{name}}: “Estou me sentindo {{mood}}”",
+    "preview": "{{name}} informou: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "team_title": "Uma pessoa voluntária precisa de apoio",
+    "team_body": "<strong>{{name}}</strong> informou no check-in de bem-estar: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "team_note_hint": "Se houver uma nota, você pode lê-la na página de alertas de bem-estar depois de entrar. Ela não está neste e-mail, para proteger a privacidade.",
+    "team_cta": "Ver alertas de bem-estar",
+    "org_title": "Uma pessoa voluntária da sua organização precisa de apoio",
+    "org_body": "<strong>{{name}}</strong>, que faz voluntariado com {{organisation}}, informou no check-in de bem-estar: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "org_team_told": "A equipe da comunidade também foi informada. Trate esta informação como confidencial e compartilhe-a apenas com quem precisa saber.",
+    "org_cta": "Ver perfil",
+    "info_card_heading": "Check-in de bem-estar",
+    "info_card_volunteer": "Pessoa voluntária",
+    "info_card_feeling": "Como se sente",
+    "info_card_organisation": "Organização"
   }
 }

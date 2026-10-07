@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} staat weer online",
     "reinstated_body": "<strong>{{name}}</strong> staat weer online op {{community}} en is opnieuw zichtbaar voor de gemeenschap.",
     "reinstated_cta": "Bekijk je organisatie"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "heel slecht",
+    "mood_2": "niet zo goed",
+    "mood_label_1": "Heel slecht",
+    "mood_label_2": "Niet zo goed",
+    "bell_team": "{{name}} gaf bij de welzijnscheck aan: ‘Ik voel me {{mood}}’ en wil graag dat iemand contact opneemt.",
+    "bell_org": "{{name}}, vrijwilliger bij {{organisation}}, gaf aan: ‘Ik voel me {{mood}}’ en wil graag dat iemand contact opneemt.",
+    "subject": "{{name}}: ‘Ik voel me {{mood}}’",
+    "preview": "{{name}} gaf aan: ‘Ik voel me {{mood}}’ en wil graag dat iemand contact opneemt.",
+    "team_title": "Een vrijwilliger vraagt om steun",
+    "team_body": "<strong>{{name}}</strong> gaf bij de welzijnscheck aan: ‘Ik voel me {{mood}}’ en vraagt of iemand contact wil opnemen.",
+    "team_note_hint": "Als er een notitie is geschreven, kun je die na het inloggen lezen op de pagina met welzijnsmeldingen. Om de privacy te beschermen staat die niet in deze e-mail.",
+    "team_cta": "Welzijnsmeldingen bekijken",
+    "org_title": "Een van je vrijwilligers vraagt om steun",
+    "org_body": "<strong>{{name}}</strong>, vrijwilliger bij {{organisation}}, gaf bij de welzijnscheck aan: ‘Ik voel me {{mood}}’ en vraagt of iemand contact wil opnemen.",
+    "org_team_told": "Het team van de gemeenschap is ook op de hoogte gebracht. Behandel dit vertrouwelijk en deel het alleen met mensen die het moeten weten.",
+    "org_cta": "Profiel bekijken",
+    "info_card_heading": "Welzijnscheck",
+    "info_card_volunteer": "Vrijwilliger",
+    "info_card_feeling": "Hoe het gaat",
+    "info_card_organisation": "Organisatie"
   }
 }

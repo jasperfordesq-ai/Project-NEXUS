@@ -1086,7 +1086,12 @@
     "day_streak": "Racha de Días",
     "suggested_rest_days": "Días de Descanso Sugeridos",
     "rest_days_desc": "Según tu actividad reciente, te recomendamos tomarte un descanso estos días:",
-    "recent_checkins": "Check-ins de Ánimo Recientes"
+    "recent_checkins": "Check-ins de Ánimo Recientes",
+    "share_with_team_label": "Quiero que alguien se ponga en contacto conmigo",
+    "share_with_team_desc": "El equipo de tu comunidad verá cómo te sientes y tu nota. Las organizaciones con las que haces voluntariado sabrán cómo te sientes, pero no verán tu nota.",
+    "share_with_team_private": "Solo tú verás este registro.",
+    "checkin_success_team_notified": "Gracias por contárnoslo. Alguien del equipo de tu comunidad se pondrá en contacto contigo.",
+    "checkin_shared_label": "Compartido con el equipo de tu comunidad"
   },
   "check_in": {
     "title": "Registro de turno",

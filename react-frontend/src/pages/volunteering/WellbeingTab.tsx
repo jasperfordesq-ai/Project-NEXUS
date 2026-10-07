@@ -28,6 +28,7 @@ import MessageSquare from 'lucide-react/icons/message-square';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -59,7 +60,22 @@ interface MoodCheckin {
   mood: number;
   note: string | null;
   created_at: string;
+  /** True when the volunteer let their community's team get in touch about this check-in. */
+  shared?: boolean;
 }
+
+/** POST /v2/volunteering/wellbeing/checkin response. */
+interface WellbeingCheckinResult {
+  id: number;
+  mood: number;
+  note: string | null;
+  shared: boolean;
+  /** True when the community's team (and organisations) were told about this check-in. */
+  team_notified: boolean;
+}
+
+/** Moods at or below this level offer to let someone get in touch. */
+const LOW_MOOD_MAX = 2;
 
 /* ───────────────────────── Mood Helpers ───────────────────────── */
 
@@ -134,6 +150,10 @@ export function WellbeingTab() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedMood, setSelectedMood] = useState<number>(3);
   const [checkinNote, setCheckinNote] = useState('');
+  // For a Low or Struggling check-in, the volunteer can let their community's
+  // team get in touch. Ticked by default; they can untick it to keep it private.
+  const [shareWithTeam, setShareWithTeam] = useState(true);
+  const isLowMood = selectedMood <= LOW_MOOD_MAX;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // AbortController ref to cancel stale requests
@@ -182,16 +202,23 @@ export function WellbeingTab() {
     try {
       setIsSubmitting(true);
 
-      const response = await api.post('/v2/volunteering/wellbeing/checkin', {
+      // share_with_team is always sent explicitly: the server treats a missing
+      // value as "do not share", and only ever shares a Low or Struggling check-in.
+      const response = await api.post<WellbeingCheckinResult>('/v2/volunteering/wellbeing/checkin', {
         mood: selectedMood,
         note: checkinNote.trim() || undefined,
+        share_with_team: isLowMood ? shareWithTeam : false,
       });
 
       if (response.success) {
-        toastRef.current.success(tRef.current('wellbeing.checkin_success'));
+        const teamNotified = response.data?.team_notified === true;
+        toastRef.current.success(
+          tRef.current(teamNotified ? 'wellbeing.checkin_success_team_notified' : 'wellbeing.checkin_success'),
+        );
         onClose();
         setSelectedMood(3);
         setCheckinNote('');
+        setShareWithTeam(true);
         load();
       } else {
         toastRef.current.error(tRef.current('wellbeing.checkin_failed'));
@@ -439,6 +466,9 @@ export function WellbeingTab() {
                         {checkin.note && (
                           <p className="text-xs text-theme-muted truncate">{checkin.note}</p>
                         )}
+                        {checkin.shared === true && (
+                          <p className="text-xs text-theme-subtle mt-0.5">{t('wellbeing.checkin_shared_label')}</p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -553,6 +583,21 @@ export function WellbeingTab() {
                 inputWrapper: 'bg-theme-elevated border-theme-default',
               }}
             />
+
+            {/* Low or Struggling: offer to let someone get in touch. */}
+            {isLowMood && (
+              <Checkbox
+                isSelected={shareWithTeam}
+                onChange={setShareWithTeam}
+                description={
+                  shareWithTeam
+                    ? t('wellbeing.share_with_team_desc')
+                    : t('wellbeing.share_with_team_private')
+                }
+              >
+                {t('wellbeing.share_with_team_label')}
+              </Checkbox>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button variant="tertiary" onPress={onClose} className="text-theme-muted">{t('wellbeing.cancel')}</Button>

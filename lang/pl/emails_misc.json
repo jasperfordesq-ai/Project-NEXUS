@@ -886,5 +886,27 @@
     "reinstated_bell": "Organizacja {{name}} jest znów widoczna",
     "reinstated_body": "Organizacja <strong>{{name}}</strong> jest znów aktywna w {{community}} i ponownie widoczna dla społeczności.",
     "reinstated_cta": "Zobacz swoją organizację"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "bardzo źle",
+    "mood_2": "źle",
+    "mood_label_1": "Bardzo źle",
+    "mood_label_2": "Źle",
+    "bell_team": "{{name}} odpowiada w ankiecie samopoczucia: „Czuję się {{mood}}” i prosi o kontakt.",
+    "bell_org": "{{name}}, osoba z wolontariatu w {{organisation}}, odpowiada: „Czuję się {{mood}}” i prosi o kontakt.",
+    "subject": "{{name}}: „Czuję się {{mood}}”",
+    "preview": "{{name}} odpowiada: „Czuję się {{mood}}” i prosi o kontakt.",
+    "team_title": "Prośba o wsparcie od osoby z wolontariatu",
+    "team_body": "<strong>{{name}}</strong> odpowiada w ankiecie samopoczucia: „Czuję się {{mood}}” i prosi, aby ktoś się skontaktował.",
+    "team_note_hint": "Jeśli dodano notatkę, możesz ją przeczytać po zalogowaniu na stronie alertów dotyczących samopoczucia. Ze względu na prywatność nie ma jej w tej wiadomości.",
+    "team_cta": "Zobacz alerty dotyczące samopoczucia",
+    "org_title": "Osoba z wolontariatu w Twojej organizacji prosi o wsparcie",
+    "org_body": "<strong>{{name}}</strong>, osoba z wolontariatu w {{organisation}}, odpowiada w ankiecie samopoczucia: „Czuję się {{mood}}” i prosi, aby ktoś się skontaktował.",
+    "org_team_told": "Zespół społeczności również został poinformowany. Traktuj tę informację jako poufną i przekazuj ją tylko osobom, które muszą ją znać.",
+    "org_cta": "Zobacz profil",
+    "info_card_heading": "Ankieta samopoczucia",
+    "info_card_volunteer": "Osoba",
+    "info_card_feeling": "Samopoczucie",
+    "info_card_organisation": "Organizacja"
   }
 }

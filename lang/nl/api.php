@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'Begin met een kleine, vrijblijvende kans om weer tot rust te komen.',
     'vol_wellbeing_recommendation_schedule_rest' => 'Er komen veel verschuivingen aan. Zorg ervoor dat u rustdagen plant.',
     'vol_wellbeing_recommendation_healthy_balance' => 'Je onderhoudt een gezond vrijwilligersevenwicht. Ga zo door!',
+    'vol_wellbeing_warning_low_mood' => 'Je liet ons onlangs weten dat je je niet zo goed voelt. Zorg goed voor jezelf en vraag om steun als je dat wilt.',
+    'vol_wellbeing_recommendation_reach_out' => 'Praat met iemand die je vertrouwt, of neem contact op met het team van je gemeenschap als je steun wilt.',
     'vol_wellbeing_invalid_action' => 'Ongeldige actie. Moet een van de volgende zijn: :actions',
     'volunteer_auto_payment_description' => 'Automatische betaling voor :hours uur vrijwillig aangeboden',
     'vol_certificate_no_approved_hours' => 'Er zijn geen goedgekeurde vrijwilligersuren gevonden voor deze gebruiker',

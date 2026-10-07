@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} è di nuovo online",
     "reinstated_body": "<strong>{{name}}</strong> è di nuovo online su {{community}} ed è nuovamente visibile alla comunità.",
     "reinstated_cta": "Vedi la tua organizzazione"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "molto in difficoltà",
+    "mood_2": "giù",
+    "mood_label_1": "In difficoltà",
+    "mood_label_2": "Giù",
+    "bell_team": "{{name}} ha indicato nel check-in sul benessere: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "bell_org": "{{name}}, che fa volontariato con {{organisation}}, ha indicato: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "subject": "{{name}}: «Mi sento {{mood}}»",
+    "preview": "{{name}} ha indicato: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "team_title": "Una persona volontaria chiede supporto",
+    "team_body": "<strong>{{name}}</strong> ha indicato nel check-in sul benessere: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "team_note_hint": "Se è stata scritta una nota, puoi leggerla nella pagina degli avvisi sul benessere dopo aver effettuato l’accesso. Non è inclusa in questa email per tutelare la riservatezza.",
+    "team_cta": "Vedi gli avvisi sul benessere",
+    "org_title": "Una persona volontaria della tua organizzazione chiede supporto",
+    "org_body": "<strong>{{name}}</strong>, che fa volontariato con {{organisation}}, ha indicato nel check-in sul benessere: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "org_team_told": "Anche il team della comunità è stato informato. Tratta questa informazione in modo riservato e condividila solo con chi ha bisogno di saperlo.",
+    "org_cta": "Vedi il profilo",
+    "info_card_heading": "Check-in sul benessere",
+    "info_card_volunteer": "Persona volontaria",
+    "info_card_feeling": "Come si sente",
+    "info_card_organisation": "Organizzazione"
   }
 }

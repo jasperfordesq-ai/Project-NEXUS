@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "Mon bien-être",
-                "description": "Un résumé privé de votre solde de bénévolat, pour vous aider à éviter l'épuisement professionnel. Vous seul pouvez voir cela.",
+                "description": "Un résumé privé de votre engagement bénévole, pour vous aider à éviter l’épuisement. Il n’est visible que par vous, sauf si vous choisissez de dire à l’équipe de votre communauté comment vous vous sentez.",
                 "score_label": "Score de bien-être",
                 "score_out_of": "sur 100",
                 "risk_label": "Risque d'épuisement professionnel",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Date",
                 "mood_invalid": "Choisissez une ambiance entre 1 et 5.",
                 "checkin_saved": "Votre enregistrement a été enregistré.",
-                "checkin_failed": "Votre enregistrement n'a pas pu être enregistré. Veuillez réessayer."
+                "checkin_failed": "Votre enregistrement n'a pas pu être enregistré. Veuillez réessayer.",
+                "share_label": "Que quelqu’un me contacte si je choisis « Faible » ou « En difficulté »",
+                "share_hint": "L’équipe de votre communauté verra comment vous vous sentez ainsi que votre note. Les organisations avec lesquelles vous faites du bénévolat sauront comment vous vous sentez, mais ne verront pas votre note. Si vous choisissez « D'accord », « Bien » ou « Génial », vous serez la seule personne à voir votre enregistrement.",
+                "checkin_saved_shared": "Merci de nous l’avoir dit. Quelqu’un de l’équipe de votre communauté vous contactera.",
+                "recent_shared": "Partagé avec l’équipe de votre communauté"
             },
             "recommended": {
                 "title": "Recommandé pour vous",

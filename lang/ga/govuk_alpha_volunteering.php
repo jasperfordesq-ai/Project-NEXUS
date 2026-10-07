@@ -250,7 +250,7 @@ return [
     ],
     'wellbeing' => [
         'title' => 'Mo leas',
-        'description' => 'Achoimre phríobháideach ar d’iarmhéid oibre deonaí, chun cabhrú leat ídiú a sheachaint. Ní féidir ach leatsa é seo a fheiceáil.',
+        'description' => 'Achoimre phríobháideach ar d’obair dheonach, chun cabhrú leat traochadh a sheachaint. Is tusa amháin a fheiceann í, mura roghnaíonn tú insint d’fhoireann do phobail conas a mhothaíonn tú.',
         'score_label' => 'Scór folláine',
         'score_out_of' => 'as 100',
         'risk_label' => 'Riosca dóite',
@@ -284,6 +284,10 @@ return [
         'mood_invalid' => 'Roghnaigh meon idir 1 agus 5.',
         'checkin_saved' => 'Sábháladh do sheic-isteach.',
         'checkin_failed' => 'Níorbh fhéidir do sheiceáil isteach a shábháil. Bain triail eile as.',
+        'share_label' => 'Lig do dhuine teagmháil a dhéanamh liom má roghnaím Íseal nó Ag streachailt',
+        'share_hint' => 'Feicfidh foireann do phobail conas atá tú ag mothú agus do nóta. Inseofar do na heagraíochtaí a ndéanann tú obair dheonach leo conas atá tú ag mothú, ach ní fheicfidh siad do nóta. Má roghnaíonn tú Ceart go leor, Maith nó Go hiontach, is tusa amháin a fheicfidh do sheiceáil isteach.',
+        'checkin_saved_shared' => 'Go raibh maith agat as é a insint dúinn. Déanfaidh duine éigin ó fhoireann do phobail teagmháil leat.',
+        'recent_shared' => 'Roinnte le foireann do phobail',
     ],
     'recommended' => [
         'title' => 'Molta duit',

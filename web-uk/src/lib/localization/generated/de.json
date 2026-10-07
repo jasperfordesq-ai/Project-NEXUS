@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "Mein Wohlbefinden",
-                "description": "Eine private Zusammenfassung Ihrer Freiwilligenbilanz, um Ihnen zu helfen, Burnout zu vermeiden. Das können nur Sie sehen.",
+                "description": "Eine private Übersicht über Ihr ehrenamtliches Engagement, die Ihnen hilft, Überlastung zu vermeiden. Nur Sie können sie sehen – es sei denn, Sie entscheiden sich, dem Team Ihrer Gemeinschaft mitzuteilen, wie es Ihnen geht.",
                 "score_label": "Wohlbefindensbewertung",
                 "score_out_of": "von 100",
                 "risk_label": "Burnout-Risiko",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Datum",
                 "mood_invalid": "Wählen Sie eine Stimmung zwischen 1 und 5.",
                 "checkin_saved": "Ihr Check-in wurde gespeichert.",
-                "checkin_failed": "Ihr Check-in konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+                "checkin_failed": "Ihr Check-in konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+                "share_label": "Jemand darf sich bei mir melden, wenn ich „Niedrig“ oder „Kämpfend“ wähle",
+                "share_hint": "Das Team Ihrer Gemeinschaft sieht, wie es Ihnen geht, und Ihre Notiz. Die Organisationen, bei denen Sie sich engagieren, erfahren, wie es Ihnen geht, aber nicht Ihre Notiz. Wenn Sie „Okay“, „Gut“ oder „Großartig“ wählen, sehen nur Sie Ihren Check-in.",
+                "checkin_saved_shared": "Danke, dass Sie es uns mitgeteilt haben. Jemand aus dem Team Ihrer Gemeinschaft wird sich bei Ihnen melden.",
+                "recent_shared": "Mit dem Team Ihrer Gemeinschaft geteilt"
             },
             "recommended": {
                 "title": "Für Sie empfohlen",

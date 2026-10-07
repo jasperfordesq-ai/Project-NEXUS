@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} está publicada de nuevo",
     "reinstated_body": "<strong>{{name}}</strong> vuelve a estar publicada en {{community}} y es visible de nuevo para la comunidad.",
     "reinstated_cta": "Ver tu organización"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "muy mal",
+    "mood_2": "mal",
+    "mood_label_1": "Muy mal",
+    "mood_label_2": "Mal",
+    "bell_team": "{{name}} indicó en su registro de bienestar: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
+    "bell_org": "{{name}}, que hace voluntariado con {{organisation}}, indicó: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
+    "subject": "{{name}}: «Me siento {{mood}}»",
+    "preview": "{{name}} indicó: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
+    "team_title": "Una persona voluntaria necesita apoyo",
+    "team_body": "<strong>{{name}}</strong> indicó en su registro de bienestar: «Me siento {{mood}}» y pide que alguien se ponga en contacto.",
+    "team_note_hint": "Si escribió una nota, puede leerla en la página de alertas de bienestar después de iniciar sesión. No se incluye en este correo para proteger su privacidad.",
+    "team_cta": "Ver alertas de bienestar",
+    "org_title": "Una persona voluntaria de su organización necesita apoyo",
+    "org_body": "<strong>{{name}}</strong>, que hace voluntariado con {{organisation}}, indicó en su registro de bienestar: «Me siento {{mood}}» y pide que alguien se ponga en contacto.",
+    "org_team_told": "El equipo de la comunidad también ha sido informado. Trate esta información de forma confidencial y compártala solo con quienes necesiten saberlo.",
+    "org_cta": "Ver su perfil",
+    "info_card_heading": "Registro de bienestar",
+    "info_card_volunteer": "Persona voluntaria",
+    "info_card_feeling": "Cómo se siente",
+    "info_card_organisation": "Organización"
   }
 }

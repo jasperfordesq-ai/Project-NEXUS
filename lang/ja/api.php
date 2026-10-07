@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'まずは、コミットメントの低い小さな機会から始めて、安心して元に戻りましょう。',
     'vol_wellbeing_recommendation_schedule_rest' => 'これからたくさんのシフトが待っています。必ず休息日を計画してください。',
     'vol_wellbeing_recommendation_healthy_balance' => 'あなたは健全なボランティア活動のバランスを維持しています。それを維持する！',
+    'vol_wellbeing_warning_low_mood' => '最近、気分がよくないと教えてくれましたね。どうか無理をせず、サポートが必要なときは遠慮なく相談してください。',
+    'vol_wellbeing_recommendation_reach_out' => '信頼できる人に話すか、サポートが必要な場合はコミュニティのチームに連絡してください。',
     'vol_wellbeing_invalid_action' => '無効なアクションです。次のいずれかである必要があります: :actions',
     'volunteer_auto_payment_description' => ':hours の自動支払いがボランティアで行われました',
     'vol_certificate_no_approved_hours' => 'このユーザーに承認されたボランティア時間は見つかりませんでした',

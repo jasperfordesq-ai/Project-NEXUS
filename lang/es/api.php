@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'Comience con una pequeña oportunidad de bajo compromiso para volver a sentirse cómodo.',
     'vol_wellbeing_recommendation_schedule_rest' => 'Tienes muchos turnos por delante. Asegúrate de programar días de descanso.',
     'vol_wellbeing_recommendation_healthy_balance' => 'Estás manteniendo un equilibrio saludable en el voluntariado. ¡Avanza!',
+    'vol_wellbeing_warning_low_mood' => 'Hace poco nos dijo que no se siente bien. Cuídese y pida apoyo si lo necesita.',
+    'vol_wellbeing_recommendation_reach_out' => 'Hable con alguien de confianza o contacte con el equipo de su comunidad si desea apoyo.',
     'vol_wellbeing_invalid_action' => 'Acción no válida. Debe ser uno de: :actions',
     'volunteer_auto_payment_description' => 'Pago automático de :hours h voluntarias',
     'vol_certificate_no_approved_hours' => 'No se encontraron horas de voluntariado aprobadas para este usuario',

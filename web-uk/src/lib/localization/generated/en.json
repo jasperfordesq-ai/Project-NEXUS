@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "My wellbeing",
-                "description": "A private summary of your volunteering balance, to help you avoid burnout. Only you can see this.",
+                "description": "A private summary of your volunteering balance, to help you avoid burnout. Only you can see it, unless you choose to tell your community’s team how you are feeling.",
                 "score_label": "Wellbeing score",
                 "score_out_of": "out of 100",
                 "risk_label": "Burnout risk",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Date",
                 "mood_invalid": "Choose a mood between 1 and 5.",
                 "checkin_saved": "Your check-in has been saved.",
-                "checkin_failed": "Your check-in could not be saved. Please try again."
+                "checkin_failed": "Your check-in could not be saved. Please try again.",
+                "share_label": "Let someone get in touch with me if I choose Low or Struggling",
+                "share_hint": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note. If you choose Okay, Good or Great, only you will see your check-in.",
+                "checkin_saved_shared": "Thank you for telling us. Someone from your community's team will be in touch.",
+                "recent_shared": "Shared with your community's team"
             },
             "recommended": {
                 "title": "Recommended for you",

@@ -250,7 +250,7 @@ return [
     ],
     'wellbeing' => [
         'title' => 'Mijn welzijn',
-        'description' => 'Een privéoverzicht van uw vrijwilligerssaldo, om u te helpen een burn-out te voorkomen. Alleen jij kunt dit zien.',
+        'description' => 'Een privéoverzicht van je vrijwilligerswerk, om je te helpen een burn-out te voorkomen. Alleen jij kunt dit zien, tenzij je ervoor kiest het team van je gemeenschap te laten weten hoe je je voelt.',
         'score_label' => 'Welzijnsscore',
         'score_out_of' => 'uit 100',
         'risk_label' => 'Risico op burn-out',
@@ -284,6 +284,10 @@ return [
         'mood_invalid' => 'Kies een stemming tussen 1 en 5.',
         'checkin_saved' => 'Uw check-in is opgeslagen.',
         'checkin_failed' => 'Uw check-in kan niet worden opgeslagen. Probeer het opnieuw.',
+        'share_label' => 'Laat iemand contact met me opnemen als ik Laag of Worstelen kies',
+        'share_hint' => 'Het team van je gemeenschap ziet hoe je je voelt en je opmerking. De organisaties waarvoor je vrijwilligerswerk doet, horen hoe je je voelt, maar niet je opmerking. Als je Oké, Goed of Geweldig kiest, ziet alleen jij je check-in.',
+        'checkin_saved_shared' => 'Bedankt dat je het ons laat weten. Iemand van het team van je gemeenschap neemt contact met je op.',
+        'recent_shared' => 'Gedeeld met het team van je gemeenschap',
     ],
     'recommended' => [
         'title' => 'Aanbevolen voor jou',

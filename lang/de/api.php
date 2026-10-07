@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'Beginnen Sie mit einer kleinen, unverbindlichen Gelegenheit, sich wieder einzuleben.',
     'vol_wellbeing_recommendation_schedule_rest' => 'Es stehen viele Schichten an. Planen Sie unbedingt Ruhetage ein.',
     'vol_wellbeing_recommendation_healthy_balance' => 'Sie achten auf eine gesunde Balance zwischen Freiwilligenarbeit und Freiwilligenarbeit. Weiter so!',
+    'vol_wellbeing_warning_low_mood' => 'Sie haben uns kürzlich mitgeteilt, dass es Ihnen nicht gut geht. Bitte achten Sie auf sich und melden Sie sich, wenn Sie Unterstützung möchten.',
+    'vol_wellbeing_recommendation_reach_out' => 'Sprechen Sie mit einer Person Ihres Vertrauens oder wenden Sie sich an das Team Ihrer Gemeinschaft, wenn Sie Unterstützung möchten.',
     'vol_wellbeing_invalid_action' => 'Ungültige Aktion. Muss einer von sein: :actions',
     'volunteer_auto_payment_description' => 'Automatische Zahlung für :hours h hat sich freiwillig gemeldet',
     'vol_certificate_no_approved_hours' => 'Für diesen Benutzer wurden keine genehmigten Freiwilligenstunden gefunden',

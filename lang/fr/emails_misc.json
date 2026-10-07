@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} est de nouveau en ligne",
     "reinstated_body": "<strong>{{name}}</strong> est de nouveau en ligne sur {{community}} et redevient visible par la communauté.",
     "reinstated_cta": "Voir votre organisation"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "en grande difficulté",
+    "mood_2": "à plat",
+    "mood_label_1": "En grande difficulté",
+    "mood_label_2": "À plat",
+    "bell_team": "{{name}} a indiqué lors de son point bien-être : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
+    "bell_org": "{{name}}, bénévole auprès de {{organisation}}, a indiqué : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
+    "subject": "{{name}} : « Je me sens {{mood}} »",
+    "preview": "{{name}} a indiqué : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
+    "team_title": "Une personne bénévole souhaite du soutien",
+    "team_body": "<strong>{{name}}</strong> a indiqué lors de son point bien-être : « Je me sens {{mood}} » et demande que quelqu’un prenne contact.",
+    "team_note_hint": "Si une note a été rédigée, vous pouvez la lire sur la page des alertes bien-être après connexion. Elle n’est pas incluse dans cet e-mail, afin de préserver la confidentialité.",
+    "team_cta": "Voir les alertes bien-être",
+    "org_title": "Une personne bénévole de votre organisation souhaite du soutien",
+    "org_body": "<strong>{{name}}</strong>, bénévole auprès de {{organisation}}, a indiqué lors de son point bien-être : « Je me sens {{mood}} » et demande que quelqu’un prenne contact.",
+    "org_team_told": "L’équipe de la communauté a également été informée. Merci de traiter cette information de manière confidentielle et de ne la partager qu’avec les personnes qui doivent la connaître.",
+    "org_cta": "Voir son profil",
+    "info_card_heading": "Point bien-être",
+    "info_card_volunteer": "Bénévole",
+    "info_card_feeling": "Ressenti",
+    "info_card_organisation": "Organisation"
   }
 }

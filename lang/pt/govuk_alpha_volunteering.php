@@ -250,7 +250,7 @@ return [
     ],
     'wellbeing' => [
         'title' => 'Meu bem-estar',
-        'description' => 'Um resumo privado do seu saldo de voluntariado, para ajudá-lo a evitar o esgotamento. Só você pode ver isso.',
+        'description' => 'Um resumo privado do seu voluntariado, para ajudar você a evitar o esgotamento. Só você pode vê-lo, a menos que escolha contar à equipe da sua comunidade como está se sentindo.',
         'score_label' => 'Pontuação de bem-estar',
         'score_out_of' => 'de 100',
         'risk_label' => 'Risco de esgotamento',
@@ -284,6 +284,10 @@ return [
         'mood_invalid' => 'Escolha um clima entre 1 e 5.',
         'checkin_saved' => 'Seu check-in foi salvo.',
         'checkin_failed' => 'Não foi possível salvar seu check-in. Por favor, tente novamente.',
+        'share_label' => 'Quero que alguém entre em contato comigo se eu escolher "Baixo" ou "Lutando"',
+        'share_hint' => 'A equipe da sua comunidade verá como você está se sentindo e a sua observação. As organizações com as quais você faz voluntariado saberão como você está se sentindo, mas não verão a sua observação. Se você escolher "Ok", "Bom" ou "Ótimo", só você verá o seu check-in.',
+        'checkin_saved_shared' => 'Obrigado por nos contar. Alguém da equipe da sua comunidade entrará em contato com você.',
+        'recent_shared' => 'Compartilhado com a equipe da sua comunidade',
     ],
     'recommended' => [
         'title' => 'Recomendado para você',

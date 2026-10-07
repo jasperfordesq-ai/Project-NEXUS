@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} が再び公開されました",
     "reinstated_body": "<strong>{{name}}</strong> は {{community}} で再び公開され、コミュニティに表示されるようになりました。",
     "reinstated_cta": "団体ページを見る"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "とてもつらい",
+    "mood_2": "あまりよくない",
+    "mood_label_1": "とてもつらい",
+    "mood_label_2": "あまりよくない",
+    "bell_team": "{{name}} さんがウェルビーイングのチェックインで「{{mood}}」と回答し、連絡を希望しています。",
+    "bell_org": "{{organisation}} でボランティアをしている {{name}} さんが「{{mood}}」と回答し、連絡を希望しています。",
+    "subject": "{{name}} さん：「{{mood}}」",
+    "preview": "{{name}} さんが「{{mood}}」と回答し、連絡を希望しています。",
+    "team_title": "ボランティアの方がサポートを求めています",
+    "team_body": "<strong>{{name}}</strong> さんがウェルビーイングのチェックインで「{{mood}}」と回答し、誰かから連絡してほしいと希望しています。",
+    "team_note_hint": "メモが書かれている場合は、ログイン後にウェルビーイングのアラートページで確認できます。プライバシー保護のため、このメールには含まれていません。",
+    "team_cta": "ウェルビーイングのアラートを見る",
+    "org_title": "あなたの団体のボランティアの方がサポートを求めています",
+    "org_body": "{{organisation}} でボランティアをしている <strong>{{name}}</strong> さんがウェルビーイングのチェックインで「{{mood}}」と回答し、誰かから連絡してほしいと希望しています。",
+    "org_team_told": "コミュニティのチームにも通知されています。この情報は機密として扱い、知る必要のある人とだけ共有してください。",
+    "org_cta": "プロフィールを見る",
+    "info_card_heading": "ウェルビーイングのチェックイン",
+    "info_card_volunteer": "ボランティア",
+    "info_card_feeling": "気分",
+    "info_card_organisation": "団体"
   }
 }

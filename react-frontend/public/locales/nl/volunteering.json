@@ -1074,7 +1074,12 @@
     "day_streak": "Dag Streak",
     "suggested_rest_days": "Voorgestelde rustdagen",
     "rest_days_desc": "Op basis van uw recente activiteit raden we u aan een pauze te nemen op deze dagen:",
-    "recent_checkins": "Recente stemmingscontroles"
+    "recent_checkins": "Recente stemmingscontroles",
+    "share_with_team_label": "Iemand mag contact met me opnemen",
+    "share_with_team_desc": "Het team van je gemeenschap ziet hoe je je voelt en je notitie. De organisaties waar je vrijwilligerswerk doet, horen hoe je je voelt, maar zien je notitie niet.",
+    "share_with_team_private": "Alleen jij ziet deze check-in.",
+    "checkin_success_team_notified": "Bedankt dat je het ons laat weten. Iemand van het team van je gemeenschap neemt contact met je op.",
+    "checkin_shared_label": "Gedeeld met het team van je gemeenschap"
   },
   "check_in": {
     "title": "Inchecken in ploegendienst",

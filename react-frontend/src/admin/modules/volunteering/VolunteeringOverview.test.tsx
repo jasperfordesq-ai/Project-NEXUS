@@ -368,7 +368,9 @@ describe('VolunteeringOverview — wellbeing alerts', () => {
     id: 55,
     user_id: 3,
     user_name: 'Carer Bob',
-    risk_type: 'burnout_risk',
+    risk_level: 'moderate',
+    reason: 'activity',
+    latest_checkin: null,
     status: 'active',
     created_at: '2026-06-10T00:00:00Z',
   };
@@ -395,11 +397,12 @@ describe('VolunteeringOverview — wellbeing alerts', () => {
 
     render(<VolunteeringOverview />);
 
-    // Defensive rendering of the alert's name and risk type fields
+    // The alerts card (WellbeingAlertsPanel) shows the name, a translated reason and risk level.
     await waitFor(() => {
       expect(screen.getByText('Carer Bob')).toBeInTheDocument();
     });
-    expect(screen.getByText('burnout_risk')).toBeInTheDocument();
+    expect(screen.getByText('Activity pattern')).toBeInTheDocument();
+    expect(screen.getByText('Moderate risk')).toBeInTheDocument();
 
     const ackBtn = screen.getAllByRole('button').find(
       (b) => b.textContent?.toLowerCase().includes('acknowledge'),
@@ -413,6 +416,20 @@ describe('VolunteeringOverview — wellbeing alerts', () => {
         { status: 'acknowledged' },
       );
     });
+  });
+
+  it('reloads the wellbeing alerts when the page Refresh button is pressed', async () => {
+    mockAdminVolunteering.getOverview.mockResolvedValue(MOCK_OVERVIEW_RESPONSE);
+    mockAdminVolunteering.getTrends.mockResolvedValue(MOCK_TRENDS_RESPONSE);
+    mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
+    mockApi.get.mockResolvedValue({ success: true, data: [] });
+
+    render(<VolunteeringOverview />);
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /refresh/i }));
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledTimes(2));
+    expect(mockApi.get).toHaveBeenLastCalledWith(expect.stringContaining('/wellbeing/alerts?status=active'));
   });
 
   it('renders defensively when the alert list envelope is nested under data.items', async () => {

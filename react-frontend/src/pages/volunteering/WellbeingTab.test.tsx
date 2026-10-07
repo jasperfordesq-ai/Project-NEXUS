@@ -55,6 +55,20 @@ const stableT = (
     "wellbeing.score_out_of_100": "{{score}}/100 - {{label}}",
     "wellbeing.tip_breaks": "Take regular breaks between volunteer shifts",
     "wellbeing.view_tips": "View Self-Care Tips",
+    "wellbeing.mood_aria": "Mood: {{mood}}",
+    "wellbeing.mood_struggling": "Struggling",
+    "wellbeing.mood_low": "Low",
+    "wellbeing.mood_okay": "Okay",
+    "wellbeing.mood_good": "Good",
+    "wellbeing.mood_great": "Great",
+    "wellbeing.submit_checkin": "Submit Check-in",
+    "wellbeing.checkin_success": "Mood check-in recorded.",
+    "wellbeing.checkin_success_team_notified": "Thank you for telling us. Someone from your community's team will be in touch.",
+    "wellbeing.checkin_shared_label": "Shared with your community's team",
+    "wellbeing.share_with_team_label": "Let someone get in touch with me",
+    "wellbeing.share_with_team_desc": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note.",
+    "wellbeing.share_with_team_private": "Only you will see this check-in.",
+    "wellbeing.recent_checkins": "Recent Check-ins",
   };
 
   if (typeof fallbackOrOptions === "string") {
@@ -85,13 +99,15 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
+const mockToast = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  warning: vi.fn(),
+}));
+
 vi.mock("@/contexts", () => ({
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  useToast: vi.fn(() => mockToast),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
@@ -228,5 +244,107 @@ describe("WellbeingTab", () => {
     expect(
       screen.getByText(/Take regular breaks between volunteer shifts/),
     ).toBeInTheDocument();
+  });
+
+  /* ── Low-mood sharing (share_with_team) ─────────────────────────────── */
+
+  async function openCheckin() {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockWellbeingData });
+    render(<WellbeingTab />);
+    await screen.findByText("75");
+    fireEvent.click(screen.getByRole("button", { name: /Log How I.m Feeling/i }));
+    await screen.findByRole("button", { name: "Submit Check-in" });
+  }
+
+  function pickMood(label: string) {
+    // Single-selection toggle buttons are exposed as radios.
+    fireEvent.click(screen.getByRole("radio", { name: `Mood: ${label}` }));
+  }
+
+  it("offers to let someone get in touch, ticked by default, for a Struggling check-in", async () => {
+    await openCheckin();
+    pickMood("Struggling");
+
+    const box = await screen.findByRole("checkbox", { name: /Let someone get in touch with me/ });
+    expect(box).toBeChecked();
+    expect(screen.getByText(/Your community's team will see how you're feeling and your note/)).toBeInTheDocument();
+  });
+
+  it("sends share_with_team: true by default for mood 1 and shows the team-notified thank-you", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: true },
+    });
+    await openCheckin();
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        "/v2/volunteering/wellbeing/checkin",
+        expect.objectContaining({ mood: 1, share_with_team: true }),
+      );
+    });
+    await waitFor(() => {
+      expect(mockToast.success).toHaveBeenCalledWith(
+        "Thank you for telling us. Someone from your community's team will be in touch.",
+      );
+    });
+  });
+
+  it("sends share_with_team: false when the volunteer unticks the box", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 10, mood: 2, note: null, shared: false, team_notified: false },
+    });
+    await openCheckin();
+    pickMood("Low");
+
+    const box = await screen.findByRole("checkbox", { name: /Let someone get in touch with me/ });
+    fireEvent.click(box);
+    await waitFor(() => expect(box).not.toBeChecked());
+    expect(screen.getByText("Only you will see this check-in.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        "/v2/volunteering/wellbeing/checkin",
+        expect.objectContaining({ mood: 2, share_with_team: false }),
+      );
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith("Mood check-in recorded."));
+  });
+
+  it("does not offer sharing for a Good check-in and sends share_with_team: false", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 11, mood: 4, note: null, shared: false, team_notified: false },
+    });
+    await openCheckin();
+    pickMood("Good");
+
+    expect(screen.queryByRole("checkbox", { name: /Let someone get in touch with me/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        "/v2/volunteering/wellbeing/checkin",
+        expect.objectContaining({ mood: 4, share_with_team: false }),
+      );
+    });
+  });
+
+  it("labels a recent check-in that was shared with the community's team", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: {
+        ...mockWellbeingData,
+        recent_checkins: [
+          { id: 1, mood: 1, note: null, created_at: "2026-10-06T10:00:00Z", shared: true },
+          { id: 2, mood: 4, note: null, created_at: "2026-10-05T10:00:00Z", shared: false },
+        ],
+      },
+    });
+    render(<WellbeingTab />);
+    expect(await screen.findAllByText("Shared with your community's team")).toHaveLength(1);
   });
 });

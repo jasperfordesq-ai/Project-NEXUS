@@ -37611,7 +37611,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Back to volunteering');
     expect(response.text).toContain('Your check-in has been saved.');
     expect(response.text).toContain('My wellbeing');
-    expect(response.text).toContain('A private summary of your volunteering balance, to help you avoid burnout. Only you can see this.');
+    expect(response.text).toContain('A private summary of your volunteering balance, to help you avoid burnout. Only you can see it, unless you choose to tell your community’s team how you are feeling.');
     expect(response.text).toContain('Wellbeing score');
     expect(response.text).toContain('76 out of 100');
     expect(response.text).toContain('id="wellbeing-score" max="100" value="76"');
@@ -39210,7 +39210,9 @@ describe('shared accessible frontend shell', () => {
     expect(wellbeingResponse.headers.location).toBe('/volunteering/wellbeing?status=checkin-saved');
     expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'POST', '/wellbeing/checkin', {
       mood: 4,
-      note: 'Feeling steady'
+      note: 'Feeling steady',
+      // Always sent: the API defaults a missing flag to false, and Good is never shared.
+      share_with_team: false
     });
 
     const donationResponse = await agent

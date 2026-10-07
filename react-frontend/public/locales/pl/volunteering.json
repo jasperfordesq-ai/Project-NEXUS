@@ -1098,7 +1098,12 @@
     "day_streak": "Seria dni",
     "suggested_rest_days": "Sugerowane dni odpoczynku",
     "rest_days_desc": "Na podstawie Twojej ostatniej aktywności zalecamy przerwę w następujących dniach:",
-    "recent_checkins": "Ostatnie kontrole nastroju"
+    "recent_checkins": "Ostatnie kontrole nastroju",
+    "share_with_team_label": "Chcę, żeby ktoś się ze mną skontaktował",
+    "share_with_team_desc": "Zespół Twojej społeczności zobaczy, jak się czujesz, oraz Twoją notatkę. Organizacje, dla których działasz jako wolontariusz, dowiedzą się, jak się czujesz, ale nie zobaczą Twojej notatki.",
+    "share_with_team_private": "Tylko Ty zobaczysz ten wpis.",
+    "checkin_success_team_notified": "Dziękujemy, że nam o tym mówisz. Ktoś z zespołu Twojej społeczności się z Tobą skontaktuje.",
+    "checkin_shared_label": "Udostępniono zespołowi Twojej społeczności"
   },
   "check_in": {
     "title": "Odprawa zmianowa",

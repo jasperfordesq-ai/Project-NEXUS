@@ -58,6 +58,15 @@ vi.mock('@/admin/modules/safeguarding/MemberSupportNeedsPanel', stub('MemberSupp
 vi.mock('@/admin/modules/safeguarding/GuardiansPanel', stub('GuardiansPanel'));
 vi.mock('@/admin/modules/safeguarding/SupportActionsPanel', stub('SupportActionsPanel'));
 vi.mock('@/admin/modules/volunteering/VolunteerSafeguarding', stub('VolunteerSafeguarding'));
+// The wellbeing alerts panel has no header actions of its own, so a plain stand-in.
+vi.mock('@/admin/modules/volunteering/WellbeingAlertsPanel', async () => {
+  const { useAdminEmbed } = await import('@/admin/components/AdminEmbedContext');
+  const Panel = () => {
+    const { embedded } = useAdminEmbed();
+    return <div data-testid="WellbeingAlertsPanel" data-embedded={String(embedded)} />;
+  };
+  return { WellbeingAlertsPanel: Panel, default: Panel };
+});
 vi.mock('@/admin/modules/safeguarding/SafeguardingHelp', () => ({
   SafeguardingHelp: () => <div data-testid="safeguarding-help" />,
   default: () => <div data-testid="safeguarding-help" />,
@@ -140,5 +149,16 @@ describe('SafeguardingVolunteeringPage', () => {
     const refresh = screen.getByRole('button', { name: 'Refresh' });
     expect(panel.contains(refresh)).toBe(false);
     expect(screen.getByRole('heading', { level: 1 }).closest('.mb-6')?.contains(refresh)).toBe(true);
+  });
+
+  it('shows the volunteer wellbeing alerts below the incidents, so brokers can follow up', async () => {
+    const Page = (await import('./SafeguardingVolunteeringPage')).default;
+    render(<Page />);
+
+    const incidents = screen.getByTestId('VolunteerSafeguarding');
+    const alerts = screen.getByTestId('WellbeingAlertsPanel');
+    expect(alerts).toHaveAttribute('data-embedded', 'true');
+    // Rendered after the incidents panel in document order.
+    expect(incidents.compareDocumentPosition(alerts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

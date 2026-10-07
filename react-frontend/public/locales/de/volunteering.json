@@ -1074,7 +1074,12 @@
     "day_streak": "Tage-Serie",
     "suggested_rest_days": "Empfohlene Ruhetage",
     "rest_days_desc": "Basierend auf Ihrer letzten Aktivität empfehlen wir, an diesen Tagen eine Pause einzulegen:",
-    "recent_checkins": "Letzte Stimmungs-Check-ins"
+    "recent_checkins": "Letzte Stimmungs-Check-ins",
+    "share_with_team_label": "Jemand darf sich bei mir melden",
+    "share_with_team_desc": "Das Team Ihrer Gemeinschaft sieht, wie es Ihnen geht, und Ihre Notiz. Die Organisationen, bei denen Sie sich engagieren, erfahren, wie es Ihnen geht, aber nicht Ihre Notiz.",
+    "share_with_team_private": "Nur Sie sehen diesen Check-in.",
+    "checkin_success_team_notified": "Danke, dass Sie es uns gesagt haben. Jemand aus dem Team Ihrer Gemeinschaft wird sich bei Ihnen melden.",
+    "checkin_shared_label": "Mit dem Team Ihrer Gemeinschaft geteilt"
   },
   "check_in": {
     "title": "Schicht-Check-in",

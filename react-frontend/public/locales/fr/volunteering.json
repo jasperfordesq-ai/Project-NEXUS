@@ -1086,7 +1086,12 @@
     "day_streak": "Jours consécutifs",
     "suggested_rest_days": "Jours de repos suggérés",
     "rest_days_desc": "D'après votre activité récente, nous vous recommandons de prendre une pause ces jours-ci :",
-    "recent_checkins": "Bilans d'humeur récents"
+    "recent_checkins": "Bilans d'humeur récents",
+    "share_with_team_label": "J'accepte que quelqu'un me contacte",
+    "share_with_team_desc": "L'équipe de votre communauté verra comment vous vous sentez, ainsi que votre note. Les organisations avec lesquelles vous faites du bénévolat sauront comment vous vous sentez, mais ne verront pas votre note.",
+    "share_with_team_private": "Vous seul(e) verrez ce bilan.",
+    "checkin_success_team_notified": "Merci de nous l'avoir dit. Une personne de l'équipe de votre communauté va vous contacter.",
+    "checkin_shared_label": "Partagé avec l'équipe de votre communauté"
   },
   "check_in": {
     "title": "Enregistrement des quarts de travail",

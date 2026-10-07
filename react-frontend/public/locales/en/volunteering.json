@@ -1074,7 +1074,12 @@
     "day_streak": "Day Streak",
     "suggested_rest_days": "Suggested Rest Days",
     "rest_days_desc": "Based on your recent activity, we recommend taking a break on these days:",
-    "recent_checkins": "Recent Mood Check-ins"
+    "recent_checkins": "Recent Mood Check-ins",
+    "share_with_team_label": "Let someone get in touch with me",
+    "share_with_team_desc": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note.",
+    "share_with_team_private": "Only you will see this check-in.",
+    "checkin_success_team_notified": "Thank you for telling us. Someone from your community's team will be in touch.",
+    "checkin_shared_label": "Shared with your community's team"
   },
   "check_in": {
     "title": "Shift Check-in",

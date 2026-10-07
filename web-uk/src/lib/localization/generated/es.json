@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "mi bienestar",
-                "description": "Un resumen privado de tu saldo de voluntariado, para ayudarte a evitar el agotamiento. Sólo tú puedes ver esto.",
+                "description": "Un resumen privado de su actividad de voluntariado para ayudarle a evitar el agotamiento. Solo usted puede verlo, salvo que decida contarle al equipo de su comunidad cómo se siente.",
                 "score_label": "Puntuación de bienestar",
                 "score_out_of": "de 100",
                 "risk_label": "Riesgo de agotamiento",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Fecha",
                 "mood_invalid": "Elija un estado de ánimo entre 1 y 5.",
                 "checkin_saved": "Tu check-in ha sido guardado.",
-                "checkin_failed": "No se pudo guardar tu check-in. Por favor inténtalo de nuevo."
+                "checkin_failed": "No se pudo guardar tu check-in. Por favor inténtalo de nuevo.",
+                "share_label": "Que alguien se ponga en contacto conmigo si elijo «Bajo» o «Luchando»",
+                "share_hint": "El equipo de tu comunidad verá cómo te sientes y tu nota. Las organizaciones con las que haces voluntariado sabrán cómo te sientes, pero no verán tu nota. Si eliges «Está bien», «Bueno» o «Genial», solo tú verás tu check-in.",
+                "checkin_saved_shared": "Gracias por contárnoslo. Alguien del equipo de tu comunidad se pondrá en contacto contigo.",
+                "recent_shared": "Compartido con el equipo de tu comunidad"
             },
             "recommended": {
                 "title": "Recomendado para ti",

@@ -1086,7 +1086,12 @@
     "day_streak": "Serie di giorni",
     "suggested_rest_days": "Giorni di riposo suggeriti",
     "rest_days_desc": "In base alla tua attività recente, ti consigliamo di prenderti una pausa in questi giorni:",
-    "recent_checkins": "Check-in dell'umore recenti"
+    "recent_checkins": "Check-in dell'umore recenti",
+    "share_with_team_label": "Voglio che qualcuno mi contatti",
+    "share_with_team_desc": "Il team della tua comunità vedrà come ti senti e la tua nota. Le organizzazioni con cui fai volontariato sapranno come ti senti, ma non vedranno la tua nota.",
+    "share_with_team_private": "Solo tu vedrai questo check-in.",
+    "checkin_success_team_notified": "Grazie per avercelo detto. Qualcuno del team della tua comunità ti contatterà.",
+    "checkin_shared_label": "Condiviso con il team della tua comunità"
   },
   "check_in": {
     "title": "Check-in a turni",

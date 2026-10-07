@@ -886,5 +886,27 @@
     "reinstated_bell": "Tá {{name}} beo arís",
     "reinstated_body": "Tá <strong>{{name}}</strong> beo arís ar {{community}} agus tá sí le feiceáil ag an bpobal athuair.",
     "reinstated_cta": "Féach ar d'eagraíocht"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "go han-dona",
+    "mood_2": "go dona",
+    "mood_label_1": "Go han-dona",
+    "mood_label_2": "Go dona",
+    "bell_team": "Seiceáil folláine ó {{name}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "bell_org": "Seiceáil folláine ó {{name}}, a dhéanann obair dheonach le {{organisation}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "subject": "{{name}}: “Mothaím {{mood}}”",
+    "preview": "{{name}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "team_title": "Tá tacaíocht ag teastáil ó oibrí deonach",
+    "team_body": "Seiceáil folláine ó <strong>{{name}}</strong>: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "team_note_hint": "Má scríobhadh nóta, is féidir leat é a léamh ar leathanach na bhfógraí folláine tar éis duit síniú isteach. Níl sé sa ríomhphost seo, ar mhaithe le príobháideacht.",
+    "team_cta": "Féach ar na fógraí folláine",
+    "org_title": "Tá tacaíocht ag teastáil ó dhuine d’oibrithe deonacha d’eagraíochta",
+    "org_body": "Seiceáil folláine ó <strong>{{name}}</strong>, a dhéanann obair dheonach le {{organisation}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "org_team_told": "Cuireadh foireann an phobail ar an eolas freisin. Coinnigh faoi rún é, agus ná roinn é ach le daoine a bhfuil gá acu leis.",
+    "org_cta": "Féach ar an bpróifíl",
+    "info_card_heading": "Seiceáil folláine",
+    "info_card_volunteer": "Oibrí deonach",
+    "info_card_feeling": "Conas a mhothaíonn siad",
+    "info_card_organisation": "Eagraíocht"
   }
 }

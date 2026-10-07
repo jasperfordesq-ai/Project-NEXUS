@@ -1086,7 +1086,12 @@
     "day_streak": "Série de Dias",
     "suggested_rest_days": "Dias de Descanso Sugeridos",
     "rest_days_desc": "Com base na sua atividade recente, recomendamos que descanse nestes dias:",
-    "recent_checkins": "Check-ins de Humor Recentes"
+    "recent_checkins": "Check-ins de Humor Recentes",
+    "share_with_team_label": "Quero que alguém entre em contato comigo",
+    "share_with_team_desc": "A equipe da sua comunidade verá como você está se sentindo e a sua nota. As organizações com as quais você faz voluntariado saberão como você está se sentindo, mas não verão a sua nota.",
+    "share_with_team_private": "Só você verá este check-in.",
+    "checkin_success_team_notified": "Obrigado por nos contar. Alguém da equipe da sua comunidade entrará em contato com você.",
+    "checkin_shared_label": "Compartilhado com a equipe da sua comunidade"
   },
   "check_in": {
     "title": "Check-in de turno",

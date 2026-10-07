@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'ابدأ بفرصة صغيرة منخفضة الالتزام للتخفيف من حدة الأمر مرة أخرى.',
     'vol_wellbeing_recommendation_schedule_rest' => 'لديك العديد من التحولات القادمة. تأكد من جدولة أيام الراحة.',
     'vol_wellbeing_recommendation_healthy_balance' => 'أنت تحافظ على توازن صحي في العمل التطوعي. استمر!',
+    'vol_wellbeing_warning_low_mood' => 'أخبرتنا مؤخرًا أنك لست بخير. اعتنِ بنفسك، واطلب الدعم إذا احتجت إليه.',
+    'vol_wellbeing_recommendation_reach_out' => 'تحدث إلى شخص تثق به، أو تواصل مع فريق مجتمعك إذا كنت ترغب في الدعم.',
     'vol_wellbeing_invalid_action' => 'إجراء غير صالح. يجب أن يكون واحدًا من: :actions',
     'volunteer_auto_payment_description' => 'تطوع الدفع التلقائي لـ :hours h',
     'vol_certificate_no_approved_hours' => 'لم يتم العثور على ساعات تطوعية معتمدة لهذا المستخدم',

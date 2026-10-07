@@ -515,6 +515,16 @@ function wellbeingStatus(status, t = null) {
       message: t ? t('govuk_alpha_volunteering.wellbeing.checkin_saved') : 'Your check-in has been saved.'
     };
   }
+  // Only ever reached when the API answered team_notified: true, i.e. the member
+  // chose Low or Struggling, ticked the box, and someone was actually told.
+  if (status === 'checkin-saved-shared') {
+    return {
+      type: 'success',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared')
+        : "Thank you for telling us. Someone from your community's team will be in touch."
+    };
+  }
   if (status === 'mood-invalid') {
     return {
       type: 'error',
@@ -964,7 +974,9 @@ function normalizeCheckin(row, t = null) {
     id: positiveInteger(checkin.id),
     createdAtLabel: bladeDateTimeLabel(checkin.created_at ?? checkin.createdAt),
     moodLabel: moodLabel(mood, t),
-    note: trimmed(checkin.note)
+    note: trimmed(checkin.note),
+    // True only when the check-in was passed on to the community's team.
+    shared: checkin.shared === true
   };
 }
 
@@ -3393,13 +3405,22 @@ router.post('/emergency-alerts/:id(\\d+)/respond', asyncRoute(async (req, res) =
 
 
 
+// An unticked HTML checkbox submits nothing at all, so absence means "no".
+function wellbeingShareTicked(value) {
+  const values = Array.isArray(value) ? value : [value];
+  return values.some((item) => ['1', 'true', 'on', 'yes'].includes(String(item ?? '').trim().toLowerCase()));
+}
+
 router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
   const mood = positiveInteger(req.body.mood);
+  const shareTicked = wellbeingShareTicked(req.body.share_with_team);
   // The note is a 500-character box; both failure exits used to blank it, so a written
-  // check-in was thrown away over a mood radio or a passing API failure.
+  // check-in was thrown away over a mood radio or a passing API failure. The share box
+  // is replayed too, so an unticked box does not come back ticked.
   rememberFormReplay(req, 'volunteering', 'wellbeing', {
     mood: trimmed(req.body.mood),
-    note: trimmed(req.body.note, 500)
+    note: trimmed(req.body.note, 500),
+    shareWithTeam: shareTicked
   });
 
   if (mood === null || mood < 1 || mood > 5) {
@@ -3413,11 +3434,20 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
     '/wellbeing/checkin',
     {
       mood,
-      note: trimmed(req.body.note, 500)
+      note: trimmed(req.body.note, 500),
+      // The server decides, so this works without JavaScript: the team is only asked
+      // to get in touch for Low (2) or Struggling (1), and only when the box is ticked.
+      // The API defaults to false when the field is missing, so it is always sent.
+      share_with_team: shareTicked && mood <= 2
     },
     // Nothing to replay after a success: the GET clears the stash either way, and on the
     // success path it is simply discarded unread.
-    '/volunteering/wellbeing?status=checkin-saved',
+    (result) => {
+      const saved = dataFrom(result);
+      return saved && typeof saved === 'object' && saved.team_notified === true
+        ? '/volunteering/wellbeing?status=checkin-saved-shared'
+        : '/volunteering/wellbeing?status=checkin-saved';
+    },
     '/volunteering/wellbeing?status=checkin-failed'
   );
 }));

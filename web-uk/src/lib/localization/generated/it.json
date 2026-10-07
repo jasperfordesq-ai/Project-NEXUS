@@ -10666,7 +10666,7 @@
             },
             "wellbeing": {
                 "title": "Il mio benessere",
-                "description": "Un riepilogo privato del tuo saldo di volontariato, per aiutarti a evitare il burnout. Solo tu puoi vederlo.",
+                "description": "Un riepilogo privato del tuo impegno di volontariato, per aiutarti a evitare il burnout. Solo tu puoi vederlo, a meno che tu non scelga di dire al team della tua comunità come ti senti.",
                 "score_label": "Punteggio di benessere",
                 "score_out_of": "su 100",
                 "risk_label": "Rischio di esaurimento",
@@ -10699,7 +10699,11 @@
                 "recent_when": "Data",
                 "mood_invalid": "Scegli uno stato d'animo tra 1 e 5.",
                 "checkin_saved": "Il tuo check-in è stato salvato.",
-                "checkin_failed": "Non è stato possibile salvare il tuo check-in. Per favore riprova."
+                "checkin_failed": "Non è stato possibile salvare il tuo check-in. Per favore riprova.",
+                "share_label": "Lascia che qualcuno mi contatti se scelgo «Basso» o «Lottando»",
+                "share_hint": "Il team della tua comunità vedrà come ti senti e la tua nota. Le organizzazioni con cui fai volontariato sapranno come ti senti, ma non vedranno la tua nota. Se scegli «Va bene», «Bene» o «Ottimo», solo tu vedrai il tuo check-in.",
+                "checkin_saved_shared": "Grazie per avercelo detto. Qualcuno del team della tua comunità ti contatterà.",
+                "recent_shared": "Condiviso con il team della tua comunità"
             },
             "recommended": {
                 "title": "Consigliato per te",

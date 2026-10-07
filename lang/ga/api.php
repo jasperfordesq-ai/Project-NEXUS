@@ -2258,6 +2258,8 @@ return [
     'vol_wellbeing_recommendation_ease_back' => 'Tosaigh le deis bheag, íseal-tiomantas chun maolú ar ais isteach.',
     'vol_wellbeing_recommendation_schedule_rest' => 'Tá go leor shifts ag teacht suas. Bí cinnte laethanta sosa a sceidealú.',
     'vol_wellbeing_recommendation_healthy_balance' => 'Tá cothromaíocht shláintiúil san obair dheonach á choinneáil agat. Coinnigh suas é!',
+    'vol_wellbeing_warning_low_mood' => 'D’inis tú dúinn le déanaí nach bhfuil tú ag mothú go maith. Tabhair aire duit féin, agus iarr tacaíocht más mian leat.',
+    'vol_wellbeing_recommendation_reach_out' => 'Labhair le duine a bhfuil muinín agat as, nó déan teagmháil le foireann do phobail más mian leat tacaíocht.',
     'vol_wellbeing_invalid_action' => 'Gníomh neamhbhailí. Ní mór go mbeadh sé ar cheann de: :actions',
     'volunteer_auto_payment_description' => 'Uath-íocaíocht do :hours h deonach',
     'vol_certificate_no_approved_hours' => 'Níor aimsíodh aon uaireanta deonacha ceadaithe don úsáideoir seo',

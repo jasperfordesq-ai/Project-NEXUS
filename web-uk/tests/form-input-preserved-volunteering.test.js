@@ -183,6 +183,128 @@ describe('wellbeing check-in keeps the note the member wrote', () => {
   });
 });
 
+describe('wellbeing check-in: letting the community team get in touch', () => {
+  // Writes succeed here, and the test records exactly what the API was sent.
+  function succeedWith(response) {
+    const posted = [];
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath, body) => {
+      if (method === 'GET') return { data: { items: [] } };
+      posted.push({ method, apiPath, body });
+      return response;
+    });
+    return posted;
+  }
+
+  function checkinPost(posted) {
+    return posted.find((call) => call.method === 'POST' && call.apiPath === '/wellbeing/checkin');
+  }
+
+  it('renders the box ticked by default, with its hint', async () => {
+    const page = await request(createApp()).get(`${MOUNT}/wellbeing`);
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('name="share_with_team"');
+    expect(isChecked(page.text, 'share_with_team')).toBe(true);
+    expect(page.text).toContain('Let someone get in touch with me if I choose Low or Struggling');
+    expect(page.text).toContain('The organisations you volunteer with will be told how you&#39;re feeling, but not your note.');
+  });
+
+  it('asks for contact when the box is ticked and the mood is Struggling', async () => {
+    const posted = succeedWith({ data: { id: 1, mood: 1, shared: true, team_notified: true } });
+    await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '1', note: 'Hard week.', share_with_team: '1' });
+    expect(checkinPost(posted).body).toEqual({ mood: 1, note: 'Hard week.', share_with_team: true });
+  });
+
+  it('asks for contact when the box is ticked and the mood is Low', async () => {
+    const posted = succeedWith({ data: { id: 1, mood: 2, shared: true, team_notified: true } });
+    await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '2', share_with_team: '1' });
+    expect(checkinPost(posted).body.share_with_team).toBe(true);
+  });
+
+  it('sends false when the box is unticked (an unticked box submits nothing)', async () => {
+    const posted = succeedWith({ data: { id: 1, mood: 1, shared: false, team_notified: false } });
+    await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '1', note: 'Hard week.' });
+    const call = checkinPost(posted);
+    expect(call.body).toHaveProperty('share_with_team', false);
+  });
+
+  it('sends false for Good even when the box is ticked', async () => {
+    const posted = succeedWith({ data: { id: 1, mood: 4, shared: false, team_notified: false } });
+    await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '4', share_with_team: '1' });
+    expect(checkinPost(posted).body.share_with_team).toBe(false);
+  });
+
+  it('sends false for Okay even when the box is ticked', async () => {
+    const posted = succeedWith({ data: { id: 1, mood: 3, shared: false, team_notified: false } });
+    await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '3', share_with_team: '1' });
+    expect(checkinPost(posted).body.share_with_team).toBe(false);
+  });
+
+  it('shows the "someone will be in touch" banner only when the team was told', async () => {
+    succeedWith({ data: { id: 1, mood: 1, note: null, shared: true, team_notified: true } });
+    const post = await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '1', share_with_team: '1' });
+    expect(post.headers.location).toContain('status=checkin-saved-shared');
+
+    const page = await request(createApp()).get(`${MOUNT}/wellbeing?status=checkin-saved-shared`);
+    expect(page.text).toContain('Thank you for telling us. Someone from your community&#39;s team will be in touch.');
+    expect(page.text).not.toContain('Your check-in has been saved.');
+  });
+
+  it('keeps the ordinary banner when nobody was told', async () => {
+    succeedWith({ data: { id: 1, mood: 1, note: null, shared: true, team_notified: false } });
+    const post = await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '1', share_with_team: '1' });
+    expect(post.headers.location).toMatch(/status=checkin-saved$/);
+  });
+
+  it('keeps an unticked box unticked after a failed submission', async () => {
+    // The default beforeEach makes every write fail.
+    const agent = request.agent(createApp());
+    await agent.post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '2', note: 'Rough.' });
+    const page = await agent.get(`${MOUNT}/wellbeing?status=checkin-failed`);
+    expect(isChecked(page.text, 'share_with_team')).toBe(false);
+  });
+
+  it('keeps a ticked box ticked after an invalid mood', async () => {
+    const agent = request.agent(createApp());
+    await agent.post(`${MOUNT}/wellbeing/checkin`).type('form')
+      .send({ _csrf: 'test-csrf-token', mood: '9', share_with_team: '1' });
+    const page = await agent.get(`${MOUNT}/wellbeing?status=mood-invalid`);
+    expect(isChecked(page.text, 'share_with_team')).toBe(true);
+  });
+
+  it('marks a shared check-in in the recent list', async () => {
+    api.callVolunteeringApi.mockImplementation(async (token, method, apiPath) => {
+      if (method === 'GET' && apiPath === '/wellbeing') {
+        return {
+          data: {
+            score: 80,
+            recent_checkins: [
+              { id: 2, mood: 1, note: 'Shared one', shared: true, created_at: '2026-10-06 10:00:00' },
+              { id: 1, mood: 4, note: 'Private one', shared: false, created_at: '2026-10-05 10:00:00' }
+            ]
+          }
+        };
+      }
+      return { data: { items: [] } };
+    });
+    const page = await request(createApp()).get(`${MOUNT}/wellbeing`);
+    const matches = page.text.match(/Shared with your community&#39;s team/g) || [];
+    expect(matches).toHaveLength(1);
+    const sharedRow = page.text.indexOf('Shared one');
+    const marker = page.text.indexOf('Shared with your community&#39;s team');
+    expect(marker).toBeGreaterThan(-1);
+    expect(marker).toBeLessThan(sharedRow);
+    expect(marker).toBeLessThan(page.text.indexOf('Private one'));
+  });
+});
+
 describe('donation form keeps the amount and message', () => {
   const MESSAGE = 'For the community fridge, in memory of my mother who used it every week.';
 

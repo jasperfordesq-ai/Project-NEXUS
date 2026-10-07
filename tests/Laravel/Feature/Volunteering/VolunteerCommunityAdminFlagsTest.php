@@ -174,11 +174,25 @@ class VolunteerCommunityAdminFlagsTest extends TestCase
         $this->apiGet('/v2/admin/volunteering/wellbeing/alerts')->assertOk();
     }
 
-    /** @dataProvider operationalRoles */
-    public function test_a_broker_or_coordinator_still_cannot_list_wellbeing_alerts(array $overrides): void
+    /**
+     * Changed 7 Oct 2026: brokers and coordinators are now told when a volunteer
+     * says they are struggling, so they must be able to open the alert they are
+     * told about (owner rule, 2 Oct: every broker function works for a broker).
+     *
+     * @dataProvider operationalRoles
+     */
+    public function test_a_broker_or_coordinator_can_list_wellbeing_alerts(array $overrides): void
     {
         $this->enableVolunteering();
         Sanctum::actingAs($this->member($overrides), ['*']);
+
+        $this->apiGet('/v2/admin/volunteering/wellbeing/alerts')->assertOk();
+    }
+
+    public function test_an_ordinary_member_cannot_list_wellbeing_alerts(): void
+    {
+        $this->enableVolunteering();
+        Sanctum::actingAs($this->member(), ['*']);
 
         $this->apiGet('/v2/admin/volunteering/wellbeing/alerts')->assertForbidden();
     }

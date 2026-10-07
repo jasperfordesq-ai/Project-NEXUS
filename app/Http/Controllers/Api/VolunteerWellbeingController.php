@@ -165,6 +165,9 @@ class VolunteerWellbeingController extends BaseApiController
         if (($indicators['engagement_gap']['days_since_last_activity'] ?? 0) > 30) {
             $warnings[] = __('api.vol_wellbeing_warning_engagement_gap');
         }
+        if (VolunteerWellbeingService::isLowMood($indicators['mood']['latest_mood'] ?? null)) {
+            $warnings[] = __('api.vol_wellbeing_warning_low_mood');
+        }
 
         // Suggested rest days (next 7 days without scheduled shifts)
         $suggestedRest = [];
@@ -187,16 +190,19 @@ class VolunteerWellbeingController extends BaseApiController
         $recentCheckins = [];
         try {
             $rows = DB::select(
-                "SELECT id, mood, note, created_at FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ? ORDER BY created_at DESC LIMIT 10",
+                "SELECT id, mood, note, share_with_team, created_at FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ? ORDER BY created_at DESC, id DESC LIMIT 10",
                 [$userId, $tenantId]
             );
             $recentCheckins = array_map(fn($row) => [
                 'id' => (int) $row->id,
                 'mood' => (int) $row->mood,
                 'note' => $row->note,
+                'shared' => (bool) $row->share_with_team,
                 'created_at' => $row->created_at,
             ], $rows);
-        } catch (\Throwable $e) { /* table may not exist yet */ }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Wellbeing dashboard: recent check-ins failed: ' . $e->getMessage());
+        }
 
         return $this->respondWithData([
             'score' => $score,
@@ -226,19 +232,15 @@ class VolunteerWellbeingController extends BaseApiController
             $note = trim(mb_substr($note, 0, 500));
         }
 
-        $tenantId = TenantContext::getId();
+        // The volunteer's own choice, shown to them beside the mood. Absent means
+        // no: a client that does not ask the question must not share on their
+        // behalf.
+        $shareWithTeam = filter_var($this->input('share_with_team', false), FILTER_VALIDATE_BOOLEAN);
 
         try {
-            DB::insert(
-                "INSERT INTO vol_mood_checkins (tenant_id, user_id, mood, note, created_at) VALUES (?, ?, ?, ?, NOW())",
-                [$tenantId, $userId, $mood, $note ?: null]
+            return $this->respondWithData(
+                $this->volunteerWellbeingService->recordCheckin($userId, $mood, $note ?: null, $shareWithTeam)
             );
-
-            return $this->respondWithData([
-                'id' => (int) DB::getPdo()->lastInsertId(),
-                'mood' => $mood,
-                'note' => $note ?: null,
-            ]);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Wellbeing checkin failed: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.vol_checkin_save_failed'), null, 500);
@@ -254,7 +256,9 @@ class VolunteerWellbeingController extends BaseApiController
     public function adminWellbeingAlerts(): JsonResponse
     {
         $this->ensureFeature();
-        $this->requireModuleAdmin();
+        // Brokers and coordinators are told about these alerts (7 Oct 2026),
+        // so they can open and act on them.
+        $this->requireBrokerOrAdmin();
         $this->rateLimit('vol_wellbeing_alerts_admin', 30, 60);
 
         $status = $this->query('status') ?: 'active';
@@ -281,7 +285,9 @@ class VolunteerWellbeingController extends BaseApiController
     public function updateWellbeingAlert($id): JsonResponse
     {
         $this->ensureFeature();
-        $this->requireModuleAdmin();
+        // Brokers and coordinators are told about these alerts (7 Oct 2026),
+        // so they can open and act on them.
+        $this->requireBrokerOrAdmin();
         $this->rateLimit('vol_wellbeing_alert_update', 30, 60);
 
         $status = (string) $this->input('status', '');

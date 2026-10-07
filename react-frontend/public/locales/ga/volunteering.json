@@ -1110,7 +1110,12 @@
     "day_streak": "Sraith Laethanta",
     "suggested_rest_days": "Laethanta Scíthe Molta",
     "rest_days_desc": "Bunaithe ar do ghníomhaíocht le déanaí, molaimid sos a ghlacadh na laethanta seo:",
-    "recent_checkins": "Seiceálacha Giúmair Le Déanaí"
+    "recent_checkins": "Seiceálacha Giúmair Le Déanaí",
+    "share_with_team_label": "Is féidir le duine teagmháil a dhéanamh liom",
+    "share_with_team_desc": "Feicfidh foireann do phobail conas atá tú ag mothú agus do nóta. Inseofar do na heagraíochtaí a ndéanann tú obair dheonach leo conas atá tú ag mothú, ach ní fheicfidh siad do nóta.",
+    "share_with_team_private": "Is tusa amháin a fheicfidh an seiceáil isteach seo.",
+    "checkin_success_team_notified": "Go raibh maith agat as é a insint dúinn. Déanfaidh duine éigin ó fhoireann do phobail teagmháil leat.",
+    "checkin_shared_label": "Roinnte le foireann do phobail"
   },
   "check_in": {
     "title": "Seiceáil Isteach don Seal",

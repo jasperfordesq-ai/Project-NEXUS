@@ -1074,7 +1074,12 @@
     "day_streak": "日数の連続",
     "suggested_rest_days": "推奨休息日",
     "rest_days_desc": "最近の活動に基づいて、これらの日に休憩を取ることをお勧めします：",
-    "recent_checkins": "最近の気分チェックイン"
+    "recent_checkins": "最近の気分チェックイン",
+    "share_with_team_label": "誰かに連絡してもらう",
+    "share_with_team_desc": "コミュニティのチームには、今の気持ちとあなたのメモが表示されます。あなたがボランティアをしている団体には今の気持ちが伝えられますが、メモは伝えられません。",
+    "share_with_team_private": "このチェックインはあなただけが見られます。",
+    "checkin_success_team_notified": "伝えてくれてありがとうございます。コミュニティのチームの誰かから連絡があります。",
+    "checkin_shared_label": "コミュニティのチームと共有済み"
   },
   "check_in": {
     "title": "シフトチェックイン",

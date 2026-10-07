@@ -886,5 +886,27 @@
     "reinstated_bell": "{{name}} ist wieder online",
     "reinstated_body": "<strong>{{name}}</strong> ist auf {{community}} wieder online und für die Gemeinschaft wieder sichtbar.",
     "reinstated_cta": "Ihre Organisation ansehen"
+  },
+  "volunteer_wellbeing": {
+    "mood_1": "sehr schlecht",
+    "mood_2": "nicht gut",
+    "mood_label_1": "Sehr schlecht",
+    "mood_label_2": "Nicht gut",
+    "bell_team": "{{name}} hat beim Check-in zum Wohlbefinden angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
+    "bell_org": "{{name}}, ehrenamtlich bei {{organisation}} tätig, hat angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
+    "subject": "{{name}}: „Mir geht es {{mood}}“",
+    "preview": "{{name}} hat angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
+    "team_title": "Eine ehrenamtliche Person wünscht sich Unterstützung",
+    "team_body": "<strong>{{name}}</strong> hat beim Check-in zum Wohlbefinden angegeben: „Mir geht es {{mood}}“, und bittet darum, dass sich jemand meldet.",
+    "team_note_hint": "Falls eine Notiz geschrieben wurde, können Sie sie nach der Anmeldung auf der Seite mit den Hinweisen zum Wohlbefinden lesen. Zum Schutz der Privatsphäre ist sie nicht in dieser E-Mail enthalten.",
+    "team_cta": "Hinweise zum Wohlbefinden ansehen",
+    "org_title": "Eine Ihrer ehrenamtlichen Personen wünscht sich Unterstützung",
+    "org_body": "<strong>{{name}}</strong>, ehrenamtlich bei {{organisation}} tätig, hat beim Check-in zum Wohlbefinden angegeben: „Mir geht es {{mood}}“, und bittet darum, dass sich jemand meldet.",
+    "org_team_told": "Das Team der Gemeinschaft wurde ebenfalls informiert. Bitte behandeln Sie dies vertraulich und geben Sie es nur an Personen weiter, die es wissen müssen.",
+    "org_cta": "Profil ansehen",
+    "info_card_heading": "Check-in zum Wohlbefinden",
+    "info_card_volunteer": "Ehrenamtliche Person",
+    "info_card_feeling": "Befinden",
+    "info_card_organisation": "Organisation"
   }
 }
