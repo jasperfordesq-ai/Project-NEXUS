@@ -1390,6 +1390,7 @@ return [
     'no_permission_org_transfer' => 'この組織から移管する権限がありません',
     'no_permission_verify_checkin' => 'このシフトのチェックインを確認する権限がありません',
     'no_permission_checkout' => 'このシフトのボランティアをチェックアウトする権限がありません',
+    'cannot_check_in_yourself' => 'ご自身のチェックインやチェックアウトは確認できません。別の主催者に依頼してください。',
     'no_permission_view_checkins' => 'このシフトのチェックインを表示する権限がありません',
     'own_posts_media_only' => 'メディアは自分の投稿にのみ追加できます',
     'own_media_only' => '自分のメディアのみを管理できる',

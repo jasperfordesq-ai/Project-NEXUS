@@ -1106,6 +1106,7 @@ return [
     'no_permission_org_transfer' => 'Sie haben keine Berechtigung zum Übertragen von dieser Organisation',
     'no_permission_verify_checkin' => 'Sie sind nicht berechtigt, Check-ins für diese Schicht zu überprüfen',
     'no_permission_checkout' => 'Sie sind nicht berechtigt, Freiwillige für diese Schicht auszuchecken',
+    'cannot_check_in_yourself' => 'Du kannst deinen eigenen Check-in oder Check-out nicht bestätigen. Bitte eine andere Person aus dem Organisationsteam.',
     'no_permission_view_checkins' => 'Sie sind nicht berechtigt, die Check-ins für diese Schicht anzuzeigen',
     'own_posts_media_only' => 'Sie können Medien nur zu Ihren eigenen Beiträgen hinzufügen',
     'own_media_only' => 'Sie können nur Ihre eigenen Medien verwalten',

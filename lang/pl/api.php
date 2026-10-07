@@ -1390,6 +1390,7 @@ return [
     'no_permission_org_transfer' => 'Nie masz uprawnień do przeniesienia z tej organizacji',
     'no_permission_verify_checkin' => 'Nie masz uprawnień do weryfikowania meldowań na tej zmianie',
     'no_permission_checkout' => 'Nie masz uprawnień do sprawdzania wolontariuszy na tę zmianę',
+    'cannot_check_in_yourself' => 'Nie możesz samodzielnie potwierdzić swojego zameldowania ani wymeldowania. Poproś innego organizatora.',
     'no_permission_view_checkins' => 'Nie masz uprawnień do wyświetlania meldowań na tej zmianie',
     'own_posts_media_only' => 'Multimedia możesz dodawać tylko do własnych postów',
     'own_media_only' => 'Możesz zarządzać tylko własnymi mediami',

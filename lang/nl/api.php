@@ -1390,6 +1390,7 @@ return [
     'no_permission_org_transfer' => 'U heeft geen toestemming om over te stappen vanuit deze organisatie',
     'no_permission_verify_checkin' => 'U heeft geen toestemming om de check-ins voor deze dienst te verifiëren',
     'no_permission_checkout' => 'Je hebt geen toestemming om vrijwilligers voor deze dienst uit te checken',
+    'cannot_check_in_yourself' => 'Je kunt je eigen in- of uitchecken niet bevestigen. Vraag een andere organisator.',
     'no_permission_view_checkins' => 'Je hebt geen toestemming om check-ins voor deze dienst te bekijken',
     'own_posts_media_only' => 'Je kunt alleen media toevoegen aan je eigen berichten',
     'own_media_only' => 'U kunt alleen uw eigen media beheren',

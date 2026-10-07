@@ -1106,6 +1106,7 @@ return [
     'no_permission_org_transfer' => 'Níl cead agat aistriú ón eagraíocht seo',
     'no_permission_verify_checkin' => 'Níl cead agat seiceáil isteach a fhíorú don athrú seo',
     'no_permission_checkout' => 'Níl cead agat oibrithe deonacha a sheiceáil don seal seo',
+    'cannot_check_in_yourself' => 'Ní féidir leat do chlárú isteach nó amach féin a dheimhniú. Iarr ar eagraí eile.',
     'no_permission_view_checkins' => 'Níl cead agat féachaint ar na seiceálacha isteach don athrú seo',
     'own_posts_media_only' => 'Ní féidir leat ach meáin a chur le do phostálacha féin',
     'own_media_only' => 'Ní féidir leat ach do chuid meáin féin a bhainistiú',

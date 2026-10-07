@@ -2037,6 +2037,7 @@ return [
     'no_permission_org_transfer'           => 'You do not have permission to transfer from this organization',
     'no_permission_verify_checkin'         => 'You do not have permission to verify check-ins for this shift',
     'no_permission_checkout'               => 'You do not have permission to check out volunteers for this shift',
+    'cannot_check_in_yourself' => 'You cannot confirm your own check-in or check-out. Ask another organiser.',
     'no_permission_view_checkins'          => 'You do not have permission to view check-ins for this shift',
     'own_posts_media_only'                 => 'You can only add media to your own posts',
     'own_media_only'                       => 'You can only manage your own media',

@@ -107,6 +107,17 @@ class VolunteerCheckInController extends BaseApiController
         }
     }
 
+    /**
+     * Nobody confirms their own attendance. A volunteer who is also on the
+     * organisation's team (owner, admin) or a community admin could verify their
+     * own QR token and check themselves out (found walking the journey, 7 Oct 2026);
+     * someone else has to.
+     */
+    private function isOwnToken(string $token, int $userId): bool
+    {
+        return (int) $this->volunteerCheckInService->getUserIdByToken($token) === $userId;
+    }
+
     public function getCheckIn($id): JsonResponse
     {
         $this->ensureFeature();
@@ -145,6 +156,9 @@ class VolunteerCheckInController extends BaseApiController
         if (!$this->canManageShift($shiftId, $userId)) {
             return $this->respondWithError('FORBIDDEN', __('api.no_permission_verify_checkin'), null, 403);
         }
+        if ($this->isOwnToken((string) $token, $userId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.cannot_check_in_yourself'), null, 403);
+        }
 
         $result = $this->volunteerCheckInService->verifyCheckIn($token);
 
@@ -170,6 +184,9 @@ class VolunteerCheckInController extends BaseApiController
 
         if (!$this->canManageShift($shiftId, $userId)) {
             return $this->respondWithError('FORBIDDEN', __('api.no_permission_checkout'), null, 403);
+        }
+        if ($this->isOwnToken((string) $token, $userId)) {
+            return $this->respondWithError('FORBIDDEN', __('api.cannot_check_in_yourself'), null, 403);
         }
 
         $checkinUserId = $this->volunteerCheckInService->getUserIdByToken($token);

@@ -1106,6 +1106,7 @@ return [
     'no_permission_org_transfer' => 'Non hai l\'autorizzazione per il trasferimento da questa organizzazione',
     'no_permission_verify_checkin' => 'Non hai l\'autorizzazione per verificare i check-in per questo turno',
     'no_permission_checkout' => 'Non hai il permesso per controllare i volontari per questo turno',
+    'cannot_check_in_yourself' => 'Non puoi confermare il tuo stesso check-in o check-out. Chiedi a un altro organizzatore.',
     'no_permission_view_checkins' => 'Non hai l\'autorizzazione per visualizzare i check-in per questo turno',
     'own_posts_media_only' => 'Puoi aggiungere contenuti multimediali solo ai tuoi post',
     'own_media_only' => 'Puoi gestire solo i tuoi contenuti multimediali',

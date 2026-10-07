@@ -1106,6 +1106,7 @@ return [
     'no_permission_org_transfer' => 'Você não tem permissão para transferir desta organização',
     'no_permission_verify_checkin' => 'Você não tem permissão para verificar check-ins para este turno',
     'no_permission_checkout' => 'Você não tem permissão para verificar voluntários para este turno',
+    'cannot_check_in_yourself' => 'Não pode confirmar a sua própria entrada ou saída. Peça a outro organizador.',
     'no_permission_view_checkins' => 'Você não tem permissão para visualizar check-ins deste turno',
     'own_posts_media_only' => 'Você só pode adicionar mídia às suas próprias postagens',
     'own_media_only' => 'Você só pode gerenciar sua própria mídia',

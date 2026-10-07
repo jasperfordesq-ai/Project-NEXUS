@@ -1106,6 +1106,7 @@ return [
     'no_permission_org_transfer' => 'Vous n\'êtes pas autorisé à effectuer un transfert depuis cette organisation',
     'no_permission_verify_checkin' => 'Vous n\'êtes pas autorisé à vérifier les enregistrements pour ce quart de travail',
     'no_permission_checkout' => 'Vous n\'êtes pas autorisé à rechercher des bénévoles pour ce quart de travail',
+    'cannot_check_in_yourself' => 'Vous ne pouvez pas confirmer votre propre arrivée ou départ. Demandez à un autre responsable.',
     'no_permission_view_checkins' => 'Vous n\'êtes pas autorisé à afficher les enregistrements pour cette équipe',
     'own_posts_media_only' => 'Vous ne pouvez ajouter des médias qu\'à vos propres publications',
     'own_media_only' => 'Vous ne pouvez gérer que vos propres médias',

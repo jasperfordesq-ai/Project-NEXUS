@@ -141,6 +141,77 @@ class VolunteerCheckInControllerTest extends TestCase
     }
 
     /**
+     * Found walking the check-in journey (7 Oct 2026): a volunteer who is also on
+     * the organisation's team (owner/admin) could verify their OWN check-in token and
+     * check themselves out, attesting their own attendance. Someone else has to.
+     */
+    public function test_a_team_admin_cannot_check_themselves_in_or_out(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create();
+        $teamAdmin = User::factory()->forTenant($this->testTenantId)->create();
+
+        $orgId = (int) DB::table('vol_organizations')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $owner->id,
+            'name' => 'Self Check-in Org',
+            'slug' => 'self-check-in-org-' . uniqid(),
+            'description' => 'Organisation for the self check-in test.',
+            'status' => 'active',
+            'created_at' => now(),
+        ]);
+        DB::table('org_members')->insert([
+            'tenant_id' => $this->testTenantId,
+            'organization_id' => $orgId,
+            'org_type' => 'volunteer',
+            'user_id' => $teamAdmin->id,
+            'role' => 'admin',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $opportunityId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'organization_id' => $orgId,
+            'title' => 'Self Check-in Opportunity',
+            'description' => 'A test opportunity with a shift.',
+            'status' => 'active',
+            'is_active' => 1,
+            'created_at' => now(),
+        ]);
+        $shiftId = (int) DB::table('vol_shifts')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $opportunityId,
+            'start_time' => now()->subMinutes(5),
+            'end_time' => now()->addHour(),
+            'capacity' => 5,
+            'created_at' => now(),
+        ]);
+        DB::table('vol_applications')->insert([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $opportunityId,
+            'shift_id' => $shiftId,
+            'user_id' => $teamAdmin->id,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $token = VolunteerCheckInService::generateToken($shiftId, $teamAdmin->id);
+        $this->assertNotNull($token);
+
+        Sanctum::actingAs($teamAdmin, ['*']);
+        $this->apiPost('/v2/volunteering/checkin/verify/' . $token)->assertStatus(403);
+        $this->assertSame('pending', DB::table('vol_shift_checkins')->where('qr_token', $token)->value('status'));
+
+        // Checked in properly by the owner, the team admin still cannot check themselves out.
+        Sanctum::actingAs($owner, ['*']);
+        $this->apiPost('/v2/volunteering/checkin/verify/' . $token)->assertOk();
+        Sanctum::actingAs($teamAdmin, ['*']);
+        $this->apiPost('/v2/volunteering/checkin/checkout/' . $token)->assertStatus(403);
+        $this->assertSame('checked_in', DB::table('vol_shift_checkins')->where('qr_token', $token)->value('status'));
+    }
+
+    /**
      * fix(volunteering): QR check-in tokens previously never expired, so a
      * leaked/stale token could still check a volunteer in weeks after the shift.
      * verifyCheckIn now rejects once now > end_time + 4h grace. Exercised at the
