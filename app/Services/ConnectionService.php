@@ -120,13 +120,25 @@ class ConnectionService
             'connection_request',
         );
 
-        $connection = DB::transaction(function () use ($requesterId, $receiverId) {
+        $connection = DB::transaction(function () use ($requesterId, $receiverId, $requesterTenantId) {
             // Lock both user rows (in consistent order to prevent deadlocks) to serialize
             // concurrent connection requests between the same pair of users
             $minId = min($requesterId, $receiverId);
             $maxId = max($requesterId, $receiverId);
-            DB::table('users')->where('id', $minId)->lockForUpdate()->first();
-            DB::table('users')->where('id', $maxId)->lockForUpdate()->first();
+            $firstUser = DB::table('users')->where('id', $minId)->lockForUpdate()->first();
+            $secondUser = DB::table('users')->where('id', $maxId)->lockForUpdate()->first();
+            $receiver = $receiverId === $minId ? $firstUser : $secondUser;
+
+            // The numeric ID in a staff registration notice is not an
+            // invitation for another member to contact an unapproved person.
+            // Check after locking so approval cannot change between the
+            // decision and the connection being created.
+            if ($receiver === null
+                || (int) $receiver->tenant_id !== (int) $requesterTenantId
+                || $receiver->status !== 'active'
+                || ! $receiver->is_approved) {
+                throw new \RuntimeException('User not found');
+            }
 
             // Check for existing connection in either direction
             $existing = Connection::query()

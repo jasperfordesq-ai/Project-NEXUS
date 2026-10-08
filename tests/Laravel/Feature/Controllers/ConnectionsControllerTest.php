@@ -128,6 +128,28 @@ class ConnectionsControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
 
+    public function test_cannot_connect_to_pending_or_unapproved_registrant_by_id(): void
+    {
+        $user = $this->authenticatedUser();
+
+        foreach ([
+            ['status' => 'pending', 'is_approved' => false],
+            ['status' => 'active', 'is_approved' => false],
+        ] as $state) {
+            $other = User::factory()->forTenant($this->testTenantId)->create($state + [
+                'privacy_profile' => 'public',
+            ]);
+
+            $this->apiPost('/v2/connections/request', ['user_id' => $other->id])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR');
+            $this->assertDatabaseMissing('connections', [
+                'requester_id' => $user->id,
+                'receiver_id' => $other->id,
+            ]);
+        }
+    }
+
     public function test_send_request_requires_authentication(): void
     {
         $response = $this->apiPost('/v2/connections/request', [
