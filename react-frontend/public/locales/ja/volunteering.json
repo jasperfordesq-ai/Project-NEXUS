@@ -181,6 +181,7 @@
   "create_opportunity_subtitle": "あなたの組織のために新しいボランティアの機会を作成します",
   "form_org_label": "組織",
   "form_org_placeholder": "あなたの組織を選択してください",
+  "form_org_yours": "あなたの組織",
   "search_organisations": "組織を検索する",
   "form_org_required": "組織を選択してください",
   "form_title_label": "機会のタイトル",

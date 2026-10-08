@@ -183,6 +183,7 @@
   "create_opportunity_subtitle": "Créez une nouvelle opportunité de bénévolat pour votre organisation",
   "form_org_label": "Organisation",
   "form_org_placeholder": "Sélectionner votre organisation",
+  "form_org_yours": "La vôtre",
   "search_organisations": "Rechercher des organisations",
   "form_org_required": "Veuillez sélectionner une organisation",
   "form_title_label": "Titre de l'opportunité",

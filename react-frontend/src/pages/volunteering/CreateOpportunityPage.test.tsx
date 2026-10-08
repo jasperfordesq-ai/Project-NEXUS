@@ -326,4 +326,27 @@ describe("CreateOpportunityPage", () => {
       authState.user = null;
     }
   });
+
+  // An admin's list mixes their own organisations with everyone else's; their own
+  // come first and say "Yours", so they are not mistaken for one another.
+  it("lists a community admin's own organisations first, labelled Yours", async () => {
+    authState.user = { id: 5, role: "admin" };
+    vi.mocked(api.get).mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith("/v2/volunteering/organisations?")
+        ? { success: true, data: [{ id: 9, name: "Alpha Trust" }, { id: 1, name: "Zebra Club" }], meta: { has_more: false, cursor: null } }
+        : { success: true, data: [{ id: 1, name: "Zebra Club", status: "approved", member_role: "owner" }] },
+    ) as ReturnType<typeof api.get>);
+    try {
+      render(<CreateOpportunityPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith("/v2/volunteering/organisations?per_page=50");
+      });
+      fireEvent.click(await screen.findByRole("button", { name: /organisation/i }));
+      const options = await screen.findAllByRole("option");
+      // The test i18n setup renders keys for this namespace, so the label shows as its key.
+      expect(options.map((o) => o.textContent)).toEqual(["Zebra Clubform_org_yours", "Alpha Trust"]);
+    } finally {
+      authState.user = null;
+    }
+  });
 });

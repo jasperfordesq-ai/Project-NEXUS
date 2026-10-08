@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 import { Autocomplete } from '@/components/ui/Autocomplete';
 import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
@@ -49,6 +50,8 @@ interface MyOrganisation {
   name: string;
   status: string;
   member_role: string;
+  /** The viewer owns or administers it (as opposed to an admin seeing every organisation). */
+  is_own?: boolean;
 }
 
 interface FormData {
@@ -206,14 +209,15 @@ export default function CreateOpportunityPage() {
       const response = await api.get<MyOrganisation[] | { items?: MyOrganisation[] }>('/v2/volunteering/my-organisations');
       if (response.success && response.data) {
         const orgs = Array.isArray(response.data) ? response.data : (response.data.items ?? []);
-        const approved = orgs.filter(
-          (org) => ['approved', 'active'].includes(org.status) && ['owner', 'admin'].includes(org.member_role),
-        );
+        const approved = orgs
+          .filter((org) => ['approved', 'active'].includes(org.status) && ['owner', 'admin'].includes(org.member_role))
+          .map((org) => ({ ...org, is_own: true }));
         if (includeCommunity) {
           for (const org of await loadCommunityOrganisations()) {
-            if (!approved.some((known) => known.id === org.id)) approved.push(org);
+            if (!approved.some((known) => known.id === org.id)) approved.push({ ...org, is_own: false });
           }
-          approved.sort((a, b) => a.name.localeCompare(b.name));
+          // The admin's own organisations first, labelled "Yours", then everyone else's.
+          approved.sort((a, b) => Number(b.is_own) - Number(a.is_own) || a.name.localeCompare(b.name));
         }
         setApprovedOrgs(approved);
 
@@ -434,7 +438,12 @@ export default function CreateOpportunityPage() {
             >
               {approvedOrgs.map((org) => (
                 <AutocompleteItem key={org.id.toString()} id={org.id.toString()} textValue={org.name}>
-                  {org.name}
+                  <span className="flex w-full items-center justify-between gap-2">
+                    <span className="truncate">{org.name}</span>
+                    {isCommunityAdmin && org.is_own && (
+                      <Chip size="sm" variant="soft" color="success">{t('form_org_yours')}</Chip>
+                    )}
+                  </span>
                 </AutocompleteItem>
               ))}
             </Autocomplete>

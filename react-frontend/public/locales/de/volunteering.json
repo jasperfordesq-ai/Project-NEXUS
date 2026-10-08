@@ -181,6 +181,7 @@
   "create_opportunity_subtitle": "Erstellen Sie einen neuen Freiwilligeneinsatz für Ihre Organisation",
   "form_org_label": "Organisation",
   "form_org_placeholder": "Wählen Sie Ihre Organisation",
+  "form_org_yours": "Ihre",
   "search_organisations": "Suchorganisationen",
   "form_org_required": "Bitte wählen Sie eine Organisation",
   "form_title_label": "Titel des Einsatzes",
