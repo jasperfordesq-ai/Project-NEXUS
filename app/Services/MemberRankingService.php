@@ -85,6 +85,7 @@ class MemberRankingService
         $usersQuery = $this->user->newQuery()
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
+            ->where('is_approved', true)
             ->where(function ($query) {
                 $query->where('privacy_search', 1)
                     ->orWhereNull('privacy_search');

@@ -1678,7 +1678,7 @@ class UsersController extends BaseApiController
         $orderBy = "$orderByField $order";
 
         $params = [$tenantId, 'active'];
-        $whereClause = 'u.tenant_id = ? AND u.status = ?';
+        $whereClause = 'u.tenant_id = ? AND u.status = ? AND u.is_approved = 1';
 
         if ($search) {
             $memberIds = \App\Services\SearchService::searchUsersStatic($search, $tenantId);
@@ -1845,7 +1845,7 @@ class UsersController extends BaseApiController
      * Community-wide counts behind the member directory, so the directory can
      * explain in plain words why it lists fewer people than have joined.
      *
-     * `community_total` is every active member of the tenant; `directory_total`
+     * `community_total` is every active, approved member of the tenant; `directory_total`
      * is the subset the directory is allowed to list. Both exclude the viewer,
      * exactly as the listing query does, so the two are directly comparable and
      * are equal when nothing is being held back.
@@ -1859,7 +1859,7 @@ class UsersController extends BaseApiController
      */
     private function directoryVisibilityStats(int $tenantId, ?int $viewerId): array
     {
-        $where  = 'u.tenant_id = ? AND u.status = ?';
+        $where  = 'u.tenant_id = ? AND u.status = ? AND u.is_approved = 1';
         $params = [$tenantId, 'active'];
 
         if ($viewerId) {

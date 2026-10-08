@@ -106,17 +106,23 @@ class MemberDiscoveryPrivacyTest extends TestCase
         $listed = $this->member(['first_name' => $needle, 'last_name' => 'Mentionsurname', 'name' => $needle . ' Mentionsurname']);
         $optedOut = $this->member(['first_name' => $needle, 'name' => $needle . ' Hidden', 'privacy_search' => 0]);
         $suspended = $this->member(['first_name' => $needle, 'name' => $needle . ' Suspended', 'status' => 'suspended']);
+        $pending = $this->member(['first_name' => $needle, 'name' => $needle . ' Pending', 'status' => 'pending', 'is_approved' => false]);
+        $unapproved = $this->member(['first_name' => $needle, 'name' => $needle . ' Unapproved', 'is_approved' => false]);
         Sanctum::actingAs($viewer, ['*']);
 
         $byId = $this->indexById($this->apiGet('/v2/mentions/search?q=' . $needle)->assertStatus(200)->json('data') ?? []);
         $this->assertArrayNotHasKey($optedOut->id, $byId);
         $this->assertArrayNotHasKey($suspended->id, $byId);
+        $this->assertArrayNotHasKey($pending->id, $byId);
+        $this->assertArrayNotHasKey($unapproved->id, $byId);
         $this->assertArrayHasKey($listed->id, $byId);
         $this->assertSurnameHidden($byId[$listed->id], $listed);
 
         $legacy = $this->indexById(CommentService::searchUsersForMention($needle, $this->testTenantId, 10, $viewer->id));
         $this->assertArrayNotHasKey($optedOut->id, $legacy);
         $this->assertArrayNotHasKey($suspended->id, $legacy, 'The legacy route must only suggest active members.');
+        $this->assertArrayNotHasKey($pending->id, $legacy);
+        $this->assertArrayNotHasKey($unapproved->id, $legacy);
         $this->assertArrayHasKey($listed->id, $legacy);
         $this->assertSurnameHidden($legacy[$listed->id], $listed);
     }

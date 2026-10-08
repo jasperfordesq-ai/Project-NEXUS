@@ -474,6 +474,72 @@ class UsersControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_pending_registration_profile_is_staff_only_until_activation(): void
+    {
+        $member = $this->authenticatedUser(['role' => 'member']);
+        $pending = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'PendingSynthetic',
+            'last_name' => 'PrivateSurname',
+            'location' => 'Synthetic location',
+            'status' => 'pending',
+            'is_approved' => false,
+            'onboarding_completed' => false,
+            'privacy_profile' => 'public',
+        ]);
+
+        $memberResponse = $this->apiGet("/v2/users/{$pending->id}");
+        $memberResponse->assertStatus(404);
+        $memberResponse->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+        $this->assertStringNotContainsString('PendingSynthetic', $memberResponse->getContent());
+
+        foreach (['broker', 'coordinator', 'admin'] as $role) {
+            $staff = User::factory()->forTenant($this->testTenantId)->create([
+                'role' => $role, 'status' => 'active', 'is_approved' => true,
+            ]);
+            Sanctum::actingAs($staff, ['*']);
+            $this->apiGet("/v2/users/{$pending->id}")
+                ->assertStatus(200)
+                ->assertJsonPath('data.first_name', 'PendingSynthetic')
+                ->assertJsonMissingPath('data.email');
+        }
+
+        $pending->update(['status' => 'active', 'is_approved' => true]);
+        Sanctum::actingAs($member, ['*']);
+        $this->apiGet("/v2/users/{$pending->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'PendingSynthetic');
+    }
+
+    public function test_active_but_unapproved_profile_is_still_staff_only(): void
+    {
+        $member = $this->authenticatedUser(['role' => 'member']);
+        $unapproved = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'UnapprovedSynthetic',
+            'status' => 'active',
+            'is_approved' => false,
+            'onboarding_completed' => true,
+            'privacy_profile' => 'public',
+        ]);
+
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(404)
+            ->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+
+        $staff = User::factory()->forTenant($this->testTenantId)->create([
+            'role' => 'admin', 'status' => 'active', 'is_approved' => true,
+        ]);
+        Sanctum::actingAs($staff, ['*']);
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'UnapprovedSynthetic');
+
+        $unapproved->update(['is_approved' => true]);
+        Sanctum::actingAs($member, ['*']);
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'UnapprovedSynthetic');
+    }
+
     // ================================================================
     // SHOW USER — Tenant isolation
     // ================================================================
@@ -509,6 +575,62 @@ class UsersControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
+    }
+
+    public function test_pending_and_unapproved_members_are_absent_from_search_and_directory(): void
+    {
+        $this->authenticatedUser(['role' => 'member']);
+        $directoryBefore = $this->apiGet('/v2/users?sort=name&limit=1');
+        $directoryBefore->assertStatus(200);
+        $initialTotal = (int) $directoryBefore->json('meta.total_items');
+        $base = [
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-visibility-avatar.png',
+            'bio' => 'Synthetic approved-profile visibility check.',
+            'latitude' => 53.3498,
+            'longitude' => -6.2603,
+        ];
+        $pending = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixturePending',
+            'status' => 'pending', 'is_approved' => false,
+        ]));
+        $unapproved = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixtureUnapproved',
+            'status' => 'active', 'is_approved' => false,
+        ]));
+        $approved = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixtureApproved',
+            'status' => 'active', 'is_approved' => true,
+        ]));
+
+        $search = $this->apiGet('/v2/users/search?q=C1VisibilityFixture&limit=100');
+        $search->assertStatus(200);
+        $searchIds = array_map('intval', array_column($search->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($pending->id, $searchIds);
+        $this->assertNotContains($unapproved->id, $searchIds);
+        $this->assertContains($approved->id, $searchIds);
+
+        $directory = $this->apiGet('/v2/users?sort=name&limit=1');
+        $directory->assertStatus(200);
+        $this->assertSame($initialTotal + 1, (int) $directory->json('meta.total_items'));
+
+        TenantContext::setById($this->testTenantId);
+        $ranked = app(\App\Services\MemberRankingService::class)->rankMembers(
+            $this->testTenantId, 100, 0, 'C1VisibilityFixture'
+        );
+        $rankedIds = array_map('intval', array_column($ranked['items'], 'user_id'));
+        $this->assertNotContains($pending->id, $rankedIds);
+        $this->assertNotContains($unapproved->id, $rankedIds);
+        $this->assertContains($approved->id, $rankedIds);
+
+        $nearby = $this->apiGet('/v2/members/nearby?lat=53.3498&lon=-6.2603&radius_km=1&limit=100&q=C1VisibilityFixture');
+        $nearby->assertStatus(200);
+        $nearbyIds = array_map('intval', array_column($nearby->json('data') ?? [], 'id'));
+        $this->assertNotContains($pending->id, $nearbyIds);
+        $this->assertNotContains($unapproved->id, $nearbyIds);
+        $this->assertContains($approved->id, $nearbyIds);
     }
 
     // ================================================================
