@@ -84,20 +84,6 @@
         }
       ]
     },
-    "app/Http/Controllers/Api/VolunteerController.php": {
-      "routes": [
-        {
-          "input": "/volunteering/org/1/dashboard?tab=applications",
-          "expected": "native",
-          "native_href": "/(modals)/volunteering-org-dashboard?tab=applications&id=1"
-        },
-        {
-          "input": "/volunteering/opportunities/1",
-          "expected": "native",
-          "native_href": "/(modals)/volunteering-detail?id=1"
-        }
-      ]
-    },
     "app/Listeners/NotifyAdminOfGdprAction.php": {
       "routes": [
         {
@@ -632,6 +618,25 @@
           "input": "/volunteering/org/1/dashboard",
           "expected": "native",
           "native_href": "/(modals)/volunteering-org-dashboard?id=1"
+        }
+      ]
+    },
+    "app/Services/VolunteerApplicationNotificationService.php": {
+      "routes": [
+        {
+          "input": "/volunteering/org/1/dashboard?tab=applications",
+          "expected": "native",
+          "native_href": "/(modals)/volunteering-org-dashboard?tab=applications&id=1"
+        },
+        {
+          "input": "/volunteering/opportunities/1",
+          "expected": "native",
+          "native_href": "/(modals)/volunteering-detail?id=1"
+        },
+        {
+          "input": "/volunteering?tab=applications",
+          "expected": "native",
+          "native_href": "/(modals)/volunteering?tab=applications"
         }
       ]
     },
