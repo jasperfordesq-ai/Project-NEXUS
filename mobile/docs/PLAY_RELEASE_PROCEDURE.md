@@ -91,7 +91,16 @@ is overwritten by the next build.
 on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
 version code 11. Version code 13 took **5m 55s** and version code 14 took
 **2m 41s** with R8 on 2026-09-15. Version code 21 / 1.9.0 took **2m 37s** with R8 on 2026-10-08
-(96,514,231 bytes, SHA-256 `CA5590600E15E9DFCDA8D0AE9375DBA60BD40C762D297935AB3FF2E61CB55F36`, built from `2df582461`). No EAS quota spent.)
+(96,514,231 bytes, SHA-256 `CA5590600E15E9DFCDA8D0AE9375DBA60BD40C762D297935AB3FF2E61CB55F36`, built from `2df582461`). Build 21 was never uploaded: version code 22 / 1.9.0 was rebuilt
+from `05c17bf94` the same afternoon in **2m 2s** (96,514,220 bytes, SHA-256
+`F9E347DDB8F869CD6A34909A5BCB1258CACF4D0FBE99C9CEE8AEC0869E6CFEE6`) and published to
+internal testing at **4:06 PM on 2026-10-08** (Console time). Its review table: Phone 12,274 /
+Tablet 6,474 / TV 4 / Car 0 / Chromebook 10 / Android XR 1, **0 lost on every row**; 33.2 MB new
+install (+210 KB), 2.5 MB update. On the Publishing overview the pre-submit quick-check bar again
+opened at "up to 14 minutes remaining" with Submit already enabled; it cleared after about
+8 minutes ("Your changes can now be sent for review"), was submitted ("Production · 22 (1.9.0) ·
+Start full rollout", managed publishing off), and the post-submit bar ended within ~2 minutes with
+"Your changes are now in review". No EAS quota spent.)
 
 Do not add Gradle's optional `--clean` step after Expo prebuild on this Windows
 checkout. On version code 13 it reached `externalNativeBuildCleanDebug` before
