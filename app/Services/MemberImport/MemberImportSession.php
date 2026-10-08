@@ -17,6 +17,13 @@ use Illuminate\Support\Str;
  * After the check the browser never sends member data again; it only names
  * rows of this session (owner, 8 Oct 2026: "a user must not corrupt our
  * database"). Holds personal data, so it expires after two hours.
+ *
+ * Two cache records, on purpose. The normalised rows can be about a megabyte
+ * and never change, so they are written ONCE, in create(). The progress record
+ * (position, status, totals) is small and the runner saves it after every
+ * member; keeping the rows inside it would re-send them to the cache up to
+ * 5,000 times per import. The runner discards the rows when the import
+ * completes, so personal data is not held after it is needed.
  */
 final class MemberImportSession
 {
@@ -26,11 +33,12 @@ final class MemberImportSession
     public static function create(int $tenantId, int $adminId, array $rows, string $fileName, string $fileSha256): string
     {
         $id = (string) Str::uuid();
+        Cache::put(self::rowsKey($id, $tenantId), $rows, self::TTL_SECONDS);
         self::save([
             'id' => $id,
             'tenant_id' => $tenantId,
             'admin_id' => $adminId,
-            'rows' => $rows,
+            'total' => count($rows),
             'file_name' => $fileName,
             'file_sha256' => $fileSha256,
             'identity_attested' => false,
@@ -45,21 +53,50 @@ final class MemberImportSession
         return $id;
     }
 
-    /** @return array<string, mixed>|null */
+    /**
+     * The progress record only (no rows), or null when it is missing, expired,
+     * malformed or belongs to another community or admin.
+     *
+     * @return array<string, mixed>|null
+     */
     public static function load(string $id, int $tenantId, int $adminId): ?array
     {
-        $session = Cache::get(self::key($id, $tenantId));
-        if (!is_array($session) || (int) $session['tenant_id'] !== $tenantId || (int) $session['admin_id'] !== $adminId) {
+        if (!Str::isUuid($id)) {
+            return null;
+        }
+        $state = Cache::get(self::stateKey($id, $tenantId));
+        if (!is_array($state) || !isset($state['tenant_id'], $state['admin_id'])
+            || (int) $state['tenant_id'] !== $tenantId || (int) $state['admin_id'] !== $adminId) {
             return null;
         }
 
-        return $session;
+        return $state;
     }
 
-    /** @param array<string, mixed> $session */
-    public static function save(array $session): void
+    /**
+     * The held rows, or null once they have expired or been discarded.
+     *
+     * @param array<string, mixed> $state
+     * @return list<array<string, mixed>>|null
+     */
+    public static function rows(array $state): ?array
     {
-        Cache::put(self::key((string) $session['id'], (int) $session['tenant_id']), $session, self::TTL_SECONDS);
+        $rows = Cache::get(self::rowsKey((string) $state['id'], (int) $state['tenant_id']));
+
+        return is_array($rows) ? array_values($rows) : null;
+    }
+
+    /** Writes the progress record only; the rows are never rewritten. @param array<string, mixed> $state */
+    public static function save(array $state): void
+    {
+        unset($state['rows']);
+        Cache::put(self::stateKey((string) $state['id'], (int) $state['tenant_id']), $state, self::TTL_SECONDS);
+    }
+
+    /** @param array<string, mixed> $state */
+    public static function discardRows(array $state): void
+    {
+        Cache::forget(self::rowsKey((string) $state['id'], (int) $state['tenant_id']));
     }
 
     public static function lock(string $id): Lock
@@ -67,8 +104,13 @@ final class MemberImportSession
         return Cache::lock('member_import_lock:' . $id, 120);
     }
 
-    private static function key(string $id, int $tenantId): string
+    private static function stateKey(string $id, int $tenantId): string
     {
         return "member_import:{$tenantId}:{$id}";
+    }
+
+    private static function rowsKey(string $id, int $tenantId): string
+    {
+        return "member_import_rows:{$tenantId}:{$id}";
     }
 }

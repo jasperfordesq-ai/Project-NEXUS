@@ -10,6 +10,7 @@ namespace App\Services\MemberImport;
 
 use App\Support\Wallet\OpeningBalance;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Checks a whole member-import file. Ready only when there is not a single
@@ -21,7 +22,12 @@ final class MemberImportChecker
     {
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * The `summary` is meaningful only when status is 'ready': on a 'problems'
+     * result it counts the rows that passed their own rules, not the file.
+     *
+     * @return array<string, mixed>
+     */
     public function check(int $tenantId, string $bytes): array
     {
         $file = MemberImportFile::parse($bytes);
@@ -70,12 +76,18 @@ final class MemberImportChecker
             );
             foreach ($found as $f) {
                 $row = $firstRowByEmail[mb_strtolower((string) $f->email)] ?? null;
-                if ($row !== null) {
-                    $existingRows[] = $row;
-                    $problems[] = ['row' => $row, 'column' => 'email', 'code' => 'already_member', 'params' => []];
+                if ($row === null) {
+                    // The database matched an address no file row maps to (its collation can
+                    // treat different spellings as equal). Never ignore it: the file is not ready.
+                    Log::error('member_import.unmapped_existing_email', ['tenant_id' => $tenantId, 'chunk_size' => count($chunk)]);
+                    $problems[] = ['row' => 0, 'column' => 'email', 'code' => 'already_member_unmatched', 'params' => []];
+                    continue;
                 }
+                $existingRows[] = $row;
+                $problems[] = ['row' => $row, 'column' => 'email', 'code' => 'already_member', 'params' => []];
             }
         }
+        $existingRows = array_values(array_unique($existingRows));
         sort($existingRows);
 
         $columnOrder = array_flip(MemberImportFile::COLUMNS);

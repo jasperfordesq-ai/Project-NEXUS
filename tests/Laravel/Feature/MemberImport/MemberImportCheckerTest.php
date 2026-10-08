@@ -90,6 +90,63 @@ final class MemberImportCheckerTest extends TestCase
         $this->assertSame(0, MemberImportSession::load($id, $this->testTenantId, 11)['next_index']);
     }
 
+    public function test_the_session_state_and_the_held_rows_are_separate_records(): void
+    {
+        $rows = [['email' => 'a@nexus.test'], ['email' => 'b@nexus.test']];
+        $id = MemberImportSession::create($this->testTenantId, 11, $rows, 'm.csv', str_repeat('a', 64));
+
+        $state = MemberImportSession::load($id, $this->testTenantId, 11);
+        $this->assertNotNull($state);
+        $this->assertArrayNotHasKey('rows', $state);
+        $this->assertSame(2, $state['total']);
+        $this->assertSame($rows, MemberImportSession::rows($state));
+
+        $state['next_index'] = 1;
+        $state['rows'] = [['email' => 'tampered@nexus.test']];
+        MemberImportSession::save($state);
+        $reloaded = MemberImportSession::load($id, $this->testTenantId, 11);
+        $this->assertSame(1, $reloaded['next_index']);
+        $this->assertArrayNotHasKey('rows', $reloaded);
+        $this->assertSame($rows, MemberImportSession::rows($reloaded));
+
+        MemberImportSession::discardRows($reloaded);
+        $this->assertNull(MemberImportSession::rows($reloaded));
+        $this->assertNotNull(MemberImportSession::load($id, $this->testTenantId, 11));
+    }
+
+    public function test_a_session_id_that_is_not_a_uuid_loads_nothing(): void
+    {
+        $this->assertNull(MemberImportSession::load('../etc/passwd', $this->testTenantId, 11));
+        $this->assertNull(MemberImportSession::load('', $this->testTenantId, 11));
+    }
+
+    public function test_a_problems_result_still_carries_the_header_and_every_source_row(): void
+    {
+        $r = $this->check("Ada,Lovelace,ada@nexus.test,,,abc
+Alan,Turing,alan@nexus.test,,,1
+");
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame(['first_name', 'last_name', 'email', 'phone', 'location', 'balance'], $r['header']);
+        $this->assertSame([
+            ['row' => 2, 'raw' => ['Ada', 'Lovelace', 'ada@nexus.test', '', '', 'abc']],
+            ['row' => 3, 'raw' => ['Alan', 'Turing', 'alan@nexus.test', '', '', '1']],
+        ], $r['source_rows']);
+    }
+
+    public function test_an_existing_member_beyond_the_first_500_emails_is_still_found(): void
+    {
+        User::factory()->forTenant($this->testTenantId)->create(['email' => 'member501@nexus.test']);
+        $body = '';
+        for ($i = 1; $i <= 501; $i++) {
+            $body .= "Test,Person{$i},member{$i}@nexus.test,,,
+";
+        }
+        $r = $this->check($body);
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame([502], $r['existing_member_rows']);
+        $this->assertSame([['row' => 502, 'column' => 'email', 'code' => 'already_member', 'params' => []]], $r['problems']);
+    }
+
     /** A second community, created inside the test transaction. */
     private function otherTenantId(): int
     {
