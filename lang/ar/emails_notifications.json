@@ -120,7 +120,11 @@
     "heading_application_received": "طلب تطوع جديد",
     "application_received_body": "تقدّم {{name}} للتطوع في منظمتك.",
     "application_received_note": "راجع طلبه وافقه أو ارفضه من لوحة تحكم منظمتك.",
-    "btn_review_application": "مراجعة الطلب"
+    "btn_review_application": "مراجعة الطلب",
+    "heading_application_submitted": "تم إرسال الطلب",
+    "application_submitted_body": "شكرًا لك — تم إرسال طلبك إلى المنظمة.",
+    "application_submitted_note": "ستراجع المنظمة طلبك، وستصلك رسالة بريد إلكتروني عند قبوله أو رفضه. يمكنك متابعة حالته في أي وقت من قائمة طلباتك.",
+    "btn_view_my_applications": "عرض طلباتي"
   },
   "default_notification": "إشعار: {{type}}",
   "sub_account": {

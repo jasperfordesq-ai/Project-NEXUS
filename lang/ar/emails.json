@@ -472,6 +472,10 @@
     "vol_group_signup_added": "تم تسجيلك في وردية تطوعية",
     "vol_group_signup_removed": "تمت إزالة تسجيل جماعي في وردية",
     "vol_group_signup_cancelled": "تم إلغاء تسجيل جماعي في وردية",
+    "vol_application_received": "🙋 طلب تطوع جديد",
+    "vol_application_submitted": "تم إرسال طلب التطوع الخاص بك",
+    "vol_application_approved": "🎉 تم قبول طلب التطوع الخاص بك",
+    "vol_application_declined": "مستجدات بشأن طلب التطوع الخاص بك",
     "default": "إشعار من Project NEXUS"
   },
   "exchange_dispute": {

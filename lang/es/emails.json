@@ -472,6 +472,10 @@
     "vol_group_signup_added": "Le han inscrito en un turno de voluntariado",
     "vol_group_signup_removed": "Se ha retirado una inscripción de grupo a un turno",
     "vol_group_signup_cancelled": "Se ha cancelado una inscripción de grupo a un turno",
+    "vol_application_received": "🙋 Nueva solicitud de voluntariado",
+    "vol_application_submitted": "Tu solicitud de voluntariado se ha enviado",
+    "vol_application_approved": "🎉 Tu solicitud de voluntariado ha sido aceptada",
+    "vol_application_declined": "Novedades sobre tu solicitud de voluntariado",
     "default": "Notificación de Project NEXUS"
   },
   "exchange_dispute": {

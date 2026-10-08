@@ -227,6 +227,12 @@ class NotificationDispatcher
             'connection_accepted',
             'vol_application_approved',
             'vol_application_declined',
+            // A new application, told to everyone who manages the organisation,
+            // and the applicant's own confirmation. The managers' notice was
+            // missing here, so on the default 'off' digest it was never emailed
+            // to anyone (owner report, 8 Oct 2026).
+            'vol_application_received',
+            'vol_application_submitted',
             'vol_hours_approved',
             // A waitlist spot offer is time-sensitive (the offer expires and passes
             // to the next person). It was previously neither instant nor a curated
@@ -3546,7 +3552,51 @@ HTML;
     }
 
     /**
-     * Build HTML email for new volunteer application received (sent to org owner).
+     * Build HTML email confirming to the applicant that their application was sent.
+     */
+    public static function buildVolApplicationSubmittedEmail(string $oppTitle): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $oppTitleHtml = htmlspecialchars($oppTitle, ENT_QUOTES, 'UTF-8');
+
+        $heading = __('emails_notifications.volunteering.heading_application_submitted');
+        $tenantLabel = __('emails_notifications.volunteering.tenant_volunteering', ['community' => $tenantName]);
+        $body = __('emails_notifications.volunteering.application_submitted_body');
+        $labelOpp = __('emails_notifications.volunteering.label_opportunity');
+        $note = __('emails_notifications.volunteering.application_submitted_note');
+        $button = __('emails_notifications.volunteering.btn_view_my_applications');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelOpp}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$oppTitleHtml}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$note}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/volunteering?tab=applications" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$button}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Build HTML email for new volunteer application received (sent to everyone
+     * who manages the organisation).
      */
     public static function buildVolApplicationReceivedEmail(string $volunteerName, string $oppTitle, int $orgId): string
     {

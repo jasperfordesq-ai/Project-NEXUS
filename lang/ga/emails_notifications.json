@@ -120,7 +120,11 @@
     "heading_application_received": "Iarratas Nua Deonachais",
     "application_received_body": "Chuir {{name}} iarratas isteach le deonú le d'eagraíocht.",
     "application_received_note": "Déan athbhreithniú ar a n-iarratas agus ceadaigh nó diúltaigh ó do dheais eagraíochta.",
-    "btn_review_application": "Déan Athbhreithniú ar an Iarratas"
+    "btn_review_application": "Déan Athbhreithniú ar an Iarratas",
+    "heading_application_submitted": "Iarratas Seolta",
+    "application_submitted_body": "Go raibh maith agat — seoladh d'iarratas chuig an eagraíocht.",
+    "application_submitted_note": "Déanfaidh siad athbhreithniú air, agus gheobhaidh tú ríomhphost nuair a ghlacann siad leis nó nuair a dhiúltaíonn siad dó. Is féidir leat a dhul chun cinn a sheiceáil am ar bith faoi d'iarratais.",
+    "btn_view_my_applications": "Féach ar Mo chuid Iarratas"
   },
   "default_notification": "Fógra: {{type}}",
   "sub_account": {

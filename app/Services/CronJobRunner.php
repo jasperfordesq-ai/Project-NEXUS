@@ -1046,6 +1046,7 @@ class CronJobRunner
             'friend_accepted' => 'connection',
 
             'vol_application_received',
+            'vol_application_submitted',
             'vol_application_approved',
             'vol_application_declined',
             'vol_hours_approved',

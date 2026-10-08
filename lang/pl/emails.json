@@ -472,6 +472,10 @@
     "vol_group_signup_added": "Zapisano Cię na zmianę wolontariacką",
     "vol_group_signup_removed": "Zapis grupowy na zmianę został usunięty",
     "vol_group_signup_cancelled": "Zapis grupowy na zmianę został anulowany",
+    "vol_application_received": "🙋 Nowe zgłoszenie wolontariackie",
+    "vol_application_submitted": "Twoje zgłoszenie wolontariackie zostało wysłane",
+    "vol_application_approved": "🎉 Twoje zgłoszenie wolontariackie zostało przyjęte",
+    "vol_application_declined": "Informacja o Twoim zgłoszeniu wolontariackim",
     "default": "Powiadomienie z Project NEXUS"
   },
   "exchange_dispute": {

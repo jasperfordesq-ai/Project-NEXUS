@@ -120,7 +120,11 @@
     "heading_application_received": "Nieuwe Vrijwilligersaanmelding",
     "application_received_body": "{{name}} heeft zich aangemeld als vrijwilliger bij uw organisatie.",
     "application_received_note": "Beoordeel de aanmelding en keur goed of af via uw organisatiedashboard.",
-    "btn_review_application": "Aanmelding Beoordelen"
+    "btn_review_application": "Aanmelding Beoordelen",
+    "heading_application_submitted": "Aanmelding verstuurd",
+    "application_submitted_body": "Bedankt — je aanmelding is naar de organisatie verstuurd.",
+    "application_submitted_note": "Zij beoordelen deze en je ontvangt een e-mail wanneer ze je aanmelding accepteren of afwijzen. Je kunt de voortgang altijd bekijken bij je aanmeldingen.",
+    "btn_view_my_applications": "Mijn aanmeldingen bekijken"
   },
   "default_notification": "Melding: {{type}}",
   "sub_account": {

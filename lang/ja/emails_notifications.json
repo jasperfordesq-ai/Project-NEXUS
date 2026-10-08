@@ -120,7 +120,11 @@
     "heading_application_received": "新しいボランティア申請",
     "application_received_body": "{{name}} があなたの組織でのボランティアを申請しました。",
     "application_received_note": "申請を確認し、組織のダッシュボードから承認または却下してください。",
-    "btn_review_application": "申請を確認する"
+    "btn_review_application": "申請を確認する",
+    "heading_application_submitted": "応募を送信しました",
+    "application_submitted_body": "ありがとうございます。応募は団体に送信されました。",
+    "application_submitted_note": "団体が内容を確認し、承認または不承認になった時点でメールでお知らせします。進捗はいつでも応募一覧で確認できます。",
+    "btn_view_my_applications": "応募一覧を見る"
   },
   "default_notification": "通知：{{type}}",
   "sub_account": {

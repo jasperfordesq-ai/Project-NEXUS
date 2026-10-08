@@ -472,6 +472,10 @@
     "vol_group_signup_added": "U bent ingeschreven voor een vrijwilligersdienst",
     "vol_group_signup_removed": "Een groepsinschrijving voor een dienst is verwijderd",
     "vol_group_signup_cancelled": "Een groepsinschrijving voor een dienst is geannuleerd",
+    "vol_application_received": "🙋 Nieuwe vrijwilligersaanmelding",
+    "vol_application_submitted": "Je vrijwilligersaanmelding is verstuurd",
+    "vol_application_approved": "🎉 Je vrijwilligersaanmelding is geaccepteerd",
+    "vol_application_declined": "Nieuws over je vrijwilligersaanmelding",
     "default": "Melding van Project NEXUS"
   },
   "exchange_dispute": {

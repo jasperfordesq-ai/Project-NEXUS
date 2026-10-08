@@ -153,6 +153,7 @@ return [
     // NotificationDispatcher — Push titles
     // =========================================================================
     'push_vol_application_received'  => 'New Application',
+    'push_vol_application_submitted'  => 'Application Sent',
     'push_vol_application_approved'  => 'Application Approved',
     'push_vol_application_declined'  => 'Application Declined',
     'push_vol_hours_approved'        => 'Hours Approved',
@@ -166,6 +167,7 @@ return [
     'push_vol_swap_declined'         => 'Shift Swap Declined',
     'vol_application_fallback_opportunity' => 'a volunteer opportunity',
     'vol_application_received_body'  => ':name applied for your volunteer opportunity: :title',
+    'vol_application_submitted_body'  => 'Your volunteer application for ":title" was sent. You will hear back once it has been reviewed.',
     'vol_application_approved_body'  => 'Your volunteer application for ":title" was accepted!',
     'vol_application_declined_body'  => 'Your volunteer application for ":title" was not accepted',
     'vol_shift_signup_body'          => ':name signed up for a shift',

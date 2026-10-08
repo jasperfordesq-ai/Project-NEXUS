@@ -18,6 +18,7 @@ use App\Http\Requests\Volunteering\UpdateOpportunityRequest;
 use App\Http\Requests\Volunteering\UpdateOrganisationRequest;
 use App\Http\Requests\Volunteering\VerifyHoursRequest;
 use App\Http\Resources\PublicOrganisationResource;
+use App\Services\VolunteerApplicationNotificationService;
 use App\Services\VolunteerService;
 use App\Services\VolunteerOpportunityCreationReceiptService;
 use App\Services\VolunteerMatchingService;
@@ -264,44 +265,9 @@ class VolunteerController extends BaseApiController
             return $this->respondWithError($code, $e->getMessage(), null, $status);
         }
 
-        // Notify the opportunity organizer about the new application
-        try {
-            $opportunity = VolOpportunity::where('tenant_id', TenantContext::getId())->find($id);
-            if (!$opportunity || (int) $opportunity->tenant_id !== TenantContext::getId()) {
-                throw new \RuntimeException(__('api.tenant_mismatch_error'));
-            }
-            if ($opportunity && $opportunity->created_by && $opportunity->created_by !== $userId) {
-                $volunteer = User::find($userId);
-                $organizer = User::find((int) $opportunity->created_by);
-                LocaleContext::withLocale($organizer, function () use ($volunteer, $opportunity) {
-                    $volunteerName = $volunteer->name ?? __('emails.common.fallback_someone');
-                    $notifContent = __('notifications.vol_application_received_body', [
-                        'name' => $volunteerName,
-                        'title' => $opportunity->title,
-                    ]);
-                    $orgId = $opportunity->organization_id;
-                    $notifLink = "/volunteering/org/{$orgId}/dashboard?tab=applications";
-
-                    $htmlContent = NotificationDispatcher::buildVolApplicationReceivedEmail(
-                        $volunteerName,
-                        $opportunity->title,
-                        (int) $orgId
-                    );
-
-                    NotificationDispatcher::dispatch(
-                        (int) $opportunity->created_by,
-                        'global',
-                        0,
-                        'vol_application_received',
-                        $notifContent,
-                        $notifLink,
-                        $htmlContent
-                    );
-                });
-            }
-        } catch (\Throwable $e) {
-            // Notification failure must not break the main flow
-        }
+        // Everyone who manages the organisation is told, and the applicant gets a
+        // confirmation. Failures are logged inside the service, never thrown.
+        VolunteerApplicationNotificationService::applicationSubmitted((int) TenantContext::getId(), (int) $application->id);
 
         return $this->respondWithData($application, null, 201);
     }

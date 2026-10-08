@@ -472,6 +472,10 @@
     "vol_group_signup_added": "Vous avez été inscrit(e) à un créneau de bénévolat",
     "vol_group_signup_removed": "Une inscription de groupe à un créneau a été retirée",
     "vol_group_signup_cancelled": "Une inscription de groupe à un créneau a été annulée",
+    "vol_application_received": "🙋 Nouvelle candidature de bénévolat",
+    "vol_application_submitted": "Votre candidature de bénévolat a été envoyée",
+    "vol_application_approved": "🎉 Votre candidature de bénévolat a été acceptée",
+    "vol_application_declined": "Du nouveau concernant votre candidature de bénévolat",
     "default": "Notification de Project NEXUS"
   },
   "exchange_dispute": {

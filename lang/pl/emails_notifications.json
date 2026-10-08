@@ -120,7 +120,11 @@
     "heading_application_received": "Nowe Zgłoszenie Wolontariackie",
     "application_received_body": "{{name}} zgłosił(a) się na wolontariat w Twojej organizacji.",
     "application_received_note": "Przejrzyj zgłoszenie i zatwierdź lub odrzuć je z poziomu panelu Twojej organizacji.",
-    "btn_review_application": "Przejrzyj Zgłoszenie"
+    "btn_review_application": "Przejrzyj Zgłoszenie",
+    "heading_application_submitted": "Zgłoszenie wysłane",
+    "application_submitted_body": "Dziękujemy — Twoje zgłoszenie zostało wysłane do organizacji.",
+    "application_submitted_note": "Organizacja je rozpatrzy, a Ty otrzymasz e-mail, gdy zostanie przyjęte lub odrzucone. Postęp możesz w każdej chwili sprawdzić w swoich zgłoszeniach.",
+    "btn_view_my_applications": "Zobacz moje zgłoszenia"
   },
   "default_notification": "Powiadomienie: {{type}}",
   "sub_account": {

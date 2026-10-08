@@ -120,7 +120,11 @@
     "heading_application_received": "Nouvelle candidature de bénévole",
     "application_received_body": "{{name}} a soumis une candidature pour faire du bénévolat avec votre organisation.",
     "application_received_note": "Examinez la candidature et approuvez-la ou refusez-la depuis le tableau de bord de votre organisation.",
-    "btn_review_application": "Examiner la candidature"
+    "btn_review_application": "Examiner la candidature",
+    "heading_application_submitted": "Candidature envoyée",
+    "application_submitted_body": "Merci — votre candidature a été envoyée à l'organisation.",
+    "application_submitted_note": "Elle va l'examiner, et vous recevrez un e-mail lorsqu'elle l'acceptera ou la refusera. Vous pouvez suivre son avancement à tout moment dans vos candidatures.",
+    "btn_view_my_applications": "Voir mes candidatures"
   },
   "default_notification": "Notification : {{type}}",
   "sub_account": {

@@ -120,7 +120,11 @@
     "heading_application_received": "Neue Ehrenamtsbewerbung",
     "application_received_body": "{{name}} hat sich als Ehrenamtliche oder Ehrenamtlicher bei Ihrer Organisation beworben.",
     "application_received_note": "Prüfen Sie die Bewerbung und genehmigen oder lehnen Sie sie über Ihr Organisations-Dashboard ab.",
-    "btn_review_application": "Bewerbung prüfen"
+    "btn_review_application": "Bewerbung prüfen",
+    "heading_application_submitted": "Bewerbung gesendet",
+    "application_submitted_body": "Vielen Dank – Ihre Bewerbung wurde an die Organisation gesendet.",
+    "application_submitted_note": "Sie wird geprüft, und Sie erhalten eine E-Mail, sobald sie angenommen oder abgelehnt wurde. Den Stand können Sie jederzeit unter Ihren Bewerbungen einsehen.",
+    "btn_view_my_applications": "Meine Bewerbungen ansehen"
   },
   "default_notification": "Benachrichtigung: {{type}}",
   "sub_account": {

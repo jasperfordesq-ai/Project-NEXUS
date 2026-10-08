@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 236,
+    "producer_count": 237,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -940,22 +940,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/VolunteerController.php:291:NotificationDispatcher::dispatch",
+            "id": "app/Http/Controllers/Api/VolunteerController.php:352:NotificationDispatcher::dispatch",
             "file": "app/Http/Controllers/Api/VolunteerController.php",
-            "line": 291,
-            "transport": "NotificationDispatcher::dispatch",
-            "role": "producer",
-            "recipient_expression": "(int) $opportunity->created_by",
-            "title_expression": null,
-            "body_expression": "$notifContent",
-            "type_expression": "vol_application_received",
-            "link_expression": "$notifLink",
-            "data_expression": null
-        },
-        {
-            "id": "app/Http/Controllers/Api/VolunteerController.php:386:NotificationDispatcher::dispatch",
-            "file": "app/Http/Controllers/Api/VolunteerController.php",
-            "line": 386,
+            "line": 352,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "(int) $application->user_id",
@@ -966,9 +953,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/VolunteerController.php:490:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/VolunteerController.php:456:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/VolunteerController.php",
-            "line": 490,
+            "line": 456,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $shift->opportunity->created_by",
@@ -1434,9 +1421,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2427:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:2428:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2427,
+            "line": 2428,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",
@@ -1447,9 +1434,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2611:NotificationDispatcher::dispatchHotMatch",
+            "id": "app/Services/CronJobRunner.php:2612:NotificationDispatcher::dispatchHotMatch",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2611,
+            "line": 2612,
             "transport": "NotificationDispatcher::dispatchHotMatch",
             "role": "producer",
             "recipient_expression": "$user['user_id']",
@@ -1460,9 +1447,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:3320:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:3321:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 3320,
+            "line": 3321,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",
@@ -2487,9 +2474,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/NotificationDispatcher.php:591:FCMPushService::sendToUser",
+            "id": "app/Services/NotificationDispatcher.php:597:FCMPushService::sendToUser",
             "file": "app/Services/NotificationDispatcher.php",
-            "line": 591,
+            "line": 597,
             "transport": "FCMPushService::sendToUser",
             "role": "transport_boundary",
             "recipient_expression": "$uid",
@@ -2900,6 +2887,32 @@
             "body_expression": "$message",
             "type_expression": "admin_adjustment",
             "link_expression": "$dashboardLink",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerApplicationNotificationService.php:82:NotificationDispatcher::dispatch",
+            "file": "app/Services/VolunteerApplicationNotificationService.php",
+            "line": 82,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "(int) $manager->id",
+            "title_expression": null,
+            "body_expression": "__('notifications.vol_application_received_body', ['name' => $name, 'title' => $application->title])",
+            "type_expression": "vol_application_received",
+            "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerApplicationNotificationService.php:115:NotificationDispatcher::dispatch",
+            "file": "app/Services/VolunteerApplicationNotificationService.php",
+            "line": 115,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "(int) $applicant->id",
+            "title_expression": null,
+            "body_expression": "__('notifications.' . $type . '_body', ['title' => $title])",
+            "type_expression": "$type",
+            "link_expression": "$accepted ? \"/volunteering/opportunities/{$oppId}\" : '/volunteering?tab=applications'",
             "data_expression": null
         },
         {

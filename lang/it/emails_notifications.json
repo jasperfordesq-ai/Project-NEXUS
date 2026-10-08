@@ -120,7 +120,11 @@
     "heading_application_received": "Nuova Candidatura Volontario",
     "application_received_body": "{{name}} ha fatto domanda per diventare volontario con la tua organizzazione.",
     "application_received_note": "Esamina la candidatura e approva o rifiuta dal dashboard della tua organizzazione.",
-    "btn_review_application": "Esamina Candidatura"
+    "btn_review_application": "Esamina Candidatura",
+    "heading_application_submitted": "Candidatura inviata",
+    "application_submitted_body": "Grazie: la tua candidatura è stata inviata all'organizzazione.",
+    "application_submitted_note": "La esaminerà e riceverai un'email quando verrà accettata o rifiutata. Puoi controllarne lo stato in qualsiasi momento tra le tue candidature.",
+    "btn_view_my_applications": "Vedi le mie candidature"
   },
   "default_notification": "Notifica: {{type}}",
   "sub_account": {

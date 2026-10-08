@@ -56,7 +56,7 @@ class NotificationService
             'exchange_disputed', 'exchange_ready_confirmation', 'exchange_cancelled',
         ],
         'volunteering' => [
-            'volunteering', 'volunteer_shift', 'vol_application_received',
+            'volunteering', 'volunteer_shift', 'vol_application_received', 'vol_application_submitted',
             'vol_application_approved', 'vol_application_rejected',
             'vol_swap_requested', 'vol_swap_approved', 'vol_shift_reminder',
         ],

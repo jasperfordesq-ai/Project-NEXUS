@@ -120,7 +120,11 @@
     "heading_application_received": "Nueva Solicitud de Voluntariado",
     "application_received_body": "{{name}} ha solicitado hacer voluntariado en su organización.",
     "application_received_note": "Revise la solicitud y apruebe o rechace desde el panel de su organización.",
-    "btn_review_application": "Revisar Solicitud"
+    "btn_review_application": "Revisar Solicitud",
+    "heading_application_submitted": "Solicitud enviada",
+    "application_submitted_body": "Gracias: tu solicitud se ha enviado a la organización.",
+    "application_submitted_note": "La revisarán y recibirás un correo electrónico cuando la acepten o la rechacen. Puedes consultar su estado en cualquier momento en tus solicitudes.",
+    "btn_view_my_applications": "Ver mis solicitudes"
   },
   "default_notification": "Notificación: {{type}}",
   "sub_account": {

@@ -120,7 +120,11 @@
     "heading_application_received": "New Volunteer Application",
     "application_received_body": "{{name}} has applied to volunteer with your organisation.",
     "application_received_note": "Review their application and approve or decline from your organisation dashboard.",
-    "btn_review_application": "Review Application"
+    "btn_review_application": "Review Application",
+    "heading_application_submitted": "Application Sent",
+    "application_submitted_body": "Thank you — your application has been sent to the organisation.",
+    "application_submitted_note": "They will review it, and you will get an email when they accept or decline it. You can check its progress at any time under your applications.",
+    "btn_view_my_applications": "View My Applications"
   },
   "default_notification": "Notification: {{type}}",
   "sub_account": {
