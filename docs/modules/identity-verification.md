@@ -33,7 +33,7 @@ When a tenant turns the flag **off**:
 The green "Verified" / "ID Verified" tag keys on the **`id_verified` member badge**, granted by `MemberVerificationBadgeService`. It is **not** the same as `users.is_verified` (which tracks email verification). Do not conflate the two:
 
 - `id_verified` badge → granted only after a document/selfie identity check passes **and** the verified name/DOB match the profile.
-- email/`is_verified` → set by the email-confirmation flow; unrelated to ID verification.
+- email/`is_verified` → set when the email is confirmed: the member uses their verification link, completes a password reset (reset links are only ever emailed), or an administrator vouches for the address (creating the account with an administrator-set password, a CSV import, or "Mark as confirmed"). All of it goes through `App\Services\Auth\EmailConfirmationService`. Unrelated to ID verification, and confirming an email never releases an identity-check hold.
 
 The badge is granted by `OptionalIdentityVerificationController::grantIdVerifiedBadge()`, which calls `MemberVerificationBadgeService::grantBadge($userId, 'id_verified', ...)`. The grant is idempotent — every code path checks for an existing badge first.
 
