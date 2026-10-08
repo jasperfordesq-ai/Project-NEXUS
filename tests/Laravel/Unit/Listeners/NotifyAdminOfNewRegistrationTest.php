@@ -54,6 +54,13 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
         parent::setUp();
 
         Cache::flush();
+        $this->testTenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Synthetic registration alert test',
+            'slug' => 'synthetic-registration-' . uniqid('', true),
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     // -------------------------------------------------------------------------
@@ -73,6 +80,76 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
         $listener = new NotifyAdminOfNewRegistration();
         $this->assertObjectNotHasProperty('tries', $listener);
         $this->assertObjectNotHasProperty('timeout', $listener);
+    }
+
+    /**
+     * Capture the listener payloads without contacting a mail or push provider.
+     * @dataProvider approvalModes
+     */
+    public function test_synthetic_fanout_omits_registrant_particulars_for_each_tenant_recipient(bool $needsApproval): void
+    {
+        if (!$needsApproval) {
+            app(\App\Services\TenantSettingsService::class)
+                ->set($this->testTenantId, 'admin_approval', 'false');
+        }
+        $member = $this->seedUser([
+            'name' => 'SyntheticRegistrantMarker',
+            'first_name' => 'SyntheticRegistrantMarker',
+            'email' => 'synthetic.registrant@example.com',
+        ]);
+        $admin = $this->seedUser(['role' => 'admin']);
+        $broker = $this->seedUser(['role' => 'broker', 'preferred_language' => 'fr']);
+        $otherTenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Other synthetic alert test',
+            'slug' => 'other-registration-' . uniqid('', true),
+            'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->seedUser(['role' => 'admin'], $otherTenantId);
+
+        $bells = [];
+        $emails = [];
+        $this->notificationAlias->shouldReceive('createNotification')->twice()
+            ->andReturnUsing(function (...$args) use (&$bells) { $bells[] = $args; });
+        $this->dispatcherAlias->shouldReceive('fanOutPush')->twice();
+        $this->emailAlias->shouldReceive('sendRaw')->twice()
+            ->andReturnUsing(function (...$args) use (&$emails) { $emails[] = $args; return true; });
+
+        (new NotifyAdminOfNewRegistration())->handle(
+            new UserRegistered($this->makeUserModel($member), $this->testTenantId)
+        );
+
+        $this->assertEqualsCanonicalizing([$admin->id, $broker->id], array_column($bells, 0));
+        $this->assertEqualsCanonicalizing([$admin->email, $broker->email], array_column($emails, 0));
+        foreach ($bells as $bell) {
+            $this->assertStringNotContainsString('SyntheticRegistrantMarker', $bell[1]);
+            $this->assertStringNotContainsString('synthetic.registrant@example.com', $bell[1]);
+            $expectedLink = !$needsApproval
+                ? '/broker/members'
+                : ($bell[0] === $admin->id
+                    ? '/admin/users?filter=pending'
+                    : '/broker/members');
+            $this->assertSame($expectedLink, $bell[2]);
+        }
+        foreach ($emails as $email) {
+            $this->assertStringNotContainsString('SyntheticRegistrantMarker', $email[1] . $email[2]);
+            $this->assertStringNotContainsString('synthetic.registrant@example.com', $email[1] . $email[2]);
+            $expectedCta = !$needsApproval
+                ? '/profile/' . $member->id
+                : ($email[0] === $admin->email
+                    ? '/admin/users?filter=pending'
+                    : '/broker/members');
+            $this->assertStringContainsString($expectedCta, $email[2]);
+            if ($needsApproval) {
+                $this->assertStringNotContainsString('/profile/' . $member->id, $email[2]);
+            }
+        }
+    }
+
+    public static function approvalModes(): array
+    {
+        return ['approval required' => [true], 'ordinary registration' => [false]];
     }
 
     // -------------------------------------------------------------------------
