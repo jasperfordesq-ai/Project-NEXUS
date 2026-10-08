@@ -699,5 +699,9 @@
   "mfa_changed": {
     "subject": "La sicurezza del tuo account è cambiata",
     "body": "I codici di recupero o le impostazioni di autenticazione sono cambiati. Se non hai richiesto la modifica, contatta subito l’amministratore della tua comunità."
+  },
+  "account_invitation": {
+    "cta": "Imposta la password",
+    "expiry": "Questo link scade tra {{days}} giorni."
   }
 }

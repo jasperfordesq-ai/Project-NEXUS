@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Services\TokenService;
+use App\Services\Auth\PasswordResetTokens;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
@@ -32,9 +33,6 @@ class PasswordResetController extends BaseApiController
         private readonly TokenService $tokenService,
         private readonly \App\Services\PwnedPasswordService $pwnedPassword,
     ) {}
-
-    /** Token expiry in seconds (1 hour) */
-    private const TOKEN_EXPIRY_SECONDS = 3600;
 
     /** Minimum password length */
     private const MIN_PASSWORD_LENGTH = 12;
@@ -283,10 +281,7 @@ class PasswordResetController extends BaseApiController
                     ->where('email', $email)
                     ->where('tenant_id', $tokenTenantId)
                     ->where('token', $hashedResetToken)
-                    ->whereRaw(
-                        'created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)',
-                        [self::TOKEN_EXPIRY_SECONDS]
-                    )
+                    ->whereRaw(PasswordResetTokens::liveCondition())
                     ->lockForUpdate()
                     ->first();
                 if (
@@ -471,10 +466,7 @@ class PasswordResetController extends BaseApiController
 
         $record = DB::table('password_resets')
             ->where('token', $hashedToken)
-            ->whereRaw(
-                'created_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)',
-                [self::TOKEN_EXPIRY_SECONDS]
-            )
+            ->whereRaw(PasswordResetTokens::liveCondition())
             ->first();
 
         if (!$record) {

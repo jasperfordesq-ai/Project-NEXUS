@@ -53,13 +53,8 @@ class TenantProvisioningMailer
                 if (!$ownsAccount) {
                     throw new \RuntimeException('Provisioned administrator does not match the applicant.');
                 }
-                $invitationToken = bin2hex(random_bytes(32));
-                DB::table('password_resets')->insert([
-                    'email' => $applicantEmail,
-                    'tenant_id' => $tenantId,
-                    'token' => hash('sha256', $invitationToken),
-                    'created_at' => now(),
-                ]);
+                // A 7-day account invitation, not a 1-hour reset link.
+                $invitationToken = app(\App\Services\Auth\PasswordResetTokens::class)->issueInvitation($applicantEmail, $tenantId);
             }
             $sent = LocaleContext::withLocale($locale, function () use ($request, $tenant, $tenantId, $applicantEmail, $invitationToken): bool {
                     $name      = $request['applicant_name'] ?? '';
@@ -81,8 +76,8 @@ class TenantProvisioningMailer
                     $builder->infoCard($info);
 
                     if ($invitationToken !== null) {
-                        $builder->paragraph(__('emails.password_reset.expiry'));
-                        $builder->button(__('emails.password_reset.cta'), $tenantUrl . '/password/reset?token=' . $invitationToken);
+                        $builder->paragraph(__('emails.account_invitation.expiry', ['days' => \App\Services\Auth\PasswordResetTokens::INVITATION_TTL_DAYS]));
+                        $builder->button(__('emails.account_invitation.cta'), $tenantUrl . '/password/reset?token=' . $invitationToken);
                     } else {
                         $builder->button(__('emails_provisioning.welcome.cta'), $loginUrl);
                     }

@@ -1411,11 +1411,10 @@ class CronJobRunner
             $tasks[] = "Password reset tokens: skipped (column not found)";
         }
 
-        // 1b. Clean expired password_resets table entries (Laravel password resets older than 1 hour)
-        // Global table — `password_resets` has no tenant_id column (keyed by email + token only).
+        // 1b. Clean expired password_resets links: reset links after 1 hour,
+        // account invitations at their own expires_at (7 days) — never by age alone.
         try {
-            $sql = "DELETE FROM password_resets WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
-            DB::delete($sql);
+            app(\App\Services\Auth\PasswordResetTokens::class)->deleteExpired();
             $tasks[] = "Cleaned expired password_resets entries";
         } catch (\Exception $e) {
             $tasks[] = "password_resets table: skipped (" . $e->getMessage() . ")";
@@ -1524,10 +1523,9 @@ class CronJobRunner
             }
         }
 
-        // 7. Clean expired password_resets entries (older than 1 hour)
-        // Global table — `password_resets` has no tenant_id column (keyed by email + token); duplicate of step 1b, kept for safety.
+        // 7. Clean expired password_resets links (duplicate of step 1b, kept for safety).
         try {
-            DB::delete("DELETE FROM password_resets WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+            app(\App\Services\Auth\PasswordResetTokens::class)->deleteExpired();
             $tasks[] = "Cleaned expired password_resets entries";
         } catch (\Exception $e) {
             $tasks[] = "password_resets: skipped (" . $e->getMessage() . ")";
@@ -2228,9 +2226,9 @@ class CronJobRunner
             Log::warning('[CronCleanup] Failed to clean expired suppressions: ' . $e->getMessage());
         }
 
-        // Clean expired password_resets table entries (older than 1 hour)
+        // Clean expired password_resets links (reset: 1 hour; invitation: its expires_at).
         try {
-            DB::delete("DELETE FROM password_resets WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+            app(\App\Services\Auth\PasswordResetTokens::class)->deleteExpired();
             echo "   Cleaned expired password_resets.\n";
         } catch (\Exception $e) {
             Log::warning('[CronCleanup] Failed to clean expired password_resets: ' . $e->getMessage());

@@ -453,6 +453,11 @@ class EmailTriggerAuditService
         $q = DB::table('password_resets as pr')
             ->select('pr.tenant_id', DB::raw('COUNT(*) as count'))
             ->where('pr.created_at', '>=', $since)
+            // Account invitations (rows with their own expires_at — see
+            // PasswordResetTokens) go out as welcome emails, not as
+            // 'password_reset', and now live 7 days; counting them here would
+            // report every invitation as a reset that was never emailed.
+            ->whereNull('pr.expires_at')
             ->whereNotExists(function ($sub) {
                 $sub->select(DB::raw(1))
                     ->from('email_log')

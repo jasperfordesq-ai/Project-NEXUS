@@ -699,5 +699,9 @@
   "mfa_changed": {
     "subject": "Ihre Kontosicherheit wurde geändert",
     "body": "Ihre Wiederherstellungscodes oder Authenticator-Einstellungen wurden geändert. Falls Sie dies nicht angefordert haben, wenden Sie sich sofort an die Administration Ihrer Gemeinschaft."
+  },
+  "account_invitation": {
+    "cta": "Passwort festlegen",
+    "expiry": "Dieser Link läuft in {{days}} Tagen ab."
   }
 }

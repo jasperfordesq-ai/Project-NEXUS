@@ -823,13 +823,8 @@ class AdminCaringCommunityController extends BaseApiController
         if (!$isDummy) {
             try {
                 $newUser = User::findById($newUserId, true);
-                $invitationToken = bin2hex(random_bytes(32));
-                DB::table('password_resets')->insert([
-                    'email' => $email,
-                    'tenant_id' => $tenantId,
-                    'token' => hash('sha256', $invitationToken),
-                    'created_at' => now(),
-                ]);
+                // A 7-day account invitation, not a 1-hour reset link.
+                $invitationToken = app(\App\Services\Auth\PasswordResetTokens::class)->issueInvitation($email, $tenantId);
                 $emailSent = TenantContext::runForTenant($tenantId, function () use ($newUser, $email, $invitationToken, $tenantId): bool {
                     return (bool) LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $invitationToken, $tenantId) {
                         $tenant = TenantContext::get();
@@ -845,8 +840,8 @@ class AdminCaringCommunityController extends BaseApiController
                             ->infoCard([
                                 __('emails_misc.admin_actions.welcome_created_info_email')    => $email,
                             ])
-                            ->paragraph(__('emails.password_reset.expiry'))
-                            ->button(__('emails.password_reset.cta'), $setPasswordLink)
+                            ->paragraph(__('emails.account_invitation.expiry', ['days' => \App\Services\Auth\PasswordResetTokens::INVITATION_TTL_DAYS]))
+                            ->button(__('emails.account_invitation.cta'), $setPasswordLink)
                             ->render();
 
                         $sent = EmailDispatchService::sendRaw($email, __('emails_misc.admin_actions.welcome_created_subject', ['community' => $tenantName]), $html, null, null, null, 'admin_welcome', ['tenant_id' => $tenantId]);

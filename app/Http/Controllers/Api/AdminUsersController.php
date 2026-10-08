@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Models\ActivityLog;
 use App\Services\AuditLogService;
+use App\Services\Auth\PasswordResetTokens;
 use App\Services\EmailDispatchService;
 use App\Services\Enterprise\GdprService;
 use App\Services\GamificationService;
@@ -791,13 +792,9 @@ class AdminUsersController extends BaseApiController
         if ($sendWelcomeEmail) {
             try {
                 $newUser = User::findById($newUserId, true);
-                $invitationToken = bin2hex(random_bytes(32));
-                DB::table('password_resets')->insert([
-                    'email' => $email,
-                    'tenant_id' => $tenantId,
-                    'token' => hash('sha256', $invitationToken),
-                    'created_at' => now(),
-                ]);
+                // A 7-day account invitation, not a 1-hour reset link: the new
+                // member did not ask for it (owner decision, 8 Oct 2026).
+                $invitationToken = app(PasswordResetTokens::class)->issueInvitation($email, $tenantId);
                 LocaleContext::withLocale($newUser['preferred_language'] ?? null, function () use ($email, $invitationToken, $tenantId) {
                     $tenant = TenantContext::get();
                     $tenantName = $tenant['name'] ?? 'Project NEXUS';
@@ -812,8 +809,8 @@ class AdminUsersController extends BaseApiController
                         ->infoCard([
                             __('emails_misc.admin_actions.welcome_created_info_email')    => $email,
                         ])
-                        ->paragraph(__('emails.password_reset.expiry'))
-                        ->button(__('emails.password_reset.cta'), $setPasswordLink)
+                        ->paragraph(__('emails.account_invitation.expiry', ['days' => PasswordResetTokens::INVITATION_TTL_DAYS]))
+                        ->button(__('emails.account_invitation.cta'), $setPasswordLink)
                         ->render();
 
                     if (!EmailDispatchService::sendRaw($email, __('emails_misc.admin_actions.welcome_created_subject', ['community' => $tenantName]), $html, null, null, null, 'admin_welcome', ['tenant_id' => $tenantId])) {
@@ -823,11 +820,7 @@ class AdminUsersController extends BaseApiController
                 $welcomeEmailSent = true;
             } catch (\Throwable $e) {
                 if (isset($invitationToken)) {
-                    DB::table('password_resets')
-                        ->where('email', $email)
-                        ->where('tenant_id', $tenantId)
-                        ->where('token', hash('sha256', $invitationToken))
-                        ->delete();
+                    app(PasswordResetTokens::class)->revoke($email, $tenantId, $invitationToken);
                 }
                 Log::warning('[AdminUsers] Welcome email failed for admin-created user: ' . $e->getMessage());
             }
@@ -2133,6 +2126,8 @@ class AdminUsersController extends BaseApiController
                     'tenant_id' => $row['tenant_id'],
                     'token' => $row['token'],
                     'created_at' => $row['created_at'],
+                    // An invitation keeps its own 7-day expiry when restored.
+                    'expires_at' => $row['expires_at'] ?? null,
                 ]);
             }
         });
@@ -2151,8 +2146,16 @@ class AdminUsersController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 
+        // A member who has never signed in may have no password they know (an
+        // invited member whose link lapsed, an imported member), so a "sign in"
+        // button leads nowhere: send a fresh 7-day set-password link instead
+        // (owner decision, 8 Oct 2026). Issuing one is gated like "Send
+        // Password Reset" — only for an account this caller outranks.
+        $needsPasswordLink = empty($user['last_login_at']) && $this->canManageSecurityTarget($adminId, $user);
+        $invitationToken = null;
+
         try {
-            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $adminId, $id) {
+            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $adminId, $id, $needsPasswordLink, &$invitationToken) {
                 // Resolve tenant from the USER's tenant_id
                 $resolvedTenant = $this->resolveUserTenant($user);
                 $userTenantId = $resolvedTenant['tenant_id'];
@@ -2176,8 +2179,26 @@ class AdminUsersController extends BaseApiController
                 }
 
                 $loginLink = $resolvedTenant['frontend_url'] . $resolvedTenant['slug_prefix'] . "/login";
+                $isFullHtml = stripos($mainMessage, '<!DOCTYPE') !== false || stripos($mainMessage, '<html') !== false;
 
-                if (stripos($mainMessage, '<!DOCTYPE') !== false || stripos($mainMessage, '<html') !== false) {
+                if ($needsPasswordLink) {
+                    $invitationToken = app(PasswordResetTokens::class)->issueInvitation($user['email'], $userTenantId);
+                    $setPasswordLink = $resolvedTenant['frontend_url'] . $resolvedTenant['slug_prefix']
+                        . '/password/reset?token=' . $invitationToken;
+                    // A community's full-HTML welcome template has nowhere to put
+                    // the link, so the standard wording is used for this member.
+                    if ($isFullHtml) {
+                        $mainMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
+                            . '<p>' . __('emails_misc.admin_actions.welcome_resend_body', ['community' => $tenantNameSafe]) . '</p>';
+                    }
+                    $html = \App\Core\EmailTemplateBuilder::make()
+                        ->theme('brand')
+                        ->title(__('emails_misc.admin_actions.welcome_resend_title'))
+                        ->paragraph($mainMessage)
+                        ->paragraph(__('emails.account_invitation.expiry', ['days' => PasswordResetTokens::INVITATION_TTL_DAYS]))
+                        ->button(__('emails.account_invitation.cta'), $setPasswordLink)
+                        ->render();
+                } elseif ($isFullHtml) {
                     $html = $mainMessage;
                 } else {
                     $html = \App\Core\EmailTemplateBuilder::make()
@@ -2192,11 +2213,18 @@ class AdminUsersController extends BaseApiController
                     throw new \RuntimeException('Welcome email send returned false');
                 }
 
-                ActivityLog::log($adminId, 'admin_resend_welcome', "Resent welcome email to user #{$id} ({$user['email']})");
+                ActivityLog::log(
+                    $adminId,
+                    'admin_resend_welcome',
+                    "Resent welcome email to user #{$id} ({$user['email']})" . ($needsPasswordLink ? ' with a set-password link' : '')
+                );
             });
 
             return $this->respondWithData(['sent' => true, 'id' => $id]);
         } catch (\Throwable $e) {
+            if ($invitationToken !== null) {
+                app(PasswordResetTokens::class)->revoke((string) $user['email'], (int) $user['tenant_id'], $invitationToken);
+            }
             \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send welcome email for user #{$id}: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.create_failed', ['resource' => 'welcome email']), null, 500);
         }

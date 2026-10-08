@@ -699,5 +699,9 @@
   "mfa_changed": {
     "subject": "Zmieniono zabezpieczenia Twojego konta",
     "body": "Zmieniono kody odzyskiwania lub ustawienia uwierzytelniania. Jeśli nie zlecono tej zmiany, natychmiast skontaktuj się z administratorem społeczności."
+  },
+  "account_invitation": {
+    "cta": "Ustaw hasło",
+    "expiry": "Ten link wygasa po {{days}} dniach."
   }
 }

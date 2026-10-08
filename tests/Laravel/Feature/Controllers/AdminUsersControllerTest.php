@@ -83,15 +83,18 @@ class AdminUsersControllerTest extends TestCase
                 ])->assertStatus(400);
                 $this->assertDatabaseHas('password_resets', ['email' => $email, 'token' => hash('sha256', $token)]);
 
+                // An invitation lives 7 days by its own expires_at (owner
+                // decision, 8 Oct 2026; was 1 hour by age): an expired one is
+                // refused. AccountInvitationLinkTest covers the 7-day window.
                 DB::table('password_resets')->where('email', $email)->where('tenant_id', $this->testTenantId)
-                    ->update(['created_at' => now()->subHours(2)]);
+                    ->update(['expires_at' => DB::raw('DATE_SUB(NOW(), INTERVAL 1 MINUTE)')]);
                 $this->withHeader('X-Tenant-ID', (string) $this->testTenantId)->postJson('/api/auth/reset-password', [
                     'token' => $token,
                     'password' => 'Member-chosen-password-456',
                     'password_confirmation' => 'Member-chosen-password-456',
                 ])->assertStatus(400);
                 DB::table('password_resets')->where('email', $email)->where('tenant_id', $this->testTenantId)
-                    ->update(['created_at' => now()]);
+                    ->update(['expires_at' => DB::raw('DATE_ADD(NOW(), INTERVAL 7 DAY)')]);
             }
 
             $this->withHeader('X-Tenant-ID', (string) $this->testTenantId)->postJson('/api/auth/reset-password', [

@@ -708,5 +708,9 @@
     "no_summary": "This policy has been published. Please read the full document for the details.",
     "read": "Read the policy",
     "service_notice": "This is an informational service email about your community policies. Newsletter subscription preferences do not affect these notices."
+  },
+  "account_invitation": {
+    "cta": "Set your password",
+    "expiry": "This link expires in {{days}} days."
   }
 }

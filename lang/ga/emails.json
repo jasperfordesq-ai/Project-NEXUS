@@ -699,5 +699,9 @@
   "mfa_changed": {
     "subject": "Athraíodh slándáil do chuntais",
     "body": "Athraíodh do chóid athshlánaithe nó do shocruithe fíordheimhnithe. Murar iarr tú é seo, déan teagmháil le riarthóir do phobail láithreach."
+  },
+  "account_invitation": {
+    "cta": "Socraigh do phasfhocal",
+    "expiry": "Éagann an nasc seo i gceann {{days}} lá."
   }
 }

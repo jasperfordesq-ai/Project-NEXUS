@@ -15972,6 +15972,7 @@ CREATE TABLE `password_resets` (
   `tenant_id` int(10) unsigned DEFAULT NULL,
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime DEFAULT NULL,
   KEY `password_resets_token_index` (`token`),
   KEY `password_resets_tenant_email_idx` (`tenant_id`,`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
