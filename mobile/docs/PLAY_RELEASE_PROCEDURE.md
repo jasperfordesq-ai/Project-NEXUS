@@ -100,7 +100,9 @@ install (+210 KB), 2.5 MB update. On the Publishing overview the pre-submit quic
 opened at "up to 14 minutes remaining" with Submit already enabled; it cleared after about
 8 minutes ("Your changes can now be sent for review"), was submitted ("Production · 22 (1.9.0) ·
 Start full rollout", managed publishing off), and the post-submit bar ended within ~2 minutes with
-"Your changes are now in review". No EAS quota spent.)
+"Your changes are now in review". Approved and live with no further action (managed publishing off): the Production
+track read "22 (1.9.0) · Available on Google Play · Released on Oct 8 4:42 PM" — **about 20 minutes**
+after submission. No EAS quota spent.)
 
 Do not add Gradle's optional `--clean` step after Expo prebuild on this Windows
 checkout. On version code 13 it reached `externalNativeBuildCleanDebug` before
