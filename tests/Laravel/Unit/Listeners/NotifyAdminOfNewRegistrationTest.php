@@ -99,6 +99,21 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
         ]);
         $admin = $this->seedUser(['role' => 'admin']);
         $broker = $this->seedUser(['role' => 'broker', 'preferred_language' => 'fr']);
+        $coordinator = $this->seedUser(['role' => 'coordinator', 'preferred_language' => 'de']);
+        $tenantAdmin = $this->seedUser(['role' => 'tenant_admin']);
+        $superAdmin = $this->seedUser(['role' => 'super_admin']);
+        $flagAdmins = [
+            $this->seedUser(['role' => 'member', 'is_admin' => 1]),
+            $this->seedUser(['role' => 'member', 'is_super_admin' => 1]),
+            $this->seedUser(['role' => 'member', 'is_tenant_super_admin' => 1]),
+            $this->seedUser(['role' => 'member', 'is_god' => 1]),
+        ];
+        $recipients = array_merge([$admin, $broker, $coordinator, $tenantAdmin, $superAdmin], $flagAdmins);
+        $adminTier = array_merge([$admin, $tenantAdmin, $superAdmin], $flagAdmins);
+        $adminTierIds = array_map(static fn (object $user): int => (int) $user->id, $adminTier);
+        $adminTierEmails = array_map(static fn (object $user): string => $user->email, $adminTier);
+        $this->seedUser(['role' => 'member']);
+        $this->seedUser(['role' => 'admin', 'status' => 'suspended']);
         $otherTenantId = (int) DB::table('tenants')->insertGetId([
             'name' => 'Other synthetic alert test',
             'slug' => 'other-registration-' . uniqid('', true),
@@ -110,24 +125,24 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
 
         $bells = [];
         $emails = [];
-        $this->notificationAlias->shouldReceive('createNotification')->twice()
+        $this->notificationAlias->shouldReceive('createNotification')->times(count($recipients))
             ->andReturnUsing(function (...$args) use (&$bells) { $bells[] = $args; });
-        $this->dispatcherAlias->shouldReceive('fanOutPush')->twice();
-        $this->emailAlias->shouldReceive('sendRaw')->twice()
+        $this->dispatcherAlias->shouldReceive('fanOutPush')->times(count($recipients));
+        $this->emailAlias->shouldReceive('sendRaw')->times(count($recipients))
             ->andReturnUsing(function (...$args) use (&$emails) { $emails[] = $args; return true; });
 
         (new NotifyAdminOfNewRegistration())->handle(
             new UserRegistered($this->makeUserModel($member), $this->testTenantId)
         );
 
-        $this->assertEqualsCanonicalizing([$admin->id, $broker->id], array_column($bells, 0));
-        $this->assertEqualsCanonicalizing([$admin->email, $broker->email], array_column($emails, 0));
+        $this->assertEqualsCanonicalizing(array_column($recipients, 'id'), array_column($bells, 0));
+        $this->assertEqualsCanonicalizing(array_column($recipients, 'email'), array_column($emails, 0));
         foreach ($bells as $bell) {
             $this->assertStringNotContainsString('SyntheticRegistrantMarker', $bell[1]);
             $this->assertStringNotContainsString('synthetic.registrant@example.com', $bell[1]);
             $expectedLink = !$needsApproval
                 ? '/broker/members'
-                : ($bell[0] === $admin->id
+                : (in_array((int) $bell[0], $adminTierIds, true)
                     ? '/admin/users?filter=pending'
                     : '/broker/members');
             $this->assertSame($expectedLink, $bell[2]);
@@ -137,7 +152,7 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
             $this->assertStringNotContainsString('synthetic.registrant@example.com', $email[1] . $email[2]);
             $expectedCta = !$needsApproval
                 ? '/profile/' . $member->id
-                : ($email[0] === $admin->email
+                : (in_array((string) $email[0], $adminTierEmails, true)
                     ? '/admin/users?filter=pending'
                     : '/broker/members');
             $this->assertStringContainsString($expectedCta, $email[2]);
