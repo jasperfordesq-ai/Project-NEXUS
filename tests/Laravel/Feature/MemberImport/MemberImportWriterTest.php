@@ -142,6 +142,23 @@ final class MemberImportWriterTest extends TestCase
         }
     }
 
+    public function test_an_imported_member_cannot_sign_in_and_the_login_answers_normally(): void
+    {
+        $row = $this->row();
+        $out = $this->write($row);
+
+        // A normal Argon2id hash, just at the minimum cost.
+        $hash = (string) DB::table('users')->where('id', $out['user_id'])->value('password_hash');
+        $info = password_get_info($hash);
+        $this->assertSame('argon2id', $info['algoName']);
+        $this->assertSame(1024, $info['options']['memory_cost']);
+        $this->assertFalse(password_verify('wrong-password', $hash));
+
+        // The real login endpoint: the usual "invalid credentials" answer, not a server error.
+        $response = $this->apiPost('/auth/login', ['email' => $row['email'], 'password' => 'wrong-password']);
+        $response->assertStatus(401);
+    }
+
     public function test_a_failure_part_way_through_leaves_nothing_behind(): void
     {
         $row = $this->row();

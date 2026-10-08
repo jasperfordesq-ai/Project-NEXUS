@@ -74,7 +74,15 @@ final class MemberImportWriter
                     'email' => $row['email'],
                     // Nobody knows this password; the member sets their own
                     // through the welcome invitation (delivery b) or "forgot password".
-                    'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_ARGON2ID),
+                    // Minimal Argon2id cost: the secret is a random 128-bit value nobody
+                    // ever sees, so a slow hash adds no protection and would make a
+                    // 5,000-member import take minutes. A password the member sets later
+                    // is hashed at full cost by the normal path.
+                    'password_hash' => password_hash(
+                        bin2hex(random_bytes(16)),
+                        PASSWORD_ARGON2ID,
+                        ['memory_cost' => 1024, 'time_cost' => 1, 'threads' => 1]
+                    ),
                     'phone' => $row['phone'],
                     'location' => $row['location'],
                     'role' => 'member',
