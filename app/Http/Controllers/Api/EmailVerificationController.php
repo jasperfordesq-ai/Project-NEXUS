@@ -26,7 +26,7 @@ class EmailVerificationController extends BaseApiController
 
     public function __construct(
         private readonly RateLimitService $rateLimitService,
-        private readonly \App\Services\TenantSettingsService $tenantSettings,
+        private readonly \App\Services\Auth\EmailConfirmationService $emailConfirmation,
     ) {}
 
     /** Token expiry in seconds (24 hours) */
@@ -107,20 +107,10 @@ class EmailVerificationController extends BaseApiController
         //     exactly like approval REQUIRED. Verifying the email never approves
         //     the account; it is released by passing identity verification
         //     (RegistrationOrchestrationService) or by an administrator.
-        if (
-            $this->tenantSettings->requiresAdminApproval($tenantId)
-            || $this->tenantSettings->registrationActivationHold($tenantId) !== null
-        ) {
-            DB::update(
-                "UPDATE users SET email_verified_at = NOW(), is_verified = 1, status = CASE WHEN status = 'pending' AND is_approved = 1 THEN 'active' ELSE status END WHERE id = ? AND tenant_id = ?",
-                [$userId, $tenantId]
-            );
-        } else {
-            DB::update(
-                "UPDATE users SET email_verified_at = NOW(), is_verified = 1, is_approved = 1, status = CASE WHEN status = 'pending' THEN 'active' ELSE status END WHERE id = ? AND tenant_id = ?",
-                [$userId, $tenantId]
-            );
-        }
+        // The rule lives in EmailConfirmationService because a completed
+        // password reset and an administrator's vouching confirm an email too,
+        // and every path must apply it identically (F-572).
+        $this->emailConfirmation->confirm((int) $userId, (int) $tenantId);
 
         // Delete all verification tokens for this user in this tenant
         $this->cleanupVerificationTokens($userId, $tenantId);

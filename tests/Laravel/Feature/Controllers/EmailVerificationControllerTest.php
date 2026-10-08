@@ -249,6 +249,55 @@ class EmailVerificationControllerTest extends TestCase
         $this->assertSame('active', $row->status);
     }
 
+    public function test_verify_email_does_not_release_an_account_held_for_its_identity_check(): void
+    {
+        // F-572: an administrator-created account in an identity-check
+        // community is stored approved + pending with its check outstanding
+        // (F-278). That is the same shape the screening branch activates, so a
+        // held member who asked the public resend form for a link went
+        // 'active' — a live member to search and digests — before the check.
+        $this->ensureEmailVerificationTokenTable();
+        DB::table('tenant_registration_policies')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId],
+            [
+                'registration_mode' => 'government_id',
+                'verification_provider' => 'f572_test_idp',
+                'verification_level' => 'document_only',
+                'post_verification' => 'admin_approval',
+                'fallback_mode' => 'none',
+                'require_email_verify' => 1,
+                'provider_config' => null,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+        app(\App\Services\TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
+
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'email_verified_at' => null,
+            'is_verified' => false,
+            'is_approved' => true,
+            'status' => 'pending',
+            'verification_status' => 'pending',
+        ]);
+
+        $plaintext = bin2hex(random_bytes(32));
+        DB::table('email_verification_tokens')->insert([
+            'user_id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', $plaintext),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        TenantContext::setById($this->testTenantId);
+        $this->apiPost('/auth/verify-email', ['token' => $plaintext])->assertOk();
+
+        $row = DB::table('users')->where('id', $user->id)->first();
+        $this->assertNotNull($row->email_verified_at, 'the email itself is confirmed');
+        $this->assertSame('pending', $row->status, 'the identity-check hold must survive email confirmation');
+    }
+
     // ------------------------------------------------------------------
     //  POST /auth/resend-verification (public, rate-limited)
     // ------------------------------------------------------------------
