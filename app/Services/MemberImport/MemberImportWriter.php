@@ -28,6 +28,8 @@ final class MemberImportWriter
 {
     public const ACTION_MEMBER_IMPORTED = 'member_imported';
 
+    private ?string $unusablePasswordHash = null;
+
     public function __construct(
         private readonly MemberImportRowRules $rules,
         private readonly EmailConfirmationService $emailConfirmation,
@@ -74,15 +76,7 @@ final class MemberImportWriter
                     'email' => $row['email'],
                     // Nobody knows this password; the member sets their own
                     // through the welcome invitation (delivery b) or "forgot password".
-                    // Minimal Argon2id cost: the secret is a random 128-bit value nobody
-                    // ever sees, so a slow hash adds no protection and would make a
-                    // 5,000-member import take minutes. A password the member sets later
-                    // is hashed at full cost by the normal path.
-                    'password_hash' => password_hash(
-                        bin2hex(random_bytes(16)),
-                        PASSWORD_ARGON2ID,
-                        ['memory_cost' => 1024, 'time_cost' => 1, 'threads' => 1]
-                    ),
+                    'password_hash' => $this->unusablePasswordHash(),
                     'phone' => $row['phone'],
                     'location' => $row['location'],
                     'role' => 'member',
@@ -145,6 +139,19 @@ final class MemberImportWriter
 
         return ['user_id' => $userId, 'balance_cents' => (int) $row['balance_cents'],
             'zeroed' => $row['original_balance_cents'] !== null, 'already' => false];
+    }
+
+    /**
+     * One full-cost Argon2id hash of a random secret that is never stored or
+     * returned, shared by every member this writer creates. Nobody can log in
+     * with it. Full cost keeps a wrong-password login against an imported
+     * account exactly as slow as against any other account (see the dummy
+     * hash in AuthController::login), and computing it once per writer (one
+     * per batch request) keeps a 5,000-member import to about a minute.
+     */
+    private function unusablePasswordHash(): string
+    {
+        return $this->unusablePasswordHash ??= password_hash(bin2hex(random_bytes(16)), PASSWORD_ARGON2ID);
     }
 
     private function createdByThisImport(int $userId, int $tenantId, string $importId): bool

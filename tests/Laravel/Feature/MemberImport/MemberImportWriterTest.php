@@ -147,16 +147,40 @@ final class MemberImportWriterTest extends TestCase
         $row = $this->row();
         $out = $this->write($row);
 
-        // A normal Argon2id hash, just at the minimum cost.
+        // A normal, full-cost Argon2id hash (PHP's defaults, the same as the
+        // dummy hash login verifies unknown emails against), so login timing
+        // is identical to every other account.
         $hash = (string) DB::table('users')->where('id', $out['user_id'])->value('password_hash');
         $info = password_get_info($hash);
         $this->assertSame('argon2id', $info['algoName']);
-        $this->assertSame(1024, $info['options']['memory_cost']);
+        $this->assertSame(
+            ['memory_cost' => PASSWORD_ARGON2_DEFAULT_MEMORY_COST, 'time_cost' => PASSWORD_ARGON2_DEFAULT_TIME_COST, 'threads' => PASSWORD_ARGON2_DEFAULT_THREADS],
+            $info['options']
+        );
+        $this->assertSame([65536, 4, 1], [$info['options']['memory_cost'], $info['options']['time_cost'], $info['options']['threads']]);
         $this->assertFalse(password_verify('wrong-password', $hash));
 
         // The real login endpoint: the usual "invalid credentials" answer, not a server error.
         $response = $this->apiPost('/auth/login', ['email' => $row['email'], 'password' => 'wrong-password']);
         $response->assertStatus(401);
+    }
+
+    public function test_one_writer_shares_one_unusable_hash_and_each_writer_makes_its_own(): void
+    {
+        $decision = AdminCreatedAccountAdmission::decide($this->testTenantId, false);
+        $hashOf = fn (int $userId): string => (string) DB::table('users')->where('id', $userId)->value('password_hash');
+        $importId = '55555555-5555-4555-8555-555555555555';
+
+        $writerA = app()->make(MemberImportWriter::class);
+        $a1 = $writerA->write($this->row(), $this->testTenantId, $this->adminId, $decision, $importId);
+        $a2 = $writerA->write($this->row(), $this->testTenantId, $this->adminId, $decision, $importId);
+        $this->assertSame($hashOf($a1['user_id']), $hashOf($a2['user_id']));
+
+        // Not a singleton: a second writer (the next batch request) has its own secret.
+        $writerB = app()->make(MemberImportWriter::class);
+        $this->assertNotSame($writerA, $writerB);
+        $b1 = $writerB->write($this->row(), $this->testTenantId, $this->adminId, $decision, $importId);
+        $this->assertNotSame($hashOf($a1['user_id']), $hashOf($b1['user_id']));
     }
 
     public function test_a_failure_part_way_through_leaves_nothing_behind(): void
