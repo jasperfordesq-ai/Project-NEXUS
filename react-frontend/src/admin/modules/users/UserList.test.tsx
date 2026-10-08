@@ -338,6 +338,9 @@ describe('UserList', () => {
     await waitFor(() => {
       expect(document.querySelector('[role="dialog"]')).toBeTruthy();
     });
+    // The checked, batched import window — not the old one-shot upload.
+    expect(await screen.findByText('Import members')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Check file' })).toBeDisabled();
   });
 
   it('navigates to create user when Add User is pressed', async () => {

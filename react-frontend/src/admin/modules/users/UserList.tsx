@@ -1,4 +1,4 @@
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, SearchField } from '@/components/ui';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Avatar, Tabs, Tab, SearchField } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -28,7 +28,6 @@ import Edit from 'lucide-react/icons/square-pen';
 import Shield from 'lucide-react/icons/shield';
 import KeyRound from 'lucide-react/icons/key-round';
 import LogIn from 'lucide-react/icons/log-in';
-import FileUp from 'lucide-react/icons/file-up';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import Trash2 from 'lucide-react/icons/trash-2';
@@ -39,8 +38,9 @@ import { useTenant,
   useToast } from '@/contexts';
 import { formatNumber, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { adminUsers, adminMemberImport,
+import { adminUsers,
   type BulkActionResult } from '../../api/adminApi';
+import { MemberImportModal } from './import/MemberImportModal';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -315,17 +315,9 @@ export function UserList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Import modal state
+  // Import window
   const [importOpen, setImportOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importLoading] = useState(false); // temporary: the import modal is replaced next
-  const [importResults, setImportResults] = useState<{
-    imported: number;
-    skipped: number;
-    errors: string[];
-    total_rows: number;
-  } | null>(null);
 
   // Confirm modal state
   const [confirmAction, setConfirmAction] = useState<{
@@ -436,12 +428,6 @@ export function UserList() {
       : null,
   ].filter(Boolean) as Array<{ key: string; label: string }>;
 
-  // TEMPORARY: the one-shot import endpoint is gone; the checked, batched
-  // import (adminMemberImport) replaces this whole modal in the next change.
-  const handleImport = () => {
-    toast.error(t('users.import_failed'));
-  };
-
   const handleExportAllMembers = async () => {
     setExportLoading(true);
     try {
@@ -451,20 +437,6 @@ export function UserList() {
     } finally {
       setExportLoading(false);
     }
-  };
-
-  const handleDownloadTemplate = async () => {
-    try {
-      await adminMemberImport.downloadTemplate();
-    } catch {
-      toast.error(t('users.import_download_template_failed'));
-    }
-  };
-
-  const resetImportModal = () => {
-    setImportOpen(false);
-    setImportFile(null);
-    setImportResults(null);
   };
 
   const handleAction = async () => {
@@ -841,93 +813,10 @@ export function UserList() {
         </ConfirmModal>
       )}
 
-      {/* Import Users Modal */}
-      <Modal isOpen={importOpen} onClose={resetImportModal} size="lg">
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
-            <FileUp size={20} aria-hidden="true" />
-            {t('users.import_title')}
-          </ModalHeader>
-          <ModalBody>
-            {!importResults ? (
-              <div className="flex flex-col gap-4">
-                <p className="text-sm text-muted">
-                  {t('users.import_csv_description')}
-                </p>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="tertiary"
-                    startContent={<Download size={14} />}
-                    onPress={handleDownloadTemplate}
-                  >
-                    {t('users.import_download_template')}
-                  </Button>
-                </div>
-
-                <div>
-                  <label htmlFor="import-csv-file" className="block text-sm font-medium mb-1">
-                    {t('users.import_csv_file')}
-                  </label>
-                  <input
-                    id="import-csv-file"
-                    type="file"
-                    accept=".csv"
-                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                    className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent-soft file:text-accent hover:file:bg-accent-soft"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-success">
-                    <CheckCircle2 size={18} aria-hidden="true" />
-                    <span className="font-medium">{t('users.import_imported')}</span>
-                  </div>
-                  {importResults.skipped > 0 && (
-                    <div className="flex items-center gap-2 text-warning">
-                      <AlertCircle size={18} aria-hidden="true" />
-                      <span className="font-medium">{t('users.import_skipped')}</span>
-                    </div>
-                  )}
-                  <span className="text-sm text-muted">
-                    {t('users.import_total_rows')}
-                  </span>
-                </div>
-
-                {importResults.errors.length > 0 && (
-                  <div className="max-h-48 overflow-y-auto rounded-lg bg-danger/10 p-3">
-                    <p className="text-sm font-medium text-danger mb-1">{t('users.import_errors')}</p>
-                    <ul className="text-xs text-danger-soft-foreground space-y-1">
-                      {importResults.errors.map((err, i) => (
-                        // Error strings may duplicate; use index prefix for stable key
-                        <li key={`err-${i}`}>{err}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="tertiary" onPress={resetImportModal} isDisabled={importLoading}>
-              {importResults ? t('users.close') : t('users.cancel')}
-            </Button>
-            {!importResults && (
-              <Button
-                onPress={handleImport}
-                isLoading={importLoading}
-                isDisabled={!importFile}
-                startContent={!importLoading ? <Upload size={16} /> : undefined}
-              >
-                {t('users.import_title')}
-              </Button>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Import members window. Mounted only while open, so every opening starts on a fresh file choice. */}
+      {importOpen && (
+        <MemberImportModal isOpen onClose={() => setImportOpen(false)} onImported={loadUsers} />
+      )}
     </div>
   );
 }

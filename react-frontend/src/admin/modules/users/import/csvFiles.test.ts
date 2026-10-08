@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { buildCsv, correctedFile, fileToBase64, problemsFile, remainingRowsFile } from './csvFiles';
+import { buildCsv, correctedFile, fileToBase64, problemsFile, remainingRowsFile, rowsFromIndexFile, rowsWithNumbersFile } from './csvFiles';
 import type { CheckResult, ImportIssue } from './types';
 
 const BOM = String.fromCharCode(0xfeff);
@@ -119,5 +119,28 @@ describe('fileToBase64', () => {
     const file = new File([new Uint8Array([0xef, 0xbb, 0xbf, 0x41])], 'm.csv', { type: 'text/csv' });
     const decoded = atob(await fileToBase64(file));
     expect(Array.from(decoded, (c) => c.charCodeAt(0))).toEqual([0xef, 0xbb, 0xbf, 0x41]);
+  });
+});
+
+describe('rowsFromIndexFile', () => {
+  it('keeps the rows from the given position onwards, whatever their spreadsheet numbers', () => {
+    expect(rowsFromIndexFile(check, 2)).toBe(`${BOM}first_name,last_name,email\r\nCy,C,cy@example.com\r\nDi,D,di@example.com\r\n`);
+  });
+
+  it('keeps everything from position 0 and nothing past the end', () => {
+    expect(rowsFromIndexFile(check, 0)).toContain('Ann,A,ann@example.com');
+    expect(rowsFromIndexFile(check, 4)).toBe(`${BOM}first_name,last_name,email\r\n`);
+  });
+});
+
+describe('rowsWithNumbersFile', () => {
+  it('lists the named rows with their spreadsheet number in front, in the order given', () => {
+    expect(rowsWithNumbersFile(check, [6, 3], 'Row')).toBe(
+      `${BOM}Row,first_name,last_name,email\r\n6,Di,D,di@example.com\r\n3,Bob,B,bob@example.com\r\n`,
+    );
+  });
+
+  it('skips a row that is not in the file rather than inventing it', () => {
+    expect(rowsWithNumbersFile(check, [99], 'Row')).toBe(`${BOM}Row,first_name,last_name,email\r\n`);
   });
 });

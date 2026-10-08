@@ -129,21 +129,6 @@
     "impersonate_success": "Erfolgreich imitieren",
     "import_csv": "CSV importieren",
     "export_all_members": "Alle Mitglieder exportieren",
-    "import_csv_description": "Importieren Sie Mitglieder aus einer CSV-Datei. Laden Sie die Vorlage herunter, um das erforderliche Format anzuzeigen.",
-    "import_csv_file": "CSV-Datei",
-    "import_default_role": "Standardrolle",
-    "import_download_template": "Vorlage herunterladen",
-    "import_download_template_failed": "Die Vorlage konnte nicht heruntergeladen werden. Bitte versuche es erneut.",
-    "import_errors": "Fehler importieren",
-    "import_failed": "Import fehlgeschlagen",
-    "import_imported": "Importiert",
-    "import_role_broker": "Makler",
-    "import_role_coordinator": "Koordinator",
-    "import_role_member": "Mitglied",
-    "import_skipped": "Import übersprungen",
-    "import_success": "Import erfolgreich",
-    "import_title": "Importieren",
-    "import_total_rows": "Gesamtzahl der Zeilen",
     "label_amount": "Betrag",
     "label_email": "E-Mail",
     "label_first_name": "Vorname",
@@ -514,5 +499,211 @@
     "engagement": "Interaktion",
     "system": "System"
   },
-  "loading": "Lädt"
+  "loading": "Lädt",
+  "member_import": {
+    "title": "Mitglieder importieren",
+    "intro": "Holen Sie Mitglieder aus einer Tabelle ins System, einschließlich ihrer Zeitguthaben. Zuerst wird die gesamte Datei geprüft. Ist etwas fehlerhaft, wird nichts importiert.",
+    "download_template": "Vorlage herunterladen",
+    "template_failed": "Die Vorlage konnte nicht heruntergeladen werden. Bitte versuchen Sie es erneut.",
+    "columns_title": "Ihre Datei benötigt diese Spalten",
+    "choose_file": "CSV-Datei auswählen",
+    "file_hint": "Nur CSV-Dateien können geprüft werden. Wählen Sie in Excel Datei › Speichern unter › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Datei prüfen",
+    "checking": "Jede Zeile wird geprüft …",
+    "check_failed": "Die Datei konnte nicht geprüft werden. Bitte versuchen Sie es erneut.",
+    "check_rate_limited": "Sie haben in der letzten Minute sehr viele Dateien geprüft. Warten Sie eine Minute und versuchen Sie es dann erneut.",
+    "choose_another": "Andere Datei auswählen",
+    "download_correct_template": "Richtige Vorlage herunterladen",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "columns": {
+      "first_name": {
+        "label": "Vorname",
+        "rule": "Pflichtfeld. Höchstens 100 Zeichen."
+      },
+      "last_name": {
+        "label": "Nachname",
+        "rule": "Pflichtfeld. Höchstens 100 Zeichen."
+      },
+      "email": {
+        "label": "E-Mail",
+        "rule": "Pflichtfeld. Ein Mitglied pro Adresse; noch nicht Mitglied hier."
+      },
+      "phone": {
+        "label": "Telefon",
+        "rule": "Optional. Internationales Format, z. B. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Ort",
+        "rule": "Optional. Wohnort oder Gegend des Mitglieds. Mitglieder ohne Angabe werden bei der ersten Anmeldung danach gefragt."
+      },
+      "balance": {
+        "label": "Guthaben",
+        "rule": "Optional. Stunden aus der bisherigen Zeitbank, z. B. 12 oder 12.5. Negative Guthaben beginnen bei 0."
+      },
+      "null": {
+        "label": "Ganze Zeile"
+      }
+    },
+    "fix": {
+      "title": "So beheben Sie das Problem",
+      "step1": "Laden Sie die Vorlage herunter.",
+      "step2": "Kopieren Sie Ihre Spalten unter die passenden Überschriften der Vorlage.",
+      "step3": "Wählen Sie in Excel Datei › Speichern unter › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Prüfen Sie die neue Datei."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "Die Datei kann nicht verwendet werden",
+        "body": "Etwas an dieser Datei hat die Prüfung verhindert. Laden Sie die Vorlage herunter, kopieren Sie Ihre Spalten hinein, speichern Sie sie als \"CSV UTF-8 (Comma delimited)\" und prüfen Sie diese Datei."
+      },
+      "empty_file": {
+        "title": "Die Datei ist leer",
+        "body": "In dieser Datei gibt es nichts zu importieren."
+      },
+      "too_large": {
+        "title": "Die Datei ist zu groß",
+        "body": "Dateien dürfen höchstens {{max_mb}} MB groß sein. Teilen Sie sie in kleinere Dateien auf."
+      },
+      "too_many_rows": {
+        "title": "Zu viele Zeilen",
+        "body": "Eine Datei kann höchstens {{max}} Mitglieder enthalten. Teilen Sie sie in kleinere Dateien auf."
+      },
+      "no_data_rows": {
+        "title": "Keine Mitglieder in der Datei",
+        "body": "Die Datei enthält Überschriften, aber keine Mitglieder darunter."
+      },
+      "spreadsheet_workbook": {
+        "title": "Das ist eine Excel-Arbeitsmappe, keine CSV-Datei",
+        "body": "Speichern Sie sie als \"CSV UTF-8 (Comma delimited)\" und prüfen Sie stattdessen diese Datei."
+      },
+      "not_text": {
+        "title": "Das ist keine Tabellendatei",
+        "body": "Wählen Sie die CSV-Datei aus, die Sie aus Ihrer Tabelle gespeichert haben."
+      },
+      "not_utf8": {
+        "title": "Die Datei wurde nicht als UTF-8 gespeichert",
+        "body": "Buchstaben mit Akzent oder Umlaut würden beschädigt. Speichern Sie die Datei erneut als \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "Die Spalten sind auf eine Weise getrennt, die wir nicht lesen können",
+        "body": "Trennen Sie die Spalten mit Kommas oder Semikolons, wie Excel es beim Speichern als CSV tut."
+      },
+      "missing_columns": {
+        "title": "Spalten fehlen",
+        "body": "Fügen Sie diese Spalten hinzu: {{columns}}. Optionale Spalten dürfen leer bleiben."
+      },
+      "unknown_columns": {
+        "title": "Die Datei enthält Spalten, die nicht in der Vorlage stehen",
+        "body": "Entfernen Sie diese Spalten: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "Eine Spalte kommt doppelt vor",
+        "body": "Behalten Sie nur eine von: {{columns}}."
+      },
+      "old_template": {
+        "title": "Das ist die alte Vorlage",
+        "body": "Die Vorlage hat sich geändert: Sie enthält jetzt die Spalten Ort und Guthaben und keine Spalte Rolle mehr."
+      },
+      "empty_column_heading": {
+        "title": "Eine Spalte hat keine Überschrift",
+        "body": "Spalte {{positions}} hat keine Überschrift. Löschen Sie in Excel die gesamte Spalte (sie kann leer aussehen und trotzdem formatiert sein) und speichern Sie dann erneut."
+      },
+      "header_not_on_first_line": {
+        "title": "Die Überschriften stehen nicht in der ersten Zeile",
+        "body": "Löschen Sie die leeren Zeilen über den Überschriften, sodass diese in Zeile 1 stehen, und speichern Sie dann erneut."
+      }
+    },
+    "problems": {
+      "title": "Es wurde nichts importiert",
+      "body": "Gefundene Probleme: {{problems}}. Zeilen mit Problemen: {{rows}}. Beheben Sie diese in Ihrer Tabelle und prüfen Sie die Datei dann erneut.",
+      "body_file": "Gefundene Probleme: {{problems}}. Beheben Sie diese in Ihrer Tabelle und prüfen Sie die Datei dann erneut.",
+      "row": "Zeile",
+      "column": "Spalte",
+      "problem": "Problem",
+      "whole_file": "Ganze Datei",
+      "more": "… und {{more}} weitere. Laden Sie die Liste herunter, um alle zu sehen.",
+      "download_list": "Liste der Probleme herunterladen",
+      "download_corrected": "Korrigierte Datei ohne die bereits vorhandenen Mitglieder herunterladen",
+      "corrected_note": "Die korrigierte Datei enthält weiterhin die anderen hier aufgeführten Probleme."
+    },
+    "problem": {
+      "required": "{{column}} fehlt.",
+      "too_long": "{{column}} ist länger als {{max}} Zeichen.",
+      "control_characters": "{{column}} enthält versteckte Steuerzeichen. Geben Sie den Wert neu ein.",
+      "starts_with_formula_character": "{{column}} darf nicht mit =, +, - oder @ beginnen.",
+      "invalid_encoding": "{{column}} enthält Zeichen, die nicht gelesen werden konnten. Geben Sie den Wert neu ein und speichern Sie die Datei dann als \"CSV UTF-8\".",
+      "invalid_email": "Das ist keine gültige E-Mail-Adresse. Wenn die Domain der Adresse Buchstaben mit Akzent oder Umlaut enthält, verwenden Sie die einfache (ASCII-)Schreibweise.",
+      "example_address": "Das ist die Beispielzeile aus einer Vorlage. Löschen Sie sie.",
+      "disposable_email": "Wegwerf-E-Mail-Adressen werden nicht akzeptiert.",
+      "invalid_phone": "Das ist keine gültige Telefonnummer. Verwenden Sie das internationale Format, z. B. +1 555 123 4567.",
+      "invalid_number": "Das ist keine Zahl. Verwenden Sie nur Ziffern, wie 12 oder 12.5 – keine Einheiten und keine Tausendertrennzeichen.",
+      "balance_too_large": "Guthaben dürfen höchstens {{max}} Stunden betragen.",
+      "wrong_cell_count": "Diese Zeile hat {{found}} Zellen; die Überschriften haben {{expected}}.",
+      "duplicate_in_file": "Diese E-Mail-Adresse steht auch in Zeile {{first_row}}.",
+      "already_member": "Diese Person ist bereits Mitglied dieser Gemeinschaft.",
+      "already_member_unmatched": "Die E-Mail-Adresse eines bestehenden Mitglieds unterscheidet sich von einer Adresse in dieser Datei nur durch Akzente oder Leerzeichen. Vergleichen Sie die Adressen in dieser Datei mit Ihren bestehenden Mitgliedern.",
+      "unknown": "Dieser Wert wird nicht akzeptiert."
+    },
+    "warning_row": "Zeile {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "ein Guthaben von {{original}} Stunden beginnt bei 0.",
+      "unknown": "diese Zeile wird mit einem geänderten Wert importiert."
+    },
+    "ready": {
+      "title": "Alle Zeilen haben die Prüfung bestanden",
+      "members": "Zu importierende Mitglieder: {{n}}",
+      "hours": "Stunden insgesamt: {{hours}}",
+      "with_town": "Mit Ort: {{n}}",
+      "without_town": "Ohne Ort: {{n}} (sie werden bei der ersten Anmeldung danach gefragt)",
+      "negatives": "Negative Guthaben, die bei 0 beginnen: {{n}}",
+      "blank_rows": "Ignorierte leere Zeilen: {{n}}",
+      "identity_attest": "Ich habe die Identität jeder Person selbst geprüft",
+      "identity_help": "Ihre Gemeinschaft verlangt eine Identitätsprüfung. Wenn Sie das Kästchen nicht anhaken, warten diese Mitglieder auf diese Prüfung, bevor sie sich anmelden können.",
+      "no_emails_yet": "Dieser Import versendet noch keine E-Mails. Mitglieder können über „Passwort vergessen“ ein Passwort festlegen, bis Einladungen hinzugefügt werden.",
+      "import_one": "{{count}} Mitglied importieren",
+      "import_other": "{{count}} Mitglieder importieren"
+    },
+    "running": {
+      "title": "Mitglieder werden importiert",
+      "batch": "Stapel {{n}} von etwa {{m}}",
+      "count": "Importierte Mitglieder: {{done}} von {{total}}",
+      "hours": "Bisher importierte Stunden: {{hours}}",
+      "remaining": "Noch etwa {{time}}",
+      "calculating": "Verbleibende Zeit wird berechnet …",
+      "keep_open": "Lassen Sie dieses Fenster geöffnet, bis der Import abgeschlossen ist.",
+      "stop": "Nach diesem Stapel anhalten",
+      "stopping": "Wird nach diesem Stapel angehalten …",
+      "progress_label": "Importfortschritt"
+    },
+    "done": {
+      "title_one": "{{count}} Mitglied importiert, mit {{balance}} Stunden",
+      "title_other": "{{count}} Mitglieder importiert, mit {{balance}} Stunden",
+      "held": "Diese Mitglieder warten auf die Identitätsprüfung Ihrer Gemeinschaft, bevor sie sich anmelden können.",
+      "download_zeroed": "Liste der Mitglieder herunterladen, deren Guthaben bei 0 begann",
+      "reference": "Importreferenz: {{ref}}",
+      "admission_incomplete_one": "{{count}} Mitglied wurde angelegt, aber der Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie das Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
+      "admission_incomplete_other": "{{count}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support."
+    },
+    "stopped": {
+      "title": "Der Import wurde angehalten. Importierte Mitglieder: {{created}} von {{total}}.",
+      "by_admin": "Sie haben den Import angehalten.",
+      "download_remaining": "Nicht importierte Zeilen herunterladen",
+      "next_step": "Beheben Sie die Ursache, falls es eine gibt, und prüfen Sie dann die heruntergeladene Datei, um den Rest zu importieren."
+    },
+    "stop": {
+      "email_now_taken": "Zeile {{row}}: Jemand mit dieser E-Mail-Adresse ist während des Imports beigetreten.",
+      "row_changed": "Zeile {{row}} besteht die Prüfung nicht mehr.",
+      "write_failed": "Zeile {{row}} konnte nicht gespeichert werden. Von dieser Zeile wurde nichts gespeichert.",
+      "unknown": "Zeile {{row}} konnte nicht importiert werden."
+    },
+    "failed": {
+      "title": "Die Verbindung zum Server wurde unterbrochen",
+      "body": "Bisher importierte Mitglieder sind gespeichert. Laden Sie die nicht importierten Zeilen herunter und prüfen Sie diese Datei, um fortzufahren.",
+      "cannot_continue": "Dieser Import kann nicht fortgesetzt werden",
+      "not_found": "Dieser Import ist abgelaufen oder wurde durch eine neuere Prüfung ersetzt. Bisher importierte Mitglieder sind gespeichert. Laden Sie die nicht importierten Zeilen herunter und prüfen Sie diese Datei, um fortzufahren.",
+      "out_of_order": "Dieser Import wurde in einem anderen Fenster fortgesetzt. Bisher importierte Mitglieder sind gespeichert. Laden Sie die nicht importierten Zeilen herunter und prüfen Sie diese Datei, um fortzufahren.",
+      "imported_so_far": "Bisher importierte Mitglieder: {{created}} von {{total}}."
+    }
+  }
 }

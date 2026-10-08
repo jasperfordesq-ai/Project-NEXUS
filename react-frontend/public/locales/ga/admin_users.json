@@ -129,21 +129,6 @@
     "impersonate_success": "Logáladh isteach mar an úsáideoir",
     "import_csv": "Iompórtáil CSV",
     "export_all_members": "Easpórtáil gach ball",
-    "import_csv_description": "Iompórtáil baill ó chomhad CSV. Íoslódáil an teimpléad chun féachaint ar an bhformáid.",
-    "import_csv_file": "Comhad CSV",
-    "import_default_role": "Ról Réamhshocraithe",
-    "import_download_template": "Íoslódáil teimpléad",
-    "import_download_template_failed": "Níorbh fhéidir an teimpléad a íoslódáil. Bain triail eile as.",
-    "import_errors": "Earráidí Iompórtála",
-    "import_failed": "Theip ar an Iompórtáil",
-    "import_imported": "Iompórtáil Iompórtáilte",
-    "import_role_broker": "Bróicéir",
-    "import_role_coordinator": "Comhordaitheoir",
-    "import_role_member": "Ball",
-    "import_skipped": "Iompórtáil Léimte",
-    "import_success": "D'éirigh le hiompórtáil",
-    "import_title": "Iompórtáil",
-    "import_total_rows": "Sraitheanna Iomlána",
     "label_amount": "Méid",
     "label_bio": "Bith",
     "label_email": "Ríomhphost",
@@ -514,5 +499,220 @@
     "engagement": "Rannpháirtíocht",
     "system": "Córas"
   },
-  "loading": "Luchtú"
+  "loading": "Luchtú",
+  "member_import": {
+    "title": "Iompórtáil baill",
+    "intro": "Tabhair baill isteach ó scarbhileog, lena n-iarmhéideanna creidmheasa ama san áireamh. Seiceáiltear an comhad iomlán ar dtús. Má tá aon rud as bealach, ní iompórtálfar tada.",
+    "download_template": "Íoslódáil an teimpléad",
+    "template_failed": "Níorbh fhéidir an teimpléad a íoslódáil. Bain triail eile as.",
+    "columns_title": "Ní mór na colúin seo a bheith i do chomhad",
+    "choose_file": "Roghnaigh comhad CSV",
+    "file_hint": "Ní féidir ach comhaid CSV a sheiceáil. In Excel, roghnaigh Comhad › Sábháil mar › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Seiceáil an comhad",
+    "checking": "Gach sraith á seiceáil…",
+    "check_failed": "Níorbh fhéidir an comhad a sheiceáil. Bain triail eile as.",
+    "check_rate_limited": "Tá a lán comhad seiceáilte agat le nóiméad anuas. Fan nóiméad, ansin bain triail eile as.",
+    "choose_another": "Roghnaigh comhad eile",
+    "download_correct_template": "Íoslódáil an teimpléad ceart",
+    "cancel": "Cealaigh",
+    "close": "Dún",
+    "columns": {
+      "first_name": {
+        "label": "Céad Ainm",
+        "rule": "Riachtanach. Suas le 100 carachtar."
+      },
+      "last_name": {
+        "label": "Sloinne",
+        "rule": "Riachtanach. Suas le 100 carachtar."
+      },
+      "email": {
+        "label": "Ríomhphost",
+        "rule": "Riachtanach. Ball amháin do gach seoladh; gan a bheith ina bhall anseo cheana."
+      },
+      "phone": {
+        "label": "Fón",
+        "rule": "Roghnach. Formáid idirnáisiúnta, e.g. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Baile",
+        "rule": "Roghnach. Baile nó ceantar an bhaill. Fiafrófar de bhaill nach bhfuil ceann acu nuair a shínfidh siad isteach den chéad uair."
+      },
+      "balance": {
+        "label": "Iarmhéid",
+        "rule": "Roghnach. Uaireanta ón mbanc ama roimhe seo, e.g. 12 nó 12.5. Tosóidh iarmhéideanna diúltacha ag 0."
+      },
+      "null": {
+        "label": "An tsraith iomlán"
+      }
+    },
+    "fix": {
+      "title": "Conas é a shocrú",
+      "step1": "Íoslódáil an teimpléad.",
+      "step2": "Cóipeáil do cholúin isteach ann faoi na ceannteidil chomhfhreagracha.",
+      "step3": "In Excel, roghnaigh Comhad › Sábháil mar › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Seiceáil an comhad nua."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "Ní féidir an comhad a úsáid",
+        "body": "Chuir rud éigin sa chomhad seo cosc orainn é a sheiceáil. Íoslódáil an teimpléad, cóipeáil do cholúin isteach ann, sábháil é mar \"CSV UTF-8 (Comma delimited)\", agus seiceáil an comhad sin."
+      },
+      "empty_file": {
+        "title": "Tá an comhad folamh",
+        "body": "Níl aon rud sa chomhad seo le hiompórtáil."
+      },
+      "too_large": {
+        "title": "Tá an comhad rómhór",
+        "body": "Is féidir comhaid suas le {{max_mb}} MB a úsáid. Roinn ina chomhaid níos lú é."
+      },
+      "too_many_rows": {
+        "title": "An iomarca sraitheanna",
+        "body": "Is féidir suas le {{max}} ball a bheith i gcomhad. Roinn ina chomhaid níos lú é."
+      },
+      "no_data_rows": {
+        "title": "Níl aon bhall sa chomhad",
+        "body": "Tá ceannteidil sa chomhad ach níl aon bhall fúthu."
+      },
+      "spreadsheet_workbook": {
+        "title": "Leabhar oibre Excel é seo, ní comhad CSV",
+        "body": "Sábháil é mar \"CSV UTF-8 (Comma delimited)\" agus seiceáil an comhad sin ina ionad."
+      },
+      "not_text": {
+        "title": "Ní comhad scarbhileoige é seo",
+        "body": "Roghnaigh an comhad CSV a shábháil tú ó do scarbhileog."
+      },
+      "not_utf8": {
+        "title": "Níor sábháladh an comhad mar UTF-8",
+        "body": "Dhéanfaí damáiste do litreacha le comharthaí diacriticiúla (mar é, á, ü). Sábháil arís é mar \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "Tá na colúin scartha ar bhealach nach féidir linn a léamh",
+        "body": "Úsáid camóga nó leathponcanna idir na colúin, mar a dhéanann Excel agus é á shábháil mar CSV."
+      },
+      "missing_columns": {
+        "title": "Tá colúin ar iarraidh",
+        "body": "Cuir na colúin seo leis: {{columns}}. Is féidir iad a fhágáil folamh nuair is roghnach iad."
+      },
+      "unknown_columns": {
+        "title": "Tá colúin sa chomhad nach bhfuil sa teimpléad",
+        "body": "Bain na colúin seo: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "Tá colún amháin le feiceáil faoi dhó",
+        "body": "Coinnigh ceann amháin de: {{columns}}."
+      },
+      "old_template": {
+        "title": "Seo an seanteimpléad",
+        "body": "Tá athrú tagtha ar an teimpléad: tá colúin bhaile agus iarmhéid ann anois agus níl colún róil ann a thuilleadh."
+      },
+      "empty_column_heading": {
+        "title": "Níl ceannteideal ag colún",
+        "body": "Níl ceannteideal ag colún {{positions}}. In Excel, scrios an colún iomlán sin (b'fhéidir go bhfuil cuma folamh air ach go bhfuil formáidiú air fós), ansin sábháil arís."
+      },
+      "header_not_on_first_line": {
+        "title": "Níl na ceannteidil ar an gcéad líne",
+        "body": "Scrios na línte folamha os cionn na gceannteideal ionas go mbeidh siad ar líne 1, ansin sábháil arís."
+      }
+    },
+    "problems": {
+      "title": "Níor iompórtáladh tada",
+      "body": "Fadhbanna aimsithe: {{problems}}. Sraitheanna le fadhbanna: {{rows}}. Ceartaigh iad i do scarbhileog, ansin seiceáil an comhad arís.",
+      "body_file": "Fadhbanna aimsithe: {{problems}}. Ceartaigh iad i do scarbhileog, ansin seiceáil an comhad arís.",
+      "row": "Sraith",
+      "column": "Colún",
+      "problem": "Fadhb",
+      "whole_file": "An comhad iomlán",
+      "more": "… agus {{more}} eile. Íoslódáil an liosta chun iad go léir a fheiceáil.",
+      "download_list": "Íoslódáil liosta na bhfadhbanna",
+      "download_corrected": "Íoslódáil comhad ceartaithe gan na daoine atá ina mbaill cheana",
+      "corrected_note": "Tá na fadhbanna eile atá liostaithe anseo sa chomhad ceartaithe fós."
+    },
+    "problem": {
+      "required": "Tá {{column}} ar iarraidh.",
+      "too_long": "Tá {{column}} níos faide ná {{max}} carachtar.",
+      "control_characters": "Tá carachtair rialaithe folaithe i {{column}}. Clóscríobh arís é.",
+      "starts_with_formula_character": "Ní féidir le {{column}} tosú le =, +, - nó @.",
+      "invalid_encoding": "Tá carachtair i {{column}} nárbh fhéidir a léamh. Clóscríobh arís é, ansin sábháil an comhad mar \"CSV UTF-8\".",
+      "invalid_email": "Ní seoladh ríomhphoist bailí é seo. Má tá litreacha le comharthaí diacriticiúla i bhfearann an tseolta, úsáid an fhoirm shimplí (ASCII).",
+      "example_address": "Seo an tsraith shamplach ó theimpléad. Scrios í.",
+      "disposable_email": "Ní ghlactar le seoltaí ríomhphoist aon-úsáide.",
+      "invalid_phone": "Ní uimhir fóin bhailí í seo. Úsáid an fhormáid idirnáisiúnta, e.g. +1 555 123 4567.",
+      "invalid_number": "Ní uimhir í seo. Úsáid digití amháin, mar 12 nó 12.5, gan aonaid ná deighilteoirí mílte.",
+      "balance_too_large": "Is féidir iarmhéideanna suas le {{max}} uair a bheith ann.",
+      "wrong_cell_count": "Tá {{found}} cill sa tsraith seo; tá {{expected}} cill sna ceannteidil.",
+      "duplicate_in_file": "Tá an ríomhphost seo ar shraith {{first_row}} freisin.",
+      "already_member": "Tá an duine seo ina bhall den phobal seo cheana.",
+      "already_member_unmatched": "Ní hionann ríomhphost ball atá ann cheana agus ríomhphost sa chomhad seo ach amháin i gcomharthaí diacriticiúla nó i spásanna. Cuir ríomhphoist an chomhaid seo i gcomparáid le do bhaill reatha.",
+      "unknown": "Ní ghlactar leis an luach seo."
+    },
+    "warning_row": "Sraith {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "tosóidh iarmhéid de {{original}} uair ag 0.",
+      "unknown": "iompórtálfar an tsraith seo le luach athraithe."
+    },
+    "ready": {
+      "title": "Rith gach sraith an seiceáil",
+      "members": "Baill le hiompórtáil: {{n}}",
+      "hours": "Uaireanta san iomlán: {{hours}}",
+      "with_town": "Le baile: {{n}}",
+      "without_town": "Gan baile: {{n}} (fiafrófar díobh nuair a shínfidh siad isteach den chéad uair)",
+      "negatives": "Iarmhéideanna diúltacha a thosóidh ag 0: {{n}}",
+      "blank_rows": "Línte folamha a seachnaíodh: {{n}}",
+      "identity_attest": "Tá céannacht gach duine seiceáilte agam féin",
+      "identity_help": "Éilíonn do phobal seiceáil céannachta. Mura gcuireann tú tic leis seo, fanfaidh na baill seo leis an seiceáil sin sula bhféadfaidh siad síniú isteach.",
+      "no_emails_yet": "Ní sheolann an t-iompórtú seo ríomhphost chuig aon duine fós. Is féidir le baill \"Dearmad ar an bhfocal faire\" a úsáid chun focal faire a shocrú go dtí go gcuirfear cuirí leis.",
+      "import_one": "Iompórtáil baill: {{count}}",
+      "import_two": "Iompórtáil baill: {{count}}",
+      "import_few": "Iompórtáil baill: {{count}}",
+      "import_many": "Iompórtáil baill: {{count}}",
+      "import_other": "Iompórtáil baill: {{count}}"
+    },
+    "running": {
+      "title": "Baill á n-iompórtáil",
+      "batch": "Baisc {{n}} as thart ar {{m}}",
+      "count": "Baill iompórtáilte: {{done}} as {{total}}",
+      "hours": "Uaireanta iompórtáilte go dtí seo: {{hours}}",
+      "remaining": "Thart ar {{time}} fágtha",
+      "calculating": "An t-am atá fágtha á ríomh…",
+      "keep_open": "Fág an fhuinneog seo oscailte go dtí go gcríochnóidh an t-iompórtú.",
+      "stop": "Stop i ndiaidh na baisce seo",
+      "stopping": "Á stopadh i ndiaidh na baisce seo…",
+      "progress_label": "Dul chun cinn an iompórtaithe"
+    },
+    "done": {
+      "title_one": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "title_two": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "title_few": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "title_many": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "title_other": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "held": "Tá na baill seo ag fanacht le seiceáil céannachta do phobail sula bhféadfaidh siad síniú isteach.",
+      "download_zeroed": "Íoslódáil liosta na mball ar thosaigh a n-iarmhéid ag 0",
+      "reference": "Tagairt iompórtála: {{ref}}",
+      "admission_incomplete_one": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_two": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_few": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_many": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_other": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht."
+    },
+    "stopped": {
+      "title": "Stop an t-iompórtú. Baill iompórtáilte: {{created}} as {{total}}.",
+      "by_admin": "Stop tú an t-iompórtú.",
+      "download_remaining": "Íoslódáil na sraitheanna nár iompórtáladh",
+      "next_step": "Má tá cúis ann, ceartaigh í, ansin seiceáil an comhad íoslódáilte chun an chuid eile a iompórtáil."
+    },
+    "stop": {
+      "email_now_taken": "Sraith {{row}}: chuaigh duine leis an ríomhphost seo isteach agus an t-iompórtú ar siúl.",
+      "row_changed": "Ní rithfidh sraith {{row}} an seiceáil a thuilleadh.",
+      "write_failed": "Níorbh fhéidir sraith {{row}} a shábháil. Níor sábháladh tada den tsraith sin.",
+      "unknown": "Níorbh fhéidir sraith {{row}} a iompórtáil."
+    },
+    "failed": {
+      "title": "Cailleadh an nasc leis an bhfreastalaí",
+      "body": "Tá na baill a iompórtáladh go dtí seo sábháilte. Íoslódáil na sraitheanna nár iompórtáladh agus seiceáil an comhad sin chun leanúint ar aghaidh.",
+      "cannot_continue": "Ní féidir leanúint leis an iompórtú seo",
+      "not_found": "Tá an t-iompórtú seo imithe in éag nó cuireadh seiceáil níos nuaí ina áit. Tá na baill a iompórtáladh go dtí seo sábháilte. Íoslódáil na sraitheanna nár iompórtáladh agus seiceáil an comhad sin chun leanúint ar aghaidh.",
+      "out_of_order": "Leanadh leis an iompórtú seo i bhfuinneog eile. Tá na baill a iompórtáladh go dtí seo sábháilte. Íoslódáil na sraitheanna nár iompórtáladh agus seiceáil an comhad sin chun leanúint ar aghaidh.",
+      "imported_so_far": "Baill iompórtáilte go dtí seo: {{created}} as {{total}}."
+    }
+  }
 }

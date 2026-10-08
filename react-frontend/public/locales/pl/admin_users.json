@@ -129,20 +129,6 @@
     "impersonate_success": "Podszywanie się pomyślnie",
     "import_csv": "Importuj plik CSV",
     "export_all_members": "Eksportuj wszystkich członków",
-    "import_csv_description": "Importuj członków z pliku CSV. Pobierz szablon, aby zobaczyć wymagany format.",
-    "import_csv_file": "Plik CSV",
-    "import_default_role": "Domyślna rola",
-    "import_download_template": "Pobierz szablon",
-    "import_download_template_failed": "Nie udało się pobrać szablonu. Spróbuj ponownie.",
-    "import_errors": "Błędy importu",
-    "import_failed": "Import nie powiódł się",
-    "import_imported": "Importuj Zaimportowano",
-    "import_role_coordinator": "Koordynator",
-    "import_role_member": "Członek",
-    "import_skipped": "Import pominięty",
-    "import_success": "Zaimportowano pomyślnie",
-    "import_title": "Importuj",
-    "import_total_rows": "Suma wierszy",
     "label_amount": "Kwota",
     "label_email": "E-mail",
     "label_first_name": "Imię",
@@ -222,7 +208,6 @@
     "role_tenant_super_admin": "Superadministrator dzierżawcy",
     "role_super_admin_short": "Super Administrator",
     "reset_2fa_reason": "Zresetowane przez administratora",
-    "import_role_broker": "Pośrednik",
     "label_bio": "Bio",
     "role_moderator": "Moderator",
     "reset_2fa_identity_reason": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)",
@@ -514,5 +499,217 @@
     "engagement": "Zaangażowanie",
     "system": "Systemu"
   },
-  "loading": "Ładowanie"
+  "loading": "Ładowanie",
+  "member_import": {
+    "title": "Importuj członków",
+    "intro": "Przenieś członków z arkusza kalkulacyjnego razem z ich saldami kredytów czasu. Najpierw sprawdzany jest cały plik. Jeśli coś jest nie tak, nic nie zostanie zaimportowane.",
+    "download_template": "Pobierz szablon",
+    "template_failed": "Nie udało się pobrać szablonu. Spróbuj ponownie.",
+    "columns_title": "Twój plik musi zawierać te kolumny",
+    "choose_file": "Wybierz plik CSV",
+    "file_hint": "Można sprawdzać tylko pliki CSV. W programie Excel wybierz Plik › Zapisz jako › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Sprawdź plik",
+    "checking": "Sprawdzanie każdego wiersza…",
+    "check_failed": "Nie udało się sprawdzić pliku. Spróbuj ponownie.",
+    "check_rate_limited": "W ciągu ostatniej minuty sprawdzono bardzo dużo plików. Poczekaj minutę, a potem spróbuj ponownie.",
+    "choose_another": "Wybierz inny plik",
+    "download_correct_template": "Pobierz właściwy szablon",
+    "cancel": "Anuluj",
+    "close": "Zamknij",
+    "columns": {
+      "first_name": {
+        "label": "Imię",
+        "rule": "Wymagane. Do 100 znaków."
+      },
+      "last_name": {
+        "label": "Nazwisko",
+        "rule": "Wymagane. Do 100 znaków."
+      },
+      "email": {
+        "label": "E-mail",
+        "rule": "Wymagane. Jeden członek na adres; jeszcze nie jest tu członkiem."
+      },
+      "phone": {
+        "label": "Telefon",
+        "rule": "Opcjonalne. Format międzynarodowy, np. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Miejscowość",
+        "rule": "Opcjonalne. Miejscowość lub okolica członka. Członkowie bez miejscowości zostaną o nią zapytani przy pierwszym logowaniu."
+      },
+      "balance": {
+        "label": "Saldo",
+        "rule": "Opcjonalne. Godziny z poprzedniego banku czasu, np. 12 lub 12.5. Salda ujemne zaczynają się od 0."
+      },
+      "null": {
+        "label": "Cały wiersz"
+      }
+    },
+    "fix": {
+      "title": "Jak to naprawić",
+      "step1": "Pobierz szablon.",
+      "step2": "Skopiuj do niego swoje kolumny pod odpowiednie nagłówki.",
+      "step3": "W programie Excel wybierz Plik › Zapisz jako › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Sprawdź nowy plik."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "Nie można użyć tego pliku",
+        "body": "Coś w tym pliku uniemożliwiło jego sprawdzenie. Pobierz szablon, skopiuj do niego swoje kolumny, zapisz go jako \"CSV UTF-8 (Comma delimited)\" i sprawdź ten plik."
+      },
+      "empty_file": {
+        "title": "Plik jest pusty",
+        "body": "W tym pliku nie ma niczego do zaimportowania."
+      },
+      "too_large": {
+        "title": "Plik jest zbyt duży",
+        "body": "Pliki mogą mieć do {{max_mb}} MB. Podziel go na mniejsze pliki."
+      },
+      "too_many_rows": {
+        "title": "Zbyt wiele wierszy",
+        "body": "Plik może zawierać do {{max}} członków. Podziel go na mniejsze pliki."
+      },
+      "no_data_rows": {
+        "title": "W pliku nie ma członków",
+        "body": "Plik ma nagłówki, ale pod nimi nie ma żadnych członków."
+      },
+      "spreadsheet_workbook": {
+        "title": "To jest skoroszyt programu Excel, a nie plik CSV",
+        "body": "Zapisz go jako \"CSV UTF-8 (Comma delimited)\" i sprawdź zamiast niego ten plik."
+      },
+      "not_text": {
+        "title": "To nie jest plik arkusza kalkulacyjnego",
+        "body": "Wybierz plik CSV zapisany z arkusza kalkulacyjnego."
+      },
+      "not_utf8": {
+        "title": "Plik nie został zapisany w kodowaniu UTF-8",
+        "body": "Litery z akcentami i znakami diakrytycznymi zostałyby uszkodzone. Zapisz go ponownie jako \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "Kolumny są rozdzielone w sposób, którego nie potrafimy odczytać",
+        "body": "Rozdzielaj kolumny przecinkami lub średnikami, tak jak robi to Excel przy zapisie do CSV."
+      },
+      "missing_columns": {
+        "title": "Brakuje kolumn",
+        "body": "Dodaj te kolumny: {{columns}}. Opcjonalne kolumny mogą pozostać puste."
+      },
+      "unknown_columns": {
+        "title": "Plik zawiera kolumny, których nie ma w szablonie",
+        "body": "Usuń te kolumny: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "Jedna kolumna występuje dwa razy",
+        "body": "Zostaw tylko jedną z: {{columns}}."
+      },
+      "old_template": {
+        "title": "To jest stary szablon",
+        "body": "Szablon się zmienił: ma teraz kolumny miejscowość i saldo i nie ma już kolumny rola."
+      },
+      "empty_column_heading": {
+        "title": "Jedna kolumna nie ma nagłówka",
+        "body": "Kolumna {{positions}} nie ma nagłówka. W programie Excel usuń całą tę kolumnę (może wyglądać na pustą, a mimo to być sformatowana), a następnie zapisz ponownie."
+      },
+      "header_not_on_first_line": {
+        "title": "Nagłówki nie są w pierwszym wierszu",
+        "body": "Usuń puste wiersze nad nagłówkami, tak aby znalazły się w wierszu 1, a następnie zapisz ponownie."
+      }
+    },
+    "problems": {
+      "title": "Nic nie zostało zaimportowane",
+      "body": "Znalezione problemy: {{problems}}. Wiersze z problemami: {{rows}}. Popraw je w arkuszu, a następnie sprawdź plik ponownie.",
+      "body_file": "Znalezione problemy: {{problems}}. Popraw je w arkuszu, a następnie sprawdź plik ponownie.",
+      "row": "Wiersz",
+      "column": "Kolumna",
+      "problem": "Problem",
+      "whole_file": "Cały plik",
+      "more": "… i {{more}} więcej. Pobierz listę, aby zobaczyć wszystkie.",
+      "download_list": "Pobierz listę problemów",
+      "download_corrected": "Pobierz poprawiony plik bez osób, które już są członkami",
+      "corrected_note": "Poprawiony plik nadal zawiera pozostałe problemy wymienione tutaj."
+    },
+    "problem": {
+      "required": "Brakuje wartości w polu: {{column}}.",
+      "too_long": "Pole {{column}} jest dłuższe niż {{max}} znaków.",
+      "control_characters": "Pole {{column}} zawiera ukryte znaki sterujące. Wpisz wartość ponownie.",
+      "starts_with_formula_character": "Pole {{column}} nie może zaczynać się od =, +, - ani @.",
+      "invalid_encoding": "Pole {{column}} zawiera znaki, których nie udało się odczytać. Wpisz wartość ponownie, a następnie zapisz plik jako \"CSV UTF-8\".",
+      "invalid_email": "To nie jest prawidłowy adres e-mail. Jeśli domena adresu zawiera litery z akcentami, użyj jej zwykłej (ASCII) postaci.",
+      "example_address": "To jest przykładowy wiersz z szablonu. Usuń go.",
+      "disposable_email": "Jednorazowe adresy e-mail nie są akceptowane.",
+      "invalid_phone": "To nie jest prawidłowy numer telefonu. Użyj formatu międzynarodowego, np. +1 555 123 4567.",
+      "invalid_number": "To nie jest liczba. Użyj samych cyfr, np. 12 lub 12.5, bez jednostek i separatorów tysięcy.",
+      "balance_too_large": "Salda mogą wynosić do {{max}} godzin.",
+      "wrong_cell_count": "Liczba komórek w tym wierszu: {{found}}; liczba nagłówków: {{expected}}.",
+      "duplicate_in_file": "Ten adres e-mail występuje także w wierszu {{first_row}}.",
+      "already_member": "Ta osoba jest już członkiem tej społeczności.",
+      "already_member_unmatched": "E-mail istniejącego członka różni się od e-maila w tym pliku tylko akcentami lub spacjami. Porównaj adresy e-mail z tego pliku z adresami istniejących członków.",
+      "unknown": "Ta wartość nie jest akceptowana."
+    },
+    "warning_row": "Wiersz {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "saldo {{original}} godz. zacznie się od 0.",
+      "unknown": "ten wiersz zostanie zaimportowany ze zmienioną wartością."
+    },
+    "ready": {
+      "title": "Wszystkie wiersze przeszły sprawdzenie",
+      "members": "Członkowie do zaimportowania: {{n}}",
+      "hours": "Łącznie godzin: {{hours}}",
+      "with_town": "Z miejscowością: {{n}}",
+      "without_town": "Bez miejscowości: {{n}} (zostaną o nią zapytani przy pierwszym logowaniu)",
+      "negatives": "Salda ujemne, które zaczną się od 0: {{n}}",
+      "blank_rows": "Pominięte puste wiersze: {{n}}",
+      "identity_attest": "Tożsamość każdej osoby została przeze mnie sprawdzona",
+      "identity_help": "Twoja społeczność wymaga weryfikacji tożsamości. Jeśli zostawisz to pole niezaznaczone, ci członkowie poczekają na tę weryfikację, zanim będą mogli się zalogować.",
+      "no_emails_yet": "Ten import nie wysyła jeszcze nikomu wiadomości e-mail. Członkowie mogą użyć opcji „Nie pamiętam hasła”, aby ustawić hasło, dopóki nie zostaną dodane zaproszenia.",
+      "import_one": "Importuj {{count}} członka",
+      "import_few": "Importuj {{count}} członków",
+      "import_many": "Importuj {{count}} członków",
+      "import_other": "Importuj {{count}} członka"
+    },
+    "running": {
+      "title": "Importowanie członków",
+      "batch": "Partia {{n}} z około {{m}}",
+      "count": "Zaimportowani członkowie: {{done}} z {{total}}",
+      "hours": "Dotychczas zaimportowane godziny: {{hours}}",
+      "remaining": "Pozostało około {{time}}",
+      "calculating": "Obliczanie pozostałego czasu…",
+      "keep_open": "Zostaw to okno otwarte, dopóki import się nie zakończy.",
+      "stop": "Zatrzymaj po tej partii",
+      "stopping": "Zatrzymywanie po tej partii…",
+      "progress_label": "Postęp importu"
+    },
+    "done": {
+      "title_one": "Zaimportowano {{count}} członka, łącznie {{balance}} godz.",
+      "title_few": "Zaimportowano {{count}} członków, łącznie {{balance}} godz.",
+      "title_many": "Zaimportowano {{count}} członków, łącznie {{balance}} godz.",
+      "title_other": "Zaimportowano {{count}} członka, łącznie {{balance}} godz.",
+      "held": "Ci członkowie czekają na weryfikację tożsamości przez Twoją społeczność, zanim będą mogli się zalogować.",
+      "download_zeroed": "Pobierz listę członków, których saldo zaczęło się od 0",
+      "reference": "Numer referencyjny importu: {{ref}}",
+      "admission_incomplete_one": "Utworzono {{count}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_few": "Utworzono {{count}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_many": "Utworzono {{count}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_other": "Utworzono {{count}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną."
+    },
+    "stopped": {
+      "title": "Import został zatrzymany. Zaimportowani członkowie: {{created}} z {{total}}.",
+      "by_admin": "Import został zatrzymany na Twoją prośbę.",
+      "download_remaining": "Pobierz wiersze, które nie zostały zaimportowane",
+      "next_step": "Usuń przyczynę, jeśli jakaś jest, a następnie sprawdź pobrany plik, aby zaimportować resztę."
+    },
+    "stop": {
+      "email_now_taken": "Wiersz {{row}}: ktoś z tym adresem e-mail dołączył w trakcie importu.",
+      "row_changed": "Wiersz {{row}} nie przechodzi już sprawdzenia.",
+      "write_failed": "Nie udało się zapisać wiersza {{row}}. Nic z tego wiersza nie zostało zapisane.",
+      "unknown": "Nie udało się zaimportować wiersza {{row}}."
+    },
+    "failed": {
+      "title": "Utracono połączenie z serwerem",
+      "body": "Dotychczas zaimportowani członkowie są zapisani. Pobierz wiersze, które nie zostały zaimportowane, i sprawdź ten plik, aby kontynuować.",
+      "cannot_continue": "Ten import nie może być kontynuowany",
+      "not_found": "Ten import wygasł lub został zastąpiony nowszym sprawdzeniem. Dotychczas zaimportowani członkowie są zapisani. Pobierz wiersze, które nie zostały zaimportowane, i sprawdź ten plik, aby kontynuować.",
+      "out_of_order": "Ten import był kontynuowany w innym oknie. Dotychczas zaimportowani członkowie są zapisani. Pobierz wiersze, które nie zostały zaimportowane, i sprawdź ten plik, aby kontynuować.",
+      "imported_so_far": "Dotychczas zaimportowani członkowie: {{created}} z {{total}}."
+    }
+  }
 }

@@ -129,21 +129,6 @@
     "impersonate_success": "Impersonate successfully",
     "import_csv": "Import CSV",
     "export_all_members": "Export all members",
-    "import_csv_description": "Import members from a CSV file. Download the template to see the required format.",
-    "import_csv_file": "CSV File",
-    "import_default_role": "Default Role",
-    "import_download_template": "Download Template",
-    "import_download_template_failed": "The template could not be downloaded. Please try again.",
-    "import_errors": "Import Errors",
-    "import_failed": "Import Failed",
-    "import_imported": "Import Imported",
-    "import_role_broker": "Broker",
-    "import_role_coordinator": "Coordinator",
-    "import_role_member": "Member",
-    "import_skipped": "Import Skipped",
-    "import_success": "Import successfully",
-    "import_title": "Import",
-    "import_total_rows": "Total Rows",
     "label_amount": "Amount",
     "label_bio": "Bio",
     "label_email": "Email",
@@ -514,5 +499,211 @@
     "intelligence": "Intelligence",
     "engagement": "Engagement",
     "system": "System"
+  },
+  "member_import": {
+    "title": "Import members",
+    "intro": "Bring members in from a spreadsheet, including their time-credit balances. The whole file is checked first. If anything is wrong, nothing is imported.",
+    "download_template": "Download the template",
+    "template_failed": "The template could not be downloaded. Please try again.",
+    "columns_title": "Your file needs these columns",
+    "choose_file": "Choose a CSV file",
+    "file_hint": "Only CSV files can be checked. In Excel, use File › Save As › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Check file",
+    "checking": "Checking every row…",
+    "check_failed": "The file could not be checked. Please try again.",
+    "check_rate_limited": "You have checked a lot of files in the last minute. Wait a minute, then try again.",
+    "choose_another": "Choose another file",
+    "download_correct_template": "Download the correct template",
+    "cancel": "Cancel",
+    "close": "Close",
+    "columns": {
+      "first_name": {
+        "label": "First name",
+        "rule": "Required. Up to 100 characters."
+      },
+      "last_name": {
+        "label": "Last name",
+        "rule": "Required. Up to 100 characters."
+      },
+      "email": {
+        "label": "Email",
+        "rule": "Required. One member per address; not already a member here."
+      },
+      "phone": {
+        "label": "Phone",
+        "rule": "Optional. International format, e.g. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Town",
+        "rule": "Optional. The member's town or area. Members without one are asked when they first sign in."
+      },
+      "balance": {
+        "label": "Balance",
+        "rule": "Optional. Hours from the previous timebank, e.g. 12 or 12.5. Negative balances start at 0."
+      },
+      "null": {
+        "label": "Whole row"
+      }
+    },
+    "fix": {
+      "title": "How to fix it",
+      "step1": "Download the template.",
+      "step2": "Copy your columns into it under the matching headings.",
+      "step3": "In Excel choose File › Save As › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Check the new file."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "The file cannot be used",
+        "body": "Something about this file stopped us checking it. Download the template, copy your columns into it, save it as \"CSV UTF-8 (Comma delimited)\", and check that file."
+      },
+      "empty_file": {
+        "title": "The file is empty",
+        "body": "There is nothing in this file to import."
+      },
+      "too_large": {
+        "title": "The file is too large",
+        "body": "Files can be up to {{max_mb}} MB. Split it into smaller files."
+      },
+      "too_many_rows": {
+        "title": "Too many rows",
+        "body": "A file can hold up to {{max}} members. Split it into smaller files."
+      },
+      "no_data_rows": {
+        "title": "No members in the file",
+        "body": "The file has headings but no members under them."
+      },
+      "spreadsheet_workbook": {
+        "title": "This is an Excel workbook, not a CSV file",
+        "body": "Save it as \"CSV UTF-8 (Comma delimited)\" and check that file instead."
+      },
+      "not_text": {
+        "title": "This is not a spreadsheet file",
+        "body": "Choose the CSV file you saved from your spreadsheet."
+      },
+      "not_utf8": {
+        "title": "The file was not saved as UTF-8",
+        "body": "Accented letters would be damaged. Save it again as \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "The columns are separated in a way we cannot read",
+        "body": "Use commas or semicolons between columns, as Excel does when saving as CSV."
+      },
+      "missing_columns": {
+        "title": "Columns are missing",
+        "body": "Add these columns: {{columns}}. They can be left empty where optional."
+      },
+      "unknown_columns": {
+        "title": "The file has columns that are not in the template",
+        "body": "Remove these columns: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "A column appears twice",
+        "body": "Keep only one of: {{columns}}."
+      },
+      "old_template": {
+        "title": "This is the old template",
+        "body": "The template has changed: it now has town and balance columns and no role column."
+      },
+      "empty_column_heading": {
+        "title": "A column has no heading",
+        "body": "Column {{positions}} has no heading. In Excel, delete that whole column (it may look empty but still be formatted), then save again."
+      },
+      "header_not_on_first_line": {
+        "title": "The headings are not on the first line",
+        "body": "Delete the empty lines above the headings so they are on line 1, then save again."
+      }
+    },
+    "problems": {
+      "title": "Nothing has been imported",
+      "body": "Problems found: {{problems}}. Rows with problems: {{rows}}. Fix them in your spreadsheet, then check the file again.",
+      "body_file": "Problems found: {{problems}}. Fix them in your spreadsheet, then check the file again.",
+      "row": "Row",
+      "column": "Column",
+      "problem": "Problem",
+      "whole_file": "Whole file",
+      "more": "…and {{more}} more. Download the list to see them all.",
+      "download_list": "Download the list of problems",
+      "download_corrected": "Download a corrected file without the people who are already members",
+      "corrected_note": "The corrected file still contains the other problems listed here."
+    },
+    "problem": {
+      "required": "{{column}} is missing.",
+      "too_long": "{{column}} is longer than {{max}} characters.",
+      "control_characters": "{{column}} contains hidden control characters. Retype it.",
+      "starts_with_formula_character": "{{column}} cannot start with =, +, - or @.",
+      "invalid_encoding": "{{column}} contains characters that could not be read. Retype it, then save the file as \"CSV UTF-8\".",
+      "invalid_email": "This is not a valid email address. If the address has accented letters in its domain, use its plain (ASCII) form.",
+      "example_address": "This is the example row from a template. Delete it.",
+      "disposable_email": "Throwaway email addresses are not accepted.",
+      "invalid_phone": "This is not a valid phone number. Use international format, e.g. +1 555 123 4567.",
+      "invalid_number": "This is not a number. Use digits only, like 12 or 12.5 — no units or thousands separators.",
+      "balance_too_large": "Balances can be up to {{max}} hours.",
+      "wrong_cell_count": "This row has {{found}} cells; the headings have {{expected}}.",
+      "duplicate_in_file": "This email is also on row {{first_row}}.",
+      "already_member": "This person is already a member of this community.",
+      "already_member_unmatched": "An existing member's email differs from an email in this file only by accents or spacing. Check the emails in this file against your existing members.",
+      "unknown": "This value is not accepted."
+    },
+    "warning_row": "Row {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "a balance of {{original}} hours will start at 0.",
+      "unknown": "this row will be imported with a changed value."
+    },
+    "ready": {
+      "title": "Every row passed the check",
+      "members": "Members to import: {{n}}",
+      "hours": "Hours in total: {{hours}}",
+      "with_town": "With a town: {{n}}",
+      "without_town": "Without a town: {{n}} (they will be asked when they first sign in)",
+      "negatives": "Negative balances that will start at 0: {{n}}",
+      "blank_rows": "Empty lines ignored: {{n}}",
+      "identity_attest": "I have checked each person's identity myself",
+      "identity_help": "Your community requires an identity check. If you leave this unticked, these members will wait for that check before they can sign in.",
+      "no_emails_yet": "This import does not email anyone yet. Members can use \"Forgot password\" to set a password until invitations are added.",
+      "import_one": "Import {{count}} member",
+      "import_other": "Import {{count}} members"
+    },
+    "running": {
+      "title": "Importing members",
+      "batch": "Batch {{n}} of about {{m}}",
+      "count": "Members imported: {{done}} of {{total}}",
+      "hours": "Hours imported so far: {{hours}}",
+      "remaining": "About {{time}} left",
+      "calculating": "Working out the time left…",
+      "keep_open": "Keep this window open until the import finishes.",
+      "stop": "Stop after this batch",
+      "stopping": "Stopping after this batch…",
+      "progress_label": "Import progress"
+    },
+    "done": {
+      "title_one": "{{count}} member imported, with {{balance}} hours",
+      "title_other": "{{count}} members imported, with {{balance}} hours",
+      "held": "These members are waiting for your community's identity check before they can sign in.",
+      "download_zeroed": "Download the list of members whose balance started at 0",
+      "reference": "Import reference: {{ref}}",
+      "admission_incomplete_one": "{{count}} member was created but their identity step did not complete (rows {{rows}}). Open them from the member list and resend their identity check, or contact support.",
+      "admission_incomplete_other": "{{count}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support."
+    },
+    "stopped": {
+      "title": "The import stopped. Members imported: {{created}} of {{total}}.",
+      "by_admin": "You stopped the import.",
+      "download_remaining": "Download the rows that were not imported",
+      "next_step": "Fix the cause if there is one, then check the downloaded file to import the rest."
+    },
+    "stop": {
+      "email_now_taken": "Row {{row}}: someone with this email joined while the import was running.",
+      "row_changed": "Row {{row}} no longer passes the check.",
+      "write_failed": "Row {{row}} could not be saved. Nothing of that row was saved.",
+      "unknown": "Row {{row}} could not be imported."
+    },
+    "failed": {
+      "title": "The connection to the server was lost",
+      "body": "Members imported so far are saved. Download the rows that were not imported and check that file to continue.",
+      "cannot_continue": "This import cannot continue",
+      "not_found": "This import has expired or was replaced by a newer check. Members imported so far are saved. Download the rows that were not imported and check that file to continue.",
+      "out_of_order": "This import continued in another window. Members imported so far are saved. Download the rows that were not imported and check that file to continue.",
+      "imported_so_far": "Members imported so far: {{created}} of {{total}}."
+    }
   }
 }

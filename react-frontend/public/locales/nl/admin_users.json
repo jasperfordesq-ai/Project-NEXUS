@@ -129,21 +129,6 @@
     "impersonate_success": "Succesvol nabootsen",
     "import_csv": "CSV importeren",
     "export_all_members": "Alle leden exporteren",
-    "import_csv_description": "Importeer leden uit een CSV-bestand. Download het sjabloon om het vereiste formaat te zien.",
-    "import_csv_file": "CSV-bestand",
-    "import_default_role": "Standaardrol",
-    "import_download_template": "Sjabloon downloaden",
-    "import_download_template_failed": "Het sjabloon kon niet worden gedownload. Probeer het opnieuw.",
-    "import_errors": "Importfouten",
-    "import_failed": "Importeren mislukt",
-    "import_imported": "Importeren Geïmporteerd",
-    "import_role_broker": "Makelaar",
-    "import_role_coordinator": "Coördinator",
-    "import_role_member": "Lid",
-    "import_skipped": "Importeren overgeslagen",
-    "import_success": "Importeren is gelukt",
-    "import_title": "Importeren",
-    "import_total_rows": "Totaal aantal rijen",
     "label_amount": "Bedrag",
     "label_bio": "Biografie",
     "label_email": "E-mail",
@@ -514,5 +499,211 @@
     "engagement": "Betrokkenheid",
     "system": "Systeem"
   },
-  "loading": "Laden"
+  "loading": "Laden",
+  "member_import": {
+    "title": "Leden importeren",
+    "intro": "Haal leden binnen uit een spreadsheet, inclusief hun tijdkrediet-saldo's. Eerst wordt het hele bestand gecontroleerd. Als er iets niet klopt, wordt er niets geïmporteerd.",
+    "download_template": "Sjabloon downloaden",
+    "template_failed": "Het sjabloon kon niet worden gedownload. Probeer het opnieuw.",
+    "columns_title": "Je bestand heeft deze kolommen nodig",
+    "choose_file": "Kies een CSV-bestand",
+    "file_hint": "Alleen CSV-bestanden kunnen worden gecontroleerd. Kies in Excel Bestand › Opslaan als › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Bestand controleren",
+    "checking": "Elke rij wordt gecontroleerd…",
+    "check_failed": "Het bestand kon niet worden gecontroleerd. Probeer het opnieuw.",
+    "check_rate_limited": "Je hebt de afgelopen minuut veel bestanden gecontroleerd. Wacht een minuut en probeer het dan opnieuw.",
+    "choose_another": "Een ander bestand kiezen",
+    "download_correct_template": "Het juiste sjabloon downloaden",
+    "cancel": "Annuleren",
+    "close": "Sluiten",
+    "columns": {
+      "first_name": {
+        "label": "Voornaam",
+        "rule": "Verplicht. Maximaal 100 tekens."
+      },
+      "last_name": {
+        "label": "Achternaam",
+        "rule": "Verplicht. Maximaal 100 tekens."
+      },
+      "email": {
+        "label": "E-mail",
+        "rule": "Verplicht. Eén lid per adres; hier nog geen lid."
+      },
+      "phone": {
+        "label": "Telefoon",
+        "rule": "Optioneel. Internationaal formaat, bijv. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Plaats",
+        "rule": "Optioneel. De woonplaats of regio van het lid. Leden zonder plaats worden er bij hun eerste aanmelding naar gevraagd."
+      },
+      "balance": {
+        "label": "Saldo",
+        "rule": "Optioneel. Uren van de vorige tijdbank, bijv. 12 of 12.5. Negatieve saldo's beginnen op 0."
+      },
+      "null": {
+        "label": "Hele rij"
+      }
+    },
+    "fix": {
+      "title": "Zo los je het op",
+      "step1": "Download het sjabloon.",
+      "step2": "Kopieer je kolommen erin, onder de bijbehorende kopteksten.",
+      "step3": "Kies in Excel Bestand › Opslaan als › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Controleer het nieuwe bestand."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "Het bestand kan niet worden gebruikt",
+        "body": "Er is iets mis met dit bestand waardoor we het niet konden controleren. Download het sjabloon, kopieer je kolommen erin, sla het op als \"CSV UTF-8 (Comma delimited)\" en controleer dat bestand."
+      },
+      "empty_file": {
+        "title": "Het bestand is leeg",
+        "body": "Er staat niets in dit bestand om te importeren."
+      },
+      "too_large": {
+        "title": "Het bestand is te groot",
+        "body": "Bestanden mogen maximaal {{max_mb}} MB groot zijn. Splits het op in kleinere bestanden."
+      },
+      "too_many_rows": {
+        "title": "Te veel rijen",
+        "body": "Een bestand mag maximaal {{max}} leden bevatten. Splits het op in kleinere bestanden."
+      },
+      "no_data_rows": {
+        "title": "Geen leden in het bestand",
+        "body": "Het bestand heeft kopteksten, maar er staan geen leden onder."
+      },
+      "spreadsheet_workbook": {
+        "title": "Dit is een Excel-werkmap, geen CSV-bestand",
+        "body": "Sla het op als \"CSV UTF-8 (Comma delimited)\" en controleer in plaats daarvan dat bestand."
+      },
+      "not_text": {
+        "title": "Dit is geen spreadsheetbestand",
+        "body": "Kies het CSV-bestand dat je vanuit je spreadsheet hebt opgeslagen."
+      },
+      "not_utf8": {
+        "title": "Het bestand is niet opgeslagen als UTF-8",
+        "body": "Letters met accenten zouden beschadigd raken. Sla het opnieuw op als \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "De kolommen zijn gescheiden op een manier die we niet kunnen lezen",
+        "body": "Gebruik komma's of puntkomma's tussen de kolommen, zoals Excel doet bij het opslaan als CSV."
+      },
+      "missing_columns": {
+        "title": "Er ontbreken kolommen",
+        "body": "Voeg deze kolommen toe: {{columns}}. Ze mogen leeg blijven als ze optioneel zijn."
+      },
+      "unknown_columns": {
+        "title": "Het bestand heeft kolommen die niet in het sjabloon staan",
+        "body": "Verwijder deze kolommen: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "Een kolom komt twee keer voor",
+        "body": "Houd er maar één over van: {{columns}}."
+      },
+      "old_template": {
+        "title": "Dit is het oude sjabloon",
+        "body": "Het sjabloon is veranderd: het heeft nu de kolommen plaats en saldo en geen kolom rol meer."
+      },
+      "empty_column_heading": {
+        "title": "Een kolom heeft geen koptekst",
+        "body": "Kolom {{positions}} heeft geen koptekst. Verwijder in Excel die hele kolom (hij kan leeg lijken maar toch opgemaakt zijn) en sla het bestand opnieuw op."
+      },
+      "header_not_on_first_line": {
+        "title": "De kopteksten staan niet op de eerste regel",
+        "body": "Verwijder de lege regels boven de kopteksten zodat die op regel 1 staan en sla het bestand opnieuw op."
+      }
+    },
+    "problems": {
+      "title": "Er is niets geïmporteerd",
+      "body": "Gevonden problemen: {{problems}}. Rijen met problemen: {{rows}}. Los ze op in je spreadsheet en controleer het bestand daarna opnieuw.",
+      "body_file": "Gevonden problemen: {{problems}}. Los ze op in je spreadsheet en controleer het bestand daarna opnieuw.",
+      "row": "Rij",
+      "column": "Kolom",
+      "problem": "Probleem",
+      "whole_file": "Heel bestand",
+      "more": "… en nog {{more}}. Download de lijst om ze allemaal te zien.",
+      "download_list": "Lijst met problemen downloaden",
+      "download_corrected": "Een gecorrigeerd bestand downloaden zonder de mensen die al lid zijn",
+      "corrected_note": "Het gecorrigeerde bestand bevat nog steeds de andere problemen die hier staan."
+    },
+    "problem": {
+      "required": "{{column}} ontbreekt.",
+      "too_long": "{{column}} is langer dan {{max}} tekens.",
+      "control_characters": "{{column}} bevat verborgen stuurtekens. Typ het opnieuw in.",
+      "starts_with_formula_character": "{{column}} mag niet beginnen met =, +, - of @.",
+      "invalid_encoding": "{{column}} bevat tekens die niet konden worden gelezen. Typ het opnieuw in en sla het bestand dan op als \"CSV UTF-8\".",
+      "invalid_email": "Dit is geen geldig e-mailadres. Als het domein van het adres letters met accenten bevat, gebruik dan de gewone (ASCII-)vorm.",
+      "example_address": "Dit is de voorbeeldrij uit een sjabloon. Verwijder hem.",
+      "disposable_email": "Wegwerp-e-mailadressen worden niet geaccepteerd.",
+      "invalid_phone": "Dit is geen geldig telefoonnummer. Gebruik het internationale formaat, bijv. +1 555 123 4567.",
+      "invalid_number": "Dit is geen getal. Gebruik alleen cijfers, zoals 12 of 12.5, zonder eenheden of duizendtalscheidingstekens.",
+      "balance_too_large": "Saldo's mogen maximaal {{max}} uur bedragen.",
+      "wrong_cell_count": "Deze rij heeft {{found}} cellen; de kopteksten hebben er {{expected}}.",
+      "duplicate_in_file": "Dit e-mailadres staat ook op rij {{first_row}}.",
+      "already_member": "Deze persoon is al lid van deze gemeenschap.",
+      "already_member_unmatched": "Het e-mailadres van een bestaand lid verschilt alleen door accenten of spaties van een adres in dit bestand. Vergelijk de e-mailadressen in dit bestand met je bestaande leden.",
+      "unknown": "Deze waarde wordt niet geaccepteerd."
+    },
+    "warning_row": "Rij {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "een saldo van {{original}} uur begint op 0.",
+      "unknown": "deze rij wordt geïmporteerd met een gewijzigde waarde."
+    },
+    "ready": {
+      "title": "Alle rijen hebben de controle doorstaan",
+      "members": "Te importeren leden: {{n}}",
+      "hours": "Totaal aantal uren: {{hours}}",
+      "with_town": "Met plaats: {{n}}",
+      "without_town": "Zonder plaats: {{n}} (er wordt bij hun eerste aanmelding naar gevraagd)",
+      "negatives": "Negatieve saldo's die op 0 beginnen: {{n}}",
+      "blank_rows": "Genegeerde lege regels: {{n}}",
+      "identity_attest": "Ik heb de identiteit van elke persoon zelf gecontroleerd",
+      "identity_help": "Je gemeenschap vraagt om een identiteitscontrole. Als je dit niet aanvinkt, wachten deze leden op die controle voordat ze kunnen inloggen.",
+      "no_emails_yet": "Deze import stuurt nog geen e-mails. Leden kunnen \"Wachtwoord vergeten\" gebruiken om een wachtwoord in te stellen totdat uitnodigingen zijn toegevoegd.",
+      "import_one": "{{count}} lid importeren",
+      "import_other": "{{count}} leden importeren"
+    },
+    "running": {
+      "title": "Leden worden geïmporteerd",
+      "batch": "Batch {{n}} van ongeveer {{m}}",
+      "count": "Geïmporteerde leden: {{done}} van {{total}}",
+      "hours": "Tot nu toe geïmporteerde uren: {{hours}}",
+      "remaining": "Nog ongeveer {{time}}",
+      "calculating": "Resterende tijd wordt berekend…",
+      "keep_open": "Houd dit venster open totdat de import klaar is.",
+      "stop": "Stoppen na deze batch",
+      "stopping": "Stoppen na deze batch…",
+      "progress_label": "Voortgang van de import"
+    },
+    "done": {
+      "title_one": "{{count}} lid geïmporteerd, met {{balance}} uur",
+      "title_other": "{{count}} leden geïmporteerd, met {{balance}} uur",
+      "held": "Deze leden wachten op de identiteitscontrole van je gemeenschap voordat ze kunnen inloggen.",
+      "download_zeroed": "Lijst downloaden van leden wier saldo op 0 begon",
+      "reference": "Importreferentie: {{ref}}",
+      "admission_incomplete_one": "{{count}} lid is aangemaakt, maar de identiteitsstap is niet voltooid (rijen {{rows}}). Open het lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
+      "admission_incomplete_other": "{{count}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support."
+    },
+    "stopped": {
+      "title": "De import is gestopt. Geïmporteerde leden: {{created}} van {{total}}.",
+      "by_admin": "Je hebt de import gestopt.",
+      "download_remaining": "De rijen downloaden die niet zijn geïmporteerd",
+      "next_step": "Los de oorzaak op als die er is en controleer dan het gedownloade bestand om de rest te importeren."
+    },
+    "stop": {
+      "email_now_taken": "Rij {{row}}: iemand met dit e-mailadres is lid geworden terwijl de import liep.",
+      "row_changed": "Rij {{row}} doorstaat de controle niet meer.",
+      "write_failed": "Rij {{row}} kon niet worden opgeslagen. Van die rij is niets opgeslagen.",
+      "unknown": "Rij {{row}} kon niet worden geïmporteerd."
+    },
+    "failed": {
+      "title": "De verbinding met de server is verbroken",
+      "body": "Tot nu toe geïmporteerde leden zijn opgeslagen. Download de rijen die niet zijn geïmporteerd en controleer dat bestand om verder te gaan.",
+      "cannot_continue": "Deze import kan niet verder",
+      "not_found": "Deze import is verlopen of vervangen door een nieuwere controle. Tot nu toe geïmporteerde leden zijn opgeslagen. Download de rijen die niet zijn geïmporteerd en controleer dat bestand om verder te gaan.",
+      "out_of_order": "Deze import is in een ander venster voortgezet. Tot nu toe geïmporteerde leden zijn opgeslagen. Download de rijen die niet zijn geïmporteerd en controleer dat bestand om verder te gaan.",
+      "imported_so_far": "Tot nu toe geïmporteerde leden: {{created}} van {{total}}."
+    }
+  }
 }

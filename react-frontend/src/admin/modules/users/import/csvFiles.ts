@@ -61,6 +61,25 @@ export function remainingRowsFile(check: CheckResult, fromSourceRow: number): st
   return buildCsv(check.header ?? [], (check.source_rows ?? []).filter((r) => r.row >= fromSourceRow).map((r) => r.raw));
 }
 
+/**
+ * The rows not yet imported, by position. For a checked file every source row
+ * became a held row in order, so the server's `next_index` names exactly the
+ * first row that was not imported — no spreadsheet row number is involved.
+ */
+export function rowsFromIndexFile(check: CheckResult, index: number): string {
+  return buildCsv(check.header ?? [], (check.source_rows ?? []).slice(Math.max(0, index)).map((r) => r.raw));
+}
+
+/** The named spreadsheet rows as they were in the file, each with its row number in front. */
+export function rowsWithNumbersFile(check: CheckResult, rowNumbers: number[], rowLabel: string): string {
+  const byRow = new Map((check.source_rows ?? []).map((r) => [r.row, r.raw]));
+  const rows = rowNumbers.flatMap((n) => {
+    const raw = byRow.get(n);
+    return raw ? [[String(n), ...raw]] : [];
+  });
+  return buildCsv([rowLabel, ...(check.header ?? [])], rows);
+}
+
 /** One line per problem. The caller supplies the translated headings and wording. */
 export function problemsFile(
   check: CheckResult,

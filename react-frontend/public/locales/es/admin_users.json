@@ -129,21 +129,6 @@
     "impersonate_success": "Suplantar con éxito",
     "import_csv": "Importar CSV",
     "export_all_members": "Exportar todos los miembros",
-    "import_csv_description": "Importe miembros desde un archivo CSV. Descargue la plantilla para ver el formato requerido.",
-    "import_csv_file": "Archivo CSV",
-    "import_default_role": "Rol predeterminado",
-    "import_download_template": "Descargar plantilla",
-    "import_download_template_failed": "No se pudo descargar la plantilla. Inténtalo de nuevo.",
-    "import_errors": "Errores de importación",
-    "import_failed": "Importación fallida",
-    "import_imported": "Importar Importado",
-    "import_role_broker": "intermediario",
-    "import_role_coordinator": "Coordinador",
-    "import_role_member": "Miembro",
-    "import_skipped": "Importación omitida",
-    "import_success": "Importar exitosamente",
-    "import_title": "Importar",
-    "import_total_rows": "Total de filas",
     "label_amount": "Cantidad",
     "label_bio": "Biografía",
     "label_email": "Correo electrónico",
@@ -514,5 +499,214 @@
     "engagement": "Compromiso",
     "system": "Sistema"
   },
-  "loading": "Cargando"
+  "loading": "Cargando",
+  "member_import": {
+    "title": "Importar miembros",
+    "intro": "Incorpora miembros desde una hoja de cálculo, incluidos sus saldos de crédito de tiempo. Primero se comprueba todo el archivo. Si algo está mal, no se importa nada.",
+    "download_template": "Descargar la plantilla",
+    "template_failed": "No se pudo descargar la plantilla. Inténtalo de nuevo.",
+    "columns_title": "Tu archivo necesita estas columnas",
+    "choose_file": "Elegir un archivo CSV",
+    "file_hint": "Solo se pueden comprobar archivos CSV. En Excel, usa Archivo › Guardar como › \"CSV UTF-8 (Comma delimited)\".",
+    "check_file": "Comprobar archivo",
+    "checking": "Comprobando cada fila…",
+    "check_failed": "No se pudo comprobar el archivo. Inténtalo de nuevo.",
+    "check_rate_limited": "Has comprobado muchos archivos en el último minuto. Espera un minuto y vuelve a intentarlo.",
+    "choose_another": "Elegir otro archivo",
+    "download_correct_template": "Descargar la plantilla correcta",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "columns": {
+      "first_name": {
+        "label": "Nombre",
+        "rule": "Obligatorio. Hasta 100 caracteres."
+      },
+      "last_name": {
+        "label": "Apellidos",
+        "rule": "Obligatorio. Hasta 100 caracteres."
+      },
+      "email": {
+        "label": "Correo electrónico",
+        "rule": "Obligatorio. Un miembro por dirección; que aún no sea miembro aquí."
+      },
+      "phone": {
+        "label": "Teléfono",
+        "rule": "Opcional. Formato internacional, p. ej. +1 555 123 4567."
+      },
+      "location": {
+        "label": "Localidad",
+        "rule": "Opcional. La localidad o zona del miembro. A los miembros sin localidad se la piden al iniciar sesión por primera vez."
+      },
+      "balance": {
+        "label": "Saldo",
+        "rule": "Opcional. Horas del banco de tiempo anterior, p. ej. 12 o 12.5. Los saldos negativos empiezan en 0."
+      },
+      "null": {
+        "label": "Fila completa"
+      }
+    },
+    "fix": {
+      "title": "Cómo solucionarlo",
+      "step1": "Descarga la plantilla.",
+      "step2": "Copia tus columnas en ella, bajo los encabezados correspondientes.",
+      "step3": "En Excel, elige Archivo › Guardar como › \"CSV UTF-8 (Comma delimited)\".",
+      "step4": "Comprueba el archivo nuevo."
+    },
+    "file_error": {
+      "unknown": {
+        "title": "No se puede usar el archivo",
+        "body": "Algo en este archivo nos ha impedido comprobarlo. Descarga la plantilla, copie tus columnas en ella, guárdela como \"CSV UTF-8 (Comma delimited)\" y comprueba ese archivo."
+      },
+      "empty_file": {
+        "title": "El archivo está vacío",
+        "body": "Este archivo no contiene nada que importar."
+      },
+      "too_large": {
+        "title": "El archivo es demasiado grande",
+        "body": "Los archivos pueden pesar hasta {{max_mb}} MB. Divídelo en archivos más pequeños."
+      },
+      "too_many_rows": {
+        "title": "Demasiadas filas",
+        "body": "Un archivo puede contener hasta {{max}} miembros. Divídelo en archivos más pequeños."
+      },
+      "no_data_rows": {
+        "title": "No hay miembros en el archivo",
+        "body": "El archivo tiene encabezados, pero ningún miembro debajo."
+      },
+      "spreadsheet_workbook": {
+        "title": "Este es un libro de Excel, no un archivo CSV",
+        "body": "Guárdalo como \"CSV UTF-8 (Comma delimited)\" y comprueba ese archivo en su lugar."
+      },
+      "not_text": {
+        "title": "Este no es un archivo de hoja de cálculo",
+        "body": "Elige el archivo CSV que guardaste desde tu hoja de cálculo."
+      },
+      "not_utf8": {
+        "title": "El archivo no se guardó como UTF-8",
+        "body": "Las letras con acento se estropearían. Vuelve a guardarlo como \"CSV UTF-8 (Comma delimited)\"."
+      },
+      "unsupported_delimiter": {
+        "title": "Las columnas están separadas de una forma que no podemos leer",
+        "body": "Usa comas o punto y coma entre las columnas, como hace Excel al guardar como CSV."
+      },
+      "missing_columns": {
+        "title": "Faltan columnas",
+        "body": "Añade estas columnas: {{columns}}. Pueden quedar vacías cuando son opcionales."
+      },
+      "unknown_columns": {
+        "title": "El archivo tiene columnas que no están en la plantilla",
+        "body": "Elimina estas columnas: {{columns}}."
+      },
+      "duplicate_columns": {
+        "title": "Una columna aparece dos veces",
+        "body": "Deja solo una de: {{columns}}."
+      },
+      "old_template": {
+        "title": "Esta es la plantilla antigua",
+        "body": "La plantilla ha cambiado: ahora tiene las columnas localidad y saldo, y ya no tiene la columna rol."
+      },
+      "empty_column_heading": {
+        "title": "Una columna no tiene encabezado",
+        "body": "La columna {{positions}} no tiene encabezado. En Excel, elimina esa columna entera (puede parecer vacía y aun así tener formato) y vuelve a guardar."
+      },
+      "header_not_on_first_line": {
+        "title": "Los encabezados no están en la primera línea",
+        "body": "Elimina las líneas vacías que hay encima de los encabezados para que queden en la línea 1 y vuelve a guardar."
+      }
+    },
+    "problems": {
+      "title": "No se ha importado nada",
+      "body": "Problemas encontrados: {{problems}}. Filas con problemas: {{rows}}. Corrígelos en tu hoja de cálculo y vuelve a comprobar el archivo.",
+      "body_file": "Problemas encontrados: {{problems}}. Corrígelos en tu hoja de cálculo y vuelve a comprobar el archivo.",
+      "row": "Fila",
+      "column": "Columna",
+      "problem": "Problema",
+      "whole_file": "Archivo completo",
+      "more": "… y {{more}} más. Descarga la lista para verlos todos.",
+      "download_list": "Descargar la lista de problemas",
+      "download_corrected": "Descargar un archivo corregido sin las personas que ya son miembros",
+      "corrected_note": "El archivo corregido sigue conteniendo los demás problemas indicados aquí."
+    },
+    "problem": {
+      "required": "Falta {{column}}.",
+      "too_long": "{{column}} supera los {{max}} caracteres.",
+      "control_characters": "{{column}} contiene caracteres de control ocultos. Vuelve a escribirlo.",
+      "starts_with_formula_character": "{{column}} no puede empezar por =, +, - ni @.",
+      "invalid_encoding": "{{column}} contiene caracteres que no se pudieron leer. Vuelve a escribirlo y guarda el archivo como \"CSV UTF-8\".",
+      "invalid_email": "No es una dirección de correo válida. Si el dominio de la dirección tiene letras con acento, usa su forma sencilla (ASCII).",
+      "example_address": "Esta es la fila de ejemplo de una plantilla. Elimínela.",
+      "disposable_email": "No se aceptan direcciones de correo desechables.",
+      "invalid_phone": "No es un número de teléfono válido. Usa el formato internacional, p. ej. +1 555 123 4567.",
+      "invalid_number": "No es un número. Usa solo dígitos, como 12 o 12.5, sin unidades ni separadores de miles.",
+      "balance_too_large": "Los saldos pueden llegar hasta {{max}} horas.",
+      "wrong_cell_count": "Esta fila tiene {{found}} celdas; los encabezados tienen {{expected}}.",
+      "duplicate_in_file": "Este correo también aparece en la fila {{first_row}}.",
+      "already_member": "Esta persona ya es miembro de esta comunidad.",
+      "already_member_unmatched": "El correo de un miembro existente se diferencia de un correo de este archivo solo por acentos o espacios. Compara los correos de este archivo con los de tus miembros existentes.",
+      "unknown": "Este valor no se acepta."
+    },
+    "warning_row": "Fila {{row}}: {{text}}",
+    "warning": {
+      "negative_balance_zeroed": "un saldo de {{original}} horas empezará en 0.",
+      "unknown": "esta fila se importará con un valor modificado."
+    },
+    "ready": {
+      "title": "Todas las filas han superado la comprobación",
+      "members": "Miembros que se importarán: {{n}}",
+      "hours": "Horas en total: {{hours}}",
+      "with_town": "Con localidad: {{n}}",
+      "without_town": "Sin localidad: {{n}} (se la pedirán al iniciar sesión por primera vez)",
+      "negatives": "Saldos negativos que empezarán en 0: {{n}}",
+      "blank_rows": "Líneas vacías ignoradas: {{n}}",
+      "identity_attest": "He comprobado yo mismo la identidad de cada persona",
+      "identity_help": "Tu comunidad exige una comprobación de identidad. Si deja esta casilla sin marcar, estos miembros esperarán esa comprobación antes de poder iniciar sesión.",
+      "no_emails_yet": "Esta importación todavía no envía correos a nadie. Los miembros pueden usar «He olvidado mi contraseña» para crear una contraseña hasta que se añadan las invitaciones.",
+      "import_one": "Importar {{count}} miembro",
+      "import_many": "Importar {{count}} de miembros",
+      "import_other": "Importar {{count}} miembros"
+    },
+    "running": {
+      "title": "Importando miembros",
+      "batch": "Lote {{n}} de aproximadamente {{m}}",
+      "count": "Miembros importados: {{done}} de {{total}}",
+      "hours": "Horas importadas hasta ahora: {{hours}}",
+      "remaining": "Faltan unos {{time}}",
+      "calculating": "Calculando el tiempo restante…",
+      "keep_open": "Mantén esta ventana abierta hasta que termine la importación.",
+      "stop": "Parar después de este lote",
+      "stopping": "Parando después de este lote…",
+      "progress_label": "Progreso de la importación"
+    },
+    "done": {
+      "title_one": "{{count}} miembro importado, con {{balance}} horas",
+      "title_many": "{{count}} de miembros importados, con {{balance}} horas",
+      "title_other": "{{count}} miembros importados, con {{balance}} horas",
+      "held": "Estos miembros esperan la comprobación de identidad de tu comunidad antes de poder iniciar sesión.",
+      "download_zeroed": "Descargar la lista de miembros cuyo saldo empezó en 0",
+      "reference": "Referencia de la importación: {{ref}}",
+      "admission_incomplete_one": "Se creó {{count}} miembro, pero su paso de identidad no se completó (filas {{rows}}). Ábrelo desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte.",
+      "admission_incomplete_many": "Se crearon {{count}} de miembros, pero su paso de identidad no se completó (filas {{rows}}). Abre cada uno desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte.",
+      "admission_incomplete_other": "Se crearon {{count}} miembros, pero su paso de identidad no se completó (filas {{rows}}). Abre cada uno desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte."
+    },
+    "stopped": {
+      "title": "La importación se detuvo. Miembros importados: {{created}} de {{total}}.",
+      "by_admin": "Detuviste la importación.",
+      "download_remaining": "Descargar las filas que no se importaron",
+      "next_step": "Corrige la causa si la hay y luego comprueba el archivo descargado para importar el resto."
+    },
+    "stop": {
+      "email_now_taken": "Fila {{row}}: alguien con este correo se unió mientras se ejecutaba la importación.",
+      "row_changed": "La fila {{row}} ya no supera la comprobación.",
+      "write_failed": "No se pudo guardar la fila {{row}}. No se guardó nada de esa fila.",
+      "unknown": "No se pudo importar la fila {{row}}."
+    },
+    "failed": {
+      "title": "Se perdió la conexión con el servidor",
+      "body": "Los miembros importados hasta ahora están guardados. Descarga las filas que no se importaron y comprueba ese archivo para continuar.",
+      "cannot_continue": "Esta importación no puede continuar",
+      "not_found": "Esta importación ha caducado o fue sustituida por una comprobación más reciente. Los miembros importados hasta ahora están guardados. Descarga las filas que no se importaron y comprueba ese archivo para continuar.",
+      "out_of_order": "Esta importación continuó en otra ventana. Los miembros importados hasta ahora están guardados. Descarga las filas que no se importaron y comprueba ese archivo para continuar.",
+      "imported_so_far": "Miembros importados hasta ahora: {{created}} de {{total}}."
+    }
+  }
 }
