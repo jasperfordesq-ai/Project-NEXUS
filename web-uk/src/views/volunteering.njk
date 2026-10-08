@@ -85,10 +85,11 @@
     </dl>
     <h2 class="govuk-heading-m govuk-!-margin-top-6 govuk-!-margin-bottom-2">{{ t("vol_org.tools_title") }}</h2>
     {# Built from lib/volunteering-sections.js, which follows the community's own
-       section switches as the website does. Group sign-ups is alpha and hidden on
-       every community (owner decision 2026-10-06); its page and routes stay for
-       the frozen route inventory. The old document-upload page is gone: its address
-       forwards to the qualifications register, listed here (gap B15). #}
+       section switches as the website does. Group sign-ups is alpha and OFF on every
+       community (owner decision 2026-10-06): it is listed here only when the
+       community's `volunteering.tab_group_signups` switch is on (gap B5). The old
+       document-upload page is gone: its address forwards to the qualifications
+       register, listed here (gap B15). #}
     <ul class="govuk-list nexus-alpha-filter-nav govuk-!-margin-bottom-4" data-testid="volunteer-tools">
       {% for tool in volunteerTools %}
         <li><a class="govuk-link" href="{{ urlFor(tool.href) }}">{{ t(tool.labelKey) }}</a></li>

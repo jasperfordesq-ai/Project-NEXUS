@@ -29,6 +29,14 @@ const FEATURE_GATES = {
   expenses: ['volunteering.expenses_enabled']
 };
 
+/**
+ * Sections that are OFF unless the community has switched them on. Group sign-ups is
+ * alpha and hidden on every community (owner decision 2026-10-06; the server default
+ * for `volunteering.tab_group_signups` is false), so an absent setting counts as off
+ * here, the opposite of every other section (gap B5, 8 Oct 2026).
+ */
+const OPT_IN = new Set(['group-signups']);
+
 const TOOLS = [
   { section: 'hours', href: '/volunteering/hours', labelKey: 'volunteering.log_hours_title' },
   { section: 'alerts', href: '/volunteering/emergency-alerts', labelKey: 'govuk_alpha_volunteering.emergency.title' },
@@ -39,6 +47,7 @@ const TOOLS = [
   { section: 'certificates', href: '/volunteering/certificates', labelKey: 'vol_depth.certificates_link' },
   { section: 'waitlist', href: '/volunteering/waitlist', labelKey: 'vol_depth.waitlist_link' },
   { section: 'swaps', href: '/volunteering/swaps', labelKey: 'vol_depth.swaps_link' },
+  { section: 'group-signups', href: '/volunteering/group-signups', labelKey: 'govuk_alpha_volunteering.group_signups.nav_link' },
   { section: 'expenses', href: '/volunteering/expenses', labelKey: 'govuk_alpha_volunteering.expenses.nav_link' },
   { section: 'donations', href: '/volunteering/donations', labelKey: 'govuk_alpha_volunteering.donations.nav_link' }
 ];
@@ -56,6 +65,7 @@ const TOOLS = [
 const SECTION_PAGES = {
   hours: { section: 'hours', href: '/volunteering/hours' },
   swaps: { section: 'swaps', href: '/volunteering/swaps' },
+  'group-signups': { section: 'group-signups', href: '/volunteering/group-signups' },
   expenses: { section: 'expenses', href: '/volunteering/expenses' },
   waitlist: { section: 'waitlist', href: '/volunteering/waitlist' },
   certificates: { section: 'certificates', href: '/volunteering/certificates' },
@@ -79,9 +89,13 @@ function isOff(value) {
   return value === false || value === 0 || value === '0' || value === 'false';
 }
 
+function isOn(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
 function sectionEnabled(config, section) {
   const key = `volunteering.tab_${String(section).replace(/-/g, '_')}`;
-  if (isOff(config[key])) return false;
+  if (OPT_IN.has(section) ? !isOn(config[key]) : isOff(config[key])) return false;
   return (FEATURE_GATES[section] || []).every((gate) => !isOff(config[gate]));
 }
 

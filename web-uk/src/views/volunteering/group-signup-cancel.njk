@@ -1,0 +1,57 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# "Are you sure?" before a group reservation is cancelled (gap B5). #}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.group_signups." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t(K ~ "back_to_group_signups") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t(K ~ "cancel_title") }}</span>
+      <h1 class="govuk-heading-l">{{ t(K ~ "cancel_confirm_title", { group: reservation.groupName }) }}</h1>
+
+      <dl class="govuk-summary-list">
+        {% if reservation.opportunityTitle %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "opportunity_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ reservation.opportunityTitle }}</dd>
+          </div>
+        {% endif %}
+        {% if reservation.shiftLabel %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "shift_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ reservation.shiftLabel }}</dd>
+          </div>
+        {% endif %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(K ~ "members_title") }}</dt>
+          <dd class="govuk-summary-list__value">{{ reservation.membersCountLabel }}</dd>
+        </div>
+      </dl>
+
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>
+          {{ t("govuk_alpha_volunteering.group_signups.cancel_warning") }}
+        </strong>
+      </div>
+
+      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-button-group">
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "cancel_button") }}<span class="govuk-visually-hidden"> {{ t(K ~ "cancel_button_for", { group: reservation.groupName }) }}</span></button>
+          <a class="govuk-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t(K ~ "cancel_keep") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

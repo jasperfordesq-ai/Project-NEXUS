@@ -1,0 +1,97 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Add a member to a group reservation (routes/volunteering-actions.js, gap B5). The
+  leader searches by name, then chooses the person from the results: the same member
+  search the website's tab uses, never a member number. People already on the
+  reservation, and the leader themselves, are left out of the results.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.group_signups." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t(K ~ "back_to_group_signups") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status and status.type == "error" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li>{% if status.field == "user_id" and results.length %}<a href="#user_id-{{ results[0].id }}">{{ status.message }}</a>{% else %}{{ status.message }}{% endif %}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ reservation.groupName }}</span>
+      <h1 class="govuk-heading-xl">{{ t(K ~ "add_member_title") }}</h1>
+      <p class="govuk-body">{{ t(K ~ "add_member_hint") }}</p>
+      {% if reservation.shiftLabel or reservation.opportunityTitle %}
+        <dl class="govuk-summary-list govuk-summary-list--no-border">
+          {% if reservation.opportunityTitle %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "opportunity_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ reservation.opportunityTitle }}</dd>
+            </div>
+          {% endif %}
+          {% if reservation.shiftLabel %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(K ~ "shift_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ reservation.shiftLabel }}</dd>
+            </div>
+          {% endif %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "members_title") }}</dt>
+            <dd class="govuk-summary-list__value">{{ reservation.membersCountLabel }}</dd>
+          </div>
+        </dl>
+      {% endif %}
+
+      <form method="get" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/new') }}" novalidate>
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="member-search">{{ t(K ~ "add_member_label") }}</label>
+          <input class="govuk-input govuk-!-width-two-thirds" id="member-search" name="q" type="search" value="{{ query }}" autocomplete="off">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.search") }}</button>
+      </form>
+
+      {% if searched %}
+        {% if not results.length %}
+          <p class="govuk-body" data-testid="group-member-no-results">{{ t(K ~ "add_member_no_results") }}</p>
+        {% else %}
+          <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members') }}" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="q" value="{{ query }}">
+            <div class="govuk-form-group{% if status and status.field == "user_id" %} govuk-form-group--error{% endif %}">
+              <fieldset class="govuk-fieldset"{% if status and status.field == "user_id" %} aria-describedby="user_id-error"{% endif %}>
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t(K ~ "add_member_choose_legend") }}</legend>
+                {% if status and status.field == "user_id" %}
+                  <p id="user_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+                {% endif %}
+                <div class="govuk-radios" data-module="govuk-radios">
+                  {% for person in results %}
+                    <div class="govuk-radios__item">
+                      <input class="govuk-radios__input" id="user_id-{{ person.id }}" name="user_id" type="radio" value="{{ person.id }}">
+                      <label class="govuk-label govuk-radios__label" for="user_id-{{ person.id }}">{{ person.name }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+            <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "add_member_button") }}</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

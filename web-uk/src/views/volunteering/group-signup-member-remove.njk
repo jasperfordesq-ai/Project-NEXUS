@@ -1,0 +1,47 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# "Are you sure?" before a member is taken off a group reservation (gap B5). #}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.group_signups." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t(K ~ "back_to_group_signups") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ reservation.groupName }}</span>
+      <h1 class="govuk-heading-l">{{ t(K ~ "remove_member_title", { name: member.name }) }}</h1>
+
+      <dl class="govuk-summary-list">
+        {% if reservation.opportunityTitle %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "opportunity_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ reservation.opportunityTitle }}</dd>
+          </div>
+        {% endif %}
+        {% if reservation.shiftLabel %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(K ~ "shift_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ reservation.shiftLabel }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      <p class="govuk-body">{{ t(K ~ "remove_member_body") }}</p>
+
+      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-button-group">
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "remove_member_confirm") }}<span class="govuk-visually-hidden"> {{ t(K ~ "remove_member_for", { name: member.name }) }}</span></button>
+          <a class="govuk-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

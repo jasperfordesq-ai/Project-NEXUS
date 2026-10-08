@@ -67,4 +67,25 @@ describe('volunteering section switches', () => {
   it('never lists the old document-upload page', () => {
     expect(volunteeringSections({}).tools.some((tool) => tool.href.includes('credentials'))).toBe(false);
   });
+
+  // Gap B5 (8 Oct 2026): group sign-ups is the one section that is OFF unless the
+  // community has switched it on (owner decision 2026-10-06), so an absent setting
+  // counts as off here, the opposite of every other section.
+  it('lists group sign-ups only when the community has switched it on', () => {
+    expect(sectionEnabled({}, 'group-signups')).toBe(false);
+    expect(sectionEnabled({ 'volunteering.tab_group_signups': false }, 'group-signups')).toBe(false);
+    expect(sectionEnabled({ 'volunteering.tab_group_signups': true }, 'group-signups')).toBe(true);
+    expect(sectionEnabled({ 'volunteering.tab_group_signups': '1' }, 'group-signups')).toBe(true);
+
+    expect(volunteeringSections({}).tools.some((tool) => tool.href === '/volunteering/group-signups')).toBe(false);
+    const on = volunteeringSections({ volunteering_config: { 'volunteering.tab_group_signups': true } });
+    expect(on.tools.map((tool) => tool.section)).toContain('group-signups');
+    expect(on.tools.find((tool) => tool.section === 'group-signups')).toEqual({
+      section: 'group-signups',
+      href: '/volunteering/group-signups',
+      labelKey: 'govuk_alpha_volunteering.group_signups.nav_link'
+    });
+    expect(on.pageFor('group-signups')).toBe('/volunteering/group-signups');
+    expect(volunteeringSections({}).pageFor('group-signups')).toBe('');
+  });
 });

@@ -38104,17 +38104,18 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Pending');
     expect(response.text).toContain('Morgan Maybe');
     expect(response.text).toContain('Declined');
-    expect(response.text).toContain('method="post" action="/volunteering/group-signups/30/members/55/remove"');
+    // Gap B5 (8 Oct 2026): the controls open their own pages (confirmation, name search,
+    // reservation form); no form on this page asks for a numeric member ID any more.
+    expect(response.text).toContain('href="/volunteering/group-signups/30/members/55/remove"');
     expect(response.text).toContain('Remove');
+    expect(response.text).toContain('href="/volunteering/group-signups/30/members/new"');
     expect(response.text).toContain('Add a member');
-    expect(response.text).toContain('id="user_id_30" name="user_id" type="number"');
-    expect(response.text).toContain('method="post" action="/volunteering/group-signups/30/members"');
-    expect(response.text).toContain('Add member');
-    expect(response.text).toContain('Cancel reservation');
-    expect(response.text).toContain('Cancelling releases all reserved slots');
-    expect(response.text).toContain('<span class="govuk-visually-hidden">Warning</span>');
-    expect(response.text).toContain('method="post" action="/volunteering/group-signups/30/cancel"');
+    expect(response.text).not.toContain('type="number"');
+    expect(response.text).not.toMatch(/member ID/i);
+    expect(response.text).toContain('href="/volunteering/group-signups/30/cancel"');
     expect(response.text).toContain('Cancel this reservation');
+    expect(response.text).toContain('href="/volunteering/group-signups/new"');
+    expect(response.text).toContain('Reserve places for your group');
     expect(response.text).toContain('Saturday Garden Team');
     expect(response.text).toContain('Cancelled');
     expect(response.text).toContain('1 members');
@@ -39266,7 +39267,8 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
       .send({ _csrf: csrfMatch[1], user_id: '55' });
-    expect(unavailableGroupAddResponse.headers.location).toBe('/volunteering/group-signups?status=member-safeguarding-unavailable');
+    // A refusal goes back to the name search so the leader can try again (gap B5).
+    expect(unavailableGroupAddResponse.headers.location).toBe('/volunteering/group-signups/30/members/new?status=member-safeguarding-unavailable');
 
     const groupRemoveResponse = await agent
       .post('/volunteering/group-signups/30/members/55/remove')

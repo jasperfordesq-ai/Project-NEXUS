@@ -1,0 +1,121 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Reserve places for your group, step 2 (routes/volunteering-actions.js, gap B5):
+  one of the opportunity's upcoming shifts, the group the places are for, how many,
+  and an optional note. Validation and API refusals come back as a GOV.UK error
+  summary with the choices kept.
+#}
+{% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set K = "govuk_alpha_volunteering.group_signups." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/group-signups/new') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}
+                  <li><a href="{{ error.href }}">{{ error.message }}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% elif failure %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ failure }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ opportunity.title }}{% if opportunity.organizationName %} — {{ opportunity.organizationName }}{% endif %}</span>
+      <h1 class="govuk-heading-xl">{{ t(K ~ "reserve_title") }}</h1>
+
+      {% if not shifts.length %}
+        <div class="govuk-inset-text" data-testid="group-reserve-no-shifts">{{ t(K ~ "reserve_no_shifts") }}</div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/volunteering/group-signups/new') }}">{{ t("actions.back") }}</a></p>
+      {% elif not groups.length %}
+        <div class="govuk-inset-text" data-testid="group-reserve-no-groups">{{ t(K ~ "reserve_no_groups") }}</div>
+      {% else %}
+        <form method="post" action="{{ urlFor('/volunteering/group-signups/new/' ~ opportunity.id) }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          <div class="govuk-form-group{% if fieldErrors.shift_id %} govuk-form-group--error{% endif %}">
+            <fieldset class="govuk-fieldset"{% if fieldErrors.shift_id %} aria-describedby="shift_id-error"{% endif %}>
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t(K ~ "reserve_shift_legend") }}</h2>
+              </legend>
+              {% if fieldErrors.shift_id %}
+                <p id="shift_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.shift_id }}</p>
+              {% endif %}
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for shift in shifts %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="shift_id-{{ shift.id }}" name="shift_id" type="radio" value="{{ shift.id }}"{% if (shift.id | string) == values.shiftId %} checked{% endif %}{% if shift.placesLabel %} aria-describedby="shift_id-{{ shift.id }}-hint"{% endif %}>
+                    <label class="govuk-label govuk-radios__label" for="shift_id-{{ shift.id }}">{{ shift.label }}</label>
+                    {% if shift.placesLabel %}<div id="shift_id-{{ shift.id }}-hint" class="govuk-hint govuk-radios__hint">{{ shift.placesLabel }}</div>{% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="govuk-form-group{% if fieldErrors.group_id %} govuk-form-group--error{% endif %}">
+            <fieldset class="govuk-fieldset"{% if fieldErrors.group_id %} aria-describedby="group_id-error"{% endif %}>
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t(K ~ "reserve_group_legend") }}</h2>
+              </legend>
+              {% if fieldErrors.group_id %}
+                <p id="group_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.group_id }}</p>
+              {% endif %}
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for group in groups %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="group_id-{{ group.id }}" name="group_id" type="radio" value="{{ group.id }}"{% if (group.id | string) == values.groupId %} checked{% endif %}>
+                    <label class="govuk-label govuk-radios__label" for="group_id-{{ group.id }}">{{ group.name }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="govuk-form-group{% if fieldErrors.reserved_slots %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--m" for="reserved_slots">{{ t(K ~ "reserve_slots_label") }}</label>
+            <div id="reserved_slots-hint" class="govuk-hint">{{ t(K ~ "reserve_slots_hint") }}</div>
+            {% if fieldErrors.reserved_slots %}
+              <p id="reserved_slots-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.reserved_slots }}</p>
+            {% endif %}
+            <input class="govuk-input govuk-input--width-3{% if fieldErrors.reserved_slots %} govuk-input--error{% endif %}" id="reserved_slots" name="reserved_slots" type="text" inputmode="numeric" value="{{ values.slots }}" aria-describedby="reserved_slots-hint{% if fieldErrors.reserved_slots %} reserved_slots-error{% endif %}">
+          </div>
+
+          {% call characterCount(500, characterCountMessages, "notes") %}
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="notes">{{ t(K ~ "reserve_notes_label") }}</label>
+            <textarea class="govuk-textarea govuk-js-character-count" id="notes" name="notes" rows="3" aria-describedby="notes-info" maxlength="500">{{ values.notes }}</textarea>
+          </div>
+          {% endcall %}
+
+          <div class="govuk-button-group">
+            <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "reserve_submit") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t("actions.cancel") }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

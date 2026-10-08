@@ -1,0 +1,44 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Reserve places for your group, step 1 (routes/volunteering-actions.js, gap B5):
+  pick the opportunity. Each link opens that opportunity's shift form. Shown only
+  the opportunities list and, when the member leads or helps run no group, the
+  reason there is nothing to click.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.group_signups." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/group-signups') }}">{{ t(K ~ "back_to_group_signups") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t(K ~ "caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t(K ~ "reserve_title") }}</h1>
+
+      {% if not groups.length %}
+        <div class="govuk-inset-text" data-testid="group-reserve-no-groups">{{ t(K ~ "reserve_no_groups") }}</div>
+      {% elif not opportunities.length %}
+        <div class="govuk-inset-text" data-testid="group-reserve-no-opportunities">{{ t(K ~ "reserve_no_opportunities") }}</div>
+      {% else %}
+        <p class="govuk-body-l">{{ t(K ~ "reserve_intro") }}</p>
+        <h2 class="govuk-heading-m">{{ t(K ~ "reserve_opportunity_legend") }}</h2>
+        <ul class="govuk-list" data-testid="group-reserve-opportunities">
+          {% for opportunity in opportunities %}
+            <li>
+              <a class="govuk-link" href="{{ urlFor('/volunteering/group-signups/new/' ~ opportunity.id) }}">{{ opportunity.title }}</a>
+              {% if opportunity.organizationName %}<span class="govuk-body-s govuk-!-margin-left-1">{{ opportunity.organizationName }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

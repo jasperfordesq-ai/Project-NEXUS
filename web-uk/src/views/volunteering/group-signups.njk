@@ -2,6 +2,11 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+{#
+  Group sign-ups (routes/volunteering-actions.js). Since gap B5 (8 Oct 2026) every
+  control opens its own page: reserving places, adding a member by name, and the
+  two "are you sure?" pages. Nothing here asks for a member number.
+#}
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
@@ -48,6 +53,8 @@
       </div>
     </div>
   {% endif %}
+
+  <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/volunteering/group-signups/new') }}" role="button" draggable="false">{{ t("govuk_alpha_volunteering.group_signups.reserve_link") }}</a>
 
   {% if not reservations.length %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.nothing_yet_title") }}</h2>{{ t("govuk_alpha_volunteering.group_signups.empty") }}</div>
@@ -123,17 +130,12 @@
               <tbody class="govuk-table__body">
                 {% for member in reservation.members %}
                   <tr class="govuk-table__row">
-                    <td class="govuk-table__cell">{{ member.name or ("#" + member.id) }}</td>
+                    <td class="govuk-table__cell">{{ member.name }}</td>
                     <td class="govuk-table__cell">{{ govukTag({ text: member.status.label, classes: (member.status.className) }) }}</td>
                     {% if reservation.isLeader and not reservation.isCancelled %}
                       <td class="govuk-table__cell">
                         {% if member.id and member.status.value == "confirmed" %}
-                          <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}">
-                            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
-                              {{ t("govuk_alpha_volunteering.group_signups.remove_member_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.remove_member_for", { name: member.name or ("#" + member.id) }) }}</span>
-                            </button>
-                          </form>
+                          <a class="govuk-link" href="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}">{{ t("govuk_alpha_volunteering.group_signups.remove_member_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.remove_member_for", { name: member.name }) }}</span></a>
                         {% endif %}
                       </td>
                     {% endif %}
@@ -145,33 +147,12 @@
           {% endif %}
 
           {% if reservation.isLeader and not reservation.isCancelled %}
-            {% if reservation.canAddMembers %}
-              <h3 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-2">{{ t("govuk_alpha_volunteering.group_signups.add_member_title") }}</h3>
-              <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members') }}">
-                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                <div class="govuk-form-group">
-                  <label class="govuk-label" for="user_id_{{ reservation.id }}">{{ t("govuk_alpha_volunteering.group_signups.add_member_label") }}</label>
-                  <div id="user_id_{{ reservation.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.group_signups.add_member_hint") }}</div>
-                  <input class="govuk-input govuk-input--width-10" id="user_id_{{ reservation.id }}" name="user_id" type="number" min="1" inputmode="numeric" aria-describedby="user_id_{{ reservation.id }}-hint">
-                </div>
-                <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_volunteering.group_signups.add_member_button") }}</button>
-              </form>
-            {% endif %}
-
-            <h3 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-2">{{ t("govuk_alpha_volunteering.group_signups.cancel_title") }}</h3>
-            <div class="govuk-warning-text">
-              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-              <strong class="govuk-warning-text__text">
-                <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>
-                {{ t("govuk_alpha_volunteering.group_signups.cancel_warning") }}
-              </strong>
-            </div>
-            <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}">
-              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button class="govuk-button govuk-button--warning" data-module="govuk-button">
-                {{ t("govuk_alpha_volunteering.group_signups.cancel_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.cancel_button_for", { group: reservation.groupName }) }}</span>
-              </button>
-            </form>
+            <ul class="govuk-list govuk-!-margin-top-4">
+              {% if reservation.canAddMembers %}
+                <li><a class="govuk-link" href="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/new') }}">{{ t("govuk_alpha_volunteering.group_signups.add_member_title") }}<span class="govuk-visually-hidden"> — {{ reservation.groupName }}</span></a></li>
+              {% endif %}
+              <li><a class="govuk-link" href="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}">{{ t("govuk_alpha_volunteering.group_signups.cancel_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.cancel_button_for", { group: reservation.groupName }) }}</span></a></li>
+            </ul>
           {% endif %}
         </article>
       {% endfor %}

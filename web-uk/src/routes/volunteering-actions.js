@@ -9,6 +9,7 @@ const { randomUUID } = require('crypto');
 const {
   ApiError,
   callVolunteeringApi,
+  getGroups,
   getVolunteeringCategories,
   searchUsers,
   submitVolunteerExpenseWithReceipt
@@ -625,6 +626,12 @@ function apiErrorField(error) {
   return trimmed(firstError?.field ?? error?.data?.field);
 }
 
+/** What the API said in its own words, or '' when it gave no message. */
+function apiErrorMessage(error) {
+  const firstError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
+  return trimmed(firstError?.message ?? error?.data?.message, 300);
+}
+
 /**
  * Which "cannot log hours" is this?
  *
@@ -645,10 +652,13 @@ function hoursFailureStatus(error) {
 
 function groupSignupStatus(status, t = null) {
   const messages = {
+    reserved: { type: 'success', key: 'govuk_alpha_volunteering.group_signups.success_reserved' },
     'member-added': { type: 'success', key: 'govuk_alpha_volunteering.group_signups.success_member_added' },
     'member-removed': { type: 'success', key: 'govuk_alpha_volunteering.group_signups.success_member_removed' },
     'reservation-cancelled': { type: 'success', key: 'govuk_alpha_volunteering.group_signups.success_reservation_cancelled' },
-    'member-id-required': { type: 'error', key: 'govuk_alpha_volunteering.group_signups.error_member_id_required' },
+    // Nobody was chosen from the search results (gap B5: a member is chosen by name,
+    // never typed as a number).
+    'member-required': { type: 'error', key: 'govuk_alpha_volunteering.group_signups.error_member_required', field: 'user_id' },
     'member-add-failed': { type: 'error', key: 'govuk_alpha_volunteering.group_signups.error_member_add_failed' },
     'member-remove-failed': { type: 'error', key: 'govuk_alpha_volunteering.group_signups.error_member_remove_failed' },
     'reservation-cancel-failed': { type: 'error', key: 'govuk_alpha_volunteering.group_signups.error_reservation_cancel_failed' },
@@ -1280,6 +1290,122 @@ function normalizeGroupReservation(row, t = null) {
     membersCountLabel,
     canAddMembers: isLeader && !isCancelled && (!maxMembers || confirmedCount < maxMembers)
   };
+}
+
+// ── Group sign-ups (gap B5, 8 Oct 2026) ──────────────────────────────────────
+//
+// A leader reserves places on a shift for a group they own or help run, then names
+// the members one at a time by searching for them. Every control is its own page,
+// so nothing needs JavaScript and nothing asks for a member number. The same rules
+// as the website's GroupSignUpTab: groups come from /groups?member=me and only the
+// ones the member owns or administers count; shifts come from the opportunity and
+// only upcoming ones are offered; the API decides everything else.
+
+function groupSignupNotFound(res) {
+  return res.status(404).render('errors/404', { title: res.locals.t('error_pages.404_title') });
+}
+
+/** One of the member's reservations, normalised, or null when it is not theirs. */
+async function groupReservationFor(token, id, t) {
+  const rows = groupReservationRowsFrom(await callApi(token, 'GET', '/group-reservations'));
+  return rows
+    .map((row) => normalizeGroupReservation(row, t))
+    .find((reservation) => reservation.id === id) || null;
+}
+
+/** The groups the member may reserve for: ones they own, or help run as an admin. */
+async function leaderGroups(req, token) {
+  const found = await getGroups(token, { member: 'me', per_page: 100 });
+  const profile = await getRequestProfile(req, token).catch(() => null);
+  const selfId = positiveInteger(dataFrom(profile)?.id);
+  return collectionFrom(found)
+    .map((row) => {
+      const group = row && typeof row === 'object' ? row : {};
+      const membership = group.viewer_membership && typeof group.viewer_membership === 'object'
+        ? group.viewer_membership
+        : {};
+      const role = trimmed(membership.role);
+      const owns = selfId !== null && positiveInteger(group.owner_id) === selfId;
+      const helpsRun = trimmed(membership.status) === 'active'
+        && (membership.is_admin === true || role === 'owner' || role === 'admin');
+      return { id: positiveInteger(group.id), name: trimmed(group.name), allowed: owns || helpsRun };
+    })
+    .filter((group) => group.id && group.name && group.allowed)
+    .map(({ id, name }) => ({ id, name }));
+}
+
+function normalizeReserveOpportunity(row) {
+  const opportunity = row && typeof row === 'object' ? row : {};
+  const organization = opportunity.organization && typeof opportunity.organization === 'object' ? opportunity.organization : {};
+  return {
+    id: positiveInteger(opportunity.id),
+    title: trimmed(opportunity.title),
+    organizationName: trimmed(organization.name ?? opportunity.organization_name)
+  };
+}
+
+/** The opportunity's upcoming shifts that still have a place, soonest first. */
+function reservableShifts(rows, t, now = Date.now()) {
+  return rows
+    .map((row) => {
+      const shift = row && typeof row === 'object' ? row : {};
+      const spots = shift.spots_available ?? shift.spotsAvailable;
+      const placesLeft = spots === null || spots === undefined || spots === '' ? null : Number(spots);
+      const known = placesLeft !== null && Number.isFinite(placesLeft);
+      return {
+        id: positiveInteger(shift.id),
+        start: shiftEpoch(shift.start_time ?? shift.startTime),
+        label: shiftWhenLabel(shift.start_time ?? shift.startTime, shift.end_time ?? shift.endTime, t),
+        placesLeft: known ? placesLeft : null,
+        placesLabel: known
+          ? t('govuk_alpha_volunteering.group_signups.reserve_shift_places_left', { count: placesLeft })
+          : ''
+      };
+    })
+    .filter((shift) => shift.id && shift.start !== null && shift.start > now
+      && (shift.placesLeft === null || shift.placesLeft > 0))
+    .sort((a, b) => a.start - b.start);
+}
+
+/** The opportunity, its reservable shifts and the member's groups for the form. */
+async function loadReserveChoices(req, token, opportunityId, t) {
+  const detail = await callApi(token, 'GET', `/opportunities/${encodeURIComponent(opportunityId)}`);
+  const opportunity = normalizeReserveOpportunity(dataFrom(detail));
+  if (!opportunity.id) return null;
+  const shiftRows = collectionFrom(await callApi(token, 'GET', `/opportunities/${encodeURIComponent(opportunityId)}/shifts`));
+  const groups = await leaderGroups(req, token);
+  return { opportunity, shifts: reservableShifts(shiftRows, t), groups };
+}
+
+function renderGroupReserve(req, res, choices, view = {}) {
+  const errors = view.errors || [];
+  const values = view.values || {};
+  return res.status(view.statusCode || 200).render('volunteering/group-signup-reserve', {
+    title: res.locals.t('govuk_alpha_volunteering.group_signups.reserve_title'),
+    activeNav: 'volunteering',
+    opportunity: choices.opportunity,
+    shifts: choices.shifts,
+    groups: choices.groups,
+    values: {
+      shiftId: values.shiftId || '',
+      // One group needs no choosing.
+      groupId: values.groupId || (choices.groups.length === 1 ? String(choices.groups[0].id) : ''),
+      slots: values.slots === undefined ? '1' : values.slots,
+      notes: values.notes || ''
+    },
+    errors,
+    fieldErrors: Object.fromEntries(errors.map((error) => [error.field, error.message])),
+    failure: view.failure || '',
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+/** The add-a-member page for a reservation, carrying a status and the search back. */
+function groupMemberSearchPage(id, status, query = '') {
+  const params = new URLSearchParams();
+  params.set('status', status);
+  if (query) params.set('q', query);
+  return `/volunteering/group-signups/${id}/members/new?${params.toString()}`;
 }
 
 function safeguardingRowsFrom(result, keys = []) {
@@ -2222,6 +2348,169 @@ router.get('/group-signups', asyncRoute(async (req, res) => {
     reservations,
     loadError,
     status: groupSignupStatus(trimmed(req.query.status), res.locals.t),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+// Reserve places, step 1: which opportunity (gap B5). Only a member who owns or
+// helps run a group has anything to click; everyone else is told why.
+router.get('/group-signups/new', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const t = res.locals.t;
+  const groups = await leaderGroups(req, token);
+  let opportunities = [];
+  if (groups.length) {
+    opportunities = collectionFrom(await callApi(token, 'GET', '/opportunities?per_page=100'))
+      .map((row) => normalizeReserveOpportunity(row))
+      .filter((opportunity) => opportunity.id && opportunity.title);
+  }
+  return res.render('volunteering/group-signup-new', {
+    title: t('govuk_alpha_volunteering.group_signups.reserve_title'),
+    activeNav: 'volunteering',
+    groups,
+    opportunities,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+// Reserve places, step 2: the shift, the group, how many, and a note.
+router.get('/group-signups/new/:opportunityId(\\d+)', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const choices = await loadReserveChoices(req, token, Number(req.params.opportunityId), res.locals.t);
+  if (!choices) return groupSignupNotFound(res);
+  return renderGroupReserve(req, res, choices);
+}, { redirectOn401: loginRedirect() }));
+
+router.post('/group-signups/new/:opportunityId(\\d+)', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const t = res.locals.t;
+  const choices = await loadReserveChoices(req, token, Number(req.params.opportunityId), t);
+  if (!choices) return groupSignupNotFound(res);
+
+  const shiftId = positiveInteger(req.body.shift_id);
+  const groupId = positiveInteger(req.body.group_id);
+  const slotsText = trimmed(req.body.reserved_slots);
+  const slots = /^\d+$/.test(slotsText) ? Number(slotsText) : null;
+  const notes = trimmed(req.body.notes).slice(0, 500);
+  const values = { shiftId: trimmed(req.body.shift_id), groupId: trimmed(req.body.group_id), slots: slotsText, notes };
+
+  // Only what the page offered counts: an upcoming shift of this opportunity, a group
+  // the member may reserve for, and a whole number of places. The API checks again.
+  const errors = [];
+  if (shiftId === null || !choices.shifts.some((shift) => shift.id === shiftId)) {
+    errors.push({
+      field: 'shift_id',
+      href: `#shift_id-${choices.shifts.length ? choices.shifts[0].id : ''}`,
+      message: t('govuk_alpha_volunteering.group_signups.error_shift_required')
+    });
+  }
+  if (groupId === null || !choices.groups.some((group) => group.id === groupId)) {
+    errors.push({
+      field: 'group_id',
+      href: `#group_id-${choices.groups.length ? choices.groups[0].id : ''}`,
+      message: t('govuk_alpha_volunteering.group_signups.error_group_required')
+    });
+  }
+  if (slots === null || slots < 1) {
+    errors.push({
+      field: 'reserved_slots',
+      href: '#reserved_slots',
+      message: t('govuk_alpha_volunteering.group_signups.error_slots_invalid')
+    });
+  }
+  if (errors.length) {
+    return renderGroupReserve(req, res, choices, { statusCode: 400, values, errors });
+  }
+
+  const payload = { group_id: groupId, reserved_slots: slots };
+  if (notes) payload.notes = notes;
+  try {
+    await callApi(token, 'POST', `/shifts/${encodeURIComponent(shiftId)}/group-reserve`, payload);
+    return redirectTo(res, '/volunteering/group-signups?status=reserved');
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // The API names the real reason (not enough places, shift started, already
+    // reserved); show that, and fall back to our own words when it gives none.
+    return renderGroupReserve(req, res, choices, {
+      statusCode: 400,
+      values,
+      failure: apiErrorMessage(error) || t('govuk_alpha_volunteering.group_signups.error_reserve_failed')
+    });
+  }
+}, { redirectOn401: loginRedirect() }));
+
+// Add a member: search by name, choose from the results (gap B5). People already on
+// the reservation, and the leader themselves, are left out of the results.
+router.get('/group-signups/:id(\\d+)/members/new', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const t = res.locals.t;
+  const reservation = await groupReservationFor(token, Number(req.params.id), t);
+  if (!reservation || !reservation.isLeader || reservation.isCancelled) return groupSignupNotFound(res);
+
+  const query = trimmed(req.query.q, 100);
+  const searched = query.length >= 2;
+  let results = [];
+  if (searched) {
+    const found = await searchUsers(token, query, { limit: 10 });
+    const profile = await getRequestProfile(req, token).catch(() => null);
+    const selfId = positiveInteger(dataFrom(profile)?.id);
+    const onReservation = new Set(reservation.members.map((member) => member.id));
+    results = collectionFrom(found)
+      .map((row) => ({
+        id: positiveInteger(row?.id),
+        name: trimmed(row?.name) || [trimmed(row?.first_name), trimmed(row?.last_name)].filter(Boolean).join(' ')
+      }))
+      .filter((row) => row.id && row.name && row.id !== selfId && !onReservation.has(row.id));
+  }
+
+  return res.render('volunteering/group-signup-add-member', {
+    title: t('govuk_alpha_volunteering.group_signups.add_member_title'),
+    activeNav: 'volunteering',
+    reservation,
+    query,
+    searched,
+    results,
+    status: groupSignupStatus(trimmed(req.query.status), t),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+// "Are you sure?" before a member is taken off the reservation (gap B5).
+router.get('/group-signups/:id(\\d+)/members/:userId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const t = res.locals.t;
+  const reservation = await groupReservationFor(token, Number(req.params.id), t);
+  const member = reservation
+    ? reservation.members.find((row) => row.id === Number(req.params.userId))
+    : null;
+  if (!reservation || !reservation.isLeader || reservation.isCancelled || !member) return groupSignupNotFound(res);
+
+  return res.render('volunteering/group-signup-member-remove', {
+    title: t('govuk_alpha_volunteering.group_signups.remove_member_title', { name: member.name }),
+    activeNav: 'volunteering',
+    reservation,
+    member,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+// "Are you sure?" before the whole reservation is cancelled (gap B5).
+router.get('/group-signups/:id(\\d+)/cancel', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const t = res.locals.t;
+  const reservation = await groupReservationFor(token, Number(req.params.id), t);
+  if (!reservation || !reservation.isLeader || reservation.isCancelled) return groupSignupNotFound(res);
+
+  return res.render('volunteering/group-signup-cancel', {
+    title: t('govuk_alpha_volunteering.group_signups.cancel_confirm_title', { group: reservation.groupName }),
+    activeNav: 'volunteering',
+    reservation,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3492,11 +3781,14 @@ router.post('/donations', asyncRoute(async (req, res) => {
   );
 }));
 
+// The chosen person is posted from the name search (gap B5). A refusal goes back to
+// the search, with the search kept, so the leader can try again or choose someone else.
 router.post('/group-signups/:id(\\d+)/members', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const userId = positiveInteger(req.body.user_id);
+  const query = trimmed(req.body.q, 100);
   if (userId === null) {
-    return redirectTo(res, '/volunteering/group-signups?status=member-id-required');
+    return redirectTo(res, groupMemberSearchPage(id, 'member-required', query));
   }
 
   const token = tokenFrom(req);
@@ -3508,12 +3800,12 @@ router.post('/group-signups/:id(\\d+)/members', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     const code = apiErrorCode(error);
     if (code === 'SAFEGUARDING_POLICY_UNAVAILABLE') {
-      return redirectTo(res, '/volunteering/group-signups?status=member-safeguarding-unavailable');
+      return redirectTo(res, groupMemberSearchPage(id, 'member-safeguarding-unavailable', query));
     }
     if (['SAFEGUARDING_CONTACT_RESTRICTED', 'VETTING_REQUIRED'].includes(code)) {
-      return redirectTo(res, '/volunteering/group-signups?status=member-safeguarding-restricted');
+      return redirectTo(res, groupMemberSearchPage(id, 'member-safeguarding-restricted', query));
     }
-    return redirectTo(res, '/volunteering/group-signups?status=member-add-failed');
+    return redirectTo(res, groupMemberSearchPage(id, 'member-add-failed', query));
   }
 }));
 
