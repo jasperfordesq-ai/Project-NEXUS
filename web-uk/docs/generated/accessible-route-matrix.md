@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-07T20:43:00.698Z
-Laravel commit SHA: `d478ad77c0e0fbcb691068ab35c7339dd056c354`
-Web UK repository commit SHA: `d478ad77c0e0fbcb691068ab35c7339dd056c354`
-Laravel working tree dirty: no
-Web UK repository working tree dirty: no
-Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
+Generated: 2026-10-08T08:18:48.485Z
+Laravel commit SHA: `64a191aac76a94b29a74ae681f3732f78223b61f`
+Web UK repository commit SHA: `64a191aac76a94b29a74ae681f3732f78223b61f`
+Laravel working tree dirty: yes
+Web UK repository working tree dirty: yes
+Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 806 |
+| web-uk routes | 812 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 96 |
+| Extra web-uk routes | 102 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 55 | 0 |
+| volunteering | 52 | 0 | 61 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -155,6 +155,11 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | POST | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
+| GET | `/volunteering/group-signups/{param}/cancel` | volunteering | volunteering/group-signup-cancel | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/group-signups/{param}/members/{param}/remove` | volunteering | volunteering/group-signup-member-remove | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/group-signups/{param}/members/new` | volunteering | volunteering/group-signup-add-member | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/group-signups/new` | volunteering | volunteering/group-signup-new | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/group-signups/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/opportunities/{param}/cancel` | volunteering | volunteering/opportunity-cancel | web-uk/src/routes/volunteering-opportunity-manage.js |
 | GET | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
@@ -182,6 +187,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | GET | `/volunteering/qualifications/{param}/withdraw` | volunteering | volunteering/my-qualification-withdraw | web-uk/src/routes/volunteering-my-qualifications.js |
 | GET | `/volunteering/qualifications/new` | volunteering |  | web-uk/src/routes/volunteering-my-qualifications.js |
 | GET | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
+| POST | `/volunteering/group-signups/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/incidents/{param}/additions` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
 | POST | `/volunteering/opportunities/{param}/cancel` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | POST | `/volunteering/opportunities/{param}/close` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
