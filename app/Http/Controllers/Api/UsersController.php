@@ -1577,8 +1577,8 @@ class UsersController extends BaseApiController
                                COALESCE(lreq.request_count, 0) as request_count
                         FROM users u
                         LEFT JOIN (SELECT receiver_id, AVG(rating) as avg_rating FROM reviews WHERE tenant_id = ? GROUP BY receiver_id) r ON r.receiver_id = u.id
-                        LEFT JOIN (SELECT sender_id, COALESCE(SUM(amount), 0) as total_given FROM transactions WHERE status = 'completed' AND tenant_id = ? GROUP BY sender_id) tg ON tg.sender_id = u.id
-                        LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
+                        LEFT JOIN (SELECT sender_id, COALESCE(SUM(amount), 0) as total_given FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY sender_id) tg ON tg.sender_id = u.id
+                        LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as offer_count FROM listings WHERE status = 'active' AND type = 'offer' AND tenant_id = ? GROUP BY user_id) lo ON lo.user_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as request_count FROM listings WHERE status = 'active' AND type = 'request' AND tenant_id = ? GROUP BY user_id) lreq ON lreq.user_id = u.id
                         WHERE u.tenant_id = ? AND u.id IN ($placeholders)
@@ -1748,8 +1748,8 @@ class UsersController extends BaseApiController
                        COALESCE(lreq.request_count, 0) as request_count
                 FROM users u
                 LEFT JOIN (SELECT receiver_id, AVG(rating) as avg_rating FROM reviews WHERE tenant_id = ? GROUP BY receiver_id) r ON r.receiver_id = u.id
-                LEFT JOIN (SELECT sender_id, COALESCE(SUM(amount), 0) as total_given FROM transactions WHERE status = 'completed' AND tenant_id = ? GROUP BY sender_id) tg ON tg.sender_id = u.id
-                LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
+                LEFT JOIN (SELECT sender_id, COALESCE(SUM(amount), 0) as total_given FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY sender_id) tg ON tg.sender_id = u.id
+                LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
                 LEFT JOIN (SELECT user_id, COUNT(*) as offer_count FROM listings WHERE status = 'active' AND type = 'offer' AND tenant_id = ? GROUP BY user_id) lo ON lo.user_id = u.id
                 LEFT JOIN (SELECT user_id, COUNT(*) as request_count FROM listings WHERE status = 'active' AND type = 'request' AND tenant_id = ? GROUP BY user_id) lreq ON lreq.user_id = u.id
                 WHERE $whereClause

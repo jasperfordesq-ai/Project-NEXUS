@@ -18,6 +18,7 @@ use App\Support\Events\EventSearchVisibility;
 use App\Support\Members\MemberDirectoryVisibility;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
+use App\Support\Wallet\OpeningBalance;
 
 /**
  * FeedSidebarController — Feed sidebar widgets (stats, suggestions, combined sidebar).
@@ -329,8 +330,8 @@ class FeedSidebarController extends BaseApiController
                     'total_listings' => (int) DB::table('listings')->where('user_id', $userId)->where('tenant_id', $tenantId)->count(),
                     'offers'         => (int) DB::table('listings')->where('user_id', $userId)->where('tenant_id', $tenantId)->where('type', 'offer')->count(),
                     'requests'       => (int) DB::table('listings')->where('user_id', $userId)->where('tenant_id', $tenantId)->where('type', 'request')->count(),
-                    'hours_given'    => (float) DB::table('transactions')->where('sender_id', $userId)->where('tenant_id', $tenantId)->sum('amount'),
-                    'hours_received' => (float) DB::table('transactions')->where('receiver_id', $userId)->where('tenant_id', $tenantId)->sum('amount'),
+                    'hours_given'    => (float) DB::table('transactions')->where('sender_id', $userId)->where('tenant_id', $tenantId)->where('transaction_type', '!=', OpeningBalance::TYPE)->sum('amount'),
+                    'hours_received' => (float) DB::table('transactions')->where('receiver_id', $userId)->where('tenant_id', $tenantId)->where('transaction_type', '!=', OpeningBalance::TYPE)->sum('amount'),
                 ];
             } catch (\Throwable $e) {
                 $data['profile_stats'] = null;

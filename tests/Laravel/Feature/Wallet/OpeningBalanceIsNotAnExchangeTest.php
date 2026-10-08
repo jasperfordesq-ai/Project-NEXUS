@@ -10,19 +10,24 @@ namespace Tests\Laravel\Feature\Wallet;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Http\Controllers\Api\AiChatController;
 use App\Services\AdminAnalyticsService;
 use App\Services\ExploreService;
+use App\Services\FeedSidebarService;
 use App\Services\HoursReportService;
 use App\Services\MemberReportService;
+use App\Services\MemberRankingService;
 use App\Services\MunicipalImpactReportService;
 use App\Services\ReportExportService;
 use App\Services\ReviewService;
+use App\Services\UserService;
 use App\Services\SocialValueService;
 use App\Support\Wallet\OpeningBalance;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
+use ReflectionMethod;
 use Tests\Laravel\TestCase;
 
 /**
@@ -47,16 +52,9 @@ final class OpeningBalanceIsNotAnExchangeTest extends TestCase
     }
 
     /** A fresh member with a 40-hour opening balance (sender_id 0, like starting_balance). */
-    private function importFortyHours(): User
+    private function importFortyHours(?User $existing = null): User
     {
-        $user = User::factory()->forTenant($this->testTenantId)->create([
-            'status' => 'active',
-            'is_approved' => true,
-            'last_login_at' => now(),
-            'email_verified_at' => null,
-            'bio' => null,
-            'location' => null,
-        ]);
+        $user = $existing ?? $this->newMember();
         DB::table('transactions')->insert([
             'tenant_id' => $this->testTenantId, 'sender_id' => 0, 'receiver_id' => $user->id,
             'amount' => self::IMPORTED_HOURS, 'description' => OpeningBalance::describe('TEST0001', null),
@@ -65,6 +63,36 @@ final class OpeningBalanceIsNotAnExchangeTest extends TestCase
         ]);
 
         return $user;
+    }
+
+    private function newMember(array $overrides = []): User
+    {
+        return User::factory()->forTenant($this->testTenantId)->create($overrides + [
+            'status' => 'active',
+            'is_approved' => true,
+            'last_login_at' => now(),
+            'email_verified_at' => null,
+            'bio' => null,
+            'location' => null,
+        ]);
+    }
+
+    /**
+     * Per-member figures: the member exists first (so the "before" read is
+     * theirs), then the 40-hour import lands on that same member.
+     *
+     * @param callable(User): mixed $figureFor
+     */
+    private function assertMemberFigureUnchangedByImport(callable $figureFor, string $label, array $overrides = []): User
+    {
+        $member = $this->newMember($overrides);
+        Cache::flush();
+        $before = $figureFor($member);
+        $this->importFortyHours($member);
+        Cache::flush();
+        $this->assertEquals($before, $figureFor($member), $label . ' counted imported hours as exchanged');
+
+        return $member;
     }
 
     /**
@@ -320,6 +348,108 @@ final class OpeningBalanceIsNotAnExchangeTest extends TestCase
                 "ReportExportService {$type}"
             );
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Sidebar, assistant, directory and profile figures (fix round 1)
+    // ------------------------------------------------------------------
+
+    public function test_feed_sidebar_community_total_hours_is_unchanged(): void
+    {
+        $service = app(FeedSidebarService::class);
+        $this->assertFigureUnchangedByImport(
+            fn () => $service->communityStats()['total_hours'],
+            'FeedSidebarService::communityStats total_hours'
+        );
+    }
+
+    public function test_feed_sidebar_member_hours_are_unchanged(): void
+    {
+        $this->assertMemberFigureUnchangedByImport(function (User $member) {
+            Sanctum::actingAs($member);
+
+            return $this->apiGet('/v2/feed/sidebar')->assertOk()->json('data.profile_stats');
+        }, 'GET /v2/feed/sidebar profile_stats');
+    }
+
+    /**
+     * The newsletter assistant's monthly figures live in a private method that
+     * the AI-provider endpoint calls; the method itself needs no provider, so it
+     * is called directly.
+     */
+    public function test_ai_newsletter_monthly_exchange_figures_are_unchanged(): void
+    {
+        $controller = app(AiChatController::class);
+        $method = new ReflectionMethod($controller, 'getNewsletterPlatformData');
+        $method->setAccessible(true);
+
+        $this->assertFigureUnchangedByImport(function () use ($controller, $method) {
+            $data = $method->invoke($controller);
+
+            return [$data['exchanges_this_month'], $data['hours_exchanged_this_month']];
+        }, 'AiChatController newsletter platform data');
+    }
+
+    public function test_member_directory_hours_are_unchanged(): void
+    {
+        $viewer = $this->newMember();
+        Sanctum::actingAs($viewer);
+        $key = 'Opbal' . substr(md5((string) microtime(true)), 0, 8);
+
+        $member = $this->newMember(['first_name' => $key, 'last_name' => 'Directory']);
+        $listed = function (string $query) use ($member, $key) {
+            $rows = $this->apiGet('/v2/users?limit=100&q=' . $key . $query)->assertOk()->json('data');
+            $row = collect($rows)->firstWhere('id', $member->id);
+            $this->assertNotNull($row, 'member should be listed in the directory');
+
+            return [$row['total_hours_given'], $row['total_hours_received']];
+        };
+
+        // Default directory listing, then the CommunityRank-ordered listing
+        // (a separate query in the same controller). The member is imported
+        // after the first "before" read and stays imported for the second.
+        $this->assertTrue(app(MemberRankingService::class)->isEnabled(), 'CommunityRank must be on for the ranked query to run');
+        $beforeDefault = $listed('');
+        $beforeRanked = $listed('&sort=communityrank');
+        $this->importFortyHours($member);
+
+        $this->assertEquals($beforeDefault, $listed(''), 'GET /v2/users counted imported hours');
+        $this->assertEquals($beforeRanked, $listed('&sort=communityrank'), 'GET /v2/users?sort=communityrank counted imported hours');
+    }
+
+    public function test_profile_hours_are_unchanged(): void
+    {
+        $this->assertMemberFigureUnchangedByImport(function (User $member) {
+            $stats = UserService::getProfileStats($member->id);
+
+            return [$stats['given_count'], $stats['received_count']];
+        }, 'UserService::getProfileStats');
+
+        $viewer = $this->newMember();
+        $this->assertMemberFigureUnchangedByImport(function (User $member) use ($viewer) {
+            $profile = UserService::getPublicProfile($member->id, $viewer->id);
+
+            return [
+                $profile['total_hours_given'], $profile['total_hours_received'],
+                $profile['stats']['total_hours_given'], $profile['stats']['total_hours_received'],
+            ];
+        }, 'UserService::getPublicProfile');
+
+        $this->assertMemberFigureUnchangedByImport(function (User $member) {
+            return UserService::getMe($member->id)['stats']['transactions_count'];
+        }, 'UserService::getMe stats');
+    }
+
+    public function test_nearby_members_hours_are_unchanged(): void
+    {
+        $viewer = $this->newMember();
+        $this->assertMemberFigureUnchangedByImport(function (User $member) use ($viewer) {
+            $result = UserService::getNearby(51.5000, -0.1200, ['radius_km' => 50, 'limit' => 500], $viewer->id);
+            $row = collect($result['items'] ?? $result['data'] ?? $result)->firstWhere('id', $member->id);
+            $this->assertNotNull($row, 'member should be found nearby');
+
+            return [$row['total_hours_given'] ?? null, $row['total_hours_received'] ?? null];
+        }, 'UserService::getNearby', ['latitude' => 51.5000, 'longitude' => -0.1200]);
     }
 
     // ------------------------------------------------------------------

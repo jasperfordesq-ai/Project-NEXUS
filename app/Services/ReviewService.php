@@ -249,7 +249,7 @@ class ReviewService
 
         // System credit grants (starting and imported opening balances, admin grants, community fund)
         // have no peer to review.
-        $systemTypes = ['starting_balance', 'opening_balance', 'admin_grant', 'community_fund'];
+        $systemTypes = ['starting_balance', \App\Support\Wallet\OpeningBalance::TYPE, 'admin_grant', 'community_fund'];
 
         // NOTE: these closures receive an Illuminate\Database\Query\Builder, NOT
         // the Eloquent Builder imported at the top of this file — so they are

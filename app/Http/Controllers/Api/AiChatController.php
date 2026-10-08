@@ -1913,7 +1913,7 @@ EOT;
 
         try {
             $result = DB::selectOne(
-                "SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total_hours FROM transactions WHERE tenant_id = ? AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
+                "SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total_hours FROM transactions WHERE tenant_id = ? AND transaction_type <> 'opening_balance' AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
                 [$tenantId]
             );
             $exchangesThisMonth = (int) ($result->count ?? 0);

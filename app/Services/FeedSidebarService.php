@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Support\Wallet\OpeningBalance;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +30,7 @@ class FeedSidebarService
         return Cache::remember($cacheKey, 120, function () use ($tenantId) {
             return [
                 'total_members'    => (int) DB::table('users')->where('tenant_id', $tenantId)->where('status', 'active')->count(),
-                'total_hours'      => (float) DB::table('transactions')->where('tenant_id', $tenantId)->where('status', 'completed')->sum('amount'),
+                'total_hours'      => (float) DB::table('transactions')->where('tenant_id', $tenantId)->where('status', 'completed')->where('transaction_type', '!=', OpeningBalance::TYPE)->sum('amount'),
                 'total_listings'   => (int) DB::table('listings')->where('tenant_id', $tenantId)->where(fn ($q) => $q->whereNull('status')->orWhere('status', 'active'))->count(),
                 'total_events'     => (int) DB::table('events')->where('tenant_id', $tenantId)->where('status', 'published')->count(),
                 'active_exchanges' => (int) DB::table('exchange_requests')->where('tenant_id', $tenantId)->whereIn('status', ['accepted', 'in_progress'])->count(),

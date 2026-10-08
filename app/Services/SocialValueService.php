@@ -45,7 +45,7 @@ class SocialValueService
      */
     public const EXCLUDED_TRANSACTION_TYPES = [
         'starting_balance',
-        'opening_balance', // OpeningBalance::TYPE — hours brought from another timebank (member import)
+        \App\Support\Wallet\OpeningBalance::TYPE, // hours brought from another timebank (member import)
         'admin_grant',
         'community_fund',
         'donation',

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
+use App\Support\Wallet\OpeningBalance;
 
 /**
  * UserService — Laravel DI-based service for user/profile operations.
@@ -327,6 +328,7 @@ class UserService
             ->where('sender_id', $userId)
             ->where('tenant_id', $tenantId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->sum('amount');
 
         // Hours received
@@ -334,6 +336,7 @@ class UserService
             ->where('receiver_id', $userId)
             ->where('tenant_id', $tenantId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->sum('amount');
 
         // Wallet balance
@@ -1025,8 +1028,8 @@ class UserService
             ->selectRaw(
                 "users.*, $haversine AS distance,
                 (SELECT AVG(rating) FROM reviews WHERE receiver_id = users.id AND tenant_id = ?) as rating,
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE sender_id = users.id AND status = 'completed' AND tenant_id = ?) as total_hours_given,
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE receiver_id = users.id AND status = 'completed' AND tenant_id = ?) as total_hours_received",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE sender_id = users.id AND status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ?) as total_hours_given,
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE receiver_id = users.id AND status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ?) as total_hours_received",
                 [$lat, $lon, $lat, $tenantId, $tenantId, $tenantId]
             )
             ->whereNotNull('latitude')
@@ -1315,6 +1318,7 @@ class UserService
                 ->count(),
             'transactions_count' => DB::table('transactions')
                 ->where('tenant_id', $tenantId)
+                ->where('transaction_type', '!=', OpeningBalance::TYPE)
                 ->where(function ($q) use ($userId) {
                     $q->where('sender_id', $userId)->orWhere('receiver_id', $userId);
                 })
@@ -1351,6 +1355,7 @@ class UserService
             ", [$userId, $userId])
             ->where('tenant_id', $tenantId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where(function ($q) use ($userId) {
                 $q->where('sender_id', $userId)->orWhere('receiver_id', $userId);
             })
