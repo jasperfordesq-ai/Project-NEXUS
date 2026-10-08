@@ -1076,6 +1076,50 @@
       "failed": "The certificate could not be revoked. It may already have been revoked."
     }
   },
+  "group_bookings": {
+    "page_title": "Group bookings",
+    "page_desc": "Places that group leaders have reserved on volunteer shifts for their members. Each named member is signed up for the shift. Cancel a booking to release its places and the members' sign-ups.",
+    "load_error": "The group bookings could not be loaded.",
+    "retry": "Try again",
+    "tiles": {
+      "active": "Active",
+      "cancelled": "Cancelled"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "All",
+      "active": "Active",
+      "cancelled": "Cancelled"
+    },
+    "search_label": "Search",
+    "search_placeholder": "Group, opportunity or leader name",
+    "clear_filters": "Clear filters",
+    "empty_title": "No group bookings",
+    "empty_body": "Group bookings appear here when a group leader reserves places on a shift.",
+    "results": "Group bookings found: {{number}}",
+    "leader": "Group leader",
+    "places": "Places: {{filled}} of {{reserved}} filled",
+    "members": "Members",
+    "no_members": "No members named yet",
+    "status": {
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Booked {{date}}",
+    "notes": "Notes",
+    "actions": {
+      "cancel": "Cancel booking"
+    },
+    "cancel": {
+      "title": "Cancel this group booking?",
+      "body": "The {{reserved}} places reserved for {{group}} on {{opportunity}} will be released and every named member's sign-up for the shift cancelled. The leader and members will be told. This cannot be undone.",
+      "confirm": "Cancel booking",
+      "done": "Group booking cancelled.",
+      "failed": "The booking could not be cancelled. It may already have been cancelled."
+    }
+  },
   "org_team": {
     "add_title": "Add someone to the team",
     "member_label": "Member",

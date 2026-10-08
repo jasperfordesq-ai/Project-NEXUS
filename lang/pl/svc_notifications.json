@@ -40,6 +40,12 @@
     "approved_by_admin": "Twoja zamiana zmian została zatwierdzona przez administratora",
     "accepted_swap_approved_by_admin": "Zamiana zmian, którą zaakceptowałeś/aś, została zatwierdzona przez administratora"
   },
+  "group_signup": {
+    "added": "{{leader}} dodał(a) Cię do grupy {{group}} na {{opportunity}} w dniu {{date}}. Jesteś teraz zapisany/a na tę zmianę. Jeśli nie możesz przyjść, możesz opuścić zapis grupowy.",
+    "left": "{{member}} opuścił(a) zapis grupowy {{group}} na {{opportunity}} w dniu {{date}}.",
+    "removed": "Usunięto Cię z zapisu grupowego {{group}} na {{opportunity}} w dniu {{date}}. Nie jesteś już zapisany/a na tę zmianę.",
+    "cancelled": "Zapis grupowy {{group}} na {{opportunity}} w dniu {{date}} został anulowany, wraz z zapisami jego członków."
+  },
   "shift": {
     "cancelled": "Organizator odwołał zmianę w :title (:date)"
   },

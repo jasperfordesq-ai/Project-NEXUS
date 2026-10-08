@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Mitglied konnte nicht entfernt werden',
     'shift_reservation_leader_only_cancel' => 'Nur Gruppenleiter/Administratoren können diese Reservierung stornieren',
     'shift_reservation_cancel_failed' => 'Reservierung konnte nicht storniert werden',
+    'shift_reservation_member_declined' => 'Die Bewerbung dieses Mitglieds für dieses Angebot wurde abgelehnt, daher kann es nicht zur Gruppenbuchung hinzugefügt werden',
+    'vol_checkout_before_shift_start' => 'Das Auschecken ist vor Schichtbeginn um :time nicht möglich',
     'message_cannot_send_to_self' => 'Sie können sich selbst keine Nachricht senden',
     'message_sender_not_allowed' => 'Ihr Konto darf keine Nachrichten senden',
     'message_recipient_not_found' => 'Empfänger nicht gefunden',

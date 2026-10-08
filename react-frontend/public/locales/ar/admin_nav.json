@@ -515,7 +515,8 @@
     "webp_converter": "WebP المحول",
     "qualifications": "المؤهلات",
     "opportunities": "الفرص والمناوبات",
-    "certificates": "الشهادات"
+    "certificates": "الشهادات",
+    "group_bookings": "الحجوزات الجماعية"
   },
   "aria": {
     "breadcrumbs": "فتات الخبز"
@@ -793,11 +794,13 @@
       "settings": "حقول مخصصة|تذكيرات|webhooks|تهيئة",
       "qualifications": "تدريب|إسعافات أولية|شهادات|انتهاء|مؤهلات",
       "opportunities": "مناوبات جدول مواعيد فرص",
-      "certificates": "شهادات التطوع|إلغاء|سحب الشهادة|رمز التحقق|شهادة الساعات"
+      "certificates": "شهادات التطوع|إلغاء|سحب الشهادة|رمز التحقق|شهادة الساعات",
+      "group_bookings": "التسجيلات الجماعية|الحجوزات الجماعية|حجوزات الفرق|الأماكن المحجوزة"
     },
     "qualifications": "المؤهلات",
     "opportunities": "الفرص والمناوبات",
-    "certificates": "الشهادات"
+    "certificates": "الشهادات",
+    "group_bookings": "الحجوزات الجماعية"
   },
   "group_join_requests": "طلبات الانضمام إلى المجموعات",
   "group_moderation": "إشراف المجموعات",

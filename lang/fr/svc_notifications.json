@@ -40,6 +40,12 @@
     "approved_by_admin": "Votre échange de poste a été approuvé par un administrateur",
     "accepted_swap_approved_by_admin": "Un échange de poste que vous avez accepté a été approuvé par un administrateur"
   },
+  "group_signup": {
+    "added": "{{leader}} vous a ajouté(e) au groupe {{group}} pour {{opportunity}} le {{date}}. Vous êtes maintenant inscrit(e) à ce créneau. Si vous ne pouvez pas venir, vous pouvez quitter l'inscription de groupe.",
+    "left": "{{member}} a quitté l'inscription de groupe {{group}} pour {{opportunity}} le {{date}}.",
+    "removed": "Vous avez été retiré(e) de l'inscription de groupe {{group}} pour {{opportunity}} le {{date}}. Vous n'êtes plus inscrit(e) à ce créneau.",
+    "cancelled": "L'inscription de groupe {{group}} pour {{opportunity}} le {{date}} a été annulée, ainsi que les inscriptions de ses membres."
+  },
   "shift": {
     "cancelled": "Un créneau sur :title (:date) a été annulé par l’organisateur"
   },

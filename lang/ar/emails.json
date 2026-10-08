@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "تم نشر إعلان باسمك",
     "sub_account_proxy_transfer": "تم إرسال أرصدة وقت من حسابك",
     "sub_account_permissions_expanded": "أصبح بإمكان أحد المساعدين فعل المزيد في حسابك",
+    "vol_group_signup_added": "تم تسجيلك في وردية تطوعية",
+    "vol_group_signup_removed": "تمت إزالة تسجيل جماعي في وردية",
+    "vol_group_signup_cancelled": "تم إلغاء تسجيل جماعي في وردية",
     "default": "إشعار من Project NEXUS"
   },
   "exchange_dispute": {

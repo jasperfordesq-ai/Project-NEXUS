@@ -479,6 +479,9 @@
     "sub_account_proxy_listing": "A listing was posted in your name",
     "sub_account_proxy_transfer": "Time credits were sent from your account",
     "sub_account_permissions_expanded": "A helper can now do more on your account",
+    "vol_group_signup_added": "You have been signed up for a volunteer shift",
+    "vol_group_signup_removed": "A group shift sign-up was removed",
+    "vol_group_signup_cancelled": "A group shift sign-up was cancelled",
     "default": "Notification from Project NEXUS"
   },
   "exchange_dispute": {

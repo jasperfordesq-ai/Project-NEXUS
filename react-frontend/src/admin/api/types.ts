@@ -2934,3 +2934,33 @@ export interface AdminVolunteerCertificatesResponse {
   total: number;
   counts: { active: number; revoked: number };
 }
+
+/** One row of GET /v2/admin/volunteering/group-reservations: a group leader's reserved places on a shift. */
+export interface AdminVolunteerGroupReservation {
+  id: number;
+  status: 'active' | 'cancelled' | 'completed';
+  reserved_slots: number;
+  /** Members named so far; each one is a real sign-up for the shift. */
+  filled_slots: number;
+  notes: string | null;
+  created_at: string;
+  shift: { id: number; start_time: string; end_time: string };
+  opportunity: { id: number; title: string };
+  organization: { id: number; name: string } | null;
+  group: { id: number; name: string } | null;
+  leader: { id: number; name: string; avatar_url: string | null } | null;
+  members: { id: number; name: string; avatar_url: string | null }[];
+}
+
+export interface AdminVolunteerGroupReservationsParams {
+  status?: 'active' | 'cancelled';
+  q?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface AdminVolunteerGroupReservationsResponse {
+  items: AdminVolunteerGroupReservation[];
+  total: number;
+  counts: { active: number; cancelled: number };
+}

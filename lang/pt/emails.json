@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Foi publicado um anúncio em seu nome",
     "sub_account_proxy_transfer": "Foram enviados créditos de tempo da sua conta",
     "sub_account_permissions_expanded": "Uma pessoa de apoio pode agora fazer mais na sua conta",
+    "vol_group_signup_added": "Foi inscrito/a num turno de voluntariado",
+    "vol_group_signup_removed": "Uma inscrição de grupo num turno foi removida",
+    "vol_group_signup_cancelled": "Uma inscrição de grupo num turno foi cancelada",
     "default": "Notificação do Project NEXUS"
   },
   "exchange_dispute": {

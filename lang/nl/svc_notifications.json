@@ -40,6 +40,12 @@
     "approved_by_admin": "Uw dienstruil is goedgekeurd door een beheerder",
     "accepted_swap_approved_by_admin": "Een dienstruil die u heeft geaccepteerd is goedgekeurd door een beheerder"
   },
+  "group_signup": {
+    "added": "{{leader}} heeft u toegevoegd aan de groep {{group}} voor {{opportunity}} op {{date}}. U bent nu ingeschreven voor deze dienst. Kunt u niet komen, dan kunt u de groepsinschrijving verlaten.",
+    "left": "{{member}} heeft de groepsinschrijving {{group}} voor {{opportunity}} op {{date}} verlaten.",
+    "removed": "U bent verwijderd uit de groepsinschrijving {{group}} voor {{opportunity}} op {{date}}. U bent niet meer ingeschreven voor deze dienst.",
+    "cancelled": "De groepsinschrijving {{group}} voor {{opportunity}} op {{date}} is geannuleerd, samen met de inschrijvingen van de leden."
+  },
   "shift": {
     "cancelled": "Een dienst bij :title (:date) is door de organisator geannuleerd"
   },

@@ -169,6 +169,7 @@ const VolunteerExpenses = lazy(() => import('./modules/volunteering/VolunteerExp
 const VolunteerTraining = lazy(() => import('./modules/volunteering/VolunteerTraining'));
 const VolunteerQualifications = lazy(() => import('./modules/volunteering/VolunteerQualifications'));
 const VolunteerCertificates = lazy(() => import('./modules/volunteering/VolunteerCertificates'));
+const VolunteerGroupBookings = lazy(() => import('./modules/volunteering/VolunteerGroupBookings'));
 const VolunteerSafeguarding = lazy(() => import('./modules/volunteering/VolunteerSafeguarding'));
 const VolunteerIncidentCaseRoute = lazy(() => import('./modules/volunteering/incidents/VolunteerIncidentCase'));
 const VolunteerHoursAudit = lazy(() => import('./modules/volunteering/VolunteerHoursAudit'));
@@ -605,6 +606,7 @@ export function AdminRoutes() {
       <Route path="volunteering/training" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerTraining /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/qualifications" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerQualifications /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/certificates" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerCertificates /></Lazy></FeatureGatedElement>} />
+      <Route path="volunteering/group-bookings" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerGroupBookings /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerSafeguarding /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding/:id" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerIncidentCaseRoute /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/hours" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerHoursAudit /></Lazy></FeatureGatedElement>} />

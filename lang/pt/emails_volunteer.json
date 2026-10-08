@@ -95,5 +95,15 @@
     "safeguarding_adults": "Proteção de adultos",
     "efaw": "Primeiros socorros de emergência no trabalho (EFAW)",
     "faw": "Primeiros socorros no trabalho (FAW)"
+  },
+  "group_signup_added": {
+    "title": "Foi inscrito/a num turno de voluntariado",
+    "body": "{{leader}} adicionou-o/a ao grupo {{group}} e inscreveu-o/a no turno abaixo.",
+    "label_opportunity": "Oportunidade",
+    "label_when": "Quando",
+    "label_group": "Grupo",
+    "signed_up": "Está agora inscrito/a — não precisa de fazer mais nada.",
+    "leave_note": "Se não puder comparecer, abra Inscrições de grupo na página de voluntariado e saia desta inscrição de grupo, para que o seu lugar possa ir para outra pessoa.",
+    "cta": "Ver as minhas inscrições de grupo"
   }
 }

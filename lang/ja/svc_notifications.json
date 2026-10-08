@@ -40,6 +40,12 @@
     "approved_by_admin": "シフト交換が管理者によって承認されました",
     "accepted_swap_approved_by_admin": "承認したシフト交換が管理者によって承認されました"
   },
+  "group_signup": {
+    "added": "{{leader}}さんがあなたを{{date}}の{{opportunity}}のグループ「{{group}}」に追加しました。このシフトへの登録が完了しています。参加できない場合は、グループ登録から抜けることができます。",
+    "left": "{{member}}さんが{{date}}の{{opportunity}}のグループ登録「{{group}}」から抜けました。",
+    "removed": "{{date}}の{{opportunity}}のグループ登録「{{group}}」から外されました。このシフトへの登録は取り消されています。",
+    "cancelled": "{{date}}の{{opportunity}}のグループ登録「{{group}}」はキャンセルされ、メンバーの登録も取り消されました。"
+  },
   "shift": {
     "cancelled": ":title のシフト（:date）が主催者により取り消されました"
   },

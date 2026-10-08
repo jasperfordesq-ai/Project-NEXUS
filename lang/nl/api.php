@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Verwijderen van het lid is mislukt',
     'shift_reservation_leader_only_cancel' => 'Alleen groepsleiders/beheerders kunnen deze reservering annuleren',
     'shift_reservation_cancel_failed' => 'Annuleren van de reservering is mislukt',
+    'shift_reservation_member_declined' => 'De aanmelding van dit lid voor deze kans is afgewezen, dus het lid kan niet aan de groepsboeking worden toegevoegd',
+    'vol_checkout_before_shift_start' => 'Uitchecken is niet mogelijk voordat de dienst begint om :time',
     'message_cannot_send_to_self' => 'U kunt geen bericht naar uzelf sturen',
     'message_sender_not_allowed' => 'Uw account mag geen berichten versturen',
     'message_recipient_not_found' => 'Ontvanger niet gevonden',

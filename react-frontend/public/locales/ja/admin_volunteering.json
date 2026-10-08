@@ -1076,6 +1076,50 @@
       "failed": "証明書を取り消せませんでした。すでに取り消されている可能性があります。"
     }
   },
+  "group_bookings": {
+    "page_title": "グループ予約",
+    "page_desc": "グループリーダーがメンバーのためにボランティアシフトに予約した枠です。指名された各メンバーはシフトに登録されています。予約をキャンセルすると、枠とメンバーの登録が解放されます。",
+    "load_error": "グループ予約を読み込めませんでした。",
+    "retry": "再試行",
+    "tiles": {
+      "active": "有効",
+      "cancelled": "キャンセル済み"
+    },
+    "filters": {
+      "label": "ステータス",
+      "all": "すべて",
+      "active": "有効",
+      "cancelled": "キャンセル済み"
+    },
+    "search_label": "検索",
+    "search_placeholder": "グループ、機会、リーダー名",
+    "clear_filters": "フィルターをクリア",
+    "empty_title": "グループ予約はありません",
+    "empty_body": "グループリーダーがシフトに枠を予約すると、ここに表示されます。",
+    "results": "見つかったグループ予約：{{number}}件",
+    "leader": "グループリーダー",
+    "places": "枠：{{reserved}}枠中{{filled}}枠が埋まっています",
+    "members": "メンバー",
+    "no_members": "まだメンバーは指名されていません",
+    "status": {
+      "active": "有効",
+      "cancelled": "キャンセル済み",
+      "completed": "完了"
+    },
+    "shift_line": "{{date}} {{start}}～{{end}}",
+    "booked_on": "予約日 {{date}}",
+    "notes": "メモ",
+    "actions": {
+      "cancel": "予約をキャンセル"
+    },
+    "cancel": {
+      "title": "このグループ予約をキャンセルしますか？",
+      "body": "{{opportunity}}で{{group}}のために予約された{{reserved}}枠は解放され、指名された各メンバーのシフト登録が取り消されます。リーダーとメンバーに通知されます。この操作は元に戻せません。",
+      "confirm": "予約をキャンセル",
+      "done": "グループ予約をキャンセルしました。",
+      "failed": "予約をキャンセルできませんでした。すでにキャンセルされている可能性があります。"
+    }
+  },
   "org_team": {
     "add_title": "チームに人を追加",
     "member_label": "メンバー",

@@ -95,5 +95,15 @@
     "safeguarding_adults": "Tutela degli adulti",
     "efaw": "Primo soccorso di emergenza sul lavoro (EFAW)",
     "faw": "Primo soccorso sul lavoro (FAW)"
+  },
+  "group_signup_added": {
+    "title": "È stato/a iscritto/a a un turno di volontariato",
+    "body": "{{leader}} l'ha aggiunta al gruppo {{group}} e l'ha iscritta al turno qui sotto.",
+    "label_opportunity": "Opportunità",
+    "label_when": "Quando",
+    "label_group": "Gruppo",
+    "signed_up": "Ora è iscritto/a: non deve fare altro.",
+    "leave_note": "Se non può partecipare, apra Iscrizioni di gruppo nella pagina del volontariato e lasci questa iscrizione di gruppo, così il suo posto potrà andare a qualcun altro.",
+    "cta": "Vedi le mie iscrizioni di gruppo"
   }
 }

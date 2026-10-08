@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Nie udało się usunąć członka',
     'shift_reservation_leader_only_cancel' => 'Tylko liderzy/administratorzy grupy mogą anulować tę rezerwację',
     'shift_reservation_cancel_failed' => 'Nie udało się anulować rezerwacji',
+    'shift_reservation_member_declined' => 'Zgłoszenie tego członka do tej oferty zostało odrzucone, więc nie można go dodać do rezerwacji grupowej',
+    'vol_checkout_before_shift_start' => 'Wymeldowanie nie jest możliwe przed rozpoczęciem zmiany o :time',
     'message_cannot_send_to_self' => 'Nie możesz wysłać wiadomości do samego siebie',
     'message_sender_not_allowed' => 'Twoje konto nie może wysyłać wiadomości',
     'message_recipient_not_found' => 'Nie znaleziono odbiorcy',

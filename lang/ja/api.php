@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'メンバーの削除に失敗しました',
     'shift_reservation_leader_only_cancel' => 'この予約をキャンセルできるのは、グループリーダー/管理者のみです',
     'shift_reservation_cancel_failed' => '予約のキャンセルに失敗しました',
+    'shift_reservation_member_declined' => 'このメンバーのこの機会への応募は却下されているため、グループ予約に追加できません',
+    'vol_checkout_before_shift_start' => 'シフト開始時刻（:time）より前にチェックアウトすることはできません',
     'message_cannot_send_to_self' => '自分自身にメッセージを送ることはできません',
     'message_sender_not_allowed' => 'このアカウントではメッセージを送信できません',
     'message_recipient_not_found' => '受信者が見つかりません',

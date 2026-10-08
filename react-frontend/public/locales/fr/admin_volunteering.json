@@ -1093,6 +1093,50 @@
       "failed": "Impossible de révoquer le certificat. Il a peut-être déjà été révoqué."
     }
   },
+  "group_bookings": {
+    "page_title": "Réservations de groupe",
+    "page_desc": "Places que les responsables de groupe ont réservées sur des créneaux de bénévolat pour leurs membres. Chaque membre nommé est inscrit au créneau. Annulez une réservation pour libérer ses places et les inscriptions des membres.",
+    "load_error": "Les réservations de groupe n'ont pas pu être chargées.",
+    "retry": "Réessayer",
+    "tiles": {
+      "active": "Actives",
+      "cancelled": "Annulées"
+    },
+    "filters": {
+      "label": "Statut",
+      "all": "Toutes",
+      "active": "Actives",
+      "cancelled": "Annulées"
+    },
+    "search_label": "Rechercher",
+    "search_placeholder": "Groupe, mission ou nom du responsable",
+    "clear_filters": "Effacer les filtres",
+    "empty_title": "Aucune réservation de groupe",
+    "empty_body": "Les réservations de groupe apparaissent ici lorsqu'un responsable de groupe réserve des places sur un créneau.",
+    "results": "Réservations de groupe trouvées : {{number}}",
+    "leader": "Responsable du groupe",
+    "places": "Places : {{filled}} sur {{reserved}} pourvues",
+    "members": "Membres",
+    "no_members": "Aucun membre nommé pour l'instant",
+    "status": {
+      "active": "Active",
+      "cancelled": "Annulée",
+      "completed": "Terminée"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Réservée le {{date}}",
+    "notes": "Notes",
+    "actions": {
+      "cancel": "Annuler la réservation"
+    },
+    "cancel": {
+      "title": "Annuler cette réservation de groupe ?",
+      "body": "Les {{reserved}} places réservées pour {{group}} sur {{opportunity}} seront libérées et l'inscription au créneau de chaque membre nommé annulée. Le responsable et les membres seront prévenus. Cette action est irréversible.",
+      "confirm": "Annuler la réservation",
+      "done": "Réservation de groupe annulée.",
+      "failed": "La réservation n'a pas pu être annulée. Elle l'est peut-être déjà."
+    }
+  },
   "org_team": {
     "add_title": "Ajouter quelqu’un à l’équipe",
     "member_label": "Membre",

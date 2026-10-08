@@ -515,7 +515,8 @@
     "roles": "Roles",
     "qualifications": "Cualificaciones",
     "opportunities": "Oportunidades y turnos",
-    "certificates": "Certificados"
+    "certificates": "Certificados",
+    "group_bookings": "Reservas de grupo"
   },
   "aria": {
     "breadcrumbs": "Pan rallado"
@@ -781,11 +782,13 @@
       "settings": "campos personalizados|recordatorios|webhooks|configuración",
       "qualifications": "formación|primeros auxilios|certificados|caducidad|cualificaciones",
       "opportunities": "turnos horario calendario oportunidades",
-      "certificates": "certificados de voluntariado|revocar|retirar certificado|código de verificación|certificado de horas"
+      "certificates": "certificados de voluntariado|revocar|retirar certificado|código de verificación|certificado de horas",
+      "group_bookings": "inscripciones de grupo|reservas de grupo|reservas de equipo|plazas reservadas"
     },
     "qualifications": "Cualificaciones",
     "opportunities": "Oportunidades y turnos",
-    "certificates": "Certificados"
+    "certificates": "Certificados",
+    "group_bookings": "Reservas de grupo"
   },
   "group_join_requests": "Solicitudes para unirse a grupos",
   "group_moderation": "Moderación de grupos",

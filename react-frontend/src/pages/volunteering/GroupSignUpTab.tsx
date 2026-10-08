@@ -21,7 +21,8 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Crown from 'lucide-react/icons/crown';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
-import Hourglass from 'lucide-react/icons/hourglass';
+import LogOut from 'lucide-react/icons/log-out';
+import UserMinus from 'lucide-react/icons/user-minus';
 import XCircle from 'lucide-react/icons/circle-x';
 import Plus from 'lucide-react/icons/plus';
 import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
@@ -42,17 +43,19 @@ import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 
 /* ───────────────────────── Types ───────────────────────── */
 
+// The API lists only confirmed members (a removed member keeps a 'cancelled'
+// row server-side and is no longer part of the group).
 interface GroupMember {
   id: number;
   name: string;
   avatar_url: string | null;
-  status: 'confirmed' | 'pending' | 'declined';
+  status: 'confirmed' | 'cancelled';
 }
 
 interface GroupReservation {
   id: number;
   group_name: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: 'active' | 'cancelled' | 'completed';
   is_leader: boolean;
   shift: {
     id: number;
@@ -116,29 +119,20 @@ const itemVariants = {
 
 const statusColor = (status: string) => {
   switch (status) {
-    case 'confirmed': return 'success';
+    case 'active': return 'success';
     case 'cancelled': return 'danger';
-    default: return 'warning';
+    default: return 'default';
   }
 };
 
-const memberStatusLabelKey = (status: string) => {
-  switch (status) {
-    case 'confirmed': return 'group_signup.member_status.confirmed';
-    case 'declined': return 'group_signup.member_status.declined';
-    default: return 'group_signup.member_status.pending';
-  }
-};
-
-// Status is otherwise conveyed by icon colour only — pass a translated label so
-// screen readers announce the state, not just the member's name.
-const memberStatusIcon = (status: string, label: string) => {
-  switch (status) {
-    case 'confirmed': return <CheckCircle className="w-3 h-3 text-emerald-500" role="img" aria-label={label} />;
-    case 'declined': return <XCircle className="w-3 h-3 text-[var(--color-error)]" role="img" aria-label={label} />;
-    default: return <Hourglass className="w-3 h-3 text-[var(--color-warning)]" role="img" aria-label={label} />;
-  }
-};
+/** What the confirmation dialog is asking before a destructive call. */
+interface PendingAction {
+  kind: 'remove' | 'leave' | 'cancel';
+  reservationId: number;
+  groupName: string;
+  memberId?: number;
+  memberName?: string;
+}
 
 function extractItems<T>(payload: unknown): T[] {
   if (Array.isArray(payload)) return payload as T[];
@@ -183,6 +177,11 @@ export function GroupSignUpTab() {
   const [isLoadingShifts, setIsLoadingShifts] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
   const [reservationError, setReservationError] = useState<string | null>(null);
+
+  // Remove a member / leave / cancel the whole reservation — each asks first.
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [isActing, setIsActing] = useState(false);
+  const currentUserId = user?.id !== undefined && user?.id !== null ? Number(user.id) : null;
 
   // Debounced member search state — /v2/users never returns email, so members
   // are matched by selecting a suggestion (id), not by typing an email.
@@ -396,6 +395,40 @@ export function GroupSignUpTab() {
     }
   };
 
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return;
+    const { kind, reservationId, memberId } = pendingAction;
+    const url = kind === 'cancel'
+      ? `/v2/volunteering/group-reservations/${reservationId}`
+      : `/v2/volunteering/group-reservations/${reservationId}/members/${memberId}`;
+    const doneKey = kind === 'remove'
+      ? 'group_signup.remove_member_done'
+      : kind === 'leave' ? 'group_signup.leave_done' : 'group_signup.cancel_reservation_done';
+
+    try {
+      setIsActing(true);
+      const response = await api.delete(url);
+      if (response.success) {
+        toastRef.current.success(tRef.current(doneKey));
+        setPendingAction(null);
+        load();
+      } else {
+        toastRef.current.error(response.error || tRef.current('group_signup.action_error'));
+      }
+    } catch (err) {
+      logError('Group reservation action failed', err);
+      toastRef.current.error(tRef.current('group_signup.action_error'));
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const pendingActionCopy = pendingAction ? {
+    title: t(`group_signup.confirm_${pendingAction.kind}_title`),
+    body: t(`group_signup.confirm_${pendingAction.kind}_body`, { name: pendingAction.memberName ?? '', group: pendingAction.groupName }),
+    action: t(`group_signup.confirm_${pendingAction.kind}_action`),
+  } : null;
+
   const handleCreateReservation = async () => {
     if (!reserveGroupId || !reserveShiftId || !reserveSlots) {
       setReservationError(tRef.current('group_signup.reserve_required'));
@@ -581,17 +614,44 @@ export function GroupSignUpTab() {
                         </AvatarGroup>
                       )}
 
-                      {/* Member list */}
-                      <div className="flex flex-wrap gap-2">
-                        {res.members.map((member) => (
-                          <div
-                            key={member.id}
-                            className="flex items-center gap-1 text-xs text-theme-subtle"
-                          >
-                            {memberStatusIcon(member.status, t(memberStatusLabelKey(member.status)))}
-                            <span>{member.name}</span>
-                          </div>
-                        ))}
+                      {/* Member list — every listed member is signed up for the shift */}
+                      <div className="flex flex-wrap gap-x-4 gap-y-2">
+                        {res.members.map((member) => {
+                          const canRemove = res.is_leader && res.status === 'active';
+                          const canLeave = !res.is_leader && res.status === 'active' && currentUserId !== null && member.id === currentUserId;
+                          return (
+                            <div
+                              key={member.id}
+                              className="flex items-center gap-1 text-xs text-theme-subtle"
+                            >
+                              <CheckCircle className="w-3 h-3 text-emerald-500" aria-hidden="true" />
+                              <span>{member.name}</span>
+                              {canRemove && (
+                                <Button
+                                  size="sm"
+                                  variant="tertiary"
+                                  className="min-h-7 px-2 text-xs"
+                                  startContent={<UserMinus className="w-3 h-3" aria-hidden="true" />}
+                                  aria-label={t('group_signup.remove_member_named', { name: member.name })}
+                                  onPress={() => setPendingAction({ kind: 'remove', reservationId: res.id, groupName: res.group_name, memberId: member.id, memberName: member.name })}
+                                >
+                                  {t('group_signup.remove_member')}
+                                </Button>
+                              )}
+                              {canLeave && (
+                                <Button
+                                  size="sm"
+                                  variant="tertiary"
+                                  className="min-h-7 px-2 text-xs"
+                                  startContent={<LogOut className="w-3 h-3" aria-hidden="true" />}
+                                  onPress={() => setPendingAction({ kind: 'leave', reservationId: res.id, groupName: res.group_name, memberId: member.id, memberName: member.name })}
+                                >
+                                  {t('group_signup.leave')}
+                                </Button>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -600,9 +660,9 @@ export function GroupSignUpTab() {
                     </p>
                   </div>
 
-                  {/* Add member button for leaders */}
-                  {res.is_leader && res.status !== 'cancelled' && (
-                    <div className="sm:flex-shrink-0">
+                  {/* Leader controls: name a member, or cancel the whole booking */}
+                  {res.is_leader && res.status === 'active' && (
+                    <div className="flex flex-wrap gap-2 sm:flex-shrink-0 sm:flex-col sm:items-end">
                       <Button
                         size="sm"
                         className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
@@ -611,6 +671,14 @@ export function GroupSignUpTab() {
                         isDisabled={res.max_members !== null && res.members.length >= res.max_members}
                       >
                         {t('group_signup.add_member')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="tertiary"
+                        startContent={<XCircle className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => setPendingAction({ kind: 'cancel', reservationId: res.id, groupName: res.group_name })}
+                      >
+                        {t('group_signup.cancel_reservation')}
                       </Button>
                     </div>
                   )}
@@ -686,6 +754,24 @@ export function GroupSignUpTab() {
               startContent={<UserPlus className="w-4 h-4" aria-hidden="true" />}
             >
               {t('group_signup.add_member')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Confirm remove / leave / cancel */}
+      <Modal isOpen={pendingAction !== null} onClose={() => { if (!isActing) setPendingAction(null); }} size="md" classNames={{
+        base: 'bg-overlay border border-theme-default',
+      }}>
+        <ModalContent>
+          <ModalHeader className="text-theme-primary">{pendingActionCopy?.title}</ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-theme-muted">{pendingActionCopy?.body}</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={() => setPendingAction(null)} isDisabled={isActing}>{t('common.cancel')}</Button>
+            <Button variant="danger" onPress={handleConfirmAction} isLoading={isActing}>
+              {pendingActionCopy?.action}
             </Button>
           </ModalFooter>
         </ModalContent>

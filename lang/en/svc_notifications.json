@@ -42,6 +42,12 @@
     "approved_by_admin": "Your shift swap was approved by an admin",
     "accepted_swap_approved_by_admin": "A shift swap you accepted was approved by an admin"
   },
+  "group_signup": {
+    "added": "{{leader}} added you to the group {{group}} for {{opportunity}} on {{date}}. You are now signed up for this shift. If you cannot make it, you can leave the group sign-up.",
+    "left": "{{member}} has left the group sign-up {{group}} for {{opportunity}} on {{date}}.",
+    "removed": "You were taken off the group sign-up {{group}} for {{opportunity}} on {{date}}. You are no longer signed up for this shift.",
+    "cancelled": "The group sign-up {{group}} for {{opportunity}} on {{date}} has been cancelled, and its members' sign-ups with it."
+  },
   "shift": {
     "cancelled": "A shift on :title (:date) has been cancelled by the organiser"
   },

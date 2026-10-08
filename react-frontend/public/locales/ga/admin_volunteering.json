@@ -1127,6 +1127,50 @@
       "failed": "Níorbh fhéidir an teastas a chúlghairm. B’fhéidir go bhfuil sé cúlghairthe cheana."
     }
   },
+  "group_bookings": {
+    "page_title": "Áirithintí grúpa",
+    "page_desc": "Áiteanna atá curtha in áirithe ag ceannairí grúpa ar shealanna oibre deonaí dá mbaill. Tá gach ball ainmnithe cláraithe don seal. Cealaigh áirithint chun a háiteanna agus clárúcháin na mball a scaoileadh.",
+    "load_error": "Níorbh fhéidir na háirithintí grúpa a lódáil.",
+    "retry": "Bain triail eile as",
+    "tiles": {
+      "active": "Gníomhach",
+      "cancelled": "Cealaithe"
+    },
+    "filters": {
+      "label": "Stádas",
+      "all": "Gach ceann",
+      "active": "Gníomhach",
+      "cancelled": "Cealaithe"
+    },
+    "search_label": "Cuardaigh",
+    "search_placeholder": "Grúpa, deis nó ainm an cheannaire",
+    "clear_filters": "Glan na scagairí",
+    "empty_title": "Gan áirithintí grúpa",
+    "empty_body": "Taispeántar áirithintí grúpa anseo nuair a chuireann ceannaire grúpa áiteanna in áirithe ar sheal.",
+    "results": "Áirithintí grúpa a aimsíodh: {{number}}",
+    "leader": "Ceannaire an ghrúpa",
+    "places": "Áiteanna: {{filled}} as {{reserved}} líonta",
+    "members": "Baill",
+    "no_members": "Níor ainmníodh aon bhall fós",
+    "status": {
+      "active": "Gníomhach",
+      "cancelled": "Cealaithe",
+      "completed": "Críochnaithe"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Curtha in áirithe {{date}}",
+    "notes": "Nótaí",
+    "actions": {
+      "cancel": "Cealaigh an áirithint"
+    },
+    "cancel": {
+      "title": "An áirithint ghrúpa seo a chealú?",
+      "body": "Scaoilfear na {{reserved}} áit atá curtha in áirithe do {{group}} ar {{opportunity}} agus cealófar clárú gach baill ainmnithe don seal. Cuirfear in iúl don cheannaire agus do na baill. Ní féidir é seo a chur ar ceal.",
+      "confirm": "Cealaigh an áirithint",
+      "done": "Áirithint ghrúpa cealaithe.",
+      "failed": "Níorbh fhéidir an áirithint a chealú. Seans go bhfuil sí cealaithe cheana."
+    }
+  },
   "org_team": {
     "add_title": "Cuir duine leis an bhfoireann",
     "member_label": "Ball",

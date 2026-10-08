@@ -179,6 +179,19 @@ describe('AdminBreadcrumbs', () => {
     });
   });
 
+  it('names the admin Group bookings page', async () => {
+    mockLocation.pathname = '/hour-timebank/admin/volunteering/group-bookings';
+    const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');
+    render(<AdminBreadcrumbs />);
+
+    await waitFor(() => {
+      const nav = document.querySelector('nav');
+      expect(nav).toBeTruthy();
+      expect(nav!.textContent).toContain('Group bookings');
+      expect(nav!.textContent).not.toMatch(/⚠/);
+    });
+  });
+
   it('renders an ordered list (<ol>) inside the nav', async () => {
     const items = [
       { label: 'Admin', href: '/hour-timebank/admin' },

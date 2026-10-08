@@ -95,5 +95,15 @@
     "safeguarding_adults": "Schutz von Erwachsenen",
     "efaw": "Betriebliche Notfall-Erste-Hilfe (EFAW)",
     "faw": "Betriebliche Erste Hilfe (FAW)"
+  },
+  "group_signup_added": {
+    "title": "Sie wurden für eine Freiwilligenschicht angemeldet",
+    "body": "{{leader}} hat Sie zur Gruppe {{group}} hinzugefügt und Sie für die folgende Schicht angemeldet.",
+    "label_opportunity": "Angebot",
+    "label_when": "Wann",
+    "label_group": "Gruppe",
+    "signed_up": "Sie sind jetzt angemeldet – es ist nichts weiter zu tun.",
+    "leave_note": "Wenn Sie nicht kommen können, öffnen Sie Gruppenanmeldungen auf der Freiwilligenseite und verlassen Sie diese Gruppenanmeldung, damit Ihr Platz an jemand anderen gehen kann.",
+    "cta": "Meine Gruppenanmeldungen ansehen"
   }
 }

@@ -515,7 +515,8 @@
     "kiss": "Communauté bienveillante",
     "qualifications": "Qualifications",
     "opportunities": "Missions et créneaux",
-    "certificates": "Certificats"
+    "certificates": "Certificats",
+    "group_bookings": "Réservations de groupe"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"
@@ -781,11 +782,13 @@
       "settings": "champs personnalisés|rappels|webhooks|configuration",
       "qualifications": "formation|premiers secours|certificats|expiration|qualifications",
       "opportunities": "créneaux planning horaires missions",
-      "certificates": "certificats de bénévolat|révoquer|retirer un certificat|code de vérification|certificat d’heures"
+      "certificates": "certificats de bénévolat|révoquer|retirer un certificat|code de vérification|certificat d’heures",
+      "group_bookings": "inscriptions de groupe|réservations de groupe|réservations d'équipe|places réservées"
     },
     "qualifications": "Qualifications",
     "opportunities": "Missions et créneaux",
-    "certificates": "Certificats"
+    "certificates": "Certificats",
+    "group_bookings": "Réservations de groupe"
   },
   "group_join_requests": "Demandes d'adhésion aux groupes",
   "group_moderation": "Modération des groupes",

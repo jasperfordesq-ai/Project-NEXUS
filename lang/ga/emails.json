@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Postáladh liosta i d’ainm",
     "sub_account_proxy_transfer": "Seoladh creidmheasanna ama ó do chuntas",
     "sub_account_permissions_expanded": "Is féidir le cúntóir níos mó a dhéanamh ar do chuntas anois",
+    "vol_group_signup_added": "Cláraíodh thú do sheal oibre deonaí",
+    "vol_group_signup_removed": "Baineadh clárú grúpa do sheal",
+    "vol_group_signup_cancelled": "Cealaíodh clárú grúpa do sheal",
     "default": "Fógra ó Project NEXUS"
   },
   "exchange_dispute": {

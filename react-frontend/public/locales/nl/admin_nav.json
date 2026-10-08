@@ -515,7 +515,8 @@
     "coupons": "Kortingsbonnen",
     "qualifications": "Kwalificaties",
     "opportunities": "Kansen & diensten",
-    "certificates": "Certificaten"
+    "certificates": "Certificaten",
+    "group_bookings": "Groepsboekingen"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
@@ -777,11 +778,13 @@
       "settings": "aangepaste velden|herinneringen|webhooks|configuratie",
       "qualifications": "training|ehbo|certificaten|vervaldatum|kwalificaties",
       "opportunities": "diensten rooster schema kansen",
-      "certificates": "vrijwilligerscertificaten|intrekken|certificaat intrekken|verificatiecode|urencertificaat"
+      "certificates": "vrijwilligerscertificaten|intrekken|certificaat intrekken|verificatiecode|urencertificaat",
+      "group_bookings": "groepsinschrijvingen|groepsreserveringen|teamboekingen|gereserveerde plaatsen"
     },
     "qualifications": "Kwalificaties",
     "opportunities": "Kansen & diensten",
-    "certificates": "Certificaten"
+    "certificates": "Certificaten",
+    "group_bookings": "Groepsboekingen"
   },
   "group_join_requests": "Lidmaatschapsverzoeken voor groepen",
   "group_moderation": "Groepsmoderatie",

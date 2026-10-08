@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'No se pudo eliminar al miembro',
     'shift_reservation_leader_only_cancel' => 'Solo los líderes/administradores del grupo pueden cancelar esta reserva',
     'shift_reservation_cancel_failed' => 'No se pudo cancelar la reserva',
+    'shift_reservation_member_declined' => 'La solicitud de este miembro para esta oportunidad fue rechazada, por lo que no se puede añadir a la reserva de grupo',
+    'vol_checkout_before_shift_start' => 'No se puede registrar la salida antes de que empiece el turno a las :time',
     'message_cannot_send_to_self' => 'No puede enviarse un mensaje a sí mismo',
     'message_sender_not_allowed' => 'Su cuenta no tiene permitido enviar mensajes',
     'message_recipient_not_found' => 'Destinatario no encontrado',

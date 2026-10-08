@@ -113,6 +113,18 @@ class VolunteerCheckInService
                     return null;
                 }
 
+                // Check-in opens 30 minutes early, so a volunteer could be checked
+                // OUT before the shift had started — closing their attendance with
+                // no time on the clock (gap C13, seen 24 minutes early).
+                $shiftStart = DB::table('vol_shifts')
+                    ->where('id', $checkin->shift_id)
+                    ->where('tenant_id', TenantContext::getId())
+                    ->value('start_time');
+                if ($shiftStart && now()->lt(Carbon::parse($shiftStart))) {
+                    $this->addError('VALIDATION_ERROR', __('api.vol_checkout_before_shift_start', ['time' => (string) $shiftStart]));
+                    return null;
+                }
+
                 DB::table('vol_shift_checkins')
                     ->where('id', $checkin->id)
                     ->where('tenant_id', TenantContext::getId())

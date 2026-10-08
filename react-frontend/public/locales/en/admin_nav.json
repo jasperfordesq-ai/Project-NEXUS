@@ -543,7 +543,8 @@
     "whitelist": "Whitelist",
     "qualifications": "Qualifications",
     "opportunities": "Opportunities & shifts",
-    "certificates": "Certificates"
+    "certificates": "Certificates",
+    "group_bookings": "Group bookings"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"
@@ -777,11 +778,13 @@
       "settings": "custom fields|reminders|webhooks|configuration",
       "qualifications": "training|first aid|certificates|expiry|credentials",
       "opportunities": "shifts rota schedule opportunities timetable",
-      "certificates": "volunteer certificates|revoke|withdraw certificate|verification code|hours certificate"
+      "certificates": "volunteer certificates|revoke|withdraw certificate|verification code|hours certificate",
+      "group_bookings": "group sign-ups|group reservations|team bookings|reserved places"
     },
     "qualifications": "Qualifications",
     "opportunities": "Opportunities & shifts",
-    "certificates": "Certificates"
+    "certificates": "Certificates",
+    "group_bookings": "Group bookings"
   },
   "group_join_requests": "Group join requests",
   "group_moderation": "Group moderation",

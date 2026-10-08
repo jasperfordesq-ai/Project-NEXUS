@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Theip ar an mball a bhaint',
     'shift_reservation_leader_only_cancel' => 'Ní féidir ach le ceannairí/riarthóirí grúpa an áirithint seo a chealú',
     'shift_reservation_cancel_failed' => 'Theip ar an áirithint a chealú',
+    'shift_reservation_member_declined' => 'Diúltaíodh iarratas an bhaill seo ar an deis seo, mar sin ní féidir é a chur leis an áirithint ghrúpa',
+    'vol_checkout_before_shift_start' => 'Ní féidir seiceáil amach roimh thús an tseala ag :time',
     'message_cannot_send_to_self' => 'Ní féidir leat teachtaireacht a sheoladh chugat féin',
     'message_sender_not_allowed' => 'Níl cead ag do chuntas teachtaireachtaí a sheoladh',
     'message_recipient_not_found' => 'Níor aimsíodh an faighteoir',

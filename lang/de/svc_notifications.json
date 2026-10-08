@@ -40,6 +40,12 @@
     "approved_by_admin": "Ihr Schichttausch wurde von einem Administrator genehmigt",
     "accepted_swap_approved_by_admin": "Ein von Ihnen angenommener Schichttausch wurde von einem Administrator genehmigt"
   },
+  "group_signup": {
+    "added": "{{leader}} hat Sie zur Gruppe {{group}} für {{opportunity}} am {{date}} hinzugefügt. Sie sind jetzt für diese Schicht angemeldet. Wenn Sie nicht kommen können, können Sie die Gruppenanmeldung verlassen.",
+    "left": "{{member}} hat die Gruppenanmeldung {{group}} für {{opportunity}} am {{date}} verlassen.",
+    "removed": "Sie wurden aus der Gruppenanmeldung {{group}} für {{opportunity}} am {{date}} entfernt. Sie sind für diese Schicht nicht mehr angemeldet.",
+    "cancelled": "Die Gruppenanmeldung {{group}} für {{opportunity}} am {{date}} wurde abgesagt, und damit auch die Anmeldungen ihrer Mitglieder."
+  },
   "shift": {
     "cancelled": "Eine Schicht bei :title (:date) wurde vom Organisator abgesagt"
   },

@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Opublikowano ogłoszenie w Twoim imieniu",
     "sub_account_proxy_transfer": "Wysłano kredyty czasowe z Twojego konta",
     "sub_account_permissions_expanded": "Osoba pomagająca może teraz robić więcej na Twoim koncie",
+    "vol_group_signup_added": "Zapisano Cię na zmianę wolontariacką",
+    "vol_group_signup_removed": "Zapis grupowy na zmianę został usunięty",
+    "vol_group_signup_cancelled": "Zapis grupowy na zmianę został anulowany",
     "default": "Powiadomienie z Project NEXUS"
   },
   "exchange_dispute": {

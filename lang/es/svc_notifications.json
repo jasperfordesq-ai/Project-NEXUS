@@ -40,6 +40,12 @@
     "approved_by_admin": "Su cambio de turno fue aprobado por un administrador",
     "accepted_swap_approved_by_admin": "Un cambio de turno que aceptó fue aprobado por un administrador"
   },
+  "group_signup": {
+    "added": "{{leader}} le ha añadido al grupo {{group}} para {{opportunity}} el {{date}}. Ya está inscrito/a en este turno. Si no puede asistir, puede abandonar la inscripción de grupo.",
+    "left": "{{member}} ha abandonado la inscripción de grupo {{group}} para {{opportunity}} el {{date}}.",
+    "removed": "Se le ha quitado de la inscripción de grupo {{group}} para {{opportunity}} el {{date}}. Ya no está inscrito/a en este turno.",
+    "cancelled": "La inscripción de grupo {{group}} para {{opportunity}} el {{date}} se ha cancelado, junto con las inscripciones de sus miembros."
+  },
   "shift": {
     "cancelled": "El organizador ha cancelado un turno de :title (:date)"
   },

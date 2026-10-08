@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'فشلت إزالة العضو',
     'shift_reservation_leader_only_cancel' => 'يمكن فقط لقادة/مشرفي المجموعة إلغاء هذا الحجز',
     'shift_reservation_cancel_failed' => 'فشل إلغاء الحجز',
+    'shift_reservation_member_declined' => 'تم رفض طلب هذا العضو لهذه الفرصة، لذلك لا يمكن إضافته إلى الحجز الجماعي',
+    'vol_checkout_before_shift_start' => 'لا يمكن تسجيل الخروج قبل بدء الوردية في :time',
     'message_cannot_send_to_self' => 'لا يمكنك إرسال رسالة إلى نفسك',
     'message_sender_not_allowed' => 'حسابك غير مسموح له بإرسال الرسائل',
     'message_recipient_not_found' => 'لم يتم العثور على المستلم',

@@ -95,5 +95,15 @@
     "safeguarding_adults": "Safeguarding adults",
     "efaw": "Emergency First Aid at Work",
     "faw": "First Aid at Work"
+  },
+  "group_signup_added": {
+    "title": "You have been signed up for a volunteer shift",
+    "body": "{{leader}} has added you to the group {{group}} and signed you up for the shift below.",
+    "label_opportunity": "Opportunity",
+    "label_when": "When",
+    "label_group": "Group",
+    "signed_up": "You are now signed up — there is nothing more to do.",
+    "leave_note": "If you cannot make it, open Group sign-ups on the volunteering page and leave this group sign-up, so your place can go to someone else.",
+    "cta": "View my group sign-ups"
   }
 }

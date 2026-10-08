@@ -421,6 +421,7 @@ describe('AdminSidebar', () => {
     ['Training', '/test/admin/volunteering/training'],
     ['Qualifications', '/test/admin/volunteering/qualifications'],
     ['Certificates', '/test/admin/volunteering/certificates'],
+    ['Group bookings', '/test/admin/volunteering/group-bookings'],
     ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
     ['Fundraising campaigns', '/test/admin/volunteering/giving-days'],
     ['Donation Refunds', '/test/admin/volunteering/donations'],

@@ -515,7 +515,8 @@
     "ranking": "Ranking",
     "qualifications": "Kwalifikacje",
     "opportunities": "Oferty i zmiany",
-    "certificates": "Certyfikaty"
+    "certificates": "Certyfikaty",
+    "group_bookings": "Rezerwacje grupowe"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"
@@ -785,11 +786,13 @@
       "settings": "pola niestandardowe|przypomnienia|webhooki|konfiguracja",
       "qualifications": "szkolenie|pierwsza pomoc|certyfikaty|ważność|kwalifikacje",
       "opportunities": "zmiany grafik harmonogram oferty",
-      "certificates": "certyfikaty wolontariusza|unieważnij|wycofaj certyfikat|kod weryfikacyjny|certyfikat godzin"
+      "certificates": "certyfikaty wolontariusza|unieważnij|wycofaj certyfikat|kod weryfikacyjny|certyfikat godzin",
+      "group_bookings": "zapisy grupowe|rezerwacje grupowe|rezerwacje zespołowe|zarezerwowane miejsca"
     },
     "qualifications": "Kwalifikacje",
     "opportunities": "Oferty i zmiany",
-    "certificates": "Certyfikaty"
+    "certificates": "Certyfikaty",
+    "group_bookings": "Rezerwacje grupowe"
   },
   "group_join_requests": "Prośby o dołączenie do grup",
   "group_moderation": "Moderacja grup",

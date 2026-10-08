@@ -36,6 +36,7 @@ vi.mock("@/lib/api", () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: [] }),
     post: vi.fn().mockResolvedValue({ success: true }),
+    delete: vi.fn().mockResolvedValue({ success: true }),
   },
 }));
 
@@ -148,7 +149,7 @@ import { api } from "@/lib/api";
 const mockReservation = {
   id: 1,
   group_name: "The Green Team",
-  status: "confirmed" as const,
+  status: "active" as const,
   is_leader: true,
   shift: {
     id: 10,
@@ -165,9 +166,11 @@ const mockReservation = {
     name: "Green Dublin",
     logo_url: null,
   },
+  // Every listed member is confirmed (= signed up for the shift); the API no
+  // longer returns removed members. Alice (id 1) is the signed-in user.
   members: [
     { id: 1, name: "Alice Ryan", avatar_url: null, status: "confirmed" as const },
-    { id: 2, name: "Bob Lee", avatar_url: null, status: "pending" as const },
+    { id: 2, name: "Bob Lee", avatar_url: null, status: "confirmed" as const },
   ],
   max_members: 10,
   created_at: "2026-03-01T10:00:00Z",
@@ -200,7 +203,7 @@ describe("GroupSignUpTab", () => {
     });
     expect(screen.getByText("Park Clean-up Day")).toBeInTheDocument();
     expect(screen.getByText("Green Dublin")).toBeInTheDocument();
-    expect(screen.getByText("Confirmed")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("Leader")).toBeInTheDocument();
     expect(screen.getByText("Alice Ryan")).toBeInTheDocument();
     expect(screen.getByText("Bob Lee")).toBeInTheDocument();
@@ -278,5 +281,75 @@ describe("GroupSignUpTab", () => {
       .queryAllByRole("button", { name: /Add Member/i })
       .filter((btn) => !(btn as HTMLButtonElement).disabled);
     expect(enabledAddButtons).toHaveLength(0);
+  });
+
+  // Gap A8: the leader had no way to remove a member or cancel the reservation
+  // on the website, although the API existed; a member had no way to leave.
+  it("lets the leader remove a member after confirming", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockReservation] });
+    render(<GroupSignUpTab />);
+    await waitFor(() => expect(screen.getByText("Bob Lee")).toBeInTheDocument());
+
+    const removeButtons = screen.getAllByRole("button", { name: /^Remove .* from the group sign-up$/ });
+    expect(removeButtons).toHaveLength(2);
+    expect(screen.queryByText("Remove this member?")).not.toBeInTheDocument();
+
+    fireEvent.click(removeButtons[1]);
+    expect(screen.getByText("Remove this member?")).toBeInTheDocument();
+    expect(screen.getByText(/Bob Lee will be taken off the group sign-up for The Green Team/)).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove member" }));
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/group-reservations/1/members/2");
+    });
+    // The list reloads after the change.
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+  });
+
+  it("lets the leader cancel the whole reservation after confirming", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockReservation] });
+    render(<GroupSignUpTab />);
+    await waitFor(() => expect(screen.getByText("The Green Team")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel reservation" }));
+    expect(screen.getByText("Cancel this reservation?")).toBeInTheDocument();
+    expect(screen.getByText(/places reserved for The Green Team will be released/)).toBeInTheDocument();
+
+    // The confirm dialog's own "Cancel reservation" is the second one on screen.
+    const confirmButtons = screen.getAllByRole("button", { name: "Cancel reservation" });
+    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/group-reservations/1");
+    });
+  });
+
+  it("lets a member leave their own place, and only their own", async () => {
+    const asMember = { ...mockReservation, is_leader: false };
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [asMember] });
+    render(<GroupSignUpTab />);
+    await waitFor(() => expect(screen.getByText("Alice Ryan")).toBeInTheDocument());
+
+    // Signed in as Alice (id 1): one Leave button, no Remove, no Cancel reservation.
+    expect(screen.getAllByRole("button", { name: /^Leave$/ })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: /^Remove .* from the group sign-up$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel reservation" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Leave$/ }));
+    expect(screen.getByText("Leave this group sign-up?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Leave group sign-up" }));
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/group-reservations/1/members/1");
+    });
+  });
+
+  it("offers no controls on a cancelled reservation", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [{ ...mockReservation, status: "cancelled" as const }] });
+    render(<GroupSignUpTab />);
+    await waitFor(() => expect(screen.getByText("The Green Team")).toBeInTheDocument());
+
+    expect(screen.getByText("Cancelled")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Remove .* from the group sign-up$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancel reservation" })).not.toBeInTheDocument();
   });
 });

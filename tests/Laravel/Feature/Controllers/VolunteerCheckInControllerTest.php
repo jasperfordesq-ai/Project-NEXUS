@@ -317,4 +317,40 @@ class VolunteerCheckInControllerTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame('checked_in', $result['status']);
     }
+
+    /**
+     * Gap C13 (8 Oct 2026): a volunteer checked in during the 30-minute early
+     * window could be checked OUT before the shift had even started (observed 24
+     * minutes early), closing their attendance with no time on the clock.
+     */
+    public function test_check_out_is_refused_before_the_shift_starts(): void
+    {
+        $token = $this->seedApprovedCheckin(now()->addMinutes(20), now()->addMinutes(80));
+        $this->assertNotNull($this->checkInOwner);
+        Sanctum::actingAs($this->checkInOwner, ['*']);
+
+        $this->apiPost('/v2/volunteering/checkin/verify/' . $token)->assertOk();
+
+        $response = $this->apiPost('/v2/volunteering/checkin/checkout/' . $token)
+            ->assertStatus(400)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR');
+        $this->assertSame(
+            __('api.vol_checkout_before_shift_start', ['time' => DB::table('vol_shift_checkins as c')
+                ->join('vol_shifts as s', 'c.shift_id', '=', 's.id')
+                ->where('c.qr_token', $token)
+                ->value('s.start_time')]),
+            $response->json('errors.0.message'),
+        );
+        $this->assertSame('checked_in', DB::table('vol_shift_checkins')->where('qr_token', $token)->value('status'));
+        $this->assertNull(DB::table('vol_shift_checkins')->where('qr_token', $token)->value('checked_out_at'));
+
+        // Control: once the shift has started the same check-out goes through.
+        \Carbon\Carbon::setTestNow(now()->addMinutes(25));
+        try {
+            $this->apiPost('/v2/volunteering/checkin/checkout/' . $token)->assertOk();
+        } finally {
+            \Carbon\Carbon::setTestNow();
+        }
+        $this->assertSame('checked_out', DB::table('vol_shift_checkins')->where('qr_token', $token)->value('status'));
+    }
 }

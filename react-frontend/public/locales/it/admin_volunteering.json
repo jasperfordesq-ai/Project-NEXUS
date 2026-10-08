@@ -1093,6 +1093,50 @@
       "failed": "Impossibile revocare il certificato. Potrebbe essere già stato revocato."
     }
   },
+  "group_bookings": {
+    "page_title": "Prenotazioni di gruppo",
+    "page_desc": "Posti che i responsabili di gruppo hanno riservato sui turni di volontariato per i loro membri. Ogni membro indicato è iscritto al turno. Annulli una prenotazione per liberare i suoi posti e le iscrizioni dei membri.",
+    "load_error": "Non è stato possibile caricare le prenotazioni di gruppo.",
+    "retry": "Riprova",
+    "tiles": {
+      "active": "Attive",
+      "cancelled": "Annullate"
+    },
+    "filters": {
+      "label": "Stato",
+      "all": "Tutte",
+      "active": "Attive",
+      "cancelled": "Annullate"
+    },
+    "search_label": "Cerca",
+    "search_placeholder": "Gruppo, opportunità o nome del responsabile",
+    "clear_filters": "Azzera filtri",
+    "empty_title": "Nessuna prenotazione di gruppo",
+    "empty_body": "Le prenotazioni di gruppo compaiono qui quando un responsabile di gruppo riserva dei posti su un turno.",
+    "results": "Prenotazioni di gruppo trovate: {{number}}",
+    "leader": "Responsabile del gruppo",
+    "places": "Posti: {{filled}} su {{reserved}} occupati",
+    "members": "Membri",
+    "no_members": "Nessun membro ancora indicato",
+    "status": {
+      "active": "Attiva",
+      "cancelled": "Annullata",
+      "completed": "Completata"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Prenotata il {{date}}",
+    "notes": "Note",
+    "actions": {
+      "cancel": "Annulla prenotazione"
+    },
+    "cancel": {
+      "title": "Annullare questa prenotazione di gruppo?",
+      "body": "I {{reserved}} posti riservati per {{group}} su {{opportunity}} saranno liberati e l'iscrizione al turno di ogni membro indicato annullata. Il responsabile e i membri verranno avvisati. L'operazione non può essere annullata.",
+      "confirm": "Annulla prenotazione",
+      "done": "Prenotazione di gruppo annullata.",
+      "failed": "Non è stato possibile annullare la prenotazione. Potrebbe essere già stata annullata."
+    }
+  },
   "org_team": {
     "add_title": "Aggiungi qualcuno al team",
     "member_label": "Membro",

@@ -2459,6 +2459,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Échec du retrait du membre',
     'shift_reservation_leader_only_cancel' => 'Seuls les responsables/administrateurs du groupe peuvent annuler cette réservation',
     'shift_reservation_cancel_failed' => 'Échec de l\'annulation de la réservation',
+    'shift_reservation_member_declined' => 'La candidature de ce membre pour cette mission a été refusée ; il ne peut donc pas être ajouté à la réservation de groupe',
+    'vol_checkout_before_shift_start' => 'Le départ ne peut pas être enregistré avant le début du créneau à :time',
     'message_cannot_send_to_self' => 'Vous ne pouvez pas vous envoyer un message à vous-même',
     'message_sender_not_allowed' => 'Votre compte n\'est pas autorisé à envoyer des messages',
     'message_recipient_not_found' => 'Destinataire introuvable',

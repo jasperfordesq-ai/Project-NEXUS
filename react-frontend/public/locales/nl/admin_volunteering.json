@@ -1076,6 +1076,50 @@
       "failed": "Het certificaat kon niet worden ingetrokken. Mogelijk is het al ingetrokken."
     }
   },
+  "group_bookings": {
+    "page_title": "Groepsboekingen",
+    "page_desc": "Plaatsen die groepsleiders op vrijwilligersdiensten voor hun leden hebben gereserveerd. Elk genoemd lid is ingeschreven voor de dienst. Annuleer een boeking om de plaatsen en de inschrijvingen van de leden vrij te geven.",
+    "load_error": "De groepsboekingen konden niet worden geladen.",
+    "retry": "Opnieuw proberen",
+    "tiles": {
+      "active": "Actief",
+      "cancelled": "Geannuleerd"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Alle",
+      "active": "Actief",
+      "cancelled": "Geannuleerd"
+    },
+    "search_label": "Zoeken",
+    "search_placeholder": "Groep, kans of naam van de leider",
+    "clear_filters": "Filters wissen",
+    "empty_title": "Geen groepsboekingen",
+    "empty_body": "Groepsboekingen verschijnen hier zodra een groepsleider plaatsen op een dienst reserveert.",
+    "results": "Gevonden groepsboekingen: {{number}}",
+    "leader": "Groepsleider",
+    "places": "Plaatsen: {{filled}} van {{reserved}} bezet",
+    "members": "Leden",
+    "no_members": "Nog geen leden genoemd",
+    "status": {
+      "active": "Actief",
+      "cancelled": "Geannuleerd",
+      "completed": "Afgerond"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Geboekt op {{date}}",
+    "notes": "Opmerkingen",
+    "actions": {
+      "cancel": "Boeking annuleren"
+    },
+    "cancel": {
+      "title": "Deze groepsboeking annuleren?",
+      "body": "De {{reserved}} plaatsen die voor {{group}} op {{opportunity}} zijn gereserveerd komen vrij en de dienstinschrijving van elk genoemd lid wordt geannuleerd. De leider en de leden worden op de hoogte gebracht. Dit kan niet ongedaan worden gemaakt.",
+      "confirm": "Boeking annuleren",
+      "done": "Groepsboeking geannuleerd.",
+      "failed": "De boeking kon niet worden geannuleerd. Mogelijk was deze al geannuleerd."
+    }
+  },
   "org_team": {
     "add_title": "Iemand aan het team toevoegen",
     "member_label": "Lid",

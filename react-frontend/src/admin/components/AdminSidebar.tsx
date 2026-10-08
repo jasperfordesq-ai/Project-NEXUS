@@ -386,6 +386,7 @@ function useAdminNav(): NavSection[] {
           { label: t('volunteering_nav.training'), href: '/admin/volunteering/training', icon: GraduationCap, keywords: keyword(t('volunteering_nav.keywords.training')) },
           { label: t('volunteering_nav.qualifications'), href: '/admin/volunteering/qualifications', icon: BadgeCheck, keywords: keyword(t('volunteering_nav.keywords.qualifications')) },
           { label: t('volunteering_nav.certificates'), href: '/admin/volunteering/certificates', icon: Award, keywords: keyword(t('volunteering_nav.keywords.certificates')) },
+          { label: t('volunteering_nav.group_bookings'), href: '/admin/volunteering/group-bookings', icon: Users, keywords: keyword(t('volunteering_nav.keywords.group_bookings')) },
           { label: t('volunteering_nav.safeguarding'), href: '/admin/volunteering/safeguarding', icon: ShieldAlert, keywords: keyword(t('volunteering_nav.keywords.safeguarding')) },
           { label: t('volunteering_nav.giving_days'), href: '/admin/volunteering/giving-days', icon: Gift, group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.giving_days')) },
           { label: t('donation_refunds'), href: '/admin/volunteering/donations', icon: HandCoins, keywords: keyword(t('search_keywords.donation_refunds')) },

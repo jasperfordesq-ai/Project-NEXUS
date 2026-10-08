@@ -1093,6 +1093,50 @@
       "failed": "No se pudo revocar el certificado. Puede que ya estuviera revocado."
     }
   },
+  "group_bookings": {
+    "page_title": "Reservas de grupo",
+    "page_desc": "Plazas que los responsables de grupo han reservado en turnos de voluntariado para sus miembros. Cada miembro nombrado está inscrito en el turno. Cancele una reserva para liberar sus plazas y las inscripciones de los miembros.",
+    "load_error": "No se han podido cargar las reservas de grupo.",
+    "retry": "Reintentar",
+    "tiles": {
+      "active": "Activas",
+      "cancelled": "Canceladas"
+    },
+    "filters": {
+      "label": "Estado",
+      "all": "Todas",
+      "active": "Activas",
+      "cancelled": "Canceladas"
+    },
+    "search_label": "Buscar",
+    "search_placeholder": "Grupo, oportunidad o nombre del responsable",
+    "clear_filters": "Borrar filtros",
+    "empty_title": "No hay reservas de grupo",
+    "empty_body": "Las reservas de grupo aparecen aquí cuando un responsable de grupo reserva plazas en un turno.",
+    "results": "Reservas de grupo encontradas: {{number}}",
+    "leader": "Responsable del grupo",
+    "places": "Plazas: {{filled}} de {{reserved}} ocupadas",
+    "members": "Miembros",
+    "no_members": "Aún no se ha nombrado a ningún miembro",
+    "status": {
+      "active": "Activa",
+      "cancelled": "Cancelada",
+      "completed": "Completada"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Reservada el {{date}}",
+    "notes": "Notas",
+    "actions": {
+      "cancel": "Cancelar reserva"
+    },
+    "cancel": {
+      "title": "¿Cancelar esta reserva de grupo?",
+      "body": "Se liberarán las {{reserved}} plazas reservadas para {{group}} en {{opportunity}} y se cancelará la inscripción en el turno de cada miembro nombrado. Se avisará al responsable y a los miembros. Esta acción no se puede deshacer.",
+      "confirm": "Cancelar reserva",
+      "done": "Reserva de grupo cancelada.",
+      "failed": "No se ha podido cancelar la reserva. Puede que ya estuviera cancelada."
+    }
+  },
   "org_team": {
     "add_title": "Añadir a alguien al equipo",
     "member_label": "Miembro",

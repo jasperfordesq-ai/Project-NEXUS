@@ -2785,6 +2785,9 @@ Route::delete('/v2/admin/volunteering/organizations/{id}/members/{memberId}', [\
 Route::get('/v2/admin/volunteering/certificates', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'index']);
 Route::get('/v2/admin/volunteering/certificates/{id}/html', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'html'])->whereNumber('id');
 Route::post('/v2/admin/volunteering/certificates/{id}/revoke', [\App\Http\Controllers\Api\AdminVolunteerCertificateController::class, 'revoke'])->whereNumber('id');
+// Group bookings (a group leader's reserved places on a shift): list and cancel (8 Oct 2026).
+Route::get('/v2/admin/volunteering/group-reservations', [\App\Http\Controllers\Api\AdminVolunteerGroupReservationController::class, 'index']);
+Route::delete('/v2/admin/volunteering/group-reservations/{id}', [\App\Http\Controllers\Api\AdminVolunteerGroupReservationController::class, 'cancel'])->whereNumber('id');
 Route::post('/v2/admin/volunteering/approvals/{id}/approve', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'approveApplication']);
 Route::post('/v2/admin/volunteering/approvals/{id}/decline', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'declineApplication']);
 Route::post('/v2/admin/volunteering/send-shift-reminders', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'sendShiftReminders']);

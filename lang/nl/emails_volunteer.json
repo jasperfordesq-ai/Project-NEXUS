@@ -95,5 +95,15 @@
     "safeguarding_adults": "Bescherming van volwassenen",
     "efaw": "Bedrijfs-EHBO voor noodgevallen (EFAW)",
     "faw": "Bedrijfs-EHBO (FAW)"
+  },
+  "group_signup_added": {
+    "title": "U bent ingeschreven voor een vrijwilligersdienst",
+    "body": "{{leader}} heeft u toegevoegd aan de groep {{group}} en u ingeschreven voor de onderstaande dienst.",
+    "label_opportunity": "Kans",
+    "label_when": "Wanneer",
+    "label_group": "Groep",
+    "signed_up": "U bent nu ingeschreven – u hoeft verder niets te doen.",
+    "leave_note": "Kunt u niet komen, open dan Groepsinschrijvingen op de vrijwilligerspagina en verlaat deze groepsinschrijving, zodat uw plaats naar iemand anders kan gaan.",
+    "cta": "Mijn groepsinschrijvingen bekijken"
   }
 }

@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Ein Eintrag wurde in Ihrem Namen veröffentlicht",
     "sub_account_proxy_transfer": "Zeitguthaben wurde von Ihrem Konto gesendet",
     "sub_account_permissions_expanded": "Eine Hilfsperson kann jetzt mehr auf Ihrem Konto tun",
+    "vol_group_signup_added": "Sie wurden für eine Freiwilligenschicht angemeldet",
+    "vol_group_signup_removed": "Eine Gruppenanmeldung für eine Schicht wurde entfernt",
+    "vol_group_signup_cancelled": "Eine Gruppenanmeldung für eine Schicht wurde abgesagt",
     "default": "Benachrichtigung von Project NEXUS"
   },
   "exchange_dispute": {

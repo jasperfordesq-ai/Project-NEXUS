@@ -263,6 +263,12 @@ class NotificationDispatcher
             // member must learn this happened in their name — if the record is
             // wrong, this notice is how they find out.
             'support_action_attested',
+            // A group leader signed the member up for a shift in their name, or
+            // took that sign-up away again. Both change what the member is
+            // committed to on a given day, so neither may wait for a digest.
+            'vol_group_signup_added',
+            'vol_group_signup_removed',
+            'vol_group_signup_cancelled',
         ];
         if (! $policyMuted && in_array($activityType, $criticalInstantTypes, true)) {
             $frequency = 'instant';

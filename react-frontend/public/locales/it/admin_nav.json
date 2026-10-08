@@ -515,7 +515,8 @@
     "prerender": "Prerender",
     "qualifications": "Qualifiche",
     "opportunities": "Opportunità e turni",
-    "certificates": "Certificati"
+    "certificates": "Certificati",
+    "group_bookings": "Prenotazioni di gruppo"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"
@@ -781,11 +782,13 @@
       "settings": "campi personalizzati|promemoria|webhook|configurazione",
       "qualifications": "formazione|primo soccorso|certificati|scadenza|qualifiche",
       "opportunities": "turni orario calendario opportunità",
-      "certificates": "certificati di volontariato|revocare|ritirare certificato|codice di verifica|certificato ore"
+      "certificates": "certificati di volontariato|revocare|ritirare certificato|codice di verifica|certificato ore",
+      "group_bookings": "iscrizioni di gruppo|prenotazioni di gruppo|prenotazioni di squadra|posti riservati"
     },
     "qualifications": "Qualifiche",
     "opportunities": "Opportunità e turni",
-    "certificates": "Certificati"
+    "certificates": "Certificati",
+    "group_bookings": "Prenotazioni di gruppo"
   },
   "group_join_requests": "Richieste di adesione ai gruppi",
   "group_moderation": "Moderazione dei gruppi",

@@ -1110,6 +1110,50 @@
       "failed": "Nie udało się unieważnić certyfikatu. Być może został już unieważniony."
     }
   },
+  "group_bookings": {
+    "page_title": "Rezerwacje grupowe",
+    "page_desc": "Miejsca zarezerwowane przez liderów grup na zmianach wolontariackich dla swoich członków. Każdy wskazany członek jest zapisany na zmianę. Anuluj rezerwację, aby zwolnić jej miejsca i zapisy członków.",
+    "load_error": "Nie udało się wczytać rezerwacji grupowych.",
+    "retry": "Spróbuj ponownie",
+    "tiles": {
+      "active": "Aktywne",
+      "cancelled": "Anulowane"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Wszystkie",
+      "active": "Aktywne",
+      "cancelled": "Anulowane"
+    },
+    "search_label": "Szukaj",
+    "search_placeholder": "Grupa, oferta lub nazwisko lidera",
+    "clear_filters": "Wyczyść filtry",
+    "empty_title": "Brak rezerwacji grupowych",
+    "empty_body": "Rezerwacje grupowe pojawiają się tutaj, gdy lider grupy zarezerwuje miejsca na zmianie.",
+    "results": "Znalezione rezerwacje grupowe: {{number}}",
+    "leader": "Lider grupy",
+    "places": "Miejsca: zajęte {{filled}} z {{reserved}}",
+    "members": "Członkowie",
+    "no_members": "Nie wskazano jeszcze członków",
+    "status": {
+      "active": "Aktywna",
+      "cancelled": "Anulowana",
+      "completed": "Zakończona"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Zarezerwowano {{date}}",
+    "notes": "Uwagi",
+    "actions": {
+      "cancel": "Anuluj rezerwację"
+    },
+    "cancel": {
+      "title": "Anulować tę rezerwację grupową?",
+      "body": "{{reserved}} miejsc zarezerwowanych dla {{group}} na {{opportunity}} zostanie zwolnionych, a zapis na zmianę każdego wskazanego członka anulowany. Lider i członkowie zostaną powiadomieni. Tej operacji nie można cofnąć.",
+      "confirm": "Anuluj rezerwację",
+      "done": "Rezerwacja grupowa anulowana.",
+      "failed": "Nie udało się anulować rezerwacji. Być może została już anulowana."
+    }
+  },
   "org_team": {
     "add_title": "Dodaj osobę do zespołu",
     "member_label": "Członek",

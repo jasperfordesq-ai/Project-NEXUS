@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Er is een advertentie uit jouw naam geplaatst",
     "sub_account_proxy_transfer": "Er zijn tijdcredits vanaf je account verstuurd",
     "sub_account_permissions_expanded": "Een helper kan nu meer op je account doen",
+    "vol_group_signup_added": "U bent ingeschreven voor een vrijwilligersdienst",
+    "vol_group_signup_removed": "Een groepsinschrijving voor een dienst is verwijderd",
+    "vol_group_signup_cancelled": "Een groepsinschrijving voor een dienst is geannuleerd",
     "default": "Melding van Project NEXUS"
   },
   "exchange_dispute": {

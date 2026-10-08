@@ -515,7 +515,8 @@
     "kiss": "Comunidade Presente",
     "qualifications": "Qualificações",
     "opportunities": "Oportunidades e turnos",
-    "certificates": "Certificados"
+    "certificates": "Certificados",
+    "group_bookings": "Reservas de grupo"
   },
   "aria": {
     "breadcrumbs": "Pão ralado"
@@ -781,11 +782,13 @@
       "settings": "campos personalizados|lembretes|webhooks|configuração",
       "qualifications": "formação|primeiros socorros|certificados|validade|qualificações",
       "opportunities": "turnos escala horário oportunidades",
-      "certificates": "certificados de voluntariado|revogar|retirar certificado|código de verificação|certificado de horas"
+      "certificates": "certificados de voluntariado|revogar|retirar certificado|código de verificação|certificado de horas",
+      "group_bookings": "inscrições de grupo|reservas de grupo|reservas de equipa|vagas reservadas"
     },
     "qualifications": "Qualificações",
     "opportunities": "Oportunidades e turnos",
-    "certificates": "Certificados"
+    "certificates": "Certificados",
+    "group_bookings": "Reservas de grupo"
   },
   "group_join_requests": "Pedidos de adesão a grupos",
   "group_moderation": "Moderação de grupos",

@@ -40,6 +40,12 @@
     "approved_by_admin": "D'fhormhuinigh riarthóir do mhalartú sealaíochta",
     "accepted_swap_approved_by_admin": "D'fhormhuinigh riarthóir malartú sealaíochta a ghlac tú leis"
   },
+  "group_signup": {
+    "added": "Chuir {{leader}} leis an ngrúpa {{group}} thú do {{opportunity}} ar {{date}}. Tá tú cláraithe don seal seo anois. Mura féidir leat teacht, is féidir leat an clárú grúpa a fhágáil.",
+    "left": "D'fhág {{member}} an clárú grúpa {{group}} do {{opportunity}} ar {{date}}.",
+    "removed": "Baineadh den chlárú grúpa {{group}} do {{opportunity}} ar {{date}} thú. Níl tú cláraithe don seal seo a thuilleadh.",
+    "cancelled": "Cealaíodh an clárú grúpa {{group}} do {{opportunity}} ar {{date}}, agus clárúcháin a bhall in éineacht leis."
+  },
   "shift": {
     "cancelled": "Chuir an t-eagraí seal ar :title (:date) ar ceal"
   },

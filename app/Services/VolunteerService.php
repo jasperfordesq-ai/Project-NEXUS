@@ -1479,10 +1479,19 @@ class VolunteerService
         // Single grouped count instead of one COUNT query per shift (N+1)
         $shiftIds = array_map(static fn ($s) => (int) $s->id, $shifts);
         $placeholders = implode(',', array_fill(0, count($shiftIds), '?'));
+        // Confirmed members of an active group reservation hold a sign-up row too,
+        // but their place is counted through reserved_count below — leave them out
+        // here or they are counted twice (see VolunteerShiftCapacityService).
         $countRows = DB::select(
-            "SELECT shift_id, COUNT(*) as cnt FROM vol_applications
-             WHERE shift_id IN ($placeholders) AND status = 'approved' AND tenant_id = ?
-             GROUP BY shift_id",
+            "SELECT a.shift_id, COUNT(*) as cnt FROM vol_applications a
+             WHERE a.shift_id IN ($placeholders) AND a.status = 'approved' AND a.tenant_id = ?
+               AND NOT EXISTS (
+                   SELECT 1 FROM vol_shift_group_members gm
+                   JOIN vol_shift_group_reservations r ON gm.reservation_id = r.id
+                   WHERE gm.user_id = a.user_id AND gm.status = 'confirmed'
+                     AND r.shift_id = a.shift_id AND r.status = 'active' AND r.tenant_id = a.tenant_id
+               )
+             GROUP BY a.shift_id",
             [...$shiftIds, $tenantId]
         );
         $counts = [];

@@ -95,5 +95,15 @@
     "safeguarding_adults": "Cumhdach daoine fásta",
     "efaw": "Garchabhair Éigeandála san Ionad Oibre",
     "faw": "Garchabhair san Ionad Oibre"
+  },
+  "group_signup_added": {
+    "title": "Cláraíodh thú do sheal oibre deonaí",
+    "body": "Chuir {{leader}} leis an ngrúpa {{group}} thú agus chláraigh sé/sí thú don seal thíos.",
+    "label_opportunity": "Deis",
+    "label_when": "Cathain",
+    "label_group": "Grúpa",
+    "signed_up": "Tá tú cláraithe anois — níl aon rud eile le déanamh.",
+    "leave_note": "Mura féidir leat teacht, oscail Clárúcháin ghrúpa ar an leathanach oibre deonaí agus fág an clárú grúpa seo, ionas gur féidir d'áit a thabhairt do dhuine eile.",
+    "cta": "Féach ar mo chlárúcháin ghrúpa"
   }
 }

@@ -95,5 +95,15 @@
     "safeguarding_adults": "Protection des adultes",
     "efaw": "Premiers secours d'urgence au travail (EFAW)",
     "faw": "Premiers secours au travail (FAW)"
+  },
+  "group_signup_added": {
+    "title": "Vous avez été inscrit(e) à un créneau de bénévolat",
+    "body": "{{leader}} vous a ajouté(e) au groupe {{group}} et vous a inscrit(e) au créneau ci-dessous.",
+    "label_opportunity": "Mission",
+    "label_when": "Quand",
+    "label_group": "Groupe",
+    "signed_up": "Vous êtes maintenant inscrit(e) — vous n'avez rien d'autre à faire.",
+    "leave_note": "Si vous ne pouvez pas venir, ouvrez Inscriptions de groupe sur la page bénévolat et quittez cette inscription de groupe, afin que votre place puisse revenir à quelqu'un d'autre.",
+    "cta": "Voir mes inscriptions de groupe"
   }
 }

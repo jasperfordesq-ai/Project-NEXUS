@@ -95,5 +95,15 @@
     "safeguarding_adults": "Ochrona osób dorosłych",
     "efaw": "Pierwsza pomoc w nagłych wypadkach w pracy (EFAW)",
     "faw": "Pierwsza pomoc w pracy (FAW)"
+  },
+  "group_signup_added": {
+    "title": "Zapisano Cię na zmianę wolontariacką",
+    "body": "{{leader}} dodał(a) Cię do grupy {{group}} i zapisał(a) Cię na poniższą zmianę.",
+    "label_opportunity": "Oferta",
+    "label_when": "Kiedy",
+    "label_group": "Grupa",
+    "signed_up": "Jesteś teraz zapisany/a – nie musisz nic więcej robić.",
+    "leave_note": "Jeśli nie możesz przyjść, otwórz Zapisy grupowe na stronie wolontariatu i opuść ten zapis grupowy, aby Twoje miejsce mogło trafić do kogoś innego.",
+    "cta": "Zobacz moje zapisy grupowe"
   }
 }

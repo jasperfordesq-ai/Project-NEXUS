@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "あなたの名前でリストが投稿されました",
     "sub_account_proxy_transfer": "あなたのアカウントからタイムクレジットが送られました",
     "sub_account_permissions_expanded": "サポーターがあなたのアカウントでできることが増えました",
+    "vol_group_signup_added": "ボランティアシフトに登録されました",
+    "vol_group_signup_removed": "シフトのグループ登録が取り消されました",
+    "vol_group_signup_cancelled": "シフトのグループ登録がキャンセルされました",
     "default": "Project NEXUS からの通知"
   },
   "exchange_dispute": {

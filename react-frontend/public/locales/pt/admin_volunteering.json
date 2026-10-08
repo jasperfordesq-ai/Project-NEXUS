@@ -1093,6 +1093,50 @@
       "failed": "Não foi possível revogar o certificado. Pode já ter sido revogado."
     }
   },
+  "group_bookings": {
+    "page_title": "Reservas de grupo",
+    "page_desc": "Vagas que os líderes de grupo reservaram em turnos de voluntariado para os seus membros. Cada membro indicado está inscrito no turno. Cancele uma reserva para libertar as suas vagas e as inscrições dos membros.",
+    "load_error": "Não foi possível carregar as reservas de grupo.",
+    "retry": "Tentar novamente",
+    "tiles": {
+      "active": "Ativas",
+      "cancelled": "Canceladas"
+    },
+    "filters": {
+      "label": "Estado",
+      "all": "Todas",
+      "active": "Ativas",
+      "cancelled": "Canceladas"
+    },
+    "search_label": "Pesquisar",
+    "search_placeholder": "Grupo, oportunidade ou nome do líder",
+    "clear_filters": "Limpar filtros",
+    "empty_title": "Sem reservas de grupo",
+    "empty_body": "As reservas de grupo aparecem aqui quando um líder de grupo reserva vagas num turno.",
+    "results": "Reservas de grupo encontradas: {{number}}",
+    "leader": "Líder do grupo",
+    "places": "Vagas: {{filled}} de {{reserved}} preenchidas",
+    "members": "Membros",
+    "no_members": "Ainda não foi indicado nenhum membro",
+    "status": {
+      "active": "Ativa",
+      "cancelled": "Cancelada",
+      "completed": "Concluída"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Reservada em {{date}}",
+    "notes": "Notas",
+    "actions": {
+      "cancel": "Cancelar reserva"
+    },
+    "cancel": {
+      "title": "Cancelar esta reserva de grupo?",
+      "body": "As {{reserved}} vagas reservadas para {{group}} em {{opportunity}} serão libertadas e a inscrição no turno de cada membro indicado será cancelada. O líder e os membros serão avisados. Esta ação não pode ser desfeita.",
+      "confirm": "Cancelar reserva",
+      "done": "Reserva de grupo cancelada.",
+      "failed": "Não foi possível cancelar a reserva. Pode já ter sido cancelada."
+    }
+  },
   "org_team": {
     "add_title": "Adicionar alguém à equipa",
     "member_label": "Membro",

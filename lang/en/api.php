@@ -3110,6 +3110,8 @@ return [
     'shift_reservation_remove_member_failed' => 'Failed to remove member',
     'shift_reservation_leader_only_cancel' => 'Only group leaders/admins can cancel this reservation',
     'shift_reservation_cancel_failed' => 'Failed to cancel reservation',
+    'shift_reservation_member_declined' => 'This member\'s application for this opportunity was declined, so they cannot be added to the group booking',
+    'vol_checkout_before_shift_start' => 'Check-out is not available before the shift starts at :time',
     'message_cannot_send_to_self' => 'You cannot send a message to yourself',
     'message_sender_not_allowed' => 'Your account is not allowed to send messages',
     'message_recipient_not_found' => 'Recipient not found',

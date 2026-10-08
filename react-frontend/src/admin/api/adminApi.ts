@@ -157,6 +157,8 @@ import type {
   AdminVolunteerQualificationsResponse,
   AdminVolunteerCertificatesParams,
   AdminVolunteerCertificatesResponse,
+  AdminVolunteerGroupReservationsParams,
+  AdminVolunteerGroupReservationsResponse,
   QualificationConfirmationMethod,
   QualificationWithdrawalReason,
 } from './types';
@@ -1839,6 +1841,19 @@ export const adminVolunteering = {
     api.download(`/v2/admin/volunteering/certificates/${id}/html`, { filename: `volunteer-certificate-${code}.html` }),
   revokeCertificate: (id: number, reason: string) =>
     api.post<{ revoked: boolean }>(`/v2/admin/volunteering/certificates/${id}/revoke`, { reason }),
+
+  // Group bookings: places a group leader reserved on a shift for named members.
+  // Cancelling releases the places and every member's sign-up, and tells the group.
+  listGroupReservations: (params: AdminVolunteerGroupReservationsParams = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== '') query.set(key, String(value));
+    }
+    const qs = query.toString();
+    return api.get<AdminVolunteerGroupReservationsResponse>(`/v2/admin/volunteering/group-reservations${qs ? `?${qs}` : ''}`);
+  },
+  cancelGroupReservation: (id: number) =>
+    api.delete<{ cancelled: boolean }>(`/v2/admin/volunteering/group-reservations/${id}`),
 
   // Training
   getTraining: () => api.get('/v2/admin/volunteering/training'),

@@ -515,7 +515,8 @@
     "whitelist": "Weiße Liste",
     "qualifications": "Qualifikationen",
     "opportunities": "Gelegenheiten & Schichten",
-    "certificates": "Bescheinigungen"
+    "certificates": "Bescheinigungen",
+    "group_bookings": "Gruppenbuchungen"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"
@@ -777,11 +778,13 @@
       "settings": "benutzerdefinierte Felder|Erinnerungen|Webhooks|Konfiguration",
       "qualifications": "schulung|erste hilfe|zertifikate|ablauf|qualifikationen",
       "opportunities": "Schichten Dienstplan Zeitplan Gelegenheiten",
-      "certificates": "Ehrenamtsbescheinigungen|widerrufen|Bescheinigung zurückziehen|Prüfcode|Stundenbescheinigung"
+      "certificates": "Ehrenamtsbescheinigungen|widerrufen|Bescheinigung zurückziehen|Prüfcode|Stundenbescheinigung",
+      "group_bookings": "Gruppenanmeldungen|Gruppenreservierungen|Teambuchungen|reservierte Plätze"
     },
     "qualifications": "Qualifikationen",
     "opportunities": "Gelegenheiten & Schichten",
-    "certificates": "Bescheinigungen"
+    "certificates": "Bescheinigungen",
+    "group_bookings": "Gruppenbuchungen"
   },
   "group_join_requests": "Beitrittsanfragen für Gruppen",
   "group_moderation": "Gruppenmoderation",

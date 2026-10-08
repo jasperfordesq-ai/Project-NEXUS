@@ -1076,6 +1076,50 @@
       "failed": "Die Bescheinigung konnte nicht widerrufen werden. Möglicherweise wurde sie bereits widerrufen."
     }
   },
+  "group_bookings": {
+    "page_title": "Gruppenbuchungen",
+    "page_desc": "Plätze, die Gruppenleitungen auf Freiwilligenschichten für ihre Mitglieder reserviert haben. Jedes benannte Mitglied ist für die Schicht angemeldet. Stornieren Sie eine Buchung, um ihre Plätze und die Anmeldungen der Mitglieder freizugeben.",
+    "load_error": "Die Gruppenbuchungen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "tiles": {
+      "active": "Aktiv",
+      "cancelled": "Storniert"
+    },
+    "filters": {
+      "label": "Status",
+      "all": "Alle",
+      "active": "Aktiv",
+      "cancelled": "Storniert"
+    },
+    "search_label": "Suche",
+    "search_placeholder": "Gruppe, Angebot oder Name der Leitung",
+    "clear_filters": "Filter zurücksetzen",
+    "empty_title": "Keine Gruppenbuchungen",
+    "empty_body": "Gruppenbuchungen erscheinen hier, sobald eine Gruppenleitung Plätze auf einer Schicht reserviert.",
+    "results": "Gefundene Gruppenbuchungen: {{number}}",
+    "leader": "Gruppenleitung",
+    "places": "Plätze: {{filled}} von {{reserved}} belegt",
+    "members": "Mitglieder",
+    "no_members": "Noch keine Mitglieder benannt",
+    "status": {
+      "active": "Aktiv",
+      "cancelled": "Storniert",
+      "completed": "Abgeschlossen"
+    },
+    "shift_line": "{{date}}, {{start}}–{{end}}",
+    "booked_on": "Gebucht am {{date}}",
+    "notes": "Notizen",
+    "actions": {
+      "cancel": "Buchung stornieren"
+    },
+    "cancel": {
+      "title": "Diese Gruppenbuchung stornieren?",
+      "body": "Die {{reserved}} für {{group}} auf {{opportunity}} reservierten Plätze werden freigegeben und die Schichtanmeldung jedes benannten Mitglieds storniert. Leitung und Mitglieder werden informiert. Dies kann nicht rückgängig gemacht werden.",
+      "confirm": "Buchung stornieren",
+      "done": "Gruppenbuchung storniert.",
+      "failed": "Die Buchung konnte nicht storniert werden. Möglicherweise wurde sie bereits storniert."
+    }
+  },
   "org_team": {
     "add_title": "Jemanden zum Team hinzufügen",
     "member_label": "Mitglied",

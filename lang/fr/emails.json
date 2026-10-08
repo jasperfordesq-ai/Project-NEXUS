@@ -469,6 +469,9 @@
     "sub_account_proxy_listing": "Une annonce a été publiée en votre nom",
     "sub_account_proxy_transfer": "Des crédits de temps ont été envoyés depuis votre compte",
     "sub_account_permissions_expanded": "Une personne aidante peut désormais faire davantage sur votre compte",
+    "vol_group_signup_added": "Vous avez été inscrit(e) à un créneau de bénévolat",
+    "vol_group_signup_removed": "Une inscription de groupe à un créneau a été retirée",
+    "vol_group_signup_cancelled": "Une inscription de groupe à un créneau a été annulée",
     "default": "Notification de Project NEXUS"
   },
   "exchange_dispute": {
