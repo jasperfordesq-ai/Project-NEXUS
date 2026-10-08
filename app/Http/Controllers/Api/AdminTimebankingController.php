@@ -37,23 +37,24 @@ class AdminTimebankingController extends BaseApiController
         $this->requireAdmin();
         $tenantId = $this->getTenantId();
 
+        // Hours brought from another timebank were not exchanged here (member import).
         $txRow = DB::selectOne(
             "SELECT COUNT(*) as total_transactions, COALESCE(SUM(amount), 0) as total_volume, COALESCE(AVG(amount), 0) as avg_transaction
-             FROM transactions WHERE tenant_id = ? AND status = 'completed'",
+             FROM transactions WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'",
             [$tenantId]
         );
 
         $topEarners = DB::select(
             "SELECT u.id as user_id, " . UserDisplayName::sql('u', 'user_name') . ", COALESCE(SUM(t.amount), 0) as amount
              FROM transactions t JOIN users u ON t.receiver_id = u.id
-             WHERE t.tenant_id = ? AND t.status = 'completed' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
+             WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
             [$tenantId]
         );
 
         $topSpenders = DB::select(
             "SELECT u.id as user_id, " . UserDisplayName::sql('u', 'user_name') . ", COALESCE(SUM(t.amount), 0) as amount
              FROM transactions t JOIN users u ON t.sender_id = u.id
-             WHERE t.tenant_id = ? AND t.status = 'completed' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
+             WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' GROUP BY u.id ORDER BY amount DESC LIMIT 5",
             [$tenantId]
         );
 
@@ -428,11 +429,11 @@ class AdminTimebankingController extends BaseApiController
              FROM users u
              LEFT JOIN (
                  SELECT receiver_id, SUM(amount) as total, COUNT(*) as cnt
-                 FROM transactions WHERE tenant_id = ? AND status = 'completed' GROUP BY receiver_id
+                 FROM transactions WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' GROUP BY receiver_id
              ) earned ON earned.receiver_id = u.id
              LEFT JOIN (
                  SELECT sender_id, SUM(amount) as total, COUNT(*) as cnt
-                 FROM transactions WHERE tenant_id = ? AND status = 'completed' GROUP BY sender_id
+                 FROM transactions WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' GROUP BY sender_id
              ) spent ON spent.sender_id = u.id
              WHERE {$where}
              ORDER BY u.balance DESC

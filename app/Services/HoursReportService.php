@@ -13,7 +13,9 @@ use App\Support\UserDisplayName;
  * HoursReportService — Native Eloquent implementation for admin hours reporting.
  *
  * Provides breakdowns of time-credit transactions by category, member, and period.
- * All queries are tenant-scoped.
+ * All queries are tenant-scoped. Hours brought from another timebank (member
+ * import, transaction_type 'opening_balance') were not exchanged here and are
+ * excluded from every total.
  */
 class HoursReportService
 {
@@ -44,7 +46,7 @@ class HoursReportService
             FROM transactions t
             LEFT JOIN listings l ON l.id = t.listing_id AND l.tenant_id = t.tenant_id
             LEFT JOIN categories c ON c.id = l.category_id AND c.tenant_id = t.tenant_id
-            WHERE t.tenant_id = ? AND t.status = 'completed'
+            WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance'
             {$dateConditions}
             GROUP BY c.id, c.name, c.color
             ORDER BY total_hours DESC";
@@ -82,13 +84,13 @@ class HoursReportService
         // Subquery: hours given (as sender)
         $givenSub = "SELECT sender_id AS user_id, COALESCE(SUM(amount), 0) AS hours_given, COUNT(*) AS given_count
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed' {$dateConditions}
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' {$dateConditions}
             GROUP BY sender_id";
 
         // Subquery: hours received (as receiver)
         $receivedSub = "SELECT receiver_id AS user_id, COALESCE(SUM(amount), 0) AS hours_received, COUNT(*) AS received_count
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed' {$dateConditions}
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' {$dateConditions}
             GROUP BY receiver_id";
 
         $orderBy = match ($sortBy) {
@@ -199,7 +201,7 @@ class HoursReportService
                 COUNT(DISTINCT receiver_id) AS unique_receivers,
                 COUNT(DISTINCT sender_id) + COUNT(DISTINCT receiver_id) AS unique_participants
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed'
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             {$dateConditions}
             {$periodCondition}
             GROUP BY DATE_FORMAT(created_at, '%Y-%m'), DATE_FORMAT(created_at, '%M %Y')
@@ -241,7 +243,7 @@ class HoursReportService
                 COUNT(DISTINCT sender_id) AS unique_providers,
                 COUNT(DISTINCT receiver_id) AS unique_receivers
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed'
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             {$dateConditions}";
 
         $summary = DB::selectOne($summaryQuery, array_merge([$tenantId], $dateBindings));
@@ -265,13 +267,13 @@ class HoursReportService
         // This month vs last month comparison
         $thisMonthQuery = "SELECT COALESCE(SUM(amount), 0) AS hours, COUNT(*) AS transactions
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed'
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())";
         $thisMonth = DB::selectOne($thisMonthQuery, [$tenantId]);
 
         $lastMonthQuery = "SELECT COALESCE(SUM(amount), 0) AS hours, COUNT(*) AS transactions
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed'
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             AND YEAR(created_at) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
             AND MONTH(created_at) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))";
         $lastMonth = DB::selectOne($lastMonthQuery, [$tenantId]);

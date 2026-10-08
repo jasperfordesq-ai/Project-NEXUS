@@ -688,7 +688,7 @@ class ExploreService
 
         try {
             $row = DB::selectOne(
-                "SELECT COUNT(*) AS cnt FROM transactions WHERE tenant_id = ? AND status = 'completed' AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
+                "SELECT COUNT(*) AS cnt FROM transactions WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
                 [$tenantId]
             );
             $exchangesThisMonth = (int) ($row->cnt ?? 0);
@@ -702,7 +702,7 @@ class ExploreService
 
         try {
             $row = DB::selectOne(
-                "SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE tenant_id = ? AND status = 'completed'",
+                "SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'",
                 [$tenantId]
             );
             $hoursExchanged = round((float) ($row->total ?? 0), 1);

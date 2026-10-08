@@ -9,12 +9,15 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Support\Wallet\OpeningBalance;
 use Illuminate\Support\Facades\DB;
 
 /**
  * AdminAnalyticsService — Laravel DI-based service for admin dashboard analytics.
  *
  * All queries are tenant-scoped via explicit tenant_id parameter or HasTenantScope trait.
+ * Transaction figures ignore opening_balance rows: hours brought from another
+ * timebank (member import) were not exchanged here.
  */
 class AdminAnalyticsService
 {
@@ -36,11 +39,13 @@ class AdminAnalyticsService
 
         $txnVolume30d = (float) $this->transaction->newQuery()
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $thirtyDaysAgo)
             ->sum('amount');
 
         $txnCount30d = (int) $this->transaction->newQuery()
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $thirtyDaysAgo)
             ->count();
 
@@ -51,6 +56,7 @@ class AdminAnalyticsService
 
         $avgTxnSize = (float) $this->transaction->newQuery()
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->avg('amount');
 
         return [
@@ -102,11 +108,13 @@ class AdminAnalyticsService
 
         $txnVolume30d = (float) DB::table('transactions')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $thirtyDaysAgo)
             ->sum('amount');
 
         $txnCount30d = (int) DB::table('transactions')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $thirtyDaysAgo)
             ->count();
 
@@ -114,9 +122,9 @@ class AdminAnalyticsService
         // Uses SQL UNION + COUNT(DISTINCT) instead of loading all IDs into PHP memory
         $activeTradersRow = DB::selectOne(
             "SELECT COUNT(DISTINCT user_id) as cnt FROM (
-                SELECT sender_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ?
+                SELECT sender_id as user_id FROM transactions WHERE tenant_id = ? AND transaction_type <> 'opening_balance' AND created_at >= ?
                 UNION
-                SELECT receiver_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ?
+                SELECT receiver_id as user_id FROM transactions WHERE tenant_id = ? AND transaction_type <> 'opening_balance' AND created_at >= ?
             ) as active_users",
             [$tenantId, $thirtyDaysAgo, $tenantId, $thirtyDaysAgo]
         );
@@ -124,6 +132,7 @@ class AdminAnalyticsService
 
         $avgTxnSize = (float) DB::table('transactions')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->avg('amount');
 
         $newUsers30d = (int) DB::table('users')
@@ -161,6 +170,7 @@ class AdminAnalyticsService
 
         return DB::table('transactions')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', now()->subMonths($months))
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
             ->selectRaw('COUNT(*) as transaction_count')
@@ -183,6 +193,7 @@ class AdminAnalyticsService
 
         return DB::table('transactions')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', now()->subWeeks($weeks))
             ->selectRaw('YEARWEEK(created_at, 1) as week')
             ->selectRaw('MIN(DATE(created_at)) as week_start')
@@ -205,6 +216,7 @@ class AdminAnalyticsService
         return DB::table('transactions as t')
             ->join('users as u', 't.receiver_id', '=', 'u.id')
             ->where('t.tenant_id', $tenantId)
+            ->where('t.transaction_type', '!=', OpeningBalance::TYPE)
             ->where('t.created_at', '>=', now()->subDays($days))
             ->select(
                 'u.id',
@@ -236,6 +248,7 @@ class AdminAnalyticsService
         return DB::table('transactions as t')
             ->join('users as u', 't.sender_id', '=', 'u.id')
             ->where('t.tenant_id', $tenantId)
+            ->where('t.transaction_type', '!=', OpeningBalance::TYPE)
             ->where('t.created_at', '>=', now()->subDays($days))
             ->select(
                 'u.id',

@@ -39,9 +39,9 @@ class MemberReportService
             ->where('u.last_login_at', '>=', $cutoff)
             ->select(['u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.email', 'u.last_login_at', 'u.created_at', 'u.avatar_url'])
             ->selectRaw(
-                "(SELECT COUNT(*) FROM transactions t WHERE (t.sender_id = u.id OR t.receiver_id = u.id) AND t.tenant_id = ? AND t.status = 'completed') as transaction_count,
-                 (SELECT COALESCE(SUM(t.amount), 0) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed') as hours_given,
-                 (SELECT COALESCE(SUM(t.amount), 0) FROM transactions t WHERE t.receiver_id = u.id AND t.tenant_id = ? AND t.status = 'completed') as hours_received",
+                "(SELECT COUNT(*) FROM transactions t WHERE (t.sender_id = u.id OR t.receiver_id = u.id) AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance') as transaction_count,
+                 (SELECT COALESCE(SUM(t.amount), 0) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance') as hours_given,
+                 (SELECT COALESCE(SUM(t.amount), 0) FROM transactions t WHERE t.receiver_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance') as hours_received",
                 [$tenantId, $tenantId, $tenantId]
             )
             ->orderByDesc('u.last_login_at')
@@ -190,9 +190,9 @@ class MemberReportService
 
         $traders = (int) DB::selectOne(
             "SELECT COUNT(DISTINCT user_id) as cnt FROM (
-                SELECT sender_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ? AND status = 'completed'
+                SELECT sender_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ? AND status = 'completed' AND transaction_type <> 'opening_balance'
                 UNION
-                SELECT receiver_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ? AND status = 'completed'
+                SELECT receiver_id as user_id FROM transactions WHERE tenant_id = ? AND created_at >= ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             ) t",
             [$tenantId, $cutoff, $tenantId, $cutoff]
         )->cnt;
@@ -258,9 +258,9 @@ class MemberReportService
             ->where('u.status', 'active')
             ->select(['u.id', 'u.first_name', 'u.last_name', 'u.profile_type', 'u.organization_name', 'u.avatar_url'])
             ->selectRaw(
-                "COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.created_at >= ?), 0) as hours_given,
-                 COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.receiver_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.created_at >= ?), 0) as hours_received,
-                 COALESCE((SELECT COUNT(*) FROM transactions t WHERE (t.sender_id = u.id OR t.receiver_id = u.id) AND t.tenant_id = ? AND t.status = 'completed' AND t.created_at >= ?), 0) as transaction_count",
+                "COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.sender_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' AND t.created_at >= ?), 0) as hours_given,
+                 COALESCE((SELECT SUM(t.amount) FROM transactions t WHERE t.receiver_id = u.id AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' AND t.created_at >= ?), 0) as hours_received,
+                 COALESCE((SELECT COUNT(*) FROM transactions t WHERE (t.sender_id = u.id OR t.receiver_id = u.id) AND t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' AND t.created_at >= ?), 0) as transaction_count",
                 [$tenantId, $cutoff, $tenantId, $cutoff, $tenantId, $cutoff]
             )
             ->havingRaw('(hours_given + hours_received) > 0')

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Builds municipal/KISS impact reporting from existing tenant-scoped activity.
+ * Hours brought from another timebank (member import, 'opening_balance') were not
+ * exchanged here and are excluded from every figure.
  */
 class MunicipalImpactReportService
 {
@@ -203,7 +205,7 @@ class MunicipalImpactReportService
             $row = DB::selectOne(
                 "SELECT COUNT(DISTINCT receiver_id) AS count
                  FROM transactions
-                 WHERE tenant_id = ? AND status = 'completed'
+                 WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
                    AND DATE(created_at) BETWEEN ? AND ?",
                 [$tenantId, $range['from'], $range['to']]
             );
@@ -221,7 +223,7 @@ class MunicipalImpactReportService
                  FROM transactions t
                  LEFT JOIN listings l ON l.id = t.listing_id AND l.tenant_id = t.tenant_id
                  LEFT JOIN categories c ON c.id = l.category_id AND c.tenant_id = t.tenant_id
-                 WHERE t.tenant_id = ? AND t.status = 'completed'
+                 WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance'
                    AND DATE(t.created_at) BETWEEN ? AND ?
                  GROUP BY COALESCE(c.name, 'Uncategorized')
                  ORDER BY hours DESC
@@ -283,7 +285,7 @@ class MunicipalImpactReportService
         if (Schema::hasTable('transactions')) {
             foreach (DB::select(
                 "SELECT DISTINCT sender_id, receiver_id FROM transactions
-                 WHERE tenant_id = ? AND status = 'completed' AND DATE(created_at) BETWEEN ? AND ?",
+                 WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND DATE(created_at) BETWEEN ? AND ?",
                 [$tenantId, $range['from'], $range['to']]
             ) as $row) {
                 if ($row->sender_id) {
@@ -307,7 +309,7 @@ class MunicipalImpactReportService
                             GREATEST(sender_id, receiver_id) AS b,
                             COUNT(*) AS c
                      FROM transactions
-                     WHERE tenant_id = ? AND status = 'completed'
+                     WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
                        AND DATE(created_at) BETWEEN ? AND ?
                        AND sender_id IS NOT NULL AND receiver_id IS NOT NULL
                      GROUP BY a, b
@@ -392,7 +394,7 @@ class MunicipalImpactReportService
         if (Schema::hasTable('transactions')) {
             foreach (DB::select(
                 "SELECT DISTINCT sender_id, receiver_id FROM transactions
-                 WHERE tenant_id = ? AND status = 'completed' AND DATE(created_at) BETWEEN ? AND ?",
+                 WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND DATE(created_at) BETWEEN ? AND ?",
                 [$tenantId, $range['from'], $range['to']]
             ) as $row) {
                 if ($row->sender_id) {
@@ -624,7 +626,7 @@ class MunicipalImpactReportService
         $row = DB::selectOne(
             "SELECT COALESCE(SUM(amount), 0) AS completed_hours
              FROM transactions
-             WHERE tenant_id = ? AND status = 'completed' AND DATE(created_at) BETWEEN ? AND ?",
+             WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND DATE(created_at) BETWEEN ? AND ?",
             [$tenantId, $range['from'], $range['to']]
         );
 
@@ -685,7 +687,7 @@ class MunicipalImpactReportService
         if (Schema::hasTable('transactions')) {
             $rows = DB::select(
                 "SELECT DISTINCT sender_id, receiver_id FROM transactions
-                 WHERE tenant_id = ? AND status = 'completed' AND DATE(created_at) BETWEEN ? AND ?",
+                 WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND DATE(created_at) BETWEEN ? AND ?",
                 [$tenantId, $range['from'], $range['to']]
             );
             foreach ($rows as $row) {
@@ -766,7 +768,7 @@ class MunicipalImpactReportService
                  FROM transactions t
                  LEFT JOIN listings l ON l.id = t.listing_id AND l.tenant_id = t.tenant_id
                  LEFT JOIN categories c ON c.id = l.category_id AND c.tenant_id = t.tenant_id
-                 WHERE t.tenant_id = ? AND t.status = 'completed' AND DATE(t.created_at) BETWEEN ? AND ?
+                 WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance' AND DATE(t.created_at) BETWEEN ? AND ?
                  GROUP BY COALESCE(c.name, 'Uncategorized')
                  ORDER BY hours DESC
                  LIMIT 8",
@@ -792,7 +794,7 @@ class MunicipalImpactReportService
                         COUNT(*) AS activities,
                         COUNT(DISTINCT sender_id) + COUNT(DISTINCT receiver_id) AS participants
                  FROM transactions
-                 WHERE tenant_id = ? AND status = 'completed' AND DATE(created_at) BETWEEN ? AND ?
+                 WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance' AND DATE(created_at) BETWEEN ? AND ?
                  GROUP BY DATE_FORMAT(created_at, '%Y-%m')",
                 [$tenantId, $range['from'], $range['to']]
             );

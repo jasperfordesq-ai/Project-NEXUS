@@ -398,7 +398,7 @@ class ReportExportService
                 COUNT(DISTINCT sender_id) AS unique_providers,
                 COUNT(DISTINCT receiver_id) AS unique_receivers
             FROM transactions
-            WHERE tenant_id = ? AND status = 'completed'
+            WHERE tenant_id = ? AND status = 'completed' AND transaction_type <> 'opening_balance'
             {$dateConditions}
             GROUP BY DATE_FORMAT(created_at, '%Y-%m')
             ORDER BY period ASC";
@@ -431,7 +431,7 @@ class ReportExportService
             FROM transactions t
             LEFT JOIN listings l ON l.id = t.listing_id AND l.tenant_id = t.tenant_id
             LEFT JOIN categories c ON c.id = l.category_id AND c.tenant_id = t.tenant_id
-            WHERE t.tenant_id = ? AND t.status = 'completed'
+            WHERE t.tenant_id = ? AND t.status = 'completed' AND t.transaction_type <> 'opening_balance'
             {$dateConditions}
             GROUP BY c.name
             ORDER BY total_hours DESC";

@@ -311,7 +311,7 @@ class AdminCrmController extends BaseApiController
      * Credits with no member on the other side. They move balances but are
      * not an exchange between two people, so they never advance the journey.
      */
-    private const FUNNEL_NON_EXCHANGE_TYPES = ['starting_balance', 'admin_grant', 'community_fund'];
+    private const FUNNEL_NON_EXCHANGE_TYPES = ['starting_balance', 'opening_balance', 'admin_grant', 'community_fund'];
 
     /**
      * Each member is placed at the FURTHEST step they have reached, and a

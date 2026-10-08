@@ -247,9 +247,9 @@ class ReviewService
         $limit = min(max((int) ($filters['limit'] ?? 20), 1), 100);
         $onlyTransactionId = isset($filters['transaction_id']) ? (int) $filters['transaction_id'] : null;
 
-        // System credit grants (starting balances, admin grants, community fund)
+        // System credit grants (starting and imported opening balances, admin grants, community fund)
         // have no peer to review.
-        $systemTypes = ['starting_balance', 'admin_grant', 'community_fund'];
+        $systemTypes = ['starting_balance', 'opening_balance', 'admin_grant', 'community_fund'];
 
         // NOTE: these closures receive an Illuminate\Database\Query\Builder, NOT
         // the Eloquent Builder imported at the top of this file — so they are
