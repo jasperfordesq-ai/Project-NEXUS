@@ -1820,9 +1820,6 @@
     "src/pages/volunteering/OpportunityDetailPage.test.tsx": {
       "TS2769": 1
     },
-    "src/pages/volunteering/OrgApplicationsTab.test.tsx": {
-      "TS2345": 9
-    },
     "src/pages/volunteering/OrgHoursReviewTab.test.tsx": {
       "TS2741": 6,
       "TS2769": 1
@@ -1884,7 +1881,7 @@
     }
   },
   "totals": {
-    "fileCount": 556,
-    "errorCount": 1693
+    "fileCount": 555,
+    "errorCount": 1684
   }
 }

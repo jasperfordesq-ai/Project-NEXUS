@@ -37,6 +37,7 @@ vi.mock('@/lib/api', () => ({
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 import { api } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@/lib/api';
 import OrgApplicationsTab from './OrgApplicationsTab';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -63,22 +64,27 @@ const makeApplication = (
   shift: null,
 });
 
-const EMPTY_RESPONSE = {
+type MockApplication = ReturnType<typeof makeApplication>;
+
+// The component requests per_page=20, so the single-page fixtures echo it back.
+const LAST_PAGE_META: PaginationMeta = { per_page: 20, cursor: null, has_more: false };
+
+const EMPTY_RESPONSE: ApiResponse<MockApplication[]> = {
   success: true,
   data: [],
-  meta: { cursor: null, has_more: false },
+  meta: LAST_PAGE_META,
 };
 
-const ONE_PENDING_RESPONSE = {
+const ONE_PENDING_RESPONSE: ApiResponse<MockApplication[]> = {
   success: true,
   data: [makeApplication()],
-  meta: { cursor: null, has_more: false },
+  meta: LAST_PAGE_META,
 };
 
-const TWO_APPS_RESPONSE = {
+const TWO_APPS_RESPONSE: ApiResponse<MockApplication[]> = {
   success: true,
   data: [makeApplication({ id: 1 }), makeApplication({ id: 2, status: 'approved', userName: 'Bob Smith' })],
-  meta: { cursor: null, has_more: false },
+  meta: LAST_PAGE_META,
 };
 
 describe('OrgApplicationsTab — loading state', () => {
