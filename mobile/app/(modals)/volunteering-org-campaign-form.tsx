@@ -243,6 +243,7 @@ function CampaignFormScreen() {
               <View testID="campaign-form-dates" className={`gap-3 ${largeText ? '' : 'flex-row'}`}>
                 <View className="min-w-0 flex-1">
                   <Input
+                    containerClassName="mb-3 w-full"
                     label={t('campaignForm.startDateLabel')}
                     accessibilityLabel={t('campaignForm.startDateLabel')}
                     placeholder={t('campaignForm.datePlaceholder')}

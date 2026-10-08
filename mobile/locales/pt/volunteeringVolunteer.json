@@ -401,6 +401,10 @@
     "cancelConfirmTitle": "Cancelar esta reserva?",
     "cancelConfirmMessage": "Todas as vagas reservadas serão libertadas.",
     "cancelledTitle": "Reserva cancelada",
-    "cancelError": "Não foi possível cancelar esta reserva. Tente novamente."
+    "cancelError": "Não foi possível cancelar esta reserva. Tente novamente.",
+    "members_one": "Membros ({{count}} de {{max}})",
+    "members_other": "Membros ({{count}} de {{max}})",
+    "membersNoMax_one": "Membros ({{count}})",
+    "membersNoMax_other": "Membros ({{count}})"
   }
 }

@@ -401,6 +401,10 @@
     "cancelConfirmTitle": "Annullare questa prenotazione?",
     "cancelConfirmMessage": "Tutti i posti prenotati verranno liberati.",
     "cancelledTitle": "Prenotazione annullata",
-    "cancelError": "Impossibile annullare questa prenotazione. Riprovi."
+    "cancelError": "Impossibile annullare questa prenotazione. Riprovi.",
+    "members_one": "Membri ({{count}} su {{max}})",
+    "members_other": "Membri ({{count}} su {{max}})",
+    "membersNoMax_one": "Membri ({{count}})",
+    "membersNoMax_other": "Membri ({{count}})"
   }
 }

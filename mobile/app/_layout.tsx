@@ -941,6 +941,14 @@ function RootNavigator() {
       <Stack.Screen name="(modals)/volunteering-org-expenses" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:expenses.title') }} />
       <Stack.Screen name="(modals)/volunteering-org-fundraising" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:fundraising.title') }} />
       <Stack.Screen name="(modals)/volunteering-org-campaign-form" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:campaignForm.newTitle') }} />
+      <Stack.Screen name="(modals)/volunteering-my-waitlists" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:waitlist.title') }} />
+      <Stack.Screen name="(modals)/volunteering-my-wellbeing" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:wellbeing.title') }} />
+      <Stack.Screen name="(modals)/volunteering-my-alerts" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:alerts.title') }} />
+      <Stack.Screen name="(modals)/volunteering-my-qualifications" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:qualifications.title') }} />
+      <Stack.Screen name="(modals)/volunteering-my-accessibility" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:accessibility.title') }} />
+      <Stack.Screen name="(modals)/volunteering-my-group-signups" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:group.title') }} />
+      <Stack.Screen name="(modals)/volunteer-shift-code" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:code.title') }} />
+      <Stack.Screen name="(modals)/volunteer-incident-report" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:incident.title') }} />
       <Stack.Screen
         name="(modals)/volunteering-detail"
         options={{ ...modalOptions, headerShown: false, title: t('volunteering:detailTitle') }}

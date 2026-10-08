@@ -36,6 +36,7 @@ import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { Ionicons } from '@/components/ui/Icon';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { ListSkeleton } from '@/components/ui/Skeleton';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -360,7 +361,7 @@ function MyGroupSignupsContent() {
         </Surface>
 
         <HeroButton onPress={() => void openReserve()} testID="group-reserve">
-          <Ionicons name="add-outline" size={16} color="#ffffff" />
+          <AccentIcon name="add-outline" size={16} />
           <HeroButton.Label>{t('volunteeringVolunteer:group.reserve')}</HeroButton.Label>
         </HeroButton>
 

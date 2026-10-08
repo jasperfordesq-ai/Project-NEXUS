@@ -233,6 +233,7 @@ function ShiftFormScreen() {
               <View testID="shift-form-times" className={`gap-3 ${largeText ? '' : 'flex-row'}`}>
                 <View className="min-w-0 flex-1">
                   <Input
+                    containerClassName="mb-3 w-full"
                     label={t('shiftForm.startLabel')}
                     accessibilityLabel={t('shiftForm.startLabel')}
                     placeholder={t('shiftForm.timePlaceholder')}

@@ -282,6 +282,7 @@ function PatternFormScreen() {
               <View testID="pattern-form-clocks" className={`gap-3 ${largeText ? '' : 'flex-row'}`}>
                 <View className="min-w-0 flex-1">
                   <Input
+                    containerClassName="mb-3 w-full"
                     label={t('patternForm.startLabel')}
                     accessibilityLabel={t('patternForm.startLabel')}
                     placeholder={t('patternForm.timePlaceholder')}
@@ -321,6 +322,7 @@ function PatternFormScreen() {
               <View testID="pattern-form-date-fields" className={`gap-3 ${largeText ? '' : 'flex-row'}`}>
                 <View className="min-w-0 flex-1">
                   <Input
+                    containerClassName="mb-3 w-full"
                     label={t('patternForm.startDateLabel')}
                     accessibilityLabel={t('patternForm.startDateLabel')}
                     placeholder={t('patternForm.datePlaceholder')}

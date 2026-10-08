@@ -401,6 +401,10 @@
     "cancelConfirmTitle": "An gcealóidh tú an áirithint seo?",
     "cancelConfirmMessage": "Scaoilfear gach áit áirithe saor.",
     "cancelledTitle": "Áirithint cealaithe",
-    "cancelError": "Níorbh fhéidir an áirithint seo a chealú. Bain triail eile as."
+    "cancelError": "Níorbh fhéidir an áirithint seo a chealú. Bain triail eile as.",
+    "members_one": "Baill ({{count}} as {{max}})",
+    "members_other": "Baill ({{count}} as {{max}})",
+    "membersNoMax_one": "Baill ({{count}})",
+    "membersNoMax_other": "Baill ({{count}})"
   }
 }

@@ -208,6 +208,9 @@ describe('the routes this outage actually broke', () => {
       .toBe('/(modals)/volunteering?tab=applications');
     expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/volunteering/my-organisations'))
       .toBe('/(modals)/volunteering?tab=organisations');
+    // Group sign-ups is its own screen on the phone, not a hub tab.
+    expect(mapSystemPathToNativeRoute('/volunteering?tab=group-signups&reservation=4&member=9'))
+      .toBe('/(modals)/volunteering-my-group-signups?reservation=4&member=9');
   });
 
   it('opens a review-request link on the pending composer route', () => {

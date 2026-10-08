@@ -350,9 +350,20 @@ class VolunteerFlowIntegrationTest extends \Tests\Laravel\TestCase
         $this->assertNotNull($checkIn, 'verifyCheckIn should succeed within window');
         $this->assertSame('checked_in', $checkIn['status']);
 
-        // Check out
+        // Check-in opens 30 minutes early, but check-out must wait for the shift
+        // to start (gap C13) — otherwise attendance closes with no time on it.
+        $this->assertFalse(
+            (bool) $checkInService->checkOut($token),
+            'checkOut must be refused before the shift has started'
+        );
+
+        // Once the shift is under way, check-out succeeds.
+        Database::query(
+            'UPDATE vol_shifts SET start_time = DATE_SUB(NOW(), INTERVAL 5 MINUTE) WHERE id = ?',
+            [$shiftId]
+        );
         $checkedOut = $checkInService->checkOut($token);
-        $this->assertTrue($checkedOut, 'checkOut should succeed');
+        $this->assertTrue($checkedOut, 'checkOut should succeed after the shift starts');
 
         // Verify DB status
         $dbStatus = (string)Database::query(

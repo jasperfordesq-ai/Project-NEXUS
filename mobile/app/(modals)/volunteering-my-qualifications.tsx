@@ -30,6 +30,7 @@ import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { Chip } from '@/components/ui/StatusChip';
 import { Ionicons } from '@/components/ui/Icon';
+import AccentIcon from '@/components/ui/AccentIcon';
 import { ListSkeleton } from '@/components/ui/Skeleton';
 import { useAppToast } from '@/components/ui/AppToast';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -231,7 +232,7 @@ function MyQualificationsContent() {
 
         {payload ? (
           <HeroButton onPress={openAdd} testID="qualifications-add" accessibilityLabel={t('volunteeringVolunteer:qualifications.add')}>
-            <Ionicons name="add-outline" size={16} color="#ffffff" />
+            <AccentIcon name="add-outline" size={16} />
             <HeroButton.Label>{t('volunteeringVolunteer:qualifications.add')}</HeroButton.Label>
           </HeroButton>
         ) : null}

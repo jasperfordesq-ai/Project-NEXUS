@@ -401,6 +401,10 @@
     "cancelConfirmTitle": "Diese Reservierung stornieren?",
     "cancelConfirmMessage": "Alle reservierten Plätze werden freigegeben.",
     "cancelledTitle": "Reservierung storniert",
-    "cancelError": "Diese Reservierung konnte nicht storniert werden. Bitte versuchen Sie es erneut."
+    "cancelError": "Diese Reservierung konnte nicht storniert werden. Bitte versuchen Sie es erneut.",
+    "members_one": "Mitglieder ({{count}} von {{max}})",
+    "members_other": "Mitglieder ({{count}} von {{max}})",
+    "membersNoMax_one": "Mitglieder ({{count}})",
+    "membersNoMax_other": "Mitglieder ({{count}})"
   }
 }

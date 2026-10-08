@@ -567,6 +567,13 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
         // wrong, which is why nobody hit it by tapping around.
         return appendParams('/(modals)/volunteering-org-dashboard', { ...params, id: detail });
       }
+      // Group sign-up notifications link to the website's tab. The phone has no such
+      // tab — group sign-ups is its own screen — so without this the tap fell back to
+      // the hub's first tab. The screen gates itself on the community switch.
+      if (!id && params.tab === 'group-signups') {
+        const { tab: _tab, ...rest } = params;
+        return appendParams('/(modals)/volunteering-my-group-signups', rest);
+      }
       return id
         ? appendParams('/(modals)/volunteering-detail', { ...params, id })
         : appendParams('/(modals)/volunteering', params);

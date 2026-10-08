@@ -9,27 +9,31 @@
       "eventOfflineCheckin.json:device.version": "Version is the same word in German",
       "event_communications.json:version": "Version is the same word in German",
       "event_recurrence_blueprints.json:history_version": "Version is the same word in German",
-      "event_templates.json:templates.mobile.optionalDatePlaceholder": "Literal machine-readable date-time format"
+      "event_templates.json:templates.mobile.optionalDatePlaceholder": "Literal machine-readable date-time format",
+      "volunteeringVolunteer.json:incident.organisationLabel": "Organisation and optional are both standard German"
     },
     "fr": {
-      "eventRegistration.json:revocation.reference": "Invitation is the same word in French; the identifier placeholder is language-neutral",
       "eventOfflineCheckin.json:device.version": "Version is the same word in French",
+      "eventRegistration.json:revocation.reference": "Invitation is the same word in French; the identifier placeholder is language-neutral",
       "event_communications.json:version": "Version is the same word in French",
       "event_recurrence_blueprints.json:history_version": "Version is the same word in French",
       "exchanges.json:groupExchanges.participants": "Participant is the same word in French",
       "exchanges.json:groupExchanges.participants_one": "Participant is the same word in French",
       "exchanges.json:groupExchanges.participants_other": "Participants is the same word in French",
-      "marketplace.json:forms.photosCount": "Photos is the same word in French",
-      "marketplace.json:orders.deliveryEstimate": "Minutes is the same word in French",
-      "marketplace.json:orders.deliveryEstimate_one": "Minute is the same word in French",
-      "jobs.json:owner.interviewMinutes_one": "Minute is the same word in French",
-      "jobs.json:owner.interviewMinutes_other": "Minutes is the same word in French",
-      "groups.json:detail.qa.votes_other": "Votes is the same word in French",
+      "groups.json:detail.analytics.breakdown.discussions": "Discussions is the same word in French",
       "groups.json:detail.analytics.participants": "Participant is the same word in French",
       "groups.json:detail.analytics.participants_one": "Participant is the same word in French",
       "groups.json:detail.analytics.participants_other": "Participants is the same word in French",
-      "groups.json:detail.analytics.breakdown.discussions": "Discussions is the same word in French",
-      "ideation.json:ideas.votes": "Votes is the same word in French"
+      "groups.json:detail.qa.votes_other": "Votes is the same word in French",
+      "ideation.json:ideas.votes": "Votes is the same word in French",
+      "jobs.json:owner.interviewMinutes_one": "Minute is the same word in French",
+      "jobs.json:owner.interviewMinutes_other": "Minutes is the same word in French",
+      "marketplace.json:forms.photosCount": "Photos is the same word in French",
+      "marketplace.json:orders.deliveryEstimate": "Minutes is the same word in French",
+      "marketplace.json:orders.deliveryEstimate_one": "Minute is the same word in French",
+      "volunteeringVolunteer.json:waitlist.capacity": "place/places is the French word for a place on a shift",
+      "volunteeringVolunteer.json:waitlist.capacity_one": "place/places is the French word for a place on a shift",
+      "volunteeringVolunteer.json:waitlist.capacity_other": "place/places is the French word for a place on a shift"
     },
     "it": {
       "resources.json:downloads_one": "Download is established Italian product terminology"
