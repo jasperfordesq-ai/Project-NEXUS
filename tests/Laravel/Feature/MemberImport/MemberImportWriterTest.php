@@ -12,13 +12,17 @@ use App\Models\User;
 use App\Services\AuditLogService;
 use App\Services\Auth\EmailConfirmationService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
+use App\Services\Identity\RegistrationPolicyService;
 use App\Services\MemberImport\MemberImportRowRules;
 use App\Services\MemberImport\MemberImportStopped;
 use App\Services\MemberImport\MemberImportWriter;
+use App\Services\TenantSettingsService;
 use App\Support\Wallet\OpeningBalance;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tests\Laravel\TestCase;
 
 final class MemberImportWriterTest extends TestCase
@@ -183,6 +187,184 @@ final class MemberImportWriterTest extends TestCase
         $this->assertNotSame($hashOf($a1['user_id']), $hashOf($b1['user_id']));
     }
 
+    public function test_any_other_exception_inside_the_write_also_becomes_a_clean_stop(): void
+    {
+        $row = $this->row();
+        $failingAudit = new class extends AuditLogService {
+            public function logAction(
+                int $tenantId,
+                string $action,
+                ?int $userId = null,
+                array $details = [],
+                ?int $organizationId = null,
+                ?int $targetUserId = null,
+            ): int {
+                throw new \RuntimeException('not a database error');
+            }
+        };
+        $writer = new MemberImportWriter(
+            app(MemberImportRowRules::class),
+            app(EmailConfirmationService::class),
+            $failingAudit
+        );
+
+        try {
+            $writer->write(
+                $row, $this->testTenantId, $this->adminId,
+                AdminCreatedAccountAdmission::decide($this->testTenantId, false),
+                '66666666-6666-4666-8666-666666666666'
+            );
+            $this->fail('expected a stop');
+        } catch (MemberImportStopped $e) {
+            $this->assertSame('write_failed', $e->reason);
+        }
+        $this->assertFalse(DB::table('users')->where('email', $row['email'])->exists());
+    }
+
+    /**
+     * Inserts a clashing member (same tenant, same email) the instant the
+     * writer's "does this email exist yet?" lookup has come back empty: the
+     * check has passed, so only the database's unique key can stop the
+     * duplicate. (It has to happen BEFORE the writer's transaction starts, so
+     * that, as with a real second request, the clash survives the rollback.)
+     */
+    private function clashJustBeforeTheUsersInsert(string $email, ?string $importIdOfClash): void
+    {
+        $armed = true;
+        DB::listen(function (QueryExecuted $query) use (&$armed, $email, $importIdOfClash): void {
+            if (!$armed || stripos($query->sql, 'select `id` from `users`') !== 0 || !in_array($email, $query->bindings, true)) {
+                return;
+            }
+            $armed = false;
+            $clashId = (int) DB::table('users')->insertGetId([
+                'tenant_id' => $this->testTenantId, 'name' => 'Clash', 'email' => $email, 'created_at' => now(),
+            ]);
+            if ($importIdOfClash !== null) {
+                DB::table('org_audit_log')->insert([
+                    'tenant_id' => $this->testTenantId, 'user_id' => $this->adminId, 'target_user_id' => $clashId,
+                    'action' => MemberImportWriter::ACTION_MEMBER_IMPORTED,
+                    'details' => json_encode(['import_id' => $importIdOfClash]), 'created_at' => now(),
+                ]);
+            }
+        });
+    }
+
+    public function test_the_unique_key_stops_a_member_who_appears_after_the_check_and_writes_no_ledger(): void
+    {
+        $row = $this->row();
+        $this->clashJustBeforeTheUsersInsert($row['email'], null);
+        $ledgerBefore = DB::table('transactions')->where('transaction_type', OpeningBalance::TYPE)->count();
+
+        try {
+            $this->write($row);
+            $this->fail('expected a stop');
+        } catch (MemberImportStopped $e) {
+            $this->assertSame('email_now_taken', $e->reason);
+        }
+
+        $this->assertSame($ledgerBefore, DB::table('transactions')->where('transaction_type', OpeningBalance::TYPE)->count());
+        $this->assertSame(1, DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', $row['email'])->count());
+    }
+
+    public function test_a_duplicate_that_is_this_imports_own_member_is_recognised_as_already_created(): void
+    {
+        // Two overlapping requests for the same import: the other one won the race.
+        $row = $this->row();
+        $importId = '77777777-7777-4777-8777-777777777777';
+        $this->clashJustBeforeTheUsersInsert($row['email'], $importId);
+
+        $out = $this->write($row, $importId);
+
+        $this->assertTrue($out['already']);
+        $this->assertTrue($out['admission_complete']);
+        $this->assertSame(
+            (int) DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', $row['email'])->value('id'),
+            $out['user_id']
+        );
+    }
+
+    public function test_a_normal_write_and_a_recognised_repeat_report_the_admission_as_complete(): void
+    {
+        $row = $this->row();
+        $this->assertTrue($this->write($row)['admission_complete']);
+        $this->assertTrue($this->write($row)['admission_complete']);
+    }
+
+    public function test_a_member_whose_attestation_record_fails_is_created_but_reported(): void
+    {
+        // Seam: afterCreate() resolves AuditLogService from the container, so a
+        // service that fails only for the attestation entry reaches exactly that step.
+        $this->app->instance(AuditLogService::class, new class extends AuditLogService {
+            public function logAction(
+                int $tenantId,
+                string $action,
+                ?int $userId = null,
+                array $details = [],
+                ?int $organizationId = null,
+                ?int $targetUserId = null,
+            ): int {
+                if ($action === AuditLogService::ACTION_ADMIN_IDENTITY_ATTESTED) {
+                    throw new \RuntimeException('attestation could not be recorded');
+                }
+
+                return parent::logAction($tenantId, $action, $userId, $details, $organizationId, $targetUserId);
+            }
+        });
+        $log = Log::spy();
+        $decision = [
+            'requires_identity_check' => true, 'held' => false, 'attested' => true,
+            'registration_mode' => 'verified_identity',
+            'columns' => ['is_approved' => 1, 'status' => 'active'],
+        ];
+
+        $out = app()->make(MemberImportWriter::class)->write(
+            $this->row(), $this->testTenantId, $this->adminId, $decision, '88888888-8888-4888-8888-888888888888'
+        );
+
+        $this->assertFalse($out['admission_complete']);
+        $this->assertFalse($out['already']);
+        $this->assertTrue(DB::table('users')->where('id', $out['user_id'])->exists());
+        $this->assertSame(1, DB::table('transactions')->where('receiver_id', $out['user_id'])->count());
+        $log->shouldHaveReceived('error')->withArgs(
+            fn (string $message): bool => $message === 'member_import.admission_after_create_failed'
+        )->once();
+    }
+
+    public function test_a_member_whose_identity_check_could_not_be_started_is_reported(): void
+    {
+        // Seam: a community whose joining rules require an identity check holds the
+        // new member, and afterCreate() then marks the check as outstanding with an
+        // UPDATE on the member. Failing exactly that statement reaches the "check not
+        // started" branch, which logs it and (since this round) reports it.
+        DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)
+            ->whereIn('setting_key', ['general.registration_mode', 'general.admin_approval', 'registration_mode', 'admin_approval'])
+            ->delete();
+        RegistrationPolicyService::upsertPolicy($this->testTenantId, [
+            'registration_mode' => 'verified_identity', 'verification_provider' => 'stripe_identity',
+            'require_email_verify' => 1,
+        ]);
+        app(TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
+        $decision = AdminCreatedAccountAdmission::decide($this->testTenantId, false);
+        $this->assertTrue($decision['held']);
+
+        DB::beforeExecuting(function (string $query): void {
+            if (stripos($query, "UPDATE users SET verification_status = 'pending'") === 0) {
+                throw new \RuntimeException('the check could not be marked as outstanding');
+            }
+        });
+        $log = Log::spy();
+
+        $out = app()->make(MemberImportWriter::class)->write(
+            $this->row(), $this->testTenantId, $this->adminId, $decision, '99999999-9999-4999-8999-999999999999'
+        );
+
+        $this->assertFalse($out['admission_complete']);
+        $this->assertSame('pending', DB::table('users')->where('id', $out['user_id'])->value('status'));
+        $log->shouldHaveReceived('error')->withArgs(
+            fn (string $message): bool => $message === 'admin_created_account.identity_check_start_failed'
+        )->once();
+    }
+
     public function test_a_failure_part_way_through_leaves_nothing_behind(): void
     {
         $row = $this->row();
@@ -204,6 +386,7 @@ final class MemberImportWriterTest extends TestCase
             $failingAudit
         );
         $ledgerBefore = DB::table('transactions')->where('transaction_type', OpeningBalance::TYPE)->count();
+        $federationBefore = DB::table('federation_user_settings')->count();
 
         try {
             $writer->write(
@@ -219,5 +402,6 @@ final class MemberImportWriterTest extends TestCase
         // Account, ledger row, balance and federation settings are all gone together.
         $this->assertFalse(DB::table('users')->where('email', $row['email'])->exists());
         $this->assertSame($ledgerBefore, DB::table('transactions')->where('transaction_type', OpeningBalance::TYPE)->count());
+        $this->assertSame($federationBefore, DB::table('federation_user_settings')->count());
     }
 }

@@ -80,8 +80,11 @@ final class AdminCreatedAccountAdmission
      * held account, or record the administrator's attestation.
      *
      * @param array{requires_identity_check: bool, held: bool, attested: bool, registration_mode: string} $decision
+     * @return bool false when a held account's identity check could not be
+     *              started (logged; the account stays pending). Callers that
+     *              can tell an administrator, like the member import, use it.
      */
-    public static function afterCreate(array $decision, int $tenantId, int $userId, int $adminId, string $source): void
+    public static function afterCreate(array $decision, int $tenantId, int $userId, int $adminId, string $source): bool
     {
         if ($decision['attested']) {
             $attestedAt = now()->toIso8601String();
@@ -108,11 +111,11 @@ final class AdminCreatedAccountAdmission
                 ['reason' => 'admin_identity_attestation', 'source' => $source, 'attested_at' => $attestedAt]
             );
 
-            return;
+            return true;
         }
 
         if (!$decision['held']) {
-            return;
+            return true;
         }
 
         // The same orchestration self-registration, social and SSO sign-up run:
@@ -128,6 +131,10 @@ final class AdminCreatedAccountAdmission
                 'source' => $source,
                 'error' => $e->getMessage(),
             ]);
+
+            return false;
         }
+
+        return true;
     }
 }

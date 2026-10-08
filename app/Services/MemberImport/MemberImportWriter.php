@@ -40,7 +40,11 @@ final class MemberImportWriter
     /**
      * @param array<string, mixed> $row      a NormalisedRow plus source_row
      * @param array<string, mixed> $decision AdminCreatedAccountAdmission::decide()
-     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool}
+     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool}
+     *         `admission_complete` is false when the member was created but their identity step
+     *         (starting the community's identity check, or recording the attestation) did not run;
+     *         it is true on the "already created by this import" path, which does not re-run it.
+     * @throws MemberImportStopped row_changed | email_now_taken | write_failed
      */
     public function write(array $row, int $tenantId, int $adminId, array $decision, string $importId): array
     {
@@ -60,8 +64,7 @@ final class MemberImportWriter
         $existingId = DB::table('users')->where('tenant_id', $tenantId)->where('email', $row['email'])->value('id');
         if ($existingId !== null) {
             if ($this->createdByThisImport((int) $existingId, $tenantId, $importId)) {
-                return ['user_id' => (int) $existingId, 'balance_cents' => (int) $row['balance_cents'],
-                    'zeroed' => $row['original_balance_cents'] !== null, 'already' => true];
+                return $this->alreadyCreated((int) $existingId, $row);
             }
             throw new MemberImportStopped('email_now_taken');
         }
@@ -123,22 +126,55 @@ final class MemberImportWriter
             });
         } catch (QueryException $e) {
             if ((int) ($e->errorInfo[1] ?? 0) === 1062) {
+                // The unique key stopped a duplicate. If the other row is this import's own
+                // member (an overlapping request committed it first), that is not a stop.
+                $winnerId = DB::table('users')->where('tenant_id', $tenantId)->where('email', $row['email'])->value('id');
+                if ($winnerId !== null && $this->createdByThisImport((int) $winnerId, $tenantId, $importId)) {
+                    return $this->alreadyCreated((int) $winnerId, $row);
+                }
                 throw new MemberImportStopped('email_now_taken');
             }
-            Log::error('member_import.write_failed', ['tenant_id' => $tenantId, 'import_id' => $importId, 'row' => $row['source_row'], 'error' => $e->getMessage()]);
+            $this->logWriteFailed($e, $tenantId, $importId, $row);
+            throw new MemberImportStopped('write_failed');
+        } catch (\Throwable $e) {
+            // DB::transaction has already rolled the member back; the runner only ever
+            // sees a stop, never a raw exception.
+            $this->logWriteFailed($e, $tenantId, $importId, $row);
             throw new MemberImportStopped('write_failed');
         }
 
+        // Outside the transaction on purpose: afterCreate() swallows its own failures
+        // for a held account, which inside a transaction could hide a rollback.
         try {
-            AdminCreatedAccountAdmission::afterCreate($decision, $tenantId, $userId, $adminId, AdminCreatedAccountAdmission::SOURCE_CSV_IMPORT);
+            $admissionComplete = AdminCreatedAccountAdmission::afterCreate($decision, $tenantId, $userId, $adminId, AdminCreatedAccountAdmission::SOURCE_CSV_IMPORT);
         } catch (\Throwable $e) {
-            // The member exists and stays pending/active as decided; the identity
-            // step is logged, never turned into a silent success.
+            // The member exists and stays pending/active as decided; the identity step is
+            // logged and reported to the caller, never turned into a silent success.
             Log::error('member_import.admission_after_create_failed', ['tenant_id' => $tenantId, 'user_id' => $userId, 'error' => $e->getMessage()]);
+            $admissionComplete = false;
         }
 
         return ['user_id' => $userId, 'balance_cents' => (int) $row['balance_cents'],
-            'zeroed' => $row['original_balance_cents'] !== null, 'already' => false];
+            'zeroed' => $row['original_balance_cents'] !== null, 'already' => false,
+            'admission_complete' => $admissionComplete];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool}
+     */
+    private function alreadyCreated(int $userId, array $row): array
+    {
+        // afterCreate() is not re-run here; the completion audit records attestation at import level.
+        return ['user_id' => $userId, 'balance_cents' => (int) $row['balance_cents'],
+            'zeroed' => $row['original_balance_cents'] !== null, 'already' => true,
+            'admission_complete' => true];
+    }
+
+    /** @param array<string, mixed> $row */
+    private function logWriteFailed(\Throwable $e, int $tenantId, string $importId, array $row): void
+    {
+        Log::error('member_import.write_failed', ['tenant_id' => $tenantId, 'import_id' => $importId, 'row' => $row['source_row'], 'error' => $e->getMessage()]);
     }
 
     /**
