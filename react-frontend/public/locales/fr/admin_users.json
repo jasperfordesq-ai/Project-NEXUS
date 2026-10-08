@@ -225,7 +225,8 @@
     "role_tenant_super_admin": "Super-administrateur du locataire",
     "role_super_admin_short": "Super Administrateur",
     "reset_2fa_reason": "Réinitialisé par un administrateur",
-    "reset_2fa_identity_reason": "Référence de l’incident et méthode de vérification de l’identité du titulaire (10–500 caractères)"
+    "reset_2fa_identity_reason": "Référence de l’incident et méthode de vérification de l’identité du titulaire (10–500 caractères)",
+    "vouched_email_note": "Sans invitation, cette adresse e-mail est considérée comme confirmée et le membre ne sera pas invité à la vérifier. Vérifiez qu’elle est correctement saisie."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Retour à la liste",
       "save_changes": "Enregistrer les modifications",
       "send_password_reset": "Envoyer la réinitialisation du mot de passe",
-      "set_password": "Définir le mot de passe"
+      "set_password": "Définir le mot de passe",
+      "mark_email_confirmed": "Marquer comme confirmée"
     },
     "aria": {
       "edit_user_form": "Modifier l'utilisateur",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Définissez un nouveau mot de passe pour cet utilisateur. Ils seront déconnectés de toutes les sessions.",
         "title": "Définir le mot de passe"
+      },
+      "mark_email_confirmed": {
+        "title": "Marquer cette adresse e-mail comme confirmée ?",
+        "message": "Ne le faites que si vous êtes certain que {{email}} appartient à ce membre, par exemple parce que vous l’avez vérifié avec lui. Il ne lui sera plus demandé de la vérifier."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Échec de l’envoi de l’e-mail de vérification",
       "verification_email_sent": "E-mail de vérification envoyé",
       "welcome_email_failed": "Échec de l'envoi de l'e-mail de bienvenue",
-      "welcome_email_sent": "E-mail de bienvenue envoyé"
+      "welcome_email_sent": "E-mail de bienvenue envoyé",
+      "email_marked_confirmed": "Adresse e-mail marquée comme confirmée",
+      "mark_email_confirmed_failed": "Impossible de marquer l’adresse e-mail comme confirmée"
     },
     "validation": {
       "email_invalid": "E-mail invalide (e.g., name@example.com)",

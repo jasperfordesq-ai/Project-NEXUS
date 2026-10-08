@@ -225,7 +225,8 @@
     "role_tenant_super_admin": "Superadministrador do inquilino",
     "role_super_admin_short": "Super Administrador",
     "reset_2fa_reason": "Redefinido por um administrador",
-    "reset_2fa_identity_reason": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)"
+    "reset_2fa_identity_reason": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)",
+    "vouched_email_note": "Sem convite, este endereço de email é considerado confirmado e o membro não precisará verificá-lo. Verifique se está escrito corretamente."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Voltar à lista",
       "save_changes": "Salvar alterações",
       "send_password_reset": "Enviar redefinição de senha",
-      "set_password": "Definir senha"
+      "set_password": "Definir senha",
+      "mark_email_confirmed": "Marcar como confirmado"
     },
     "aria": {
       "edit_user_form": "Editar usuário",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Defina uma nova senha para este usuário. Eles serão desconectados de todas as sessões.",
         "title": "Definir senha"
+      },
+      "mark_email_confirmed": {
+        "title": "Marcar este email como confirmado?",
+        "message": "Faça isto apenas se tiver certeza de que {{email}} pertence a este membro, por exemplo porque confirmou com ele. Não será mais pedido que o verifique."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Falha ao enviar email de verificação",
       "verification_email_sent": "Email de verificação enviado",
       "welcome_email_failed": "Falha ao enviar e-mail de boas-vindas",
-      "welcome_email_sent": "E-mail de boas-vindas enviado"
+      "welcome_email_sent": "E-mail de boas-vindas enviado",
+      "email_marked_confirmed": "Email marcado como confirmado",
+      "mark_email_confirmed_failed": "Não foi possível marcar o email como confirmado"
     },
     "validation": {
       "email_invalid": "E-mail inválido (e.g., name@example.com)",

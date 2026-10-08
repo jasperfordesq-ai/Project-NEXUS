@@ -225,7 +225,8 @@
     "import_role_broker": "Pośrednik",
     "label_bio": "Bio",
     "role_moderator": "Moderator",
-    "reset_2fa_identity_reason": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)"
+    "reset_2fa_identity_reason": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)",
+    "vouched_email_note": "Bez zaproszenia ten adres e-mail jest traktowany jako potwierdzony i członek nie zostanie poproszony o jego weryfikację. Sprawdź, czy jest wpisany poprawnie."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Wróć do listy",
       "save_changes": "Zapisz zmiany",
       "send_password_reset": "Wyślij reset hasła",
-      "set_password": "Ustaw hasło"
+      "set_password": "Ustaw hasło",
+      "mark_email_confirmed": "Oznacz jako potwierdzony"
     },
     "aria": {
       "edit_user_form": "Edytuj użytkownika",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Ustaw nowe hasło dla tego użytkownika. Zostaną wylogowani ze wszystkich sesji.",
         "title": "Ustaw hasło"
+      },
+      "mark_email_confirmed": {
+        "title": "Oznaczyć ten adres e-mail jako potwierdzony?",
+        "message": "Zrób to tylko wtedy, gdy masz pewność, że {{email}} należy do tego członka, na przykład dlatego, że sprawdziłeś to z nim. Nie będzie już proszony o weryfikację adresu."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Nie udało się wysłać e-maila weryfikacyjnego",
       "verification_email_sent": "E-mail weryfikacyjny wysłany",
       "welcome_email_failed": "Nie udało się wysłać wiadomości powitalnej",
-      "welcome_email_sent": "Wiadomość powitalna została wysłana"
+      "welcome_email_sent": "Wiadomość powitalna została wysłana",
+      "email_marked_confirmed": "Adres e-mail oznaczony jako potwierdzony",
+      "mark_email_confirmed_failed": "Nie udało się oznaczyć adresu e-mail jako potwierdzonego"
     },
     "validation": {
       "email_invalid": "Nieprawidłowy adres e-mail (e.g., name@example.com)",

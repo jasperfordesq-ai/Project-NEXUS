@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -17,6 +17,7 @@ const { mockAdminUsers, mockAdminTimebanking, mockAdminVetting, mockAdminInsuran
       update: vi.fn(),
       getConsents: vi.fn(),
       sendVerificationEmail: vi.fn(),
+      confirmEmail: vi.fn(),
     },
     mockAdminTimebanking: { adjustBalance: vi.fn() },
     mockAdminVetting: { getUserRecords: vi.fn() },
@@ -92,9 +93,21 @@ vi.mock('../../components/PageHeader', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
 }));
 
+// A minimal stand-in that still lets a test confirm the dialog it opened.
+const { ConfirmStub } = vi.hoisted(() => ({
+  ConfirmStub: ({ isOpen, onConfirm, title, confirmLabel }: {
+    isOpen: boolean; onConfirm: () => void; title: string; confirmLabel?: string;
+  }) =>
+    isOpen ? (
+      <div role="dialog" aria-label={title}>
+        <button type="button" onClick={onConfirm}>{confirmLabel}</button>
+      </div>
+    ) : null,
+}));
+
 vi.mock('../../components/ConfirmModal', () => ({
-  default: () => null,
-  ConfirmModal: () => null,
+  default: ConfirmStub,
+  ConfirmModal: ConfirmStub,
 }));
 
 vi.mock('../../components', () => ({
@@ -304,6 +317,41 @@ describe('UserEdit', () => {
     await waitFor(() => {
       expect(screen.getByText('Email activated')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /resend verification email/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /mark as confirmed/i })).not.toBeInTheDocument();
     });
+  });
+
+  it('lets an admin mark an unverified email as confirmed after confirming the dialog', async () => {
+    mockAdminUsers.get
+      .mockResolvedValueOnce({ success: true, data: makeUser({ email_verified_at: null }) })
+      .mockResolvedValue({ success: true, data: makeUser({ email_verified_at: '2026-10-08T10:00:00Z' }) });
+    mockAdminUsers.confirmEmail.mockResolvedValue({ success: true, data: makeUser({ email_verified_at: '2026-10-08T10:00:00Z' }) });
+    const { UserEdit } = await import('./UserEdit');
+    render(<UserEdit />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /mark as confirmed/i }));
+    expect(mockAdminUsers.confirmEmail).not.toHaveBeenCalled();
+
+    const dialog = await screen.findByRole('dialog', { name: /mark this email as confirmed/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: /mark as confirmed/i }));
+
+    await waitFor(() => {
+      expect(mockAdminUsers.confirmEmail).toHaveBeenCalledWith(42);
+      expect(mockToast.success).toHaveBeenCalled();
+      expect(screen.getByText('Email activated')).toBeInTheDocument();
+    });
+  });
+
+  it('reports a failure to mark the email confirmed', async () => {
+    mockAdminUsers.get.mockResolvedValue({ success: true, data: makeUser({ email_verified_at: null }) });
+    mockAdminUsers.confirmEmail.mockResolvedValue({ success: false, error: 'nope' });
+    const { UserEdit } = await import('./UserEdit');
+    render(<UserEdit />);
+
+    await userEvent.click(await screen.findByRole('button', { name: /mark as confirmed/i }));
+    const dialog = await screen.findByRole('dialog', { name: /mark this email as confirmed/i });
+    await userEvent.click(within(dialog).getByRole('button', { name: /mark as confirmed/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
   });
 });

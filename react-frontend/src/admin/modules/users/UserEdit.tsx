@@ -12,6 +12,7 @@ import Coins from 'lucide-react/icons/coins';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import KeyRound from 'lucide-react/icons/key-round';
 import Mail from 'lucide-react/icons/mail';
+import MailCheck from 'lucide-react/icons/mail-check';
 import Building2 from 'lucide-react/icons/building-2';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import FileCheck from 'lucide-react/icons/file-check';
@@ -103,6 +104,8 @@ export function UserEdit() {
   // Welcome email
   const [welcomeEmailLoading, setWelcomeEmailLoading] = useState(false);
   const [verificationEmailLoading, setVerificationEmailLoading] = useState(false);
+  const [confirmEmailOpen, setConfirmEmailOpen] = useState(false);
+  const [confirmEmailLoading, setConfirmEmailLoading] = useState(false);
 
   // GDPR Consents
   const [consents, setConsents] = useState<UserConsent[]>([]);
@@ -469,6 +472,28 @@ export function UserEdit() {
     }
   }
 
+  // The administrator vouches for the address, so the member is not asked to
+  // confirm it (owner decision, 8 Oct 2026). Server-side this applies the same
+  // rule as the member's own verification link.
+  async function handleConfirmEmail() {
+    if (!id) return;
+    setConfirmEmailLoading(true);
+    try {
+      const res = await adminUsers.confirmEmail(Number(id));
+      if (res.success) {
+        toast.success(t('toasts.email_marked_confirmed'));
+        setConfirmEmailOpen(false);
+        loadUser();
+      } else {
+        toast.error(t('toasts.mark_email_confirmed_failed'));
+      }
+    } catch {
+      toast.error(t('toasts.mark_email_confirmed_failed'));
+    } finally {
+      setConfirmEmailLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -663,16 +688,25 @@ export function UserEdit() {
                 )}
               </div>
               {!emailActivated && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  startContent={!verificationEmailLoading ? <Mail aria-hidden="true" size={14} /> : undefined}
-                  onPress={handleSendVerificationEmail}
-                  isLoading={verificationEmailLoading}
-                  className="sm:shrink-0"
-                >
-                  {t('actions.resend_verification_email')}
-                </Button>
+                <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    startContent={!verificationEmailLoading ? <Mail aria-hidden="true" size={14} /> : undefined}
+                    onPress={handleSendVerificationEmail}
+                    isLoading={verificationEmailLoading}
+                  >
+                    {t('actions.resend_verification_email')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    startContent={<MailCheck aria-hidden="true" size={14} />}
+                    onPress={() => setConfirmEmailOpen(true)}
+                  >
+                    {t('actions.mark_email_confirmed')}
+                  </Button>
+                </div>
               )}
             </div>
           </CardBody>
@@ -1082,6 +1116,19 @@ export function UserEdit() {
           </CardBody>
         </Card>
       </div>
+
+      {/* Mark Email Confirmed */}
+      <ConfirmModal
+        isOpen={confirmEmailOpen}
+        onClose={() => setConfirmEmailOpen(false)}
+        onConfirm={handleConfirmEmail}
+        title={t('modals.mark_email_confirmed.title')}
+        message={t('modals.mark_email_confirmed.message', { email: user.email })}
+        confirmLabel={t('actions.mark_email_confirmed')}
+        cancelLabel={t('actions.cancel')}
+        confirmColor="primary"
+        isLoading={confirmEmailLoading}
+      />
 
       {/* Badge Removal Confirmation */}
       {badgeToRemove && (

@@ -225,7 +225,8 @@
     "role_tenant_super_admin": "Superadministrador del inquilino",
     "role_super_admin_short": "Súper Administrador",
     "reset_2fa_reason": "Restablecido por un administrador",
-    "reset_2fa_identity_reason": "Referencia del incidente y cómo verificaste la identidad del titular (10–500 caracteres)"
+    "reset_2fa_identity_reason": "Referencia del incidente y cómo verificaste la identidad del titular (10–500 caracteres)",
+    "vouched_email_note": "Sin invitación, esta dirección de correo electrónico se considera confirmada y no se pedirá al miembro que la verifique. Compruebe que esté escrita correctamente."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Volver a la lista",
       "save_changes": "Guardar cambios",
       "send_password_reset": "Enviar restablecimiento de contraseña",
-      "set_password": "Establecer contraseña"
+      "set_password": "Establecer contraseña",
+      "mark_email_confirmed": "Marcar como confirmado"
     },
     "aria": {
       "edit_user_form": "Editar usuario",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Establezca una nueva contraseña para este usuario. Se cerrarán sus sesiones en todas las sesiones.",
         "title": "Establecer contraseña"
+      },
+      "mark_email_confirmed": {
+        "title": "¿Marcar este correo electrónico como confirmado?",
+        "message": "Hágalo solo si está seguro de que {{email}} pertenece a este miembro, por ejemplo porque lo ha comprobado con él. Ya no se le pedirá que lo verifique."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "No se pudo enviar el correo de verificación",
       "verification_email_sent": "Correo de verificación enviado",
       "welcome_email_failed": "No se pudo enviar el correo electrónico de bienvenida",
-      "welcome_email_sent": "Correo electrónico de bienvenida enviado"
+      "welcome_email_sent": "Correo electrónico de bienvenida enviado",
+      "email_marked_confirmed": "Correo electrónico marcado como confirmado",
+      "mark_email_confirmed_failed": "No se pudo marcar el correo electrónico como confirmado"
     },
     "validation": {
       "email_invalid": "Correo electrónico no válido (e.g., name@example.com)",

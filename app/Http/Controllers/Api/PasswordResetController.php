@@ -374,6 +374,26 @@ class PasswordResetController extends BaseApiController
         /** @var array<string, mixed> $user */
         $user = $resetOutcome['user'];
 
+        // Using the link proves the member owns the inbox: reset links —
+        // including an administrator's account invitation — are only ever
+        // delivered by email, never shown on screen. So a completed reset also
+        // confirms the email, under the same rule as the verification link.
+        // The address is re-checked against the locked row so an email changed
+        // since the link was sent is never the one confirmed. A failure here
+        // leaves the member asked to verify as before; the reset still stands.
+        if (strcasecmp(trim((string) ($user['email'] ?? '')), trim($email)) === 0) {
+            try {
+                app(\App\Services\Auth\EmailConfirmationService::class)
+                    ->confirm((int) $user['id'], $tokenTenantId);
+            } catch (\Throwable $e) {
+                Log::error('[PasswordReset] Could not record the email as confirmed after a reset', [
+                    'user_id' => (int) $user['id'],
+                    'tenant_id' => $tokenTenantId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         // Log the password change
         try {
             \App\Models\ActivityLog::log(

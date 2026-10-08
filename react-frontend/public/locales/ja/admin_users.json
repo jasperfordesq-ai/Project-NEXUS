@@ -225,7 +225,8 @@
     "role_tenant_super_admin": "テナントのスーパー管理者",
     "role_super_admin_short": "スーパー管理者",
     "reset_2fa_reason": "管理者によってリセットされました",
-    "reset_2fa_identity_reason": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）"
+    "reset_2fa_identity_reason": "インシデント番号とアカウント所有者の本人確認方法（10～500文字）",
+    "vouched_email_note": "招待を送らない場合、このメールアドレスは確認済みとして扱われ、メンバーに確認を求めることはありません。正しく入力されているか確認してください。"
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "リストに戻る",
       "save_changes": "変更を保存",
       "send_password_reset": "パスワードリセットを送信",
-      "set_password": "パスワードを設定する"
+      "set_password": "パスワードを設定する",
+      "mark_email_confirmed": "確認済みにする"
     },
     "aria": {
       "edit_user_form": "ユーザーの編集",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "このユーザーに新しいパスワードを設定します。すべてのセッションからログアウトされます。",
         "title": "パスワードを設定する"
+      },
+      "mark_email_confirmed": {
+        "title": "このメールアドレスを確認済みにしますか？",
+        "message": "{{email}} がこのメンバーのものであると確信できる場合（本人に確認した場合など）にのみ行ってください。今後、メンバーにメールアドレスの確認は求められません。"
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "確認メールを送信できませんでした",
       "verification_email_sent": "確認メールを送信しました",
       "welcome_email_failed": "ウェルカムメールの送信に失敗しました",
-      "welcome_email_sent": "ウェルカムメールが送信されました"
+      "welcome_email_sent": "ウェルカムメールが送信されました",
+      "email_marked_confirmed": "メールアドレスを確認済みにしました",
+      "mark_email_confirmed_failed": "メールアドレスを確認済みにできませんでした"
     },
     "validation": {
       "email_invalid": "メールアドレスが無効です (e.g., name@example.com)",

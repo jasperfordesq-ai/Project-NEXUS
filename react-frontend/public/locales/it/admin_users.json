@@ -225,7 +225,8 @@
     "role_super_admin_short": "Super Amministratore",
     "reset_2fa_reason": "Ripristinato da un amministratore",
     "label_bio": "Bio",
-    "reset_2fa_identity_reason": "Riferimento dell’incidente e modalità di verifica dell’identità del titolare (10–500 caratteri)"
+    "reset_2fa_identity_reason": "Riferimento dell’incidente e modalità di verifica dell’identità del titolare (10–500 caratteri)",
+    "vouched_email_note": "Senza invito, questo indirizzo email viene considerato confermato e al membro non verrà chiesto di verificarlo. Controlla che sia scritto correttamente."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Ritorna all'elenco",
       "save_changes": "Salva modifiche",
       "send_password_reset": "Invia reimpostazione password",
-      "set_password": "Imposta password"
+      "set_password": "Imposta password",
+      "mark_email_confirmed": "Segna come confermato"
     },
     "aria": {
       "edit_user_form": "Modifica utente",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Imposta una nuova password per questo utente. Verranno disconnessi da tutte le sessioni.",
         "title": "Imposta password"
+      },
+      "mark_email_confirmed": {
+        "title": "Segnare questo indirizzo email come confermato?",
+        "message": "Fallo solo se sei sicuro che {{email}} appartenga a questo membro, ad esempio perché l’hai verificato con lui. Non gli verrà più chiesto di verificarlo."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Impossibile inviare l’email di verifica",
       "verification_email_sent": "Email di verifica inviata",
       "welcome_email_failed": "Impossibile inviare l'e-mail di benvenuto",
-      "welcome_email_sent": "Email di benvenuto inviata"
+      "welcome_email_sent": "Email di benvenuto inviata",
+      "email_marked_confirmed": "Email segnata come confermata",
+      "mark_email_confirmed_failed": "Impossibile segnare l’email come confermata"
     },
     "validation": {
       "email_invalid": "E-mail non valida (e.g., name@example.com)",

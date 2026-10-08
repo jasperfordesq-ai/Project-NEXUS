@@ -225,7 +225,8 @@
     "reset_2fa_reason": "Zurückgesetzt durch einen Administrator",
     "label_bio": "Biografie",
     "role_moderator": "Moderator",
-    "reset_2fa_identity_reason": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)"
+    "reset_2fa_identity_reason": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)",
+    "vouched_email_note": "Ohne Einladung gilt diese E-Mail-Adresse als bestätigt, und das Mitglied wird nicht gebeten, sie zu verifizieren. Prüfen Sie, ob sie richtig geschrieben ist."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Zurück zur Liste",
       "save_changes": "Änderungen speichern",
       "send_password_reset": "Passwort-Reset senden",
-      "set_password": "Passwort festlegen"
+      "set_password": "Passwort festlegen",
+      "mark_email_confirmed": "Als bestätigt markieren"
     },
     "aria": {
       "edit_user_form": "Benutzer bearbeiten",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Legen Sie ein neues Passwort für diesen Benutzer fest. Sie werden von allen Sitzungen abgemeldet.",
         "title": "Passwort festlegen"
+      },
+      "mark_email_confirmed": {
+        "title": "Diese E-Mail-Adresse als bestätigt markieren?",
+        "message": "Tun Sie dies nur, wenn Sie sicher sind, dass {{email}} diesem Mitglied gehört – zum Beispiel, weil Sie es mit dem Mitglied abgeklärt haben. Das Mitglied wird dann nicht mehr gebeten, die Adresse zu verifizieren."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Bestätigungs-E-Mail konnte nicht gesendet werden",
       "verification_email_sent": "Bestätigungs-E-Mail gesendet",
       "welcome_email_failed": "Willkommens-E-Mail konnte nicht gesendet werden",
-      "welcome_email_sent": "Willkommens-E-Mail gesendet"
+      "welcome_email_sent": "Willkommens-E-Mail gesendet",
+      "email_marked_confirmed": "E-Mail-Adresse als bestätigt markiert",
+      "mark_email_confirmed_failed": "Die E-Mail-Adresse konnte nicht als bestätigt markiert werden"
     },
     "validation": {
       "email_invalid": "E-Mail ungültig (e.g., name@example.com)",

@@ -59,6 +59,11 @@ class AdminUsersController extends BaseApiController
         return new GdprService($this->getTenantId());
     }
 
+    private function emailConfirmation(): \App\Services\Auth\EmailConfirmationService
+    {
+        return app(\App\Services\Auth\EmailConfirmationService::class);
+    }
+
     // =========================================================================
     // List & Show
     // =========================================================================
@@ -319,7 +324,10 @@ class AdminUsersController extends BaseApiController
         // never be able to redirect password recovery for a peer/higher-tier
         // administrator by replacing that account's email address.
         $requiresSecurityAuthorization = false;
-        foreach (['email', 'role', 'status'] as $securityField) {
+        // `email_verified` vouches for the sign-in address, which "Sign in
+        // with Google/Apple" trusts when it links an existing account, so it
+        // is guarded exactly like changing the address.
+        foreach (['email', 'role', 'status', 'email_verified'] as $securityField) {
             if (
                 array_key_exists($securityField, $input)
                 && !$this->canManageSecurityTarget($adminId, $user)
@@ -342,7 +350,7 @@ class AdminUsersController extends BaseApiController
         // retain full access. See tests/Laravel/Feature/Controllers/
         // BrokerUserActionsAuthorizationTest.php.
         if (!$this->callerIsAdminTier()) {
-            $brokerReservedFields = ['role', 'status', 'email', 'profile_type', 'organization_name'];
+            $brokerReservedFields = ['role', 'status', 'email', 'email_verified', 'profile_type', 'organization_name'];
             foreach ($brokerReservedFields as $reserved) {
                 if (array_key_exists($reserved, $input)) {
                     return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.broker_cannot_edit_field'), $reserved, 403);
@@ -502,7 +510,12 @@ class AdminUsersController extends BaseApiController
             }
         }
 
-        if (empty($updates)) {
+        // Owner decision, 8 Oct 2026: an administrator may mark a member's email
+        // confirmed. Only `true` does anything — there is no "unconfirm".
+        $confirmEmail = array_key_exists('email_verified', $input)
+            && filter_var($input['email_verified'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === true;
+
+        if (empty($updates) && !$confirmEmail) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_fields_to_update'), null, 422);
         }
 
@@ -512,16 +525,25 @@ class AdminUsersController extends BaseApiController
         $params[] = $id;
         $params[] = $tenantId;
 
+        $emailConfirmed = false;
         if ($requiresSecurityAuthorization) {
-            $updated = DB::transaction(function () use ($adminId, $id, $tenantId, $updates, $params): bool {
+            $updated = DB::transaction(function () use ($adminId, $id, $tenantId, $updates, $params, $confirmEmail, &$emailConfirmed): bool {
                 if ($this->lockManageableSecurityTarget($adminId, $id, $tenantId) === null) {
                     return false;
                 }
 
-                DB::update(
-                    "UPDATE users SET " . implode(', ', $updates) . " WHERE id = ? AND tenant_id = ?",
-                    $params
-                );
+                if ($updates !== []) {
+                    DB::update(
+                        "UPDATE users SET " . implode(', ', $updates) . " WHERE id = ? AND tenant_id = ?",
+                        $params
+                    );
+                }
+                // The same rule as the member's own verification link, so a
+                // pending self-serve member is not left stuck and an
+                // identity-check hold is never released (F-572).
+                if ($confirmEmail) {
+                    $emailConfirmed = $this->emailConfirmation()->confirm($id, $tenantId);
+                }
                 return true;
             }, 3);
             if (!$updated) {
@@ -538,6 +560,14 @@ class AdminUsersController extends BaseApiController
 
         ActivityLog::log($adminId, 'admin_update_user', "Updated user #{$id}");
         $this->auditLogService->logUserUpdated($adminId, $id, array_keys($input));
+
+        if ($emailConfirmed) {
+            $confirmedEmail = (string) DB::table('users')->where('id', $id)->where('tenant_id', $tenantId)->value('email');
+            ActivityLog::log($adminId, 'admin_confirm_user_email', "Confirmed the email of user #{$id} ({$confirmedEmail})");
+            $this->auditLogService->logAdminAction('confirm_user_email', $adminId, $id, [
+                'email' => $confirmedEmail,
+            ]);
+        }
 
         // If this update is effectively an approval (pending → active), grant welcome credits
         // and send the approval welcome email — same as the dedicated /approve endpoint.
@@ -721,6 +751,15 @@ class AdminUsersController extends BaseApiController
             $adminId,
             \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_ADMIN_CREATE
         );
+
+        // An administrator who sets the password themselves is vouching for the
+        // address (owner decision, 8 Oct 2026), so the member is not then asked
+        // to confirm it. An invited member confirms it by using the emailed
+        // set-password link instead (PasswordResetController) — that proves the
+        // inbox is theirs, and a mistyped address is never marked confirmed.
+        if (!$sendWelcomeEmail) {
+            $this->emailConfirmation()->recordAdminVouched((int) $newUserId, $tenantId);
+        }
 
         // Admin-created accounts are approved immediately and never pass through
         // the approval flow (an identity check, where required, is separate —
@@ -2338,6 +2377,10 @@ class AdminUsersController extends BaseApiController
                         $adminId,
                         \App\Services\Identity\AdminCreatedAccountAdmission::SOURCE_CSV_IMPORT
                     );
+
+                    // The importing administrator vouches for each address
+                    // (owner decision, 8 Oct 2026).
+                    $this->emailConfirmation()->recordAdminVouched($newUserId, $tenantId);
 
                     try {
                         DB::statement(

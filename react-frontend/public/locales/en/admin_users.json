@@ -225,7 +225,8 @@
     "permissions_editor_unavailable_desc": "This page shows the user's role and granted permissions but can't change them. Manage access by changing the user's role on the user edit page.",
     "role_unknown": "Unknown role",
     "role_tenant_super_admin": "Tenant Super Admin",
-    "reset_2fa_identity_reason": "Incident reference and how you verified the account holder’s identity (10–500 characters)"
+    "reset_2fa_identity_reason": "Incident reference and how you verified the account holder’s identity (10–500 characters)",
+    "vouched_email_note": "Without an invitation, this email address is treated as confirmed and the member won't be asked to verify it. Check it is typed correctly."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Return to List",
       "save_changes": "Save Changes",
       "send_password_reset": "Send Password Reset",
-      "set_password": "Set Password"
+      "set_password": "Set Password",
+      "mark_email_confirmed": "Mark as confirmed"
     },
     "aria": {
       "edit_user_form": "Edit user",
@@ -343,6 +345,10 @@
       "set_password": {
         "body": "Set a new password for this user. They will be logged out of all sessions.",
         "title": "Set Password"
+      },
+      "mark_email_confirmed": {
+        "title": "Mark this email as confirmed?",
+        "message": "Only do this if you are sure {{email}} belongs to this member, for example because you checked it with them. They will no longer be asked to verify it."
       }
     },
     "placeholders": {
@@ -431,7 +437,9 @@
       "verification_email_failed": "Failed to send verification email",
       "verification_email_sent": "Verification email sent",
       "welcome_email_failed": "Failed to send welcome email",
-      "welcome_email_sent": "Welcome email sent"
+      "welcome_email_sent": "Welcome email sent",
+      "email_marked_confirmed": "Email marked as confirmed",
+      "mark_email_confirmed_failed": "Could not mark the email as confirmed"
     },
     "validation": {
       "email_invalid": "Please enter a valid email address (e.g., name@example.com)",

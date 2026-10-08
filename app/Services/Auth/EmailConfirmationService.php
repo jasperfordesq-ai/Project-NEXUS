@@ -21,6 +21,15 @@ use Illuminate\Support\Facades\DB;
  * "confirmed" but stuck pending — and the verification link would then
  * short-circuit as "already verified" and never release them.
  *
+ * Paths that confirm an email:
+ *  - the member clicks the verification link (EmailVerificationController);
+ *  - the member completes a password reset — reset links are only ever
+ *    delivered by email, so using one proves the inbox is theirs;
+ *  - an administrator vouches for the address: the "mark confirmed" action
+ *    on an existing account uses confirm(); creating an account with an
+ *    administrator-set password, or by CSV import, uses recordAdminVouched()
+ *    (see there for why). Owner decision, 8 Oct 2026.
+ *
  * An identity-check hold (E-035 F-152, E-062 F-278) is never released here.
  * 🔴 F-572: an administrator-created account held for its identity check is
  * stored approved (`is_approved = 1`) and `pending`, which is exactly the
@@ -68,5 +77,25 @@ final class EmailConfirmationService
         }
 
         return $affected > 0;
+    }
+
+    /**
+     * Record the email of an account an administrator has just created as
+     * confirmed, WITHOUT the activation rule above.
+     *
+     * A new administrator-created account's approval and status were already
+     * decided by AdminCreatedAccountAdmission (F-278), and its identity check
+     * releases it later. Applying confirm() here would let a held account
+     * whose identity-check start failed (verification_status still 'none')
+     * go live, which F-278 forbids. Activation that waits on the email —
+     * approveAndRelease() after a passed check — still sees the confirmation.
+     */
+    public function recordAdminVouched(int $userId, int $tenantId): void
+    {
+        DB::update(
+            "UPDATE users SET email_verified_at = COALESCE(email_verified_at, NOW()), is_verified = 1
+             WHERE id = ? AND tenant_id = ?",
+            [$userId, $tenantId]
+        );
     }
 }

@@ -228,4 +228,16 @@ describe('UserCreate', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/admin/users'));
   });
+
+  it('warns that the address is treated as confirmed only when the admin sets the password', async () => {
+    render(<UserCreate />);
+    const note = /treated as confirmed/i;
+
+    // Invitation on (default): the member confirms by using the emailed link.
+    expect(screen.queryByText(note)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('switch'));
+
+    expect(screen.getByText(note)).toBeInTheDocument();
+  });
 });

@@ -276,6 +276,8 @@ export interface UpdateUserPayload {
   location?: string;
   profile_type?: 'individual' | 'organisation';
   organization_name?: string;
+  /** Mark the member's email confirmed. Only `true` is meaningful. */
+  email_verified?: true;
 }
 
 export interface UserConsent {

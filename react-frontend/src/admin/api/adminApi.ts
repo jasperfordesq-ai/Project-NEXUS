@@ -213,6 +213,10 @@ export const adminUsers = {
   update: (id: number, data: UpdateUserPayload) =>
     api.put<AdminUser>(`/v2/admin/users/${id}`, data),
 
+  /** An administrator vouches for the member's email address (no "unconfirm"). */
+  confirmEmail: (id: number) =>
+    api.put<AdminUser>(`/v2/admin/users/${id}`, { email_verified: true }),
+
   delete: (id: number) =>
     api.delete<{ success: boolean }>(`/v2/admin/users/${id}`),
 

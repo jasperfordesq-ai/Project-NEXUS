@@ -225,7 +225,8 @@
     "role_super_admin_short": "Super Fheidhmeannach",
     "reset_2fa_reason": "Athshocraithe ag riarthóir",
     "label_tagline": "Slogán",
-    "reset_2fa_identity_reason": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)"
+    "reset_2fa_identity_reason": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)",
+    "vouched_email_note": "Gan chuireadh, meastar go bhfuil an seoladh ríomhphoist seo deimhnithe agus ní iarrfar ar an mball é a fhíorú. Seiceáil go bhfuil sé clóscríofa i gceart."
   },
   "user_edit": {
     "actions": {
@@ -242,7 +243,8 @@
       "return_to_list": "Fill ar an Liosta",
       "save_changes": "Sábháil Athruithe",
       "send_password_reset": "Seol Pasfhocal Athshocraigh",
-      "set_password": "Socraigh Pasfhocal"
+      "set_password": "Socraigh Pasfhocal",
+      "mark_email_confirmed": "Marcáil mar dheimhnithe"
     },
     "aria": {
       "edit_user_form": "Cuir úsáideoir in eagar",
@@ -326,6 +328,10 @@
       "set_password": {
         "body": "Socraigh pasfhocal nua don úsáideoir seo. Déanfar iad a logáil amach as gach seisiún.",
         "title": "Socraigh Pasfhocal"
+      },
+      "mark_email_confirmed": {
+        "title": "An seoladh ríomhphoist seo a mharcáil mar dheimhnithe?",
+        "message": "Ná déan é seo ach amháin má tá tú cinnte gur leis an mball seo {{email}}, mar shampla toisc gur sheiceáil tú leo é. Ní iarrfar orthu é a fhíorú a thuilleadh."
       }
     },
     "placeholders": {
@@ -414,7 +420,9 @@
       "verification_email_failed": "Níorbh fhéidir an ríomhphost fíorúcháin a sheoladh",
       "verification_email_sent": "Ríomhphost fíorúcháin seolta",
       "welcome_email_failed": "Theip ar ríomhphost fáilte a sheoladh",
-      "welcome_email_sent": "Seoladh ríomhphost fáilte"
+      "welcome_email_sent": "Seoladh ríomhphost fáilte",
+      "email_marked_confirmed": "Ríomhphost marcáilte mar dheimhnithe",
+      "mark_email_confirmed_failed": "Níorbh fhéidir an ríomhphost a mharcáil mar dheimhnithe"
     },
     "validation": {
       "email_invalid": "Ríomhphost Neamhbhailí (e.g., name@example.com)",

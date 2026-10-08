@@ -239,6 +239,12 @@ export function UserCreate() {
                 aria-label={t('users.send_welcome_email')}
               />
             </div>
+            {/* Without an invitation the administrator vouches for the address,
+                so the member is never asked to confirm it — a typo would go
+                unnoticed. With one, using the emailed link confirms it. */}
+            {!sendWelcomeEmail && (
+              <p className="-mt-2 text-xs text-muted">{t('users.vouched_email_note')}</p>
+            )}
 
             {/* Submit */}
             <div className="flex justify-end gap-3 pt-2">
