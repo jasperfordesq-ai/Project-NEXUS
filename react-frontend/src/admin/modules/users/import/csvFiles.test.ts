@@ -109,8 +109,10 @@ describe('problemsFile', () => {
       { row: 'Row', column: 'Column', problem: 'Problem' },
       describeIssue,
       (c) => (c === null ? '' : `col:${c}`),
+      (r) => (r === 0 ? 'Whole file' : String(r)),
     );
-    expect(csv).toBe(`${BOM}Row,Column,Problem\r\n3,col:email,problem:email_invalid\r\n0,,problem:invalid_encoding\r\n`);
+    // Row 0 means the whole file: it is written as that wording, never as a "0" an admin would hunt for.
+    expect(csv).toBe(`${BOM}Row,Column,Problem\r\n3,col:email,problem:email_invalid\r\nWhole file,,problem:invalid_encoding\r\n`);
   });
 });
 

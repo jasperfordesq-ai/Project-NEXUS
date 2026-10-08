@@ -661,35 +661,37 @@
       "identity_attest": "I have checked each person's identity myself",
       "identity_help": "Your community requires an identity check. If you leave this unticked, these members will wait for that check before they can sign in.",
       "no_emails_yet": "This import does not email anyone yet. Members can use \"Forgot password\" to set a password until invitations are added.",
-      "import_one": "Import {{count}} member",
-      "import_other": "Import {{count}} members"
+      "import_one": "Import {{countFormatted}} member",
+      "import_other": "Import {{countFormatted}} members"
     },
     "running": {
       "title": "Importing members",
       "batch": "Batch {{n}} of about {{m}}",
       "count": "Members imported: {{done}} of {{total}}",
       "hours": "Hours imported so far: {{hours}}",
-      "remaining": "About {{time}} left",
+      "remaining": "Time left: about {{time}}",
       "calculating": "Working out the time left…",
       "keep_open": "Keep this window open until the import finishes.",
       "stop": "Stop after this batch",
       "stopping": "Stopping after this batch…",
-      "progress_label": "Import progress"
+      "progress_label": "Import progress",
+      "announce": "Import {{percent}}% complete."
     },
     "done": {
-      "title_one": "{{count}} member imported, with {{balance}} hours",
-      "title_other": "{{count}} members imported, with {{balance}} hours",
+      "title_one": "{{countFormatted}} member imported, with {{balance}} hours",
+      "title_other": "{{countFormatted}} members imported, with {{balance}} hours",
       "held": "These members are waiting for your community's identity check before they can sign in.",
       "download_zeroed": "Download the list of members whose balance started at 0",
       "reference": "Import reference: {{ref}}",
-      "admission_incomplete_one": "{{count}} member was created but their identity step did not complete (rows {{rows}}). Open them from the member list and resend their identity check, or contact support.",
-      "admission_incomplete_other": "{{count}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support."
+      "admission_incomplete_one": "{{countFormatted}} member was created but their identity step did not complete (rows {{rows}}). Open them from the member list and resend their identity check, or contact support.",
+      "admission_incomplete_other": "{{countFormatted}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support."
     },
     "stopped": {
       "title": "The import stopped. Members imported: {{created}} of {{total}}.",
       "by_admin": "You stopped the import.",
       "download_remaining": "Download the rows that were not imported",
-      "next_step": "Fix the cause if there is one, then check the downloaded file to import the rest."
+      "next_step": "Fix the cause if there is one, then check the downloaded file to import the rest.",
+      "all_processed": "Every row in the file was processed, so there is nothing left to download. The member list shows who was imported."
     },
     "stop": {
       "email_now_taken": "Row {{row}}: someone with this email joined while the import was running.",
@@ -704,6 +706,7 @@
       "not_found": "This import has expired or was replaced by a newer check. Members imported so far are saved. Download the rows that were not imported and check that file to continue.",
       "out_of_order": "This import continued in another window. Members imported so far are saved. Download the rows that were not imported and check that file to continue.",
       "imported_so_far": "Members imported so far: {{created}} of {{total}}."
-    }
+    },
+    "chosen_file": "Chosen file: {{name}}"
   }
 }

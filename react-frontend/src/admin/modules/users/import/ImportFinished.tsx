@@ -11,6 +11,7 @@ import { formatNumber } from '@/lib/helpers';
 import { downloadText, rowsFromIndexFile, rowsWithNumbersFile } from './csvFiles';
 import { formatHours } from './format';
 import { describeStop } from './issueText';
+import { useFocusOnMount } from './useFocusOnMount';
 import type { CheckResult, RunnerState } from './types';
 
 interface Props {
@@ -26,6 +27,9 @@ export function ImportFinished({ state, check, onClose }: Props) {
   const reference = (check.import_id ?? '').slice(0, 8).toUpperCase();
   const incomplete = state.admissionIncomplete;
   const leftover = phase !== 'completed';
+  // Rows the run never reached. For a checked file every row became a held row, in order.
+  const remaining = Math.max(0, (check.source_rows ?? []).length - nextIndex);
+  const lead = useFocusOnMount<HTMLDivElement>();
 
   // Members whose negative balance became 0 — only the ones this run actually reached.
   const reached = new Set((check.source_rows ?? []).slice(0, nextIndex).map((r) => r.row));
@@ -37,7 +41,7 @@ export function ImportFinished({ state, check, onClose }: Props) {
   if (phase === 'completed') {
     alert = {
       color: 'success',
-      title: t('member_import.done.title', { count: created, balance: formatHours(state.balance) }),
+      title: t('member_import.done.title', { count: created, countFormatted: formatNumber(created), balance: formatHours(state.balance) }),
       description: state.held ? t('member_import.done.held') : undefined,
     };
   } else if (phase === 'stopped') {
@@ -69,17 +73,29 @@ export function ImportFinished({ state, check, onClose }: Props) {
   return (
     <>
       <ModalBody className="flex flex-col gap-4">
-        <Alert color={alert.color} title={alert.title} description={alert.description} />
-
-        {incomplete > 0 && (
+        <div ref={lead} tabIndex={-1} className="flex flex-col gap-4 outline-none">
           <Alert
-            color="warning"
-            description={t('member_import.done.admission_incomplete', { count: incomplete, rows: state.admissionIncompleteRows.join(', ') })}
+            color={alert.color}
+            role={alert.color === 'success' ? 'status' : 'alert'}
+            title={alert.title}
+            description={alert.description}
           />
-        )}
+
+          {incomplete > 0 && (
+            <Alert
+              color="warning"
+              role="alert"
+              description={t('member_import.done.admission_incomplete', {
+                count: incomplete,
+                countFormatted: formatNumber(incomplete),
+                rows: state.admissionIncompleteRows.map((row) => formatNumber(row)).join(', '),
+              })}
+            />
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-2">
-          {leftover && (
+          {leftover && remaining > 0 && (
             <Button
               variant="secondary"
               startContent={<Download size={16} aria-hidden="true" />}
@@ -98,6 +114,8 @@ export function ImportFinished({ state, check, onClose }: Props) {
             </Button>
           )}
         </div>
+
+        {leftover && remaining === 0 && <p className="text-sm text-muted">{t('member_import.stopped.all_processed')}</p>}
 
         {reference && <p className="text-xs text-muted">{t('member_import.done.reference', { ref: reference })}</p>}
       </ModalBody>

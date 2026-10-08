@@ -661,41 +661,43 @@
       "identity_attest": "Tożsamość każdej osoby została przeze mnie sprawdzona",
       "identity_help": "Twoja społeczność wymaga weryfikacji tożsamości. Jeśli zostawisz to pole niezaznaczone, ci członkowie poczekają na tę weryfikację, zanim będą mogli się zalogować.",
       "no_emails_yet": "Ten import nie wysyła jeszcze nikomu wiadomości e-mail. Członkowie mogą użyć opcji „Nie pamiętam hasła”, aby ustawić hasło, dopóki nie zostaną dodane zaproszenia.",
-      "import_one": "Importuj {{count}} członka",
-      "import_few": "Importuj {{count}} członków",
-      "import_many": "Importuj {{count}} członków",
-      "import_other": "Importuj {{count}} członka"
+      "import_one": "Importuj {{countFormatted}} członka",
+      "import_few": "Importuj {{countFormatted}} członków",
+      "import_many": "Importuj {{countFormatted}} członków",
+      "import_other": "Importuj {{countFormatted}} członka"
     },
     "running": {
       "title": "Importowanie członków",
       "batch": "Partia {{n}} z około {{m}}",
       "count": "Zaimportowani członkowie: {{done}} z {{total}}",
       "hours": "Dotychczas zaimportowane godziny: {{hours}}",
-      "remaining": "Pozostało około {{time}}",
+      "remaining": "Szacowany pozostały czas: {{time}}",
       "calculating": "Obliczanie pozostałego czasu…",
       "keep_open": "Zostaw to okno otwarte, dopóki import się nie zakończy.",
       "stop": "Zatrzymaj po tej partii",
       "stopping": "Zatrzymywanie po tej partii…",
-      "progress_label": "Postęp importu"
+      "progress_label": "Postęp importu",
+      "announce": "Import ukończony w {{percent}}%."
     },
     "done": {
-      "title_one": "Zaimportowano {{count}} członka, łącznie {{balance}} godz.",
-      "title_few": "Zaimportowano {{count}} członków, łącznie {{balance}} godz.",
-      "title_many": "Zaimportowano {{count}} członków, łącznie {{balance}} godz.",
-      "title_other": "Zaimportowano {{count}} członka, łącznie {{balance}} godz.",
+      "title_one": "Zaimportowano {{countFormatted}} członka, łącznie {{balance}} godz.",
+      "title_few": "Zaimportowano {{countFormatted}} członków, łącznie {{balance}} godz.",
+      "title_many": "Zaimportowano {{countFormatted}} członków, łącznie {{balance}} godz.",
+      "title_other": "Zaimportowano {{countFormatted}} członka, łącznie {{balance}} godz.",
       "held": "Ci członkowie czekają na weryfikację tożsamości przez Twoją społeczność, zanim będą mogli się zalogować.",
       "download_zeroed": "Pobierz listę członków, których saldo zaczęło się od 0",
       "reference": "Numer referencyjny importu: {{ref}}",
-      "admission_incomplete_one": "Utworzono {{count}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
-      "admission_incomplete_few": "Utworzono {{count}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
-      "admission_incomplete_many": "Utworzono {{count}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
-      "admission_incomplete_other": "Utworzono {{count}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną."
+      "admission_incomplete_one": "Utworzono {{countFormatted}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_few": "Utworzono {{countFormatted}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_many": "Utworzono {{countFormatted}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "admission_incomplete_other": "Utworzono {{countFormatted}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną."
     },
     "stopped": {
       "title": "Import został zatrzymany. Zaimportowani członkowie: {{created}} z {{total}}.",
       "by_admin": "Import został zatrzymany na Twoją prośbę.",
       "download_remaining": "Pobierz wiersze, które nie zostały zaimportowane",
-      "next_step": "Usuń przyczynę, jeśli jakaś jest, a następnie sprawdź pobrany plik, aby zaimportować resztę."
+      "next_step": "Usuń przyczynę, jeśli jakaś jest, a następnie sprawdź pobrany plik, aby zaimportować resztę.",
+      "all_processed": "Przetworzono wszystkie wiersze pliku, więc nie ma już nic do pobrania. Lista członków pokazuje, kto został zaimportowany."
     },
     "stop": {
       "email_now_taken": "Wiersz {{row}}: ktoś z tym adresem e-mail dołączył w trakcie importu.",
@@ -710,6 +712,7 @@
       "not_found": "Ten import wygasł lub został zastąpiony nowszym sprawdzeniem. Dotychczas zaimportowani członkowie są zapisani. Pobierz wiersze, które nie zostały zaimportowane, i sprawdź ten plik, aby kontynuować.",
       "out_of_order": "Ten import był kontynuowany w innym oknie. Dotychczas zaimportowani członkowie są zapisani. Pobierz wiersze, które nie zostały zaimportowane, i sprawdź ten plik, aby kontynuować.",
       "imported_so_far": "Dotychczas zaimportowani członkowie: {{created}} z {{total}}."
-    }
+    },
+    "chosen_file": "Wybrany plik: {{name}}"
   }
 }

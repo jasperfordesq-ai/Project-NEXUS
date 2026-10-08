@@ -111,6 +111,13 @@ describe('MemberImportModal', () => {
       expect(screen.getByRole('button', { name: 'Check file' })).toBeEnabled();
     });
 
+    it('is closed by a click outside the window (control for the ready-screen test)', async () => {
+      const user = userEvent.setup();
+      open();
+      await user.click(document.querySelector('[data-slot="modal-backdrop"]') as HTMLElement);
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
     it('only offers CSV files', () => {
       open();
       expect(screen.getByLabelText('Choose a CSV file')).toHaveAttribute('accept', '.csv,text/csv');
@@ -141,23 +148,53 @@ describe('MemberImportModal', () => {
       expect(await screen.findByText('Every row passed the check')).toBeInTheDocument();
     });
 
-    it('tells the admin when the check could not run, and returns to the file choice', async () => {
+    it('tells the admin inline when the check could not run, and forgets the file', async () => {
       mockApi.check.mockResolvedValue({ success: false, code: 'NETWORK_ERROR' });
       const user = userEvent.setup();
       open();
       await user.upload(screen.getByLabelText('Choose a CSV file'), new File(['x'], 'members.csv'));
+      expect(screen.getByText('Chosen file: members.csv')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Check file' }));
-      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('The file could not be checked. Please try again.'));
-      expect(screen.getByRole('button', { name: 'Check file' })).toBeInTheDocument();
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('The file could not be checked. Please try again.');
+      // The file input came back empty, so Check file must not still be submittable.
+      expect(screen.getByRole('button', { name: 'Check file' })).toBeDisabled();
+      expect(screen.queryByText(/Chosen file:/)).not.toBeInTheDocument();
+      await user.upload(screen.getByLabelText('Choose a CSV file'), new File(['x'], 'again.csv'));
+      expect(screen.getByRole('button', { name: 'Check file' })).toBeEnabled();
     });
 
-    it('says to wait a minute when too many files were checked', async () => {
+    it('says to wait a minute, inline, when too many files were checked', async () => {
       mockApi.check.mockResolvedValue({ success: false, code: 'RATE_LIMIT_EXCEEDED' });
       const user = userEvent.setup();
       open();
       await user.upload(screen.getByLabelText('Choose a CSV file'), new File(['x'], 'members.csv'));
       await user.click(screen.getByRole('button', { name: 'Check file' }));
-      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringContaining('Wait a minute, then try again')));
+      expect(await screen.findByRole('alert')).toHaveTextContent('Wait a minute, then try again');
+      expect(screen.getByRole('button', { name: 'Check file' })).toBeDisabled();
+    });
+
+    it('moves focus to the failure message so it is announced', async () => {
+      mockApi.check.mockResolvedValue({ success: false, code: 'NETWORK_ERROR' });
+      const user = userEvent.setup();
+      open();
+      await user.upload(screen.getByLabelText('Choose a CSV file'), new File(['x'], 'members.csv'));
+      await user.click(screen.getByRole('button', { name: 'Check file' }));
+      const alert = await screen.findByRole('alert');
+      await waitFor(() => expect(document.activeElement).toContainElement(alert));
+    });
+
+    it('does not read or upload a file over 2 MB: it shows the too-large screen straight away', async () => {
+      const user = userEvent.setup();
+      open();
+      const big = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.csv', { type: 'text/csv' });
+      await user.upload(screen.getByLabelText('Choose a CSV file'), big);
+      await user.click(screen.getByRole('button', { name: 'Check file' }));
+      expect(await screen.findByText('The file is too large')).toBeInTheDocument();
+      expect(screen.getByText('Files can be up to 2 MB. Split it into smaller files.')).toBeInTheDocument();
+      expect(fileToBase64).not.toHaveBeenCalled();
+      expect(mockApi.check).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Download the correct template' })).toBeInTheDocument();
     });
   });
 
@@ -171,6 +208,13 @@ describe('MemberImportModal', () => {
 
       await user.click(screen.getByRole('button', { name: 'Download the correct template' }));
       expect(mockApi.downloadTemplate).toHaveBeenCalledTimes(1);
+    });
+
+    it('announces a file error as an alert and moves focus to it', async () => {
+      await checkWith(fileError('empty_file'));
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('The file is empty');
+      await waitFor(() => expect(document.activeElement).toContainElement(alert));
     });
 
     it('lists the columns for a missing-columns error', async () => {
@@ -202,6 +246,13 @@ describe('MemberImportModal', () => {
   });
 
   describe('problems', () => {
+    it('announces the result: a danger alert, with focus moved onto it', async () => {
+      await checkWith(problems([issue(3, 'invalid_email')]));
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('Nothing has been imported');
+      await waitFor(() => expect(document.activeElement).toContainElement(alert));
+    });
+
     it('says nothing was imported and lists each problem with its row', async () => {
       await checkWith(problems([issue(3, 'invalid_email'), issue(4, 'wrong_cell_count', null, { found: 4, expected: 6 })]));
       expect(await screen.findByText('Nothing has been imported')).toBeInTheDocument();
@@ -250,6 +301,15 @@ describe('MemberImportModal', () => {
       expect(csv).toContain('Row,Column,Problem');
     });
 
+    it('writes a whole-file problem as "Whole file" in the downloaded list, never 0', async () => {
+      const user = await checkWith(problems([issue(0, 'already_member_unmatched', null), issue(3, 'invalid_email')]));
+      await user.click(await screen.findByRole('button', { name: 'Download the list of problems' }));
+      const lines = (downloadText.mock.calls[0][0] as string).split('\r\n').filter(Boolean);
+      expect(lines[1]).toMatch(/^Whole file,Whole row,/);
+      expect(lines[2]).toMatch(/^3,Email,/);
+      expect(lines.some((l) => l.startsWith('0,'))).toBe(false);
+    });
+
     it('offers the corrected file only when some problems are existing members', async () => {
       await checkWith(problems([issue(3, 'invalid_email')]));
       await screen.findByText('Nothing has been imported');
@@ -285,6 +345,28 @@ describe('MemberImportModal', () => {
       expect(screen.getByText(/Empty lines ignored: 2/)).toBeInTheDocument();
       expect(screen.getByText(/does not email anyone yet/)).toBeInTheDocument();
       expect(screen.getByText(/Row 4: a balance of -3\.50 hours will start at 0\./)).toBeInTheDocument();
+    });
+
+    it('announces readiness and moves focus onto the result', async () => {
+      await checkWith(ready());
+      const status = await screen.findByRole('status');
+      expect(status).toHaveTextContent('Every row passed the check');
+      await waitFor(() => expect(document.activeElement).toContainElement(status));
+    });
+
+    it('formats the counts with the locale formatter', async () => {
+      await checkWith(ready({ summary: { rows: 1234, blank_rows_ignored: 0, total_balance: '1234.50', negative_count: 0, with_location: 1234, without_location: 0 }, warnings: [] }));
+      expect(await screen.findByRole('button', { name: 'Import 1,234 members' })).toBeInTheDocument();
+      expect(screen.getByText('Members to import: 1,234')).toBeInTheDocument();
+    });
+
+    it('is not closed by a click outside the window, but Cancel still closes it', async () => {
+      const user = await checkWith(ready());
+      await screen.findByText('Every row passed the check');
+      await user.click(document.querySelector('[data-slot="modal-backdrop"]') as HTMLElement);
+      expect(onClose).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(onClose).toHaveBeenCalledTimes(1);
     });
 
     it('does not show the identity checkbox when the community does not require it', async () => {
@@ -341,7 +423,7 @@ describe('MemberImportModal', () => {
       expect(await screen.findByText('Batch 2 of about 5')).toBeInTheDocument();
       expect(screen.getByText('Members imported: 25 of 125')).toBeInTheDocument();
       expect(screen.getByText('Hours imported so far: 300.00')).toBeInTheDocument();
-      expect(screen.getByText(/About .* left/)).toBeInTheDocument();
+      expect(screen.getByText(/Time left: about .*/)).toBeInTheDocument();
       expect(screen.getByText('Keep this window open until the import finishes.')).toBeInTheDocument();
       const bar = screen.getByRole('progressbar', { name: 'Import progress' });
       expect(bar).toHaveAttribute('aria-valuenow', '20');
@@ -363,7 +445,7 @@ describe('MemberImportModal', () => {
 
     it('shows "Stopping…" while the runner is stopping', async () => {
       await startRunning({ phase: 'stopping' });
-      expect(await screen.findByText('Stopping after this batch…')).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Stopping after this batch…' })).toBeDisabled();
       expect(screen.queryByRole('button', { name: 'Stop after this batch' })).not.toBeInTheDocument();
     });
 
@@ -385,6 +467,25 @@ describe('MemberImportModal', () => {
       await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, balance: '42.50' });
       expect(await screen.findByText('5 members imported, with 42.50 hours')).toBeInTheDocument();
       expect(screen.getByText('Import reference: ABCDEF12')).toBeInTheDocument();
+    });
+
+    it('moves focus onto the result when the run finishes, and announces failures as alerts', async () => {
+      await finishWith({ phase: 'failed', nextIndex: 1, created: 1, total: 5, errorCode: 'NETWORK_ERROR' });
+      const alerts = await screen.findAllByRole('alert');
+      expect(alerts[0]).toHaveTextContent('The connection to the server was lost');
+      await waitFor(() => expect(document.activeElement).toContainElement(alerts[0]));
+    });
+
+    it('formats the imported count with the locale formatter', async () => {
+      await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 1234, balance: '5.00' });
+      expect(await screen.findByText('1,234 members imported, with 5.00 hours')).toBeInTheDocument();
+    });
+
+    it('does not offer a download when every row was already processed', async () => {
+      await finishWith({ phase: 'failed', nextIndex: 5, created: 5, total: 5, errorCode: 'NETWORK_ERROR' });
+      await screen.findByText('The connection to the server was lost');
+      expect(screen.queryByRole('button', { name: 'Download the rows that were not imported' })).not.toBeInTheDocument();
+      expect(screen.getByText(/Every row in the file was processed/)).toBeInTheDocument();
     });
 
     it('says "member" in the singular when only one was imported', async () => {

@@ -13,17 +13,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FileUp from 'lucide-react/icons/file-up';
-import { Modal, ModalBody, ModalContent, ModalHeader, Spinner } from '@/components/ui';
+import { Modal, ModalContent, ModalHeader } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { adminMemberImport } from '@/admin/api/adminApi';
 import { fileToBase64 } from './csvFiles';
-import { ImportChoose } from './ImportChoose';
+import { ImportChecking } from './ImportChecking';
+import { CheckFailure, ImportChoose } from './ImportChoose';
 import { ImportFileError, ImportProblemList } from './ImportProblems';
 import { ImportReady } from './ImportReady';
 import { ImportProgress } from './ImportProgress';
 import { ImportFinished } from './ImportFinished';
 import { useMemberImportRunner } from './useMemberImportRunner';
 import type { CheckResult } from './types';
+
+/** The server's own limit (MemberImportFile::MAX_BYTES). Anything bigger is refused here, unread. */
+const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
 type Step = 'choose' | 'checking' | 'file_error' | 'problems' | 'ready' | 'running';
 
@@ -42,6 +46,7 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [check, setCheck] = useState<CheckResult | null>(null);
   const [identityChecked, setIdentityChecked] = useState(false);
+  const [checkFailure, setCheckFailure] = useState<CheckFailure | null>(null);
 
   const phase = runner.state.phase;
   const finished = step === 'running' && (phase === 'completed' || phase === 'stopped' || phase === 'failed');
@@ -49,7 +54,7 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
   // Closing while a check or an import is in flight would leave the admin without the result.
   const locked = step === 'checking' || running;
 
-  const chooseAnother = () => { setFile(null); setCheck(null); setStep('choose'); };
+  const chooseAnother = () => { setFile(null); setCheck(null); setCheckFailure(null); setStep('choose'); };
 
   const downloadTemplate = async () => {
     try {
@@ -61,6 +66,13 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
 
   const runCheck = async () => {
     if (!file) return;
+    setCheckFailure(null);
+    if (file.size > MAX_FILE_BYTES) {
+      // Same wording as the server's refusal, without reading or sending a file it would refuse.
+      setCheck({ status: 'file_error', file_error: { code: 'too_large', params: { max_mb: MAX_FILE_BYTES / (1024 * 1024) } } });
+      setStep('file_error');
+      return;
+    }
     setStep('checking');
     let response;
     try {
@@ -69,7 +81,10 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
       response = null;
     }
     if (!response?.success || !response.data) {
-      toast.error(t(response?.code === 'RATE_LIMIT_EXCEEDED' ? 'member_import.check_rate_limited' : 'member_import.check_failed'));
+      // The file picker comes back empty, so forget the file too: otherwise Check file would
+      // still be pressable with a file the admin can no longer see chosen.
+      setFile(null);
+      setCheckFailure(response?.code === 'RATE_LIMIT_EXCEEDED' ? 'check_rate_limited' : 'check_failed');
       setStep('choose');
       return;
     }
@@ -92,7 +107,7 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
 
   return (
     <Modal isOpen={isOpen} onClose={close} size="2xl" scrollBehavior="inside"
-      isDismissable={!locked} isKeyboardDismissDisabled={locked} hideCloseButton={locked || finished}>
+      isDismissable={!locked && step !== 'ready'} isKeyboardDismissDisabled={locked} hideCloseButton={locked || finished}>
       <ModalContent>
         <ModalHeader className="flex items-center gap-2">
           <FileUp size={20} aria-hidden="true" />
@@ -100,16 +115,9 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
         </ModalHeader>
 
         {step === 'choose' && (
-          <ImportChoose file={file} onFile={setFile} onCheck={runCheck} onDownloadTemplate={downloadTemplate} onCancel={close} />
+          <ImportChoose file={file} checkFailure={checkFailure} onFile={setFile} onCheck={runCheck} onDownloadTemplate={downloadTemplate} onCancel={close} />
         )}
-        {step === 'checking' && (
-          <ModalBody>
-            <div role="status" className="flex items-center gap-3 py-6">
-              <Spinner size="md" />
-              <span>{t('member_import.checking')}</span>
-            </div>
-          </ModalBody>
-        )}
+        {step === 'checking' && <ImportChecking />}
         {step === 'file_error' && check && (
           <ImportFileError error={check.file_error} onDownloadTemplate={downloadTemplate} onChooseAnother={chooseAnother} />
         )}

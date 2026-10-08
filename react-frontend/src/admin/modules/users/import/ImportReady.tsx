@@ -9,6 +9,7 @@ import { Alert, Button, Checkbox, ModalBody, ModalFooter } from '@/components/ui
 import { formatNumber } from '@/lib/helpers';
 import { formatHours } from './format';
 import { describeWarning } from './issueText';
+import { useFocusOnMount } from './useFocusOnMount';
 import type { CheckResult } from './types';
 
 interface Props {
@@ -25,6 +26,7 @@ export function ImportReady({ check, identityChecked, onIdentityChange, onImport
   const summary = check.summary;
   const rows = summary?.rows ?? 0;
   const warnings = check.warnings ?? [];
+  const lead = useFocusOnMount<HTMLDivElement>();
 
   const lines: string[] = summary ? [
     t('member_import.ready.members', { n: formatNumber(summary.rows) }),
@@ -37,7 +39,9 @@ export function ImportReady({ check, identityChecked, onIdentityChange, onImport
   return (
     <>
       <ModalBody className="flex flex-col gap-4">
-        <Alert color="success" title={t('member_import.ready.title')} />
+        <div ref={lead} tabIndex={-1} className="outline-none">
+          <Alert color="success" role="status" title={t('member_import.ready.title')} />
+        </div>
 
         <ul className="space-y-1 text-sm">
           {lines.map((line) => <li key={line}>{line}</li>)}
@@ -71,7 +75,7 @@ export function ImportReady({ check, identityChecked, onIdentityChange, onImport
       <ModalFooter>
         <Button variant="tertiary" onPress={onCancel}>{t('member_import.cancel')}</Button>
         <Button onPress={onImport} startContent={<Upload size={16} aria-hidden="true" />}>
-          {t('member_import.ready.import', { count: rows })}
+          {t('member_import.ready.import', { count: rows, countFormatted: formatNumber(rows) })}
         </Button>
       </ModalFooter>
     </>

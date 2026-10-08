@@ -661,44 +661,46 @@
       "identity_attest": "Tá céannacht gach duine seiceáilte agam féin",
       "identity_help": "Éilíonn do phobal seiceáil céannachta. Mura gcuireann tú tic leis seo, fanfaidh na baill seo leis an seiceáil sin sula bhféadfaidh siad síniú isteach.",
       "no_emails_yet": "Ní sheolann an t-iompórtú seo ríomhphost chuig aon duine fós. Is féidir le baill \"Dearmad ar an bhfocal faire\" a úsáid chun focal faire a shocrú go dtí go gcuirfear cuirí leis.",
-      "import_one": "Iompórtáil baill: {{count}}",
-      "import_two": "Iompórtáil baill: {{count}}",
-      "import_few": "Iompórtáil baill: {{count}}",
-      "import_many": "Iompórtáil baill: {{count}}",
-      "import_other": "Iompórtáil baill: {{count}}"
+      "import_one": "Iompórtáil baill: {{countFormatted}}",
+      "import_two": "Iompórtáil baill: {{countFormatted}}",
+      "import_few": "Iompórtáil baill: {{countFormatted}}",
+      "import_many": "Iompórtáil baill: {{countFormatted}}",
+      "import_other": "Iompórtáil baill: {{countFormatted}}"
     },
     "running": {
       "title": "Baill á n-iompórtáil",
       "batch": "Baisc {{n}} as thart ar {{m}}",
       "count": "Baill iompórtáilte: {{done}} as {{total}}",
       "hours": "Uaireanta iompórtáilte go dtí seo: {{hours}}",
-      "remaining": "Thart ar {{time}} fágtha",
+      "remaining": "Am fágtha: thart ar {{time}}",
       "calculating": "An t-am atá fágtha á ríomh…",
       "keep_open": "Fág an fhuinneog seo oscailte go dtí go gcríochnóidh an t-iompórtú.",
       "stop": "Stop i ndiaidh na baisce seo",
       "stopping": "Á stopadh i ndiaidh na baisce seo…",
-      "progress_label": "Dul chun cinn an iompórtaithe"
+      "progress_label": "Dul chun cinn an iompórtaithe",
+      "announce": "Iompórtáil {{percent}}% críochnaithe."
     },
     "done": {
-      "title_one": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
-      "title_two": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
-      "title_few": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
-      "title_many": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
-      "title_other": "Baill iompórtáilte: {{count}} (iomlán {{balance}} uair)",
+      "title_one": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",
+      "title_two": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",
+      "title_few": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",
+      "title_many": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",
+      "title_other": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",
       "held": "Tá na baill seo ag fanacht le seiceáil céannachta do phobail sula bhféadfaidh siad síniú isteach.",
       "download_zeroed": "Íoslódáil liosta na mball ar thosaigh a n-iarmhéid ag 0",
       "reference": "Tagairt iompórtála: {{ref}}",
-      "admission_incomplete_one": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
-      "admission_incomplete_two": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
-      "admission_incomplete_few": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
-      "admission_incomplete_many": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
-      "admission_incomplete_other": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{count}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht."
+      "admission_incomplete_one": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_two": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_few": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_many": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "admission_incomplete_other": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht."
     },
     "stopped": {
       "title": "Stop an t-iompórtú. Baill iompórtáilte: {{created}} as {{total}}.",
       "by_admin": "Stop tú an t-iompórtú.",
       "download_remaining": "Íoslódáil na sraitheanna nár iompórtáladh",
-      "next_step": "Má tá cúis ann, ceartaigh í, ansin seiceáil an comhad íoslódáilte chun an chuid eile a iompórtáil."
+      "next_step": "Má tá cúis ann, ceartaigh í, ansin seiceáil an comhad íoslódáilte chun an chuid eile a iompórtáil.",
+      "all_processed": "Próiseáladh gach sraith sa chomhad, mar sin níl aon rud fágtha le híoslódáil. Taispeánann liosta na mball cé a iompórtáladh."
     },
     "stop": {
       "email_now_taken": "Sraith {{row}}: chuaigh duine leis an ríomhphost seo isteach agus an t-iompórtú ar siúl.",
@@ -713,6 +715,7 @@
       "not_found": "Tá an t-iompórtú seo imithe in éag nó cuireadh seiceáil níos nuaí ina áit. Tá na baill a iompórtáladh go dtí seo sábháilte. Íoslódáil na sraitheanna nár iompórtáladh agus seiceáil an comhad sin chun leanúint ar aghaidh.",
       "out_of_order": "Leanadh leis an iompórtú seo i bhfuinneog eile. Tá na baill a iompórtáladh go dtí seo sábháilte. Íoslódáil na sraitheanna nár iompórtáladh agus seiceáil an comhad sin chun leanúint ar aghaidh.",
       "imported_so_far": "Baill iompórtáilte go dtí seo: {{created}} as {{total}}."
-    }
+    },
+    "chosen_file": "Comhad roghnaithe: {{name}}"
   }
 }

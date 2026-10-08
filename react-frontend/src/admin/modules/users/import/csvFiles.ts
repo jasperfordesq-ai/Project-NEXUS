@@ -80,16 +80,20 @@ export function rowsWithNumbersFile(check: CheckResult, rowNumbers: number[], ro
   return buildCsv([rowLabel, ...(check.header ?? [])], rows);
 }
 
-/** One line per problem. The caller supplies the translated headings and wording. */
+/**
+ * One line per problem. The caller supplies the translated headings and wording, and the
+ * label for a row: row 0 means "the whole file" and must never reach an admin as a "0".
+ */
 export function problemsFile(
   check: CheckResult,
   labels: { row: string; column: string; problem: string },
   describe: (issue: ImportIssue) => string,
   columnLabel: (column: string | null) => string,
+  rowLabel: (row: number) => string,
 ): string {
   return buildCsv(
     [labels.row, labels.column, labels.problem],
-    (check.problems ?? []).map((p) => [String(p.row), columnLabel(p.column), describe(p)]),
+    (check.problems ?? []).map((p) => [rowLabel(p.row), columnLabel(p.column), describe(p)]),
   );
 }
 

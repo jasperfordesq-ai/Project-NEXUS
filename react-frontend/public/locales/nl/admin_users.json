@@ -661,35 +661,37 @@
       "identity_attest": "Ik heb de identiteit van elke persoon zelf gecontroleerd",
       "identity_help": "Je gemeenschap vraagt om een identiteitscontrole. Als je dit niet aanvinkt, wachten deze leden op die controle voordat ze kunnen inloggen.",
       "no_emails_yet": "Deze import stuurt nog geen e-mails. Leden kunnen \"Wachtwoord vergeten\" gebruiken om een wachtwoord in te stellen totdat uitnodigingen zijn toegevoegd.",
-      "import_one": "{{count}} lid importeren",
-      "import_other": "{{count}} leden importeren"
+      "import_one": "{{countFormatted}} lid importeren",
+      "import_other": "{{countFormatted}} leden importeren"
     },
     "running": {
       "title": "Leden worden geïmporteerd",
       "batch": "Batch {{n}} van ongeveer {{m}}",
       "count": "Geïmporteerde leden: {{done}} van {{total}}",
       "hours": "Tot nu toe geïmporteerde uren: {{hours}}",
-      "remaining": "Nog ongeveer {{time}}",
+      "remaining": "Resterende tijd: ongeveer {{time}}",
       "calculating": "Resterende tijd wordt berekend…",
       "keep_open": "Houd dit venster open totdat de import klaar is.",
       "stop": "Stoppen na deze batch",
       "stopping": "Stoppen na deze batch…",
-      "progress_label": "Voortgang van de import"
+      "progress_label": "Voortgang van de import",
+      "announce": "Import voor {{percent}}% voltooid."
     },
     "done": {
-      "title_one": "{{count}} lid geïmporteerd, met {{balance}} uur",
-      "title_other": "{{count}} leden geïmporteerd, met {{balance}} uur",
+      "title_one": "{{countFormatted}} lid geïmporteerd, met {{balance}} uur",
+      "title_other": "{{countFormatted}} leden geïmporteerd, met {{balance}} uur",
       "held": "Deze leden wachten op de identiteitscontrole van je gemeenschap voordat ze kunnen inloggen.",
       "download_zeroed": "Lijst downloaden van leden wier saldo op 0 begon",
       "reference": "Importreferentie: {{ref}}",
-      "admission_incomplete_one": "{{count}} lid is aangemaakt, maar de identiteitsstap is niet voltooid (rijen {{rows}}). Open het lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
-      "admission_incomplete_other": "{{count}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support."
+      "admission_incomplete_one": "{{countFormatted}} lid is aangemaakt, maar de identiteitsstap is niet voltooid (rijen {{rows}}). Open het lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
+      "admission_incomplete_other": "{{countFormatted}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support."
     },
     "stopped": {
       "title": "De import is gestopt. Geïmporteerde leden: {{created}} van {{total}}.",
       "by_admin": "Je hebt de import gestopt.",
       "download_remaining": "De rijen downloaden die niet zijn geïmporteerd",
-      "next_step": "Los de oorzaak op als die er is en controleer dan het gedownloade bestand om de rest te importeren."
+      "next_step": "Los de oorzaak op als die er is en controleer dan het gedownloade bestand om de rest te importeren.",
+      "all_processed": "Alle rijen in het bestand zijn verwerkt, dus er valt niets meer te downloaden. De ledenlijst laat zien wie is geïmporteerd."
     },
     "stop": {
       "email_now_taken": "Rij {{row}}: iemand met dit e-mailadres is lid geworden terwijl de import liep.",
@@ -704,6 +706,7 @@
       "not_found": "Deze import is verlopen of vervangen door een nieuwere controle. Tot nu toe geïmporteerde leden zijn opgeslagen. Download de rijen die niet zijn geïmporteerd en controleer dat bestand om verder te gaan.",
       "out_of_order": "Deze import is in een ander venster voortgezet. Tot nu toe geïmporteerde leden zijn opgeslagen. Download de rijen die niet zijn geïmporteerd en controleer dat bestand om verder te gaan.",
       "imported_so_far": "Tot nu toe geïmporteerde leden: {{created}} van {{total}}."
-    }
+    },
+    "chosen_file": "Gekozen bestand: {{name}}"
   }
 }

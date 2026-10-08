@@ -661,38 +661,40 @@
       "identity_attest": "Eu mesmo verifiquei a identidade de cada pessoa",
       "identity_help": "A sua comunidade exige uma verificação de identidade. Se deixar esta caixa desmarcada, estes membros asalvarão essa verificação antes de poderem entrar.",
       "no_emails_yet": "Esta importação ainda não envia e-mails a ninguém. Os membros podem usar «Esqueci minha senha» para definir uma senha até serem adicionados convites.",
-      "import_one": "Importar {{count}} membro",
-      "import_many": "Importar {{count}} de membros",
-      "import_other": "Importar {{count}} membros"
+      "import_one": "Importar {{countFormatted}} membro",
+      "import_many": "Importar {{countFormatted}} de membros",
+      "import_other": "Importar {{countFormatted}} membros"
     },
     "running": {
       "title": "Importando membros",
       "batch": "Lote {{n}} de cerca de {{m}}",
       "count": "Membros importados: {{done}} de {{total}}",
       "hours": "Horas importadas até agora: {{hours}}",
-      "remaining": "Faltam cerca de {{time}}",
+      "remaining": "Tempo restante: cerca de {{time}}",
       "calculating": "Calculando o tempo restante…",
       "keep_open": "Mantenha esta janela aberta até a importação terminar.",
       "stop": "Parar depois deste lote",
       "stopping": "Parando depois deste lote…",
-      "progress_label": "Progresso da importação"
+      "progress_label": "Progresso da importação",
+      "announce": "Importação concluída em {{percent}}%."
     },
     "done": {
-      "title_one": "{{count}} membro importado, com {{balance}} horas",
-      "title_many": "{{count}} de membros importados, com {{balance}} horas",
-      "title_other": "{{count}} membros importados, com {{balance}} horas",
+      "title_one": "{{countFormatted}} membro importado, com {{balance}} horas",
+      "title_many": "{{countFormatted}} de membros importados, com {{balance}} horas",
+      "title_other": "{{countFormatted}} membros importados, com {{balance}} horas",
       "held": "Estes membros aguardam a verificação de identidade da sua comunidade antes de poderem entrar.",
       "download_zeroed": "Baixar a lista de membros cujo saldo começou em 0",
       "reference": "Referência da importação: {{ref}}",
-      "admission_incomplete_one": "{{count}} membro foi criado, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra-o a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte.",
-      "admission_incomplete_many": "{{count}} de membros foram criados, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra cada um a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte.",
-      "admission_incomplete_other": "{{count}} membros foram criados, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra cada um a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte."
+      "admission_incomplete_one": "{{countFormatted}} membro foi criado, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra-o a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte.",
+      "admission_incomplete_many": "{{countFormatted}} de membros foram criados, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra cada um a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte.",
+      "admission_incomplete_other": "{{countFormatted}} membros foram criados, mas o seu passo de identidade não foi concluído (linhas {{rows}}). Abra cada um a partir da lista de membros e reenvie a verificação de identidade, ou entre em contato com o suporte."
     },
     "stopped": {
       "title": "A importação parou. Membros importados: {{created}} de {{total}}.",
       "by_admin": "Você parou a importação.",
       "download_remaining": "Baixar as linhas que não foram importadas",
-      "next_step": "Se houver uma causa, corrija-a e depois verifique o arquivo baixado para importar o resto."
+      "next_step": "Se houver uma causa, corrija-a e depois verifique o arquivo baixado para importar o resto.",
+      "all_processed": "Todas as linhas do arquivo foram processadas, então não resta nada para baixar. A lista de membros mostra quem foi importado."
     },
     "stop": {
       "email_now_taken": "Linha {{row}}: alguém com este e-mail entrou enquanto a importação decorria.",
@@ -707,6 +709,7 @@
       "not_found": "Esta importação expirou ou foi substituída por uma verificação mais recente. Os membros importados até agora estão salvos. Baixe as linhas que não foram importadas e verifique esse arquivo para continuar.",
       "out_of_order": "Esta importação continuou noutra janela. Os membros importados até agora estão salvos. Baixe as linhas que não foram importadas e verifique esse arquivo para continuar.",
       "imported_so_far": "Membros importados até agora: {{created}} de {{total}}."
-    }
+    },
+    "chosen_file": "Arquivo escolhido: {{name}}"
   }
 }

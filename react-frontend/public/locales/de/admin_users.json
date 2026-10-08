@@ -661,35 +661,37 @@
       "identity_attest": "Ich habe die Identität jeder Person selbst geprüft",
       "identity_help": "Ihre Gemeinschaft verlangt eine Identitätsprüfung. Wenn Sie das Kästchen nicht anhaken, warten diese Mitglieder auf diese Prüfung, bevor sie sich anmelden können.",
       "no_emails_yet": "Dieser Import versendet noch keine E-Mails. Mitglieder können über „Passwort vergessen“ ein Passwort festlegen, bis Einladungen hinzugefügt werden.",
-      "import_one": "{{count}} Mitglied importieren",
-      "import_other": "{{count}} Mitglieder importieren"
+      "import_one": "{{countFormatted}} Mitglied importieren",
+      "import_other": "{{countFormatted}} Mitglieder importieren"
     },
     "running": {
       "title": "Mitglieder werden importiert",
       "batch": "Stapel {{n}} von etwa {{m}}",
       "count": "Importierte Mitglieder: {{done}} von {{total}}",
       "hours": "Bisher importierte Stunden: {{hours}}",
-      "remaining": "Noch etwa {{time}}",
+      "remaining": "Verbleibende Zeit: etwa {{time}}",
       "calculating": "Verbleibende Zeit wird berechnet …",
       "keep_open": "Lassen Sie dieses Fenster geöffnet, bis der Import abgeschlossen ist.",
       "stop": "Nach diesem Stapel anhalten",
       "stopping": "Wird nach diesem Stapel angehalten …",
-      "progress_label": "Importfortschritt"
+      "progress_label": "Importfortschritt",
+      "announce": "Import zu {{percent}} % abgeschlossen."
     },
     "done": {
-      "title_one": "{{count}} Mitglied importiert, mit {{balance}} Stunden",
-      "title_other": "{{count}} Mitglieder importiert, mit {{balance}} Stunden",
+      "title_one": "{{countFormatted}} Mitglied importiert, mit {{balance}} Stunden",
+      "title_other": "{{countFormatted}} Mitglieder importiert, mit {{balance}} Stunden",
       "held": "Diese Mitglieder warten auf die Identitätsprüfung Ihrer Gemeinschaft, bevor sie sich anmelden können.",
       "download_zeroed": "Liste der Mitglieder herunterladen, deren Guthaben bei 0 begann",
       "reference": "Importreferenz: {{ref}}",
-      "admission_incomplete_one": "{{count}} Mitglied wurde angelegt, aber der Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie das Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
-      "admission_incomplete_other": "{{count}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support."
+      "admission_incomplete_one": "{{countFormatted}} Mitglied wurde angelegt, aber der Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie das Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
+      "admission_incomplete_other": "{{countFormatted}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support."
     },
     "stopped": {
       "title": "Der Import wurde angehalten. Importierte Mitglieder: {{created}} von {{total}}.",
       "by_admin": "Sie haben den Import angehalten.",
       "download_remaining": "Nicht importierte Zeilen herunterladen",
-      "next_step": "Beheben Sie die Ursache, falls es eine gibt, und prüfen Sie dann die heruntergeladene Datei, um den Rest zu importieren."
+      "next_step": "Beheben Sie die Ursache, falls es eine gibt, und prüfen Sie dann die heruntergeladene Datei, um den Rest zu importieren.",
+      "all_processed": "Alle Zeilen der Datei wurden verarbeitet, daher gibt es nichts mehr herunterzuladen. Die Mitgliederliste zeigt, wer importiert wurde."
     },
     "stop": {
       "email_now_taken": "Zeile {{row}}: Jemand mit dieser E-Mail-Adresse ist während des Imports beigetreten.",
@@ -704,6 +706,7 @@
       "not_found": "Dieser Import ist abgelaufen oder wurde durch eine neuere Prüfung ersetzt. Bisher importierte Mitglieder sind gespeichert. Laden Sie die nicht importierten Zeilen herunter und prüfen Sie diese Datei, um fortzufahren.",
       "out_of_order": "Dieser Import wurde in einem anderen Fenster fortgesetzt. Bisher importierte Mitglieder sind gespeichert. Laden Sie die nicht importierten Zeilen herunter und prüfen Sie diese Datei, um fortzufahren.",
       "imported_so_far": "Bisher importierte Mitglieder: {{created}} von {{total}}."
-    }
+    },
+    "chosen_file": "Ausgewählte Datei: {{name}}"
   }
 }
