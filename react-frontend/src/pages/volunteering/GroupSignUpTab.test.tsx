@@ -294,7 +294,7 @@ describe("GroupSignUpTab", () => {
     expect(removeButtons).toHaveLength(2);
     expect(screen.queryByText("Remove this member?")).not.toBeInTheDocument();
 
-    fireEvent.click(removeButtons[1]);
+    fireEvent.click(removeButtons[1]!);
     expect(screen.getByText("Remove this member?")).toBeInTheDocument();
     expect(screen.getByText(/Bob Lee will be taken off the group sign-up for The Green Team/)).toBeInTheDocument();
     expect(api.delete).not.toHaveBeenCalled();
@@ -318,7 +318,7 @@ describe("GroupSignUpTab", () => {
 
     // The confirm dialog's own "Cancel reservation" is the second one on screen.
     const confirmButtons = screen.getAllByRole("button", { name: "Cancel reservation" });
-    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
+    fireEvent.click(confirmButtons[confirmButtons.length - 1]!);
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/group-reservations/1");
     });

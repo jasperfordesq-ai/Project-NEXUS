@@ -304,6 +304,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   training: 'breadcrumbs.training',
   qualifications: 'breadcrumbs.qualifications',
   certificates: 'breadcrumbs.certificates',
+  'group-bookings': 'breadcrumbs.group_bookings',
   expenses: 'breadcrumbs.expenses',
 
   // Logs
