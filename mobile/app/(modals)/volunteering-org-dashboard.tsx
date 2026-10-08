@@ -31,6 +31,12 @@ import {
   type VolunteerOrganisationStats,
   type VolunteeringOrganisation,
 } from '@/lib/api/volunteering';
+import {
+  getOrganisationOpportunities,
+  unwrapList,
+  type OrgOpportunity,
+  type OrgOpportunityState,
+} from '@/lib/api/volunteeringOrganiser';
 import * as Haptics from '@/lib/haptics';
 import { useApi } from '@/lib/hooks/useApi';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
@@ -51,17 +57,19 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import { isRefusalStatus } from '@/lib/api/refusal';
 import { useConfirm } from '@/components/ui/useConfirm';
 import AccentIcon from '@/components/ui/AccentIcon';
+import ChoiceChips from '@/components/ui/ChoiceChips';
 import { useParamTab } from '@/lib/hooks/useParamTab';
 import { withRouteGate } from '@/components/withRouteGate';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
-type OrgTab = 'overview' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
+type OrgTab = 'overview' | 'opportunities' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const ORG_TABS: { key: OrgTab; icon: IoniconName }[] = [
   { key: 'overview', icon: 'grid-outline' },
+  { key: 'opportunities', icon: 'briefcase-outline' },
   { key: 'applications', icon: 'clipboard-outline' },
   { key: 'hours', icon: 'time-outline' },
   { key: 'volunteers', icon: 'people-outline' },
@@ -124,11 +132,44 @@ function StatusChip({ status }: { status: string }) {
   );
 }
 
+/** The organiser screens that live outside this dashboard, reachable from the overview. */
+function OrganiserToolsCard({ orgId, onTab }: { orgId: number; onTab: (tab: OrgTab) => void }) {
+  const { t } = useTranslation('volunteeringOrganiser');
+  const primary = usePrimaryColor();
+  const theme = useTheme();
+  const tools: { key: string; icon: IoniconName; label: string; hint: string; onPress: () => void }[] = [
+    { key: 'opportunities', icon: 'briefcase-outline', label: t('tools.opportunities'), hint: t('tools.opportunitiesHint'), onPress: () => onTab('opportunities') },
+    { key: 'expenses', icon: 'receipt-outline', label: t('tools.expenses'), hint: t('tools.expensesHint'), onPress: () => router.push({ pathname: '/(modals)/volunteering-org-expenses', params: { id: String(orgId) } } as Href) },
+    { key: 'fundraising', icon: 'gift-outline', label: t('tools.fundraising'), hint: t('tools.fundraisingHint'), onPress: () => router.push({ pathname: '/(modals)/volunteering-org-fundraising', params: { id: String(orgId) } } as Href) },
+  ];
+  return (
+    <HeroCard className="rounded-panel p-0" testID="org-dashboard-tools">
+      <HeroCard.Body className="gap-3 p-4">
+        <Text className="text-base font-semibold" style={{ color: theme.text }} accessibilityRole="header">
+          {t('tools.heading')}
+        </Text>
+        {tools.map((tool) => (
+          <HeroButton key={tool.key} variant="secondary" className="h-auto justify-start py-3" onPress={tool.onPress} accessibilityLabel={tool.label} accessibilityHint={tool.hint} testID={`org-dashboard-tool-${tool.key}`}>
+            <Ionicons name={tool.icon} size={18} color={primary} />
+            <View className="min-w-0 flex-1 items-start">
+              <HeroButton.Label style={{ textAlign: 'left' }}>{tool.label}</HeroButton.Label>
+              <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{tool.hint}</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={16} color={theme.textMuted} />
+          </HeroButton>
+        ))}
+      </HeroCard.Body>
+    </HeroCard>
+  );
+}
+
 function OverviewPanel({
+  orgId,
   stats,
   org,
   onTab,
 }: {
+  orgId: number;
   stats: VolunteerOrganisationStats | null;
   org: VolunteeringOrganisation | null;
   onTab: (tab: OrgTab) => void;
@@ -140,7 +181,12 @@ function OverviewPanel({
   const largeText = fontScale > 1.3;
 
   if (!stats) {
-    return <EmptyState icon="analytics-outline" title={t('org.statsUnavailable')} />;
+    return (
+      <View className="gap-4">
+        <EmptyState icon="analytics-outline" title={t('org.statsUnavailable')} />
+        <OrganiserToolsCard orgId={orgId} onTab={onTab} />
+      </View>
+    );
   }
 
   return (
@@ -192,6 +238,123 @@ function OverviewPanel({
           </View>
         </HeroCard.Body>
       </HeroCard>
+      <OrganiserToolsCard orgId={orgId} onTab={onTab} />
+    </View>
+  );
+}
+
+type OpportunityFilter = OrgOpportunityState | 'all';
+const OPPORTUNITY_FILTERS: OpportunityFilter[] = ['open', 'closed', 'cancelled', 'all'];
+
+function formatDateOnly(value: string) {
+  const date = new Date(value.length === 10 ? `${value}T00:00:00` : value.replace(' ', 'T'));
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+}
+
+/**
+ * Everything the organisation has posted — open, closed to new volunteers, and cancelled —
+ * with what needs attention, and the way into each one's shifts. Mirrors the website's
+ * OrgOpportunitiesTab; the public list shows only open ones, so without this an organiser
+ * could not find a closed opportunity to reopen or a cancelled one at all.
+ */
+function OpportunitiesPanel({ items, loading, error, onRefresh }: { items: OrgOpportunity[]; loading: boolean; error: string | null; onRefresh: () => void }) {
+  const { t } = useTranslation('volunteeringOrganiser');
+  const primary = usePrimaryColor();
+  const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
+  const [filter, setFilter] = useState<OpportunityFilter>('open');
+
+  const visible = useMemo(() => (filter === 'all' ? items : items.filter((item) => item.state === filter)), [filter, items]);
+
+  if (loading && items.length === 0) return <LoadingSpinner />;
+  if (error && items.length === 0) return <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-opportunities-error" />;
+
+  const stateColour = (state: OrgOpportunityState) => (state === 'open' ? theme.success : state === 'closed' ? theme.warning : theme.error);
+
+  return (
+    <View className="gap-3">
+      <RefreshFailedNotice error={error} onRetry={onRefresh} isRetrying={loading} testID="org-opportunities-error" />
+      <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('opportunities.intro')}</Text>
+      <ChoiceChips
+        label={t('opportunities.filterLabel')}
+        options={OPPORTUNITY_FILTERS.map((key) => ({ value: key, label: t(`opportunities.filter.${key}`) }))}
+        selected={filter}
+        onSelect={(value) => { if (value) setFilter(value); }}
+        testID="org-opportunities-filter"
+      />
+      {visible.length === 0 ? (
+        <EmptyState icon="briefcase-outline" title={filter === 'open' ? t('opportunities.emptyOpen') : t('opportunities.emptyOther')} testID="org-opportunities-empty" />
+      ) : null}
+      {visible.map((opp) => (
+        <HeroCard key={opp.id} className="rounded-panel p-0" testID={`org-opportunity-${opp.id}`}>
+          <HeroCard.Body className="gap-3 p-4">
+            <View className="gap-1">
+              <View className="flex-row flex-wrap items-center gap-2">
+                <Text className="min-w-0 flex-1 text-base font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? undefined : 2}>{opp.title}</Text>
+                <Chip size="sm" variant="secondary" color="default">
+                  <Ionicons name="ellipse" size={9} color={stateColour(opp.state)} />
+                  <Chip.Label>{t(`opportunities.state.${opp.state}`)}</Chip.Label>
+                </Chip>
+              </View>
+              <Text className="text-xs" style={{ color: theme.textMuted }}>
+                {[
+                  opp.is_remote ? t('opportunities.remote') : opp.location,
+                  opp.start_date ? formatDateOnly(opp.start_date) : null,
+                ].filter(Boolean).join(' · ')}
+              </Text>
+            </View>
+            <View className="flex-row flex-wrap gap-2">
+              <Chip size="sm" variant="secondary" color={opp.pending_applications > 0 ? 'warning' : 'default'}>
+                <Chip.Label>{t('opportunities.pending', { n: opp.pending_applications })}</Chip.Label>
+              </Chip>
+              <Chip size="sm" variant="secondary" color="default">
+                <Chip.Label>{t('opportunities.approved', { n: opp.approved_volunteers })}</Chip.Label>
+              </Chip>
+              <Chip size="sm" variant="secondary" color={opp.state === 'open' && opp.upcoming_shifts === 0 ? 'warning' : 'default'}>
+                <Chip.Label>{opp.upcoming_shifts === 0 ? t('opportunities.noUpcomingShifts') : t('opportunities.upcomingShifts', { n: opp.upcoming_shifts })}</Chip.Label>
+              </Chip>
+            </View>
+            <View testID={`org-opportunity-${opp.id}-actions`} className={`gap-2 ${largeText ? '' : 'flex-row flex-wrap'}`}>
+              {opp.state === 'cancelled' ? null : (
+                <HeroButton
+                  size="sm"
+                  variant="secondary"
+                  accessibilityLabel={t('opportunities.shiftsLabel', { title: opp.title })}
+                  onPress={() => router.push({ pathname: '/(modals)/volunteering-shift-list', params: { opportunityId: String(opp.id), title: opp.title } } as Href)}
+                  testID={`org-opportunity-${opp.id}-shifts`}
+                >
+                  <Ionicons name="calendar-outline" size={16} color={primary} />
+                  <HeroButton.Label>{t('opportunities.shifts')}</HeroButton.Label>
+                </HeroButton>
+              )}
+              {opp.state === 'cancelled' ? null : (
+                <HeroButton
+                  size="sm"
+                  variant="secondary"
+                  accessibilityLabel={t('opportunities.editLabel', { title: opp.title })}
+                  onPress={() => router.push({ pathname: '/(modals)/edit-volunteering', params: { id: String(opp.id) } } as Href)}
+                  testID={`org-opportunity-${opp.id}-edit`}
+                >
+                  <Ionicons name="create-outline" size={16} color={primary} />
+                  <HeroButton.Label>{t('opportunities.edit')}</HeroButton.Label>
+                </HeroButton>
+              )}
+              <HeroButton
+                size="sm"
+                variant="ghost"
+                accessibilityLabel={t('opportunities.viewLabel', { title: opp.title })}
+                onPress={() => router.push({ pathname: '/(modals)/volunteering-detail', params: { id: String(opp.id) } } as Href)}
+                testID={`org-opportunity-${opp.id}-view`}
+              >
+                <Ionicons name="open-outline" size={16} color={theme.textSecondary} />
+                <HeroButton.Label style={{ color: theme.textSecondary }}>{t('opportunities.view')}</HeroButton.Label>
+              </HeroButton>
+            </View>
+          </HeroCard.Body>
+        </HeroCard>
+      ))}
     </View>
   );
 }
@@ -705,7 +868,7 @@ function SettingsPanel({
 }
 
 function VolunteeringOrgDashboardInner() {
-  const { t } = useTranslation(['volunteering', 'common']);
+  const { t } = useTranslation(['volunteering', 'common', 'volunteeringOrganiser']);
   const params = useLocalSearchParams<{ id?: string; tab?: string | string[] }>();
   const orgId = parseId(params.id);
   const primary = usePrimaryColor();
@@ -767,6 +930,7 @@ function VolunteeringOrgDashboardInner() {
   const hoursApi = useApi(() => (orgId ? getOrganisationPendingHours(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
   const volunteersApi = useApi(() => (orgId ? getOrganisationVolunteers(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
   const walletApi = useApi(() => (orgId ? getOrganisationWalletTransactions(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
+  const opportunitiesApi = useApi(() => (orgId ? getOrganisationOpportunities(orgId) : Promise.reject(new Error('invalid-org'))), [orgId], { enabled: Boolean(orgId) });
 
   const org = orgApi.data?.data ?? null;
   const stats = statsApi.data?.data ?? null;
@@ -774,6 +938,7 @@ function VolunteeringOrgDashboardInner() {
   const pendingHours = useMemo(() => normaliseItems<OrganisationPendingHour>(hoursApi.data), [hoursApi.data]);
   const volunteers = useMemo(() => normaliseItems<OrganisationVolunteer>(volunteersApi.data), [volunteersApi.data]);
   const transactions = useMemo(() => normaliseItems<OrganisationWalletTransaction>(walletApi.data), [walletApi.data]);
+  const opportunities = useMemo(() => unwrapList<OrgOpportunity>(opportunitiesApi.data?.data, 'items'), [opportunitiesApi.data]);
 
   function refreshAll() {
     orgApi.refresh();
@@ -782,6 +947,7 @@ function VolunteeringOrgDashboardInner() {
     hoursApi.refresh();
     volunteersApi.refresh();
     walletApi.refresh();
+    opportunitiesApi.refresh();
   }
 
   if (!orgId) {
@@ -851,7 +1017,7 @@ function VolunteeringOrgDashboardInner() {
                 >
                   <Ionicons name={item.icon} size={16} color={selected ? primary : theme.textSecondary} />
                   <HeroButton.Label style={{ color: selected ? primary : theme.textSecondary }}>
-                    {t(`org.tabs.${item.key}`)}
+                    {item.key === 'opportunities' ? t('volunteeringOrganiser:opportunities.tab') : t(`org.tabs.${item.key}`)}
                   </HeroButton.Label>
                 </HeroButton>
               );
@@ -874,7 +1040,8 @@ function VolunteeringOrgDashboardInner() {
         ) : null}
 
         {orgApi.isLoading && !org ? <LoadingSpinner /> : null}
-        {tab === 'overview' && !orgApi.isLoading ? <OverviewPanel stats={stats} org={org} onTab={selectTab} /> : null}
+        {tab === 'overview' && !orgApi.isLoading ? <OverviewPanel orgId={orgId} stats={stats} org={org} onTab={selectTab} /> : null}
+        {tab === 'opportunities' ? <OpportunitiesPanel items={opportunities} loading={opportunitiesApi.isLoading} error={opportunitiesApi.error} onRefresh={refreshAll} /> : null}
         {tab === 'applications' ? <ApplicationsPanel applications={applications} loading={applicationsApi.isLoading} error={applicationsApi.error} onRefresh={refreshAll} /> : null}
         {tab === 'hours' ? <HoursPanel entries={pendingHours} loading={hoursApi.isLoading} error={hoursApi.error} onRefresh={refreshAll} /> : null}
         {tab === 'volunteers' ? <VolunteersPanel volunteers={volunteers} loading={volunteersApi.isLoading} error={volunteersApi.error} onRefresh={refreshAll} /> : null}

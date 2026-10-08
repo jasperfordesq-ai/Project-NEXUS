@@ -69,6 +69,11 @@ import {
   type VolunteeringOrganisation,
   type VolunteeringResponse,
 } from '@/lib/api/volunteering';
+import { submitVolunteerExpenseWithReceipt, volunteerSwitchOn, type VolunteerSwitch } from '@/lib/api/volunteeringVolunteer';
+import * as ImagePicker from 'expo-image-picker';
+import { prepareImageForUpload } from '@/lib/media/prepareImageForUpload';
+import { useOpenExternalUrl } from '@/components/ui/useOpenExternalUrl';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { ApiResponseError } from '@/lib/api/client';
@@ -101,16 +106,20 @@ import {
   reserveShiftSwapRequestOperation,
 } from '@/lib/shiftSwapRequestOperation';
 
-type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations';
+type TabKey = 'opportunities' | 'applications' | 'shifts' | 'swaps' | 'hours' | 'certificates' | 'expenses' | 'donations' | 'organisations' | 'tools';
 
 /**
- * The same nine keys as a value, for validating a `?tab=` deep link. Declared next to the
+ * The same ten keys as a value, for validating a `?tab=` deep link. Declared next to the
  * type on purpose: a tab added to one and not the other is a tab no link can reach, and
  * `deepLinkTabs.test.ts` fails if they fall out of step.
+ *
+ * `tools` (2026-10-08) is the volunteer's own list of the rest: waiting lists, wellbeing,
+ * urgent requests, qualifications, concerns, accessibility needs, group sign-ups. Each is
+ * its own screen rather than a tab, because each has a community switch of its own.
  */
 const TAB_KEYS: readonly TabKey[] = [
   'opportunities', 'applications', 'shifts', 'swaps', 'hours',
-  'certificates', 'expenses', 'donations', 'organisations',
+  'certificates', 'expenses', 'donations', 'organisations', 'tools',
 ];
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const EXPENSE_TYPES: VolunteerExpenseType[] = ['travel', 'meals', 'supplies', 'equipment', 'parking', 'other'];
@@ -422,6 +431,71 @@ function HeroHeader({
         </View>
       </HeroCard.Body>
     </HeroCard>
+  );
+}
+
+/**
+ * The volunteer-side screens that do not fit a tab (gap M3, 2026-10-08). Every entry is
+ * gated by the same community switch the website gates its tab with; group sign-ups is
+ * OFF unless the community opted in. No data is fetched here — each screen loads its own
+ * — so this adds no `useApi` call to a screen whose tests stub those positionally.
+ */
+function VolunteerToolsPanel() {
+  const { t } = useTranslation(['volunteeringVolunteer']);
+  const { tenant } = useTenant();
+  const theme = useTheme();
+  const primary = usePrimaryColor();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.3;
+  const config = tenant?.volunteering_config;
+
+  const entries: { key: string; switchKey: VolunteerSwitch; icon: IoniconName; href: Href; tone: string }[] = [
+    { key: 'waitlists', switchKey: 'tab_waitlist', icon: 'hourglass-outline', href: '/(modals)/volunteering-my-waitlists' as Href, tone: primary },
+    { key: 'alerts', switchKey: 'tab_alerts', icon: 'megaphone-outline', href: '/(modals)/volunteering-my-alerts' as Href, tone: '#f59e0b' },
+    { key: 'wellbeing', switchKey: 'tab_wellbeing', icon: 'heart-circle-outline', href: '/(modals)/volunteering-my-wellbeing' as Href, tone: '#e11d48' },
+    { key: 'qualifications', switchKey: 'tab_credentials', icon: 'ribbon-outline', href: '/(modals)/volunteering-my-qualifications' as Href, tone: '#22c55e' },
+    { key: 'incident', switchKey: 'tab_safeguarding', icon: 'shield-outline', href: '/(modals)/volunteer-incident-report' as Href, tone: theme.error },
+    { key: 'accessibility', switchKey: 'tab_accessibility', icon: 'accessibility-outline', href: '/(modals)/volunteering-my-accessibility' as Href, tone: primary },
+    { key: 'groupSignups', switchKey: 'tab_group_signups', icon: 'people-outline', href: '/(modals)/volunteering-my-group-signups' as Href, tone: primary },
+  ];
+  const visible = entries.filter((entry) => volunteerSwitchOn(config, entry.switchKey));
+
+  return (
+    <View className="gap-3" testID="volunteering-tools">
+      <View>
+        <Text className="text-base font-semibold" style={{ color: theme.text }} accessibilityRole="header">{t('volunteeringVolunteer:tools.heading')}</Text>
+        <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>{t('volunteeringVolunteer:tools.description')}</Text>
+      </View>
+      {visible.length === 0 ? (
+        <EmptyState icon="apps-outline" title={t('volunteeringVolunteer:tools.empty')} testID="volunteering-tools-empty" />
+      ) : null}
+      {visible.map((entry) => (
+        <HeroCard key={entry.key} className="rounded-panel p-0" testID={`volunteering-tool-${entry.key}`}>
+          <HeroCard.Body className={`${largeText ? '' : 'flex-row items-center'} gap-3 p-4`}>
+            <View className="size-10 items-center justify-center rounded-full" style={{ backgroundColor: withAlpha(entry.tone, 0.12) }}>
+              <Ionicons name={entry.icon} size={20} color={entry.tone} />
+            </View>
+            <View className="min-w-0 flex-1">
+              <Text className="text-base font-semibold" style={{ color: theme.text }}>{t(`volunteeringVolunteer:tools.${entry.key}`)}</Text>
+              <Text className="mt-0.5 text-sm leading-5" style={{ color: theme.textSecondary }}>{t(`volunteeringVolunteer:tools.${entry.key}Hint`)}</Text>
+            </View>
+            <HeroButton
+              size={largeText ? 'md' : 'sm'}
+              variant="secondary"
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(entry.href);
+              }}
+              accessibilityLabel={t('volunteeringVolunteer:tools.openLabel', { name: t(`volunteeringVolunteer:tools.${entry.key}`) })}
+              testID={`volunteering-tool-open-${entry.key}`}
+            >
+              <Ionicons name="chevron-forward-outline" size={16} color={primary} />
+              <HeroButton.Label>{t('volunteeringVolunteer:tools.open')}</HeroButton.Label>
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ))}
+    </View>
   );
 }
 
@@ -854,15 +928,19 @@ function ShiftsPanel({
   error: string | null;
   onRefresh: () => void;
 }) {
-  const { t } = useTranslation('volunteering');
+  const { t } = useTranslation(['volunteering', 'volunteeringVolunteer']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { tenant } = useTenant();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const cancelPending = useRef(false);
+  // The member's own check-in code lives on its own screen (volunteer-shift-code.tsx);
+  // the website shows it under the same `enable_qr_checkin` switch.
+  const qrCheckinOn = volunteerSwitchOn(tenant?.volunteering_config, 'enable_qr_checkin');
 
   /**
    * 🔴 Asking for a swap did not exist anywhere on the platform until 2026-08-24 — not in
@@ -1075,6 +1153,18 @@ function ShiftsPanel({
                 <Ionicons name="swap-horizontal-outline" size={16} color={primary} />
                 <HeroButton.Label>{t('swaps.ask')}</HeroButton.Label>
               </HeroButton>
+              {qrCheckinOn ? (
+                <HeroButton
+                  size="sm"
+                  variant="tertiary"
+                  onPress={() => router.push({ pathname: '/(modals)/volunteer-shift-code', params: { id: String(shift.id), title: shift.opportunity_title } } as unknown as Href)}
+                  accessibilityLabel={t('volunteeringVolunteer:code.showCodeLabel', { title: shift.opportunity_title })}
+                  testID={`shift-code-${shift.id}`}
+                >
+                  <Ionicons name="qr-code-outline" size={16} color={primary} />
+                  <HeroButton.Label>{t('volunteeringVolunteer:code.showCode')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
             </HeroCard.Body>
           </HeroCard>
         );
@@ -1531,7 +1621,7 @@ function ExpensesPanel({
   onRefresh: () => void;
   onDraftStateChange: (state: DraftState) => void;
 }) {
-  const { t } = useTranslation('volunteering');
+  const { t } = useTranslation(['volunteering', 'volunteeringVolunteer']);
   const primary = usePrimaryColor();
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
@@ -1542,16 +1632,52 @@ function ExpensesPanel({
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('EUR');
   const [description, setDescription] = useState('');
+  /*
+    A receipt photo, attached the way an avatar is picked (system photo picker, no
+    library permission, shrunk before upload) and sent as the multipart `receipt` field
+    the website's form uses. The server accepts jpg/png/webp/pdf up to 10 MB; a photo
+    picker cannot offer a PDF, so this is photos only and says so.
+  */
+  const [receipt, setReceipt] = useState<{ uri: string; mimeType?: string | null } | null>(null);
+  const [pickingReceipt, setPickingReceipt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submitPending = useRef(false);
+  const pickPending = useRef(false);
   const submitAttempt = useMutationAttempt('volunteer-expense');
 
   useEffect(() => {
     onDraftStateChange({
-      isDirty: amount.trim() !== '' || description.trim() !== '',
+      isDirty: amount.trim() !== '' || description.trim() !== '' || receipt !== null,
       isSaving: submitting,
     });
-  }, [amount, description, onDraftStateChange, submitting]);
+  }, [amount, description, onDraftStateChange, receipt, submitting]);
+
+  async function handlePickReceipt() {
+    if (pickPending.current || submitting) return;
+    pickPending.current = true;
+    setPickingReceipt(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.85,
+        allowsMultipleSelection: false,
+      });
+      const asset = result.canceled ? null : result.assets?.[0];
+      if (!asset?.uri) return;
+      if (typeof asset.fileSize === 'number' && asset.fileSize > 10 * 1024 * 1024) {
+        showToast({ title: t('common:errors.alertTitle'), description: t('volunteeringVolunteer:expenses.receiptTooLarge'), variant: 'warning' });
+        return;
+      }
+      // Shrunk, and re-encoded when the phone hands over a format the server refuses (HEIC).
+      const prepared = await prepareImageForUpload(asset, { convertUnsupportedFormats: true });
+      setReceipt({ uri: prepared.uri, mimeType: prepared.mimeType ?? asset.mimeType ?? null });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('volunteeringVolunteer:expenses.receiptPickError')), variant: 'danger' });
+    } finally {
+      pickPending.current = false;
+      setPickingReceipt(false);
+    }
+  }
 
   useEffect(() => {
     if (selectedOrgId === null && organisations.length > 0) {
@@ -1578,10 +1704,13 @@ function ExpensesPanel({
         currency: currency.trim() || 'EUR',
         description: description.trim(),
       };
-      await submitVolunteerExpense(payload, submitAttempt.keyFor(payload));
+      const key = submitAttempt.keyFor({ ...payload, receipt: receipt?.uri ?? null });
+      if (receipt) await submitVolunteerExpenseWithReceipt(payload, receipt, key);
+      else await submitVolunteerExpense(payload, key);
       submitAttempt.clear();
       setAmount('');
       setDescription('');
+      setReceipt(null);
       onRefresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
@@ -1707,6 +1836,30 @@ function ExpensesPanel({
                 accessibilityLabel={t('expenses.descriptionPlaceholder')}
                 editable={!submitting}
               />
+              <View className="gap-2" testID="volunteering-expense-receipt">
+                <View className={`${largeText ? '' : 'flex-row flex-wrap items-center'} gap-2`} style={largeText ? { flexDirection: 'column' } : undefined}>
+                  <HeroButton
+                    size="sm"
+                    variant="secondary"
+                    isDisabled={submitting || pickingReceipt}
+                    onPress={() => void handlePickReceipt()}
+                    testID="volunteering-expense-attach-receipt"
+                    accessibilityState={{ busy: pickingReceipt }}
+                  >
+                    {pickingReceipt ? <Spinner size="sm" /> : <Ionicons name="camera-outline" size={16} color={primary} />}
+                    <HeroButton.Label>{t(receipt ? 'volunteeringVolunteer:expenses.changeReceipt' : 'volunteeringVolunteer:expenses.attachReceipt')}</HeroButton.Label>
+                  </HeroButton>
+                  {receipt ? (
+                    <HeroButton size="sm" variant="tertiary" isDisabled={submitting} onPress={() => setReceipt(null)} testID="volunteering-expense-remove-receipt">
+                      <Ionicons name="close-outline" size={16} color={theme.textSecondary} />
+                      <HeroButton.Label>{t('volunteeringVolunteer:expenses.removeReceipt')}</HeroButton.Label>
+                    </HeroButton>
+                  ) : null}
+                </View>
+                <Text className="text-xs leading-4" style={{ color: receipt ? theme.success : theme.textMuted }} testID="volunteering-expense-receipt-status">
+                  {receipt ? t('volunteeringVolunteer:expenses.receiptAttached') : t('volunteeringVolunteer:expenses.receiptHint')}
+                </Text>
+              </View>
               <HeroButton isDisabled={submitting} onPress={() => void handleSubmit()}>
                 {submitting ? <Spinner size="sm" /> : <HeroButton.Label>{t('expenses.submit')}</HeroButton.Label>}
               </HeroButton>
@@ -1741,6 +1894,11 @@ function ExpensesPanel({
                 <Text className="text-xs" style={{ color: theme.textMuted }}>
                   {t(`expenses.types.${expense.expense_type}`)} - {formatDate(expense.submitted_at) ?? t('expenses.dateUnknown')}
                 </Text>
+                {(expense as VolunteerExpense & { has_receipt?: boolean }).has_receipt ? (
+                  <Text className="text-xs" style={{ color: theme.textSecondary }} testID={`volunteering-expense-has-receipt-${expense.id}`}>
+                    {t('volunteeringVolunteer:expenses.hasReceipt')}
+                  </Text>
+                ) : null}
               </HeroCard.Body>
             </HeroCard>
           );
@@ -1765,12 +1923,21 @@ function DonationsPanel({
   onRefresh: () => void;
   onDraftStateChange: (state: DraftState) => void;
 }) {
-  const { t } = useTranslation('volunteering');
+  const { t } = useTranslation(['volunteering', 'volunteeringVolunteer']);
   const primary = usePrimaryColor();
   const theme = useTheme();
+  const { tenant } = useTenant();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.3;
   const { show: showToast } = useAppToast();
+  const openExternalUrl = useOpenExternalUrl();
+  /*
+    Card payments are deliberately NOT taken in the app (no Stripe here). The website's
+    Donations tab has the card form, so the app sends the member there in their browser
+    — one of the external destinations the handoff allows. Only when the community has a
+    slug to build the address from.
+  */
+  const cardDonationUrl = tenant?.slug ? buildWebUrl(tenant.slug, '/volunteering?tab=donations') : null;
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState('EUR');
@@ -1949,6 +2116,26 @@ function DonationsPanel({
           </HeroButton>
         </HeroCard.Body>
       </HeroCard>
+
+      {cardDonationUrl ? (
+        <HeroCard className="rounded-panel p-0" testID="volunteering-donate-by-card">
+          <HeroCard.Body className="gap-3 p-4">
+            <View>
+              <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('volunteeringVolunteer:donations.cardHeading')}</Text>
+              <Text className="mt-1 text-sm leading-5" style={{ color: theme.textSecondary }}>{t('volunteeringVolunteer:donations.cardBody')}</Text>
+            </View>
+            <HeroButton
+              variant="secondary"
+              onPress={() => void openExternalUrl(cardDonationUrl)}
+              accessibilityLabel={t('volunteeringVolunteer:donations.cardLabel')}
+              testID="volunteering-donate-by-card-button"
+            >
+              <Ionicons name="card-outline" size={16} color={primary} />
+              <HeroButton.Label>{t('volunteeringVolunteer:donations.cardButton')}</HeroButton.Label>
+            </HeroButton>
+          </HeroCard.Body>
+        </HeroCard>
+      ) : null}
 
       {!error && donations.length === 0 ? (
         <EmptyState icon="heart-outline" title={t('donations.emptyTitle')} />
@@ -2227,7 +2414,7 @@ function VolunteeringScreen() {
 }
 
 function VolunteeringScreenInner() {
-  const { t } = useTranslation(['volunteering', 'common']);
+  const { t } = useTranslation(['volunteering', 'common', 'volunteeringVolunteer']);
   const params = useLocalSearchParams<{ tab?: string; submitted?: string }>();
   /*
     🔴 Registering an organisation replaced this screen with itself, carrying
@@ -2486,6 +2673,7 @@ function VolunteeringScreenInner() {
     { key: 'expenses', label: t('tabs.expenses'), icon: 'receipt-outline', requiresAuth: true },
     { key: 'donations', label: t('tabs.donations'), icon: 'heart-outline', requiresAuth: true },
     { key: 'organisations', label: t('tabs.organisations'), icon: 'business-outline', requiresAuth: true },
+    { key: 'tools', label: t('volunteeringVolunteer:tools.tab'), icon: 'apps-outline', requiresAuth: true },
   ], [t]);
 
   const visibleTabs = useMemo(
@@ -2667,6 +2855,8 @@ function VolunteeringScreenInner() {
               <TabLoadMore hasMore={shiftsApi.hasMore} isLoadingMore={shiftsApi.isLoadingMore} onPress={shiftsApi.loadMore} testID="volunteering-shifts-load-more" />
               </>
             ) : null}
+
+            {activeTab === 'tools' ? <VolunteerToolsPanel /> : null}
 
             {activeTab === 'swaps' ? (
               <SwapsPanel

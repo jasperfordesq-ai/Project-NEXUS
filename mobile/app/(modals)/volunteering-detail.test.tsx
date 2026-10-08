@@ -97,6 +97,18 @@ jest.mock('react-i18next', () => ({
         'spots': opts ? `${String(opts.count ?? 0)} spots available` : '0 spots available',
         'common:errors.alertTitle': 'Error',
         'common:back': 'Back',
+        'volunteeringVolunteer:waitlist.join': 'Join waiting list',
+        'volunteeringVolunteer:waitlist.joinLabel': 'Join the waiting list',
+        'volunteeringVolunteer:waitlist.onList': opts ? `You are number ${String(opts.position ?? '')} on the waiting list` : 'On the waiting list',
+        'volunteeringVolunteer:waitlist.viewAll': 'Waiting lists',
+        'volunteeringVolunteer:waitlist.leave': 'Leave waiting list',
+        'volunteeringVolunteer:waitlist.leaveLabel': 'Leave the waiting list',
+        'volunteeringVolunteer:waitlist.leaveConfirmTitle': 'Leave this waiting list?',
+        'volunteeringVolunteer:waitlist.leaveConfirmMessage': 'You will lose your place in the queue.',
+        'volunteeringVolunteer:waitlist.joinedTitle': 'You are on the waiting list',
+        'volunteeringVolunteer:waitlist.joinedBody': 'We will tell you if a place comes free.',
+        'volunteeringVolunteer:waitlist.joinError': 'Could not add you to the waiting list.',
+        'volunteeringVolunteer:waitlist.leftTitle': 'You have left the waiting list',
       };
       return map[key] ?? key;
     },
@@ -161,6 +173,18 @@ jest.mock('@/lib/api/volunteering', () => ({
     factoryCalls.push('myShifts');
     return Promise.resolve({ data: { items: [], cursor: null, has_more: false } });
   }),
+}));
+
+const mockJoinWaitlist = jest.fn();
+const mockLeaveWaitlist = jest.fn();
+jest.mock('@/lib/api/volunteeringVolunteer', () => ({
+  ...jest.requireActual('@/lib/api/volunteeringVolunteer'),
+  getMyWaitlists: jest.fn(() => {
+    factoryCalls.push('myWaitlists');
+    return Promise.resolve({ data: [] });
+  }),
+  joinWaitlist: (...args: unknown[]) => mockJoinWaitlist(...args),
+  leaveWaitlist: (...args: unknown[]) => mockLeaveWaitlist(...args),
 }));
 
 /**
@@ -821,5 +845,83 @@ describe('VolunteeringDetailScreen', () => {
     });
 
     expect(signUpForShift).toHaveBeenCalledWith(2, 1);
+  });
+
+  // Gap M3: a full shift was a dead end on the phone — the sign-up button was offered,
+  // the server refused it, and there was no way to wait for a place.
+  function approvedOpportunityWithFullShift(onList: boolean) {
+    const opportunity = {
+      ...mockOpportunity,
+      has_applied: true,
+      application: { id: 44, status: 'approved' },
+      shifts: [
+        { id: 9, start_time: '2026-08-24T09:00:00Z', end_time: '2026-08-24T11:00:00Z', capacity: 4, signup_count: 4, spots_available: 0 },
+      ],
+    };
+    const waitlists = {
+      data: onList
+        ? [{
+            id: 3,
+            position: 2,
+            status: 'waiting',
+            notified_at: null,
+            shift: { id: 9, start_time: '2026-08-24T09:00:00Z', end_time: '2026-08-24T11:00:00Z', capacity: 4 },
+            opportunity: { id: 10, title: 'Community Garden Volunteer' },
+            organization: { id: 4, name: 'Green Spaces Dublin' },
+            joined_at: '2026-08-01T00:00:00Z',
+          }]
+        : [],
+    };
+    mockUseApi.mockImplementation((factory: unknown) => {
+      factoryCalls.length = 0;
+      try {
+        void (factory as () => unknown)();
+      } catch {
+        // only which API was reached matters
+      }
+      const which = factoryCalls[0];
+      return {
+        data: which === 'myWaitlists' ? waitlists : which === 'myShifts' ? { data: { items: [], cursor: null, has_more: false } } : { data: opportunity },
+        isLoading: false,
+        error: null,
+        refresh: jest.fn(),
+      };
+    });
+  }
+
+  it('offers the waiting list on a full shift instead of a sign-up the server would refuse', async () => {
+    approvedOpportunityWithFullShift(false);
+    mockJoinWaitlist.mockResolvedValue({ data: { id: 3, position: 1 } });
+
+    const { getByTestId, queryByText } = render(<VolunteeringDetailScreen />);
+
+    expect(queryByText('Sign up for shift')).toBeNull();
+    fireEvent.press(getByTestId('shift-waitlist-join-9'));
+
+    await waitFor(() => {
+      expect(mockJoinWaitlist).toHaveBeenCalledWith(9);
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'You are on the waiting list',
+        variant: 'success',
+      }));
+    });
+  });
+
+  it('shows the member their place on the waiting list and asks before they leave it', async () => {
+    approvedOpportunityWithFullShift(true);
+    mockLeaveWaitlist.mockResolvedValue(undefined);
+
+    const { getByTestId, getByText, queryByTestId } = render(<VolunteeringDetailScreen />);
+
+    expect(getByText('You are number 2 on the waiting list')).toBeTruthy();
+    expect(queryByTestId('shift-waitlist-join-9')).toBeNull();
+
+    fireEvent.press(getByTestId('shift-waitlist-leave-9'));
+    expect(mockLeaveWaitlist).not.toHaveBeenCalled();
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'Leave this waiting list?' }));
+
+    const opts = mockConfirm.mock.calls[0][0] as { onConfirm: () => void };
+    await act(async () => { opts.onConfirm(); });
+    expect(mockLeaveWaitlist).toHaveBeenCalledWith(9);
   });
 });

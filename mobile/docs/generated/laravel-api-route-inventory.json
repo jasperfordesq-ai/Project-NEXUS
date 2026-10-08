@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2800,
-  "api_route_rows": 2765,
-  "distinct_api_paths": 2301,
+  "total_registered_routes": 2802,
+  "api_route_rows": 2767,
+  "distinct_api_paths": 2303,
   "route_source_fingerprint": {
-    "digest": "1fc22ac848bff9d6210e0c27db2f11b3a1aa47244852f513f8dbee9a2f7dc36e",
+    "digest": "1709304dd7068060bc45c2b003e4d67d4fd9ece62d37c91ea21047ab459a5e94",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "51a22ddfaa8d69fab5080db902f8148e3a29f1243f7d7d7d19c058a56c9474cb"
+        "sha256": "e8a525a0b05c0c7bf5bfb4ccde81324a631e3acec43ef0ebd3ad9d5a16f7334e"
       },
       {
         "file": "routes/channels.php",
@@ -3397,6 +3397,12 @@
     ],
     "/api/v2/admin/volunteering/giving-days/{id}/trends": [
       "GET"
+    ],
+    "/api/v2/admin/volunteering/group-reservations": [
+      "GET"
+    ],
+    "/api/v2/admin/volunteering/group-reservations/{id}": [
+      "DELETE"
     ],
     "/api/v2/admin/volunteering/guardian-consents": [
       "GET"

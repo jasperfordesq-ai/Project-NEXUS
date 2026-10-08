@@ -30,7 +30,7 @@ const NAMESPACES = [
   'notifications', 'settings', 'wallet', 'profile', 'search', 'blog',
   'groups', 'gamification', 'goals', 'chat', 'volunteering', 'organisations',
   'endorsements', 'federation', 'jobs', 'marketplace', 'resources', 'ideation', 'courses', 'podcasts', 'onboarding', 'clubs', 'venues',
-  'explore', 'legal',
+  'explore', 'legal', 'volunteeringOrganiser', 'volunteeringVolunteer',
 ] as const;
 
 // Each loader is a function — require() calls inside are only evaluated when
@@ -78,6 +78,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/en/venues.json'),
     explore: require('../locales/en/explore.json'),
     legal: require('../locales/en/legal.json'),
+    volunteeringOrganiser: require('../locales/en/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/en/volunteeringVolunteer.json'),
   }),
   ga: () => ({
     common: require('../locales/ga/common.json'),
@@ -120,6 +122,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/ga/venues.json'),
     explore: require('../locales/ga/explore.json'),
     legal: require('../locales/ga/legal.json'),
+    volunteeringOrganiser: require('../locales/ga/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/ga/volunteeringVolunteer.json'),
   }),
   de: () => ({
     common: require('../locales/de/common.json'),
@@ -162,6 +166,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/de/venues.json'),
     explore: require('../locales/de/explore.json'),
     legal: require('../locales/de/legal.json'),
+    volunteeringOrganiser: require('../locales/de/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/de/volunteeringVolunteer.json'),
   }),
   fr: () => ({
     common: require('../locales/fr/common.json'),
@@ -204,6 +210,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/fr/venues.json'),
     explore: require('../locales/fr/explore.json'),
     legal: require('../locales/fr/legal.json'),
+    volunteeringOrganiser: require('../locales/fr/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/fr/volunteeringVolunteer.json'),
   }),
   it: () => ({
     common: require('../locales/it/common.json'),
@@ -246,6 +254,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/it/venues.json'),
     explore: require('../locales/it/explore.json'),
     legal: require('../locales/it/legal.json'),
+    volunteeringOrganiser: require('../locales/it/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/it/volunteeringVolunteer.json'),
   }),
   pt: () => ({
     common: require('../locales/pt/common.json'),
@@ -288,6 +298,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/pt/venues.json'),
     explore: require('../locales/pt/explore.json'),
     legal: require('../locales/pt/legal.json'),
+    volunteeringOrganiser: require('../locales/pt/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/pt/volunteeringVolunteer.json'),
   }),
   es: () => ({
     common: require('../locales/es/common.json'),
@@ -330,6 +342,8 @@ const languageLoaders: Record<string, LanguageLoader> = {
     venues: require('../locales/es/venues.json'),
     explore: require('../locales/es/explore.json'),
     legal: require('../locales/es/legal.json'),
+    volunteeringOrganiser: require('../locales/es/volunteeringOrganiser.json'),
+    volunteeringVolunteer: require('../locales/es/volunteeringVolunteer.json'),
   }),
 };
 

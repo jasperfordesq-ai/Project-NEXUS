@@ -17,7 +17,8 @@ let mockDeclineNoteRequired = false;
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
-  router: { push: mockPush, replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
+  // Lazy wrapper: the factory runs before `const mockPush` is initialised, so a direct reference is undefined.
+  router: { push: (...args: unknown[]) => mockPush(...args), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false) },
   useLocalSearchParams: () => mockRouteParams,
 }));
 
@@ -93,6 +94,36 @@ jest.mock('react-i18next', () => ({
         'org.settings.emailPlaceholder': 'Contact email',
         'org.settings.websitePlaceholder': 'Website',
         'org.settings.save': 'Save organisation',
+        'volunteeringOrganiser:opportunities.tab': 'Opportunities',
+        'tools.heading': 'Organiser tools',
+        'tools.opportunities': 'Opportunities and shifts',
+        'tools.opportunitiesHint': 'Everything this organisation has posted.',
+        'tools.expenses': 'Expense claims',
+        'tools.expensesHint': 'Approve, reject and pay claims.',
+        'tools.fundraising': 'Fundraising',
+        'tools.fundraisingHint': 'Run campaigns.',
+        'opportunities.intro': 'Everything this organisation has posted.',
+        'opportunities.filterLabel': 'Show opportunities',
+        'opportunities.filter.open': 'Open',
+        'opportunities.filter.closed': 'Closed',
+        'opportunities.filter.cancelled': 'Cancelled',
+        'opportunities.filter.all': 'All',
+        'opportunities.state.open': 'Open',
+        'opportunities.state.closed': 'Closed to new volunteers',
+        'opportunities.state.cancelled': 'Cancelled',
+        'opportunities.remote': 'Remote',
+        'opportunities.pending': opts ? `Waiting for a decision: ${String(opts.n ?? 0)}` : 'Waiting',
+        'opportunities.approved': opts ? `Approved: ${String(opts.n ?? 0)}` : 'Approved',
+        'opportunities.upcomingShifts': opts ? `Upcoming shifts: ${String(opts.n ?? 0)}` : 'Upcoming shifts',
+        'opportunities.noUpcomingShifts': 'No upcoming shifts',
+        'opportunities.shifts': 'Shifts',
+        'opportunities.shiftsLabel': opts ? `Manage the shifts for ${String(opts.title ?? '')}` : 'Manage shifts',
+        'opportunities.edit': 'Edit',
+        'opportunities.editLabel': opts ? `Edit ${String(opts.title ?? '')}` : 'Edit',
+        'opportunities.view': 'View',
+        'opportunities.viewLabel': opts ? `Open ${String(opts.title ?? '')}` : 'Open',
+        'opportunities.emptyOpen': 'No open opportunities. Post one to start finding volunteers.',
+        'opportunities.emptyOther': 'Nothing here.',
         'applications.approve': 'Approve',
         'applications.decline': 'Decline',
         'hoursValue': opts ? `${String(opts.count ?? 0)}h` : '0h',
@@ -186,6 +217,15 @@ jest.mock('@/lib/api/volunteering', () => ({
   verifyVolunteerHours: jest.fn().mockResolvedValue({ data: {} }),
 }));
 
+jest.mock('@/lib/api/volunteeringOrganiser', () => ({
+  getOrganisationOpportunities: jest.fn(),
+  unwrapList: (raw: unknown, key: string) => {
+    if (Array.isArray(raw)) return raw;
+    const inner = (raw as Record<string, unknown> | null | undefined)?.[key];
+    return Array.isArray(inner) ? inner : [];
+  },
+}));
+
 import { depositOrganisationWallet, handleVolunteerApplication, updateOrganisation, verifyVolunteerHours } from '@/lib/api/volunteering';
 import VolunteeringOrgDashboard from './volunteering-org-dashboard';
 
@@ -226,6 +266,20 @@ function mockDashboardApis(overrides: Partial<Record<number, Record<string, unkn
       },
       {
         data: { data: { items: [{ id: 99, type: 'deposit', amount: 5, note: 'Top-up', created_at: '2026-05-03T00:00:00Z' }], cursor: null, has_more: false } },
+        isLoading: false,
+        error: null,
+        refresh,
+      },
+      {
+        // GET /organisations/{id}/opportunities — the seventh call, in the order the screen makes them.
+        data: {
+          data: {
+            items: [
+              { id: 3, title: 'Garden Helper', state: 'open', location: 'Allotments', is_remote: false, start_date: '2026-06-01', end_date: null, pending_applications: 1, approved_volunteers: 2, upcoming_shifts: 0 },
+              { id: 4, title: 'Old Fair', state: 'cancelled', location: null, is_remote: true, start_date: null, end_date: null, pending_applications: 0, approved_volunteers: 0, upcoming_shifts: 0 },
+            ],
+          },
+        },
         isLoading: false,
         error: null,
         refresh,
@@ -529,6 +583,48 @@ describe('VolunteeringOrgDashboard', () => {
       expect(depositOrganisationWallet).toHaveBeenCalledWith(5, 1.5, undefined, expect.any(String)),
     );
   });
+  it('lists the organisation\'s own opportunities with a way into their shifts, hiding cancelled ones by default', () => {
+    mockRouteParams = { id: '5', tab: 'opportunities' };
+    const screen = render(<VolunteeringOrgDashboard />);
+
+    expect(screen.getByText('Garden Helper')).toBeTruthy();
+    expect(screen.getByText('Waiting for a decision: 1')).toBeTruthy();
+    expect(screen.getByText('No upcoming shifts')).toBeTruthy();
+    expect(screen.queryByText('Old Fair')).toBeNull();
+
+    fireEvent.press(screen.getByTestId('org-opportunity-3-shifts'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/volunteering-shift-list', params: { opportunityId: '3', title: 'Garden Helper' } });
+    fireEvent.press(screen.getByTestId('org-opportunity-3-edit'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/edit-volunteering', params: { id: '3' } });
+
+    fireEvent.press(screen.getByLabelText('Cancelled'));
+    expect(screen.getByText('Old Fair')).toBeTruthy();
+    // A cancelled opportunity has no shifts to manage and nothing to edit.
+    expect(screen.queryByTestId('org-opportunity-4-shifts')).toBeNull();
+    expect(screen.queryByTestId('org-opportunity-4-edit')).toBeNull();
+  });
+
+  it('shows a retryable opportunities load failure instead of an empty claim', () => {
+    const retry = jest.fn();
+    mockRouteParams = { id: '5', tab: 'opportunities' };
+    mockDashboardApis({ 6: { data: null, isLoading: false, error: 'Network down', errorStatus: 500, errorCode: null, refresh: retry } });
+    const screen = render(<VolunteeringOrgDashboard />);
+    expect(screen.getByTestId('org-opportunities-error')).toBeTruthy();
+    expect(screen.queryByText('No open opportunities. Post one to start finding volunteers.')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Retry'));
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the expense review and fundraising screens for this organisation from the overview', () => {
+    const screen = render(<VolunteeringOrgDashboard />);
+    fireEvent.press(screen.getByTestId('org-dashboard-tool-expenses'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/volunteering-org-expenses', params: { id: '5' } });
+    fireEvent.press(screen.getByTestId('org-dashboard-tool-fundraising'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/(modals)/volunteering-org-fundraising', params: { id: '5' } });
+    fireEvent.press(screen.getByTestId('org-dashboard-tool-opportunities'));
+    expect(screen.getByText('Garden Helper')).toBeTruthy();
+  });
+
   it('🔴 says access was refused rather than claiming every list is empty', () => {
     // `getOrganisation` succeeds for anybody — it is the public record — while the five
     // organiser calls answer 403. The screen used to show a Retry that could never

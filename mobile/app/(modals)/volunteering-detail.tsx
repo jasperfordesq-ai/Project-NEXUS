@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { type Href, router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -36,6 +36,7 @@ import {
   type VolunteerShiftRegistration,
   type VolunteeringOrganisation,
 } from '@/lib/api/volunteering';
+import { getMyWaitlists, joinWaitlist, leaveWaitlist, volunteerSwitchOn, type WaitlistEntry } from '@/lib/api/volunteeringVolunteer';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { ApiResponseError } from '@/lib/api/client';
 import { isRefusalStatus } from '@/lib/api/refusal';
@@ -173,6 +174,10 @@ function ShiftCard({
   busy,
   canSignUp,
   isMine,
+  waitlistOn,
+  waitlistEntry,
+  onJoinWaitlist,
+  onLeaveWaitlist,
 }: {
   shift: VolunteerShift;
   onSignUp: () => void;
@@ -187,8 +192,14 @@ function ShiftCard({
    * on `myShiftForThisOpportunity`.
    */
   isMine: boolean;
+  /** The community's `tab_waitlist` switch; off hides every waiting-list control. */
+  waitlistOn: boolean;
+  /** The member's own entry on this shift's waiting list, when they are on it. */
+  waitlistEntry: WaitlistEntry | null;
+  onJoinWaitlist: () => void;
+  onLeaveWaitlist: () => void;
 }) {
-  const { t } = useTranslation('volunteering');
+  const { t } = useTranslation(['volunteering', 'volunteeringVolunteer']);
   const theme = useTheme();
   const primary = usePrimaryColor();
   const { fontScale } = useWindowDimensions();
@@ -196,6 +207,8 @@ function ShiftCard({
   const date = formatDate(shift.start_time, 'short');
   const start = formatTime(shift.start_time);
   const end = formatTime(shift.end_time);
+  // The website's rule: a shift with no capacity is open; one with 0 places is full.
+  const isFull = shift.spots_available !== null && shift.spots_available <= 0;
 
   return (
     <HeroCard className="rounded-panel p-0">
@@ -221,6 +234,10 @@ function ShiftCard({
             <Chip size="sm" color="success" testID={`shift-mine-${shift.id}`}>
               <Chip.Label>{t('myShifts.confirmed')}</Chip.Label>
             </Chip>
+          ) : isFull ? (
+            <Chip size="sm" variant="secondary" color="default" testID={`shift-full-${shift.id}`}>
+              <Chip.Label>{t('volunteeringVolunteer:waitlist.full')}</Chip.Label>
+            </Chip>
           ) : null}
         </View>
         {canSignUp && isMine ? (
@@ -236,11 +253,63 @@ function ShiftCard({
             <HeroButton.Label>{t('myShifts.cancel')}</HeroButton.Label>
           </HeroButton>
         ) : null}
-        {canSignUp && !isMine ? (
+        {canSignUp && !isMine && !isFull ? (
           <HeroButton size="sm" variant="secondary" isDisabled={busy} onPress={onSignUp} accessibilityState={{ busy: signingUp }}>
             {signingUp ? <Spinner size="sm" /> : null}
             <HeroButton.Label>{t('signUpForShift')}</HeroButton.Label>
           </HeroButton>
+        ) : null}
+        {/*
+          🔴 A full shift used to be a dead end: the sign-up button was offered, the server
+          refused it, and the member had no way to wait for a place. The website offers
+          "Join waitlist" exactly here — approved, not already on the shift, shift full —
+          and this follows it. Position and the claim action live on the Waiting lists
+          screen; this card only needs to say "you are on it".
+        */}
+        {canSignUp && !isMine && isFull && waitlistOn ? (
+          waitlistEntry ? (
+            <View className="gap-2" testID={`shift-waitlisted-${shift.id}`}>
+              <Text className="text-sm font-semibold" style={{ color: primary }}>
+                {t('volunteeringVolunteer:waitlist.onList', { position: waitlistEntry.position })}
+              </Text>
+              <View className={`${largeText ? '' : 'flex-row'} gap-2`} style={largeText ? { flexDirection: 'column' } : undefined}>
+                <HeroButton
+                  className={largeText ? 'w-full' : 'flex-1'}
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => router.push('/(modals)/volunteering-my-waitlists' as Href)}
+                  testID={`shift-waitlist-view-${shift.id}`}
+                >
+                  <Ionicons name="hourglass-outline" size={16} color={primary} />
+                  <HeroButton.Label>{t('volunteeringVolunteer:waitlist.viewAll')}</HeroButton.Label>
+                </HeroButton>
+                <HeroButton
+                  className={largeText ? 'w-full' : 'flex-1'}
+                  size="sm"
+                  variant="danger-soft"
+                  isDisabled={busy}
+                  onPress={onLeaveWaitlist}
+                  testID={`shift-waitlist-leave-${shift.id}`}
+                  accessibilityLabel={t('volunteeringVolunteer:waitlist.leaveLabel', { title: date ?? '' })}
+                >
+                  <HeroButton.Label>{t('volunteeringVolunteer:waitlist.leave')}</HeroButton.Label>
+                </HeroButton>
+              </View>
+            </View>
+          ) : (
+            <HeroButton
+              size="sm"
+              variant="secondary"
+              isDisabled={busy}
+              onPress={onJoinWaitlist}
+              testID={`shift-waitlist-join-${shift.id}`}
+              accessibilityLabel={t('volunteeringVolunteer:waitlist.joinLabel', { date: date ?? '' })}
+              accessibilityState={{ busy: signingUp }}
+            >
+              {signingUp ? <Spinner size="sm" /> : <Ionicons name="hourglass-outline" size={16} color={primary} />}
+              <HeroButton.Label>{t('volunteeringVolunteer:waitlist.join')}</HeroButton.Label>
+            </HeroButton>
+          )
         ) : null}
       </HeroCard.Body>
     </HeroCard>
@@ -454,6 +523,24 @@ function VolunteeringDetailScreenInner() {
     return items.find((item) => item.opportunity_id === safeId) ?? null;
   }, [myShiftsApi.data, safeId]);
 
+  /**
+   * Waiting lists (gap M3). The community's `tab_waitlist` switch hides every control;
+   * the member's own entries come from `GET /v2/volunteering/my-waitlists` so a full
+   * shift's card can say "you are on it" instead of offering a sign-up the server refuses.
+   */
+  const waitlistOn = volunteerSwitchOn(tenant?.volunteering_config, 'tab_waitlist');
+  const waitlistsApi = useApi<{ data: WaitlistEntry[] }>(
+    () => getMyWaitlists(),
+    [safeId, canSignUpForShifts, waitlistOn],
+    { enabled: safeId > 0 && canSignUpForShifts && waitlistOn },
+  );
+  const waitlistEntries: WaitlistEntry[] = useMemo(() => {
+    const items = waitlistsApi.data?.data;
+    return Array.isArray(items) ? items : [];
+  }, [waitlistsApi.data]);
+  const waitlistEntryFor = (shiftId: number): WaitlistEntry | null =>
+    waitlistEntries.find((entry) => entry.shift?.id === shiftId) ?? null;
+
   async function handleShare() {
     if (!opportunity) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -593,6 +680,78 @@ function VolunteeringDetailScreenInner() {
     }
 
     void performSignUpForShift(shiftId);
+  }
+
+  async function handleJoinWaitlist(shiftId: number) {
+    if (shiftPending.current) return;
+    if (!isAuthenticated) {
+      showToast({ title: t('signInRequiredTitle'), description: t('signInRequiredMessage'), variant: 'warning' });
+      return;
+    }
+    shiftPending.current = true;
+    setSigningShiftId(shiftId);
+    try {
+      await joinWaitlist(shiftId);
+      if (!mountedRef.current) return;
+      waitlistsApi.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({
+        title: t('volunteeringVolunteer:waitlist.joinedTitle'),
+        description: t('volunteeringVolunteer:waitlist.joinedBody'),
+        variant: 'success',
+      });
+    } catch (err) {
+      if (!mountedRef.current) return;
+      // A 409 means the server already has us on the list: show that, do not complain.
+      waitlistsApi.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('volunteeringVolunteer:waitlist.joinError')),
+        variant: 'danger',
+      });
+    } finally {
+      shiftPending.current = false;
+      setSigningShiftId(null);
+    }
+  }
+
+  function handleLeaveWaitlist(shiftId: number) {
+    if (shiftPending.current) return;
+    confirm({
+      title: t('volunteeringVolunteer:waitlist.leaveConfirmTitle'),
+      message: t('volunteeringVolunteer:waitlist.leaveConfirmMessage'),
+      confirmLabel: t('volunteeringVolunteer:waitlist.leave'),
+      cancelLabel: t('common:buttons.cancel'),
+      variant: 'danger',
+      confirmTestID: 'shift-waitlist-leave-confirm',
+      onConfirm: () => performLeaveWaitlist(shiftId),
+    });
+  }
+
+  async function performLeaveWaitlist(shiftId: number) {
+    if (shiftPending.current) return;
+    shiftPending.current = true;
+    setCancellingShiftId(shiftId);
+    try {
+      await leaveWaitlist(shiftId);
+      if (!mountedRef.current) return;
+      waitlistsApi.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      showToast({ title: t('volunteeringVolunteer:waitlist.leftTitle'), variant: 'success' });
+    } catch (err) {
+      if (!mountedRef.current) return;
+      waitlistsApi.refresh();
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      showToast({
+        title: t('common:errors.alertTitle'),
+        description: describeApiError(err, t('volunteeringVolunteer:waitlist.leaveError')),
+        variant: 'danger',
+      });
+    } finally {
+      shiftPending.current = false;
+      setCancellingShiftId(null);
+    }
   }
 
   function handleCancelShift(shiftId: number) {
@@ -880,6 +1039,10 @@ function VolunteeringDetailScreenInner() {
                   isMine={myShiftForThisOpportunity?.id === shift.id}
                   onSignUp={() => handleSignUpForShift(shift.id)}
                   onCancel={() => handleCancelShift(shift.id)}
+                  waitlistOn={waitlistOn && !waitlistsApi.error}
+                  waitlistEntry={waitlistEntryFor(shift.id)}
+                  onJoinWaitlist={() => handleJoinWaitlist(shift.id)}
+                  onLeaveWaitlist={() => handleLeaveWaitlist(shift.id)}
                 />
               ))}
               {canSignUpForShifts && myShiftsApi.error ? (

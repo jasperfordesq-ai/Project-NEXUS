@@ -934,6 +934,13 @@ function RootNavigator() {
         name="(modals)/volunteering-org-dashboard"
         options={{ ...modalOptions, headerShown: false, title: t('volunteering:org.title') }}
       />
+      <Stack.Screen name="(modals)/volunteering-shift-list" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:shifts.title') }} />
+      <Stack.Screen name="(modals)/volunteering-shift-form" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:shiftForm.newTitle') }} />
+      <Stack.Screen name="(modals)/volunteering-shift-pattern-form" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:patternForm.newTitle') }} />
+      <Stack.Screen name="(modals)/volunteering-shift-roster" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:roster.title') }} />
+      <Stack.Screen name="(modals)/volunteering-org-expenses" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:expenses.title') }} />
+      <Stack.Screen name="(modals)/volunteering-org-fundraising" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:fundraising.title') }} />
+      <Stack.Screen name="(modals)/volunteering-org-campaign-form" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:campaignForm.newTitle') }} />
       <Stack.Screen
         name="(modals)/volunteering-detail"
         options={{ ...modalOptions, headerShown: false, title: t('volunteering:detailTitle') }}

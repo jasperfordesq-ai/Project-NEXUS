@@ -147,6 +147,26 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
   'edit-volunteering': F('volunteering'),
   'volunteer-checkin': F('volunteering'),
   'donation-receipt': F('volunteering'),
+  // Organiser-side screens (gap M2, 2026-10-08): shifts, rosters, expense review and
+  // fundraising for an organisation the member manages. Same switch as the dashboard
+  // they hang off; the server refuses anyone who is not an organiser.
+  'volunteering-shift-list': F('volunteering'),
+  'volunteering-shift-form': F('volunteering'),
+  'volunteering-shift-pattern-form': F('volunteering'),
+  'volunteering-shift-roster': F('volunteering'),
+  'volunteering-org-expenses': F('volunteering'),
+  'volunteering-org-fundraising': F('volunteering'),
+  'volunteering-org-campaign-form': F('volunteering'),
+  // Volunteer-side screens (gap M3, 2026-10-08). Each also honours its own community
+  // switch from `volunteering_config` inside the screen; the feature flag is the gate here.
+  'volunteering-my-waitlists': F('volunteering'),
+  'volunteer-shift-code': F('volunteering'),
+  'volunteering-my-wellbeing': F('volunteering'),
+  'volunteering-my-alerts': F('volunteering'),
+  'volunteering-my-qualifications': F('volunteering'),
+  'volunteer-incident-report': F('volunteering'),
+  'volunteering-my-accessibility': F('volunteering'),
+  'volunteering-my-group-signups': F('volunteering'),
   organisations: F('organisations'),
   'organisation-detail': F('organisations'),
   'new-organisation': F('organisations'),
