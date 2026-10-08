@@ -73,6 +73,22 @@ final class MemberImportRowRulesTest extends TestCase
         yield 'unit text' => [['balance' => '5 hours'], 'balance', 'invalid_number'];
         yield 'too large' => [['balance' => '100000.01'], 'balance', 'balance_too_large'];
         yield 'long location' => [['location' => str_repeat('a', 256)], 'location', 'too_long'];
+        yield 'formula email =' => [['email' => '=a@b.co'], 'email', 'starts_with_formula_character'];
+        yield 'formula email -' => [['email' => '-a@b.co'], 'email', 'starts_with_formula_character'];
+        yield 'disposable email' => [['email' => 'x@mailinator.com'], 'email', 'disposable_email'];
+        yield 'long email' => [['email' => str_repeat('a', 251) . '@b.co'], 'email', 'too_long'];
+        yield 'long phone' => [['phone' => '+' . str_repeat('1', 50)], 'phone', 'invalid_phone'];
+        yield 'phone starting with minus' => [['phone' => '-1234567'], 'phone', 'invalid_phone'];
+        yield 'escaped formula name' => [['first_name' => "'=1+1"], 'first_name', 'starts_with_formula_character'];
+        yield 'tab inside a value' => [['location' => "Co\trk"], 'location', 'control_characters'];
+        yield 'C1 control in a name' => [['first_name' => "Ad\u{85}a"], 'first_name', 'control_characters'];
+        yield 'plus balance' => [['balance' => '+5'], 'balance', 'invalid_number'];
+        yield 'trailing point balance' => [['balance' => '12.'], 'balance', 'invalid_number'];
+        yield 'leading point balance' => [['balance' => '.5'], 'balance', 'invalid_number'];
+        yield 'exponent balance' => [['balance' => '1e3'], 'balance', 'invalid_number'];
+        yield 'unicode minus balance' => [['balance' => "\u{2212}3"], 'balance', 'invalid_number'];
+        yield 'bad encoding name' => [['first_name' => "\xFF"], 'first_name', 'invalid_encoding'];
+        yield 'bad encoding balance' => [['balance' => "1\xFF"], 'balance', 'invalid_encoding'];
     }
 
     /** @param array<string,string> $over */
@@ -84,6 +100,45 @@ final class MemberImportRowRulesTest extends TestCase
         $this->assertContains(['column' => $column, 'code' => $code], array_map(
             static fn ($p) => ['column' => $p['column'], 'code' => $p['code']], $r['problems']
         ));
+    }
+
+    public function test_a_value_in_the_wrong_encoding_gets_only_that_problem(): void
+    {
+        $r = $this->rules()->check($this->cells(['first_name' => "\xFF"]));
+        $this->assertSame([['column' => 'first_name', 'code' => 'invalid_encoding', 'params' => []]], $r['problems']);
+    }
+
+    public function test_unicode_spaces_and_invisible_marks_are_trimmed(): void
+    {
+        $r = $this->rules()->check($this->cells([
+            'first_name' => "\u{A0}Ada\u{A0}", 'email' => "\u{3000}Ada@Nexus.test\u{200B}",
+        ]));
+        $this->assertSame([], $r['problems']);
+        $this->assertSame('Ada', $r['row']['first_name']);
+        $this->assertSame('ada@nexus.test', $r['row']['email']);
+    }
+
+    public function test_a_negative_balance_of_any_size_is_only_a_warning(): void
+    {
+        $r = $this->rules()->check($this->cells(['balance' => '-200000']));
+        $this->assertSame([], $r['problems']);
+        $this->assertSame(0, $r['row']['balance_cents']);
+        $this->assertSame(-20_000_000, $r['row']['original_balance_cents']);
+        $this->assertSame([['column' => 'balance', 'code' => 'negative_balance_zeroed', 'params' => ['original' => '-200000.00']]], $r['warnings']);
+    }
+
+    public function test_minus_zero_is_zero_without_a_warning(): void
+    {
+        $r = $this->rules()->check($this->cells(['balance' => '-0']));
+        $this->assertSame(0, $r['row']['balance_cents']);
+        $this->assertNull($r['row']['original_balance_cents']);
+        $this->assertSame([], $r['warnings']);
+    }
+
+    public function test_the_same_cells_always_give_the_same_answer(): void
+    {
+        $cells = $this->cells(['phone' => '+353 1 234 5678', 'balance' => '-3,5']);
+        $this->assertSame($this->rules()->check($cells), $this->rules()->check($cells));
     }
 
     public function test_the_maximum_balance_is_allowed(): void

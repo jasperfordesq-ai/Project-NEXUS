@@ -17,6 +17,11 @@ use App\Support\Wallet\OpeningBalance;
  * the writer at the moment a member is created, so the two can never differ.
  * Same limits as self-registration (RegistrationService): names ≤100, email
  * ≤255 and not disposable, international phone numbers.
+ *
+ * Problem codes (the row is refused): required, too_long, invalid_encoding,
+ * control_characters, starts_with_formula_character, invalid_email,
+ * example_address, disposable_email, invalid_phone, invalid_number,
+ * balance_too_large. Warning code: negative_balance_zeroed.
  */
 final class MemberImportRowRules
 {
@@ -35,14 +40,25 @@ final class MemberImportRowRules
         $problems = [];
         $warnings = [];
         $value = [];
+        $unreadable = []; // columns not in UTF-8: reported once, no other rule is run on them
         foreach (MemberImportFile::COLUMNS as $column) {
-            $value[$column] = self::clean((string) ($cells[$column] ?? ''));
-            if (preg_match('/[\x00-\x1F\x7F]/', $value[$column])) {
+            $raw = (string) ($cells[$column] ?? '');
+            if (!mb_check_encoding($raw, 'UTF-8')) {
+                $problems[] = self::issue($column, 'invalid_encoding');
+                $unreadable[$column] = true;
+                $value[$column] = '';
+                continue;
+            }
+            $value[$column] = self::clean($raw);
+            if (preg_match('/[\x00-\x1F\x7F\x{0080}-\x{009F}]/u', $value[$column])) {
                 $problems[] = self::issue($column, 'control_characters');
             }
         }
 
         foreach (['first_name', 'last_name'] as $column) {
+            if (isset($unreadable[$column])) {
+                continue;
+            }
             if ($value[$column] === '') {
                 $problems[] = self::issue($column, 'required');
             } elseif (mb_strlen($value[$column]) > 100) {
@@ -53,8 +69,12 @@ final class MemberImportRowRules
         }
 
         $email = mb_strtolower($value['email']);
-        if ($email === '') {
+        if (isset($unreadable['email'])) {
+            // already reported
+        } elseif ($email === '') {
             $problems[] = self::issue('email', 'required');
+        } elseif (self::startsWithFormula($email)) {
+            $problems[] = self::issue('email', 'starts_with_formula_character');
         } elseif (mb_strlen($email) > 255) {
             $problems[] = self::issue('email', 'too_long', ['max' => 255]);
         } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
@@ -66,12 +86,16 @@ final class MemberImportRowRules
         }
 
         $phone = $value['phone'];
-        if ($phone !== '' && (mb_strlen($phone) > 50 || !Validator::isPhone($phone))) {
+        // Every genuine international number starts with + or a digit, so a leading "-" is a mistake.
+        if (!isset($unreadable['phone']) && $phone !== ''
+            && (mb_strlen($phone) > 50 || $phone[0] === '-' || !Validator::isPhone($phone))) {
             $problems[] = self::issue('phone', 'invalid_phone');
         }
 
         $location = $value['location'];
-        if (mb_strlen($location) > 255) {
+        if (isset($unreadable['location'])) {
+            // already reported
+        } elseif (mb_strlen($location) > 255) {
             $problems[] = self::issue('location', 'too_long', ['max' => 255]);
         } elseif (self::startsWithFormula($location)) {
             $problems[] = self::issue('location', 'starts_with_formula_character');
@@ -80,17 +104,20 @@ final class MemberImportRowRules
         $balanceCents = 0;
         $originalCents = null;
         $balance = $value['balance'];
-        if ($balance !== '') {
+        if ($balance !== '' && !isset($unreadable['balance'])) {
             if (!preg_match('/^(-)?(\d{1,6})(?:[.,](\d{1,2}))?$/', $balance, $m)) {
                 $problems[] = self::issue('balance', 'invalid_number');
             } else {
                 // "12,5" means 12.50 — a single decimal digit is tenths, so pad on the right.
                 $cents = ((int) $m[2]) * 100 + (int) str_pad($m[3] ?? '', 2, '0');
-                if ($cents > self::MAX_BALANCE_CENTS) {
+                if ($m[1] === '-') {
+                    // Negative balances start at 0 whatever their size; "-0" is just 0.
+                    if ($cents > 0) {
+                        $originalCents = -$cents;
+                        $warnings[] = self::issue('balance', 'negative_balance_zeroed', ['original' => OpeningBalance::formatCents(-$cents)]);
+                    }
+                } elseif ($cents > self::MAX_BALANCE_CENTS) {
                     $problems[] = self::issue('balance', 'balance_too_large', ['max' => 100000]);
-                } elseif ($m[1] === '-' && $cents > 0) {
-                    $originalCents = -$cents;
-                    $warnings[] = self::issue('balance', 'negative_balance_zeroed', ['original' => OpeningBalance::formatCents(-$cents)]);
                 } else {
                     $balanceCents = $cents;
                 }
@@ -116,10 +143,15 @@ final class MemberImportRowRules
         ];
     }
 
-    /** Trim (including non-breaking spaces) and undo our own export's formula escape. */
+    /**
+     * Trim whitespace, Unicode spaces (NBSP, ideographic space…) and invisible format
+     * characters (zero-width space, BOM…), then undo our own export's formula escape.
+     * Never blanks a value: if the pattern cannot run, the original comes back unchanged.
+     */
     private static function clean(string $value): string
     {
-        $value = (string) preg_replace('/^[\s\x{00A0}\x{FEFF}]+|[\s\x{00A0}\x{FEFF}]+$/u', '', $value);
+        $trimmed = preg_replace('/^[\s\p{Z}\p{Cf}]+|[\s\p{Z}\p{Cf}]+$/u', '', $value);
+        $value = $trimmed ?? $value;
 
         return preg_match("/^'[=+\\-@]/", $value) ? substr($value, 1) : $value;
     }
