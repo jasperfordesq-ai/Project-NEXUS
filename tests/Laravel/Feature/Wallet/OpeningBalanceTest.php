@@ -9,7 +9,11 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Wallet;
 
 use App\Models\User;
+use App\Services\EmailDispatchService;
 use App\Services\StartingBalanceService;
+use App\Services\TenantSettingsService;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use App\Services\WalletService;
 use App\Support\Wallet\OpeningBalance;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -83,6 +87,67 @@ final class OpeningBalanceTest extends TestCase
         $this->assertSame(__('api.wallet_counterparty_previous_timebank'), $row['other_user']['name']);
     }
 
+    public function test_the_wallet_shows_the_plain_label_when_no_negative_original_was_recorded(): void
+    {
+        $user = $this->importedMember(1250);
+
+        $row = $this->walletRowFor($user);
+
+        $this->assertSame(__('api.wallet_opening_balance'), $row['description']);
+        $this->assertStringNotContainsString('import AB12CD34', (string) $row['description']);
+    }
+
+    public function test_the_wallet_label_is_translated_into_the_members_language(): void
+    {
+        $user = $this->importedMember(1250);
+        $previous = app()->getLocale();
+
+        try {
+            app()->setLocale('en');
+            $english = $this->walletRowFor($user);
+            app()->setLocale('de');
+            $german = $this->walletRowFor($user);
+        } finally {
+            app()->setLocale($previous);
+        }
+
+        $this->assertNotSame($english['description'], $german['description']);
+        $this->assertNotSame($english['other_user']['name'], $german['other_user']['name']);
+        $this->assertSame('Anfangssaldo aus deiner früheren Zeitbank übernommen', $german['description']);
+    }
+
+    /**
+     * The admin-approval path (AdminUsersController::grantWelcomeCredits) has its own
+     * copy of the "already granted" predicate; it must also recognise opening_balance.
+     */
+    public function test_admin_approval_gives_an_imported_member_no_welcome_credits(): void
+    {
+        app(TenantSettingsService::class)->set($this->testTenantId, 'wallet.starting_balance', '5', 'float');
+        app()->instance(EmailDispatchService::class, new OpeningBalanceSilentEmailDispatch());
+
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $imported = $this->importedMember(1250);
+        DB::table('users')->where('id', $imported->id)->update(['is_approved' => 0, 'email_verified_at' => now()]);
+        // Control: an ordinary applicant on the same tenant, same setting, IS granted credits.
+        $ordinary = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending', 'is_approved' => false, 'email_verified_at' => now(), 'balance' => 0,
+        ]);
+
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, TwoFactorPolicy::claims('totp')
+        )]);
+
+        $response = $this->apiPost('/v2/admin/users/' . $imported->id . '/approve');
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.welcome_credits', 0);
+        $this->assertSame('12.50', (string) DB::table('users')->where('id', $imported->id)->value('balance'));
+        $this->assertFalse(DB::table('transactions')->where('receiver_id', $imported->id)->where('transaction_type', 'starting_balance')->exists());
+
+        $control = $this->apiPost('/v2/admin/users/' . $ordinary->id . '/approve');
+        $control->assertStatus(200);
+        $control->assertJsonPath('data.welcome_credits', 5);
+    }
+
     /** @return array<string, mixed> */
     private function walletRowFor(User $user): array
     {
@@ -91,5 +156,14 @@ final class OpeningBalanceTest extends TestCase
         $this->assertIsArray($row);
 
         return $row;
+    }
+}
+
+/** Swallows the approval welcome email so the test sends nothing. */
+final class OpeningBalanceSilentEmailDispatch extends EmailDispatchService
+{
+    public function send(string $to, string $subject, string $body, array $options = []): bool
+    {
+        return true;
     }
 }
