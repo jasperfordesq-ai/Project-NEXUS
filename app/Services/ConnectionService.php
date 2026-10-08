@@ -41,8 +41,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
             ])
             ->where('status', $status);
 
@@ -465,8 +465,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
             ]);
 
         if ($status === 'pending_sent') {
@@ -535,9 +535,14 @@ class ConnectionService
         $partner = (int) $conn->requester_id === $viewerId ? $conn->receiver : $conn->requester;
         $shaped = null;
 
+        if ($partner !== null && ($partner->status !== 'active' || ! $partner->is_approved)
+            && ! MemberProfileVisibility::canView((int) $partner->id, $viewerId)) {
+            $partner = null;
+        }
+
         if ($partner !== null) {
             $shaped = $partner->toArray();
-            unset($shaped['last_active_at'], $shaped['privacy_profile']);
+            unset($shaped['last_active_at'], $shaped['privacy_profile'], $shaped['status'], $shaped['is_approved']);
 
             // Same rule as MemberProfileVisibility::canView() for a signed-in
             // viewer, read from the loaded row: "public" and "members" are

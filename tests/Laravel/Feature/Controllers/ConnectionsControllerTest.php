@@ -95,6 +95,29 @@ class ConnectionsControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    public function test_status_does_not_confirm_pending_or_unapproved_user_id(): void
+    {
+        $member = $this->authenticatedUser();
+
+        foreach ([
+            ['status' => 'pending', 'is_approved' => false],
+            ['status' => 'active', 'is_approved' => false],
+        ] as $state) {
+            $other = User::factory()->forTenant($this->testTenantId)->create($state);
+            $this->apiGet("/v2/connections/status/{$other->id}")
+                ->assertStatus(404)
+                ->assertJsonPath('errors.0.code', 'NOT_FOUND');
+
+            $staff = User::factory()->forTenant($this->testTenantId)->create([
+                'role' => 'coordinator', 'status' => 'active', 'is_approved' => true,
+            ]);
+            Sanctum::actingAs($staff, ['*']);
+            $this->apiGet("/v2/connections/status/{$other->id}")
+                ->assertStatus(200);
+            Sanctum::actingAs($member, ['*']);
+        }
+    }
+
     public function test_status_requires_authentication(): void
     {
         $response = $this->apiGet('/v2/connections/status/1');
@@ -148,6 +171,49 @@ class ConnectionsControllerTest extends TestCase
                 'receiver_id' => $other->id,
             ]);
         }
+    }
+
+    public function test_old_connection_rows_do_not_show_unapproved_partner_to_member(): void
+    {
+        $user = $this->authenticatedUser();
+        foreach ([
+            ['status' => 'pending', 'is_approved' => false],
+            ['status' => 'active', 'is_approved' => false],
+        ] as $state) {
+            $other = User::factory()->forTenant($this->testTenantId)->create($state + [
+                'first_name' => 'PendingSynthetic', 'privacy_profile' => 'public',
+            ]);
+            Connection::factory()->forTenant($this->testTenantId)->create([
+                'requester_id' => $user->id,
+                'receiver_id' => $other->id,
+                'status' => 'pending',
+            ]);
+        }
+
+        $response = $this->apiGet('/v2/connections?status=pending_sent');
+        $response->assertStatus(200);
+        $this->assertStringNotContainsString('PendingSynthetic', $response->getContent());
+        $this->assertSame([], $response->json('data'));
+    }
+
+    public function test_pending_sent_list_keeps_approved_private_recipient_card(): void
+    {
+        $user = $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'ApprovedSynthetic',
+            'privacy_profile' => 'connections',
+        ]);
+        Connection::factory()->forTenant($this->testTenantId)->create([
+            'requester_id' => $user->id,
+            'receiver_id' => $other->id,
+            'status' => 'pending',
+        ]);
+
+        $response = $this->apiGet('/v2/connections?status=pending_sent');
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.0.user.first_name', 'ApprovedSynthetic');
+        $response->assertJsonPath('data.0.user.bio', null);
     }
 
     public function test_send_request_requires_authentication(): void
