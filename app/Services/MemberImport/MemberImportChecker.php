@@ -75,7 +75,7 @@ final class MemberImportChecker
                 array_merge([$tenantId], $chunk)
             );
             foreach ($found as $f) {
-                $row = $firstRowByEmail[mb_strtolower((string) $f->email)] ?? null;
+                $row = $firstRowByEmail[mb_strtolower(trim((string) $f->email))] ?? null;
                 if ($row === null) {
                     // The database matched an address no file row maps to (its collation can
                     // treat different spellings as equal). Never ignore it: the file is not ready.

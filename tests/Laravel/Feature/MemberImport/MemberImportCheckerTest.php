@@ -147,6 +147,35 @@ Alan,Turing,alan@nexus.test,,,1
         $this->assertSame([['row' => 502, 'column' => 'email', 'code' => 'already_member', 'params' => []]], $r['problems']);
     }
 
+    public function test_an_existing_member_whose_stored_email_has_stray_spaces_is_still_found(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('users')->where('id', $user->id)->update(['email' => 'Grace@Nexus.test  ']);
+
+        $r = $this->check("Grace,Hopper,grace@nexus.test,,,
+Ada,Lovelace,ada@nexus.test,,,
+");
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame([2], $r['existing_member_rows']);
+        $this->assertSame([['row' => 2, 'column' => 'email', 'code' => 'already_member', 'params' => []]], $r['problems']);
+    }
+
+    public function test_a_database_match_no_file_row_maps_to_blocks_the_file(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('users')->where('id', $user->id)->update(['email' => 'adà@nexus.test']);
+        $matches = DB::select("SELECT COUNT(*) AS n FROM users WHERE id = ? AND email IN ('ada@nexus.test')", [$user->id]);
+        if ((int) $matches[0]->n !== 1) {
+            $this->markTestSkipped('This database collation does not treat à and a as equal.');
+        }
+
+        $r = $this->check("Ada,Lovelace,ada@nexus.test,,,
+");
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame([['row' => 0, 'column' => 'email', 'code' => 'already_member_unmatched', 'params' => []]], $r['problems']);
+        $this->assertSame([], $r['existing_member_rows']);
+    }
+
     /** A second community, created inside the test transaction. */
     private function otherTenantId(): int
     {
