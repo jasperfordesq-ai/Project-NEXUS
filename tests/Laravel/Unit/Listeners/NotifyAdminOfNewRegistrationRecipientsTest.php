@@ -224,7 +224,7 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
         $admin = (object) ['role' => 'admin'];
 
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
-            $admin, true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            $admin, true, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         $this->assertSame(
@@ -235,12 +235,12 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
         );
     }
 
-    public function test_self_serve_community_keeps_the_neutral_wording(): void
+    public function test_self_serve_community_keeps_the_neutral_wording_and_uses_staff_member_list(): void
     {
         $admin = (object) ['role' => 'admin'];
 
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
-            $admin, false, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            $admin, false, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         $this->assertSame(
@@ -248,13 +248,40 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
             $plan['key'],
             'A community that does not require approval must NOT be told an approval is outstanding.'
         );
-        $this->assertSame('/profile/5', $plan['cta_url']);
+        $this->assertSame('/admin/users', $plan['cta_url']);
+        $this->assertSame('/admin/users', $plan['bell_link']);
+    }
+
+    /** @dataProvider operationalRoleProvider */
+    public function test_self_serve_broker_and_coordinator_use_member_list(string $role): void
+    {
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => $role], false, '/admin/users?filter=pending', '/broker/members', '/admin/users'
+        );
+
+        $this->assertSame('/broker/members', $plan['cta_url']);
+        $this->assertSame('/broker/members', $plan['bell_link']);
+    }
+
+    public function test_neutral_alert_respects_admin_flag_and_operational_role_exclusion(): void
+    {
+        $flagAdmin = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => 'member', 'is_tenant_super_admin' => 1], false,
+            '/admin/users?filter=pending', '/broker/members', '/admin/users'
+        );
+        $this->assertSame('/admin/users', $flagAdmin['cta_url']);
+
+        $coordinator = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => 'coordinator', 'is_tenant_super_admin' => 1], false,
+            '/admin/users?filter=pending', '/broker/members', '/admin/users'
+        );
+        $this->assertSame('/broker/members', $coordinator['cta_url']);
     }
 
     public function test_admin_is_sent_to_the_approvals_queue(): void
     {
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
-            (object) ['role' => 'admin'], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            (object) ['role' => 'admin'], true, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         $this->assertSame('/admin/users?filter=pending', $plan['cta_url']);
@@ -267,7 +294,7 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
         // so this account can open /admin/* and should get the queue link.
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
             (object) ['role' => 'member', 'is_tenant_super_admin' => 1],
-            true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            true, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         $this->assertSame('/admin/users?filter=pending', $plan['cta_url']);
@@ -279,7 +306,7 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
     public function test_broker_and_coordinator_are_never_sent_to_an_admin_url(string $role): void
     {
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
-            (object) ['role' => $role], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            (object) ['role' => $role], true, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         // AdminTier deliberately refuses these roles at /admin/*, so an admin
@@ -298,7 +325,7 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
     public function test_broker_still_receives_the_pending_wording(): void
     {
         $plan = NotifyAdminOfNewRegistration::alertPlanFor(
-            (object) ['role' => 'broker'], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+            (object) ['role' => 'broker'], true, '/admin/users?filter=pending', '/broker/members', '/admin/users'
         );
 
         // Being unable to open the admin queue is a routing detail; the broker

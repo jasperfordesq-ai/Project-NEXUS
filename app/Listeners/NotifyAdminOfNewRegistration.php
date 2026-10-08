@@ -86,8 +86,9 @@ class NotifyAdminOfNewRegistration
      *      approval is outstanding.
      *   2. WHERE TO SEND THEM. Only admin-tier accounts may open /admin/*;
      *      AdminTier deliberately refuses broker and coordinator, who are
-     *      redirected to /dashboard. Sending a broker to the approvals queue
-     *      would hand them a dead link, so they keep the broker members list.
+     *      redirected to /dashboard. Both alert variants use a staff member
+     *      list so incomplete/private registrant profiles do not break the
+     *      link. Approval alerts select the pending queue for admin-tier staff.
      *
      * @param object $recipient a row from recipientsFor()
      * @return array{key: string, bell_link: string, cta_url: string}
@@ -95,19 +96,18 @@ class NotifyAdminOfNewRegistration
     public static function alertPlanFor(
         object $recipient,
         bool $needsApproval,
-        string $profileUrl,
         string $adminQueueUrl,
-        string $brokerListUrl
+        string $brokerListUrl,
+        string $adminListUrl
     ): array {
+        $canReachAdminQueue = \App\Support\Authorization\AdminTier::allows($recipient);
         if (!$needsApproval) {
             return [
                 'key'       => 'new_user_',
-                'bell_link' => '/broker/members',
-                'cta_url'   => $profileUrl,
+                'bell_link' => $canReachAdminQueue ? '/admin/users' : '/broker/members',
+                'cta_url'   => $canReachAdminQueue ? $adminListUrl : $brokerListUrl,
             ];
         }
-
-        $canReachAdminQueue = \App\Support\Authorization\AdminTier::allows($recipient);
 
         return [
             'key'       => 'new_user_pending_',
@@ -150,11 +150,6 @@ class NotifyAdminOfNewRegistration
             $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
             $baseUrl    = TenantContext::getFrontendUrl();
             $basePath   = TenantContext::getSlugPrefix();
-            // Recipients include broker/coordinator roles who can't hit
-            // /admin/* routes — they're redirected to /dashboard. Use the
-            // user-facing /profile/{id} route which works for everyone.
-            $profileUrl = $baseUrl . $basePath . '/profile/' . $user->id;
-
             // 🔴 Does this registration actually need somebody to act?
             //
             // The alert used to be the same either way: subject "New member
@@ -190,6 +185,7 @@ class NotifyAdminOfNewRegistration
             // are deliberately refused /admin/* (see AdminTier), so they keep
             // the broker members list they can actually open.
             $adminQueueUrl  = $baseUrl . $basePath . '/admin/users?filter=pending';
+            $adminListUrl   = $baseUrl . $basePath . '/admin/users';
             $brokerListUrl  = $baseUrl . $basePath . '/broker/members';
 
             $admins = self::recipientsFor((int) $event->tenantId);
@@ -206,10 +202,10 @@ class NotifyAdminOfNewRegistration
                 }
 
                 try {
-                    LocaleContext::withLocale($admin, function () use ($admin, $user, $profileUrl, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $brokerListUrl) {
+                    LocaleContext::withLocale($admin, function () use ($admin, $user, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $adminListUrl, $brokerListUrl) {
                         $adminName = $admin->first_name ?? $admin->name ?? 'Admin';
 
-                        $plan = self::alertPlanFor($admin, $needsApproval, $profileUrl, $adminQueueUrl, $brokerListUrl);
+                        $plan = self::alertPlanFor($admin, $needsApproval, $adminQueueUrl, $brokerListUrl, $adminListUrl);
                         $key      = $plan['key'];
                         $bellLink = $plan['bell_link'];
                         $ctaUrl   = $plan['cta_url'];
