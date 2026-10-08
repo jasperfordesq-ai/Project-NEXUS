@@ -100,19 +100,12 @@ final class MemberImportFile
             return self::refuse('missing_columns', ['columns' => $missing]);
         }
 
-        // Spreadsheet row numbers: the header is row 1, and a quoted cell with a
-        // line break spans several rows, so count physical lines, not records.
-        $cursor = ftell($handle);
-        $rowNumber = 1 + substr_count($text, "\n", 0, $cursor);
-
+        // Spreadsheet row numbers: the header is row 1. A quoted cell with a line break is still one spreadsheet row, so count records, not text lines.
+        $rowNumber = 1;
         $rows = [];
         $blank = 0;
         while (($record = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
-            $end = ftell($handle);
-            $row = $rowNumber;
-            $rowNumber += substr_count($text, "\n", $cursor, $end - $cursor);
-            $cursor = $end;
-
+            $rowNumber++;
             $raw = array_map(static fn ($c) => (string) $c, $record);
             if (implode('', array_map('trim', $raw)) === '') {
                 $blank++;
@@ -123,7 +116,7 @@ final class MemberImportFile
                 return self::refuse('too_many_rows', ['max' => self::MAX_ROWS]);
             }
             $rows[] = [
-                'row' => $row,
+                'row' => $rowNumber,
                 'raw' => $raw,
                 'cells' => count($raw) === count($header) ? array_combine($header, $raw) : null,
             ];

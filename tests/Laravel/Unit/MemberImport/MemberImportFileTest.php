@@ -156,15 +156,13 @@ final class MemberImportFileTest extends TestCase
         $this->assertSame('Lovelace, Jr', $r['rows'][0]['cells']['last_name']);
     }
 
-    public function test_a_quoted_cell_with_a_line_break_is_one_cell_and_later_rows_keep_spreadsheet_numbers(): void
+    public function test_a_quoted_cell_with_a_line_break_is_one_cell_and_one_spreadsheet_row(): void
     {
-        $r = MemberImportFile::parse(self::HEADER . "Ada,\"Lovelace\nJr\",ada@nexus.test,,,\nBob,Smith,bob@nexus.test,,,\n");
+        $r = MemberImportFile::parse(self::HEADER . "Ada,Lovelace,ada@nexus.test,,\"Cork\nIreland\",\nAlan,Turing,alan@nexus.test,,,\n");
         $this->assertTrue($r['ok']);
         $this->assertCount(2, $r['rows']);
-        $this->assertSame("Lovelace\nJr", $r['rows'][0]['cells']['last_name']);
-        $this->assertSame(2, $r['rows'][0]['row']);
-        // Ada's cell spans spreadsheet rows 2 and 3, so Bob is on row 4.
-        $this->assertSame(4, $r['rows'][1]['row']);
+        $this->assertSame([2, 3], [$r['rows'][0]['row'], $r['rows'][1]['row']]);
+        $this->assertSame("Cork\nIreland", $r['rows'][0]['cells']['location']);
     }
 
     public function test_a_file_with_only_carriage_returns_is_read_line_by_line(): void
