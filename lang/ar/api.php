@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'فشل حذف الفرصة',
     'volunteer_application_not_yours' => 'هذا الطلب ليس طلبك',
     'volunteer_application_withdraw_approved' => 'لا يمكنك سحب طلب تمت الموافقة عليه. يُرجى التواصل مع المنظمة مباشرةً.',
+    'volunteer_remove_only_approved' => 'لا يمكن إزالة إلا متطوع تمت الموافقة عليه. ارفض الطلب المعلّق بدلاً من ذلك.',
+    'volunteer_removed' => 'تمت إزالة المتطوع من الفرصة',
     'volunteer_application_withdraw_failed' => 'فشل سحب الطلب',
     'volunteer_application_already_decided' => 'تم البت في هذا الطلب بالفعل',
     'volunteer_shift_approved_application_required' => 'يجب أن يكون لديك طلب موافق عليه للتسجيل في المناوبات',

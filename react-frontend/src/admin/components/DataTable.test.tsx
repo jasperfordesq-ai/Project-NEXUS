@@ -310,6 +310,8 @@ describe('StatusBadge', () => {
     ['suspended', 'Suspended', 'danger'],
     ['rejected', 'Rejected', 'danger'],
     ['terminated', 'Terminated', 'danger'],
+    // A declined volunteer application showed as "Unknown" until 8 Oct 2026.
+    ['declined', 'Declined', 'danger'],
   ])('renders the partnership status %s as %s', async (status, label, color) => {
     const { StatusBadge } = await import('./DataTable');
     render(<StatusBadge status={status} />);

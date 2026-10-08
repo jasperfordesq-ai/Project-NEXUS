@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => '募集の削除に失敗しました',
     'volunteer_application_not_yours' => 'これはあなたの応募ではありません',
     'volunteer_application_withdraw_approved' => '承認済みの応募は取り下げできません。団体に直接お問い合わせください。',
+    'volunteer_remove_only_approved' => '削除できるのは承認済みのボランティアのみです。保留中の応募は代わりに却下してください。',
+    'volunteer_removed' => 'ボランティアを募集から削除しました',
     'volunteer_application_withdraw_failed' => '応募の取り下げに失敗しました',
     'volunteer_application_already_decided' => 'この応募はすでに処理されています',
     'volunteer_shift_approved_application_required' => 'シフトに登録するには承認済みの応募が必要です',

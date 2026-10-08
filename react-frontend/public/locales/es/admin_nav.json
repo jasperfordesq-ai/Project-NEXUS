@@ -574,7 +574,8 @@
       "open": "Abrir",
       "planned": "Planificado",
       "processing": "Procesamiento",
-      "resolved": "Resuelto"
+      "resolved": "Resuelto",
+      "declined": "Rechazada"
     }
   },
   "help_drawer": {

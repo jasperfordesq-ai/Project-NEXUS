@@ -152,6 +152,7 @@
     "vetting_removed": "تم حذف سجل توثيقك.",
     "volunteer_approved": "تمت الموافقة على طلب التطوع الخاص بك!",
     "volunteer_declined": "لم يتم قبول طلب التطوع الخاص بك.",
+    "volunteer_removed": "تمت إزالتك كمتطوع من \":opportunity\".",
     "monitoring_restricted": "قام منسق بنك وقتك بتقييد رسائلك مؤقتاً.",
     "monitoring_under_review": "تمت إخضاع حسابك للمراجعة من قِبل منسق بنك وقتك.",
     "monitoring_lifted": "تم رفع القيود المفروضة على رسائلك.",

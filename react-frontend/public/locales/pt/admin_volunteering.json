@@ -924,7 +924,18 @@
     "wellbeing_mood_great": "Ótimo",
     "wellbeing_latest_checkin": "Último check-in: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Último check-in: {{mood}}",
-    "wellbeing_note_label": "Nota da pessoa"
+    "wellbeing_note_label": "Nota da pessoa",
+    "approvals_all_opportunities": "Todas as oportunidades",
+    "approvals_row_actions": "Mais ações para {{name}}",
+    "approvals_view_member": "Ver membro",
+    "approvals_view_opportunity": "Ver oportunidade",
+    "approvals_email_applicant": "Enviar e-mail ao candidato",
+    "approvals_remove": "Remover da oportunidade",
+    "approvals_remove_title": "Remover voluntário",
+    "approvals_remove_confirm": "Remover {{name}} de \"{{opportunity}}\"? A pessoa será avisada e qualquer lugar de turno que ocupava ficará livre. Poderá candidatar-se novamente mais tarde.",
+    "approvals_remove_button": "Remover",
+    "approvals_removed": "Voluntário removido",
+    "approvals_remove_failed": "Não foi possível remover o voluntário"
   },
   "donation_refunds": {
     "page_title": "Reembolsos de doações",

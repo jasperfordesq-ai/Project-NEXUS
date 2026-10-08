@@ -940,7 +940,18 @@
     "wellbeing_mood_great": "Świetnie",
     "wellbeing_latest_checkin": "Ostatni wpis: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Ostatni wpis: {{mood}}",
-    "wellbeing_note_label": "Notatka tej osoby"
+    "wellbeing_note_label": "Notatka tej osoby",
+    "approvals_all_opportunities": "Wszystkie oferty",
+    "approvals_row_actions": "Więcej działań dla {{name}}",
+    "approvals_view_member": "Zobacz członka",
+    "approvals_view_opportunity": "Zobacz ofertę",
+    "approvals_email_applicant": "Napisz do kandydata",
+    "approvals_remove": "Usuń z oferty",
+    "approvals_remove_title": "Usuń wolontariusza",
+    "approvals_remove_confirm": "Usunąć {{name}} z „{{opportunity}}”? Osoba zostanie powiadomiona, a zajmowane przez nią miejsce na zmianie zostanie zwolnione. Może później zgłosić się ponownie.",
+    "approvals_remove_button": "Usuń",
+    "approvals_removed": "Wolontariusz usunięty",
+    "approvals_remove_failed": "Nie udało się usunąć wolontariusza"
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

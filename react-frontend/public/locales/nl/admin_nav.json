@@ -573,7 +573,8 @@
       "planned": "Gepland",
       "processing": "Verwerken",
       "resolved": "Opgelost",
-      "medium": "Medium"
+      "medium": "Medium",
+      "declined": "Afgewezen"
     }
   },
   "help_drawer": {

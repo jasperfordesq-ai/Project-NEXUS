@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Theip ar an deis a scriosadh',
     'volunteer_application_not_yours' => 'Ní leatsa an t-iarratas seo',
     'volunteer_application_withdraw_approved' => 'Ní féidir iarratas faofa a tharraingt siar. Déan teagmháil go díreach leis an eagraíocht.',
+    'volunteer_remove_only_approved' => 'Ní féidir ach oibrí deonach ceadaithe a bhaint. Diúltaigh d’iarratas atá ar feitheamh ina ionad sin.',
+    'volunteer_removed' => 'Baineadh an t-oibrí deonach den deis',
     'volunteer_application_withdraw_failed' => 'Theip ar an iarratas a tharraingt siar',
     'volunteer_application_already_decided' => 'Rinneadh cinneadh ar an iarratas seo cheana féin',
     'volunteer_shift_approved_application_required' => 'Ní mór iarratas faofa a bheith agat chun clárú do shealanna',

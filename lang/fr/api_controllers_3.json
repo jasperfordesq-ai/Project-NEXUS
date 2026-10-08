@@ -152,6 +152,7 @@
     "vetting_removed": "Votre dossier de vérification a été supprimé.",
     "volunteer_approved": "Votre candidature de bénévolat a été approuvée !",
     "volunteer_declined": "Votre candidature de bénévolat n'a pas été acceptée.",
+    "volunteer_removed": "Vous avez été retiré(e) en tant que bénévole de « :opportunity ».",
     "monitoring_restricted": "Votre coordinateur de banque de temps a temporairement restreint votre messagerie.",
     "monitoring_under_review": "Votre compte a été mis sous examen par votre coordinateur de banque de temps.",
     "monitoring_lifted": "Vos restrictions de messagerie ont été levées.",

@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Nie udało się usunąć oferty',
     'volunteer_application_not_yours' => 'To nie jest Twoje zgłoszenie',
     'volunteer_application_withdraw_approved' => 'Nie można wycofać zatwierdzonego zgłoszenia. Skontaktuj się bezpośrednio z organizacją.',
+    'volunteer_remove_only_approved' => 'Usunąć można tylko zatwierdzonego wolontariusza. Oczekujące zgłoszenie należy zamiast tego odrzucić.',
+    'volunteer_removed' => 'Wolontariusz został usunięty z oferty',
     'volunteer_application_withdraw_failed' => 'Nie udało się wycofać zgłoszenia',
     'volunteer_application_already_decided' => 'Ta aplikacja została już rozpatrzona',
     'volunteer_shift_approved_application_required' => 'Aby zapisać się na zmiany, musisz mieć zatwierdzone zgłoszenie',

@@ -152,6 +152,7 @@
         "vetting_removed": "Your verification record has been removed.",
         "volunteer_approved": "Your volunteer application has been approved!",
         "volunteer_declined": "Your volunteer application was not accepted.",
+        "volunteer_removed": "You have been removed as a volunteer from \":opportunity\".",
         "monitoring_restricted": "Your messaging has been temporarily restricted by your timebank coordinator.",
         "monitoring_under_review": "Your account has been placed under review by your timebank coordinator.",
         "monitoring_lifted": "Your messaging restrictions have been lifted.",

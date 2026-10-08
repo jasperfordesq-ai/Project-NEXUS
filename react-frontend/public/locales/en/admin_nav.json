@@ -601,7 +601,8 @@
       "tenant_updated": "Tenant updated",
       "user_created": "User created",
       "user_moved": "User moved",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "declined": "Declined"
     }
   },
   "help_drawer": {

@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'No se pudo eliminar la oportunidad',
     'volunteer_application_not_yours' => 'Esta solicitud no es suya',
     'volunteer_application_withdraw_approved' => 'No puede retirar una solicitud aprobada. Póngase en contacto directamente con la organización.',
+    'volunteer_remove_only_approved' => 'Solo se puede retirar a un voluntario aprobado. Rechace una solicitud pendiente en su lugar.',
+    'volunteer_removed' => 'Voluntario retirado de la oportunidad',
     'volunteer_application_withdraw_failed' => 'No se pudo retirar la solicitud',
     'volunteer_application_already_decided' => 'Esta solicitud ya ha sido resuelta',
     'volunteer_shift_approved_application_required' => 'Debe tener una solicitud aprobada para inscribirse en turnos',

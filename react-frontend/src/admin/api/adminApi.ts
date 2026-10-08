@@ -1736,6 +1736,10 @@ export const adminVolunteering = {
   declineApplication: (id: number) =>
     api.post<{ success: boolean }>(`/v2/admin/volunteering/approvals/${id}/decline`, {}),
 
+  /** Takes an approved volunteer off the opportunity; they are told and any shift place is freed. */
+  removeVolunteer: (id: number) =>
+    api.post<{ message: string }>(`/v2/admin/volunteering/approvals/${id}/remove`, {}),
+
   getOrganizations: () => api.get<Array<{ id: number; name: string; opportunity_count: number; volunteer_count: number }>>('/v2/admin/volunteering/organizations'),
   /** Every opportunity in the community, newest first, for the Opportunities & shifts page. */
   getOpportunities: (params: { search?: string; status?: string; cursor?: string | null } = {}) => {

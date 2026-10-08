@@ -572,7 +572,8 @@
       "open": "未処理",
       "planned": "予定",
       "processing": "処理中",
-      "resolved": "解決済み"
+      "resolved": "解決済み",
+      "declined": "却下"
     },
     "total_count_one": "{{count}} 合計"
   },

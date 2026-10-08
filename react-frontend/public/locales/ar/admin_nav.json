@@ -577,7 +577,8 @@
       "open": "مفتوح",
       "planned": "مخطط له",
       "processing": "جارٍ المعالجة",
-      "resolved": "تم حله"
+      "resolved": "تم حله",
+      "declined": "مرفوض"
     }
   },
   "help_drawer": {

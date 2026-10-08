@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 237,
+    "producer_count": 238,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -495,6 +495,19 @@
             "body_expression": "__('api_controllers_3.admin_bells.volunteer_declined')",
             "type_expression": "moderation",
             "link_expression": "null",
+            "data_expression": null
+        },
+        {
+            "id": "app/Http/Controllers/Api/AdminVolunteerController.php:1303:NotificationDispatcher::fanOutPush",
+            "file": "app/Http/Controllers/Api/AdminVolunteerController.php",
+            "line": 1303,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "$volunteerId",
+            "title_expression": null,
+            "body_expression": "$message",
+            "type_expression": "moderation",
+            "link_expression": "/volunteering",
             "data_expression": null
         },
         {

@@ -152,6 +152,7 @@
     "vetting_removed": "Il tuo record di verifica è stato rimosso.",
     "volunteer_approved": "La tua candidatura di volontariato è stata approvata!",
     "volunteer_declined": "La tua candidatura di volontariato non è stata accettata.",
+    "volunteer_removed": "Sei stato rimosso come volontario da \":opportunity\".",
     "monitoring_restricted": "Il tuo coordinatore della banca del tempo ha temporaneamente limitato la tua messaggistica.",
     "monitoring_under_review": "Il tuo account è stato messo sotto revisione dal tuo coordinatore della banca del tempo.",
     "monitoring_lifted": "Le restrizioni alla tua messaggistica sono state rimosse.",

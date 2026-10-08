@@ -956,7 +956,18 @@
     "wellbeing_mood_great": "Ar fheabhas",
     "wellbeing_latest_checkin": "An seiceáil isteach is déanaí: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "An seiceáil isteach is déanaí: {{mood}}",
-    "wellbeing_note_label": "A nóta"
+    "wellbeing_note_label": "A nóta",
+    "approvals_all_opportunities": "Gach deis",
+    "approvals_row_actions": "Tuilleadh gníomhartha do {{name}}",
+    "approvals_view_member": "Féach ar an mball",
+    "approvals_view_opportunity": "Féach ar an deis",
+    "approvals_email_applicant": "Seol ríomhphost chuig an iarrthóir",
+    "approvals_remove": "Bain den deis",
+    "approvals_remove_title": "Bain an t-oibrí deonach",
+    "approvals_remove_confirm": "An bhfuil tú ag iarraidh {{name}} a bhaint de \"{{opportunity}}\"? Cuirfear in iúl dóibh é, agus scaoilfear aon áit ar sheal a bhí acu. Is féidir leo iarratas a dhéanamh arís níos déanaí.",
+    "approvals_remove_button": "Bain",
+    "approvals_removed": "Baineadh an t-oibrí deonach",
+    "approvals_remove_failed": "Níorbh fhéidir an t-oibrí deonach a bhaint"
   },
   "donation_refunds": {
     "page_title": "Aisíocaíochtaí Síntiús",

@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Verwijderen van de vacature is mislukt',
     'volunteer_application_not_yours' => 'Dit is niet uw aanmelding',
     'volunteer_application_withdraw_approved' => 'U kunt een goedgekeurde aanmelding niet intrekken. Neem rechtstreeks contact op met de organisatie.',
+    'volunteer_remove_only_approved' => 'Alleen een goedgekeurde vrijwilliger kan worden verwijderd. Wijs een openstaande aanmelding in plaats daarvan af.',
+    'volunteer_removed' => 'Vrijwilliger verwijderd uit de vrijwilligersplek',
     'volunteer_application_withdraw_failed' => 'Intrekken van de aanmelding is mislukt',
     'volunteer_application_already_decided' => 'Over deze aanmelding is al beslist',
     'volunteer_shift_approved_application_required' => 'U moet een goedgekeurde aanmelding hebben om u voor diensten in te schrijven',

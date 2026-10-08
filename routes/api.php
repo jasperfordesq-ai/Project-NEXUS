@@ -2790,6 +2790,7 @@ Route::get('/v2/admin/volunteering/group-reservations', [\App\Http\Controllers\A
 Route::delete('/v2/admin/volunteering/group-reservations/{id}', [\App\Http\Controllers\Api\AdminVolunteerGroupReservationController::class, 'cancel'])->whereNumber('id');
 Route::post('/v2/admin/volunteering/approvals/{id}/approve', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'approveApplication']);
 Route::post('/v2/admin/volunteering/approvals/{id}/decline', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'declineApplication']);
+Route::post('/v2/admin/volunteering/approvals/{id}/remove', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'removeVolunteer']);
 Route::post('/v2/admin/volunteering/send-shift-reminders', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'sendShiftReminders']);
 Route::get('/v2/admin/volunteering/expenses', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'adminExpenses']);
 Route::get('/v2/admin/volunteering/expenses/policies', [\App\Http\Controllers\Api\VolunteerExpenseController::class, 'getExpensePolicies']);

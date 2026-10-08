@@ -924,7 +924,18 @@
     "wellbeing_mood_great": "Genial",
     "wellbeing_latest_checkin": "Último registro: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Último registro: {{mood}}",
-    "wellbeing_note_label": "Su nota"
+    "wellbeing_note_label": "Su nota",
+    "approvals_all_opportunities": "Todas las oportunidades",
+    "approvals_row_actions": "Más acciones para {{name}}",
+    "approvals_view_member": "Ver miembro",
+    "approvals_view_opportunity": "Ver oportunidad",
+    "approvals_email_applicant": "Enviar correo al solicitante",
+    "approvals_remove": "Retirar de la oportunidad",
+    "approvals_remove_title": "Retirar voluntario",
+    "approvals_remove_confirm": "¿Retirar a {{name}} de \"{{opportunity}}\"? Se le avisará y se liberará cualquier plaza de turno que tuviera. Podrá volver a solicitarlo más adelante.",
+    "approvals_remove_button": "Retirar",
+    "approvals_removed": "Voluntario retirado",
+    "approvals_remove_failed": "No se pudo retirar al voluntario"
   },
   "donation_refunds": {
     "page_title": "Reembolsos de donaciones",

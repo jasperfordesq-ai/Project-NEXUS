@@ -152,6 +152,7 @@
     "vetting_removed": "Baineadh do thaifead fíorúcháin.",
     "volunteer_approved": "Ceadaíodh d'iarratas deonaíochta!",
     "volunteer_declined": "Ní ghlacadh le d'iarratas deonaíochta.",
+    "volunteer_removed": "Baineadh thú mar oibrí deonach de \":opportunity\".",
     "monitoring_restricted": "Chuir comhordaitheoir do bhainc ama srianadh sealadach ar do chuid teachtaireachtaí.",
     "monitoring_under_review": "Chuir comhordaitheoir do bhainc ama do chuntas faoi athbhreithniú.",
     "monitoring_lifted": "Tógadh srianta do chuid teachtaireachtaí.",

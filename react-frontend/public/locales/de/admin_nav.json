@@ -573,7 +573,8 @@
       "open": "Offen",
       "planned": "Geplant",
       "processing": "Wird verarbeitet",
-      "resolved": "Gelöst"
+      "resolved": "Gelöst",
+      "declined": "Abgelehnt"
     }
   },
   "help_drawer": {

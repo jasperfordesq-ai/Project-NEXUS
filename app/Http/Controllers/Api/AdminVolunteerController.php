@@ -1230,6 +1230,101 @@ class AdminVolunteerController extends BaseApiController
         }
     }
 
+    /**
+     * POST /api/v2/admin/volunteering/approvals/{id}/remove
+     *
+     * Takes an approved volunteer off an opportunity (8 Oct 2026). Until then the
+     * admin Applications page offered nothing on a decided row, so a volunteer
+     * could not be removed at all. Only an approved application can be removed:
+     * a pending one is declined instead, and a declined one holds no place.
+     *
+     * The application row goes (as when a volunteer withdraws), the removal is
+     * written to the organisation's audit log, the volunteer is told, and a
+     * shift place they held is offered to the waitlist.
+     */
+    public function removeVolunteer($id): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        if (!TenantContext::hasFeature('volunteering')) {
+            return $this->respondWithError('FEATURE_DISABLED', __('api.service_unavailable'), null, 403);
+        }
+        $tenantId = (int) TenantContext::getId();
+        $id = (int) $id;
+
+        $app = $id ? DB::selectOne(
+            "SELECT va.id, va.status, va.user_id, va.shift_id, va.opportunity_id,
+                    vo.title as opportunity_title, vo.organization_id
+             FROM vol_applications va INNER JOIN vol_opportunities vo ON va.opportunity_id = vo.id
+             WHERE va.id = ? AND va.tenant_id = ? AND vo.tenant_id = ?",
+            [$id, $tenantId, $tenantId]
+        ) : null;
+
+        if (!$app) {
+            return $this->respondWithError('NOT_FOUND', __('api.not_found', ['model' => 'Application']), null, 404);
+        }
+        if ($app->status !== 'approved') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.volunteer_remove_only_approved'), null, 422);
+        }
+
+        // Conditional delete: a decision or withdrawal that slipped in since the
+        // read above leaves nothing to remove, and nobody is told twice.
+        $deleted = DB::table('vol_applications')
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'approved')
+            ->delete();
+        if ($deleted === 0) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.volunteer_remove_only_approved'), null, 422);
+        }
+
+        $volunteerId = (int) $app->user_id;
+        app(\App\Services\AuditLogService::class)->log(
+            'volunteer_removed_from_opportunity',
+            $app->organization_id !== null ? (int) $app->organization_id : null,
+            $adminId,
+            [
+                'application_id' => $id,
+                'opportunity_id' => (int) $app->opportunity_id,
+                'opportunity_title' => (string) $app->opportunity_title,
+                'shift_id' => $app->shift_id !== null ? (int) $app->shift_id : null,
+            ],
+            $volunteerId
+        );
+
+        try {
+            $volunteer = DB::table('users')
+                ->where('id', $volunteerId)
+                ->where('tenant_id', $tenantId)
+                ->select(['preferred_language'])
+                ->first();
+            LocaleContext::withLocale($volunteer, function () use ($volunteerId, $tenantId, $app) {
+                $message = __('api_controllers_3.admin_bells.volunteer_removed', ['opportunity' => (string) $app->opportunity_title]);
+                Notification::createNotification($volunteerId, $message, '/volunteering', 'moderation', true, $tenantId);
+                NotificationDispatcher::fanOutPush($volunteerId, 'moderation', $message, '/volunteering');
+            });
+        } catch (\Throwable $e) {
+            Log::warning('AdminVolunteerController::removeVolunteer notification failed: ' . $e->getMessage());
+        }
+
+        // A place on a shift that has not started yet goes to the next person
+        // waiting for it.
+        if ($app->shift_id !== null) {
+            try {
+                $shift = DB::selectOne(
+                    "SELECT start_time FROM vol_shifts WHERE id = ? AND tenant_id = ?",
+                    [(int) $app->shift_id, $tenantId]
+                );
+                if ($shift && strtotime((string) $shift->start_time) > time()) {
+                    \App\Services\ShiftWaitlistService::notifyNext((int) $app->shift_id, $tenantId);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('AdminVolunteerController::removeVolunteer waitlist offer failed: ' . $e->getMessage());
+            }
+        }
+
+        return $this->respondWithData(['message' => __('api.volunteer_removed')]);
+    }
+
     /** POST /api/v2/admin/volunteering/send-shift-reminders -- delegates to service (email sending) */
     public function sendShiftReminders(): JsonResponse
     {

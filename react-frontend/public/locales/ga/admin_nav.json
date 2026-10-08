@@ -576,7 +576,8 @@
       "open": "Oscailte",
       "planned": "Pleanáilte",
       "processing": "Ag próiseáil",
-      "resolved": "Réitithe"
+      "resolved": "Réitithe",
+      "declined": "Diúltaithe"
     }
   },
   "help_drawer": {

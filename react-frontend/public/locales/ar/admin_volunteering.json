@@ -972,7 +972,18 @@
     "wellbeing_mood_great": "ممتاز",
     "wellbeing_latest_checkin": "آخر تسجيل للحالة: {{mood}}، {{date}}",
     "wellbeing_latest_checkin_mood": "آخر تسجيل للحالة: {{mood}}",
-    "wellbeing_note_label": "ملاحظته"
+    "wellbeing_note_label": "ملاحظته",
+    "approvals_all_opportunities": "كل الفرص",
+    "approvals_row_actions": "إجراءات أخرى لـ {{name}}",
+    "approvals_view_member": "عرض العضو",
+    "approvals_view_opportunity": "عرض الفرصة",
+    "approvals_email_applicant": "مراسلة المتقدم بالبريد",
+    "approvals_remove": "إزالة من الفرصة",
+    "approvals_remove_title": "إزالة المتطوع",
+    "approvals_remove_confirm": "هل تريد إزالة {{name}} من \"{{opportunity}}\"؟ سيتم إبلاغه، وسيتم تحرير أي مكان كان يشغله في المناوبات. يمكنه التقدم مرة أخرى لاحقاً.",
+    "approvals_remove_button": "إزالة",
+    "approvals_removed": "تمت إزالة المتطوع",
+    "approvals_remove_failed": "تعذّرت إزالة المتطوع"
   },
   "donation_refunds": {
     "page_title": "استرداد التبرعات",

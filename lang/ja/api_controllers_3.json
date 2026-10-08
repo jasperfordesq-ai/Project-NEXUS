@@ -152,6 +152,7 @@
     "vetting_removed": "あなたの確認記録が削除されました。",
     "volunteer_approved": "ボランティア申請が承認されました！",
     "volunteer_declined": "ボランティア申請は受け入れられませんでした。",
+    "volunteer_removed": "「:opportunity」のボランティアから外されました。",
     "monitoring_restricted": "タイムバンクコーディネーターにより、メッセージ送信が一時的に制限されました。",
     "monitoring_under_review": "アカウントがタイムバンクコーディネーターによる審査対象になりました。",
     "monitoring_lifted": "メッセージの制限が解除されました。",

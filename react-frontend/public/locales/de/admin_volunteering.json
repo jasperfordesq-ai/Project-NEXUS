@@ -908,7 +908,18 @@
     "wellbeing_mood_great": "Sehr gut",
     "wellbeing_latest_checkin": "Letzter Check-in: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Letzter Check-in: {{mood}}",
-    "wellbeing_note_label": "Notiz der Person"
+    "wellbeing_note_label": "Notiz der Person",
+    "approvals_all_opportunities": "Alle Einsätze",
+    "approvals_row_actions": "Weitere Aktionen für {{name}}",
+    "approvals_view_member": "Mitglied ansehen",
+    "approvals_view_opportunity": "Einsatz ansehen",
+    "approvals_email_applicant": "E-Mail an Bewerber/in",
+    "approvals_remove": "Aus dem Einsatz entfernen",
+    "approvals_remove_title": "Freiwillige Person entfernen",
+    "approvals_remove_confirm": "{{name}} aus „{{opportunity}}“ entfernen? Die Person wird benachrichtigt und ein belegter Schichtplatz wird frei. Sie kann sich später erneut bewerben.",
+    "approvals_remove_button": "Entfernen",
+    "approvals_removed": "Freiwillige Person entfernt",
+    "approvals_remove_failed": "Die freiwillige Person konnte nicht entfernt werden"
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

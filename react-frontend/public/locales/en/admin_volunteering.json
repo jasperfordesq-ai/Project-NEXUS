@@ -908,7 +908,18 @@
     "wellbeing_mood_great": "Great",
     "wellbeing_latest_checkin": "Latest check-in: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Latest check-in: {{mood}}",
-    "wellbeing_note_label": "Their note"
+    "wellbeing_note_label": "Their note",
+    "approvals_all_opportunities": "All opportunities",
+    "approvals_row_actions": "More actions for {{name}}",
+    "approvals_view_member": "View member",
+    "approvals_view_opportunity": "View opportunity",
+    "approvals_email_applicant": "Email applicant",
+    "approvals_remove": "Remove from opportunity",
+    "approvals_remove_title": "Remove volunteer",
+    "approvals_remove_confirm": "Remove {{name}} from \"{{opportunity}}\"? They will be told, and any shift place they held will be freed. They can apply again later.",
+    "approvals_remove_button": "Remove",
+    "approvals_removed": "Volunteer removed",
+    "approvals_remove_failed": "Could not remove the volunteer"
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",

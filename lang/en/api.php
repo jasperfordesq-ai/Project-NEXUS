@@ -3009,6 +3009,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Failed to delete opportunity',
     'volunteer_application_not_yours' => 'This is not your application',
     'volunteer_application_withdraw_approved' => 'You cannot withdraw an approved application. Please contact the organisation directly.',
+    'volunteer_remove_only_approved' => 'Only an approved volunteer can be removed. Decline a pending application instead.',
+    'volunteer_removed' => 'Volunteer removed from the opportunity',
     'volunteer_application_withdraw_failed' => 'Failed to withdraw application',
     'volunteer_application_already_decided' => 'This application has already been decided',
     'volunteer_shift_approved_application_required' => 'You must have an approved application to sign up for shifts',

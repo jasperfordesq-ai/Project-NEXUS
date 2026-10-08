@@ -70,12 +70,14 @@ const page = vi.hoisted(() => (items: Array<{ status: string; opportunity_title:
 const mockGetApprovals = vi.hoisted(() => vi.fn());
 const mockApproveApp = vi.hoisted(() => vi.fn());
 const mockDeclineApp = vi.hoisted(() => vi.fn());
+const mockRemoveVolunteer = vi.hoisted(() => vi.fn());
 
 vi.mock('../../api/adminApi', () => ({
   adminVolunteering: {
     getApprovals: mockGetApprovals,
     approveApplication: mockApproveApp,
     declineApplication: mockDeclineApp,
+    removeVolunteer: mockRemoveVolunteer,
   },
 }));
 
@@ -471,6 +473,61 @@ describe('VolunteerApprovals', () => {
     await waitFor(() => {
       expect(mockDeclineApp).toHaveBeenCalledWith(1);
       expect(mockToast.success).toHaveBeenCalled();
+    });
+  });
+
+  // ── Row menu (8 Oct 2026: decided rows used to offer nothing at all) ────────
+
+  async function openRowMenu(name: RegExp) {
+    mockGetApprovals.mockResolvedValue(page(MOCK_APPLICATIONS));
+    render(<VolunteerApprovals />);
+    const trigger = await screen.findByRole('button', { name });
+    await userEvent.click(trigger);
+    return (await screen.findAllByRole('menuitem')).map((m) => m.textContent ?? '');
+  }
+
+  it('every row has a menu; only an approved volunteer can be removed', async () => {
+    const approvedItems = await openRowMenu(/more actions for bob helper/i);
+    expect(approvedItems.some((l) => /view member/i.test(l))).toBe(true);
+    expect(approvedItems.some((l) => /remove from opportunity/i.test(l))).toBe(true);
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.click(screen.getByRole('button', { name: /more actions for carol applicant/i }));
+    const declinedItems = (await screen.findAllByRole('menuitem')).map((m) => m.textContent ?? '');
+    expect(declinedItems.some((l) => /view member/i.test(l))).toBe(true);
+    expect(declinedItems.some((l) => /remove from opportunity/i.test(l))).toBe(false);
+  });
+
+  it('removing a volunteer asks first, then calls the server and reloads', async () => {
+    mockRemoveVolunteer.mockResolvedValue({ success: true });
+    const items = await openRowMenu(/more actions for bob helper/i);
+    expect(items.length).toBeGreaterThan(0);
+    const remove = (await screen.findAllByRole('menuitem')).find((m) => /remove from opportunity/i.test(m.textContent ?? ''));
+    await userEvent.click(remove!);
+    expect(mockRemoveVolunteer).not.toHaveBeenCalled();
+
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent(/Bob Helper/);
+    expect(dialog).toHaveTextContent(/Meals on Wheels/);
+    const confirm = within(dialog).getAllByRole('button').find((b) => /^remove$/i.test(b.textContent?.trim() ?? ''));
+    await userEvent.click(confirm!);
+
+    await waitFor(() => {
+      expect(mockRemoveVolunteer).toHaveBeenCalledWith(2);
+      expect(mockToast.success).toHaveBeenCalled();
+    });
+    expect(mockGetApprovals.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('shows the server\'s reason when a removal is refused', async () => {
+    mockRemoveVolunteer.mockResolvedValue({ success: false, error: 'Only an approved volunteer can be removed.' });
+    await openRowMenu(/more actions for bob helper/i);
+    const remove = (await screen.findAllByRole('menuitem')).find((m) => /remove from opportunity/i.test(m.textContent ?? ''));
+    await userEvent.click(remove!);
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getAllByRole('button').find((b) => /^remove$/i.test(b.textContent?.trim() ?? ''))!);
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Only an approved volunteer can be removed.');
     });
   });
 

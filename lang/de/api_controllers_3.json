@@ -152,6 +152,7 @@
     "vetting_removed": "Ihr Verifizierungsnachweis wurde entfernt.",
     "volunteer_approved": "Ihre Freiwilligenbewerbung wurde genehmigt!",
     "volunteer_declined": "Ihre Freiwilligenbewerbung wurde nicht angenommen.",
+    "volunteer_removed": "Sie wurden als freiwillige Person aus „:opportunity“ entfernt.",
     "monitoring_restricted": "Ihr Zeitbank-Koordinator hat Ihre Nachrichtenversendung vorübergehend eingeschränkt.",
     "monitoring_under_review": "Ihr Konto wurde von Ihrem Zeitbank-Koordinator unter Überprüfung gestellt.",
     "monitoring_lifted": "Ihre Nachrichteneinschränkungen wurden aufgehoben.",

@@ -924,7 +924,18 @@
     "wellbeing_mood_great": "Très bien",
     "wellbeing_latest_checkin": "Dernier bilan : {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Dernier bilan : {{mood}}",
-    "wellbeing_note_label": "Sa note"
+    "wellbeing_note_label": "Sa note",
+    "approvals_all_opportunities": "Toutes les missions",
+    "approvals_row_actions": "Plus d’actions pour {{name}}",
+    "approvals_view_member": "Voir le membre",
+    "approvals_view_opportunity": "Voir la mission",
+    "approvals_email_applicant": "Écrire au candidat",
+    "approvals_remove": "Retirer de la mission",
+    "approvals_remove_title": "Retirer le bénévole",
+    "approvals_remove_confirm": "Retirer {{name}} de « {{opportunity}} » ? La personne sera prévenue et toute place de créneau qu’elle occupait sera libérée. Elle pourra postuler à nouveau plus tard.",
+    "approvals_remove_button": "Retirer",
+    "approvals_removed": "Bénévole retiré",
+    "approvals_remove_failed": "Impossible de retirer le bénévole"
   },
   "donation_refunds": {
     "page_title": "Remboursements de dons",

@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Échec de la suppression de la mission',
     'volunteer_application_not_yours' => 'Cette candidature n\'est pas la vôtre',
     'volunteer_application_withdraw_approved' => 'Vous ne pouvez pas retirer une candidature approuvée. Veuillez contacter directement l\'organisation.',
+    'volunteer_remove_only_approved' => 'Seul un bénévole approuvé peut être retiré. Refusez plutôt une candidature en attente.',
+    'volunteer_removed' => 'Bénévole retiré de la mission',
     'volunteer_application_withdraw_failed' => 'Échec du retrait de la candidature',
     'volunteer_application_already_decided' => 'Cette candidature a déjà été traitée',
     'volunteer_shift_approved_application_required' => 'Vous devez avoir une candidature approuvée pour vous inscrire à des créneaux',

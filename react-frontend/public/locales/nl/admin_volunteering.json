@@ -908,7 +908,18 @@
     "wellbeing_mood_great": "Geweldig",
     "wellbeing_latest_checkin": "Laatste check-in: {{mood}}, {{date}}",
     "wellbeing_latest_checkin_mood": "Laatste check-in: {{mood}}",
-    "wellbeing_note_label": "Hun notitie"
+    "wellbeing_note_label": "Hun notitie",
+    "approvals_all_opportunities": "Alle vrijwilligersplekken",
+    "approvals_row_actions": "Meer acties voor {{name}}",
+    "approvals_view_member": "Lid bekijken",
+    "approvals_view_opportunity": "Vrijwilligersplek bekijken",
+    "approvals_email_applicant": "Aanmelder e-mailen",
+    "approvals_remove": "Verwijderen uit vrijwilligersplek",
+    "approvals_remove_title": "Vrijwilliger verwijderen",
+    "approvals_remove_confirm": "{{name}} verwijderen uit \"{{opportunity}}\"? Diegene krijgt bericht en een gereserveerde dienstplek komt vrij. Later opnieuw aanmelden kan.",
+    "approvals_remove_button": "Verwijderen",
+    "approvals_removed": "Vrijwilliger verwijderd",
+    "approvals_remove_failed": "De vrijwilliger kon niet worden verwijderd"
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

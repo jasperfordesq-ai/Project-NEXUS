@@ -908,7 +908,18 @@
     "wellbeing_mood_great": "とても良い",
     "wellbeing_latest_checkin": "最新のチェックイン：{{mood}}（{{date}}）",
     "wellbeing_latest_checkin_mood": "最新のチェックイン：{{mood}}",
-    "wellbeing_note_label": "本人のメモ"
+    "wellbeing_note_label": "本人のメモ",
+    "approvals_all_opportunities": "すべての募集",
+    "approvals_row_actions": "{{name}} のその他の操作",
+    "approvals_view_member": "メンバーを表示",
+    "approvals_view_opportunity": "募集を表示",
+    "approvals_email_applicant": "応募者にメール",
+    "approvals_remove": "募集から外す",
+    "approvals_remove_title": "ボランティアを外す",
+    "approvals_remove_confirm": "{{name}} を「{{opportunity}}」から外しますか？本人に通知され、確保していたシフト枠は解放されます。後で再度応募できます。",
+    "approvals_remove_button": "外す",
+    "approvals_removed": "ボランティアを外しました",
+    "approvals_remove_failed": "ボランティアを外せませんでした"
   },
   "donation_refunds": {
     "page_title": "寄付の返金",

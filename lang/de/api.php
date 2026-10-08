@@ -2358,6 +2358,8 @@ return [
     'volunteer_opportunity_delete_failed' => 'Einsatzmöglichkeit konnte nicht gelöscht werden',
     'volunteer_application_not_yours' => 'Dies ist nicht Ihre Bewerbung',
     'volunteer_application_withdraw_approved' => 'Eine genehmigte Bewerbung kann nicht zurückgezogen werden. Bitte wenden Sie sich direkt an die Organisation.',
+    'volunteer_remove_only_approved' => 'Nur genehmigte Freiwillige können entfernt werden. Lehnen Sie eine offene Bewerbung stattdessen ab.',
+    'volunteer_removed' => 'Freiwillige Person aus dem Einsatz entfernt',
     'volunteer_application_withdraw_failed' => 'Bewerbung konnte nicht zurückgezogen werden',
     'volunteer_application_already_decided' => 'Über diese Bewerbung wurde bereits entschieden',
     'volunteer_shift_approved_application_required' => 'Sie benötigen eine genehmigte Bewerbung, um sich für Schichten anzumelden',

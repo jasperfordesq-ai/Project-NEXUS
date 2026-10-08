@@ -152,6 +152,7 @@
     "vetting_removed": "O seu registo de verificação foi removido.",
     "volunteer_approved": "A sua candidatura de voluntariado foi aprovada!",
     "volunteer_declined": "A sua candidatura de voluntariado não foi aceite.",
+    "volunteer_removed": "Foi removido como voluntário de \":opportunity\".",
     "monitoring_restricted": "O seu coordenador do banco de tempo restringiu temporariamente as suas mensagens.",
     "monitoring_under_review": "A sua conta foi colocada sob revisão pelo seu coordenador do banco de tempo.",
     "monitoring_lifted": "As suas restrições de mensagens foram levantadas.",

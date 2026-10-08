@@ -152,6 +152,7 @@
     "vetting_removed": "Twój rekord weryfikacji został usunięty.",
     "volunteer_approved": "Twój wniosek wolontariacki został zatwierdzony!",
     "volunteer_declined": "Twój wniosek wolontariacki nie został przyjęty.",
+    "volunteer_removed": "Usunięto Cię jako wolontariusza z „:opportunity”.",
     "monitoring_restricted": "Koordynator banku czasu tymczasowo ograniczył Twoje wysyłanie wiadomości.",
     "monitoring_under_review": "Twoje konto zostało poddane przeglądowi przez koordynatora banku czasu.",
     "monitoring_lifted": "Twoje ograniczenia wiadomości zostały zniesione.",
