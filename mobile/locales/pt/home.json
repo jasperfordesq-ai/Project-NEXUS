@@ -154,6 +154,7 @@
     "totalVotes": "{{count}} votos",
     "totalVotes_one": "{{count}} voto",
     "voted": "Você votou",
+    "yourVote": "O seu voto",
     "closed": "Enquete encerrada",
     "vote": "Votar",
     "resultsHiddenUntilClose": "Resultados revelados quando a sondagem fechar",

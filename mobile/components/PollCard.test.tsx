@@ -50,6 +50,7 @@ jest.mock('react-i18next', () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
       if (key === 'poll.totalVotes') return `${String(opts?.count ?? 0)} votes`;
       if (key === 'poll.voted') return 'You voted';
+      if (key === 'poll.yourVote') return 'Your vote';
       if (key === 'poll.closed') return 'Poll closed';
       if (key === 'poll.voteToSeeResults') return 'Vote to see results';
       if (key === 'poll.resultsHiddenUntilClose') return 'Results revealed when poll closes';
@@ -317,6 +318,23 @@ describe('PollCard', () => {
     expect(getByText('Results revealed when poll closes')).toBeTruthy();
     // No percentage bar may be drawn from a withheld tally.
     expect(() => getByText('0%')).toThrow();
+  });
+
+  /**
+   * 🔴 Owner, 2026-10-08: with the tallies withheld, the only sign of a vote was the small
+   * "You voted" chip — every option still looked like an untouched button. The website
+   * (`FeedCard.tsx`) ticks the chosen option even while counts are hidden; so must this.
+   */
+  it('ticks the option the member chose while the results are still withheld', () => {
+    const { getByTestId, queryByTestId, getByText, queryByText } = render(
+      <PollCard pollData={withheld(142)} itemId={41} />,
+    );
+
+    expect(getByTestId('poll-option-142-your-vote')).toBeTruthy();
+    expect(queryByTestId('poll-option-141-your-vote')).toBeNull();
+    expect(getByText('Your vote')).toBeTruthy();
+    // Still no tally drawn from the withheld nulls.
+    expect(queryByText('0%')).toBeNull();
   });
 
   it('does not invent a total of 1 out of a withheld tally when voting', async () => {

@@ -114,7 +114,11 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
    * once you have. The same two lines are used here, from the same wording.
    */
   const resultsWithheld = poll ? poll.results_visible === false || poll.total_votes == null : false;
-  const showResults = !resultsWithheld && (hasVoted || (poll ? !poll.is_active : false));
+  // Once the member has voted (or the poll has closed) the options stop being buttons and
+  // become a read-out with the member's choice ticked — even while the counts are withheld.
+  // Gating this on the counts as well left every option looking untouched after a vote, so
+  // the only sign of it was a small chip (owner, 2026-10-08). Matches `FeedCard.tsx`.
+  const showResults = hasVoted || (poll ? !poll.is_active : false);
   // Participation volume is public even when the split is not, so show the count whenever
   // the server actually sent one.
   const knownTotal = poll && poll.total_votes != null ? poll.total_votes : null;
@@ -309,7 +313,9 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
           key={option.id}
           option={option}
           showResults={showResults}
+          countsHidden={resultsWithheld}
           isUserVote={selectedOptionId === option.id}
+          yourVoteLabel={t('poll.yourVote')}
           primary={primary}
           theme={theme}
           isLargeText={isLargeText}
@@ -373,7 +379,10 @@ export default function PollCard({ pollData, itemId, onVoted, showQuestion = tru
 interface PollOptionRowProps {
   option: { id: number; text: string; vote_count: number | null; percentage: number | null };
   showResults: boolean;
+  /** The server withheld the tallies: show the member's choice, but no bar or percentage. */
+  countsHidden: boolean;
   isUserVote: boolean;
+  yourVoteLabel: string;
   primary: string;
   theme: {
     surface: string;
@@ -388,15 +397,16 @@ interface PollOptionRowProps {
   isLargeText: boolean;
 }
 
-function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPress, disabled, isLargeText }: PollOptionRowProps) {
+function PollOptionRow({ option, showResults, countsHidden, isUserVote, yourVoteLabel, primary, theme, onPress, disabled, isLargeText }: PollOptionRowProps) {
   const fillAnim = useRef(new Animated.Value(0)).current;
   const reduceMotion = useReducedMotion();
   // Withheld tallies arrive as null; animating to null leaves the bar in an undefined
   // state, so treat it as an empty bar.
   const percentage = option.percentage ?? 0;
+  const showTally = showResults && !countsHidden;
 
   useEffect(() => {
-    if (!showResults) {
+    if (!showTally) {
       fillAnim.setValue(0);
       return;
     }
@@ -409,7 +419,7 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
       duration: 500,
       useNativeDriver: false,
     }).start();
-  }, [showResults, percentage, fillAnim, reduceMotion]);
+  }, [showTally, percentage, fillAnim, reduceMotion]);
 
   const fillWidth = fillAnim.interpolate({
     inputRange: [0, 100],
@@ -423,10 +433,14 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
     return (
       <View
         className="min-h-[56px] justify-center overflow-hidden rounded-panel-inner"
+        accessible
+        accessibilityLabel={isUserVote ? `${option.text}, ${yourVoteLabel}` : option.text}
+        accessibilityState={{ selected: isUserVote }}
         style={{
-          borderWidth: 1,
+          borderWidth: isUserVote ? 2 : 1,
           borderColor: resultBorderColor,
-          backgroundColor: withAlpha(theme.surface, 0.82),
+          // A withheld tally draws no bar, so tint the chosen row itself instead.
+          backgroundColor: isUserVote && countsHidden ? withAlpha(primary, 0.1) : withAlpha(theme.surface, 0.82),
         }}
       >
         <Animated.View
@@ -443,35 +457,44 @@ function PollOptionRow({ option, showResults, isUserVote, primary, theme, onPres
         <View className={`gap-3 px-3 py-3.5 ${isLargeText ? 'items-start' : 'flex-row items-center justify-between'}`}>
           <View className={`${isLargeText ? 'w-full' : 'min-w-0 flex-1'} flex-row items-start gap-2.5`}>
             <View
+              testID={isUserVote ? `poll-option-${option.id}-your-vote` : undefined}
               className="size-7 items-center justify-center rounded-full"
               style={{
-                backgroundColor: isUserVote ? withAlpha(primary, 0.16) : withAlpha(theme.textSecondary, 0.08),
+                // A solid filled tick, as on the website — a faint outline was easy to miss.
+                backgroundColor: isUserVote ? primary : withAlpha(theme.textSecondary, 0.08),
                 borderWidth: 1,
-                borderColor: isUserVote ? withAlpha(primary, 0.45) : theme.borderSubtle,
+                borderColor: isUserVote ? primary : theme.borderSubtle,
               }}
             >
               <Ionicons
                 name={isUserVote ? 'checkmark' : 'ellipse-outline'}
-                size={14}
-                color={isUserVote ? primary : theme.textSecondary}
+                size={isUserVote ? 16 : 14}
+                color={isUserVote ? theme.onPrimary : theme.textSecondary}
               />
             </View>
-            <Text
-              className="min-w-0 flex-1 text-sm leading-5"
-              style={{ color: isUserVote ? primary : theme.text, fontWeight: isUserVote ? '700' : '500' }}
-              numberOfLines={isLargeText ? 0 : 3}
-            >
-              {option.text}
-            </Text>
+            <View className="min-w-0 flex-1 gap-0.5">
+              <Text
+                className="text-sm leading-5"
+                style={{ color: isUserVote ? primary : theme.text, fontWeight: isUserVote ? '700' : '500' }}
+                numberOfLines={isLargeText ? 0 : 3}
+              >
+                {option.text}
+              </Text>
+              {isUserVote ? (
+                <Text className="text-xs font-semibold" style={{ color: primary }}>{yourVoteLabel}</Text>
+              ) : null}
+            </View>
           </View>
-          <View className={`${isLargeText ? 'self-start' : 'min-w-[48px]'} rounded-full px-2 py-1`} style={{ backgroundColor: isUserVote ? withAlpha(primary, 0.14) : withAlpha(theme.textSecondary, 0.1) }}>
-            <Text
-              className="text-center text-xs font-bold"
-              style={{ color: isUserVote ? primary : theme.textSecondary }}
-            >
-              {percentage}%
-            </Text>
-          </View>
+          {showTally ? (
+            <View className={`${isLargeText ? 'self-start' : 'min-w-[48px]'} rounded-full px-2 py-1`} style={{ backgroundColor: isUserVote ? withAlpha(primary, 0.14) : withAlpha(theme.textSecondary, 0.1) }}>
+              <Text
+                className="text-center text-xs font-bold"
+                style={{ color: isUserVote ? primary : theme.textSecondary }}
+              >
+                {percentage}%
+              </Text>
+            </View>
+          ) : null}
         </View>
       </View>
     );

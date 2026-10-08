@@ -154,6 +154,7 @@
     "totalVotes": "{{count}} vóta",
     "totalVotes_one": "{{count}} vóta",
     "voted": "Vótáil tú",
+    "yourVote": "Do vóta",
     "closed": "Pobalbhreith dúnta",
     "vote": "Vótáil",
     "resultsHiddenUntilClose": "Nochtfar na torthaí nuair a dhúnfar an phobalbhreith",

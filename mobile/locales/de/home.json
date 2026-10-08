@@ -154,6 +154,7 @@
     "totalVotes": "{{count}} Stimmen",
     "totalVotes_one": "{{count}} Stimme",
     "voted": "Du hast abgestimmt",
+    "yourVote": "Ihre Stimme",
     "closed": "Umfrage beendet",
     "vote": "Abstimmen",
     "resultsHiddenUntilClose": "Ergebnisse erscheinen nach Ablauf der Umfrage",
