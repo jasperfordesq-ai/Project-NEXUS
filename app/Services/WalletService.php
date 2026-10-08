@@ -1118,7 +1118,8 @@ class WalletService
                     'donation'         => __('api.wallet_counterparty_community_fund'),
                     'community_fund'   => __('api.wallet_counterparty_community_fund'),
                     'starting_balance' => __('api.wallet_counterparty_system'),
-                    'admin_grant'      => __('api.wallet_counterparty_admin'),
+                    'opening_balance'  => __('api.wallet_counterparty_previous_timebank'),
+                    'admin_grant'    => __('api.wallet_counterparty_admin'),
                     'event_attendance_reward' => __('api.wallet_counterparty_community_fund'),
                     'event_attendance_reversal' => __('api.wallet_counterparty_community_fund'),
                     default            => __('api.wallet_counterparty_unknown'),
@@ -1140,7 +1141,9 @@ class WalletService
             'type'             => $isSender ? 'debit' : 'credit',
             'status'           => $txn->status ?? 'completed',
             'amount'           => (float) $txn->amount,
-            'description'      => $txn->description,
+            'description'      => $txnType === \App\Support\Wallet\OpeningBalance::TYPE
+                ? self::openingBalanceLabel($txn->description)
+                : $txn->description,
             'transaction_type' => $txn->transaction_type ?? 'transfer',
             'sender'           => $formatUser($sender),
             'receiver'         => $formatUser($receiver),
@@ -1148,5 +1151,18 @@ class WalletService
             'balance_after'    => null,
             'created_at'       => $txn->created_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * Translated wallet text for an imported opening-balance row. The stored
+     * description is English and machine-readable, never shown to members.
+     */
+    private static function openingBalanceLabel(?string $stored): string
+    {
+        $original = \App\Support\Wallet\OpeningBalance::originalCentsFrom($stored);
+
+        return $original === null
+            ? __('api.wallet_opening_balance')
+            : __('api.wallet_opening_balance_was_negative', ['amount' => \App\Support\Wallet\OpeningBalance::formatCents($original)]);
     }
 }

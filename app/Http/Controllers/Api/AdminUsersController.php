@@ -2786,8 +2786,11 @@ class AdminUsersController extends BaseApiController
                 // legacy arm, while every legacy row still does. The same
                 // change is made in StartingBalanceService::alreadyGranted(),
                 // which must stay identical to this predicate.
+                //
+                // opening_balance (admin member import) counts as granted too: an
+                // imported member brought their balance with them (owner, 8 Oct 2026).
                 $existing = DB::selectOne(
-                    "SELECT id FROM transactions WHERE tenant_id = ? AND receiver_id = ? AND (transaction_type = 'starting_balance' OR (description LIKE '[Welcome Bonus]%' AND sender_id = receiver_id)) LIMIT 1",
+                    "SELECT id FROM transactions WHERE tenant_id = ? AND receiver_id = ? AND (transaction_type IN ('starting_balance', 'opening_balance') OR (description LIKE '[Welcome Bonus]%' AND sender_id = receiver_id)) LIMIT 1",
                     [$userTenantId, $userId]
                 );
 

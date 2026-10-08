@@ -188,13 +188,16 @@ class StartingBalanceService
      * 0.01-credit transfer. WalletService::transfer refuses a self-transfer
      * outright, so no member-reachable path can write a row that satisfies the
      * legacy arm, while every legacy row still does.
+     *
+     * opening_balance (admin member import) counts as granted: an imported
+     * member brought their balance with them (owner, 8 Oct 2026).
      */
     private static function alreadyGranted(int $tenantId, int $userId): bool
     {
         $existing = DB::selectOne(
             "SELECT id FROM transactions
              WHERE tenant_id = ? AND receiver_id = ?
-               AND (transaction_type = 'starting_balance'
+               AND (transaction_type IN ('starting_balance', 'opening_balance')
                     OR (description LIKE '[Welcome Bonus]%' AND sender_id = receiver_id))
              LIMIT 1",
             [$tenantId, $userId]
