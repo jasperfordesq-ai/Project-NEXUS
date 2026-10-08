@@ -169,7 +169,8 @@ class ConnectionSuggestionController extends BaseApiController
             WHERE u.tenant_id = ?
             AND u.id NOT IN ({$excludePlaceholders})
             AND u.is_active = 1
-            AND u.status != 'suspended'
+            AND u.status = 'active'
+            AND u.is_approved = 1
             AND {$visibilitySql}
             ORDER BY score DESC, u.last_active_at DESC
             LIMIT ?

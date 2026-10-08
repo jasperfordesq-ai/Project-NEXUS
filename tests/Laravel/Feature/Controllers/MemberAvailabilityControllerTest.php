@@ -102,11 +102,31 @@ class MemberAvailabilityControllerTest extends TestCase
     public function test_get_user_availability_returns_data(): void
     {
         $user = $this->authenticatedUser();
-        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $other = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
 
         $response = $this->apiGet("/v2/users/{$other->id}/availability");
 
         $response->assertStatus(200);
+    }
+
+    public function test_get_user_availability_hides_pending_and_unapproved_profiles(): void
+    {
+        $this->authenticatedUser();
+
+        foreach ([
+            ['status' => 'pending', 'is_approved' => false],
+            ['status' => 'active', 'is_approved' => false],
+        ] as $state) {
+            $other = User::factory()->forTenant($this->testTenantId)->create($state + [
+                'privacy_profile' => 'public',
+            ]);
+
+            $this->apiGet("/v2/users/{$other->id}/availability")
+                ->assertStatus(404)
+                ->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+        }
     }
 
     // ------------------------------------------------------------------

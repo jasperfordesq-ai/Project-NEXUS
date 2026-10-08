@@ -102,12 +102,33 @@ final class MemberProfileVisibility
             return true;
         }
 
-        $privacy = DB::table('users')
+        $owner = DB::table('users')
             ->where('id', $ownerId)
             ->where('tenant_id', TenantContext::getId())
-            ->value('privacy_profile');
+            ->first(['tenant_id', 'status', 'is_approved', 'privacy_profile']);
 
-        $privacy = $privacy === null ? 'public' : (string) $privacy;
+        if ($owner === null) {
+            return false;
+        }
+
+        // A direct member ID must not disclose a registration before the
+        // account is active and approved. Keep the same staff review exception
+        // as the main public-profile route; self access was handled above.
+        if ($owner->status !== 'active' || ! $owner->is_approved) {
+            $viewer = $viewerId ? User::withoutGlobalScope(TenantScope::class)
+                ->select(['id', 'tenant_id', 'role', 'status', 'is_approved'])
+                ->find($viewerId) : null;
+            $staffCanReview = $viewer?->status === 'active' && $viewer->is_approved && (
+                self::viewerIsAdmin($viewerId)
+                || ((int) $viewer->tenant_id === (int) $owner->tenant_id
+                    && in_array($viewer->role, ['broker', 'coordinator'], true))
+            );
+            if (! $staffCanReview) {
+                return false;
+            }
+        }
+
+        $privacy = $owner->privacy_profile === null ? 'public' : (string) $owner->privacy_profile;
 
         if ($privacy === 'public') {
             return true;

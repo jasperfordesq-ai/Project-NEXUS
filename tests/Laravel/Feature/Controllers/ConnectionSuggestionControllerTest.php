@@ -81,6 +81,28 @@ class ConnectionSuggestionControllerTest extends TestCase
         $this->assertLessThanOrEqual(2, count($suggestions));
     }
 
+    public function test_suggestions_exclude_pending_and_unapproved_members(): void
+    {
+        $me = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $pending = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending', 'is_approved' => false,
+            'is_active' => true, 'privacy_search' => true,
+        ]);
+        $unapproved = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => false,
+            'is_active' => true, 'privacy_search' => true,
+        ]);
+        Sanctum::actingAs($me);
+
+        $response = $this->apiGet('/v2/connections/suggestions');
+        $response->assertStatus(200);
+        $ids = array_column($response->json('data.suggestions') ?? [], 'id');
+        $this->assertNotContains($pending->id, $ids);
+        $this->assertNotContains($unapproved->id, $ids);
+    }
+
     public function test_suggestions_limit_above_max_is_clamped(): void
     {
         $me = User::factory()->forTenant($this->testTenantId)->create();
