@@ -13,6 +13,12 @@ namespace App\Services\MemberImport;
  * whole file with a reason the admin can act on. Nothing is guessed: a file
  * that is not UTF-8 CSV in the template's columns is refused, never converted
  * (owner, 8 Oct 2026 — "if it hasn't got our values, the import is invalid").
+ *
+ * Refusal codes (each one tells the admin what to change):
+ *   empty_file, too_large, spreadsheet_workbook, not_text, not_utf8,
+ *   unsupported_delimiter, header_not_on_first_line, empty_column_heading,
+ *   duplicate_columns, old_template, unknown_columns, missing_columns,
+ *   no_data_rows, too_many_rows
  */
 final class MemberImportFile
 {
@@ -45,8 +51,15 @@ final class MemberImportFile
         $text = preg_replace('/^\xEF\xBB\xBF/', '', $bytes) ?? $bytes;
         $text = str_replace(["\r\n", "\r"], "\n", $text);
 
-        $firstLine = strtok($text, "\n");
-        $delimiter = self::detectDelimiter($firstLine === false ? '' : $firstLine);
+        if (trim($text) === '') {
+            return self::refuse('empty_file');
+        }
+        // The delimiter is read from the same line the header is read from.
+        $firstLine = explode("\n", $text, 2)[0];
+        if (trim($firstLine) === '') {
+            return self::refuse('header_not_on_first_line');
+        }
+        $delimiter = self::detectDelimiter($firstLine);
         if ($delimiter === null) {
             return self::refuse('unsupported_delimiter');
         }
@@ -58,6 +71,14 @@ final class MemberImportFile
         $rawHeader = fgetcsv($handle, null, $delimiter, '"', '');
         $rawHeader = is_array($rawHeader) ? array_map(static fn ($h) => (string) $h, $rawHeader) : [];
         $header = array_map([self::class, 'normaliseHeader'], $rawHeader);
+
+        $emptyHeadings = array_keys($header, '', true);
+        if ($emptyHeadings !== []) {
+            fclose($handle);
+            return self::refuse('empty_column_heading', [
+                'positions' => array_map(static fn (int $i): int => $i + 1, $emptyHeadings),
+            ]);
+        }
 
         $duplicates = array_values(array_unique(array_diff_assoc($header, array_unique($header))));
         if ($duplicates !== []) {
@@ -79,11 +100,19 @@ final class MemberImportFile
             return self::refuse('missing_columns', ['columns' => $missing]);
         }
 
+        // Spreadsheet row numbers: the header is row 1, and a quoted cell with a
+        // line break spans several rows, so count physical lines, not records.
+        $cursor = ftell($handle);
+        $rowNumber = 1 + substr_count($text, "\n", 0, $cursor);
+
         $rows = [];
         $blank = 0;
-        $rowNumber = 1;
         while (($record = fgetcsv($handle, null, $delimiter, '"', '')) !== false) {
-            $rowNumber++;
+            $end = ftell($handle);
+            $row = $rowNumber;
+            $rowNumber += substr_count($text, "\n", $cursor, $end - $cursor);
+            $cursor = $end;
+
             $raw = array_map(static fn ($c) => (string) $c, $record);
             if (implode('', array_map('trim', $raw)) === '') {
                 $blank++;
@@ -94,7 +123,7 @@ final class MemberImportFile
                 return self::refuse('too_many_rows', ['max' => self::MAX_ROWS]);
             }
             $rows[] = [
-                'row' => $rowNumber,
+                'row' => $row,
                 'raw' => $raw,
                 'cells' => count($raw) === count($header) ? array_combine($header, $raw) : null,
             ];

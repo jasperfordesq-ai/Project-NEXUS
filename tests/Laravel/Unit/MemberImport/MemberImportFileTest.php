@@ -100,4 +100,95 @@ final class MemberImportFileTest extends TestCase
         $this->assertSame('too_many_rows', $many['code']);
         $this->assertSame(MemberImportFile::MAX_ROWS, $many['params']['max']);
     }
+
+    public function test_exactly_the_maximum_number_of_rows_is_accepted(): void
+    {
+        $lines = self::HEADER;
+        for ($i = 1; $i <= MemberImportFile::MAX_ROWS; $i++) {
+            $lines .= "A,B,a{$i}@nexus.test,,,\n";
+        }
+
+        $r = MemberImportFile::parse($lines);
+        $this->assertTrue($r['ok']);
+        $this->assertCount(MemberImportFile::MAX_ROWS, $r['rows']);
+        $this->assertSame(MemberImportFile::MAX_ROWS + 1, $r['rows'][array_key_last($r['rows'])]['row']);
+    }
+
+    public function test_an_empty_column_heading_is_named_by_its_position(): void
+    {
+        $r = MemberImportFile::parse("first_name,last_name,email,phone,location,balance,\nA,B,a@nexus.test,,,,\n");
+        $this->assertFalse($r['ok']);
+        $this->assertSame('empty_column_heading', $r['code']);
+        $this->assertSame([7], $r['params']['positions']);
+    }
+
+    public function test_every_empty_column_heading_is_listed(): void
+    {
+        $r = MemberImportFile::parse("first_name,,email,phone,location,balance,\nA,B,a@nexus.test,,,,\n");
+        $this->assertSame('empty_column_heading', $r['code']);
+        $this->assertSame([2, 7], $r['params']['positions']);
+    }
+
+    public function test_a_blank_first_line_says_the_header_is_not_on_the_first_line(): void
+    {
+        $r = MemberImportFile::parse("\n" . self::HEADER . "Ada,Lovelace,ada@nexus.test,,,\n");
+        $this->assertFalse($r['ok']);
+        $this->assertSame('header_not_on_first_line', $r['code']);
+
+        $spaced = MemberImportFile::parse("   \r\n" . self::HEADER . "Ada,Lovelace,ada@nexus.test,,,\n");
+        $this->assertSame('header_not_on_first_line', $spaced['code']);
+    }
+
+    public function test_a_file_of_only_blank_lines_is_an_empty_file(): void
+    {
+        foreach (["\n\n", " \r\n  \r\n", "\n", "\xEF\xBB\xBF", "\xEF\xBB\xBF\n"] as $bytes) {
+            $r = MemberImportFile::parse($bytes);
+            $this->assertFalse($r['ok']);
+            $this->assertSame('empty_file', $r['code']);
+        }
+    }
+
+    public function test_a_quoted_cell_with_a_comma_is_one_cell(): void
+    {
+        $r = MemberImportFile::parse(self::HEADER . "Ada,\"Lovelace, Jr\",ada@nexus.test,,,\n");
+        $this->assertTrue($r['ok']);
+        $this->assertCount(6, $r['rows'][0]['raw']);
+        $this->assertSame('Lovelace, Jr', $r['rows'][0]['cells']['last_name']);
+    }
+
+    public function test_a_quoted_cell_with_a_line_break_is_one_cell_and_later_rows_keep_spreadsheet_numbers(): void
+    {
+        $r = MemberImportFile::parse(self::HEADER . "Ada,\"Lovelace\nJr\",ada@nexus.test,,,\nBob,Smith,bob@nexus.test,,,\n");
+        $this->assertTrue($r['ok']);
+        $this->assertCount(2, $r['rows']);
+        $this->assertSame("Lovelace\nJr", $r['rows'][0]['cells']['last_name']);
+        $this->assertSame(2, $r['rows'][0]['row']);
+        // Ada's cell spans spreadsheet rows 2 and 3, so Bob is on row 4.
+        $this->assertSame(4, $r['rows'][1]['row']);
+    }
+
+    public function test_a_file_with_only_carriage_returns_is_read_line_by_line(): void
+    {
+        $r = MemberImportFile::parse("first_name,last_name,email,phone,location,balance\rAda,Lovelace,ada@nexus.test,,Cork,1\r");
+        $this->assertTrue($r['ok']);
+        $this->assertSame(2, $r['rows'][0]['row']);
+        $this->assertSame('Cork', $r['rows'][0]['cells']['location']);
+    }
+
+    public function test_a_last_line_without_a_newline_is_read(): void
+    {
+        $r = MemberImportFile::parse(self::HEADER . 'Ada,Lovelace,ada@nexus.test,,,');
+        $this->assertTrue($r['ok']);
+        $this->assertCount(1, $r['rows']);
+        $this->assertSame('Ada', $r['rows'][0]['cells']['first_name']);
+    }
+
+    public function test_a_fully_quoted_semicolon_header_with_a_bom_is_accepted(): void
+    {
+        $r = MemberImportFile::parse("\xEF\xBB\xBF\"first_name\";\"last_name\";\"email\";\"phone\";\"location\";\"balance\"\nAda;Lovelace;ada@nexus.test;;Cork;12,5\n");
+        $this->assertTrue($r['ok']);
+        $this->assertSame(';', $r['delimiter']);
+        $this->assertSame(MemberImportFile::COLUMNS, $r['header']);
+        $this->assertSame('12,5', $r['rows'][0]['cells']['balance']);
+    }
 }
