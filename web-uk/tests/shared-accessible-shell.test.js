@@ -20924,6 +20924,66 @@ describe('shared accessible frontend shell', () => {
     expect(volunteerPage.text).not.toContain('href="/volunteering/opportunities/77/shifts"');
   });
 
+  it('tells whoever runs the organisation they cannot volunteer for it, and shows a refused application in the API\'s words', async () => {
+    // 8 Oct 2026: the API answers runs_organisation and refuses their application (422).
+    const api = require('../src/lib/api');
+    const t = createTranslator('en');
+    const opportunity = {
+      id: 77,
+      title: 'Community Kitchen Helper',
+      organization_id: 42,
+      organization: { id: 42, name: 'Community Club' },
+      shifts: [],
+      has_applied: false,
+      can_manage: false,
+      is_owner: false,
+      runs_organisation: true
+    };
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: opportunity });
+    const runsPage = await request(app).get('/volunteering/opportunities/77').set('Cookie', signedAuthCookieHeader());
+    expect(runsPage.status).toBe(200);
+    expect(runsPage.text).toContain('data-testid="opportunity-runs-organisation"');
+    expect(runsPage.text).toContain(t('govuk_alpha_volunteering.runs_organisation.note'));
+    expect(runsPage.text).toContain('href="/volunteering/organisations/42/manage"');
+    expect(runsPage.text).not.toContain('method="post" action="/volunteering/opportunities/77/apply"');
+
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: opportunity });
+    const confirmPage = await request(app).get('/organisations/opportunities/77/apply').set('Cookie', signedAuthCookieHeader());
+    expect(confirmPage.text).toContain('data-testid="organisation-apply-runs-organisation"');
+    expect(confirmPage.text).not.toContain('method="post" action="/volunteering/opportunities/77/apply"');
+
+    // The refusal itself: stashed by the POST, shown once by the page it redirects to.
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    const agent = request.agent(app);
+    const first = await agent.get('/contact').set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const refusal = 'You run this organisation, so you cannot apply to volunteer for its opportunities.';
+    api.callVolunteeringApi.mockRejectedValueOnce(new api.ApiError('refused', 422, {
+      errors: [{ code: 'VALIDATION_ERROR', message: refusal }]
+    }));
+    const applied = await agent
+      .post('/volunteering/opportunities/77/apply')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
+      .type('form')
+      .send({ _csrf: csrf, message: 'Hello' });
+    expect(applied.headers.location).toBe('/volunteering/opportunities/77?status=apply-refused');
+
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, runs_organisation: false } });
+    const refusedPage = await agent
+      .get('/volunteering/opportunities/77?status=apply-refused')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(refusedPage.text).toContain('govuk-error-summary');
+    expect(refusedPage.text).toContain(refusal);
+
+    // Read once: a reload falls back to the catalogue's generic failure.
+    api.getVolunteerOpportunity.mockResolvedValueOnce({ data: { ...opportunity, runs_organisation: false } });
+    const reloaded = await agent
+      .get('/volunteering/opportunities/77?status=apply-refused')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+    expect(reloaded.text).not.toContain(refusal);
+  });
+
   it('returns the shared 404 page when a Laravel volunteering opportunity is missing', async () => {
     const api = require('../src/lib/api');
     api.getVolunteerOpportunity.mockRejectedValueOnce(new api.ApiError('Not found', 404));

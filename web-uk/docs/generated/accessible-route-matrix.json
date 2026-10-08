@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-08T08:18:48.485Z",
+  "generatedAt": "2026-10-08T19:28:22.113Z",
   "provenance": {
-    "generatedAt": "2026-10-08T08:18:48.485Z",
+    "generatedAt": "2026-10-08T19:28:22.113Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "64a191aac76a94b29a74ae681f3732f78223b61f",
+    "laravelCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "64a191aac76a94b29a74ae681f3732f78223b61f",
+    "webUkRepositoryCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-08T08:18:48.485Z",
+    "generatedAt": "2026-10-08T19:28:22.113Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 812,
+    "webUkRoutes": 814,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 102,
+    "extraWebUkRoutes": 104,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -145,7 +145,7 @@
       "volunteering": {
         "matched": 52,
         "missing": 0,
-        "extraWebUk": 61,
+        "extraWebUk": 63,
         "ignoredInfrastructure": 0
       },
       "health": {
@@ -1689,6 +1689,27 @@
     },
     {
       "method": "GET",
+      "path": "/volunteering/organisations/{param}/applications/{param}/remove",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/organisations/{param}/applications/{param}/remove",
+      "webUkView": "volunteering/org-application-remove",
+      "webUkFile": "web-uk/src/routes/volunteering-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
       "path": "/volunteering/organisations/{param}/expenses",
       "family": "volunteering",
       "status": "extra-web-uk",
@@ -2294,6 +2315,27 @@
       "webUkPath": "/volunteering/opportunities/{param}/shifts/new",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/volunteering-shifts.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/volunteering/organisations/{param}/applications/{param}/remove",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/organisations/{param}/applications/{param}/remove",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/volunteering-actions.js",
       "webUkRouteKind": ""
     },
     {

@@ -359,6 +359,12 @@ class VolunteerService
             throw new \RuntimeException(__('api.volunteer_cannot_apply_own'), 422);
         }
 
+        // Nor can anyone who runs the organisation: they would be deciding their
+        // own application (owner, 8 Oct 2026).
+        if (self::userRunsOrganisation($tenantId, $userId, (int) $opportunity->organization_id)) {
+            throw new \RuntimeException(__('api.volunteer_cannot_apply_own_organisation'), 422);
+        }
+
         $organizerId = (int) ($opportunity->created_by ?? 0);
         if ($organizerId <= 0) {
             $organizerId = (int) DB::table('vol_organizations')
@@ -978,6 +984,14 @@ class VolunteerService
                 : (int) ($opp->org_owner_id ?? 0);
             $formatted['is_owner'] = $createdBy > 0 && $createdBy === (int) $viewerId;
             $formatted['can_manage'] = $viewerCanManage;
+            // The viewer runs this organisation, so apply() refuses them: the
+            // page shows a "you run this" note in place of the Apply button.
+            $formatted['runs_organisation'] = self::userRunsOrganisation(
+                $tenantId,
+                (int) $viewerId,
+                (int) ($opp->organization_id ?? 0),
+                isset($opp->created_by) ? (int) $opp->created_by : null
+            );
         }
 
         return $formatted;
@@ -3019,6 +3033,151 @@ class VolunteerService
         );
 
         return $orgRole && in_array($orgRole->role, ['owner', 'admin'], true);
+    }
+
+    /**
+     * Does $userId run this organisation: the opportunity's creator, the
+     * organisation's owner, or an active owner/admin on its team?
+     *
+     * The people who run an organisation cannot apply to volunteer for its
+     * opportunities (owner, 8 Oct 2026): they would be deciding their own
+     * application, which the decision screens refuse, so it was left stuck.
+     * They may still log hours and claim expenses with it; another admin
+     * decides those (owner decision, 8 Oct 2026, keeping the 2 Oct design).
+     * Community admins are deliberately NOT included — they may volunteer
+     * anywhere they do not run.
+     */
+    public static function userRunsOrganisation(int $tenantId, int $userId, int $organizationId, ?int $opportunityCreatorId = null): bool
+    {
+        if ($userId <= 0) {
+            return false;
+        }
+        if ($opportunityCreatorId !== null && $opportunityCreatorId === $userId) {
+            return true;
+        }
+        if ($organizationId <= 0) {
+            return false;
+        }
+
+        $ownerId = (int) DB::table('vol_organizations')
+            ->where('id', $organizationId)
+            ->where('tenant_id', $tenantId)
+            ->value('user_id');
+        if ($ownerId === $userId) {
+            return true;
+        }
+
+        return DB::table('org_members')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $organizationId)
+            ->where('org_type', 'volunteer')
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->whereIn('role', ['owner', 'admin'])
+            ->exists();
+    }
+
+    /**
+     * Take an approved volunteer off an opportunity (8 Oct 2026). Allowed to
+     * whoever manages the opportunity — its organisation's owner and team
+     * owners/admins, its creator, and community admins — including on their
+     * own application. Only an approved application can be removed: a pending
+     * one is declined instead, and a declined one holds no place.
+     *
+     * The application row goes (as when a volunteer withdraws), the removal is
+     * written to the organisation's audit log, the volunteer is told (unless
+     * they removed themselves), and a place on a shift that has not started is
+     * offered to the waitlist.
+     */
+    public static function removeApprovedVolunteer(int $applicationId, int $actorId): bool
+    {
+        self::$errors = [];
+        $tenantId = self::getTenantId();
+
+        $app = DB::selectOne(
+            "SELECT va.id, va.status, va.user_id, va.shift_id, va.opportunity_id,
+                    opp.title AS opportunity_title, opp.organization_id, opp.created_by,
+                    org.user_id AS org_owner_id
+             FROM vol_applications va
+             JOIN vol_opportunities opp ON opp.id = va.opportunity_id AND opp.tenant_id = va.tenant_id
+             LEFT JOIN vol_organizations org ON org.id = opp.organization_id AND org.tenant_id = va.tenant_id
+             WHERE va.id = ? AND va.tenant_id = ?",
+            [$applicationId, $tenantId]
+        );
+
+        if (!$app) {
+            self::$errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.not_found', ['model' => 'Application'])];
+            return false;
+        }
+        if (!self::viewerManagesOpportunity($app, $actorId)) {
+            self::$errors[] = ['code' => 'FORBIDDEN', 'message' => __('api.volunteer_opportunity_manage_forbidden')];
+            return false;
+        }
+        if ($app->status !== 'approved') {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_remove_only_approved')];
+            return false;
+        }
+
+        // Conditional delete: a decision or withdrawal that slipped in since the
+        // read above leaves nothing to remove, and nobody is told twice.
+        $deleted = DB::table('vol_applications')
+            ->where('id', $applicationId)
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'approved')
+            ->delete();
+        if ($deleted === 0) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.volunteer_remove_only_approved')];
+            return false;
+        }
+
+        $volunteerId = (int) $app->user_id;
+        app(AuditLogService::class)->log(
+            'volunteer_removed_from_opportunity',
+            $app->organization_id !== null ? (int) $app->organization_id : null,
+            $actorId,
+            [
+                'application_id' => $applicationId,
+                'opportunity_id' => (int) $app->opportunity_id,
+                'opportunity_title' => (string) $app->opportunity_title,
+                'shift_id' => $app->shift_id !== null ? (int) $app->shift_id : null,
+            ],
+            $volunteerId
+        );
+
+        if ($volunteerId !== $actorId) {
+            try {
+                $volunteer = DB::table('users')
+                    ->where('id', $volunteerId)
+                    ->where('tenant_id', $tenantId)
+                    ->select(['preferred_language'])
+                    ->first();
+                LocaleContext::withLocale($volunteer, function () use ($volunteerId, $tenantId, $app) {
+                    $message = __('api_controllers_3.admin_bells.volunteer_removed', ['opportunity' => (string) $app->opportunity_title]);
+                    \App\Models\Notification::createNotification($volunteerId, $message, '/volunteering', 'moderation', true, $tenantId);
+                    NotificationDispatcher::fanOutPush($volunteerId, 'moderation', $message, '/volunteering');
+                });
+            } catch (\Throwable $e) {
+                Log::warning('VolunteerService::removeApprovedVolunteer notification failed: ' . $e->getMessage());
+            }
+        }
+
+        // A place on a shift that has not started yet goes to the next person
+        // waiting for it.
+        if ($app->shift_id !== null) {
+            try {
+                $shift = DB::selectOne(
+                    "SELECT start_time FROM vol_shifts WHERE id = ? AND tenant_id = ?",
+                    [(int) $app->shift_id, $tenantId]
+                );
+                if ($shift && strtotime((string) $shift->start_time) > time()) {
+                    ShiftWaitlistService::notifyNext((int) $app->shift_id, $tenantId);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('VolunteerService::removeApprovedVolunteer waitlist offer failed: ' . $e->getMessage());
+            }
+        }
+
+        return true;
     }
 
     /**

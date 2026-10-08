@@ -1,0 +1,24 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Confirm taking an approved volunteer off an opportunity (8 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+{% set OM = "govuk_alpha_volunteering.org_manage." %}
+{% set backHref = '/volunteering/organisations/' ~ orgId ~ '/manage?app_status=approved' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(backHref) }}">{{ t(OM ~ "back") }}</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-xl">{{ t(OM ~ "remove_title", { name: application.applicant.name, opportunity: application.opportunity.title }) }}</h1>
+  <p class="govuk-body">{{ t(OM ~ "remove_body") }}</p>
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id ~ '/remove') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(OM ~ "remove_confirm") }}</button>
+      <a class="govuk-link" href="{{ urlFor(backHref) }}">{{ t(OM ~ "cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

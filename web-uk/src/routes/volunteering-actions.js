@@ -17,6 +17,7 @@ const {
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
+const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { readDate, splitDate, dateParts } = require('../lib/date-input');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -375,6 +376,12 @@ async function runOpportunityAction(req, res, options) {
     }
     if (options.codeStatuses && Object.hasOwn(options.codeStatuses, code)) {
       return redirectTo(res, opportunityRedirect(options.opportunityId, options.codeStatuses[code]));
+    }
+    // A refusal whose reason only the API's own message can tell (lib/api-refusal.js):
+    // stash that message for the page to show, rather than a generic failure.
+    if (options.refusal && options.refusal.codes.includes(code)
+      && rememberApiRefusal(req, options.refusal.key, error)) {
+      return redirectTo(res, opportunityRedirect(options.opportunityId, options.refusal.status));
     }
     return redirectTo(res, opportunityRedirect(options.opportunityId, options.failureStatus));
   }
@@ -740,7 +747,7 @@ function swapPageStatus(status, t = null) {
   return { ...config, message: translated !== config.key ? translated : (config.fallback || translated) };
 }
 
-function orgManageStatus(status, t = null) {
+function orgManageStatus(status, t = null, refusal = '') {
   const messages = {
     'application-approved': { type: 'success', key: 'govuk_alpha.vol_org.states.application-approved' },
     'application-declined': { type: 'success', key: 'govuk_alpha.vol_org.states.application-declined' },
@@ -757,10 +764,17 @@ function orgManageStatus(status, t = null) {
       key: 'safeguarding.errors.policy_unavailable',
       fallback: 'We cannot confirm the community safeguarding policy right now. No message has been sent. Please try again shortly.'
     },
-    'hours-verify-failed': { type: 'error', key: 'govuk_alpha.vol_org.states.hours-verify-failed' }
+    'hours-verify-failed': { type: 'error', key: 'govuk_alpha.vol_org.states.hours-verify-failed' },
+    // Taking an approved volunteer off an opportunity (8 Oct 2026).
+    'application-removed': { type: 'success', key: 'govuk_alpha_volunteering.org_manage.removed' },
+    'application-remove-failed': { type: 'error', key: 'govuk_alpha_volunteering.org_manage.remove_failed' }
   };
   const config = messages[status] || null;
   if (!config) return null;
+  if (status === 'application-remove-failed' && refusal) {
+    // The API's own reason, e.g. only an approved volunteer can be removed.
+    return { ...config, message: refusal };
+  }
   const translated = typeof t === 'function' ? t(config.key) : config.key;
   return {
     ...config,
@@ -858,7 +872,7 @@ function orgWalletStatus(status, t = null) {
   };
 }
 
-function expenseStatus(status, t = null) {
+function expenseStatus(status, t = null, refusal = '') {
   const messages = {
     'expense-submitted': { type: 'success', key: 'success_submitted' },
     'expense-org-required': { type: 'error', key: 'error_org_required', field: 'organization_id' },
@@ -873,6 +887,10 @@ function expenseStatus(status, t = null) {
     'expense-failed': { type: 'error', key: 'error_failed' }
   };
   const config = messages[status] || null;
+  if (config && status === 'expense-forbidden' && refusal) {
+    // The API's own reason (expenseFailureRedirect), in the member's language.
+    return { ...config, message: refusal };
+  }
   return config
     ? { ...config, message: t ? t(config.fullKey || `govuk_alpha_volunteering.expenses.${config.key}`) : (config.fullKey || config.key) }
     : null;
@@ -2839,7 +2857,49 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
     applicationsMore,
     hoursMore,
     loadError,
-    status: orgManageStatus(trimmed(req.query.status), res.locals.t),
+    status: orgManageStatus(
+      trimmed(req.query.status),
+      res.locals.t,
+      trimmed(req.query.status) === 'application-remove-failed' ? consumeApiRefusal(req, `org-${id}-remove`) : ''
+    ),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+// Take an approved volunteer off an opportunity (8 Oct 2026): confirm first. Until now
+// an organisation could approve a volunteer but never remove one.
+router.get('/organisations/:id(\\d+)/applications/:appId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, loginRedirect());
+  }
+
+  const id = Number(req.params.id);
+  const appId = Number(req.params.appId);
+  const t = res.locals.t;
+  // The API lists an organisation's applications newest first, paging on `id < cursor`,
+  // so a cursor one past this id returns exactly this application when it is approved.
+  // Anything else (not approved, not this organisation's) is "not found" here.
+  const result = await callApi(
+    token,
+    'GET',
+    `/organisations/${encodeURIComponent(id)}/applications?status=approved&per_page=1&cursor=${appId + 1}`
+  );
+  const application = collectionFrom(result)
+    .map((row) => normalizeOrgApplication(row, t))
+    .find((row) => row.id === appId && row.status === 'approved');
+  if (!application) {
+    return res.status(404).render('errors/404', { title: t('govuk_alpha.error_pages.404_title') });
+  }
+
+  return res.render('volunteering/org-application-remove', {
+    title: t('govuk_alpha_volunteering.org_manage.remove_title', {
+      name: application.applicant.name,
+      opportunity: application.opportunity.title
+    }),
+    activeNav: 'volunteering',
+    orgId: id,
+    application,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3195,7 +3255,11 @@ router.get('/expenses', asyncRoute(async (req, res) => {
     dashboard,
     loadError,
     expenseForm: consumeFormReplay(req, 'volunteering', 'expenses'),
-    status: expenseStatus(trimmed(req.query.status), res.locals.t),
+    status: expenseStatus(
+      trimmed(req.query.status),
+      res.locals.t,
+      trimmed(req.query.status) === 'expense-forbidden' ? consumeApiRefusal(req, 'expenses') : ''
+    ),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3305,6 +3369,9 @@ router.post('/opportunities/:id(\\d+)/apply', asyncRoute(async (req, res) => {
     opportunityId: id,
     successStatus: 'apply-created',
     failureStatus: 'apply-failed',
+    // 422 covers "you run this organisation" (8 Oct 2026), "this is your own
+    // opportunity" and "no longer active"; only the message says which.
+    refusal: { codes: ['VALIDATION_ERROR', 'FORBIDDEN'], key: `apply-${id}`, status: 'apply-refused' },
     restrictedStatus: 'apply-safeguarding-restricted',
     unavailableStatus: 'apply-safeguarding-unavailable'
   });
@@ -3844,6 +3911,20 @@ const EXPENSE_RECEIPT_TYPES = {
   'image/webp': 'webp'
 };
 
+/**
+ * A refused claim (8 Oct 2026). FORBIDDEN has more than one cause — no approved
+ * relationship with the organisation, no approved application for the opportunity —
+ * and only the API's message says which, so it is stashed for the page to show in
+ * place of the generic "not allowed". Anything else stays the generic failure.
+ */
+function expenseFailureRedirect(req, error) {
+  if (apiErrorCode(error) === 'FORBIDDEN') {
+    rememberApiRefusal(req, 'expenses', error);
+    return '/volunteering/expenses?status=expense-forbidden';
+  }
+  return '/volunteering/expenses?status=expense-failed';
+}
+
 router.post('/expenses', asyncRoute(async (req, res) => {
   // Gap B13: an optional receipt. The temporary upload is removed however the
   // request ends.
@@ -3910,7 +3991,7 @@ router.post('/expenses', asyncRoute(async (req, res) => {
         '/expenses',
         fields,
         '/volunteering/expenses?status=expense-submitted',
-        '/volunteering/expenses?status=expense-failed'
+        (error) => expenseFailureRedirect(req, error)
       );
     }
 
@@ -3931,7 +4012,7 @@ router.post('/expenses', asyncRoute(async (req, res) => {
       });
     } catch (error) {
       if (redirectOnAuthError(error, res)) return undefined;
-      return redirectTo(res, '/volunteering/expenses?status=expense-failed');
+      return redirectTo(res, expenseFailureRedirect(req, error));
     }
     return redirectTo(res, '/volunteering/expenses?status=expense-submitted');
   } finally {
@@ -4130,6 +4211,26 @@ router.post('/organisations/:id(\\d+)/applications/:appId(\\d+)', asyncRoute(asy
     }
     return redirectTo(res, orgManageRedirect(id, 'application-failed'));
   }
+}));
+
+// Remove an approved volunteer (8 Oct 2026). The API tells them, frees any shift place
+// and records it; they may apply again later. Back to the approved list either way.
+router.post('/organisations/:id(\\d+)/applications/:appId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const appId = Number(req.params.appId);
+
+  return runAction(
+    req,
+    res,
+    'POST',
+    `/applications/${appId}/remove`,
+    {},
+    `${orgManageRedirect(id, 'application-removed')}&app_status=approved`,
+    (error) => {
+      rememberApiRefusal(req, `org-${id}-remove`, error);
+      return `${orgManageRedirect(id, 'application-remove-failed')}&app_status=approved`;
+    }
+  );
 }));
 
 router.post('/organisations/:id(\\d+)/hours/:logId(\\d+)', asyncRoute(async (req, res) => {

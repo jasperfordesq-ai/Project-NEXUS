@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Deze organisatie is niet actief en kan geen nieuwe uren of stortingen accepteren.',
     'volunteer_opportunity_not_active' => 'Mogelijkheid niet gevonden of niet actief',
     'volunteer_cannot_apply_own' => 'U kunt niet op uw eigen mogelijkheid solliciteren',
+    'volunteer_cannot_apply_own_organisation' => 'Jij beheert deze organisatie, dus je kunt je niet aanmelden als vrijwilliger voor haar vrijwilligersplekken. Aanmeldingen beheer je via het dashboard van je organisatie.',
     'volunteer_shift_not_found' => 'Verschuiving niet gevonden',
     'volunteer_shift_started' => 'Deze verschuiving is al begonnen',
     'volunteer_shift_at_capacity' => 'Deze verschuiving is op capaciteit',

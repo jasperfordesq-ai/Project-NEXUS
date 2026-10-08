@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'هذه المنظمة غير نشطة ولا يمكنها قبول ساعات أو إيداعات جديدة.',
     'volunteer_opportunity_not_active' => 'لم يتم العثور على الفرصة أو أنها غير نشطة',
     'volunteer_cannot_apply_own' => 'لا يمكنك التقديم على فرصتك الخاصة',
+    'volunteer_cannot_apply_own_organisation' => 'أنت تدير هذه المنظمة، لذا لا يمكنك التقدم للتطوع في فرصها. يمكنك إدارة طلباتها من لوحة تحكم منظمتك.',
     'volunteer_shift_not_found' => 'لم يتم العثور على التحول',
     'volunteer_shift_started' => 'وقد بدأ هذا التحول بالفعل',
     'volunteer_shift_at_capacity' => 'هذا التحول في القدرة',

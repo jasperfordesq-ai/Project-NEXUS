@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Bewerbungen",
                 "applications_empty_filtered": "Keine Bewerbungen entsprechen diesem Filter.",
-                "hours_more": "Weitere Stunden zur Prüfung"
+                "hours_more": "Weitere Stunden zur Prüfung",
+                "remove": "Von dieser Gelegenheit entfernen",
+                "remove_title": ":name von :opportunity entfernen?",
+                "remove_body": "Die Person wird darüber informiert. Hatte sie einen Platz in einer Schicht, die noch nicht begonnen hat, wird dieser der nächsten Person auf der Warteliste angeboten. Sie kann sich später erneut bewerben.",
+                "remove_confirm": "Ja, entfernen",
+                "cancel": "Abbrechen",
+                "back": "Zurück zu den Bewerbungen",
+                "removed": "Die freiwillige Person wurde von der Gelegenheit entfernt und darüber informiert.",
+                "remove_failed": "Wir konnten die freiwillige Person nicht entfernen. Bitte versuchen Sie es erneut."
             },
             "expense_receipt": {
                 "label": "Beleg (optional)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "Das sind Ihre eigenen Stunden. Eine andere Person, die diese Organisation leitet, muss sie genehmigen."
+            },
+            "runs_organisation": {
+                "note": "Sie leiten diese Organisation und können sich daher nicht für ihre eigenen Gelegenheiten freiwillig melden.",
+                "manage_link": "Bewerbungen der Organisation verwalten"
             },
             "certificate_revoked": {
                 "tag": "Widerrufen",

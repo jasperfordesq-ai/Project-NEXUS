@@ -45,6 +45,14 @@
       <p class="govuk-body">{{ t("govuk_alpha_organisations.apply.already_applied_body") }}</p>
       <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ t("govuk_alpha_organisations.apply.view_opportunity") }}</a>
     </div>
+  {% elif opportunity.runsOrganisation %}
+    {# 8 Oct 2026: whoever runs the organisation cannot volunteer for it. #}
+    <div class="govuk-inset-text" data-testid="organisation-apply-runs-organisation">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.runs_organisation.note") }}</p>
+      {% if opportunity.organisationId %}
+        <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ opportunity.organisationId ~ '/manage') }}">{{ t("govuk_alpha_volunteering.runs_organisation.manage_link") }}</a></p>
+      {% endif %}
+    </div>
   {% else %}
     <form method="post" action="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string) + '/apply') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">

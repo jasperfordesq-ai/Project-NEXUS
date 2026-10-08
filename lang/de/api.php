@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Diese Organisation ist nicht aktiv und kann keine neuen Stunden oder Einzahlungen annehmen.',
     'volunteer_opportunity_not_active' => 'Die Gelegenheit wurde nicht gefunden oder ist nicht aktiv',
     'volunteer_cannot_apply_own' => 'Sie können sich nicht auf Ihre eigene Stelle bewerben',
+    'volunteer_cannot_apply_own_organisation' => 'Sie leiten diese Organisation und können sich daher nicht selbst für ihre Einsätze bewerben. Die Bewerbungen verwalten Sie im Dashboard Ihrer Organisation.',
     'volunteer_shift_not_found' => 'Schicht nicht gefunden',
     'volunteer_shift_started' => 'Dieser Wandel hat bereits begonnen',
     'volunteer_shift_at_capacity' => 'Diese Schicht ist ausgelastet',

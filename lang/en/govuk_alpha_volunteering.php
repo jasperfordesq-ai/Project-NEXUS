@@ -1175,6 +1175,15 @@ return [
         'applications_heading' => 'Applications',
         'applications_empty_filtered' => 'No applications match this filter.',
         'hours_more' => 'More hours to review',
+        // An organisation takes an approved volunteer off an opportunity (8 Oct 2026).
+        'remove' => 'Remove from this opportunity',
+        'remove_title' => 'Remove :name from :opportunity?',
+        'remove_body' => 'They will be told they have been removed. If they had a place on a shift that has not started yet, it will be offered to the next person on the waiting list. They can apply again later.',
+        'remove_confirm' => 'Yes, remove them',
+        'cancel' => 'Cancel',
+        'back' => 'Back to applications',
+        'removed' => 'The volunteer has been removed from the opportunity and has been told.',
+        'remove_failed' => 'We could not remove the volunteer. Please try again.',
     ],
     // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
     'expense_receipt' => [
@@ -1186,6 +1195,11 @@ return [
     // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
     'own_hours' => [
         'note' => 'These are your own hours. Someone else who runs this organisation must approve them.',
+    ],
+    // The people who run an organisation cannot volunteer for its opportunities (8 Oct 2026).
+    'runs_organisation' => [
+        'note' => 'You run this organisation, so you cannot volunteer for its own opportunities.',
+        'manage_link' => 'Manage its applications',
     ],
     // A certificate the community revoked (gap D8, 7 Oct 2026)
     'certificate_revoked' => [

@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Solicitudes",
                 "applications_empty_filtered": "Ninguna solicitud coincide con este filtro.",
-                "hours_more": "Más horas por revisar"
+                "hours_more": "Más horas por revisar",
+                "remove": "Quitar de esta oportunidad",
+                "remove_title": "¿Quitar a :name de :opportunity?",
+                "remove_body": "Se le avisará de que se le ha quitado. Si tenía plaza en un turno que aún no ha empezado, se ofrecerá a la siguiente persona de la lista de espera. Podrá volver a solicitarla más adelante.",
+                "remove_confirm": "Sí, quitarla",
+                "cancel": "Cancelar",
+                "back": "Volver a las solicitudes",
+                "removed": "Se ha quitado al voluntario de la oportunidad y se le ha avisado.",
+                "remove_failed": "No hemos podido quitar al voluntario. Inténtalo de nuevo."
             },
             "expense_receipt": {
                 "label": "Recibo (opcional)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "Estas son sus propias horas. Otra persona que gestione esta organización debe aprobarlas."
+            },
+            "runs_organisation": {
+                "note": "Diriges esta organización, así que no puedes hacer voluntariado en sus propias oportunidades.",
+                "manage_link": "Gestionar sus solicitudes"
             },
             "certificate_revoked": {
                 "tag": "Revocado",

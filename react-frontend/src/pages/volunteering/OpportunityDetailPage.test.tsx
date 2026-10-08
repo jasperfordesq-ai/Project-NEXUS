@@ -66,12 +66,7 @@ vi.mock('@/contexts', () => ({
     hasFeature: vi.fn(() => true),
     hasModule: vi.fn(() => true),
   })),
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  useToast: vi.fn(() => mockToast),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
@@ -98,6 +93,12 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/components/navigation', () => ({ Breadcrumbs: () => null }));
 vi.mock('@/components/social/SocialInteractionPanel', () => ({ SocialInteractionPanel: () => null }));
+
+const { mockConfirm, mockToast } = vi.hoisted(() => ({
+  mockConfirm: vi.fn(),
+  mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}));
+vi.mock('@/components/ui/ConfirmDialog', () => ({ useConfirm: () => mockConfirm }));
 
 import OpportunityDetailPage from './OpportunityDetailPage';
 
@@ -407,6 +408,120 @@ describe('OpportunityDetailPage', () => {
     await waitFor(() => {
       expect(screen.getAllByText('Park Cleanup Drive')[0]).toBeInTheDocument();
     });
+  });
+});
+
+// 8 Oct 2026: someone who runs the organisation could apply to volunteer for it,
+// then nobody could decide the application, because the decision screens refuse
+// "your own" items. The server now refuses them and says runs_organisation.
+describe('OpportunityDetailPage — viewer runs the organisation', () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('shows no Apply button, and a note linking to the organisation dashboard instead', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockOpportunity, status: 'open', runs_organisation: true, can_manage: false, is_owner: false },
+    });
+    render(<OpportunityDetailPage />);
+
+    expect(await screen.findByTestId('opportunity-runs-organisation')).toHaveTextContent('opportunity.runs_organisation_notice');
+    expect(screen.getByTestId('opportunity-runs-organisation-link'))
+      .toHaveAttribute('href', '/test/volunteering/org/7/dashboard?tab=applications');
+    expect(screen.queryByText('opportunity.apply_now')).not.toBeInTheDocument();
+    expect(screen.queryByText('opportunity.submit_application')).not.toBeInTheDocument();
+  });
+
+  it('shows no note to an ordinary volunteer, who keeps the Apply button', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockOpportunity, runs_organisation: false } });
+    render(<OpportunityDetailPage />);
+
+    expect(await screen.findByText('opportunity.apply_now')).toBeInTheDocument();
+    expect(screen.queryByTestId('opportunity-runs-organisation')).not.toBeInTheDocument();
+  });
+
+  it('keeps showing an application made before the rule, rather than the note', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: {
+        ...mockOpportunity,
+        runs_organisation: true,
+        has_applied: true,
+        application: { id: 99, status: 'pending', message: null, created_at: '2026-02-01T00:00:00Z' },
+      },
+    });
+    render(<OpportunityDetailPage />);
+
+    expect(await screen.findByText('opportunity.you_have_applied')).toBeInTheDocument();
+    expect(screen.queryByTestId('opportunity-runs-organisation')).not.toBeInTheDocument();
+  });
+});
+
+// 8 Oct 2026: nobody who manages an opportunity could take an approved volunteer off it.
+describe('OpportunityDetailPage — removing an approved volunteer', () => {
+  const managed = { ...mockOpportunity, status: 'open', is_owner: false, can_manage: true, runs_organisation: true };
+  const applicant = (id: number, status: 'pending' | 'approved', name: string) => ({
+    id, status, message: null, created_at: '2026-02-01T10:00:00Z',
+    user: { id: id + 100, name, email: `${id}@example.com`, avatar_url: null },
+    shift: null,
+  });
+  const serve = () => vi.mocked(api.get).mockImplementation((async (url: string) => (
+    url === '/v2/volunteering/opportunities/42' ? { success: true, data: managed }
+      : url.includes('/applications') ? {
+        success: true,
+        data: { items: [applicant(201, 'pending', 'Pat Pending'), applicant(202, 'approved', 'Avery Approved')], cursor: null, has_more: false },
+      }
+        : { success: true, data: [] }
+  )) as unknown as typeof api.get);
+  const applicationLoads = () => vi.mocked(api.get).mock.calls.filter((c) => String(c[0]).includes('/applications')).length;
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('offers Remove only on the approved row', async () => {
+    serve();
+    render(<OpportunityDetailPage />);
+    await screen.findByText('Avery Approved');
+
+    expect(screen.getAllByText('applications.remove')).toHaveLength(1);
+  });
+
+  it('asks first, then removes the right application and reloads the list', async () => {
+    serve();
+    mockConfirm.mockResolvedValueOnce(true);
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: { id: 202, removed: true } });
+    render(<OpportunityDetailPage />);
+    await screen.findByText('Avery Approved');
+    const loadsBefore = applicationLoads();
+
+    fireEvent.click(screen.getByText('applications.remove'));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/v2/volunteering/applications/202/remove', {}));
+    expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({ title: 'applications.remove_title', status: 'danger' }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('applications.removed'));
+    await waitFor(() => expect(applicationLoads()).toBeGreaterThan(loadsBefore));
+  });
+
+  it('does not remove when the confirmation is cancelled', async () => {
+    serve();
+    mockConfirm.mockResolvedValueOnce(false);
+    render(<OpportunityDetailPage />);
+    await screen.findByText('Avery Approved');
+
+    fireEvent.click(screen.getByText('applications.remove'));
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it("shows the server's own message when the removal is refused", async () => {
+    serve();
+    mockConfirm.mockResolvedValueOnce(true);
+    vi.mocked(api.post).mockResolvedValueOnce({ success: false, error: 'You cannot manage this opportunity.', code: 'FORBIDDEN' });
+    render(<OpportunityDetailPage />);
+    await screen.findByText('Avery Approved');
+
+    fireEvent.click(screen.getByText('applications.remove'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('You cannot manage this opportunity.'));
   });
 });
 

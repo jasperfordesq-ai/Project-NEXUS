@@ -847,7 +847,9 @@
     "manage_closed_toast": "Zamknięta dla nowych wolontariuszy.",
     "manage_reopened_toast": "Ponownie otwarta dla nowych wolontariuszy.",
     "manage_cancelled_toast": "Oferta odwołana.",
-    "manage_failed": "Nie udało się zmienić oferty. Spróbuj ponownie."
+    "manage_failed": "Nie udało się zmienić oferty. Spróbuj ponownie.",
+    "runs_organisation_notice": "Prowadzisz tę organizację, więc nie możesz zgłosić się jako wolontariusz do jej własnych ofert. Zgłoszeniami zarządzaj w panelu swojej organizacji.",
+    "runs_organisation_link": "Przejdź do panelu organizacji"
   },
   "org_settings": {
     "heading": "Ustawienia organizacji",
@@ -901,6 +903,12 @@
     "decline_note_placeholder": "Podziel się powodem lub kolejnymi krokami wolontariusza.",
     "decline_note_required": "Przed odrzuceniem wymagana jest notatka.",
     "decline_confirm": "Odrzuć aplikację",
+    "remove": "Usuń z oferty",
+    "remove_title": "Usunąć tego wolontariusza?",
+    "remove_confirm": "{{name}} zostanie usunięty(-a) z oferty „{{opportunity}}”. Otrzyma powiadomienie, zajmowane miejsce na zmianie zostanie zwolnione, a później będzie można zgłosić się ponownie.",
+    "remove_button": "Usuń wolontariusza",
+    "removed": "Wolontariusz został usunięty z oferty.",
+    "remove_failed": "Nie udało się usunąć wolontariusza. Spróbuj ponownie.",
     "cancel": "Anuluj",
     "search_partial_hint": "Wyszukiwanie obejmuje tylko załadowane zgłoszenia. Załaduj wszystkie, aby przeszukać wszystkich.",
     "load_all": "Załaduj wszystkie",

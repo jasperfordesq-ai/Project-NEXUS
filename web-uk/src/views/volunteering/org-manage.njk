@@ -108,6 +108,12 @@
           {% endif %}
           {% if application.status != "pending" %}
             <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="org-application-status-{{ application.id }}">{{ govukTag({ text: t("volunteering.status_values." ~ application.status), classes: ("govuk-tag--green" if application.status == "approved" else "govuk-tag--grey") }) }}</p>
+            {% if application.status == "approved" %}
+              {# 8 Oct 2026: an approved volunteer can be taken off the opportunity (confirmed first). #}
+              <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                <a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id ~ '/remove') }}" data-testid="org-application-remove-{{ application.id }}">{{ t(OM ~ "remove") }}<span class="govuk-visually-hidden">: {{ application.applicant.name }}, {{ application.opportunity.title }}</span></a>
+              </p>
+            {% endif %}
           {% else %}
           <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">

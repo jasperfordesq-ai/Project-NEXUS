@@ -840,7 +840,9 @@
     "manage_closed_toast": "Fermée aux nouveaux bénévoles.",
     "manage_reopened_toast": "Rouverte aux nouveaux bénévoles.",
     "manage_cancelled_toast": "Mission annulée.",
-    "manage_failed": "Impossible de modifier la mission. Veuillez réessayer."
+    "manage_failed": "Impossible de modifier la mission. Veuillez réessayer.",
+    "runs_organisation_notice": "Vous gérez cette organisation : vous ne pouvez donc pas faire du bénévolat pour ses propres missions. Gérez ses candidatures depuis le tableau de bord de votre organisation.",
+    "runs_organisation_link": "Aller au tableau de bord de l'organisation"
   },
   "org_settings": {
     "heading": "Paramètres de l'organisation",
@@ -894,6 +896,12 @@
     "decline_note_placeholder": "Partagez la raison ou les prochaines étapes pour le bénévole.",
     "decline_note_required": "Une note est requise avant de refuser.",
     "decline_confirm": "Refuser la demande",
+    "remove": "Retirer de la mission",
+    "remove_title": "Retirer ce bénévole ?",
+    "remove_confirm": "{{name}} sera retiré(e) de « {{opportunity}} ». La personne sera prévenue, toute place de créneau qu'elle occupe sera libérée et elle pourra postuler à nouveau plus tard.",
+    "remove_button": "Retirer le bénévole",
+    "removed": "Bénévole retiré(e) de la mission.",
+    "remove_failed": "Impossible de retirer le bénévole. Veuillez réessayer.",
     "cancel": "Cancel",
     "search_partial_hint": "La recherche ne couvre que les candidatures chargées. Chargez tout pour rechercher parmi tous.",
     "load_all": "Tout charger",

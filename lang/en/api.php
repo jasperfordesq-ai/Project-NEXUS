@@ -2001,6 +2001,7 @@ return [
     'volunteer_org_not_active' => 'This organisation is not active and cannot accept new hours or deposits.',
     'volunteer_opportunity_not_active'     => 'Opportunity not found or is not active',
     'volunteer_cannot_apply_own'           => 'You cannot apply to your own opportunity',
+    'volunteer_cannot_apply_own_organisation' => 'You run this organisation, so you can\'t apply to volunteer for its opportunities. You can manage its applications from your organisation dashboard.',
     'volunteer_shift_not_found'            => 'Shift not found',
     'volunteer_shift_started'              => 'This shift has already started',
     'volunteer_shift_at_capacity'          => 'This shift is at capacity',

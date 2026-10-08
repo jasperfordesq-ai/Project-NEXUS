@@ -1132,6 +1132,15 @@ return [
         'applications_heading' => 'Iarratais',
         'applications_empty_filtered' => 'Níl aon iarratas ag teacht leis an scagaire seo.',
         'hours_more' => 'Tuilleadh uaireanta le hathbhreithniú',
+        // An organisation takes an approved volunteer off an opportunity (8 Oct 2026).
+        'remove' => 'Bain den deis seo',
+        'remove_title' => ':name a bhaint de :opportunity?',
+        'remove_body' => 'Cuirfear in iúl dóibh gur baineadh iad. Má bhí áit acu ar sheal nár thosaigh fós, tairgfear í don chéad duine eile ar an liosta feithimh. Is féidir leo iarratas a dhéanamh arís níos déanaí.',
+        'remove_confirm' => 'Is ea, bain iad',
+        'cancel' => 'Cealaigh',
+        'back' => 'Ar ais chuig na hiarratais',
+        'removed' => 'Baineadh an t-oibrí deonach den deis agus cuireadh in iúl dóibh é.',
+        'remove_failed' => 'Níorbh fhéidir linn an t-oibrí deonach a bhaint. Bain triail eile as.',
     ],
     // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
     'expense_receipt' => [
@@ -1143,6 +1152,11 @@ return [
     // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
     'own_hours' => [
         'note' => 'Is iad seo do chuid uaireanta féin. Caithfidh duine eile a ritheann an eagraíocht seo iad a cheadú.',
+    ],
+    // The people who run an organisation cannot volunteer for its opportunities (8 Oct 2026).
+    'runs_organisation' => [
+        'note' => 'Is tusa a ritheann an eagraíocht seo, mar sin ní féidir leat obair dheonach a dhéanamh ar a deiseanna féin.',
+        'manage_link' => 'Bainistigh a cuid iarratas',
     ],
     // A certificate the community revoked (gap D8, 7 Oct 2026)
     'certificate_revoked' => [

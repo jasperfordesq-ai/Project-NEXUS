@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Esta organização não está ativa e não pode aceitar novas horas ou depósitos.',
     'volunteer_opportunity_not_active' => 'Oportunidade não encontrada ou não está ativa',
     'volunteer_cannot_apply_own' => 'Você não pode se inscrever em sua própria oportunidade',
+    'volunteer_cannot_apply_own_organisation' => 'Gere esta organização, por isso não pode candidatar-se como voluntário às suas oportunidades. Pode gerir as candidaturas no painel da sua organização.',
     'volunteer_shift_not_found' => 'Turno não encontrado',
     'volunteer_shift_started' => 'Essa mudança já começou',
     'volunteer_shift_at_capacity' => 'Esta mudança está na capacidade',

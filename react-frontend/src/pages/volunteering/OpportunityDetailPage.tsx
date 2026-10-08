@@ -17,6 +17,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -51,6 +52,8 @@ import Pencil from 'lucide-react/icons/pencil';
 import Lock from 'lucide-react/icons/lock';
 import LockOpen from 'lucide-react/icons/lock-open';
 import Ban from 'lucide-react/icons/ban';
+import UserMinus from 'lucide-react/icons/user-minus';
+import Info from 'lucide-react/icons/info';
 import { Helmet } from 'react-helmet-async';
 import { PageMeta } from '@/components/seo';
 import { LoadingScreen } from '@/components/feedback';
@@ -108,6 +111,8 @@ interface OpportunityDetail {
   is_owner?: boolean;
   /** Creator, owning organisation's owner/admin, or a community admin: may manage shifts. */
   can_manage?: boolean;
+  /** Creator, organisation owner, or an owner/admin on its team. The server refuses their application. */
+  runs_organisation?: boolean;
   is_liked?: boolean;
   likes_count?: number;
   comments_count?: number;
@@ -314,10 +319,12 @@ function ShiftCheckinPanel({ shifts }: ShiftCheckinPanelProps) {
 
 interface ApplicationsPanelProps {
   opportunityId: number;
+  opportunityTitle: string;
 }
 
-function ApplicationsPanel({ opportunityId }: ApplicationsPanelProps) {
+function ApplicationsPanel({ opportunityId, opportunityTitle }: ApplicationsPanelProps) {
   const toast = useToast();
+  const confirm = useConfirm();
   const { t } = useTranslation('volunteering');
   const { volunteeringConfig } = useTenant();
   const [applications, setApplications] = useState<OppApplicationItem[]>([]);
@@ -461,6 +468,34 @@ function ApplicationsPanel({ opportunityId }: ApplicationsPanelProps) {
       toast.error(t('something_wrong'));
     } finally {
       setActionLoading((prev) => ({ ...prev, [applicationId]: false }));
+    }
+  }
+
+  // Takes an approved volunteer off the opportunity. The server tells them,
+  // frees any shift place they hold, and lets them apply again later.
+  async function handleRemove(app: OppApplicationItem) {
+    const ok = await confirm({
+      title: t('applications.remove_title'),
+      body: t('applications.remove_confirm', { name: app.user.name, opportunity: opportunityTitle }),
+      confirmLabel: t('applications.remove_button'),
+      status: 'danger',
+    });
+    if (!ok) return;
+
+    setActionLoading((prev) => ({ ...prev, [app.id]: true }));
+    try {
+      const response = await api.post(`/v2/volunteering/applications/${app.id}/remove`, {});
+      if (response.success) {
+        toast.success(t('applications.removed'));
+        loadApplications(statusFilter);
+      } else {
+        toast.error(response.error || t('applications.remove_failed'));
+      }
+    } catch (err) {
+      logError('Failed to remove volunteer from opportunity', err);
+      toast.error(t('applications.remove_failed'));
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [app.id]: false }));
     }
   }
 
@@ -733,6 +768,20 @@ function ApplicationsPanel({ opportunityId }: ApplicationsPanelProps) {
                       onPress={() => openDeclineModal([app.id])}
                     >
                       {t('applications.decline')}
+                    </Button>
+                  </div>
+                )}
+
+                {app.status === 'approved' && (
+                  <div className="flex gap-2 sm:flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="danger-soft"
+                      startContent={<UserMinus className="w-3.5 h-3.5" aria-hidden="true" />}
+                      isLoading={actionLoading[app.id]}
+                      onPress={() => void handleRemove(app)}
+                    >
+                      {t('applications.remove')}
                     </Button>
                   </div>
                 )}
@@ -1013,6 +1062,9 @@ export function OpportunityDetailPage() {
   const canManage = Boolean(opp.can_manage || opp.is_owner);
   const canManageShifts = canManage;
   const isClosed = opp.status === 'closed';
+  // People who run the organisation cannot volunteer for it — the server refuses
+  // the application, so the page offers no way to start one (owner, 8 Oct 2026).
+  const runsOrganisation = Boolean(opp.runs_organisation);
   // The shift this volunteer is on (one per opportunity) — the only one with a check-in code.
   const heldShifts = (opp.shifts ?? []).filter((shift) => shift.id === opp.application?.shift_id);
   const approvedApplication = opp.application?.status === 'approved' ? opp.application : null;
@@ -1147,7 +1199,7 @@ export function OpportunityDetailPage() {
           )}
 
           {/* Apply button */}
-          {isAuthenticated && opp.is_active && !isClosed && !opp.has_applied && !opp.is_owner && (
+          {isAuthenticated && opp.is_active && !isClosed && !opp.has_applied && !opp.is_owner && !runsOrganisation && (
             <Button
               className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
               startContent={<Send className="w-4 h-4" aria-hidden="true" />}
@@ -1155,6 +1207,26 @@ export function OpportunityDetailPage() {
             >
               {t('opportunity.apply_now')}
             </Button>
+          )}
+
+          {isAuthenticated && runsOrganisation && !opp.has_applied && (
+            <div
+              className="flex items-start gap-3 p-4 rounded-xl bg-theme-elevated border border-theme-default"
+              data-testid="opportunity-runs-organisation"
+            >
+              <Info className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="space-y-2">
+                <p className="text-sm text-theme-secondary">{t('opportunity.runs_organisation_notice')}</p>
+                <Link
+                  to={tenantPath(`/volunteering/org/${opp.organization.id}/dashboard?tab=applications`)}
+                  className="text-sm text-accent hover:underline inline-flex items-center gap-1"
+                  data-testid="opportunity-runs-organisation-link"
+                >
+                  {t('opportunity.runs_organisation_link')}
+                  <ChevronRight className="w-3 h-3" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
           )}
 
           {opp.has_applied && opp.application && (
@@ -1360,10 +1432,10 @@ export function OpportunityDetailPage() {
 
       {/* Applications management — owner only */}
       {/* Applicants — everyone who may manage the opportunity, not only its creator (gap A4, 6 Oct 2026). */}
-      {canManage && <ApplicationsPanel opportunityId={opp.id} />}
+      {canManage && <ApplicationsPanel opportunityId={opp.id} opportunityTitle={opp.title} />}
 
-      {/* Apply Modal */}
-      <Modal isOpen={applyModal.isOpen} onOpenChange={applyModal.onOpenChange}>
+      {/* Apply Modal — never for someone who runs the organisation */}
+      <Modal isOpen={applyModal.isOpen && !runsOrganisation} onOpenChange={applyModal.onOpenChange}>
         <ModalContent>
           {(onClose) => (
             <>

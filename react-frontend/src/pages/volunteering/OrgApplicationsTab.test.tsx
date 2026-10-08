@@ -10,10 +10,13 @@ import userEvent from '@testing-library/user-event';
 
 // ── Hoisted stable refs — must be declared via vi.hoisted so they exist when
 //    vi.mock factories run (which are hoisted to the top of the file).
-const { mockToast, mockTenantPath } = vi.hoisted(() => ({
+const { mockToast, mockTenantPath, mockConfirm } = vi.hoisted(() => ({
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
   mockTenantPath: vi.fn((p: string) => `/test${p}`),
+  mockConfirm: vi.fn(),
 }));
+
+vi.mock('@/components/ui/ConfirmDialog', () => ({ useConfirm: () => mockConfirm }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -249,6 +252,84 @@ describe('OrgApplicationsTab — decline action', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
     });
+  });
+});
+
+// 8 Oct 2026: an organisation could not take an approved volunteer off an
+// opportunity at all. Approved rows now offer "Remove from opportunity".
+describe('OrgApplicationsTab — remove an approved volunteer', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const removeButtons = () =>
+    screen.queryAllByRole('button').filter((b) => /^(Remove from opportunity|applications\.remove)$/.test(b.textContent?.trim() ?? ''));
+
+  it('offers Remove only on approved rows', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(TWO_APPS_RESPONSE);
+    render(<OrgApplicationsTab orgId={7} />);
+    await waitFor(() => screen.getByText('Bob Smith'));
+
+    expect(removeButtons()).toHaveLength(1);
+    // The one Remove button sits in Bob's (approved) row, not Alice's (pending).
+    const bobRow = screen.getByText('Bob Smith').closest('div.rounded-xl') as HTMLElement;
+    expect(bobRow).toContainElement(removeButtons()[0]!);
+  });
+
+  it('asks first, naming the person and the opportunity, then removes and reloads', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockResolvedValue(TWO_APPS_RESPONSE);
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: { id: 2, removed: true } });
+    mockConfirm.mockResolvedValueOnce(true);
+
+    render(<OrgApplicationsTab orgId={7} />);
+    await waitFor(() => screen.getByText('Bob Smith'));
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    await user.click(removeButtons()[0]!);
+
+    expect(mockConfirm).toHaveBeenCalledTimes(1);
+    const options = mockConfirm.mock.calls[0]![0] as { body: string; status: string };
+    expect(options.body).toContain('Bob Smith');
+    expect(options.body).toContain('Garden Helper');
+    expect(options.status).toBe('danger');
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/v2/volunteering/applications/2/remove', {});
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+  });
+
+  it('does nothing when the confirmation is cancelled', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockResolvedValue(TWO_APPS_RESPONSE);
+    mockConfirm.mockResolvedValueOnce(false);
+
+    render(<OrgApplicationsTab orgId={7} />);
+    await waitFor(() => screen.getByText('Bob Smith'));
+    await user.click(removeButtons()[0]!);
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalled());
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it("shows the server's own message when the removal is refused", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockResolvedValue(TWO_APPS_RESPONSE);
+    vi.mocked(api.post).mockResolvedValueOnce({
+      success: false,
+      error: 'Only an approved volunteer can be removed.',
+      code: 'VALIDATION_ERROR',
+    });
+    mockConfirm.mockResolvedValueOnce(true);
+
+    render(<OrgApplicationsTab orgId={7} />);
+    await waitFor(() => screen.getByText('Bob Smith'));
+    await user.click(removeButtons()[0]!);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Only an approved volunteer can be removed.');
+    });
+    expect(mockToast.success).not.toHaveBeenCalled();
   });
 });
 

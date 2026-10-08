@@ -107,6 +107,7 @@ const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-s
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
 const { qrSvg } = require('./lib/qr-svg');
+const { consumeApiRefusal } = require('./lib/api-refusal');
 const { getRequestIntlLocale } = require('./lib/request-intl-locale');
 const { nl2br } = require('./lib/nl2br');
 const { humanizeLabel } = require('./lib/humanize-label');
@@ -1495,6 +1496,10 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       // The people who run this opportunity manage its shifts instead of applying to
       // it (routes/volunteering-shifts.js). The API decides who they are.
       canManage: opportunity.can_manage === true || opportunity.is_owner === true,
+      // Whoever runs the organisation (creator, owner, team owner/admin) cannot volunteer
+      // for it: the API refuses their application (8 Oct 2026), so the page says why
+      // instead of offering an Apply button that can only fail.
+      runsOrganisation: opportunity.runs_organisation === true,
       // Closed: off the list and taking no new applications. Cancelled: withdrawn for
       // good (the API keeps the row, is_active = 0). routes/volunteering-opportunity-manage.js
       isClosed: opportunity.status === 'closed',
@@ -1529,6 +1534,10 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
       const statusPresentation = {
         'apply-created': ['success', res.locals.t('govuk_alpha.volunteering.apply_created')],
         'apply-failed': ['error', res.locals.t('govuk_alpha.volunteering.apply_failed')],
+        // The API refused the application and said why (e.g. "You run this
+        // organisation…"); its own words, stashed by the POST, read once here.
+        'apply-refused': ['error', (status === 'apply-refused' && consumeApiRefusal(req, `apply-${Number(req.params.id)}`))
+          || res.locals.t('govuk_alpha.volunteering.apply_failed')],
         'apply-safeguarding-restricted': ['error', safeguardingMessage(
           'safeguarding.errors.interaction_not_allowed',
           'The recipient\u2019s community safeguarding policy does not allow this direct interaction. Ask a coordinator for help.'
@@ -2085,7 +2094,9 @@ app.get('/organisations/opportunities/:id(\\d+)/apply', requireOrganisationAuth,
       title,
       organisationId,
       organisationName,
-      hasApplied: !!opportunity.has_applied
+      hasApplied: !!opportunity.has_applied,
+      // 8 Oct 2026: the API refuses an application from whoever runs the organisation.
+      runsOrganisation: opportunity.runs_organisation === true
     };
   };
 

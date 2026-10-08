@@ -367,6 +367,25 @@ class VolunteerController extends BaseApiController
         return $this->respondWithData(['id' => (int) $id, 'status' => $action === 'approve' ? 'approved' : 'declined']);
     }
 
+    /**
+     * POST /api/v2/volunteering/applications/{id}/remove — whoever manages the
+     * opportunity (its organisation's owner and team owners/admins) takes an
+     * approved volunteer off it (8 Oct 2026). Before this an organisation could
+     * approve a volunteer but never remove one.
+     */
+    public function removeVolunteer($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('volunteering_remove_volunteer', 30, 60);
+
+        if (!$this->volunteerService->removeApprovedVolunteer((int) $id, $userId)) {
+            $errors = $this->volunteerService->getErrors();
+            return $this->respondWithErrors($errors, $this->getErrorStatus($errors));
+        }
+        return $this->respondWithData(['id' => (int) $id, 'removed' => true]);
+    }
+
     public function withdrawApplication($id): JsonResponse
     {
         $this->ensureFeature();

@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'この団体は有効ではないため、新しい時間や入金を受け付けられません。',
     'volunteer_opportunity_not_active' => '機会が見つからないか、アクティブではありません',
     'volunteer_cannot_apply_own' => '自分の案件に応募することはできません',
+    'volunteer_cannot_apply_own_organisation' => 'あなたはこの団体の運営者のため、この団体の募集にボランティアとして応募することはできません。応募の管理は団体のダッシュボードから行えます。',
     'volunteer_shift_not_found' => 'シフトが見つかりません',
     'volunteer_shift_started' => 'このシフトはすでに始まっています',
     'volunteer_shift_at_capacity' => 'このシフトは定員に達しています',

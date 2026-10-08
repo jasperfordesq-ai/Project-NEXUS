@@ -833,7 +833,9 @@
     "manage_closed_toast": "Gesloten voor nieuwe vrijwilligers.",
     "manage_reopened_toast": "Heropend voor nieuwe vrijwilligers.",
     "manage_cancelled_toast": "Vacature geannuleerd.",
-    "manage_failed": "Kon de vacature niet wijzigen. Probeer het opnieuw."
+    "manage_failed": "Kon de vacature niet wijzigen. Probeer het opnieuw.",
+    "runs_organisation_notice": "Jij beheert deze organisatie, dus je kunt geen vrijwilligerswerk doen voor haar eigen vacatures. Beheer de aanmeldingen via het dashboard van je organisatie.",
+    "runs_organisation_link": "Naar het dashboard van de organisatie"
   },
   "org_settings": {
     "heading": "Organisatie-instellingen",
@@ -887,6 +889,12 @@
     "decline_note_placeholder": "Deel de reden of volgende stappen voor de vrijwilliger.",
     "decline_note_required": "Er is een notitie vereist voordat u weigert.",
     "decline_confirm": "Aanvraag afwijzen",
+    "remove": "Verwijderen uit vacature",
+    "remove_title": "Deze vrijwilliger verwijderen?",
+    "remove_confirm": "{{name}} wordt verwijderd uit ‘{{opportunity}}’. Diegene krijgt bericht, een eventuele plek in een dienst komt vrij en diegene kan zich later opnieuw aanmelden.",
+    "remove_button": "Vrijwilliger verwijderen",
+    "removed": "Vrijwilliger verwijderd uit de vacature.",
+    "remove_failed": "Kan de vrijwilliger niet verwijderen. Probeer het opnieuw.",
     "cancel": "Cancel",
     "search_partial_hint": "Zoeken geldt alleen voor geladen aanmeldingen. Laad alles om iedereen te doorzoeken.",
     "load_all": "Alles laden",

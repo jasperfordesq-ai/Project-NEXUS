@@ -840,7 +840,9 @@
     "manage_closed_toast": "Cerrada a nuevos voluntarios.",
     "manage_reopened_toast": "Reabierta a nuevos voluntarios.",
     "manage_cancelled_toast": "Oportunidad cancelada.",
-    "manage_failed": "No se pudo cambiar la oportunidad. Inténtalo de nuevo."
+    "manage_failed": "No se pudo cambiar la oportunidad. Inténtalo de nuevo.",
+    "runs_organisation_notice": "Diriges esta organización, así que no puedes hacer voluntariado en sus propias oportunidades. Gestiona sus solicitudes desde el panel de tu organización.",
+    "runs_organisation_link": "Ir al panel de la organización"
   },
   "org_settings": {
     "heading": "Configuración de la organización",
@@ -894,6 +896,12 @@
     "decline_note_placeholder": "Comparta el motivo o los próximos pasos para el voluntario.",
     "decline_note_required": "Se requiere una nota antes de rechazar.",
     "decline_confirm": "Rechazar solicitud",
+    "remove": "Quitar de la oportunidad",
+    "remove_title": "¿Quitar a este voluntario?",
+    "remove_confirm": "{{name}} dejará de participar en «{{opportunity}}». Se le avisará, se liberará cualquier plaza de turno que tenga y podrá volver a solicitarlo más adelante.",
+    "remove_button": "Quitar voluntario",
+    "removed": "Voluntario quitado de la oportunidad.",
+    "remove_failed": "No se pudo quitar al voluntario. Inténtalo de nuevo.",
     "cancel": "Cancel",
     "search_partial_hint": "La búsqueda solo cubre las solicitudes cargadas. Carga todas para buscar entre todas.",
     "load_all": "Cargar todas",

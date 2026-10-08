@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Cette organisation n\'est pas active et ne peut pas accepter de nouvelles heures ou de nouveaux dépôts.',
     'volunteer_opportunity_not_active' => 'Opportunité introuvable ou inactive',
     'volunteer_cannot_apply_own' => 'Vous ne pouvez pas postuler à votre propre opportunité',
+    'volunteer_cannot_apply_own_organisation' => 'Vous gérez cette organisation : vous ne pouvez donc pas postuler comme bénévole à ses missions. Vous pouvez gérer ses candidatures depuis le tableau de bord de votre organisation.',
     'volunteer_shift_not_found' => 'Changement introuvable',
     'volunteer_shift_started' => 'Ce changement a déjà commencé',
     'volunteer_shift_at_capacity' => 'Ce changement est à pleine capacité',

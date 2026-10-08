@@ -833,7 +833,9 @@
     "manage_closed_toast": "Closed to new volunteers.",
     "manage_reopened_toast": "Reopened to new volunteers.",
     "manage_cancelled_toast": "Opportunity cancelled.",
-    "manage_failed": "Could not change the opportunity. Please try again."
+    "manage_failed": "Could not change the opportunity. Please try again.",
+    "runs_organisation_notice": "You run this organisation, so you can't volunteer for its own opportunities. Manage its applications from your organisation dashboard.",
+    "runs_organisation_link": "Go to the organisation dashboard"
   },
   "org_settings": {
     "heading": "Organization Settings",
@@ -887,6 +889,12 @@
     "decline_note_placeholder": "Share the reason or next steps for the volunteer.",
     "decline_note_required": "A note is required before declining.",
     "decline_confirm": "Decline application",
+    "remove": "Remove from opportunity",
+    "remove_title": "Remove this volunteer?",
+    "remove_confirm": "{{name}} will be taken off \"{{opportunity}}\". They will be told, any shift place they hold will be freed, and they can apply again later.",
+    "remove_button": "Remove volunteer",
+    "removed": "Volunteer removed from the opportunity.",
+    "remove_failed": "Could not remove the volunteer. Please try again.",
     "cancel": "Cancel",
     "search_partial_hint": "Search covers only loaded applications. Load all to search everyone.",
     "load_all": "Load all",

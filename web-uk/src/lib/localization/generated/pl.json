@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Zgłoszenia",
                 "applications_empty_filtered": "Żadne zgłoszenie nie pasuje do tego filtra.",
-                "hours_more": "Więcej godzin do sprawdzenia"
+                "hours_more": "Więcej godzin do sprawdzenia",
+                "remove": "Usuń z tej oferty",
+                "remove_title": "Usunąć osobę :name z oferty :opportunity?",
+                "remove_body": "Ta osoba zostanie powiadomiona o usunięciu. Jeśli miała miejsce na zmianie, która jeszcze się nie rozpoczęła, zostanie ono zaproponowane kolejnej osobie z listy oczekujących. Później może zgłosić się ponownie.",
+                "remove_confirm": "Tak, usuń",
+                "cancel": "Anuluj",
+                "back": "Wróć do zgłoszeń",
+                "removed": "Wolontariusz został usunięty z oferty i otrzymał powiadomienie.",
+                "remove_failed": "Nie udało się usunąć wolontariusza. Spróbuj ponownie."
             },
             "expense_receipt": {
                 "label": "Paragon (opcjonalnie)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "To są Twoje własne godziny. Musi je zatwierdzić inna osoba zarządzająca tą organizacją."
+            },
+            "runs_organisation": {
+                "note": "Prowadzisz tę organizację, więc nie możesz zgłaszać się jako wolontariusz do jej ofert.",
+                "manage_link": "Zarządzaj jej zgłoszeniami"
             },
             "certificate_revoked": {
                 "tag": "Unieważniony",

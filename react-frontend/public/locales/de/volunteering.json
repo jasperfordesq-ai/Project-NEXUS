@@ -833,7 +833,9 @@
     "manage_closed_toast": "Für neue Freiwillige geschlossen.",
     "manage_reopened_toast": "Wieder für neue Freiwillige geöffnet.",
     "manage_cancelled_toast": "Angebot abgesagt.",
-    "manage_failed": "Das Angebot konnte nicht geändert werden. Bitte versuchen Sie es erneut."
+    "manage_failed": "Das Angebot konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+    "runs_organisation_notice": "Sie leiten diese Organisation und können sich daher nicht für ihre eigenen Einsätze melden. Die Bewerbungen verwalten Sie im Dashboard Ihrer Organisation.",
+    "runs_organisation_link": "Zum Dashboard der Organisation"
   },
   "org_settings": {
     "heading": "Organisationseinstellungen",
@@ -887,6 +889,12 @@
     "decline_note_placeholder": "Teilen Sie dem Freiwilligen den Grund oder die nächsten Schritte mit.",
     "decline_note_required": "Vor der Ablehnung ist eine Notiz erforderlich.",
     "decline_confirm": "Bewerbung ablehnen",
+    "remove": "Vom Einsatz entfernen",
+    "remove_title": "Diese freiwillige Person entfernen?",
+    "remove_confirm": "{{name}} wird von „{{opportunity}}“ entfernt. Die Person wird benachrichtigt, ein belegter Schichtplatz wird frei, und sie kann sich später erneut bewerben.",
+    "remove_button": "Person entfernen",
+    "removed": "Die freiwillige Person wurde vom Einsatz entfernt.",
+    "remove_failed": "Die freiwillige Person konnte nicht entfernt werden. Bitte versuchen Sie es erneut.",
     "cancel": "Cancel",
     "search_partial_hint": "Die Suche umfasst nur geladene Bewerbungen. Laden Sie alle, um alle zu durchsuchen.",
     "load_all": "Alle laden",

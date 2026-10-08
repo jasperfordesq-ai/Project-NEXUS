@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Iarratais",
                 "applications_empty_filtered": "Níl aon iarratas ag teacht leis an scagaire seo.",
-                "hours_more": "Tuilleadh uaireanta le hathbhreithniú"
+                "hours_more": "Tuilleadh uaireanta le hathbhreithniú",
+                "remove": "Bain den deis seo",
+                "remove_title": ":name a bhaint de :opportunity?",
+                "remove_body": "Cuirfear in iúl dóibh gur baineadh iad. Má bhí áit acu ar sheal nár thosaigh fós, tairgfear í don chéad duine eile ar an liosta feithimh. Is féidir leo iarratas a dhéanamh arís níos déanaí.",
+                "remove_confirm": "Is ea, bain iad",
+                "cancel": "Cealaigh",
+                "back": "Ar ais chuig na hiarratais",
+                "removed": "Baineadh an t-oibrí deonach den deis agus cuireadh in iúl dóibh é.",
+                "remove_failed": "Níorbh fhéidir linn an t-oibrí deonach a bhaint. Bain triail eile as."
             },
             "expense_receipt": {
                 "label": "Admháil (roghnach)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "Is iad seo do chuid uaireanta féin. Caithfidh duine eile a ritheann an eagraíocht seo iad a cheadú."
+            },
+            "runs_organisation": {
+                "note": "Is tusa a ritheann an eagraíocht seo, mar sin ní féidir leat obair dheonach a dhéanamh ar a deiseanna féin.",
+                "manage_link": "Bainistigh a cuid iarratas"
             },
             "certificate_revoked": {
                 "tag": "Cúlghairthe",

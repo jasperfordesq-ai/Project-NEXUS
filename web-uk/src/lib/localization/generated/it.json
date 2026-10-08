@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Candidature",
                 "applications_empty_filtered": "Nessuna candidatura corrisponde a questo filtro.",
-                "hours_more": "Altre ore da esaminare"
+                "hours_more": "Altre ore da esaminare",
+                "remove": "Rimuovi da questa opportunità",
+                "remove_title": "Rimuovere :name da :opportunity?",
+                "remove_body": "La persona riceverà una notifica della rimozione. Se aveva un posto in un turno non ancora iniziato, verrà offerto alla persona successiva in lista d’attesa. Potrà candidarsi di nuovo in seguito.",
+                "remove_confirm": "Sì, rimuovi",
+                "cancel": "Annulla",
+                "back": "Torna alle candidature",
+                "removed": "Il volontario è stato rimosso dall’opportunità ed è stato avvisato.",
+                "remove_failed": "Non è stato possibile rimuovere il volontario. Riprova."
             },
             "expense_receipt": {
                 "label": "Ricevuta (facoltativa)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "Queste sono le tue ore. Un’altra persona che gestisce questa organizzazione deve approvarle."
+            },
+            "runs_organisation": {
+                "note": "Gestisci questa organizzazione, quindi non puoi fare volontariato per le sue opportunità.",
+                "manage_link": "Gestisci le sue candidature"
             },
             "certificate_revoked": {
                 "tag": "Revocato",

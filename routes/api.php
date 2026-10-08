@@ -1303,6 +1303,7 @@ Route::post('/v2/volunteering/opportunities/{id}/apply', [\App\Http\Controllers\
 Route::get('/v2/volunteering/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'myApplications']);
 Route::put('/v2/volunteering/applications/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'handleApplication']);
 Route::delete('/v2/volunteering/applications/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'withdrawApplication']);
+Route::post('/v2/volunteering/applications/{id}/remove', [\App\Http\Controllers\Api\VolunteerController::class, 'removeVolunteer']);
 Route::get('/v2/volunteering/shifts', [\App\Http\Controllers\Api\VolunteerController::class, 'myShifts']);
 Route::post('/v2/volunteering/shifts/{id}/signup', [\App\Http\Controllers\Api\VolunteerController::class, 'signUp']);
 Route::delete('/v2/volunteering/shifts/{id}/signup', [\App\Http\Controllers\Api\VolunteerController::class, 'cancelSignup']);

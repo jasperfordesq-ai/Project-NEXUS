@@ -854,7 +854,9 @@
     "manage_closed_toast": "Dúnta d’oibrithe deonacha nua.",
     "manage_reopened_toast": "Athoscailte d’oibrithe deonacha nua.",
     "manage_cancelled_toast": "Cuireadh an deis ar ceal.",
-    "manage_failed": "Níorbh fhéidir an deis a athrú. Bain triail eile as."
+    "manage_failed": "Níorbh fhéidir an deis a athrú. Bain triail eile as.",
+    "runs_organisation_notice": "Is tusa a reáchtálann an eagraíocht seo, mar sin ní féidir leat obair dheonach a dhéanamh ar a deiseanna féin. Bainistigh a cuid iarratas ó dheais d’eagraíochta.",
+    "runs_organisation_link": "Téigh go deais na heagraíochta"
   },
   "org_settings": {
     "heading": "Socruithe Eagraíochta",
@@ -908,6 +910,12 @@
     "decline_note_placeholder": "Roinn an chúis nó na chéad chéimeanna eile don oibrí deonach.",
     "decline_note_required": "Tá nóta ag teastáil sula ndiúltaítear don iarratas.",
     "decline_confirm": "Iarratas a dhiúltú",
+    "remove": "Bain den deis",
+    "remove_title": "An bhfuil tú ag iarraidh an t-oibrí deonach seo a bhaint?",
+    "remove_confirm": "Bainfear {{name}} de “{{opportunity}}”. Cuirfear é seo in iúl dó nó di, scaoilfear aon áit sealaíochta atá aige nó aici, agus is féidir leis nó léi iarratas a dhéanamh arís níos déanaí.",
+    "remove_button": "Bain an t-oibrí deonach",
+    "removed": "Baineadh an t-oibrí deonach den deis.",
+    "remove_failed": "Níorbh fhéidir an t-oibrí deonach a bhaint. Bain triail eile as.",
     "cancel": "Cealaigh",
     "search_partial_hint": "Ní chuimsíonn an cuardach ach iarratais atá lódáilte. Lódáil gach ceann chun cuardach a dhéanamh ar chách.",
     "load_all": "Lódáil gach ceann",

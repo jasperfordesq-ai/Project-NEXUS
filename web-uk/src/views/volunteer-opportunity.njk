@@ -241,6 +241,16 @@
         </div>
       </div>
     </div>
+  {% elif opportunity.runsOrganisation and not opportunity.hasApplied %}
+    {# 8 Oct 2026: whoever runs the organisation cannot volunteer for it (the API refuses
+       the application), so no Apply form — say why and point to where its applications
+       are decided. #}
+    <div class="govuk-inset-text govuk-!-margin-top-7" data-testid="opportunity-runs-organisation">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.runs_organisation.note") }}</p>
+      {% if opportunity.organisationId %}
+        <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ opportunity.organisationId ~ '/manage') }}">{{ t("govuk_alpha_volunteering.runs_organisation.manage_link") }}</a></p>
+      {% endif %}
+    </div>
   {% elif opportunity.canManage %}
     <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha_volunteering.shift_manager.manager_notice") }}</div>
   {% elif opportunity.hasApplied %}

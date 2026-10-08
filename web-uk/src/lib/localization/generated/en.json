@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Applications",
                 "applications_empty_filtered": "No applications match this filter.",
-                "hours_more": "More hours to review"
+                "hours_more": "More hours to review",
+                "remove": "Remove from this opportunity",
+                "remove_title": "Remove :name from :opportunity?",
+                "remove_body": "They will be told they have been removed. If they had a place on a shift that has not started yet, it will be offered to the next person on the waiting list. They can apply again later.",
+                "remove_confirm": "Yes, remove them",
+                "cancel": "Cancel",
+                "back": "Back to applications",
+                "removed": "The volunteer has been removed from the opportunity and has been told.",
+                "remove_failed": "We could not remove the volunteer. Please try again."
             },
             "expense_receipt": {
                 "label": "Receipt (optional)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "These are your own hours. Someone else who runs this organisation must approve them."
+            },
+            "runs_organisation": {
+                "note": "You run this organisation, so you cannot volunteer for its own opportunities.",
+                "manage_link": "Manage its applications"
             },
             "certificate_revoked": {
                 "tag": "Revoked",

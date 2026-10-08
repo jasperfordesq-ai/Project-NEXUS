@@ -15,9 +15,11 @@ import Clock from 'lucide-react/icons/clock';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import Users from 'lucide-react/icons/users';
 import Plus from 'lucide-react/icons/plus';
+import UserMinus from 'lucide-react/icons/user-minus';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
@@ -90,6 +92,7 @@ function isRateLimited(code?: string): boolean {
 
 function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
   const toast = useToast();
+  const confirm = useConfirm();
   const { t } = useTranslation('volunteering');
   const { tenantPath, volunteeringConfig } = useTenant();
 
@@ -99,7 +102,7 @@ function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [actionLoading, setActionLoading] = useState<Record<number, 'approve' | 'decline' | undefined>>({});
+  const [actionLoading, setActionLoading] = useState<Record<number, 'approve' | 'decline' | 'remove' | undefined>>({});
   const [nameSearch, setNameSearch] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [isBulkRunning, setIsBulkRunning] = useState(false);
@@ -272,6 +275,36 @@ function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
       return { ok: false, rateLimited: false };
     } finally {
       setActionLoading((prev) => ({ ...prev, [applicationId]: undefined }));
+    }
+  }
+
+  /* ---- Remove an approved volunteer ---- */
+
+  // Takes an approved volunteer off the opportunity. The server tells them,
+  // frees any shift place they hold, and lets them apply again later.
+  async function handleRemove(app: OrgApplication) {
+    const ok = await confirm({
+      title: t('applications.remove_title'),
+      body: t('applications.remove_confirm', { name: app.user.name, opportunity: app.opportunity.title }),
+      confirmLabel: t('applications.remove_button'),
+      status: 'danger',
+    });
+    if (!ok) return;
+
+    setActionLoading((prev) => ({ ...prev, [app.id]: 'remove' }));
+    try {
+      const response = await api.post(`/v2/volunteering/applications/${app.id}/remove`, {});
+      if (response.success) {
+        toast.success(t('applications.removed'));
+        loadApplications(statusFilter);
+      } else {
+        toast.error(response.error || t('applications.remove_failed'));
+      }
+    } catch (err) {
+      logError('Failed to remove volunteer from opportunity', err);
+      toast.error(t('applications.remove_failed'));
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [app.id]: undefined }));
     }
   }
 
@@ -619,6 +652,21 @@ function OrgApplicationsTab({ orgId }: OrgApplicationsTabProps) {
                     onPress={() => openDeclineModal([app.id])}
                   >
                     {t('applications.decline')}
+                  </Button>
+                </div>
+              )}
+
+              {app.status === 'approved' && (
+                <div className="flex gap-2 sm:flex-col sm:items-end sm:shrink-0">
+                  <Button
+                    size="sm"
+                    variant="danger-soft"
+                    isLoading={actionLoading[app.id] === 'remove'}
+                    isDisabled={!!actionLoading[app.id]}
+                    startContent={actionLoading[app.id] !== 'remove' ? <UserMinus className="w-3.5 h-3.5" aria-hidden="true" /> : undefined}
+                    onPress={() => void handleRemove(app)}
+                  >
+                    {t('applications.remove')}
                   </Button>
                 </div>
               )}

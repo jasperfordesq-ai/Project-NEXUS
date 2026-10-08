@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Ta organizacja nie jest aktywna i nie może przyjmować nowych godzin ani wpłat.',
     'volunteer_opportunity_not_active' => 'Nie znaleziono możliwości lub jest ona nieaktywna',
     'volunteer_cannot_apply_own' => 'Nie możesz aplikować, korzystając z własnej możliwości',
+    'volunteer_cannot_apply_own_organisation' => 'Prowadzisz tę organizację, więc nie możesz zgłosić się jako wolontariusz do jej ofert. Zgłoszeniami zarządzasz w panelu swojej organizacji.',
     'volunteer_shift_not_found' => 'Nie znaleziono zmiany',
     'volunteer_shift_started' => 'Ta zmiana już się rozpoczęła',
     'volunteer_shift_at_capacity' => 'Ta zmiana jest na wyczerpaniu',

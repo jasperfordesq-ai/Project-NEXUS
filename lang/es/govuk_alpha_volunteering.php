@@ -1132,6 +1132,15 @@ return [
         'applications_heading' => 'Solicitudes',
         'applications_empty_filtered' => 'Ninguna solicitud coincide con este filtro.',
         'hours_more' => 'Más horas por revisar',
+        // An organisation takes an approved volunteer off an opportunity (8 Oct 2026).
+        'remove' => 'Quitar de esta oportunidad',
+        'remove_title' => '¿Quitar a :name de :opportunity?',
+        'remove_body' => 'Se le avisará de que se le ha quitado. Si tenía plaza en un turno que aún no ha empezado, se ofrecerá a la siguiente persona de la lista de espera. Podrá volver a solicitarla más adelante.',
+        'remove_confirm' => 'Sí, quitarla',
+        'cancel' => 'Cancelar',
+        'back' => 'Volver a las solicitudes',
+        'removed' => 'Se ha quitado al voluntario de la oportunidad y se le ha avisado.',
+        'remove_failed' => 'No hemos podido quitar al voluntario. Inténtalo de nuevo.',
     ],
     // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
     'expense_receipt' => [
@@ -1143,6 +1152,11 @@ return [
     // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
     'own_hours' => [
         'note' => 'Estas son sus propias horas. Otra persona que gestione esta organización debe aprobarlas.',
+    ],
+    // The people who run an organisation cannot volunteer for its opportunities (8 Oct 2026).
+    'runs_organisation' => [
+        'note' => 'Diriges esta organización, así que no puedes hacer voluntariado en sus propias oportunidades.',
+        'manage_link' => 'Gestionar sus solicitudes',
     ],
     // A certificate the community revoked (gap D8, 7 Oct 2026)
     'certificate_revoked' => [

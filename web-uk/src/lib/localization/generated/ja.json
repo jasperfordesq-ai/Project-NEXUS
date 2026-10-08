@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "応募",
                 "applications_empty_filtered": "この絞り込みに一致する応募はありません。",
-                "hours_more": "確認待ちの時間をさらに表示"
+                "hours_more": "確認待ちの時間をさらに表示",
+                "remove": "この活動から外す",
+                "remove_title": ":nameさんを「:opportunity」から外しますか？",
+                "remove_body": "外されたことは本人に通知されます。まだ始まっていないシフトに枠を持っていた場合、その枠はキャンセル待ちの次の人に案内されます。本人は後で再び申し込むことができます。",
+                "remove_confirm": "はい、外します",
+                "cancel": "キャンセル",
+                "back": "申し込み一覧に戻る",
+                "removed": "ボランティアを活動から外し、本人に通知しました。",
+                "remove_failed": "ボランティアを外せませんでした。もう一度お試しください。"
             },
             "expense_receipt": {
                 "label": "領収書（任意）",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "これはあなた自身の時間です。この団体を運営する別の人が承認する必要があります。"
+            },
+            "runs_organisation": {
+                "note": "あなたはこの団体を運営しているため、この団体の活動にボランティアとして参加することはできません。",
+                "manage_link": "この団体の申し込みを管理する"
             },
             "certificate_revoked": {
                 "tag": "取り消し済み",

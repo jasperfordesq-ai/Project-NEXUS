@@ -833,7 +833,9 @@
     "manage_closed_toast": "新規募集を終了しました。",
     "manage_reopened_toast": "新規募集を再開しました。",
     "manage_cancelled_toast": "募集を中止しました。",
-    "manage_failed": "募集を変更できませんでした。もう一度お試しください。"
+    "manage_failed": "募集を変更できませんでした。もう一度お試しください。",
+    "runs_organisation_notice": "あなたはこの団体を運営しているため、この団体自身の募集にボランティアとして参加することはできません。応募の管理は団体のダッシュボードから行ってください。",
+    "runs_organisation_link": "団体のダッシュボードへ"
   },
   "org_settings": {
     "heading": "組織の設定",
@@ -887,6 +889,12 @@
     "decline_note_placeholder": "ボランティアの理由や次のステップを共有します。",
     "decline_note_required": "辞退する前にメモが必要です。",
     "decline_confirm": "申請を拒否する",
+    "remove": "募集から外す",
+    "remove_title": "このボランティアを外しますか？",
+    "remove_confirm": "{{name}}さんを「{{opportunity}}」から外します。本人に通知され、確保しているシフト枠は解放されます。後で再度応募することもできます。",
+    "remove_button": "ボランティアを外す",
+    "removed": "ボランティアを募集から外しました。",
+    "remove_failed": "ボランティアを外せませんでした。もう一度お試しください。",
     "cancel": "Cancel",
     "search_partial_hint": "検索は読み込み済みの申請のみが対象です。全員を検索するにはすべて読み込んでください。",
     "load_all": "すべて読み込む",

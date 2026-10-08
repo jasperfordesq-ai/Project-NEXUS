@@ -1855,6 +1855,7 @@ return [
     'volunteer_org_not_active' => 'Níl an eagraíocht seo gníomhach agus ní féidir léi uaireanta nó taiscí nua a ghlacadh.',
     'volunteer_opportunity_not_active' => 'Ní bhfuarthas an deis nó níl sé gníomhach',
     'volunteer_cannot_apply_own' => 'Ní féidir leat iarratas a dhéanamh ar do dheis féin',
+    'volunteer_cannot_apply_own_organisation' => 'Is tusa a reáchtálann an eagraíocht seo, mar sin ní féidir leat iarratas a dhéanamh obair dheonach a dhéanamh dá deiseanna. Is féidir leat a hiarratais a bhainistiú ó dheais d’eagraíochta.',
     'volunteer_shift_not_found' => 'Níor aimsíodh an t-athrú',
     'volunteer_shift_started' => 'Tá an t-aistriú seo tosaithe cheana féin',
     'volunteer_shift_at_capacity' => 'Tá an t-aistriú seo ag a lánacmhainneacht',

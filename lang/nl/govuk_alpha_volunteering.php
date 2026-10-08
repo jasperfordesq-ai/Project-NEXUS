@@ -1132,6 +1132,15 @@ return [
         'applications_heading' => 'Aanmeldingen',
         'applications_empty_filtered' => 'Geen aanmeldingen komen overeen met dit filter.',
         'hours_more' => 'Meer uren om te beoordelen',
+        // An organisation takes an approved volunteer off an opportunity (8 Oct 2026).
+        'remove' => 'Van deze kans verwijderen',
+        'remove_title' => ':name verwijderen van :opportunity?',
+        'remove_body' => 'De persoon krijgt bericht dat die is verwijderd. Had die een plek in een dienst die nog niet is begonnen, dan wordt die plek aangeboden aan de volgende persoon op de wachtlijst. Later opnieuw aanmelden is mogelijk.',
+        'remove_confirm' => 'Ja, verwijderen',
+        'cancel' => 'Annuleren',
+        'back' => 'Terug naar de aanmeldingen',
+        'removed' => 'De vrijwilliger is van de kans verwijderd en heeft daarover bericht gekregen.',
+        'remove_failed' => 'We konden de vrijwilliger niet verwijderen. Probeer het opnieuw.',
     ],
     // A volunteer attaches a receipt to an expense claim (gap B13, 7 Oct 2026).
     'expense_receipt' => [
@@ -1143,6 +1152,11 @@ return [
     // An organiser's own logged hours cannot be approved by them (gap B14, 7 Oct 2026).
     'own_hours' => [
         'note' => 'Dit zijn uw eigen uren. Iemand anders die deze organisatie beheert, moet ze goedkeuren.',
+    ],
+    // The people who run an organisation cannot volunteer for its opportunities (8 Oct 2026).
+    'runs_organisation' => [
+        'note' => 'U beheert deze organisatie, dus u kunt geen vrijwilligerswerk doen voor haar eigen kansen.',
+        'manage_link' => 'Aanmeldingen van de organisatie beheren',
     ],
     // A certificate the community revoked (gap D8, 7 Oct 2026)
     'certificate_revoked' => [

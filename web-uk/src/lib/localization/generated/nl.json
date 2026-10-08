@@ -11532,7 +11532,15 @@
             "org_manage": {
                 "applications_heading": "Aanmeldingen",
                 "applications_empty_filtered": "Geen aanmeldingen komen overeen met dit filter.",
-                "hours_more": "Meer uren om te beoordelen"
+                "hours_more": "Meer uren om te beoordelen",
+                "remove": "Van deze kans verwijderen",
+                "remove_title": ":name verwijderen van :opportunity?",
+                "remove_body": "De persoon krijgt bericht dat die is verwijderd. Had die een plek in een dienst die nog niet is begonnen, dan wordt die plek aangeboden aan de volgende persoon op de wachtlijst. Later opnieuw aanmelden is mogelijk.",
+                "remove_confirm": "Ja, verwijderen",
+                "cancel": "Annuleren",
+                "back": "Terug naar de aanmeldingen",
+                "removed": "De vrijwilliger is van de kans verwijderd en heeft daarover bericht gekregen.",
+                "remove_failed": "We konden de vrijwilliger niet verwijderen. Probeer het opnieuw."
             },
             "expense_receipt": {
                 "label": "Bon (optioneel)",
@@ -11542,6 +11550,10 @@
             },
             "own_hours": {
                 "note": "Dit zijn uw eigen uren. Iemand anders die deze organisatie beheert, moet ze goedkeuren."
+            },
+            "runs_organisation": {
+                "note": "U beheert deze organisatie, dus u kunt geen vrijwilligerswerk doen voor haar eigen kansen.",
+                "manage_link": "Aanmeldingen van de organisatie beheren"
             },
             "certificate_revoked": {
                 "tag": "Ingetrokken",
