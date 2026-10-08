@@ -5,10 +5,22 @@
 
 import type { CheckResult, ImportIssue } from './types';
 
-/** Same escape as the server's CsvExportSanitizer; the import undoes it. */
+// The server's own trim (MemberImportRowRules::clean): white space, Unicode
+// separators and format characters (no-break and ideographic spaces, zero-width
+// spaces, the byte-order mark, the word joiner) from both ends of every cell.
+const SERVER_TRIM = /^[\s\p{Z}\p{Cf}]+|[\s\p{Z}\p{Cf}]+$/gu;
+
+/**
+ * Same escape as the server's CsvExportSanitizer, which the import undoes: after
+ * trimming, the server removes ONE leading apostrophe when the next character is
+ * = + - or @. So the value is trimmed here first (and written trimmed), and a
+ * cell that starts with one of those characters gets the apostrophe. A cell that
+ * already starts with an apostrophe is left alone: the server reads what we write
+ * exactly as it would read the original, which is the property that matters.
+ */
 function cell(value: string): string {
-  // eslint-disable-next-line no-control-regex -- matches the server's rule, which includes control characters
-  const escaped = /^[\s\x00-\x1F]*[=+\-@]/.test(value) ? `'${value}` : value;
+  const trimmed = value.replace(SERVER_TRIM, '');
+  const escaped = /^[=+\-@]/.test(trimmed) ? `'${trimmed}` : trimmed;
   return /[",;\r\n]/.test(escaped) ? `"${escaped.replace(/"/g, '""')}"` : escaped;
 }
 

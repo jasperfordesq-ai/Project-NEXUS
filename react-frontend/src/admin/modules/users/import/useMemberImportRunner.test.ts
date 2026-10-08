@@ -19,7 +19,7 @@ import { useMemberImportRunner } from './useMemberImportRunner';
 
 // Production waits are 1 s (busy), 5 s (rate limited) and 0.5 s doubling
 // (failures); tests shorten them so the file stays fast.
-const FAST = { timings: { busyMs: 5, rateLimitMs: 5, retryBaseMs: 5 } };
+const FAST = { timings: { busyMs: 5, rateLimitMs: 5, retryBaseMs: 5, noProgressMs: 1 } };
 
 function ok(from: number, processed: number, total: number, ms: number, extra: Partial<BatchResult> = {}): ApiResponse<BatchResult> {
   const next = from + processed;
@@ -178,6 +178,66 @@ describe('useMemberImportRunner', () => {
     expect(result.current.state.nextIndex).toBe(0);
     expect(result.current.state.errorCode).toBe('SERVER_ERROR');
     expect(batch).toHaveBeenCalledTimes(3);
+  });
+
+  it('never goes backwards if the server reports an earlier position', async () => {
+    batch
+      .mockResolvedValueOnce(ok(0, 25, 100, 100))
+      .mockResolvedValueOnce(ok(0, 5, 100, 100, { next_index: 5, status: 'running' }))
+      .mockImplementation(serve(100, 100));
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 100, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
+    expect(batch.mock.calls[2][1]).toBe(25);
+  });
+
+  it('pauses between responses that make no progress, then gives up', async () => {
+    batch.mockResolvedValue(ok(0, 0, 100, 10, { status: 'running', next_index: 0 }));
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 100, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('failed'), { timeout: 5000 });
+    expect(result.current.state.errorCode).toBe('NO_PROGRESS');
+    expect(batch).toHaveBeenCalledTimes(30);
+  });
+
+  it('a response that makes progress resets the no-progress count', async () => {
+    let calls = 0;
+    batch.mockImplementation((_id: string, from: number, count: number) => {
+      calls += 1;
+      if (calls <= 29) return Promise.resolve(ok(0, 0, 40, 10, { status: 'running', next_index: 0 }));
+      return Promise.resolve(ok(from, Math.min(count, 40 - from), 40, 10));
+    });
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 40, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'), { timeout: 5000 });
+  });
+
+  it('gives up when the import stays busy for too long', async () => {
+    batch.mockResolvedValue({ success: false, code: 'IMPORT_BUSY' });
+    const { result } = renderHook(() => useMemberImportRunner({ timings: { ...FAST.timings, maxWaitMs: 50 } }));
+    act(() => result.current.start('id', 20, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('failed'), { timeout: 5000 });
+    expect(result.current.state.errorCode).toBe('IMPORT_BUSY');
+  });
+
+  it('gives up when rate limited for too long', async () => {
+    batch.mockResolvedValue({ success: false, code: 'RATE_LIMIT_EXCEEDED' });
+    const { result } = renderHook(() => useMemberImportRunner({ timings: { ...FAST.timings, maxWaitMs: 50 } }));
+    act(() => result.current.start('id', 20, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('failed'), { timeout: 5000 });
+    expect(result.current.state.errorCode).toBe('RATE_LIMIT_EXCEEDED');
+  });
+
+  it('turns an unexpected throw into a failed run and can be started again', async () => {
+    batch.mockImplementationOnce(() => { throw new Error('kaboom'); });
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 20, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('failed'));
+    expect(result.current.state.errorCode).toBe('UNEXPECTED');
+    expect(result.current.state.errorMessage).toBe('kaboom');
+    batch.mockImplementation(serve(20, 100));
+    act(() => result.current.start('id', 20, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
   });
 
   it('stop() finishes the current batch and then halts', async () => {

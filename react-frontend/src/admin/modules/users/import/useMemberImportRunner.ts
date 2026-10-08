@@ -14,6 +14,7 @@ const MAX_BATCH = 200;
 const QUICK_MS = 1000;
 const SLOW_MS = 3000;
 const MAX_FAILURES = 3;
+const MAX_NO_PROGRESS = 30;
 
 /** Waits between attempts. Production values; tests pass shorter ones. */
 export interface RunnerTimings {
@@ -26,9 +27,15 @@ export interface RunnerTimings {
   rateLimitMs: number;
   /** First wait after an ordinary failure; doubles for each further one. */
   retryBaseMs: number;
+  /** Pause after a response that moved the import no further. */
+  noProgressMs: number;
+  /** Give up after this much consecutive busy / rate-limited waiting (10 minutes). */
+  maxWaitMs: number;
 }
 
-const DEFAULT_TIMINGS: RunnerTimings = { busyMs: 1000, rateLimitMs: 5000, retryBaseMs: 500 };
+const DEFAULT_TIMINGS: RunnerTimings = {
+  busyMs: 1000, rateLimitMs: 5000, retryBaseMs: 500, noProgressMs: 1000, maxWaitMs: 10 * 60 * 1000,
+};
 
 const initial: RunnerState = {
   phase: 'idle', total: 0, nextIndex: 0, batchNumber: 0, batchSize: FIRST_BATCH,
@@ -82,6 +89,11 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
       let batchNumber = 0;
       let failures = 0;
       let first = true;
+      let noProgress = 0;
+      let waitedMs = 0;
+      const fail = (errorCode: string | null, errorMessage: string | null) => {
+        if (!unmounted.current) setState((s) => ({ ...s, phase: 'failed', errorMessage, errorCode }));
+      };
 
       try {
         // The server, not this loop, decides when the import is over: when the
@@ -108,15 +120,20 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
             : performance.now() - t0;
 
           if (!res.success || !res.data) {
-            if (res.code === 'IMPORT_BUSY') { await sleep(timings.current.busyMs); continue; }
-            if (res.code === 'RATE_LIMIT_EXCEEDED') { await sleep(timings.current.rateLimitMs); continue; }
+            if (res.code === 'IMPORT_BUSY' || res.code === 'RATE_LIMIT_EXCEEDED') {
+              // Waiting is free of the failure budget, but not endless.
+              if (waitedMs >= timings.current.maxWaitMs) { fail(res.code, res.error ?? res.code); break; }
+              const wait = res.code === 'IMPORT_BUSY' ? timings.current.busyMs : timings.current.rateLimitMs;
+              await sleep(wait);
+              waitedMs += wait;
+              continue;
+            }
+            waitedMs = 0;
             // Held rows expired, or the server moved on (another tab): retrying cannot help.
             const fatal = res.code === 'IMPORT_NOT_FOUND' || res.code === 'IMPORT_OUT_OF_ORDER';
             failures += 1;
             if (fatal || failures >= MAX_FAILURES) {
-              if (!unmounted.current) {
-                setState((s) => ({ ...s, phase: 'failed', errorMessage: res.error ?? res.code ?? null, errorCode: res.code ?? null }));
-              }
+              fail(res.code ?? null, res.error ?? res.code ?? null);
               break;
             }
             await sleep(timings.current.retryBaseMs * 2 ** (failures - 1));
@@ -124,10 +141,15 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           }
 
           failures = 0;
+          waitedMs = 0;
           first = false;
           const d = res.data;
           if (d.batch.processed > 0) batchNumber += 1;
-          next = d.next_index;
+          // Never go backwards: the server's position only moves forward.
+          const previous = next;
+          next = Math.max(next, d.next_index);
+          const stalled = d.status === 'running' && d.batch.processed === 0 && next === previous;
+          noProgress = stalled ? noProgress + 1 : 0;
           if (elapsed < QUICK_MS) size = Math.min(MAX_BATCH, Math.round(size * 1.5));
           else if (elapsed > SLOW_MS) size = Math.max(MIN_BATCH, Math.round(size * 0.6));
 
@@ -146,7 +168,14 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
             }));
           }
           if (phase !== 'running') break;
+          if (stalled) {
+            // No tight loop on a server that keeps answering without moving.
+            if (noProgress >= MAX_NO_PROGRESS) { fail('NO_PROGRESS', null); break; }
+            await sleep(timings.current.noProgressMs);
+          }
         }
+      } catch (error) {
+        fail('UNEXPECTED', error instanceof Error ? error.message : String(error));
       } finally {
         running.current = false;
       }

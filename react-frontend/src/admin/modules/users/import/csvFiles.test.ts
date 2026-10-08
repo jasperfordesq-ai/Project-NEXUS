@@ -8,6 +8,8 @@ import { buildCsv, correctedFile, fileToBase64, problemsFile, remainingRowsFile 
 import type { CheckResult, ImportIssue } from './types';
 
 const BOM = String.fromCharCode(0xfeff);
+const NBSP = String.fromCharCode(0xa0);
+const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
 
 const check: CheckResult = {
   status: 'problems',
@@ -23,6 +25,19 @@ const check: CheckResult = {
     { row: 0, column: null, code: 'invalid_encoding', params: {} },
   ],
 };
+
+// A TS copy of what the server does to a cell on the way in (MemberImportRowRules::clean):
+// trim, then drop one leading apostrophe only when the next character is = + - or @.
+function serverClean(raw: string): string {
+  const trimmed = raw.replace(/^[\s\p{Z}\p{Cf}]+|[\s\p{Z}\p{Cf}]+$/gu, '');
+  return /^'[=+\-@]/.test(trimmed) ? trimmed.slice(1) : trimmed;
+}
+
+/** The single data cell buildCsv writes for a value, with CSV quoting undone. */
+function writtenCell(value: string): string {
+  const line = buildCsv(['h'], [[value]]).slice(BOM.length).split('\r\n')[1];
+  return line.startsWith('"') ? line.slice(1, -1).replace(/""/g, '"') : line;
+}
 
 describe('buildCsv', () => {
   it('starts with a byte-order mark and ends each row with CRLF', () => {
@@ -43,6 +58,28 @@ describe('buildCsv', () => {
     const csv = buildCsv(['phone', 'balance'], [['+353 1 234', '-3']]);
     expect(csv).toContain("'+353 1 234");
     expect(csv).toContain("'-3");
+  });
+
+  it('trims surrounding whitespace first, so a space before a formula character still escapes', () => {
+    expect(buildCsv(['n'], [[' -3']])).toBe(`${BOM}n\r\n'-3\r\n`);
+    expect(buildCsv(['p'], [[' +353 87 123 4567']])).toBe(`${BOM}p\r\n'+353 87 123 4567\r\n`);
+    expect(buildCsv(['n'], [[`  Cork ${NBSP}${ZERO_WIDTH_SPACE}`]])).toBe(`${BOM}n\r\nCork\r\n`);
+  });
+
+  // The server must read the written cell exactly as it would have read the
+  // original. (A cell that begins with an apostrophe before a formula character
+  // cannot be told apart from our own escape, so it reads the same either way.)
+  it.each(['-3', ' -3', '=x', "'=x", "''=x", '@a', 'Cork', '  +353 1 234  ', ' \t+1'])(
+    'is read back as the original through the server rule: %j',
+    (original) => {
+      expect(serverClean(writtenCell(original))).toBe(serverClean(original));
+    },
+  );
+
+  it('gives back the trimmed original for values without a leading apostrophe', () => {
+    for (const original of ['-3', ' -3', '=x', "''=x", '@a', 'Cork']) {
+      expect(serverClean(writtenCell(original))).toBe(original.trim());
+    }
   });
 });
 

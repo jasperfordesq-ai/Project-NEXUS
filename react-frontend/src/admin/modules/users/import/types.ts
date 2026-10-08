@@ -47,7 +47,7 @@ export interface BatchResult {
   totals: { created: number; balance: string; zeroed: number; admission_incomplete: number };
   /** Spreadsheet rows of members created without their identity step. */
   admission_incomplete_rows: number[];
-  stop: { row: number; code: string; params: Record<string, string | number> } | null;
+  stop: { row: number; code: string; params: Record<string, string | number | string[]> } | null;
   held: boolean;
   batch: { processed: number; created: number; duration_ms: number };
 }
