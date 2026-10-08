@@ -90,7 +90,8 @@ is overwritten by the next build.
 (~91 MB minified; the build itself took **1m 45s** unminified, **2m 14s** with R8
 on a warm cache, and **5m 44s** with R8 from a cold clean checkout — 2026-09-13,
 version code 11. Version code 13 took **5m 55s** and version code 14 took
-**2m 41s** with R8 on 2026-09-15. No EAS quota spent.)
+**2m 41s** with R8 on 2026-09-15. Version code 21 / 1.9.0 took **2m 37s** with R8 on 2026-10-08
+(96,514,231 bytes, SHA-256 `CA5590600E15E9DFCDA8D0AE9375DBA60BD40C762D297935AB3FF2E61CB55F36`, built from `2df582461`). No EAS quota spent.)
 
 Do not add Gradle's optional `--clean` step after Expo prebuild on this Windows
 checkout. On version code 13 it reached `externalNativeBuildCleanDebug` before
