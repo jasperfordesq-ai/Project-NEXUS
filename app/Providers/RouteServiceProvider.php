@@ -218,13 +218,18 @@ class RouteServiceProvider extends ServiceProvider
             );
         });
 
-        // Member import batches: one admin, sequential requests of 10–200 rows.
-        // 120/min leaves room for the smallest batches while capping a runaway loop.
-        RateLimiter::for('member-import', function (Request $request) {
-            return Limit::perMinute(120)->by(
-                $request->user()?->id ? 'user:' . $request->user()->id : 'ip:' . $request->ip()
-            );
-        });
+        // Member import — per-ADDRESS backstops. A route throttle runs before this
+        // app's Authenticate middleware (the framework's middleware sorter moves
+        // ThrottleRequests ahead of SubstituteBindings, which precedes it), so the
+        // signed-in user is not known here and $request->user() is null. The
+        // per-administrator limit on checks (10 a minute) is enforced in
+        // AdminMemberImportController::check(), after authentication.
+        // Checks: each can hold ~1 MB of rows in the shared Redis (128 MB,
+        // allkeys-lru, also holding the queue and these counters).
+        RateLimiter::for('member-import-check', static fn (Request $request): Limit => Limit::perMinute(30)->by('member-import-check:ip:' . $request->ip()));
+
+        // Batches: sequential requests of 10–200 rows; 120/min caps a runaway loop.
+        RateLimiter::for('member-import', static fn (Request $request): Limit => Limit::perMinute(120)->by('member-import:ip:' . $request->ip()));
 
         RateLimiter::for('groups-join', static fn (Request $request): array => [
             Limit::perMinute(30)->by(self::groupsRateKey($request, 'join')),

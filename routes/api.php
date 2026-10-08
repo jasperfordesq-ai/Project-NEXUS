@@ -1832,7 +1832,7 @@ Route::post('/v2/admin/users', [\App\Http\Controllers\Api\AdminUsersController::
 // batches. Replaces POST /v2/admin/users/import. Creating accounts and
 // balances in bulk asks for a fresh second factor, like a balance adjustment.
 Route::post('/v2/admin/members/import/check', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'check'])
-    ->middleware(['step-up', 'throttle:member-import']);
+    ->middleware(['step-up', 'throttle:member-import-check']);
 Route::post('/v2/admin/members/import/{importId}/batch', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'batch'])
     ->whereUuid('importId')->middleware(['step-up', 'throttle:member-import']);
 Route::get('/v2/admin/members/import/template', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'template']);

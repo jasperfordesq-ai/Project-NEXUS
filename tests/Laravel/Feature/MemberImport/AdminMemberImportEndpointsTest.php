@@ -10,6 +10,7 @@ namespace Tests\Laravel\Feature\MemberImport;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\AuditLogService;
 use App\Services\MemberImport\MemberImportRunner;
 use App\Services\MemberImport\MemberImportSession;
 use App\Services\TenantSettingsService;
@@ -90,6 +91,13 @@ final class AdminMemberImportEndpointsTest extends TestCase
         );
         app(TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
         TenantContext::setById($this->testTenantId);
+    }
+
+    private function completionAudits(string $importId): int
+    {
+        return DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)
+            ->where('action', MemberImportRunner::ACTION_IMPORT_COMPLETED)
+            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(details, '$.import_id')) = ?", [$importId])->count();
     }
 
     public function test_full_journey_imports_every_row_with_balances(): void
@@ -230,6 +238,148 @@ final class AdminMemberImportEndpointsTest extends TestCase
         $this->get('/api/v2/admin/members/import/template', $this->withTenantHeader($this->headers($member)))->assertStatus(403);
     }
 
+    public function test_a_broker_cannot_run_a_batch(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(3, $prefix))->json('data.import_id');
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active', 'is_approved' => true]);
+
+        $this->batch($id, 0, 10, [], $broker)->assertStatus(403);
+        $this->assertSame(0, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+    }
+
+    public function test_a_tiny_batch_is_raised_to_the_minimum(): void
+    {
+        $id = $this->check($this->csv(12, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($id, 0, 1)->assertOk()->assertJsonPath('data.next_index', MemberImportRunner::MIN_BATCH);
+    }
+
+    public function test_replaying_a_completed_import_writes_no_second_completion_audit(): void
+    {
+        $id = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.status', 'completed')->assertJsonPath('data.batch.processed', 0);
+        $this->batch($id, 3, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $this->assertSame(1, $this->completionAudits($id));
+        $this->assertSame(1, DB::table('activity_log')->where('user_id', $this->admin->id)->where('action', 'admin_bulk_import_users')->count());
+    }
+
+    public function test_the_activity_feed_records_the_import_as_the_old_import_did(): void
+    {
+        $id = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $this->assertSame('Bulk imported 3 users (0 skipped)', DB::table('activity_log')
+            ->where('user_id', $this->admin->id)->where('action', 'admin_bulk_import_users')->value('details'));
+    }
+
+    public function test_a_running_import_whose_last_member_was_written_completes_on_the_next_request(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(3, $prefix))->json('data.import_id');
+        // The process died after writing the last member but before completing.
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $state['status'] = 'running';
+        $state['next_index'] = 3;
+        $state['totals']['created'] = 3;
+        MemberImportSession::save($state);
+
+        // The browser retries the batch whose answer it never got.
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.status', 'completed')->assertJsonPath('data.batch.processed', 0);
+        $this->assertSame(1, $this->completionAudits($id));
+        $this->assertNull(MemberImportSession::rows(MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id)));
+        $this->assertSame(0, DB::table('users')->where('email', 'like', $prefix . '-%')->count(), 'completing writes no member');
+    }
+
+    public function test_a_failing_bulk_import_record_does_not_undo_the_completion(): void
+    {
+        $this->app->instance(AuditLogService::class, new class extends AuditLogService {
+            public function logBulkImport($adminUserId, $importedCount, $skippedCount, $totalRows)
+            {
+                throw new \RuntimeException('bulk import record failed');
+            }
+        });
+        $id = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+        $this->batch($id, 3, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+        $this->assertSame(1, $this->completionAudits($id));
+    }
+
+    public function test_members_whose_identity_step_did_not_run_are_reported(): void
+    {
+        $this->requireIdentityCheck();
+        // Seam (as in MemberImportWriterTest): the attestation record fails, so the
+        // member is created but their identity step did not run.
+        $this->app->instance(AuditLogService::class, new class extends AuditLogService {
+            public function logAction(int $tenantId, string $action, ?int $userId = null, array $details = [], ?int $organizationId = null, ?int $targetUserId = null): int
+            {
+                if ($action === AuditLogService::ACTION_ADMIN_IDENTITY_ATTESTED) {
+                    throw new \RuntimeException('attestation could not be recorded');
+                }
+
+                return parent::logAction($tenantId, $action, $userId, $details, $organizationId, $targetUserId);
+            }
+        });
+        $id = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+
+        $r = $this->batch($id, 0, 10, ['identity_checked_by_admin' => true])->assertOk()->assertJsonPath('data.status', 'completed');
+        $this->assertSame(3, $r->json('data.totals.admission_incomplete'));
+        $this->assertSame([2, 3, 4], $r->json('data.admission_incomplete_rows'));
+    }
+
+    public function test_the_admission_decision_is_fixed_when_the_import_starts(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(12, $prefix))->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.held', false);
+
+        // The joining rules change mid-import; the rest of this import is admitted as it started.
+        $this->requireIdentityCheck();
+        $this->batch($id, 10, 10)->assertOk()->assertJsonPath('data.status', 'completed')->assertJsonPath('data.held', false);
+        $this->assertSame(12, DB::table('users')->where('tenant_id', $this->testTenantId)
+            ->where('email', 'like', $prefix . '-%')->where('status', 'active')->count());
+    }
+
+    public function test_a_new_check_discards_the_same_admins_never_started_import(): void
+    {
+        $first = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $firstState = MemberImportSession::load($first, $this->testTenantId, (int) $this->admin->id);
+
+        $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->assertOk()->assertJsonPath('data.status', 'ready');
+
+        $this->assertNull(MemberImportSession::load($first, $this->testTenantId, (int) $this->admin->id));
+        $this->assertNull(MemberImportSession::rows($firstState));
+        $this->batch($first, 0, 10)->assertStatus(404);
+    }
+
+    public function test_a_new_check_leaves_other_admins_and_running_imports_alone(): void
+    {
+        $other = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => true]);
+        $othersImport = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))), $other)->json('data.import_id');
+        $running = $this->check($this->csv(12, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($running, 0, 10)->assertOk()->assertJsonPath('data.status', 'running');
+
+        $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->assertOk()->assertJsonPath('data.status', 'ready');
+
+        $this->assertNotNull(MemberImportSession::load($othersImport, $this->testTenantId, (int) $other->id));
+        $this->batch($running, 10, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+    }
+
+    public function test_checks_are_limited_to_ten_a_minute(): void
+    {
+        $csv = $this->csv(1, 'mi-' . bin2hex(random_bytes(3)));
+        for ($i = 0; $i < 10; $i++) {
+            $this->check($csv)->assertOk();
+        }
+        $this->check($csv)->assertStatus(429)->assertJsonPath('code', 'RATE_LIMIT_EXCEEDED');
+
+        // Counted per administrator, not per address: another admin is unaffected.
+        $other = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => true]);
+        $this->check($csv, $other)->assertOk();
+    }
+
     public function test_an_email_taken_mid_import_stops_at_that_row(): void
     {
         $prefix = 'mi-' . bin2hex(random_bytes(3));
@@ -240,6 +390,10 @@ final class AdminMemberImportEndpointsTest extends TestCase
         $this->assertSame('stopped', $r->json('data.status'));
         $this->assertSame(4, $r->json('data.next_index'));
         $this->assertSame(['row' => 6, 'code' => 'email_now_taken', 'params' => []], $r->json('data.stop'));
+
+        // A stop is final: the held rows are discarded at once.
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertNull(MemberImportSession::rows($state));
 
         // A stopped import answers without writing anything more.
         $this->batch($id, 4, 10)->assertOk()->assertJsonPath('data.status', 'stopped')->assertJsonPath('data.batch.processed', 0);

@@ -31,6 +31,8 @@ class AdminMemberImportController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    public const CHECKS_PER_MINUTE = 10;
+
     public function __construct(
         private readonly MemberImportChecker $checker,
         private readonly MemberImportRunner $runner,
@@ -42,6 +44,10 @@ class AdminMemberImportController extends BaseApiController
     {
         $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
+        // Per administrator, here rather than on the route: a route throttle runs
+        // before authentication and can only count by address (RouteServiceProvider).
+        // Each check can hold ~1 MB of rows in the shared Redis.
+        $this->rateLimit('member_import_check', self::CHECKS_PER_MINUTE, 60);
 
         $rawName = request()->input('file_name');
         $fileName = preg_replace('/[^A-Za-z0-9._ -]/', '_', basename(is_string($rawName) ? $rawName : '')) ?: 'members.csv';

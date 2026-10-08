@@ -23,7 +23,16 @@ use Illuminate\Support\Str;
  * (position, status, totals) is small and the runner saves it after every
  * member; keeping the rows inside it would re-send them to the cache up to
  * 5,000 times per import. The runner discards the rows when the import
- * completes, so personal data is not held after it is needed.
+ * completes or stops, so personal data is not held after it is needed.
+ *
+ * Bounded: one held, never-started import per administrator per community.
+ * The cache is the shared Redis (128 MB, allkeys-lru — queue and rate-limit
+ * counters live there too), and a 5,000-row import is about a megabyte, so
+ * repeated checks must not pile up. create() remembers the admin's latest
+ * import; a new check deletes the previous one's rows and progress record if
+ * it never started ('ready'). A previous import that is running (perhaps in
+ * another tab) is left alone and keeps going; one whose batch holds the lock
+ * right now is left alone too. Checks are also rate-limited (10 a minute).
  */
 final class MemberImportSession
 {
@@ -32,6 +41,8 @@ final class MemberImportSession
     /** @param list<array<string, mixed>> $rows */
     public static function create(int $tenantId, int $adminId, array $rows, string $fileName, string $fileSha256): string
     {
+        self::discardPreviousIfNeverStarted($tenantId, $adminId);
+
         $id = (string) Str::uuid();
         Cache::put(self::rowsKey($id, $tenantId), $rows, self::TTL_SECONDS);
         self::save([
@@ -49,8 +60,32 @@ final class MemberImportSession
             'created_at' => now()->toIso8601String(),
             'finished_at' => null,
         ]);
+        Cache::put(self::latestKey($tenantId, $adminId), $id, self::TTL_SECONDS);
 
         return $id;
+    }
+
+    private static function discardPreviousIfNeverStarted(int $tenantId, int $adminId): void
+    {
+        $previousId = Cache::get(self::latestKey($tenantId, $adminId));
+        if (!is_string($previousId)) {
+            return;
+        }
+        // Under the import's own lock, so a first batch cannot start between the
+        // status check and the delete. Busy means a batch is running: leave it.
+        $lock = self::lock($previousId);
+        if (!$lock->get()) {
+            return;
+        }
+        try {
+            $previous = self::load($previousId, $tenantId, $adminId);
+            if ($previous !== null && $previous['status'] === 'ready') {
+                self::discardRows($previous);
+                Cache::forget(self::stateKey($previousId, $tenantId));
+            }
+        } finally {
+            $lock->release();
+        }
     }
 
     /**
@@ -112,5 +147,10 @@ final class MemberImportSession
     private static function rowsKey(string $id, int $tenantId): string
     {
         return "member_import_rows:{$tenantId}:{$id}";
+    }
+
+    private static function latestKey(int $tenantId, int $adminId): string
+    {
+        return "member_import_latest:{$tenantId}:{$adminId}";
     }
 }
