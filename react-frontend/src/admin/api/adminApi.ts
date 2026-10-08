@@ -9,6 +9,7 @@
  */
 
 import { api, type ApiResponse } from '@/lib/api';
+import type { BatchResult, CheckResult } from '@/admin/modules/users/import/types';
 import type {
   AdminDashboardStats,
   MonthlyTrend,
@@ -269,18 +270,6 @@ export const adminUsers = {
   sendWelcomeEmail: (userId: number) =>
     api.post<{ success: boolean }>(`/v2/admin/users/${userId}/send-welcome-email`),
 
-  importUsers: (file: File, options?: { default_role?: string }) => {
-    const formData = new FormData();
-    formData.append('csv_file', file);
-    if (options?.default_role) formData.append('default_role', options.default_role);
-    return api.upload<{ imported: number; skipped: number; errors: string[]; total_rows: number }>('/v2/admin/users/import', formData);
-  },
-
-  // Fetched through api.download so the request carries the admin's auth
-  // header; opening the URL in a new tab sends no token and gets a 401.
-  downloadImportTemplate: () =>
-    api.download('/v2/admin/users/import/template', { filename: 'user_import_template.csv' }),
-
   // Same export as Reports → Member reports (every member of this community;
   // formula cells neutralised server-side).
   exportAllMembers: () =>
@@ -293,6 +282,31 @@ export const adminUsers = {
 
   bulkSuspend: (userIds: number[], reason?: string) =>
     api.post<BulkActionResult>('/v2/admin/users/bulk-suspend', { user_ids: userIds, reason }),
+};
+
+// Member import: the whole file is checked first, then a clean file is
+// imported in batches the browser paces (see useMemberImportRunner).
+// The 60 s timeout covers the server's 8 s work budget per request plus a slow network.
+export const adminMemberImport = {
+  check: (fileName: string, contentBase64: string) =>
+    api.post<CheckResult>(
+      '/v2/admin/members/import/check',
+      { file_name: fileName, content_base64: contentBase64 },
+      { timeout: 60000 },
+    ),
+
+  // The admin's identity attestation travels with the first batch only.
+  batch: (importId: string, from: number, count: number, identityChecked?: boolean) =>
+    api.post<BatchResult>(
+      `/v2/admin/members/import/${encodeURIComponent(importId)}/batch`,
+      identityChecked === undefined ? { from, count } : { from, count, identity_checked_by_admin: identityChecked },
+      { timeout: 60000 },
+    ),
+
+  // Fetched through api.download so the request carries the admin's auth
+  // header; opening the URL in a new tab sends no token and gets a 401.
+  downloadTemplate: () =>
+    api.download('/v2/admin/members/import/template', { filename: 'member_import_template.csv' }),
 };
 
 // Shared bulk-action response shape

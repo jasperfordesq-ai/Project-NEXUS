@@ -188,8 +188,6 @@ vi.mock('@/admin/api/adminApi', () => ({
     delete: vi.fn().mockResolvedValue({ success: true }),
     reset2fa: vi.fn().mockResolvedValue({ success: true }),
     impersonate: vi.fn().mockResolvedValue({ success: true, data: { token: 'test' } }),
-    importUsers: vi.fn().mockResolvedValue({ success: true, data: { imported: 0, skipped: 0, errors: [], total_rows: 0 } }),
-    downloadImportTemplate: vi.fn(),
     exportAllMembers: vi.fn(),
     setSuperAdmin: vi.fn().mockResolvedValue({ success: true }),
     setGlobalSuperAdmin: vi.fn().mockResolvedValue({ success: true }),

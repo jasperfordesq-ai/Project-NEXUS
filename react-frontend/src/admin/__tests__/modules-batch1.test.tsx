@@ -118,7 +118,6 @@ vi.mock('../../api/adminApi', () => ({
     recheckAllBadges: vi.fn().mockResolvedValue({ success: true }),
     recheckUserBadges: vi.fn().mockResolvedValue({ success: true }),
     getConsents: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    importUsers: vi.fn().mockResolvedValue({ success: true }),
   },
   adminListings: {
     list: vi.fn().mockResolvedValue({ success: true, data: [], meta: { current_page: 1, per_page: 20, total: 0, total_pages: 0, has_more: false } }),

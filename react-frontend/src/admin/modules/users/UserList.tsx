@@ -39,7 +39,7 @@ import { useTenant,
   useToast } from '@/contexts';
 import { formatNumber, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { adminUsers,
+import { adminUsers, adminMemberImport,
   type BulkActionResult } from '../../api/adminApi';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
@@ -319,7 +319,7 @@ export function UserList() {
   const [importOpen, setImportOpen] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importLoading, setImportLoading] = useState(false);
+  const [importLoading] = useState(false); // temporary: the import modal is replaced next
   const [importResults, setImportResults] = useState<{
     imported: number;
     skipped: number;
@@ -436,25 +436,10 @@ export function UserList() {
       : null,
   ].filter(Boolean) as Array<{ key: string; label: string }>;
 
-  const handleImport = async () => {
-    if (!importFile) return;
-    setImportLoading(true);
-    setImportResults(null);
-
-    // A CSV import creates ordinary members only (E-062 F-278); staff roles
-    // are granted one person at a time afterwards.
-    const res = await adminUsers.importUsers(importFile);
-    if (res.success && res.data) {
-      const data = res.data as { imported: number; skipped: number; errors: string[]; total_rows: number };
-      setImportResults(data);
-      if (data.imported > 0) {
-        toast.success(t('users.import_success'));
-        loadUsers();
-      }
-    } else {
-      toast.error(t('users.import_failed'));
-    }
-    setImportLoading(false);
+  // TEMPORARY: the one-shot import endpoint is gone; the checked, batched
+  // import (adminMemberImport) replaces this whole modal in the next change.
+  const handleImport = () => {
+    toast.error(t('users.import_failed'));
   };
 
   const handleExportAllMembers = async () => {
@@ -470,7 +455,7 @@ export function UserList() {
 
   const handleDownloadTemplate = async () => {
     try {
-      await adminUsers.downloadImportTemplate();
+      await adminMemberImport.downloadTemplate();
     } catch {
       toast.error(t('users.import_download_template_failed'));
     }

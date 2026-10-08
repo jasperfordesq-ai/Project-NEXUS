@@ -22,6 +22,7 @@ vi.mock('@/lib/api', () => ({
 import {
   adminDashboard,
   adminUsers,
+  adminMemberImport,
   adminConfig,
   adminListings,
   adminCategories,
@@ -268,18 +269,6 @@ describe('adminUsers', () => {
     expect(mockPost).toHaveBeenCalledWith('/v2/admin/users/bulk-suspend', { user_ids: [4, 5], reason: 'violation' });
   });
 
-  it('importUsers calls upload with FormData', async () => {
-    mockUpload.mockResolvedValueOnce({ success: true, data: { imported: 5, skipped: 0, errors: [], total_rows: 5 } });
-    const file = new File(['a,b'], 'users.csv', { type: 'text/csv' });
-    await adminUsers.importUsers(file, { default_role: 'member' });
-    expect(mockUpload).toHaveBeenCalledOnce();
-    const [url, formData] = mockUpload.mock.calls[0];
-    expect(url).toBe('/v2/admin/users/import');
-    expect(formData).toBeInstanceOf(FormData);
-    expect((formData as FormData).get('csv_file')).toBe(file);
-    expect((formData as FormData).get('default_role')).toBe('member');
-  });
-
   it('exportAcceptances downloads the streamed CSV instead of parsing it as JSON', async () => {
     mockDownload.mockResolvedValueOnce(new Blob());
     await adminLegalDocs.exportAcceptances(3, '2026-01-01');
@@ -296,13 +285,45 @@ describe('adminUsers', () => {
     expect(url).toBe('/v2/admin/reports/members/export?format=csv');
     expect(options?.filename).toMatch(/^members-\d{4}-\d{2}-\d{2}\.csv$/);
   });
+});
 
-  it('downloadImportTemplate uses an authenticated API download, not a new tab', async () => {
+// ─── Member import ───────────────────────────────────────────────────────────
+
+describe('adminMemberImport', () => {
+  it('check posts the file as JSON with a long timeout', async () => {
+    mockPost.mockResolvedValueOnce({ success: true, data: { status: 'ready' } });
+    await adminMemberImport.check('members.csv', 'QUJD');
+    expect(mockPost).toHaveBeenCalledWith(
+      '/v2/admin/members/import/check',
+      { file_name: 'members.csv', content_base64: 'QUJD' },
+      { timeout: 60000 },
+    );
+  });
+
+  it('batch names the rows and sends the attestation only when given', async () => {
+    mockPost.mockResolvedValue({ success: true, data: {} });
+    await adminMemberImport.batch('abc/1', 0, 25, true);
+    await adminMemberImport.batch('abc/1', 25, 40);
+    expect(mockPost).toHaveBeenNthCalledWith(
+      1,
+      '/v2/admin/members/import/abc%2F1/batch',
+      { from: 0, count: 25, identity_checked_by_admin: true },
+      { timeout: 60000 },
+    );
+    expect(mockPost).toHaveBeenNthCalledWith(
+      2,
+      '/v2/admin/members/import/abc%2F1/batch',
+      { from: 25, count: 40 },
+      { timeout: 60000 },
+    );
+  });
+
+  it('downloadTemplate uses an authenticated API download, not a new tab', async () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     mockDownload.mockResolvedValueOnce(new Blob());
-    await adminUsers.downloadImportTemplate();
-    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/users/import/template', {
-      filename: 'user_import_template.csv',
+    await adminMemberImport.downloadTemplate();
+    expect(mockDownload).toHaveBeenCalledWith('/v2/admin/members/import/template', {
+      filename: 'member_import_template.csv',
     });
     expect(openSpy).not.toHaveBeenCalled();
     openSpy.mockRestore();
