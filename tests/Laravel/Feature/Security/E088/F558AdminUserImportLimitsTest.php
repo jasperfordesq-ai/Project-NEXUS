@@ -8,11 +8,15 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\Security\E088;
 
-use App\Http\Controllers\Api\AdminUsersController;
 use App\Models\User;
+use App\Services\MemberImport\MemberImportFile;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\TestResponse;
 use Tests\Laravel\TestCase;
 
 /**
@@ -21,104 +25,125 @@ use Tests\Laravel\TestCase;
  * declared text/csv were accepted, and a 50,000-row file was processed in one
  * request. The type is now detected from the bytes, and size and row count are
  * capped before any account is created.
+ *
+ * Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced.
+ * The new import receives the file's bytes (base64 in JSON) with no declared
+ * type at all, refuses a whole file with a file error, and creates nobody
+ * until a check of the entire file found no problem.
  */
 final class F558AdminUserImportLimitsTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @var list<string> */
-    private array $tempFiles = [];
+    private User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
-        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+        Cache::flush();
+        Queue::fake();
+        $this->admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);
     }
 
-    protected function tearDown(): void
-    {
-        unset($_FILES['csv_file']);
-        foreach ($this->tempFiles as $path) {
-            @unlink($path);
-        }
-        parent::tearDown();
-    }
-
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_binary_content_declared_as_csv_is_refused(): void
     {
-        // A PNG signature and header, declared by the browser as text/csv.
-        $this->present("\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01\x08\x06\0\0\0\x1f\x15\xc4\x89", 'text/csv');
+        // A PNG signature and header, named members.csv.
+        $res = $this->check("\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01\x08\x06\0\0\0\x1f\x15\xc4\x89")->assertOk();
 
-        $this->postImport()->assertStatus(400)->assertJsonPath('errors.0.message', __('api.csv_invalid_type'));
+        $res->assertJsonPath('data.status', 'file_error')->assertJsonPath('data.file_error.code', 'not_text');
+        $this->assertNull($res->json('data.import_id'));
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_an_oversized_file_is_refused_before_any_row_is_read(): void
     {
         $email = 'f558-big-' . bin2hex(random_bytes(4)) . '@example.test';
-        $csv = "first_name,last_name,email\nBig,File,{$email}\n" . str_repeat('#' . str_repeat('x', 1023) . "\n", (int) ceil(AdminUsersController::IMPORT_MAX_BYTES / 1024) + 1);
-        $this->present($csv, 'text/csv');
+        $csv = $this->header() . "Big,File,{$email},,,\n"
+            . str_repeat('Pad,' . str_repeat('x', 1000) . ",pad@example.test,,,\n", (int) ceil(MemberImportFile::MAX_BYTES / 1024) + 1);
 
-        $this->postImport()->assertStatus(422)
-            ->assertJsonPath('errors.0.message', __('api.csv_too_large', ['max' => AdminUsersController::IMPORT_MAX_BYTES / 1024 / 1024]));
+        $res = $this->check($csv)->assertOk();
+
+        $res->assertJsonPath('data.status', 'file_error')
+            ->assertJsonPath('data.file_error.code', 'too_large')
+            ->assertJsonPath('data.file_error.params.max_mb', intdiv(MemberImportFile::MAX_BYTES, 1024 * 1024));
+        $this->assertNull($res->json('data.import_id'));
         $this->assertFalse(DB::table('users')->where('email', $email)->exists());
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_too_many_rows_are_refused_and_nothing_is_imported(): void
     {
         $prefix = 'f558-rows-' . bin2hex(random_bytes(4));
-        $lines = ['first_name,last_name,email'];
-        for ($i = 0; $i <= AdminUsersController::IMPORT_MAX_ROWS; $i++) {
-            $lines[] = "Row,{$i},{$prefix}-{$i}@example.test";
+        $lines = [rtrim($this->header(), "\n")];
+        for ($i = 0; $i <= MemberImportFile::MAX_ROWS; $i++) {
+            $lines[] = "Row,{$i},{$prefix}-{$i}@example.test,,,";
         }
-        $this->present(implode("\n", $lines) . "\n", 'text/csv');
 
-        $this->postImport()->assertStatus(422)
-            ->assertJsonPath('errors.0.message', __('api.csv_too_many_rows', ['max' => AdminUsersController::IMPORT_MAX_ROWS]));
+        $res = $this->check(implode("\n", $lines) . "\n")->assertOk();
+
+        $res->assertJsonPath('data.status', 'file_error')
+            ->assertJsonPath('data.file_error.code', 'too_many_rows')
+            ->assertJsonPath('data.file_error.params.max', MemberImportFile::MAX_ROWS);
+        $this->assertNull($res->json('data.import_id'));
         $this->assertFalse(DB::table('users')->where('email', 'like', $prefix . '-%')->exists());
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_a_normal_csv_still_imports_whatever_type_the_browser_declares(): void
     {
+        // The browser no longer declares a type at all: only the bytes count.
         $email = 'f558-ok-' . bin2hex(random_bytes(4)) . '@example.test';
-        // Some browsers send application/vnd.ms-excel or an empty type for .csv.
-        $this->present("first_name,last_name,email\nAda,Lovelace,{$email}\n", 'application/octet-stream');
 
-        $this->postImport()->assertOk()->assertJsonPath('data.imported', 1);
+        $this->import($this->header() . "Ada,Lovelace,{$email},,,\n")->assertJsonPath('data.totals.created', 1);
         $this->assertTrue(DB::table('users')->where('email', $email)->where('tenant_id', $this->testTenantId)->exists());
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_the_downloaded_template_imports_back_unchanged_apart_from_its_rows(): void
     {
         // The template starts with a UTF-8 byte-order mark (for Excel), and so
         // does a CSV saved by Excel as "CSV UTF-8". The importer read the mark
         // as part of the first column name and reported first_name missing.
-        $template = (string) $this->get('/api/v2/admin/users/import/template', $this->withTenantHeader([]))->getContent();
+        $template = (string) $this->get('/api/v2/admin/members/import/template', $this->withTenantHeader($this->auth()))->assertOk()->getContent();
         $this->assertStringStartsWith("\xEF\xBB\xBF", $template);
 
         $email = 'f558-tpl-' . bin2hex(random_bytes(4)) . '@example.test';
-        $lines = preg_split('/\r?\n/', trim($template)) ?: [];
-        $this->present($lines[0] . "\nAda,Lovelace,{$email},,member\n", 'text/csv');
-
-        $this->postImport()->assertOk()->assertJsonPath('data.imported', 1);
+        $this->import($template . "Ada,Lovelace,{$email},,,\n")->assertJsonPath('data.totals.created', 1);
         $this->assertTrue(DB::table('users')->where('email', $email)->exists());
     }
 
-    private function present(string $contents, string $declaredType): void
+    private function header(): string
     {
-        $path = '/tmp/e088-f558-' . bin2hex(random_bytes(8)) . '.csv';
-        file_put_contents($path, $contents);
-        $this->tempFiles[] = $path;
-        $_FILES['csv_file'] = [
-            'name' => 'members.csv', 'type' => $declaredType, 'tmp_name' => $path,
-            'error' => UPLOAD_ERR_OK, 'size' => filesize($path),
-        ];
+        return implode(',', MemberImportFile::COLUMNS) . "\n";
     }
 
-    private function postImport(): \Illuminate\Testing\TestResponse
+    /** @return array<string, string> */
+    private function auth(): array
     {
-        return $this->json('POST', '/api/v2/admin/users/import', [], [
-            'Accept' => 'application/json',
-            'X-Tenant-ID' => (string) $this->testTenantId,
-        ]);
+        return ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $this->admin->id, $this->admin->tenant_id, TwoFactorPolicy::claims('totp')
+        )];
+    }
+
+    private function check(string $bytes): TestResponse
+    {
+        return $this->apiPost('/v2/admin/members/import/check', [
+            'file_name' => 'members.csv', 'content_base64' => base64_encode($bytes),
+        ], $this->auth());
+    }
+
+    /** Checks the file (it must be ready) and runs every batch; returns the last batch. */
+    private function import(string $bytes): TestResponse
+    {
+        $check = $this->check($bytes)->assertOk()->assertJsonPath('data.status', 'ready');
+        $id = (string) $check->json('data.import_id');
+        $next = 0;
+        do {
+            $res = $this->apiPost("/v2/admin/members/import/{$id}/batch", ['from' => $next, 'count' => 50], $this->auth())->assertOk();
+            $next = (int) $res->json('data.next_index');
+        } while ($res->json('data.status') === 'running');
+
+        return $res->assertJsonPath('data.status', 'completed');
     }
 }

@@ -2620,32 +2620,6 @@
         }
       }
     },
-    "/api/v2/admin/users/import": {
-      "post": {
-        "summary": "POST /api/v2/admin/users/import",
-        "tags": [
-          "Admin Users"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
-    "/api/v2/admin/users/import/template": {
-      "get": {
-        "summary": "GET /api/v2/admin/users/import/template",
-        "tags": [
-          "Admin Users"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation"
-          }
-        }
-      }
-    },
     "/api/v2/admin/users/{id}": {
       "get": {
         "summary": "GET /api/v2/admin/users/{id}",

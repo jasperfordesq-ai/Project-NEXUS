@@ -1828,8 +1828,14 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/users/{id}/send-welcome-email', [\App\Http\Controllers\Api\AdminUsersController::class, 'sendWelcomeEmail'])->whereNumber('id');
 });
 Route::post('/v2/admin/users', [\App\Http\Controllers\Api\AdminUsersController::class, 'store']);
-Route::post('/v2/admin/users/import', [\App\Http\Controllers\Api\AdminUsersController::class, 'import']);
-Route::get('/v2/admin/users/import/template', [\App\Http\Controllers\Api\AdminUsersController::class, 'importTemplate']);
+// Member import (8 Oct 2026): check the whole file, then import it in paced
+// batches. Replaces POST /v2/admin/users/import. Creating accounts and
+// balances in bulk asks for a fresh second factor, like a balance adjustment.
+Route::post('/v2/admin/members/import/check', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'check'])
+    ->middleware(['step-up', 'throttle:member-import']);
+Route::post('/v2/admin/members/import/{importId}/batch', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'batch'])
+    ->whereUuid('importId')->middleware(['step-up', 'throttle:member-import']);
+Route::get('/v2/admin/members/import/template', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'template']);
 Route::delete('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'destroy'])->middleware('step-up');
 Route::post('/v2/admin/users/{id}/ban', [\App\Http\Controllers\Api\AdminUsersController::class, 'ban'])->middleware('step-up');
 Route::post('/v2/admin/users/badges/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll'])

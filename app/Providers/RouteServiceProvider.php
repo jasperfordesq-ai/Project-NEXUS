@@ -218,6 +218,14 @@ class RouteServiceProvider extends ServiceProvider
             );
         });
 
+        // Member import batches: one admin, sequential requests of 10–200 rows.
+        // 120/min leaves room for the smallest batches while capping a runaway loop.
+        RateLimiter::for('member-import', function (Request $request) {
+            return Limit::perMinute(120)->by(
+                $request->user()?->id ? 'user:' . $request->user()->id : 'ip:' . $request->ip()
+            );
+        });
+
         RateLimiter::for('groups-join', static fn (Request $request): array => [
             Limit::perMinute(30)->by(self::groupsRateKey($request, 'join')),
             Limit::perMinute(120)->by(self::groupsActorRateKey($request, 'join')),

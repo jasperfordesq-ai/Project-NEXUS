@@ -10,6 +10,8 @@ namespace Tests\Laravel\Feature\Auth;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\TenantSettingsService;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -38,9 +40,6 @@ class AdminVouchedEmailConfirmationTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @var array<int,string> */
-    private array $tempFiles = [];
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,18 +55,6 @@ class AdminVouchedEmailConfirmationTest extends TestCase
         $this->requireEmailVerification();
         // Joining rules are stated, never inherited from the shared test tenant.
         $this->setRegistrationMode('open_with_approval');
-    }
-
-    protected function tearDown(): void
-    {
-        foreach ($this->tempFiles as $f) {
-            if (is_file($f)) {
-                @unlink($f);
-            }
-        }
-        $this->tempFiles = [];
-        unset($_FILES['csv_file']);
-        parent::tearDown();
     }
 
     // ------------------------------------------------------------ fixtures
@@ -151,15 +138,12 @@ class AdminVouchedEmailConfirmationTest extends TestCase
         ], $extra));
     }
 
-    private function presentCsv(string $contents): void
+    /** The member import asks for a recently entered second factor (step-up). @return array<string,string> */
+    private function freshSecondFactor(User $admin): array
     {
-        $path = '/tmp/vouch-import-' . bin2hex(random_bytes(8)) . '.csv';
-        file_put_contents($path, $contents);
-        $this->tempFiles[] = $path;
-        $_FILES['csv_file'] = [
-            'name' => 'members.csv', 'type' => 'text/csv', 'tmp_name' => $path,
-            'error' => UPLOAD_ERR_OK, 'size' => filesize($path),
-        ];
+        return ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, TwoFactorPolicy::claims('totp')
+        )];
     }
 
     private function resetPassword(string $email): \Illuminate\Testing\TestResponse
@@ -227,17 +211,19 @@ class AdminVouchedEmailConfirmationTest extends TestCase
 
     // ------------------------------------------------------------ CSV import
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_csv_imported_accounts_are_confirmed(): void
     {
-        $this->actingAsRole('admin');
+        $admin = $this->actingAsRole('admin');
         $a = $this->email('csv-a');
         $b = $this->email('csv-b');
-        $this->presentCsv("first_name,last_name,email\nVouch,Alpha,{$a}\nVouch,Beta,{$b}\n");
+        $csv = "first_name,last_name,email,phone,location,balance\nVouch,Alpha,{$a},,,\nVouch,Beta,{$b},,,\n";
 
-        $this->json('POST', '/api/v2/admin/users/import', [], [
-            'Accept' => 'application/json',
-            'X-Tenant-ID' => (string) $this->testTenantId,
-        ])->assertStatus(200)->assertJsonPath('data.imported', 2);
+        $id = (string) $this->apiPost('/v2/admin/members/import/check', [
+            'file_name' => 'members.csv', 'content_base64' => base64_encode($csv),
+        ], $this->freshSecondFactor($admin))->assertStatus(200)->assertJsonPath('data.status', 'ready')->json('data.import_id');
+        $this->apiPost("/v2/admin/members/import/{$id}/batch", ['from' => 0, 'count' => 10], $this->freshSecondFactor($admin))
+            ->assertStatus(200)->assertJsonPath('data.status', 'completed')->assertJsonPath('data.totals.created', 2);
 
         $this->assertConfirmed($a);
         $this->assertConfirmed($b);

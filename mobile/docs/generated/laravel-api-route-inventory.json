@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2802,
-  "api_route_rows": 2767,
-  "distinct_api_paths": 2303,
+  "total_registered_routes": 2805,
+  "api_route_rows": 2770,
+  "distinct_api_paths": 2306,
   "route_source_fingerprint": {
-    "digest": "1709304dd7068060bc45c2b003e4d67d4fd9ece62d37c91ea21047ab459a5e94",
+    "digest": "d8f82fb773045b2bb6d6862a7a4e1e9f8d68ad69083b7ded15ed7b2845c0c795",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "e8a525a0b05c0c7bf5bfb4ccde81324a631e3acec43ef0ebd3ad9d5a16f7334e"
+        "sha256": "d976a852011b4e091d039ff0a6f69b7731aa9cb7b7728fe65ab3ad17a2cf751b"
       },
       {
         "file": "routes/channels.php",
@@ -2345,6 +2345,15 @@
     "/api/v2/admin/member-premium/tiers/{id}/sync-stripe": [
       "POST"
     ],
+    "/api/v2/admin/members/import/check": [
+      "POST"
+    ],
+    "/api/v2/admin/members/import/template": [
+      "GET"
+    ],
+    "/api/v2/admin/members/import/{importId}/batch": [
+      "POST"
+    ],
     "/api/v2/admin/members/inactive": [
       "GET"
     ],
@@ -3218,12 +3227,6 @@
     "/api/v2/admin/users/bulk-suspend": [
       "POST"
     ],
-    "/api/v2/admin/users/import": [
-      "POST"
-    ],
-    "/api/v2/admin/users/import/template": [
-      "GET"
-    ],
     "/api/v2/admin/users/{id}": [
       "DELETE",
       "GET",
@@ -3328,6 +3331,9 @@
       "POST"
     ],
     "/api/v2/admin/volunteering/approvals/{id}/decline": [
+      "POST"
+    ],
+    "/api/v2/admin/volunteering/approvals/{id}/remove": [
       "POST"
     ],
     "/api/v2/admin/volunteering/certificates": [
@@ -6990,6 +6996,9 @@
     "/api/v2/volunteering/applications/{id}": [
       "DELETE",
       "PUT"
+    ],
+    "/api/v2/volunteering/applications/{id}/remove": [
+      "POST"
     ],
     "/api/v2/volunteering/certificates": [
       "GET",

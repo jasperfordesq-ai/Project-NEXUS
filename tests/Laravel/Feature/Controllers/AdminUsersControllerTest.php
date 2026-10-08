@@ -696,9 +696,10 @@ class AdminUsersControllerTest extends TestCase
     }
 
     // ================================================================
-    // IMPORT TEMPLATE — GET /v2/admin/users/import/template
+    // IMPORT TEMPLATE — GET /v2/admin/members/import/template
     // ================================================================
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_import_template_returns_200_for_admin(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -706,17 +707,18 @@ class AdminUsersControllerTest extends TestCase
             $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
         )]);
 
-        $response = $this->apiGet('/v2/admin/users/import/template');
+        $response = $this->apiGet('/v2/admin/members/import/template');
 
         $response->assertStatus(200);
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_import_template_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();
         Sanctum::actingAs($member);
 
-        $response = $this->apiGet('/v2/admin/users/import/template');
+        $response = $this->apiGet('/v2/admin/members/import/template');
 
         $response->assertStatus(403);
     }

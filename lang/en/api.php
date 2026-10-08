@@ -284,6 +284,9 @@ return [
     'csv_too_many_rows'                    => 'The file has too many rows. The maximum is :max members per import.',
     'csv_missing_columns'                  => 'Missing required columns: :columns',
     'csv_could_not_read'                   => 'Could not read file',
+    'member_import_busy'                   => 'This import is already running in another window. Wait a moment and try again.',
+    'member_import_out_of_order'           => 'This import has moved on. Reload the import window to continue from where it is.',
+    'member_import_not_found'              => 'This import has expired or belongs to another administrator. Check the file again to start a new import.',
     'csv_import_members_only'              => 'An import can only create ordinary members. Give other roles to people one at a time after the import.',
 
     // ============================================

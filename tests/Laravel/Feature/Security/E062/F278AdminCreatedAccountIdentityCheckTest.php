@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Services\CaringCommunity\PaperOnboardingIntakeService;
 use App\Services\Identity\RegistrationOrchestrationService;
 use App\Services\TenantSettingsService;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -31,13 +33,13 @@ use Tests\Laravel\TestCase;
  *    that attestation is recorded (who, when) in the audit log;
  *  - a CSV import creates ordinary members only;
  *  - every other mode keeps "active immediately".
+ *
+ * The CSV-import tests moved to /v2/admin/members/import on 8 Oct 2026 when
+ * the old endpoint was replaced.
  */
 class F278AdminCreatedAccountIdentityCheckTest extends TestCase
 {
     use DatabaseTransactions;
-
-    /** @var array<int,string> */
-    private array $tempFiles = [];
 
     protected function setUp(): void
     {
@@ -47,18 +49,6 @@ class F278AdminCreatedAccountIdentityCheckTest extends TestCase
             \Illuminate\Routing\Middleware\ThrottleRequests::class,
             \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
         ]);
-    }
-
-    protected function tearDown(): void
-    {
-        foreach ($this->tempFiles as $f) {
-            if (is_file($f)) {
-                @unlink($f);
-            }
-        }
-        $this->tempFiles = [];
-        unset($_FILES['csv_file']);
-        parent::tearDown();
     }
 
     // ------------------------------------------------------------ fixtures
@@ -159,23 +149,37 @@ class F278AdminCreatedAccountIdentityCheckTest extends TestCase
         ], $extra));
     }
 
-    private function presentCsv(string $contents): void
+    /** The member import asks for a recently entered second factor (step-up). @return array<string,string> */
+    private function freshSecondFactor(User $admin): array
     {
-        $path = '/tmp/e064f-f278-import-' . bin2hex(random_bytes(8)) . '.csv';
-        file_put_contents($path, $contents);
-        $this->tempFiles[] = $path;
-        $_FILES['csv_file'] = [
-            'name' => 'members.csv', 'type' => 'text/csv', 'tmp_name' => $path,
-            'error' => UPLOAD_ERR_OK, 'size' => filesize($path),
-        ];
+        return ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, TwoFactorPolicy::claims('totp')
+        )];
     }
 
-    private function postImport(array $fields = []): \Illuminate\Testing\TestResponse
+    private function checkCsv(User $admin, string $csv, array $fields = []): \Illuminate\Testing\TestResponse
     {
-        return $this->json('POST', '/api/v2/admin/users/import', $fields, [
-            'Accept' => 'application/json',
-            'X-Tenant-ID' => (string) $this->testTenantId,
-        ]);
+        return $this->apiPost('/v2/admin/members/import/check', $fields + [
+            'file_name' => 'members.csv', 'content_base64' => base64_encode($csv),
+        ], $this->freshSecondFactor($admin));
+    }
+
+    /**
+     * Checks the file (it must be ready) and runs every batch; $firstBatch is
+     * sent with the first one. Returns the last batch.
+     */
+    private function importCsv(User $admin, string $csv, array $firstBatch = []): \Illuminate\Testing\TestResponse
+    {
+        $id = (string) $this->checkCsv($admin, $csv)->assertStatus(200)->assertJsonPath('data.status', 'ready')->json('data.import_id');
+        $next = 0;
+        $extra = $firstBatch;
+        do {
+            $res = $this->apiPost("/v2/admin/members/import/{$id}/batch", ['from' => $next, 'count' => 50] + $extra, $this->freshSecondFactor($admin))->assertStatus(200);
+            $next = (int) $res->json('data.next_index');
+            $extra = [];
+        } while ($res->json('data.status') === 'running');
+
+        return $res->assertJsonPath('data.status', 'completed');
     }
 
     private function enableCaringCommunity(): void
@@ -234,72 +238,87 @@ class F278AdminCreatedAccountIdentityCheckTest extends TestCase
 
     // ------------------------------------------------------------ CSV import
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_csv_import_in_an_identity_community_holds_every_row_for_the_check(): void
     {
         $this->setMode('government_id');
-        $this->admin();
+        $admin = $this->admin();
         $a = $this->email('csv-a');
         $b = $this->email('csv-b');
-        $this->presentCsv("first_name,last_name,email\nF278,Alpha,{$a}\nF278,Beta,{$b}\n");
+        $csv = "first_name,last_name,email,phone,location,balance\nF278,Alpha,{$a},,,\nF278,Beta,{$b},,,\n";
 
-        $this->postImport()->assertStatus(200)->assertJsonPath('data.imported', 2);
+        $this->checkCsv($admin, $csv)->assertJsonPath('data.admission.requires_identity_check', true);
+        $this->importCsv($admin, $csv)->assertJsonPath('data.totals.created', 2)->assertJsonPath('data.held', true);
 
         $this->assertHeldForIdentity($a);
         $this->assertHeldForIdentity($b);
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_csv_import_with_an_attestation_is_live_and_audited_per_account(): void
     {
         $this->setMode('government_id');
         $admin = $this->admin();
         $a = $this->email('csv-attested');
-        $this->presentCsv("first_name,last_name,email\nF278,Attested,{$a}\n");
+        $csv = "first_name,last_name,email,phone,location,balance\nF278,Attested,{$a},,,\n";
 
-        $this->postImport(['identity_checked_by_admin' => '1'])->assertStatus(200)->assertJsonPath('data.imported', 1);
+        // The attestation is given once, with the first batch.
+        $this->importCsv($admin, $csv, ['identity_checked_by_admin' => '1'])
+            ->assertJsonPath('data.totals.created', 1)->assertJsonPath('data.held', false);
 
         $this->assertLive($a);
         $this->assertAttestationRecorded((int) $admin->id, $a, 'csv_import');
     }
 
+    /** Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced. */
     public function test_csv_import_creates_ordinary_members_only(): void
     {
         $this->setMode('open');
-        $this->admin();
+        $admin = $this->admin();
+        $one = $this->email('csv-member-1');
+        $two = $this->email('csv-member-2');
+        $csv = "first_name,last_name,email,phone,location,balance\nF278,One,{$one},,,\nF278,Two,{$two},,,\n";
+
+        // A role asked for in the request is not an input the import reads.
+        $id = (string) $this->checkCsv($admin, $csv, ['role' => 'admin', 'default_role' => 'broker'])
+            ->assertStatus(200)->assertJsonPath('data.status', 'ready')->json('data.import_id');
+        $this->apiPost("/v2/admin/members/import/{$id}/batch", [
+            'from' => 0, 'count' => 10, 'role' => 'admin', 'default_role' => 'broker',
+        ], $this->freshSecondFactor($admin))->assertStatus(200)->assertJsonPath('data.status', 'completed');
+
+        foreach ([$one, $two] as $email) {
+            $this->assertLive($email);
+            $this->assertSame('member', (string) $this->row($email)['role'], 'an import creates ordinary members only');
+        }
+    }
+
+    /**
+     * Replaces test_csv_import_refuses_a_non_member_default_role: the new
+     * import has no default role, and a file with the old template's role
+     * column is refused whole, so no row can ask for a staff role.
+     *
+     * Moved to /v2/admin/members/import on 8 Oct 2026 when the old endpoint was replaced.
+     */
+    public function test_csv_import_refuses_a_role_column(): void
+    {
+        $this->setMode('open');
+        $admin = $this->admin();
         $member = $this->email('csv-member');
         $asAdmin = $this->email('csv-admin');
         $asBroker = $this->email('csv-broker');
-        $this->presentCsv(
-            "first_name,last_name,email,role\n"
-            . "F278,Member,{$member},member\n"
-            . "F278,Admin,{$asAdmin},admin\n"
-            . "F278,Broker,{$asBroker},broker\n"
-        );
 
-        $res = $this->postImport()->assertStatus(200);
-        $res->assertJsonPath('data.imported', 1);
-        $res->assertJsonPath('data.skipped', 2);
+        $res = $this->checkCsv($admin,
+            "first_name,last_name,email,phone,role\n"
+            . "F278,Member,{$member},,member\n"
+            . "F278,Admin,{$asAdmin},,admin\n"
+            . "F278,Broker,{$asBroker},,broker\n"
+        )->assertStatus(200);
 
-        // CONTROL: the ordinary member row is created, live, as a member.
-        $this->assertLive($member);
-        $this->assertSame('member', (string) $this->row($member)['role']);
+        $res->assertJsonPath('data.status', 'file_error')->assertJsonPath('data.file_error.code', 'old_template');
+        $this->assertNull($res->json('data.import_id'), 'a refused file cannot be imported');
         $this->assertFalse(
-            DB::table('users')->where('tenant_id', $this->testTenantId)->whereIn('email', [$asAdmin, $asBroker])->exists(),
-            'a CSV row must never create an admin or broker account'
-        );
-    }
-
-    public function test_csv_import_refuses_a_non_member_default_role(): void
-    {
-        $this->setMode('open');
-        $this->admin();
-        $email = $this->email('csv-default-role');
-        $this->presentCsv("first_name,last_name,email\nF278,Default,{$email}\n");
-
-        $this->postImport(['default_role' => 'broker'])->assertStatus(422);
-
-        $this->assertFalse(
-            DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', $email)->exists(),
-            'nothing is imported when the import asks for a staff role'
+            DB::table('users')->where('tenant_id', $this->testTenantId)->whereIn('email', [$member, $asAdmin, $asBroker])->exists(),
+            'nothing is imported from a file that names roles'
         );
     }
 
