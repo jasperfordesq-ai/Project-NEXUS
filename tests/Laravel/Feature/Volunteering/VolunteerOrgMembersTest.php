@@ -144,16 +144,54 @@ class VolunteerOrgMembersTest extends TestCase
 
     public function test_the_last_owner_cannot_be_removed(): void
     {
-        // A legacy organisation whose creator holds no owner row: the only
-        // owner row belongs to someone else, and removing it is refused.
+        // The creator's account is no longer active and holds no owner row, so
+        // the only working owner is someone else: removing them is refused.
         DB::table('org_members')->where('organization_id', $this->orgId)->where('user_id', $this->creator->id)->update(['role' => 'member']);
         DB::table('org_members')->where('organization_id', $this->orgId)->where('user_id', $this->orgAdmin->id)->update(['role' => 'owner']);
+        DB::table('users')->where('id', $this->creator->id)->update(['status' => 'suspended']);
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
         $this->apiDelete("/v2/admin/volunteering/organizations/{$this->orgId}/members/{$this->orgAdmin->id}")
             ->assertStatus(422)->assertJsonPath('errors.0.code', 'LAST_OWNER');
+        $this->apiPut("/v2/admin/volunteering/organizations/{$this->orgId}/members/{$this->orgAdmin->id}", ['role' => 'member'])
+            ->assertStatus(422)->assertJsonPath('errors.0.code', 'LAST_OWNER');
         $this->assertSame('active', $this->rowFor($this->orgAdmin)->status);
+    }
+
+    /**
+     * Found walking the Team tab (8 Oct 2026): the person who registered the
+     * organisation is always its owner and can never be removed, but the
+     * last-owner check counted only team rows. With no row for the creator, a
+     * second owner could be neither removed nor stepped down.
+     */
+    public function test_the_creator_counts_as_an_owner_so_a_second_owner_can_be_removed(): void
+    {
+        DB::table('org_members')->where('organization_id', $this->orgId)->where('user_id', $this->creator->id)->delete();
+        Sanctum::actingAs($this->creator);
+
+        $this->apiPost($this->url(), ['user_id' => $this->newcomer->id, 'role' => 'owner'])->assertStatus(201);
+        $this->apiPut($this->url("/{$this->newcomer->id}"), ['role' => 'admin'])->assertOk();
+        $this->apiPut($this->url("/{$this->newcomer->id}"), ['role' => 'owner'])->assertOk();
+        $this->apiDelete($this->url("/{$this->newcomer->id}"))->assertOk();
+        $this->assertSame('removed', $this->rowFor($this->newcomer)->status);
+    }
+
+    /** A creator whose team row says "member" still runs the organisation, so is listed as its owner. */
+    public function test_the_creator_is_listed_as_owner_whatever_their_team_row_says(): void
+    {
+        DB::table('org_members')->where('organization_id', $this->orgId)->where('user_id', $this->creator->id)->update(['role' => 'member']);
+        Sanctum::actingAs($this->creator);
+
+        $first = $this->apiGet($this->url())->assertOk()->json('data.items.0');
+        $this->assertSame($this->creator->id, $first['user_id']);
+        $this->assertSame('owner', $first['role']);
+
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
+        $adminFirst = $this->apiGet("/v2/admin/volunteering/organizations/{$this->orgId}/members")->assertOk()->json('data.0');
+        $this->assertSame($this->creator->id, (int) $adminFirst['user_id']);
+        $this->assertSame('owner', $adminFirst['role']);
+        $this->assertTrue($adminFirst['is_creator']);
     }
 
     /**

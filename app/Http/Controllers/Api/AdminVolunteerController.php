@@ -964,10 +964,15 @@ class AdminVolunteerController extends BaseApiController
 
         // is_creator: the person who registered the organisation, who cannot be
         // removed or demoted (gap D7).
+        // The creator runs the organisation whatever their team row says, so is
+        // shown as its owner, first (matches VolunteerOrgMemberService::list()).
         $members = array_map(
-            fn ($row) => (array) $row + ['is_creator' => (int) $row->user_id === (int) $org->user_id],
+            fn ($row) => (int) $row->user_id === (int) $org->user_id
+                ? ['role' => 'owner'] + (array) $row + ['is_creator' => true]
+                : (array) $row + ['is_creator' => false],
             $rows
         );
+        usort($members, static fn (array $a, array $b) => (int) !$a['is_creator'] <=> (int) !$b['is_creator']);
 
         // Older organisations have no team row for their creator, who still
         // manages them; list them as the owner they are.

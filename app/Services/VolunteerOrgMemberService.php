@@ -90,10 +90,17 @@ class VolunteerOrgMemberService
             'user_id' => (int) $row->user_id,
             'name' => UserDisplayName::resolve($row),
             'avatar_url' => $row->avatar_url,
-            'role' => in_array($row->role, self::ROLES, true) ? $row->role : 'member',
+            // The creator runs the organisation whatever their row says (see access()).
+            'role' => (int) $row->user_id === $creatorId
+                ? 'owner'
+                : (in_array($row->role, self::ROLES, true) ? $row->role : 'member'),
             'is_creator' => (int) $row->user_id === $creatorId,
             'joined_at' => $row->created_at,
         ], $rows);
+
+        // Owners first, the creator at the head.
+        usort($items, static fn (array $a, array $b) => [(int) !$a['is_creator'], array_search($a['role'], self::ROLES, true)]
+            <=> [(int) !$b['is_creator'], array_search($b['role'], self::ROLES, true)]);
 
         // Older organisations have no team row for the person who registered
         // them, though that person manages it. List them as the owner they are.
@@ -268,13 +275,22 @@ class VolunteerOrgMemberService
         foreach ($rows as $row) {
             if ((int) $row->user_id === $userId) {
                 $target = $row;
-            } elseif ($row->role === 'owner') {
+            } elseif ($row->role === 'owner' && (int) $row->user_id !== $creatorId) {
                 $otherOwners++;
             }
         }
 
         if ($target === null) {
             return ['code' => 'NOT_MEMBER'];
+        }
+
+        // The person who registered the organisation manages it whatever their
+        // team row says (access()), and can never be removed or demoted, so while
+        // their account is active the organisation can never be left unowned.
+        // Counting only team rows refused to remove a second owner whenever the
+        // creator had no owner row (found walking the Team tab, 8 Oct 2026).
+        if ($creatorId > 0 && DB::table('users')->where('id', $creatorId)->where('tenant_id', $tenantId)->where('status', 'active')->exists()) {
+            $otherOwners++;
         }
 
         return ['id' => (int) $target->id, 'role' => (string) $target->role, 'other_owners' => $otherOwners];
