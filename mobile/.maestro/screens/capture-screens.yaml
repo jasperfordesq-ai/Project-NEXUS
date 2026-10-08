@@ -182,9 +182,14 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 07-settings
 
+# 🔴 Maestro text matching is a FULL match, so "Support|Help|Contact" only ever passed
+# because the "Contact" card title happened to be on the first screenful. The featured
+# "Help & support" card added on 2026-10-03 pushed it off-screen and this step failed
+# every night from 2026-10-04 while the screen itself opened correctly. Wait on the
+# screen's own title, which nothing added to the list can move.
 - openLink: nexus://support
 - extendedWaitUntil:
-    visible: "Support|Help|Contact"
+    visible: "Support & legal|Support|Help|Contact"
     timeout: 20000
 - waitForAnimationToEnd:
     timeout: 8000
