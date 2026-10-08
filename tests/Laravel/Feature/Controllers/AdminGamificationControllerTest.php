@@ -95,18 +95,7 @@ class AdminGamificationControllerTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
-        // Ensure custom_badges table exists
-        DB::statement("CREATE TABLE IF NOT EXISTS custom_badges (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            tenant_id INT NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            description TEXT,
-            icon VARCHAR(100) DEFAULT 'award',
-            xp INT DEFAULT 0,
-            category VARCHAR(100) DEFAULT 'custom',
-            is_active TINYINT DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
+        $this->ensureCustomBadgesTable();
 
         $response = $this->apiPost('/v2/admin/gamification/badges', [
             'name' => 'Test Badge',
@@ -234,5 +223,40 @@ class AdminGamificationControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_custom_badges_helper_keeps_the_test_transaction_open(): void
+    {
+        // CREATE TABLE commits implicitly on MariaDB even when IF NOT EXISTS
+        // finds the table, which ends DatabaseTransactions' wrapper: every
+        // later write in the test becomes permanent in nexus_test.
+        $this->ensureCustomBadgesTable();
+
+        $this->assertSame(
+            1,
+            (int) DB::selectOne('SELECT @@in_transaction AS t')->t,
+            'the helper must not end the test transaction'
+        );
+    }
+
+    private function ensureCustomBadgesTable(): void
+    {
+        // Check first: CREATE TABLE commits the test transaction implicitly,
+        // even when IF NOT EXISTS finds the table already there.
+        if (\Illuminate\Support\Facades\Schema::hasTable('custom_badges')) {
+            return;
+        }
+
+        DB::statement("CREATE TABLE IF NOT EXISTS custom_badges (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            tenant_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            icon VARCHAR(100) DEFAULT 'award',
+            xp INT DEFAULT 0,
+            category VARCHAR(100) DEFAULT 'custom',
+            is_active TINYINT DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
     }
 }

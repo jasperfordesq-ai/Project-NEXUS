@@ -982,8 +982,28 @@ class AdminUsersControllerTest extends TestCase
             ->count());
     }
 
+    public function test_token_table_helper_keeps_the_test_transaction_open(): void
+    {
+        // CREATE TABLE commits implicitly on MariaDB even when IF NOT EXISTS
+        // finds the table, which ends DatabaseTransactions' wrapper: every
+        // later write in the test becomes permanent in nexus_test.
+        $this->ensureEmailVerificationTokenTable();
+
+        $this->assertSame(
+            1,
+            (int) DB::selectOne('SELECT @@in_transaction AS t')->t,
+            'the helper must not end the test transaction'
+        );
+    }
+
     private function ensureEmailVerificationTokenTable(): void
     {
+        // Check first: CREATE TABLE commits the test transaction implicitly,
+        // even when IF NOT EXISTS finds the table already there.
+        if (\Illuminate\Support\Facades\Schema::hasTable('email_verification_tokens')) {
+            return;
+        }
+
         DB::statement("
             CREATE TABLE IF NOT EXISTS `email_verification_tokens` (
                 `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
