@@ -95,8 +95,14 @@ final class InvitationOutbox
     /** How long a member stays "recently invited". */
     public const RECENT_HOURS = 24;
 
-    /** The scheduled sender's pace (a 50-second budget, one email a second). */
-    public const SENDS_PER_MINUTE = 50;
+    /**
+     * The pace the "about N minutes" estimates assume. The scheduled sender
+     * has a 50-second budget and waits one second between emails, but each send
+     * itself also takes time (building the link, handing it to the mail
+     * service), so a run sends fewer than 50. 40 a minute is the realistic
+     * figure; the estimates are shown as "about".
+     */
+    public const SENDS_PER_MINUTE = 40;
 
     /**
      * Written to last_error just before the email is handed to the provider.

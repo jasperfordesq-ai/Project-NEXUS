@@ -44,6 +44,12 @@ use Illuminate\Support\Str;
  */
 class CronJobRunner
 {
+    /** Most members the manual /cron/geocode-batch page looks up in one request. */
+    public const MANUAL_GEOCODE_MEMBER_LIMIT = 20;
+
+    /** The manual page stops starting member lookups after this many seconds (it runs inside a web request). */
+    public const MANUAL_GEOCODE_BUDGET_SECONDS = 20.0;
+
     private ?float $jobStartTime = null;
     private ?string $currentJobId = null;
 
@@ -2668,9 +2674,14 @@ class CronJobRunner
             echo '  Cache entries: ' . ($stats['cache_entries'] ?? 0) . "\n\n";
 
             // Geocode users across all tenants, marking each attempt so an
-            // unfindable town cannot block the rest (limit 50, 40 s budget).
+            // unfindable town cannot block the rest. This page runs inside a
+            // web request, so it is kept short; the scheduled
+            // members:geocode-pending command works through the rest.
             echo "Geocoding users...\n";
-            $userResults = GeocodingService::geocodePendingUsers(50, 40.0);
+            $userResults = GeocodingService::geocodePendingUsers(
+                self::MANUAL_GEOCODE_MEMBER_LIMIT,
+                self::MANUAL_GEOCODE_BUDGET_SECONDS
+            );
             echo "  Processed: {$userResults['processed']}\n";
             echo "  Success: {$userResults['success']}\n";
             echo "  Failed: {$userResults['failed']}\n\n";

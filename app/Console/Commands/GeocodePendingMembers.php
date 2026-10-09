@@ -18,12 +18,17 @@ use Illuminate\Support\Facades\Schema;
  * member is marked as attempted before the network is called — so a town that
  * cannot be found never blocks the members queued behind it. See
  * GeocodingService::geocodePendingUsers().
+ *
+ * Scheduled every minute in the FOREGROUND (so it never overlaps the 30-minute
+ * listings lookup and breaks the map service's one-request-a-second rule), so
+ * the defaults keep a run to about 12 seconds: the scheduler is one loop, and a
+ * long foreground run delays every job that has to start at an exact minute.
  */
 final class GeocodePendingMembers extends Command
 {
     protected $signature = 'members:geocode-pending
-        {--limit=40 : Most members to look at in this run (1-500)}
-        {--budget=50 : Stop starting new lookups after this many seconds (1-300)}';
+        {--limit=10 : Most members to look at in this run (1-500)}
+        {--budget=12 : Stop starting new lookups after this many seconds (1-300)}';
 
     protected $description = 'Look up map positions for members whose town has not been looked up yet, without ever getting stuck on an unfindable town.';
 

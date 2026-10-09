@@ -220,6 +220,11 @@ final class InvitationOutboxTest extends TestCase
         $this->assertSame(2, InvitationOutbox::minutesToSend(InvitationOutbox::SENDS_PER_MINUTE + 1));
         $this->assertSame((int) ceil(5000 / InvitationOutbox::SENDS_PER_MINUTE), InvitationOutbox::minutesToSend(5000));
 
+        // The sender waits a second between emails AND each send takes time, so
+        // a 50-second run sends fewer than 50. The estimate must allow for that.
+        $this->assertLessThanOrEqual(40, InvitationOutbox::SENDS_PER_MINUTE);
+        $this->assertSame(2, InvitationOutbox::minutesToSend(50), '50 invitations take more than a minute');
+
         // The queue's estimate is the same sum over everything still waiting, platform-wide.
         $this->queue($this->member());
         $waiting = DB::table('member_invitation_outbox')->whereIn('status', ['pending', 'processing'])->count();
@@ -764,6 +769,11 @@ final class InvitationOutboxTest extends TestCase
             ->first(fn ($e) => is_string($e->command) && str_contains($e->command, 'members:send-invitations'));
 
         $this->assertNotNull($event, 'members:send-invitations is scheduled');
+        $this->assertStringContainsString('--limit=60', $event->command);
+        $this->assertStringContainsString('--budget=50', $event->command);
+        // A 50-second run in the foreground would hold up the scheduler loop and
+        // make jobs that only fire at an exact minute miss their minute.
+        $this->assertTrue($event->runInBackground, 'the 50-second sender runs in the background');
         $this->assertSame('* * * * *', $event->expression);
         $this->assertTrue($event->withoutOverlapping);
         $this->assertSame(10, $event->expiresAt);

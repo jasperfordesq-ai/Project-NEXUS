@@ -261,16 +261,25 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // Welcome invitations queued by the member import and the admin "send
         // invitation" action go out about one a second from a durable outbox.
         // Claim tokens make an overlapping run harmless; these are a second line.
+        // In the background: production's scheduler is one `schedule:run; sleep
+        // 60` loop, and a 50-second foreground run would push every later
+        // minute's run past the exact minute that daily and every-N-minute jobs
+        // need. A deploy that kills a run mid-send is covered by the outbox's
+        // interrupted-send rule (that row is never retried).
         $schedule->command('members:send-invitations --limit=60 --budget=50')
             ->everyMinute()
             ->withoutOverlapping(10)
             ->onOneServer()
+            ->runInBackground()
             ->name('members-send-invitations');
 
         // Map lookups for members' towns. Each member is marked as attempted
         // before the network call, so an unfindable town never blocks the rest.
-        // Nominatim allows one request a second; 40 lookups fit the 50 s budget.
-        $schedule->command('members:geocode-pending --limit=40 --budget=50')
+        // Kept in the FOREGROUND so it never runs at the same moment as the
+        // 30-minute listings lookup (Nominatim allows one request a second
+        // across both) — and therefore kept SHORT (10 lookups, 12 s), so it
+        // does not hold up the scheduler loop.
+        $schedule->command('members:geocode-pending --limit=10 --budget=12')
             ->everyMinute()
             ->withoutOverlapping(10)
             ->onOneServer()

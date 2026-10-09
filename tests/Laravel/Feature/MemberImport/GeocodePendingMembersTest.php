@@ -71,7 +71,7 @@ final class GeocodePendingMembersTest extends TestCase
             $place = (string) ($query['q'] ?? '');
             if (str_starts_with($place, 'Outage')) {
                 if ($this->outageStatus === 0) {
-                    throw new IlluminateHttpClientConnectionException('cURL error 28: timed out');
+                    throw new \Illuminate\Http\Client\ConnectionException('cURL error 28: timed out');
                 }
                 return Http::response('', $this->outageStatus);
             }
@@ -451,6 +451,32 @@ final class GeocodePendingMembersTest extends TestCase
         $this->assertSame(0, $askedAboutTheMember);
     }
 
+    public function test_the_manual_cron_page_looks_at_twenty_members_at_most_within_twenty_seconds(): void
+    {
+        // /cron/geocode-batch runs inside a web request, so it must be short.
+        $this->assertLessThanOrEqual(20, CronJobRunner::MANUAL_GEOCODE_MEMBER_LIMIT);
+        $this->assertLessThanOrEqual(20.0, CronJobRunner::MANUAL_GEOCODE_BUDGET_SECONDS);
+
+        $members = [];
+        for ($i = 1; $i <= 25; $i++) {
+            $members[] = $this->member("Manual Nowhere {$i}")->id;
+        }
+
+        $runner = (new \ReflectionClass(CronJobRunner::class))->newInstanceWithoutConstructor();
+        ob_start();
+        try {
+            $runner->geocodeBatch();
+        } finally {
+            ob_end_clean();
+        }
+
+        $this->assertSame(
+            CronJobRunner::MANUAL_GEOCODE_MEMBER_LIMIT,
+            DB::table('users')->whereIn('id', $members)->whereNotNull('geocode_attempted_at')->count(),
+            'the manual page stops at its own limit; the rest wait for the scheduled command'
+        );
+    }
+
     public function test_the_command_runs_and_reports_a_summary(): void
     {
         $this->member('Findable Town One');
@@ -475,8 +501,16 @@ final class GeocodePendingMembersTest extends TestCase
             ->first(fn ($e) => is_string($e->command) && str_contains($e->command, 'members:geocode-pending'));
 
         $this->assertNotNull($event, 'members:geocode-pending is scheduled');
-        $this->assertStringContainsString('--limit=40', $event->command);
-        $this->assertStringContainsString('--budget=50', $event->command);
+        $this->assertStringContainsString('--limit=10', $event->command);
+        $this->assertStringContainsString('--budget=12', $event->command);
+        // Foreground on purpose: a background run could overlap the 30-minute
+        // listings lookup and break the map service's one-request-a-second rule.
+        // So it must stay short, or the minute-by-minute scheduler loop falls
+        // behind and jobs that only fire at an exact minute are skipped.
+        $this->assertFalse($event->runInBackground, 'map lookups run in the foreground');
+        $this->assertMatchesRegularExpression('/--budget=(\d+)/', $event->command);
+        preg_match('/--budget=(\d+)/', $event->command, $budget);
+        $this->assertLessThanOrEqual(12, (int) $budget[1], 'a foreground run must not hold the scheduler loop');
         $this->assertSame('* * * * *', $event->expression);
         $this->assertTrue($event->withoutOverlapping);
         $this->assertSame(10, $event->expiresAt);

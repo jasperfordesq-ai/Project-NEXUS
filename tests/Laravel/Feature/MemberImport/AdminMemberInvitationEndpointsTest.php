@@ -318,7 +318,7 @@ final class AdminMemberInvitationEndpointsTest extends TestCase
         $queued = $this->inviteEveryone(2)->assertOk();
 
         $this->assertSame($queued->json('data.eta_minutes'), $count->json('data.eta_minutes'));
-        $this->assertGreaterThanOrEqual(2, $count->json('data.eta_minutes'), '62+ waiting at 50 a minute');
+        $this->assertGreaterThanOrEqual(2, $count->json('data.eta_minutes'), '62+ waiting at 40 a minute');
     }
 
     public function test_invite_everyone_needs_a_whole_number_to_confirm(): void
