@@ -430,6 +430,20 @@ describe('MemberImportModal', () => {
       expect(screen.queryByText(note)).not.toBeInTheDocument();
     });
 
+    it('shows no minutes estimate while every member will be held, and shows it once they will not be', async () => {
+      const user = await checkWith(ready({ admission: { requires_identity_check: true } }));
+      const estimate = /Emails go out in the background, about one a second/;
+      await screen.findByText(/Members waiting for an identity check are not emailed now/);
+      expect(screen.queryByText(estimate)).not.toBeInTheDocument();
+      await user.click(screen.getByRole('checkbox', { name: /I have checked each person's identity myself/ }));
+      expect(screen.getByText(estimate)).toBeInTheDocument();
+    });
+
+    it('still shows the minutes estimate when the community needs no identity check', async () => {
+      await checkWith(ready({ admission: { requires_identity_check: false } }));
+      expect(await screen.findByText(/Emails go out in the background, about one a second/)).toBeInTheDocument();
+    });
+
     it('starts the import with the identity box ticked', async () => {
       const user = await checkWith(ready({ admission: { requires_identity_check: true } }));
       const box = await screen.findByRole('checkbox', { name: /I have checked each person's identity myself/ });

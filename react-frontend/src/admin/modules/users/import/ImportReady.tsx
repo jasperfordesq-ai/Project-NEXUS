@@ -77,7 +77,8 @@ export function ImportReady({ check, identityChecked, onIdentityChange, sendInvi
         <Checkbox
           isSelected={sendInvitations}
           onChange={onSendInvitationsChange}
-          description={t('member_import.ready.send_invitations_help', { duration: aboutMinutes(t, Math.max(1, check.invitation_minutes ?? 1)) })}
+          // No "about N minutes" while every member will be held: nobody is emailed now, so the note below says so instead.
+          description={heldNotEmailed ? undefined : t('member_import.ready.send_invitations_help', { duration: aboutMinutes(t, Math.max(1, check.invitation_minutes ?? 1)) })}
         >
           {t('member_import.ready.send_invitations')}
         </Checkbox>
