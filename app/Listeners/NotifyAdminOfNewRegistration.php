@@ -263,6 +263,7 @@ class NotifyAdminOfNewRegistration
                             $sent = EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
                                 'tenant_id' => $event->tenantId,
                                 'idempotency_key' => $noticeKey,
+                                'dispatch_id' => $claim['dispatch_id'] ?? null,
                             ]);
                         } finally {
                             if ($claim !== null && !RegistrationStaffEmailDeliveryLedger::resolveClaim(

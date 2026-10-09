@@ -27,6 +27,7 @@ return new class extends Migration {
             ])->default('captured');
             $table->unsignedSmallInteger('attempts')->default(0);
             $table->uuid('claim_token')->nullable();
+            $table->uuid('dispatch_id')->nullable()->unique();
             $table->timestamp('claimed_at')->nullable();
             $table->timestamp('resolved_at')->nullable();
             $table->string('provider_message_id', 255)->nullable();
@@ -38,6 +39,7 @@ return new class extends Migration {
                 'uq_registration_staff_email_recipient'
             );
             $table->index(['tenant_id', 'status', 'created_at'], 'idx_registration_staff_email_status');
+            $table->index(['status', 'claimed_at'], 'idx_registration_staff_email_stale_claim');
         });
     }
 

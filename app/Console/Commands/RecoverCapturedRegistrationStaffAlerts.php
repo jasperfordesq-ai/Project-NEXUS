@@ -55,9 +55,20 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
         $registrations = $query->get();
         if ($this->option('dry-run')) {
             $this->info('Captured registration groups eligible for recovery: ' . $registrations->count());
+            $staleQuery = DB::table('registration_staff_email_deliveries')
+                ->where('status', 'claimed')
+                ->where('claimed_at', '<=', now()->subMinutes(20));
+            if ($tenantOption !== null) {
+                $staleQuery->where('tenant_id', (int) $tenantOption);
+            }
+            $this->info('Stale claims requiring UNKNOWN hold: ' . $staleQuery->count());
             return self::SUCCESS;
         }
 
+        $heldUnknown = RegistrationStaffEmailDeliveryLedger::holdStaleClaimsUnknown(
+            $tenantOption !== null ? (int) $tenantOption : null,
+            100,
+        );
         $attempted = 0;
         $cancelled = 0;
         $failed = 0;
@@ -95,7 +106,7 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
                 ]);
             }
         }
-        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} failed={$failed}");
+        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} held_unknown={$heldUnknown} failed={$failed}");
         return $failed === 0 ? self::SUCCESS : self::FAILURE;
     }
 }

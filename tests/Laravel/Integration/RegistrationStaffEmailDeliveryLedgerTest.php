@@ -46,6 +46,8 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
 
         $claim = Ledger::claimCapturedForInline($tenant, $registrant, $recipient);
         $this->assertSame($id, $claim['id'] ?? null);
+        $this->assertNotEmpty($claim['dispatch_id'] ?? null);
+        $this->assertSame($claim['dispatch_id'], DB::table('registration_staff_email_deliveries')->where('id', $id)->value('dispatch_id'));
         $this->assertNull(Ledger::claimCapturedForInline($tenant, $registrant, $recipient));
         $this->assertNull(Ledger::claimCapturedForInline($tenant + 1, $registrant, $recipient));
         $this->assertTrue(Ledger::resolveClaim($tenant, $id, $claim['token'], 'accepted'));

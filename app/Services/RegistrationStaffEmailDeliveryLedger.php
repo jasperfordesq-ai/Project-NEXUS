@@ -82,7 +82,7 @@ final class RegistrationStaffEmailDeliveryLedger
      * Atomically reserve a captured inline-send intent. A crash after this
      * transition cannot cause an automatic second provider call on replay.
      *
-     * @return array{id:int, token:string}|null
+     * @return array{id:int, token:string, dispatch_id:string}|null
      */
     public static function claimCapturedForInline(int $tenantId, int $registrantId, int $recipientId): ?array
     {
@@ -91,6 +91,7 @@ final class RegistrationStaffEmailDeliveryLedger
         }
 
         $token = (string) Str::uuid();
+        $dispatchId = (string) Str::uuid();
         $claimed = DB::table(self::TABLE)
             ->where('tenant_id', $tenantId)
             ->where('registrant_user_id', $registrantId)
@@ -114,6 +115,7 @@ final class RegistrationStaffEmailDeliveryLedger
             ->update([
                 'status' => 'claimed',
                 'claim_token' => $token,
+                'dispatch_id' => $dispatchId,
                 'claimed_at' => now(),
                 'attempts' => DB::raw('attempts + 1'),
                 'updated_at' => now(),
@@ -131,7 +133,7 @@ final class RegistrationStaffEmailDeliveryLedger
         if ($id <= 0) {
             throw new \RuntimeException('Claimed registration delivery was not found');
         }
-        return ['id' => $id, 'token' => $token];
+        return ['id' => $id, 'token' => $token, 'dispatch_id' => $dispatchId];
     }
 
     public static function hasIntentForRegistrant(int $tenantId, int $registrantId): bool
@@ -178,6 +180,35 @@ final class RegistrationStaffEmailDeliveryLedger
             ->update([
                 'status' => 'cancelled',
                 'last_error_code' => 'REGISTRANT_UNAVAILABLE',
+                'resolved_at' => now(),
+                'updated_at' => now(),
+            ]);
+    }
+
+    /** Hold crashed or timed-out claims for reconciliation, never for retry. */
+    public static function holdStaleClaimsUnknown(?int $tenantId = null, int $limit = 100): int
+    {
+        if (($tenantId !== null && $tenantId <= 0) || $limit < 1 || $limit > 1000) {
+            throw new \InvalidArgumentException('Invalid stale-claim scope or limit');
+        }
+        $cutoff = now()->subMinutes(20);
+        $query = DB::table(self::TABLE)
+            ->where('status', 'claimed')
+            ->where('claimed_at', '<=', $cutoff);
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+        $ids = $query->orderBy('claimed_at')->limit($limit)->pluck('id')->all();
+        if ($ids === []) {
+            return 0;
+        }
+        return DB::table(self::TABLE)
+            ->whereIn('id', $ids)
+            ->where('status', 'claimed')
+            ->where('claimed_at', '<=', $cutoff)
+            ->update([
+                'status' => 'unknown',
+                'last_error_code' => 'CLAIM_EXPIRED_UNCONFIRMED',
                 'resolved_at' => now(),
                 'updated_at' => now(),
             ]);

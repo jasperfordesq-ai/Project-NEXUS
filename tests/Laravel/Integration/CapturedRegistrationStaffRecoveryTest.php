@@ -106,6 +106,28 @@ final class CapturedRegistrationStaffRecoveryTest extends TestCase
         $this->assertSame(0, $sender->adminCalls);
     }
 
+    public function test_abandoned_claim_is_held_unknown_without_a_second_send(): void
+    {
+        [$tenant, $registrant, $recipient, $delivery] = $this->fixture();
+        $claim = Ledger::claimCapturedForInline($tenant, $registrant, $recipient);
+        $this->assertNotNull($claim);
+        DB::table('registration_staff_email_deliveries')->where('id', $delivery)
+            ->update(['claimed_at' => now()->subMinutes(21)]);
+        [$otherTenant, $otherRegistrant, $otherRecipient, $freshDelivery] = $this->fixture();
+        $this->assertNotNull(Ledger::claimCapturedForInline($otherTenant, $otherRegistrant, $otherRecipient));
+        $sender = new RecoveryCaptureDispatchService();
+        app()->instance(EmailDispatchService::class, $sender);
+
+        $this->artisan('emails:recover-captured-registration-staff', ['--tenant' => $tenant])
+            ->assertExitCode(0);
+
+        $held = DB::table('registration_staff_email_deliveries')->where('id', $delivery)->first();
+        $this->assertSame('unknown', $held->status);
+        $this->assertSame('CLAIM_EXPIRED_UNCONFIRMED', $held->last_error_code);
+        $this->assertSame('claimed', DB::table('registration_staff_email_deliveries')->where('id', $freshDelivery)->value('status'));
+        $this->assertSame(0, $sender->adminCalls);
+    }
+
     /** @return array{int,int,int,int} */
     private function fixture(): array
     {

@@ -111,6 +111,12 @@ class ActivationEmailQueueResilienceTest extends TestCase
         $categories = array_column($mailer->calls, 'category');
         $this->assertContains('activation', $categories);
         $this->assertContains('admin_new_registration', $categories);
+        $deliveryDispatchId = DB::table('registration_staff_email_deliveries')
+            ->where('tenant_id', $tenantId)->where('registrant_user_id', $userId)
+            ->value('dispatch_id');
+        $staffCall = collect($mailer->calls)->firstWhere('category', 'admin_new_registration');
+        $this->assertNotEmpty($deliveryDispatchId);
+        $this->assertSame($deliveryDispatchId, $staffCall['dispatch_id'] ?? null);
 
         Queue::assertNotPushed(
             CallQueuedListener::class,
@@ -328,7 +334,7 @@ class ActivationEmailQueueResilienceTest extends TestCase
 
 class RegistrationInlineEmailDispatchService extends EmailDispatchService
 {
-    /** @var list<array{to:string, subject:string, category:string|null, tenant_id:int|null}> */
+    /** @var list<array{to:string, subject:string, category:string|null, tenant_id:int|null, dispatch_id:string|null}> */
     public array $calls = [];
 
     /** @var list<string> */
@@ -341,6 +347,7 @@ class RegistrationInlineEmailDispatchService extends EmailDispatchService
             'subject'   => $subject,
             'category'  => $options['category'] ?? null,
             'tenant_id' => isset($options['tenant_id']) ? (int) $options['tenant_id'] : null,
+            'dispatch_id' => $options['dispatch_id'] ?? null,
         ];
 
         return !in_array($to, $this->failFor, true);
