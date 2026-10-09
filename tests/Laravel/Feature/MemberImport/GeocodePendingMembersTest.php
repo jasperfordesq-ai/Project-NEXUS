@@ -41,6 +41,9 @@ final class GeocodePendingMembersTest extends TestCase
 
     private int $otherTenantId;
 
+    /** Status the fake map service answers with for towns named "Outage ..." (0 = connection error). */
+    private int $outageStatus = 429;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -66,6 +69,12 @@ final class GeocodePendingMembersTest extends TestCase
         Http::fake(function ($request) {
             parse_str((string) parse_url((string) $request->url(), PHP_URL_QUERY), $query);
             $place = (string) ($query['q'] ?? '');
+            if (str_starts_with($place, 'Outage')) {
+                if ($this->outageStatus === 0) {
+                    throw new IlluminateHttpClientConnectionException('cURL error 28: timed out');
+                }
+                return Http::response('', $this->outageStatus);
+            }
             if (isset(self::KNOWN[$place])) {
                 [$lat, $lon] = self::KNOWN[$place];
                 return Http::response([['lat' => $lat, 'lon' => $lon]], 200);
@@ -296,16 +305,127 @@ final class GeocodePendingMembersTest extends TestCase
 
     public function test_a_member_in_an_unloadable_tenant_is_marked_and_does_not_stop_the_run(): void
     {
-        // A tenant row that no longer loads (inactive) must not abort the batch.
-        $broken = $this->member('Findable Town One', $this->otherTenantId);
+        // A member whose tenant cannot be loaded must not abort the batch. The
+        // tenant id points at nothing (foreign keys are off only for this insert;
+        // the transaction is rolled back).
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        try {
+            $broken = $this->member('Findable Town One', 987654);
+        } finally {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
         $good = $this->member('Findable Town Two', $this->testTenantId);
-        DB::table('tenants')->where('id', $this->otherTenantId)->update(['is_active' => 0]);
 
         $result = GeocodingService::geocodePendingUsers(10, 30.0);
 
         $this->assertNotNull($this->row($broken->id)->geocode_attempted_at);
+        $this->assertNull($this->row($broken->id)->latitude, 'a member whose community cannot be loaded gets no position');
         $this->assertNotNull($this->row($good->id)->latitude, 'the other member was still looked up');
         $this->assertSame(2, $result['processed']);
+    }
+
+    // -------------------------------------------- provider outage handling
+
+    /** Seconds from now until the member is next eligible (negative = already eligible). */
+    private function secondsUntilEligible(int $userId): int
+    {
+        return (int) DB::selectOne(
+            "SELECT TIMESTAMPDIFF(SECOND, NOW(), geocode_attempted_at + INTERVAL 7 DAY) AS s FROM users WHERE id = ?",
+            [$userId]
+        )->s;
+    }
+
+    public function test_a_provider_error_retries_the_member_in_about_an_hour_not_a_week(): void
+    {
+        $member = $this->member('Outage Town');
+
+        $result = GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertSame(1, $result['processed']);
+        $this->assertSame(1, $result['failed']);
+        $this->assertNull($this->row($member->id)->latitude);
+        $this->assertEqualsWithDelta(3600, $this->secondsUntilEligible($member->id), 30, 'eligible again in about an hour');
+
+        // Not before the hour is up ...
+        Cache::flush();
+        $this->assertSame(0, GeocodingService::geocodePendingUsers(10, 30.0)['processed']);
+
+        // ... and picked up once it has, when the service is back.
+        DB::update('UPDATE users SET geocode_attempted_at = geocode_attempted_at - INTERVAL 61 MINUTE WHERE id = ?', [$member->id]);
+        DB::update("UPDATE users SET location = 'Findable Town One' WHERE id = ?", [$member->id]);
+        $retry = GeocodingService::geocodePendingUsers(10, 30.0);
+        $this->assertSame(1, $retry['success']);
+        $this->assertNotNull($this->row($member->id)->latitude);
+    }
+
+    public function test_a_timeout_or_server_error_is_also_a_provider_error(): void
+    {
+        $this->outageStatus = 503;
+        $member = $this->member('Outage Server Error');
+
+        GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertEqualsWithDelta(3600, $this->secondsUntilEligible($member->id), 30);
+
+        $this->outageStatus = 0;
+        $other = $this->member('Outage Connection');
+        GeocodingService::geocodePendingUsers(10, 30.0);
+        $this->assertEqualsWithDelta(3600, $this->secondsUntilEligible($other->id), 30, 'a connection error is a provider error too');
+    }
+
+    public function test_a_not_found_town_still_waits_a_week(): void
+    {
+        $member = $this->member('Nowhereville Unknown');
+
+        GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertEqualsWithDelta(7 * 86400, $this->secondsUntilEligible($member->id), 30);
+        DB::update('UPDATE users SET geocode_attempted_at = NOW() - INTERVAL 6 DAY WHERE id = ?', [$member->id]);
+        Cache::flush();
+        $this->assertSame(0, GeocodingService::geocodePendingUsers(10, 30.0)['processed']);
+    }
+
+    public function test_three_provider_errors_in_a_row_stop_the_run(): void
+    {
+        $ids = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $ids[] = $this->member("Outage Number {$i}")->id;
+        }
+
+        $result = GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertSame(3, $result['processed']);
+        $this->assertSame(1, $result['stopped_on_provider_errors']);
+        $this->assertSame(1, $result['deferred']);
+        $this->assertNull($this->row($ids[3])->geocode_attempted_at, 'the fourth member was not touched');
+        $this->assertSame(3, $this->lookups());
+    }
+
+    public function test_a_success_between_errors_resets_the_count(): void
+    {
+        $this->member('Outage Number 1');
+        $this->member('Outage Number 2');
+        $this->member('Findable Town One');
+        $this->member('Outage Number 3');
+        $this->member('Outage Number 4');
+
+        $result = GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertSame(5, $result['processed']);
+        $this->assertSame(0, $result['stopped_on_provider_errors']);
+    }
+
+    public function test_a_remembered_provider_error_counts_as_a_provider_error(): void
+    {
+        $first = $this->member('Outage Shared Town');
+        $second = $this->member('Outage Shared Town');
+
+        $result = GeocodingService::geocodePendingUsers(10, 30.0);
+
+        $this->assertSame(1, $this->lookups(), 'the second member was answered from the 15-minute memory');
+        $this->assertSame(2, $result['processed']);
+        $this->assertEqualsWithDelta(3600, $this->secondsUntilEligible($first->id), 30);
+        $this->assertEqualsWithDelta(3600, $this->secondsUntilEligible($second->id), 30, 'not parked for a week');
     }
 
     public function test_the_thirty_minute_job_no_longer_looks_up_members(): void

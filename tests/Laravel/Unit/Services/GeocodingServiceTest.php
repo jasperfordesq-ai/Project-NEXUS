@@ -142,7 +142,7 @@ class GeocodingServiceTest extends TestCase
         Cache::shouldReceive('get')->andReturn(null);
         Cache::shouldReceive('put')
             ->once()
-            ->with(\Mockery::type('string'), [], 900);
+            ->with(\Mockery::type('string'), ['provider_error' => true], 900);
 
         Http::shouldReceive('withHeaders->timeout->get')
             ->andThrow(new \Exception('cURL error 28: Operation timed out'));
@@ -156,7 +156,7 @@ class GeocodingServiceTest extends TestCase
         Cache::shouldReceive('get')->andReturn(null);
         Cache::shouldReceive('put')
             ->once()
-            ->with(\Mockery::type('string'), [], 900);
+            ->with(\Mockery::type('string'), ['provider_error' => true], 900);
 
         Http::shouldReceive('withHeaders->timeout->get')->andReturn(
             new \Illuminate\Http\Client\Response(new \GuzzleHttp\Psr7\Response(503, [], ''))
@@ -172,6 +172,40 @@ class GeocodingServiceTest extends TestCase
         Http::shouldReceive('withHeaders')->never();
 
         $this->assertNull(GeocodingService::geocode('Partner Demo'));
+    }
+
+    public function test_geocode_answers_a_remembered_provider_error_as_no_coordinates(): void
+    {
+        Cache::shouldReceive('get')->andReturn(['provider_error' => true]);
+        Http::shouldReceive('withHeaders')->never();
+
+        $this->assertNull(GeocodingService::geocode('Dublin'));
+    }
+
+    public function test_lookup_tells_found_not_found_and_provider_error_apart(): void
+    {
+        Cache::shouldReceive('get')->andReturn(['latitude' => 53.35, 'longitude' => -6.26], [], ['provider_error' => true]);
+        Http::shouldReceive('withHeaders')->never();
+
+        $this->assertSame('found', GeocodingService::lookup('a')['status']);
+        $this->assertSame('not_found', GeocodingService::lookup('b')['status']);
+        $this->assertSame('provider_error', GeocodingService::lookup('c')['status']);
+        $this->assertSame('not_found', GeocodingService::lookup('   ')['status']);
+    }
+
+    public function test_lookup_reports_a_429_as_a_provider_error_and_an_empty_answer_as_not_found(): void
+    {
+        Cache::shouldReceive('get')->andReturn(null);
+        Cache::shouldReceive('put')->twice();
+        Http::shouldReceive('withHeaders->timeout->get')->andReturn(
+            new \Illuminate\Http\Client\Response(new \GuzzleHttp\Psr7\Response(429, [], '')),
+            $this->okResponse([])
+        );
+        Log::shouldReceive('warning')->once();
+        Log::shouldReceive('info')->once();
+
+        $this->assertSame('provider_error', GeocodingService::lookup('Dublin')['status']);
+        $this->assertSame('not_found', GeocodingService::lookup('Atlantis')['status']);
     }
 
     // =========================================================================

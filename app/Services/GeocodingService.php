@@ -64,6 +64,25 @@ class GeocodingService
     /** Cached marker meaning "we asked, and there is no answer for this address". */
     private const NO_RESULT = [];
 
+    /**
+     * Cached marker meaning "we could not ask, or the provider failed" (429, 5xx,
+     * timeout, connection error). Kept distinct from NO_RESULT so a caller that
+     * cares (the member lookup) can tell an outage from a verdict on the address.
+     * geocode() treats both as "no coordinates", as it always has.
+     */
+    private const PROVIDER_ERROR = ['provider_error' => true];
+
+    /** Outcomes of lookup(). */
+    public const STATUS_FOUND = 'found';
+    public const STATUS_NOT_FOUND = 'not_found';
+    public const STATUS_PROVIDER_ERROR = 'provider_error';
+
+    /** After a provider error a member is eligible again in about this long, not a week. */
+    private const USER_PROVIDER_ERROR_RETRY_MINUTES = 60;
+
+    /** The run stops after this many provider errors in a row. */
+    private const MAX_CONSECUTIVE_PROVIDER_ERRORS = 3;
+
     public function __construct()
     {
     }
@@ -75,17 +94,38 @@ class GeocodingService
      */
     public static function geocode(string $address): ?array
     {
+        return self::lookup($address)['coords'];
+    }
+
+    /**
+     * Like geocode(), but says WHY there is no answer: the address was found,
+     * the provider has no such place, or the provider failed (429, 5xx, timeout,
+     * connection error — a bad moment, not a verdict on the address). Same cache
+     * and same rate limit as geocode(): found 24 h, not found 24 h, provider
+     * error 15 min.
+     *
+     * @return array{status: string, coords: array{latitude: float, longitude: float}|null}
+     */
+    public static function lookup(string $address): array
+    {
         $address = trim($address);
         if (empty($address)) {
-            return null;
+            return ['status' => self::STATUS_NOT_FOUND, 'coords' => null];
         }
 
-        // Check cache first. An empty array is the remembered-failure marker, so
-        // a known-bad address is answered from cache instead of over the network.
+        // Check cache first, so a known-bad address (or a provider that failed a
+        // moment ago) is answered from cache instead of over the network.
         $cacheKey = 'geocode:' . md5(strtolower($address));
         $cached = Cache::get($cacheKey);
         if (is_array($cached)) {
-            return $cached === self::NO_RESULT ? null : $cached;
+            if (isset($cached['latitude'], $cached['longitude'])) {
+                return ['status' => self::STATUS_FOUND, 'coords' => $cached];
+            }
+
+            return [
+                'status' => $cached === self::PROVIDER_ERROR ? self::STATUS_PROVIDER_ERROR : self::STATUS_NOT_FOUND,
+                'coords' => null,
+            ];
         }
 
         try {
@@ -105,8 +145,8 @@ class GeocodingService
                     'address' => $address,
                     'status' => $response->status(),
                 ]);
-                Cache::put($cacheKey, self::NO_RESULT, self::TRANSIENT_FAILURE_CACHE_TTL);
-                return null;
+                Cache::put($cacheKey, self::PROVIDER_ERROR, self::TRANSIENT_FAILURE_CACHE_TTL);
+                return ['status' => self::STATUS_PROVIDER_ERROR, 'coords' => null];
             }
 
             $results = $response->json();
@@ -114,7 +154,7 @@ class GeocodingService
             if (empty($results) || !isset($results[0]['lat'], $results[0]['lon'])) {
                 Log::info('Geocoding returned no results', ['address' => $address]);
                 Cache::put($cacheKey, self::NO_RESULT, self::FAILURE_CACHE_TTL);
-                return null;
+                return ['status' => self::STATUS_NOT_FOUND, 'coords' => null];
             }
 
             $coords = [
@@ -124,14 +164,14 @@ class GeocodingService
 
             Cache::put($cacheKey, $coords, self::CACHE_TTL);
 
-            return $coords;
+            return ['status' => self::STATUS_FOUND, 'coords' => $coords];
         } catch (\Throwable $e) {
             Log::error('Geocoding exception', [
                 'address' => $address,
                 'error' => $e->getMessage(),
             ]);
-            Cache::put($cacheKey, self::NO_RESULT, self::TRANSIENT_FAILURE_CACHE_TTL);
-            return null;
+            Cache::put($cacheKey, self::PROVIDER_ERROR, self::TRANSIENT_FAILURE_CACHE_TTL);
+            return ['status' => self::STATUS_PROVIDER_ERROR, 'coords' => null];
         }
     }
 
@@ -177,6 +217,26 @@ class GeocodingService
         );
 
         return $affected > 0;
+    }
+
+    /**
+     * updateUserCoordinates() that reports the outcome (found / not found /
+     * provider error) instead of a bare boolean. Only "found" with a row actually
+     * updated returns STATUS_FOUND.
+     */
+    public static function updateUserCoordinatesWithStatus(int $userId, ?string $location): string
+    {
+        $lookup = static::lookup((string) $location);
+        if ($lookup['status'] !== self::STATUS_FOUND) {
+            return $lookup['status'];
+        }
+
+        $affected = DB::update(
+            "UPDATE users SET latitude = ?, longitude = ? WHERE id = ? AND tenant_id = ?",
+            [$lookup['coords']['latitude'], $lookup['coords']['longitude'], $userId, TenantContext::getId()]
+        );
+
+        return $affected > 0 ? self::STATUS_FOUND : self::STATUS_NOT_FOUND;
     }
 
     /**
@@ -263,6 +323,11 @@ class GeocodingService
      * they change their town (users.geocode_attempted_at is cleared whenever
      * users.location changes).
      *
+     * A map-service failure (429, 5xx, timeout, connection error) is not a
+     * verdict on the town: that member is marked so they are eligible again in
+     * about an hour, and the run stops after three such failures in a row, so a
+     * short outage never parks members for a week.
+     *
      * Requests stay strictly serial: geocode() holds each one at least a second
      * behind the last, which is Nominatim's usage policy. Cached answers (found
      * or not) cost no request and no wait.
@@ -270,8 +335,9 @@ class GeocodingService
      * @param int           $limit         Most members to look at in this run.
      * @param float         $budgetSeconds Stop starting new lookups after this long.
      * @param callable|null $clock         Returns the current time in seconds (float); tests only.
-     * @return array{processed: int, success: int, failed: int, skipped: int, deferred: int}
-     *         deferred = selected but not reached because the budget ran out.
+     * @return array{processed: int, success: int, failed: int, skipped: int, deferred: int, stopped_on_provider_errors: int}
+     *         deferred = selected but not reached (budget ran out, or the run
+     *         stopped on provider errors); stopped_on_provider_errors is 1 if it did.
      */
     public static function geocodePendingUsers(int $limit, float $budgetSeconds, ?callable $clock = null): array
     {
@@ -282,15 +348,17 @@ class GeocodingService
         $users = DB::select(
             "SELECT id, tenant_id, location FROM users
              WHERE location IS NOT NULL AND location <> ''
-               AND (latitude IS NULL OR longitude IS NULL)
+               AND latitude IS NULL
                AND (geocode_attempted_at IS NULL
                     OR geocode_attempted_at < NOW() - INTERVAL {$retryDays} DAY)
-             ORDER BY geocode_attempted_at IS NOT NULL, geocode_attempted_at, id
+             ORDER BY geocode_attempted_at, id
              LIMIT ?",
             [max(1, $limit)]
         );
 
-        $result = ['processed' => 0, 'success' => 0, 'failed' => 0, 'skipped' => 0, 'deferred' => 0];
+        $result = ['processed' => 0, 'success' => 0, 'failed' => 0, 'skipped' => 0, 'deferred' => 0, 'stopped_on_provider_errors' => 0];
+        $consecutiveProviderErrors = 0;
+        $providerErrorRetryMinutes = self::USER_PROVIDER_ERROR_RETRY_MINUTES;
 
         foreach ($users as $index => $user) {
             if (($clock() - $startedAt) >= $budgetSeconds) {
@@ -319,9 +387,9 @@ class GeocodingService
             $result['processed']++;
 
             try {
-                $found = TenantContext::runForTenant(
+                $status = TenantContext::runForTenant(
                     $tenantId,
-                    static fn (): bool => static::updateUserCoordinates($userId, (string) $user->location)
+                    static fn (): string => static::updateUserCoordinatesWithStatus($userId, (string) $user->location)
                 );
             } catch (\Throwable $e) {
                 Log::warning('Member map lookup failed', [
@@ -329,10 +397,39 @@ class GeocodingService
                     'tenant_id' => $tenantId,
                     'error' => $e->getMessage(),
                 ]);
-                $found = false;
+                $status = self::STATUS_NOT_FOUND;
             }
 
-            $found ? $result['success']++ : $result['failed']++;
+            if ($status === self::STATUS_FOUND) {
+                $result['success']++;
+                $consecutiveProviderErrors = 0;
+                continue;
+            }
+
+            $result['failed']++;
+
+            if ($status !== self::STATUS_PROVIDER_ERROR) {
+                $consecutiveProviderErrors = 0;
+                continue;
+            }
+
+            // The provider failed: backdate the marker so the member is eligible
+            // again in about an hour. Same database clock as the selection above
+            // (NOW() - 7 days + 1 hour compares as "older than 7 days" an hour on).
+            DB::update(
+                "UPDATE users SET geocode_attempted_at = NOW() - INTERVAL {$retryDays} DAY + INTERVAL {$providerErrorRetryMinutes} MINUTE
+                 WHERE id = ? AND tenant_id = ?",
+                [$userId, $tenantId]
+            );
+
+            if (++$consecutiveProviderErrors >= self::MAX_CONSECUTIVE_PROVIDER_ERRORS) {
+                $result['stopped_on_provider_errors'] = 1;
+                $result['deferred'] = count($users) - $index - 1;
+                Log::warning('Member map lookups stopped: the map service keeps failing', [
+                    'consecutive_errors' => $consecutiveProviderErrors,
+                ]);
+                break;
+            }
         }
 
         return $result;
