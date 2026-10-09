@@ -277,7 +277,7 @@ class UserService
      *
      * @return array{items: array, cursor: string|null, has_more: bool}
      */
-    public static function search(string $term, int $limit = 20): array
+    public static function search(string $term, int $limit = 20, ?int $viewerId = null): array
     {
         $limit = min($limit, 100);
         $like = '%' . $term . '%';
@@ -308,6 +308,7 @@ class UserService
 
         // Apply onboarding visibility gating
         OnboardingConfigService::applyVisibilityScope($query);
+        MemberProfileVisibility::applyToQuery($query, TenantContext::getId(), $viewerId);
 
         $items = $query->get();
 

@@ -190,17 +190,11 @@ class UsersController extends BaseApiController
         $q = $this->query('q', '');
         $limit = $this->queryInt('limit', 20, 1, 100);
 
-        $results = $this->userService->search($q, $limit);
+        $viewerId = $this->getOptionalUserId();
+        $results = $this->userService->search($q, $limit, $viewerId);
 
         // Hide surnames from non-admin viewers
-        $viewer = Auth::user();
-        $viewerIsAdmin = $viewer && (
-            in_array($viewer->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($viewer->is_admin ?? false)
-            || (bool) ($viewer->is_super_admin ?? false)
-            || (bool) ($viewer->is_tenant_super_admin ?? false)
-            || (bool) ($viewer->is_god ?? false)
-        );
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
         if (!$viewerIsAdmin && isset($results['items'])) {
             $results['items'] = array_map(static function (array $u): array {
                 unset($u['last_name']);
@@ -1508,13 +1502,7 @@ class UsersController extends BaseApiController
         $tenantId = $this->getTenantId();
         $viewerId = $this->getOptionalUserId();
         $viewer = Auth::user();
-        $viewerIsAdmin = $viewer && (
-            in_array($viewer->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($viewer->is_admin ?? false)
-            || (bool) ($viewer->is_super_admin ?? false)
-            || (bool) ($viewer->is_tenant_super_admin ?? false)
-            || (bool) ($viewer->is_god ?? false)
-        );
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
 
         $limit = min((int) $request->query('limit', 50), 100);
         $offset = max((int) $request->query('offset', 0), 0);

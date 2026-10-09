@@ -650,6 +650,94 @@ class UsersControllerTest extends TestCase
         $response->assertJsonStructure(['data', 'meta']);
     }
 
+    public function test_unapproved_admin_session_cannot_use_directory_admin_privacy_exemption(): void
+    {
+        $this->authenticatedUser(['role' => 'admin', 'is_approved' => false]);
+        $private = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1UnapprovedAdminDirectoryFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'connections',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-private-avatar.png',
+            'bio' => 'Synthetic private directory fixture.',
+        ]);
+
+        $response = $this->apiGet('/v2/users?q=C1UnapprovedAdminDirectoryFixture&sort=name&limit=100');
+        if ($response->getStatusCode() !== 200) {
+            $this->assertContains($response->getStatusCode(), [401, 403]);
+            return;
+        }
+        $ids = array_map('intval', array_column($response->json('data') ?? [], 'id'));
+        $this->assertNotContains($private->id, $ids,
+            'An unapproved admin session must not bypass profile privacy in the directory.');
+
+        $this->authenticatedUser(['role' => 'admin']);
+        $activeAdminResponse = $this->apiGet('/v2/users?q=C1UnapprovedAdminDirectoryFixture&sort=name&limit=100');
+        $activeAdminResponse->assertStatus(200);
+        $activeAdminIds = array_map('intval', array_column($activeAdminResponse->json('data') ?? [], 'id'));
+        $this->assertContains($private->id, $activeAdminIds);
+    }
+
+    public function test_member_search_does_not_return_connections_only_profile_to_unapproved_admin(): void
+    {
+        $this->authenticatedUser(['role' => 'admin', 'is_approved' => false]);
+        $private = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1PrivateSearchFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'connections',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-private-avatar.png',
+            'bio' => 'Synthetic private search fixture.',
+        ]);
+
+        $response = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $response->assertStatus(200);
+        $ids = array_map('intval', array_column($response->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($private->id, $ids,
+            'A member search must not reveal a connections-only profile to an unapproved Admin.');
+
+        $public = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1PublicSearchFixture',
+            'last_name' => 'ProtectedSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-public-avatar.png',
+            'bio' => 'Synthetic public search fixture.',
+        ]);
+        $publicResponse = $this->apiGet('/v2/users/search?q=C1PublicSearchFixture&limit=100');
+        $publicResponse->assertStatus(200);
+        $publicRows = array_values(array_filter($publicResponse->json('data.items') ?? [],
+            static fn (array $row): bool => (int) $row['id'] === (int) $public->id));
+        $this->assertCount(1, $publicRows);
+        $this->assertArrayNotHasKey('last_name', $publicRows[0]);
+
+        $this->authenticatedUser(['role' => 'member']);
+        $memberResponse = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $memberResponse->assertStatus(200);
+        $memberIds = array_map('intval', array_column($memberResponse->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($private->id, $memberIds);
+
+        $this->authenticatedUser(['role' => 'admin']);
+        $activeAdminResponse = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $activeAdminResponse->assertStatus(200);
+        $activeAdminIds = array_map('intval', array_column($activeAdminResponse->json('data.items') ?? [], 'id'));
+        $this->assertContains($private->id, $activeAdminIds);
+        $activePublicResponse = $this->apiGet('/v2/users/search?q=C1PublicSearchFixture&limit=100');
+        $activePublicRows = array_values(array_filter($activePublicResponse->json('data.items') ?? [],
+            static fn (array $row): bool => (int) $row['id'] === (int) $public->id));
+        $this->assertCount(1, $activePublicRows);
+        $this->assertSame('ProtectedSurname', $activePublicRows[0]['last_name']);
+    }
+
     /**
      * The directory tells members how many of the community it is showing.
      * `community_total` counts everyone active, `directory_total` only those it
