@@ -151,6 +151,22 @@ class ConnectionsControllerTest extends TestCase
         $this->assertContains($response->getStatusCode(), [200, 201]);
     }
 
+    public function test_unapproved_privileged_account_cannot_send_connection_request(): void
+    {
+        $sender = $this->authenticatedUser([
+            'role' => 'admin', 'status' => 'active', 'is_approved' => false,
+        ]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        $this->apiPost('/v2/connections/request', ['user_id' => $recipient->id])
+            ->assertStatus(422);
+        $this->assertDatabaseMissing('connections', [
+            'requester_id' => $sender->id, 'receiver_id' => $recipient->id,
+        ]);
+    }
+
     public function test_cannot_connect_to_pending_or_unapproved_registrant_by_id(): void
     {
         $user = $this->authenticatedUser();

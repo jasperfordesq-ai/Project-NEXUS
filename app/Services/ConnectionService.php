@@ -127,13 +127,18 @@ class ConnectionService
             $maxId = max($requesterId, $receiverId);
             $firstUser = DB::table('users')->where('id', $minId)->lockForUpdate()->first();
             $secondUser = DB::table('users')->where('id', $maxId)->lockForUpdate()->first();
+            $requester = $requesterId === $minId ? $firstUser : $secondUser;
             $receiver = $receiverId === $minId ? $firstUser : $secondUser;
 
             // The numeric ID in a staff registration notice is not an
             // invitation for another member to contact an unapproved person.
             // Check after locking so approval cannot change between the
             // decision and the connection being created.
-            if ($receiver === null
+            if ($requester === null
+                || (int) $requester->tenant_id !== (int) $requesterTenantId
+                || $requester->status !== 'active'
+                || ! $requester->is_approved
+                || $receiver === null
                 || (int) $receiver->tenant_id !== (int) $requesterTenantId
                 || $receiver->status !== 'active'
                 || ! $receiver->is_approved) {
