@@ -15,9 +15,19 @@ use Illuminate\Support\Facades\Schema;
  * location text. A member whose lookup found nothing is marked, so the job does
  * not retry the same address every run. NULL = never tried.
  *
- * Nullable and appended at the end of `users`, so on MariaDB 10.11 this is an
- * instant, metadata-only change that does not rebuild the table or block the
- * colour that is still serving traffic during a blue/green migration.
+ * 🔴 This is NOT an instant change. `users` has a FULLTEXT index
+ * (ft_users_search), and on MariaDB 10.11 that rules out a metadata-only add:
+ * measured 2026-10-09 on a throwaway copy of `users` (10.11.18),
+ *   ALGORITHM=INSTANT            -> ERROR 1845 "not supported for this operation"
+ *   ALGORITHM=INPLACE, LOCK=NONE -> ERROR 1846 "Fulltext index creation requires
+ *                                   a lock. Try LOCK=SHARED"
+ *   ALGORITHM=INPLACE, LOCK=SHARED and the plain add below -> accepted
+ * So MariaDB REBUILDS `users` while holding a shared lock: members can still be
+ * read, but every write to `users` (sign-in stamps, profile edits, sign-ups)
+ * waits until the rebuild ends — on the colour still serving traffic too. The
+ * copy took about 2.5 s at 63,000 rows locally. Check the production row count
+ * before deploying; at today's size it is seconds. The migration safety gate
+ * passes it (it only blocks destructive changes), so nothing else will warn.
  */
 return new class extends Migration {
     public function up(): void
