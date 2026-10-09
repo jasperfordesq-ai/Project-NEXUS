@@ -45,8 +45,9 @@ class AdminMemberImportController extends BaseApiController
         $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
         // Per administrator, here rather than on the route: a route throttle runs
-        // before authentication and can only count by address (RouteServiceProvider).
-        // Each check can hold ~1 MB of rows in the shared Redis.
+        // before authentication and the second-factor check, so it would also
+        // count requests those refuse. Each check can hold ~1 MB of rows in the
+        // shared Redis.
         $this->rateLimit('member_import_check', self::CHECKS_PER_MINUTE, 60);
 
         $rawName = request()->input('file_name');

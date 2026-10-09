@@ -105,19 +105,7 @@ class RouteServiceProvider extends ServiceProvider
         // an unauthenticated caller can create, which the raw header did not.
         RateLimiter::for('api', function (Request $request) {
             $tenant = (string) (TenantContext::currentId() ?? 'unresolved');
-            $identity = $request->user()?->id;
-            $bearer = $request->bearerToken();
-            if (! $identity && is_string($bearer) && $bearer !== '') {
-                try {
-                    $claims = app(TokenService::class)->validateRequestAccessToken($request, $bearer);
-                    $verifiedUserId = (int) ($claims['user_id'] ?? $claims['sub'] ?? 0);
-                    $identity = $verifiedUserId > 0 ? $verifiedUserId : null;
-                } catch (\Throwable) {
-                    // Limiting must fail closed to the anonymous bucket rather
-                    // than turning a malformed credential into a server error.
-                    $identity = null;
-                }
-            }
+            $identity = self::verifiedActorId($request);
             $key = $tenant . '|' . ($identity ?: 'ip:' . $request->ip());
 
             return [
@@ -186,8 +174,8 @@ class RouteServiceProvider extends ServiceProvider
             $challenge = is_string($token) ? app(\App\Services\TwoFactorChallengeManager::class)->get($token) : null;
             if ($challenge && array_intersect(['totp_setup', 'totp', 'backup_code'], $challenge['methods'] ?? [])) {
                 $actor = 'user:' . (int) $challenge['tenant_id'] . ':' . (int) $challenge['user_id'];
-            } elseif (!$request->exists('two_factor_token') && $request->user()) {
-                $actor = 'user:' . $request->user()->tenant_id . ':' . $request->user()->id;
+            } elseif (!$request->exists('two_factor_token') && ($userId = self::verifiedActorId($request)) !== null) {
+                $actor = 'user:' . (int) TenantContext::getId() . ':' . $userId;
             }
             return [
                 Limit::perMinute(5)->by('mfa-challenge:' . $request->path() . ':' . $actor),
@@ -200,7 +188,7 @@ class RouteServiceProvider extends ServiceProvider
         // but isolate it per tenant and authenticated actor.
         RateLimiter::for('events-people-bulk', static function (Request $request): Limit {
             $tenantId = (int) TenantContext::getId();
-            $userId = $request->user()?->getAuthIdentifier();
+            $userId = self::verifiedActorId($request);
             $actor = $userId !== null ? 'user:' . $userId : 'ip:' . $request->ip();
 
             return Limit::perMinute(30)->by(
@@ -213,17 +201,17 @@ class RouteServiceProvider extends ServiceProvider
         // behind auth:sanctum). This replaces the old per-IP numeric throttle that
         // allowed multiple admins behind a shared NAT to starve each other.
         RateLimiter::for('bulk-export', function (Request $request) {
-            return Limit::perMinute(1)->by(
-                $request->user()?->id ? 'user:' . $request->user()->id : 'ip:' . $request->ip()
-            );
+            $userId = self::verifiedActorId($request);
+
+            return Limit::perMinute(1)->by($userId !== null ? 'user:' . $userId : 'ip:' . $request->ip());
         });
 
-        // Member import — per-ADDRESS backstops. A route throttle runs before this
-        // app's Authenticate middleware (the framework's middleware sorter moves
-        // ThrottleRequests ahead of SubstituteBindings, which precedes it), so the
-        // signed-in user is not known here and $request->user() is null. The
+        // Member import — per-ADDRESS backstops, deliberately. (A route throttle
+        // runs before Authenticate, so $request->user() is null here; a limiter
+        // that wants the member uses verifiedActorId() — see F-577.) The
         // per-administrator limit on checks (10 a minute) is enforced in
-        // AdminMemberImportController::check(), after authentication.
+        // AdminMemberImportController::check(), after the second-factor check,
+        // so only administrators who passed it are counted.
         // Checks: each can hold ~1 MB of rows in the shared Redis (128 MB,
         // allkeys-lru, also holding the queue and these counters).
         RateLimiter::for('member-import-check', static fn (Request $request): Limit => Limit::perMinute(30)->by('member-import-check:ip:' . $request->ip()));
@@ -276,9 +264,9 @@ class RouteServiceProvider extends ServiceProvider
         // HTTP Range requests (each is a fresh request), but bounded so a
         // single client cannot use the media proxy for bandwidth DoS.
         RateLimiter::for('podcast-media', function (Request $request) {
-            return Limit::perMinute(180)->by(
-                $request->user()?->id ? 'user:' . $request->user()->id : 'ip:' . $request->ip()
-            );
+            $userId = self::verifiedActorId($request);
+
+            return Limit::perMinute(180)->by($userId !== null ? 'user:' . $userId : 'ip:' . $request->ip());
         });
 
         $this->routes(function () {
@@ -353,6 +341,48 @@ class RouteServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * The member a limiter should count this request against, or null for the
+     * anonymous per-address bucket.
+     *
+     * 🔴 Never `$request->user()` alone (F-577). On every signed-in route the
+     * throttle runs BEFORE App\Http\Middleware\Authenticate: that class is not
+     * in Laravel's middleware priority list (it does not implement
+     * AuthenticatesRequests), so the sorter leaves it after the `api` group's
+     * throttle and after any route `throttle:`. For a bearer-token caller the
+     * user is therefore never resolved yet, and a limiter keyed on it counts
+     * members by address. RouteThrottleIdentityTest pins that ordering.
+     *
+     * So the access token is verified here, the way F-036 did for `api`. The
+     * result is cached on the request and Authenticate reuses it, so this costs
+     * one verification per request, not one per limiter. Unverified bearer text
+     * (malformed, expired, revoked) never becomes an identity: rotating junk
+     * tokens must not mint fresh buckets.
+     */
+    private static function verifiedActorId(Request $request): ?int
+    {
+        $resolved = $request->user()?->getAuthIdentifier();
+        if ($resolved !== null) {
+            return (int) $resolved;
+        }
+
+        $bearer = $request->bearerToken();
+        if (!is_string($bearer) || $bearer === '') {
+            return null;
+        }
+
+        try {
+            $claims = app(TokenService::class)->validateRequestAccessToken($request, $bearer);
+        } catch (\Throwable) {
+            // Fail closed to the anonymous bucket rather than turning a
+            // malformed credential into a server error.
+            return null;
+        }
+        $userId = (int) ($claims['user_id'] ?? $claims['sub'] ?? 0);
+
+        return $userId > 0 ? $userId : null;
+    }
+
     private static function groupsRateKey(Request $request, string $family): string
     {
         $groupId = $request->route('id') ?? $request->route('groupId');
@@ -369,7 +399,7 @@ class RouteServiceProvider extends ServiceProvider
     private static function groupsActorRateKey(Request $request, string $family): string
     {
         $tenantId = (int) TenantContext::getId();
-        $userId = $request->user()?->getAuthIdentifier();
+        $userId = self::verifiedActorId($request);
         $actor = $userId !== null ? 'user:' . $userId : 'ip:' . $request->ip();
 
         return "groups:{$family}:tenant:{$tenantId}:{$actor}:all";
@@ -379,7 +409,7 @@ class RouteServiceProvider extends ServiceProvider
     private static function routeRateLimits(Request $request, int $attempts, int $minutes): array
     {
         $tenantId = (int) (TenantContext::currentId() ?? 0);
-        $userId = $request->user()?->getAuthIdentifier();
+        $userId = self::verifiedActorId($request);
         $ip = (string) $request->ip();
         $actor = $userId !== null ? 'user:' . $userId : 'ip:' . $ip;
 
