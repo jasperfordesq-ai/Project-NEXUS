@@ -1,6 +1,6 @@
 # Security Assurance
 
-Last reviewed: 2026-09-28
+Last reviewed: 2026-10-09
 
 How security assessment works on Project NEXUS: what gets tested, how results are recorded, and
 how a customer — particularly a public-sector one — can ask for and receive evidence.
@@ -39,10 +39,11 @@ Four layers, each answering a different question.
 | **Automated gates** | Did this change break a security property we already protect? | Every push, every release. See [`CI.md`](CI.md). |
 | **Automated scanning** | Are there known-vulnerable dependencies, secrets, or patterns? | Nightly and on merge. See [`SECURITY-SCANNING.md`](SECURITY-SCANNING.md). |
 | **Targeted assessment** | Does a specific security property hold across the whole route table? | Periodic, recorded as an engagement. |
-| **Independent testing** | Would someone outside the team reach the same conclusion? | Contracted with an independent firm; testing has not started and no independent report exists. |
+| **Independent testing** | Would someone outside the team reach the same conclusion? | An independent penetration test by a specialist firm, completed October 2026 on an isolated staging environment with synthetic data. Repeated about every twelve months, or sooner when a customer requires it. |
 
-The fourth line is the honest one and must stay. No internal work substitutes for independent
-testing, and no assurance document may suggest otherwise.
+No internal work substitutes for independent testing, and no assurance document may suggest
+otherwise. An independent test covers the build it tested; it does not certify changes made
+after it.
 
 ### A finite verification checklist
 
@@ -194,10 +195,10 @@ A public-sector buyer, or anyone with a supplier-assurance obligation, can ask f
 3. **The complete internal assessment record** — methods, endpoint populations, original findings
    and their remediation history. Supplied confidentially on request; the summary is never
    presented as though it were this.
-4. **Testing terms**, if the organisation wants to commission its own testing. The current
-   engagement has a signed proposal and a draft rules-of-engagement document; its final
-   authorisation and test window are still being agreed. Do not describe contracted work as a
-   completed independent assessment before the testing and report exist.
+4. **A letter of assurance from the independent testing firm.** The firm's full report is
+   confidential and is not shared. Never describe planned or contracted testing as a completed
+   independent assessment before the testing has happened.
+5. **Testing terms**, if the organisation wants to commission its own testing.
 
 Requests come through the commercial relationship. The technical contact is named in the
 assurance package itself.

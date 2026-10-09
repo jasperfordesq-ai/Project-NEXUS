@@ -52,8 +52,15 @@ vocabulary that distinguishes "a fix exists" from "the fix works in production",
 frozen, and what an organisation with a supplier-assurance obligation can ask for.
 
 Finding detail is held privately and shared with a customer under their own confidential package
-once remediation allows. No independent penetration test has been commissioned to date; that is
-stated plainly in every assurance document rather than left to inference.
+once remediation allows.
+
+An independent penetration test by a specialist security firm was completed in October 2026,
+against an isolated staging copy of the platform holding only synthetic data. It covered the web
+application, the accessible frontend and the API. The findings it reported were fixed and
+confirmed by the firm's retest, apart from one low-severity item that we accepted as a known risk.
+The firm's report is confidential; a letter
+of assurance from the firm is available on request. The next independent test is planned for
+about twelve months later, or sooner if a customer requires one.
 
 ## Scope
 

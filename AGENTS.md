@@ -492,8 +492,15 @@ So security work is **cumulative and cross-referenced**, never a standalone exer
   distribution and the remediation history, never a shorter list. Never write "bombproof",
   "unbreakable" or "fully secure".
 
-Two standing facts that are easy to get wrong and damaging to state incorrectly: **no independent
-penetration test has been performed**, and **Coventry did not offer to perform testing**.
+Two standing facts that are easy to get wrong and damaging to state incorrectly:
+
+- **An independent penetration test HAS been performed** (corrected 2026-10-09; until then this
+  line said none had). A specialist firm tested the isolated pen-test staging server; the owner
+  recorded the engagement complete on 2026-10-09 (register E-100). Its report is proprietary and
+  internal only — never quote from it or share it. What can be shared, on request, is the firm's
+  **letter of assurance**. The next independent test is due about October 2027, or sooner if a
+  new customer requires one. An independent test covers the build it tested, not later changes.
+- **Coventry did not offer to perform testing.**
 
 ---
 
