@@ -251,7 +251,7 @@ describe('UserList', () => {
     await chooseExport(/importing elsewhere|export_for_import/i);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
-    const message = String(mockToast.error.mock.calls[0][0]);
+    const message = String(mockToast.error.mock.calls[0]?.[0]);
     expect(message).toMatch(/importing elsewhere|export_for_import_failed/i);
     expect(message).not.toContain('429');
   });
