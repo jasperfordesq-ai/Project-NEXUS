@@ -56,12 +56,13 @@ export function ImportFinished({ state, check, onClose }: Props) {
       ),
     };
   } else if (state.errorCode === 'IMPORT_NOT_FOUND' || state.errorCode === 'IMPORT_OUT_OF_ORDER') {
+    const reason = state.errorCode === 'IMPORT_NOT_FOUND' ? 'member_import.failed.not_found' : 'member_import.failed.out_of_order';
     alert = {
       color: 'danger',
       title: t('member_import.failed.cannot_continue'),
       description: (
         <>
-          <p>{t(state.errorCode === 'IMPORT_NOT_FOUND' ? 'member_import.failed.not_found' : 'member_import.failed.out_of_order')}</p>
+          <p>{t(reason)}</p>
           <p>{imported}</p>
         </>
       ),

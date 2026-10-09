@@ -40,7 +40,7 @@ function runnerState(overrides: Partial<RunnerState> = {}): RunnerState {
   return {
     phase: 'running', total: 125, nextIndex: 25, batchNumber: 1, batchSize: 25,
     created: 25, balance: '300.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
-    held: false, stop: null, errorMessage: null, errorCode: null, startedAt: 0, secondsRemaining: 120,
+    held: false, stop: null, errorCode: null, startedAt: 0, secondsRemaining: 120,
     ...overrides,
   };
 }

@@ -158,7 +158,6 @@ describe('useMemberImportRunner', () => {
     act(() => result.current.start('id', 20, false));
     await waitFor(() => expect(result.current.state.phase).toBe('failed'));
     expect(result.current.state.errorCode).toBe('IMPORT_NOT_FOUND');
-    expect(result.current.state.errorMessage).toBe('gone');
     expect(batch).toHaveBeenCalledTimes(1);
   });
 
@@ -272,7 +271,6 @@ describe('useMemberImportRunner', () => {
     act(() => result.current.start('id', 20, false));
     await waitFor(() => expect(result.current.state.phase).toBe('failed'));
     expect(result.current.state.errorCode).toBe('UNEXPECTED');
-    expect(result.current.state.errorMessage).toBe('kaboom');
     batch.mockImplementation(serve(20, 100));
     act(() => result.current.start('id', 20, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));

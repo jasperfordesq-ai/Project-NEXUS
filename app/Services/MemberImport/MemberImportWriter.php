@@ -11,6 +11,7 @@ namespace App\Services\MemberImport;
 use App\Services\AuditLogService;
 use App\Services\Auth\EmailConfirmationService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
+use App\Support\UserDisplayName;
 use App\Support\Wallet\OpeningBalance;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +75,7 @@ final class MemberImportWriter
             $userId = DB::transaction(function () use ($row, $tenantId, $adminId, $decision, $importId): int {
                 $userId = (int) DB::table('users')->insertGetId([
                     'tenant_id' => $tenantId,
-                    'name' => trim($row['first_name'] . ' ' . $row['last_name']),
+                    'name' => UserDisplayName::forStorage(null, null, $row['first_name'], $row['last_name']),
                     'first_name' => $row['first_name'],
                     'last_name' => $row['last_name'],
                     'email' => $row['email'],

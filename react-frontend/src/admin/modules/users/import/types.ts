@@ -67,7 +67,6 @@ export interface RunnerState {
   admissionIncompleteRows: number[];
   held: boolean;
   stop: BatchResult['stop'];
-  errorMessage: string | null;
   /** Machine code of the failure, e.g. IMPORT_NOT_FOUND; null unless phase is `failed`. */
   errorCode: string | null;
   startedAt: number | null;

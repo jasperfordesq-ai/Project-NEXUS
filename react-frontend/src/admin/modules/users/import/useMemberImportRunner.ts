@@ -42,7 +42,7 @@ const DEFAULT_TIMINGS: RunnerTimings = {
 const initial: RunnerState = {
   phase: 'idle', total: 0, nextIndex: 0, batchNumber: 0, batchSize: FIRST_BATCH,
   created: 0, balance: '0.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
-  held: false, stop: null, errorMessage: null, errorCode: null, startedAt: null, secondsRemaining: null,
+  held: false, stop: null, errorCode: null, startedAt: null, secondsRemaining: null,
 };
 
 const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
@@ -110,8 +110,10 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
       let waitedMs = 0;
       // The loop ended because the admin pressed Stop (not because the server stopped it).
       let adminStopped = false;
-      const fail = (errorCode: string | null, errorMessage: string | null) => {
-        if (!unmounted.current) setState((s) => ({ ...s, phase: 'failed', errorMessage, errorCode }));
+      // Only the machine code is kept: the window words every failure from its own
+      // translations and never shows the server's (or an exception's) raw text.
+      const fail = (errorCode: string) => {
+        if (!unmounted.current) setState((s) => ({ ...s, phase: 'failed', errorCode }));
       };
 
       try {
@@ -138,7 +140,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           if (!res.success || !res.data) {
             if (res.code === 'IMPORT_BUSY' || res.code === 'RATE_LIMIT_EXCEEDED') {
               // Waiting is free of the failure budget, but not endless.
-              if (waitedMs >= timings.current.maxWaitMs) { fail(res.code, res.error ?? res.code); break; }
+              if (waitedMs >= timings.current.maxWaitMs) { fail(res.code); break; }
               const wait = res.code === 'IMPORT_BUSY' ? timings.current.busyMs : timings.current.rateLimitMs;
               await sleep(wait);
               waitedMs += wait;
@@ -149,7 +151,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
             const fatal = res.code === 'IMPORT_NOT_FOUND' || res.code === 'IMPORT_OUT_OF_ORDER';
             failures += 1;
             if (fatal || failures >= MAX_FAILURES) {
-              fail(res.code ?? null, res.error ?? res.code ?? null);
+              fail(res.code ?? 'UNKNOWN');
               break;
             }
             await sleep(timings.current.retryBaseMs * 2 ** (failures - 1));
@@ -189,7 +191,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           if (phase !== 'running') break;
           if (stalled) {
             // No tight loop on a server that keeps answering without moving.
-            if (noProgress >= MAX_NO_PROGRESS) { fail('NO_PROGRESS', null); break; }
+            if (noProgress >= MAX_NO_PROGRESS) { fail('NO_PROGRESS'); break; }
             await sleep(timings.current.noProgressMs);
           }
         }
@@ -217,8 +219,8 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
               : { ...s, phase: 'stopped' }));
           }
         }
-      } catch (error) {
-        fail('UNEXPECTED', error instanceof Error ? error.message : String(error));
+      } catch {
+        fail('UNEXPECTED');
       } finally {
         running.current = false;
       }

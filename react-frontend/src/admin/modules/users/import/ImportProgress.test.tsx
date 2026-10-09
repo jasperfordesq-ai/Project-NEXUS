@@ -22,7 +22,7 @@ function state(overrides: Partial<RunnerState> = {}): RunnerState {
   return {
     phase: 'running', total: 1000, nextIndex: 0, batchNumber: 0, batchSize: 25,
     created: 0, balance: '0.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
-    held: false, stop: null, errorMessage: null, errorCode: null, startedAt: 0, secondsRemaining: 60,
+    held: false, stop: null, errorCode: null, startedAt: 0, secondsRemaining: 60,
     ...overrides,
   };
 }
