@@ -40,6 +40,9 @@ final class F558AdminUserImportLimitsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The import refuses addresses the mailer can never send to (F-581); @example.test is allowed
+        // only as a capture domain, which is how a development machine receives mail.
+        config(['mail.capture_recipient_domains' => ['example.test']]);
         Cache::flush();
         Queue::fake();
         $this->admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active']);

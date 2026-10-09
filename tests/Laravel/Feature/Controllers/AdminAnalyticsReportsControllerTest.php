@@ -571,6 +571,9 @@ class AdminAnalyticsReportsControllerTest extends TestCase
     public function test_member_directory_export_needs_a_fresh_second_factor(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => 1]);
+        // A member to export: with an empty directory the export answers NO_DATA (404), which would
+        // hide whether the second-factor gate let the request through.
+        User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => 1]);
         $token = fn (array $claims) => ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken($admin->id, $admin->tenant_id, $claims)];
 
         // Signed in an hour ago: asked for a second factor, nothing sent.
@@ -581,7 +584,9 @@ class AdminAnalyticsReportsControllerTest extends TestCase
         $this->apiGet('/v2/admin/reports/members/export?format=csv', $token(TwoFactorPolicy::claims('totp')))->assertOk();
 
         // The other report types are unchanged: no second factor asked for.
-        $this->apiGet('/v2/admin/reports/transactions/export?format=csv', $token(['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600]))->assertOk();
+        // (200 with a CSV, or 404 NO_DATA in an empty test database — either way, never the 403 prompt.)
+        $other = $this->apiGet('/v2/admin/reports/transactions/export?format=csv', $token(['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600]));
+        $this->assertContains($other->status(), [200, 404]);
     }
 
     public function test_export_report_returns_403_for_member(): void
