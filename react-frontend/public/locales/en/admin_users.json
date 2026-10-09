@@ -665,6 +665,8 @@
       "invalid_phone": "This is not a valid phone number. Use international format, e.g. +1 555 123 4567.",
       "invalid_number": "This is not a number. Use digits only, like 12 or 12.5 — no units or thousands separators.",
       "balance_too_large": "Balances can be up to {{max}} hours.",
+      "total_balance_too_large": "Together, the balances in this file come to more than {{max}} hours. Check that the balance column is in hours and not another unit.",
+      "nothing_left_to_import": "Every member in this file has already been imported from it. There is nothing left to import.",
       "wrong_cell_count": "This row has {{found}} cells; the headings have {{expected}}.",
       "duplicate_in_file": "This email is also on row {{first_row}}.",
       "already_member": "This person is already a member of this community.",
@@ -684,6 +686,7 @@
       "without_town": "Without a town: {{n}} (they can add it from their profile)",
       "negatives": "Negative balances that will start at 0: {{n}}",
       "blank_rows": "Empty lines ignored: {{n}}",
+      "already_imported": "Already imported from this same file earlier, so skipped: {{n}}",
       "identity_attest": "I have checked each person's identity myself",
       "identity_help": "Your community requires an identity check. If you leave this unticked, these members will wait for that check before they can sign in.",
       "send_invitations": "Email each new member a link to set their password",
@@ -718,6 +721,16 @@
       "invitations_queued_one": "{{countFormatted}} welcome email is queued and will go out over {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} welcome emails are queued and will go out over {{duration}}.",
       "no_invitations": "No welcome emails were sent."
+    },
+    "undo": {
+      "button": "Undo this import",
+      "confirm": "Remove the members this import created? Members who have already signed in or taken part in any exchange are kept.",
+      "confirm_yes": "Yes, remove them",
+      "confirm_no": "No, keep them",
+      "done": "Import undone. Removed: {{removed}}. Kept because they have already used their account: {{kept}}.",
+      "failed": "The import could not be undone. Try again, or contact support.",
+      "busy": "The import is still running. Stop it first, then undo it.",
+      "working": "Removing members… {{removed}} removed so far. Keep this window open."
     },
     "stopped": {
       "title": "The import stopped. Members imported: {{created}} of {{total}}.",

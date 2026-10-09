@@ -10,6 +10,7 @@ namespace App\Services\MemberImport;
 
 use App\Core\Validator;
 use App\Services\DisposableEmailService;
+use App\Services\EmailDispatchService;
 use App\Support\Wallet\OpeningBalance;
 
 /**
@@ -21,11 +22,13 @@ use App\Support\Wallet\OpeningBalance;
  * Problem codes (the row is refused): required, too_long, invalid_encoding,
  * control_characters, starts_with_formula_character, invalid_email,
  * example_address, disposable_email, invalid_phone, invalid_number,
- * balance_too_large. Warning code: negative_balance_zeroed.
+ * balance_too_large (total_balance_too_large is raised by the checker for a whole file). Warning code: negative_balance_zeroed.
  */
 final class MemberImportRowRules
 {
     public const MAX_BALANCE_CENTS = 10_000_000; // 100,000 hours — the manual-adjustment cap
+    /** All balances in one file together: 1,000,000 hours. A file above it is almost certainly in the wrong unit. */
+    public const MAX_TOTAL_BALANCE_CENTS = 100_000_000;
 
     public function __construct(private readonly DisposableEmailService $disposable)
     {
@@ -50,7 +53,10 @@ final class MemberImportRowRules
                 continue;
             }
             $value[$column] = self::clean($raw);
-            if (preg_match('/[\x00-\x1F\x7F\x{0080}-\x{009F}]/u', $value[$column])) {
+            // Control characters, plus the invisible or direction-changing ones that let one
+            // name look like another (zero-width space, right-to-left override, isolates).
+            // The joiners U+200C and U+200D stay: names in Persian and Indic scripts need them.
+            if (preg_match('/[\x00-\x1F\x7F\x{0080}-\x{009F}\x{061C}\x{200B}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{2069}\x{FEFF}]/u', $value[$column])) {
                 $problems[] = self::issue($column, 'control_characters');
             }
         }
@@ -77,7 +83,13 @@ final class MemberImportRowRules
             $problems[] = self::issue('email', 'starts_with_formula_character');
         } elseif (mb_strlen($email) > 255) {
             $problems[] = self::issue('email', 'too_long', ['max' => 255]);
-        } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) === false
+            // A host name with at least one dot: PHP also accepts a bracketed IP address
+            // (a@[1.2.3.4]), which is never a member's mailbox.
+            || !preg_match('/@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/', $email)
+            // The platform's own mailer refuses reserved domains (.invalid, .test, .local…): such a
+            // member would be created and never invited. Same rule, same test-capture allowance.
+            || EmailDispatchService::isUnroutableRecipient($email)) {
             $problems[] = self::issue('email', 'invalid_email');
         } elseif (preg_match('/@(?:[^@]+\.)?example\.(?:com|org|net)$/', $email)) {
             $problems[] = self::issue('email', 'example_address');

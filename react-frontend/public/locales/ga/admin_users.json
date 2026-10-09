@@ -677,6 +677,8 @@
       "invalid_phone": "Ní uimhir fóin bhailí í seo. Úsáid an fhormáid idirnáisiúnta, e.g. +1 555 123 4567.",
       "invalid_number": "Ní uimhir í seo. Úsáid digití amháin, mar 12 nó 12.5, gan aonaid ná deighilteoirí mílte.",
       "balance_too_large": "Is féidir iarmhéideanna suas le {{max}} uair a bheith ann.",
+      "total_balance_too_large": "Le chéile, tá na hiarmhéideanna sa chomhad seo níos mó ná {{max}} uair. Seiceáil gur in uaireanta, agus ní in aonad eile, atá an colún iarmhéide.",
+      "nothing_left_to_import": "Tá gach ball sa chomhad seo iompórtáilte uaidh cheana. Níl aon rud fágtha le hiompórtáil.",
       "wrong_cell_count": "Tá {{found}} cill sa tsraith seo; tá {{expected}} cill sna ceannteidil.",
       "duplicate_in_file": "Tá an ríomhphost seo ar shraith {{first_row}} freisin.",
       "already_member": "Tá an duine seo ina bhall den phobal seo cheana.",
@@ -696,6 +698,7 @@
       "without_town": "Gan baile: {{n}} (is féidir leo é a chur leis óna bpróifíl)",
       "negatives": "Iarmhéideanna diúltacha a thosóidh ag 0: {{n}}",
       "blank_rows": "Línte folamha a seachnaíodh: {{n}}",
+      "already_imported": "Iompórtáilte cheana ón gcomhad céanna seo, mar sin fágadh ar lár iad: {{n}}",
       "identity_attest": "Tá céannacht gach duine seiceáilte agam féin",
       "identity_help": "Éilíonn do phobal seiceáil céannachta. Mura gcuireann tú tic leis seo, fanfaidh na baill seo leis an seiceáil sin sula bhféadfaidh siad síniú isteach.",
       "send_invitations": "Seol nasc ríomhphoist chuig gach ball nua chun a fhocal faire a shocrú",
@@ -742,6 +745,16 @@
       "invitations_queued_many": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
       "invitations_queued_other": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
       "no_invitations": "Níor seoladh aon ríomhphost fáilte."
+    },
+    "undo": {
+      "button": "Cealaigh an t-iompórtú seo",
+      "confirm": "An mbainfear na baill a chruthaigh an t-iompórtú seo? Coinnítear baill a bhfuil logáil isteach déanta acu cheana nó a ghlac páirt i malartú ar bith.",
+      "confirm_yes": "Bain iad",
+      "confirm_no": "Ná bain, coinnigh iad",
+      "done": "Cealaíodh an t-iompórtú. Bainte: {{removed}}. Coinnithe toisc go bhfuil a gcuntas úsáidte acu cheana: {{kept}}.",
+      "failed": "Níorbh fhéidir an t-iompórtú a chealú. Bain triail eile as nó déan teagmháil leis an tacaíocht.",
+      "busy": "Tá an t-iompórtú ag rith fós. Stop é ar dtús, agus ansin cealaigh é.",
+      "working": "Baill á mbaint… {{removed}} bainte go dtí seo. Coinnigh an fhuinneog seo ar oscailt."
     },
     "stopped": {
       "title": "Stop an t-iompórtú. Baill iompórtáilte: {{created}} as {{total}}.",

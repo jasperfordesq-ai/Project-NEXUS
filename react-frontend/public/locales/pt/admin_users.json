@@ -669,6 +669,8 @@
       "invalid_phone": "Este não é um número de telefone válido. Use o formato internacional, por ex. +1 555 123 4567.",
       "invalid_number": "Isto não é um número. Use apenas dígitos, como 12 ou 12.5, sem unidades nem separadores de milhares.",
       "balance_too_large": "Os saldos podem chegar a {{max}} horas.",
+      "total_balance_too_large": "Somados, os saldos deste arquivo ultrapassam {{max}} horas. Verifique se a coluna de saldo está em horas e não em outra unidade.",
+      "nothing_left_to_import": "Todos os membros deste arquivo já foram importados a partir dele. Não há mais nada a importar.",
       "wrong_cell_count": "Esta linha tem {{found}} células; os cabeçalhos têm {{expected}}.",
       "duplicate_in_file": "Este e-mail também está na linha {{first_row}}.",
       "already_member": "Esta pessoa já é membro desta comunidade.",
@@ -688,6 +690,7 @@
       "without_town": "Sem cidade: {{n}} (podem adicioná-la pelo perfil)",
       "negatives": "Saldos negativos que começarão em 0: {{n}}",
       "blank_rows": "Linhas vazias ignoradas: {{n}}",
+      "already_imported": "Já importados antes a partir deste mesmo arquivo, por isso ignorados: {{n}}",
       "identity_attest": "Eu mesmo verifiquei a identidade de cada pessoa",
       "identity_help": "A sua comunidade exige uma verificação de identidade. Se deixar esta caixa desmarcada, estes membros asalvarão essa verificação antes de poderem entrar.",
       "send_invitations": "Enviar a cada novo membro um link por e-mail para definir a senha",
@@ -726,6 +729,16 @@
       "invitations_queued_many": "{{countFormatted}} de e-mails de boas-vindas estão na fila e serão enviados em {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} e-mails de boas-vindas estão na fila e serão enviados em {{duration}}.",
       "no_invitations": "Nenhum e-mail de boas-vindas foi enviado."
+    },
+    "undo": {
+      "button": "Desfazer esta importação",
+      "confirm": "Remover os membros criados por esta importação? Os membros que já entraram na conta ou participaram de alguma troca são mantidos.",
+      "confirm_yes": "Sim, remover",
+      "confirm_no": "Não, manter",
+      "done": "Importação desfeita. Removidos: {{removed}}. Mantidos por já terem usado a conta: {{kept}}.",
+      "failed": "Não foi possível desfazer a importação. Tente novamente ou entre em contato com o suporte.",
+      "busy": "A importação ainda está em andamento. Pare-a primeiro e depois desfaça-a.",
+      "working": "Removendo membros… {{removed}} removidos até agora. Mantenha esta janela aberta."
     },
     "stopped": {
       "title": "A importação parou. Membros importados: {{created}} de {{total}}.",

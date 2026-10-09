@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2809,
-  "api_route_rows": 2774,
-  "distinct_api_paths": 2310,
+  "total_registered_routes": 2810,
+  "api_route_rows": 2775,
+  "distinct_api_paths": 2311,
   "route_source_fingerprint": {
-    "digest": "7d512b6dc3d55a509422eb16503baffe5bb637ae52aec7b9ef554d8e54630958",
+    "digest": "58875fb63014f5afd7bbeeb2ad80a2db73ac85a9206f64872b0d5b2769262a00",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "e5f37364907f801e74f167c95ab4c2ed81df5ec90ed2845a0706e846720add32"
+        "sha256": "c6b491ebee061a4d915eb15fb46a93f292893edef744a8d515dafda72f1b5b0c"
       },
       {
         "file": "routes/channels.php",
@@ -2355,6 +2355,9 @@
       "GET"
     ],
     "/api/v2/admin/members/import/{importId}/batch": [
+      "POST"
+    ],
+    "/api/v2/admin/members/import/{importId}/undo": [
       "POST"
     ],
     "/api/v2/admin/members/inactive": [

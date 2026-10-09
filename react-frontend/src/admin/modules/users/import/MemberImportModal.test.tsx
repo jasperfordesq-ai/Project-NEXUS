@@ -11,7 +11,7 @@ import { buildCsv } from './csvFiles';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 const { mockApi, mockRunner, mockToast, downloadText, fileToBase64 } = vi.hoisted(() => ({
-  mockApi: { check: vi.fn(), downloadTemplate: vi.fn(), batch: vi.fn() },
+  mockApi: { check: vi.fn(), downloadTemplate: vi.fn(), batch: vi.fn(), undo: vi.fn() },
   mockRunner: { state: {} as RunnerState, start: vi.fn(), stop: vi.fn() },
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() },
   downloadText: vi.fn(),
@@ -381,6 +381,11 @@ describe('MemberImportModal', () => {
       expect(screen.getByText(/Row 4: a balance of -3\.50 hours will start at 0\./)).toBeInTheDocument();
     });
 
+    it('says how many members from an earlier run of the same file are skipped', async () => {
+      await checkWith(ready({ summary: { rows: 3, already_imported: 2, blank_rows_ignored: 0, total_balance: '1.00', negative_count: 0, with_location: 3, without_location: 0 } }));
+      expect(await screen.findByText(/Already imported from this same file earlier, so skipped: 2/)).toBeInTheDocument();
+    });
+
     it('announces readiness and moves focus onto the result', async () => {
       await checkWith(ready());
       const status = await screen.findByRole('status');
@@ -535,6 +540,32 @@ describe('MemberImportModal', () => {
       await user.click(await screen.findByRole('button', { name: IMPORT_BUTTON }));
       return user;
     }
+
+    it('asks before taking the import back, then reports what was removed and kept', async () => {
+      // Two passes: the first runs out of time, the second finishes. Removed adds up; kept comes from the last.
+      mockApi.undo
+        .mockResolvedValueOnce({ success: true, data: { done: false, remaining: 2, removed: 3, already_removed: 0, kept: {}, hours_removed: '7.00' } })
+        .mockResolvedValueOnce({ success: true, data: { done: true, remaining: 0, removed: 1, already_removed: 3, kept: { signed_in: 1 }, hours_removed: '3.00' } });
+      const user = await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, balance: '42.50' });
+
+      await user.click(await screen.findByRole('button', { name: 'Undo this import' }));
+      expect(mockApi.undo).not.toHaveBeenCalled();
+      expect(screen.getByText(/Remove the members this import created/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Yes, remove them' }));
+      expect(await screen.findByText(/Import undone. Removed: 4. Kept because they have already used their account: 1./)).toBeInTheDocument();
+      expect(mockApi.undo).toHaveBeenCalledTimes(2);
+      expect(screen.queryByRole('button', { name: 'Undo this import' })).not.toBeInTheDocument();
+    });
+
+    it('says so when the import is still running on the server', async () => {
+      mockApi.undo.mockResolvedValue({ success: false, code: 'IMPORT_BUSY' });
+      const user = await finishWith({ phase: 'stopped', nextIndex: 2, total: 5, created: 2, balance: '1.00' });
+
+      await user.click(await screen.findByRole('button', { name: 'Undo this import' }));
+      await user.click(screen.getByRole('button', { name: 'Yes, remove them' }));
+      expect(await screen.findByText('The import is still running. Stop it first, then undo it.')).toBeInTheDocument();
+    });
 
     it('celebrates a completed import and shows the import reference', async () => {
       await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, balance: '42.50' });

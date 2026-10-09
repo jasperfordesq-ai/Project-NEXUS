@@ -669,6 +669,8 @@
       "invalid_phone": "Questo non è un numero di telefono valido. Usa il formato internazionale, ad es. +1 555 123 4567.",
       "invalid_number": "Questo non è un numero. Usa solo cifre, come 12 o 12.5, senza unità né separatori delle migliaia.",
       "balance_too_large": "I saldi possono arrivare fino a {{max}} ore.",
+      "total_balance_too_large": "Insieme, i saldi di questo file superano {{max}} ore. Controlla che la colonna del saldo sia in ore e non in un'altra unità.",
+      "nothing_left_to_import": "Tutti i membri di questo file sono già stati importati. Non c'è più nulla da importare.",
       "wrong_cell_count": "Questa riga ha {{found}} celle; le intestazioni ne hanno {{expected}}.",
       "duplicate_in_file": "Questa e-mail compare anche alla riga {{first_row}}.",
       "already_member": "Questa persona è già membro di questa comunità.",
@@ -688,6 +690,7 @@
       "without_town": "Senza città: {{n}} (possono aggiungerla dal loro profilo)",
       "negatives": "Saldi negativi che partiranno da 0: {{n}}",
       "blank_rows": "Righe vuote ignorate: {{n}}",
+      "already_imported": "Già importati in precedenza da questo stesso file, quindi saltati: {{n}}",
       "identity_attest": "Ho controllato personalmente l'identità di ogni persona",
       "identity_help": "La tua comunità richiede un controllo dell'identità. Se lasci questa casella non selezionata, questi membri attenderanno tale controllo prima di poter accedere.",
       "send_invitations": "Invia a ogni nuovo membro un link via e-mail per impostare la password",
@@ -726,6 +729,16 @@
       "invitations_queued_many": "{{countFormatted}} di e-mail di benvenuto sono in coda e verranno inviate in {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} e-mail di benvenuto sono in coda e verranno inviate in {{duration}}.",
       "no_invitations": "Non è stata inviata alcuna e-mail di benvenuto."
+    },
+    "undo": {
+      "button": "Annulla questa importazione",
+      "confirm": "Rimuovere i membri creati da questa importazione? I membri che hanno già effettuato l'accesso o partecipato a uno scambio vengono mantenuti.",
+      "confirm_yes": "Sì, rimuovili",
+      "confirm_no": "No, mantienili",
+      "done": "Importazione annullata. Rimossi: {{removed}}. Mantenuti perché hanno già usato il loro account: {{kept}}.",
+      "failed": "Non è stato possibile annullare l'importazione. Riprova o contatta l'assistenza.",
+      "busy": "L'importazione è ancora in corso. Fermala prima, poi annullala.",
+      "working": "Rimozione dei membri in corso… {{removed}} rimossi finora. Tieni aperta questa finestra."
     },
     "stopped": {
       "title": "L'importazione si è fermata. Membri importati: {{created}} di {{total}}.",

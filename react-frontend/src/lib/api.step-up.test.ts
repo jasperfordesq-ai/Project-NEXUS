@@ -166,4 +166,33 @@ describe('step-up retry', () => {
     expect(result.code).toBe('AUTH_INSUFFICIENT_PERMISSIONS');
     expect(handler).not.toHaveBeenCalled();
   });
+
+  describe('file downloads', () => {
+    const refusal = (): Response => ({ ...stepUpRefusal(), clone() { return this as Response; } }) as Response;
+    const file = (): Response => ({
+      ok: true, status: 200, headers: new Headers(),
+      blob: () => Promise.resolve(new Blob(['a,b'])),
+    }) as unknown as Response;
+
+    it('asks for a code and asks again with the confirmation', async () => {
+      const handler = vi.fn().mockResolvedValue({ token: 'dl-proof', expiresIn: 300 });
+      mod.setStepUpHandler(handler);
+      vi.mocked(fetch).mockResolvedValueOnce(refusal()).mockResolvedValueOnce(file());
+
+      const blob = await mod.api.download('/v2/admin/members/export');
+
+      expect(blob.size).toBe(3);
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(sentConfirmation(0)).toBeNull();
+      expect(sentConfirmation(1)).toBe('dl-proof');
+    });
+
+    it('fails as a download when the person cancels, and never loops', async () => {
+      mod.setStepUpHandler(vi.fn().mockResolvedValue(null));
+      vi.mocked(fetch).mockResolvedValueOnce(refusal());
+
+      await expect(mod.api.download('/v2/admin/members/export')).rejects.toThrow();
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+  });
 });

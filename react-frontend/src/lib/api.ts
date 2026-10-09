@@ -969,6 +969,17 @@ export class ApiClient {
     }
   }
 
+  /** A refusal that asks for a fresh second factor (E-085), read from a copy so the body stays usable. */
+  private async isStepUpRefusal(response: Response): Promise<boolean> {
+    try {
+      const body = await response.clone().json();
+      return body?.code === AUTH_STEP_UP_REQUIRED
+        || (Array.isArray(body?.errors) && body.errors.some((e: { code?: string }) => e?.code === AUTH_STEP_UP_REQUIRED));
+    } catch {
+      return false;
+    }
+  }
+
   private isLogoutInProgress(
     expectedGeneration: string | null = tokenManager.getSessionGeneration(),
   ): boolean {
@@ -2071,6 +2082,7 @@ export class ApiClient {
     options: RequestOptions & { filename?: string },
     retryOnUnauthorized: boolean,
     expectedAuthContext?: AuthContextSnapshot,
+    stepUpStage: StepUpStage = 'none',
   ): Promise<Blob> {
     const authContextAtRequestStart = expectedAuthContext ?? this.captureAuthContext();
     if (!options.skipAuth && !this.authContextIsUnchanged(authContextAtRequestStart)) {
@@ -2122,6 +2134,41 @@ export class ApiClient {
         this.expireSession('expired', authContextAtRequestStart.sessionGeneration);
       }
       throw new Error(i18n.t('session_expired_message', { ns: 'errors' }));
+    }
+
+    // A download behind a step-up gate: ask for the second factor once (or reuse one still in
+    // date) and ask again with the proof — the same handshake request() performs.
+    if (response.status === 403 && !options.skipAuth && stepUpStage !== 'prompted' && await this.isStepUpRefusal(response)) {
+      const generation = authContextAtRequestStart.sessionGeneration;
+      if (stepUpStage === 'cached') {
+        cachedStepUp = null;
+      }
+      const reusable = cachedStepUp !== null
+        && cachedStepUp.sessionGeneration === generation
+        && cachedStepUp.expiresAt > Date.now();
+      let proof: string | null = reusable && cachedStepUp ? cachedStepUp.token : null;
+      let nextStage: StepUpStage = 'cached';
+      if (proof === null && stepUpHandler) {
+        pendingStepUp ??= stepUpHandler().finally(() => { pendingStepUp = null; });
+        const confirmed = await pendingStepUp;
+        if (confirmed) {
+          proof = confirmed.token;
+          cachedStepUp = {
+            token: confirmed.token,
+            expiresAt: Date.now() + Math.max(0, confirmed.expiresIn - 20) * 1000,
+            sessionGeneration: generation,
+          };
+        }
+        nextStage = 'prompted';
+      }
+      if (!this.authContextIsUnchanged(authContextAtRequestStart)) {
+        throw this.contextChangedDownloadError();
+      }
+      if (proof !== null) {
+        const retryHeaders = new Headers(options.headers);
+        retryHeaders.set('X-Security-Confirmation', proof);
+        return this.downloadWithRetry(endpoint, { ...options, headers: retryHeaders }, retryOnUnauthorized, authContextAtRequestStart, nextStage);
+      }
     }
 
     if (!response.ok) {

@@ -24,6 +24,8 @@ export interface CheckSummary {
   negative_count: number;
   with_location: number;
   without_location: number;
+  /** Rows skipped because an earlier import of this same file already created them. */
+  already_imported?: number;
 }
 
 export interface CheckResult {

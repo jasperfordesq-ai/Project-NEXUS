@@ -19,6 +19,13 @@ final class MemberImportCheckerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // The test addresses are @nexus.test; the mailer accepts a reserved domain only when it is a capture domain.
+        config(['mail.capture_recipient_domains' => ['nexus.test']]);
+    }
+
     private const HEADER = "first_name,last_name,email,phone,location,balance\n";
 
     private function check(string $body): array
@@ -37,6 +44,24 @@ final class MemberImportCheckerTest extends TestCase
         $this->assertSame(1, $r['summary']['with_location']);
         $this->assertSame([['row' => 3, 'column' => 'balance', 'code' => 'negative_balance_zeroed', 'params' => ['original' => '-3.00']]], $r['warnings']);
         $this->assertSame(2, $r['rows'][0]['source_row']);
+    }
+
+    public function test_a_file_whose_balances_together_are_absurd_is_refused_as_a_whole(): void
+    {
+        $body = '';
+        for ($i = 1; $i <= 11; $i++) {
+            $body .= "Ada,Lovelace,total{$i}@nexus.test,,,100000
+";
+        }
+        $r = $this->check($body);
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame([['row' => 0, 'column' => 'balance', 'code' => 'total_balance_too_large', 'params' => ['max' => 1000000]]], $r['problems']);
+
+        // Ten of them is exactly the ceiling and is allowed.
+        $this->assertSame('ready', $this->check(implode('', array_map(
+            static fn (int $i): string => "Ada,Lovelace,ok{$i}@nexus.test,,,100000
+", range(1, 10)
+        )))['status']);
     }
 
     public function test_one_bad_row_makes_the_whole_file_problems_with_row_numbers(): void

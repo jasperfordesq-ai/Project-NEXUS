@@ -35,6 +35,8 @@ final class MemberImportWriterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The test addresses are @nexus.test; the mailer accepts a reserved domain only when it is a capture domain.
+        config(['mail.capture_recipient_domains' => ['nexus.test']]);
         $this->adminId = User::factory()->forTenant($this->testTenantId)->admin()->create()->id;
     }
 
@@ -218,6 +220,49 @@ final class MemberImportWriterTest extends TestCase
         $this->assertTrue($again['already']);
         $this->assertSame($first['user_id'], $again['user_id']);
         $this->assertSame(1, DB::table('transactions')->where('receiver_id', $first['user_id'])->count());
+    }
+
+    public function test_a_recovered_held_member_is_reported_for_follow_up_not_as_complete(): void
+    {
+        // The member was committed but the identity step after the commit may never have run.
+        $decision = [
+            'requires_identity_check' => true, 'held' => true, 'attested' => false,
+            'registration_mode' => 'verified_identity',
+            'columns' => ['is_approved' => 1, 'status' => 'pending'],
+        ];
+        $row = $this->row();
+        $id = '99999999-9999-4999-8999-999999999991';
+        $writer = fn () => app(MemberImportWriter::class)->write($row, $this->testTenantId, $this->adminId, $decision, $id);
+        $writer();
+        $again = $writer();
+
+        $this->assertTrue($again['already']);
+        $this->assertFalse($again['admission_complete']);
+    }
+
+    public function test_a_recovered_attested_member_gets_the_attestation_recorded_once(): void
+    {
+        $decision = [
+            'requires_identity_check' => true, 'held' => false, 'attested' => true,
+            'registration_mode' => 'verified_identity',
+            'columns' => ['is_approved' => 1, 'status' => 'active'],
+        ];
+        $row = $this->row();
+        $id = '99999999-9999-4999-8999-999999999992';
+        $run = fn () => app(MemberImportWriter::class)->write($row, $this->testTenantId, $this->adminId, $decision, $id);
+        $first = $run();
+        // Simulate the crash: the attestation entry never made it.
+        DB::table('org_audit_log')->where('target_user_id', $first['user_id'])
+            ->where('action', AuditLogService::ACTION_ADMIN_IDENTITY_ATTESTED)->delete();
+
+        $again = $run();
+        $third = $run();
+
+        $this->assertTrue($again['already']);
+        $this->assertTrue($again['admission_complete']);
+        $this->assertTrue($third['admission_complete']);
+        $this->assertSame(1, DB::table('org_audit_log')->where('target_user_id', $first['user_id'])
+            ->where('action', AuditLogService::ACTION_ADMIN_IDENTITY_ATTESTED)->count());
     }
 
     public function test_the_same_email_from_a_different_import_is_a_stop(): void

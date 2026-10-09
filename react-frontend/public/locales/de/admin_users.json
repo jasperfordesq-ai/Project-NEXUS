@@ -665,6 +665,8 @@
       "invalid_phone": "Das ist keine gültige Telefonnummer. Verwenden Sie das internationale Format, z. B. +1 555 123 4567.",
       "invalid_number": "Das ist keine Zahl. Verwenden Sie nur Ziffern, wie 12 oder 12.5 – keine Einheiten und keine Tausendertrennzeichen.",
       "balance_too_large": "Guthaben dürfen höchstens {{max}} Stunden betragen.",
+      "total_balance_too_large": "Zusammen ergeben die Guthaben in dieser Datei mehr als {{max}} Stunden. Prüfen Sie, ob die Guthaben-Spalte in Stunden und nicht in einer anderen Einheit angegeben ist.",
+      "nothing_left_to_import": "Alle Mitglieder dieser Datei wurden bereits daraus importiert. Es gibt nichts mehr zu importieren.",
       "wrong_cell_count": "Diese Zeile hat {{found}} Zellen; die Überschriften haben {{expected}}.",
       "duplicate_in_file": "Diese E-Mail-Adresse steht auch in Zeile {{first_row}}.",
       "already_member": "Diese Person ist bereits Mitglied dieser Gemeinschaft.",
@@ -684,6 +686,7 @@
       "without_town": "Ohne Ort: {{n}} (sie können ihn in ihrem Profil ergänzen)",
       "negatives": "Negative Guthaben, die bei 0 beginnen: {{n}}",
       "blank_rows": "Ignorierte leere Zeilen: {{n}}",
+      "already_imported": "Bereits früher aus derselben Datei importiert und daher übersprungen: {{n}}",
       "identity_attest": "Ich habe die Identität jeder Person selbst geprüft",
       "identity_help": "Ihre Gemeinschaft verlangt eine Identitätsprüfung. Wenn Sie das Kästchen nicht anhaken, warten diese Mitglieder auf diese Prüfung, bevor sie sich anmelden können.",
       "send_invitations": "Jedem neuen Mitglied einen Link zum Festlegen seines Passworts per E-Mail senden",
@@ -718,6 +721,16 @@
       "invitations_queued_one": "{{countFormatted}} Willkommens-E-Mail ist in der Warteschlange und wird innerhalb von {{duration}} versendet.",
       "invitations_queued_other": "{{countFormatted}} Willkommens-E-Mails sind in der Warteschlange und werden innerhalb von {{duration}} versendet.",
       "no_invitations": "Es wurden keine Willkommens-E-Mails gesendet."
+    },
+    "undo": {
+      "button": "Diesen Import rückgängig machen",
+      "confirm": "Die durch diesen Import angelegten Mitglieder entfernen? Mitglieder, die sich bereits angemeldet oder an einem Austausch teilgenommen haben, bleiben erhalten.",
+      "confirm_yes": "Ja, entfernen",
+      "confirm_no": "Nein, behalten",
+      "done": "Import rückgängig gemacht. Entfernt: {{removed}}. Behalten, weil sie ihr Konto bereits genutzt haben: {{kept}}.",
+      "failed": "Der Import konnte nicht rückgängig gemacht werden. Versuchen Sie es erneut oder wenden Sie sich an den Support.",
+      "busy": "Der Import läuft noch. Halten Sie ihn zuerst an und machen Sie ihn dann rückgängig.",
+      "working": "Mitglieder werden entfernt … bisher {{removed}} entfernt. Lassen Sie dieses Fenster geöffnet."
     },
     "stopped": {
       "title": "Der Import wurde angehalten. Importierte Mitglieder: {{created}} von {{total}}.",

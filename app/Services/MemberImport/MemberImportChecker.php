@@ -67,9 +67,31 @@ final class MemberImportChecker
             $rows[] = $result['row'] + ['source_row' => $source['row']];
         }
 
+        // Each balance is within its own cap, but a whole file can still be far beyond anything a
+        // community holds (a column in minutes, or cents). Row 0: the problem belongs to the file.
+        if (array_sum(array_column($rows, 'balance_cents')) > MemberImportRowRules::MAX_TOTAL_BALANCE_CENTS) {
+            $problems[] = ['row' => 0, 'column' => 'balance', 'code' => 'total_balance_too_large',
+                'params' => ['max' => intdiv(MemberImportRowRules::MAX_TOTAL_BALANCE_CENTS, 100)]];
+        }
+
+        $fileSha256 = hash('sha256', $bytes);
         $existingRows = [];
+        // Rows whose member an earlier import of this very file already created: an import that was
+        // interrupted can be finished by checking the same file again. They are not problems and are
+        // not imported twice.
+        $alreadyImportedRows = [];
         foreach (array_chunk(array_keys($firstRowByEmail), 500) as $chunk) {
             $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+            $earlier = DB::table('org_audit_log as a')
+                ->join('users as u', static fn ($j) => $j->on('u.id', '=', 'a.target_user_id')->on('u.tenant_id', '=', 'a.tenant_id'))
+                ->where('a.tenant_id', $tenantId)
+                ->where('a.action', MemberImportWriter::ACTION_MEMBER_IMPORTED)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(a.details, '$.file_sha256')) = ?", [$fileSha256])
+                ->whereNull('u.anonymized_at')
+                ->whereRaw("TRIM(u.email) IN ({$placeholders})", $chunk)
+                ->pluck('u.email')
+                ->map(static fn ($e): string => mb_strtolower(trim((string) $e)))
+                ->flip();
             // TRIM: the collation already ignores trailing spaces, but a stored
             // address with LEADING spaces would otherwise never match.
             $found = DB::select(
@@ -85,12 +107,26 @@ final class MemberImportChecker
                     $problems[] = ['row' => 0, 'column' => 'email', 'code' => 'already_member_unmatched', 'params' => []];
                     continue;
                 }
+                if ($earlier->has(mb_strtolower(trim((string) $f->email)))) {
+                    $alreadyImportedRows[$row] = true;
+                    continue;
+                }
                 $existingRows[] = $row;
                 $problems[] = ['row' => $row, 'column' => 'email', 'code' => 'already_member', 'params' => []];
             }
         }
         $existingRows = array_values(array_unique($existingRows));
         sort($existingRows);
+
+        if ($alreadyImportedRows !== []) {
+            // The held rows, the shown rows and the warnings all lose them together, so a position in one
+            // is a position in the others.
+            $rows = array_values(array_filter($rows, static fn ($r) => !isset($alreadyImportedRows[$r['source_row']])));
+            $warnings = array_values(array_filter($warnings, static fn ($w) => !isset($alreadyImportedRows[$w['row']])));
+            if ($problems === [] && $rows === []) {
+                $problems[] = ['row' => 0, 'column' => 'email', 'code' => 'nothing_left_to_import', 'params' => []];
+            }
+        }
 
         $columnOrder = array_flip(MemberImportFile::COLUMNS);
         usort($problems, static fn ($a, $b) => [$a['row'], $columnOrder[$a['column'] ?? ''] ?? -1]
@@ -99,12 +135,14 @@ final class MemberImportChecker
         $result = [
             'status' => $problems === [] ? 'ready' : 'problems',
             'header' => $file['raw_header'],
-            'source_rows' => array_map(static fn ($s) => ['row' => $s['row'], 'raw' => $s['raw']], $file['rows']),
+            'source_rows' => array_map(static fn ($s) => ['row' => $s['row'], 'raw' => $s['raw']],
+                array_values(array_filter($file['rows'], static fn ($s) => !isset($alreadyImportedRows[$s['row']])))),
             'problems' => $problems,
             'warnings' => $warnings,
             'existing_member_rows' => $existingRows,
             'summary' => [
-                'rows' => count($file['rows']),
+                'rows' => count($file['rows']) - count($alreadyImportedRows),
+                'already_imported' => count($alreadyImportedRows),
                 'blank_rows_ignored' => $file['blank_rows'],
                 'total_balance' => OpeningBalance::formatCents(array_sum(array_column($rows, 'balance_cents'))),
                 'negative_count' => count(array_filter($rows, static fn ($r) => $r['original_balance_cents'] !== null)),

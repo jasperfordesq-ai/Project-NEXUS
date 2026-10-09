@@ -126,7 +126,7 @@ final class MemberImportRunner
                     }
                     $row = $rows[$session['next_index']];
                     try {
-                        $out = $this->writer->write($row, $tenantId, $adminId, $decision, $importId, (bool) $session['send_invitations']);
+                        $out = $this->writer->write($row, $tenantId, $adminId, $decision, $importId, (bool) $session['send_invitations'], (string) $session['file_sha256']);
                     } catch (MemberImportStopped $e) {
                         $session['status'] = 'stopped';
                         $session['stop'] = ['row' => (int) $row['source_row'], 'code' => $e->reason, 'params' => $e->params];

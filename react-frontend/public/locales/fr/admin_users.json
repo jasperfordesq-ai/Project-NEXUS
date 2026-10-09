@@ -669,6 +669,8 @@
       "invalid_phone": "Ce n'est pas un numéro de téléphone valide. Utilisez le format international, par ex. +1 555 123 4567.",
       "invalid_number": "Ce n'est pas un nombre. Utilisez uniquement des chiffres, comme 12 ou 12.5, sans unité ni séparateur de milliers.",
       "balance_too_large": "Les soldes peuvent aller jusqu'à {{max}} heures.",
+      "total_balance_too_large": "Ensemble, les soldes de ce fichier dépassent {{max}} heures. Vérifiez que la colonne des soldes est en heures et non dans une autre unité.",
+      "nothing_left_to_import": "Tous les membres de ce fichier en ont déjà été importés. Il ne reste rien à importer.",
       "wrong_cell_count": "Cette ligne a {{found}} cellules ; les en-têtes en ont {{expected}}.",
       "duplicate_in_file": "Cet e-mail figure aussi à la ligne {{first_row}}.",
       "already_member": "Cette personne est déjà membre de cette communauté.",
@@ -688,6 +690,7 @@
       "without_town": "Sans ville : {{n}} (elle pourra être ajoutée depuis leur profil)",
       "negatives": "Soldes négatifs qui commenceront à 0 : {{n}}",
       "blank_rows": "Lignes vides ignorées : {{n}}",
+      "already_imported": "Déjà importés précédemment depuis ce même fichier, donc ignorés : {{n}}",
       "identity_attest": "J'ai vérifié moi-même l'identité de chaque personne",
       "identity_help": "Votre communauté exige une vérification d'identité. Si vous laissez cette case décochée, ces membres attendront cette vérification avant de pouvoir se connecter.",
       "send_invitations": "Envoyer à chaque nouveau membre un lien par e-mail pour définir son mot de passe",
@@ -726,6 +729,16 @@
       "invitations_queued_many": "{{countFormatted}} d'e-mails de bienvenue sont en file d'attente et partiront en {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} e-mails de bienvenue sont en file d'attente et partiront en {{duration}}.",
       "no_invitations": "Aucun e-mail de bienvenue n'a été envoyé."
+    },
+    "undo": {
+      "button": "Annuler cet import",
+      "confirm": "Supprimer les membres créés par cet import ? Les membres qui se sont déjà connectés ou ont participé à un échange sont conservés.",
+      "confirm_yes": "Oui, les supprimer",
+      "confirm_no": "Non, les conserver",
+      "done": "Import annulé. Supprimés : {{removed}}. Conservés car ils ont déjà utilisé leur compte : {{kept}}.",
+      "failed": "L'import n'a pas pu être annulé. Réessayez ou contactez l'assistance.",
+      "busy": "L'import est encore en cours. Arrêtez-le d'abord, puis annulez-le.",
+      "working": "Suppression des membres… {{removed}} supprimés pour l'instant. Laissez cette fenêtre ouverte."
     },
     "stopped": {
       "title": "L'import s'est arrêté. Membres importés : {{created}} sur {{total}}.",

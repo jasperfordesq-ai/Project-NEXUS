@@ -37,6 +37,7 @@ export function ImportReady({ check, identityChecked, onIdentityChange, sendInvi
     t('member_import.ready.hours', { hours: formatHours(summary.total_balance) }),
     t('member_import.ready.with_town', { n: formatNumber(summary.with_location) }),
     ...(summary.without_location > 0 ? [t('member_import.ready.without_town', { n: formatNumber(summary.without_location) })] : []),
+    ...((summary.already_imported ?? 0) > 0 ? [t('member_import.ready.already_imported', { n: formatNumber(summary.already_imported ?? 0) })] : []),
     ...(summary.blank_rows_ignored > 0 ? [t('member_import.ready.blank_rows', { n: formatNumber(summary.blank_rows_ignored) })] : []),
   ] : [];
 

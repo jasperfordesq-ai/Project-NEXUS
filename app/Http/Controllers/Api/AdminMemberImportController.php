@@ -20,6 +20,7 @@ use App\Services\MemberImport\MemberImportNotFound;
 use App\Services\MemberImport\MemberImportOutOfOrder;
 use App\Services\MemberImport\MemberImportRunner;
 use App\Services\MemberImport\MemberImportSession;
+use App\Services\MemberImport\MemberImportUndo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -44,6 +45,7 @@ class AdminMemberImportController extends BaseApiController
         private readonly MemberImportChecker $checker,
         private readonly MemberImportRunner $runner,
         private readonly AuditLogService $audit,
+        private readonly MemberImportUndo $undo,
     ) {
     }
 
@@ -128,6 +130,40 @@ class AdminMemberImportController extends BaseApiController
             return $this->respondWithError('IMPORT_OUT_OF_ORDER', __('api.member_import_out_of_order'), 'from', 409);
         } catch (MemberImportNotFound) {
             return $this->respondWithError('IMPORT_NOT_FOUND', __('api.member_import_not_found'), null, 404);
+        }
+    }
+
+    /**
+     * POST /api/v2/admin/members/import/{importId}/undo — take the import back
+     * (MemberImportUndo). Refused while the import is still running: press Stop
+     * first, so no batch is writing members as they are removed.
+     */
+    public function undo(string $importId): JsonResponse
+    {
+        $adminId = $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+        // The browser repeats this call until the undo says it is done (8 s of work a time).
+        $this->rateLimit('member_import_undo', 60, 60);
+
+        $lock = MemberImportSession::lock($importId);
+        if (!$lock->get()) {
+            return $this->respondWithError('IMPORT_BUSY', __('api.member_import_busy'), null, 409);
+        }
+        try {
+            $session = MemberImportSession::load($importId, $tenantId, $adminId);
+            if ($session !== null && $session['status'] === 'running') {
+                return $this->respondWithError('IMPORT_BUSY', __('api.member_import_busy'), null, 409);
+            }
+            if ($session !== null) {
+                // Whatever was left to import is not wanted any more.
+                $session['status'] = 'stopped';
+                MemberImportSession::save($session);
+                MemberImportSession::discardRows($session);
+            }
+
+            return $this->respondWithData($this->undo->undo($importId, $tenantId, $adminId));
+        } finally {
+            $lock->release();
         }
     }
 

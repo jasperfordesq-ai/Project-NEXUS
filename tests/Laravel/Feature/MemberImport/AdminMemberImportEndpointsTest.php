@@ -40,6 +40,8 @@ final class AdminMemberImportEndpointsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The test addresses are @nexus.test; the mailer accepts a reserved domain only when it is a capture domain.
+        config(['mail.capture_recipient_domains' => ['nexus.test']]);
         Cache::flush();
         Queue::fake();
         $this->admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => true]);
@@ -353,6 +355,165 @@ final class AdminMemberImportEndpointsTest extends TestCase
         $this->assertNull(MemberImportSession::load($first, $this->testTenantId, (int) $this->admin->id));
         $this->assertNull(MemberImportSession::rows($firstState));
         $this->batch($first, 0, 10)->assertStatus(404);
+    }
+
+    /** Runs a whole import over HTTP; returns the import id. */
+    private function runImport(int $n, string $prefix): string
+    {
+        $id = $this->check($this->csv($n, $prefix))->assertOk()->json('data.import_id');
+        $next = 0;
+        while ($next < $n) {
+            $next = $this->batch($id, $next, 10)->assertOk()->json('data.next_index');
+        }
+
+        return $id;
+    }
+
+    private function undo(string $id, bool $fresh = true): TestResponse
+    {
+        return $this->apiPost("/v2/admin/members/import/{$id}/undo", [], $this->headers(null, $fresh));
+    }
+
+    public function test_undo_removes_untouched_members_and_keeps_anyone_who_has_acted(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->runImport(5, $prefix);
+        $ids = DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', 'like', $prefix . '-%')->orderBy('id')->pluck('id')->all();
+        $this->assertCount(5, $ids);
+
+        DB::table('users')->where('id', $ids[0])->update(['last_login_at' => now()]);          // signed in
+        DB::table('transactions')->insert([                                                       // has activity
+            'tenant_id' => $this->testTenantId, 'sender_id' => $ids[1], 'receiver_id' => $ids[2], 'amount' => 0.1,
+            'description' => 't', 'status' => 'completed', 'transaction_type' => 'transfer', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('users')->where('id', $ids[3])->update(['role' => 'admin', 'is_admin' => 1]);  // not a plain member
+
+        $r = $this->undo($id)->assertOk();
+        $this->assertSame(1, $r->json('data.removed'));                      // only ids[4]
+        $this->assertSame(['signed_in' => 1, 'has_activity' => 2, 'not_plain_member' => 1], $r->json('data.kept'));
+
+        $gone = DB::table('users')->where('id', $ids[4])->first();
+        $this->assertNotNull($gone->anonymized_at ?? $gone->deleted_at ?? null);
+        $this->assertStringNotContainsString($prefix, (string) $gone->email, 'the address is freed');
+        $this->assertEquals(0, $gone->balance);
+        $this->assertSame('cancelled', DB::table('transactions')->where('receiver_id', $ids[4])->value('status'));
+        $this->assertTrue($r->json('data.done'));
+        $this->assertSame(1, DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)->where('action', 'member_import_undone')->count());
+
+        // Run again: nothing more to remove, the removed member is just counted.
+        $again = $this->undo($id)->assertOk();
+        $this->assertSame(0, $again->json('data.removed'));
+        $this->assertSame(1, $again->json('data.already_removed'));
+
+        // The corrected file can use the freed address.
+        $this->assertSame('ready', $this->check(self::HEADER . "Member,4,{$prefix}-4@nexus.test,,,1
+")->json('data.status'));
+    }
+
+    public function test_undo_works_in_passes_the_browser_repeats_until_done(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->runImport(4, $prefix);
+        $undo = app(\App\Services\MemberImport\MemberImportUndo::class);
+
+        // No time at all: exactly one member per pass, and the pass says it is not done.
+        $first = $undo->undo($id, $this->testTenantId, (int) $this->admin->id, 0.0);
+        $this->assertFalse($first['done']);
+        $this->assertSame(3, $first['remaining']);
+        $this->assertSame(1, $first['removed']);
+
+        $second = $undo->undo($id, $this->testTenantId, (int) $this->admin->id, 0.0);
+        $this->assertFalse($second['done']);
+        $this->assertSame(1, $second['already_removed'], 'a member removed by an earlier pass is recognised, not failed');
+        $this->assertSame(1, $second['removed']);
+
+        // A pass with a real budget finishes the rest and reports the whole picture.
+        $last = $undo->undo($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertTrue($last['done']);
+        $this->assertSame(0, $last['remaining']);
+        $this->assertSame(2, $last['removed']);
+        $this->assertSame(2, $last['already_removed']);
+        $this->assertSame(0, DB::table('users')->where('email', 'like', $prefix . '-%')->whereNull('anonymized_at')->count());
+        // Every pass is audited; together they are the record of the undo.
+        $this->assertSame(3, DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)->where('action', 'member_import_undone')
+            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(details, '$.import_id')) = ?", [$id])->count());
+    }
+
+    public function test_undo_cancels_welcome_emails_that_have_not_gone(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(3, $prefix))->json('data.import_id');
+        $this->batch($id, 0, 10, ['send_invitations' => true])->assertOk();
+        $this->assertSame(3, DB::table('member_invitation_outbox')->where('request_key', $id)->where('status', 'pending')->count());
+
+        $this->undo($id)->assertOk()->assertJsonPath('data.removed', 3);
+
+        $this->assertSame(0, DB::table('member_invitation_outbox')->where('request_key', $id)->where('status', 'pending')->count());
+        $this->assertSame(3, DB::table('member_invitation_outbox')->where('request_key', $id)->where('skip_reason', 'import_undone')->count());
+    }
+
+    public function test_undo_needs_a_fresh_second_factor_and_changes_nothing_without_it(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->runImport(3, $prefix);
+
+        $this->undo($id, false)->assertStatus(403)->assertJsonPath('errors.0.code', 'AUTH_STEP_UP_REQUIRED');
+        $this->assertSame(3, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+    }
+
+    public function test_undo_is_refused_while_the_import_is_running_and_allowed_once_stopped(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(25, $prefix))->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk();                       // running, 10 of 25 written
+
+        $this->undo($id)->assertStatus(409)->assertJsonPath('errors.0.code', 'IMPORT_BUSY');
+        $this->assertSame(10, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+
+        // Stopped: now it can be undone, and what was left to import is gone.
+        $this->batch($id, 10, 10, ['stop' => true])->assertOk();
+        $this->undo($id)->assertOk()->assertJsonPath('data.removed', 10);
+    }
+
+    public function test_checking_the_same_file_again_finishes_an_interrupted_import(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $csv = $this->csv(25, $prefix);
+        $id = $this->check($csv)->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk();                          // 10 of 25 written ...
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        MemberImportSession::discardRows($state);                       // ... then the held rows are lost
+        $this->batch($id, 10, 10)->assertStatus(404);
+
+        $again = $this->check($csv)->assertOk();
+        $this->assertSame('ready', $again->json('data.status'));
+        $this->assertSame(15, $again->json('data.summary.rows'));
+        $this->assertSame(10, $again->json('data.summary.already_imported'));
+        $this->assertCount(15, $again->json('data.source_rows'));
+        $this->assertSame([], $again->json('data.problems'));
+
+        $id2 = $again->json('data.import_id');
+        $next = 0;
+        while ($next < 15) {
+            $next = $this->batch($id2, $next, 10)->assertOk()->json('data.next_index');
+        }
+        $this->assertSame(25, DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', 'like', $prefix . '-%')->count());
+
+        // Everything is now in: the same file has nothing left to import.
+        $done = $this->check($csv)->assertOk();
+        $this->assertSame('problems', $done->json('data.status'));
+        $this->assertSame('nothing_left_to_import', $done->json('data.problems.0.code'));
+    }
+
+    public function test_a_member_from_a_different_file_is_still_already_a_member(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $this->runImport(3, $prefix);
+
+        $other = $this->check(self::HEADER . "Member,0,{$prefix}-0@nexus.test,,,1
+")->assertOk();
+        $this->assertSame('problems', $other->json('data.status'));
+        $this->assertSame('already_member', $other->json('data.problems.0.code'));
     }
 
     public function test_a_new_check_leaves_other_admins_and_running_imports_alone(): void

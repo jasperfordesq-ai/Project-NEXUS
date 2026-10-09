@@ -320,6 +320,15 @@ export const adminMemberInvitations = {
     api.post<InvitationQueueResult>('/v2/admin/members/invitations/never-signed-in', { confirm_count: confirmCount }),
 };
 
+export interface UndoPassResult {
+  done: boolean;
+  remaining: number;
+  removed: number;
+  already_removed: number;
+  kept: Record<string, number>;
+  hours_removed: string;
+}
+
 // Member import: the whole file is checked first, then a clean file is
 // imported in batches the browser paces (see useMemberImportRunner).
 // The 60 s timeout covers the server's 8 s work budget per request plus a slow network.
@@ -346,6 +355,17 @@ export const adminMemberImport = {
           : { identity_checked_by_admin: first.identityChecked, send_invitations: first.sendInvitations }),
         ...(stop ? { stop: true } : {}),
       },
+      { timeout: 60000 },
+    ),
+
+  // Takes a finished or stopped import back: removes the members it created that nobody has
+  // touched since. One call does about 8 s of removals; repeat it until `done` is true
+  // (`removed` is this call's count, `kept` is complete only on the final call).
+  // 409 IMPORT_BUSY while the import is still running.
+  undo: (importId: string) =>
+    api.post<UndoPassResult>(
+      `/v2/admin/members/import/${encodeURIComponent(importId)}/undo`,
+      {},
       { timeout: 60000 },
     ),
 

@@ -14,6 +14,13 @@ use Tests\Laravel\TestCase;
 
 final class MemberImportRowRulesTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // The test addresses are @nexus.test; the mailer accepts a reserved domain only when it is a capture domain.
+        config(['mail.capture_recipient_domains' => ['nexus.test']]);
+    }
+
     /** @param array<string,string> $over @return array<string,string> */
     private function cells(array $over = []): array
     {
@@ -37,6 +44,12 @@ final class MemberImportRowRulesTest extends TestCase
         $this->assertSame('Cork', $r['row']['location']);
         $this->assertSame(1250, $r['row']['balance_cents']);
         $this->assertNull($r['row']['original_balance_cents']);
+    }
+
+    public function test_the_joiners_real_names_need_are_kept(): void
+    {
+        $r = $this->rules()->check($this->cells(['first_name' => "م‌ه"]));
+        $this->assertSame([], $r['problems']);
     }
 
     public function test_blank_optional_fields_become_null_and_zero(): void
@@ -88,6 +101,11 @@ final class MemberImportRowRulesTest extends TestCase
         yield 'exponent balance' => [['balance' => '1e3'], 'balance', 'invalid_number'];
         yield 'unicode minus balance' => [['balance' => "\u{2212}3"], 'balance', 'invalid_number'];
         yield 'bad encoding name' => [['first_name' => "\xFF"], 'first_name', 'invalid_encoding'];
+        yield 'reserved domain .invalid' => [['email' => 'a@foo.invalid'], 'email', 'invalid_email'];
+        yield 'reserved domain .local' => [['email' => 'a@foo.local'], 'email', 'invalid_email'];
+        yield 'bracketed IP address' => [['email' => 'a@[1.2.3.4]'], 'email', 'invalid_email'];
+        yield 'right-to-left override in a name' => [['first_name' => "An‮n"], 'first_name', 'control_characters'];
+        yield 'zero-width space inside a name' => [['last_name' => "Lo​ve"], 'last_name', 'control_characters'];
         yield 'bad encoding balance' => [['balance' => "1\xFF"], 'balance', 'invalid_encoding'];
     }
 

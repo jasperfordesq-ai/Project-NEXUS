@@ -8,6 +8,8 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\TokenService;
+use App\Services\TwoFactorPolicy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -561,9 +563,25 @@ class AdminAnalyticsReportsControllerTest extends TestCase
 
         // xlsx is now a supported format (IT-Data-01 native XLSX export);
         // use a genuinely unsupported format to exercise the 400 path.
-        $response = $this->apiGet('/v2/admin/reports/members/export?format=docx');
+        $response = $this->apiGet('/v2/admin/reports/transactions/export?format=docx');
 
         $response->assertStatus(400);
+    }
+
+    public function test_member_directory_export_needs_a_fresh_second_factor(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => 1]);
+        $token = fn (array $claims) => ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken($admin->id, $admin->tenant_id, $claims)];
+
+        // Signed in an hour ago: asked for a second factor, nothing sent.
+        $this->apiGet('/v2/admin/reports/members/export?format=csv', $token(['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600]))
+            ->assertStatus(403)->assertJsonPath('errors.0.code', 'AUTH_STEP_UP_REQUIRED');
+
+        // Fresh second factor: the file is sent.
+        $this->apiGet('/v2/admin/reports/members/export?format=csv', $token(TwoFactorPolicy::claims('totp')))->assertOk();
+
+        // The other report types are unchanged: no second factor asked for.
+        $this->apiGet('/v2/admin/reports/transactions/export?format=csv', $token(['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600]))->assertOk();
     }
 
     public function test_export_report_returns_403_for_member(): void

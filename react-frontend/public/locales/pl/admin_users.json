@@ -673,6 +673,8 @@
       "invalid_phone": "To nie jest prawidłowy numer telefonu. Użyj formatu międzynarodowego, np. +1 555 123 4567.",
       "invalid_number": "To nie jest liczba. Użyj samych cyfr, np. 12 lub 12.5, bez jednostek i separatorów tysięcy.",
       "balance_too_large": "Salda mogą wynosić do {{max}} godzin.",
+      "total_balance_too_large": "Łącznie salda w tym pliku przekraczają {{max}} godzin. Sprawdź, czy kolumna salda jest w godzinach, a nie w innej jednostce.",
+      "nothing_left_to_import": "Wszyscy członkowie z tego pliku zostali już z niego zaimportowani. Nie ma już nic do zaimportowania.",
       "wrong_cell_count": "Liczba komórek w tym wierszu: {{found}}; liczba nagłówków: {{expected}}.",
       "duplicate_in_file": "Ten adres e-mail występuje także w wierszu {{first_row}}.",
       "already_member": "Ta osoba jest już członkiem tej społeczności.",
@@ -692,6 +694,7 @@
       "without_town": "Bez miejscowości: {{n}} (mogą ją dodać w swoim profilu)",
       "negatives": "Salda ujemne, które zaczną się od 0: {{n}}",
       "blank_rows": "Pominięte puste wiersze: {{n}}",
+      "already_imported": "Zaimportowani wcześniej z tego samego pliku, więc pominięci: {{n}}",
       "identity_attest": "Tożsamość każdej osoby została przeze mnie sprawdzona",
       "identity_help": "Twoja społeczność wymaga weryfikacji tożsamości. Jeśli zostawisz to pole niezaznaczone, ci członkowie poczekają na tę weryfikację, zanim będą mogli się zalogować.",
       "send_invitations": "Wyślij każdemu nowemu członkowi e-mail z linkiem do ustawienia hasła",
@@ -734,6 +737,16 @@
       "invitations_queued_many": "{{countFormatted}} wiadomości powitalnych czeka w kolejce i zostanie wysłanych w ciągu {{duration}}.",
       "invitations_queued_other": "{{countFormatted}} wiadomości powitalnej czeka w kolejce i zostanie wysłane w ciągu {{duration}}.",
       "no_invitations": "Nie wysłano żadnych wiadomości powitalnych."
+    },
+    "undo": {
+      "button": "Cofnij ten import",
+      "confirm": "Usunąć członków utworzonych przez ten import? Członkowie, którzy już się zalogowali lub wzięli udział w wymianie, zostają.",
+      "confirm_yes": "Tak, usuń",
+      "confirm_no": "Nie, zostaw",
+      "done": "Import cofnięty. Usunięto: {{removed}}. Zachowano, ponieważ już korzystali z konta: {{kept}}.",
+      "failed": "Nie udało się cofnąć importu. Spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
+      "busy": "Import wciąż trwa. Najpierw go zatrzymaj, potem cofnij.",
+      "working": "Usuwanie członków… usunięto dotąd {{removed}}. Nie zamykaj tego okna."
     },
     "stopped": {
       "title": "Import został zatrzymany. Zaimportowani członkowie: {{created}} z {{total}}.",

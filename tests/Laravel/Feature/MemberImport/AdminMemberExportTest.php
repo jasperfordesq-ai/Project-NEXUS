@@ -40,6 +40,8 @@ final class AdminMemberExportTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
+        // The test addresses are @nexus.test; the mailer accepts a reserved domain only when it is a capture domain.
+        config(['mail.capture_recipient_domains' => ['nexus.test']]);
         $this->admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => true]);
     }
 
@@ -87,6 +89,16 @@ final class AdminMemberExportTest extends TestCase
     }
 
     // ------------------------------------------------------------ the file
+
+    public function test_a_stale_second_factor_is_asked_for_and_nothing_is_sent_or_recorded(): void
+    {
+        $stale = ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken($this->admin->id, $this->admin->tenant_id, ['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600])];
+        $before = DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)->where('action', 'member_export')->count();
+
+        $this->apiGet(self::URL, $stale)->assertStatus(403)->assertJsonPath('errors.0.code', 'AUTH_STEP_UP_REQUIRED');
+
+        $this->assertSame($before, DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)->where('action', 'member_export')->count());
+    }
 
     public function test_the_file_has_exactly_the_import_templates_columns_after_a_bom(): void
     {

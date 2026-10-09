@@ -665,6 +665,8 @@
       "invalid_phone": "Dit is geen geldig telefoonnummer. Gebruik het internationale formaat, bijv. +1 555 123 4567.",
       "invalid_number": "Dit is geen getal. Gebruik alleen cijfers, zoals 12 of 12.5, zonder eenheden of duizendtalscheidingstekens.",
       "balance_too_large": "Saldo's mogen maximaal {{max}} uur bedragen.",
+      "total_balance_too_large": "Samen komen de saldo's in dit bestand uit op meer dan {{max}} uur. Controleer of de saldokolom in uren is en niet in een andere eenheid.",
+      "nothing_left_to_import": "Alle leden in dit bestand zijn er al uit geïmporteerd. Er valt niets meer te importeren.",
       "wrong_cell_count": "Deze rij heeft {{found}} cellen; de kopteksten hebben er {{expected}}.",
       "duplicate_in_file": "Dit e-mailadres staat ook op rij {{first_row}}.",
       "already_member": "Deze persoon is al lid van deze gemeenschap.",
@@ -684,6 +686,7 @@
       "without_town": "Zonder plaats: {{n}} (ze kunnen die toevoegen via hun profiel)",
       "negatives": "Negatieve saldo's die op 0 beginnen: {{n}}",
       "blank_rows": "Genegeerde lege regels: {{n}}",
+      "already_imported": "Eerder al uit ditzelfde bestand geïmporteerd en daarom overgeslagen: {{n}}",
       "identity_attest": "Ik heb de identiteit van elke persoon zelf gecontroleerd",
       "identity_help": "Je gemeenschap vraagt om een identiteitscontrole. Als je dit niet aanvinkt, wachten deze leden op die controle voordat ze kunnen inloggen.",
       "send_invitations": "Stuur elk nieuw lid een e-mail met een link om een wachtwoord in te stellen",
@@ -718,6 +721,16 @@
       "invitations_queued_one": "{{countFormatted}} welkomstmail staat klaar en wordt binnen {{duration}} verstuurd.",
       "invitations_queued_other": "{{countFormatted}} welkomstmails staan klaar en worden binnen {{duration}} verstuurd.",
       "no_invitations": "Er zijn geen welkomstmails verstuurd."
+    },
+    "undo": {
+      "button": "Deze import ongedaan maken",
+      "confirm": "De leden verwijderen die deze import heeft aangemaakt? Leden die al zijn ingelogd of aan een uitwisseling hebben meegedaan, blijven behouden.",
+      "confirm_yes": "Ja, verwijderen",
+      "confirm_no": "Nee, behouden",
+      "done": "Import ongedaan gemaakt. Verwijderd: {{removed}}. Behouden omdat ze hun account al hebben gebruikt: {{kept}}.",
+      "failed": "De import kon niet ongedaan worden gemaakt. Probeer het opnieuw of neem contact op met support.",
+      "busy": "De import loopt nog. Stop hem eerst en maak hem daarna ongedaan.",
+      "working": "Leden worden verwijderd… tot nu toe {{removed}} verwijderd. Houd dit venster open."
     },
     "stopped": {
       "title": "De import is gestopt. Geïmporteerde leden: {{created}} van {{total}}.",

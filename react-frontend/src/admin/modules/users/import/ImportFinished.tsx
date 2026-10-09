@@ -3,10 +3,11 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import Download from 'lucide-react/icons/download';
 import { Alert, Button, ModalBody, ModalFooter } from '@/components/ui';
+import { adminMemberImport } from '@/admin/api/adminApi';
 import { formatNumber } from '@/lib/helpers';
 import { downloadText, rowsFromIndexFile, rowsWithNumbersFile } from './csvFiles';
 import { aboutMinutes, formatHours } from './format';
@@ -30,6 +31,34 @@ export function ImportFinished({ state, check, onClose }: Props) {
   // Rows the run never reached. For a checked file every row became a held row, in order.
   const remaining = Math.max(0, (check.source_rows ?? []).length - nextIndex);
   const lead = useFocusOnMount<HTMLDivElement>();
+
+  // Taking the import back: ask once, then say what happened.
+  const [undoStep, setUndoStep] = useState<'idle' | 'confirm' | 'working' | 'done'>('idle');
+  const [undoResult, setUndoResult] = useState<{ color: 'success' | 'danger'; text: string } | null>(null);
+  const [undoRemoved, setUndoRemoved] = useState(0);
+  // The server removes members for about 8 s per call and says whether any are left; keep
+  // calling until it is done. `removed` adds up across calls; `kept` is complete on the last.
+  const undoImport = async () => {
+    if (!check.import_id) return;
+    setUndoStep('working');
+    let removedSoFar = 0;
+    for (;;) {
+      const response = await adminMemberImport.undo(check.import_id);
+      if (!response?.success || !response.data) {
+        setUndoResult({ color: 'danger', text: t(response?.code === 'IMPORT_BUSY' ? 'member_import.undo.busy' : 'member_import.undo.failed') });
+        setUndoStep('idle');
+        return;
+      }
+      removedSoFar += response.data.removed;
+      setUndoRemoved(removedSoFar);
+      if (response.data.done) {
+        const kept = Object.values(response.data.kept).reduce((sum, n) => sum + n, 0);
+        setUndoResult({ color: 'success', text: t('member_import.undo.done', { removed: formatNumber(removedSoFar), kept: formatNumber(kept) }) });
+        setUndoStep('done');
+        return;
+      }
+    }
+  };
 
   // Members whose negative balance became 0 — only the ones this run actually reached.
   const reached = new Set((check.source_rows ?? []).slice(0, nextIndex).map((r) => r.row));
@@ -104,9 +133,32 @@ export function ImportFinished({ state, check, onClose }: Props) {
           )}
 
           <p className="text-sm">{invitations}</p>
+
+          {undoStep === 'working' && (
+            <Alert color="default" role="status" description={t('member_import.undo.working', { removed: formatNumber(undoRemoved) })} />
+          )}
+          {undoResult && <Alert color={undoResult.color} role={undoResult.color === 'success' ? 'status' : 'alert'} description={undoResult.text} />}
+          {undoStep === 'confirm' && (
+            <Alert
+              color="warning"
+              role="alert"
+              description={(
+                <div className="flex flex-col gap-2">
+                  <p>{t('member_import.undo.confirm')}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="danger" onPress={undoImport}>{t('member_import.undo.confirm_yes')}</Button>
+                    <Button variant="secondary" onPress={() => setUndoStep('idle')}>{t('member_import.undo.confirm_no')}</Button>
+                  </div>
+                </div>
+              )}
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {created > 0 && undoStep === 'idle' && check.import_id && (
+            <Button variant="secondary" onPress={() => setUndoStep('confirm')}>{t('member_import.undo.button')}</Button>
+          )}
           {leftover && remaining > 0 && (
             <Button
               variant="secondary"
