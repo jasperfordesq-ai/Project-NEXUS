@@ -2561,7 +2561,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "تقدّم المستوى {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "متاح بشكل عام (الإصدار 3.0.0)",
+  "release_stage": "متاح بشكل عام (الإصدار 3.1.0)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "ضبط نظام الألوان واللكنة والكثافة.",
