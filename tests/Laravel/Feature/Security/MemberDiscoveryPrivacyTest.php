@@ -52,6 +52,12 @@ class MemberDiscoveryPrivacyTest extends TestCase
 
         $this->assertSame([(int) $approved->id], $visibleTo((int) $viewer->id));
         $this->assertSame([(int) $approved->id], $visibleTo(null));
+
+        // An older accepted connection must not reopen a pending profile.
+        $this->connect($viewer, $pending);
+        DB::table('users')->where('id', $pending->id)->update(['privacy_profile' => 'private']);
+        $this->assertSame([(int) $approved->id], $visibleTo((int) $viewer->id));
+
         $this->assertContains((int) $pending->id, $visibleTo((int) $pending->id));
         $this->assertContains((int) $pending->id, $visibleTo((int) $viewer->id, true));
     }
