@@ -22,6 +22,7 @@ import { lazy, Suspense, useState, type ReactNode } from 'react';
 
 import { Input } from '@/components/ui/Input';
 import type { MemberLocationValue } from '@/lib/memberLocation';
+import { useKeepFocusAcrossSwap } from '@/components/location/useKeepFocusAcrossSwap';
 
 const PlaceAutocompleteInput = lazy(() =>
   import('@/components/location/PlaceAutocompleteInput').then((module) => ({
@@ -55,6 +56,13 @@ export function MemberLocationField({
   className,
 }: MemberLocationFieldProps) {
   const [isActivated, setIsActivated] = useState(false);
+  // The swap to the place search replaces the input element the member is
+  // typing in; this puts focus (and the caret) back in the new one.
+  const { containerRef, arm } = useKeepFocusAcrossSwap();
+  const activate = () => {
+    arm();
+    setIsActivated(true);
+  };
 
   const handleText = (text: string) => onChange({ location: text });
 
@@ -64,10 +72,10 @@ export function MemberLocationField({
       label={label}
       placeholder={placeholder}
       value={value.location}
-      onFocus={activateOnType ? () => setIsActivated(true) : undefined}
+      onFocus={activateOnType ? activate : undefined}
       onChange={(e) => {
         handleText(e.target.value);
-        if (activateOnType) setIsActivated(true);
+        if (activateOnType) activate();
       }}
       isRequired={isRequired}
       isInvalid={isInvalid}
@@ -78,7 +86,7 @@ export function MemberLocationField({
   );
 
   return (
-    <div className={className}>
+    <div ref={containerRef} className={className}>
       {isActivated ? (
         <Suspense fallback={plainInput(false)}>
           <PlaceAutocompleteInput

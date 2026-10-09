@@ -60,6 +60,7 @@ import { api, tokenManager } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePasswordCheck } from '@/hooks/usePasswordCheck';
 import { PasswordStrength } from '@/components/auth/PasswordStrength';
+import { useKeepFocusAcrossSwap } from '@/components/location/useKeepFocusAcrossSwap';
 
 const PlaceAutocompleteInput = lazy(() =>
   import('@/components/location/PlaceAutocompleteInput').then((module) => ({
@@ -118,6 +119,12 @@ export function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const [isLocationAutocompleteActivated, setIsLocationAutocompleteActivated] = useState(false);
+  // Swapping in the place search replaces the input being typed in; keep focus.
+  const { containerRef: locationFieldRef, arm: armLocationFocus } = useKeepFocusAcrossSwap();
+  const activateLocationAutocomplete = () => {
+    armLocationFocus();
+    setIsLocationAutocompleteActivated(true);
+  };
 
   // Bot protection — single off-screen honeypot. Multi-field decoys
   // (`confirm_email`, `address_line_2`, etc.) were autofilled by browsers
@@ -719,6 +726,7 @@ export function RegisterPage() {
             </div>
 
             {/* Location */}
+            <div ref={locationFieldRef}>
             {isLocationAutocompleteActivated ? (
               <Suspense
                 fallback={
@@ -779,11 +787,11 @@ export function RegisterPage() {
                 label={requiredLabel(t('register.location_label'))}
                 placeholder={t('register.location_placeholder')}
                 value={location}
-                onFocus={() => setIsLocationAutocompleteActivated(true)}
+                onFocus={activateLocationAutocomplete}
                 onChange={(e) => {
                   setLocation(e.target.value);
                   setLocationTouched(true);
-                  setIsLocationAutocompleteActivated(true);
+                  activateLocationAutocomplete();
                 }}
                 isRequired
                 isInvalid={locationTouched && !!locationError}
@@ -796,6 +804,7 @@ export function RegisterPage() {
                 }}
               />
             )}
+            </div>
 
             {/* Phone */}
             <Input

@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import i18n from 'i18next';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, userEvent } from '@/test/test-utils';
 
 const apiMocks = vi.hoisted(() => ({
   get: vi.fn(),
@@ -171,6 +171,24 @@ describe('RegisterPage', () => {
     expect(locationInput).toBeRequired();
     expect(phoneInput).toBeRequired();
     expect(phoneInput).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('keeps focus and typed letters in the location box when the place search loads', async () => {
+    const user = userEvent.setup();
+    render(<RegisterPage />);
+
+    await user.click(await screen.findByLabelText(/location/i));
+    // Type straight away, before the lazy place search has loaded.
+    await user.keyboard('Gal');
+
+    await waitFor(() => {
+      const active = document.activeElement as HTMLInputElement | null;
+      expect(active?.tagName).toBe('INPUT');
+      expect(active?.value).toBe('Gal');
+    });
+    // Typing carries on in whichever box now has focus.
+    await user.keyboard('way');
+    expect((document.activeElement as HTMLInputElement).value).toBe('Galway');
   });
 
   it('shows closed registration instructions and hides the registration submit button', async () => {
