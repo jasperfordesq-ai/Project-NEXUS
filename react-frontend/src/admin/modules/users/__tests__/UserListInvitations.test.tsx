@@ -201,7 +201,7 @@ describe('UserList — welcome invitations', () => {
       mockInvitations.neverSignedInCount.mockResolvedValue({ success: true, data: { eligible: 0, pending: 4, eta_minutes: 1 } });
       render(<UserList />);
 
-      expect(await screen.findByText('Everyone here has already been invited or signed in.')).toBeInTheDocument();
+      expect(await screen.findByText('No one on this list can be invited right now.')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Invite everyone who has never signed in' })).not.toBeInTheDocument();
     });
 
@@ -226,7 +226,7 @@ describe('UserList — welcome invitations', () => {
       await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith(
         '1,500 welcome emails are queued and will go out over about 30 minutes.',
       ));
-      expect(await screen.findByText('Everyone here has already been invited or signed in.')).toBeInTheDocument();
+      expect(await screen.findByText('No one on this list can be invited right now.')).toBeInTheDocument();
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
@@ -272,8 +272,47 @@ describe('UserList — welcome invitations', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Send the emails' }));
 
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-      expect(mockToast.info).toHaveBeenCalledWith('Everyone here has already been invited or signed in.');
+      expect(mockToast.info).toHaveBeenCalledWith('No one on this list can be invited right now.');
       expect(mockInvitations.inviteEveryone).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not reopen a window the admin closed while the request was running', async () => {
+      let answer: (value: unknown) => void = () => {};
+      mockInvitations.neverSignedInCount
+        .mockResolvedValueOnce({ success: true, data: { eligible: 5, pending: 0, eta_minutes: 1 } })
+        .mockResolvedValueOnce({ success: true, data: { eligible: 5, pending: 0, eta_minutes: 1 } })
+        .mockResolvedValue({ success: true, data: { eligible: 7, pending: 0, eta_minutes: 1 } });
+      mockInvitations.inviteEveryone.mockImplementation(() => new Promise((resolve) => { answer = resolve; }));
+      render(<UserList />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Invite everyone who has never signed in' }));
+      await screen.findByRole('dialog');
+      fireEvent.click(screen.getByRole('button', { name: 'Send the emails' }));
+      await waitFor(() => expect(mockInvitations.inviteEveryone).toHaveBeenCalledWith(5));
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      answer({ success: false, code: 'COUNT_CHANGED' });
+
+      // The number on the tab is brought up to date, but nothing pops up unasked.
+      await waitFor(() => expect(mockInvitations.neverSignedInCount).toHaveBeenCalledTimes(3));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(mockToast.error).not.toHaveBeenCalled();
+      expect(mockToast.info).not.toHaveBeenCalled();
+    });
+
+    it('says the count could not be checked and offers to try again', async () => {
+      mockInvitations.neverSignedInCount
+        .mockResolvedValueOnce({ success: false, code: 'SERVER_ERROR', error: 'SERVER TEXT' })
+        .mockResolvedValue({ success: true, data: { eligible: 3, pending: 0, eta_minutes: 1 } });
+      render(<UserList />);
+
+      expect(await screen.findByText('Could not check who can be invited. Try again.')).toBeInTheDocument();
+      expect(screen.queryByText('SERVER TEXT')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+      expect(await screen.findByRole('button', { name: 'Invite everyone who has never signed in' })).toBeInTheDocument();
+      expect(screen.queryByText('Could not check who can be invited. Try again.')).not.toBeInTheDocument();
     });
   });
 });

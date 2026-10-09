@@ -77,9 +77,9 @@ class AdminMemberInvitationController extends BaseApiController
         return $this->respondWithData([
             'eligible' => $eligible,
             'pending' => $pending,
-            // This community's queue, these members included. Other communities
-            // share the sender's pace, so the real wait can be a little longer.
-            'eta_minutes' => InvitationOutbox::minutesToSend($eligible + $pending),
+            // The whole platform's queue plus these members: the same estimate
+            // the POST answers with once they are queued.
+            'eta_minutes' => $eligible > 0 ? $this->outbox->etaMinutes($eligible) : 0,
         ]);
     }
 

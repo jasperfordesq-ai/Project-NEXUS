@@ -10,7 +10,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip, Av
  * Parity: PHP Admin\UserController::index()
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Input } from '@heroui/react/input';
 import { Label } from '@heroui/react/label';
 import { TextField } from '@heroui/react/textfield';
@@ -360,11 +360,19 @@ export function UserList() {
   // `attempt` remounts the confirm window each time the number is re-asked.
   const [inviteAll, setInviteAll] = useState<{ count: number; minutes: number; changed: boolean; attempt: number } | null>(null);
   const [inviteAllLoading, setInviteAllLoading] = useState(false);
+  const [inviteCountFailed, setInviteCountFailed] = useState(false);
+  // Whether the confirm window is open right now. Read after the POST returns:
+  // a window the admin closed meanwhile must not reopen unasked.
+  const inviteAllOpenRef = useRef(false);
+  useEffect(() => {
+    inviteAllOpenRef.current = inviteAll !== null;
+  }, [inviteAll]);
 
   const loadInviteCount = useCallback(async (): Promise<NeverSignedInInvitationCount | null> => {
     const res = await adminMemberInvitations.neverSignedInCount();
     const data = res.success && res.data ? res.data : null;
     setInviteCount(data);
+    setInviteCountFailed(data === null);
     return data;
   }, []);
 
@@ -373,6 +381,7 @@ export function UserList() {
       void loadInviteCount();
     } else {
       setInviteCount(null);
+      setInviteCountFailed(false);
     }
   }, [onNeverLoggedInTab, loadInviteCount]);
 
@@ -437,8 +446,13 @@ export function UserList() {
       return;
     }
     if (res.code === 'COUNT_CHANGED') {
-      // Someone joined, signed in or was invited meanwhile: show the new number.
-      await openInviteAll(true);
+      // Someone joined, signed in or was invited meanwhile: show the new number,
+      // in the window if it is still open, otherwise only on the tab.
+      if (inviteAllOpenRef.current) {
+        await openInviteAll(true);
+      } else {
+        void loadInviteCount();
+      }
       return;
     }
     setInviteAll(null);
@@ -824,9 +838,16 @@ export function UserList() {
         </Tabs>
       </div>
 
-      {onNeverLoggedInTab && inviteCount && (
+      {onNeverLoggedInTab && (inviteCount || inviteCountFailed) && (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-divider/70 bg-surface px-4 py-3 shadow-sm shadow-black/[0.03]">
-          {inviteCount.eligible > 0 ? (
+          {!inviteCount ? (
+            <>
+              <p className="text-sm text-muted">{t('users.invite_count_failed')}</p>
+              <Button size="sm" variant="secondary" onPress={() => void loadInviteCount()}>
+                {t('users.invite_count_retry')}
+              </Button>
+            </>
+          ) : inviteCount.eligible > 0 ? (
             <Button
               startContent={<Mail size={16} aria-hidden="true" />}
               onPress={() => void openInviteAll()}

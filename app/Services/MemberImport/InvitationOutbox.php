@@ -716,12 +716,14 @@ final class InvitationOutbox
     /**
      * Minutes until the whole platform's queue (this request included) has been
      * sent, at least 1. An estimate: other communities' invitations share the pace.
+     * $notYetQueued adds invitations about to be queued (a count shown before
+     * the admin confirms), so the two estimates agree.
      */
-    public function etaMinutes(): int
+    public function etaMinutes(int $notYetQueued = 0): int
     {
         $waiting = DB::table(self::TABLE)->whereIn('status', ['pending', 'processing'])->count();
 
-        return max(1, self::minutesToSend($waiting));
+        return max(1, self::minutesToSend($waiting + max(0, $notYetQueued)));
     }
 
     /** Minutes the scheduled sender needs for this many invitations at its pace; 0 for none. */

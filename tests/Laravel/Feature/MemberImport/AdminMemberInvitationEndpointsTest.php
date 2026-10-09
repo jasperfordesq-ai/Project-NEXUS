@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\MemberImport;
 
+use App\Http\Middleware\RequireRecentSecondFactor;
 use App\Models\User;
 use App\Services\TokenService;
 use App\Services\TwoFactorPolicy;
@@ -47,11 +48,14 @@ final class AdminMemberInvitationEndpointsTest extends TestCase
     // ------------------------------------------------------------ fixtures
 
     /** @return array<string, string> */
-    private function headers(?User $as = null): array
+    private function headers(?User $as = null, bool $freshSecondFactor = true): array
     {
         $as ??= $this->admin;
+        $claims = $freshSecondFactor
+            ? TwoFactorPolicy::claims('totp')
+            : ['mfa_method' => 'totp', 'mfa_verified_at' => time() - 3600];
 
-        return ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken($as->id, $as->tenant_id, TwoFactorPolicy::claims('totp'))];
+        return ['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken($as->id, $as->tenant_id, $claims)];
     }
 
     /** @param array<string, mixed> $extra */
@@ -276,6 +280,45 @@ final class AdminMemberInvitationEndpointsTest extends TestCase
         $this->assertSame(0, $this->outboxRows($b->id));
 
         $this->assertSame(2, $this->inviteEveryone(2)->assertOk()->json('data.queued'));
+    }
+
+    public function test_invite_everyone_asks_for_a_recent_second_factor(): void
+    {
+        $a = $this->member();
+        $stale = $this->headers(null, false);
+
+        // Counting and inviting up to 100 selected members do not ask (like bulk approve).
+        $this->assertSame(1, $this->apiGet(self::COUNT, $stale)->assertOk()->json('data.eligible'));
+
+        $this->apiPost(self::EVERYONE, ['confirm_count' => 1], $stale)
+            ->assertStatus(403)->assertJsonPath('errors.0.code', RequireRecentSecondFactor::ERROR_CODE);
+        $this->assertSame(0, $this->outboxRows($a->id));
+
+        $this->assertSame(1, $this->apiPost(self::SELECTED, ['user_ids' => [$a->id]], $stale)->assertOk()->json('data.queued'));
+    }
+
+    public function test_the_counted_estimate_matches_the_queued_result(): void
+    {
+        $this->member();
+        $this->member();
+        // Invitations of another community already waiting share the sender's pace.
+        $elsewhere = $this->member([], 1);
+        $rows = [];
+        for ($i = 0; $i < 60; $i++) {
+            $rows[] = [
+                'tenant_id' => 1, 'user_id' => $elsewhere->id, 'request_key' => sprintf('eta-%032d', $i),
+                'source' => 'admin_bulk', 'status' => 'pending', 'attempts' => 0,
+                'available_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+            ];
+        }
+        DB::table('member_invitation_outbox')->insert($rows);
+
+        $count = $this->apiGet(self::COUNT, $this->headers())->assertOk();
+        $this->assertSame(2, $count->json('data.eligible'));
+        $queued = $this->inviteEveryone(2)->assertOk();
+
+        $this->assertSame($queued->json('data.eta_minutes'), $count->json('data.eta_minutes'));
+        $this->assertGreaterThanOrEqual(2, $count->json('data.eta_minutes'), '62+ waiting at 50 a minute');
     }
 
     public function test_invite_everyone_needs_a_whole_number_to_confirm(): void
