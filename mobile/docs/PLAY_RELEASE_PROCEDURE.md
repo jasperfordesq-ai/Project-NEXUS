@@ -458,6 +458,37 @@ catch a repeated-code bundle before archiving. The 96,305,250-byte AAB has SHA-2
   177 countries and regions. `mobile/live-store-build.json` records that exact
   artifact and source commit.
 
+On **2026-10-09**, build **23 / 1.10.0** went through both steps the same day, at the owner's
+request, **without a physical-device walk of build 23**. It was built by `build-aab-play.sh
+--version-code 23` from `7eca856cd` (the version bump on top of `a494abcaf`, whose CI Pipeline,
+E2E, Platform contracts and Security Scan runs all passed; the Android Native Release Gate last ran,
+and passed, on `908eddecc`, which carries every mobile change in this build). No native dependency
+or plugin changed since build 22; the version moved to 1.10.0 because the "Where are you based?"
+prompt is new functionality. The guarded build took **2m 44s**; the 96,510,098-byte AAB has
+SHA-256 `8A23136EE8D15A31FAC14270A490E8CCB1145B371EBEA601B80F1E95BF65B8FD`. The owner uploaded it
+(the agent's `file_upload` refused it at the 10 MB bridge limit); the agent did everything else.
+
+- 🔴 **Console slot, 2026-10-09:** `u/0` and `u/3` opened the terms page for `jasper.ford.esq`,
+  `u/1` was JasperHampton, and `u/2` asked the owner to re-verify their password ("Verify it's you").
+  Adding `?authuser=jasper@hour-timebank.ie` to the Console URL resolves the right slot without
+  guessing; it landed on `u/2` once the owner had signed in again.
+- 🔴 **Drop only the `.aab`.** The owner dragged in the two `.sha256` files that sit beside it in
+  `releases/android/play/` as well; Play listed them as failed uploads with "Upload a valid app
+  bundle". Dismissing the two error rows (✕) cleared the message and left bundle 23 attached.
+- **Internal testing:** "Ready to release", no quick-checks bar. 0 devices lost on every row
+  (Phone 12,274 / Tablet 6,474 / TV 4 / Chromebook 10 / Android XR 1). New install 33.2 MB
+  (+2.63 KB), update 1.41 MB. Published **4:13 PM** Console time.
+- **Production:** promote carried the bundle, name `23 (1.10.0)` and notes across, with build 22
+  under "Not included". 100.0% roll-out, all targeted countries, 6 active installs.
+- **Quick checks:** the pre-submit bar opened at "up to 14 minutes", counted down a minute at a
+  time and cleared after **about 8 minutes** with "Your changes can now be sent for review" and no
+  issues listed. The submit dialog carried no warning about a review in flight. After submission a
+  second bar opened under "Changes in review", again quoting "up to 14 minutes", and ended within
+  about a minute with "Your changes are now in review".
+- **Submission 17**, submitted October 9, 2026 at **4:24 PM**, Production — In review. Managed
+  publishing is off, so approval releases it automatically. `live-store-build.json` stays on build
+  22 until the Production track shows build 23 released.
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*
