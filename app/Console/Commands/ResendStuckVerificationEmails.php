@@ -15,6 +15,7 @@ use App\I18n\LocaleContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * One-shot recovery command for the production users who registered while
@@ -209,6 +210,14 @@ class ResendStuckVerificationEmails extends Command
 
     private function ensureVerificationTokenTableExists(): void
     {
+        // The table is schema-managed (database/schema/mysql-schema.sql); the
+        // CREATE below is only a fallback for a database built without it.
+        // Check first: MariaDB commits any open transaction before DDL, even
+        // when IF NOT EXISTS finds the table.
+        if (Schema::hasTable('email_verification_tokens')) {
+            return;
+        }
+
         DB::statement("
             CREATE TABLE IF NOT EXISTS `email_verification_tokens` (
                 `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

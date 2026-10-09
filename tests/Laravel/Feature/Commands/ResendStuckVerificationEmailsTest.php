@@ -80,6 +80,30 @@ class ResendStuckVerificationEmailsTest extends TestCase
             ->assertSuccessful();
     }
 
+    public function test_token_table_check_keeps_the_transaction_open(): void
+    {
+        // CREATE TABLE commits implicitly on MariaDB even when IF NOT EXISTS
+        // finds the table, which ended DatabaseTransactions' wrapper: the
+        // tests above that call sendOne() left their seeded tenants, members
+        // and tokens permanently in nexus_test.
+        $this->assertSame(1, $this->inTransaction(), 'precondition: the test transaction is open');
+
+        $method = new \ReflectionMethod(ResendStuckVerificationEmails::class, 'ensureVerificationTokenTableExists');
+        $method->setAccessible(true);
+        $method->invoke(new ResendStuckVerificationEmails());
+
+        $this->assertSame(
+            1,
+            $this->inTransaction(),
+            'ensureVerificationTokenTableExists() must not commit the open transaction'
+        );
+    }
+
+    private function inTransaction(): int
+    {
+        return (int) DB::selectOne('SELECT @@in_transaction AS t')->t;
+    }
+
     private function seedPendingUser(int $tenantId): int
     {
         DB::table('tenants')->insertOrIgnore([
