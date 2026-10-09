@@ -31,6 +31,8 @@ return new class extends Migration {
             $table->timestamp('claimed_at')->nullable();
             $table->timestamp('resolved_at')->nullable();
             $table->string('provider_message_id', 255)->nullable();
+            $table->unsignedBigInteger('reconciled_from_email_log_id')->nullable();
+            $table->timestamp('reconciled_at')->nullable();
             $table->string('last_error_code', 64)->nullable();
             $table->timestamps();
 

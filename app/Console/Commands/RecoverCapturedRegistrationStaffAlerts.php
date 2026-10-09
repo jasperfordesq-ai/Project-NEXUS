@@ -62,10 +62,19 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
                 $staleQuery->where('tenant_id', (int) $tenantOption);
             }
             $this->info('Stale claims requiring UNKNOWN hold: ' . $staleQuery->count());
+            $unknownQuery = DB::table('registration_staff_email_deliveries')->where('status', 'unknown');
+            if ($tenantOption !== null) {
+                $unknownQuery->where('tenant_id', (int) $tenantOption);
+            }
+            $this->info('Unknown deliveries awaiting reconciliation: ' . $unknownQuery->count());
             return self::SUCCESS;
         }
 
         $heldUnknown = RegistrationStaffEmailDeliveryLedger::holdStaleClaimsUnknown(
+            $tenantOption !== null ? (int) $tenantOption : null,
+            100,
+        );
+        $reconciledAccepted = RegistrationStaffEmailDeliveryLedger::reconcileConfirmedMailLog(
             $tenantOption !== null ? (int) $tenantOption : null,
             100,
         );
@@ -106,7 +115,7 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
                 ]);
             }
         }
-        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} held_unknown={$heldUnknown} failed={$failed}");
+        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} held_unknown={$heldUnknown} reconciled_accepted={$reconciledAccepted} failed={$failed}");
         return $failed === 0 ? self::SUCCESS : self::FAILURE;
     }
 }

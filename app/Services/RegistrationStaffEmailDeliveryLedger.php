@@ -215,6 +215,72 @@ final class RegistrationStaffEmailDeliveryLedger
     }
 
     /**
+     * Resolve UNKNOWN only from one exact positive local transport receipt.
+     * Absence, failure, or multiple log rows cannot establish non-acceptance
+     * and remain for provider/operator review.
+     */
+    public static function reconcileConfirmedMailLog(?int $tenantId = null, int $limit = 100): int
+    {
+        if (($tenantId !== null && $tenantId <= 0) || $limit < 1 || $limit > 1000) {
+            throw new \InvalidArgumentException('Invalid mail-log reconciliation scope or limit');
+        }
+        $keySql = "CONCAT('admin_new_registration:', d.tenant_id, ':', d.registrant_user_id, ':', d.recipient_user_id)";
+        $candidates = DB::table(self::TABLE . ' as d')
+            ->where('d.status', 'unknown')
+            ->whereNotNull('d.dispatch_id')
+            ->whereExists(function ($query) use ($keySql): void {
+                $query->selectRaw('1')->from('email_log as e')
+                    ->whereColumn('e.tenant_id', 'd.tenant_id')
+                    ->whereColumn('e.dispatch_id', 'd.dispatch_id')
+                    ->where('e.category', 'admin_new_registration')
+                    ->whereRaw('e.idempotency_key = ' . $keySql)
+                    ->whereIn('e.status', ['sent', 'delivered']);
+            })
+            ->whereRaw("(SELECT COUNT(*) FROM email_log e2 WHERE e2.tenant_id = d.tenant_id AND e2.dispatch_id = d.dispatch_id AND e2.category = 'admin_new_registration' AND e2.idempotency_key = {$keySql}) = 1");
+        if ($tenantId !== null) {
+            $candidates->where('d.tenant_id', $tenantId);
+        }
+        $ids = $candidates->orderBy('d.id')->limit($limit)->pluck('d.id')->all();
+        $resolved = 0;
+        foreach ($ids as $id) {
+            $resolved += DB::transaction(static function () use ($id): int {
+                $delivery = DB::table(self::TABLE)
+                    ->where('id', $id)->where('status', 'unknown')
+                    ->lockForUpdate()->first();
+                if ($delivery === null || $delivery->dispatch_id === null) {
+                    return 0;
+                }
+                $key = 'admin_new_registration:' . $delivery->tenant_id . ':'
+                    . $delivery->registrant_user_id . ':' . $delivery->recipient_user_id;
+                $logs = DB::table('email_log')
+                    ->where('tenant_id', $delivery->tenant_id)
+                    ->where('dispatch_id', $delivery->dispatch_id)
+                    ->where('category', 'admin_new_registration')
+                    ->where('idempotency_key', $key)
+                    ->lockForUpdate()->limit(2)
+                    ->get(['id', 'status', 'provider_message_id']);
+                if ($logs->count() !== 1 || !in_array($logs[0]->status, ['sent', 'delivered'], true)) {
+                    return 0;
+                }
+                return DB::table(self::TABLE)
+                    ->where('id', $delivery->id)
+                    ->where('tenant_id', $delivery->tenant_id)
+                    ->where('status', 'unknown')
+                    ->where('dispatch_id', $delivery->dispatch_id)
+                    ->update([
+                        'status' => 'accepted',
+                        'provider_message_id' => $logs[0]->provider_message_id,
+                        'last_error_code' => null,
+                        'reconciled_from_email_log_id' => $logs[0]->id,
+                        'reconciled_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+            });
+        }
+        return $resolved;
+    }
+
+    /**
      * ACCEPTED means the provider confirmed acceptance, not delivery/read.
      * UNKNOWN is retained for possible acceptance after timeout or crash.
      */

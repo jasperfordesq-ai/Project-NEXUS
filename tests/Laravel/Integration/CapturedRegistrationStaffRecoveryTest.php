@@ -128,6 +128,58 @@ final class CapturedRegistrationStaffRecoveryTest extends TestCase
         $this->assertSame(0, $sender->adminCalls);
     }
 
+    public function test_one_exact_sent_receipt_reconciles_unknown_to_accepted_without_resend(): void
+    {
+        [$tenant, $registrant, $recipient, $delivery] = $this->fixture();
+        $claim = Ledger::claimCapturedForInline($tenant, $registrant, $recipient);
+        $this->assertNotNull($claim);
+        $this->assertTrue(Ledger::resolveClaim($tenant, $delivery, $claim['token'], 'unknown', null, 'INLINE_SEND_UNCONFIRMED'));
+        $logId = $this->mailLog($tenant, $registrant, $recipient, $claim['dispatch_id'], 'sent');
+        $sender = new RecoveryCaptureDispatchService();
+        app()->instance(EmailDispatchService::class, $sender);
+
+        $this->artisan('emails:recover-captured-registration-staff', ['--tenant' => $tenant])
+            ->assertExitCode(0);
+
+        $row = DB::table('registration_staff_email_deliveries')->where('id', $delivery)->first();
+        $this->assertSame('accepted', $row->status);
+        $this->assertSame($logId, (int) $row->reconciled_from_email_log_id);
+        $this->assertNotNull($row->reconciled_at);
+        $this->assertSame(0, $sender->adminCalls);
+    }
+
+    public function test_failed_or_conflicting_mail_logs_leave_unknown_for_manual_review(): void
+    {
+        [$tenant, $registrant, $recipient, $delivery] = $this->fixture();
+        $claim = Ledger::claimCapturedForInline($tenant, $registrant, $recipient);
+        $this->assertTrue(Ledger::resolveClaim($tenant, $delivery, $claim['token'], 'unknown', null, 'INLINE_SEND_UNCONFIRMED'));
+        $this->mailLog($tenant, $registrant, $recipient, $claim['dispatch_id'], 'failed');
+        $this->artisan('emails:recover-captured-registration-staff', ['--tenant' => $tenant])
+            ->assertExitCode(0);
+        $this->assertSame('unknown', DB::table('registration_staff_email_deliveries')->where('id', $delivery)->value('status'));
+
+        $this->mailLog($tenant, $registrant, $recipient, $claim['dispatch_id'], 'sent');
+        $this->artisan('emails:recover-captured-registration-staff', ['--tenant' => $tenant])
+            ->assertExitCode(0);
+        $this->assertSame('unknown', DB::table('registration_staff_email_deliveries')->where('id', $delivery)->value('status'));
+    }
+
+    private function mailLog(int $tenant, int $registrant, int $recipient, string $dispatchId, string $status): int
+    {
+        return (int) DB::table('email_log')->insertGetId([
+            'tenant_id' => $tenant,
+            'recipient_email' => (string) DB::table('users')->where('id', $recipient)->value('email'),
+            'category' => 'admin_new_registration',
+            'source' => self::class,
+            'idempotency_key' => "admin_new_registration:{$tenant}:{$registrant}:{$recipient}",
+            'dispatch_id' => $dispatchId,
+            'status' => $status,
+            'provider' => 'postmark',
+            'provider_message_id' => $status === 'sent' ? 'synthetic-provider-confirmation' : null,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
     /** @return array{int,int,int,int} */
     private function fixture(): array
     {
