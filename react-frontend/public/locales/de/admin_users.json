@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Ort",
-        "rule": "Optional. Wohnort oder Gegend des Mitglieds. Mitglieder ohne Angabe werden bei der ersten Anmeldung danach gefragt."
+        "rule": "Optional. Wohnort oder Gegend des Mitglieds. Mitglieder können ihn später in ihrem Profil ergänzen."
       },
       "balance": {
         "label": "Guthaben",
@@ -655,7 +655,7 @@
       "members": "Zu importierende Mitglieder: {{n}}",
       "hours": "Stunden insgesamt: {{hours}}",
       "with_town": "Mit Ort: {{n}}",
-      "without_town": "Ohne Ort: {{n}} (sie werden bei der ersten Anmeldung danach gefragt)",
+      "without_town": "Ohne Ort: {{n}} (sie können ihn in ihrem Profil ergänzen)",
       "negatives": "Negative Guthaben, die bei 0 beginnen: {{n}}",
       "blank_rows": "Ignorierte leere Zeilen: {{n}}",
       "identity_attest": "Ich habe die Identität jeder Person selbst geprüft",
@@ -666,16 +666,18 @@
     },
     "running": {
       "title": "Mitglieder werden importiert",
-      "batch": "Stapel {{n}} von etwa {{m}}",
-      "count": "Importierte Mitglieder: {{done}} von {{total}}",
-      "hours": "Bisher importierte Stunden: {{hours}}",
-      "remaining": "Verbleibende Zeit: etwa {{time}}",
       "calculating": "Verbleibende Zeit wird berechnet …",
       "keep_open": "Lassen Sie dieses Fenster geöffnet, bis der Import abgeschlossen ist.",
       "stop": "Nach diesem Stapel anhalten",
       "stopping": "Wird nach diesem Stapel angehalten …",
       "progress_label": "Importfortschritt",
-      "announce": "Import zu {{percent}} % abgeschlossen."
+      "announce": "Import zu {{percent}} % abgeschlossen.",
+      "tile_members": "Importierte Mitglieder",
+      "tile_hours": "Importierte Stunden",
+      "tile_batch": "Stapel",
+      "tile_time_left": "Verbleibende Zeit",
+      "tile_of_total": "von {{total}}",
+      "tile_of_about": "von etwa {{m}}"
     },
     "done": {
       "title_one": "{{countFormatted}} Mitglied importiert, mit {{balance}} Stunden",

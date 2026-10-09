@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Plaats",
-        "rule": "Optioneel. De woonplaats of regio van het lid. Leden zonder plaats worden er bij hun eerste aanmelding naar gevraagd."
+        "rule": "Optioneel. De woonplaats of regio van het lid. Leden kunnen die later toevoegen via hun profiel."
       },
       "balance": {
         "label": "Saldo",
@@ -655,7 +655,7 @@
       "members": "Te importeren leden: {{n}}",
       "hours": "Totaal aantal uren: {{hours}}",
       "with_town": "Met plaats: {{n}}",
-      "without_town": "Zonder plaats: {{n}} (er wordt bij hun eerste aanmelding naar gevraagd)",
+      "without_town": "Zonder plaats: {{n}} (ze kunnen die toevoegen via hun profiel)",
       "negatives": "Negatieve saldo's die op 0 beginnen: {{n}}",
       "blank_rows": "Genegeerde lege regels: {{n}}",
       "identity_attest": "Ik heb de identiteit van elke persoon zelf gecontroleerd",
@@ -666,16 +666,18 @@
     },
     "running": {
       "title": "Leden worden geïmporteerd",
-      "batch": "Batch {{n}} van ongeveer {{m}}",
-      "count": "Geïmporteerde leden: {{done}} van {{total}}",
-      "hours": "Tot nu toe geïmporteerde uren: {{hours}}",
-      "remaining": "Resterende tijd: ongeveer {{time}}",
       "calculating": "Resterende tijd wordt berekend…",
       "keep_open": "Houd dit venster open totdat de import klaar is.",
       "stop": "Stoppen na deze batch",
       "stopping": "Stoppen na deze batch…",
       "progress_label": "Voortgang van de import",
-      "announce": "Import voor {{percent}}% voltooid."
+      "announce": "Import voor {{percent}}% voltooid.",
+      "tile_members": "Geïmporteerde leden",
+      "tile_hours": "Geïmporteerde uren",
+      "tile_batch": "Batch",
+      "tile_time_left": "Resterende tijd",
+      "tile_of_total": "van {{total}}",
+      "tile_of_about": "van ongeveer {{m}}"
     },
     "done": {
       "title_one": "{{countFormatted}} lid geïmporteerd, met {{balance}} uur",

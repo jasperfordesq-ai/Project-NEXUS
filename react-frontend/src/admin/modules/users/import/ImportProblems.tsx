@@ -99,19 +99,19 @@ export function ImportProblemList({ check, onChooseAnother }: ProblemsProps) {
           <table className="w-full text-start text-sm">
             <thead className="sticky top-0 bg-surface text-xs text-muted">
               <tr>
-                <th scope="col" className="px-3 py-2 text-start font-medium">{t('member_import.problems.row')}</th>
-                <th scope="col" className="px-3 py-2 text-start font-medium">{t('member_import.problems.column')}</th>
-                <th scope="col" className="px-3 py-2 text-start font-medium">{t('member_import.problems.problem')}</th>
+                <th scope="col" className="whitespace-nowrap px-3 py-2 text-start font-medium">{t('member_import.problems.row')}</th>
+                <th scope="col" className="whitespace-nowrap px-3 py-2 text-start font-medium">{t('member_import.problems.column')}</th>
+                <th scope="col" className="w-full px-3 py-2 text-start font-medium">{t('member_import.problems.problem')}</th>
               </tr>
             </thead>
             <tbody>
               {problems.slice(0, SHOWN_PROBLEMS).map((problem, index) => (
                 // The same row can have several problems, so the position is part of the key.
                 <tr key={`${problem.row}-${index}`} className="border-t border-border align-top">
-                  <td className="px-3 py-2 tabular-nums">
+                  <td className="whitespace-nowrap px-3 py-2 tabular-nums">
                     {rowText(problem.row)}
                   </td>
-                  <td className="px-3 py-2">{describeColumn(t, problem.column)}</td>
+                  <td className="whitespace-nowrap px-3 py-2">{describeColumn(t, problem.column)}</td>
                   <td className="px-3 py-2">{describeIssue(t, problem)}</td>
                 </tr>
               ))}

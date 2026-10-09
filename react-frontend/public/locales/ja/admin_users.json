@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "市区町村",
-        "rule": "任意。メンバーの市区町村または地域。未入力のメンバーは、初回サインイン時に入力を求められます。"
+        "rule": "任意。メンバーの市区町村または地域。メンバーは後からプロフィールで追加できます。"
       },
       "balance": {
         "label": "残高",
@@ -655,7 +655,7 @@
       "members": "インポートするメンバー: {{n}}人",
       "hours": "合計時間: {{hours}}時間",
       "with_town": "市区町村あり: {{n}}人",
-      "without_town": "市区町村なし: {{n}}人(初回サインイン時に入力を求められます)",
+      "without_town": "市区町村なし: {{n}}人(プロフィールから追加できます)",
       "negatives": "0から始まるマイナス残高: {{n}}件",
       "blank_rows": "無視された空行: {{n}}行",
       "identity_attest": "全員の本人確認を自分で行いました",
@@ -666,16 +666,18 @@
     },
     "running": {
       "title": "メンバーをインポートしています",
-      "batch": "バッチ {{n}} / 約{{m}}",
-      "count": "インポート済みのメンバー: {{done}} / {{total}}人",
-      "hours": "ここまでにインポートした時間: {{hours}}時間",
-      "remaining": "残り時間: 約{{time}}",
       "calculating": "残り時間を計算しています…",
       "keep_open": "インポートが終わるまで、このウィンドウを開いたままにしてください。",
       "stop": "このバッチの後で停止",
       "stopping": "このバッチの後で停止します…",
       "progress_label": "インポートの進行状況",
-      "announce": "インポートが{{percent}}%完了しました。"
+      "announce": "インポートが{{percent}}%完了しました。",
+      "tile_members": "インポート済みメンバー",
+      "tile_hours": "インポート済みの時間",
+      "tile_batch": "バッチ",
+      "tile_time_left": "残り時間",
+      "tile_of_total": "/ {{total}}人",
+      "tile_of_about": "/ 約{{m}}"
     },
     "done": {
       "title_other": "{{countFormatted}}人をインポートしました(合計{{balance}}時間)",

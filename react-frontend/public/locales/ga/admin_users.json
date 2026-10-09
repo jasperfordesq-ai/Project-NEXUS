@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Baile",
-        "rule": "Roghnach. Baile nó ceantar an bhaill. Fiafrófar de bhaill nach bhfuil ceann acu nuair a shínfidh siad isteach den chéad uair."
+        "rule": "Roghnach. Baile nó ceantar an bhaill. Is féidir le baill é a chur leis níos déanaí óna bpróifíl."
       },
       "balance": {
         "label": "Iarmhéid",
@@ -655,7 +655,7 @@
       "members": "Baill le hiompórtáil: {{n}}",
       "hours": "Uaireanta san iomlán: {{hours}}",
       "with_town": "Le baile: {{n}}",
-      "without_town": "Gan baile: {{n}} (fiafrófar díobh nuair a shínfidh siad isteach den chéad uair)",
+      "without_town": "Gan baile: {{n}} (is féidir leo é a chur leis óna bpróifíl)",
       "negatives": "Iarmhéideanna diúltacha a thosóidh ag 0: {{n}}",
       "blank_rows": "Línte folamha a seachnaíodh: {{n}}",
       "identity_attest": "Tá céannacht gach duine seiceáilte agam féin",
@@ -669,16 +669,18 @@
     },
     "running": {
       "title": "Baill á n-iompórtáil",
-      "batch": "Baisc {{n}} as thart ar {{m}}",
-      "count": "Baill iompórtáilte: {{done}} as {{total}}",
-      "hours": "Uaireanta iompórtáilte go dtí seo: {{hours}}",
-      "remaining": "Am fágtha: thart ar {{time}}",
       "calculating": "An t-am atá fágtha á ríomh…",
       "keep_open": "Fág an fhuinneog seo oscailte go dtí go gcríochnóidh an t-iompórtú.",
       "stop": "Stop i ndiaidh na baisce seo",
       "stopping": "Á stopadh i ndiaidh na baisce seo…",
       "progress_label": "Dul chun cinn an iompórtaithe",
-      "announce": "Iompórtáil {{percent}}% críochnaithe."
+      "announce": "Iompórtáil {{percent}}% críochnaithe.",
+      "tile_members": "Baill iompórtáilte",
+      "tile_hours": "Uaireanta iompórtáilte",
+      "tile_batch": "Baisc",
+      "tile_time_left": "Am fágtha",
+      "tile_of_total": "as {{total}}",
+      "tile_of_about": "as thart ar {{m}}"
     },
     "done": {
       "title_one": "Baill iompórtáilte: {{countFormatted}} (iomlán {{balance}} uair)",

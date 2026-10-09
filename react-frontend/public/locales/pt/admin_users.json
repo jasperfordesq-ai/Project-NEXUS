@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Cidade",
-        "rule": "Opcional. A cidade ou zona do membro. A cidade é pedida aos membros que não a informarem, no primeiro acesso."
+        "rule": "Opcional. A cidade ou a região do membro. Os membros podem adicioná-la depois, pelo perfil."
       },
       "balance": {
         "label": "Saldo",
@@ -655,7 +655,7 @@
       "members": "Membros a importar: {{n}}",
       "hours": "Total de horas: {{hours}}",
       "with_town": "Com cidade: {{n}}",
-      "without_town": "Sem cidade: {{n}} (a cidade será pedida no primeiro acesso)",
+      "without_town": "Sem cidade: {{n}} (podem adicioná-la pelo perfil)",
       "negatives": "Saldos negativos que começarão em 0: {{n}}",
       "blank_rows": "Linhas vazias ignoradas: {{n}}",
       "identity_attest": "Eu mesmo verifiquei a identidade de cada pessoa",
@@ -667,16 +667,18 @@
     },
     "running": {
       "title": "Importando membros",
-      "batch": "Lote {{n}} de cerca de {{m}}",
-      "count": "Membros importados: {{done}} de {{total}}",
-      "hours": "Horas importadas até agora: {{hours}}",
-      "remaining": "Tempo restante: cerca de {{time}}",
       "calculating": "Calculando o tempo restante…",
       "keep_open": "Mantenha esta janela aberta até a importação terminar.",
       "stop": "Parar depois deste lote",
       "stopping": "Parando depois deste lote…",
       "progress_label": "Progresso da importação",
-      "announce": "Importação concluída em {{percent}}%."
+      "announce": "Importação concluída em {{percent}}%.",
+      "tile_members": "Membros importados",
+      "tile_hours": "Horas importadas",
+      "tile_batch": "Lote",
+      "tile_time_left": "Tempo restante",
+      "tile_of_total": "de {{total}}",
+      "tile_of_about": "de cerca de {{m}}"
     },
     "done": {
       "title_one": "{{countFormatted}} membro importado, com {{balance}} horas",

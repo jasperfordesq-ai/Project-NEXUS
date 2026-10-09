@@ -34,15 +34,40 @@ function announced(container: HTMLElement): string {
   return regions[0]!.textContent ?? '';
 }
 
-describe('ImportProgress live region', () => {
-  it('announces only at each 10% of progress, while the visible lines keep updating', () => {
+describe('ImportProgress', () => {
+  it('shows the percentage large and every figure in its own tile', () => {
+    render(<ImportProgress state={state({ nextIndex: 130, batchNumber: 2, balance: '55.50', secondsRemaining: 90 })} onStop={vi.fn()} />);
+    expect(screen.getByText('13%')).toBeInTheDocument();
+    const tile = (label: string) => screen.getByText(label).closest('div') as HTMLElement;
+    expect(tile('Members imported')).toHaveTextContent(/130.*of 1,000/);
+    expect(tile('Hours imported')).toHaveTextContent('55.50');
+    expect(tile('Batch')).toHaveTextContent(/3.*of about 37/);
+    expect(tile('Time left')).toHaveTextContent(/2.*minutes/);
+    expect(screen.getByRole('progressbar', { name: 'Import progress' })).toHaveAttribute('aria-valuenow', '13');
+    expect(screen.getByText('Keep this window open until the import finishes.')).toBeInTheDocument();
+  });
+
+  it('says the time left is being worked out, rather than showing a made-up figure', () => {
+    render(<ImportProgress state={state({ secondsRemaining: null })} onStop={vi.fn()} />);
+    expect(screen.getByText('Time left').closest('div')).toHaveTextContent('Working out the time left');
+  });
+
+  it('stops after this batch when Stop is pressed, and then says it is stopping', async () => {
+    const onStop = vi.fn();
+    const { userEvent } = await import('@/test/test-utils');
+    render(<ImportProgress state={state({ nextIndex: 130 })} onStop={onStop} />);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Stop after this batch' }));
+    expect(onStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('announces only at each 10% of progress, while the visible figures keep updating', () => {
     const { container, rerender } = render(<ImportProgress state={state({ nextIndex: 100 })} onStop={vi.fn()} />);
     const at10 = announced(container);
     expect(at10).toContain('10%');
 
     // 101 to 199 rows done: the figures on screen move, the announcement does not.
     rerender(<ImportProgress state={state({ nextIndex: 130, batchNumber: 2, secondsRemaining: 50 })} onStop={vi.fn()} />);
-    expect(screen.getByText('Members imported: 130 of 1,000')).toBeInTheDocument();
+    expect(screen.getByText('13%')).toBeInTheDocument();
     expect(announced(container)).toBe(at10);
     rerender(<ImportProgress state={state({ nextIndex: 199, batchNumber: 3, secondsRemaining: 40 })} onStop={vi.fn()} />);
     expect(announced(container)).toBe(at10);
@@ -61,9 +86,9 @@ describe('ImportProgress live region', () => {
     expect(announced(container)).toContain('Stopping after this batch');
   });
 
-  it('keeps the rapidly updating lines out of any live region', () => {
+  it('keeps the rapidly updating figures out of any live region', () => {
     render(<ImportProgress state={state({ nextIndex: 130 })} onStop={vi.fn()} />);
-    const line = screen.getByText('Members imported: 130 of 1,000');
-    expect(line.closest('[aria-live], [role="status"]')).toBeNull();
+    const figure = screen.getByText('Members imported').closest('div') as HTMLElement;
+    expect(figure.closest('[aria-live], [role="status"]')).toBeNull();
   });
 });

@@ -5,6 +5,7 @@
 
 import { useTranslation } from 'react-i18next';
 import Hand from 'lucide-react/icons/hand';
+import type { ReactNode } from 'react';
 import { Button, ModalBody, ModalFooter, Progress } from '@/components/ui';
 import { formatNumber } from '@/lib/helpers';
 import { formatHours, formatTimeLeft } from './format';
@@ -16,7 +17,21 @@ interface Props {
   onStop: () => void;
 }
 
-/** While the import runs: a growing bar and plain numbers. The window cannot be closed here. */
+/** One statistic: a small heading, a large tabular figure and an optional note under it. */
+function Tile({ label, figure, note }: { label: string; figure: ReactNode; note?: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface-secondary p-3">
+      <dt className="text-xs font-medium text-muted">{label}</dt>
+      <dd className="truncate text-2xl font-semibold tabular-nums">{figure}</dd>
+      {note && <dd className="text-xs text-muted">{note}</dd>}
+    </div>
+  );
+}
+
+/**
+ * While the import runs: a large percentage, a thick growing bar and four figures in tiles.
+ * The window cannot be closed here.
+ */
 export function ImportProgress({ state, onStop }: Props) {
   const { t } = useTranslation('admin_users');
   const { total, nextIndex, batchNumber, batchSize } = state;
@@ -36,21 +51,32 @@ export function ImportProgress({ state, onStop }: Props) {
 
   return (
     <>
-      <ModalBody className="flex flex-col gap-4">
-        <div ref={lead} tabIndex={-1} className="outline-none">
-          <Progress aria-label={t('member_import.running.progress_label')} value={percent} showValueLabel />
+      <ModalBody className="flex flex-col gap-5">
+        <div ref={lead} tabIndex={-1} className="flex flex-col gap-3 outline-none">
+          <p className="text-5xl font-semibold leading-none tabular-nums" aria-hidden="true">
+            {formatNumber(percent / 100, { style: 'percent', maximumFractionDigits: 0 })}
+          </p>
+          <Progress aria-label={t('member_import.running.progress_label')} value={percent} size="lg" />
         </div>
         <span aria-live="polite" className="sr-only">{announcement}</span>
-        <div className="flex flex-col gap-1 text-sm">
-          <p className="font-medium">{t('member_import.running.batch', { n: current, m: estimate })}</p>
-          <p>{t('member_import.running.count', { done: formatNumber(nextIndex), total: formatNumber(total) })}</p>
-          <p>{t('member_import.running.hours', { hours: formatHours(state.balance) })}</p>
-          <p className="text-muted">
-            {state.secondsRemaining === null
-              ? t('member_import.running.calculating')
-              : t('member_import.running.remaining', { time: formatTimeLeft(state.secondsRemaining) })}
-          </p>
-        </div>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Tile
+            label={t('member_import.running.tile_members')}
+            figure={formatNumber(nextIndex)}
+            note={t('member_import.running.tile_of_total', { total: formatNumber(total) })}
+          />
+          <Tile label={t('member_import.running.tile_hours')} figure={formatHours(state.balance)} />
+          <Tile
+            label={t('member_import.running.tile_batch')}
+            figure={formatNumber(current)}
+            note={t('member_import.running.tile_of_about', { m: formatNumber(estimate) })}
+          />
+          <Tile
+            label={t('member_import.running.tile_time_left')}
+            figure={state.secondsRemaining === null ? '—' : formatTimeLeft(state.secondsRemaining)}
+            note={state.secondsRemaining === null ? t('member_import.running.calculating') : undefined}
+          />
+        </dl>
         <p className="text-sm text-muted">{t('member_import.running.keep_open')}</p>
       </ModalBody>
       <ModalFooter>

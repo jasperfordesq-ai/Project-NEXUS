@@ -73,6 +73,11 @@ const issue = (row: number, code: string, column: ImportIssue['column'] = 'email
 // "Import 5 members", or "Import 1 member" for a file of one.
 const IMPORT_BUTTON = /^Import \d+ members?$/;
 
+/** The statistic tile whose small heading is `label`: its heading, figure and note. */
+function tile(label: string): HTMLElement {
+  return screen.getByText(label).closest('div') as HTMLElement;
+}
+
 const onClose = vi.fn();
 const onImported = vi.fn();
 
@@ -116,6 +121,12 @@ describe('MemberImportModal', () => {
       open();
       await user.click(document.querySelector('[data-slot="modal-backdrop"]') as HTMLElement);
       expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('says members can add their town later, and promises no sign-in prompt', async () => {
+      open();
+      expect(await screen.findByText(/Members can add it later from their profile\./)).toBeInTheDocument();
+      expect(screen.queryByText(/asked when they first sign in/)).not.toBeInTheDocument();
     });
 
     it('only offers CSV files', () => {
@@ -284,6 +295,16 @@ describe('MemberImportModal', () => {
       expect(within(table).getByText('This value is not accepted.')).toBeInTheDocument();
     });
 
+    it('keeps the row and column cells on one line so only the problem text wraps', async () => {
+      await checkWith(problems([issue(3, 'invalid_number', 'balance')]));
+      const table = await screen.findByRole('table');
+      expect(within(table).getByRole('columnheader', { name: 'Row' })).toHaveClass('whitespace-nowrap');
+      expect(within(table).getByRole('columnheader', { name: 'Column' })).toHaveClass('whitespace-nowrap');
+      expect(within(table).getByText('3')).toHaveClass('whitespace-nowrap');
+      expect(within(table).getByText('Balance')).toHaveClass('whitespace-nowrap');
+      expect(within(table).getByText(/This is not a number/)).not.toHaveClass('whitespace-nowrap');
+    });
+
     it('shows the first 200 problems and says how many more there are', async () => {
       const many = Array.from({ length: 230 }, (_, i) => issue(i + 2, 'invalid_email'));
       await checkWith(problems(many));
@@ -340,7 +361,7 @@ describe('MemberImportModal', () => {
       expect(screen.getByText(/Members to import: 5/)).toBeInTheDocument();
       expect(screen.getByText(/Hours in total: 42\.50/)).toBeInTheDocument();
       expect(screen.getByText(/With a town: 3/)).toBeInTheDocument();
-      expect(screen.getByText(/Without a town: 2/)).toBeInTheDocument();
+      expect(screen.getByText('Without a town: 2 (they can add it from their profile)')).toBeInTheDocument();
       expect(screen.getByText(/Negative balances that will start at 0: 1/)).toBeInTheDocument();
       expect(screen.getByText(/Empty lines ignored: 2/)).toBeInTheDocument();
       expect(screen.getByText(/does not email anyone yet/)).toBeInTheDocument();
@@ -420,10 +441,12 @@ describe('MemberImportModal', () => {
 
     it('shows batch, counts, hours and time left, and a progress bar', async () => {
       await startRunning({ phase: 'running' });
-      expect(await screen.findByText('Batch 2 of about 5')).toBeInTheDocument();
-      expect(screen.getByText('Members imported: 25 of 125')).toBeInTheDocument();
-      expect(screen.getByText('Hours imported so far: 300.00')).toBeInTheDocument();
-      expect(screen.getByText(/Time left: about .*/)).toBeInTheDocument();
+      expect(await screen.findByText('Batch')).toBeInTheDocument();
+      expect(tile('Batch')).toHaveTextContent(/2.*of about 5/);
+      expect(tile('Members imported')).toHaveTextContent(/25.*of 125/);
+      expect(tile('Hours imported')).toHaveTextContent('300.00');
+      expect(tile('Time left')).toHaveTextContent(/2.*minutes/);
+      expect(screen.getByText('20%')).toBeInTheDocument();
       expect(screen.getByText('Keep this window open until the import finishes.')).toBeInTheDocument();
       const bar = screen.getByRole('progressbar', { name: 'Import progress' });
       expect(bar).toHaveAttribute('aria-valuenow', '20');
@@ -431,7 +454,7 @@ describe('MemberImportModal', () => {
 
     it('cannot be closed while it runs', async () => {
       await startRunning({ phase: 'running' });
-      await screen.findByText('Batch 2 of about 5');
+      await screen.findByText('Batch');
       expect(screen.queryByRole('button', { name: /close/i })).not.toBeInTheDocument();
       fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
       expect(onClose).not.toHaveBeenCalled();
@@ -451,7 +474,9 @@ describe('MemberImportModal', () => {
 
     it('never says "Batch 0" at the very start', async () => {
       await startRunning({ phase: 'running', nextIndex: 0, batchNumber: 0, created: 0, balance: '0.00', secondsRemaining: null });
-      expect(await screen.findByText('Batch 1 of about 5')).toBeInTheDocument();
+      expect(await screen.findByText('Batch')).toBeInTheDocument();
+      expect(tile('Batch')).toHaveTextContent(/1.*of about 5/);
+      expect(tile('Time left')).toHaveTextContent('Working out the time left');
     });
   });
 

@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Town",
-        "rule": "Optional. The member's town or area. Members without one are asked when they first sign in."
+        "rule": "Optional. The member's town or area. Members can add it later from their profile."
       },
       "balance": {
         "label": "Balance",
@@ -655,7 +655,7 @@
       "members": "Members to import: {{n}}",
       "hours": "Hours in total: {{hours}}",
       "with_town": "With a town: {{n}}",
-      "without_town": "Without a town: {{n}} (they will be asked when they first sign in)",
+      "without_town": "Without a town: {{n}} (they can add it from their profile)",
       "negatives": "Negative balances that will start at 0: {{n}}",
       "blank_rows": "Empty lines ignored: {{n}}",
       "identity_attest": "I have checked each person's identity myself",
@@ -666,16 +666,18 @@
     },
     "running": {
       "title": "Importing members",
-      "batch": "Batch {{n}} of about {{m}}",
-      "count": "Members imported: {{done}} of {{total}}",
-      "hours": "Hours imported so far: {{hours}}",
-      "remaining": "Time left: about {{time}}",
       "calculating": "Working out the time left…",
       "keep_open": "Keep this window open until the import finishes.",
       "stop": "Stop after this batch",
       "stopping": "Stopping after this batch…",
       "progress_label": "Import progress",
-      "announce": "Import {{percent}}% complete."
+      "announce": "Import {{percent}}% complete.",
+      "tile_members": "Members imported",
+      "tile_hours": "Hours imported",
+      "tile_batch": "Batch",
+      "tile_time_left": "Time left",
+      "tile_of_total": "of {{total}}",
+      "tile_of_about": "of about {{m}}"
     },
     "done": {
       "title_one": "{{countFormatted}} member imported, with {{balance}} hours",

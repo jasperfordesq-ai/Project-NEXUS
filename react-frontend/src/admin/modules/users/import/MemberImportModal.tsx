@@ -106,7 +106,7 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={close} size="2xl" scrollBehavior="inside"
+    <Modal isOpen={isOpen} onClose={close} size="3xl" scrollBehavior="inside"
       isDismissable={!locked && step !== 'ready'} isKeyboardDismissDisabled={locked} hideCloseButton={locked || finished}>
       <ModalContent>
         <ModalHeader className="flex items-center gap-2">

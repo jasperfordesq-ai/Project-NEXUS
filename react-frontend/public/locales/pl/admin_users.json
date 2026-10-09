@@ -535,7 +535,7 @@
       },
       "location": {
         "label": "Miejscowość",
-        "rule": "Opcjonalne. Miejscowość lub okolica członka. Członkowie bez miejscowości zostaną o nią zapytani przy pierwszym logowaniu."
+        "rule": "Opcjonalne. Miejscowość lub okolica członka. Członkowie mogą ją dodać później w swoim profilu."
       },
       "balance": {
         "label": "Saldo",
@@ -655,7 +655,7 @@
       "members": "Członkowie do zaimportowania: {{n}}",
       "hours": "Łącznie godzin: {{hours}}",
       "with_town": "Z miejscowością: {{n}}",
-      "without_town": "Bez miejscowości: {{n}} (zostaną o nią zapytani przy pierwszym logowaniu)",
+      "without_town": "Bez miejscowości: {{n}} (mogą ją dodać w swoim profilu)",
       "negatives": "Salda ujemne, które zaczną się od 0: {{n}}",
       "blank_rows": "Pominięte puste wiersze: {{n}}",
       "identity_attest": "Tożsamość każdej osoby została przeze mnie sprawdzona",
@@ -668,16 +668,18 @@
     },
     "running": {
       "title": "Importowanie członków",
-      "batch": "Partia {{n}} z około {{m}}",
-      "count": "Zaimportowani członkowie: {{done}} z {{total}}",
-      "hours": "Dotychczas zaimportowane godziny: {{hours}}",
-      "remaining": "Szacowany pozostały czas: {{time}}",
       "calculating": "Obliczanie pozostałego czasu…",
       "keep_open": "Zostaw to okno otwarte, dopóki import się nie zakończy.",
       "stop": "Zatrzymaj po tej partii",
       "stopping": "Zatrzymywanie po tej partii…",
       "progress_label": "Postęp importu",
-      "announce": "Import ukończony w {{percent}}%."
+      "announce": "Import ukończony w {{percent}}%.",
+      "tile_members": "Zaimportowani członkowie",
+      "tile_hours": "Zaimportowane godziny",
+      "tile_batch": "Partia",
+      "tile_time_left": "Pozostały czas",
+      "tile_of_total": "z {{total}}",
+      "tile_of_about": "z około {{m}}"
     },
     "done": {
       "title_one": "Zaimportowano {{countFormatted}} członka, łącznie {{balance}} godz.",
