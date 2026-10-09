@@ -15,6 +15,7 @@ use App\Models\Notification;
 use App\Models\ActivityLog;
 use App\Services\AuditLogService;
 use App\Services\Auth\PasswordResetTokens;
+use App\Services\Auth\WelcomeInvitationMailer;
 use App\Services\EmailDispatchService;
 use App\Services\Enterprise\GdprService;
 use App\Services\GamificationService;
@@ -25,6 +26,7 @@ use App\Services\TenantSettingsService;
 use App\Services\TokenService;
 use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
+use App\Support\Tenancy\UserTenantResolver;
 use App\Support\UserDisplayName;
 
 /**
@@ -2142,79 +2144,20 @@ class AdminUsersController extends BaseApiController
         // (owner decision, 8 Oct 2026). Issuing one is gated like "Send
         // Password Reset" — only for an account this caller outranks.
         $needsPasswordLink = empty($user['last_login_at']) && $this->canManageSecurityTarget($adminId, $user);
-        $invitationToken = null;
 
         try {
-            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $adminId, $id, $needsPasswordLink, &$invitationToken) {
-                // Resolve tenant from the USER's tenant_id
-                $resolvedTenant = $this->resolveUserTenant($user);
-                $userTenantId = $resolvedTenant['tenant_id'];
-                $tenantName = $resolvedTenant['name'];
-                $tenantNameSafe = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
+            // The email itself — language, community template, link issue and
+            // revoke-on-failure — is shared with the member-import sender.
+            app(WelcomeInvitationMailer::class)->send($user, $needsPasswordLink);
 
-                // Read tenant configuration for custom welcome email content
-                $tenantRow = DB::selectOne("SELECT configuration FROM tenants WHERE id = ?", [$userTenantId]);
-                $config = json_decode($tenantRow->configuration ?? '{}', true);
-                $welcomeConfig = $config['welcome_email'] ?? [];
-
-                $subject = !empty($welcomeConfig['subject']) ? $welcomeConfig['subject'] : __('emails_misc.admin_actions.welcome_resend_subject', ['community' => $tenantNameSafe]);
-
-                $firstName = htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8');
-
-                if (!empty($welcomeConfig['body'])) {
-                    $mainMessage = $welcomeConfig['body'];
-                } else {
-                    $mainMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
-                        . '<p>' . __('emails_misc.admin_actions.welcome_resend_body', ['community' => $tenantNameSafe]) . '</p>';
-                }
-
-                $loginLink = $resolvedTenant['frontend_url'] . $resolvedTenant['slug_prefix'] . "/login";
-                $isFullHtml = stripos($mainMessage, '<!DOCTYPE') !== false || stripos($mainMessage, '<html') !== false;
-
-                if ($needsPasswordLink) {
-                    $invitationToken = app(PasswordResetTokens::class)->issueInvitation($user['email'], $userTenantId);
-                    $setPasswordLink = $resolvedTenant['frontend_url'] . $resolvedTenant['slug_prefix']
-                        . '/password/reset?token=' . $invitationToken;
-                    // A community's full-HTML welcome template has nowhere to put
-                    // the link, so the standard wording is used for this member.
-                    if ($isFullHtml) {
-                        $mainMessage = '<p>' . __('emails_misc.admin_actions.welcome_resend_greeting', ['name' => $firstName]) . '</p>'
-                            . '<p>' . __('emails_misc.admin_actions.welcome_resend_body', ['community' => $tenantNameSafe]) . '</p>';
-                    }
-                    $html = \App\Core\EmailTemplateBuilder::make()
-                        ->theme('brand')
-                        ->title(__('emails_misc.admin_actions.welcome_resend_title'))
-                        ->paragraph($mainMessage)
-                        ->paragraph(__('emails.account_invitation.expiry', ['days' => PasswordResetTokens::INVITATION_TTL_DAYS]))
-                        ->button(__('emails.account_invitation.cta'), $setPasswordLink)
-                        ->render();
-                } elseif ($isFullHtml) {
-                    $html = $mainMessage;
-                } else {
-                    $html = \App\Core\EmailTemplateBuilder::make()
-                        ->theme('brand')
-                        ->title(__('emails_misc.admin_actions.welcome_resend_title'))
-                        ->paragraph($mainMessage)
-                        ->button(__('emails_misc.admin_actions.welcome_resend_cta'), $loginLink)
-                        ->render();
-                }
-
-                if (!EmailDispatchService::sendRaw($user['email'], $subject, $html, null, null, null, 'welcome', ['tenant_id' => $userTenantId])) {
-                    throw new \RuntimeException('Welcome email send returned false');
-                }
-
-                ActivityLog::log(
-                    $adminId,
-                    'admin_resend_welcome',
-                    "Resent welcome email to user #{$id} ({$user['email']})" . ($needsPasswordLink ? ' with a set-password link' : '')
-                );
-            });
+            ActivityLog::log(
+                $adminId,
+                'admin_resend_welcome',
+                "Resent welcome email to user #{$id} ({$user['email']})" . ($needsPasswordLink ? ' with a set-password link' : '')
+            );
 
             return $this->respondWithData(['sent' => true, 'id' => $id]);
         } catch (\Throwable $e) {
-            if ($invitationToken !== null) {
-                app(PasswordResetTokens::class)->revoke((string) $user['email'], (int) $user['tenant_id'], $invitationToken);
-            }
             \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send welcome email for user #{$id}: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.create_failed', ['resource' => 'welcome email']), null, 500);
         }
@@ -2381,46 +2324,7 @@ class AdminUsersController extends BaseApiController
      */
     private function resolveUserTenant(array $user): array
     {
-        if (empty($user['tenant_id'])) {
-            throw new \RuntimeException(__('api.user_missing_tenant_id'));
-        }
-        $userTenantId = (int) $user['tenant_id'];
-        $tenantName   = 'Project NEXUS';
-        $slugPrefix   = '';
-        $frontendUrl  = \App\Core\Env::get('FRONTEND_URL', 'https://app.project-nexus.ie');
-
-        $tenant = DB::selectOne(
-            "SELECT t.name, t.slug, t.domain, p.domain AS parent_domain
-             FROM tenants t
-             LEFT JOIN tenants p ON p.id = t.parent_id AND p.is_active = 1
-             WHERE t.id = ?",
-            [$userTenantId]
-        );
-
-        if ($tenant) {
-            $tenantName = $tenant->name;
-            $slug       = $tenant->slug ?? '';
-
-            if (!empty($tenant->domain)) {
-                // Tenant owns its custom domain — no slug prefix in URLs
-                $frontendUrl = 'https://' . rtrim((string) $tenant->domain, '/');
-                $slugPrefix  = '';
-            } elseif (!empty($tenant->parent_domain)) {
-                // Sub-tenant sharing parent's custom domain (e.g. timebanking.uk/cardiff)
-                $frontendUrl = 'https://' . rtrim((string) $tenant->parent_domain, '/');
-                $slugPrefix  = $slug ? '/' . $slug : '';
-            } else {
-                // Shared platform host (app.project-nexus.ie/slug)
-                $slugPrefix = $slug ? '/' . $slug : '';
-            }
-        }
-
-        return [
-            'tenant_id'    => $userTenantId,
-            'name'         => $tenantName,
-            'slug_prefix'  => $slugPrefix,
-            'frontend_url' => $frontendUrl,
-        ];
+        return UserTenantResolver::resolve($user);
     }
 
     private function notifySuspendedUser(array $user, int $id): void
