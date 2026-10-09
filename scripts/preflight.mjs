@@ -203,6 +203,18 @@ if (areas.docsMeta.length) {
   record('docs hygiene', 'SKIP', 'no docs/meta changes');
 }
 
+// The accessible frontend's committed /changelog pages, released versions only
+// (same gate as CI's docs-hygiene job; unreleased.json is not gated — see
+// web-uk/scripts/build-changelog.js). Exit 2 means web-uk/node_modules is missing.
+if (files.some((f) => f === 'CHANGELOG.md'
+  || f === 'web-uk/scripts/build-changelog.js'
+  || f.startsWith('web-uk/src/lib/generated/changelog/'))) {
+  sh('accessible changelog pages (released versions)',
+    'node web-uk/scripts/build-changelog.js --check-released', { unavailableExit: 2 });
+} else {
+  record('accessible changelog pages', 'SKIP', 'CHANGELOG.md and its generated pages unchanged');
+}
+
 // SPDX is seconds and protects a hard release rule — run when any source changed.
 if (files.some((f) => /\.(php|ts|tsx|mjs)$/.test(f))) {
   sh('SPDX headers', 'node scripts/check-spdx.mjs');

@@ -1361,6 +1361,26 @@ jobs:
       - name: "BLOCKING: Prove the semver gate still catches violations"
         run: npm run test:semver-gate
 
+      # The accessible frontend (web-uk) serves /changelog from pages pre-rendered
+      # into web-uk/src/lib/generated/changelog/ and committed — its Docker build
+      # context cannot see CHANGELOG.md. Nothing checked them, so 2.1.0, 3.0.0 and
+      # 3.1.0 were missing from that page until 9 Oct 2026. It lives HERE, not in
+      # platform-contracts.yml's Web UK jobs, because those only wake on web-uk/**
+      # changes — exactly the commit that forgot to regenerate would skip them.
+      #
+      # Released versions only. unreleased.json is deliberately not gated: nearly
+      # every commit edits [Unreleased], and gating it would demand a regeneration
+      # (and invite generated-file conflicts) on all of them. scripts/release.mjs
+      # refreshes it at every cut. Rationale in web-uk/scripts/build-changelog.js.
+      #
+      # --ignore-scripts: the renderer needs only `marked` and `sanitize-html`; no
+      # install hook is required, and none should run in a hygiene job.
+      - name: Install web-uk dependencies (changelog renderer)
+        run: npm ci --prefix web-uk --ignore-scripts --no-audit --no-fund
+
+      - name: "BLOCKING: Accessible frontend changelog pages match every released version"
+        run: npm --prefix web-uk run check:changelog:released
+
       # scripts/release.mjs rewrote react-frontend/package-lock.json with a blind
       # string replace when cutting v1.8.0. The old platform version also
       # occurred as a dependency's own version, in two dependency ranges and in

@@ -43,6 +43,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 import { JSON_VERSION_KEYS, setJsonVersion } from './lib/set-json-version.mjs';
@@ -106,6 +107,33 @@ if (dirty.length && !ALLOW_DIRTY && !DRY_RUN) {
   console.error('Commit or set aside your work first. A release commit must contain only the release.');
   console.error('(--allow-dirty overrides this; the release commit still only stages release files.)');
   process.exit(1);
+}
+
+// 🔴 The accessible frontend's /changelog is served from pages pre-rendered into
+// web-uk/src/lib/generated/changelog/ and committed, because web-uk's Docker build
+// context cannot see CHANGELOG.md. Nothing regenerated them, so 2.1.0, 3.0.0 and
+// 3.1.0 were missing from that page until 9 Oct 2026. The cut regenerates them now,
+// which needs web-uk's own dependencies — a root `npm ci` does not install them.
+// Refuse BEFORE writing anything (and in --dry-run, so the plan is honest) rather
+// than cutting a release whose accessible changelog silently stops at the last one.
+const WEBUK_CHANGELOG_DIR = 'web-uk/src/lib/generated/changelog';
+{
+  const webukRequire = createRequire(path.join(root, 'web-uk', 'package.json'));
+  const missing = ['marked', 'sanitize-html'].filter((dep) => {
+    try {
+      webukRequire.resolve(dep);
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  if (missing.length) {
+    die(
+      `web-uk dependencies are not installed (${missing.join(', ')}), so the accessible frontend's ` +
+        'changelog pages cannot be regenerated. Run `npm --prefix web-uk ci` and try again.',
+      2
+    );
+  }
 }
 
 // ------------------------------------------------------- read current state
@@ -324,6 +352,7 @@ for (const rel of versionFiles) {
 
 for (const e of edits) console.log(`  ${e.rel} (${e.occurrences})`);
 console.log(`  CHANGELOG.md (new [${nextVersion}] section)`);
+console.log(`  ${WEBUK_CHANGELOG_DIR}/ (regenerated: ${nextVersion}.json, unreleased.json, index.json)`);
 console.log('');
 
 if (DRY_RUN) {
@@ -350,6 +379,12 @@ if (!run('npm', ['--prefix', 'react-frontend', 'run', 'copy-changelog'])) {
   die('failed to regenerate the in-app changelog copy', 2);
 }
 
+// The accessible frontend's pages ARE committed (the React copy above is gitignored),
+// so they go into the release commit below. See WEBUK_CHANGELOG_DIR.
+if (!run('node', ['web-uk/scripts/build-changelog.js'])) {
+  die(`failed to regenerate the accessible frontend's changelog pages in ${WEBUK_CHANGELOG_DIR}/`, 2);
+}
+
 // --------------------------------------------------------------- self-check
 // Only the tag-independent check can run here. check-semver-policy asserts that
 // every release at or above its enforcement floor has a `vX.Y.Z` tag, and this
@@ -371,7 +406,11 @@ if (NO_COMMIT) {
   process.exit(0);
 }
 
-const staged = ['CHANGELOG.md', ...edits.map((e) => e.rel)];
+const staged = ['CHANGELOG.md', ...edits.map((e) => e.rel), WEBUK_CHANGELOG_DIR];
+// The new release's page is a NEW file, and `git commit -- <path>` refuses a path git
+// does not yet know. Add that one directory (new and removed pages alike) and nothing
+// else, so the commit is still limited to the explicit list above.
+git(['add', '--', WEBUK_CHANGELOG_DIR]);
 git(['commit', '-m', `chore(release): cut v${nextVersion}`, '--', ...staged]);
 console.log(`Committed: chore(release): cut v${nextVersion}`);
 

@@ -205,7 +205,15 @@ The tool will:
 5. Update `VERSION` and every derived reference.
 6. Add the compare link.
 7. Regenerate the in-app changelog copy.
-8. Create an annotated git tag `vX.Y.Z`.
+8. Regenerate the accessible frontend's changelog pages
+   (`web-uk/src/lib/generated/changelog/`) and include them in the release
+   commit. They are committed because `web-uk`'s Docker build cannot see
+   `CHANGELOG.md`. The tool refuses to start if `web-uk`'s dependencies are not
+   installed (`npm --prefix web-uk ci`); CI's
+   `npm --prefix web-uk run check:changelog:released` fails when a released
+   version's page is missing or stale. The `unreleased.json` page is refreshed
+   at each cut but is not gated between releases.
+9. Create an annotated git tag `vX.Y.Z`.
 
 It does **not** push and does **not** deploy. Both remain deliberate, separate
 actions — see the deployment rules in [AGENTS.md](../AGENTS.md).

@@ -22,15 +22,43 @@
  * that is a poor trade for the members this frontend exists for.
  *
  * Usage:
- *   node scripts/build-changelog.js          # write the file
- *   node scripts/build-changelog.js --check  # fail if it is out of date
+ *   node scripts/build-changelog.js                   # write the files
+ *   node scripts/build-changelog.js --check           # fail if ANY file is out of date
+ *   node scripts/build-changelog.js --check-released  # fail if a RELEASED version is out of date
+ *
+ * 🔴 `--check-released` is the BLOCKING gate (CI docs-hygiene job and preflight);
+ * `--check` is not. Almost every commit edits the `[Unreleased]` section of
+ * CHANGELOG.md, so gating `unreleased.json` would force a regeneration — and a
+ * generated-file merge conflict between concurrent sessions — on nearly every commit,
+ * for a page that only previews what is coming. A released version's section changes
+ * once, when `scripts/release.mjs` cuts it, and that tool regenerates these files. A
+ * released page going missing or stale is the failure that actually happened: 2.1.0,
+ * 3.0.0 and 3.1.0 were absent from /changelog until 9 Oct 2026. `unreleased.json` is
+ * refreshed by every release cut and whenever build:changelog is run.
+ *
+ * Exit codes: 0 up to date / written, 1 out of date, 2 could not run (a dependency is
+ * not installed, CHANGELOG.md unreadable) — so preflight can say "not run" honestly.
  */
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { marked } = require('marked');
 
-const { sanitizeCmsHtml } = require('../src/lib/html-sanitizer');
+// 🔴 `marked` is a devDependency and `sanitize-html` lives in web-uk/node_modules,
+// which a root-level `npm ci` does not install. Say so plainly and exit 2, rather
+// than letting a bare stack trace read like a broken changelog.
+let marked;
+let sanitizeCmsHtml;
+try {
+  ({ marked } = require('marked'));
+  ({ sanitizeCmsHtml } = require('../src/lib/html-sanitizer'));
+} catch (err) {
+  if (err && err.code === 'MODULE_NOT_FOUND') {
+    console.error(`build-changelog: a web-uk dependency is not installed (${String(err.message).split('\n')[0]}).`);
+    console.error('                 Run `npm --prefix web-uk ci` first. Nothing was checked or written.');
+    process.exit(2);
+  }
+  throw err;
+}
 
 const repoRoot = path.join(__dirname, '..', '..');
 const sourcePath = path.join(repoRoot, 'CHANGELOG.md');
@@ -178,14 +206,82 @@ function expectedFiles(releases) {
   return files;
 }
 
+/**
+ * The index with everything an `[Unreleased]` edit moves taken out: the unreleased
+ * entry (its line and section counts change with every entry) and `releaseCount`.
+ * What is left is exactly the released history.
+ */
+function releasedIndexShape(text) {
+  const { releaseCount, ...rest } = JSON.parse(text);
+  return JSON.stringify({
+    ...rest,
+    releases: (rest.releases || []).filter((release) => !release.isUnreleased),
+  });
+}
+
+/** Problems with the released-version pages only. See the header for why. */
+function releasedProblems(releases, files, onDisk) {
+  const unreleasedFiles = new Set(
+    releases.filter((release) => release.isUnreleased).map((release) => `${release.slug}.json`),
+  );
+  const problems = [];
+
+  for (const [name, content] of files) {
+    if (unreleasedFiles.has(name)) continue;
+    const file = path.join(outputDir, name);
+    const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+    if (current === null) {
+      problems.push(`missing: ${name}`);
+    } else if (name === 'index.json') {
+      let same = false;
+      try {
+        same = releasedIndexShape(current) === releasedIndexShape(content);
+      } catch {
+        // Unparseable index: report it as out of date.
+      }
+      if (!same) problems.push('out of date: index.json (its released-version entries)');
+    } else if (current !== content) {
+      problems.push(`out of date: ${name}`);
+    }
+  }
+  for (const name of onDisk) {
+    if (!files.has(name) && !unreleasedFiles.has(name)) {
+      problems.push(`stale, no longer in CHANGELOG.md: ${name}`);
+    }
+  }
+  return problems;
+}
+
 function main() {
+  const checkReleased = process.argv.includes('--check-released');
   const check = process.argv.includes('--check');
-  const releases = build();
+  let releases;
+  try {
+    releases = build();
+  } catch (err) {
+    console.error(`build-changelog: ${err.message}`);
+    process.exit(2);
+  }
   const files = expectedFiles(releases);
 
   const onDisk = fs.existsSync(outputDir)
     ? fs.readdirSync(outputDir).filter((name) => name.endsWith('.json'))
     : [];
+
+  if (checkReleased) {
+    const problems = releasedProblems(releases, files, onDisk);
+    const releasedCount = releases.filter((release) => !release.isUnreleased).length;
+    if (problems.length) {
+      console.error('FAIL: the accessible frontend\'s changelog pages for released versions are out of date.');
+      for (const problem of problems.slice(0, 15)) console.error(`  - ${problem}`);
+      if (problems.length > 15) console.error(`  ...and ${problems.length - 15} more`);
+      console.error('      Run `npm --prefix web-uk run build:changelog` and commit web-uk/src/lib/generated/changelog/.');
+      console.error('      (scripts/release.mjs does this itself when it cuts a release.)');
+      process.exit(1);
+    }
+    console.log(`Released changelog pages up to date: ${releasedCount} releases (unreleased.json is not gated, by design).`);
+    return;
+  }
 
   if (check) {
     const problems = [];
