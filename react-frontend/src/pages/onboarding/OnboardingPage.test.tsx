@@ -96,6 +96,42 @@ vi.mock('@/hooks/useOnboardingConfig', () => ({
 }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
+// The real place search talks to a geocoding provider; this stand-in exposes a
+// text box and a "pick a place" button that behave like the real one does
+// (a pick reports the text first, then the chosen place with its coordinates).
+vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
+  PlaceAutocompleteInput: (props: {
+    label?: React.ReactNode;
+    placeholder?: string;
+    value: string;
+    onChange?: (v: string) => void;
+    onPlaceSelect?: (p: { formattedAddress: string; lat: number; lng: number }) => void;
+    onClear?: () => void;
+  }) => (
+    <div>
+      <input
+        data-testid="place-input"
+        aria-label={String(props.label)}
+        placeholder={props.placeholder}
+        value={props.value}
+        onChange={(e) => props.onChange?.(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => {
+          props.onChange?.('Galway, Ireland');
+          props.onPlaceSelect?.({ formattedAddress: 'Galway, Ireland', lat: 53.27, lng: -9.05 });
+        }}
+      >
+        pick-place
+      </button>
+      <button type="button" onClick={() => { props.onChange?.(''); props.onClear?.(); }}>
+        clear-place
+      </button>
+    </div>
+  ),
+}));
+
 // Extend the shared UI mock with an interactive TagGroup/Tag pair. The page's
 // skill pickers use HeroUI v3's selection-based TagGroup, whose
 // generic stubs render as inert divs. This override wires `selectedKeys` /
@@ -690,5 +726,211 @@ describe('OnboardingPage', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/v2/onboarding/complete', {});
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "Where are you based?" — asked only of members whose location is empty.
+// The SERVER says so (`location_missing`); the wizard never works it out itself.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('OnboardingPage — member with no location', () => {
+  const BIO = 'A bio that is long enough to pass the minimum length validation checks easily.';
+  const refreshUser = vi.fn().mockResolvedValue(undefined);
+
+  async function signInAs(extra: Record<string, unknown>) {
+    const { useAuth } = await import('@/contexts');
+    vi.mocked(useAuth).mockReturnValue({
+      user: {
+        id: 1,
+        first_name: 'Test',
+        name: 'Test User',
+        onboarding_completed: false,
+        avatar_url: '/uploads/avatar.jpg',
+        bio: '',
+        ...extra,
+      },
+      isAuthenticated: true,
+      refreshUser,
+    } as unknown as ReturnType<typeof useAuth>);
+  }
+
+  async function openProfileStep() {
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    render(<OnboardingPage />);
+    await user.click(screen.getByText("Let's Get Started"));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
+    });
+    return user;
+  }
+
+  /** The location box is a plain input until focused, then the place search. */
+  async function typeLocation(user: Awaited<ReturnType<typeof openProfileStep>>, text: string) {
+    await user.click(screen.getByPlaceholderText('Your town or city'));
+    const box = await screen.findByTestId('place-input');
+    await user.type(box, text);
+    return box;
+  }
+
+  const nextButton = () => screen.getByText('Next').closest('button') as HTMLButtonElement;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    refreshUser.mockResolvedValue(undefined);
+    vi.mocked(api.put).mockResolvedValue({ success: true, data: {} } as never);
+  });
+
+  it('asks "Where are you based?" on the profile step when the server says location is missing', async () => {
+    await signInAs({ location_missing: true });
+    await openProfileStep();
+
+    expect(screen.getByPlaceholderText('Your town or city')).toBeInTheDocument();
+    expect(screen.getByText('Where you are based')).toBeInTheDocument();
+  });
+
+  it('never shows the question to a member who has a location', async () => {
+    await signInAs({ location_missing: false, location: 'Cork' });
+    await openProfileStep();
+
+    expect(screen.queryByPlaceholderText('Your town or city')).not.toBeInTheDocument();
+    expect(screen.queryByText('Where you are based')).not.toBeInTheDocument();
+  });
+
+  it('treats an absent flag as "not missing"', async () => {
+    await signInAs({});
+    await openProfileStep();
+
+    expect(screen.queryByPlaceholderText('Your town or city')).not.toBeInTheDocument();
+  });
+
+  it('keeps Next disabled until a location is entered, even with photo and bio done', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+
+    expect(nextButton()).toBeDisabled();
+
+    await typeLocation(user, 'Galway');
+    expect(nextButton()).toBeEnabled();
+  });
+
+  it('does not accept a location made only of spaces', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+
+    await typeLocation(user, '   ');
+
+    expect(nextButton()).toBeDisabled();
+  });
+
+  it('sends the picked place with its coordinates along with the bio', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+
+    await user.click(screen.getByPlaceholderText('Your town or city'));
+    await screen.findByTestId('place-input');
+    await user.click(screen.getByText('pick-place'));
+    await user.click(nextButton());
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/v2/users/me', {
+        bio: BIO,
+        location: 'Galway, Ireland',
+        latitude: 53.27,
+        longitude: -9.05,
+      });
+    });
+    await waitFor(() => expect(refreshUser).toHaveBeenCalled());
+  });
+
+  it('sends typed text on its own, with no coordinates, when no place was picked', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+
+    await typeLocation(user, '  Galway ');
+    await user.click(nextButton());
+
+    await waitFor(() => expect(api.put).toHaveBeenCalled());
+    expect(vi.mocked(api.put).mock.calls[0]![1]).toEqual({ bio: BIO, location: 'Galway' });
+  });
+
+  it('drops the picked place coordinates when the member then edits the text', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+
+    await user.click(screen.getByPlaceholderText('Your town or city'));
+    const box = await screen.findByTestId('place-input');
+    await user.click(screen.getByText('pick-place'));
+    await user.type(box, ' Road');
+    await user.click(nextButton());
+
+    await waitFor(() => expect(api.put).toHaveBeenCalled());
+    expect(vi.mocked(api.put).mock.calls[0]![1]).toEqual({ bio: BIO, location: 'Galway, Ireland Road' });
+  });
+
+  it('is not skipped past when photo and bio already exist but the location is missing', async () => {
+    await signInAs({ location_missing: true, bio: BIO });
+    render(<OnboardingPage />);
+
+    // Photo + bio would normally send the member straight to step 3.
+    expect(screen.getByRole('button', { name: /Step 1: Welcome \(current\)/ })).toBeInTheDocument();
+    const { userEvent } = await import('@/test/test-utils');
+    await userEvent.setup().click(screen.getByText("Let's Get Started"));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
+    });
+    expect(screen.getByPlaceholderText('Your town or city')).toBeInTheDocument();
+    expect(nextButton()).toBeDisabled();
+  });
+
+  it('still skips the profile step for a member who has photo, bio and a location', async () => {
+    await signInAs({ location_missing: false, bio: BIO, location: 'Cork' });
+    render(<OnboardingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Step 3.*\(current\)/ })).toBeInTheDocument();
+    });
+  });
+
+  it('shows our own translated message when the server refuses the location', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    vi.mocked(api.put).mockResolvedValue({
+      success: false,
+      error: 'The location may not be greater than 255 characters.',
+      errors: [{ code: 'VALIDATION_ERROR', field: 'location', message: 'The location may not be greater than 255 characters.' }],
+    } as never);
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+    await typeLocation(user, 'Galway');
+    await user.click(nextButton());
+
+    await waitFor(() => expect(stableToastValue.error).toHaveBeenCalled());
+    const [title, message] = stableToastValue.error.mock.calls[0]!;
+    expect(title).toBe('Save failed');
+    expect(message).toBe('We could not save that place. Please check it and try again.');
+    // Still on the profile step.
+    expect(screen.getByRole('button', { name: /Step 2: Profile \(current\)/ })).toBeInTheDocument();
+  });
+
+  it('explains a refused map position in its own words', async () => {
+    await signInAs({ location_missing: true, bio: '' });
+    vi.mocked(api.put).mockResolvedValue({
+      success: false,
+      error: 'The latitude must be between -90 and 90.',
+      errors: [{ field: 'latitude', message: 'The latitude must be between -90 and 90.' }],
+    } as never);
+    const user = await openProfileStep();
+    await user.type(screen.getByRole('textbox', { name: /about you/i }), BIO);
+    await typeLocation(user, 'Galway');
+    await user.click(nextButton());
+
+    await waitFor(() => expect(stableToastValue.error).toHaveBeenCalled());
+    expect(stableToastValue.error.mock.calls[0]![1]).toMatch(/map position/);
   });
 });

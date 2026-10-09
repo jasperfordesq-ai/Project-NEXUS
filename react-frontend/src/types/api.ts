@@ -84,6 +84,13 @@ export interface User {
   preferred_language?: string;
   preferred_theme?: 'light' | 'dark' | 'system';
   onboarding_completed?: boolean;
+  /**
+   * True when this member has no location (empty or whitespace). Decided by the
+   * SERVER and supplied by GET /v2/users/me for the signed-in member only.
+   * Only `true` means missing — absent/undefined is NOT missing. Never derive
+   * it from `location`.
+   */
+  location_missing?: boolean;
   email_verified_at?: string | null;
   created_at?: string;
   updated_at?: string;

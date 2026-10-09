@@ -9,7 +9,10 @@
  *
  * Steps:
  *  - Welcome      - Benefits overview, community introduction
- *  - Your Profile - Upload profile photo + write bio (MANDATORY — cannot skip)
+ *  - Your Profile - Upload profile photo + write bio (MANDATORY — cannot skip).
+ *                   Also asks "Where are you based?", but only of a member the
+ *                   server reports as having no location (user.location_missing).
+ *                   Required here, never forced by the server.
  *  - Skills       - What the member can offer / would like help with (optional).
  *                   Saved into the member's skills, which matching, Explore and
  *                   the personalised feed use.
@@ -62,6 +65,15 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
 import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
+import { MemberLocationField } from '@/components/location/MemberLocationField';
+import {
+  EMPTY_MEMBER_LOCATION,
+  hasLocationText,
+  isLocationMissing,
+  locationErrorField,
+  locationUpdatePayload,
+  type MemberLocationValue,
+} from '@/lib/memberLocation';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -132,6 +144,10 @@ export function OnboardingPage() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [bio, setBio] = useState('');
+  // Where the member is based. Only asked when the SERVER says the member has no
+  // location (user.location_missing). The server never forces it — only this wizard does.
+  const [locationValue, setLocationValue] = useState<MemberLocationValue>(EMPTY_MEMBER_LOCATION);
+  const needsLocation = isLocationMissing(user);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   // Track whether existing user data has been loaded into wizard state (one-shot)
@@ -248,6 +264,7 @@ export function OnboardingPage() {
       user?.avatar_url &&
       user?.bio &&
       user.bio.trim().length >= MIN_BIO_LENGTH &&
+      user.location_missing !== true &&
       currentStep <= profileStepIdx
     ) {
       initialSkipDone.current = true;
@@ -256,7 +273,7 @@ export function OnboardingPage() {
       for (let i = 1; i <= nextAfterProfile; i++) visited.add(i);
       setVisitedSteps(visited);
     }
-  }, [user?.avatar_url, user?.bio, currentStep, profileStepIdx, nextAfterProfile, MIN_BIO_LENGTH]);
+  }, [user?.avatar_url, user?.bio, user?.location_missing, currentStep, profileStepIdx, nextAfterProfile, MIN_BIO_LENGTH]);
 
   // ── Load suggestion categories when reaching the skills step ─────────────
 
@@ -377,9 +394,18 @@ export function OnboardingPage() {
       return;
     }
 
+    // Required here (client-side only) when the server says there is no location yet.
+    if (needsLocation && !hasLocationText(locationValue)) {
+      toast.error(t('toast_profile_incomplete'), t('location_label'));
+      return;
+    }
+
     try {
       setIsSavingProfile(true);
-      const response = await api.put('/v2/users/me', { bio: bio.trim() });
+      const response = await api.put('/v2/users/me', {
+        bio: bio.trim(),
+        ...(needsLocation ? locationUpdatePayload(locationValue) : {}),
+      });
       if (!mountedRef.current) return;
 
       if (response.success) {
@@ -387,7 +413,15 @@ export function OnboardingPage() {
         if (!mountedRef.current) return;
         goNextAnimated();
       } else {
-        toast.error(t('toast_save_failed'), response.error || t('toast_save_failed_desc'));
+        // Our own wording, keyed off which field the server refused — never the server's English.
+        const refused = needsLocation ? locationErrorField(response.errors) : null;
+        const description =
+          refused === 'location'
+            ? t('location_error_location')
+            : refused === 'coordinates'
+              ? t('location_error_coordinates')
+              : response.error || t('toast_save_failed_desc');
+        toast.error(t('toast_save_failed'), description);
       }
     } catch (error) {
       logError('Failed to save bio during onboarding', error);
@@ -395,7 +429,7 @@ export function OnboardingPage() {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [bio, user?.avatar_url, toast, refreshUser, goNextAnimated, t, MIN_BIO_LENGTH]);
+  }, [bio, locationValue, needsLocation, user?.avatar_url, toast, refreshUser, goNextAnimated, t, MIN_BIO_LENGTH]);
 
   // ── Skill suggestions (the community's listing categories) ──────────────
 
@@ -486,7 +520,9 @@ export function OnboardingPage() {
 
   const hasAvatar = !!user?.avatar_url;
   const hasBio = bio.trim().length >= MIN_BIO_LENGTH;
-  const profileStepComplete = hasAvatar && hasBio;
+  // A member the server reports as having no location must give one before moving on.
+  const hasLocation = !needsLocation || hasLocationText(locationValue);
+  const profileStepComplete = hasAvatar && hasBio && hasLocation;
 
   // ── Completion celebration overlay (checked BEFORE redirect guard so the
   //    celebration screen actually renders — refreshUser() sets
@@ -591,6 +627,7 @@ export function OnboardingPage() {
           completedSteps={getCompletedSteps({
             hasAvatar,
             hasBio,
+            hasLocation,
             offerSkills,
             needSkills,
             stepSlugToIndex,
@@ -849,6 +886,18 @@ export function OnboardingPage() {
                   />
                 </div>
 
+                {/* Where are you based? — only for members the server reports as having no location */}
+                {needsLocation && (
+                  <MemberLocationField
+                    className="mt-4"
+                    value={locationValue}
+                    onChange={setLocationValue}
+                    label={t('location_label')}
+                    placeholder={t('location_placeholder')}
+                    isRequired
+                  />
+                )}
+
                 {/* Validation checklist */}
                 <div className="mt-4 p-3 rounded-lg bg-theme-elevated">
                   <p className="text-xs font-medium text-theme-muted mb-2">
@@ -857,6 +906,9 @@ export function OnboardingPage() {
                   <div className="flex flex-col gap-1.5">
                     <ValidationItem checked={hasAvatar} label={t('validation_photo')} />
                     <ValidationItem checked={hasBio} label={t('validation_bio', { min: MIN_BIO_LENGTH })} />
+                    {needsLocation && (
+                      <ValidationItem checked={hasLocation} label={t('validation_location')} />
+                    )}
                   </div>
                 </div>
               </GlassCard>
@@ -1075,6 +1127,7 @@ export function OnboardingPage() {
 function getCompletedSteps(state: {
   hasAvatar: boolean;
   hasBio: boolean;
+  hasLocation: boolean;
   offerSkills: string[];
   needSkills: string[];
   stepSlugToIndex: Map<string, number>;
@@ -1086,7 +1139,7 @@ function getCompletedSteps(state: {
   const skillsIdx = idx.get('skills');
 
   if (welcomeIdx) completed.add(welcomeIdx); // Welcome is always "done" once visited
-  if (profileIdx && state.hasAvatar && state.hasBio) completed.add(profileIdx);
+  if (profileIdx && state.hasAvatar && state.hasBio && state.hasLocation) completed.add(profileIdx);
   if (skillsIdx && (state.offerSkills.length > 0 || state.needSkills.length > 0)) completed.add(skillsIdx);
   return completed;
 }
