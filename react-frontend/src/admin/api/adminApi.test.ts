@@ -285,6 +285,14 @@ describe('adminUsers', () => {
     expect(url).toBe('/v2/admin/reports/members/export?format=csv');
     expect(options?.filename).toMatch(/^members-\d{4}-\d{2}-\d{2}\.csv$/);
   });
+
+  it('exportForImport downloads every member in the import template columns', async () => {
+    mockDownload.mockResolvedValueOnce(new Blob());
+    await adminUsers.exportForImport();
+    const [url, options] = mockDownload.mock.calls[0];
+    expect(url).toBe('/v2/admin/members/export');
+    expect(options?.filename).toMatch(/^members-for-import-\d{4}-\d{2}-\d{2}\.csv$/);
+  });
 });
 
 // ─── Member import ───────────────────────────────────────────────────────────

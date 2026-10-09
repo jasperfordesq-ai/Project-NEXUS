@@ -19,6 +19,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Plus from 'lucide-react/icons/plus';
 import Upload from 'lucide-react/icons/upload';
 import Download from 'lucide-react/icons/download';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import FileSpreadsheet from 'lucide-react/icons/file-spreadsheet';
+import FileUp from 'lucide-react/icons/file-up';
 import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import UserCheck from 'lucide-react/icons/user-check';
 import UserX from 'lucide-react/icons/user-x';
@@ -539,12 +542,15 @@ export function UserList() {
       : null,
   ].filter(Boolean) as Array<{ key: string; label: string }>;
 
-  const handleExportAllMembers = async () => {
+  // Two downloads of every member: the full report, or a file in the member
+  // import template's columns for importing into another community.
+  const handleExport = async (key: React.Key) => {
+    const forImport = key === 'for_import';
     setExportLoading(true);
     try {
-      await adminUsers.exportAllMembers();
+      await (forImport ? adminUsers.exportForImport() : adminUsers.exportAllMembers());
     } catch {
-      toast.error(t('common:errors.download_failed'));
+      toast.error(forImport ? t('users.export_for_import_failed') : t('common:errors.download_failed'));
     } finally {
       setExportLoading(false);
     }
@@ -749,14 +755,34 @@ export function UserList() {
         description={t('users.description')}
         actions={
           <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              startContent={<Download size={16} />}
-              onPress={handleExportAllMembers}
-              isLoading={exportLoading}
-            >
-              {t('users.export_all_members')}
-            </Button>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant="secondary"
+                  startContent={<Download size={16} aria-hidden="true" />}
+                  endContent={<ChevronDown size={16} aria-hidden="true" />}
+                  isLoading={exportLoading}
+                >
+                  {t('users.export_all_members')}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label={t('users.export_all_members')} onAction={(key) => { void handleExport(key); }}>
+                <DropdownItem
+                  key="report" id="report"
+                  startContent={<FileSpreadsheet size={16} aria-hidden="true" />}
+                  description={t('users.export_members_report_desc')}
+                >
+                  {t('users.export_members_report')}
+                </DropdownItem>
+                <DropdownItem
+                  key="for_import" id="for_import"
+                  startContent={<FileUp size={16} aria-hidden="true" />}
+                  description={t('users.export_for_import_desc')}
+                >
+                  {t('users.export_for_import')}
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
             <Button
               variant="secondary"
               startContent={<Upload size={16} />}

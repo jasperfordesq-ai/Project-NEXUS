@@ -20,6 +20,7 @@ const { mockAdminUsers } = vi.hoisted(() => ({
     reset2fa: vi.fn(),
     impersonate: vi.fn(),
     exportAllMembers: vi.fn(),
+    exportForImport: vi.fn(),
     bulkApprove: vi.fn(),
     bulkSuspend: vi.fn(),
   },
@@ -209,24 +210,50 @@ describe('UserList', () => {
     });
   });
 
-  it('exports all members through the authenticated client', async () => {
-    mockAdminUsers.exportAllMembers.mockResolvedValue(new Blob());
+  // The export button opens a menu: the full members report, or a file in the
+  // member import template's columns for importing into another community.
+  async function chooseExport(item: RegExp) {
     const { UserList } = await import('./UserList');
     render(<UserList />);
-
     fireEvent.click(await screen.findByRole('button', { name: /export all members|export_all_members/i }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: item }));
+  }
+
+  it('exports the members report through the authenticated client', async () => {
+    mockAdminUsers.exportAllMembers.mockResolvedValue(new Blob());
+
+    await chooseExport(/members report|export_members_report/i);
 
     await waitFor(() => expect(mockAdminUsers.exportAllMembers).toHaveBeenCalledTimes(1));
+    expect(mockAdminUsers.exportForImport).not.toHaveBeenCalled();
   });
 
-  it('shows an error toast when the member export fails', async () => {
-    mockAdminUsers.exportAllMembers.mockRejectedValue(new Error('401'));
-    const { UserList } = await import('./UserList');
-    render(<UserList />);
+  it('downloads the file for importing elsewhere from its own endpoint', async () => {
+    mockAdminUsers.exportForImport.mockResolvedValue(new Blob());
 
-    fireEvent.click(await screen.findByRole('button', { name: /export all members|export_all_members/i }));
+    await chooseExport(/importing elsewhere|export_for_import/i);
+
+    await waitFor(() => expect(mockAdminUsers.exportForImport).toHaveBeenCalledTimes(1));
+    expect(mockAdminUsers.exportAllMembers).not.toHaveBeenCalled();
+  });
+
+  it('shows an error toast when the members report export fails', async () => {
+    mockAdminUsers.exportAllMembers.mockRejectedValue(new Error('401'));
+
+    await chooseExport(/members report|export_members_report/i);
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+  });
+
+  it('shows its own translated message, never server text, when the file for importing fails', async () => {
+    mockAdminUsers.exportForImport.mockRejectedValue(new Error('Download failed (429)'));
+
+    await chooseExport(/importing elsewhere|export_for_import/i);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    const message = String(mockToast.error.mock.calls[0][0]);
+    expect(message).toMatch(/importing elsewhere|export_for_import_failed/i);
+    expect(message).not.toContain('429');
   });
 
   it('calls adminUsers.list on mount', async () => {

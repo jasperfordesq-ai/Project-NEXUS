@@ -277,6 +277,13 @@ export const adminUsers = {
       filename: `members-${new Date().toISOString().slice(0, 10)}.csv`,
     }),
 
+  // Every member in the member import template's columns, so the file can be
+  // imported into another community unchanged. The server names the file.
+  exportForImport: () =>
+    api.download('/v2/admin/members/export', {
+      filename: `members-for-import-${new Date().toISOString().slice(0, 10)}.csv`,
+    }),
+
   bulkApprove: (userIds: number[]) =>
     api.post<BulkActionResult>('/v2/admin/users/bulk-approve', { user_ids: userIds }),
 
