@@ -62,9 +62,10 @@ final class MemberProfileVisibility
         // Bypass the tenant scope so a platform super-admin acting on another
         // community is still recognised.
         $viewer = User::withoutGlobalScope(TenantScope::class)
-            ->select(['id', 'tenant_id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+            ->select(['id', 'tenant_id', 'role', 'status', 'is_approved', 'is_admin',
+                'is_super_admin', 'is_tenant_super_admin', 'is_god'])
             ->find($viewerId);
-        if (!AdminTier::allows($viewer)) {
+        if ($viewer?->status !== 'active' || ! $viewer->is_approved || ! AdminTier::allows($viewer)) {
             return false;
         }
 

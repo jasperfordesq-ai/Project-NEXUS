@@ -968,6 +968,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native course quizzes now let learners review and edit their answers after selecting Try again, rather than immediately consuming another attempt with unchanged answers. Recovery of an uncertain submission continues to reuse its original attempt.
 
 ### Security
+- **Suspended or unapproved administrators no longer get the member-profile privacy exemption.** Shared profile visibility checks now require the viewer to be active and approved before applying Admin-tier access, matching the direct pending-profile rule.
 - **Bulk member-profile queries now enforce the pending-account gate themselves.** Shared profile visibility SQL could include a pending or unapproved account when its privacy setting was public, even though direct profile and directory checks had already been tightened. Bulk results now require an active, approved account for other members and anonymous viewers; a registrant can still inspect their own account and staff can still use their review path.
 
 - Granting or removing community top-admin rights now requires outranking the account being changed, as other account-security actions already do, so one platform admin can no longer demote another or a platform owner (F-255).

@@ -62,6 +62,20 @@ class MemberDiscoveryPrivacyTest extends TestCase
         $this->assertContains((int) $pending->id, $visibleTo((int) $viewer->id, true));
     }
 
+    public function test_suspended_admin_loses_the_profile_visibility_exemption(): void
+    {
+        $pending = $this->member(['status' => 'pending', 'is_approved' => false]);
+        $suspendedAdmin = $this->member(['role' => 'admin', 'status' => 'suspended']);
+
+        $this->assertFalse(MemberProfileVisibility::viewerIsAdmin((int) $suspendedAdmin->id));
+        $this->assertFalse(MemberProfileVisibility::canView((int) $pending->id, (int) $suspendedAdmin->id));
+
+        $query = DB::table('users')->where('tenant_id', $this->testTenantId)
+            ->where('id', $pending->id);
+        MemberProfileVisibility::applyToQuery($query, $this->testTenantId, (int) $suspendedAdmin->id);
+        $this->assertFalse($query->exists());
+    }
+
     // ------------------------------------------------------------------
     //  Feed sidebar suggested members
     // ------------------------------------------------------------------
