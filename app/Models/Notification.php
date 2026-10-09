@@ -175,6 +175,27 @@ class Notification extends Model
         return (int) $id;
     }
 
+    /**
+     * Insert one bell for a stable business event and report whether it was new.
+     * Callers can use the result to avoid repeating an associated push on replay.
+     */
+    public static function createNotificationOnce(
+        int $userId,
+        string $message,
+        ?string $link,
+        string $type,
+        int $tenantId,
+        string $idempotencyKey,
+    ): bool {
+        if (trim($idempotencyKey) === '') {
+            throw new \InvalidArgumentException('Notification idempotency key is required');
+        }
+
+        $created = false;
+        self::createNotification($userId, $message, $link, $type, false, $tenantId, $idempotencyKey, $created);
+        return $created;
+    }
+
     private static function resolveTenantIdForRecipient(int $userId, ?int $candidateTenantId, string $source): ?int
     {
         $contextTenantId = TenantContext::currentId();

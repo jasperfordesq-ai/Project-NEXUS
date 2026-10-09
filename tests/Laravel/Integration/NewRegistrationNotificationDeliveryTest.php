@@ -54,6 +54,8 @@ class NewRegistrationNotificationDeliveryTest extends TestCase
         $event = new UserRegistered($user, $this->testTenantId);
         $listener->handle($event);
         $listener->handle($event); // done-key suppresses a repeated event
+        Cache::forget('notify_admin_new_registration:done:' . $this->testTenantId . ':' . $registrant);
+        $listener->handle($event); // forced replay still cannot duplicate bells
 
         $rows = DB::table('notifications')
             ->where('type', 'new_user_registered')

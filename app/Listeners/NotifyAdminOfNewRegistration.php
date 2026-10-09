@@ -211,8 +211,18 @@ class NotifyAdminOfNewRegistration
                         $ctaUrl   = $plan['cta_url'];
 
                         $bellContent = __('emails_misc.admin_notify.' . $key . 'bell');
-                        Notification::createNotification((int) $admin->id, $bellContent, $bellLink, 'new_user_registered');
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'new_user_registered', $bellContent, $bellLink);
+                        $noticeKey = 'admin_new_registration:' . $event->tenantId . ':' . $user->id . ':' . $admin->id;
+                        $bellCreated = Notification::createNotificationOnce(
+                            (int) $admin->id,
+                            $bellContent,
+                            $bellLink,
+                            'new_user_registered',
+                            (int) $event->tenantId,
+                            $noticeKey
+                        );
+                        if ($bellCreated) {
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'new_user_registered', $bellContent, $bellLink);
+                        }
 
                         $subject = __('emails_misc.admin_notify.' . $key . 'subject', ['community' => $tenantName]);
 
@@ -227,7 +237,7 @@ class NotifyAdminOfNewRegistration
 
                         if (!EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
                             'tenant_id' => $event->tenantId,
-                            'idempotency_key' => 'admin_new_registration:' . $event->tenantId . ':' . $user->id . ':' . $admin->id,
+                            'idempotency_key' => $noticeKey,
                         ])) {
                             Log::warning('NotifyAdminOfNewRegistration: email send failed', ['admin_id' => $admin->id, 'email' => $adminEmail]);
                         }

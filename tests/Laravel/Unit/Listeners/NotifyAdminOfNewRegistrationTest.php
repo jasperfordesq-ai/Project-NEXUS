@@ -125,8 +125,11 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
 
         $bells = [];
         $emails = [];
-        $this->notificationAlias->shouldReceive('createNotification')->times(count($recipients))
-            ->andReturnUsing(function (...$args) use (&$bells) { $bells[] = $args; });
+        $this->notificationAlias->shouldReceive('createNotificationOnce')->times(count($recipients))
+            ->andReturnUsing(function ($id, $content, $link, $type, $tenantId, $noticeKey) use (&$bells) {
+                $bells[] = [$id, $content, $link, $type, $tenantId, $noticeKey];
+                return true;
+            });
         $this->dispatcherAlias->shouldReceive('fanOutPush')->times(count($recipients));
         $this->emailAlias->shouldReceive('sendRaw')->times(count($recipients))
             ->andReturnUsing(function (...$args) use (&$emails) { $emails[] = $args; return true; });
@@ -159,6 +162,27 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
     public static function approvalModes(): array
     {
         return ['approval required' => [true], 'ordinary registration' => [false]];
+    }
+
+    public function test_replayed_event_sends_push_only_for_a_new_bell(): void
+    {
+        $member = $this->seedUser(['role' => 'member']);
+        $admin = $this->seedUser(['role' => 'admin']);
+        $event = new UserRegistered($this->makeUserModel($member), $this->testTenantId);
+        $noticeKey = 'admin_new_registration:' . $this->testTenantId . ':' . $member->id . ':' . $admin->id;
+
+        $this->notificationAlias->shouldReceive('createNotificationOnce')
+            ->twice()
+            ->with((int) $admin->id, Mockery::type('string'), Mockery::type('string'),
+                'new_user_registered', $this->testTenantId, $noticeKey)
+            ->andReturn(true, false);
+        $this->dispatcherAlias->shouldReceive('fanOutPush')->once();
+        $this->emailAlias->shouldReceive('sendRaw')->twice()->andReturn(true);
+
+        $listener = new NotifyAdminOfNewRegistration();
+        $listener->handle($event);
+        Cache::forget('notify_admin_new_registration:done:' . $this->testTenantId . ':' . $member->id);
+        $listener->handle($event);
     }
 
     // -------------------------------------------------------------------------
