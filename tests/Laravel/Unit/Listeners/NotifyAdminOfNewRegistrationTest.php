@@ -140,25 +140,19 @@ class NotifyAdminOfNewRegistrationTest extends TestCase
         foreach ($bells as $bell) {
             $this->assertStringNotContainsString('SyntheticRegistrantMarker', $bell[1]);
             $this->assertStringNotContainsString('synthetic.registrant@example.com', $bell[1]);
-            $expectedLink = !$needsApproval
-                ? '/broker/members'
-                : (in_array((int) $bell[0], $adminTierIds, true)
-                    ? '/admin/users?filter=pending'
-                    : '/broker/members');
+            $expectedLink = in_array((int) $bell[0], $adminTierIds, true)
+                ? ($needsApproval ? '/admin/users?filter=pending' : '/admin/users')
+                : '/broker/members';
             $this->assertSame($expectedLink, $bell[2]);
         }
         foreach ($emails as $email) {
             $this->assertStringNotContainsString('SyntheticRegistrantMarker', $email[1] . $email[2]);
             $this->assertStringNotContainsString('synthetic.registrant@example.com', $email[1] . $email[2]);
-            $expectedCta = !$needsApproval
-                ? '/profile/' . $member->id
-                : (in_array((string) $email[0], $adminTierEmails, true)
-                    ? '/admin/users?filter=pending'
-                    : '/broker/members');
+            $expectedCta = in_array((string) $email[0], $adminTierEmails, true)
+                ? ($needsApproval ? '/admin/users?filter=pending' : '/admin/users')
+                : '/broker/members';
             $this->assertStringContainsString($expectedCta, $email[2]);
-            if ($needsApproval) {
-                $this->assertStringNotContainsString('/profile/' . $member->id, $email[2]);
-            }
+            $this->assertStringNotContainsString('/profile/' . $member->id, $email[2]);
         }
     }
 
