@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2805,
-  "api_route_rows": 2770,
-  "distinct_api_paths": 2306,
+  "total_registered_routes": 2808,
+  "api_route_rows": 2773,
+  "distinct_api_paths": 2309,
   "route_source_fingerprint": {
-    "digest": "f3f775ec6f30f9ea68b40590254e1ce0ea97db62594e7838aa4a2209b44c2752",
+    "digest": "7a0c0bc326892bc98386d6af8641f835a763fda6e3ad582836fb02047fe1d394",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "d69faa652ad346e6f7e830f698b38864601609205404ba767edbec30b860ebad"
+        "sha256": "1f282b20de70663bee4989d3f58186fdfc372ccaa51bee32a0f7d4b43162266e"
       },
       {
         "file": "routes/channels.php",
@@ -22,7 +22,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "8505a781486b909823dd27c26dc1e664f2502b9c7414fbbf3c458ff9b09730a2"
+        "sha256": "d7ae65de1b0247040d2cccb8567fe7c281027179da7fda3b9c6c588d2c9f190b"
       }
     ]
   },
@@ -2362,6 +2362,15 @@
     ],
     "/api/v2/admin/members/inactive/notify": [
       "POST"
+    ],
+    "/api/v2/admin/members/invitations": [
+      "POST"
+    ],
+    "/api/v2/admin/members/invitations/never-signed-in": [
+      "POST"
+    ],
+    "/api/v2/admin/members/invitations/never-signed-in-count": [
+      "GET"
     ],
     "/api/v2/admin/menu-items/{id}": [
       "DELETE",
