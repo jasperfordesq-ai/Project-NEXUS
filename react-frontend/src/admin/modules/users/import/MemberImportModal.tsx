@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FileUp from 'lucide-react/icons/file-up';
-import { Modal, ModalContent, ModalHeader } from '@/components/ui';
+import { Modal, ModalContent, ModalHeader, ModalHeading } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { adminMemberImport } from '@/admin/api/adminApi';
 import { fileToBase64 } from './csvFiles';
@@ -109,9 +109,11 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
     <Modal isOpen={isOpen} onClose={close} size="3xl" scrollBehavior="inside"
       isDismissable={!locked && step !== 'ready'} isKeyboardDismissDisabled={locked} hideCloseButton={locked || finished}>
       <ModalContent>
-        <ModalHeader className="flex items-center gap-2">
-          <FileUp size={20} aria-hidden="true" />
-          {running ? t('member_import.running.title') : t('member_import.title')}
+        {/* Icon above the title, both centred at every width. An explicit heading keeps the icon
+            a separate item: inside the heading it sat in the same line of text and drifted left. */}
+        <ModalHeader className="flex flex-col items-center gap-2 text-center">
+          <FileUp size={24} aria-hidden="true" />
+          <ModalHeading>{running ? t('member_import.running.title') : t('member_import.title')}</ModalHeading>
         </ModalHeader>
 
         {step === 'choose' && (

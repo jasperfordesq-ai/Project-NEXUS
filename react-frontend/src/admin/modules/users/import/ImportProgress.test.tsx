@@ -47,6 +47,13 @@ describe('ImportProgress', () => {
     expect(screen.getByText('Keep this window open until the import finishes.')).toBeInTheDocument();
   });
 
+  it('wraps a long figure onto a second line instead of cutting it off', () => {
+    render(<ImportProgress state={state({ nextIndex: 130, secondsRemaining: 7200 })} onStop={vi.fn()} />);
+    const figure = screen.getByText('Time left').closest('div')!.querySelector('dd') as HTMLElement;
+    expect(figure).toHaveClass('break-words');
+    expect(figure).not.toHaveClass('truncate');
+  });
+
   it('says the time left is being worked out, rather than showing a made-up figure', () => {
     render(<ImportProgress state={state({ secondsRemaining: null })} onStop={vi.fn()} />);
     expect(screen.getByText('Time left').closest('div')).toHaveTextContent('Working out the time left');

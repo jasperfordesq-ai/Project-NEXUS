@@ -129,6 +129,15 @@ describe('MemberImportModal', () => {
       expect(screen.queryByText(/asked when they first sign in/)).not.toBeInTheDocument();
     });
 
+    it('centres the icon above the title at every width: they are separate centred items, not one run of inline text', async () => {
+      open();
+      const heading = await screen.findByRole('heading', { name: 'Import members' });
+      const header = heading.parentElement as HTMLElement;
+      expect(header).toHaveClass('flex', 'flex-col', 'items-center', 'text-center');
+      expect(header.querySelector('svg')).not.toBeNull();
+      expect(heading.querySelector('svg')).toBeNull();
+    });
+
     it('only offers CSV files', () => {
       open();
       expect(screen.getByLabelText('Choose a CSV file')).toHaveAttribute('accept', '.csv,text/csv');

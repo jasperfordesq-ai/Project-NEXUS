@@ -22,7 +22,7 @@ function Tile({ label, figure, note }: { label: string; figure: ReactNode; note?
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-surface-secondary p-3">
       <dt className="text-xs font-medium text-muted">{label}</dt>
-      <dd className="truncate text-2xl font-semibold tabular-nums">{figure}</dd>
+      <dd className="break-words text-2xl font-semibold tabular-nums">{figure}</dd>
       {note && <dd className="text-xs text-muted">{note}</dd>}
     </div>
   );
