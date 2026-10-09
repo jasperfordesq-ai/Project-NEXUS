@@ -21,7 +21,9 @@ use Illuminate\Support\Facades\Log;
  * Creates one imported member. The account, its opening-balance ledger row,
  * the balance itself, its federation settings, the vouched email and the
  * audit entry are written in ONE transaction: a member is created completely
- * or not at all. The row is re-checked against the same rules first, and an
+ * or not at all — and so is the member's welcome invitation, when the import
+ * sends them (one outbox row, linked to the import by its id; the scheduled
+ * sender emails it later). The row is re-checked against the same rules first, and an
  * email that has been taken since the check stops the import rather than
  * being skipped (owner, 8 Oct 2026).
  */
@@ -35,20 +37,27 @@ final class MemberImportWriter
         private readonly MemberImportRowRules $rules,
         private readonly EmailConfirmationService $emailConfirmation,
         private readonly AuditLogService $audit,
+        private readonly InvitationOutbox $invitations,
     ) {
     }
 
     /**
      * @param array<string, mixed> $row      a NormalisedRow plus source_row
      * @param array<string, mixed> $decision AdminCreatedAccountAdmission::decide()
-     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool}
+     * @param bool $sendInvitation queue a welcome invitation for the new member, unless the
+     *                             decision holds them for an identity check
+     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool, invitation_queued: bool}
      *         `admission_complete` is false when the member was created but their identity step
      *         (starting the community's identity check, or recording the attestation) did not run;
      *         it is true on the "already created by this import" path, which does not re-run it.
+     *         `invitation_queued` says whether this import's invitation for the member exists.
      * @throws MemberImportStopped row_changed | email_now_taken | write_failed
      */
-    public function write(array $row, int $tenantId, int $adminId, array $decision, string $importId): array
+    public function write(array $row, int $tenantId, int $adminId, array $decision, string $importId, bool $sendInvitation = false): array
     {
+        // A held member cannot sign in yet; they are invited from the member list once approved.
+        $invite = $sendInvitation && ($decision['held'] ?? true) === false;
+
         $recheck = $this->rules->check([
             'first_name' => (string) $row['first_name'],
             'last_name' => (string) $row['last_name'],
@@ -66,13 +75,13 @@ final class MemberImportWriter
         $existingId = DB::table('users')->where('tenant_id', $tenantId)->whereRaw('TRIM(email) = ?', [$row['email']])->value('id');
         if ($existingId !== null) {
             if ($this->createdByThisImport((int) $existingId, $tenantId, $importId)) {
-                return $this->alreadyCreated((int) $existingId, $row);
+                return $this->alreadyCreated((int) $existingId, $row, $tenantId, $importId);
             }
             throw new MemberImportStopped('email_now_taken');
         }
 
         try {
-            $userId = DB::transaction(function () use ($row, $tenantId, $adminId, $decision, $importId): int {
+            $userId = DB::transaction(function () use ($row, $tenantId, $adminId, $decision, $importId, $invite): int {
                 $userId = (int) DB::table('users')->insertGetId([
                     'tenant_id' => $tenantId,
                     'name' => UserDisplayName::forStorage(null, null, $row['first_name'], $row['last_name']),
@@ -124,6 +133,12 @@ final class MemberImportWriter
                     'original_balance' => $row['original_balance_cents'] === null ? null : OpeningBalance::formatCents($row['original_balance_cents']),
                 ], null, $userId);
 
+                if ($invite) {
+                    // In the member's own transaction: the invitation exists if and only if
+                    // the member does, and a failure here undoes the member (write_failed).
+                    $this->invitations->enqueueOneInTransaction($tenantId, $userId, $importId, $adminId);
+                }
+
                 return $userId;
             });
         } catch (QueryException $e) {
@@ -132,7 +147,7 @@ final class MemberImportWriter
                 // member (an overlapping request committed it first), that is not a stop.
                 $winnerId = DB::table('users')->where('tenant_id', $tenantId)->whereRaw('TRIM(email) = ?', [$row['email']])->value('id');
                 if ($winnerId !== null && $this->createdByThisImport((int) $winnerId, $tenantId, $importId)) {
-                    return $this->alreadyCreated((int) $winnerId, $row);
+                    return $this->alreadyCreated((int) $winnerId, $row, $tenantId, $importId);
                 }
                 throw new MemberImportStopped('email_now_taken');
             }
@@ -158,19 +173,25 @@ final class MemberImportWriter
 
         return ['user_id' => $userId, 'balance_cents' => (int) $row['balance_cents'],
             'zeroed' => $row['original_balance_cents'] !== null, 'already' => false,
-            'admission_complete' => $admissionComplete];
+            'admission_complete' => $admissionComplete, 'invitation_queued' => $invite];
     }
 
     /**
      * @param array<string, mixed> $row
-     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool}
+     * @return array{user_id: int, balance_cents: int, zeroed: bool, already: bool, admission_complete: bool, invitation_queued: bool}
      */
-    private function alreadyCreated(int $userId, array $row): array
+    private function alreadyCreated(int $userId, array $row, int $tenantId, string $importId): array
     {
         // afterCreate() is not re-run here; the completion audit records attestation at import level.
+        // Nothing is queued either: the invitation was written with the member, or not at all.
+        // It is only looked up, so the import's total counts this member as it counts them created.
+        $queued = DB::table('member_invitation_outbox')
+            ->where('tenant_id', $tenantId)->where('user_id', $userId)->where('request_key', $importId)
+            ->exists();
+
         return ['user_id' => $userId, 'balance_cents' => (int) $row['balance_cents'],
             'zeroed' => $row['original_balance_cents'] !== null, 'already' => true,
-            'admission_complete' => true];
+            'admission_complete' => true, 'invitation_queued' => $queued];
     }
 
     /** @param array<string, mixed> $row */

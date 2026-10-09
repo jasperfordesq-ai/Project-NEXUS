@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Log;
  *
  * The admission decision (held for the community's identity check or not) is
  * taken once, on the first batch, and stored: a change to the joining rules
- * mid-import does not split one import into two kinds of member.
+ * mid-import does not split one import into two kinds of member. Whether the
+ * new members are sent a welcome invitation is fixed on the first batch too.
  *
  * Resolve it per request, never as a singleton: its writer computes one
  * password hash and reuses it for every member it creates.
@@ -37,19 +38,22 @@ final class MemberImportRunner
     public function __construct(
         private readonly MemberImportWriter $writer,
         private readonly AuditLogService $audit,
+        private readonly InvitationOutbox $invitations,
     ) {
     }
 
     /**
      * @param bool|null $identityAttested honoured only on the first batch (status 'ready');
      *                                    null leaves the session's value unchanged
+     * @param bool|null $sendInvitations queue each new (not held) member's welcome invitation;
+     *                                   honoured only on the first batch, like $identityAttested
      * @param bool $stop the admin pressed Stop: write nothing, mark the import
      *                   stopped and discard the held rows now rather than leave
      *                   them to expire. Same ordering rules as a batch.
      * @return array<string, mixed>
      * @throws MemberImportBusy | MemberImportNotFound | MemberImportOutOfOrder
      */
-    public function runBatch(string $importId, int $tenantId, int $adminId, int $from, int $count, ?bool $identityAttested, bool $stop = false): array
+    public function runBatch(string $importId, int $tenantId, int $adminId, int $from, int $count, ?bool $identityAttested, bool $stop = false, ?bool $sendInvitations = null): array
     {
         $lock = MemberImportSession::lock($importId);
         if (!$lock->get()) {
@@ -64,6 +68,9 @@ final class MemberImportRunner
             $total = (int) $session['total'];
             $session['totals']['admission_incomplete'] ??= 0;
             $session['admission_incomplete_rows'] ??= [];
+            // Imports saved before invitations existed send none.
+            $session['send_invitations'] ??= false;
+            $session['totals']['invitations_queued'] ??= 0;
 
             // Every member was written but the request ended before the import was
             // marked complete: whatever position the browser names, finish it now.
@@ -102,6 +109,9 @@ final class MemberImportRunner
                     if ($identityAttested !== null) {
                         $session['identity_attested'] = $identityAttested;
                     }
+                    if ($sendInvitations !== null) {
+                        $session['send_invitations'] = $sendInvitations;
+                    }
                     $session['admission'] = AdminCreatedAccountAdmission::decide($tenantId, (bool) $session['identity_attested']);
                     $session['status'] = 'running';
                 }
@@ -116,7 +126,7 @@ final class MemberImportRunner
                     }
                     $row = $rows[$session['next_index']];
                     try {
-                        $out = $this->writer->write($row, $tenantId, $adminId, $decision, $importId);
+                        $out = $this->writer->write($row, $tenantId, $adminId, $decision, $importId, (bool) $session['send_invitations']);
                     } catch (MemberImportStopped $e) {
                         $session['status'] = 'stopped';
                         $session['stop'] = ['row' => (int) $row['source_row'], 'code' => $e->reason, 'params' => $e->params];
@@ -126,6 +136,7 @@ final class MemberImportRunner
                     $session['totals']['created']++;
                     $session['totals']['balance_cents'] += $out['balance_cents'];
                     $session['totals']['zeroed'] += $out['zeroed'] ? 1 : 0;
+                    $session['totals']['invitations_queued'] += $out['invitation_queued'] ? 1 : 0;
                     if (!$out['admission_complete']) {
                         // Created, but the identity step did not run: the admin follows these up.
                         $session['totals']['admission_incomplete']++;
@@ -174,6 +185,7 @@ final class MemberImportRunner
             'negative_balances_zeroed' => $session['totals']['zeroed'],
             'admission_incomplete' => $session['totals']['admission_incomplete'],
             'identity_attested' => (bool) $session['identity_attested'],
+            'invitations_queued' => $session['totals']['invitations_queued'],
         ]);
         $session['status'] = 'completed';
         $session['finished_at'] = now()->toIso8601String();
@@ -208,6 +220,7 @@ final class MemberImportRunner
         $held = isset($session['admission']['held'])
             ? (bool) $session['admission']['held']
             : AdminCreatedAccountAdmission::decide((int) $session['tenant_id'], (bool) $session['identity_attested'])['held'];
+        $queued = (int) $session['totals']['invitations_queued'];
 
         return [
             'import_id' => $session['id'],
@@ -219,7 +232,11 @@ final class MemberImportRunner
                 'balance' => OpeningBalance::formatCents($session['totals']['balance_cents']),
                 'zeroed' => $session['totals']['zeroed'],
                 'admission_incomplete' => $session['totals']['admission_incomplete'],
+                'invitations_queued' => $queued,
             ],
+            // About how long until this import's invitations have gone. The sender's pace
+            // is shared by every community, so it is read from the whole queue.
+            'invitations_eta_minutes' => $queued > 0 ? $this->invitations->etaMinutes() : 0,
             'admission_incomplete_rows' => array_values($session['admission_incomplete_rows']),
             'stop' => $session['stop'],
             'held' => $held,

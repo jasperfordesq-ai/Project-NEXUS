@@ -13,6 +13,7 @@ use App\Services\AuditLogService;
 use App\Services\Auth\EmailConfirmationService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
 use App\Services\Identity\RegistrationPolicyService;
+use App\Services\MemberImport\InvitationOutbox;
 use App\Services\MemberImport\MemberImportRowRules;
 use App\Services\MemberImport\MemberImportStopped;
 use App\Services\MemberImport\MemberImportWriter;
@@ -48,12 +49,90 @@ final class MemberImportWriterTest extends TestCase
         ], $over);
     }
 
-    private function write(array $row, string $importId = '11111111-1111-4111-8111-111111111111'): array
+    private function write(array $row, string $importId = '11111111-1111-4111-8111-111111111111', bool $invite = false): array
     {
         return app(MemberImportWriter::class)->write(
             $row, $this->testTenantId, $this->adminId,
-            AdminCreatedAccountAdmission::decide($this->testTenantId, false), $importId
+            AdminCreatedAccountAdmission::decide($this->testTenantId, false), $importId, $invite
         );
+    }
+
+    /** @return list<object> */
+    private function invitations(int $userId): array
+    {
+        return DB::table('member_invitation_outbox')->where('tenant_id', $this->testTenantId)->where('user_id', $userId)->get()->all();
+    }
+
+    public function test_a_member_created_with_invitations_on_is_queued_once_for_this_import(): void
+    {
+        $importId = '55555555-5555-4555-8555-555555555555';
+        $out = $this->write($this->row(), $importId, true);
+
+        $this->assertTrue($out['invitation_queued']);
+        $rows = $this->invitations($out['user_id']);
+        $this->assertCount(1, $rows);
+        $this->assertSame($importId, $rows[0]->request_key);
+        $this->assertSame(InvitationOutbox::SOURCE_IMPORT, $rows[0]->source);
+        $this->assertSame('pending', $rows[0]->status);
+        $this->assertSame($this->adminId, (int) $rows[0]->requested_by);
+    }
+
+    public function test_a_member_created_with_invitations_off_is_not_queued(): void
+    {
+        $out = $this->write($this->row());
+
+        $this->assertFalse($out['invitation_queued']);
+        $this->assertSame([], $this->invitations($out['user_id']));
+    }
+
+    public function test_a_member_held_for_an_identity_check_is_not_queued(): void
+    {
+        $decision = [
+            'requires_identity_check' => true, 'held' => true, 'attested' => false,
+            'registration_mode' => 'verified_identity',
+            'columns' => ['is_approved' => 0, 'status' => 'pending'],
+        ];
+
+        $out = app(MemberImportWriter::class)->write(
+            $this->row(), $this->testTenantId, $this->adminId, $decision, '66666666-6666-4666-8666-666666666666', true
+        );
+
+        $this->assertFalse($out['invitation_queued']);
+        $this->assertSame([], $this->invitations($out['user_id']));
+    }
+
+    public function test_a_member_this_import_already_created_is_not_queued_again(): void
+    {
+        $row = $this->row();
+        $importId = '55555555-5555-4555-8555-555555555555';
+        $first = $this->write($row, $importId, true);
+
+        $again = $this->write($row, $importId, true);
+
+        $this->assertTrue($again['already']);
+        // Reported as queued (its row exists), so the import's total still counts it once.
+        $this->assertTrue($again['invitation_queued']);
+        $this->assertCount(1, $this->invitations($first['user_id']));
+    }
+
+    public function test_a_failing_invitation_insert_undoes_the_member(): void
+    {
+        $row = $this->row();
+        DB::beforeExecuting(function (string $query): void {
+            if (stripos($query, 'insert into `member_invitation_outbox`') === 0) {
+                throw new \RuntimeException('outbox unavailable');
+            }
+        });
+
+        try {
+            $this->write($row, '55555555-5555-4555-8555-555555555555', true);
+            $this->fail('expected a stop');
+        } catch (MemberImportStopped $e) {
+            $this->assertSame('write_failed', $e->reason);
+        }
+
+        // The invitation exists if and only if the member does.
+        $this->assertFalse(DB::table('users')->where('email', $row['email'])->exists());
     }
 
     public function test_a_member_is_created_with_balance_ledger_and_location(): void
@@ -223,7 +302,8 @@ final class MemberImportWriterTest extends TestCase
         $writer = new MemberImportWriter(
             app(MemberImportRowRules::class),
             app(EmailConfirmationService::class),
-            $failingAudit
+            $failingAudit,
+            app(InvitationOutbox::class)
         );
 
         try {
@@ -401,7 +481,8 @@ final class MemberImportWriterTest extends TestCase
         $writer = new MemberImportWriter(
             app(MemberImportRowRules::class),
             app(EmailConfirmationService::class),
-            $failingAudit
+            $failingAudit,
+            app(InvitationOutbox::class)
         );
         $ledgerBefore = DB::table('transactions')->where('transaction_type', OpeningBalance::TYPE)->count();
         $federationBefore = DB::table('federation_user_settings')->count();

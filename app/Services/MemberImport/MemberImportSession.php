@@ -53,10 +53,11 @@ final class MemberImportSession
             'file_name' => $fileName,
             'file_sha256' => $fileSha256,
             'identity_attested' => false,
+            'send_invitations' => false,
             'next_index' => 0,
             'status' => 'ready',
             'stop' => null,
-            'totals' => ['created' => 0, 'balance_cents' => 0, 'zeroed' => 0],
+            'totals' => ['created' => 0, 'balance_cents' => 0, 'zeroed' => 0, 'invitations_queued' => 0],
             'created_at' => now()->toIso8601String(),
             'finished_at' => null,
         ]);

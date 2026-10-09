@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Services\Identity\AdminCreatedAccountAdmission;
+use App\Services\MemberImport\InvitationOutbox;
 use App\Services\MemberImport\MemberImportBusy;
 use App\Services\MemberImport\MemberImportChecker;
 use App\Services\MemberImport\MemberImportFile;
@@ -79,6 +80,8 @@ class AdminMemberImportController extends BaseApiController
 
         if ($result['status'] === 'ready') {
             $result['import_id'] = MemberImportSession::create($tenantId, $adminId, $result['rows'], $fileName, hash('sha256', $bytes));
+            // How long the welcome invitations for this file would take at the sender's pace.
+            $result['invitation_minutes'] = InvitationOutbox::minutesToSend(count($result['rows']));
         }
         // The browser never receives the normalised rows; the server holds them.
         unset($result['rows']);
@@ -105,9 +108,13 @@ class AdminMemberImportController extends BaseApiController
             : null;
         // `stop: true` — the admin pressed Stop; the held rows are discarded now.
         $stop = request()->boolean('stop');
+        // Like the attestation: read on the first batch only; absent means no invitations.
+        $sendInvitations = request()->has('send_invitations')
+            ? filter_var(request()->input('send_invitations'), FILTER_VALIDATE_BOOLEAN)
+            : null;
 
         try {
-            return $this->respondWithData($this->runner->runBatch($importId, $tenantId, $adminId, $from, $count, $attested, $stop));
+            return $this->respondWithData($this->runner->runBatch($importId, $tenantId, $adminId, $from, $count, $attested, $stop, $sendInvitations));
         } catch (MemberImportBusy) {
             return $this->respondWithError('IMPORT_BUSY', __('api.member_import_busy'), null, 409);
         } catch (MemberImportOutOfOrder) {

@@ -713,12 +713,21 @@ final class InvitationOutbox
             ->all();
     }
 
-    /** Minutes until the whole platform's queue (this request included) has been sent. */
-    private function etaMinutes(): int
+    /**
+     * Minutes until the whole platform's queue (this request included) has been
+     * sent, at least 1. An estimate: other communities' invitations share the pace.
+     */
+    public function etaMinutes(): int
     {
         $waiting = DB::table(self::TABLE)->whereIn('status', ['pending', 'processing'])->count();
 
-        return max(1, (int) ceil($waiting / self::SENDS_PER_MINUTE));
+        return max(1, self::minutesToSend($waiting));
+    }
+
+    /** Minutes the scheduled sender needs for this many invitations at its pace; 0 for none. */
+    public static function minutesToSend(int $count): int
+    {
+        return $count <= 0 ? 0 : (int) ceil($count / self::SENDS_PER_MINUTE);
     }
 
     private static function assertSource(string $source): void

@@ -212,6 +212,21 @@ final class InvitationOutboxTest extends TestCase
         $this->assertSame(5, (int) $row->requested_by);
     }
 
+    public function test_minutes_to_send_follows_the_senders_pace(): void
+    {
+        $this->assertSame(0, InvitationOutbox::minutesToSend(0));
+        $this->assertSame(1, InvitationOutbox::minutesToSend(1));
+        $this->assertSame(1, InvitationOutbox::minutesToSend(InvitationOutbox::SENDS_PER_MINUTE));
+        $this->assertSame(2, InvitationOutbox::minutesToSend(InvitationOutbox::SENDS_PER_MINUTE + 1));
+        $this->assertSame((int) ceil(5000 / InvitationOutbox::SENDS_PER_MINUTE), InvitationOutbox::minutesToSend(5000));
+
+        // The queue's estimate is the same sum over everything still waiting, platform-wide.
+        $this->queue($this->member());
+        $waiting = DB::table('member_invitation_outbox')->whereIn('status', ['pending', 'processing'])->count();
+        $this->assertSame(InvitationOutbox::minutesToSend($waiting), $this->outbox->etaMinutes());
+        $this->assertGreaterThanOrEqual(1, $this->outbox->etaMinutes());
+    }
+
     // --------------------------------------------------------------- drain
 
     public function test_drain_sends_with_a_link_issued_at_send_time_and_logs_it(): void

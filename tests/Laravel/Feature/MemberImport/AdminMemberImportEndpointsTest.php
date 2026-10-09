@@ -11,6 +11,7 @@ namespace Tests\Laravel\Feature\MemberImport;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\AuditLogService;
+use App\Services\MemberImport\InvitationOutbox;
 use App\Services\MemberImport\MemberImportRunner;
 use App\Services\MemberImport\MemberImportSession;
 use App\Services\TenantSettingsService;
@@ -489,6 +490,87 @@ final class AdminMemberImportEndpointsTest extends TestCase
 
         $this->assertSame(12, DB::table('users')->where('tenant_id', $this->testTenantId)
             ->where('email', 'like', $prefix . '-%')->where('status', 'pending')->count());
+    }
+
+    /** Invitations this import queued, as outbox rows linked by its id. */
+    private function invitationsFor(string $importId): int
+    {
+        return DB::table('member_invitation_outbox')->where('tenant_id', $this->testTenantId)
+            ->where('request_key', $importId)->count();
+    }
+
+    public function test_a_ready_check_says_how_long_its_invitations_would_take(): void
+    {
+        $r = $this->check($this->csv(25, 'mi-' . bin2hex(random_bytes(3))))->assertOk();
+        $this->assertSame(InvitationOutbox::minutesToSend(25), $r->json('data.invitation_minutes'));
+    }
+
+    public function test_invitations_ticked_queue_one_per_new_member_linked_to_the_import(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(12, $prefix))->json('data.import_id');
+
+        $first = $this->batch($id, 0, 10, ['send_invitations' => true])->assertOk();
+        $this->assertSame(10, $first->json('data.totals.invitations_queued'));
+        $r = $this->batch($id, 10, 10)->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $this->assertSame(12, $r->json('data.totals.invitations_queued'));
+        $this->assertGreaterThanOrEqual(1, $r->json('data.invitations_eta_minutes'));
+        $this->assertSame(12, $this->invitationsFor($id));
+        $memberIds = DB::table('users')->where('tenant_id', $this->testTenantId)->where('email', 'like', $prefix . '-%')->pluck('id')->map('intval')->sort()->values()->all();
+        $queuedIds = DB::table('member_invitation_outbox')->where('request_key', $id)->pluck('user_id')->map('intval')->sort()->values()->all();
+        $this->assertSame($memberIds, $queuedIds, 'exactly one invitation per new member');
+        $this->assertSame(12, DB::table('member_invitation_outbox')->where('request_key', $id)
+            ->where('source', 'import')->where('requested_by', $this->admin->id)->where('status', 'pending')->count());
+
+        $audit = DB::table('org_audit_log')->where('tenant_id', $this->testTenantId)
+            ->where('action', MemberImportRunner::ACTION_IMPORT_COMPLETED)
+            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(details, '$.import_id')) = ?", [$id])->first();
+        $this->assertSame(12, json_decode((string) $audit->details, true)['invitations_queued']);
+    }
+
+    public function test_invitations_are_off_unless_the_first_batch_asks(): void
+    {
+        $id = $this->check($this->csv(12, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+
+        $r = $this->batch($id, 0, 10)->assertOk();
+        $this->assertSame(0, $r->json('data.totals.invitations_queued'));
+        $this->assertSame(0, $r->json('data.invitations_eta_minutes'));
+        // Too late: the import started without invitations.
+        $this->batch($id, 10, 10, ['send_invitations' => true])->assertOk()
+            ->assertJsonPath('data.status', 'completed')->assertJsonPath('data.totals.invitations_queued', 0);
+
+        $this->assertSame(0, $this->invitationsFor($id));
+    }
+
+    public function test_invitations_unticked_queue_nothing(): void
+    {
+        $id = $this->check($this->csv(5, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+
+        $this->batch($id, 0, 10, ['send_invitations' => false])->assertOk()
+            ->assertJsonPath('data.status', 'completed')->assertJsonPath('data.totals.invitations_queued', 0);
+        $this->assertSame(0, $this->invitationsFor($id));
+    }
+
+    public function test_members_held_for_an_identity_check_are_not_invited(): void
+    {
+        $this->requireIdentityCheck();
+        $id = $this->check($this->csv(5, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+
+        $this->batch($id, 0, 10, ['send_invitations' => true])->assertOk()
+            ->assertJsonPath('data.status', 'completed')->assertJsonPath('data.held', true)
+            ->assertJsonPath('data.totals.invitations_queued', 0);
+        $this->assertSame(0, $this->invitationsFor($id));
+    }
+
+    public function test_replaying_a_batch_queues_no_second_invitation(): void
+    {
+        $id = $this->check($this->csv(12, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($id, 0, 10, ['send_invitations' => true])->assertOk();
+
+        $this->batch($id, 0, 10, ['send_invitations' => true])->assertOk()
+            ->assertJsonPath('data.batch.processed', 0)->assertJsonPath('data.totals.invitations_queued', 10);
+        $this->assertSame(10, $this->invitationsFor($id));
     }
 
     public function test_the_template_is_the_header_only(): void
