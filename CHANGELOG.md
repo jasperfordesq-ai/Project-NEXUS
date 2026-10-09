@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Admin — send the welcome email to members who have never signed in, either the ones you select or everyone at once.** On Admin → Users, selecting members now offers "Send invitation", and the "Never logged in" tab has "Invite everyone who has never signed in", which first shows how many members will be emailed and roughly how long it will take, and asks again if that number changes before you confirm. Both only queue the emails: they go out in the background at about one a second, each with a link to set a password. Members who have signed in, were invited in the last 24 hours, are already waiting, are held or suspended, or whose address cannot receive mail are skipped, and so are staff accounts (invite those one at a time). The result says how many were queued and how many were skipped. Administrators only, not brokers; each request is recorded in the audit log with its counts. Server: `POST /api/v2/admin/members/invitations`, `GET …/never-signed-in-count`, `POST …/never-signed-in`.
+
 ## [3.1.0] - 2026-10-09
 
 ### Added

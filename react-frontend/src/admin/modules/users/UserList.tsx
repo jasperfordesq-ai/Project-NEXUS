@@ -31,6 +31,7 @@ import LogIn from 'lucide-react/icons/log-in';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import Trash2 from 'lucide-react/icons/trash-2';
+import Mail from 'lucide-react/icons/mail';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts';
 import { canImpersonateTarget } from '@/lib/access';
@@ -39,8 +40,12 @@ import { useTenant,
 import { formatNumber, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { adminUsers,
-  type BulkActionResult } from '../../api/adminApi';
+  adminMemberInvitations,
+  type BulkActionResult,
+  type InvitationQueueResult,
+  type NeverSignedInInvitationCount } from '../../api/adminApi';
 import { MemberImportModal } from './import/MemberImportModal';
+import { aboutMinutes } from './import/format';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -346,6 +351,98 @@ export function UserList() {
     setSelectedIds(new Set());
     loadUsers();
     void actionLabel;
+  };
+
+  // Welcome invitations. Both actions only QUEUE the emails; the server sends
+  // them at a steady pace and re-checks every member at send time.
+  const onNeverLoggedInTab = filter === 'never_logged_in';
+  const [inviteCount, setInviteCount] = useState<NeverSignedInInvitationCount | null>(null);
+  // `attempt` remounts the confirm window each time the number is re-asked.
+  const [inviteAll, setInviteAll] = useState<{ count: number; minutes: number; changed: boolean; attempt: number } | null>(null);
+  const [inviteAllLoading, setInviteAllLoading] = useState(false);
+
+  const loadInviteCount = useCallback(async (): Promise<NeverSignedInInvitationCount | null> => {
+    const res = await adminMemberInvitations.neverSignedInCount();
+    const data = res.success && res.data ? res.data : null;
+    setInviteCount(data);
+    return data;
+  }, []);
+
+  useEffect(() => {
+    if (onNeverLoggedInTab) {
+      void loadInviteCount();
+    } else {
+      setInviteCount(null);
+    }
+  }, [onNeverLoggedInTab, loadInviteCount]);
+
+  const inviteErrorMessage = (code?: string) =>
+    code === 'RATE_LIMIT_EXCEEDED' ? t('users.invite_rate_limited') : t('users.invite_failed');
+
+  /** The server's counts, in the admin's language. Never the server's own text. */
+  const reportInvitations = (result: InvitationQueueResult) => {
+    const skippedTotal = Object.values(result.skipped ?? {}).reduce((sum, n) => sum + (Number(n) || 0), 0);
+    const parts = [
+      result.queued > 0
+        ? t('users.invite_queued', {
+            count: result.queued,
+            countFormatted: formatNumber(result.queued),
+            duration: aboutMinutes(t, Math.max(1, result.eta_minutes)),
+          })
+        : t('users.invite_none_queued'),
+    ];
+    if (skippedTotal > 0) {
+      parts.push(t('users.invite_skipped', { count: skippedTotal, countFormatted: formatNumber(skippedTotal) }));
+    }
+    const message = parts.join(' ');
+    if (result.queued > 0) {
+      toast.success(message);
+    } else {
+      toast.info(message);
+    }
+  };
+
+  /** Fetch the number afresh and ask the admin to confirm it (again, after COUNT_CHANGED). */
+  const openInviteAll = async (changed = false) => {
+    setInviteAllLoading(true);
+    const fresh = await loadInviteCount();
+    setInviteAllLoading(false);
+    if (!fresh) {
+      setInviteAll(null);
+      toast.error(t('users.invite_failed'));
+      return;
+    }
+    if (fresh.eligible <= 0) {
+      setInviteAll(null);
+      toast.info(t('users.invite_all_none'));
+      return;
+    }
+    setInviteAll((prev) => ({
+      count: fresh.eligible,
+      minutes: Math.max(1, fresh.eta_minutes),
+      changed,
+      attempt: (prev?.attempt ?? 0) + 1,
+    }));
+  };
+
+  const confirmInviteAll = async () => {
+    if (!inviteAll) return;
+    setInviteAllLoading(true);
+    const res = await adminMemberInvitations.inviteEveryone(inviteAll.count);
+    setInviteAllLoading(false);
+    if (res.success && res.data) {
+      setInviteAll(null);
+      reportInvitations(res.data);
+      void loadInviteCount();
+      return;
+    }
+    if (res.code === 'COUNT_CHANGED') {
+      // Someone joined, signed in or was invited meanwhile: show the new number.
+      await openInviteAll(true);
+      return;
+    }
+    setInviteAll(null);
+    toast.error(inviteErrorMessage(res.code));
   };
 
   const loadUsers = useCallback(async () => {
@@ -727,6 +824,22 @@ export function UserList() {
         </Tabs>
       </div>
 
+      {onNeverLoggedInTab && inviteCount && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-divider/70 bg-surface px-4 py-3 shadow-sm shadow-black/[0.03]">
+          {inviteCount.eligible > 0 ? (
+            <Button
+              startContent={<Mail size={16} aria-hidden="true" />}
+              onPress={() => void openInviteAll()}
+              isLoading={inviteAllLoading && !inviteAll}
+            >
+              {t('users.invite_all_button')}
+            </Button>
+          ) : (
+            <p className="text-sm text-muted">{t('users.invite_all_none')}</p>
+          )}
+        </div>
+      )}
+
       {(() => {
         const selectedIdList = Array.from(selectedIds).map((id) => Number(id)).filter((n) => Number.isFinite(n));
         const bulkActions: BulkAction[] = [
@@ -742,6 +855,29 @@ export function UserList() {
               try {
                 const res = await adminUsers.bulkApprove(selectedIdList);
                 handleBulkResult(res, 'approve');
+              } finally {
+                setBulkLoading(false);
+              }
+            },
+          },
+          {
+            key: 'invite',
+            label: t('users.action_send_invitation'),
+            icon: <Mail size={14} />,
+            color: 'primary',
+            confirmTitle: t('users.bulk_invite_title'),
+            confirmMessage: t('users.bulk_invite_message'),
+            onConfirm: async () => {
+              setBulkLoading(true);
+              try {
+                const res = await adminMemberInvitations.sendSelected(selectedIdList);
+                if (res.success && res.data) {
+                  reportInvitations(res.data);
+                  setSelectedIds(new Set());
+                  if (onNeverLoggedInTab) void loadInviteCount();
+                } else {
+                  toast.error(inviteErrorMessage(res.code));
+                }
               } finally {
                 setBulkLoading(false);
               }
@@ -811,6 +947,28 @@ export function UserList() {
             <Input minLength={10} maxLength={500} />
           </TextField>}
         </ConfirmModal>
+      )}
+
+      {/* Invite everyone who has never signed in: confirm the number just fetched. */}
+      {inviteAll && (
+        <ConfirmModal
+          key={`invite-all-${inviteAll.attempt}`}
+          isOpen
+          onClose={() => setInviteAll(null)}
+          onConfirm={() => void confirmInviteAll()}
+          title={t('users.invite_all_title')}
+          message={[
+            inviteAll.changed ? t('users.invite_all_count_changed') : '',
+            t('users.invite_all_message', {
+              count: inviteAll.count,
+              countFormatted: formatNumber(inviteAll.count),
+              duration: aboutMinutes(t, inviteAll.minutes),
+            }),
+          ].filter(Boolean).join(' ')}
+          confirmLabel={t('users.invite_all_confirm')}
+          confirmColor="primary"
+          isLoading={inviteAllLoading}
+        />
       )}
 
       {/* Import members window. Mounted only while open, so every opening starts on a fresh file choice. */}

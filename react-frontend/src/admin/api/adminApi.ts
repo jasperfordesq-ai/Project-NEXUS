@@ -284,6 +284,35 @@ export const adminUsers = {
     api.post<BulkActionResult>('/v2/admin/users/bulk-suspend', { user_ids: userIds, reason }),
 };
 
+/** What a "send invitation" request queued, and how many it skipped for each reason. */
+export interface InvitationQueueResult {
+  queued: number;
+  skipped: Record<string, number>;
+  eta_minutes: number;
+}
+
+/** Members who never signed in and would be invited now, and invitations already waiting. */
+export interface NeverSignedInInvitationCount {
+  eligible: number;
+  pending: number;
+  eta_minutes: number;
+}
+
+// Welcome invitations from the member list. Both POSTs only queue the emails;
+// the server's scheduled sender sends them at a steady pace.
+export const adminMemberInvitations = {
+  sendSelected: (userIds: number[]) =>
+    api.post<InvitationQueueResult>('/v2/admin/members/invitations', { user_ids: userIds }),
+
+  neverSignedInCount: () =>
+    api.get<NeverSignedInInvitationCount>('/v2/admin/members/invitations/never-signed-in-count'),
+
+  // `confirmCount` is the number the admin was shown. If it no longer matches,
+  // the server queues nothing and answers COUNT_CHANGED.
+  inviteEveryone: (confirmCount: number) =>
+    api.post<InvitationQueueResult>('/v2/admin/members/invitations/never-signed-in', { confirm_count: confirmCount }),
+};
+
 // Member import: the whole file is checked first, then a clean file is
 // imported in batches the browser paces (see useMemberImportRunner).
 // The 60 s timeout covers the server's 8 s work budget per request plus a slow network.

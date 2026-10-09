@@ -27,6 +27,7 @@ const { mockAdminUsers } = vi.hoisted(() => ({
 
 vi.mock('@/admin/api/adminApi', () => ({
   adminUsers: mockAdminUsers,
+  adminMemberInvitations: { sendSelected: vi.fn(), neverSignedInCount: vi.fn(), inviteEveryone: vi.fn() },
   adminMemberImport: { downloadTemplate: vi.fn() },
   adminFederation: { getCreditBalances: vi.fn(), getCreditAgreementTransactions: vi.fn() },
 }));
