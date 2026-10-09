@@ -185,19 +185,23 @@ final class MemberProfileVisibility
         // Only a fixed table/alias name reaches the SQL; no request value does.
         $t = preg_replace('/[^A-Za-z0-9_]/', '', $table) ?: 'users';
         $col = "{$t}.privacy_profile";
+        $approved = "{$t}.status = 'active' AND {$t}.is_approved = 1";
 
         if ($viewerId === null) {
-            return ["{$col} IS NULL OR {$col} = 'public'", []];
+            return ["({$approved}) AND ({$col} IS NULL OR {$col} = 'public')", []];
         }
 
-        $sql = "{$col} IS NULL OR {$col} IN ('public', 'members')"
+        // Self may inspect an unfinished account. Bulk member-facing lists
+        // must not reveal a pending registration merely because its profile
+        // privacy is public or an older connection row exists.
+        $sql = "(({$approved}) OR {$t}.id = ?) AND ({$col} IS NULL OR {$col} IN ('public', 'members')"
             . " OR {$t}.id = ?"
             . " OR EXISTS (SELECT 1 FROM connections pv_c"
             . " WHERE pv_c.tenant_id = ? AND pv_c.status = 'accepted'"
             . " AND ((pv_c.requester_id = {$t}.id AND pv_c.receiver_id = ?)"
-            . " OR (pv_c.receiver_id = {$t}.id AND pv_c.requester_id = ?)))";
+            . " OR (pv_c.receiver_id = {$t}.id AND pv_c.requester_id = ?))))";
 
-        return [$sql, [$viewerId, $tenantId, $viewerId, $viewerId]];
+        return [$sql, [$viewerId, $viewerId, $tenantId, $viewerId, $viewerId]];
     }
 
     /**

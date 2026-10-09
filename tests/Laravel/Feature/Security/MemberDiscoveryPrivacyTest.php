@@ -11,6 +11,7 @@ namespace Tests\Laravel\Feature\Security;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\CommentService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,25 @@ class MemberDiscoveryPrivacyTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
+    }
+
+    public function test_bulk_profile_visibility_hides_pending_accounts_from_others_but_preserves_self_and_staff(): void
+    {
+        $viewer = $this->member();
+        $pending = $this->member(['status' => 'pending', 'is_approved' => false, 'privacy_profile' => 'public']);
+        $approved = $this->member(['status' => 'active', 'is_approved' => true, 'privacy_profile' => 'public']);
+        $ids = [(int) $pending->id, (int) $approved->id];
+
+        $visibleTo = function (?int $viewerId, ?bool $viewerIsAdmin = null) use ($ids): array {
+            $query = DB::table('users')->where('tenant_id', $this->testTenantId)->whereIn('id', $ids);
+            MemberProfileVisibility::applyToQuery($query, $this->testTenantId, $viewerId, 'users', $viewerIsAdmin);
+            return $query->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        };
+
+        $this->assertSame([(int) $approved->id], $visibleTo((int) $viewer->id));
+        $this->assertSame([(int) $approved->id], $visibleTo(null));
+        $this->assertContains((int) $pending->id, $visibleTo((int) $pending->id));
+        $this->assertContains((int) $pending->id, $visibleTo((int) $viewer->id, true));
     }
 
     // ------------------------------------------------------------------
