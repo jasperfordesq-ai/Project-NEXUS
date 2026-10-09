@@ -1054,6 +1054,14 @@ jobs:
       - name: "BLOCKING: Deploy keeps the secrets file owner-only"
         run: bash scripts/test/test-env-file-permissions.sh
 
+      # Added 2026-10-09. Production Redis (queue, delayed jobs, cache, locks)
+      # ran allkeys-lru — silently deleting any key when full — because its
+      # policy was fixed in a compose file whose container was never recreated.
+      # Pins compose.redis.yml + noeviction everywhere, and the deploy check
+      # that re-asserts it. Stubbed docker; no container.
+      - name: "BLOCKING: Redis never silently evicts (noeviction)"
+        run: bash scripts/test/test-redis-eviction-policy.sh
+
       # Added 2026-10-07. The pre-commit hook ran the staged PHPUnit files as
       # root in the bind-mounted container, leaving root-owned test scratch
       # that broke every later www-data run. Stubbed docker; no container.

@@ -137,13 +137,16 @@ services:
       start_period: 30s
 
   # ---------------------------------------------------------------------------
-  # Redis 7 (Sessions & Cache - Internal only)
+  # Redis 7 (Queue, Cache & Locks) — LOCAL DEVELOPMENT ONLY
   # ---------------------------------------------------------------------------
+  # 🔴 Production Redis is defined in compose.redis.yml, not here. Same eviction
+  # policy (noeviction: a full Redis refuses writes loudly instead of silently
+  # deleting queued jobs and locks); the memory limit is smaller here.
   redis:
     image: redis:7-alpine
     container_name: nexus-php-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy noeviction
     volumes:
       - nexus-redis-data:/data
     networks:

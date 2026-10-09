@@ -1,0 +1,84 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+#
+# =============================================================================
+# PRODUCTION Redis (`nexus-php-redis`) — the one Redis both blue/green colours share
+# =============================================================================
+#
+# compose.bluegreen.yml points every colour at REDIS_HOST=nexus-php-redis but does
+# not define it, because it must outlive both colours. Until 2026-08-09 it was
+# defined in compose.prod.yml; that file was deleted with the legacy single-colour
+# stack (f86e500e8), leaving production Redis with no definition in the repository.
+# The running container (created 2026-05-01) predated the last edit to that file,
+# so the queue-protecting policy written into it on 2026-05-02 (f1d051268) never
+# took effect: production ran `allkeys-lru` until 2026-10-09.
+#
+# 🔴 This Redis holds the Laravel QUEUE (Horizon, including delayed jobs), Horizon's
+# own records, the cache, rate-limiter counters, cache locks and the scheduler's
+# overlap locks, and web-uk sessions (db 4). It therefore runs `noeviction`:
+#   - `allkeys-lru` silently deletes ANY key when memory is full — a queued email,
+#     a delayed invitation, a lock — and nothing reports it.
+#   - `volatile-lru` protects the queue but still silently deletes keys with an
+#     expiry, which here are the locks that stop scheduled tasks and unique jobs
+#     running twice.
+#   - `noeviction` refuses new writes when full instead. Requests that write to
+#     the cache then fail with an error Sentry sees, and nothing is lost quietly.
+# Measured 2026-10-09: 3.8 MB peak in 7.9 days against the 400 MB limit, 0 keys
+# evicted. Every deploy re-asserts the policy and reports usage and evictions
+# (secure_redis_eviction_policy in scripts/deploy/phases/validate-env.sh).
+#
+# 🔴 APPLYING THIS FILE RECREATES REDIS (a few seconds without it; data survives in
+# the append-only file on the volume). Only with the owner's say-so:
+#   cd /opt/nexus-php && sudo docker compose -f compose.redis.yml up -d redis
+# Never add --remove-orphans: the `nexus-php` project also owns nexus-php-db.
+# 🔴 Never run a bare `docker compose up` in /opt/nexus-php — compose.yml is the
+# LOCAL DEVELOPMENT file, and its redis service would recreate nexus-php-redis on
+# the wrong network (nexus-internal), cutting both colours off from it.
+#
+# Regression test: scripts/test/test-redis-eviction-policy.sh
+# =============================================================================
+
+name: nexus-php
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nexus-php-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 400mb
+      --maxmemory-policy noeviction
+      --save 900 1
+      --save 300 10
+    volumes:
+      - nexus-php-redis-data:/data
+    networks:
+      - nexus-php-internal
+    # Not published to the host: only the containers on nexus-php-internal use it.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          # Was 512M with the same 400 MB data limit. Rewriting the append-only
+          # file forks Redis, and pages changed during the rewrite are copied, so
+          # a nearly full Redis could cross 512M and be killed. A ceiling, not a
+          # reservation: it costs nothing until Redis actually grows.
+          memory: 768M
+        reservations:
+          memory: 128M
+
+networks:
+  nexus-php-internal:
+    external: true
+
+volumes:
+  nexus-php-redis-data:
+    external: true

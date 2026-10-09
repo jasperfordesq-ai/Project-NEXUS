@@ -1624,6 +1624,7 @@ cmd_deploy() {
     . "$SELF_DIR/phases/validate-env.sh"
     validate_required_env_vars
     secure_env_file_permissions
+    secure_redis_eviction_policy
     validate_dockerfiles
 
     local active target commit release_dir release_meta

@@ -100,6 +100,68 @@ secure_env_file_permissions() {
     fi
 }
 
+# The shared Redis (nexus-php-redis) holds the queue, delayed jobs, Horizon's
+# records, the cache and every lock. Under `allkeys-lru` a full Redis silently
+# deletes any of them; production ran that way from 2026-05-01 to 2026-10-09
+# because its definition file was edited but the container never recreated.
+# Every deploy re-asserts `noeviction` (a full Redis then refuses writes loudly)
+# and reports usage and evictions. A CONFIG SET does not survive a Redis
+# restart, which is why this runs every time: the lasting fix is recreating the
+# container from compose.redis.yml. Stops the deploy only if the policy cannot
+# be set; an unreachable Redis is reported, not fatal, as before.
+# Regression test: scripts/test/test-redis-eviction-policy.sh
+secure_redis_eviction_policy() {
+    log_step "=== Redis Eviction Policy ==="
+
+    local container="${NEXUS_REDIS_CONTAINER:-nexus-php-redis}"
+    local cli=(docker exec "$container" redis-cli)
+
+    if ! "${cli[@]}" ping > /dev/null 2>&1; then
+        log_warn "Redis ($container) unreachable — eviction policy not checked"
+        return 0
+    fi
+
+    local policy
+    policy="$("${cli[@]}" CONFIG GET maxmemory-policy 2>/dev/null | tr -d '\r' | sed -n 2p || true)"
+    if [ "$policy" != "noeviction" ]; then
+        "${cli[@]}" CONFIG SET maxmemory-policy noeviction > /dev/null 2>&1 || true
+        local now
+        now="$("${cli[@]}" CONFIG GET maxmemory-policy 2>/dev/null | tr -d '\r' | sed -n 2p || true)"
+        if [ "$now" != "noeviction" ]; then
+            log_err "Redis eviction policy is '${policy:-unknown}' and could not be set to noeviction — queued jobs can be silently deleted; aborting deploy"
+            exit 1
+        fi
+        log_warn "Redis eviction policy was '${policy:-unknown}'; set to noeviction. This is lost if Redis restarts — recreate it from compose.redis.yml"
+    fi
+
+    local info maxmemory used evicted
+    info="$("${cli[@]}" INFO 2>/dev/null | tr -d '\r' || true)"
+    maxmemory="$("${cli[@]}" CONFIG GET maxmemory 2>/dev/null | tr -d '\r' | sed -n 2p || true)"
+    used="$(printf '%s\n' "$info" | sed -n 's/^used_memory:\([0-9][0-9]*\)$/\1/p')"
+    evicted="$(printf '%s\n' "$info" | sed -n 's/^evicted_keys:\([0-9][0-9]*\)$/\1/p')"
+
+    if [ -n "$evicted" ] && [ "$evicted" -gt 0 ]; then
+        log_warn "Redis has discarded $evicted key(s) for lack of memory since it last started — queued jobs or locks may have been lost"
+    fi
+
+    if ! [[ "$maxmemory" =~ ^[0-9]+$ ]] || ! [[ "$used" =~ ^[0-9]+$ ]]; then
+        log_warn "Redis memory figures unreadable (maxmemory='${maxmemory}', used='${used}')"
+        return 0
+    fi
+    if [ "$maxmemory" -eq 0 ]; then
+        log_warn "Redis has no memory limit (maxmemory 0); it can grow until the host runs out"
+        return 0
+    fi
+
+    local pct=$(( used * 100 / maxmemory ))
+    local summary="$(( used / 1048576 )) MB of $(( maxmemory / 1048576 )) MB used (${pct}%), ${evicted:-?} key(s) discarded"
+    if [ "$pct" -ge 50 ]; then
+        log_warn "Redis is ${pct}% full — at 100% every cache and queue write fails. $summary"
+    else
+        log_ok "Redis eviction policy noeviction; $summary"
+    fi
+}
+
 validate_environment() {
     log_step "=== Pre-Deploy Validation ==="
 
@@ -185,6 +247,7 @@ validate_environment() {
     else
         log_warn "Redis connection failed (non-critical)"
     fi
+    secure_redis_eviction_policy
 
     if [ $VALIDATION_FAILED -eq 1 ]; then
         log_err "Pre-deploy validation failed"

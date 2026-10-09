@@ -132,7 +132,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: nexus-ci-redis
-    command: redis-server --appendonly no --maxmemory 128mb --maxmemory-policy allkeys-lru
+    # noeviction, as in production (compose.redis.yml): a full Redis must fail
+    # loudly, never silently delete queued jobs or locks.
+    command: redis-server --appendonly no --maxmemory 128mb --maxmemory-policy noeviction
     networks:
       - nexus-ci-internal
     healthcheck:

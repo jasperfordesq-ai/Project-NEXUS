@@ -183,6 +183,31 @@ refuses to start with pending migrations rather than applying them silently,
 so this must be a deliberate, planned operation. See
 [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md).
 
+## Shared Redis
+
+Both colours share one Redis container, `nexus-php-redis`, defined in
+[`compose.redis.yml`](../compose.redis.yml) rather than in `compose.bluegreen.yml`
+because it must outlive both colours. It holds the Laravel queue (including
+delayed jobs), Horizon's records, the cache, rate-limiter counters, cache and
+scheduler locks, and Web UK sessions.
+
+- 🔴 **It runs `maxmemory-policy noeviction`.** A full Redis then refuses new
+  writes with errors that reach Sentry. The evicting policies (`allkeys-lru`,
+  `volatile-lru`) instead delete queued jobs or locks silently. Production ran
+  `allkeys-lru` from 2026-05-01 until 2026-10-09: the policy had been fixed in the
+  old `compose.prod.yml`, but the container was never recreated, and that file was
+  later deleted.
+- Every deploy re-asserts the policy and logs usage and the number of keys
+  discarded since Redis last started (`secure_redis_eviction_policy` in
+  `scripts/deploy/phases/validate-env.sh`). A setting changed at runtime is lost
+  when Redis restarts, so the lasting fix is recreating the container from the
+  file. That restarts Redis for a few seconds, so do it only with the owner's
+  agreement: `sudo docker compose -f compose.redis.yml up -d redis` from
+  `/opt/nexus-php`. Never add `--remove-orphans`.
+- 🔴 Never run a bare `docker compose up` in `/opt/nexus-php`. `compose.yml` is
+  the local development file, and its `redis` service would recreate
+  `nexus-php-redis` on the wrong network, which cuts both colours off from it.
+
 ## Monitoring and backups
 
 | What | Where it runs | Schedule | Alerts via |
