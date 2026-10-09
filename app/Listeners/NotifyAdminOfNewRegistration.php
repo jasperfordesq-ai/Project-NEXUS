@@ -259,28 +259,42 @@ class NotifyAdminOfNewRegistration
                         }
 
                         $sent = false;
+                        $outcome = 'unknown';
+                        $errorCode = 'INLINE_SEND_UNCONFIRMED';
                         try {
-                            $sent = EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
-                                'tenant_id' => $event->tenantId,
-                                'idempotency_key' => $noticeKey,
-                                'dispatch_id' => $claim['dispatch_id'] ?? null,
-                            ]);
+                            if ($claim !== null && EmailDispatchService::isUnroutableRecipient($adminEmail)) {
+                                // This is a pre-transport refusal: no provider
+                                // could have accepted this address.
+                                $outcome = 'definite_failure';
+                                $errorCode = 'UNROUTABLE_RECIPIENT';
+                            } else {
+                                $sent = EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
+                                    'tenant_id' => $event->tenantId,
+                                    'idempotency_key' => $noticeKey,
+                                    'dispatch_id' => $claim['dispatch_id'] ?? null,
+                                ]);
+                                if ($sent) {
+                                    $outcome = 'accepted';
+                                    $errorCode = null;
+                                }
+                            }
                         } finally {
                             if ($claim !== null && !RegistrationStaffEmailDeliveryLedger::resolveClaim(
                                 (int) $event->tenantId,
                                 $claim['id'],
                                 $claim['token'],
-                                $sent ? 'accepted' : 'unknown',
+                                $outcome,
                                 null,
-                                $sent ? null : 'INLINE_SEND_UNCONFIRMED',
+                                $errorCode,
                             )) {
                                 throw new \RuntimeException('Registration staff-email claim could not be resolved');
                             }
                         }
                         if (!$sent) {
-                            Log::warning('NotifyAdminOfNewRegistration: email send unconfirmed', [
+                            Log::warning('NotifyAdminOfNewRegistration: email delivery not accepted', [
                                 'admin_id' => $admin->id,
                                 'tenant_id' => $event->tenantId,
+                                'outcome' => $outcome,
                             ]);
                         }
                     });

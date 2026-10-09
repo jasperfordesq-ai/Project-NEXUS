@@ -147,6 +147,31 @@ class ActivationEmailQueueResilienceTest extends TestCase
         $this->assertContains('admin_new_registration', array_column($mailer->calls, 'category'));
     }
 
+    public function test_unroutable_staff_address_is_definite_pretransport_failure(): void
+    {
+        $tenantId = $this->inviteOnlyTenant('UNROUTE');
+        TenantContext::setById($tenantId);
+        $admin = NotifyAdminOfNewRegistration::recipientsFor($tenantId)->first();
+        DB::table('users')->where('id', $admin->id)->where('tenant_id', $tenantId)
+            ->update(['email' => 'synthetic-admin@unroute.test']);
+        $mailer = new RegistrationInlineEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $result = $this->registrationService()->register(
+            $this->registrationData('unroutable-' . uniqid() . '@project-nexus.testmail', 'UNROUTE'),
+            $tenantId,
+        );
+        $this->assertArrayNotHasKey('error', $result);
+        $delivery = DB::table('registration_staff_email_deliveries')
+            ->where('tenant_id', $tenantId)
+            ->where('registrant_user_id', (int) $result['user']['id'])
+            ->first();
+        $this->assertSame('definite_failure', $delivery->status);
+        $this->assertSame('UNROUTABLE_RECIPIENT', $delivery->last_error_code);
+        $this->assertSame(0, count(array_filter($mailer->calls,
+            static fn (array $call): bool => $call['category'] === 'admin_new_registration')));
+    }
+
     public function test_partial_inline_result_stays_unknown_and_event_replay_does_not_resend_either_recipient(): void
     {
         $tenantId = (int) DB::table('tenants')->insertGetId([
