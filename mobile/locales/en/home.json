@@ -335,5 +335,15 @@
     "opens_externally": "Plays outside the app",
     "play_video_accessibility": "Play video: {{title}}. Opens outside the app.",
     "open_link_accessibility": "Open link: {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Tell us where you are based",
+    "subtitle": "Add your town or city so you can find people and listings near you.",
+    "label": "Where are you based?",
+    "placeholder": "Your town or city",
+    "save": "Save",
+    "errorRequired": "Please enter your town or city.",
+    "errorLocation": "We could not save that place. Please check it and try again.",
+    "errorGeneric": "We could not save your location. Please try again."
   }
 }

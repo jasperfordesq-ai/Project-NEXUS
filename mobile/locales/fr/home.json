@@ -335,5 +335,15 @@
     "opens_externally": "Lecture en dehors de l'application",
     "play_video_accessibility": "Lire la vidéo : {{title}}. S'ouvre en dehors de l'application.",
     "open_link_accessibility": "Ouvrir le lien : {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Dites-nous où vous habitez",
+    "subtitle": "Ajoutez votre ville ou commune pour trouver des personnes et des annonces près de chez vous.",
+    "label": "Où habitez-vous ?",
+    "placeholder": "Votre ville ou commune",
+    "save": "Enregistrer",
+    "errorRequired": "Veuillez saisir votre ville ou commune.",
+    "errorLocation": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
+    "errorGeneric": "Nous n'avons pas pu enregistrer votre localisation. Veuillez réessayer."
   }
 }

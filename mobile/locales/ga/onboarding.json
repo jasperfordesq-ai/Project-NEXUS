@@ -158,5 +158,10 @@
   "skills_needed_count_two": "{{count}} scil de dhíth",
   "toast_listings_created_one": "Cruthaíodh {{count}} liostú duit.",
   "toast_listings_created_other": "Cruthaíodh {{count}} liostú duit.",
-  "community_fallback": "Pobal"
+  "community_fallback": "Pobal",
+  "location_label": "Cá bhfuil tú lonnaithe?",
+  "location_placeholder": "Do bhaile nó do chathair",
+  "toast_location_required": "Suíomh riachtanach",
+  "toast_location_required_desc": "Inis dúinn do bhaile nó do chathair le leanúint ar aghaidh.",
+  "toast_location_invalid_desc": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as."
 }

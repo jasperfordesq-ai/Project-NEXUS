@@ -57,6 +57,8 @@ jest.mock('@/lib/api/onboarding', () => ({
 import OnboardingScreen from './onboarding';
 import { storage } from '@/lib/storage';
 import { getMe } from '@/lib/api/auth';
+import { ApiResponseError } from '@/lib/api/client';
+import { updateProfile } from '@/lib/api/profile';
 import {
   completeOnboarding,
   getOnboardingCategories,
@@ -159,5 +161,116 @@ describe('OnboardingScreen', () => {
 
     expect(saveSafeguardingPreferences).not.toHaveBeenCalled();
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
+  });
+
+  describe('profile step for a member with no location', () => {
+    const profileConfig = {
+      config: { bio_min_length: 10, avatar_required: false, bio_required: true },
+      steps: [
+        { slug: 'profile', label_code: 'profile', required: true },
+        { slug: 'confirm', label_code: 'confirm', required: false },
+      ],
+    };
+    const fullProfile = (extra: Record<string, unknown> = {}) => ({
+      data: { ...mockUser, ...extra } as never,
+    });
+    // Resolves to the profile the server would return once the place is saved.
+    const savedProfile = (extra: Record<string, unknown> = {}) => ({
+      data: { ...mockUser, location: 'Cork', location_missing: false, ...extra } as never,
+    });
+
+    beforeEach(() => {
+      jest.mocked(getOnboardingConfig).mockResolvedValue(profileConfig as never);
+      jest.mocked(updateProfile).mockResolvedValue(savedProfile());
+    });
+
+    it('asks where the member is based when the server says the location is missing', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ avatar_url: null, bio: '', location_missing: true }));
+      const { getByTestId, getByLabelText } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-location-input')).toBeTruthy());
+      expect(getByLabelText('location_label')).toBeTruthy();
+    });
+
+    it.each([
+      ['has a location', { location_missing: false }],
+      ['was not told either way', {}],
+    ])('does not ask a member who %s', async (_label, extra) => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ avatar_url: null, bio: '', ...extra }));
+      const { getByTestId, queryByTestId } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-next')).toBeTruthy());
+      expect(queryByTestId('onboarding-location-input')).toBeNull();
+    });
+
+    it('does not skip the profile step for a member who has a photo and bio but no location', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: true }));
+      const { getByTestId } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-location-input')).toBeTruthy());
+    });
+
+    it('still skips the profile step for a member who is complete and has a location', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: false }));
+      const { getByTestId, queryByTestId } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-complete')).toBeTruthy());
+      expect(queryByTestId('onboarding-location-input')).toBeNull();
+    });
+
+    it('will not continue while the place is blank or only spaces', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: true, avatar_url: null }));
+      const { getByTestId } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-location-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('onboarding-location-input'), '   ');
+      fireEvent.press(getByTestId('onboarding-next'));
+
+      expect(updateProfile).not.toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'toast_location_required',
+        variant: 'danger',
+      }));
+    });
+
+    it('saves the trimmed place together with the bio, refreshes the member and moves on', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: true, avatar_url: null, bio: '' }));
+      const { getByTestId, getByLabelText } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-location-input')).toBeTruthy());
+      fireEvent.changeText(getByLabelText('bio_label'), '  I like helping with gardens.  ');
+      fireEvent.changeText(getByTestId('onboarding-location-input'), '  Cork  ');
+      fireEvent.press(getByTestId('onboarding-next'));
+
+      await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({
+        bio: 'I like helping with gardens.',
+        location: 'Cork',
+      }));
+      await waitFor(() => expect(mockRefreshUser).toHaveBeenCalledWith(expect.objectContaining({
+        location: 'Cork',
+        location_missing: false,
+      })));
+      await waitFor(() => expect(getByTestId('onboarding-complete')).toBeTruthy());
+    });
+
+    it('shows our own translated message when the server refuses the place, not its English', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: true }));
+      jest.mocked(updateProfile).mockRejectedValueOnce(
+        new ApiResponseError(422, 'The location may not be greater than 255 characters.', undefined, 'VALIDATION', 'location'),
+      );
+      const { getByTestId } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByTestId('onboarding-location-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('onboarding-location-input'), 'Cork');
+      fireEvent.press(getByTestId('onboarding-next'));
+
+      await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+        description: 'toast_location_invalid_desc',
+        variant: 'danger',
+      })));
+      expect(mockRefreshUser).not.toHaveBeenCalled();
+    });
+
+    it('sends only the bio for a member who already has a location, as before', async () => {
+      jest.mocked(getMe).mockResolvedValue(fullProfile({ location_missing: false, avatar_url: null, bio: '' }));
+      const { getByTestId, getByLabelText } = render(<OnboardingScreen />);
+      await waitFor(() => expect(getByLabelText('bio_label')).toBeTruthy());
+      fireEvent.changeText(getByLabelText('bio_label'), 'I like helping with gardens.');
+      fireEvent.press(getByTestId('onboarding-next'));
+      await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ bio: 'I like helping with gardens.' }));
+    });
   });
 });

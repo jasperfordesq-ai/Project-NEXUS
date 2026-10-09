@@ -335,5 +335,15 @@
     "opens_externally": "Wird außerhalb der App abgespielt",
     "play_video_accessibility": "Video abspielen: {{title}}. Wird außerhalb der App geöffnet.",
     "open_link_accessibility": "Link öffnen: {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Sag uns, wo du ansässig bist",
+    "subtitle": "Gib deine Stadt oder deinen Ort an, damit du Menschen und Angebote in deiner Nähe findest.",
+    "label": "Wo bist du ansässig?",
+    "placeholder": "Deine Stadt oder dein Ort",
+    "save": "Speichern",
+    "errorRequired": "Bitte gib deine Stadt oder deinen Ort ein.",
+    "errorLocation": "Wir konnten diesen Ort nicht speichern. Bitte prüfe die Eingabe und versuche es erneut.",
+    "errorGeneric": "Dein Standort konnte nicht gespeichert werden. Bitte versuche es erneut."
   }
 }

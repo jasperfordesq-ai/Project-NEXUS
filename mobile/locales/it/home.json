@@ -335,5 +335,15 @@
     "opens_externally": "Viene riprodotto fuori dall'app",
     "play_video_accessibility": "Riproduci video: {{title}}. Si apre fuori dall'app.",
     "open_link_accessibility": "Apri link: {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Dicci dove vivi",
+    "subtitle": "Aggiungi la tua città o il tuo paese per trovare persone e annunci vicino a te.",
+    "label": "Dove vivi?",
+    "placeholder": "La tua città o il tuo paese",
+    "save": "Salva",
+    "errorRequired": "Inserisci la tua città o il tuo paese.",
+    "errorLocation": "Non siamo riusciti a salvare quel luogo. Controllalo e riprova.",
+    "errorGeneric": "Non siamo riusciti a salvare la tua posizione. Riprova."
   }
 }

@@ -146,5 +146,10 @@
   "skills_needed_count_other": "{{count}} Fähigkeit(en) gesucht",
   "toast_listings_created_one": "{{count}} Eintrag für Sie erstellt.",
   "toast_listings_created_other": "{{count}} Einträge für Sie erstellt.",
-  "community_fallback": "Gemeinschaft"
+  "community_fallback": "Gemeinschaft",
+  "location_label": "Wo sind Sie ansässig?",
+  "location_placeholder": "Ihre Stadt oder Ihr Ort",
+  "toast_location_required": "Standort erforderlich",
+  "toast_location_required_desc": "Bitte geben Sie Ihre Stadt oder Ihren Ort an, um fortzufahren.",
+  "toast_location_invalid_desc": "Wir konnten diesen Ort nicht speichern. Bitte prüfen Sie die Eingabe und versuchen Sie es erneut."
 }

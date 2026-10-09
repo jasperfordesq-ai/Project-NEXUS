@@ -335,5 +335,15 @@
     "opens_externally": "Seinnfear é lasmuigh den aip",
     "play_video_accessibility": "Seinn físeán: {{title}}. Osclaítear lasmuigh den aip.",
     "open_link_accessibility": "Oscail nasc: {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Inis dúinn cá bhfuil tú lonnaithe",
+    "subtitle": "Cuir do bhaile nó do chathair leis chun daoine agus liostaí in aice leat a aimsiú.",
+    "label": "Cá bhfuil tú lonnaithe?",
+    "placeholder": "Do bhaile nó do chathair",
+    "save": "Sábháil",
+    "errorRequired": "Cuir isteach do bhaile nó do chathair le do thoil.",
+    "errorLocation": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as.",
+    "errorGeneric": "Níorbh fhéidir do shuíomh a shábháil. Bain triail eile as."
   }
 }

@@ -146,5 +146,10 @@
   "skills_needed_count_other": "{{count}} skill(s) needed",
   "toast_listings_created_one": "{{count}} listing created for you.",
   "toast_listings_created_other": "{{count}} listings created for you.",
-  "community_fallback": "Community"
+  "community_fallback": "Community",
+  "location_label": "Where are you based?",
+  "location_placeholder": "Your town or city",
+  "toast_location_required": "Location required",
+  "toast_location_required_desc": "Please tell us your town or city to continue.",
+  "toast_location_invalid_desc": "We could not save that place. Please check it and try again."
 }

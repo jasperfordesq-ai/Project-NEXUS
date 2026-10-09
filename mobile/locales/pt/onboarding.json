@@ -150,5 +150,10 @@
   "skills_needed_count_many": "{{count}} competência(s) necessária(s)",
   "toast_listings_created_one": "{{count}} anúncio criado para si.",
   "toast_listings_created_other": "{{count}} anúncios criados para si.",
-  "community_fallback": "Comunidade"
+  "community_fallback": "Comunidade",
+  "location_label": "Onde vive?",
+  "location_placeholder": "A sua localidade",
+  "toast_location_required": "Localização necessária",
+  "toast_location_required_desc": "Indique a sua localidade para continuar.",
+  "toast_location_invalid_desc": "Não foi possível guardar esse local. Verifique-o e tente novamente."
 }

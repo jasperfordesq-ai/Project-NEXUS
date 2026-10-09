@@ -54,9 +54,11 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+let mockAuthUser: Record<string, unknown> = { id: 1, email: 'alice@example.com', name: 'Alice Smith' };
 jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
-    user: { id: 1, email: 'alice@example.com', name: 'Alice Smith' },
+    user: mockAuthUser,
+    refreshUser: jest.fn(),
     displayName: 'Alice Smith',
     logout: jest.fn(),
   }),
@@ -225,6 +227,7 @@ beforeEach(() => {
   // leak would have failed the hashtag-door case purely on test order.
   mockHasModule.mockReturnValue(true);
   mockTenant = { id: 2, slug: 'hour-timebank' };
+  mockAuthUser = { id: 1, email: 'alice@example.com', name: 'Alice Smith' };
 });
 
 const mockFeedItem = {
@@ -239,6 +242,31 @@ const mockFeedItem = {
 };
 
 describe('HomeScreen', () => {
+  describe('location reminder', () => {
+    it('shows the reminder when the server says the member has no location', () => {
+      mockAuthUser = { ...mockAuthUser, onboarding_completed: true, location_missing: true };
+      const { getByTestId } = render(<HomeScreen />);
+      expect(getByTestId('location-missing-card')).toBeTruthy();
+    });
+
+    it('never offers a way to hide it', () => {
+      mockAuthUser = { ...mockAuthUser, onboarding_completed: true, location_missing: true };
+      const { queryByTestId } = render(<HomeScreen />);
+      expect(queryByTestId('location-missing-dismiss')).toBeNull();
+    });
+
+    it.each([
+      ['has a location', { onboarding_completed: true, location_missing: false }],
+      // Right after sign-in the user object has no such field. Absent is not "missing".
+      ['has just signed in (field absent)', { onboarding_completed: true }],
+      ['has not finished onboarding', { onboarding_completed: false, location_missing: true }],
+    ])('shows no reminder when the member %s', (_label, extra) => {
+      mockAuthUser = { ...mockAuthUser, ...extra };
+      const { queryByTestId } = render(<HomeScreen />);
+      expect(queryByTestId('location-missing-card')).toBeNull();
+    });
+  });
+
   it('offers recovery without losing loaded rows after a later request fails', () => {
     const refresh = jest.fn();
     mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState,

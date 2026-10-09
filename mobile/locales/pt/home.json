@@ -335,5 +335,15 @@
     "opens_externally": "Reproduz fora da aplicação",
     "play_video_accessibility": "Reproduzir vídeo: {{title}}. Abre fora da aplicação.",
     "open_link_accessibility": "Abrir ligação: {{title}}"
+  },
+  "locationPrompt": {
+    "title": "Diga-nos onde vive",
+    "subtitle": "Adicione a sua localidade para encontrar pessoas e anúncios perto de si.",
+    "label": "Onde vive?",
+    "placeholder": "A sua localidade",
+    "save": "Guardar",
+    "errorRequired": "Indique a sua localidade.",
+    "errorLocation": "Não foi possível guardar esse local. Verifique-o e tente novamente.",
+    "errorGeneric": "Não foi possível guardar a sua localização. Tente novamente."
   }
 }

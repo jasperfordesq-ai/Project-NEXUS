@@ -21,9 +21,11 @@ import Checkbox from '@/components/ui/Checkbox';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
 import NativePressable from '@/components/ui/NativePressable';
+import Input from '@/components/ui/Input';
 import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { getMe, type User } from '@/lib/api/auth';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import {
   completeOnboarding,
@@ -94,6 +96,11 @@ function OnboardingScreenInner() {
   const [safeguardingOptions, setSafeguardingOptions] = useState<SafeguardingOption[]>([]);
   const [profile, setProfile] = useState<Partial<User>>(user as Partial<User>);
   const [bio, setBio] = useState((user as Partial<User> | null)?.bio ?? '');
+  // 🔴 Set once from the server's own `location_missing` on /users/me and kept for the whole
+  // visit, so the field does not vanish when the member goes Back after saving. Only an explicit
+  // `true` counts: an absent value is "we were not told", never "missing".
+  const [locationMissing, setLocationMissing] = useState(false);
+  const [location, setLocation] = useState('');
   const [interests, setInterests] = useState<number[]>([]);
   const [offers, setOffers] = useState<number[]>([]);
   const [needs, setNeeds] = useState<number[]>([]);
@@ -145,6 +152,9 @@ function OnboardingScreenInner() {
       setSafeguardingOptions(options);
       setProfile(fullProfile.data);
       setBio(fullProfile.data.bio ?? '');
+      const missingLocation = fullProfile.data.location_missing === true;
+      setLocationMissing(missingLocation);
+      setLocation('');
       setInterests(status.interests.filter((item) => item.interest_type === 'interest').map((item) => item.category_id));
       setOffers(status.interests.filter((item) => item.interest_type === 'skill_offer').map((item) => item.category_id));
       setNeeds(status.interests.filter((item) => item.interest_type === 'skill_need').map((item) => item.category_id));
@@ -156,6 +166,7 @@ function OnboardingScreenInner() {
       const configuredMinimum = Number(configResult.config.bio_min_length ?? 10);
       if (
         profileStepIndex >= 0 &&
+        !missingLocation &&
         fullProfile.data.avatar_url &&
         (fullProfile.data.bio?.trim().length ?? 0) >= configuredMinimum
       ) {
@@ -231,22 +242,38 @@ function OnboardingScreenInner() {
       });
       return;
     }
+    const place = location.trim();
+    // Asked firmly here, never forced by the server: required-ness is this screen's job alone.
+    if (locationMissing && place === '') {
+      showToast({ title: t('toast_location_required'), description: t('toast_location_required_desc'), variant: 'danger' });
+      return;
+    }
     setBusy(true);
     try {
-      const response = await updateProfile({ bio: bio.trim() });
+      const response = await updateProfile(locationMissing ? { bio: bio.trim(), location: place } : { bio: bio.trim() });
       if (!mountedRef.current) return;
-      setProfile(response.data);
-      refreshUser(response.data);
-      await storage.setJson(STORAGE_KEYS.USER_DATA, response.data);
+      // A place was just accepted, so it is no longer missing even if the reply omits the flag.
+      const saved = locationMissing
+        ? { ...response.data, location_missing: response.data.location_missing ?? false }
+        : response.data;
+      setProfile(saved);
+      refreshUser(saved);
+      await storage.setJson(STORAGE_KEYS.USER_DATA, saved);
       if (!mountedRef.current) return;
       goNext();
     } catch (error) {
       if (!mountedRef.current) return;
-      showToast({ title: t('toast_save_failed'), description: describeApiError(error, t('toast_save_failed_desc')), variant: 'danger' });
+      // The server's English is never shown for a place it refused: our own translated words.
+      const refusedLocation = error instanceof ApiResponseError && error.status === 422 && error.field === 'location';
+      showToast({
+        title: t('toast_save_failed'),
+        description: refusedLocation ? t('toast_location_invalid_desc') : describeApiError(error, t('toast_save_failed_desc')),
+        variant: 'danger',
+      });
     } finally {
       if (mountedRef.current) setBusy(false);
     }
-  }, [bio, configuration?.config.avatar_required, configuration?.config.bio_required, goNext, minBioLength, profile.avatar_url, refreshUser, showToast, t]);
+  }, [bio, configuration?.config.avatar_required, configuration?.config.bio_required, goNext, location, locationMissing, minBioLength, profile.avatar_url, refreshUser, showToast, t]);
 
   const toggleSafeguarding = useCallback((option: SafeguardingOption) => {
     setSafeguardingSelections((previous) => {
@@ -400,6 +427,22 @@ function OnboardingScreenInner() {
                 accessibilityLabel={t('bio_label')}
               />
               <Text className="text-xs text-muted-foreground">{t('bio_min_chars', { min: minBioLength, current: bio.trim().length })}</Text>
+              {locationMissing ? (
+                <Input
+                  testID="onboarding-location-input"
+                  label={t('location_label')}
+                  accessibilityLabel={t('location_label')}
+                  value={location}
+                  onChangeText={setLocation}
+                  placeholder={t('location_placeholder')}
+                  autoCapitalize="words"
+                  autoComplete="postal-address-locality"
+                  returnKeyType="done"
+                  maxLength={255}
+                  editable={!busy}
+                  containerClassName="mb-0"
+                />
+              ) : null}
             </HeroCard.Body>
           </HeroCard>
         ) : null}

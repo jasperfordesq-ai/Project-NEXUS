@@ -26,6 +26,7 @@ import { useRealtimeContext } from '@/lib/context/RealtimeContext';
 import FeedItem, { type FeedCommentTarget, type FeedReactorsTarget } from '@/components/FeedItem';
 import CommentSheet from '@/components/comments/CommentSheet';
 import ReactorsSheet from '@/components/reactions/ReactorsSheet';
+import LocationMissingCard from '@/components/LocationMissingCard';
 import PushPermissionCard from '@/components/PushPermissionCard';
 import TenantBanner from '@/components/TenantBanner';
 import { FeedItemSkeleton } from '@/components/ui/Skeleton';
@@ -229,6 +230,12 @@ export default function HomeScreen() {
               once the member has answered. Audit 2026-09-09, item 1.
             */}
             <PushPermissionCard />
+            {/*
+              Reminds a member with no location to add one. NEVER hideable (owner decision, 9 Oct
+              2026) — no "Not now", nothing stored. It renders nothing unless the server has said
+              `location_missing === true` for a member who has finished onboarding.
+            */}
+            <LocationMissingCard />
             <Surface
               variant="default"
               className="mx-3 mt-2 gap-2.5 overflow-hidden rounded-panel px-3 py-2.5"

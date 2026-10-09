@@ -53,6 +53,15 @@ export interface User {
   tenant_id: number;
   created_at: string | null;
   onboarding_completed?: boolean;
+  /**
+   * True when the member has no location. Decided only by the server (`location` empty or
+   * blank) and sent only on the own-profile `GET /v2/users/me`.
+   *
+   * 🔴 Only an explicit `true` means "missing". `LoginUser` — the slim object that arrives
+   * with sign-in — does not carry it, so an absent value must never be read as missing, or the
+   * home reminder would flash for every member right after login.
+   */
+  location_missing?: boolean;
 }
 
 /**
