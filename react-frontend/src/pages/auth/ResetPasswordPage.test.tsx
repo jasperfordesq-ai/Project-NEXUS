@@ -7,8 +7,10 @@
  * Tests for ResetPasswordPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen } from '@/test/test-utils';
+import { api } from '@/lib/api';
+import { HIBP_TIMEOUT_MS } from '@/hooks/usePasswordCheck';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -84,5 +86,56 @@ describe('ResetPasswordPage', () => {
     render(<ResetPasswordPage />);
     expect(screen.getByPlaceholderText('Enter a strong password')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Re-enter your password')).toBeInTheDocument();
+  });
+});
+
+describe('ResetPasswordPage when the breach check hangs', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // The breach-check request never answers (seen in a sandboxed browser,
+    // and possible behind some firewalls, privacy extensions and portals).
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  function fillBothFields(password: string) {
+    fireEvent.change(screen.getByPlaceholderText('Enter a strong password'), { target: { value: password } });
+    fireEvent.change(screen.getByPlaceholderText('Re-enter your password'), { target: { value: password } });
+  }
+
+  it('cannot be submitted while the check is still running', async () => {
+    render(<ResetPasswordPage />);
+    fillBothFields('reset-page-still-checking-1');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350 + 1000);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset Password' }));
+
+    expect(api.post).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Checking against known data breaches');
+  });
+
+  it('becomes submittable once the time limit passes, leaving the server to check', async () => {
+    render(<ResetPasswordPage />);
+    const password = 'reset-page-hanging-check-2';
+    fillBothFields(password);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350 + HIBP_TIMEOUT_MS);
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Reset Password' }));
+    });
+
+    expect(api.post).toHaveBeenCalledWith('/auth/reset-password', {
+      token: 'test-token',
+      password,
+      password_confirmation: password,
+    });
   });
 });

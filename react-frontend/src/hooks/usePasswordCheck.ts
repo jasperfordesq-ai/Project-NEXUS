@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * usePasswordCheck — live NIST SP 800-63B aligned password strength check.
@@ -22,14 +23,24 @@ import { useEffect, useState } from 'react';
  *      api.pwnedpasswords.com/range/{prefix}, looks up the remaining
  *      suffix in the returned list. Server never learns the password.
  *
- * Failure mode: HIBP network error → treated as "not pwned" (fail-open) so
- * an HIBP outage doesn't block registration. The server-side check (which
- * fails-open too but logs the outage) is the backstop.
+ * Failure mode: HIBP network error, non-OK response, or no answer within
+ * HIBP_TIMEOUT_MS → treated as "not pwned" (fail-open) so an HIBP outage —
+ * or a request that hangs behind a firewall, captive portal or privacy
+ * extension — doesn't block registration or a password reset. The request
+ * is aborted, `breachCheckUnavailable` is set, and the message says the check
+ * could not run. The server-side check (PwnedPasswordService, run on both
+ * register and reset) is the real gate.
  */
 
 export const PASSWORD_MIN_LENGTH = 12;
 
 const HIBP_API = 'https://api.pwnedpasswords.com/range/';
+
+/** How long the breach check may take before it is abandoned (fail-open). */
+export const HIBP_TIMEOUT_MS = 4000;
+
+/** Debounce after the last keystroke before the breach check starts. */
+const HIBP_DEBOUNCE_MS = 350;
 
 async function sha1Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
@@ -48,6 +59,12 @@ export interface PasswordCheckState {
   isPwned: boolean | null;
   /** True while the HIBP request is in flight. */
   isChecking: boolean;
+  /**
+   * True when the breach check could not run (network error, error response,
+   * or no answer within HIBP_TIMEOUT_MS). The password is still accepted here;
+   * the server repeats the check on submit.
+   */
+  breachCheckUnavailable: boolean;
   /** True when the password is acceptable for submission. */
   isAcceptable: boolean;
   /** Plain-language status message for the user. */
@@ -61,12 +78,15 @@ export interface PasswordCheckState {
 const checkCache = new Map<string, boolean>();
 
 export function usePasswordCheck(password: string): PasswordCheckState {
+  const { t } = useTranslation('auth');
   const length = password.length;
   const isLongEnough = length >= PASSWORD_MIN_LENGTH;
   const [isPwned, setIsPwned] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [breachCheckUnavailable, setBreachCheckUnavailable] = useState(false);
 
   useEffect(() => {
+    setBreachCheckUnavailable(false);
     if (!isLongEnough) {
       setIsPwned(null);
       setIsChecking(false);
@@ -74,49 +94,66 @@ export function usePasswordCheck(password: string): PasswordCheckState {
     }
 
     let cancelled = false;
+    let settled = false;
+    let deadline: number | undefined;
+    const controller = new AbortController();
     setIsChecking(true);
 
+    // Every outcome goes through here exactly once, so a late answer can't
+    // overwrite the fail-open result after the time limit (or vice versa).
+    const finish = (found: boolean, unavailable: boolean) => {
+      if (cancelled || settled) return;
+      settled = true;
+      window.clearTimeout(deadline);
+      setIsPwned(found);
+      setBreachCheckUnavailable(unavailable);
+      setIsChecking(false);
+    };
+
     const timer = window.setTimeout(async () => {
+      // A request that hangs rather than fails would otherwise leave
+      // isChecking true for ever and the form could never be submitted.
+      deadline = window.setTimeout(() => {
+        controller.abort();
+        finish(false, true); // fail-open
+      }, HIBP_TIMEOUT_MS);
+
       try {
         const hash = (await sha1Hex(password)).toUpperCase();
-        if (cancelled) return;
+        if (cancelled || settled) return;
         if (checkCache.has(hash)) {
-          setIsPwned(checkCache.get(hash) === true);
-          setIsChecking(false);
+          finish(checkCache.get(hash) === true, false);
           return;
         }
         const prefix = hash.slice(0, 5);
         const suffix = hash.slice(5);
         const resp = await fetch(`${HIBP_API}${prefix}`, {
           headers: { 'Add-Padding': 'true' },
+          signal: controller.signal,
         });
-        if (cancelled) return;
+        if (cancelled || settled) return;
         if (!resp.ok) {
-          setIsPwned(false); // fail-open
-          setIsChecking(false);
+          finish(false, true); // fail-open
           return;
         }
         const body = await resp.text();
+        if (cancelled || settled) return;
         const found = body.split('\n').some((line) => {
           const [s, c] = line.trim().split(':');
           return s === suffix && Number(c) > 0;
         });
         checkCache.set(hash, found);
-        if (!cancelled) {
-          setIsPwned(found);
-          setIsChecking(false);
-        }
+        finish(found, false);
       } catch {
-        if (!cancelled) {
-          setIsPwned(false); // fail-open on network/crypto error
-          setIsChecking(false);
-        }
+        finish(false, true); // fail-open on network/abort/crypto error
       }
-    }, 350);
+    }, HIBP_DEBOUNCE_MS);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      window.clearTimeout(deadline);
+      controller.abort();
     };
   }, [password, isLongEnough]);
 
@@ -124,20 +161,22 @@ export function usePasswordCheck(password: string): PasswordCheckState {
   let tone: PasswordCheckState['tone'] = 'idle';
 
   if (length === 0) {
-    message = `Use ${PASSWORD_MIN_LENGTH} or more characters. A memorable passphrase is stronger than a short complex one.`;
+    message = t('password_check.hint', { min: PASSWORD_MIN_LENGTH });
     tone = 'idle';
   } else if (!isLongEnough) {
-    const remaining = PASSWORD_MIN_LENGTH - length;
-    message = `Add ${remaining} more character${remaining === 1 ? '' : 's'}.`;
+    message = t('password_check.add_more', { count: PASSWORD_MIN_LENGTH - length });
     tone = 'warn';
   } else if (isChecking) {
-    message = 'Checking against known data breaches…';
+    message = t('password_check.checking');
     tone = 'idle';
   } else if (isPwned === true) {
-    message = 'This password appears in a known data breach. Please choose a different one.';
+    message = t('password_check.breached');
     tone = 'error';
+  } else if (isPwned === false && breachCheckUnavailable) {
+    message = t('password_check.unavailable');
+    tone = 'idle';
   } else if (isPwned === false) {
-    message = 'Strong enough.';
+    message = t('password_check.strong');
     tone = 'success';
   }
 
@@ -148,6 +187,7 @@ export function usePasswordCheck(password: string): PasswordCheckState {
     isLongEnough,
     isPwned,
     isChecking,
+    breachCheckUnavailable,
     isAcceptable,
     message,
     tone,

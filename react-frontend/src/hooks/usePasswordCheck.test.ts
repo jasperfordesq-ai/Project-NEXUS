@@ -4,8 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { PASSWORD_MIN_LENGTH, usePasswordCheck } from './usePasswordCheck';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { HIBP_TIMEOUT_MS, PASSWORD_MIN_LENGTH, usePasswordCheck } from './usePasswordCheck';
 
 async function sha1HexUpper(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
@@ -73,6 +73,7 @@ describe('usePasswordCheck HIBP breach check', () => {
     expect(result.current.isAcceptable).toBe(true);
     expect(result.current.message).toBe('Strong enough.');
     expect(result.current.tone).toBe('success');
+    expect(result.current.breachCheckUnavailable).toBe(false);
   });
 
   it('flags a breached password as unacceptable', async () => {
@@ -99,6 +100,7 @@ describe('usePasswordCheck HIBP breach check', () => {
 
     expect(result.current.isPwned).toBe(false);
     expect(result.current.isAcceptable).toBe(true);
+    expect(result.current.breachCheckUnavailable).toBe(true);
   });
 
   it('fails open when the HIBP request throws', async () => {
@@ -108,5 +110,57 @@ describe('usePasswordCheck HIBP breach check', () => {
     await waitFor(() => expect(result.current.isChecking).toBe(false));
 
     expect(result.current.isPwned).toBe(false);
+    expect(result.current.isAcceptable).toBe(true);
+    expect(result.current.breachCheckUnavailable).toBe(true);
+  });
+});
+
+describe('usePasswordCheck when the breach check hangs', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // A request that never settles — what a firewall, captive portal or
+    // privacy extension can do instead of failing outright.
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('keeps checking until the time limit, then fails open', async () => {
+    const { result } = renderHook(() => usePasswordCheck('hanging-request-passphrase'));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350 + HIBP_TIMEOUT_MS - 1);
+    });
+    expect(result.current.isChecking).toBe(true);
+    expect(result.current.isAcceptable).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(result.current.isChecking).toBe(false);
+    expect(result.current.isPwned).toBe(false);
+    expect(result.current.isAcceptable).toBe(true);
+    expect(result.current.breachCheckUnavailable).toBe(true);
+    expect(result.current.message).toContain('could not check');
+  });
+
+  it('aborts the hanging request when the time limit passes', async () => {
+    renderHook(() => usePasswordCheck('abort-the-request-passphrase'));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350);
+    });
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(init.signal?.aborted).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(HIBP_TIMEOUT_MS);
+    });
+    expect(init.signal?.aborted).toBe(true);
   });
 });
