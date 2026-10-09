@@ -235,7 +235,8 @@
     "role_unknown": "Unknown role",
     "role_tenant_super_admin": "Tenant Super Admin",
     "reset_2fa_identity_reason": "Incident reference and how you verified the account holder’s identity (10–500 characters)",
-    "vouched_email_note": "Without an invitation, this email address is treated as confirmed and the member won't be asked to verify it. Check it is typed correctly."
+    "vouched_email_note": "Without an invitation, this email address is treated as confirmed and the member won't be asked to verify it. Check it is typed correctly.",
+    "no_location": "No location"
   },
   "user_edit": {
     "actions": {

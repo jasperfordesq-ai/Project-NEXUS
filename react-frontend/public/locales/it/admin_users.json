@@ -238,7 +238,8 @@
     "reset_2fa_reason": "Ripristinato da un amministratore",
     "label_bio": "Bio",
     "reset_2fa_identity_reason": "Riferimento dell’incidente e modalità di verifica dell’identità del titolare (10–500 caratteri)",
-    "vouched_email_note": "Senza invito, questo indirizzo email viene considerato confermato e al membro non verrà chiesto di verificarlo. Controlla che sia scritto correttamente."
+    "vouched_email_note": "Senza invito, questo indirizzo email viene considerato confermato e al membro non verrà chiesto di verificarlo. Controlla che sia scritto correttamente.",
+    "no_location": "Senza posizione"
   },
   "user_edit": {
     "actions": {

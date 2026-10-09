@@ -238,7 +238,8 @@
     "role_super_admin_short": "Super Administrador",
     "reset_2fa_reason": "Redefinido por um administrador",
     "reset_2fa_identity_reason": "Referência do incidente e como verificou a identidade do titular (10–500 caracteres)",
-    "vouched_email_note": "Sem convite, este endereço de email é considerado confirmado e o membro não precisará verificá-lo. Verifique se está escrito corretamente."
+    "vouched_email_note": "Sem convite, este endereço de email é considerado confirmado e o membro não precisará verificá-lo. Verifique se está escrito corretamente.",
+    "no_location": "Sem localização"
   },
   "user_edit": {
     "actions": {

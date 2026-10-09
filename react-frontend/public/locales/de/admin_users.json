@@ -235,7 +235,8 @@
     "label_bio": "Biografie",
     "role_moderator": "Moderator",
     "reset_2fa_identity_reason": "Vorfallsreferenz und Prüfung der Identität des Kontoinhabers (10–500 Zeichen)",
-    "vouched_email_note": "Ohne Einladung gilt diese E-Mail-Adresse als bestätigt, und das Mitglied wird nicht gebeten, sie zu verifizieren. Prüfen Sie, ob sie richtig geschrieben ist."
+    "vouched_email_note": "Ohne Einladung gilt diese E-Mail-Adresse als bestätigt, und das Mitglied wird nicht gebeten, sie zu verifizieren. Prüfen Sie, ob sie richtig geschrieben ist.",
+    "no_location": "Kein Standort"
   },
   "user_edit": {
     "actions": {

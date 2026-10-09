@@ -241,7 +241,8 @@
     "label_bio": "Bio",
     "role_moderator": "Moderator",
     "reset_2fa_identity_reason": "Numer zgłoszenia i sposób weryfikacji tożsamości właściciela konta (10–500 znaków)",
-    "vouched_email_note": "Bez zaproszenia ten adres e-mail jest traktowany jako potwierdzony i członek nie zostanie poproszony o jego weryfikację. Sprawdź, czy jest wpisany poprawnie."
+    "vouched_email_note": "Bez zaproszenia ten adres e-mail jest traktowany jako potwierdzony i członek nie zostanie poproszony o jego weryfikację. Sprawdź, czy jest wpisany poprawnie.",
+    "no_location": "Brak lokalizacji"
   },
   "user_edit": {
     "actions": {

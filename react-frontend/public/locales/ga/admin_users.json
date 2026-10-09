@@ -244,7 +244,8 @@
     "reset_2fa_reason": "Athshocraithe ag riarthóir",
     "label_tagline": "Slogán",
     "reset_2fa_identity_reason": "Tagairt na heachtra agus conas a d’fhíoraigh tú céannacht shealbhóir an chuntais (10–500 carachtar)",
-    "vouched_email_note": "Gan chuireadh, meastar go bhfuil an seoladh ríomhphoist seo deimhnithe agus ní iarrfar ar an mball é a fhíorú. Seiceáil go bhfuil sé clóscríofa i gceart."
+    "vouched_email_note": "Gan chuireadh, meastar go bhfuil an seoladh ríomhphoist seo deimhnithe agus ní iarrfar ar an mball é a fhíorú. Seiceáil go bhfuil sé clóscríofa i gceart.",
+    "no_location": "Gan suíomh"
   },
   "user_edit": {
     "actions": {

@@ -106,4 +106,74 @@ describe('UserList smart search', () => {
     expect(screen.getByText('Status: Pending')).toBeInTheDocument();
     expect(screen.getByText('Role: Admin')).toBeInTheDocument();
   });
+
+  it('understands "no location" typed in the smart search', async () => {
+    const user = userEvent.setup();
+    renderUserList();
+
+    await waitFor(() => expect(mockAdminUsers.list).toHaveBeenCalled());
+
+    await user.type(screen.getByRole('searchbox', { name: /smart user search/i }), 'no location');
+
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenLastCalledWith(expect.objectContaining({
+        status: 'no_location',
+        tenant_id: 2,
+      }));
+    });
+    expect(screen.getByText('Status: No location')).toBeInTheDocument();
+  });
+
+  it('understands status:no_location typed in the smart search', async () => {
+    const user = userEvent.setup();
+    renderUserList();
+
+    await waitFor(() => expect(mockAdminUsers.list).toHaveBeenCalled());
+
+    await user.type(screen.getByRole('searchbox', { name: /smart user search/i }), 'status:no_location');
+
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'no_location' }));
+    });
+  });
+});
+
+describe('UserList "No location" tab', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAdminUsers.list.mockResolvedValue({
+      success: true,
+      data: [],
+      meta: { total: 0, current_page: 1, per_page: 20, total_pages: 1 },
+    });
+  });
+
+  it('offers a "No location" tab that lists only members with no location', async () => {
+    const user = userEvent.setup();
+    renderUserList();
+    await waitFor(() => expect(mockAdminUsers.list).toHaveBeenCalled());
+
+    await user.click(screen.getByRole('tab', { name: 'No location' }));
+
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenLastCalledWith(expect.objectContaining({
+        status: 'no_location',
+        page: 1,
+        tenant_id: 2,
+      }));
+    });
+  });
+
+  it('opens straight on the tab from a ?filter=no_location link', async () => {
+    render(
+      <MemoryRouter initialEntries={['/test/admin/users?filter=no_location']}>
+        <UserList />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(mockAdminUsers.list).toHaveBeenCalledWith(expect.objectContaining({ status: 'no_location' }));
+    });
+    expect(screen.getByRole('tab', { name: 'No location', selected: true })).toBeInTheDocument();
+  });
 });

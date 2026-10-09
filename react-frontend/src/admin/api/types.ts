@@ -245,7 +245,7 @@ export interface AdminBadge {
 export interface UserListParams {
   page?: number;
   limit?: number;
-  status?: 'all' | 'active' | 'pending' | 'suspended' | 'banned' | 'never_logged_in' | 'onboarding_incomplete';
+  status?: 'all' | 'active' | 'pending' | 'suspended' | 'banned' | 'never_logged_in' | 'onboarding_incomplete' | 'no_location';
   role?: string;
   search?: string;
   sort?: string;

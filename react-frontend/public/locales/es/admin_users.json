@@ -238,7 +238,8 @@
     "role_super_admin_short": "Súper Administrador",
     "reset_2fa_reason": "Restablecido por un administrador",
     "reset_2fa_identity_reason": "Referencia del incidente y cómo verificaste la identidad del titular (10–500 caracteres)",
-    "vouched_email_note": "Sin invitación, esta dirección de correo electrónico se considera confirmada y no se pedirá al miembro que la verifique. Compruebe que esté escrita correctamente."
+    "vouched_email_note": "Sin invitación, esta dirección de correo electrónico se considera confirmada y no se pedirá al miembro que la verifique. Compruebe que esté escrita correctamente.",
+    "no_location": "Sin ubicación"
   },
   "user_edit": {
     "actions": {

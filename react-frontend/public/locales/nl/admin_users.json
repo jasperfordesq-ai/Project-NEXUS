@@ -235,7 +235,8 @@
     "reset_2fa_reason": "Reset door een beheerder",
     "role_moderator": "Moderator",
     "reset_2fa_identity_reason": "Incidentreferentie en hoe u de identiteit van de accounthouder hebt gecontroleerd (10–500 tekens)",
-    "vouched_email_note": "Zonder uitnodiging geldt dit e-mailadres als bevestigd en wordt het lid niet gevraagd het te verifiëren. Controleer of het correct is gespeld."
+    "vouched_email_note": "Zonder uitnodiging geldt dit e-mailadres als bevestigd en wordt het lid niet gevraagd het te verifiëren. Controleer of het correct is gespeld.",
+    "no_location": "Geen locatie"
   },
   "user_edit": {
     "actions": {

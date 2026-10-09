@@ -70,6 +70,7 @@ const PHRASE_HINTS: Array<
 > = [
   { type: 'status', value: 'never_logged_in', pattern: /\bnever[\s_-]+logged[\s_-]+in\b/gi },
   { type: 'status', value: 'onboarding_incomplete', pattern: /\bonboarding[\s_-]+incomplete\b/gi },
+  { type: 'status', value: 'no_location', pattern: /\bno[\s_-]+location\b/gi },
   { type: 'role', value: 'tenant_admin', pattern: /\btenant[\s_-]+admin\b/gi },
   { type: 'role', value: 'super_admin', pattern: /\bsuper[\s_-]+admin\b/gi },
 ];
@@ -82,6 +83,8 @@ const STATUS_HINTS: Record<string, UserStatusFilter> = {
   incomplete: 'onboarding_incomplete',
   never_logged_in: 'never_logged_in',
   neverloggedin: 'never_logged_in',
+  no_location: 'no_location',
+  nolocation: 'no_location',
   onboarding: 'onboarding_incomplete',
   onboarding_incomplete: 'onboarding_incomplete',
   pending: 'pending',
@@ -861,6 +864,7 @@ export function UserList() {
           <Tab key="banned" title={t('users.banned')} />
           <Tab key="never_logged_in" title={t('users.never_logged_in')} />
           <Tab key="onboarding_incomplete" title={t('users.onboarding_incomplete')} />
+          <Tab key="no_location" title={t('users.no_location')} />
         </Tabs>
       </div>
 

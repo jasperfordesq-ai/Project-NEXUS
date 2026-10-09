@@ -238,7 +238,8 @@
     "role_super_admin_short": "Super Administrateur",
     "reset_2fa_reason": "Réinitialisé par un administrateur",
     "reset_2fa_identity_reason": "Référence de l’incident et méthode de vérification de l’identité du titulaire (10–500 caractères)",
-    "vouched_email_note": "Sans invitation, cette adresse e-mail est considérée comme confirmée et le membre ne sera pas invité à la vérifier. Vérifiez qu’elle est correctement saisie."
+    "vouched_email_note": "Sans invitation, cette adresse e-mail est considérée comme confirmée et le membre ne sera pas invité à la vérifier. Vérifiez qu’elle est correctement saisie.",
+    "no_location": "Sans lieu"
   },
   "user_edit": {
     "actions": {
