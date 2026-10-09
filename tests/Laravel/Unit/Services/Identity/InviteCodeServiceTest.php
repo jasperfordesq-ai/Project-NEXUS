@@ -90,19 +90,21 @@ class InviteCodeServiceTest extends TestCase
 
     public function test_deactivate_returns_false_when_not_found(): void
     {
-        $stmt = \Mockery::mock();
-        $stmt->shouldReceive('rowCount')->andReturn(0);
-        DB::shouldReceive('statement')->andReturn($stmt);
+        DB::shouldReceive('affectingStatement')->andReturn(0);
 
         $this->assertFalse(InviteCodeService::deactivate(2, 999));
     }
 
     public function test_redeem_returns_false_when_update_fails(): void
     {
-        $stmt = \Mockery::mock();
-        $stmt->shouldReceive('rowCount')->andReturn(0);
-        DB::shouldReceive('statement')->andReturn($stmt);
+        DB::shouldReceive('affectingStatement')->andReturn(0);
 
         $this->assertFalse(InviteCodeService::redeem(2, 'NOCODE', 1));
+    }
+
+    public function test_deactivate_returns_true_when_one_code_is_updated(): void
+    {
+        DB::shouldReceive('affectingStatement')->once()->andReturn(1);
+        $this->assertTrue(InviteCodeService::deactivate(2, 1));
     }
 }

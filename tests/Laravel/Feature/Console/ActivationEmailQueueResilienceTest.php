@@ -95,6 +95,11 @@ class ActivationEmailQueueResilienceTest extends TestCase
 
         $userId = (int) ($result['user']['id'] ?? 0);
         $this->assertGreaterThan(0, $userId);
+        $this->assertSame(1, DB::table('registration_staff_email_deliveries')
+            ->where('tenant_id', $tenantId)
+            ->where('registrant_user_id', $userId)
+            ->where('status', 'captured')
+            ->count());
         $this->assertTrue(DB::table('email_verification_tokens')
             ->where('tenant_id', $tenantId)
             ->where('user_id', $userId)
@@ -111,6 +116,101 @@ class ActivationEmailQueueResilienceTest extends TestCase
                 NotifyAdminOfNewRegistration::class,
             ], true)
         );
+    }
+
+    public function test_invite_redemption_commits_with_registration_email_intent(): void
+    {
+        $tenantId = $this->inviteOnlyTenant('INVGOOD1');
+        TenantContext::setById($tenantId);
+        $mailer = new RegistrationInlineEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+        $email = 'invite-good-' . uniqid() . '@project-nexus.testmail';
+
+        $result = $this->registrationService()->register($this->registrationData($email, 'INVGOOD1'), $tenantId);
+
+        $this->assertArrayNotHasKey('error', $result);
+        $registrantId = (int) ($result['user']['id'] ?? 0);
+        $this->assertGreaterThan(0, $registrantId);
+        $this->assertSame(1, (int) DB::table('tenant_invite_codes')
+            ->where('tenant_id', $tenantId)->where('code', 'INVGOOD1')->value('uses_count'));
+        $this->assertSame(1, DB::table('registration_staff_email_deliveries')
+            ->where('tenant_id', $tenantId)->where('registrant_user_id', $registrantId)->count());
+        $this->assertContains('admin_new_registration', array_column($mailer->calls, 'category'));
+    }
+
+    public function test_lost_invite_race_rolls_back_account_and_alert_intent(): void
+    {
+        $tenantId = $this->inviteOnlyTenant('INVLOST1');
+        TenantContext::setById($tenantId);
+        $mailer = new RegistrationInlineEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+        $email = 'invite-lost-' . uniqid() . '@project-nexus.testmail';
+
+        User::creating(function (User $user) use ($email, $tenantId): void {
+            if ($user->email === $email) {
+                // Simulate a valid precheck followed by an exhausted code at
+                // the atomic redemption point, inside the account transaction.
+                DB::table('tenant_invite_codes')->where('tenant_id', $tenantId)
+                    ->where('code', 'INVLOST1')->update(['uses_count' => 1]);
+            }
+        });
+
+        $result = $this->registrationService()->register($this->registrationData($email, 'INVLOST1'), $tenantId);
+
+        $this->assertSame('INVITE_INVALID', $result['code'] ?? null);
+        $this->assertSame(422, $result['status'] ?? null);
+        $this->assertSame(0, DB::table('users')->where('tenant_id', $tenantId)->where('email', $email)->count());
+        $this->assertSame(0, DB::table('registration_staff_email_deliveries')->where('tenant_id', $tenantId)->count());
+        $this->assertSame(0, (int) DB::table('tenant_invite_codes')
+            ->where('tenant_id', $tenantId)->where('code', 'INVLOST1')->value('uses_count'));
+        $this->assertNotContains('admin_new_registration', array_column($mailer->calls, 'category'));
+    }
+
+    private function registrationService(): RegistrationService
+    {
+        return new RegistrationService(
+            new User(),
+            app(TenantSettingsService::class),
+            new RegistrationInlinePwnedPasswordService(),
+            new RegistrationInlineDisposableEmailService(),
+            new RegistrationInlineMxRecordValidator(),
+        );
+    }
+
+    private function registrationData(string $email, string $inviteCode): array
+    {
+        return [
+            'first_name' => 'Invite', 'last_name' => 'Signup', 'email' => $email,
+            'location' => 'Toronto, Canada', 'phone' => '+15551234567',
+            'password' => 'A uniquely long registration passphrase 2026',
+            'password_confirmation' => 'A uniquely long registration passphrase 2026',
+            'terms_accepted' => true, 'invite_code' => $inviteCode,
+        ];
+    }
+
+    private function inviteOnlyTenant(string $code): int
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Synthetic Invite Intent Tenant',
+            'slug' => 'invite-intent-' . uniqid('', true),
+            'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $admin = User::factory()->forTenant($tenantId)->create([
+            'role' => 'admin', 'status' => 'active',
+            'email' => 'admin-invite-' . uniqid() . '@project-nexus.testmail',
+            'preferred_language' => 'en',
+        ]);
+        DB::table('tenant_invite_codes')->insert([
+            'tenant_id' => $tenantId, 'code' => $code,
+            'created_by' => $admin->id, 'max_uses' => 1,
+            'uses_count' => 0, 'is_active' => 1, 'created_at' => now(),
+        ]);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $tenantId, 'setting_key' => 'general.registration_mode'],
+            ['setting_value' => 'invite_only', 'setting_type' => 'string', 'updated_at' => now()],
+        );
+        app(TenantSettingsService::class)->clearCacheForTenant($tenantId);
+        return $tenantId;
     }
 
     public function test_resend_stuck_activations_command_is_scheduled(): void

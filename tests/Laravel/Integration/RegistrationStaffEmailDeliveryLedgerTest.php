@@ -15,7 +15,7 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_capture_is_tenant_scoped_unique_and_does_not_reopen_an_outcome(): void
+    public function test_legacy_inline_capture_is_tenant_scoped_unique_and_not_claimable(): void
     {
         $tenant = $this->tenant();
         $otherTenant = $this->tenant();
@@ -28,12 +28,8 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
         $this->assertSame($id, Ledger::captureInTransaction($tenant, $registrant, $recipient));
         $this->assertSame(1, DB::table('registration_staff_email_deliveries')->where('tenant_id', $tenant)->count());
 
-        $token = Ledger::claimPending($tenant, $id);
-        $this->assertNotNull($token);
-        $this->assertTrue(Ledger::resolveClaim($tenant, $id, $token, 'accepted', 'synthetic-provider-id'));
-        $this->assertSame($id, Ledger::captureInTransaction($tenant, $registrant, $recipient));
         $this->assertNull(Ledger::claimPending($tenant, $id));
-        $this->assertSame('accepted', DB::table('registration_staff_email_deliveries')->where('id', $id)->value('status'));
+        $this->assertSame('captured', DB::table('registration_staff_email_deliveries')->where('id', $id)->value('status'));
 
         $this->expectException(\InvalidArgumentException::class);
         Ledger::captureInTransaction($tenant, $registrant, $foreign);
@@ -42,7 +38,7 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
     public function test_claim_token_and_unknown_outcome_cannot_be_replayed_or_reclaimed(): void
     {
         $tenant = $this->tenant();
-        $id = Ledger::captureInTransaction($tenant, $this->user($tenant), $this->user($tenant, 'admin'));
+        $id = $this->pendingDelivery($tenant, $this->user($tenant), $this->user($tenant, 'admin'));
         $token = Ledger::claimPending($tenant, $id);
         $this->assertNotNull($token);
         $this->assertNull(Ledger::claimPending($tenant, $id));
@@ -64,8 +60,8 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
     {
         $tenant = $this->tenant();
         $registrant = $this->user($tenant);
-        $first = Ledger::captureInTransaction($tenant, $registrant, $this->user($tenant, 'admin'));
-        $second = Ledger::captureInTransaction($tenant, $registrant, $this->user($tenant, 'admin'));
+        $first = $this->pendingDelivery($tenant, $registrant, $this->user($tenant, 'admin'));
+        $second = $this->pendingDelivery($tenant, $registrant, $this->user($tenant, 'admin'));
 
         $firstToken = Ledger::claimPending($tenant, $first);
         $secondToken = Ledger::claimPending($tenant, $second);
@@ -87,7 +83,7 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
     public function test_error_code_rejects_raw_recipient_or_provider_text(): void
     {
         $tenant = $this->tenant();
-        $id = Ledger::captureInTransaction($tenant, $this->user($tenant), $this->user($tenant, 'admin'));
+        $id = $this->pendingDelivery($tenant, $this->user($tenant), $this->user($tenant, 'admin'));
         $token = Ledger::claimPending($tenant, $id);
         $this->assertNotNull($token);
 
@@ -101,6 +97,20 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
             'name' => 'Synthetic delivery tenant',
             'slug' => 'delivery-' . uniqid('', true),
             'is_active' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /** Future worker-owned rows; no production path creates these yet. */
+    private function pendingDelivery(int $tenant, int $registrant, int $recipient): int
+    {
+        return (int) DB::table('registration_staff_email_deliveries')->insertGetId([
+            'tenant_id' => $tenant,
+            'registrant_user_id' => $registrant,
+            'recipient_user_id' => $recipient,
+            'status' => 'pending',
+            'attempts' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

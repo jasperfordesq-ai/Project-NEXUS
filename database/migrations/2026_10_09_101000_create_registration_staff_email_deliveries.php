@@ -23,8 +23,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('registrant_user_id');
             $table->unsignedBigInteger('recipient_user_id');
             $table->enum('status', [
-                'pending', 'claimed', 'accepted', 'definite_failure', 'unknown', 'cancelled',
-            ])->default('pending');
+                'captured', 'pending', 'claimed', 'accepted', 'definite_failure', 'unknown', 'cancelled',
+            ])->default('captured');
             $table->unsignedSmallInteger('attempts')->default(0);
             $table->uuid('claim_token')->nullable();
             $table->timestamp('claimed_at')->nullable();

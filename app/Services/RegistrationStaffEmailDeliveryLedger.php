@@ -38,7 +38,9 @@ final class RegistrationStaffEmailDeliveryLedger
             'tenant_id' => $tenantId,
             'registrant_user_id' => $registrantId,
             'recipient_user_id' => $recipientId,
-            'status' => 'pending',
+            // Legacy inline mail still runs. Capture intent for crash recovery
+            // without making this row claimable by a later worker on rollout.
+            'status' => 'captured',
             'attempts' => 0,
             'created_at' => now(),
             'updated_at' => now(),
