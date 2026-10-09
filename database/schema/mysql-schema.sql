@@ -14287,6 +14287,35 @@ CREATE TABLE `member_data_exports` (
   KEY `idx_mde_tenant_requested` (`tenant_id`,`requested_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `member_invitation_outbox`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `member_invitation_outbox` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `request_key` char(36) NOT NULL,
+  `source` varchar(20) NOT NULL,
+  `requested_by` int(11) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `skip_reason` varchar(40) DEFAULT NULL,
+  `attempts` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `available_at` datetime NOT NULL,
+  `claim_token` char(36) DEFAULT NULL,
+  `claimed_at` datetime DEFAULT NULL,
+  `last_error` varchar(500) DEFAULT NULL,
+  `sent_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_invitation_request` (`tenant_id`,`user_id`,`request_key`),
+  KEY `idx_invitation_due` (`status`,`available_at`,`id`),
+  KEY `idx_invitation_user` (`tenant_id`,`user_id`,`status`),
+  KEY `fk_invitation_outbox_user` (`user_id`),
+  CONSTRAINT `fk_invitation_outbox_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_invitation_outbox_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `member_notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -19826,6 +19855,7 @@ CREATE TABLE `users` (
   `resume_headline` varchar(255) DEFAULT NULL,
   `resume_summary` text DEFAULT NULL,
   `stripe_customer_id` varchar(255) DEFAULT NULL,
+  `geocode_attempted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_email_tenant` (`email`,`tenant_id`),
   UNIQUE KEY `idx_tenant_username` (`tenant_id`,`username`),
@@ -21904,7 +21934,9 @@ INSERT INTO `laravel_migrations` VALUES
 (463,'2026_10_05_140000_add_organization_to_giving_days_and_donations',145),
 (464,'2026_10_05_160000_create_fundraising_history_and_handovers',146),
 (465,'2026_10_05_170000_tighten_fundraising_handover_guard',147),
-(477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149);
+(477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149),
+(482,'2026_10_09_100000_create_member_invitation_outbox_table',153),
+(483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
