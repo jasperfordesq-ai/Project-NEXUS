@@ -318,6 +318,14 @@ describe('adminMemberImport', () => {
     );
   });
 
+  it('batch sends stop: true only for the admin stop call', async () => {
+    mockPost.mockResolvedValue({ success: true, data: {} });
+    await adminMemberImport.batch('abc', 30, 10, undefined, true);
+    await adminMemberImport.batch('abc', 30, 10, undefined, false);
+    expect(mockPost).toHaveBeenNthCalledWith(1, '/v2/admin/members/import/abc/batch', { from: 30, count: 10, stop: true }, { timeout: 60000 });
+    expect(mockPost).toHaveBeenNthCalledWith(2, '/v2/admin/members/import/abc/batch', { from: 30, count: 10 }, { timeout: 60000 });
+  });
+
   it('downloadTemplate uses an authenticated API download, not a new tab', async () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     mockDownload.mockResolvedValueOnce(new Blob());

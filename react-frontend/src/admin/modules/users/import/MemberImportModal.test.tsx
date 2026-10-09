@@ -599,6 +599,16 @@ describe('MemberImportModal', () => {
       expect(downloadText).toHaveBeenCalledWith(buildCsv(HEADER, sourceRows(5).slice(3).map((r) => r.raw)), expect.any(String));
     });
 
+    it('words the server record of an admin stop exactly as an admin stop', async () => {
+      const user = await finishWith({
+        phase: 'stopped', nextIndex: 3, created: 3, total: 5,
+        stop: { row: 5, code: 'stopped_by_admin', params: {} },
+      });
+      expect(await screen.findByText('You stopped the import.')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Download the rows that were not imported' }));
+      expect(downloadText).toHaveBeenCalledWith(buildCsv(HEADER, sourceRows(5).slice(3).map((r) => r.raw)), expect.any(String));
+    });
+
     it('explains a lost connection and offers the rest', async () => {
       const user = await finishWith({ phase: 'failed', nextIndex: 1, created: 1, total: 5, errorCode: 'NETWORK_ERROR' });
       expect(await screen.findByText('The connection to the server was lost')).toBeInTheDocument();

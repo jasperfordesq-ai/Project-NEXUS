@@ -63,6 +63,11 @@ const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolv
  * batch without writing anything. A busy or rate-limited answer is waited out
  * and does not count towards the three failures that end the run.
  *
+ * Stop lets the batch in flight finish, then sends one last call flagged
+ * `stop` so the server discards the member data it is holding for the import
+ * at once. If that call fails (or the run failed on a lost connection), the
+ * server's copy simply expires within two hours.
+ *
  * Leaving the page while a run is in progress halts it at the next batch
  * boundary: nobody is left to watch it or to see where it stopped.
  */
@@ -103,18 +108,22 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
       let first = true;
       let noProgress = 0;
       let waitedMs = 0;
+      // The loop ended because the admin pressed Stop (not because the server stopped it).
+      let adminStopped = false;
       const fail = (errorCode: string | null, errorMessage: string | null) => {
         if (!unmounted.current) setState((s) => ({ ...s, phase: 'failed', errorMessage, errorCode }));
       };
 
       try {
-        // The server, not this loop, decides when the import is over: when the
-        // last row is done it still answers "running" once more and completes
-        // on the next request, so keep asking from its position until then.
+        // The server, not this loop, decides when the import is over. It
+        // completes the import in the same request that writes the last row; an
+        // import left "running" with every row written (the request ended before
+        // completion was saved) is completed by the next request, so keep asking
+        // from the server's position until it says completed or stopped.
         for (;;) {
           if (unmounted.current) break;
           if (stopRequested.current) {
-            setState((s) => ({ ...s, phase: 'stopped' }));
+            adminStopped = true;
             break;
           }
 
@@ -163,9 +172,10 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           }
 
           const rate = next / Math.max(1, (Date.now() - startedAt) / 1000);
+          adminStopped = d.status === 'running' && stopRequested.current;
           const phase = d.status === 'completed' ? 'completed'
             : d.status === 'stopped' ? 'stopped'
-            : stopRequested.current ? 'stopped' : 'running';
+            : adminStopped ? 'stopping' : 'running';
           if (!unmounted.current) {
             setState((s) => ({
               ...s, phase, nextIndex: next, batchNumber, batchSize: size,
@@ -181,6 +191,30 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
             // No tight loop on a server that keeps answering without moving.
             if (noProgress >= MAX_NO_PROGRESS) { fail('NO_PROGRESS', null); break; }
             await sleep(timings.current.noProgressMs);
+          }
+        }
+
+        if (adminStopped) {
+          // Tell the server once, so it discards the member data it holds for
+          // this import now rather than keep it until it expires (two hours).
+          // Best effort: if this call fails the data still expires on its own.
+          const res: ApiResponse<BatchResult> | null = await adminMemberImport
+            .batch(importId, next, MIN_BATCH, undefined, true)
+            .catch(() => null);
+          const d = res?.success ? res.data : undefined;
+          if (!unmounted.current) {
+            setState((s) => (d
+              ? {
+                // "completed" if every member was already written when the stop arrived.
+                ...s, phase: d.status === 'completed' ? 'completed' : 'stopped',
+                nextIndex: Math.max(next, d.next_index),
+                created: d.totals.created, balance: d.totals.balance, zeroed: d.totals.zeroed,
+                admissionIncomplete: d.totals.admission_incomplete ?? 0,
+                admissionIncompleteRows: d.admission_incomplete_rows ?? [],
+                held: d.held, stop: d.stop,
+                secondsRemaining: d.status === 'completed' ? 0 : s.secondsRemaining,
+              }
+              : { ...s, phase: 'stopped' }));
           }
         }
       } catch (error) {

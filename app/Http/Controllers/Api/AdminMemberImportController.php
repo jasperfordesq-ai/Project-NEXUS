@@ -102,9 +102,11 @@ class AdminMemberImportController extends BaseApiController
         $attested = request()->has(AdminCreatedAccountAdmission::ATTESTATION_FIELD)
             ? AdminCreatedAccountAdmission::attestationFromInput(request()->all())
             : null;
+        // `stop: true` — the admin pressed Stop; the held rows are discarded now.
+        $stop = request()->boolean('stop');
 
         try {
-            return $this->respondWithData($this->runner->runBatch($importId, $tenantId, $adminId, $from, $count, $attested));
+            return $this->respondWithData($this->runner->runBatch($importId, $tenantId, $adminId, $from, $count, $attested, $stop));
         } catch (MemberImportBusy) {
             return $this->respondWithError('IMPORT_BUSY', __('api.member_import_busy'), null, 409);
         } catch (MemberImportOutOfOrder) {

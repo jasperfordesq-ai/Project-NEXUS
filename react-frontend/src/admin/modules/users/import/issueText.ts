@@ -46,8 +46,12 @@ export function describeFileError(t: TFunction, code: string, params: Params = {
   return { title: t(`${key}.title`, flat), body: t(`${key}.body`, flat) };
 }
 
-/** Why the server stopped the import on a row. */
+/**
+ * Why the server stopped the import on a row. `stopped_by_admin` is the
+ * server's record of the admin's own Stop, worded exactly as that stop is.
+ */
 export function describeStop(t: TFunction, stop: { row: number; code: string; params: Params }): string {
+  if (stop.code === 'stopped_by_admin') return t('member_import.stopped.by_admin');
   return t(`member_import.stop.${stop.code}`, {
     ...flatten(stop.params),
     row: stop.row,

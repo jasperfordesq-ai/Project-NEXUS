@@ -43,10 +43,13 @@ final class MemberImportRunner
     /**
      * @param bool|null $identityAttested honoured only on the first batch (status 'ready');
      *                                    null leaves the session's value unchanged
+     * @param bool $stop the admin pressed Stop: write nothing, mark the import
+     *                   stopped and discard the held rows now rather than leave
+     *                   them to expire. Same ordering rules as a batch.
      * @return array<string, mixed>
      * @throws MemberImportBusy | MemberImportNotFound | MemberImportOutOfOrder
      */
-    public function runBatch(string $importId, int $tenantId, int $adminId, int $from, int $count, ?bool $identityAttested): array
+    public function runBatch(string $importId, int $tenantId, int $adminId, int $from, int $count, ?bool $identityAttested, bool $stop = false): array
     {
         $lock = MemberImportSession::lock($importId);
         if (!$lock->get()) {
@@ -76,7 +79,18 @@ final class MemberImportRunner
 
             $processed = 0;
             $created = 0;
-            if (!$unfinished) {
+            // An admin stop. Not for an import whose every member is already
+            // written: that one is finished below instead, so it is audited.
+            if ($stop && !$unfinished) {
+                $rows = MemberImportSession::rows($session);
+                $session['status'] = 'stopped';
+                $session['stop'] = [
+                    'row' => isset($rows[$session['next_index']]) ? (int) $rows[$session['next_index']]['source_row'] : 0,
+                    'code' => 'stopped_by_admin',
+                    'params' => [],
+                ];
+            }
+            if (!$unfinished && $session['status'] !== 'stopped') {
                 // Read once per batch. Rows that expired mid-import cannot be
                 // continued; the members written so far stay.
                 $rows = MemberImportSession::rows($session);

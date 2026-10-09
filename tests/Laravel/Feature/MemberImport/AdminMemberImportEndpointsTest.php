@@ -380,6 +380,80 @@ final class AdminMemberImportEndpointsTest extends TestCase
         $this->check($csv, $other)->assertOk();
     }
 
+    public function test_an_admin_stop_discards_the_held_rows_and_writes_nothing_more(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(25, $prefix))->json('data.import_id');
+        $this->batch($id, 0, 10)->assertOk()->assertJsonPath('data.next_index', 10);
+
+        $r = $this->batch($id, 10, 10, ['stop' => true])->assertOk();
+        $this->assertSame('stopped', $r->json('data.status'));
+        $this->assertSame(10, $r->json('data.next_index'));
+        $this->assertSame(0, $r->json('data.batch.processed'));
+        // Row 12 of the file (header + index 10) is the first one not imported.
+        $this->assertSame(['row' => 12, 'code' => 'stopped_by_admin', 'params' => []], $r->json('data.stop'));
+        $this->assertSame(10, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertNotNull($state, 'the progress record stays so a replay still answers');
+        $this->assertNull(MemberImportSession::rows($state), 'the held member data is discarded at once');
+
+        // Later batches, and a replayed stop, answer with the stopped state and write nothing.
+        $this->batch($id, 10, 10)->assertOk()->assertJsonPath('data.status', 'stopped')->assertJsonPath('data.batch.processed', 0);
+        $this->batch($id, 10, 10, ['stop' => true])->assertOk()
+            ->assertJsonPath('data.status', 'stopped')->assertJsonPath('data.stop.code', 'stopped_by_admin');
+        $this->assertSame(10, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+        $this->assertSame(0, $this->completionAudits($id));
+    }
+
+    public function test_an_admin_stop_before_the_first_batch_writes_no_one(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(5, $prefix))->json('data.import_id');
+
+        $r = $this->batch($id, 0, 10, ['stop' => true])->assertOk();
+        $this->assertSame('stopped', $r->json('data.status'));
+        $this->assertSame(['row' => 2, 'code' => 'stopped_by_admin', 'params' => []], $r->json('data.stop'));
+        $this->assertSame(0, DB::table('users')->where('email', 'like', $prefix . '-%')->count());
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertNull(MemberImportSession::rows($state));
+    }
+
+    public function test_a_stop_must_name_the_next_position(): void
+    {
+        $id = $this->check($this->csv(12, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $this->batch($id, 5, 10, ['stop' => true])->assertStatus(409)->assertJsonPath('errors.0.code', 'IMPORT_OUT_OF_ORDER');
+
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertSame('ready', $state['status']);
+        $this->assertNotNull(MemberImportSession::rows($state));
+    }
+
+    public function test_a_stop_on_a_completed_import_changes_nothing(): void
+    {
+        $prefix = 'mi-' . bin2hex(random_bytes(3));
+        $id = $this->check($this->csv(12, $prefix))->json('data.import_id');
+        $this->batch($id, 0, 200)->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $r = $this->batch($id, 12, 10, ['stop' => true])->assertOk();
+        $this->assertSame('completed', $r->json('data.status'));
+        $this->assertNull($r->json('data.stop'));
+        $this->assertSame(12, $r->json('data.totals.created'));
+        $this->assertSame(1, $this->completionAudits($id));
+    }
+
+    public function test_another_admin_cannot_stop_the_import(): void
+    {
+        $id = $this->check($this->csv(3, 'mi-' . bin2hex(random_bytes(3))))->json('data.import_id');
+        $other = User::factory()->forTenant($this->testTenantId)->admin()->create(['status' => 'active', 'is_approved' => true]);
+
+        $this->batch($id, 0, 10, ['stop' => true], $other)->assertStatus(404)->assertJsonPath('errors.0.code', 'IMPORT_NOT_FOUND');
+
+        $state = MemberImportSession::load($id, $this->testTenantId, (int) $this->admin->id);
+        $this->assertSame('ready', $state['status']);
+        $this->assertNotNull(MemberImportSession::rows($state), 'the owner can still run it');
+    }
+
     public function test_an_email_taken_mid_import_stops_at_that_row(): void
     {
         $prefix = 'mi-' . bin2hex(random_bytes(3));

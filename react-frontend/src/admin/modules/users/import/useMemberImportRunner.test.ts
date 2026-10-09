@@ -8,10 +8,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ApiResponse } from '@/lib/api';
 import type { BatchResult } from './types';
 
-const batch = vi.fn<(importId: string, from: number, count: number, identityChecked?: boolean) => Promise<ApiResponse<BatchResult>>>();
+const batch = vi.fn<(importId: string, from: number, count: number, identityChecked?: boolean, stop?: boolean) => Promise<ApiResponse<BatchResult>>>();
 vi.mock('@/admin/api/adminApi', () => ({
   adminMemberImport: {
-    batch: (importId: string, from: number, count: number, identityChecked?: boolean) => batch(importId, from, count, identityChecked),
+    batch: (importId: string, from: number, count: number, identityChecked?: boolean, stop?: boolean) =>
+      stop === undefined ? batch(importId, from, count, identityChecked) : batch(importId, from, count, identityChecked, stop),
   },
 }));
 
@@ -277,17 +278,109 @@ describe('useMemberImportRunner', () => {
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
   });
 
-  it('stop() finishes the current batch and then halts', async () => {
+  /** The server's answer to the admin's stop call. */
+  function stoppedByAdmin(from: number, total: number): ApiResponse<BatchResult> {
+    return ok(from, 0, total, 5, { status: 'stopped', stop: { row: from + 2, code: 'stopped_by_admin', params: {} } });
+  }
+
+  /** Starts a run whose first batch only returns when the test says so. */
+  function startHeldBatch(total: number) {
     let release: () => void = () => {};
     batch.mockImplementationOnce((_id: string, from: number, count: number) => new Promise<ApiResponse<BatchResult>>((r) => {
-      release = () => r(ok(from, count, 100, 100));
+      release = () => r(ok(from, count, total, 100));
     }));
-    const { result } = renderHook(() => useMemberImportRunner(FAST));
-    act(() => result.current.start('id', 100, false));
+    const hook = renderHook(() => useMemberImportRunner(FAST));
+    act(() => hook.result.current.start('id', total, false));
+    return { ...hook, release: () => release() };
+  }
+
+  it('stop() finishes the current batch, tells the server once, then halts', async () => {
+    batch.mockImplementation((_id: string, from: number) => Promise.resolve(stoppedByAdmin(from, 100)));
+    const { result, release } = startHeldBatch(100);
+    act(() => result.current.stop());
+    expect(result.current.state.phase).toBe('stopping');
+    await act(async () => { release(); });
+    await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
+    // One final call from the next position, flagged as a stop, so the server
+    // discards the held rows now instead of keeping them for two hours.
+    expect(batch).toHaveBeenCalledTimes(2);
+    expect(batch.mock.calls[1]).toEqual(['id', 25, 10, undefined, true]);
+    expect(result.current.state.nextIndex).toBe(25);
+    expect(result.current.state.created).toBe(25);
+  });
+
+  it('stays "stopping" until the stop call has been answered', async () => {
+    let answer: () => void = () => {};
+    batch.mockImplementation((_id: string, from: number) => new Promise<ApiResponse<BatchResult>>((r) => {
+      answer = () => r(stoppedByAdmin(from, 100));
+    }));
+    const { result, release } = startHeldBatch(100);
+    act(() => result.current.stop());
+    await act(async () => { release(); });
+    await waitFor(() => expect(batch).toHaveBeenCalledTimes(2));
+    expect(result.current.state.phase).toBe('stopping');
+    await act(async () => { answer(); });
+    await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
+  });
+
+  it('settles as stopped even when the stop call fails (best effort)', async () => {
+    batch.mockResolvedValue({ success: false, code: 'NETWORK_ERROR' });
+    const { result, release } = startHeldBatch(100);
     act(() => result.current.stop());
     await act(async () => { release(); });
     await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
-    expect(batch).toHaveBeenCalledTimes(1);
+    expect(batch).toHaveBeenCalledTimes(2); // never retried
     expect(result.current.state.nextIndex).toBe(25);
+    expect(result.current.state.errorCode).toBeNull();
+  });
+
+  it('settles as stopped when the stop call throws', async () => {
+    batch.mockRejectedValue(new Error('offline'));
+    const { result, release } = startHeldBatch(100);
+    act(() => result.current.stop());
+    await act(async () => { release(); });
+    await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
+    expect(result.current.state.errorCode).toBeNull();
+  });
+
+  it('a stop pressed between batches still sends the stop call', async () => {
+    let calls = 0;
+    batch.mockImplementation((_id: string, from: number, count: number, _att?: boolean, stop?: boolean) => {
+      calls += 1;
+      if (stop) return Promise.resolve(stoppedByAdmin(from, 100));
+      // First request fails, so the loop waits before retrying: stop lands in that wait.
+      if (calls === 1) return Promise.resolve({ success: false, code: 'NETWORK_ERROR' } as ApiResponse<BatchResult>);
+      return Promise.resolve(ok(from, count, 100, 100));
+    });
+    const { result } = renderHook(() => useMemberImportRunner({ timings: { ...FAST.timings, retryBaseMs: 50 } }));
+    act(() => result.current.start('id', 100, false));
+    await waitFor(() => expect(batch).toHaveBeenCalledTimes(1));
+    act(() => result.current.stop());
+    await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
+    expect(batch.mock.calls.at(-1)).toEqual(['id', 0, 10, undefined, true]);
+  });
+
+  it('shows the import as completed if every member was already written when the stop arrived', async () => {
+    batch.mockImplementation((_id: string, from: number) => Promise.resolve(ok(from, 0, 25, 5, { status: 'completed' })));
+    let release: () => void = () => {};
+    batch.mockImplementationOnce((_id: string, from: number, count: number) => new Promise<ApiResponse<BatchResult>>((r) => {
+      // All 25 rows written, but the server has not yet marked the import complete.
+      release = () => r(ok(from, count, 25, 100, { status: 'running' }));
+    }));
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 25, false));
+    act(() => result.current.stop());
+    await act(async () => { release(); });
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
+    expect(batch.mock.calls[1]).toEqual(['id', 25, 10, undefined, true]);
+  });
+
+  it('does not send a stop call when the server itself stopped or completed the import', async () => {
+    batch.mockImplementation(serve(20, 100));
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 20, false));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
+    act(() => result.current.stop());
+    expect(batch.mock.calls.every((c) => c.length === 4)).toBe(true);
   });
 });
