@@ -516,6 +516,8 @@
     "download_correct_template": "Richtige Vorlage herunterladen",
     "cancel": "Abbrechen",
     "close": "Schließen",
+    "about_minutes_one": "etwa {{minutes}} Minute",
+    "about_minutes_other": "etwa {{minutes}} Minuten",
     "columns": {
       "first_name": {
         "label": "Vorname",
@@ -660,7 +662,9 @@
       "blank_rows": "Ignorierte leere Zeilen: {{n}}",
       "identity_attest": "Ich habe die Identität jeder Person selbst geprüft",
       "identity_help": "Ihre Gemeinschaft verlangt eine Identitätsprüfung. Wenn Sie das Kästchen nicht anhaken, warten diese Mitglieder auf diese Prüfung, bevor sie sich anmelden können.",
-      "no_emails_yet": "Dieser Import versendet noch keine E-Mails. Mitglieder können über „Passwort vergessen“ ein Passwort festlegen, bis Einladungen hinzugefügt werden.",
+      "send_invitations": "Jedem neuen Mitglied einen Link zum Festlegen seines Passworts per E-Mail senden",
+      "send_invitations_help": "Die E-Mails werden im Hintergrund versendet, etwa eine pro Sekunde ({{duration}} für diese Datei). Der Link ist 7 Tage gültig.",
+      "invitations_held_note": "Mitglieder, die auf eine Identitätsprüfung warten, erhalten jetzt keine E-Mail – laden Sie sie nach ihrer Freigabe über die Mitgliederliste ein.",
       "import_one": "{{countFormatted}} Mitglied importieren",
       "import_other": "{{countFormatted}} Mitglieder importieren"
     },
@@ -686,7 +690,10 @@
       "download_zeroed": "Liste der Mitglieder herunterladen, deren Guthaben bei 0 begann",
       "reference": "Importreferenz: {{ref}}",
       "admission_incomplete_one": "{{countFormatted}} Mitglied wurde angelegt, aber der Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie das Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
-      "admission_incomplete_other": "{{countFormatted}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support."
+      "admission_incomplete_other": "{{countFormatted}} Mitglieder wurden angelegt, aber ihr Identitätsschritt wurde nicht abgeschlossen (Zeilen {{rows}}). Öffnen Sie jedes Mitglied in der Mitgliederliste und senden Sie die Identitätsprüfung erneut, oder wenden Sie sich an den Support.",
+      "invitations_queued_one": "{{countFormatted}} Willkommens-E-Mail ist in der Warteschlange und wird innerhalb von {{duration}} versendet.",
+      "invitations_queued_other": "{{countFormatted}} Willkommens-E-Mails sind in der Warteschlange und werden innerhalb von {{duration}} versendet.",
+      "no_invitations": "Es wurden keine Willkommens-E-Mails gesendet."
     },
     "stopped": {
       "title": "Der Import wurde angehalten. Importierte Mitglieder: {{created}} von {{total}}.",

@@ -516,6 +516,10 @@
     "download_correct_template": "Pobierz właściwy szablon",
     "cancel": "Anuluj",
     "close": "Zamknij",
+    "about_minutes_one": "około {{minutes}} minuty",
+    "about_minutes_few": "około {{minutes}} minut",
+    "about_minutes_many": "około {{minutes}} minut",
+    "about_minutes_other": "około {{minutes}} minuty",
     "columns": {
       "first_name": {
         "label": "Imię",
@@ -660,7 +664,9 @@
       "blank_rows": "Pominięte puste wiersze: {{n}}",
       "identity_attest": "Tożsamość każdej osoby została przeze mnie sprawdzona",
       "identity_help": "Twoja społeczność wymaga weryfikacji tożsamości. Jeśli zostawisz to pole niezaznaczone, ci członkowie poczekają na tę weryfikację, zanim będą mogli się zalogować.",
-      "no_emails_yet": "Ten import nie wysyła jeszcze nikomu wiadomości e-mail. Członkowie mogą użyć opcji „Nie pamiętam hasła”, aby ustawić hasło, dopóki nie zostaną dodane zaproszenia.",
+      "send_invitations": "Wyślij każdemu nowemu członkowi e-mail z linkiem do ustawienia hasła",
+      "send_invitations_help": "Wiadomości są wysyłane w tle, około jednej na sekundę ({{duration}} dla tego pliku). Link jest ważny 7 dni.",
+      "invitations_held_note": "Członkowie oczekujący na weryfikację tożsamości nie otrzymają teraz wiadomości — zaproś ich z listy członków po zatwierdzeniu.",
       "import_one": "Importuj {{countFormatted}} członka",
       "import_few": "Importuj {{countFormatted}} członków",
       "import_many": "Importuj {{countFormatted}} członków",
@@ -692,7 +698,12 @@
       "admission_incomplete_one": "Utworzono {{countFormatted}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
       "admission_incomplete_few": "Utworzono {{countFormatted}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
       "admission_incomplete_many": "Utworzono {{countFormatted}} członków, ale ich krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz każdego z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
-      "admission_incomplete_other": "Utworzono {{countFormatted}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną."
+      "admission_incomplete_other": "Utworzono {{countFormatted}} członka, ale jego krok weryfikacji tożsamości nie został ukończony (wiersze {{rows}}). Otwórz go z listy członków i wyślij weryfikację tożsamości ponownie albo skontaktuj się z pomocą techniczną.",
+      "invitations_queued_one": "{{countFormatted}} wiadomość powitalna czeka w kolejce i zostanie wysłana w ciągu {{duration}}.",
+      "invitations_queued_few": "{{countFormatted}} wiadomości powitalne czekają w kolejce i zostaną wysłane w ciągu {{duration}}.",
+      "invitations_queued_many": "{{countFormatted}} wiadomości powitalnych czeka w kolejce i zostanie wysłanych w ciągu {{duration}}.",
+      "invitations_queued_other": "{{countFormatted}} wiadomości powitalnej czeka w kolejce i zostanie wysłane w ciągu {{duration}}.",
+      "no_invitations": "Nie wysłano żadnych wiadomości powitalnych."
     },
     "stopped": {
       "title": "Import został zatrzymany. Zaimportowani członkowie: {{created}} z {{total}}.",

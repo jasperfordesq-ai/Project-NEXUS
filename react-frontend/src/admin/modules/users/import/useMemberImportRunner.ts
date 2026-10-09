@@ -42,6 +42,7 @@ const DEFAULT_TIMINGS: RunnerTimings = {
 const initial: RunnerState = {
   phase: 'idle', total: 0, nextIndex: 0, batchNumber: 0, batchSize: FIRST_BATCH,
   created: 0, balance: '0.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
+  invitationsQueued: 0, invitationsEtaMinutes: 0,
   held: false, stop: null, errorCode: null, startedAt: null, secondsRemaining: null,
 };
 
@@ -93,7 +94,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
     return () => window.removeEventListener('beforeunload', warn);
   }, [state.phase]);
 
-  const start = useCallback((importId: string, total: number, identityChecked: boolean) => {
+  const start = useCallback((importId: string, total: number, identityChecked: boolean, sendInvitations = false) => {
     if (running.current) return;
     running.current = true;
     stopRequested.current = false;
@@ -133,7 +134,7 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           // The client reports failures as values; this only guards against a throw
           // leaving the run stuck in "running" with nobody told.
           const res: ApiResponse<BatchResult> = await adminMemberImport
-            .batch(importId, next, size, first ? identityChecked : undefined)
+            .batch(importId, next, size, first ? { identityChecked, sendInvitations } : undefined)
             .catch((): ApiResponse<BatchResult> => ({ success: false, code: 'NETWORK_ERROR' }));
           const wallMs = clock.current() - t0;
 
@@ -184,6 +185,8 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
               created: d.totals.created, balance: d.totals.balance, zeroed: d.totals.zeroed,
               admissionIncomplete: d.totals.admission_incomplete ?? 0,
               admissionIncompleteRows: d.admission_incomplete_rows ?? [],
+              invitationsQueued: d.totals.invitations_queued ?? 0,
+              invitationsEtaMinutes: d.invitations_eta_minutes ?? 0,
               held: d.held, stop: d.stop,
               secondsRemaining: phase === 'completed' ? 0 : rate > 0 ? Math.ceil(Math.max(0, total - next) / rate) : null,
             }));
@@ -213,6 +216,8 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
                 created: d.totals.created, balance: d.totals.balance, zeroed: d.totals.zeroed,
                 admissionIncomplete: d.totals.admission_incomplete ?? 0,
                 admissionIncompleteRows: d.admission_incomplete_rows ?? [],
+                invitationsQueued: d.totals.invitations_queued ?? 0,
+                invitationsEtaMinutes: d.invitations_eta_minutes ?? 0,
                 held: d.held, stop: d.stop,
                 secondsRemaining: d.status === 'completed' ? 0 : s.secondsRemaining,
               }

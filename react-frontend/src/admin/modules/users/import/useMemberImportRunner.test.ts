@@ -6,13 +6,13 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ApiResponse } from '@/lib/api';
-import type { BatchResult } from './types';
+import type { BatchResult, FirstBatchChoices } from './types';
 
-const batch = vi.fn<(importId: string, from: number, count: number, identityChecked?: boolean, stop?: boolean) => Promise<ApiResponse<BatchResult>>>();
+const batch = vi.fn<(importId: string, from: number, count: number, first?: FirstBatchChoices, stop?: boolean) => Promise<ApiResponse<BatchResult>>>();
 vi.mock('@/admin/api/adminApi', () => ({
   adminMemberImport: {
-    batch: (importId: string, from: number, count: number, identityChecked?: boolean, stop?: boolean) =>
-      stop === undefined ? batch(importId, from, count, identityChecked) : batch(importId, from, count, identityChecked, stop),
+    batch: (importId: string, from: number, count: number, first?: FirstBatchChoices, stop?: boolean) =>
+      stop === undefined ? batch(importId, from, count, first) : batch(importId, from, count, first, stop),
   },
 }));
 
@@ -28,7 +28,8 @@ function ok(from: number, processed: number, total: number, ms: number, extra: P
     success: true,
     data: {
       import_id: 'id', status: next >= total ? 'completed' : 'running', next_index: next, total,
-      totals: { created: next, balance: '0.00', zeroed: 0, admission_incomplete: 0 },
+      totals: { created: next, balance: '0.00', zeroed: 0, admission_incomplete: 0, invitations_queued: 0 },
+      invitations_eta_minutes: 0,
       admission_incomplete_rows: [], stop: null, held: false,
       batch: { processed, created: processed, duration_ms: ms }, ...extra,
     },
@@ -48,8 +49,26 @@ describe('useMemberImportRunner', () => {
     act(() => result.current.start('id', 60, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
     expect(result.current.state.created).toBe(60);
-    expect(batch.mock.calls[0]).toEqual(['id', 0, 25, false]);
-    expect(batch.mock.calls[1]![3]).toBeUndefined(); // attestation is sent with the first batch only
+    expect(batch.mock.calls[0]).toEqual(['id', 0, 25, { identityChecked: false, sendInvitations: false }]);
+    expect(batch.mock.calls[1]![3]).toBeUndefined(); // the first-batch choices go with the first batch only
+  });
+
+  it('sends the invitation choice with the first batch only, and carries the queued count through', async () => {
+    batch.mockImplementation((_id: string, from: number, count: number) => {
+      const processed = Math.min(count, 60 - from);
+      const next = from + processed;
+      return Promise.resolve(ok(from, processed, 60, 200, {
+        totals: { created: next, balance: '0.00', zeroed: 0, admission_incomplete: 0, invitations_queued: next },
+        invitations_eta_minutes: 2,
+      }));
+    });
+    const { result } = renderHook(() => useMemberImportRunner(FAST));
+    act(() => result.current.start('id', 60, true, true));
+    await waitFor(() => expect(result.current.state.phase).toBe('completed'));
+    expect(batch.mock.calls[0]![3]).toEqual({ identityChecked: true, sendInvitations: true });
+    expect(batch.mock.calls.slice(1).every((c) => c[3] === undefined)).toBe(true);
+    expect(result.current.state.invitationsQueued).toBe(60);
+    expect(result.current.state.invitationsEtaMinutes).toBe(2);
   });
 
   it('grows quick batches and shrinks slow ones within 10–200', async () => {
@@ -184,7 +203,7 @@ describe('useMemberImportRunner', () => {
   it('carries the held and incomplete-identity details through', async () => {
     batch.mockResolvedValue(ok(0, 12, 12, 100, {
       held: true,
-      totals: { created: 12, balance: '5.00', zeroed: 1, admission_incomplete: 2 },
+      totals: { created: 12, balance: '5.00', zeroed: 1, admission_incomplete: 2, invitations_queued: 0 },
       admission_incomplete_rows: [4, 9],
     }));
     const { result } = renderHook(() => useMemberImportRunner(FAST));
@@ -343,7 +362,7 @@ describe('useMemberImportRunner', () => {
 
   it('a stop pressed between batches still sends the stop call', async () => {
     let calls = 0;
-    batch.mockImplementation((_id: string, from: number, count: number, _att?: boolean, stop?: boolean) => {
+    batch.mockImplementation((_id: string, from: number, count: number, _first?: FirstBatchChoices, stop?: boolean) => {
       calls += 1;
       if (stop) return Promise.resolve(stoppedByAdmin(from, 100));
       // First request fails, so the loop waits before retrying: stop lands in that wait.

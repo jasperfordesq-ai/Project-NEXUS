@@ -3,7 +3,13 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import type { TFunction } from 'i18next';
 import { formatNumber, getFormattingLocale } from '@/lib/helpers';
+
+/** "about 7 minutes", in the admin's language: the welcome-invitation estimates are rough by nature. */
+export function aboutMinutes(t: TFunction, minutes: number): string {
+  return t('member_import.about_minutes', { count: minutes, minutes: formatNumber(minutes) });
+}
 
 /** Hours as the server reports them ("1234.50"), grouped and spaced the way the admin's language does. */
 export function formatHours(value: string): string {

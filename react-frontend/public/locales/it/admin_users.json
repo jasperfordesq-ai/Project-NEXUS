@@ -516,6 +516,9 @@
     "download_correct_template": "Scarica il modello corretto",
     "cancel": "Annulla",
     "close": "Chiudi",
+    "about_minutes_one": "circa {{minutes}} minuto",
+    "about_minutes_many": "circa {{minutes}} minuti",
+    "about_minutes_other": "circa {{minutes}} minuti",
     "columns": {
       "first_name": {
         "label": "Nome",
@@ -660,7 +663,9 @@
       "blank_rows": "Righe vuote ignorate: {{n}}",
       "identity_attest": "Ho controllato personalmente l'identità di ogni persona",
       "identity_help": "La tua comunità richiede un controllo dell'identità. Se lasci questa casella non selezionata, questi membri attenderanno tale controllo prima di poter accedere.",
-      "no_emails_yet": "Questa importazione non invia ancora e-mail a nessuno. I membri possono usare «Password dimenticata» per impostare una password finché non saranno aggiunti gli inviti.",
+      "send_invitations": "Invia a ogni nuovo membro un link via e-mail per impostare la password",
+      "send_invitations_help": "Le e-mail partono in background, circa una al secondo ({{duration}} per questo file). Il link è valido 7 giorni.",
+      "invitations_held_note": "I membri in attesa di un controllo dell'identità non ricevono ora alcuna e-mail: invitali dall'elenco dei membri dopo l'approvazione.",
       "import_one": "Importa {{countFormatted}} membro",
       "import_many": "Importa {{countFormatted}} di membri",
       "import_other": "Importa {{countFormatted}} membri"
@@ -689,7 +694,11 @@
       "reference": "Riferimento dell'importazione: {{ref}}",
       "admission_incomplete_one": "{{countFormatted}} membro è stato creato ma il suo passaggio di identità non è stato completato (righe {{rows}}). Aprilo dall'elenco dei membri e invia di nuovo il suo controllo dell'identità, oppure contatta l'assistenza.",
       "admission_incomplete_many": "{{countFormatted}} di membri sono stati creati ma il loro passaggio di identità non è stato completato (righe {{rows}}). Apri ciascuno dall'elenco dei membri e invia di nuovo il suo controllo dell'identità, oppure contatta l'assistenza.",
-      "admission_incomplete_other": "{{countFormatted}} membri sono stati creati ma il loro passaggio di identità non è stato completato (righe {{rows}}). Apri ciascuno dall'elenco dei membri e invia di nuovo il suo controllo dell'identità, oppure contatta l'assistenza."
+      "admission_incomplete_other": "{{countFormatted}} membri sono stati creati ma il loro passaggio di identità non è stato completato (righe {{rows}}). Apri ciascuno dall'elenco dei membri e invia di nuovo il suo controllo dell'identità, oppure contatta l'assistenza.",
+      "invitations_queued_one": "{{countFormatted}} e-mail di benvenuto è in coda e verrà inviata in {{duration}}.",
+      "invitations_queued_many": "{{countFormatted}} di e-mail di benvenuto sono in coda e verranno inviate in {{duration}}.",
+      "invitations_queued_other": "{{countFormatted}} e-mail di benvenuto sono in coda e verranno inviate in {{duration}}.",
+      "no_invitations": "Non è stata inviata alcuna e-mail di benvenuto."
     },
     "stopped": {
       "title": "L'importazione si è fermata. Membri importati: {{created}} di {{total}}.",

@@ -37,6 +37,15 @@ export interface CheckResult {
   summary?: CheckSummary;
   import_id?: string;
   admission?: { requires_identity_check: boolean };
+  /** About how long the welcome invitations for this file would take to send (ready files only). */
+  invitation_minutes?: number;
+}
+
+/** The admin's choices that the server fixes on the first batch and ignores afterwards. */
+export interface FirstBatchChoices {
+  identityChecked: boolean;
+  /** Queue a welcome invitation for each new member who is not held for an identity check. */
+  sendInvitations: boolean;
 }
 
 export interface BatchResult {
@@ -44,7 +53,9 @@ export interface BatchResult {
   status: 'ready' | 'running' | 'stopped' | 'completed';
   next_index: number;
   total: number;
-  totals: { created: number; balance: string; zeroed: number; admission_incomplete: number };
+  totals: { created: number; balance: string; zeroed: number; admission_incomplete: number; invitations_queued: number };
+  /** About how long until the queued invitations have gone (the sender's pace is shared); 0 when none were queued. */
+  invitations_eta_minutes: number;
   /** Spreadsheet rows of members created without their identity step. */
   admission_incomplete_rows: number[];
   stop: { row: number; code: string; params: Record<string, string | number | string[]> } | null;
@@ -65,6 +76,8 @@ export interface RunnerState {
   zeroed: number;
   admissionIncomplete: number;
   admissionIncompleteRows: number[];
+  invitationsQueued: number;
+  invitationsEtaMinutes: number;
   held: boolean;
   stop: BatchResult['stop'];
   /** Machine code of the failure, e.g. IMPORT_NOT_FOUND; null unless phase is `failed`. */

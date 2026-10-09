@@ -516,6 +516,12 @@
     "download_correct_template": "تنزيل القالب الصحيح",
     "cancel": "إلغاء",
     "close": "إغلاق",
+    "about_minutes_zero": "نحو {{minutes}} دقيقة",
+    "about_minutes_one": "نحو {{minutes}} دقيقة",
+    "about_minutes_two": "نحو {{minutes}} دقيقة",
+    "about_minutes_few": "نحو {{minutes}} دقائق",
+    "about_minutes_many": "نحو {{minutes}} دقيقة",
+    "about_minutes_other": "نحو {{minutes}} دقيقة",
     "columns": {
       "first_name": {
         "label": "الاسم الأول",
@@ -660,7 +666,9 @@
       "blank_rows": "أسطر فارغة تم تجاهلها: {{n}}",
       "identity_attest": "لقد تحققت بنفسي من هوية كل شخص",
       "identity_help": "يشترط مجتمعك التحقق من الهوية. إذا تركت هذا المربع غير محدد، فسينتظر هؤلاء الأعضاء ذلك التحقق قبل أن يتمكنوا من تسجيل الدخول.",
-      "no_emails_yet": "لا يرسل هذا الاستيراد بريداً إلكترونياً إلى أحد بعد. يمكن للأعضاء استخدام \"نسيت كلمة المرور\" لتعيين كلمة مرور إلى حين إضافة الدعوات.",
+      "send_invitations": "إرسال رابط بالبريد الإلكتروني إلى كل عضو جديد لتعيين كلمة المرور",
+      "send_invitations_help": "تُرسل الرسائل في الخلفية، بمعدل رسالة واحدة تقريباً في الثانية ({{duration}} لهذا الملف). يبقى الرابط صالحاً لمدة 7 أيام.",
+      "invitations_held_note": "لن تُرسل رسائل الآن إلى الأعضاء الذين ينتظرون التحقق من الهوية — ادعهم من قائمة الأعضاء بعد الموافقة عليهم.",
       "import_zero": "استيراد الأعضاء ({{countFormatted}})",
       "import_one": "استيراد الأعضاء ({{countFormatted}})",
       "import_two": "استيراد الأعضاء ({{countFormatted}})",
@@ -698,7 +706,14 @@
       "title_many": "تم استيراد الأعضاء: {{countFormatted}} (إجمالي الساعات: {{balance}})",
       "admission_incomplete_many": "تم إنشاء أعضاء لكن خطوة التحقق من الهوية لم تكتمل لديهم: {{countFormatted}} (الصفوف {{rows}}). افتح كل عضو من قائمة الأعضاء وأعد إرسال التحقق من الهوية، أو تواصل مع الدعم.",
       "title_other": "تم استيراد الأعضاء: {{countFormatted}} (إجمالي الساعات: {{balance}})",
-      "admission_incomplete_other": "تم إنشاء أعضاء لكن خطوة التحقق من الهوية لم تكتمل لديهم: {{countFormatted}} (الصفوف {{rows}}). افتح كل عضو من قائمة الأعضاء وأعد إرسال التحقق من الهوية، أو تواصل مع الدعم."
+      "admission_incomplete_other": "تم إنشاء أعضاء لكن خطوة التحقق من الهوية لم تكتمل لديهم: {{countFormatted}} (الصفوف {{rows}}). افتح كل عضو من قائمة الأعضاء وأعد إرسال التحقق من الهوية، أو تواصل مع الدعم.",
+      "invitations_queued_zero": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "invitations_queued_one": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "invitations_queued_two": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "invitations_queued_few": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "invitations_queued_many": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "invitations_queued_other": "رسائل الترحيب في قائمة الانتظار: {{countFormatted}}، وستُرسل خلال {{duration}}.",
+      "no_invitations": "لم تُرسل أي رسالة ترحيب."
     },
     "stopped": {
       "title": "توقف الاستيراد. الأعضاء المستوردون: {{created}} من {{total}}.",

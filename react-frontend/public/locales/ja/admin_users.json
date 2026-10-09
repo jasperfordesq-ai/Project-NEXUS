@@ -516,6 +516,8 @@
     "download_correct_template": "正しいテンプレートをダウンロード",
     "cancel": "キャンセル",
     "close": "閉じる",
+    "about_minutes_other": "約{{minutes}}分",
+    "about_minutes_one": "約{{minutes}}分",
     "columns": {
       "first_name": {
         "label": "名",
@@ -660,7 +662,9 @@
       "blank_rows": "無視された空行: {{n}}行",
       "identity_attest": "全員の本人確認を自分で行いました",
       "identity_help": "このコミュニティでは本人確認が必要です。チェックを入れない場合、これらのメンバーは本人確認が済むまでサインインできません。",
-      "no_emails_yet": "このインポートでは、まだ誰にもメールは送信されません。招待機能が追加されるまでは、メンバーは「パスワードをお忘れですか」からパスワードを設定できます。",
+      "send_invitations": "新しいメンバー全員に、パスワード設定用のリンクをメールで送信する",
+      "send_invitations_help": "メールはバックグラウンドで1秒に約1通ずつ送信されます(このファイルでは{{duration}})。リンクの有効期限は7日間です。",
+      "invitations_held_note": "本人確認を待っているメンバーには、今はメールを送信しません。承認後にメンバー一覧から招待してください。",
       "import_other": "{{countFormatted}}人をインポート",
       "import_one": "{{countFormatted}}人をインポート"
     },
@@ -686,7 +690,10 @@
       "reference": "インポート参照番号: {{ref}}",
       "admission_incomplete_other": "{{countFormatted}}人のメンバーが作成されましたが、本人確認の手順が完了していません({{rows}}行目)。メンバー一覧から各メンバーを開いて本人確認を再送するか、サポートにお問い合わせください。",
       "title_one": "{{countFormatted}}人をインポートしました(合計{{balance}}時間)",
-      "admission_incomplete_one": "{{countFormatted}}人のメンバーが作成されましたが、本人確認の手順が完了していません({{rows}}行目)。メンバー一覧から各メンバーを開いて本人確認を再送するか、サポートにお問い合わせください。"
+      "admission_incomplete_one": "{{countFormatted}}人のメンバーが作成されましたが、本人確認の手順が完了していません({{rows}}行目)。メンバー一覧から各メンバーを開いて本人確認を再送するか、サポートにお問い合わせください。",
+      "invitations_queued_other": "{{countFormatted}}通のウェルカムメールが送信待ちで、{{duration}}かけて送信されます。",
+      "invitations_queued_one": "{{countFormatted}}通のウェルカムメールが送信待ちで、{{duration}}かけて送信されます。",
+      "no_invitations": "ウェルカムメールは送信されませんでした。"
     },
     "stopped": {
       "title": "インポートが停止しました。インポート済みのメンバー: {{created}} / {{total}}人。",

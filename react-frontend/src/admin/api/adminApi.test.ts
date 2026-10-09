@@ -300,14 +300,14 @@ describe('adminMemberImport', () => {
     );
   });
 
-  it('batch names the rows and sends the attestation only when given', async () => {
+  it('batch names the rows and sends the first-batch choices only when given', async () => {
     mockPost.mockResolvedValue({ success: true, data: {} });
-    await adminMemberImport.batch('abc/1', 0, 25, true);
+    await adminMemberImport.batch('abc/1', 0, 25, { identityChecked: true, sendInvitations: false });
     await adminMemberImport.batch('abc/1', 25, 40);
     expect(mockPost).toHaveBeenNthCalledWith(
       1,
       '/v2/admin/members/import/abc%2F1/batch',
-      { from: 0, count: 25, identity_checked_by_admin: true },
+      { from: 0, count: 25, identity_checked_by_admin: true, send_invitations: false },
       { timeout: 60000 },
     );
     expect(mockPost).toHaveBeenNthCalledWith(

@@ -516,6 +516,8 @@
     "download_correct_template": "Download the correct template",
     "cancel": "Cancel",
     "close": "Close",
+    "about_minutes_one": "about {{minutes}} minute",
+    "about_minutes_other": "about {{minutes}} minutes",
     "columns": {
       "first_name": {
         "label": "First name",
@@ -660,7 +662,9 @@
       "blank_rows": "Empty lines ignored: {{n}}",
       "identity_attest": "I have checked each person's identity myself",
       "identity_help": "Your community requires an identity check. If you leave this unticked, these members will wait for that check before they can sign in.",
-      "no_emails_yet": "This import does not email anyone yet. Members can use \"Forgot password\" to set a password until invitations are added.",
+      "send_invitations": "Email each new member a link to set their password",
+      "send_invitations_help": "Emails go out in the background, about one a second ({{duration}} for this file). The link lasts 7 days.",
+      "invitations_held_note": "Members waiting for an identity check are not emailed now — invite them from the member list once they are approved.",
       "import_one": "Import {{countFormatted}} member",
       "import_other": "Import {{countFormatted}} members"
     },
@@ -686,7 +690,10 @@
       "download_zeroed": "Download the list of members whose balance started at 0",
       "reference": "Import reference: {{ref}}",
       "admission_incomplete_one": "{{countFormatted}} member was created but their identity step did not complete (rows {{rows}}). Open them from the member list and resend their identity check, or contact support.",
-      "admission_incomplete_other": "{{countFormatted}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support."
+      "admission_incomplete_other": "{{countFormatted}} members were created but their identity step did not complete (rows {{rows}}). Open each one from the member list and resend their identity check, or contact support.",
+      "invitations_queued_one": "{{countFormatted}} welcome email is queued and will go out over {{duration}}.",
+      "invitations_queued_other": "{{countFormatted}} welcome emails are queued and will go out over {{duration}}.",
+      "no_invitations": "No welcome emails were sent."
     },
     "stopped": {
       "title": "The import stopped. Members imported: {{created}} of {{total}}.",

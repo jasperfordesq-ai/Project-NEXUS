@@ -9,7 +9,7 @@
  */
 
 import { api, type ApiResponse } from '@/lib/api';
-import type { BatchResult, CheckResult } from '@/admin/modules/users/import/types';
+import type { BatchResult, CheckResult, FirstBatchChoices } from '@/admin/modules/users/import/types';
 import type {
   AdminDashboardStats,
   MonthlyTrend,
@@ -295,16 +295,19 @@ export const adminMemberImport = {
       { timeout: 60000 },
     ),
 
-  // The admin's identity attestation travels with the first batch only.
+  // The admin's first-batch choices (identity attestation, welcome invitations)
+  // travel with the first batch only; the server ignores them on any later one.
   // `stop: true` (after the admin pressed Stop) writes nothing: the server marks
   // the import stopped and discards the rows it was holding for it.
-  batch: (importId: string, from: number, count: number, identityChecked?: boolean, stop?: boolean) =>
+  batch: (importId: string, from: number, count: number, first?: FirstBatchChoices, stop?: boolean) =>
     api.post<BatchResult>(
       `/v2/admin/members/import/${encodeURIComponent(importId)}/batch`,
       {
         from,
         count,
-        ...(identityChecked === undefined ? {} : { identity_checked_by_admin: identityChecked }),
+        ...(first === undefined
+          ? {}
+          : { identity_checked_by_admin: first.identityChecked, send_invitations: first.sendInvitations }),
         ...(stop ? { stop: true } : {}),
       },
       { timeout: 60000 },

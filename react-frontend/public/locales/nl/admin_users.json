@@ -516,6 +516,8 @@
     "download_correct_template": "Het juiste sjabloon downloaden",
     "cancel": "Annuleren",
     "close": "Sluiten",
+    "about_minutes_one": "ongeveer {{minutes}} minuut",
+    "about_minutes_other": "ongeveer {{minutes}} minuten",
     "columns": {
       "first_name": {
         "label": "Voornaam",
@@ -660,7 +662,9 @@
       "blank_rows": "Genegeerde lege regels: {{n}}",
       "identity_attest": "Ik heb de identiteit van elke persoon zelf gecontroleerd",
       "identity_help": "Je gemeenschap vraagt om een identiteitscontrole. Als je dit niet aanvinkt, wachten deze leden op die controle voordat ze kunnen inloggen.",
-      "no_emails_yet": "Deze import stuurt nog geen e-mails. Leden kunnen \"Wachtwoord vergeten\" gebruiken om een wachtwoord in te stellen totdat uitnodigingen zijn toegevoegd.",
+      "send_invitations": "Stuur elk nieuw lid een e-mail met een link om een wachtwoord in te stellen",
+      "send_invitations_help": "De e-mails worden op de achtergrond verstuurd, ongeveer één per seconde ({{duration}} voor dit bestand). De link is 7 dagen geldig.",
+      "invitations_held_note": "Leden die op een identiteitscontrole wachten, krijgen nu geen e-mail. Nodig ze uit vanuit de ledenlijst zodra ze zijn goedgekeurd.",
       "import_one": "{{countFormatted}} lid importeren",
       "import_other": "{{countFormatted}} leden importeren"
     },
@@ -686,7 +690,10 @@
       "download_zeroed": "Lijst downloaden van leden wier saldo op 0 begon",
       "reference": "Importreferentie: {{ref}}",
       "admission_incomplete_one": "{{countFormatted}} lid is aangemaakt, maar de identiteitsstap is niet voltooid (rijen {{rows}}). Open het lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
-      "admission_incomplete_other": "{{countFormatted}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support."
+      "admission_incomplete_other": "{{countFormatted}} leden zijn aangemaakt, maar hun identiteitsstap is niet voltooid (rijen {{rows}}). Open elk lid vanuit de ledenlijst en stuur de identiteitscontrole opnieuw, of neem contact op met support.",
+      "invitations_queued_one": "{{countFormatted}} welkomstmail staat klaar en wordt binnen {{duration}} verstuurd.",
+      "invitations_queued_other": "{{countFormatted}} welkomstmails staan klaar en worden binnen {{duration}} verstuurd.",
+      "no_invitations": "Er zijn geen welkomstmails verstuurd."
     },
     "stopped": {
       "title": "De import is gestopt. Geïmporteerde leden: {{created}} van {{total}}.",

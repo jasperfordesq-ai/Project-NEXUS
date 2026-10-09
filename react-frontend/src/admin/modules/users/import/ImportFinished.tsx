@@ -9,7 +9,7 @@ import Download from 'lucide-react/icons/download';
 import { Alert, Button, ModalBody, ModalFooter } from '@/components/ui';
 import { formatNumber } from '@/lib/helpers';
 import { downloadText, rowsFromIndexFile, rowsWithNumbersFile } from './csvFiles';
-import { formatHours } from './format';
+import { aboutMinutes, formatHours } from './format';
 import { describeStop } from './issueText';
 import { useFocusOnMount } from './useFocusOnMount';
 import type { CheckResult, RunnerState } from './types';
@@ -34,6 +34,15 @@ export function ImportFinished({ state, check, onClose }: Props) {
   // Members whose negative balance became 0 — only the ones this run actually reached.
   const reached = new Set((check.source_rows ?? []).slice(0, nextIndex).map((r) => r.row));
   const zeroedRows = (check.warnings ?? []).filter((w) => w.code === 'negative_balance_zeroed' && reached.has(w.row)).map((w) => w.row);
+
+  const queued = state.invitationsQueued;
+  const invitations = queued > 0
+    ? t('member_import.done.invitations_queued', {
+      count: queued,
+      countFormatted: formatNumber(queued),
+      duration: aboutMinutes(t, Math.max(1, state.invitationsEtaMinutes)),
+    })
+    : t('member_import.done.no_invitations');
 
   const imported = t('member_import.failed.imported_so_far', { created: formatNumber(created), total: formatNumber(total) });
 
@@ -93,6 +102,8 @@ export function ImportFinished({ state, check, onClose }: Props) {
               })}
             />
           )}
+
+          <p className="text-sm">{invitations}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">

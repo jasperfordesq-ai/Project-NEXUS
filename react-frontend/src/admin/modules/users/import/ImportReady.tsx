@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Upload from 'lucide-react/icons/upload';
 import { Alert, Button, Checkbox, ModalBody, ModalFooter } from '@/components/ui';
 import { formatNumber } from '@/lib/helpers';
-import { formatHours } from './format';
+import { aboutMinutes, formatHours } from './format';
 import { describeWarning } from './issueText';
 import { useFocusOnMount } from './useFocusOnMount';
 import type { CheckResult } from './types';
@@ -16,17 +16,21 @@ interface Props {
   check: CheckResult;
   identityChecked: boolean;
   onIdentityChange: (checked: boolean) => void;
+  sendInvitations: boolean;
+  onSendInvitationsChange: (checked: boolean) => void;
   onImport: () => void;
   onCancel: () => void;
 }
 
-/** Every row passed: what is about to happen, and the one decision the admin owns (identity). */
-export function ImportReady({ check, identityChecked, onIdentityChange, onImport, onCancel }: Props) {
+/** Every row passed: what is about to happen, and the decisions the admin owns (identity, welcome emails). */
+export function ImportReady({ check, identityChecked, onIdentityChange, sendInvitations, onSendInvitationsChange, onImport, onCancel }: Props) {
   const { t } = useTranslation('admin_users');
   const summary = check.summary;
   const rows = summary?.rows ?? 0;
   const warnings = check.warnings ?? [];
   const lead = useFocusOnMount<HTMLDivElement>();
+  // Unticked attestation in a community with an identity check: every member is held, so none is emailed now.
+  const heldNotEmailed = sendInvitations && Boolean(check.admission?.requires_identity_check) && !identityChecked;
 
   const lines: string[] = summary ? [
     t('member_import.ready.members', { n: formatNumber(summary.rows) }),
@@ -70,7 +74,15 @@ export function ImportReady({ check, identityChecked, onIdentityChange, onImport
           </Checkbox>
         )}
 
-        <p className="text-sm text-muted">{t('member_import.ready.no_emails_yet')}</p>
+        <Checkbox
+          isSelected={sendInvitations}
+          onChange={onSendInvitationsChange}
+          description={t('member_import.ready.send_invitations_help', { duration: aboutMinutes(t, Math.max(1, check.invitation_minutes ?? 1)) })}
+        >
+          {t('member_import.ready.send_invitations')}
+        </Checkbox>
+
+        {heldNotEmailed && <p className="text-sm text-muted">{t('member_import.ready.invitations_held_note')}</p>}
       </ModalBody>
       <ModalFooter>
         <Button variant="tertiary" onPress={onCancel}>{t('member_import.cancel')}</Button>

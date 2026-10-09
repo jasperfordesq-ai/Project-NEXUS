@@ -46,6 +46,8 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [check, setCheck] = useState<CheckResult | null>(null);
   const [identityChecked, setIdentityChecked] = useState(false);
+  // Welcome invitations are on unless the admin unticks them.
+  const [sendInvitations, setSendInvitations] = useState(true);
   const [checkFailure, setCheckFailure] = useState<CheckFailure | null>(null);
 
   const phase = runner.state.phase;
@@ -90,12 +92,13 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
     }
     setCheck(response.data);
     setIdentityChecked(false);
+    setSendInvitations(true);
     setStep(response.data.status === 'ready' ? 'ready' : response.data.status === 'problems' ? 'problems' : 'file_error');
   };
 
   const startImport = () => {
     if (!check?.import_id || !check.summary) return;
-    runner.start(check.import_id, check.summary.rows, check.admission?.requires_identity_check ? identityChecked : false);
+    runner.start(check.import_id, check.summary.rows, check.admission?.requires_identity_check ? identityChecked : false, sendInvitations);
     setStep('running');
   };
 
@@ -126,6 +129,7 @@ export function MemberImportModal({ isOpen, onClose, onImported }: Props) {
         {step === 'problems' && check && <ImportProblemList check={check} onChooseAnother={chooseAnother} />}
         {step === 'ready' && check && (
           <ImportReady check={check} identityChecked={identityChecked} onIdentityChange={setIdentityChecked}
+            sendInvitations={sendInvitations} onSendInvitationsChange={setSendInvitations}
             onImport={startImport} onCancel={close} />
         )}
         {running && <ImportProgress state={runner.state} onStop={runner.stop} />}

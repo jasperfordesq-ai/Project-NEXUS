@@ -516,6 +516,9 @@
     "download_correct_template": "Descargar la plantilla correcta",
     "cancel": "Cancelar",
     "close": "Cerrar",
+    "about_minutes_one": "aproximadamente {{minutes}} minuto",
+    "about_minutes_many": "aproximadamente {{minutes}} minutos",
+    "about_minutes_other": "aproximadamente {{minutes}} minutos",
     "columns": {
       "first_name": {
         "label": "Nombre",
@@ -660,7 +663,9 @@
       "blank_rows": "Líneas vacías ignoradas: {{n}}",
       "identity_attest": "He comprobado yo mismo la identidad de cada persona",
       "identity_help": "Tu comunidad exige una comprobación de identidad. Si deja esta casilla sin marcar, estos miembros esperarán esa comprobación antes de poder iniciar sesión.",
-      "no_emails_yet": "Esta importación todavía no envía correos a nadie. Los miembros pueden usar «He olvidado mi contraseña» para crear una contraseña hasta que se añadan las invitaciones.",
+      "send_invitations": "Enviar a cada miembro nuevo un enlace por correo para crear su contraseña",
+      "send_invitations_help": "Los correos se envían en segundo plano, aproximadamente uno por segundo ({{duration}} para este archivo). El enlace es válido durante 7 días.",
+      "invitations_held_note": "A los miembros que esperan una comprobación de identidad no se les envía ningún correo ahora; invítalos desde la lista de miembros cuando estén aprobados.",
       "import_one": "Importar {{countFormatted}} miembro",
       "import_many": "Importar {{countFormatted}} de miembros",
       "import_other": "Importar {{countFormatted}} miembros"
@@ -689,7 +694,11 @@
       "reference": "Referencia de la importación: {{ref}}",
       "admission_incomplete_one": "Se creó {{countFormatted}} miembro, pero su paso de identidad no se completó (filas {{rows}}). Ábrelo desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte.",
       "admission_incomplete_many": "Se crearon {{countFormatted}} de miembros, pero su paso de identidad no se completó (filas {{rows}}). Abre cada uno desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte.",
-      "admission_incomplete_other": "Se crearon {{countFormatted}} miembros, pero su paso de identidad no se completó (filas {{rows}}). Abre cada uno desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte."
+      "admission_incomplete_other": "Se crearon {{countFormatted}} miembros, pero su paso de identidad no se completó (filas {{rows}}). Abre cada uno desde la lista de miembros y reenvía su comprobación de identidad, o ponte en contacto con soporte.",
+      "invitations_queued_one": "{{countFormatted}} correo de bienvenida está en cola y se enviará en {{duration}}.",
+      "invitations_queued_many": "{{countFormatted}} de correos de bienvenida están en cola y se enviarán en {{duration}}.",
+      "invitations_queued_other": "{{countFormatted}} correos de bienvenida están en cola y se enviarán en {{duration}}.",
+      "no_invitations": "No se envió ningún correo de bienvenida."
     },
     "stopped": {
       "title": "La importación se detuvo. Miembros importados: {{created}} de {{total}}.",

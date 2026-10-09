@@ -516,6 +516,11 @@
     "download_correct_template": "Íoslódáil an teimpléad ceart",
     "cancel": "Cealaigh",
     "close": "Dún",
+    "about_minutes_one": "timpeall {{minutes}} nóiméad",
+    "about_minutes_two": "timpeall {{minutes}} nóiméad",
+    "about_minutes_few": "timpeall {{minutes}} nóiméad",
+    "about_minutes_many": "timpeall {{minutes}} nóiméad",
+    "about_minutes_other": "timpeall {{minutes}} nóiméad",
     "columns": {
       "first_name": {
         "label": "Céad Ainm",
@@ -660,7 +665,9 @@
       "blank_rows": "Línte folamha a seachnaíodh: {{n}}",
       "identity_attest": "Tá céannacht gach duine seiceáilte agam féin",
       "identity_help": "Éilíonn do phobal seiceáil céannachta. Mura gcuireann tú tic leis seo, fanfaidh na baill seo leis an seiceáil sin sula bhféadfaidh siad síniú isteach.",
-      "no_emails_yet": "Ní sheolann an t-iompórtú seo ríomhphost chuig aon duine fós. Is féidir le baill \"Dearmad ar an bhfocal faire\" a úsáid chun focal faire a shocrú go dtí go gcuirfear cuirí leis.",
+      "send_invitations": "Seol nasc ríomhphoist chuig gach ball nua chun a fhocal faire a shocrú",
+      "send_invitations_help": "Seoltar na ríomhphoist sa chúlra, timpeall ceann amháin sa soicind ({{duration}} don chomhad seo). Maireann an nasc 7 lá.",
+      "invitations_held_note": "Ní sheoltar ríomhphost anois chuig baill atá ag fanacht le seiceáil céannachta — tabhair cuireadh dóibh ón liosta ball nuair a bheidh siad ceadaithe.",
       "import_one": "Iompórtáil baill: {{countFormatted}}",
       "import_two": "Iompórtáil baill: {{countFormatted}}",
       "import_few": "Iompórtáil baill: {{countFormatted}}",
@@ -695,7 +702,13 @@
       "admission_incomplete_two": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
       "admission_incomplete_few": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
       "admission_incomplete_many": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
-      "admission_incomplete_other": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht."
+      "admission_incomplete_other": "Cruthaíodh baill ach níor críochnaíodh a gcéim céannachta: {{countFormatted}} (sraitheanna {{rows}}). Oscail gach ball ón liosta ball agus seol a sheiceáil céannachta arís, nó déan teagmháil leis an tacaíocht.",
+      "invitations_queued_one": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
+      "invitations_queued_two": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
+      "invitations_queued_few": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
+      "invitations_queued_many": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
+      "invitations_queued_other": "Ríomhphoist fáilte sa scuaine: {{countFormatted}}. Seolfar iad thar {{duration}}.",
+      "no_invitations": "Níor seoladh aon ríomhphost fáilte."
     },
     "stopped": {
       "title": "Stop an t-iompórtú. Baill iompórtáilte: {{created}} as {{total}}.",

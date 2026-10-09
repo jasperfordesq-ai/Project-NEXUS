@@ -41,6 +41,7 @@ function runnerState(overrides: Partial<RunnerState> = {}): RunnerState {
     phase: 'running', total: 125, nextIndex: 25, batchNumber: 1, batchSize: 25,
     created: 25, balance: '300.00', zeroed: 0, admissionIncomplete: 0, admissionIncompleteRows: [],
     held: false, stop: null, errorCode: null, startedAt: 0, secondsRemaining: 120,
+    invitationsQueued: 0, invitationsEtaMinutes: 0,
     ...overrides,
   };
 }
@@ -54,6 +55,7 @@ function ready(overrides: Partial<CheckResult> = {}): CheckResult {
     warnings: [{ row: 4, column: 'balance', code: 'negative_balance_zeroed', params: { original: '-3.50' } }],
     import_id: 'abcdef12-3456-7890-abcd-ef1234567890',
     admission: { requires_identity_check: false },
+    invitation_minutes: 1,
     ...overrides,
   };
 }
@@ -373,7 +375,9 @@ describe('MemberImportModal', () => {
       expect(screen.getByText('Without a town: 2 (they can add it from their profile)')).toBeInTheDocument();
       expect(screen.getByText(/Negative balances that will start at 0: 1/)).toBeInTheDocument();
       expect(screen.getByText(/Empty lines ignored: 2/)).toBeInTheDocument();
-      expect(screen.getByText(/does not email anyone yet/)).toBeInTheDocument();
+      expect(screen.queryByText(/does not email anyone yet/)).not.toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: /Email each new member a link to set their password/ })).toBeChecked();
+      expect(screen.getByText('Emails go out in the background, about one a second (about 1 minute for this file). The link lasts 7 days.')).toBeInTheDocument();
       expect(screen.getByText(/Row 4: a balance of -3\.50 hours will start at 0\./)).toBeInTheDocument();
     });
 
@@ -402,7 +406,28 @@ describe('MemberImportModal', () => {
     it('does not show the identity checkbox when the community does not require it', async () => {
       await checkWith(ready());
       await screen.findByText('Every row passed the check');
-      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+      expect(screen.queryByRole('checkbox', { name: /identity/ })).not.toBeInTheDocument();
+      expect(screen.queryByText(/not emailed now/)).not.toBeInTheDocument();
+    });
+
+    it('gives the invitation estimate for the file, in the plural and locale-formatted', async () => {
+      await checkWith(ready({ invitation_minutes: 1200 }));
+      expect(await screen.findByText(/about one a second \(about 1,200 minutes for this file\)/)).toBeInTheDocument();
+    });
+
+    it('starts the import without invitations when the box is unticked', async () => {
+      const user = await checkWith(ready());
+      await user.click(await screen.findByRole('checkbox', { name: /Email each new member a link/ }));
+      await user.click(screen.getByRole('button', { name: IMPORT_BUTTON }));
+      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, false, false);
+    });
+
+    it('says held members are not emailed now, until the admin attests their identity', async () => {
+      const user = await checkWith(ready({ admission: { requires_identity_check: true } }));
+      const note = 'Members waiting for an identity check are not emailed now — invite them from the member list once they are approved.';
+      expect(await screen.findByText(note)).toBeInTheDocument();
+      await user.click(screen.getByRole('checkbox', { name: /I have checked each person's identity myself/ }));
+      expect(screen.queryByText(note)).not.toBeInTheDocument();
     });
 
     it('starts the import with the identity box ticked', async () => {
@@ -411,13 +436,13 @@ describe('MemberImportModal', () => {
       expect(screen.getByText(/wait for that check before they can sign in/)).toBeInTheDocument();
       await user.click(box);
       await user.click(screen.getByRole('button', { name: 'Import 5 members' }));
-      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, true);
+      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, true, true);
     });
 
     it('starts the import with the identity box left unticked', async () => {
       const user = await checkWith(ready({ admission: { requires_identity_check: true } }));
       await user.click(await screen.findByRole('button', { name: IMPORT_BUTTON }));
-      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, false);
+      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, false, true);
     });
 
     it('says "member" in the singular for a one-member file', async () => {
@@ -425,10 +450,10 @@ describe('MemberImportModal', () => {
       expect(await screen.findByRole('button', { name: 'Import 1 member' })).toBeInTheDocument();
     });
 
-    it('starts without an attestation when none is required', async () => {
+    it('starts without an attestation when none is required, with invitations on by default', async () => {
       const user = await checkWith(ready());
       await user.click(await screen.findByRole('button', { name: IMPORT_BUTTON }));
-      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, false);
+      expect(mockRunner.start).toHaveBeenCalledWith('abcdef12-3456-7890-abcd-ef1234567890', 5, false, true);
     });
 
     it('Cancel closes the window without importing', async () => {
@@ -539,6 +564,22 @@ describe('MemberImportModal', () => {
       await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, zeroed: 0 });
       await screen.findByText(/members imported/);
       expect(screen.queryByRole('button', { name: /balance started at 0/ })).not.toBeInTheDocument();
+    });
+
+    it('says how many welcome emails are queued and about how long they take', async () => {
+      await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, invitationsQueued: 1234, invitationsEtaMinutes: 25 });
+      expect(await screen.findByText('1,234 welcome emails are queued and will go out over about 25 minutes.')).toBeInTheDocument();
+    });
+
+    it('says "email" and "minute" in the singular for one invitation', async () => {
+      await finishWith({ phase: 'completed', nextIndex: 1, total: 1, created: 1, invitationsQueued: 1, invitationsEtaMinutes: 1 });
+      expect(await screen.findByText('1 welcome email is queued and will go out over about 1 minute.')).toBeInTheDocument();
+    });
+
+    it('says no welcome emails were sent when none were queued', async () => {
+      await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, invitationsQueued: 0 });
+      expect(await screen.findByText('No welcome emails were sent.')).toBeInTheDocument();
+      expect(screen.queryByText(/welcome emails? (is|are) queued/)).not.toBeInTheDocument();
     });
 
     it('says when members are waiting for the identity check', async () => {

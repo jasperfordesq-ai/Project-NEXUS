@@ -516,6 +516,9 @@
     "download_correct_template": "Télécharger le bon modèle",
     "cancel": "Annuler",
     "close": "Fermer",
+    "about_minutes_one": "environ {{minutes}} minute",
+    "about_minutes_many": "environ {{minutes}} minutes",
+    "about_minutes_other": "environ {{minutes}} minutes",
     "columns": {
       "first_name": {
         "label": "Prénom",
@@ -660,7 +663,9 @@
       "blank_rows": "Lignes vides ignorées : {{n}}",
       "identity_attest": "J'ai vérifié moi-même l'identité de chaque personne",
       "identity_help": "Votre communauté exige une vérification d'identité. Si vous laissez cette case décochée, ces membres attendront cette vérification avant de pouvoir se connecter.",
-      "no_emails_yet": "Cet import n'envoie encore d'e-mail à personne. Les membres peuvent utiliser « Mot de passe oublié » pour définir un mot de passe, en attendant l'ajout des invitations.",
+      "send_invitations": "Envoyer à chaque nouveau membre un lien par e-mail pour définir son mot de passe",
+      "send_invitations_help": "Les e-mails partent en arrière-plan, environ un par seconde ({{duration}} pour ce fichier). Le lien est valable 7 jours.",
+      "invitations_held_note": "Les membres en attente d'une vérification d'identité ne reçoivent pas d'e-mail pour l'instant : invitez-les depuis la liste des membres une fois qu'ils sont approuvés.",
       "import_one": "Importer {{countFormatted}} membre",
       "import_many": "Importer {{countFormatted}} de membres",
       "import_other": "Importer {{countFormatted}} membres"
@@ -689,7 +694,11 @@
       "reference": "Référence de l'import : {{ref}}",
       "admission_incomplete_one": "{{countFormatted}} membre a été créé mais son étape d'identité n'a pas abouti (lignes {{rows}}). Ouvrez-le depuis la liste des membres et renvoyez sa vérification d'identité, ou contactez l'assistance.",
       "admission_incomplete_many": "{{countFormatted}} de membres ont été créés mais leur étape d'identité n'a pas abouti (lignes {{rows}}). Ouvrez chacun depuis la liste des membres et renvoyez sa vérification d'identité, ou contactez l'assistance.",
-      "admission_incomplete_other": "{{countFormatted}} membres ont été créés mais leur étape d'identité n'a pas abouti (lignes {{rows}}). Ouvrez chacun depuis la liste des membres et renvoyez sa vérification d'identité, ou contactez l'assistance."
+      "admission_incomplete_other": "{{countFormatted}} membres ont été créés mais leur étape d'identité n'a pas abouti (lignes {{rows}}). Ouvrez chacun depuis la liste des membres et renvoyez sa vérification d'identité, ou contactez l'assistance.",
+      "invitations_queued_one": "{{countFormatted}} e-mail de bienvenue est en file d'attente et partira en {{duration}}.",
+      "invitations_queued_many": "{{countFormatted}} d'e-mails de bienvenue sont en file d'attente et partiront en {{duration}}.",
+      "invitations_queued_other": "{{countFormatted}} e-mails de bienvenue sont en file d'attente et partiront en {{duration}}.",
+      "no_invitations": "Aucun e-mail de bienvenue n'a été envoyé."
     },
     "stopped": {
       "title": "L'import s'est arrêté. Membres importés : {{created}} sur {{total}}.",
