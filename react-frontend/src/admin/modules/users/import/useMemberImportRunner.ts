@@ -13,6 +13,8 @@ const MIN_BATCH = 10;
 const MAX_BATCH = 200;
 const QUICK_MS = 1000;
 const SLOW_MS = 3000;
+// Only a guard for a slow network or a client timeout, never the growth signal.
+const WALL_GUARD_MS = 10000;
 const MAX_FAILURES = 3;
 const MAX_NO_PROGRESS = 30;
 
@@ -47,8 +49,16 @@ const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolv
 
 /**
  * Drives a checked member import batch by batch. The browser only names rows
- * (from/count); the server holds the data. Each batch is timed: quick batches
- * grow, slow ones shrink, always within 10–200 rows. A failed request is
+ * (from/count); the server holds the data. Batch size follows the server's OWN
+ * work time for the batch (`batch.duration_ms`): under 1 s it grows by half, over
+ * 3 s it shrinks, always within 10–200 rows. The round-trip time is deliberately
+ * not the signal: every request carries a fixed overhead (authentication,
+ * step-up, framework start-up) that does not depend on batch size, so judging by
+ * wall-clock keeps small batches looking "medium" and never grows them, which is
+ * exactly when bigger batches help most. Wall-clock only shrinks the batch when a
+ * round trip exceeds 10 s (slow network, risk of the 60 s request timeout). A
+ * response that processed nothing (a replay or the final completion) leaves the
+ * size alone. A failed request is
  * retried with the SAME `from` — safe, because the server answers a repeated
  * batch without writing anything. A busy or rate-limited answer is waited out
  * and does not count towards the three failures that end the run.
@@ -56,13 +66,15 @@ const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolv
  * Leaving the page while a run is in progress halts it at the next batch
  * boundary: nobody is left to watch it or to see where it stopped.
  */
-export function useMemberImportRunner(options?: { timings?: Partial<RunnerTimings> }) {
+export function useMemberImportRunner(options?: { timings?: Partial<RunnerTimings>; now?: () => number }) {
   const [state, setState] = useState<RunnerState>(initial);
   const stopRequested = useRef(false);
   const running = useRef(false);
   const unmounted = useRef(false);
   const timings = useRef<RunnerTimings>({ ...DEFAULT_TIMINGS, ...options?.timings });
   timings.current = { ...DEFAULT_TIMINGS, ...options?.timings };
+  const clock = useRef<() => number>(() => performance.now());
+  clock.current = options?.now ?? (() => performance.now());
 
   useEffect(() => {
     unmounted.current = false;
@@ -106,18 +118,13 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
             break;
           }
 
-          const t0 = performance.now();
+          const t0 = clock.current();
           // The client reports failures as values; this only guards against a throw
           // leaving the run stuck in "running" with nobody told.
           const res: ApiResponse<BatchResult> = await adminMemberImport
             .batch(importId, next, size, first ? identityChecked : undefined)
             .catch((): ApiResponse<BatchResult> => ({ success: false, code: 'NETWORK_ERROR' }));
-          // Wall-clock time includes the network. The server's own figure can never
-          // be larger in practice, so taking the larger of the two changes nothing
-          // live; it keeps the pacing decision driven by what the server reports.
-          const elapsed = res.success && res.data
-            ? Math.max(performance.now() - t0, res.data.batch.duration_ms)
-            : performance.now() - t0;
+          const wallMs = clock.current() - t0;
 
           if (!res.success || !res.data) {
             if (res.code === 'IMPORT_BUSY' || res.code === 'RATE_LIMIT_EXCEEDED') {
@@ -150,8 +157,10 @@ export function useMemberImportRunner(options?: { timings?: Partial<RunnerTiming
           next = Math.max(next, d.next_index);
           const stalled = d.status === 'running' && d.batch.processed === 0 && next === previous;
           noProgress = stalled ? noProgress + 1 : 0;
-          if (elapsed < QUICK_MS) size = Math.min(MAX_BATCH, Math.round(size * 1.5));
-          else if (elapsed > SLOW_MS) size = Math.max(MIN_BATCH, Math.round(size * 0.6));
+          if (d.batch.processed > 0) {
+            if (d.batch.duration_ms > SLOW_MS || wallMs > WALL_GUARD_MS) size = Math.max(MIN_BATCH, Math.round(size * 0.6));
+            else if (d.batch.duration_ms < QUICK_MS) size = Math.min(MAX_BATCH, Math.round(size * 1.5));
+          }
 
           const rate = next / Math.max(1, (Date.now() - startedAt) / 1000);
           const phase = d.status === 'completed' ? 'completed'

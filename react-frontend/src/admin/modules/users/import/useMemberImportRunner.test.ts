@@ -67,6 +67,43 @@ describe('useMemberImportRunner', () => {
     expect(Math.max(...sizes)).toBeLessThanOrEqual(200);
   });
 
+  // Drives the runner's clock: each request "takes" wallMs on the wall clock
+  // while the server reports serverMs of its own work.
+  function runSizes(total: number, serverMs: number, wallMs: number, processedPerCall?: number) {
+    let clock = 0;
+    const sizes: number[] = [];
+    batch.mockImplementation((_id: string, from: number, count: number) => {
+      sizes.push(count);
+      clock += wallMs;
+      const processed = processedPerCall ?? Math.min(count, total - from);
+      return Promise.resolve(ok(from, processed, total, serverMs, processedPerCall === 0 ? { status: 'running', next_index: from } : {}));
+    });
+    return { sizes, hook: renderHook(() => useMemberImportRunner({ ...FAST, now: () => clock })) };
+  }
+
+  it('grows when the server is quick, even if each round trip takes 1.8 s of overhead', async () => {
+    const { sizes, hook } = runSizes(200, 280, 1800);
+    act(() => hook.result.current.start('id', 200, false));
+    await waitFor(() => expect(hook.result.current.state.phase).toBe('completed'));
+    expect(sizes[1]).toBeGreaterThan(sizes[0]!);
+    expect(sizes[2]).toBeGreaterThan(sizes[1]!);
+  });
+
+  it('shrinks when the round trip is very slow even though the server was quick', async () => {
+    const { sizes, hook } = runSizes(200, 280, 12000);
+    act(() => hook.result.current.start('id', 200, false));
+    await waitFor(() => expect(hook.result.current.state.phase).toBe('completed'));
+    expect(sizes[1]).toBeLessThan(sizes[0]!);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(10);
+  });
+
+  it('leaves the size alone when a response processed nothing', async () => {
+    const { sizes, hook } = runSizes(100, 5, 5, 0);
+    act(() => hook.result.current.start('id', 100, false));
+    await waitFor(() => expect(hook.result.current.state.phase).toBe('failed'), { timeout: 5000 });
+    expect(new Set(sizes)).toEqual(new Set([25]));
+  });
+
   it('retries the same rows after a failed request', async () => {
     batch
       .mockResolvedValueOnce({ success: false, code: 'NETWORK_ERROR' })
