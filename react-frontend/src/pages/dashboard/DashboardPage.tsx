@@ -411,7 +411,8 @@ export function DashboardPage() {
 
         {/* "Where are you based?" — for a member with no town. Deliberately has no
             dismiss control: it stays until they add one (owner decision, 9 Oct 2026).
-            A member still in onboarding sees the banner above instead. */}
+            Shown whether or not onboarding is finished; a member still in onboarding
+            may see the banner above as well. */}
         {shouldShowLocationReminder(user) && (
           <motion.div variants={itemVariants}>
             <LocationMissingPrompt />

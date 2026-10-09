@@ -84,7 +84,9 @@ describe('LocationMissingPrompt', () => {
       ['finished onboarding, server says no location', { onboarding_completed: true, location_missing: true }, true],
       ['has a location', { onboarding_completed: true, location_missing: false }, false],
       ['flag absent (not reported)', { onboarding_completed: true }, false],
-      ['not onboarded yet (the onboarding banner covers them)', { onboarding_completed: false, location_missing: true }, false],
+      ['not onboarded yet, server says no location', { onboarding_completed: false, location_missing: true }, true],
+      ['not onboarded yet, has a location', { onboarding_completed: false, location_missing: false }, false],
+      ['not onboarded yet, flag absent', { onboarding_completed: false }, false],
     ])('%s', (_name, fields, expected) => {
       expect(shouldShowLocationReminder({ ...fields } as never)).toBe(expected);
     });
@@ -110,11 +112,18 @@ describe('LocationMissingPrompt', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('renders nothing for a member who has not finished onboarding', () => {
+  it('still asks a member who has not finished onboarding (their community may not force the wizard)', () => {
     signInAs({ onboarding_completed: false, location_missing: true });
     render(<LocationMissingPrompt />);
 
-    expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
+    expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
+  });
+
+  it('renders nothing for a member who has not finished onboarding but has a location', () => {
+    signInAs({ onboarding_completed: false, location_missing: false, location: 'Cork' });
+    const { container } = render(<LocationMissingPrompt />);
+
+    expect(container.textContent).toBe('');
   });
 
   it('can never be hidden: there is no dismiss control and nothing is remembered', () => {

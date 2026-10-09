@@ -286,12 +286,29 @@ describe('DashboardPage', () => {
       expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
     });
 
-    it('leaves a member still in onboarding to the onboarding banner', async () => {
+    it('also asks a member still in onboarding (alongside the onboarding banner)', async () => {
       await signInAs({ onboarding_completed: false, location_missing: true });
 
       render(<DashboardPage />);
 
       expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+      expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
+    });
+
+    it('does not ask a member still in onboarding who has a location', async () => {
+      await signInAs({ onboarding_completed: false, location_missing: false, location: 'Cork' });
+
+      render(<DashboardPage />);
+
+      expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+      expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
+    });
+
+    it('does not ask a member still in onboarding when the flag is absent', async () => {
+      await signInAs({ onboarding_completed: false });
+
+      render(<DashboardPage />);
+
       expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
     });
   });

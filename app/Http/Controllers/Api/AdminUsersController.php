@@ -108,7 +108,9 @@ class AdminUsersController extends BaseApiController
                     // Members the clients ask "Where are you based?" — same rule as
                     // `location_missing` on /v2/users/me (NULL, empty or whitespace-only).
                     // REGEXP rather than TRIM() so tabs/newlines count, as they do in PHP's trim().
-                    $conditions[] = "(u.location IS NULL OR u.location REGEXP '^[[:space:]]*$')";
+                    // Deleted and anonymised accounts are excluded: erasure nulls the location,
+                    // but those rows can never be asked.
+                    $conditions[] = "(u.location IS NULL OR u.location REGEXP '^[[:space:]]*$') AND u.deleted_at IS NULL AND u.anonymized_at IS NULL";
                     break;
             }
         }

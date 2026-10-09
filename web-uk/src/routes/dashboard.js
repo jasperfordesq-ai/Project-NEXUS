@@ -261,8 +261,9 @@ function isGoingEvent(event) {
 }
 
 // The "Where are you based?" reminder and its outcome messages. The reminder is
-// shown only when the API says the member's location is empty (a literal `true`)
-// and onboarding is finished — a member still in onboarding is asked there instead.
+// shown whenever the API says the member's location is empty (a literal `true`),
+// whether or not onboarding is finished: a community that switches the wizard off or
+// makes it optional would otherwise never ask an admin-created or imported member.
 // It deliberately has no dismiss control: it stays until a town is added.
 const LOCATION_NOTICES = {
   'location-saved': { kind: 'success', key: 'dashboard.location_saved' },
@@ -391,7 +392,7 @@ router.get('/', asyncRoute(async (req, res) => {
     balance,
     balanceLabel: t('dashboard.hours_value', { value: formatOneDecimal(balance) }),
     onboardingCompleted: onboardingCompleted(onboardingData),
-    showLocationReminder: onboardingCompleted(onboardingData) && safeProfile.location_missing === true,
+    showLocationReminder: safeProfile.location_missing === true,
     locationNotice: locationNotice(req.query.status, t),
     exchangeAttention: normalizeExchangeAttention(exchangeAttentionData, tc),
     endorsements: normalizeEndorsements(endorsementsData, tc),

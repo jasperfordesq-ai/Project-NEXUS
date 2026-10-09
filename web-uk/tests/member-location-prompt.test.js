@@ -280,6 +280,17 @@ describe('dashboard: the location reminder', () => {
     expect(res.text).toMatch(/<input[^>]*name="location"[^>]*autocomplete="address-level2"/);
   });
 
+  it('also asks a member whose onboarding is not finished (the wizard may be off or optional)', async () => {
+    api.getProfile.mockResolvedValue({ data: { id: 1, location_missing: true } });
+    api.getOnboardingStatus.mockResolvedValue({ data: { onboarding_completed: false } });
+
+    const res = await request(app()).get('/dashboard');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('dashboard-location-title');
+    expect(res.text).toContain('dashboard-onboarding-title');
+  });
+
   it('has no way to dismiss the reminder', async () => {
     api.getProfile.mockResolvedValue({ data: { id: 1, location_missing: true } });
 
@@ -295,7 +306,8 @@ describe('dashboard: the location reminder', () => {
     ['location_missing is false', { location_missing: false }, { onboarding_completed: true }],
     ['location_missing is absent', {}, { onboarding_completed: true }],
     ['location_missing is the string "true"', { location_missing: 'true' }, { onboarding_completed: true }],
-    ['onboarding is not finished', { location_missing: true }, { onboarding_completed: false }]
+    ['onboarding is not finished and location_missing is false', { location_missing: false }, { onboarding_completed: false }],
+    ['onboarding is not finished and location_missing is absent', {}, { onboarding_completed: false }]
   ])('shows nothing when %s', async (_label, profile, onboarding) => {
     api.getProfile.mockResolvedValue({ data: { id: 1, ...profile } });
     api.getOnboardingStatus.mockResolvedValue({ data: onboarding });

@@ -2466,7 +2466,7 @@ app.post('/events/:id(\\d+)/rsvp/remove', renderLegacyNotFound);
 app.post('/members/:id(\\d+)/connect', renderLegacyNotFound);
 
 // Protected routes with CSRF and rate limiting
-app.use('/dashboard', doubleCsrfProtection, dashboardRoutes);
+app.use('/dashboard', doubleCsrfProtection, postOnly(formLimiter), dashboardRoutes);
 app.use('/listings', doubleCsrfProtection, postOnly(formLimiter), listingsRoutes);
 // /profile carries the two-factor forms (code entry, recovery codes, disable);
 // throttle their POSTs like every other form-bearing route.

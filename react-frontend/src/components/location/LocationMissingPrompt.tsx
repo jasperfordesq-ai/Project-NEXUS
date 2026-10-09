@@ -10,10 +10,12 @@
  *  - It can NEVER be hidden. There is deliberately no dismiss control, no
  *    "remind me later", and nothing is remembered in the browser. It stays
  *    until the member saves a town.
- *  - It is shown only when the SERVER says the member has no location
- *    (`location_missing`) and the member has finished onboarding — a member
- *    still in onboarding sees the onboarding banner, and that wizard asks
- *    the same question.
+ *  - It is shown whenever the SERVER says the member has no location
+ *    (`location_missing === true`), whether or not onboarding is finished.
+ *    A member whose community forces the wizard never reaches the home page
+ *    before answering it; a member in a community where the wizard is off or
+ *    optional (e.g. an admin-created or imported member) would otherwise never
+ *    be asked. Such a member may see this card beside the onboarding banner.
  *  - Nothing is forced on the server: this is a firm, permanent prompt, not a gate.
  */
 
@@ -39,7 +41,7 @@ import type { User } from '@/types/api';
 
 /** The one rule for when the reminder appears. */
 export function shouldShowLocationReminder(user: User | null | undefined): boolean {
-  return user?.onboarding_completed === true && isLocationMissing(user);
+  return isLocationMissing(user);
 }
 
 export function LocationMissingPrompt() {

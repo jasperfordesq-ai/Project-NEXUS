@@ -209,6 +209,12 @@ class AdminUsersControllerTest extends TestCase
         $withTabs = $make("\t \n");
         $withTown = $make('Cork');
 
+        // Deleted and anonymised accounts lose their location, but can never be asked for one.
+        $deleted = $make(null);
+        DB::table('users')->where('id', $deleted->id)->update(['deleted_at' => now()]);
+        $anonymised = $make(null);
+        DB::table('users')->where('id', $anonymised->id)->update(['anonymized_at' => now()]);
+
         // A member with no location in ANOTHER community must never be listed.
         DB::table('tenants')->insertOrIgnore([
             'id' => 998,
@@ -236,6 +242,8 @@ class AdminUsersControllerTest extends TestCase
         $this->assertContains($withTabs->id, $ids);
         $this->assertNotContains($withTown->id, $ids);
         $this->assertNotContains($foreign->id, $ids);
+        $this->assertNotContains($deleted->id, $ids);
+        $this->assertNotContains($anonymised->id, $ids);
         $this->assertCount(4, $ids);
 
         // And the filter really is the thing narrowing the list: without it the
