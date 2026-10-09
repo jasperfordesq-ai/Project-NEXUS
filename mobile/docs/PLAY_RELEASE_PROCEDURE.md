@@ -470,8 +470,8 @@ SHA-256 `8A23136EE8D15A31FAC14270A490E8CCB1145B371EBEA601B80F1E95BF65B8FD`. The 
 
 - 🔴 **Console slot, 2026-10-09:** `u/0` and `u/3` opened the terms page for `jasper.ford.esq`,
   `u/1` was JasperHampton, and `u/2` asked the owner to re-verify their password ("Verify it's you").
-  Adding `?authuser=jasper@hour-timebank.ie` to the Console URL resolves the right slot without
-  guessing; it landed on `u/2` once the owner had signed in again.
+  Adding `?authuser=<the owning account's address>` to the Console URL resolves the right slot
+  without guessing; it landed on `u/2` once the owner had signed in again.
 - 🔴 **Drop only the `.aab`.** The owner dragged in the two `.sha256` files that sit beside it in
   `releases/android/play/` as well; Play listed them as failed uploads with "Upload a valid app
   bundle". Dismissing the two error rows (✕) cleared the message and left bundle 23 attached.
