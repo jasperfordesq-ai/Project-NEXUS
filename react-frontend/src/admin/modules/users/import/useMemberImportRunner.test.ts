@@ -48,7 +48,7 @@ describe('useMemberImportRunner', () => {
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
     expect(result.current.state.created).toBe(60);
     expect(batch.mock.calls[0]).toEqual(['id', 0, 25, false]);
-    expect(batch.mock.calls[1][3]).toBeUndefined(); // attestation is sent with the first batch only
+    expect(batch.mock.calls[1]![3]).toBeUndefined(); // attestation is sent with the first batch only
   });
 
   it('grows quick batches and shrinks slow ones within 10–200', async () => {
@@ -61,8 +61,8 @@ describe('useMemberImportRunner', () => {
     const { result } = renderHook(() => useMemberImportRunner(FAST));
     act(() => result.current.start('id', 400, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
-    expect(sizes[1]).toBeGreaterThan(sizes[0]);
-    expect(sizes[3]).toBeLessThan(sizes[2]);
+    expect(sizes[1]).toBeGreaterThan(sizes[0]!);
+    expect(sizes[3]).toBeLessThan(sizes[2]!);
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(10);
     expect(Math.max(...sizes)).toBeLessThanOrEqual(200);
   });
@@ -74,8 +74,8 @@ describe('useMemberImportRunner', () => {
     const { result } = renderHook(() => useMemberImportRunner(FAST));
     act(() => result.current.start('id', 20, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'), { timeout: 5000 });
-    expect(batch.mock.calls[0][1]).toBe(0);
-    expect(batch.mock.calls[1][1]).toBe(0);
+    expect(batch.mock.calls[0]![1]).toBe(0);
+    expect(batch.mock.calls[1]![1]).toBe(0);
   });
 
   it('waits and retries when the import is busy', async () => {
@@ -85,7 +85,7 @@ describe('useMemberImportRunner', () => {
     const { result } = renderHook(() => useMemberImportRunner(FAST));
     act(() => result.current.start('id', 20, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'), { timeout: 5000 });
-    expect(batch.mock.calls[1][1]).toBe(0);
+    expect(batch.mock.calls[1]![1]).toBe(0);
   });
 
   it('waits out a rate limit without counting it as a failure', async () => {
@@ -141,7 +141,7 @@ describe('useMemberImportRunner', () => {
     act(() => result.current.start('id', 12, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
     expect(batch).toHaveBeenCalledTimes(2);
-    expect(batch.mock.calls[1][1]).toBe(12);
+    expect(batch.mock.calls[1]![1]).toBe(12);
   });
 
   it('carries the held and incomplete-identity details through', async () => {
@@ -188,7 +188,7 @@ describe('useMemberImportRunner', () => {
     const { result } = renderHook(() => useMemberImportRunner(FAST));
     act(() => result.current.start('id', 100, false));
     await waitFor(() => expect(result.current.state.phase).toBe('completed'));
-    expect(batch.mock.calls[2][1]).toBe(25);
+    expect(batch.mock.calls[2]![1]).toBe(25);
   });
 
   it('pauses between responses that make no progress, then gives up', async () => {

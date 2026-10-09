@@ -35,7 +35,7 @@ function serverClean(raw: string): string {
 
 /** The single data cell buildCsv writes for a value, with CSV quoting undone. */
 function writtenCell(value: string): string {
-  const line = buildCsv(['h'], [[value]]).slice(BOM.length).split('\r\n')[1];
+  const line = buildCsv(['h'], [[value]]).slice(BOM.length).split('\r\n')[1] as string;
   return line.startsWith('"') ? line.slice(1, -1).replace(/""/g, '"') : line;
 }
 

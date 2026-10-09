@@ -24,7 +24,7 @@
     "src/admin/api/adminApi.test.ts": {
       "TS2345": 3,
       "TS2353": 3,
-      "TS2488": 2,
+      "TS2488": 1,
       "TS2532": 1
     },
     "src/admin/api/billingApi.test.ts": {

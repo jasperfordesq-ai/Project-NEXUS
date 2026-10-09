@@ -31,7 +31,7 @@ function state(overrides: Partial<RunnerState> = {}): RunnerState {
 function announced(container: HTMLElement): string {
   const regions = container.querySelectorAll('[aria-live="polite"]');
   expect(regions).toHaveLength(1);
-  return regions[0].textContent ?? '';
+  return regions[0]!.textContent ?? '';
 }
 
 describe('ImportProgress live region', () => {

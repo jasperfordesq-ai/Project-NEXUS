@@ -13,7 +13,7 @@ import { buildCsv } from './csvFiles';
 const { mockApi, mockRunner, mockToast, downloadText, fileToBase64 } = vi.hoisted(() => ({
   mockApi: { check: vi.fn(), downloadTemplate: vi.fn(), batch: vi.fn() },
   mockRunner: { state: {} as RunnerState, start: vi.fn(), stop: vi.fn() },
-  mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), showToast: vi.fn() },
+  mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() },
   downloadText: vi.fn(),
   fileToBase64: vi.fn(),
 }));
@@ -296,7 +296,7 @@ describe('MemberImportModal', () => {
       const many = Array.from({ length: 230 }, (_, i) => issue(i + 2, 'invalid_email'));
       const user = await checkWith(problems(many));
       await user.click(await screen.findByRole('button', { name: 'Download the list of problems' }));
-      const csv = downloadText.mock.calls[0][0] as string;
+      const csv = downloadText.mock.calls[0]![0] as string;
       expect(csv.split('\r\n').filter(Boolean)).toHaveLength(231); // heading + 230
       expect(csv).toContain('Row,Column,Problem');
     });
@@ -304,7 +304,7 @@ describe('MemberImportModal', () => {
     it('writes a whole-file problem as "Whole file" in the downloaded list, never 0', async () => {
       const user = await checkWith(problems([issue(0, 'already_member_unmatched', null), issue(3, 'invalid_email')]));
       await user.click(await screen.findByRole('button', { name: 'Download the list of problems' }));
-      const lines = (downloadText.mock.calls[0][0] as string).split('\r\n').filter(Boolean);
+      const lines = (downloadText.mock.calls[0]![0] as string).split('\r\n').filter(Boolean);
       expect(lines[1]).toMatch(/^Whole file,Whole row,/);
       expect(lines[2]).toMatch(/^3,Email,/);
       expect(lines.some((l) => l.startsWith('0,'))).toBe(false);
@@ -473,7 +473,7 @@ describe('MemberImportModal', () => {
       await finishWith({ phase: 'failed', nextIndex: 1, created: 1, total: 5, errorCode: 'NETWORK_ERROR' });
       const alerts = await screen.findAllByRole('alert');
       expect(alerts[0]).toHaveTextContent('The connection to the server was lost');
-      await waitFor(() => expect(document.activeElement).toContainElement(alerts[0]));
+      await waitFor(() => expect(document.activeElement).toContainElement(alerts[0]!));
     });
 
     it('formats the imported count with the locale formatter', async () => {
@@ -496,7 +496,7 @@ describe('MemberImportModal', () => {
     it('offers the list of members whose balance started at 0, with their rows', async () => {
       const user = await finishWith({ phase: 'completed', nextIndex: 5, total: 5, created: 5, zeroed: 1 });
       await user.click(await screen.findByRole('button', { name: 'Download the list of members whose balance started at 0' }));
-      const csv = downloadText.mock.calls[0][0] as string;
+      const csv = downloadText.mock.calls[0]![0] as string;
       expect(csv).toContain('Row,first_name');
       expect(csv).toContain('4,F2,L2,m2@example.com');
     });
