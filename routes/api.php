@@ -1330,6 +1330,9 @@ Route::middleware(['feature:volunteering', 'feature:organisations'])->group(func
     Route::get('/v2/volunteering/organisations/{id}/wallet/transactions', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletTransactions']);
     Route::post('/v2/volunteering/organisations/{id}/wallet/deposit', [\App\Http\Controllers\Api\VolunteerController::class, 'orgWalletDeposit']);
     Route::get('/v2/volunteering/organisations/{id}/volunteers', [\App\Http\Controllers\Api\VolunteerController::class, 'orgVolunteers']);
+    Route::post('/v2/volunteering/organisations/{id}/volunteers/{userId}/retire', [\App\Http\Controllers\Api\VolunteerController::class, 'retireOrgVolunteer'])->whereNumber(['id', 'userId']);
+    Route::post('/v2/volunteering/organisations/{id}/volunteers/{userId}/reinstate', [\App\Http\Controllers\Api\VolunteerController::class, 'reinstateOrgVolunteer'])->whereNumber(['id', 'userId']);
+    Route::delete('/v2/volunteering/organisations/{id}/volunteers/{userId}', [\App\Http\Controllers\Api\VolunteerController::class, 'removeOrgVolunteer'])->whereNumber(['id', 'userId']);
     Route::get('/v2/volunteering/organisations/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'orgApplications']);
     Route::get('/v2/volunteering/organisations/{id}/opportunities', [\App\Http\Controllers\Api\VolunteerController::class, 'orgOpportunities'])->whereNumber('id');
     Route::get('/v2/volunteering/organisations/{id}/hours/pending', [\App\Http\Controllers\Api\VolunteerController::class, 'orgHoursPending']);

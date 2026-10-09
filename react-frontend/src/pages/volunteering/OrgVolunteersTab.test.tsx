@@ -10,6 +10,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { api } from '@/lib/api';
+import type { ApiResponse } from '@/lib/api';
 import { createMockContexts } from '@/test/mock-contexts';
 
 vi.mock('@/lib/api', () => ({
@@ -23,6 +24,9 @@ vi.mock('@/lib/api', () => ({
 }));
 
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
+const mockConfirm = vi.hoisted(() => vi.fn());
+
+vi.mock('@/components/ui/ConfirmDialog', () => ({ useConfirm: () => mockConfirm }));
 
 vi.mock('@/contexts', () =>
   createMockContexts({
@@ -66,17 +70,19 @@ const VOLUNTEERS = [
   },
 ];
 
+type TestVolunteer = (typeof VOLUNTEERS)[number] & { retired_at?: string | null };
+
 /** Build a successful API response object matching how OrgVolunteersTab reads it */
 function volunteerResponse(
-  items: typeof VOLUNTEERS,
-  { cursor = null, has_more = false } = {}
-) {
+  items: TestVolunteer[],
+  { cursor = null as string | null, has_more = false } = {}
+): ApiResponse<TestVolunteer[]> {
   return {
     success: true,
     // Mirrors the real backend shape after api.get() unwraps the envelope:
     // response.data = Volunteer[] (read via extractCollectionItems), response.meta = pagination
     data: items,
-    meta: { cursor, has_more },
+    meta: { cursor, has_more } as ApiResponse['meta'],
   };
 }
 
@@ -227,5 +233,92 @@ describe('OrgVolunteersTab', () => {
     expect(screen.getByText(/12/)).toBeInTheDocument();
     // applications_count for Alice is 3
     expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
+  it('retires a volunteer after confirmation and takes them off the active list', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse(VOLUNTEERS));
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: { user_id: 10, released_shifts: 0 } });
+    mockConfirm.mockResolvedValueOnce(true);
+
+    render(<OrgVolunteersTab orgId={7} />);
+    await waitFor(() => expect(screen.getByText('Alice Brown')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retire Alice Brown' }));
+
+    await waitFor(() => expect(screen.queryByText('Alice Brown')).not.toBeInTheDocument());
+    expect(mockConfirm).toHaveBeenCalledTimes(1);
+    expect(api.post).toHaveBeenCalledWith('/v2/volunteering/organisations/7/volunteers/10/retire', {});
+    expect(mockToast.success).toHaveBeenCalledWith('Alice Brown has been retired.');
+    expect(screen.getByText('Bob Green')).toBeInTheDocument();
+  });
+
+  it('does nothing when the retire confirmation is cancelled', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse(VOLUNTEERS));
+    mockConfirm.mockResolvedValueOnce(false);
+
+    render(<OrgVolunteersTab orgId={7} />);
+    await waitFor(() => expect(screen.getByText('Alice Brown')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retire Alice Brown' }));
+
+    await waitFor(() => expect(mockConfirm).toHaveBeenCalledTimes(1));
+    expect(api.post).not.toHaveBeenCalled();
+    expect(screen.getByText('Alice Brown')).toBeInTheDocument();
+  });
+
+  it('removes a volunteer from the organisation after confirmation', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse(VOLUNTEERS));
+    vi.mocked(api.delete).mockResolvedValueOnce({ success: true, data: { user_id: 11, removed_roles: 1 } });
+    mockConfirm.mockResolvedValueOnce(true);
+
+    render(<OrgVolunteersTab orgId={7} />);
+    await waitFor(() => expect(screen.getByText('Bob Green')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Bob Green' }));
+
+    await waitFor(() => expect(screen.queryByText('Bob Green')).not.toBeInTheDocument());
+    expect(api.delete).toHaveBeenCalledWith('/v2/volunteering/organisations/7/volunteers/11');
+    expect(mockToast.success).toHaveBeenCalledWith('Bob Green has been removed.');
+  });
+
+  it('keeps the volunteer and shows the server message when an action fails', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse(VOLUNTEERS));
+    vi.mocked(api.delete).mockResolvedValueOnce({ success: false, error: 'Not allowed' });
+    mockConfirm.mockResolvedValueOnce(true);
+
+    render(<OrgVolunteersTab orgId={7} />);
+    await waitFor(() => expect(screen.getByText('Bob Green')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Bob Green' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Not allowed'));
+    expect(screen.getByText('Bob Green')).toBeInTheDocument();
+  });
+
+  it('lists retired volunteers on the Retired tab and reinstates without asking', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce(volunteerResponse(VOLUNTEERS));
+    vi.mocked(api.get).mockResolvedValueOnce(
+      volunteerResponse([{ ...VOLUNTEERS[0], retired_at: '2026-10-01 10:00:00' }])
+    );
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: { user_id: 10 } });
+
+    render(<OrgVolunteersTab orgId={7} />);
+    await waitFor(() => expect(screen.getByText('Bob Green')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Retired' }));
+
+    await waitFor(() =>
+      expect(api.get).toHaveBeenLastCalledWith(expect.stringContaining('status=retired'))
+    );
+    await waitFor(() => expect(screen.getByText('Alice Brown')).toBeInTheDocument());
+    expect(screen.queryByText('Bob Green')).not.toBeInTheDocument();
+    expect(screen.getByText(/^Retired .*2026/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reinstate Alice Brown' }));
+
+    await waitFor(() => expect(screen.queryByText('Alice Brown')).not.toBeInTheDocument());
+    expect(mockConfirm).not.toHaveBeenCalled();
+    expect(api.post).toHaveBeenCalledWith('/v2/volunteering/organisations/7/volunteers/10/reinstate', {});
+    expect(mockToast.success).toHaveBeenCalledWith('Alice Brown is back on your active roster.');
   });
 });

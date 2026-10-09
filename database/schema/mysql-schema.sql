@@ -20801,6 +20801,27 @@ CREATE TABLE `vol_org_deposit_receipts` (
   UNIQUE KEY `vol_org_deposit_receipt_unique` (`tenant_id`,`user_id`,`fingerprint`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vol_org_retired_volunteers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vol_org_retired_volunteers` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `organization_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `retired_by` int(11) DEFAULT NULL,
+  `retired_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_vol_org_retired` (`tenant_id`,`organization_id`,`user_id`),
+  KEY `idx_vol_org_retired_user` (`user_id`),
+  KEY `fk_vol_org_retired_org` (`organization_id`),
+  KEY `fk_vol_org_retired_by` (`retired_by`),
+  CONSTRAINT `fk_vol_org_retired_by` FOREIGN KEY (`retired_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_vol_org_retired_org` FOREIGN KEY (`organization_id`) REFERENCES `vol_organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_vol_org_retired_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_vol_org_retired_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_org_transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21936,7 +21957,8 @@ INSERT INTO `laravel_migrations` VALUES
 (465,'2026_10_05_170000_tighten_fundraising_handover_guard',147),
 (477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149),
 (482,'2026_10_09_100000_create_member_invitation_outbox_table',153),
-(483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153);
+(483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153),
+(484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

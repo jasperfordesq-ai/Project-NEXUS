@@ -1829,8 +1829,8 @@
       "TS2532": 1
     },
     "src/pages/volunteering/OrgVolunteersTab.test.tsx": {
-      "TS2322": 2,
-      "TS2345": 9
+      "TS2322": 1,
+      "TS2345": 1
     },
     "src/pages/volunteering/OrgWalletTab.test.tsx": {
       "TS2741": 1
@@ -1882,6 +1882,6 @@
   },
   "totals": {
     "fileCount": 555,
-    "errorCount": 1684
+    "errorCount": 1674
   }
 }

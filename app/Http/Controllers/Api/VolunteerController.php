@@ -810,7 +810,10 @@ class VolunteerController extends BaseApiController
             SELECT
                 (SELECT COUNT(DISTINCT va.user_id) FROM vol_applications va
                  JOIN vol_opportunities vo ON va.opportunity_id = vo.id
-                 WHERE vo.organization_id = ? AND va.tenant_id = ? AND va.status = 'approved') as total_volunteers,
+                 WHERE vo.organization_id = ? AND va.tenant_id = ? AND va.status = 'approved'
+                   AND NOT EXISTS (SELECT 1 FROM vol_org_retired_volunteers r
+                                   WHERE r.tenant_id = va.tenant_id AND r.organization_id = vo.organization_id
+                                     AND r.user_id = va.user_id)) as total_volunteers,
                 (SELECT COUNT(*) FROM vol_applications va2
                  JOIN vol_opportunities vo2 ON va2.opportunity_id = vo2.id
                  WHERE vo2.organization_id = ? AND va2.tenant_id = ? AND va2.status = 'pending') as pending_applications,
@@ -913,8 +916,12 @@ class VolunteerController extends BaseApiController
         $orgId = (int) $id;
         $limit = $this->queryInt('per_page', 20, 1, 50);
         $cursor = $this->query('cursor');
+        // Active roster by default; ?status=retired lists the volunteers the
+        // organisation has retired (VolunteerRosterService::retire()).
+        $retired = $this->query('status') === 'retired';
+        $retiredClause = $retired ? ' AND r.id IS NOT NULL' : ' AND r.id IS NULL';
 
-        $params = [$orgId, $tenantId, $tenantId, $orgId, $tenantId];
+        $params = [$orgId, $tenantId, $tenantId, $orgId, $orgId, $tenantId];
         $cursorClause = '';
         if ($cursor) {
             $cursorClause = ' AND u.id < ?';
@@ -931,13 +938,16 @@ class VolunteerController extends BaseApiController
                    COALESCE((SELECT SUM(vl.hours) FROM vol_logs vl
                              WHERE vl.user_id = u.id AND vl.organization_id = ?
                                AND vl.tenant_id = ? AND vl.status = 'approved'), 0) as total_hours,
-                   COUNT(DISTINCT va.id) as applications_count
+                   COUNT(DISTINCT va.id) as applications_count,
+                   r.retired_at
             FROM users u
             INNER JOIN vol_applications va ON va.user_id = u.id AND va.tenant_id = u.tenant_id AND va.status = 'approved' AND va.tenant_id = ?
             INNER JOIN vol_opportunities vo ON va.opportunity_id = vo.id AND vo.tenant_id = va.tenant_id AND vo.organization_id = ?
+            LEFT JOIN vol_org_retired_volunteers r ON r.user_id = u.id AND r.tenant_id = u.tenant_id AND r.organization_id = ?
             WHERE u.tenant_id = ?
+            {$retiredClause}
             {$cursorClause}
-            GROUP BY u.id, u.name, u.avatar_url, u.email
+            GROUP BY u.id, u.name, u.avatar_url, u.email, r.retired_at
             ORDER BY u.id DESC
             LIMIT ?
         ", $params);
@@ -953,11 +963,72 @@ class VolunteerController extends BaseApiController
             'total_hours' => (float) $r->total_hours,
             'applications_count' => (int) $r->applications_count,
             'applied_at' => $r->applied_at,
+            'retired_at' => $r->retired_at,
         ], $rows);
 
         $lastItem = end($items);
         $nextCursor = $lastItem ? (string) $lastItem['id'] : null;
         return $this->respondWithCollection($items, $hasMore ? $nextCursor : null, $limit, $hasMore);
+    }
+
+    /**
+     * POST /v2/volunteering/organisations/{id}/volunteers/{userId}/retire
+     */
+    public function retireOrgVolunteer($id, $userId): JsonResponse
+    {
+        return $this->changeRoster((int) $id, (int) $userId, 'retire');
+    }
+
+    /**
+     * POST /v2/volunteering/organisations/{id}/volunteers/{userId}/reinstate
+     */
+    public function reinstateOrgVolunteer($id, $userId): JsonResponse
+    {
+        return $this->changeRoster((int) $id, (int) $userId, 'reinstate');
+    }
+
+    /**
+     * DELETE /v2/volunteering/organisations/{id}/volunteers/{userId}
+     */
+    public function removeOrgVolunteer($id, $userId): JsonResponse
+    {
+        return $this->changeRoster((int) $id, (int) $userId, 'remove');
+    }
+
+    /**
+     * Roster changes are open to exactly those who can see the roster
+     * (ensureOrgAccess): the organisation's creator, its owners and admins,
+     * and community admins.
+     */
+    private function changeRoster(int $orgId, int $volunteerId, string $action): JsonResponse
+    {
+        $this->ensureOrganisationFeature();
+        $this->rateLimit('vol_org_roster_change', 60, 60);
+        $actorId = $this->getUserId();
+        if (!$this->ensureOrgAccess($orgId)) {
+            return $this->respondWithError('FORBIDDEN', __('api_controllers_2.volunteer.access_denied'), null, 403);
+        }
+
+        $roster = app(\App\Services\VolunteerRosterService::class);
+        $tenantId = TenantContext::getId();
+        $result = match ($action) {
+            'retire' => $roster->retire($tenantId, $orgId, $actorId, $volunteerId),
+            'reinstate' => $roster->reinstate($tenantId, $orgId, $actorId, $volunteerId),
+            default => $roster->remove($tenantId, $orgId, $actorId, $volunteerId),
+        };
+
+        if (!$result['ok']) {
+            [$status, $key] = match ($result['code'] ?? '') {
+                'NOT_VOLUNTEER' => [404, 'api.vol_roster_not_volunteer'],
+                'ALREADY_RETIRED' => [409, 'api.vol_roster_already_retired'],
+                'NOT_RETIRED' => [404, 'api.vol_roster_not_retired'],
+                default => [500, 'api.server_error'],
+            };
+            return $this->respondWithError($result['code'] ?? 'ERROR', __($key), null, $status);
+        }
+
+        unset($result['ok']);
+        return $this->respondWithData(['user_id' => $volunteerId] + $result);
     }
 
     public function orgApplications($id): JsonResponse
