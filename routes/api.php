@@ -1836,6 +1836,11 @@ Route::post('/v2/admin/members/import/check', [\App\Http\Controllers\Api\AdminMe
 Route::post('/v2/admin/members/import/{importId}/batch', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'batch'])
     ->whereUuid('importId')->middleware(['step-up', 'throttle:member-import']);
 Route::get('/v2/admin/members/import/template', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'template']);
+// Export for re-import (9 Oct 2026): every member in the template's columns.
+// Admin only; the per-admin limit and the audit record live in the controller.
+// No step-up yet: the browser's file download cannot answer the second-factor
+// prompt (it is handled for JSON requests only).
+Route::get('/v2/admin/members/export', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'export']);
 // Welcome invitations from the member list (9 Oct 2026). Admin only; both POSTs
 // only queue rows in the invitation outbox. Per-admin limits live in the controller.
 // Emailing every never-signed-in member asks for a fresh second factor, like the

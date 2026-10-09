@@ -8,8 +8,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\ActivityLog;
+use App\Services\AuditLogService;
 use App\Services\Identity\AdminCreatedAccountAdmission;
 use App\Services\MemberImport\InvitationOutbox;
+use App\Services\MemberImport\MemberExportCsv;
 use App\Services\MemberImport\MemberImportBusy;
 use App\Services\MemberImport\MemberImportChecker;
 use App\Services\MemberImport\MemberImportFile;
@@ -19,6 +22,7 @@ use App\Services\MemberImport\MemberImportRunner;
 use App\Services\MemberImport\MemberImportSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Admin member import (design: .local-docs-archive/member-import-export/).
@@ -33,10 +37,13 @@ class AdminMemberImportController extends BaseApiController
     protected bool $isV2Api = true;
 
     public const CHECKS_PER_MINUTE = 10;
+    public const EXPORTS_PER_WINDOW = 10;
+    public const EXPORT_WINDOW_SECONDS = 300;
 
     public function __construct(
         private readonly MemberImportChecker $checker,
         private readonly MemberImportRunner $runner,
+        private readonly AuditLogService $audit,
     ) {
     }
 
@@ -132,6 +139,33 @@ class AdminMemberImportController extends BaseApiController
         return response("\xEF\xBB\xBF" . implode(',', MemberImportFile::COLUMNS) . "\n", 200, [
             'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => 'attachment; filename="member_import_template.csv"',
+        ]);
+    }
+
+    /**
+     * GET /api/v2/admin/members/export — every member in the template's
+     * columns, for importing into another community (MemberExportCsv).
+     * Every member's email, phone and balance leave the platform, so the
+     * export is recorded before a byte is sent; if it cannot be recorded,
+     * nothing is sent.
+     */
+    public function export(): StreamedResponse
+    {
+        $adminId = $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+        // Per administrator, like the other exports that stream a whole table.
+        $this->rateLimit('member_export', self::EXPORTS_PER_WINDOW, self::EXPORT_WINDOW_SECONDS);
+
+        $rows = MemberExportCsv::count($tenantId);
+        ActivityLog::log($adminId, 'admin_member_export', "Exported {$rows} members in the import template's columns");
+        $this->audit->logAction($tenantId, MemberExportCsv::AUDIT_ACTION, $adminId, ['rows' => $rows]);
+
+        return response()->streamDownload(static function () use ($tenantId): void {
+            $out = fopen('php://output', 'wb');
+            MemberExportCsv::write($out, $tenantId);
+            fclose($out);
+        }, 'members-for-import-' . now()->format('Y-m-d') . '.csv', [
+            'Content-Type' => 'text/csv; charset=utf-8',
         ]);
     }
 }
