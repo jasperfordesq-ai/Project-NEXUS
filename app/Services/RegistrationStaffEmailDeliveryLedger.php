@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
 
 /**
  * Durable per-recipient claim state for registration staff email.
- * No caller or sender is wired until the registration commit boundary and
- * provider UNKNOWN reconciliation are proven together.
+ * Captured intent is claimed before the inline sender calls a provider.
+ * A false/ambiguous send result stays UNKNOWN until reconciliation.
  */
 final class RegistrationStaffEmailDeliveryLedger
 {
@@ -76,6 +76,58 @@ final class RegistrationStaffEmailDeliveryLedger
                 'updated_at' => now(),
             ]);
         return $claimed === 1 ? $token : null;
+    }
+
+    /**
+     * Atomically reserve a captured inline-send intent. A crash after this
+     * transition cannot cause an automatic second provider call on replay.
+     *
+     * @return array{id:int, token:string}|null
+     */
+    public static function claimCapturedForInline(int $tenantId, int $registrantId, int $recipientId): ?array
+    {
+        if ($tenantId <= 0 || $registrantId <= 0 || $recipientId <= 0) {
+            throw new \InvalidArgumentException('A valid tenant-scoped registration delivery is required');
+        }
+
+        $token = (string) Str::uuid();
+        $claimed = DB::table(self::TABLE)
+            ->where('tenant_id', $tenantId)
+            ->where('registrant_user_id', $registrantId)
+            ->where('recipient_user_id', $recipientId)
+            ->where('status', 'captured')
+            ->update([
+                'status' => 'claimed',
+                'claim_token' => $token,
+                'claimed_at' => now(),
+                'attempts' => DB::raw('attempts + 1'),
+                'updated_at' => now(),
+            ]);
+        if ($claimed !== 1) {
+            return null;
+        }
+
+        $id = (int) DB::table(self::TABLE)
+            ->where('tenant_id', $tenantId)
+            ->where('registrant_user_id', $registrantId)
+            ->where('recipient_user_id', $recipientId)
+            ->where('claim_token', $token)
+            ->value('id');
+        if ($id <= 0) {
+            throw new \RuntimeException('Claimed registration delivery was not found');
+        }
+        return ['id' => $id, 'token' => $token];
+    }
+
+    public static function hasIntentForRegistrant(int $tenantId, int $registrantId): bool
+    {
+        if ($tenantId <= 0 || $registrantId <= 0) {
+            return false;
+        }
+        return DB::table(self::TABLE)
+            ->where('tenant_id', $tenantId)
+            ->where('registrant_user_id', $registrantId)
+            ->exists();
     }
 
     /**

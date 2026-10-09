@@ -15,7 +15,7 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_legacy_inline_capture_is_tenant_scoped_unique_and_not_claimable(): void
+    public function test_inline_capture_is_tenant_scoped_unique_and_not_claimable_by_pending_worker(): void
     {
         $tenant = $this->tenant();
         $otherTenant = $this->tenant();
@@ -33,6 +33,24 @@ final class RegistrationStaffEmailDeliveryLedgerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         Ledger::captureInTransaction($tenant, $registrant, $foreign);
+    }
+
+    public function test_captured_inline_intent_can_be_claimed_only_once_and_resolved(): void
+    {
+        $tenant = $this->tenant();
+        $registrant = $this->user($tenant);
+        $recipient = $this->user($tenant, 'admin');
+        $id = Ledger::captureInTransaction($tenant, $registrant, $recipient);
+        $this->assertTrue(Ledger::hasIntentForRegistrant($tenant, $registrant));
+        $this->assertFalse(Ledger::hasIntentForRegistrant($tenant + 1, $registrant));
+
+        $claim = Ledger::claimCapturedForInline($tenant, $registrant, $recipient);
+        $this->assertSame($id, $claim['id'] ?? null);
+        $this->assertNull(Ledger::claimCapturedForInline($tenant, $registrant, $recipient));
+        $this->assertNull(Ledger::claimCapturedForInline($tenant + 1, $registrant, $recipient));
+        $this->assertTrue(Ledger::resolveClaim($tenant, $id, $claim['token'], 'accepted'));
+        $this->assertNull(Ledger::claimCapturedForInline($tenant, $registrant, $recipient));
+        $this->assertSame('accepted', DB::table('registration_staff_email_deliveries')->where('id', $id)->value('status'));
     }
 
     public function test_claim_token_and_unknown_outcome_cannot_be_replayed_or_reclaimed(): void

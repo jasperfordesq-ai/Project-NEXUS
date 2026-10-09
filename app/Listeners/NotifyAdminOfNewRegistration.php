@@ -12,6 +12,7 @@ use App\Events\UserRegistered;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Services\EmailDispatchService;
+use App\Services\RegistrationStaffEmailDeliveryLedger;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -118,17 +119,19 @@ class NotifyAdminOfNewRegistration
 
     public function handle(UserRegistered $event): void
     {
-        // Idempotency guard: suppress duplicate/concurrent deliveries so the admin
-        // fanout (email + bell to every admin) runs exactly once per event.
+        // Legacy events without captured intent still use the cache done key.
+        // For new registrations the durable per-recipient claim is authoritative:
+        // a done key must not hide a captured recipient after a partial fanout.
         $entityId = (int) ($event->user->id ?? 0);
         $tenantId = (int) ($event->tenantId ?? 0);
+        $ledgerManaged = RegistrationStaffEmailDeliveryLedger::hasIntentForRegistrant($tenantId, $entityId);
         $handledKey = null;
         $claimKey = null;
         $claimAcquired = false;
         if ($entityId > 0) {
             $handledKey = 'notify_admin_new_registration:done:' . $tenantId . ':' . $entityId;
             $claimKey = 'notify_admin_new_registration:claim:' . $tenantId . ':' . $entityId;
-            if (Cache::has($handledKey)) {
+            if (!$ledgerManaged && Cache::has($handledKey)) {
                 Log::info('NotifyAdminOfNewRegistration: duplicate fanout suppressed', ['entity_id' => $entityId, 'tenant_id' => $tenantId]);
                 return;
             }
@@ -202,7 +205,7 @@ class NotifyAdminOfNewRegistration
                 }
 
                 try {
-                    LocaleContext::withLocale($admin, function () use ($admin, $user, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $adminListUrl, $brokerListUrl) {
+                    LocaleContext::withLocale($admin, function () use ($admin, $user, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $adminListUrl, $brokerListUrl, $ledgerManaged) {
                         $adminName = $admin->first_name ?? $admin->name ?? 'Admin';
 
                         $plan = self::alertPlanFor($admin, $needsApproval, $adminQueueUrl, $brokerListUrl, $adminListUrl);
@@ -235,11 +238,40 @@ class NotifyAdminOfNewRegistration
                             ->button(__('emails_misc.admin_notify.' . $key . 'cta'), $ctaUrl)
                             ->render();
 
-                        if (!EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
-                            'tenant_id' => $event->tenantId,
-                            'idempotency_key' => $noticeKey,
-                        ])) {
-                            Log::warning('NotifyAdminOfNewRegistration: email send failed', ['admin_id' => $admin->id, 'email' => $adminEmail]);
+                        $claim = $ledgerManaged
+                            ? RegistrationStaffEmailDeliveryLedger::claimCapturedForInline(
+                                (int) $event->tenantId,
+                                (int) $user->id,
+                                (int) $admin->id,
+                            )
+                            : null;
+                        if ($ledgerManaged && $claim === null) {
+                            return;
+                        }
+
+                        $sent = false;
+                        try {
+                            $sent = EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
+                                'tenant_id' => $event->tenantId,
+                                'idempotency_key' => $noticeKey,
+                            ]);
+                        } finally {
+                            if ($claim !== null && !RegistrationStaffEmailDeliveryLedger::resolveClaim(
+                                (int) $event->tenantId,
+                                $claim['id'],
+                                $claim['token'],
+                                $sent ? 'accepted' : 'unknown',
+                                null,
+                                $sent ? null : 'INLINE_SEND_UNCONFIRMED',
+                            )) {
+                                throw new \RuntimeException('Registration staff-email claim could not be resolved');
+                            }
+                        }
+                        if (!$sent) {
+                            Log::warning('NotifyAdminOfNewRegistration: email send unconfirmed', [
+                                'admin_id' => $admin->id,
+                                'tenant_id' => $event->tenantId,
+                            ]);
                         }
                     });
                 } catch (\Throwable $e) {
@@ -252,8 +284,9 @@ class NotifyAdminOfNewRegistration
                 }
             }
 
-            // Mark handled only after the full fanout ran, so a duplicate delivery can't re-email admins.
-            if ($handledKey !== null) {
+            // The legacy cache gate remains only for events without captured
+            // intent. Managed email deduplication lives in the row claim.
+            if (!$ledgerManaged && $handledKey !== null) {
                 Cache::put($handledKey, 1, now()->addHours(24));
             }
         } finally {

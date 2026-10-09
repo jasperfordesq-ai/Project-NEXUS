@@ -7,6 +7,7 @@
 namespace Tests\Laravel\Feature\Console;
 
 use App\Core\TenantContext;
+use App\Events\UserRegistered;
 use App\Listeners\NotifyAdminOfNewRegistration;
 use App\Listeners\SendWelcomeNotification;
 use App\Models\User;
@@ -15,11 +16,13 @@ use App\Services\EmailDispatchService;
 use App\Services\MxRecordValidator;
 use App\Services\PwnedPasswordService;
 use App\Services\RegistrationService;
+use App\Services\RegistrationStaffEmailDeliveryLedger;
 use App\Services\TenantSettingsService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Tests\Laravel\TestCase;
 
@@ -98,7 +101,7 @@ class ActivationEmailQueueResilienceTest extends TestCase
         $this->assertSame(1, DB::table('registration_staff_email_deliveries')
             ->where('tenant_id', $tenantId)
             ->where('registrant_user_id', $userId)
-            ->where('status', 'captured')
+            ->where('status', 'accepted')
             ->count());
         $this->assertTrue(DB::table('email_verification_tokens')
             ->where('tenant_id', $tenantId)
@@ -136,6 +139,68 @@ class ActivationEmailQueueResilienceTest extends TestCase
         $this->assertSame(1, DB::table('registration_staff_email_deliveries')
             ->where('tenant_id', $tenantId)->where('registrant_user_id', $registrantId)->count());
         $this->assertContains('admin_new_registration', array_column($mailer->calls, 'category'));
+    }
+
+    public function test_partial_inline_result_stays_unknown_and_event_replay_does_not_resend_either_recipient(): void
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Synthetic partial registration tenant',
+            'slug' => 'partial-registration-' . uniqid(),
+            'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        TenantContext::setById($tenantId);
+        $accepted = 'accepted-' . uniqid() . '@project-nexus.testmail';
+        $unconfirmed = 'unconfirmed-' . uniqid() . '@project-nexus.testmail';
+        foreach ([$accepted, $unconfirmed] as $email) {
+            User::factory()->forTenant($tenantId)->create([
+                'role' => 'admin', 'status' => 'active', 'email' => $email,
+                'preferred_language' => 'en',
+            ]);
+        }
+        $mailer = new RegistrationInlineEmailDispatchService();
+        $mailer->failFor = [$unconfirmed];
+        app()->instance(EmailDispatchService::class, $mailer);
+
+        $data = $this->registrationData('partial-' . uniqid() . '@project-nexus.testmail', '');
+        unset($data['invite_code']);
+        $result = $this->registrationService()->register($data, $tenantId);
+        $this->assertArrayNotHasKey('error', $result);
+        $registrantId = (int) $result['user']['id'];
+        $statuses = DB::table('registration_staff_email_deliveries')
+            ->where('tenant_id', $tenantId)->where('registrant_user_id', $registrantId)
+            ->orderBy('id')->pluck('status')->all();
+        $this->assertSame(['accepted', 'unknown'], $statuses);
+        $before = count(array_filter($mailer->calls, static fn (array $call): bool => $call['category'] === 'admin_new_registration'));
+        $this->assertSame(2, $before);
+
+        $user = new User();
+        $user->id = $registrantId;
+        Cache::put('notify_admin_new_registration:done:' . $tenantId . ':' . $registrantId, 1, now()->addDay());
+        (new NotifyAdminOfNewRegistration())->handle(new UserRegistered($user, $tenantId));
+        $after = count(array_filter($mailer->calls, static fn (array $call): bool => $call['category'] === 'admin_new_registration'));
+        $this->assertSame($before, $after);
+    }
+
+    public function test_captured_intent_survives_a_stale_event_done_key(): void
+    {
+        $tenantId = $this->inviteOnlyTenant('CRASHGAP');
+        TenantContext::setById($tenantId);
+        $admin = NotifyAdminOfNewRegistration::recipientsFor($tenantId)->first();
+        $registrant = User::factory()->forTenant($tenantId)->create([
+            'role' => 'member', 'status' => 'pending',
+            'email' => 'captured-' . uniqid() . '@project-nexus.testmail',
+        ]);
+        $deliveryId = DB::transaction(static fn (): int => RegistrationStaffEmailDeliveryLedger::captureInTransaction(
+            $tenantId, (int) $registrant->id, (int) $admin->id,
+        ));
+        $mailer = new RegistrationInlineEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+        Cache::put('notify_admin_new_registration:done:' . $tenantId . ':' . $registrant->id, 1, now()->addDay());
+
+        (new NotifyAdminOfNewRegistration())->handle(new UserRegistered($registrant, $tenantId));
+
+        $this->assertSame(1, count(array_filter($mailer->calls, static fn (array $call): bool => $call['category'] === 'admin_new_registration')));
+        $this->assertSame('accepted', DB::table('registration_staff_email_deliveries')->where('id', $deliveryId)->value('status'));
     }
 
     public function test_lost_invite_race_rolls_back_account_and_alert_intent(): void
@@ -266,6 +331,9 @@ class RegistrationInlineEmailDispatchService extends EmailDispatchService
     /** @var list<array{to:string, subject:string, category:string|null, tenant_id:int|null}> */
     public array $calls = [];
 
+    /** @var list<string> */
+    public array $failFor = [];
+
     public function send(string $to, string $subject, string $body, array $options = []): bool
     {
         $this->calls[] = [
@@ -275,7 +343,7 @@ class RegistrationInlineEmailDispatchService extends EmailDispatchService
             'tenant_id' => isset($options['tenant_id']) ? (int) $options['tenant_id'] : null,
         ];
 
-        return true;
+        return !in_array($to, $this->failFor, true);
     }
 }
 
