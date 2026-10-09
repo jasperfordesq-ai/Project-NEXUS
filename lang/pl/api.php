@@ -586,6 +586,7 @@ return [
     'bulk_max_100' => 'Maksymalnie 100 rekordów na akcję zbiorczą',
     'bulk_ids_required' => 'Do akcji zbiorczych wymagana jest niepusta lista identyfikatorów.',
     'bulk_too_many' => 'Za dużo identyfikatorów. Maksymalnie :max na akcję zbiorczą.',
+    'member_invitations_count_changed' => 'Liczba członków do zaproszenia uległa zmianie. Sprawdź nową liczbę i potwierdź ponownie.',
     'vetting_bulk_invalid_action' => 'Nieprawidłowa akcja. Musi być: zweryfikuj, odrzuć lub usuń',
     'vetting_bulk_reject_reason_required' => 'Odrzucenie zbiorcze wymaga podania powodu',
     'file_upload_failed' => 'Nie przesłano żadnego pliku lub przesyłanie nie powiodło się',

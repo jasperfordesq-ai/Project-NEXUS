@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'Impossible de récupérer l\'aperçu pour cette URL',
     'bulk_ids_required' => 'Une liste non vide d’ID est requise pour les actions groupées.',
     'bulk_too_many' => 'Trop de pièces d\'identité. :max maximum par action groupée.',
+    'member_invitations_count_changed' => 'Le nombre de membres à inviter a changé. Vérifiez le nouveau nombre et confirmez de nouveau.',
     'total_hours_gt_zero' => 'Le total des heures doit être supérieur à 0',
     'unexpected_error' => 'Une erreur inattendue s\'est produite.',
     'access_denied' => 'Accès refusé',

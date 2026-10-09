@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'Níorbh fhéidir réamhamharc a fháil don URL seo',
     'bulk_ids_required' => 'Tá liosta aitheantais neamhfholamh ag teastáil le haghaidh bulcghníomhartha.',
     'bulk_too_many' => 'An iomarca aitheantais. Uasmhéid :max in aghaidh an bhulcghníomhaíochta.',
+    'member_invitations_count_changed' => 'Tá athrú tagtha ar líon na mball le cuireadh a thabhairt dóibh. Seiceáil an líon nua agus deimhnigh arís.',
     'total_hours_gt_zero' => 'Caithfidh na huaireanta iomlána a bheith níos mó ná 0',
     'unexpected_error' => 'Tharla earráid gan choinne.',
     'access_denied' => 'Rochtain diúltaithe',

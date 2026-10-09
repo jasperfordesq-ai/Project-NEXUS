@@ -1192,6 +1192,7 @@ return [
     'bulk_max_100'                         => 'Maximum 100 records per bulk action',
     'bulk_ids_required'                    => 'A non-empty list of IDs is required for bulk actions.',
     'bulk_too_many'                        => 'Too many IDs. Maximum :max per bulk action.',
+    'member_invitations_count_changed'     => 'The number of members to invite has changed. Check the new number and confirm again.',
     'vetting_bulk_invalid_action'          => 'Invalid action. Must be: verify, reject, or delete',
     'vetting_bulk_reject_reason_required'  => 'A reason is required for bulk rejection',
     'file_upload_failed'                   => 'No file was uploaded or upload failed',

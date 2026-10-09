@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'Die Vorschau für diese URL konnte nicht abgerufen werden',
     'bulk_ids_required' => 'Für Massenaktionen ist eine nicht leere Liste von IDs erforderlich.',
     'bulk_too_many' => 'Zu viele IDs. Maximal :max pro Massenaktion.',
+    'member_invitations_count_changed' => 'Die Zahl der einzuladenden Mitglieder hat sich geändert. Prüfen Sie die neue Zahl und bestätigen Sie erneut.',
     'total_hours_gt_zero' => 'Die Gesamtstundenzahl muss größer als 0 sein',
     'unexpected_error' => 'Es ist ein unerwarteter Fehler aufgetreten.',
     'access_denied' => 'Zugriff verweigert',

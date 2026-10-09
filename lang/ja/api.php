@@ -586,6 +586,7 @@ return [
     'bulk_max_100' => '一括アクションごとに最大 100 レコード',
     'bulk_ids_required' => '一括アクションには空でない ID リストが必要です。',
     'bulk_too_many' => 'ID が多すぎます。一括アクションごとの最大 :max。',
+    'member_invitations_count_changed' => '招待するメンバーの数が変わりました。新しい数を確認して、もう一度確定してください。',
     'vetting_bulk_invalid_action' => '無効なアクションです。必須: 検証、拒否、または削除',
     'vetting_bulk_reject_reason_required' => '一括拒否には理由が必要です',
     'file_upload_failed' => 'ファイルがアップロードされていないか、アップロードに失敗しました',

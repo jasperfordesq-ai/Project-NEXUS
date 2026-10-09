@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'No se pudo obtener la vista previa de esta URL',
     'bulk_ids_required' => 'Se requiere una lista de ID que no esté vacía para acciones masivas.',
     'bulk_too_many' => 'Demasiadas identificaciones. Máximo :max por acción masiva.',
+    'member_invitations_count_changed' => 'El número de miembros a los que invitar ha cambiado. Revisa el nuevo número y vuelve a confirmar.',
     'total_hours_gt_zero' => 'El total de horas debe ser mayor que 0',
     'unexpected_error' => 'Se produjo un error inesperado.',
     'access_denied' => 'Acceso denegado',

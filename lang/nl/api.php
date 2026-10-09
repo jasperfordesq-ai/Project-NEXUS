@@ -586,6 +586,7 @@ return [
     'bulk_max_100' => 'Maximaal 100 records per bulkactie',
     'bulk_ids_required' => 'Voor bulkacties is een niet-lege lijst met ID\'s vereist.',
     'bulk_too_many' => 'Te veel ID\'s. Maximaal :max per bulkactie.',
+    'member_invitations_count_changed' => 'Het aantal uit te nodigen leden is gewijzigd. Controleer het nieuwe aantal en bevestig opnieuw.',
     'vetting_bulk_invalid_action' => 'Ongeldige actie. Moet zijn: verifiëren, afwijzen of verwijderen',
     'vetting_bulk_reject_reason_required' => 'Voor bulkafkeuring is een reden vereist',
     'file_upload_failed' => 'Er is geen bestand geüpload of het uploaden is mislukt',

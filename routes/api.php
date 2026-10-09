@@ -1836,6 +1836,11 @@ Route::post('/v2/admin/members/import/check', [\App\Http\Controllers\Api\AdminMe
 Route::post('/v2/admin/members/import/{importId}/batch', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'batch'])
     ->whereUuid('importId')->middleware(['step-up', 'throttle:member-import']);
 Route::get('/v2/admin/members/import/template', [\App\Http\Controllers\Api\AdminMemberImportController::class, 'template']);
+// Welcome invitations from the member list (9 Oct 2026). Admin only; both POSTs
+// only queue rows in the invitation outbox. Per-admin limits live in the controller.
+Route::post('/v2/admin/members/invitations', [\App\Http\Controllers\Api\AdminMemberInvitationController::class, 'sendSelected']);
+Route::get('/v2/admin/members/invitations/never-signed-in-count', [\App\Http\Controllers\Api\AdminMemberInvitationController::class, 'neverSignedInCount']);
+Route::post('/v2/admin/members/invitations/never-signed-in', [\App\Http\Controllers\Api\AdminMemberInvitationController::class, 'inviteEveryone']);
 Route::delete('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'destroy'])->middleware('step-up');
 Route::post('/v2/admin/users/{id}/ban', [\App\Http\Controllers\Api\AdminUsersController::class, 'ban'])->middleware('step-up');
 Route::post('/v2/admin/users/badges/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll'])

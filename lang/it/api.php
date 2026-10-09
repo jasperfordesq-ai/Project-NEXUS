@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'Impossibile recuperare l\'anteprima per questo URL',
     'bulk_ids_required' => 'Per le azioni collettive è richiesto un elenco non vuoto di ID.',
     'bulk_too_many' => 'Troppi ID. Massimo :max per azione collettiva.',
+    'member_invitations_count_changed' => 'Il numero di membri da invitare è cambiato. Controlla il nuovo numero e conferma di nuovo.',
     'total_hours_gt_zero' => 'Le ore totali devono essere maggiori di 0',
     'unexpected_error' => 'Si è verificato un errore imprevisto.',
     'access_denied' => 'Accesso negato',

@@ -1221,6 +1221,7 @@ return [
     'link_preview_failed' => 'Não foi possível obter a visualização deste URL',
     'bulk_ids_required' => 'Uma lista não vazia de IDs é necessária para ações em massa.',
     'bulk_too_many' => 'Muitos IDs. Máximo :max por ação em massa.',
+    'member_invitations_count_changed' => 'O número de membros a convidar mudou. Verifique o novo número e confirme novamente.',
     'total_hours_gt_zero' => 'O total de horas deve ser maior que 0',
     'unexpected_error' => 'Ocorreu um erro inesperado.',
     'access_denied' => 'Acesso negado',
