@@ -258,6 +258,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('podcasts-dispatch-media-cleanup');
 
+        // Welcome invitations queued by the member import and the admin "send
+        // invitation" action go out about one a second from a durable outbox.
+        // Claim tokens make an overlapping run harmless; these are a second line.
+        $schedule->command('members:send-invitations --limit=60 --budget=50')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('members-send-invitations');
+
         $schedule->command('events:materialize-recurrences')
             ->hourly()
             ->withoutOverlapping(55)
