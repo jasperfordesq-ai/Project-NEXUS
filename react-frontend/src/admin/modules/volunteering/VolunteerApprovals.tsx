@@ -216,7 +216,7 @@ export function VolunteerApprovals() {
         toast.success(t('volunteering.approvals_removed'));
         void loadData();
       } else {
-        toast.error(res.error || t('volunteering.approvals_remove_failed'));
+        toast.error(t('volunteering.approvals_remove_failed'));
       }
     } catch {
       toast.error(t('volunteering.approvals_remove_failed'));

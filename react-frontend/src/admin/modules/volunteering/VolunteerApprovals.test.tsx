@@ -519,7 +519,7 @@ describe('VolunteerApprovals', () => {
     expect(mockGetApprovals.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('shows the server\'s reason when a removal is refused', async () => {
+  it('shows a translated message, not the server text, when a removal is refused', async () => {
     mockRemoveVolunteer.mockResolvedValue({ success: false, error: 'Only an approved volunteer can be removed.' });
     await openRowMenu(/more actions for bob helper/i);
     const remove = (await screen.findAllByRole('menuitem')).find((m) => /remove from opportunity/i.test(m.textContent ?? ''));
@@ -527,7 +527,7 @@ describe('VolunteerApprovals', () => {
     const dialog = await screen.findByRole('dialog');
     await userEvent.click(within(dialog).getAllByRole('button').find((b) => /^remove$/i.test(b.textContent?.trim() ?? ''))!);
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Only an approved volunteer can be removed.');
+      expect(mockToast.error).toHaveBeenCalledWith('Could not remove the volunteer');
     });
   });
 
