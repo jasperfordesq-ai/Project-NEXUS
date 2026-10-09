@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\EmailDispatchService;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
@@ -648,6 +649,51 @@ class UsersControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data', 'meta']);
+    }
+
+    public function test_ranked_directory_rechecks_visibility_after_cached_member_becomes_private(): void
+    {
+        $viewer = $this->authenticatedUser(['role' => 'member', 'latitude' => null, 'longitude' => null]);
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1StaleRankFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-stale-rank.png',
+            'bio' => 'Synthetic stale ranked directory fixture.',
+        ]);
+        $key = "community_rank:{$this->testTenantId}:{$viewer->id}:0:0";
+        Cache::put($key, [['user_id' => $member->id, 'score' => 1.0]], 180);
+        try {
+            $ranked = app(\App\Services\MemberRankingService::class)->rankMembers(
+                $this->testTenantId, 100, 0, '', (int) $viewer->id
+            );
+            $this->assertContains($member->id, array_map('intval', array_column($ranked['items'], 'user_id')),
+                'The ranked candidate must come from a stale cache for this regression.');
+            $public = $this->apiGet('/v2/users?sort=communityrank&limit=100');
+            $public->assertStatus(200);
+            $this->assertContains($member->id,
+                array_map('intval', array_column($public->json('data') ?? [], 'id')));
+
+            foreach ([
+                ['privacy_profile' => 'connections'],
+                ['privacy_profile' => 'public', 'privacy_search' => false],
+                ['privacy_search' => true, 'is_approved' => false],
+                ['is_approved' => true, 'status' => 'inactive'],
+            ] as $changed) {
+                $member->update($changed);
+                $response = $this->apiGet('/v2/users?sort=communityrank&limit=100');
+                $response->assertStatus(200);
+                $ids = array_map('intval', array_column($response->json('data') ?? [], 'id'));
+                $this->assertNotContains($member->id, $ids,
+                    'A cached ranking must not disclose a member after their current visibility changes.');
+            }
+        } finally {
+            Cache::forget($key);
+        }
     }
 
     public function test_unapproved_admin_session_cannot_use_directory_admin_privacy_exemption(): void

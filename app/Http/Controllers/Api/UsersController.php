@@ -1541,6 +1541,25 @@ class UsersController extends BaseApiController
             if (!empty($orderedIds)) {
                 $placeholders = implode(',', array_fill(0, count($orderedIds), '?'));
                 $orderPlaceholders = implode(',', array_fill(0, count($orderedIds), '?'));
+                // CommunityRank may return a three-minute cached ID list.
+                // Recheck the current directory policy before loading profile
+                // fields: a connection, approval or search opt-in may have
+                // changed since the cache was written.
+                $detailWhere = "u.tenant_id = ? AND u.status = 'active' AND u.is_approved = 1"
+                    . " AND u.id IN ($placeholders)"
+                    . ' AND (u.privacy_search = 1 OR u.privacy_search IS NULL)';
+                if ($viewerId) {
+                    $detailWhere .= ' AND u.id != ?';
+                }
+                foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId) as $condition) {
+                    $detailWhere .= " AND ($condition)";
+                }
+                [$profileSql, $profileParams] = MemberProfileVisibility::sqlCondition(
+                    $tenantId, $viewerId, 'u', $viewerIsAdmin
+                );
+                if ($profileSql !== '') {
+                    $detailWhere .= " AND ($profileSql)";
+                }
                 $sql = "SELECT u.id,
                                CASE
                                    WHEN u.profile_type = 'organisation' AND u.organization_name IS NOT NULL AND u.organization_name != '' THEN u.organization_name
@@ -1569,10 +1588,16 @@ class UsersController extends BaseApiController
                         LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as offer_count FROM listings WHERE status = 'active' AND type = 'offer' AND tenant_id = ? GROUP BY user_id) lo ON lo.user_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as request_count FROM listings WHERE status = 'active' AND type = 'request' AND tenant_id = ? GROUP BY user_id) lreq ON lreq.user_id = u.id
-                        WHERE u.tenant_id = ? AND u.id IN ($placeholders)
+                        WHERE $detailWhere
                         ORDER BY FIELD(u.id, $orderPlaceholders)";
 
-                $detailParams = array_merge([$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId], $orderedIds, $orderedIds);
+                $detailParams = array_merge(
+                    [$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId],
+                    $orderedIds,
+                    $viewerId ? [$viewerId] : [],
+                    $profileParams,
+                    $orderedIds
+                );
                 $users = DB::select($sql, $detailParams);
                 $users = array_map(fn ($u) => (array) $u, $users);
 
@@ -1648,12 +1673,14 @@ class UsersController extends BaseApiController
                 return $u;
             }, $users);
 
+            $visibilityStats = $this->directoryVisibilityStats($tenantId, $viewerId);
+            $totalCount = $search === '' ? $visibilityStats['directory_total'] : $totalCount;
             return $this->respondWithData($users, array_merge([
                 'total_items' => $totalCount,
                 'per_page'    => $limit,
                 'offset'      => $offset,
                 'has_more'    => ($offset + $limit) < $totalCount,
-            ], $this->directoryVisibilityStats($tenantId, $viewerId)));
+            ], $visibilityStats));
         }
 
         $validSorts = [
