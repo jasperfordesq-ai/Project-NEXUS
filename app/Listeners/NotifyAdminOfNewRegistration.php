@@ -193,6 +193,15 @@ class NotifyAdminOfNewRegistration
 
             $admins = self::recipientsFor((int) $event->tenantId);
 
+            if ($ledgerManaged) {
+                RegistrationStaffEmailDeliveryLedger::cancelCapturedOutsideRecipients(
+                    $tenantId,
+                    $entityId,
+                    $admins->filter(static fn ($staff): bool => !empty($staff->email))
+                        ->pluck('id')->map(static fn ($id): int => (int) $id)->all(),
+                );
+            }
+
             if ($admins->isEmpty()) {
                 Log::info('NotifyAdminOfNewRegistration: no active admins found for tenant', ['tenant_id' => $event->tenantId]);
                 return;
