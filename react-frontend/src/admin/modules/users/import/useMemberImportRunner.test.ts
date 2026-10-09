@@ -357,7 +357,7 @@ describe('useMemberImportRunner', () => {
     await waitFor(() => expect(batch).toHaveBeenCalledTimes(1));
     act(() => result.current.stop());
     await waitFor(() => expect(result.current.state.phase).toBe('stopped'));
-    expect(batch.mock.calls.at(-1)).toEqual(['id', 0, 10, undefined, true]);
+    expect(batch.mock.calls[batch.mock.calls.length - 1]).toEqual(['id', 0, 10, undefined, true]);
   });
 
   it('shows the import as completed if every member was already written when the stop arrived', async () => {

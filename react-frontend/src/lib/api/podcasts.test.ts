@@ -409,7 +409,7 @@ describe('podcastsApi.createEpisode (upload path, with audio_file)', () => {
       audio_url: '',
       audio_file: fakeFile,
     });
-    const [uploadedEndpoint] = vi.mocked(api.upload).mock.calls[0];
+    const [uploadedEndpoint] = vi.mocked(api.upload).mock.calls[0]!;
     expect(uploadedEndpoint).toBe('/v2/podcasts/99/episodes');
   });
 
@@ -421,7 +421,7 @@ describe('podcastsApi.createEpisode (upload path, with audio_file)', () => {
       audio_url: '',
       audio_file: fakeFile,
     });
-    const [, , fieldName] = vi.mocked(api.upload).mock.calls[0];
+    const [, , fieldName] = vi.mocked(api.upload).mock.calls[0]!;
     expect(fieldName).toBe('file');
   });
 
@@ -433,7 +433,7 @@ describe('podcastsApi.createEpisode (upload path, with audio_file)', () => {
       audio_url: '',
       audio_file: fakeFile,
     });
-    const [, formData] = vi.mocked(api.upload).mock.calls[0];
+    const [, formData] = vi.mocked(api.upload).mock.calls[0]!;
     expect(formData).toBeInstanceOf(FormData);
   });
 
@@ -446,7 +446,7 @@ describe('podcastsApi.createEpisode (upload path, with audio_file)', () => {
       audio_url: '',
       audio_file: fakeFile,
     }, onProgress);
-    const [, , , options] = vi.mocked(api.upload).mock.calls[0];
+    const [, , , options] = vi.mocked(api.upload).mock.calls[0]!;
     expect(options).toBeDefined();
     expect(options).toHaveProperty('onUploadProgress', onProgress);
   });
@@ -459,7 +459,7 @@ describe('podcastsApi.createEpisode (upload path, with audio_file)', () => {
       audio_url: '',
       audio_file: fakeFile,
     });
-    const [, , , options] = vi.mocked(api.upload).mock.calls[0];
+    const [, , , options] = vi.mocked(api.upload).mock.calls[0]!;
     expect(options).toBeUndefined();
   });
 });
