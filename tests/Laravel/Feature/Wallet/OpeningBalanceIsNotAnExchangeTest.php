@@ -12,12 +12,16 @@ use App\Core\TenantContext;
 use App\Models\User;
 use App\Http\Controllers\Api\AiChatController;
 use App\Services\AdminAnalyticsService;
+use App\Services\CaringCommunity\NationalKissDashboardService;
 use App\Services\ExploreService;
 use App\Services\FeedSidebarService;
 use App\Services\HoursReportService;
+use App\Services\MemberActivityService;
 use App\Services\MemberReportService;
 use App\Services\MemberRankingService;
 use App\Services\MunicipalImpactReportService;
+use App\Services\NexusScoreService;
+use App\Services\RedisCache;
 use App\Services\ReportExportService;
 use App\Services\ReviewService;
 use App\Services\UserService;
@@ -450,6 +454,81 @@ final class OpeningBalanceIsNotAnExchangeTest extends TestCase
 
             return [$row['total_hours_given'] ?? null, $row['total_hours_received'] ?? null];
         }, 'UserService::getNearby', ['latitude' => 51.5000, 'longitude' => -0.1200]);
+    }
+
+    // ------------------------------------------------------------------
+    // Public platform stats (GET /v2/platform/stats) — final review F1
+    // ------------------------------------------------------------------
+
+    public function test_public_platform_stats_hours_exchanged_is_unchanged(): void
+    {
+        // Cached in the redis store, which Cache::flush() (default store) does not reach.
+        $redis = app(RedisCache::class);
+        $this->assertFigureUnchangedByImport(function () use ($redis) {
+            $redis->delete('platform_stats_public:tenant:' . $this->testTenantId);
+            $redis->delete('platform_stats_public');
+            $data = $this->apiGet('/v2/platform/stats')->assertOk()->json('data');
+            $this->assertSame('tenant', $data['scope']);
+
+            return $data['hours_exchanged'];
+        }, 'GET /v2/platform/stats hours_exchanged');
+    }
+
+    // ------------------------------------------------------------------
+    // Member activity (/v2/users/me/activity/* and the public
+    // /v2/users/{id}/activity/dashboard) — final review F1
+    // ------------------------------------------------------------------
+
+    public function test_member_activity_hours_are_unchanged(): void
+    {
+        $service = app(MemberActivityService::class);
+
+        $this->assertMemberFigureUnchangedByImport(
+            fn (User $member) => $service->getHours($member->id),
+            'MemberActivityService::getHours'
+        );
+        $this->assertMemberFigureUnchangedByImport(
+            fn (User $member) => $service->getHoursSummary($member->id),
+            'MemberActivityService::getHoursSummary'
+        );
+        $this->assertMemberFigureUnchangedByImport(
+            fn (User $member) => $service->getMonthlyHours($member->id),
+            'MemberActivityService::getMonthlyHours'
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // NexusScore engagement and quality components — final review F1
+    // ------------------------------------------------------------------
+
+    public function test_nexus_score_engagement_and_success_rate_are_unchanged(): void
+    {
+        $service = app(NexusScoreService::class);
+
+        $this->assertMemberFigureUnchangedByImport(function (User $member) use ($service) {
+            $breakdown = $service->calculateNexusScore($member->id, $this->testTenantId)['breakdown'];
+
+            return [$breakdown['engagement'], $breakdown['quality']['details']['success_rate']];
+        }, 'NexusScoreService engagement / quality success rate');
+    }
+
+    /**
+     * Found by the F1 sweep: the national KISS dashboard adds each
+     * cooperative's completed transaction hours to its approved care hours.
+     * Every public method is cached and cross-tenant, so the shared private
+     * per-tenant method is called directly.
+     */
+    public function test_national_kiss_cooperative_hours_are_unchanged(): void
+    {
+        $service = app(NationalKissDashboardService::class);
+        $method = new ReflectionMethod($service, 'approvedHoursForTenant');
+        $method->setAccessible(true);
+        $range = ['from' => date('Y-m-d', strtotime('-1 day')), 'to' => date('Y-m-d', strtotime('+1 day'))];
+
+        $this->assertFigureUnchangedByImport(
+            fn () => $method->invoke($service, $this->testTenantId, $range),
+            'NationalKissDashboardService cooperative hours'
+        );
     }
 
     // ------------------------------------------------------------------

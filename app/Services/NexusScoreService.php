@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Models\VolLog;
 use App\Models\UserBadge;
 use App\Models\UserStreak;
+use App\Support\Wallet\OpeningBalance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -208,22 +209,30 @@ class NexusScoreService
 
     /**
      * Community Engagement Score (250 points max).
+     *
+     * Opening balances (hours brought in from another timebank by an admin
+     * member import) are not exchanges: they earn no credits, connection or
+     * active day here.
      */
     private function calculateEngagementScore(int $userId, int $tenantId): array
     {
         $creditsSent = (float) Transaction::where('sender_id', $userId)
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('status', 'completed')->sum('amount');
         $creditsReceived = (float) Transaction::where('receiver_id', $userId)
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('status', 'completed')->sum('amount');
         $uniqueConnections = (int) Transaction::where('status', 'completed')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
             ->selectRaw('COUNT(DISTINCT CASE WHEN sender_id = ? THEN receiver_id WHEN receiver_id = ? THEN sender_id END) as cnt', [$userId, $userId])
             ->value('cnt');
         $activeDays = (int) Transaction::where('status', 'completed')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))
             ->selectRaw('COUNT(DISTINCT DATE(created_at)) as cnt')
             ->value('cnt');
@@ -261,10 +270,14 @@ class NexusScoreService
         $reviewCount = (int) Review::where('receiver_id', $userId)->where('tenant_id', $tenantId)->count();
         $positiveReviews = (int) Review::where('receiver_id', $userId)->where('tenant_id', $tenantId)->where('rating', '>=', 4)->count();
 
+        // An imported opening balance is always "completed"; counting it would
+        // hand a newly imported member a 100% exchange success rate.
         $totalTxns = Transaction::where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))->count();
         $completedTxns = Transaction::where('status', 'completed')
             ->where('tenant_id', $tenantId)
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where(fn ($q) => $q->where('sender_id', $userId)->orWhere('receiver_id', $userId))->count();
 
         $successRate = $totalTxns > 0 ? ($completedTxns / $totalTxns) : 0;

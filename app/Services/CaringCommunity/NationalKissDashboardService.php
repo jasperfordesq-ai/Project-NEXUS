@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services\CaringCommunity;
 
+use App\Support\Wallet\OpeningBalance;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -300,13 +301,16 @@ class NationalKissDashboardService
         }
 
         if (Schema::hasTable('transactions')) {
+            // Opening balances (hours a member brought from another timebank
+            // through an admin member import) were not given here.
             $row = DB::selectOne(
                 "SELECT COALESCE(SUM(amount), 0) AS h
                  FROM transactions
                  WHERE tenant_id = ?
                    AND status = 'completed'
+                   AND transaction_type <> ?
                    AND DATE(created_at) BETWEEN ? AND ?",
-                [$tenantId, $range['from'], $range['to']]
+                [$tenantId, OpeningBalance::TYPE, $range['from'], $range['to']]
             );
             $total += (float) ($row->h ?? 0);
         }

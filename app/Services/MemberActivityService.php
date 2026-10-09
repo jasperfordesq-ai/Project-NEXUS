@@ -20,6 +20,7 @@ use App\Support\FeedItemTables;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\SavedItemVisibility;
 use App\Support\UserDisplayName;
+use App\Support\Wallet\OpeningBalance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,11 @@ use Illuminate\Support\Facades\Log;
  * skills breakdowns, connection stats, and engagement metrics.
  *
  * All queries are tenant-scoped automatically via the HasTenantScope trait.
+ *
+ * Hours figures ignore opening_balance rows: hours a member brought in from
+ * another timebank (admin member import) were not exchanged here. "Balance" /
+ * "net balance" below is therefore the net of exchange activity, not the
+ * wallet balance.
  */
 class MemberActivityService
 {
@@ -295,11 +301,13 @@ class MemberActivityService
         $given = (float) Transaction::query()
             ->where('sender_id', $userId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->sum('amount');
 
         $received = (float) Transaction::query()
             ->where('receiver_id', $userId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->sum('amount');
 
         return [
@@ -318,11 +326,13 @@ class MemberActivityService
     {
         $givenQuery = Transaction::query()
             ->where('sender_id', $userId)
-            ->where('status', 'completed');
+            ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE);
 
         $receivedQuery = Transaction::query()
             ->where('receiver_id', $userId)
-            ->where('status', 'completed');
+            ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE);
 
         $givenTotal = (float) (clone $givenQuery)->sum('amount');
         $givenCount = (clone $givenQuery)->count();
@@ -498,6 +508,7 @@ class MemberActivityService
         $given = Transaction::query()
             ->where('sender_id', $userId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $twelveMonthsAgo)
             ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('COALESCE(SUM(amount), 0) as total'))
             ->groupBy('month')
@@ -508,6 +519,7 @@ class MemberActivityService
         $received = Transaction::query()
             ->where('receiver_id', $userId)
             ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE)
             ->where('created_at', '>=', $twelveMonthsAgo)
             ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('COALESCE(SUM(amount), 0) as total'))
             ->groupBy('month')

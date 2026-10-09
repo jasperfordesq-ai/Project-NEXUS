@@ -19,6 +19,7 @@ use App\Core\TenantContext;
 use App\Helpers\UrlHelper;
 use App\Services\BrokerControlConfigService;
 use App\Services\AuthenticationConfigurationService;
+use App\Support\Wallet\OpeningBalance;
 
 /**
  * TenantBootstrapController -- Tenant configuration bootstrap for SPA init.
@@ -340,7 +341,11 @@ class TenantBootstrapController extends BaseApiController
         }
 
         $membersQuery = DB::table('users')->where('status', 'active');
-        $hoursQuery = DB::table('transactions')->where('status', 'completed');
+        // Hours a member brought in from another timebank (admin member import)
+        // were exchanged elsewhere, so they are not "hours exchanged" here.
+        $hoursQuery = DB::table('transactions')
+            ->where('status', 'completed')
+            ->where('transaction_type', '!=', OpeningBalance::TYPE);
         $listingsQuery = DB::table('listings')->where('status', 'active');
 
         if ($scopedTenantId !== null) {
