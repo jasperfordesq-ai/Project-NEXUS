@@ -113,6 +113,23 @@ describe('iOS keyboard avoidance', () => {
     expect(missing).toEqual([]);
   });
 
+  /*
+    The scan above only sees a field written directly in a screen file. A field that lives in a
+    component (the home tab's location reminder) is invisible to it, so the screens that render
+    such a component are listed here and must give their scroll view both props: the first tap on
+    a button inside the list must act (not just close the keyboard), and iOS must make room.
+  */
+  const COMPONENTS_WITH_FIELDS = ['LocationMissingCard'];
+
+  it.each(COMPONENTS_WITH_FIELDS)('every screen that renders %s lets taps through and makes room for the keyboard', (component) => {
+    const users = screens.filter(({ source }) => source.includes(`@/components/${component}'`));
+    expect(users.map(({ route }) => route)).toContain('home');
+    const failing = users
+      .filter(({ source }) => !/keyboardShouldPersistTaps="handled"/.test(source) || !/automaticallyAdjustKeyboardInsets/.test(source))
+      .map(({ route }) => route);
+    expect(failing).toEqual([]);
+  });
+
   it('carries no allowlist entry for a screen that has since been fixed or deleted', () => {
     const routes = new Set(screens.map((screen) => screen.route));
     const stale = Object.keys(NO_KEYBOARD_AVOIDANCE).filter((route) => !routes.has(route));

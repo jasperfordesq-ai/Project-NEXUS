@@ -209,6 +209,11 @@ export default function HomeScreen() {
 
       <FlatList<FeedItemType>
         testID="feed-list"
+        // The location reminder in the header has a text field and a Save button. Without these a
+        // tap on Save with the keyboard open only closed the keyboard (two taps), and on iOS the
+        // keyboard covered the field.
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
         data={feedUnavailable ? [] : items}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
