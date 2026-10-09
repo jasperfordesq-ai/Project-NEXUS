@@ -101,6 +101,7 @@ return [
     'push_vol_application_submitted' => 'Candidatura inviata',
     'push_vol_application_approved' => 'Applicazione approvata',
     'push_vol_application_declined' => 'Applicazione rifiutata',
+    'push_vol_volunteer_removed' => 'Aggiornamento sul volontariato',
     'push_vol_hours_approved' => 'Orari approvati',
     'push_vol_hours_declined' => 'Orari diminuiti',
     'push_vol_hours_pending_review' => 'Ore in attesa di revisione',

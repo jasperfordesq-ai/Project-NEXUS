@@ -476,7 +476,8 @@
     "vol_application_submitted": "Je vrijwilligersaanmelding is verstuurd",
     "vol_application_approved": "🎉 Je vrijwilligersaanmelding is geaccepteerd",
     "vol_application_declined": "Nieuws over je vrijwilligersaanmelding",
-    "default": "Melding van Project NEXUS"
+    "default": "Melding van Project NEXUS",
+    "vol_volunteer_removed": "Nieuws over uw vrijwilligerswerk"
   },
   "exchange_dispute": {
     "subject": "Uw uitwisseling is gemarkeerd voor beoordeling",

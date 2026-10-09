@@ -124,7 +124,12 @@
     "heading_application_submitted": "応募を送信しました",
     "application_submitted_body": "ありがとうございます。応募は団体に送信されました。",
     "application_submitted_note": "団体が内容を確認し、承認または不承認になった時点でメールでお知らせします。進捗はいつでも応募一覧で確認できます。",
-    "btn_view_my_applications": "応募一覧を見る"
+    "btn_view_my_applications": "応募一覧を見る",
+    "heading_removed": "ボランティア活動についてのお知らせ",
+    "removed_body": "主催者があなたをこの募集のボランティア名簿から外しました。この活動への参加は不要になりました。",
+    "removed_org_body": "{{organisation}} があなたをボランティア名簿から外しました。この団体の募集への参加は不要になりました。今後のシフトの枠は解放されています。",
+    "label_organisation": "団体",
+    "removed_note": "これまでご協力いただいた時間に感謝いたします。記録済みの時間はそのまま残ります。誤りだと思われる場合は、主催者にご連絡ください。いつでも再度お申し込みいただけます。"
   },
   "default_notification": "通知：{{type}}",
   "sub_account": {

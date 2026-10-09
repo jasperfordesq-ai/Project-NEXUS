@@ -124,7 +124,12 @@
     "heading_application_submitted": "Candidatura enviada",
     "application_submitted_body": "Obrigado — a sua candidatura foi enviada para a organização.",
     "application_submitted_note": "A organização vai analisá-la e receberá um email quando for aceite ou recusada. Pode acompanhar o progresso a qualquer momento nas suas candidaturas.",
-    "btn_view_my_applications": "Ver as minhas candidaturas"
+    "btn_view_my_applications": "Ver as minhas candidaturas",
+    "heading_removed": "Novidades sobre o seu voluntariado",
+    "removed_body": "O organizador retirou-o da lista de voluntários desta oportunidade, pelo que a sua ajuda já não é esperada.",
+    "removed_org_body": "{{organisation}} retirou-o da sua lista de voluntários, pelo que a sua ajuda já não é esperada em nenhuma das suas oportunidades. Os seus lugares nos próximos turnos foram libertados.",
+    "label_organisation": "Organização",
+    "removed_note": "Obrigado pelo tempo que dedicou. As horas que já registou ficam no seu histórico. Se acha que se trata de um erro, contacte o organizador. Pode candidatar-se novamente a qualquer momento."
   },
   "default_notification": "Notificação: {{type}}",
   "sub_account": {

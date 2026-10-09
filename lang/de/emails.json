@@ -476,7 +476,8 @@
     "vol_application_submitted": "Ihre Freiwilligen-Bewerbung wurde gesendet",
     "vol_application_approved": "🎉 Ihre Freiwilligen-Bewerbung wurde angenommen",
     "vol_application_declined": "Neuigkeiten zu Ihrer Freiwilligen-Bewerbung",
-    "default": "Benachrichtigung von Project NEXUS"
+    "default": "Benachrichtigung von Project NEXUS",
+    "vol_volunteer_removed": "Neuigkeiten zu Ihrem Ehrenamt"
   },
   "exchange_dispute": {
     "subject": "Ihr Tausch wurde zur Überprüfung markiert",

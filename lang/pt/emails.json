@@ -476,7 +476,8 @@
     "vol_application_submitted": "A sua candidatura de voluntariado foi enviada",
     "vol_application_approved": "🎉 A sua candidatura de voluntariado foi aceite",
     "vol_application_declined": "Novidades sobre a sua candidatura de voluntariado",
-    "default": "Notificação do Project NEXUS"
+    "default": "Notificação do Project NEXUS",
+    "vol_volunteer_removed": "Novidades sobre o seu voluntariado"
   },
   "exchange_dispute": {
     "subject": "A sua troca foi sinalizada para revisão",

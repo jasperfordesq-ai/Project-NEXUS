@@ -159,7 +159,7 @@ class VolunteerRosterService
             'released_shift_ids' => $released,
         ], $volunteerId);
         $this->offerReleasedPlaces($tenantId, $released);
-        $this->notify($tenantId, $orgId, $actorId, $volunteerId, 'api.vol_roster_removed_notification');
+        $this->notifyRemoved($tenantId, $orgId, $actorId, $volunteerId, max($applicationIds));
 
         return ['ok' => true, 'removed_roles' => count($applicationIds), 'released_shifts' => count($released)];
     }
@@ -250,6 +250,50 @@ class VolunteerRosterService
             } catch (\Throwable $e) {
                 Log::warning('VolunteerRosterService: waitlist offer failed', ['shift' => $shiftId, 'error' => $e->getMessage()]);
             }
+        }
+    }
+
+    /**
+     * A removal is told by bell, push and email (the email whatever the member's
+     * digest setting; owner, 9 Oct 2026). $eventKey is one of the deleted
+     * application ids, so a later removal after re-applying is told again.
+     */
+    private function notifyRemoved(int $tenantId, int $orgId, int $actorId, int $volunteerId, int $eventKey): void
+    {
+        if ($volunteerId === $actorId) {
+            return;
+        }
+
+        try {
+            $recipient = DB::selectOne(
+                'SELECT id, preferred_language FROM users WHERE id = ? AND tenant_id = ?',
+                [$volunteerId, $tenantId]
+            );
+            if ($recipient === null) {
+                return;
+            }
+            $orgName = (string) DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', $tenantId)->value('name');
+
+            $delivered = LocaleContext::withLocale($recipient, function () use ($volunteerId, $orgId, $orgName, $eventKey) {
+                return NotificationDispatcher::dispatch(
+                    $volunteerId,
+                    'global',
+                    0,
+                    'vol_volunteer_removed',
+                    __('api.vol_roster_removed_notification', ['org' => $orgName]),
+                    '/volunteering',
+                    NotificationDispatcher::buildVolVolunteerRemovedEmail(null, $orgName),
+                    false,
+                    null,
+                    null,
+                    "vol-roster-removed:{$orgId}:{$eventKey}",
+                );
+            });
+            if ($delivered === false) {
+                Log::error('VolunteerRosterService: removal notice not delivered', ['org' => $orgId, 'user' => $volunteerId]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('VolunteerRosterService: removal notice failed', ['org' => $orgId, 'user' => $volunteerId, 'error' => $e->getMessage()]);
         }
     }
 

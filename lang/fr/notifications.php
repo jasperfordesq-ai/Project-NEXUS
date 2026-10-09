@@ -101,6 +101,7 @@ return [
     'push_vol_application_submitted' => 'Candidature envoyée',
     'push_vol_application_approved' => 'Demande approuvée',
     'push_vol_application_declined' => 'Demande refusée',
+    'push_vol_volunteer_removed' => 'Du nouveau sur votre bénévolat',
     'push_vol_hours_approved' => 'Heures approuvées',
     'push_vol_hours_declined' => 'Heures refusées',
     'push_vol_hours_pending_review' => 'Heures en attente d\'examen',

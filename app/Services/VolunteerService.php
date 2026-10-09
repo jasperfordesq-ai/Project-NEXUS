@@ -3151,11 +3151,27 @@ class VolunteerService
                     ->where('tenant_id', $tenantId)
                     ->select(['preferred_language'])
                     ->first();
-                LocaleContext::withLocale($volunteer, function () use ($volunteerId, $tenantId, $app) {
-                    $message = __('api_controllers_3.admin_bells.volunteer_removed', ['opportunity' => (string) $app->opportunity_title]);
-                    \App\Models\Notification::createNotification($volunteerId, $message, '/volunteering', 'moderation', true, $tenantId);
-                    NotificationDispatcher::fanOutPush($volunteerId, 'moderation', $message, '/volunteering');
+                // Bell, push and email together; the type is in the dispatcher's
+                // instant list, so the email is sent whatever the member's
+                // digest setting (owner, 9 Oct 2026).
+                $delivered = LocaleContext::withLocale($volunteer, function () use ($volunteerId, $applicationId, $app) {
+                    return NotificationDispatcher::dispatch(
+                        $volunteerId,
+                        'global',
+                        0,
+                        'vol_volunteer_removed',
+                        __('api_controllers_3.admin_bells.volunteer_removed', ['opportunity' => (string) $app->opportunity_title]),
+                        '/volunteering',
+                        NotificationDispatcher::buildVolVolunteerRemovedEmail((string) $app->opportunity_title),
+                        false,
+                        null,
+                        null,
+                        'vol-volunteer-removed:' . $applicationId,
+                    );
                 });
+                if ($delivered === false) {
+                    Log::error('VolunteerService::removeApprovedVolunteer notice not delivered', ['application_id' => $applicationId]);
+                }
             } catch (\Throwable $e) {
                 Log::warning('VolunteerService::removeApprovedVolunteer notification failed: ' . $e->getMessage());
             }

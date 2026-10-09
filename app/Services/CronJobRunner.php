@@ -1055,6 +1055,7 @@ class CronJobRunner
             'vol_application_submitted',
             'vol_application_approved',
             'vol_application_declined',
+            'vol_volunteer_removed',
             'vol_hours_approved',
             'vol_shift_reminder',
             'vol_expense_status' => 'volunteering',

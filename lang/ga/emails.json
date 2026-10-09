@@ -476,7 +476,8 @@
     "vol_application_submitted": "Seoladh d'iarratas deonach",
     "vol_application_approved": "🎉 Glacadh le d'iarratas deonach",
     "vol_application_declined": "Nuashonrú ar d'iarratas deonach",
-    "default": "Fógra ó Project NEXUS"
+    "default": "Fógra ó Project NEXUS",
+    "vol_volunteer_removed": "Nuashonrú ar d’obair dheonach"
   },
   "exchange_dispute": {
     "subject": "Marcáladh d'idirmhalartú lena athbhreithniú",

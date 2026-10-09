@@ -124,7 +124,12 @@
     "heading_application_submitted": "Zgłoszenie wysłane",
     "application_submitted_body": "Dziękujemy — Twoje zgłoszenie zostało wysłane do organizacji.",
     "application_submitted_note": "Organizacja je rozpatrzy, a Ty otrzymasz e-mail, gdy zostanie przyjęte lub odrzucone. Postęp możesz w każdej chwili sprawdzić w swoich zgłoszeniach.",
-    "btn_view_my_applications": "Zobacz moje zgłoszenia"
+    "btn_view_my_applications": "Zobacz moje zgłoszenia",
+    "heading_removed": "Informacja o Twoim wolontariacie",
+    "removed_body": "Organizator usunął Cię z listy wolontariuszy tej oferty, więc Twoja pomoc przy niej nie jest już oczekiwana.",
+    "removed_org_body": "{{organisation}} usunęła Cię ze swojej listy wolontariuszy, więc Twoja pomoc przy jej ofertach nie jest już oczekiwana. Twoje miejsca na nadchodzących zmianach zostały zwolnione.",
+    "label_organisation": "Organizacja",
+    "removed_note": "Dziękujemy za poświęcony czas. Zarejestrowane już godziny pozostają w Twojej historii. Jeśli uważasz, że to pomyłka, skontaktuj się z organizatorem. W każdej chwili możesz zgłosić się ponownie."
   },
   "default_notification": "Powiadomienie: {{type}}",
   "sub_account": {

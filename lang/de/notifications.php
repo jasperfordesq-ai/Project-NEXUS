@@ -101,6 +101,7 @@ return [
     'push_vol_application_submitted' => 'Bewerbung gesendet',
     'push_vol_application_approved' => 'Antrag genehmigt',
     'push_vol_application_declined' => 'Antrag abgelehnt',
+    'push_vol_volunteer_removed' => 'Neuigkeiten zum Ehrenamt',
     'push_vol_hours_approved' => 'Stunden genehmigt',
     'push_vol_hours_declined' => 'Stunden abgelehnt',
     'push_vol_hours_pending_review' => 'Stunden bis zur Überprüfung',

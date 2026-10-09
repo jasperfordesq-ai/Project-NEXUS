@@ -124,7 +124,12 @@
     "heading_application_submitted": "Candidatura inviata",
     "application_submitted_body": "Grazie: la tua candidatura è stata inviata all'organizzazione.",
     "application_submitted_note": "La esaminerà e riceverai un'email quando verrà accettata o rifiutata. Puoi controllarne lo stato in qualsiasi momento tra le tue candidature.",
-    "btn_view_my_applications": "Vedi le mie candidature"
+    "btn_view_my_applications": "Vedi le mie candidature",
+    "heading_removed": "Un aggiornamento sul tuo volontariato",
+    "removed_body": "L’organizzatore ti ha tolto dall’elenco dei volontari di questa opportunità, quindi non è più previsto il tuo aiuto.",
+    "removed_org_body": "{{organisation}} ti ha tolto dal suo elenco di volontari, quindi non è più previsto il tuo aiuto in nessuna delle sue opportunità. I tuoi posti nei turni in arrivo sono stati liberati.",
+    "label_organisation": "Organizzazione",
+    "removed_note": "Grazie per il tempo che hai donato. Le ore già registrate restano nella tua cronologia. Se pensi che si tratti di un errore, contatta l’organizzatore. Puoi candidarti di nuovo in qualsiasi momento."
   },
   "default_notification": "Notifica: {{type}}",
   "sub_account": {

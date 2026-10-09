@@ -124,7 +124,12 @@
     "heading_application_submitted": "Bewerbung gesendet",
     "application_submitted_body": "Vielen Dank – Ihre Bewerbung wurde an die Organisation gesendet.",
     "application_submitted_note": "Sie wird geprüft, und Sie erhalten eine E-Mail, sobald sie angenommen oder abgelehnt wurde. Den Stand können Sie jederzeit unter Ihren Bewerbungen einsehen.",
-    "btn_view_my_applications": "Meine Bewerbungen ansehen"
+    "btn_view_my_applications": "Meine Bewerbungen ansehen",
+    "heading_removed": "Neuigkeiten zu Ihrem Ehrenamt",
+    "removed_body": "Die Organisation hat Sie von der Freiwilligenliste dieses Angebots genommen. Ihre Mithilfe dabei wird nicht mehr erwartet.",
+    "removed_org_body": "{{organisation}} hat Sie von der Freiwilligenliste genommen. Ihre Mithilfe bei den Angeboten der Organisation wird nicht mehr erwartet. Ihre Plätze in bevorstehenden Schichten wurden freigegeben.",
+    "label_organisation": "Organisation",
+    "removed_note": "Vielen Dank für die Zeit, die Sie eingebracht haben. Ihre bereits erfassten Stunden bleiben in Ihrem Verlauf erhalten. Wenn Sie glauben, dass es sich um einen Irrtum handelt, wenden Sie sich bitte an die Organisation. Sie können sich jederzeit erneut bewerben."
   },
   "default_notification": "Benachrichtigung: {{type}}",
   "sub_account": {

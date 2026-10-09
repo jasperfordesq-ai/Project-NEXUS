@@ -486,7 +486,8 @@
     "vol_application_submitted": "Your volunteer application was sent",
     "vol_application_approved": "🎉 Your volunteer application was accepted",
     "vol_application_declined": "An update on your volunteer application",
-    "default": "Notification from Project NEXUS"
+    "default": "Notification from Project NEXUS",
+    "vol_volunteer_removed": "An update about your volunteering"
   },
   "exchange_dispute": {
     "subject": "Your exchange has been flagged for review",

@@ -104,6 +104,7 @@ return [
     'push_vol_application_submitted' => 'Zgłoszenie wysłane',
     'push_vol_application_approved' => 'Aplikacja zatwierdzona',
     'push_vol_application_declined' => 'Wniosek odrzucony',
+    'push_vol_volunteer_removed' => 'Informacja o wolontariacie',
     'push_vol_hours_approved' => 'Godziny zatwierdzone',
     'push_vol_hours_declined' => 'Godziny odrzucone',
     'push_vol_hours_pending_review' => 'Godziny oczekiwania na sprawdzenie',

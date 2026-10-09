@@ -476,7 +476,8 @@
     "vol_application_submitted": "ボランティア応募を送信しました",
     "vol_application_approved": "🎉 ボランティア応募が承認されました",
     "vol_application_declined": "ボランティア応募についてのお知らせ",
-    "default": "Project NEXUS からの通知"
+    "default": "Project NEXUS からの通知",
+    "vol_volunteer_removed": "ボランティア活動についてのお知らせ"
   },
   "exchange_dispute": {
     "subject": "交換がレビューのためにフラグが立てられました",

@@ -104,6 +104,7 @@ return [
     'push_vol_application_submitted' => 'تم إرسال الطلب',
     'push_vol_application_approved' => 'تمت الموافقة على التطبيق',
     'push_vol_application_declined' => 'تم رفض الطلب',
+    'push_vol_volunteer_removed' => 'مستجدات التطوع',
     'push_vol_hours_approved' => 'الساعات المعتمدة',
     'push_vol_hours_declined' => 'ساعات مرفوضة',
     'push_vol_hours_pending_review' => 'ساعات في انتظار المراجعة',

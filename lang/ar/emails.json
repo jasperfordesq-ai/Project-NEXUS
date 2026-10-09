@@ -476,7 +476,8 @@
     "vol_application_submitted": "تم إرسال طلب التطوع الخاص بك",
     "vol_application_approved": "🎉 تم قبول طلب التطوع الخاص بك",
     "vol_application_declined": "مستجدات بشأن طلب التطوع الخاص بك",
-    "default": "إشعار من Project NEXUS"
+    "default": "إشعار من Project NEXUS",
+    "vol_volunteer_removed": "مستجدات بشأن تطوعك"
   },
   "exchange_dispute": {
     "subject": "تم تمييز تبادلك للمراجعة",

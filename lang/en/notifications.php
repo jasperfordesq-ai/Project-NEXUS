@@ -156,6 +156,7 @@ return [
     'push_vol_application_submitted'  => 'Application Sent',
     'push_vol_application_approved'  => 'Application Approved',
     'push_vol_application_declined'  => 'Application Declined',
+    'push_vol_volunteer_removed' => 'Volunteering update',
     'push_vol_hours_approved'        => 'Hours Approved',
     'push_vol_hours_declined'        => 'Hours Declined',
     'push_vol_hours_pending_review'  => 'Hours Pending Review',

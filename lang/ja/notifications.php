@@ -104,6 +104,7 @@ return [
     'push_vol_application_submitted' => '応募を送信しました',
     'push_vol_application_approved' => '申請が承認されました',
     'push_vol_application_declined' => '申請は却下されました',
+    'push_vol_volunteer_removed' => 'ボランティアのお知らせ',
     'push_vol_hours_approved' => '承認された時間',
     'push_vol_hours_declined' => '拒否された時間帯',
     'push_vol_hours_pending_review' => '審査待ちの時間',

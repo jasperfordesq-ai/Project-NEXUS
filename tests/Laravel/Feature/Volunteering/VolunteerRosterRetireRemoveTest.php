@@ -168,9 +168,40 @@ class VolunteerRosterRetireRemoveTest extends TestCase
         $this->assertTrue(DB::table('vol_applications')->where('id', $pending)->exists());
         $this->assertTrue(DB::table('vol_logs')->where('id', $logId)->exists());
         $this->assertSame(1, DB::table('notifications')->where('user_id', $this->volunteer->id)
-            ->where('type', 'volunteer_roster')->count());
+            ->where('type', 'vol_volunteer_removed')->count());
+        $this->assertRemovalEmailQueued('Food Bank');
 
         $this->apiDelete($this->url("/{$this->volunteer->id}"))->assertStatus(404);
+    }
+
+    public function test_removing_a_volunteer_from_one_opportunity_emails_them(): void
+    {
+        $appId = $this->approve($this->oppA);
+        Sanctum::actingAs($this->creator);
+
+        $this->apiPost("/v2/volunteering/applications/{$appId}/remove")->assertOk();
+
+        $this->assertFalse(DB::table('vol_applications')->where('id', $appId)->exists());
+        $this->assertSame(1, DB::table('notifications')->where('user_id', $this->volunteer->id)
+            ->where('type', 'vol_volunteer_removed')->count());
+        $this->assertRemovalEmailQueued('Sorting');
+    }
+
+    /**
+     * The volunteer has no digest setting (the default is 'off'), so this also
+     * proves the removal email is sent at once rather than waiting for a digest.
+     */
+    private function assertRemovalEmailQueued(string $mustMention): void
+    {
+        $rows = DB::table('notification_queue')->where('user_id', $this->volunteer->id)
+            ->where('activity_type', 'vol_volunteer_removed')->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame('instant', $rows[0]->frequency);
+        $this->assertStringContainsString($mustMention, (string) $rows[0]->email_body);
+        $this->assertStringContainsString(
+            __('emails_notifications.volunteering.heading_removed'),
+            (string) $rows[0]->email_body
+        );
     }
 
     public function test_a_retired_volunteer_can_be_removed_and_leaves_the_retired_list(): void

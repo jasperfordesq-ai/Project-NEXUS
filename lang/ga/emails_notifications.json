@@ -124,7 +124,12 @@
     "heading_application_submitted": "Iarratas Seolta",
     "application_submitted_body": "Go raibh maith agat — seoladh d'iarratas chuig an eagraíocht.",
     "application_submitted_note": "Déanfaidh siad athbhreithniú air, agus gheobhaidh tú ríomhphost nuair a ghlacann siad leis nó nuair a dhiúltaíonn siad dó. Is féidir leat a dhul chun cinn a sheiceáil am ar bith faoi d'iarratais.",
-    "btn_view_my_applications": "Féach ar Mo chuid Iarratas"
+    "btn_view_my_applications": "Féach ar Mo chuid Iarratas",
+    "heading_removed": "Nuashonrú ar d’obair dheonach",
+    "removed_body": "Bhain an t-eagraí thú de liosta na n-oibrithe deonacha don deis seo, mar sin níltear ag súil le do chabhair léi a thuilleadh.",
+    "removed_org_body": "Bhain {{organisation}} thú dá liosta oibrithe deonacha, mar sin níltear ag súil le do chabhair le haon cheann dá deiseanna a thuilleadh. Scaoileadh aon áit a bhí agat ar a seachanna atá le teacht.",
+    "label_organisation": "Eagraíocht",
+    "removed_note": "Go raibh maith agat as an am a thug tú. Fanann na huaireanta atá logáilte agat cheana ar do thaifead. Má cheapann tú gur botún é seo, déan teagmháil leis an eagraí. Tá fáilte romhat iarratas a dhéanamh arís am ar bith."
   },
   "default_notification": "Fógra: {{type}}",
   "sub_account": {

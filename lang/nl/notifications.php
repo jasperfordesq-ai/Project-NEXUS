@@ -104,6 +104,7 @@ return [
     'push_vol_application_submitted' => 'Aanmelding verstuurd',
     'push_vol_application_approved' => 'Aanvraag goedgekeurd',
     'push_vol_application_declined' => 'Aanvraag afgewezen',
+    'push_vol_volunteer_removed' => 'Nieuws over vrijwilligerswerk',
     'push_vol_hours_approved' => 'Uren goedgekeurd',
     'push_vol_hours_declined' => 'Uren geweigerd',
     'push_vol_hours_pending_review' => 'Uren in afwachting van beoordeling',

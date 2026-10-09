@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 238,
+    "producer_count": 239,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -1421,9 +1421,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2432:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:2433:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2432,
+            "line": 2433,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",
@@ -1434,9 +1434,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:2616:NotificationDispatcher::dispatchHotMatch",
+            "id": "app/Services/CronJobRunner.php:2617:NotificationDispatcher::dispatchHotMatch",
             "file": "app/Services/CronJobRunner.php",
-            "line": 2616,
+            "line": 2617,
             "transport": "NotificationDispatcher::dispatchHotMatch",
             "role": "producer",
             "recipient_expression": "$user['user_id']",
@@ -1447,9 +1447,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/CronJobRunner.php:3332:NotificationDispatcher::dispatchMatchDigest",
+            "id": "app/Services/CronJobRunner.php:3333:NotificationDispatcher::dispatchMatchDigest",
             "file": "app/Services/CronJobRunner.php",
-            "line": 3332,
+            "line": 3333,
             "transport": "NotificationDispatcher::dispatchMatchDigest",
             "role": "producer",
             "recipient_expression": "$user['id']",
@@ -2474,9 +2474,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/NotificationDispatcher.php:597:FCMPushService::sendToUser",
+            "id": "app/Services/NotificationDispatcher.php:601:FCMPushService::sendToUser",
             "file": "app/Services/NotificationDispatcher.php",
-            "line": 597,
+            "line": 601,
             "transport": "FCMPushService::sendToUser",
             "role": "transport_boundary",
             "recipient_expression": "$uid",
@@ -2981,6 +2981,19 @@
             "data_expression": null
         },
         {
+            "id": "app/Services/VolunteerRosterService.php:278:NotificationDispatcher::dispatch",
+            "file": "app/Services/VolunteerRosterService.php",
+            "line": 278,
+            "transport": "NotificationDispatcher::dispatch",
+            "role": "producer",
+            "recipient_expression": "$volunteerId",
+            "title_expression": null,
+            "body_expression": "__('api.vol_roster_removed_notification', ['org' => $orgName])",
+            "type_expression": "vol_volunteer_removed",
+            "link_expression": "/volunteering",
+            "data_expression": null
+        },
+        {
             "id": "app/Services/VolunteerService.php:1174:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerService.php",
             "line": 1174,
@@ -3072,15 +3085,15 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:3157:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerService.php:3158:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 3157,
-            "transport": "NotificationDispatcher::fanOutPush",
+            "line": 3158,
+            "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
             "title_expression": null,
-            "body_expression": "$message",
-            "type_expression": "moderation",
+            "body_expression": "__('api_controllers_3.admin_bells.volunteer_removed', ['opportunity' => (string) $app->opportunity_title])",
+            "type_expression": "vol_volunteer_removed",
             "link_expression": "/volunteering",
             "data_expression": null
         },

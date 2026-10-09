@@ -101,6 +101,7 @@ return [
     'push_vol_application_submitted' => 'Iarratas Seolta',
     'push_vol_application_approved' => 'Iarratas ceadaithe',
     'push_vol_application_declined' => 'Iarratas Diúltaithe',
+    'push_vol_volunteer_removed' => 'Nuashonrú deonachais',
     'push_vol_hours_approved' => 'Uaireanta Ceadaithe',
     'push_vol_hours_declined' => 'Uaireanta Diúltaithe',
     'push_vol_hours_pending_review' => 'Uaireanta ar Feitheamh Athbhreithniú',

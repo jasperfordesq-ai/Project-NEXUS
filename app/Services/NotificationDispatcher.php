@@ -233,6 +233,10 @@ class NotificationDispatcher
             // to anyone (owner report, 8 Oct 2026).
             'vol_application_received',
             'vol_application_submitted',
+            // Taken off an opportunity, or off a whole organisation. The member
+            // must hear by email that they are no longer expected (owner,
+            // 9 Oct 2026); until then it was a bell and a push only.
+            'vol_volunteer_removed',
             'vol_hours_approved',
             // A waitlist spot offer is time-sensitive (the offer expires and passes
             // to the next person). It was previously neither instant nor a curated
@@ -3366,6 +3370,61 @@ HTML;
     /**
      * Build HTML email for volunteer application decline.
      */
+    /**
+     * Told to a volunteer who has been taken off an opportunity, or off every
+     * opportunity of an organisation at once (owner, 9 Oct 2026). Calm, not
+     * alarming: what changed, that their logged hours stay, and who to ask.
+     *
+     * Pass the opportunity title for a single opportunity, or null and the
+     * organisation's name for a removal from the whole organisation.
+     */
+    public static function buildVolVolunteerRemovedEmail(?string $oppTitle, string $orgName = ''): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $orgNameHtml = htmlspecialchars($orgName, ENT_QUOTES, 'UTF-8');
+
+        $heading = __('emails_notifications.volunteering.heading_removed');
+        $tenantLabel = __('emails_notifications.volunteering.tenant_volunteering', ['community' => $tenantName]);
+        if ($oppTitle !== null) {
+            $body = __('emails_notifications.volunteering.removed_body');
+            $label = __('emails_notifications.volunteering.label_opportunity');
+            $value = htmlspecialchars($oppTitle, ENT_QUOTES, 'UTF-8');
+        } else {
+            $body = __('emails_notifications.volunteering.removed_org_body', ['organisation' => $orgNameHtml]);
+            $label = __('emails_notifications.volunteering.label_organisation');
+            $value = $orgNameHtml;
+        }
+        $note = __('emails_notifications.volunteering.removed_note');
+        $button = __('emails_notifications.volunteering.btn_browse_opportunities');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #475569; background-image: linear-gradient(135deg, #475569, #334155); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$label}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$value}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$note}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/volunteering" style="display: inline-block; background-color: #475569; background-image: linear-gradient(135deg, #475569, #334155); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$button}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
     public static function buildVolApplicationDeclinedEmail(string $oppTitle): string
     {
         $tenant = TenantContext::get();

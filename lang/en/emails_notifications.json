@@ -124,7 +124,12 @@
     "heading_application_submitted": "Application Sent",
     "application_submitted_body": "Thank you — your application has been sent to the organisation.",
     "application_submitted_note": "They will review it, and you will get an email when they accept or decline it. You can check its progress at any time under your applications.",
-    "btn_view_my_applications": "View My Applications"
+    "btn_view_my_applications": "View My Applications",
+    "heading_removed": "An update about your volunteering",
+    "removed_body": "The organiser has taken you off the volunteer list for this opportunity, so you are no longer expected to help with it.",
+    "removed_org_body": "{{organisation}} has taken you off its volunteer list, so you are no longer expected to help with any of its opportunities. Any places you held on its upcoming shifts have been released.",
+    "label_organisation": "Organisation",
+    "removed_note": "Thank you for the time you have given. The hours you have already logged stay on your record. If you think this is a mistake, please get in touch with the organiser. You are welcome to apply again at any time."
   },
   "default_notification": "Notification: {{type}}",
   "sub_account": {

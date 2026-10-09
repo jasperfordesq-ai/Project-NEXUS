@@ -124,7 +124,12 @@
     "heading_application_submitted": "Aanmelding verstuurd",
     "application_submitted_body": "Bedankt — je aanmelding is naar de organisatie verstuurd.",
     "application_submitted_note": "Zij beoordelen deze en je ontvangt een e-mail wanneer ze je aanmelding accepteren of afwijzen. Je kunt de voortgang altijd bekijken bij je aanmeldingen.",
-    "btn_view_my_applications": "Mijn aanmeldingen bekijken"
+    "btn_view_my_applications": "Mijn aanmeldingen bekijken",
+    "heading_removed": "Nieuws over uw vrijwilligerswerk",
+    "removed_body": "De organisator heeft u van de vrijwilligerslijst van deze vacature gehaald. Uw hulp hierbij wordt niet meer verwacht.",
+    "removed_org_body": "{{organisation}} heeft u van de vrijwilligerslijst gehaald. Uw hulp bij de vacatures van deze organisatie wordt niet meer verwacht. Uw plekken in komende diensten zijn vrijgegeven.",
+    "label_organisation": "Organisatie",
+    "removed_note": "Bedankt voor de tijd die u hebt gegeven. De uren die u al hebt geregistreerd blijven bewaard. Denkt u dat dit een vergissing is, neem dan contact op met de organisator. U kunt zich altijd opnieuw aanmelden."
   },
   "default_notification": "Melding: {{type}}",
   "sub_account": {

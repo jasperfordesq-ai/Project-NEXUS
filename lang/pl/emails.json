@@ -476,7 +476,8 @@
     "vol_application_submitted": "Twoje zgłoszenie wolontariackie zostało wysłane",
     "vol_application_approved": "🎉 Twoje zgłoszenie wolontariackie zostało przyjęte",
     "vol_application_declined": "Informacja o Twoim zgłoszeniu wolontariackim",
-    "default": "Powiadomienie z Project NEXUS"
+    "default": "Powiadomienie z Project NEXUS",
+    "vol_volunteer_removed": "Informacja o Twoim wolontariacie"
   },
   "exchange_dispute": {
     "subject": "Twoja wymiana została oznaczona do weryfikacji",

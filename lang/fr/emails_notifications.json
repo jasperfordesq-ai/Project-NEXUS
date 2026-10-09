@@ -124,7 +124,12 @@
     "heading_application_submitted": "Candidature envoyée",
     "application_submitted_body": "Merci — votre candidature a été envoyée à l'organisation.",
     "application_submitted_note": "Elle va l'examiner, et vous recevrez un e-mail lorsqu'elle l'acceptera ou la refusera. Vous pouvez suivre son avancement à tout moment dans vos candidatures.",
-    "btn_view_my_applications": "Voir mes candidatures"
+    "btn_view_my_applications": "Voir mes candidatures",
+    "heading_removed": "Du nouveau concernant votre bénévolat",
+    "removed_body": "L’organisateur vous a retiré de la liste des bénévoles de cette mission : votre aide n’y est plus attendue.",
+    "removed_org_body": "{{organisation}} vous a retiré de sa liste de bénévoles : votre aide n’est plus attendue sur aucune de ses missions. Vos places sur ses créneaux à venir ont été libérées.",
+    "label_organisation": "Organisation",
+    "removed_note": "Merci pour le temps que vous avez donné. Les heures déjà enregistrées restent dans votre historique. Si vous pensez qu’il s’agit d’une erreur, contactez l’organisateur. Vous pouvez postuler à nouveau à tout moment."
   },
   "default_notification": "Notification : {{type}}",
   "sub_account": {

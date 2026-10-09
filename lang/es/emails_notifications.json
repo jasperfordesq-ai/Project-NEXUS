@@ -124,7 +124,12 @@
     "heading_application_submitted": "Solicitud enviada",
     "application_submitted_body": "Gracias: tu solicitud se ha enviado a la organización.",
     "application_submitted_note": "La revisarán y recibirás un correo electrónico cuando la acepten o la rechacen. Puedes consultar su estado en cualquier momento en tus solicitudes.",
-    "btn_view_my_applications": "Ver mis solicitudes"
+    "btn_view_my_applications": "Ver mis solicitudes",
+    "heading_removed": "Novedades sobre su voluntariado",
+    "removed_body": "El organizador le ha retirado de la lista de voluntarios de esta oportunidad, así que ya no se cuenta con su ayuda en ella.",
+    "removed_org_body": "{{organisation}} le ha retirado de su lista de voluntarios, así que ya no se cuenta con su ayuda en ninguna de sus oportunidades. Se han liberado las plazas que tenía en sus próximos turnos.",
+    "label_organisation": "Organización",
+    "removed_note": "Gracias por el tiempo que ha dedicado. Las horas que ya registró se conservan en su historial. Si cree que se trata de un error, póngase en contacto con el organizador. Puede volver a presentar su solicitud cuando quiera."
   },
   "default_notification": "Notificación: {{type}}",
   "sub_account": {
