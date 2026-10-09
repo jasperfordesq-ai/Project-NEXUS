@@ -15,6 +15,7 @@ const {
   getOnboardingStatus,
   getExchangeAttentionCount,
   getMemberEndorsements,
+  updateProfile,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -259,6 +260,58 @@ function isGoingEvent(event) {
   return String(rsvp.status || '').toLowerCase() === 'going';
 }
 
+// The "Where are you based?" reminder and its outcome messages. The reminder is
+// shown only when the API says the member's location is empty (a literal `true`)
+// and onboarding is finished — a member still in onboarding is asked there instead.
+// It deliberately has no dismiss control: it stays until a town is added.
+const LOCATION_NOTICES = {
+  'location-saved': { kind: 'success', key: 'dashboard.location_saved' },
+  'location-required': { kind: 'error', key: 'dashboard.location_required' },
+  'location-invalid': { kind: 'error', key: 'dashboard.location_invalid' },
+  'location-failed': { kind: 'error', key: 'dashboard.location_failed' }
+};
+
+function locationNotice(status, t) {
+  const notice = LOCATION_NOTICES[String(status || '')];
+  return notice ? { kind: notice.kind, message: t(notice.key) } : null;
+}
+
+function apiErrorFields(error) {
+  if (!(error instanceof ApiError)) return [];
+  const fields = Array.isArray(error.data && error.data.errors)
+    ? error.data.errors.map((item) => String((item && item.field) || '')).filter(Boolean)
+    : [];
+  if (error.data && error.data.field) fields.push(String(error.data.field));
+  return fields;
+}
+
+function redirectTo(res, pathname) {
+  const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
+  return res.redirect(urlFor(pathname));
+}
+
+// Same shape as the profile-settings save in routes/profile.js (POST /settings):
+// trim and cap the text, call PUT /v2/users/me, then redirect back with a status
+// that the GET renders as a banner. CSRF is enforced by the /dashboard mount in
+// server.js, and the form carries the usual hidden _csrf field.
+router.post('/location', asyncRoute(async (req, res) => {
+  const location = String((req.body && req.body.location) || '').trim().slice(0, 255);
+  if (!location) {
+    return redirectTo(res, '/dashboard?status=location-required#dashboard-location');
+  }
+
+  try {
+    await updateProfile(req.token, { location });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    // Our own translated message, keyed off the field — never the server's English.
+    const status = apiErrorFields(error).includes('location') ? 'location-invalid' : 'location-failed';
+    return redirectTo(res, `/dashboard?status=${status}#dashboard-location`);
+  }
+
+  return redirectTo(res, '/dashboard?status=location-saved');
+}));
+
 router.get('/', asyncRoute(async (req, res) => {
   const tenant = req.accessibleRouting?.tenant && typeof req.accessibleRouting.tenant === 'object'
     ? req.accessibleRouting.tenant
@@ -338,6 +391,8 @@ router.get('/', asyncRoute(async (req, res) => {
     balance,
     balanceLabel: t('dashboard.hours_value', { value: formatOneDecimal(balance) }),
     onboardingCompleted: onboardingCompleted(onboardingData),
+    showLocationReminder: onboardingCompleted(onboardingData) && safeProfile.location_missing === true,
+    locationNotice: locationNotice(req.query.status, t),
     exchangeAttention: normalizeExchangeAttention(exchangeAttentionData, tc),
     endorsements: normalizeEndorsements(endorsementsData, tc),
     gamification: normalizedGamification(gamificationData, badges, t),

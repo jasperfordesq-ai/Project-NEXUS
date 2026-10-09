@@ -142,6 +142,8 @@ function normalizeSafeguardingOption(option) {
 function statusBanner(status, t) {
   const banners = {
     'bio-too-short': { type: 'error', anchor: 'bio' },
+    'location-required': { type: 'error', anchor: 'location' },
+    'location-invalid': { type: 'error', anchor: 'location' },
     'avatar-required': { type: 'error', anchor: 'avatar' },
     'avatar-failed': { type: 'error', anchor: 'avatar' },
     'safeguarding-failed': { type: 'error', anchor: null },
@@ -211,6 +213,17 @@ function nextStep(step) {
 
 function isAuthError(error) {
   return error instanceof ApiError && error.status === 401;
+}
+
+// v2 endpoints nest the field at `data.errors[].field`; some older paths put it
+// at `data.field`. Read both (see the note in completeFailureRedirect).
+function apiErrorFields(error) {
+  if (!(error instanceof ApiError)) return [];
+  const fields = Array.isArray(error.data?.errors)
+    ? error.data.errors.map((item) => String(item?.field || '')).filter(Boolean)
+    : [];
+  if (error.data?.field) fields.push(String(error.data.field));
+  return fields;
 }
 
 function completeFailureRedirect(error) {
@@ -372,16 +385,37 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
 
   if (step === 'profile') {
     const bio = String(req.body.bio || '').trim();
+    const payload = { bio: bio || null };
+
+    // "Where are you based?" is only on the form for a member whose location is
+    // empty (the server says so with `location_missing`), so the field being
+    // posted at all is how we know it was asked. A blank answer is refused here
+    // in the browser flow; the SERVER never forces a location, so older clients
+    // and the API keep working without one.
+    const locationAsked = Object.prototype.hasOwnProperty.call(req.body, 'location');
+    const location = locationAsked ? String(req.body.location || '').trim().slice(0, 255) : '';
+    if (location) payload.location = location;
+
     try {
-      await updateProfile(req.token, { bio: bio || null });
+      await updateProfile(req.token, payload);
     } catch (error) {
       if (isAuthError(error)) throw error;
-      const field = error instanceof ApiError ? String(error.data?.field || '') : '';
+      const fields = apiErrorFields(error);
       const message = error instanceof ApiError ? String(error.message || '') : '';
-      if (field === 'bio' || /bio/i.test(message)) {
+      // Our own translated message, keyed off the field — never the server's English.
+      if (fields.includes('location')) {
+        return redirectTo(res, '/onboarding/profile?status=location-invalid');
+      }
+      if (fields.includes('bio') || /bio/i.test(message)) {
         return redirectTo(res, '/onboarding/profile?status=bio-too-short');
       }
       return redirectTo(res, '/onboarding/profile?status=complete-failed');
+    }
+
+    // The bio above is saved first so a member who forgot the town does not lose
+    // what they typed.
+    if (locationAsked && !location) {
+      return redirectTo(res, '/onboarding/profile?status=location-required');
     }
   }
 

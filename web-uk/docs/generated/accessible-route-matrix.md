@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-08T19:28:22.113Z
-Laravel commit SHA: `c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e`
-Web UK repository commit SHA: `c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e`
+Generated: 2026-10-09T12:35:54.570Z
+Laravel commit SHA: `040b9e89ba0b1871299944c835c5c4c039b79dca`
+Web UK repository commit SHA: `040b9e89ba0b1871299944c835c5c4c039b79dca`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 814 |
+| web-uk routes | 815 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 104 |
+| Extra web-uk routes | 105 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -41,7 +41,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | cookies | 1 | 0 | 0 | 0 |
 | coupons | 2 | 0 | 0 | 0 |
 | courses | 26 | 0 | 0 | 0 |
-| dashboard | 1 | 0 | 0 | 0 |
+| dashboard | 1 | 0 | 1 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
 | events | 94 | 0 | 2 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
@@ -128,6 +128,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/changelog/{param}` | changelog | public-info/changelog-release | web-uk/src/routes/public-info.js |
 | GET | `/child-safety` | child-safety |  | web-uk/src/routes/legal.js |
 | POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
+| POST | `/dashboard/location` | dashboard |  | web-uk/src/routes/dashboard.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |

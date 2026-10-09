@@ -5,15 +5,30 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block mainContent %}
-  {% if status == "onboarding-complete" or successMessage %}
+  {% if status == "onboarding-complete" or successMessage or (locationNotice and locationNotice.kind == "success") %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="dashboard-success-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="dashboard-success-title">{{ t("states.success_title") }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
-        <p class="govuk-notification-banner__heading">{{ successMessage or t("onboarding.complete_banner") }}</p>
+        <p class="govuk-notification-banner__heading">{{ successMessage or (locationNotice.message if (locationNotice and locationNotice.kind == "success") else t("onboarding.complete_banner")) }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {# A failed "Where are you based?" submission. Links to the field it concerns. #}
+  {% if showLocationReminder and locationNotice and locationNotice.kind == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#dashboard-location">{{ locationNotice.message }}</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   {% endif %}
@@ -45,6 +60,33 @@
         <p class="govuk-body">
           <a class="govuk-notification-banner__link" href="{{ urlFor('/onboarding') }}">{{ t("dashboard.onboarding_link") }}</a>
         </p>
+      </div>
+    </div>
+  {% endif %}
+
+  {# "Where are you based?" — shown only to a member whose location is empty, once
+     onboarding is finished. Deliberately NOT dismissible (owner decision, 9 Oct
+     2026): it stays until a town is added. Plain text, no JavaScript. #}
+  {% if showLocationReminder %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-location-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="dashboard-location-title">{{ t("dashboard.location_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("dashboard.location_body") }}</p>
+        <form method="post" action="{{ urlFor('/dashboard/location') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ govukInput({
+            label: { text: t("dashboard.location_label"), classes: "govuk-label--s" },
+            id: "dashboard-location",
+            name: "location",
+            autocomplete: "address-level2",
+            classes: "govuk-!-width-two-thirds",
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: locationNotice.message } if (locationNotice and locationNotice.kind == "error") else undefined,
+            attributes: { maxlength: "255" }
+          }) }}
+          <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("dashboard.location_button") }}</button>
+        </form>
       </div>
     </div>
   {% endif %}

@@ -1409,6 +1409,14 @@
                 "onboarding_title": "Finish setting up your profile",
                 "onboarding_body": "Add a few details so other members can find and connect with you.",
                 "onboarding_link": "Complete your profile",
+                "location_title": "Tell us where you are based",
+                "location_body": "Add your town or city so you can find people and listings near you.",
+                "location_label": "Where are you based?",
+                "location_button": "Save",
+                "location_saved": "Location saved",
+                "location_required": "Enter where you are based",
+                "location_invalid": "We could not save that place. Please check it and try again.",
+                "location_failed": "We could not save your location. Please try again.",
                 "pending_reviews_title": "Exchanges need your attention",
                 "pending_reviews_body": "You have :count exchange that needs your attention.|You have :count exchanges that need your attention.",
                 "pending_reviews_link": "View your exchanges",
@@ -1509,7 +1517,7 @@
                 "phone_label": "Phone number",
                 "phone_hint": "Use an international format, for example +1 555 123 4567.",
                 "location_label": "Town, city or area",
-                "location_hint": "Start typing a town, city or postcode and pick a suggestion. You must select one from the list — free-text locations are not accepted.",
+                "location_hint": "Type your town, city or area in your own words.",
                 "newsletter_label": "Send me community updates by email",
                 "profile_type_label": "Are you registering as an individual or an organisation?",
                 "profile_type_hint": "Organisations are charities, community groups, businesses or other legal entities.",
@@ -4563,7 +4571,9 @@
                     "upload_button": "Upload photo",
                     "bio_label": "About you",
                     "bio_hint": "A sentence or two about yourself.",
-                    "save_continue": "Save and continue"
+                    "save_continue": "Save and continue",
+                    "location_label": "Where are you based?",
+                    "location_hint": "Add your town or city so you can find people and listings near you."
                 },
                 "interests": {
                     "title": "Your interests",
@@ -4605,7 +4615,9 @@
                     "avatar-saved": "Your photo has been uploaded.",
                     "avatar-failed": "We could not upload that photo. Please try again.",
                     "safeguarding-failed": "We could not save your answers. Please try again.",
-                    "complete-failed": "Something went wrong. Please try again."
+                    "complete-failed": "Something went wrong. Please try again.",
+                    "location-required": "Enter where you are based",
+                    "location-invalid": "We could not save that place. Please check it and try again."
                 },
                 "count_selected": ":count selected",
                 "complete_banner": "Your profile is all set up. Welcome to the community."

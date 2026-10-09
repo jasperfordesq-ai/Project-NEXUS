@@ -1409,6 +1409,14 @@
                 "onboarding_title": "Termine de configurar su perfil",
                 "onboarding_body": "Añada algunos datos para que otros miembros puedan encontrarle y conectar con usted.",
                 "onboarding_link": "Completar su perfil",
+                "location_title": "Cuéntanos dónde vives",
+                "location_body": "Añade tu pueblo o ciudad para encontrar personas y anuncios cerca de ti.",
+                "location_label": "¿Dónde vives?",
+                "location_button": "Guardar",
+                "location_saved": "Ubicación guardada",
+                "location_required": "Indica dónde vives",
+                "location_invalid": "No pudimos guardar ese lugar. Revísalo e inténtalo de nuevo.",
+                "location_failed": "No pudimos guardar tu ubicación. Inténtalo de nuevo.",
                 "pending_reviews_title": "Hay intercambios que requieren su atención",
                 "pending_reviews_body": "Tiene :count intercambio que requiere su atención.|Tiene :count intercambios que requieren su atención.",
                 "pending_reviews_link": "Ver sus intercambios",
@@ -1509,7 +1517,7 @@
                 "phone_label": "Número de teléfono",
                 "phone_hint": "Utilice un formato internacional, por ejemplo +1 555 123 4567.",
                 "location_label": "Pueblo, ciudad o zona",
-                "location_hint": "Comience a escribir un pueblo, ciudad o código postal y elija una sugerencia. Debe seleccionar uno de la lista; no se aceptan ubicaciones de texto libre.",
+                "location_hint": "Escribe tu pueblo, ciudad o zona con tus propias palabras.",
                 "newsletter_label": "Envíame actualizaciones de la comunidad por correo electrónico",
                 "profile_type_label": "¿Se está registrando como individuo o como organización%",
                 "profile_type_hint": "Las organizaciones son organizaciones benéficas, grupos comunitarios, empresas u otras entidades legales.",
@@ -4563,7 +4571,9 @@
                     "upload_button": "Subir foto",
                     "bio_label": "Sobre ti",
                     "bio_hint": "Una o dos frases sobre ti.",
-                    "save_continue": "Guardar y continuar"
+                    "save_continue": "Guardar y continuar",
+                    "location_label": "¿Dónde vives?",
+                    "location_hint": "Añade tu pueblo o ciudad para encontrar personas y anuncios cerca de ti."
                 },
                 "interests": {
                     "title": "Tus intereses",
@@ -4605,7 +4615,9 @@
                     "avatar-saved": "Tu foto ha sido subida.",
                     "avatar-failed": "No hemos podido subir esa foto. Por favor, inténtalo de nuevo.",
                     "safeguarding-failed": "No hemos podido guardar tus respuestas. Por favor, inténtalo de nuevo.",
-                    "complete-failed": "Algo salió mal. Por favor, inténtalo de nuevo."
+                    "complete-failed": "Algo salió mal. Por favor, inténtalo de nuevo.",
+                    "location-required": "Indica dónde vives",
+                    "location-invalid": "No pudimos guardar ese lugar. Revísalo e inténtalo de nuevo."
                 },
                 "count_selected": ":count seleccionados",
                 "complete_banner": "Tu perfil está configurado. Bienvenido a la comunidad."

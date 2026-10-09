@@ -1409,6 +1409,14 @@
                 "onboarding_title": "Críochnaigh do phróifíl a shocrú",
                 "onboarding_body": "Cuir roinnt sonraí leis ionas gur féidir le comhaltaí eile thú a aimsiú agus nascadh leat.",
                 "onboarding_link": "Críochnaigh do phróifíl",
+                "location_title": "Inis dúinn cá bhfuil tú lonnaithe",
+                "location_body": "Cuir do bhaile nó do chathair leis chun daoine agus liostaí in aice leat a aimsiú.",
+                "location_label": "Cá bhfuil tú lonnaithe?",
+                "location_button": "Sábháil",
+                "location_saved": "Sábháladh an suíomh",
+                "location_required": "Cuir isteach an áit a bhfuil tú lonnaithe",
+                "location_invalid": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as.",
+                "location_failed": "Níorbh fhéidir do shuíomh a shábháil. Bain triail eile as.",
                 "pending_reviews_title": "Tá aird de dhíth ar mhalartuithe",
                 "pending_reviews_body": "Tá :count mhalartú ann a dteastaíonn aird uaidh.|Tá :count malartú ann a dteastaíonn aird uathu.",
                 "pending_reviews_link": "Féach ar do mhalartuithe",
@@ -1509,7 +1517,7 @@
                 "phone_label": "Uimhir theileafóin",
                 "phone_hint": "Bain úsáid as formáid idirnáisiúnta, mar shampla +1 555 123 4567.",
                 "location_label": "Baile, cathair nó ceantar",
-                "location_hint": "Tosaigh ag clóscríobh baile, cathair nó cód poist agus roghnaigh moladh. Ní mór duit ceann a roghnú ón liosta - ní ghlactar le láithreacha saorthéacs.",
+                "location_hint": "Clóscríobh do bhaile, do chathair nó do cheantar i do chuid focal féin.",
                 "newsletter_label": "Seol nuashonruithe pobail chugam trí ríomhphost",
                 "profile_type_label": "An bhfuil tú ag clárú mar dhuine aonair nó mar eagraíocht?",
                 "profile_type_hint": "Is carthanachtaí, grúpaí pobail, gnólachtaí nó eintitis dhlíthiúla eile iad eagraíochtaí.",
@@ -4563,7 +4571,9 @@
                     "upload_button": "Uaslódáil grianghraf",
                     "bio_label": "Fútsa",
                     "bio_hint": "Abairt nó dhó fútsa féin.",
-                    "save_continue": "Sábháil agus lean ar aghaidh"
+                    "save_continue": "Sábháil agus lean ar aghaidh",
+                    "location_label": "Cá bhfuil tú lonnaithe?",
+                    "location_hint": "Cuir do bhaile nó do chathair leis chun daoine agus liostaí in aice leat a aimsiú."
                 },
                 "interests": {
                     "title": "Do chuid spéiseanna",
@@ -4605,7 +4615,9 @@
                     "avatar-saved": "Uaslódáladh do ghrianghraf.",
                     "avatar-failed": "Níorbh fhéidir linn an grianghraf sin a uaslódáil. Bain triail eile as le do thoil.",
                     "safeguarding-failed": "Níorbh fhéidir linn do chuid freagraí a shábháil. Bain triail eile as le do thoil.",
-                    "complete-failed": "Chuaigh rud éigin mícheart. Bain triail eile as le do thoil."
+                    "complete-failed": "Chuaigh rud éigin mícheart. Bain triail eile as le do thoil.",
+                    "location-required": "Cuir isteach an áit a bhfuil tú lonnaithe",
+                    "location-invalid": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as."
                 },
                 "count_selected": ":count roghnaithe",
                 "complete_banner": "Tá do phróifíl socraithe. Fáilte chuig an bpobal."

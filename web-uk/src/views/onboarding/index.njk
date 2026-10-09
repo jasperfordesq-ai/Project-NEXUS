@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "_character-count.njk" import characterCount %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block mainContent %}
   {% set bagInterests = bag.interests or [] %}
@@ -89,6 +90,22 @@
             <textarea class="govuk-textarea govuk-js-character-count" id="bio" name="bio" rows="4" maxlength="2000" aria-describedby="bio-hint{% if statusBanner and statusBanner.anchor == 'bio' %} bio-error{% endif %} bio-info">{{ onboardingUser.bio or "" }}</textarea>
           </div>
           {% endcall %}
+
+          {# Only a member whose location is empty is asked (`location_missing` is
+             decided on the server; only a literal true counts). Plain free text —
+             there is no suggestion list on this site and no JavaScript is needed. #}
+          {% if onboardingUser.location_missing === true %}
+            {{ govukInput({
+              label: { text: t("govuk_alpha.onboarding.profile.location_label"), classes: "govuk-label--s" },
+              hint: { text: t("govuk_alpha.onboarding.profile.location_hint") },
+              id: "location",
+              name: "location",
+              autocomplete: "address-level2",
+              classes: "govuk-!-width-two-thirds",
+              errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: statusBanner.message } if (statusBanner and statusBanner.anchor == "location") else undefined,
+              attributes: { maxlength: "255" }
+            }) }}
+          {% endif %}
           <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.profile.save_continue") }}</button>
         </form>
 

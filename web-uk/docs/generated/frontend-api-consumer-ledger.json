@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-08T19:28:22.834Z",
+  "generatedAt": "2026-10-09T12:35:55.300Z",
   "provenance": {
-    "generatedAt": "2026-10-08T19:28:22.834Z",
+    "generatedAt": "2026-10-09T12:35:55.300Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
+    "laravelCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
+    "webUkRepositoryCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -16,13 +16,13 @@
     "api": "src/lib/api.js",
     "apiSha256": "59726956582562b37b824dad44646b2c9b11170c6d2c209197ea6aa8f55b9313",
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
-    "laravelOpenApiSha256": "19251d3779e9de53f07baec9c7bd68f433cddec508650123f4cc2f42f56b0419",
+    "laravelOpenApiSha256": "e62d269ed23389802826e5c8a14db151f75fa729a3f0ae2a3acd7259f1906315",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
     "laravelApiRouteFiles": [
       "routes/api.php",
       "routes/api-volunteering-qualifications.php"
     ],
-    "laravelApiRoutesSha256": "b3ca5cebb0439e03630daf25acf49ef8c38be739f0d10fec9fafa7011f05fedc"
+    "laravelApiRoutesSha256": "fe6ef355130c0d5e8094c122ef25e3a65d986c8a1791bc897ab967d24acf0d8a"
   },
   "summary": {
     "contracts": 753,
@@ -289,6 +289,7 @@
         "tests/legal-acceptance-gate.test.js",
         "tests/localization.test.js",
         "tests/marketplace-payment-contract.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/members-directory-coverage.test.js",
         "tests/multipart-temp-file-cleanup.test.js",
         "tests/profile-account-deletion-contract.test.js",
@@ -8101,6 +8102,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -9038,6 +9040,7 @@
         "tests/api.test.js",
         "tests/feed-excludes-gamification-milestones.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -10137,6 +10140,7 @@
       "tests": [
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -15983,6 +15987,7 @@
         "tests/form-input-preserved-on-error.test.js",
         "tests/ledger-token-crosscheck.test.js",
         "tests/listings-saved-tag-and-group-membership-states.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/routes.test.js",
         "tests/runtime/listings-mutation.spec.js",
         "tests/runtime/saved-collections-mutation.spec.js",
@@ -18656,6 +18661,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19809,6 +19815,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19845,6 +19852,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -19878,6 +19886,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -19912,6 +19921,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -19945,6 +19955,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19982,6 +19993,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -23303,6 +23315,7 @@
         "tests/listings-saved-tag-and-group-membership-states.test.js",
         "tests/localization.test.js",
         "tests/marketplace-title-localization.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/messages-unread-freshness-and-group-self-add.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/profile-account-deletion-contract.test.js",
@@ -23400,7 +23413,7 @@
         "200"
       ],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/onboarding-posts.js",
+      "redirects": "consumer-controlled: src/routes/dashboard.js, src/routes/onboarding-posts.js",
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
@@ -23413,11 +23426,13 @@
         ]
       },
       "frontendConsumers": [
+        "src/routes/dashboard.js",
         "src/routes/onboarding-posts.js"
       ],
       "tests": [
         "tests/admin-tier-authorisation.test.js",
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/settings-contract-parity.test.js",
         "tests/shared-accessible-shell.test.js",
@@ -23604,6 +23619,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/onboarding-completion-failure.test.js",
         "tests/profile-settings-save-contract.test.js",
         "tests/settings-contract-parity.test.js",
@@ -30367,6 +30383,7 @@
         "tests/csrf-session-binding.test.js",
         "tests/federation-onboarding-session.test.js",
         "tests/form-field-error-targeting-more.test.js",
+        "tests/member-location-prompt.test.js",
         "tests/routes.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",

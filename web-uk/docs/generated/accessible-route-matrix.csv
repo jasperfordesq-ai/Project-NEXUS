@@ -13,6 +13,7 @@ extra-web-uk,GET,/changelog,changelog,,,,,,,,,public-info/changelog,,,,web-uk/sr
 extra-web-uk,GET,/changelog/{param},changelog,,,,,,,,,public-info/changelog-release,,,,web-uk/src/routes/public-info.js,
 extra-web-uk,GET,/child-safety,child-safety,,,,,,,,,,,,,web-uk/src/routes/legal.js,
 extra-web-uk,POST,/cookie-consent/hide,cookie-consent,,,,,,,,,,,,,web-uk/src/server.js,
+extra-web-uk,POST,/dashboard/location,dashboard,,,,,,,,,,,,,web-uk/src/routes/dashboard.js,
 extra-web-uk,GET,/events/my,events,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/events/{param}/rsvp/remove,events,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/goals/{param}/buddy-requests/{param}/{param},goals,,,,,,,,,,,,,web-uk/src/routes/goals.js,

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-08T19:28:22.113Z",
+  "generatedAt": "2026-10-09T12:35:54.570Z",
   "provenance": {
-    "generatedAt": "2026-10-08T19:28:22.113Z",
+    "generatedAt": "2026-10-09T12:35:54.570Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
+    "laravelCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "c217c1abb2a24ce2ec8eb3856c59b7b9e2f7d03e",
+    "webUkRepositoryCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-08T19:28:22.113Z",
+    "generatedAt": "2026-10-09T12:35:54.570Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 814,
+    "webUkRoutes": 815,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 104,
+    "extraWebUkRoutes": 105,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -47,6 +47,12 @@
         "ignoredInfrastructure": 0
       },
       "cookie-consent": {
+        "matched": 1,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "dashboard": {
         "matched": 1,
         "missing": 0,
         "extraWebUk": 1,
@@ -252,12 +258,6 @@
       },
       "courses": {
         "matched": 26,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "dashboard": {
-        "matched": 1,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -803,6 +803,27 @@
       "webUkPath": "/cookie-consent/hide",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/dashboard/location",
+      "family": "dashboard",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/dashboard/location",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/dashboard.js",
       "webUkRouteKind": ""
     },
     {

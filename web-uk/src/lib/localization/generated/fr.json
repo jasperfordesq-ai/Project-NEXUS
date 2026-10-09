@@ -1409,6 +1409,14 @@
                 "onboarding_title": "Finalisez la configuration de votre profil",
                 "onboarding_body": "Ajoutez quelques informations pour que les autres membres puissent vous trouver et se connecter avec vous.",
                 "onboarding_link": "Compléter votre profil",
+                "location_title": "Dites-nous où vous habitez",
+                "location_body": "Ajoutez votre ville ou commune pour trouver des personnes et des annonces près de chez vous.",
+                "location_label": "Où habitez-vous ?",
+                "location_button": "Enregistrer",
+                "location_saved": "Lieu enregistré",
+                "location_required": "Indiquez où vous habitez",
+                "location_invalid": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
+                "location_failed": "Nous n'avons pas pu enregistrer votre lieu. Veuillez réessayer.",
                 "pending_reviews_title": "Des échanges nécessitent votre attention",
                 "pending_reviews_body": "Vous avez :count échange qui nécessite votre attention.|Vous avez :count échanges qui nécessitent votre attention.",
                 "pending_reviews_link": "Voir vos échanges",
@@ -1509,7 +1517,7 @@
                 "phone_label": "Numéro de téléphone",
                 "phone_hint": "Utilisez un format international, par exemple +1 555 123 4567.",
                 "location_label": "Ville, ville ou région",
-                "location_hint": "Commencez à saisir une ville ou un code postal et choisissez une suggestion. Vous devez en sélectionner un dans la liste – les emplacements en texte libre ne sont pas acceptés.",
+                "location_hint": "Saisissez votre ville, commune ou secteur avec vos propres mots.",
                 "newsletter_label": "Envoyez-moi des mises à jour de la communauté par e-mail",
                 "profile_type_label": "Vous vous inscrivez en tant que particulier ou organisation%",
                 "profile_type_hint": "Les organisations sont des organismes de bienfaisance, des groupes communautaires, des entreprises ou d'autres entités juridiques.",
@@ -4563,7 +4571,9 @@
                     "upload_button": "Téléverser une photo",
                     "bio_label": "À propos de vous",
                     "bio_hint": "Une ou deux phrases vous décrivant.",
-                    "save_continue": "Enregistrer et continuer"
+                    "save_continue": "Enregistrer et continuer",
+                    "location_label": "Où habitez-vous ?",
+                    "location_hint": "Ajoutez votre ville ou commune pour trouver des personnes et des annonces près de chez vous."
                 },
                 "interests": {
                     "title": "Vos centres d'intérêt",
@@ -4605,7 +4615,9 @@
                     "avatar-saved": "Votre photo a été téléversée.",
                     "avatar-failed": "Nous n'avons pas pu téléverser cette photo. Veuillez réessayer.",
                     "safeguarding-failed": "Nous n'avons pas pu enregistrer vos réponses. Veuillez réessayer.",
-                    "complete-failed": "Une erreur s'est produite. Veuillez réessayer."
+                    "complete-failed": "Une erreur s'est produite. Veuillez réessayer.",
+                    "location-required": "Indiquez où vous habitez",
+                    "location-invalid": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez."
                 },
                 "count_selected": ":count sélectionné(s)",
                 "complete_banner": "Votre profil est entièrement configuré. Bienvenue dans la communauté."

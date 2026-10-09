@@ -1409,6 +1409,14 @@
                 "onboarding_title": "Richten Sie Ihr Profil fertig ein",
                 "onboarding_body": "Fügen Sie einige Details hinzu, damit andere Mitglieder Sie finden und sich mit Ihnen verbinden können.",
                 "onboarding_link": "Profil vervollständigen",
+                "location_title": "Sagen Sie uns, wo Sie ansässig sind",
+                "location_body": "Geben Sie Ihre Stadt oder Ihren Ort an, damit Sie Menschen und Angebote in Ihrer Nähe finden.",
+                "location_label": "Wo sind Sie ansässig?",
+                "location_button": "Speichern",
+                "location_saved": "Standort gespeichert",
+                "location_required": "Geben Sie ein, wo Sie ansässig sind",
+                "location_invalid": "Wir konnten diesen Ort nicht speichern. Bitte prüfen Sie die Eingabe und versuchen Sie es erneut.",
+                "location_failed": "Ihr Standort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
                 "pending_reviews_title": "Austausche brauchen Ihre Aufmerksamkeit",
                 "pending_reviews_body": "Sie haben :count Austausch, der Ihre Aufmerksamkeit erfordert.|Sie haben :count Austausche, die Ihre Aufmerksamkeit erfordern.",
                 "pending_reviews_link": "Ihre Austausche ansehen",
@@ -1509,7 +1517,7 @@
                 "phone_label": "Telefonnummer",
                 "phone_hint": "Verwenden Sie ein internationales Format, zum Beispiel +1 555 123 4567.",
                 "location_label": "Stadt, Stadt oder Gegend",
-                "location_hint": "Beginnen Sie mit der Eingabe einer Stadt oder Postleitzahl und wählen Sie einen Vorschlag aus. Sie müssen einen aus der Liste auswählen – Freitextorte werden nicht akzeptiert.",
+                "location_hint": "Geben Sie Ihre Stadt, Ihren Ort oder Ihre Gegend in eigenen Worten ein.",
                 "newsletter_label": "Senden Sie mir Community-Updates per E-Mail",
                 "profile_type_label": "Registrieren Sie sich als Einzelperson oder als Organisation%",
                 "profile_type_hint": "Organisationen sind Wohltätigkeitsorganisationen, Gemeindegruppen, Unternehmen oder andere juristische Personen.",
@@ -4563,7 +4571,9 @@
                     "upload_button": "Foto hochladen",
                     "bio_label": "Über Sie",
                     "bio_hint": "Ein oder zwei Sätze über sich selbst.",
-                    "save_continue": "Speichern und weiter"
+                    "save_continue": "Speichern und weiter",
+                    "location_label": "Wo sind Sie ansässig?",
+                    "location_hint": "Geben Sie Ihre Stadt oder Ihren Ort an, damit Sie Menschen und Angebote in Ihrer Nähe finden."
                 },
                 "interests": {
                     "title": "Ihre Interessen",
@@ -4605,7 +4615,9 @@
                     "avatar-saved": "Ihr Foto wurde hochgeladen.",
                     "avatar-failed": "Dieses Foto konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.",
                     "safeguarding-failed": "Ihre Antworten konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
-                    "complete-failed": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+                    "complete-failed": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                    "location-required": "Geben Sie ein, wo Sie ansässig sind",
+                    "location-invalid": "Wir konnten diesen Ort nicht speichern. Bitte prüfen Sie die Eingabe und versuchen Sie es erneut."
                 },
                 "count_selected": ":count ausgewählt",
                 "complete_banner": "Ihr Profil ist vollständig eingerichtet. Willkommen in der Gemeinschaft."
