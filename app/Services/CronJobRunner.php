@@ -2667,9 +2667,10 @@ class CronJobRunner
             echo "  Listings needing geocoding: {$stats['listings_without_coords']}\n";
             echo '  Cache entries: ' . ($stats['cache_entries'] ?? 0) . "\n\n";
 
-            // Geocode users (limit to 50 per run to avoid timeouts)
+            // Geocode users across all tenants, marking each attempt so an
+            // unfindable town cannot block the rest (limit 50, 40 s budget).
             echo "Geocoding users...\n";
-            $userResults = GeocodingService::batchGeocodeUsers(50);
+            $userResults = GeocodingService::geocodePendingUsers(50, 40.0);
             echo "  Processed: {$userResults['processed']}\n";
             echo "  Success: {$userResults['success']}\n";
             echo "  Failed: {$userResults['failed']}\n\n";
@@ -2852,11 +2853,12 @@ class CronJobRunner
     {
         $this->forEachTenant(function ($tenantId, $slug) {
             try {
-                $userResults = GeocodingService::batchGeocodeUsers(50);
-                if ($userResults['processed'] > 0) {
-                    echo "   [{$slug}] Users: {$userResults['processed']} processed, {$userResults['success']} success.\n";
-                }
-
+                // Members are NOT geocoded here any more. This job picks rows with
+                // no ORDER BY and keeps no record of what it tried, so fifty
+                // unfindable towns in one tenant were re-asked about on every run
+                // and nobody after them was ever looked up. Members now go through
+                // the members:geocode-pending command (every minute, all tenants),
+                // which marks each attempt and moves on. Listings stay here.
                 $listingResults = GeocodingService::batchGeocodeListings(50);
                 if ($listingResults['processed'] > 0) {
                     echo "   [{$slug}] Listings: {$listingResults['processed']} processed, {$listingResults['success']} success.\n";

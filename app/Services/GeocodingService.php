@@ -48,6 +48,16 @@ class GeocodingService
      */
     private const MIN_REQUEST_INTERVAL_US = 1_000_000;
 
+    /**
+     * The interval actually applied. A property rather than the constant alone
+     * only so a test can lower it to zero by reflection; nothing in the
+     * application changes it.
+     */
+    private static int $minRequestIntervalUs = self::MIN_REQUEST_INTERVAL_US;
+
+    /** A member whose town could not be found is not asked about again for this long. */
+    private const USER_RETRY_AFTER_DAYS = 7;
+
     /** Wall-clock time of the last outbound Nominatim request in this process. */
     private static ?float $lastRequestAt = null;
 
@@ -137,8 +147,8 @@ class GeocodingService
     {
         if (self::$lastRequestAt !== null) {
             $elapsedUs = (microtime(true) - self::$lastRequestAt) * 1_000_000;
-            if ($elapsedUs < self::MIN_REQUEST_INTERVAL_US) {
-                usleep((int) (self::MIN_REQUEST_INTERVAL_US - $elapsedUs));
+            if ($elapsedUs < self::$minRequestIntervalUs) {
+                usleep((int) (self::$minRequestIntervalUs - $elapsedUs));
             }
         }
 
@@ -196,6 +206,9 @@ class GeocodingService
     /**
      * Batch geocode users that have a location but no coordinates.
      *
+     * @deprecated Can starve: no ordering and no attempt marker, so unfindable
+     *             towns are retried for ever. Use geocodePendingUsers().
+     *
      * @return array{processed: int, success: int, failed: int}
      */
     public static function batchGeocodeUsers(int $limit = 100): array
@@ -233,6 +246,96 @@ class GeocodingService
             'success' => $success,
             'failed' => $failed,
         ];
+    }
+
+    /**
+     * Look up the map position of members' towns, across every tenant, so that
+     * no member is ever starved by others.
+     *
+     * batchGeocodeUsers() above picks "has a town, has no position" with no
+     * ORDER BY and keeps no record that it tried, so a tenant with fifty
+     * unfindable towns re-asked about the same fifty on every run and nobody
+     * after them was ever looked up. Here every member is marked as attempted
+     * BEFORE the network is called, and the selection puts never-tried members
+     * first, then the longest-ago attempts, so a failure (or a crash, or a
+     * timeout) simply moves on to the next member. A member whose town could
+     * not be found is asked about again only after seven days, or sooner if
+     * they change their town (users.geocode_attempted_at is cleared whenever
+     * users.location changes).
+     *
+     * Requests stay strictly serial: geocode() holds each one at least a second
+     * behind the last, which is Nominatim's usage policy. Cached answers (found
+     * or not) cost no request and no wait.
+     *
+     * @param int           $limit         Most members to look at in this run.
+     * @param float         $budgetSeconds Stop starting new lookups after this long.
+     * @param callable|null $clock         Returns the current time in seconds (float); tests only.
+     * @return array{processed: int, success: int, failed: int, skipped: int, deferred: int}
+     *         deferred = selected but not reached because the budget ran out.
+     */
+    public static function geocodePendingUsers(int $limit, float $budgetSeconds, ?callable $clock = null): array
+    {
+        $clock ??= static fn (): float => microtime(true);
+        $startedAt = $clock();
+        $retryDays = self::USER_RETRY_AFTER_DAYS;
+
+        $users = DB::select(
+            "SELECT id, tenant_id, location FROM users
+             WHERE location IS NOT NULL AND location <> ''
+               AND (latitude IS NULL OR longitude IS NULL)
+               AND (geocode_attempted_at IS NULL
+                    OR geocode_attempted_at < NOW() - INTERVAL {$retryDays} DAY)
+             ORDER BY geocode_attempted_at IS NOT NULL, geocode_attempted_at, id
+             LIMIT ?",
+            [max(1, $limit)]
+        );
+
+        $result = ['processed' => 0, 'success' => 0, 'failed' => 0, 'skipped' => 0, 'deferred' => 0];
+
+        foreach ($users as $index => $user) {
+            if (($clock() - $startedAt) >= $budgetSeconds) {
+                $result['deferred'] = count($users) - $index;
+                break;
+            }
+
+            $userId = (int) $user->id;
+            $tenantId = (int) $user->tenant_id;
+
+            // Claim the row before any network call. The same conditions as the
+            // selection make this safe if another run picked the same member:
+            // only one UPDATE can match.
+            $claimed = DB::update(
+                "UPDATE users SET geocode_attempted_at = NOW()
+                 WHERE id = ? AND tenant_id = ?
+                   AND (geocode_attempted_at IS NULL
+                        OR geocode_attempted_at < NOW() - INTERVAL {$retryDays} DAY)",
+                [$userId, $tenantId]
+            );
+            if ($claimed < 1) {
+                $result['skipped']++;
+                continue;
+            }
+
+            $result['processed']++;
+
+            try {
+                $found = TenantContext::runForTenant(
+                    $tenantId,
+                    static fn (): bool => static::updateUserCoordinates($userId, (string) $user->location)
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Member map lookup failed', [
+                    'user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                    'error' => $e->getMessage(),
+                ]);
+                $found = false;
+            }
+
+            $found ? $result['success']++ : $result['failed']++;
+        }
+
+        return $result;
     }
 
     /**

@@ -1398,10 +1398,14 @@ class AdminSuperController extends BaseApiController
                 : '';
 
             DB::update(
-                "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, location = ?, phone = ?"
+                // geocode_attempted_at is cleared when the town changes (a new
+                // question for members:geocode-pending). It sits BEFORE
+                // `location = ?` because MySQL evaluates SET left to right.
+                "UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?,"
+                    . " geocode_attempted_at = IF(location <=> ?, geocode_attempted_at, NULL), location = ?, phone = ?"
                     . $clearAdminFlagsSql
                     . ", updated_at = NOW() WHERE id = ?",
-                [$firstName, $lastName, $email, $role, $location ?: null, $phone ?: null, $id]
+                [$firstName, $lastName, $email, $role, $location ?: null, $location ?: null, $phone ?: null, $id]
             );
 
             if (!$this->superAdminAuditService->log(

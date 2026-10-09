@@ -267,6 +267,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('members-send-invitations');
 
+        // Map lookups for members' towns. Each member is marked as attempted
+        // before the network call, so an unfindable town never blocks the rest.
+        // Nominatim allows one request a second; 40 lookups fit the 50 s budget.
+        $schedule->command('members:geocode-pending --limit=40 --budget=50')
+            ->everyMinute()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('members-geocode-pending');
+
         $schedule->command('events:materialize-recurrences')
             ->hourly()
             ->withoutOverlapping(55)

@@ -242,6 +242,13 @@ class UserService
         ];
 
         $user->fill(collect($data)->only($allowed)->all());
+
+        // A changed town is a new question for the background map lookup
+        // (members:geocode-pending): forget that the old one was tried.
+        if ($user->isDirty('location')) {
+            $user->geocode_attempted_at = null;
+        }
+
         $user->save();
 
         return $user->fresh();

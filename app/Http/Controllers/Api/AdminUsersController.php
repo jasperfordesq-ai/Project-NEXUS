@@ -422,6 +422,13 @@ class AdminUsersController extends BaseApiController
                 if ($field === 'role') {
                     $newRole = (string) $value;
                 }
+                if ($field === 'location') {
+                    // A changed town is a new question for the background map
+                    // lookup. MySQL evaluates SET left to right, so this must come
+                    // BEFORE `location = ?` to compare against the old value.
+                    $updates[] = 'geocode_attempted_at = IF(location <=> ?, geocode_attempted_at, NULL)';
+                    $params[] = $value;
+                }
                 $updates[] = "{$field} = ?";
                 $params[] = $value;
             }
