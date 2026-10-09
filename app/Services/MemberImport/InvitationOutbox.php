@@ -11,7 +11,10 @@ namespace App\Services\MemberImport;
 use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\Services\Auth\WelcomeInvitationMailer;
+use App\Services\EmailDispatchService;
 use App\Support\Authorization\AdminTier;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -32,9 +35,13 @@ use Illuminate\Support\Str;
  *    lock stops two rows for the same member being sent at once, a member
  *    invited in the last 24 hours is skipped, and a send that was interrupted
  *    half way (the process died) is never retried automatically;
- *  - nobody who signed in, is held (not `active`), or whose address is
- *    suppressed gets one: the member is re-checked at send time, and a
- *    suppressed address is a terminal `skipped`, never retried;
+ *  - "invited in the last 24 hours" means by ANY sender: another outbox row,
+ *    or a set-password link issued directly (password_resets, e.g. the admin
+ *    "Resend welcome email" action);
+ *  - nobody who signed in, is held (not `active` and approved), or whose
+ *    address is suppressed or undeliverable gets one: the member is re-checked
+ *    at send time, and those are a terminal `skipped`, never retried;
+ *  - last_error never holds personal data (see safeError());
  *  - nothing silently vanishes: every row ends `sent`, `skipped` (with a
  *    reason) or `failed` (with the error), and a claim abandoned by a dead
  *    worker is taken back after 10 minutes.
@@ -61,6 +68,8 @@ final class InvitationOutbox
     public const SKIP_NOT_MEMBER = 'not_member';
     /** Already waiting in the outbox. Reported by eligibility() only; never stored on a row. */
     public const SKIP_ALREADY_QUEUED = 'already_queued';
+    /** The address can never receive mail (reserved domain, malformed). Terminal. */
+    public const SKIP_UNDELIVERABLE = 'undeliverable';
 
     /** Every reason eligibility() can report, in the order the rules are applied. */
     public const SKIP_REASONS = [
@@ -69,9 +78,13 @@ final class InvitationOutbox
         self::SKIP_NOT_ACTIVE,
         self::SKIP_SIGNED_IN,
         self::SKIP_SUPPRESSED,
+        self::SKIP_UNDELIVERABLE,
         self::SKIP_ALREADY_QUEUED,
         self::SKIP_RECENTLY_INVITED,
     ];
+
+    /** Finished rows (sent, skipped, failed) are deleted this long after they last changed. */
+    public const RETENTION_DAYS = 30;
 
     /** A send that throws this many times is given up (`failed`). */
     public const MAX_ATTEMPTS = 5;
@@ -92,6 +105,9 @@ final class InvitationOutbox
      * have gone, and it is not retried (a second email is the worse outcome).
      */
     private const SEND_STARTED = 'send_started';
+
+    /** last_error of a row given up because its send was interrupted (see SEND_STARTED). */
+    private const INTERRUPTED = 'Interrupted while sending; not retried so the member is never emailed twice';
 
     private const CHUNK = 500;
 
@@ -120,10 +136,12 @@ final class InvitationOutbox
             $users = DB::table('users')
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $chunk)
-                ->get(['id', 'email', 'role', 'status', 'last_login_at', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+                ->get(['id', 'email', 'role', 'status', 'is_approved', 'last_login_at', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
                 ->keyBy('id');
 
-            $suppressed = $this->suppressedEmails($users->pluck('email')->filter()->all());
+            $emails = $users->pluck('email')->filter()->map(static fn ($e): string => (string) $e)->values()->all();
+            $suppressed = $this->suppressedEmails($emails);
+            $recentLinks = $this->emailsWithRecentInvitationLink($tenantId, $emails);
 
             $open = DB::table(self::TABLE)
                 ->where('tenant_id', $tenantId)
@@ -131,23 +149,21 @@ final class InvitationOutbox
                 ->whereIn('status', ['pending', 'processing'])
                 ->pluck('user_id')->map('intval')->flip();
 
-            $recent = DB::table(self::TABLE)
-                ->where('tenant_id', $tenantId)
-                ->whereIn('user_id', $chunk)
-                ->where('status', 'sent')
-                ->where('sent_at', '>=', now()->subHours(self::RECENT_HOURS)->toDateTimeString())
+            $recent = $this->recentOutboxRows(DB::table(self::TABLE)->where('tenant_id', $tenantId)->whereIn('user_id', $chunk))
                 ->pluck('user_id')->map('intval')->flip();
 
             foreach ($chunk as $id) {
                 $user = $users->get($id);
+                $email = $user === null ? '' : strtolower(trim((string) $user->email));
                 $reason = match (true) {
                     $user === null => self::SKIP_NOT_FOUND,
                     !self::isPlainMember($user) => self::SKIP_NOT_MEMBER,
-                    $user->status !== 'active' => self::SKIP_NOT_ACTIVE,
+                    !self::isActive($user) => self::SKIP_NOT_ACTIVE,
                     $user->last_login_at !== null => self::SKIP_SIGNED_IN,
-                    isset($suppressed[strtolower(trim((string) $user->email))]) => self::SKIP_SUPPRESSED,
+                    isset($suppressed[$email]) => self::SKIP_SUPPRESSED,
+                    EmailDispatchService::isUnroutableRecipient((string) $user->email) => self::SKIP_UNDELIVERABLE,
                     $open->has($id) => self::SKIP_ALREADY_QUEUED,
-                    $recent->has($id) => self::SKIP_RECENTLY_INVITED,
+                    $recent->has($id), isset($recentLinks[$email]) => self::SKIP_RECENTLY_INVITED,
                     default => null,
                 };
                 if ($reason === null) {
@@ -319,7 +335,7 @@ final class InvitationOutbox
         $id = (int) $row->id;
 
         if ($row->last_error === self::SEND_STARTED) {
-            return $this->giveUp($id, $token, 'Interrupted while sending; not retried so the member is never emailed twice');
+            return $this->giveUp($id, $token, self::INTERRUPTED);
         }
         if ((int) $row->attempts > self::MAX_ATTEMPTS) {
             return $this->giveUp($id, $token, 'Interrupted ' . self::MAX_ATTEMPTS . ' times before sending; given up');
@@ -347,16 +363,20 @@ final class InvitationOutbox
             ->where('id', $userId)
             ->where('tenant_id', $tenantId)
             ->first([
-                'id', 'tenant_id', 'email', 'first_name', 'last_name', 'role', 'status', 'last_login_at',
+                'id', 'tenant_id', 'email', 'first_name', 'last_name', 'role', 'status', 'is_approved', 'last_login_at',
                 'preferred_language', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god',
             ]);
 
+        // Undeliverable is checked here, before any link is issued: the
+        // dispatcher would refuse the send, and retrying it five times would
+        // only issue and revoke five links.
         $reason = match (true) {
             $user === null => self::SKIP_NOT_FOUND,
             !self::isPlainMember($user) => self::SKIP_NOT_MEMBER,
-            $user->status !== 'active' => self::SKIP_NOT_ACTIVE,
+            !self::isActive($user) => self::SKIP_NOT_ACTIVE,
             $user->last_login_at !== null => self::SKIP_SIGNED_IN,
             Mailer::isSuppressed((string) $user->email) => self::SKIP_SUPPRESSED,
+            EmailDispatchService::isUnroutableRecipient((string) $user->email) => self::SKIP_UNDELIVERABLE,
             default => null,
         };
         if ($reason !== null) {
@@ -371,13 +391,12 @@ final class InvitationOutbox
         }
 
         try {
-            $sentRecently = DB::table(self::TABLE)
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $userId)
-                ->where('id', '!=', $id)
-                ->where('status', 'sent')
-                ->where('sent_at', '>=', now()->subHours(self::RECENT_HOURS)->toDateTimeString())
-                ->exists();
+            // Any invitation in the last 24 hours counts, whoever sent it: another
+            // outbox row, or a link issued directly (e.g. "Resend welcome email").
+            $sentRecently = $this->recentOutboxRows(
+                DB::table(self::TABLE)->where('tenant_id', $tenantId)->where('user_id', $userId)->where('id', '!=', $id)
+            )->exists()
+                || $this->emailsWithRecentInvitationLink($tenantId, [(string) $user->email]) !== [];
             if ($sentRecently) {
                 return $this->skip($id, $token, self::SKIP_RECENTLY_INVITED);
             }
@@ -432,7 +451,7 @@ final class InvitationOutbox
     {
         $id = (int) $row->id;
         $attempts = (int) $row->attempts;
-        $error = mb_substr($e->getMessage() !== '' ? $e->getMessage() : $e::class, 0, 500);
+        $error = self::safeError($e);
         $terminal = $attempts >= self::MAX_ATTEMPTS;
         $now = now();
 
@@ -566,7 +585,107 @@ final class InvitationOutbox
         }
     }
 
+    // ---------------------------------------------------------------- retention
+
+    /**
+     * Delete finished rows (sent, skipped, failed) that have not changed for
+     * $days days, across every community, in chunks. Rows still waiting or
+     * being sent are never deleted, however old. Run by the sending command
+     * after each drain. 30 days is a working choice pending the DPO.
+     */
+    public function pruneFinished(int $days = self::RETENTION_DAYS): int
+    {
+        $cutoff = now()->subDays(max(1, $days))->toDateTimeString();
+        $chunk = 1000;
+        $total = 0;
+        do {
+            $deleted = DB::delete(
+                'DELETE FROM ' . self::TABLE . "
+                  WHERE status IN ('sent', 'skipped', 'failed') AND updated_at < ?
+                  ORDER BY id LIMIT {$chunk}",
+                [$cutoff]
+            );
+            $total += $deleted;
+        } while ($deleted === $chunk);
+
+        return $total;
+    }
+
     // ------------------------------------------------------------------ helpers
+
+    /** `active` AND approved: a member awaiting approval is not invited yet. */
+    private static function isActive(object $user): bool
+    {
+        return ($user->status ?? null) === 'active' && (int) ($user->is_approved ?? 0) === 1;
+    }
+
+    /**
+     * Restrict an outbox query to rows that mean "this member was (or may have
+     * been) emailed in the last 24 hours": sent, being sent right now, or given
+     * up because a send was interrupted half way.
+     */
+    private function recentOutboxRows(Builder $query): Builder
+    {
+        $since = now()->subHours(self::RECENT_HOURS)->toDateTimeString();
+
+        return $query->where(function (Builder $recent) use ($since): void {
+            $recent->where(fn (Builder $q) => $q->where('status', 'sent')->where('sent_at', '>=', $since))
+                ->orWhere(fn (Builder $q) => $q->where('status', 'processing')->where('last_error', self::SEND_STARTED)->where('updated_at', '>=', $since))
+                ->orWhere(fn (Builder $q) => $q->where('status', 'failed')->where('last_error', self::INTERRUPTED)->where('updated_at', '>=', $since));
+        });
+    }
+
+    /**
+     * Addresses (lower-cased) of this community that were issued a set-password
+     * invitation link in the last 24 hours by ANY sender — the outbox, the admin
+     * "Resend welcome email" action, account creation. An invitation row has
+     * `expires_at` set; a forgot-password row leaves it NULL and does not count.
+     *
+     * Compared on the DATABASE clock: PasswordResetTokens::issueInvitation()
+     * writes created_at with the database's NOW(), not the application's.
+     *
+     * @param list<string> $emails
+     * @return array<string, true>
+     */
+    private function emailsWithRecentInvitationLink(int $tenantId, array $emails): array
+    {
+        $emails = array_values(array_unique(array_filter($emails, static fn (string $e): bool => $e !== '')));
+        if ($emails === []) {
+            return [];
+        }
+
+        return DB::table('password_resets')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('email', $emails)
+            ->whereNotNull('expires_at')
+            ->whereRaw('created_at >= NOW() - INTERVAL ' . self::RECENT_HOURS . ' HOUR')
+            ->pluck('email')
+            ->mapWithKeys(static fn ($email): array => [strtolower(trim((string) $email)) => true])
+            ->all();
+    }
+
+    /**
+     * What may be stored in last_error: the exception class and a message free
+     * of personal data. A database error's message carries the SQL with its
+     * bound values (an email address, say), so only its SQLSTATE and driver
+     * code are kept; any other message has email addresses redacted.
+     */
+    private static function safeError(\Throwable $e): string
+    {
+        for ($cause = $e; $cause !== null; $cause = $cause->getPrevious()) {
+            if ($cause instanceof QueryException) {
+                $info = is_array($cause->errorInfo) ? $cause->errorInfo : [];
+                $state = (string) ($info[0] ?? $cause->getCode());
+                $driver = isset($info[1]) ? ' (driver error ' . (int) $info[1] . ')' : '';
+
+                return mb_substr($cause::class . ': SQLSTATE ' . $state . $driver, 0, 500);
+            }
+        }
+
+        $message = (string) preg_replace('/[^\s@<>()\[\]"\',;:]+@[^\s@<>()\[\]"\',;:]+/u', '[email]', $e->getMessage());
+
+        return mb_substr($e::class . ($message !== '' ? ': ' . $message : ''), 0, 500);
+    }
 
     /** A role-'member' account with none of the staff flags (AdminTier is the canonical staff test). */
     private static function isPlainMember(object $user): bool

@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Schema;
  * Sends queued welcome invitations (member import and the admin "send
  * invitation" action) from the durable outbox, about one a second. Scheduled
  * every minute on one server without overlap; the outbox's own claim tokens
- * keep it safe even if two runs do overlap.
+ * keep it safe even if two runs do overlap. After sending, it deletes finished
+ * rows older than InvitationOutbox::RETENTION_DAYS.
  */
 final class SendMemberInvitations extends Command
 {
@@ -42,6 +43,8 @@ final class SendMemberInvitations extends Command
         }
 
         $summary = $outbox->drain($limit, (float) $budget, $gapMs);
+        // Finished rows are kept InvitationOutbox::RETENTION_DAYS, then deleted.
+        $summary['pruned'] = $outbox->pruneFinished();
 
         $this->line(implode(' ', array_map(
             static fn (string $key, int $value): string => "{$key}={$value}",

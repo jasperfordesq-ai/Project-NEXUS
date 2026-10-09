@@ -62,7 +62,7 @@ final class InvitationOutboxTest extends TestCase
     private function member(array $extra = []): User
     {
         return User::factory()->forTenant($this->testTenantId)->create(array_merge([
-            'email' => 'outbox-' . bin2hex(random_bytes(6)) . '@example.test',
+            'email' => 'outbox-' . bin2hex(random_bytes(6)) . '@outbox-mail.example.org',
             'first_name' => 'Iris', 'role' => 'member', 'status' => 'active',
             'is_approved' => 1, 'last_login_at' => null,
         ], $extra));
@@ -339,7 +339,7 @@ final class InvitationOutboxTest extends TestCase
             $this->assertSame('pending', $row->status, "attempt {$attempt} is retried");
             $this->assertSame($attempt, (int) $row->attempts);
             $this->assertSame(now()->addMinutes($delay)->toDateTimeString(), $row->available_at, "attempt {$attempt} backs off {$delay} min");
-            $this->assertSame('Welcome email send returned false', $row->last_error);
+            $this->assertSame('RuntimeException: Welcome email send returned false', $row->last_error);
             $this->assertNull($row->claim_token);
             $this->assertSame(0, $this->liveInvitations($member->email), "attempt {$attempt}'s link was revoked");
 
@@ -355,7 +355,7 @@ final class InvitationOutboxTest extends TestCase
         $row = $this->row($member->id);
         $this->assertSame('failed', $row->status);
         $this->assertSame(5, (int) $row->attempts);
-        $this->assertSame('Welcome email send returned false', $row->last_error);
+        $this->assertSame('RuntimeException: Welcome email send returned false', $row->last_error);
         $this->assertSame(5, $this->mail->countFor($member->email), 'five attempts, no more');
         $this->assertSame(0, $this->liveInvitations($member->email));
 
@@ -524,6 +524,198 @@ final class InvitationOutboxTest extends TestCase
         $this->assertSame(0, $this->mail->countFor($member->email));
     }
 
+    // ------------------------------------------ fix round 1: every invitation path
+
+    /** Back-date this member's newest password_resets row on the DATABASE clock it was written with. */
+    private function ageNewestResetRow(string $email, int $minutes): void
+    {
+        DB::statement(
+            'UPDATE password_resets SET created_at = NOW() - INTERVAL ? MINUTE
+              WHERE email = ? AND tenant_id = ? ORDER BY created_at DESC LIMIT 1',
+            [$minutes, $email, $this->testTenantId]
+        );
+    }
+
+    public function test_a_manual_resend_ten_minutes_ago_makes_a_member_recently_invited_for_bulk(): void
+    {
+        $member = $this->member();
+        app(\App\Services\Auth\WelcomeInvitationMailer::class)->send(User::findById($member->id, true), true);
+        $this->ageNewestResetRow($member->email, 10);
+
+        $result = $this->outbox->eligibility($this->testTenantId, [$member->id]);
+
+        $this->assertSame([], $result['eligible']);
+        $this->assertSame([$member->id], $result['skipped'][InvitationOutbox::SKIP_RECENTLY_INVITED]);
+    }
+
+    public function test_a_manual_resend_after_queueing_makes_the_queued_row_skip_at_send_time(): void
+    {
+        $member = $this->member();
+        $this->queue($member);
+        app(\App\Services\Auth\WelcomeInvitationMailer::class)->send(User::findById($member->id, true), true);
+        $this->ageNewestResetRow($member->email, 10);
+
+        $this->drain();
+
+        $row = $this->row($member->id);
+        $this->assertSame('skipped', $row->status);
+        $this->assertSame(InvitationOutbox::SKIP_RECENTLY_INVITED, $row->skip_reason);
+        $this->assertSame(1, $this->mail->countFor($member->email), 'only the manual email');
+    }
+
+    public function test_a_plain_password_reset_or_an_old_invitation_does_not_count_as_recent(): void
+    {
+        $reset = $this->member();
+        // A forgot-password link: expires_at NULL.
+        DB::table('password_resets')->insert([
+            'email' => $reset->email, 'tenant_id' => $this->testTenantId,
+            'token' => hash('sha256', 'plain-reset'), 'created_at' => DB::raw('NOW()'), 'expires_at' => null,
+        ]);
+        $old = $this->member();
+        app(\App\Services\Auth\WelcomeInvitationMailer::class)->send(User::findById($old->id, true), true);
+        $this->ageNewestResetRow($old->email, 25 * 60);
+
+        $result = $this->outbox->eligibility($this->testTenantId, [$reset->id, $old->id]);
+        $this->assertSame([$reset->id, $old->id], $result['eligible']);
+
+        $this->queue($reset);
+        $this->drain();
+        $this->assertSame('sent', $this->row($reset->id)->status);
+    }
+
+    public function test_a_sibling_row_interrupted_mid_send_counts_as_recent(): void
+    {
+        $failedSibling = $this->member();
+        $this->queue($failedSibling, self::OTHER_REQUEST);
+        DB::table('member_invitation_outbox')->where('user_id', $failedSibling->id)->update([
+            'status' => 'failed', 'attempts' => 1, 'updated_at' => now()->subHour(),
+            'last_error' => 'Interrupted while sending; not retried so the member is never emailed twice',
+        ]);
+        $sendingSibling = $this->member();
+        $this->queue($sendingSibling, self::OTHER_REQUEST);
+        DB::table('member_invitation_outbox')->where('user_id', $sendingSibling->id)->update([
+            'status' => 'processing', 'claim_token' => 'another-worker', 'claimed_at' => now()->subMinutes(2),
+            'attempts' => 1, 'last_error' => 'send_started', 'updated_at' => now()->subMinutes(2),
+        ]);
+
+        $check = $this->outbox->eligibility($this->testTenantId, [$failedSibling->id]);
+        $this->assertSame([$failedSibling->id], $check['skipped'][InvitationOutbox::SKIP_RECENTLY_INVITED]);
+
+        // Second rows that raced past eligibility.
+        foreach ([$failedSibling, $sendingSibling] as $member) {
+            DB::table('member_invitation_outbox')->insert([
+                'tenant_id' => $this->testTenantId, 'user_id' => $member->id, 'request_key' => self::REQUEST,
+                'source' => 'admin_bulk', 'status' => 'pending', 'attempts' => 0,
+                'available_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $this->drain();
+
+        foreach ([$failedSibling, $sendingSibling] as $member) {
+            $row = $this->row($member->id, self::REQUEST);
+            $this->assertSame('skipped', $row->status);
+            $this->assertSame(InvitationOutbox::SKIP_RECENTLY_INVITED, $row->skip_reason);
+            $this->assertSame(0, $this->mail->countFor($member->email));
+        }
+    }
+
+    public function test_an_unapproved_member_is_not_active_in_eligibility_and_at_send_time(): void
+    {
+        $unapproved = $this->member(['is_approved' => 0]);
+        $check = $this->outbox->eligibility($this->testTenantId, [$unapproved->id]);
+        $this->assertSame([$unapproved->id], $check['skipped'][InvitationOutbox::SKIP_NOT_ACTIVE]);
+
+        $member = $this->member();
+        $this->queue($member);
+        DB::table('users')->where('id', $member->id)->update(['is_approved' => 0]);
+        $this->drain();
+
+        $this->assertSame(InvitationOutbox::SKIP_NOT_ACTIVE, $this->row($member->id)->skip_reason);
+        $this->assertSame(0, $this->mail->countFor($member->email));
+    }
+
+    public function test_an_undeliverable_address_is_skipped_once_and_never_retried(): void
+    {
+        $member = $this->member(['email' => 'outbox-' . bin2hex(random_bytes(4)) . '@nowhere.invalid']);
+        $check = $this->outbox->eligibility($this->testTenantId, [$member->id]);
+        $this->assertSame([$member->id], $check['skipped'][InvitationOutbox::SKIP_UNDELIVERABLE]);
+
+        // Queued anyway (the import path does not ask eligibility()).
+        $this->outbox->enqueueOneInTransaction($this->testTenantId, $member->id, self::REQUEST, 1);
+        $this->drain();
+
+        $row = $this->row($member->id);
+        $this->assertSame('skipped', $row->status);
+        $this->assertSame(InvitationOutbox::SKIP_UNDELIVERABLE, $row->skip_reason);
+        $this->assertSame(0, $this->mail->countFor($member->email), 'no send attempted');
+        $this->assertSame(0, $this->liveInvitations($member->email));
+
+        $this->advance(60 * 24);
+        $this->drain();
+        $this->assertSame(1, (int) $this->row($member->id)->attempts, 'never claimed again');
+    }
+
+    public function test_a_database_error_keeps_the_members_address_out_of_last_error(): void
+    {
+        $member = $this->member();
+        $this->queue($member);
+        $driver = new \PDOException("SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '{$member->email}'");
+        $driver->errorInfo = ['23000', 1062, "Duplicate entry '{$member->email}'"];
+        $this->mail->throw = new \Illuminate\Database\QueryException(
+            'mysql', 'insert into email_log (email) values (?)', [$member->email], $driver
+        );
+
+        $this->drain();
+
+        $row = $this->row($member->id);
+        $this->assertSame('pending', $row->status, 'retried later');
+        $this->assertStringNotContainsString($member->email, (string) $row->last_error);
+        $this->assertStringNotContainsString('@', (string) $row->last_error);
+        $this->assertStringContainsString('QueryException', (string) $row->last_error);
+        $this->assertStringContainsString('23000', (string) $row->last_error);
+        $this->assertLessThanOrEqual(500, mb_strlen((string) $row->last_error));
+    }
+
+    public function test_an_email_address_in_any_other_error_message_is_redacted(): void
+    {
+        $member = $this->member();
+        $this->queue($member);
+        $this->mail->throw = new \RuntimeException("Mailbox {$member->email} rejected by provider");
+
+        $this->drain();
+
+        $error = (string) $this->row($member->id)->last_error;
+        $this->assertStringNotContainsString($member->email, $error);
+        $this->assertStringContainsString('rejected by provider', $error);
+    }
+
+    public function test_the_command_prunes_finished_rows_older_than_thirty_days(): void
+    {
+        $rows = [];
+        foreach (['sent', 'skipped', 'failed', 'pending'] as $status) {
+            $member = $this->member();
+            $rows[$status] = $this->queue($member)->id;
+            DB::table('member_invitation_outbox')->where('id', $rows[$status])->update([
+                'status' => $status, 'updated_at' => now()->subDays(31),
+                // A pending row 31 days old is merely not due; it is never pruned.
+                'available_at' => now()->addYear(),
+            ]);
+        }
+        $recentMember = $this->member();
+        $recent = $this->queue($recentMember)->id;
+        DB::table('member_invitation_outbox')->where('id', $recent)->update(['status' => 'sent', 'updated_at' => now()->subDays(29)]);
+
+        $this->assertSame(0, Artisan::call('members:send-invitations', ['--gap-ms' => 0]));
+        $this->assertMatchesRegularExpression('/pruned=[1-9]/', Artisan::output());
+
+        $left = DB::table('member_invitation_outbox')->whereIn('id', array_merge(array_values($rows), [$recent]))->pluck('id')->all();
+        sort($left);
+        $expected = [$rows['pending'], $recent];
+        sort($expected);
+        $this->assertSame($expected, $left);
+    }
+
     // ------------------------------------------------------------- command
 
     public function test_the_command_respects_its_limit_and_exits_zero(): void
@@ -576,6 +768,9 @@ class OutboxCapturingEmailDispatch extends EmailDispatchService
     /** Run once, during the next send (to start a second drain mid-send). */
     public ?\Closure $onSend = null;
 
+    /** Thrown from every send when set. */
+    public ?\Throwable $throw = null;
+
     public function send(string $to, string $subject, string $body, array $options = []): bool
     {
         $this->sent[] = ['to' => $to, 'subject' => $subject, 'body' => $body, 'options' => $options];
@@ -583,6 +778,9 @@ class OutboxCapturingEmailDispatch extends EmailDispatchService
             $hook = $this->onSend;
             $this->onSend = null;
             $hook();
+        }
+        if ($this->throw !== null) {
+            throw $this->throw;
         }
 
         return $this->succeed;
