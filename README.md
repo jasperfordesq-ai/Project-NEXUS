@@ -414,6 +414,7 @@ We welcome contributors comfortable in any part of this stack — PHP/Laravel, R
 ## Quality, Security, and Releases
 
 - Security reports use the private process in [SECURITY.md](SECURITY.md).
+- **Independent assurance:** the platform is penetration tested every year by an independent firm. In 2026 that was [Cyphere](https://thecyphere.com), in October. See [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md#independent-assurance).
 - Contributor behaviour expectations are documented in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 - Maintained project documentation starts at [docs/README.md](docs/README.md).
 - Public documentation changes are checked with `npm run check:docs`.

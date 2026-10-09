@@ -54,13 +54,15 @@ frozen, and what an organisation with a supplier-assurance obligation can ask fo
 Finding detail is held privately and shared with a customer under their own confidential package
 once remediation allows.
 
-An independent penetration test by a specialist security firm was completed in October 2026,
+An independent penetration test by [Cyphere](https://thecyphere.com), a specialist security
+firm and our independent security testing partner for 2026, was completed in October 2026,
 against an isolated staging copy of the platform holding only synthetic data. It covered the web
 application, the accessible frontend and the API. The findings it reported were fixed and
 confirmed by the firm's retest, apart from one low-severity item that we accepted as a known risk.
 The firm's report is confidential; a letter
-of assurance from the firm is available on request. The next independent test is planned for
-about twelve months later, or sooner if a customer requires one.
+of assurance from the firm is available on request. Independent testing is repeated every
+year: the next test is planned for about October 2027, or sooner if a customer requires one. See
+[docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md#independent-assurance).
 
 ## Scope
 

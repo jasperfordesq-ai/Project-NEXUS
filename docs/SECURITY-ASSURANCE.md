@@ -13,6 +13,24 @@ Related: [`SECURITY.md`](../SECURITY.md) for vulnerability disclosure,
 [`SECURITY-SCANNING.md`](SECURITY-SCANNING.md) for the automated scanners,
 [`CI.md`](CI.md) for which checks block a release.
 
+## Independent assurance
+
+Project NEXUS is not only assessed by the people who build it. In 2026 our independent security
+testing partner is [Cyphere](https://thecyphere.com), a specialist security firm.
+
+- **What was tested:** Cyphere completed a penetration test in October 2026 against an isolated
+  staging copy of the platform holding only synthetic data. It covered the web application, the
+  accessible frontend and the API.
+- **What happened to the findings:** the findings it reported were fixed and confirmed by
+  Cyphere's retest, apart from one low-severity item accepted as a known risk.
+- **How often:** independent testing is repeated every year. The next test is planned for about
+  October 2027, or sooner if a customer requires one.
+- **What can be shared:** Cyphere's report is confidential. A letter of assurance from Cyphere is
+  available on request (see Section 6).
+
+An independent test covers the build it tested. It does not certify changes made after it, which
+is why the internal layers in Section 2 continue between tests.
+
 ---
 
 ## 1. Why this exists
@@ -39,7 +57,7 @@ Four layers, each answering a different question.
 | **Automated gates** | Did this change break a security property we already protect? | Every push, every release. See [`CI.md`](CI.md). |
 | **Automated scanning** | Are there known-vulnerable dependencies, secrets, or patterns? | Nightly and on merge. See [`SECURITY-SCANNING.md`](SECURITY-SCANNING.md). |
 | **Targeted assessment** | Does a specific security property hold across the whole route table? | Periodic, recorded as an engagement. |
-| **Independent testing** | Would someone outside the team reach the same conclusion? | An independent penetration test by a specialist firm, completed October 2026 on an isolated staging environment with synthetic data. Repeated about every twelve months, or sooner when a customer requires it. |
+| **Independent testing** | Would someone outside the team reach the same conclusion? | An independent penetration test by [Cyphere](https://thecyphere.com), a specialist security firm, completed October 2026 on an isolated staging environment with synthetic data. Repeated every year, or sooner when a customer requires it. See [Independent assurance](#independent-assurance). |
 
 No internal work substitutes for independent testing, and no assurance document may suggest
 otherwise. An independent test covers the build it tested; it does not certify changes made
