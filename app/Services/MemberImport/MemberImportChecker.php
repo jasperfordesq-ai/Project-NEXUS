@@ -70,8 +70,10 @@ final class MemberImportChecker
         $existingRows = [];
         foreach (array_chunk(array_keys($firstRowByEmail), 500) as $chunk) {
             $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+            // TRIM: the collation already ignores trailing spaces, but a stored
+            // address with LEADING spaces would otherwise never match.
             $found = DB::select(
-                "SELECT email FROM users WHERE tenant_id = ? AND email IN ({$placeholders})",
+                "SELECT email FROM users WHERE tenant_id = ? AND TRIM(email) IN ({$placeholders})",
                 array_merge([$tenantId], $chunk)
             );
             foreach ($found as $f) {

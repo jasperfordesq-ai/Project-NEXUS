@@ -160,6 +160,20 @@ Ada,Lovelace,ada@nexus.test,,,
         $this->assertSame([['row' => 2, 'column' => 'email', 'code' => 'already_member', 'params' => []]], $r['problems']);
     }
 
+    /** The collation ignores trailing spaces but not leading ones, so the lookup trims. */
+    public function test_an_existing_member_whose_stored_email_has_leading_spaces_is_still_found(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('users')->where('id', $user->id)->update(['email' => '  grace@nexus.test']);
+
+        $r = $this->check("Ada,Lovelace,ada@nexus.test,,,
+Grace,Hopper,grace@nexus.test,,,
+");
+        $this->assertSame('problems', $r['status']);
+        $this->assertSame([3], $r['existing_member_rows']);
+        $this->assertSame([['row' => 3, 'column' => 'email', 'code' => 'already_member', 'params' => []]], $r['problems']);
+    }
+
     public function test_a_database_match_no_file_row_maps_to_blocks_the_file(): void
     {
         $user = User::factory()->forTenant($this->testTenantId)->create();

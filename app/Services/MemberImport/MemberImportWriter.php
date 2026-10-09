@@ -61,7 +61,8 @@ final class MemberImportWriter
         }
         $row = $recheck['row'] + ['source_row' => (int) $row['source_row']];
 
-        $existingId = DB::table('users')->where('tenant_id', $tenantId)->where('email', $row['email'])->value('id');
+        // TRIM, as the checker does: a stored address with leading spaces is still this address.
+        $existingId = DB::table('users')->where('tenant_id', $tenantId)->whereRaw('TRIM(email) = ?', [$row['email']])->value('id');
         if ($existingId !== null) {
             if ($this->createdByThisImport((int) $existingId, $tenantId, $importId)) {
                 return $this->alreadyCreated((int) $existingId, $row);
@@ -128,7 +129,7 @@ final class MemberImportWriter
             if ((int) ($e->errorInfo[1] ?? 0) === 1062) {
                 // The unique key stopped a duplicate. If the other row is this import's own
                 // member (an overlapping request committed it first), that is not a stop.
-                $winnerId = DB::table('users')->where('tenant_id', $tenantId)->where('email', $row['email'])->value('id');
+                $winnerId = DB::table('users')->where('tenant_id', $tenantId)->whereRaw('TRIM(email) = ?', [$row['email']])->value('id');
                 if ($winnerId !== null && $this->createdByThisImport((int) $winnerId, $tenantId, $importId)) {
                     return $this->alreadyCreated((int) $winnerId, $row);
                 }

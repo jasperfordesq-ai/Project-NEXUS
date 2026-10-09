@@ -110,6 +110,24 @@ final class MemberImportWriterTest extends TestCase
         $this->assertSame($before, DB::table('transactions')->count());
     }
 
+    public function test_an_email_taken_since_the_check_with_leading_spaces_stored_is_still_a_stop(): void
+    {
+        $row = $this->row();
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('users')->where('id', $user->id)->update(['email' => '  ' . $row['email']]);
+        $users = DB::table('users')->where('tenant_id', $this->testTenantId)->count();
+        $before = DB::table('transactions')->count();
+
+        try {
+            $this->write($row);
+            $this->fail('expected a stop');
+        } catch (MemberImportStopped $e) {
+            $this->assertSame('email_now_taken', $e->reason);
+        }
+        $this->assertSame($users, DB::table('users')->where('tenant_id', $this->testTenantId)->count());
+        $this->assertSame($before, DB::table('transactions')->count());
+    }
+
     public function test_a_member_this_import_already_created_is_recognised_not_stopped(): void
     {
         // The server committed the member, then died before recording progress.
