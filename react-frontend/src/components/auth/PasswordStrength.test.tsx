@@ -32,6 +32,7 @@ function makeState(overrides: Partial<PasswordCheckState>): PasswordCheckState {
     isLongEnough: false,
     isPwned: null,
     isChecking: false,
+    breachCheckUnavailable: false,
     isAcceptable: false,
     message: '',
     tone: 'idle',

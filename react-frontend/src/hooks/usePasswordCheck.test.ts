@@ -154,7 +154,7 @@ describe('usePasswordCheck when the breach check hangs', () => {
       await vi.advanceTimersByTimeAsync(350);
     });
     await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
-    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    const init = vi.mocked(fetch).mock.calls[0]?.[1] as RequestInit;
     expect(init.signal).toBeInstanceOf(AbortSignal);
     expect(init.signal?.aborted).toBe(false);
 
