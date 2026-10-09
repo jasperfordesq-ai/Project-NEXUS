@@ -15,6 +15,7 @@ use App\Services\EmailDispatchService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Sends a welcome notification (email + in-app) when a new user registers.
@@ -207,6 +208,16 @@ class SendWelcomeNotification
 
     private function ensureVerificationTokenTableExists(): void
     {
+        // The table is schema-managed (database/schema/mysql-schema.sql); the
+        // CREATE below is only a fallback for a database built without it.
+        // Check first: MariaDB commits any open transaction before DDL, even
+        // when IF NOT EXISTS finds the table, which split the caller's
+        // transaction on every registration and leaked test fixtures into
+        // nexus_test.
+        if (Schema::hasTable('email_verification_tokens')) {
+            return;
+        }
+
         DB::statement("
             CREATE TABLE IF NOT EXISTS `email_verification_tokens` (
                 `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
