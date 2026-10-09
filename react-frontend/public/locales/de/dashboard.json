@@ -160,5 +160,17 @@
   "likes_count_one": "{{count}} gefällt mir",
   "likes_count_other": "{{count}} gefällt mir",
   "comments_count_one": "{{count}} Kommentare",
-  "comments_count_other": "{{count}} Kommentare"
+  "comments_count_other": "{{count}} Kommentare",
+  "location_prompt": {
+    "title": "Sagen Sie uns, wo Sie ansässig sind",
+    "subtitle": "Geben Sie Ihre Stadt oder Ihren Ort an, damit Sie Menschen und Angebote in Ihrer Nähe finden.",
+    "label": "Wo sind Sie ansässig?",
+    "placeholder": "Ihre Stadt oder Ihr Ort",
+    "save": "Speichern",
+    "saved": "Standort gespeichert",
+    "not_saved": "Standort nicht gespeichert",
+    "error_location": "Wir konnten diesen Ort nicht speichern. Bitte prüfen Sie die Eingabe und versuchen Sie es erneut.",
+    "error_coordinates": "Die Kartenposition für diesen Ort konnte nicht verwendet werden. Bitte wählen Sie ihn erneut aus der Liste aus oder geben Sie nur Ihren Ort ein.",
+    "error_generic": "Ihr Standort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+  }
 }

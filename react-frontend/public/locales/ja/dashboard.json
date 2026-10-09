@@ -160,5 +160,17 @@
   "likes_count_other": "{{count}} が「いいね！」",
   "comments_count_other": "{{count}} コメント",
   "likes_count_one": "{{count}} 好き",
-  "comments_count_one": "{{count}} コメントする"
+  "comments_count_one": "{{count}} コメントする",
+  "location_prompt": {
+    "title": "お住まいの場所を教えてください",
+    "subtitle": "お住まいの市区町村を追加すると、近くの人や投稿を見つけられます。",
+    "label": "どちらにお住まいですか？",
+    "placeholder": "お住まいの市区町村",
+    "save": "保存",
+    "saved": "場所を保存しました",
+    "not_saved": "場所は保存されていません",
+    "error_location": "その場所を保存できませんでした。内容を確認して、もう一度お試しください。",
+    "error_coordinates": "その場所の地図上の位置を使用できませんでした。リストからもう一度選ぶか、市区町村名だけを入力してください。",
+    "error_generic": "場所を保存できませんでした。もう一度お試しください。"
+  }
 }

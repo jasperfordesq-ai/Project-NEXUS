@@ -164,5 +164,17 @@
   "likes_count_other": "{{count}} me gusta",
   "comments_count_many": "{{count}} comentarios",
   "comments_count_one": "{{count}} comentarios",
-  "comments_count_other": "{{count}} comentarios"
+  "comments_count_other": "{{count}} comentarios",
+  "location_prompt": {
+    "title": "Cuéntanos dónde vives",
+    "subtitle": "Añade tu pueblo o ciudad para encontrar personas y anuncios cerca de ti.",
+    "label": "¿Dónde vives?",
+    "placeholder": "Tu pueblo o ciudad",
+    "save": "Guardar",
+    "saved": "Ubicación guardada",
+    "not_saved": "Ubicación no guardada",
+    "error_location": "No pudimos guardar ese lugar. Revísalo e inténtalo de nuevo.",
+    "error_coordinates": "No pudimos usar la posición en el mapa de ese lugar. Vuelve a elegirlo de la lista o escribe solo tu pueblo o ciudad.",
+    "error_generic": "No pudimos guardar tu ubicación. Inténtalo de nuevo."
+  }
 }

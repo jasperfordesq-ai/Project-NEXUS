@@ -172,5 +172,17 @@
   "comments_count_many": "{{count}} dtrácht",
   "comments_count_one": "{{count}} trácht",
   "comments_count_other": "{{count}} trácht",
-  "comments_count_two": "{{count}} thrácht"
+  "comments_count_two": "{{count}} thrácht",
+  "location_prompt": {
+    "title": "Inis dúinn cá bhfuil tú lonnaithe",
+    "subtitle": "Cuir do bhaile nó do chathair leis chun daoine agus liostaí in aice leat a aimsiú.",
+    "label": "Cá bhfuil tú lonnaithe?",
+    "placeholder": "Do bhaile nó do chathair",
+    "save": "Sábháil",
+    "saved": "Sábháladh an suíomh",
+    "not_saved": "Níor sábháladh an suíomh",
+    "error_location": "Níorbh fhéidir an áit sin a shábháil. Seiceáil é agus bain triail eile as.",
+    "error_coordinates": "Níorbh fhéidir suíomh léarscáile na háite sin a úsáid. Roghnaigh as an liosta arís é, nó clóscríobh do bhaile amháin.",
+    "error_generic": "Níorbh fhéidir do shuíomh a shábháil. Bain triail eile as."
+  }
 }

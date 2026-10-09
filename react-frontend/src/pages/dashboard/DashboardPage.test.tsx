@@ -249,6 +249,53 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
   });
 
+  describe('location reminder', () => {
+    async function signInAs(fields: Record<string, unknown>) {
+      const { useAuth } = await import('@/contexts');
+      vi.mocked(useAuth).mockReturnValue({
+        user: { id: 1, first_name: 'Test', name: 'Test User', ...fields },
+        isAuthenticated: true,
+        refreshUser: vi.fn(),
+      } as unknown as ReturnType<typeof useAuth>);
+    }
+
+    it('reminds a member who finished onboarding but has no location', async () => {
+      await signInAs({ onboarding_completed: true, location_missing: true });
+
+      render(<DashboardPage />);
+
+      expect(screen.getByText('Tell us where you are based')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Your town or city')).toBeInTheDocument();
+      // Can never be hidden: nothing on the card closes it.
+      expect(screen.queryByRole('button', { name: /dismiss|close|hide|not now|later/i })).not.toBeInTheDocument();
+    });
+
+    it('does not show it to a member who has a location', async () => {
+      await signInAs({ onboarding_completed: true, location_missing: false, location: 'Cork' });
+
+      render(<DashboardPage />);
+
+      expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
+    });
+
+    it('does not show it when the server did not report the flag', async () => {
+      await signInAs({ onboarding_completed: true });
+
+      render(<DashboardPage />);
+
+      expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
+    });
+
+    it('leaves a member still in onboarding to the onboarding banner', async () => {
+      await signInAs({ onboarding_completed: false, location_missing: true });
+
+      render(<DashboardPage />);
+
+      expect(screen.getByText('Complete your profile setup')).toBeInTheDocument();
+      expect(screen.queryByText('Tell us where you are based')).not.toBeInTheDocument();
+    });
+  });
+
   it('hides Find Members quick action when connections feature is disabled', () => {
     featureFlags.connections = false;
 

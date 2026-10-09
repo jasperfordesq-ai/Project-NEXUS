@@ -164,5 +164,17 @@
   "likes_count_other": "Mi piace a {{count}}",
   "comments_count_many": "{{count}} commenti",
   "comments_count_one": "{{count}} commenti",
-  "comments_count_other": "{{count}} commenti"
+  "comments_count_other": "{{count}} commenti",
+  "location_prompt": {
+    "title": "Dicci dove vivi",
+    "subtitle": "Aggiungi la tua città o il tuo paese per trovare persone e annunci vicino a te.",
+    "label": "Dove vivi?",
+    "placeholder": "La tua città o il tuo paese",
+    "save": "Salva",
+    "saved": "Posizione salvata",
+    "not_saved": "Posizione non salvata",
+    "error_location": "Non siamo riusciti a salvare quel luogo. Controllalo e riprova.",
+    "error_coordinates": "Non siamo riusciti a usare la posizione sulla mappa per quel luogo. Sceglilo di nuovo dall'elenco oppure scrivi solo la tua città.",
+    "error_generic": "Non siamo riusciti a salvare la tua posizione. Riprova."
+  }
 }

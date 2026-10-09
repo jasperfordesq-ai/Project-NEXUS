@@ -160,5 +160,17 @@
   "likes_count_one": "{{count}} likes",
   "likes_count_other": "{{count}} likes",
   "comments_count_one": "{{count}} comments",
-  "comments_count_other": "{{count}} comments"
+  "comments_count_other": "{{count}} comments",
+  "location_prompt": {
+    "title": "Tell us where you are based",
+    "subtitle": "Add your town or city so you can find people and listings near you.",
+    "label": "Where are you based?",
+    "placeholder": "Your town or city",
+    "save": "Save",
+    "saved": "Location saved",
+    "not_saved": "Location not saved",
+    "error_location": "We could not save that place. Please check it and try again.",
+    "error_coordinates": "We could not use the map position for that place. Please pick it from the list again, or type just your town.",
+    "error_generic": "We could not save your location. Please try again."
+  }
 }

@@ -164,5 +164,17 @@
   "likes_count_other": "{{count}} aime",
   "comments_count_many": "{{count}} commentaires",
   "comments_count_one": "{{count}} commentaires",
-  "comments_count_other": "{{count}} commentaires"
+  "comments_count_other": "{{count}} commentaires",
+  "location_prompt": {
+    "title": "Dites-nous où vous habitez",
+    "subtitle": "Ajoutez votre ville ou commune pour trouver des personnes et des annonces près de chez vous.",
+    "label": "Où habitez-vous ?",
+    "placeholder": "Votre ville ou commune",
+    "save": "Enregistrer",
+    "saved": "Lieu enregistré",
+    "not_saved": "Lieu non enregistré",
+    "error_location": "Nous n'avons pas pu enregistrer ce lieu. Vérifiez-le et réessayez.",
+    "error_coordinates": "Nous n'avons pas pu utiliser la position sur la carte pour ce lieu. Choisissez-le à nouveau dans la liste ou saisissez uniquement votre ville.",
+    "error_generic": "Nous n'avons pas pu enregistrer votre lieu. Veuillez réessayer."
+  }
 }

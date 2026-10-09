@@ -164,5 +164,17 @@
   "likes_count_other": "{{count}} gosta",
   "comments_count_many": "{{count}} comentários",
   "comments_count_one": "{{count}} comentários",
-  "comments_count_other": "{{count}} comentários"
+  "comments_count_other": "{{count}} comentários",
+  "location_prompt": {
+    "title": "Diga-nos onde vive",
+    "subtitle": "Adicione a sua localidade para encontrar pessoas e anúncios perto de si.",
+    "label": "Onde vive?",
+    "placeholder": "A sua localidade",
+    "save": "Guardar",
+    "saved": "Localização guardada",
+    "not_saved": "Localização não guardada",
+    "error_location": "Não foi possível guardar esse local. Verifique-o e tente novamente.",
+    "error_coordinates": "Não foi possível usar a posição no mapa para esse local. Escolha-o novamente na lista ou escreva apenas a sua localidade.",
+    "error_generic": "Não foi possível guardar a sua localização. Tente novamente."
+  }
 }

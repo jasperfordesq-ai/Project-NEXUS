@@ -176,5 +176,17 @@
   "comments_count_one": "{{count}} التعليقات",
   "comments_count_other": "{{count}} التعليقات",
   "comments_count_two": "{{count}} تعليق",
-  "comments_count_zero": "{{count}} تعليق"
+  "comments_count_zero": "{{count}} تعليق",
+  "location_prompt": {
+    "title": "أخبرنا أين تقيم",
+    "subtitle": "أضف مدينتك أو بلدتك لتجد الأشخاص والإعلانات القريبة منك.",
+    "label": "أين تقيم؟",
+    "placeholder": "مدينتك أو بلدتك",
+    "save": "حفظ",
+    "saved": "تم حفظ الموقع",
+    "not_saved": "لم يتم حفظ الموقع",
+    "error_location": "تعذّر حفظ هذا المكان. يرجى التحقق منه والمحاولة مرة أخرى.",
+    "error_coordinates": "تعذّر استخدام موقع الخريطة لهذا المكان. يرجى اختياره من القائمة مرة أخرى، أو اكتب اسم بلدتك فقط.",
+    "error_generic": "تعذّر حفظ موقعك. يرجى المحاولة مرة أخرى."
+  }
 }

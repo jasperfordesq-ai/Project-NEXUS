@@ -9,6 +9,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
 import { SupportActionPrompt } from '@/components/subaccounts/SupportActionPrompt';
+import { LocationMissingPrompt, shouldShowLocationReminder } from '@/components/location/LocationMissingPrompt';
 import { Progress } from '@/components/ui/Progress';
 import { Skeleton } from '@/components/ui/Skeleton';
 /**
@@ -405,6 +406,15 @@ export function DashboardPage() {
                 <Button as={Link} to={tenantPath('/onboarding')} size="sm" className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white sm:w-auto" endContent={<ArrowRight className="w-4 h-4" aria-hidden="true" />}>{t('onboarding.get_started')}</Button>
               </div>
             </GlassCard>
+          </motion.div>
+        )}
+
+        {/* "Where are you based?" — for a member with no town. Deliberately has no
+            dismiss control: it stays until they add one (owner decision, 9 Oct 2026).
+            A member still in onboarding sees the banner above instead. */}
+        {shouldShowLocationReminder(user) && (
+          <motion.div variants={itemVariants}>
+            <LocationMissingPrompt />
           </motion.div>
         )}
 

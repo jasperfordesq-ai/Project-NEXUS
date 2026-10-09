@@ -168,5 +168,17 @@
   "comments_count_few": "{{count}} komentarze",
   "comments_count_many": "{{count}} komentarzy",
   "comments_count_one": "{{count}} komentarze",
-  "comments_count_other": "{{count}} komentarze"
+  "comments_count_other": "{{count}} komentarze",
+  "location_prompt": {
+    "title": "Powiedz nam, gdzie mieszkasz",
+    "subtitle": "Dodaj swoją miejscowość, aby znajdować osoby i ogłoszenia w pobliżu.",
+    "label": "Gdzie mieszkasz?",
+    "placeholder": "Twoja miejscowość",
+    "save": "Zapisz",
+    "saved": "Zapisano lokalizację",
+    "not_saved": "Nie zapisano lokalizacji",
+    "error_location": "Nie udało się zapisać tego miejsca. Sprawdź je i spróbuj ponownie.",
+    "error_coordinates": "Nie udało się użyć położenia na mapie dla tego miejsca. Wybierz je ponownie z listy lub wpisz samą miejscowość.",
+    "error_generic": "Nie udało się zapisać Twojej lokalizacji. Spróbuj ponownie."
+  }
 }

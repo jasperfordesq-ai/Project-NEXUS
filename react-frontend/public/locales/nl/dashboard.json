@@ -160,5 +160,17 @@
   "likes_count_one": "{{count}} vind-ik-leuks",
   "likes_count_other": "{{count}} vind-ik-leuks",
   "comments_count_one": "{{count}} opmerkingen",
-  "comments_count_other": "{{count}} opmerkingen"
+  "comments_count_other": "{{count}} opmerkingen",
+  "location_prompt": {
+    "title": "Laat ons weten waar je woont",
+    "subtitle": "Voeg je woonplaats toe om mensen en advertenties bij jou in de buurt te vinden.",
+    "label": "Waar woon je?",
+    "placeholder": "Je woonplaats",
+    "save": "Opslaan",
+    "saved": "Locatie opgeslagen",
+    "not_saved": "Locatie niet opgeslagen",
+    "error_location": "We konden die plaats niet opslaan. Controleer de invoer en probeer het opnieuw.",
+    "error_coordinates": "We konden de kaartpositie van die plaats niet gebruiken. Kies de plaats opnieuw uit de lijst of typ alleen je woonplaats.",
+    "error_generic": "We konden je locatie niet opslaan. Probeer het opnieuw."
+  }
 }
