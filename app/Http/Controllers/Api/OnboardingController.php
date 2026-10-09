@@ -37,11 +37,16 @@ class OnboardingController extends BaseApiController
         $user = \App\Models\User::findById($userId);
         $hasAvatar = !empty($user['avatar_url'] ?? '');
         $hasBio = !empty(trim($user['bio'] ?? ''));
+        // Same rule as `location_missing` on /v2/users/me, inverted: NULL, empty
+        // or spaces-only means no location. Informational — completing
+        // onboarding never requires it on the server.
+        $hasLocation = trim((string) ($user['location'] ?? '')) !== '';
 
         return $this->respondWithData([
             'onboarding_completed' => $complete,
             'has_avatar'           => $hasAvatar,
             'has_bio'              => $hasBio,
+            'has_location'         => $hasLocation,
             // Retired 2026-10-02: the wizard no longer records interests.
             // Kept as an empty list so app versions that still read it work.
             'interests'            => [],

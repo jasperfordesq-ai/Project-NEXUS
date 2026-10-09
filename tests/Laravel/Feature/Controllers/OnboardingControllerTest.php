@@ -57,6 +57,32 @@ class OnboardingControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * @return array<string, array{0: ?string, 1: bool}>
+     */
+    public static function hasLocationProvider(): array
+    {
+        return [
+            'null'        => [null, false],
+            'empty'       => ['', false],
+            'spaces only' => ['   ', false],
+            'a town'      => ['Cork', true],
+        ];
+    }
+
+    /**
+     * @dataProvider hasLocationProvider
+     */
+    public function test_status_reports_whether_the_member_has_a_location(?string $location, bool $expected): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('users')->where('id', $user->id)->update(['location' => $location]);
+
+        $this->apiGet('/v2/onboarding/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.has_location', $expected);
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/onboarding/categories
     // ------------------------------------------------------------------
@@ -104,6 +130,23 @@ class OnboardingControllerTest extends TestCase
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    /**
+     * Location is asked for firmly by the clients but never forced by the
+     * server: older phone-app versions and the accessible site must still be
+     * able to finish onboarding. Owner decision, 9 Oct 2026.
+     */
+    public function test_complete_succeeds_for_a_member_with_an_avatar_and_bio_but_no_location(): void
+    {
+        $user = $this->readyToCompleteUser();
+        DB::table('users')->where('id', $user->id)->update(['location' => null]);
+
+        $this->apiPost('/v2/onboarding/complete', ['interests' => []])
+            ->assertStatus(200);
+
+        $this->assertSame(1, (int) DB::table('users')->where('id', $user->id)->value('onboarding_completed'));
+        $this->assertNull(DB::table('users')->where('id', $user->id)->value('location'));
     }
 
     public function test_complete_onboarding_dispatches_completion_event_once(): void

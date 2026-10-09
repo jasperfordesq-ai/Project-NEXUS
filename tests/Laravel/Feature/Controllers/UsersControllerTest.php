@@ -91,6 +91,192 @@ class UsersControllerTest extends TestCase
             ->assertJsonPath('data.can_create_events', true);
     }
 
+    /**
+     * Every client asks the server whether to prompt for a town, so the rule
+     * lives in one place: NULL, empty and spaces-only all count as missing.
+     *
+     * @return array<string, array{0: ?string, 1: bool}>
+     */
+    public static function locationMissingProvider(): array
+    {
+        return [
+            'null'        => [null, true],
+            'empty'       => ['', true],
+            'spaces only' => ['   ', true],
+            'tab/newline' => ["\t \n", true],
+            'a town'      => ['Cork', false],
+            'padded town' => ['  Cork  ', false],
+        ];
+    }
+
+    /**
+     * @dataProvider locationMissingProvider
+     */
+    public function test_me_reports_whether_the_location_is_missing(?string $location, bool $expectedMissing): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('users')->where('id', $user->id)->update(['location' => $location]);
+
+        $this->apiGet('/v2/users/me')
+            ->assertStatus(200)
+            ->assertJsonPath('data.location_missing', $expectedMissing);
+    }
+
+    public function test_the_location_flag_is_private_to_the_member_and_absent_from_public_profiles(): void
+    {
+        $this->authenticatedUser();
+        $other = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'location' => null,
+        ]);
+
+        $response = $this->apiGet('/v2/users/' . $other->id);
+
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('location_missing', $response->json('data'));
+    }
+
+    // ================================================================
+    // UPDATE ME — location validation (light hardening, 9 Oct 2026)
+    // ================================================================
+
+    public function test_update_profile_accepts_a_town_with_coordinates_and_clears_the_flag(): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('users')->where('id', $user->id)->update(['location' => null]);
+
+        $this->apiPut('/v2/users/me', [
+            'location' => 'Cork, Ireland',
+            'latitude' => 51.8985,
+            'longitude' => -8.4756,
+        ])->assertStatus(200)
+            ->assertJsonPath('data.location', 'Cork, Ireland')
+            ->assertJsonPath('data.location_missing', false);
+    }
+
+    public function test_update_profile_accepts_numeric_string_coordinates(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', [
+            'location' => 'Cork',
+            'latitude' => '51.8985',
+            'longitude' => '-8.4756',
+        ])->assertStatus(200);
+    }
+
+    public function test_update_profile_accepts_a_town_with_no_coordinates_or_null_coordinates(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['location' => 'Cork'])->assertStatus(200);
+        $this->apiPut('/v2/users/me', [
+            'location' => 'Cork',
+            'latitude' => null,
+            'longitude' => null,
+        ])->assertStatus(200);
+    }
+
+    public function test_update_profile_refuses_a_location_longer_than_255_characters(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['location' => str_repeat('a', 256)])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'location');
+
+        $this->apiPut('/v2/users/me', ['location' => str_repeat('a', 255)])
+            ->assertStatus(200);
+    }
+
+    public function test_update_profile_measures_the_location_after_trimming(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['location' => str_repeat(' ', 20) . str_repeat('a', 255) . str_repeat(' ', 20)])
+            ->assertStatus(200);
+    }
+
+    public function test_update_profile_refuses_a_location_that_is_not_text(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['location' => ['Cork']])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'location');
+    }
+
+    /**
+     * @return array<string, array{0: mixed, 1: mixed, 2: string}>
+     */
+    public static function badCoordinatesProvider(): array
+    {
+        return [
+            'latitude too high'   => [90.5, 10, 'latitude'],
+            'latitude too low'    => [-91, 10, 'latitude'],
+            'longitude too high'  => [10, 180.1, 'longitude'],
+            'longitude too low'   => [10, -181, 'longitude'],
+            'latitude text'       => ['north', 10, 'latitude'],
+            'longitude text'      => [10, 'east', 'longitude'],
+            'latitude array'      => [[1], 10, 'latitude'],
+        ];
+    }
+
+    /**
+     * @dataProvider badCoordinatesProvider
+     */
+    public function test_update_profile_refuses_out_of_range_or_non_numeric_coordinates(mixed $lat, mixed $lng, string $field): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', [
+            'location' => 'Somewhere',
+            'latitude' => $lat,
+            'longitude' => $lng,
+        ])->assertStatus(422)
+            ->assertJsonPath('errors.0.field', $field);
+    }
+
+    public function test_update_profile_accepts_the_edges_of_the_valid_range(): void
+    {
+        $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['latitude' => 90, 'longitude' => 180])->assertStatus(200);
+        $this->apiPut('/v2/users/me', ['latitude' => -90, 'longitude' => -180])->assertStatus(200);
+    }
+
+    public function test_update_profile_refuses_null_island_but_allows_a_single_zero(): void
+    {
+        $user = $this->authenticatedUser();
+
+        $this->apiPut('/v2/users/me', ['location' => 'Nowhere', 'latitude' => 0, 'longitude' => 0])
+            ->assertStatus(422);
+        $this->apiPut('/v2/users/me', ['location' => 'Nowhere', 'latitude' => '0.0', 'longitude' => '0'])
+            ->assertStatus(422);
+
+        // The equator and the prime meridian are real places.
+        $this->apiPut('/v2/users/me', ['location' => 'Quito', 'latitude' => 0, 'longitude' => -78.5])
+            ->assertStatus(200);
+        $this->apiPut('/v2/users/me', ['location' => 'Greenwich', 'latitude' => 51.48, 'longitude' => 0])
+            ->assertStatus(200);
+
+        $this->assertNotSame('Nowhere', DB::table('users')->where('id', $user->id)->value('location'));
+    }
+
+    public function test_a_refused_location_update_changes_nothing(): void
+    {
+        $user = $this->authenticatedUser();
+        DB::table('users')->where('id', $user->id)->update(['location' => 'Galway', 'bio' => 'Before']);
+
+        $this->apiPut('/v2/users/me', ['bio' => 'After', 'location' => str_repeat('a', 300)])
+            ->assertStatus(422);
+
+        $row = DB::table('users')->where('id', $user->id)->first();
+        $this->assertSame('Galway', $row->location);
+        $this->assertSame('Before', $row->bio);
+    }
+
     private function setEventCreationRole(string $role): void
     {
         $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');

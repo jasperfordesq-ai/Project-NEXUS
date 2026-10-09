@@ -187,6 +187,63 @@ class AdminUsersControllerTest extends TestCase
         $this->assertSame($verifiedAt->toDateTimeString(), $response->json('data.0.email_verified_at'));
     }
 
+    public function test_index_no_location_filter_lists_only_members_with_an_empty_location_in_this_tenant(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['location' => 'Dublin']);
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+
+        // A unique surname keeps the check independent of however many location-less
+        // members the shared test database already holds (the list is paginated).
+        $marker = 'Noloc' . bin2hex(random_bytes(4));
+        $make = fn (?string $location) => User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'last_name' => $marker,
+            'location' => $location,
+        ]);
+        $withNull = $make(null);
+        $withEmpty = $make('');
+        $withSpaces = $make('   ');
+        $withTabs = $make("\t \n");
+        $withTown = $make('Cork');
+
+        // A member with no location in ANOTHER community must never be listed.
+        DB::table('tenants')->insertOrIgnore([
+            'id' => 998,
+            'name' => 'Other Tenant',
+            'slug' => 'other-tenant-no-location',
+            'is_active' => true,
+            'depth' => 0,
+            'allows_subtenants' => false,
+        ]);
+        $foreign = User::factory()->forTenant(998)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'last_name' => $marker,
+            'location' => null,
+        ]);
+
+        $response = $this->apiGet('/v2/admin/users?status=no_location&limit=100&search=' . $marker);
+
+        $response->assertStatus(200);
+        $ids = collect($response->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $this->assertContains($withNull->id, $ids);
+        $this->assertContains($withEmpty->id, $ids);
+        $this->assertContains($withSpaces->id, $ids);
+        $this->assertContains($withTabs->id, $ids);
+        $this->assertNotContains($withTown->id, $ids);
+        $this->assertNotContains($foreign->id, $ids);
+        $this->assertCount(4, $ids);
+
+        // And the filter really is the thing narrowing the list: without it the
+        // member with a town is there too.
+        $all = collect($this->apiGet('/v2/admin/users?limit=100&search=' . $marker)->json('data'))->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $this->assertContains($withTown->id, $all);
+    }
+
     // ================================================================
     // SHOW — GET /v2/admin/users/{id}
     // ================================================================

@@ -104,6 +104,12 @@ class AdminUsersController extends BaseApiController
                 case 'onboarding_incomplete':
                     $conditions[] = 'u.is_approved = 1 AND (u.onboarding_completed = 0 OR u.onboarding_completed IS NULL)';
                     break;
+                case 'no_location':
+                    // Members the clients ask "Where are you based?" — same rule as
+                    // `location_missing` on /v2/users/me (NULL, empty or whitespace-only).
+                    // REGEXP rather than TRIM() so tabs/newlines count, as they do in PHP's trim().
+                    $conditions[] = "(u.location IS NULL OR u.location REGEXP '^[[:space:]]*$')";
+                    break;
             }
         }
 

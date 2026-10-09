@@ -396,6 +396,42 @@ class UserService
             }
         }
 
+        // location: optional free text, max 255 chars once trimmed (the column is
+        // VARCHAR(255)). Null clears it. Never required here: the server asks
+        // firmly through `location_missing` but does not force a town.
+        if (array_key_exists('location', $data) && $data['location'] !== null) {
+            if (!is_string($data['location'])) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => 'Location must be text', 'field' => 'location'];
+            } elseif (mb_strlen(trim($data['location'])) > 255) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => 'Location must not exceed 255 characters', 'field' => 'location'];
+            }
+        }
+
+        // latitude / longitude: optional and nullable; numbers (numeric strings are
+        // fine — clients send both) within range. Mirrors RegistrationService.
+        $coordinateOk = ['latitude' => false, 'longitude' => false];
+        foreach (['latitude' => 90, 'longitude' => 180] as $field => $limit) {
+            if (!array_key_exists($field, $data) || $data[$field] === null) {
+                continue;
+            }
+            $value = $data[$field];
+            if (!is_int($value) && !is_float($value) && !(is_string($value) && is_numeric($value))) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => ucfirst($field) . ' must be a number', 'field' => $field];
+            } elseif (abs((float) $value) > $limit) {
+                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => ucfirst($field) . ' must be between -' . $limit . ' and ' . $limit, 'field' => $field];
+            } else {
+                $coordinateOk[$field] = true;
+            }
+        }
+
+        // Null Island guard: lat 0 AND lng 0 together is the default-zero
+        // placeholder, not a real place (same rule as registration). Either
+        // one alone is valid — the equator and the prime meridian are real.
+        if ($coordinateOk['latitude'] && $coordinateOk['longitude']
+            && (float) $data['latitude'] === 0.0 && (float) $data['longitude'] === 0.0) {
+            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => 'Latitude and longitude of 0, 0 are not a real place', 'field' => 'latitude'];
+        }
+
         return empty(self::$errors);
     }
 
@@ -1296,6 +1332,11 @@ class UserService
             $profile['privacy_profile']         = $user->privacy_profile ?? 'public';
             $profile['privacy_search']          = (bool) ($user->privacy_search ?? true);
             $profile['onboarding_completed']    = (bool) ($user->onboarding_completed ?? false);
+            // One rule, decided only here and read by every client (website,
+            // accessible site, phone app): a member whose location is NULL,
+            // empty or only spaces is asked "Where are you based?". Not named
+            // `needs_location` — that already means "has no coordinates" in matching.
+            $profile['location_missing']        = trim((string) ($user->location ?? '')) === '';
             $profile['preferred_language']       = $user->preferred_language ?? 'en';
             $profile['has_2fa_enabled']          = (bool) ($user->totp_enabled ?? false);
             $profile['preferred_theme']          = $user->preferred_theme ?? 'system';
