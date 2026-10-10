@@ -2550,6 +2550,12 @@ class EventService
                 ->mapWithKeys(static fn ($count, $eventId): array => [(int) $eventId => (int) $count])
                 ->all();
         }
+        // Seated guests occupy places at the registration gate (F-356), so the
+        // displayed capacity and the register/waitlist actions must count them
+        // too, from the same definition EventPeopleService uses.
+        $seatedGuestCounts = Schema::hasTable('event_registration_guests')
+            ? app(EventPeopleService::class)->seatedGuestCounts($tenantId, $eventIds)
+            : [];
 
         // Interest remains an independent engagement signal during the
         // canonical-registration compatibility window.
@@ -2827,7 +2833,8 @@ class EventService
             // or expiry. Counting a corrupt confirmed+offered overlap twice is
             // intentionally fail-closed; the integrity audit identifies it.
             $capacityOccupiedCount = $confirmedCount
-                + (int) ($activeOfferCounts[$eventId] ?? 0);
+                + (int) ($activeOfferCounts[$eventId] ?? 0)
+                + (int) ($seatedGuestCounts[$eventId] ?? 0);
             $maxAttendees = isset($event['max_attendees']) && $event['max_attendees'] !== null
                 ? (int) $event['max_attendees']
                 : null;

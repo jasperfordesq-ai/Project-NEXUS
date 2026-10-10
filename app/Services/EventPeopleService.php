@@ -260,7 +260,10 @@ final class EventPeopleService
         $eventId = (int) $event->getKey();
         $confirmedIds = $this->confirmedIds($tenantId, $eventId);
         $confirmed = (clone $confirmedIds)->count('user_id');
-        $occupied = $this->capacityOccupiedIds($tenantId, $eventId)->count('user_id');
+        // The same occupied count the registration gate enforces: confirmed
+        // members, live offers AND seated guests. Without the guests a full
+        // event showed a free place and a Register button that then failed.
+        $occupied = $this->capacityOccupiedCount($event);
         $limitValue = $event->getRawOriginal('max_attendees');
         $limit = $limitValue === null || $limitValue === '' ? null : (int) $limitValue;
 
@@ -281,23 +284,49 @@ final class EventPeopleService
         // F-397: seated guests occupy places too. This is the floor an
         // organiser may lower max_attendees to (EventService), and without the
         // guests it allowed a capacity below the number of people already
-        // seated. Counted as the registration gate counts them: captured
-        // guests of a confirmed registration.
-        $seatedGuests = (int) DB::table('event_registration_guests')
+        // seated.
+        $seatedGuests = $this->seatedGuestCounts($tenantId, [$eventId])[$eventId] ?? 0;
+
+        return $this->capacityOccupiedIds($tenantId, $eventId)->count('user_id') + $seatedGuests;
+    }
+
+    /**
+     * Seated guests per event, counted as the registration gate counts them
+     * (EventRegistrationService::occupiedGuestCountLocked): captured guests of
+     * a confirmed registration. Batched so list and detail projections can
+     * show the same occupied count the gate enforces without a query per
+     * event. Events with no seated guests are omitted.
+     *
+     * @param  list<int> $eventIds
+     * @return array<int,int>
+     */
+    public function seatedGuestCounts(int $tenantId, array $eventIds): array
+    {
+        $eventIds = array_values(array_unique(array_filter(
+            array_map('intval', $eventIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+        if ($tenantId <= 0 || $eventIds === []) {
+            return [];
+        }
+
+        return DB::table('event_registration_guests')
             ->where('event_registration_guests.tenant_id', $tenantId)
-            ->where('event_registration_guests.event_id', $eventId)
+            ->whereIn('event_registration_guests.event_id', $eventIds)
             ->whereIn('event_registration_guests.status', EventRegistrationGuestService::CAPACITY_CONSUMING_GUEST_STATES)
-            ->whereExists(function ($query) use ($tenantId, $eventId): void {
+            ->whereExists(function ($query) use ($tenantId): void {
                 $query->selectRaw('1')
                     ->from('event_registrations as guest_registration')
                     ->whereColumn('guest_registration.id', 'event_registration_guests.registration_id')
+                    ->whereColumn('guest_registration.event_id', 'event_registration_guests.event_id')
                     ->where('guest_registration.tenant_id', $tenantId)
-                    ->where('guest_registration.event_id', $eventId)
                     ->where('guest_registration.registration_state', EventCapacityRegistrationState::Confirmed->value);
             })
-            ->count();
-
-        return $this->capacityOccupiedIds($tenantId, $eventId)->count('user_id') + $seatedGuests;
+            ->selectRaw('event_registration_guests.event_id, COUNT(*) AS aggregate')
+            ->groupBy('event_registration_guests.event_id')
+            ->pluck('aggregate', 'event_id')
+            ->mapWithKeys(static fn ($count, $eventId): array => [(int) $eventId => (int) $count])
+            ->all();
     }
 
     private function filteredPeopleFacts(
