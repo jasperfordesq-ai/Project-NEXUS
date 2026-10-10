@@ -643,8 +643,17 @@ final class EventRegistrationService
             if ($activeOwnOffer) {
                 throw new EventRegistrationException('event_registration_offer_acceptance_required');
             }
+            // F-586: a guest may be captured while the place is still invited
+            // or pending, and availableSlotsLocked() counts only guests of
+            // CONFIRMED places — so the guest is uncounted until this very
+            // transition. The place therefore needs a seat for the member AND
+            // one for each guest it brings, on every path into confirmed
+            // (organiser approval, invited-member confirm, offer acceptance).
             $available = $this->availableSlotsLocked($event, $pool, $acceptedWaitlistEntryId);
-            if ($available !== null && $available < 1) {
+            $seatsNeeded = 1 + ($registration === null
+                ? 0
+                : $this->capturedGuestCountLocked($tenantId, $eventId, (int) $registration->getKey()));
+            if ($available !== null && $available < $seatsNeeded) {
                 throw new EventRegistrationException('event_registration_capacity_full');
             }
         }
@@ -1091,6 +1100,18 @@ final class EventRegistrationService
                         EventCapacityRegistrationState::Confirmed->value,
                     );
             })
+            ->lockForUpdate()
+            ->count();
+    }
+
+    /** Seated guests of one registration, whatever state the registration is in (F-586). */
+    private function capturedGuestCountLocked(int $tenantId, int $eventId, int $registrationId): int
+    {
+        return DB::table('event_registration_guests')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->where('registration_id', $registrationId)
+            ->whereIn('status', EventRegistrationGuestService::CAPACITY_CONSUMING_GUEST_STATES)
             ->lockForUpdate()
             ->count();
     }
