@@ -727,6 +727,21 @@ final class EventWaitlistService
                 $now,
             );
 
+            // F-587: under manual approval the accepted offer is a pending
+            // request, which holds no seat. The offer that held the seat is
+            // now spent, so hand the seat on to the next waiter exactly as a
+            // withdrawn or expired offer does — otherwise the queue stalls.
+            $next = null;
+            if (! $registration->registration->registration_state->consumesCapacity()
+                && $this->timedOffersEnabled()) {
+                $next = $this->offerNextWithinTransaction(
+                    $event,
+                    $pool,
+                    null,
+                    "accept-unseated-release:{$result->historyId}",
+                );
+            }
+
             return new EventWaitlistTransitionResult(
                 $result->entry,
                 true,
@@ -735,6 +750,8 @@ final class EventWaitlistService
                 $result->outboxId,
                 null,
                 $registration->registration,
+                $next?->entry,
+                $next?->offerToken,
             );
         }, 5);
     }

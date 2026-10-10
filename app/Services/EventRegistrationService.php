@@ -315,6 +315,10 @@ final class EventRegistrationService
     /**
      * Accept a locked queue offer without adding a second capacity claim.
      * Caller must hold the Event and waitlist-entry row locks in a transaction.
+     *
+     * The published registration settings still apply (F-587): under manual
+     * approval the result is `pending`, not `confirmed`, and the caller must
+     * hand the seat back to the queue.
      */
     public function confirmFromWaitlistLocked(
         Event $event,
@@ -512,8 +516,12 @@ final class EventRegistrationService
         // F-099: published registration settings bind a member acting on their
         // own registration. Resolved BEFORE the idempotency replay check so a
         // retried "confirm" that was turned into "pending" replays cleanly.
+        // F-587: this includes accepting a waitlist offer. An offer is a seat
+        // becoming free, not the organiser's approval, so under manual approval
+        // the accepted offer becomes a pending request, and an offer cannot be
+        // accepted outside the published registration window.
         $memberActing = (int) $actor->getKey() === $userId;
-        if ($memberActing && $acceptedWaitlistEntryId === null) {
+        if ($memberActing) {
             $target = $this->memberRequestedTarget($event, $userId, $pool, $target);
         }
 
