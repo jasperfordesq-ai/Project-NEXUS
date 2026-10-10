@@ -57,6 +57,16 @@ final class EventCreditService
 
     public const FUNDING_SOURCE = 'tenant_treasury';
 
+    /**
+     * reversal_code on a reward reversed because its check-in was undone
+     * (F-588). Distinct from an admin reversal on purpose: only an
+     * undo-driven reversal may be re-paid by a later genuine re-check-in; an
+     * admin's decision that the reward was not due must stand.
+     */
+    public const UNDO_REVERSAL_CODE = 'attendance_undone';
+
+    private const ADMIN_REVERSAL_CODE = 'admin_reversal';
+
     /** Recognised outcomes. Anything else means the writer is not authorised. */
     public const SETTLED_STATUSES = [
         'disabled',
@@ -210,6 +220,12 @@ final class EventCreditService
             ->where('claim_type', self::CLAIM_TYPE)
             ->first();
 
+        if ($claim !== null
+            && (string) $claim->status === 'reversed'
+            && (string) ($claim->reversal_code ?? '') === self::UNDO_REVERSAL_CODE) {
+            return $this->reopenUndoneClaim($tenantId, $eventId, $attendeeId, $claim, $eventTitle);
+        }
+
         if ($claim === null || (string) $claim->status !== 'failed') {
             return $this->outcome('already_settled');
         }
@@ -240,6 +256,69 @@ final class EventCreditService
     }
 
     /**
+     * F-588: the reward was reversed because its check-in was undone, and the
+     * member has now genuinely been checked in again, so pay it again. The
+     * claim row is reused (its subject key is unique per member and event),
+     * so the transaction it previously pointed at is kept in its metadata; the
+     * money ledger itself keeps every mint and reversal row. The conditional
+     * UPDATE is the race guard, exactly as for a failed-claim resume.
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    private function reopenUndoneClaim(
+        int $tenantId,
+        int $eventId,
+        int $attendeeId,
+        object $claim,
+        string $eventTitle,
+    ): array {
+        $metadata = $this->decodeMetadata($claim->metadata ?? null);
+        $metadata['previous_transaction_ids'] = array_values(array_merge(
+            is_array($metadata['previous_transaction_ids'] ?? null) ? $metadata['previous_transaction_ids'] : [],
+            $claim->transaction_id !== null ? [(int) $claim->transaction_id] : [],
+        ));
+
+        try {
+            $encoded = json_encode($metadata, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $this->outcome('deferred_failed', (int) $claim->id);
+        }
+
+        $reopened = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $claim->id)
+            ->where('status', 'reversed')
+            ->where('reversal_code', self::UNDO_REVERSAL_CODE)
+            ->update([
+                'status' => 'pending',
+                'transaction_id' => null,
+                'completed_at' => null,
+                'reversed_at' => null,
+                'reversal_code' => null,
+                'failure_code' => null,
+                'failed_at' => null,
+                'metadata' => $encoded,
+                'updated_at' => now(),
+            ]);
+
+        if ($reopened !== 1) {
+            return $this->outcome('already_settled');
+        }
+
+        // XP and challenge progress were recorded on the first mint and are
+        // not taken back by the undo, so they are not recorded a second time.
+        return $this->attemptMint(
+            (int) $claim->id,
+            $tenantId,
+            $eventId,
+            $attendeeId,
+            $this->clampToCeiling((float) $claim->amount),
+            $eventTitle,
+            false,
+        );
+    }
+
+    /**
      * Take a claim that is `pending` through the mint: monthly cap, wallet
      * write, completion, engagement. Every exit leaves the claim in a terminal
      * or retryable state — never stranded in `pending` (the wallet failure and
@@ -254,6 +333,7 @@ final class EventCreditService
         int $attendeeId,
         float $amount,
         string $eventTitle,
+        bool $recordEngagement = true,
     ): array {
         // Monthly treasury ceiling — a SOFT ceiling. Deliberately lock-free:
         // every check-in whose read runs before the others' mints commit sees
@@ -370,12 +450,14 @@ final class EventCreditService
         // progress reflect verified attendance rather than an RSVP. Reuses the
         // recipient-localised description for the same reason: the XP log is
         // read by the member, not by whoever scanned them in.
-        EngagementService::record(
-            $attendeeId,
-            'event_attendance_verified',
-            'event:' . $eventId,
-            $description,
-        );
+        if ($recordEngagement) {
+            EngagementService::record(
+                $attendeeId,
+                'event_attendance_verified',
+                'event:' . $eventId,
+                $description,
+            );
+        }
 
         return $this->outcome('settled', $claimId, $transactionId, $amount);
     }
@@ -458,6 +540,52 @@ final class EventCreditService
      */
     public function reverseClaim(int $tenantId, int $claimId, int $actorId, string $reason): array
     {
+        return $this->reverse($tenantId, $claimId, $actorId, $reason, self::ADMIN_REVERSAL_CODE);
+    }
+
+    /**
+     * F-588: an organiser undid a check-in, so the reward it paid is reversed
+     * through exactly the admin reversal path (child claim, member debit,
+     * original moved to `reversed`), tagged UNDO_REVERSAL_CODE so a later
+     * genuine re-check-in can pay again. Runs inside the caller's attendance
+     * transaction: if the undo rolls back, so does the reversal.
+     *
+     * Outcomes: `no_reward` (nothing completed to reverse: never paid, still
+     * failed, or already reversed by an admin), `reversed`, `reverse_failed`
+     * (ledger refused; the failed child claim is the durable record and the
+     * admin reverse action resumes it), or `not_reversible` (lost a race).
+     * Deliberately not gated on the credit mode, like reverseClaim().
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    public function reverseForUndoneAttendance(Event $event, int $attendeeId, int $actorId): array
+    {
+        $tenantId = (int) $event->tenant_id;
+        $claim = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', (int) $event->getKey())
+            ->where('user_id', $attendeeId)
+            ->where('claim_type', self::CLAIM_TYPE)
+            ->first(['id', 'status', 'reversed_at']);
+
+        if ($claim === null || (string) $claim->status !== 'completed' || $claim->reversed_at !== null) {
+            return $this->outcome('no_reward', $claim !== null ? (int) $claim->id : null);
+        }
+
+        return $this->reverse(
+            $tenantId,
+            (int) $claim->id,
+            $actorId,
+            self::UNDO_REVERSAL_CODE,
+            self::UNDO_REVERSAL_CODE,
+        );
+    }
+
+    /**
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    private function reverse(int $tenantId, int $claimId, int $actorId, string $reason, string $reversalCode): array
+    {
         $claim = DB::table('event_attendance_credit_claims')
             ->where('tenant_id', $tenantId)
             ->where('id', $claimId)
@@ -483,7 +611,7 @@ final class EventCreditService
             ->update([
                 'status' => 'reversed',
                 'reversed_at' => now(),
-                'reversal_code' => 'admin_reversal',
+                'reversal_code' => $reversalCode,
                 'updated_at' => now(),
             ]);
 
@@ -522,6 +650,9 @@ final class EventCreditService
                     'mode' => 'treasury',
                     'actor_user_id' => $actorId,
                     'reason' => $reason,
+                    'reversed_transaction_id' => $claim->transaction_id !== null
+                        ? (int) $claim->transaction_id
+                        : null,
                 ], JSON_THROW_ON_ERROR),
                 'claimed_at' => $now,
                 'created_at' => $now,
@@ -536,9 +667,13 @@ final class EventCreditService
                 throw $exception;
             }
 
-            // A prior reversal attempt left a child row. Resume it only from
-            // `failed`; any other state means a reversal is already in flight
-            // or done, so put the original back the way we found it.
+            // A prior reversal attempt left a child row. Resume it from
+            // `failed`, or (F-588) from `completed` when that completion
+            // reversed an EARLIER payment of a reward that a genuine
+            // re-check-in has since paid again: the child records which
+            // transaction it reversed. Any other state means a reversal is
+            // already in flight or done, so put the original back the way we
+            // found it.
             $child = DB::table('event_attendance_credit_claims')
                 ->where('tenant_id', $tenantId)
                 ->where('event_id', (int) $claim->event_id)
@@ -546,18 +681,51 @@ final class EventCreditService
                 ->where('claim_type', self::REVERSAL_CLAIM_TYPE)
                 ->first();
 
-            $resumed = $child !== null && (string) $child->status === 'failed'
-                ? DB::table('event_attendance_credit_claims')
-                    ->where('tenant_id', $tenantId)
-                    ->where('id', (int) $child->id)
-                    ->where('status', 'failed')
-                    ->update([
-                        'status' => 'pending',
-                        'failure_code' => null,
-                        'failed_at' => null,
-                        'updated_at' => now(),
-                    ])
-                : 0;
+            $resumed = 0;
+            if ($child !== null && in_array((string) $child->status, ['failed', 'completed'], true)) {
+                $childMetadata = $this->decodeMetadata($child->metadata ?? null);
+                $reversedTransactionId = $childMetadata['reversed_transaction_id'] ?? null;
+                $earlierCycle = (string) $child->status === 'completed'
+                    && is_numeric($reversedTransactionId)
+                    && $claim->transaction_id !== null
+                    && (int) $reversedTransactionId !== (int) $claim->transaction_id;
+
+                if ((string) $child->status === 'failed' || $earlierCycle) {
+                    $childMetadata['actor_user_id'] = $actorId;
+                    $childMetadata['reason'] = $reason;
+                    $childMetadata['reversed_transaction_id'] = $claim->transaction_id !== null
+                        ? (int) $claim->transaction_id
+                        : null;
+                    if ($earlierCycle && $child->transaction_id !== null) {
+                        $childMetadata['previous_transaction_ids'] = array_values(array_merge(
+                            is_array($childMetadata['previous_transaction_ids'] ?? null)
+                                ? $childMetadata['previous_transaction_ids']
+                                : [],
+                            [(int) $child->transaction_id],
+                        ));
+                    }
+
+                    try {
+                        $encodedChild = json_encode($childMetadata, JSON_THROW_ON_ERROR);
+                    } catch (\JsonException) {
+                        $encodedChild = null;
+                    }
+
+                    $resumed = $encodedChild === null ? 0 : DB::table('event_attendance_credit_claims')
+                        ->where('tenant_id', $tenantId)
+                        ->where('id', (int) $child->id)
+                        ->where('status', (string) $child->status)
+                        ->update([
+                            'status' => 'pending',
+                            'transaction_id' => null,
+                            'completed_at' => null,
+                            'failure_code' => null,
+                            'failed_at' => null,
+                            'metadata' => $encodedChild,
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
 
             if ($resumed !== 1) {
                 $this->restoreReversedClaim($tenantId, $claimId);
@@ -653,6 +821,17 @@ final class EventCreditService
                 'reversal_code' => null,
                 'updated_at' => now(),
             ]);
+    }
+
+    /** @return array<string,mixed> */
+    private function decodeMetadata(mixed $metadata): array
+    {
+        if (! is_string($metadata) || $metadata === '') {
+            return [];
+        }
+        $decoded = json_decode($metadata, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /** The tenant's monthly treasury ceiling, or null when uncapped. */

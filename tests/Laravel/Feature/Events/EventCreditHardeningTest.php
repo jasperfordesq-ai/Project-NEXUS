@@ -274,9 +274,12 @@ class EventCreditHardeningTest extends TestCase
             'Mis-scan during hardening test',
             'hardening-undo-1',
         );
-        $this->assertNull($undo->toArray()['credit_status']);
+        // F-588: the undo reverses the reward it paid, and says so.
+        $this->assertSame('reversed', $undo->toArray()['credit_status']);
+        $this->assertSame(0.0, $this->balanceOf($attendee));
 
-        // Re-check-in after the undo: financially a no-op, and now it SAYS so.
+        // A genuine re-check-in after the undo pays again: still exactly one
+        // reward held.
         $second = $service->transition(
             (int) $event->id,
             (int) $attendee->id,
@@ -286,7 +289,7 @@ class EventCreditHardeningTest extends TestCase
             null,
             'hardening-checkin-2',
         );
-        $this->assertSame('already_settled', $second->toArray()['credit_status']);
+        $this->assertSame('settled', $second->toArray()['credit_status']);
         $this->assertSame(1.0, $this->balanceOf($attendee), 'Still exactly one reward.');
     }
 }

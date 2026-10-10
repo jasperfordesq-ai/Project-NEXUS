@@ -576,6 +576,19 @@ final class EventAttendanceService
                     throw new EventAttendanceException('event_attendance_credit_writer_not_authorized');
                 }
                 $creditStatus = (string) $credit['status'];
+            } elseif ($action === EventAttendanceAction::Undo
+                && $this->isPresentState($fromState)
+                && ! $this->isPresentState($toState)) {
+                // F-588: undoing a check-in must not leave the reward it paid.
+                // Same reversal as the admin "reverse" action, inside this
+                // transaction. A refused reversal does not block the undo (the
+                // member really was not here); it is recorded as a failed
+                // reversal claim the admin can retry, and reported back here.
+                $creditStatus = (string) $this->creditService->reverseForUndoneAttendance(
+                    $event,
+                    $attendeeId,
+                    (int) $persistedActor->getKey(),
+                )['status'];
             }
 
             $outbox = $this->outbox->record(
@@ -692,6 +705,16 @@ final class EventAttendanceService
         return strtolower(trim((string) $legacyStatus)) === 'attended'
             ? EventAttendanceState::Attended
             : EventAttendanceState::NotCheckedIn;
+    }
+
+    /** States in which the member counts as having attended (and was paid). */
+    private function isPresentState(EventAttendanceState $state): bool
+    {
+        return in_array($state, [
+            EventAttendanceState::CheckedIn,
+            EventAttendanceState::CheckedOut,
+            EventAttendanceState::Attended,
+        ], true);
     }
 
     private function stateFromStored(mixed $value): EventAttendanceState
