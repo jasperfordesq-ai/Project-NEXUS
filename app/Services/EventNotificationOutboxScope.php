@@ -25,6 +25,7 @@ final class EventNotificationOutboxScope
                     ->orWhere($column, 'event.updated')
                     ->orWhere($column, 'event.reminder.due')
                     ->orWhereIn($column, self::GUARDIAN_CONSENT_ACTIONS)
+                    ->orWhereIn($column, self::DELEGATED_ACTIONS)
                     ->orWhere($column, 'like', 'event.registration.%')
                     ->orWhere($column, 'like', 'event.waitlist.%')
                     ->orWhere($column, 'like', 'event.staff_role.%');
@@ -45,6 +46,7 @@ final class EventNotificationOutboxScope
                             ->where($column, '<>', 'event.updated')
                             ->where($column, '<>', 'event.reminder.due')
                             ->whereNotIn($column, self::GUARDIAN_CONSENT_ACTIONS)
+                            ->whereNotIn($column, self::DELEGATED_ACTIONS)
                             ->where($column, 'not like', 'event.registration.%')
                             ->where($column, 'not like', 'event.waitlist.%')
                             ->where($column, 'not like', 'event.staff_role.%');
@@ -58,6 +60,7 @@ final class EventNotificationOutboxScope
             || $action === 'event.updated'
             || $action === 'event.reminder.due'
             || in_array($action, self::GUARDIAN_CONSENT_ACTIONS, true)
+            || in_array($action, self::DELEGATED_ACTIONS, true)
             || str_starts_with($action, 'event.registration.')
             || str_starts_with($action, 'event.waitlist.')
             || str_starts_with($action, 'event.staff_role.');
@@ -68,6 +71,21 @@ final class EventNotificationOutboxScope
         'event.safety.guardian_consent.requested',
         'event.safety.guardian_consent.granted',
         'event.safety.guardian_consent.withdrawn',
+    ];
+
+    /**
+     * Facts EventNotificationOutboxActionHandler hands to a dedicated consumer
+     * (EventInvitationDeliveryConsumer, EventRegistrationGuestNotificationConsumer).
+     * Listed exactly: `event.registration_guest.%` is NOT matched by the
+     * `event.registration.%` prefix, and without these entries the scheduled
+     * processor never claimed either fact, so invitations and guest-withdrawal
+     * emails sat `pending` for ever under outbox_authoritative delivery.
+     *
+     * @var list<string>
+     */
+    private const DELEGATED_ACTIONS = [
+        'event.invitation.issued',
+        'event.registration_guest.withdrawn',
     ];
 
     /** @return array{string,string} */
