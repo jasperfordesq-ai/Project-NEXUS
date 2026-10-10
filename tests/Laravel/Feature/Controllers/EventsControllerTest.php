@@ -179,9 +179,13 @@ class EventsControllerTest extends TestCase
         $titles = array_column($response->json('data'), 'title');
 
         $this->assertContains('Visible active event', $titles);
-        $this->assertNotContains('Cancelled event', $titles);
+        // A published event that was cancelled or completed stays listed so
+        // its state chip can render and shared links keep working. These rows
+        // predate the lifecycle columns (publication_status NULL), so they
+        // are read through the legacy fallback, as the admin list does.
+        $this->assertContains('Cancelled event', $titles);
+        $this->assertContains('Completed event', $titles);
         $this->assertNotContains('Draft event', $titles);
-        $this->assertNotContains('Completed event', $titles);
     }
 
     public function test_public_index_returns_full_next_public_event_contract_when_opted_in(): void

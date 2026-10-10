@@ -336,27 +336,97 @@ class PublicEventsTest extends TestCase
 
     // ── Operational status + attendance mode (re-audit hardening) ───────
 
-    public function test_a_cancelled_event_stays_listed_but_says_so(): void
+    /**
+     * The lifecycle writer mirrors BOTH Cancelled and Postponed to legacy
+     * `status = 'cancelled'` (EventLifecycleCompatibility::legacyMirror). This
+     * test used to seed `status = 'active'` with `operational_status =
+     * 'cancelled'` — a combination the writer never produces — so it passed
+     * while every really-cancelled event 404'd and vanished from the lists.
+     */
+    public function test_a_cancelled_or_postponed_event_stays_listed_but_says_so(): void
     {
         $organiser = $this->organiser();
-        $event = $this->event($organiser, [], [
+
+        foreach (['cancelled', 'postponed'] as $operational) {
+            $event = $this->event($organiser, ['title' => ucfirst($operational) . ' orchard walk'], [
+                'status' => 'cancelled',
+                'publication_status' => 'published',
+                'operational_status' => $operational,
+            ]);
+            $this->assertSame('cancelled', $event->fresh()->getRawOriginal('status'));
+
+            $list = $this->apiGet('/v2/public/events');
+            $list->assertStatus(200);
+            $row = collect($list->json('data'))->firstWhere('id', $event->id);
+
+            // People who saw the poster need to learn the plan changed — the
+            // event stays visible WITH its state, rather than looking normal
+            // or vanishing.
+            $this->assertNotNull($row, ucfirst($operational) . ' events must stay discoverable.');
+            $this->assertSame($operational, $row['operational_status']);
+
+            $detail = $this->apiGet('/v2/public/events/' . $event->id);
+            $detail->assertStatus(200);
+            $this->assertSame($operational, $detail->json('data.operational_status'));
+        }
+    }
+
+    public function test_a_cancelled_event_stays_in_the_member_list_and_cannot_be_joined(): void
+    {
+        $organiser = $this->organiser();
+        $event = $this->event($organiser, ['title' => 'Cancelled for members'], [
+            'status' => 'cancelled',
             'publication_status' => 'published',
             'operational_status' => 'cancelled',
         ]);
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->actingAs($member);
 
-        $list = $this->apiGet('/v2/public/events');
-        $list->assertStatus(200);
-        $row = collect($list->json('data'))->firstWhere('id', $event->id);
+        // The React member list asks for the canonical contract (schedule.state).
+        $rows = collect($this->apiGet('/v2/events', ['X-Events-Contract' => '2'])->assertStatus(200)->json('data'));
+        $row = $rows->firstWhere('id', $event->id);
+        $this->assertNotNull($row, 'A cancelled event must stay in the member list so its chip can render.');
+        $this->assertSame('cancelled', $row['schedule']['state'] ?? null);
 
-        // People who saw the poster need to learn the plan changed — the
-        // event stays visible WITH its state, rather than looking normal
-        // (the pre-fix behaviour) or vanishing.
-        $this->assertNotNull($row, 'Cancelled events must stay discoverable.');
-        $this->assertSame('cancelled', $row['operational_status']);
+        $rsvp = $this->apiPost('/v2/events/' . $event->id . '/rsvp', ['status' => 'going']);
+        $this->assertGreaterThanOrEqual(400, $rsvp->getStatusCode(), 'A cancelled event must not accept RSVPs.');
+    }
 
-        $detail = $this->apiGet('/v2/public/events/' . $event->id);
-        $detail->assertStatus(200);
-        $this->assertSame('cancelled', $detail->json('data.operational_status'));
+    public function test_unpublished_events_with_a_real_legacy_mirror_stay_hidden(): void
+    {
+        $organiser = $this->organiser();
+        $draft = $this->event($organiser, ['title' => 'Mirrored draft'], [
+            'status' => 'draft',
+            'publication_status' => 'draft',
+        ]);
+        $pending = $this->event($organiser, ['title' => 'Mirrored pending'], [
+            'status' => 'draft',
+            'publication_status' => 'pending_review',
+        ]);
+        $archived = $this->event($organiser, ['title' => 'Mirrored archived'], [
+            'status' => 'cancelled',
+            'publication_status' => 'archived',
+            'operational_status' => 'cancelled',
+        ]);
+
+        $ids = array_column($this->apiGet('/v2/public/events')->json('data') ?? [], 'id');
+        foreach ([$draft, $pending, $archived] as $hidden) {
+            $this->assertNotContains((int) $hidden->id, $ids);
+            $this->assertSame(404, $this->apiGet('/v2/public/events/' . $hidden->id)->getStatusCode());
+        }
+
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->actingAs($member);
+        $memberIds = array_column($this->apiGet('/v2/events')->json('data') ?? [], 'id');
+        foreach ([$draft, $pending, $archived] as $hidden) {
+            $this->assertNotContains((int) $hidden->id, $memberIds);
+        }
     }
 
     public function test_attendance_mode_reflects_remote_options_not_the_raw_column(): void

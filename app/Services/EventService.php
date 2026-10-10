@@ -32,6 +32,7 @@ use App\Support\Events\EventRegistrationAvailability;
 use App\Support\Events\EventRegistrationCompatibility;
 use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Database\Query\Builder as QueryBuilderContract;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -255,7 +256,7 @@ class EventService
                 'group:id,name',
             ])
             ->where(function (Builder $q) use ($viewerId) {
-                $q->whereNull('status')->orWhere('status', 'active');
+                self::wherePublishedPublication($q, 'events');
                 // Draft and pending-review events mirror to legacy 'draft', so
                 // without this clause the publication-visibility block below
                 // ("members see their OWN drafts/pending") could never match:
@@ -374,10 +375,8 @@ class EventService
                 ->whereColumn('e2.tenant_id', 'events.tenant_id')
                 ->whereRaw('COALESCE(e2.parent_event_id, e2.id) = COALESCE(events.parent_event_id, events.id)')
                 ->whereColumn('e2.id', '!=', 'events.id')
-                ->where(function ($status) {
-                    $status->whereNull('e2.status')->orWhere('e2.status', 'active');
-                })
                 ->whereRaw($siblingVisibilityPredicate, $siblingVisibilityBindings);
+            self::wherePublishedPublication($sub, 'e2');
 
             if ($categoryId !== null) {
                 $sub->where('e2.category_id', $categoryId);
@@ -414,19 +413,37 @@ class EventService
                     ->whereRaw("{$siblingHaversine} <= ?", [$nearLat, $nearLng, $nearLat, $radiusKm]);
             }
 
-            if ($when === 'past') {
-                $sub->where('e2.start_time', '<', $snapshotAt)
-                    ->whereRaw('(e2.start_time > events.start_time OR (e2.start_time = events.start_time AND e2.id > events.id))');
-            } elseif ($when === 'all') {
-                $sub->whereRaw(
-                    '((e2.start_time >= ? AND (events.start_time < ? OR e2.start_time < events.start_time OR (e2.start_time = events.start_time AND e2.id < events.id)))'
-                    . ' OR (e2.start_time < ? AND events.start_time < ? AND (e2.start_time > events.start_time OR (e2.start_time = events.start_time AND e2.id > events.id))))',
-                    [$snapshotAt, $snapshotAt, $snapshotAt, $snapshotAt]
-                );
-            } else {
-                $sub->where('e2.start_time', '>=', $snapshotAt)
-                    ->whereRaw('(e2.start_time < events.start_time OR (e2.start_time = events.start_time AND e2.id < events.id))');
-            }
+            // Cancelled, postponed and completed occurrences are listed (with
+            // their state) but must not stand in for a series that still has
+            // a running occurrence: a running sibling in the window always
+            // wins, and only siblings of the same kind compete on time.
+            $siblingIsRunning = "COALESCE(e2.status, 'active') = 'active'";
+            $rowIsRunning = "COALESCE(events.status, 'active') = 'active'";
+            $sub->where(function ($preferred) use ($when, $snapshotAt, $siblingIsRunning, $rowIsRunning) {
+                $preferred->where(function ($running) use ($when, $snapshotAt, $siblingIsRunning, $rowIsRunning) {
+                    $running->whereRaw($siblingIsRunning)->whereRaw("NOT ({$rowIsRunning})");
+                    if ($when === 'past') {
+                        $running->where('e2.start_time', '<', $snapshotAt);
+                    } elseif ($when !== 'all') {
+                        $running->where('e2.start_time', '>=', $snapshotAt);
+                    }
+                })->orWhere(function ($sameKind) use ($when, $snapshotAt, $siblingIsRunning, $rowIsRunning) {
+                    $sameKind->whereRaw("({$siblingIsRunning}) = ({$rowIsRunning})");
+                    if ($when === 'past') {
+                        $sameKind->where('e2.start_time', '<', $snapshotAt)
+                            ->whereRaw('(e2.start_time > events.start_time OR (e2.start_time = events.start_time AND e2.id > events.id))');
+                    } elseif ($when === 'all') {
+                        $sameKind->whereRaw(
+                            '((e2.start_time >= ? AND (events.start_time < ? OR e2.start_time < events.start_time OR (e2.start_time = events.start_time AND e2.id < events.id)))'
+                            . ' OR (e2.start_time < ? AND events.start_time < ? AND (e2.start_time > events.start_time OR (e2.start_time = events.start_time AND e2.id > events.id))))',
+                            [$snapshotAt, $snapshotAt, $snapshotAt, $snapshotAt]
+                        );
+                    } else {
+                        $sameKind->where('e2.start_time', '>=', $snapshotAt)
+                            ->whereRaw('(e2.start_time < events.start_time OR (e2.start_time = events.start_time AND e2.id < events.id))');
+                    }
+                });
+            });
         });
 
         if (!$hasProximity && $cursorPosition !== null) {
@@ -822,6 +839,33 @@ class EventService
      * Get a single event by ID without embedding attendee identities.
      */
     /**
+     * "Published", read from the canonical publication axis.
+     *
+     * Discovery used to filter on the legacy `status` mirror (`NULL` or
+     * `'active'`), but the lifecycle writer mirrors Postponed and Cancelled to
+     * `'cancelled'` and Completed to `'completed'` — so every published event
+     * that was postponed, cancelled or completed vanished from the lists and
+     * its shared link 404'd, and the "cancelled"/"postponed" chips could never
+     * render. Rows written before the lifecycle migration have no
+     * publication_status; they fall back to the legacy mirror exactly as
+     * AdminEventsController::applyPublicationFilter() does. Drafts,
+     * pending-review and archived events never match.
+     */
+    private static function wherePublishedPublication(QueryBuilderContract $query, string $table): void
+    {
+        $query->where(static function (QueryBuilderContract $published) use ($table): void {
+            $published->where("{$table}.publication_status", EventPublicationState::Published->value)
+                ->orWhere(static function (QueryBuilderContract $legacy) use ($table): void {
+                    $legacy->whereNull("{$table}.publication_status")
+                        ->where(static function (QueryBuilderContract $mirror) use ($table): void {
+                            $mirror->whereNull("{$table}.status")
+                                ->orWhereIn("{$table}.status", ['active', 'cancelled', 'completed']);
+                        });
+                });
+        });
+    }
+
+    /**
      * The audience predicate shared by every discovery query.
      *
      * Extracted so the anonymous/public listing and the public detail lookup
@@ -875,7 +919,7 @@ class EventService
      * getById() refuses a null viewer outright (EventPolicy needs a user), which
      * is correct for the member API. This is the deliberately separate public
      * path: same audience predicate as the public listing, same published-only
-     * and active-status constraints, so an event that would not appear in the
+     * constraint (wherePublishedPublication), so an event that would not appear in the
      * public list cannot be opened directly by guessing its id.
      *
      * Returns the raw row; the caller is responsible for the public projection.
@@ -892,14 +936,8 @@ class EventService
                 'user:id,first_name,last_name,organization_name,profile_type,avatar_url',
                 'category:id,name,slug,color,type',
             ])
-            ->whereKey($id)
-            ->where(function (Builder $status) {
-                $status->whereNull('status')->orWhere('status', 'active');
-            })
-            ->where(function (Builder $published) {
-                $published->whereNull('events.publication_status')
-                    ->orWhere('events.publication_status', EventPublicationState::Published->value);
-            });
+            ->whereKey($id);
+        self::wherePublishedPublication($query, 'events');
 
         self::applyDiscoveryVisibility($query, null, $tenantId, false);
 

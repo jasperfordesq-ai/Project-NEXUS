@@ -223,6 +223,34 @@ final class EventDiscoveryContractTest extends TestCase
             ->assertJsonPath('data.0.series_count', 3);
     }
 
+    public function test_a_wholly_cancelled_series_still_shows_one_card_carrying_its_state(): void
+    {
+        $organizer = $this->authenticate();
+        $categoryId = $this->category('Cancelled series');
+        $cancelled = [
+            'category_id' => $categoryId,
+            'status' => 'cancelled',
+            'publication_status' => 'published',
+            'operational_status' => 'cancelled',
+        ];
+        $templateId = $this->event($organizer->id, 'Cancelled template', '2030-03-07 10:00:00', $cancelled + [
+            'is_recurring_template' => 1,
+        ]);
+        $firstChildId = $this->event($organizer->id, 'Cancelled first child', '2030-03-03 10:00:00', $cancelled + [
+            'parent_event_id' => $templateId,
+        ]);
+        $this->event($organizer->id, 'Cancelled later child', '2030-03-14 10:00:00', $cancelled + [
+            'parent_event_id' => $templateId,
+        ]);
+
+        $response = $this->apiGet("/v2/events?category_id={$categoryId}&per_page=10");
+
+        $response->assertOk();
+        // One card per series — the next occurrence — instead of the series
+        // vanishing because every occurrence's legacy mirror is 'cancelled'.
+        $this->assertSame([$firstChildId], $this->ids($response));
+    }
+
     public function test_category_endpoint_unifies_singular_and_plural_event_types_and_filter_uses_ids(): void
     {
         $organizer = $this->authenticate();
