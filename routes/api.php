@@ -274,7 +274,7 @@ Route::middleware('feature:events')->group(function () {
         ->middleware('throttle:nexus-route-10-per-1m');
     Route::delete('/v2/events/calendar/feed-tokens/{tokenId}', [\App\Http\Controllers\Api\EventCalendarController::class, 'revokeToken'])
         ->whereNumber('tokenId');
-    Route::post('/v2/events/recurring', [\App\Http\Controllers\Api\EventsController::class, 'createRecurring']);
+    Route::post('/v2/events/recurring', [\App\Http\Controllers\Api\EventsController::class, 'createRecurring'])->middleware('legal-acceptance');
     Route::get('/v2/events/series', [\App\Http\Controllers\Api\EventsController::class, 'listSeries']);
     Route::post('/v2/events/series', [\App\Http\Controllers\Api\EventsController::class, 'createSeries']);
     Route::get('/v2/events/series/{seriesId}', [\App\Http\Controllers\Api\EventsController::class, 'showSeries'])->whereNumber('seriesId');
@@ -294,7 +294,7 @@ Route::middleware('feature:events')->group(function () {
     Route::post('/v2/event-templates/{templateId}/materialization-preview', [\App\Http\Controllers\Api\EventTemplateController::class, 'previewMaterialization'])
         ->whereNumber('templateId')->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/event-templates/{templateId}/materializations', [\App\Http\Controllers\Api\EventTemplateController::class, 'materialize'])
-        ->whereNumber('templateId')->middleware('throttle:nexus-route-20-per-1m');
+        ->whereNumber('templateId')->middleware('throttle:nexus-route-20-per-1m')->middleware('legal-acceptance');
     Route::post('/v2/events', [\App\Http\Controllers\Api\EventsController::class, 'store'])->middleware('legal-acceptance');
     Route::get('/v2/events/{id}/calendar.ics', [\App\Http\Controllers\Api\EventCalendarController::class, 'eventFeed'])
         ->whereNumber('id');

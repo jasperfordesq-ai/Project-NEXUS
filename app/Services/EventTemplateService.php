@@ -32,6 +32,7 @@ final class EventTemplateService
     public function __construct(
         private readonly EventTemplateFoundationSupport $support = new EventTemplateFoundationSupport(),
         private readonly EventTemplateManifest $manifest = new EventTemplateManifest(),
+        private readonly EventConfigurationService $eventConfiguration = new EventConfigurationService(),
     ) {
     }
 
@@ -458,6 +459,13 @@ final class EventTemplateService
                     $overrides,
                     true,
                 );
+                // Materializing creates a new event, so it must obey the same
+                // community "who may create events" rule as POST /v2/events
+                // (F-589). Checked before the idempotent replay so a member who
+                // has lost the right cannot re-obtain a result either.
+                if (! $this->eventConfiguration->canCreate($tenantId, (int) $plan['actor']->id)) {
+                    throw new EventTemplateException('event_template_authorization_denied');
+                }
                 $requestHash = $this->materializationRequestHash($plan);
                 $replay = $this->auditReplay(
                     $tenantId,
