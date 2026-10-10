@@ -635,6 +635,20 @@ final class EventRegistrationService
         }
 
         $wasConsuming = $from?->consumesCapacity() ?? false;
+
+        // The organiser's published cancellation cutoff binds a member giving
+        // up their own confirmed place. Organisers and event managers are
+        // exempt (including on their own registration, so a lifecycle
+        // cancellation can never be blocked by it), and a request that never
+        // held a seat may still be withdrawn. Checked after the replay above,
+        // so a withdrawal made before the cutoff still replays cleanly.
+        if ($target === EventCapacityRegistrationState::Cancelled
+            && $wasConsuming
+            && ! $managerActing
+            && $this->cancellationCutoffPassed($event)
+            && ! $this->policy->manageRegistration($actor, $event)) {
+            throw new EventRegistrationException('event_registration_transition_invalid');
+        }
         if ($target->consumesCapacity() && ! $wasConsuming) {
             $activeOwnOffer = EventWaitlistEntry::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
@@ -909,6 +923,21 @@ final class EventRegistrationService
         }
 
         return $target;
+    }
+
+    /** Has the PUBLISHED cancellation cutoff for this event passed? */
+    private function cancellationCutoffPassed(Event $event): bool
+    {
+        $cutoff = DB::table('event_registration_settings')
+            ->where('tenant_id', (int) $event->tenant_id)
+            ->where('event_id', (int) $event->getKey())
+            ->where('status', 'published')
+            ->value('cancellation_cutoff_at_utc');
+        if ($cutoff === null || $cutoff === '') {
+            return false;
+        }
+
+        return Carbon::now('UTC')->gt(Carbon::parse((string) $cutoff, 'UTC'));
     }
 
     /**
