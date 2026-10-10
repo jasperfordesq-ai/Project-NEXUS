@@ -1083,9 +1083,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:215:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:236:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewRegistration.php",
-            "line": 215,
+            "line": 236,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
