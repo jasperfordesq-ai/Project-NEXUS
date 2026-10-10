@@ -14,14 +14,26 @@ use App\Models\EventStaffAssignment;
 use App\Models\EventStaffAssignmentHistory;
 use BackedEnum;
 use DateTimeInterface;
+use App\Support\Members\MemberProfileVisibility;
 use App\Support\UserDisplayName;
 
 /** Canonical, audit-bearing representation of one delegated Events role. */
 final class EventStaffResource
 {
-    /** @return array<string, mixed> */
-    public static function fromModel(EventStaffAssignment $assignment): array
-    {
+    /**
+     * F-084 / F-591: the team list is read by organisers, who are ordinary
+     * members, so by default a team member is shown by first name (an
+     * organisation by its trading name, never its contact person) and the
+     * surname is omitted. Full names are returned only when the caller says
+     * the viewer is an administrator, or for the viewer's own row.
+     *
+     * @return array<string, mixed>
+     */
+    public static function fromModel(
+        EventStaffAssignment $assignment,
+        ?int $viewerId = null,
+        bool $viewerIsAdmin = false,
+    ): array {
         $role = $assignment->role instanceof EventStaffRole
             ? $assignment->role
             : EventStaffRole::tryFrom((string) $assignment->getAttribute('role'));
@@ -33,17 +45,33 @@ final class EventStaffResource
         $name = $user === null
             ? null
             : UserDisplayName::resolve($user);
+        $member = [
+            'id' => (int) $assignment->user_id,
+            'name' => $name !== '' ? $name : null,
+            'first_name' => $user?->first_name,
+            'last_name' => $user?->last_name,
+            'avatar_url' => $user?->avatar_url,
+        ];
+        $isOwnRow = $viewerId !== null && $viewerId === (int) $assignment->user_id;
+        if (! $viewerIsAdmin && ! $isOwnRow) {
+            $isOrganisation = UserDisplayName::isOrganisation($user);
+            $member = MemberProfileVisibility::withoutSurname($member + [
+                'profile_type' => $user?->profile_type,
+                'organization_name' => $user?->organization_name,
+            ]);
+            unset($member['profile_type'], $member['organization_name']);
+            $member['name'] = ($member['name'] ?? '') !== '' ? $member['name'] : null;
+            if ($isOrganisation) {
+                // The contact person behind an organisation account is not
+                // part of its public identity.
+                $member['first_name'] = null;
+            }
+        }
 
         return [
             'id' => (int) $assignment->getKey(),
             'event_id' => (int) $assignment->event_id,
-            'member' => [
-                'id' => (int) $assignment->user_id,
-                'name' => $name !== '' ? $name : null,
-                'first_name' => $user?->first_name,
-                'last_name' => $user?->last_name,
-                'avatar_url' => $user?->avatar_url,
-            ],
+            'member' => $member,
             'role' => $role?->value ?? (string) $assignment->getRawOriginal('role'),
             'capabilities' => $role === null
                 ? []
