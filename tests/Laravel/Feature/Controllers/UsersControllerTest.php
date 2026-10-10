@@ -651,6 +651,34 @@ class UsersControllerTest extends TestCase
         $response->assertJsonStructure(['data', 'meta']);
     }
 
+    public function test_ranked_directory_pages_by_the_cached_ranking_when_cached_members_are_now_hidden(): void
+    {
+        $viewer = $this->authenticatedUser(['role' => 'member', 'latitude' => null, 'longitude' => null]);
+        // Ids that no longer resolve stand in for members hidden since the
+        // ranking was cached: the detail query filters them out of the page.
+        $cached = [];
+        for ($i = 0; $i < 400; $i++) {
+            $cached[] = ['user_id' => 990000000 + $i, 'score' => 1.0];
+        }
+        $key = "community_rank:{$this->testTenantId}:{$viewer->id}:0:0";
+        Cache::put($key, $cached, 180);
+        try {
+            $first = $this->apiGet('/v2/users?sort=communityrank&limit=50&offset=0');
+            $first->assertStatus(200);
+            $visible = (int) ($first->json('meta.total_items') ?? 0);
+            $this->assertLessThan(count($cached), $visible,
+                'Precondition: the fresh visible directory is smaller than the cached ranking.');
+            $this->assertTrue((bool) $first->json('meta.has_more'),
+                'Paging must continue while the cached ranking has later entries.');
+            $last = $this->apiGet('/v2/users?sort=communityrank&limit=50&offset=350');
+            $last->assertStatus(200);
+            $this->assertFalse((bool) $last->json('meta.has_more'),
+                'Paging must stop at the end of the cached ranking.');
+        } finally {
+            Cache::forget($key);
+        }
+    }
+
     public function test_ranked_directory_rechecks_visibility_after_cached_member_becomes_private(): void
     {
         $viewer = $this->authenticatedUser(['role' => 'member', 'latitude' => null, 'longitude' => null]);

@@ -1528,6 +1528,10 @@ class UsersController extends BaseApiController
             );
 
             $totalCount = $ranked['total'];
+            // Offsets index the (possibly cached) ranking, so paging must
+            // follow that ranking's length. A member hidden since it was
+            // cached is filtered from the page, but must not end paging early.
+            $rankedTotal = (int) $ranked['total'];
             $orderedIds = array_map(
                 static fn (array $member): int => (int) ($member['user_id'] ?? 0),
                 $ranked['items']
@@ -1679,7 +1683,7 @@ class UsersController extends BaseApiController
                 'total_items' => $totalCount,
                 'per_page'    => $limit,
                 'offset'      => $offset,
-                'has_more'    => ($offset + $limit) < $totalCount,
+                'has_more'    => ($offset + $limit) < $rankedTotal,
             ], $visibilityStats));
         }
 

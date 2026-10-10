@@ -81,6 +81,7 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
         $attempted = 0;
         $cancelled = 0;
         $failed = 0;
+        $unresolvedRecipients = 0;
         $deadline = microtime(true) + 45.0;
         $listener = app(NotifyAdminOfNewRegistration::class);
         foreach ($registrations as $row) {
@@ -100,12 +101,33 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
                     $cancelled += RegistrationStaffEmailDeliveryLedger::cancelCapturedForRegistrant($tenantId, $registrantId);
                     continue;
                 }
+                // The listener absorbs per-recipient failures, so a normal
+                // return is not success. Judge each captured row by where the
+                // ledger says it ended up.
+                $capturedIds = DB::table('registration_staff_email_deliveries')
+                    ->where('tenant_id', $tenantId)
+                    ->where('registrant_user_id', $registrantId)
+                    ->where('status', 'captured')
+                    ->pluck('id');
                 // Call only the staff listener. Re-dispatching UserRegistered
                 // would also re-run welcome/activation listeners.
                 $user = new User();
                 $user->id = $registrantId;
                 $listener->handle(new UserRegistered($user, $tenantId));
                 $attempted++;
+                $unresolved = DB::table('registration_staff_email_deliveries')
+                    ->whereIn('id', $capturedIds)
+                    ->whereNotIn('status', ['accepted', 'cancelled'])
+                    ->count();
+                if ($unresolved > 0) {
+                    $failed++;
+                    $unresolvedRecipients += $unresolved;
+                    Log::warning('Captured registration staff alert recovery left recipients unresolved', [
+                        'tenant_id' => $tenantId,
+                        'registrant_id' => $registrantId,
+                        'unresolved_recipients' => $unresolved,
+                    ]);
+                }
             } catch (\Throwable $e) {
                 $failed++;
                 Log::error('Captured registration staff alert recovery failed', [
@@ -115,7 +137,7 @@ final class RecoverCapturedRegistrationStaffAlerts extends Command
                 ]);
             }
         }
-        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} held_unknown={$heldUnknown} reconciled_accepted={$reconciledAccepted} failed={$failed}");
+        $this->info("Captured registration recovery: attempted={$attempted} cancelled={$cancelled} held_unknown={$heldUnknown} reconciled_accepted={$reconciledAccepted} failed={$failed} unresolved_recipients={$unresolvedRecipients}");
         return $failed === 0 ? self::SUCCESS : self::FAILURE;
     }
 }

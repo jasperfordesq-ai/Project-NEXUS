@@ -17054,6 +17054,33 @@ CREATE TABLE `regional_analytics_subscriptions` (
   KEY `regional_analytics_subscriptions_tenant_id_index` (`tenant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `registration_staff_email_deliveries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `registration_staff_email_deliveries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint(20) unsigned NOT NULL,
+  `registrant_user_id` bigint(20) unsigned NOT NULL,
+  `recipient_user_id` bigint(20) unsigned NOT NULL,
+  `status` enum('captured','pending','claimed','accepted','definite_failure','unknown','cancelled') NOT NULL DEFAULT 'captured',
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `claim_token` char(36) DEFAULT NULL,
+  `dispatch_id` char(36) DEFAULT NULL,
+  `claimed_at` timestamp NULL DEFAULT NULL,
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  `provider_message_id` varchar(255) DEFAULT NULL,
+  `reconciled_from_email_log_id` bigint(20) unsigned DEFAULT NULL,
+  `reconciled_at` timestamp NULL DEFAULT NULL,
+  `last_error_code` varchar(64) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_registration_staff_email_recipient` (`tenant_id`,`registrant_user_id`,`recipient_user_id`),
+  UNIQUE KEY `registration_staff_email_deliveries_dispatch_id_unique` (`dispatch_id`),
+  KEY `idx_registration_staff_email_status` (`tenant_id`,`status`,`created_at`),
+  KEY `idx_registration_staff_email_stale_claim` (`status`,`claimed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21958,7 +21985,8 @@ INSERT INTO `laravel_migrations` VALUES
 (477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149),
 (482,'2026_10_09_100000_create_member_invitation_outbox_table',153),
 (483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153),
-(484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154);
+(484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154),
+(485,'2026_10_09_101000_create_registration_staff_email_deliveries',155);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

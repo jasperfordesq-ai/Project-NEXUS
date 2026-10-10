@@ -67,6 +67,20 @@ final class CapturedRegistrationStaffRecoveryTest extends TestCase
         $this->assertSame(0, $sender->adminCalls);
     }
 
+    public function test_recovery_reports_failure_when_a_recipient_send_does_not_succeed(): void
+    {
+        [$tenant, $registrant, $recipient, $delivery] = $this->fixture();
+        $sender = new RecoveryCaptureDispatchService();
+        $sender->result = false;
+        app()->instance(EmailDispatchService::class, $sender);
+
+        $this->artisan('emails:recover-captured-registration-staff', ['--tenant' => $tenant, '--limit' => 20])
+            ->expectsOutputToContain('failed=1 unresolved_recipients=1')
+            ->assertExitCode(1);
+        $this->assertSame(1, $sender->adminCalls);
+        $this->assertNotSame('accepted', DB::table('registration_staff_email_deliveries')->where('id', $delivery)->value('status'));
+    }
+
     public function test_dry_run_does_not_claim_or_send(): void
     {
         [$tenant, , , $delivery] = $this->fixture();
@@ -210,11 +224,13 @@ final class CapturedRegistrationStaffRecoveryTest extends TestCase
 final class RecoveryCaptureDispatchService extends EmailDispatchService
 {
     public int $adminCalls = 0;
+    public bool $result = true;
 
     public function send(string $to, string $subject, string $body, array $options = []): bool
     {
         if (($options['category'] ?? null) === 'admin_new_registration') {
             $this->adminCalls++;
+            return $this->result;
         }
         return true;
     }
