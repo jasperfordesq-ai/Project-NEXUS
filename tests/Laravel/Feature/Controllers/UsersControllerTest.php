@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\EmailDispatchService;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
@@ -474,6 +475,72 @@ class UsersControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_pending_registration_profile_is_staff_only_until_activation(): void
+    {
+        $member = $this->authenticatedUser(['role' => 'member']);
+        $pending = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'PendingSynthetic',
+            'last_name' => 'PrivateSurname',
+            'location' => 'Synthetic location',
+            'status' => 'pending',
+            'is_approved' => false,
+            'onboarding_completed' => false,
+            'privacy_profile' => 'public',
+        ]);
+
+        $memberResponse = $this->apiGet("/v2/users/{$pending->id}");
+        $memberResponse->assertStatus(404);
+        $memberResponse->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+        $this->assertStringNotContainsString('PendingSynthetic', $memberResponse->getContent());
+
+        foreach (['broker', 'coordinator', 'admin'] as $role) {
+            $staff = User::factory()->forTenant($this->testTenantId)->create([
+                'role' => $role, 'status' => 'active', 'is_approved' => true,
+            ]);
+            Sanctum::actingAs($staff, ['*']);
+            $this->apiGet("/v2/users/{$pending->id}")
+                ->assertStatus(200)
+                ->assertJsonPath('data.first_name', 'PendingSynthetic')
+                ->assertJsonMissingPath('data.email');
+        }
+
+        $pending->update(['status' => 'active', 'is_approved' => true]);
+        Sanctum::actingAs($member, ['*']);
+        $this->apiGet("/v2/users/{$pending->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'PendingSynthetic');
+    }
+
+    public function test_active_but_unapproved_profile_is_still_staff_only(): void
+    {
+        $member = $this->authenticatedUser(['role' => 'member']);
+        $unapproved = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'UnapprovedSynthetic',
+            'status' => 'active',
+            'is_approved' => false,
+            'onboarding_completed' => true,
+            'privacy_profile' => 'public',
+        ]);
+
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(404)
+            ->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+
+        $staff = User::factory()->forTenant($this->testTenantId)->create([
+            'role' => 'admin', 'status' => 'active', 'is_approved' => true,
+        ]);
+        Sanctum::actingAs($staff, ['*']);
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'UnapprovedSynthetic');
+
+        $unapproved->update(['is_approved' => true]);
+        Sanctum::actingAs($member, ['*']);
+        $this->apiGet("/v2/users/{$unapproved->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.first_name', 'UnapprovedSynthetic');
+    }
+
     // ================================================================
     // SHOW USER — Tenant isolation
     // ================================================================
@@ -511,6 +578,62 @@ class UsersControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    public function test_pending_and_unapproved_members_are_absent_from_search_and_directory(): void
+    {
+        $this->authenticatedUser(['role' => 'member']);
+        $directoryBefore = $this->apiGet('/v2/users?sort=name&limit=1');
+        $directoryBefore->assertStatus(200);
+        $initialTotal = (int) $directoryBefore->json('meta.total_items');
+        $base = [
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-visibility-avatar.png',
+            'bio' => 'Synthetic approved-profile visibility check.',
+            'latitude' => 53.3498,
+            'longitude' => -6.2603,
+        ];
+        $pending = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixturePending',
+            'status' => 'pending', 'is_approved' => false,
+        ]));
+        $unapproved = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixtureUnapproved',
+            'status' => 'active', 'is_approved' => false,
+        ]));
+        $approved = User::factory()->forTenant($this->testTenantId)->create(array_merge($base, [
+            'first_name' => 'C1VisibilityFixtureApproved',
+            'status' => 'active', 'is_approved' => true,
+        ]));
+
+        $search = $this->apiGet('/v2/users/search?q=C1VisibilityFixture&limit=100');
+        $search->assertStatus(200);
+        $searchIds = array_map('intval', array_column($search->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($pending->id, $searchIds);
+        $this->assertNotContains($unapproved->id, $searchIds);
+        $this->assertContains($approved->id, $searchIds);
+
+        $directory = $this->apiGet('/v2/users?sort=name&limit=1');
+        $directory->assertStatus(200);
+        $this->assertSame($initialTotal + 1, (int) $directory->json('meta.total_items'));
+
+        TenantContext::setById($this->testTenantId);
+        $ranked = app(\App\Services\MemberRankingService::class)->rankMembers(
+            $this->testTenantId, 100, 0, 'C1VisibilityFixture'
+        );
+        $rankedIds = array_map('intval', array_column($ranked['items'], 'user_id'));
+        $this->assertNotContains($pending->id, $rankedIds);
+        $this->assertNotContains($unapproved->id, $rankedIds);
+        $this->assertContains($approved->id, $rankedIds);
+
+        $nearby = $this->apiGet('/v2/members/nearby?lat=53.3498&lon=-6.2603&radius_km=1&limit=100&q=C1VisibilityFixture');
+        $nearby->assertStatus(200);
+        $nearbyIds = array_map('intval', array_column($nearby->json('data') ?? [], 'id'));
+        $this->assertNotContains($pending->id, $nearbyIds);
+        $this->assertNotContains($unapproved->id, $nearbyIds);
+        $this->assertContains($approved->id, $nearbyIds);
+    }
+
     // ================================================================
     // MEMBER DIRECTORY (INDEX)
     // ================================================================
@@ -526,6 +649,167 @@ class UsersControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['data', 'meta']);
+    }
+
+    public function test_ranked_directory_pages_by_the_cached_ranking_when_cached_members_are_now_hidden(): void
+    {
+        $viewer = $this->authenticatedUser(['role' => 'member', 'latitude' => null, 'longitude' => null]);
+        // Ids that no longer resolve stand in for members hidden since the
+        // ranking was cached: the detail query filters them out of the page.
+        $cached = [];
+        for ($i = 0; $i < 400; $i++) {
+            $cached[] = ['user_id' => 990000000 + $i, 'score' => 1.0];
+        }
+        $key = "community_rank:{$this->testTenantId}:{$viewer->id}:0:0";
+        Cache::put($key, $cached, 180);
+        try {
+            $first = $this->apiGet('/v2/users?sort=communityrank&limit=50&offset=0');
+            $first->assertStatus(200);
+            $visible = (int) ($first->json('meta.total_items') ?? 0);
+            $this->assertLessThan(count($cached), $visible,
+                'Precondition: the fresh visible directory is smaller than the cached ranking.');
+            $this->assertTrue((bool) $first->json('meta.has_more'),
+                'Paging must continue while the cached ranking has later entries.');
+            $last = $this->apiGet('/v2/users?sort=communityrank&limit=50&offset=350');
+            $last->assertStatus(200);
+            $this->assertFalse((bool) $last->json('meta.has_more'),
+                'Paging must stop at the end of the cached ranking.');
+        } finally {
+            Cache::forget($key);
+        }
+    }
+
+    public function test_ranked_directory_rechecks_visibility_after_cached_member_becomes_private(): void
+    {
+        $viewer = $this->authenticatedUser(['role' => 'member', 'latitude' => null, 'longitude' => null]);
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1StaleRankFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-stale-rank.png',
+            'bio' => 'Synthetic stale ranked directory fixture.',
+        ]);
+        $key = "community_rank:{$this->testTenantId}:{$viewer->id}:0:0";
+        Cache::put($key, [['user_id' => $member->id, 'score' => 1.0]], 180);
+        try {
+            $ranked = app(\App\Services\MemberRankingService::class)->rankMembers(
+                $this->testTenantId, 100, 0, '', (int) $viewer->id
+            );
+            $this->assertContains($member->id, array_map('intval', array_column($ranked['items'], 'user_id')),
+                'The ranked candidate must come from a stale cache for this regression.');
+            $public = $this->apiGet('/v2/users?sort=communityrank&limit=100');
+            $public->assertStatus(200);
+            $this->assertContains($member->id,
+                array_map('intval', array_column($public->json('data') ?? [], 'id')));
+
+            foreach ([
+                ['privacy_profile' => 'connections'],
+                ['privacy_profile' => 'public', 'privacy_search' => false],
+                ['privacy_search' => true, 'is_approved' => false],
+                ['is_approved' => true, 'status' => 'inactive'],
+            ] as $changed) {
+                $member->update($changed);
+                $response = $this->apiGet('/v2/users?sort=communityrank&limit=100');
+                $response->assertStatus(200);
+                $ids = array_map('intval', array_column($response->json('data') ?? [], 'id'));
+                $this->assertNotContains($member->id, $ids,
+                    'A cached ranking must not disclose a member after their current visibility changes.');
+            }
+        } finally {
+            Cache::forget($key);
+        }
+    }
+
+    public function test_unapproved_admin_session_cannot_use_directory_admin_privacy_exemption(): void
+    {
+        $this->authenticatedUser(['role' => 'admin', 'is_approved' => false]);
+        $private = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1UnapprovedAdminDirectoryFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'connections',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-private-avatar.png',
+            'bio' => 'Synthetic private directory fixture.',
+        ]);
+
+        $response = $this->apiGet('/v2/users?q=C1UnapprovedAdminDirectoryFixture&sort=name&limit=100');
+        if ($response->getStatusCode() !== 200) {
+            $this->assertContains($response->getStatusCode(), [401, 403]);
+            return;
+        }
+        $ids = array_map('intval', array_column($response->json('data') ?? [], 'id'));
+        $this->assertNotContains($private->id, $ids,
+            'An unapproved admin session must not bypass profile privacy in the directory.');
+
+        $this->authenticatedUser(['role' => 'admin']);
+        $activeAdminResponse = $this->apiGet('/v2/users?q=C1UnapprovedAdminDirectoryFixture&sort=name&limit=100');
+        $activeAdminResponse->assertStatus(200);
+        $activeAdminIds = array_map('intval', array_column($activeAdminResponse->json('data') ?? [], 'id'));
+        $this->assertContains($private->id, $activeAdminIds);
+    }
+
+    public function test_member_search_does_not_return_connections_only_profile_to_unapproved_admin(): void
+    {
+        $this->authenticatedUser(['role' => 'admin', 'is_approved' => false]);
+        $private = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1PrivateSearchFixture',
+            'last_name' => 'PrivateSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'connections',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-private-avatar.png',
+            'bio' => 'Synthetic private search fixture.',
+        ]);
+
+        $response = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $response->assertStatus(200);
+        $ids = array_map('intval', array_column($response->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($private->id, $ids,
+            'A member search must not reveal a connections-only profile to an unapproved Admin.');
+
+        $public = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'C1PublicSearchFixture',
+            'last_name' => 'ProtectedSurname',
+            'status' => 'active',
+            'is_approved' => true,
+            'privacy_profile' => 'public',
+            'privacy_search' => true,
+            'onboarding_completed' => true,
+            'avatar_url' => '/uploads/test/c1-public-avatar.png',
+            'bio' => 'Synthetic public search fixture.',
+        ]);
+        $publicResponse = $this->apiGet('/v2/users/search?q=C1PublicSearchFixture&limit=100');
+        $publicResponse->assertStatus(200);
+        $publicRows = array_values(array_filter($publicResponse->json('data.items') ?? [],
+            static fn (array $row): bool => (int) $row['id'] === (int) $public->id));
+        $this->assertCount(1, $publicRows);
+        $this->assertArrayNotHasKey('last_name', $publicRows[0]);
+
+        $this->authenticatedUser(['role' => 'member']);
+        $memberResponse = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $memberResponse->assertStatus(200);
+        $memberIds = array_map('intval', array_column($memberResponse->json('data.items') ?? [], 'id'));
+        $this->assertNotContains($private->id, $memberIds);
+
+        $this->authenticatedUser(['role' => 'admin']);
+        $activeAdminResponse = $this->apiGet('/v2/users/search?q=C1PrivateSearchFixture&limit=100');
+        $activeAdminResponse->assertStatus(200);
+        $activeAdminIds = array_map('intval', array_column($activeAdminResponse->json('data.items') ?? [], 'id'));
+        $this->assertContains($private->id, $activeAdminIds);
+        $activePublicResponse = $this->apiGet('/v2/users/search?q=C1PublicSearchFixture&limit=100');
+        $activePublicRows = array_values(array_filter($activePublicResponse->json('data.items') ?? [],
+            static fn (array $row): bool => (int) $row['id'] === (int) $public->id));
+        $this->assertCount(1, $activePublicRows);
+        $this->assertSame('ProtectedSurname', $activePublicRows[0]['last_name']);
     }
 
     /**

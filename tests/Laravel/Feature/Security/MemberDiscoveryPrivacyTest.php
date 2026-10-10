@@ -11,6 +11,7 @@ namespace Tests\Laravel\Feature\Security;
 use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\CommentService;
+use App\Support\Members\MemberProfileVisibility;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,45 @@ class MemberDiscoveryPrivacyTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
+    }
+
+    public function test_bulk_profile_visibility_hides_pending_accounts_from_others_but_preserves_self_and_staff(): void
+    {
+        $viewer = $this->member();
+        $pending = $this->member(['status' => 'pending', 'is_approved' => false, 'privacy_profile' => 'public']);
+        $approved = $this->member(['status' => 'active', 'is_approved' => true, 'privacy_profile' => 'public']);
+        $ids = [(int) $pending->id, (int) $approved->id];
+
+        $visibleTo = function (?int $viewerId, ?bool $viewerIsAdmin = null) use ($ids): array {
+            $query = DB::table('users')->where('tenant_id', $this->testTenantId)->whereIn('id', $ids);
+            MemberProfileVisibility::applyToQuery($query, $this->testTenantId, $viewerId, 'users', $viewerIsAdmin);
+            return $query->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        };
+
+        $this->assertSame([(int) $approved->id], $visibleTo((int) $viewer->id));
+        $this->assertSame([(int) $approved->id], $visibleTo(null));
+
+        // An older accepted connection must not reopen a pending profile.
+        $this->connect($viewer, $pending);
+        DB::table('users')->where('id', $pending->id)->update(['privacy_profile' => 'private']);
+        $this->assertSame([(int) $approved->id], $visibleTo((int) $viewer->id));
+
+        $this->assertContains((int) $pending->id, $visibleTo((int) $pending->id));
+        $this->assertContains((int) $pending->id, $visibleTo((int) $viewer->id, true));
+    }
+
+    public function test_suspended_admin_loses_the_profile_visibility_exemption(): void
+    {
+        $pending = $this->member(['status' => 'pending', 'is_approved' => false]);
+        $suspendedAdmin = $this->member(['role' => 'admin', 'status' => 'suspended']);
+
+        $this->assertFalse(MemberProfileVisibility::viewerIsAdmin((int) $suspendedAdmin->id));
+        $this->assertFalse(MemberProfileVisibility::canView((int) $pending->id, (int) $suspendedAdmin->id));
+
+        $query = DB::table('users')->where('tenant_id', $this->testTenantId)
+            ->where('id', $pending->id);
+        MemberProfileVisibility::applyToQuery($query, $this->testTenantId, (int) $suspendedAdmin->id);
+        $this->assertFalse($query->exists());
     }
 
     // ------------------------------------------------------------------
@@ -106,17 +146,23 @@ class MemberDiscoveryPrivacyTest extends TestCase
         $listed = $this->member(['first_name' => $needle, 'last_name' => 'Mentionsurname', 'name' => $needle . ' Mentionsurname']);
         $optedOut = $this->member(['first_name' => $needle, 'name' => $needle . ' Hidden', 'privacy_search' => 0]);
         $suspended = $this->member(['first_name' => $needle, 'name' => $needle . ' Suspended', 'status' => 'suspended']);
+        $pending = $this->member(['first_name' => $needle, 'name' => $needle . ' Pending', 'status' => 'pending', 'is_approved' => false]);
+        $unapproved = $this->member(['first_name' => $needle, 'name' => $needle . ' Unapproved', 'is_approved' => false]);
         Sanctum::actingAs($viewer, ['*']);
 
         $byId = $this->indexById($this->apiGet('/v2/mentions/search?q=' . $needle)->assertStatus(200)->json('data') ?? []);
         $this->assertArrayNotHasKey($optedOut->id, $byId);
         $this->assertArrayNotHasKey($suspended->id, $byId);
+        $this->assertArrayNotHasKey($pending->id, $byId);
+        $this->assertArrayNotHasKey($unapproved->id, $byId);
         $this->assertArrayHasKey($listed->id, $byId);
         $this->assertSurnameHidden($byId[$listed->id], $listed);
 
         $legacy = $this->indexById(CommentService::searchUsersForMention($needle, $this->testTenantId, 10, $viewer->id));
         $this->assertArrayNotHasKey($optedOut->id, $legacy);
         $this->assertArrayNotHasKey($suspended->id, $legacy, 'The legacy route must only suggest active members.');
+        $this->assertArrayNotHasKey($pending->id, $legacy);
+        $this->assertArrayNotHasKey($unapproved->id, $legacy);
         $this->assertArrayHasKey($listed->id, $legacy);
         $this->assertSurnameHidden($legacy[$listed->id], $listed);
     }

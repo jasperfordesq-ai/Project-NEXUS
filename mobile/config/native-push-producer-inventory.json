@@ -524,9 +524,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/ConnectionsController.php:248:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/ConnectionsController.php:251:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/ConnectionsController.php",
-            "line": 248,
+            "line": 251,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $requesterId",
@@ -1083,9 +1083,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:219:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyAdminOfNewRegistration.php:236:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyAdminOfNewRegistration.php",
-            "line": 219,
+            "line": 236,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $admin->id",
@@ -2864,9 +2864,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/UserService.php:747:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/UserService.php:769:NotificationDispatcher::fanOutPush",
             "file": "app/Services/UserService.php",
-            "line": 747,
+            "line": 769,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $user->id",

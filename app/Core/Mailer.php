@@ -691,6 +691,18 @@ class Mailer
                 return true;
             }
 
+            if ($category === 'admin_new_registration') {
+                // A timed-out provider may already have accepted this exact
+                // alert. The per-recipient ledger holds false as UNKNOWN; an
+                // automatic SMTP fallback could send a second copy now.
+                \Illuminate\Support\Facades\Log::warning(
+                    'Mailer: registration staff alert primary outcome unconfirmed; SMTP fallback withheld',
+                    self::recipientLogContext($to, $metadata),
+                );
+                self::logEmail($to, $subject, 'failed', null, 'Primary provider outcome unconfirmed; SMTP fallback withheld', $this->tenantId, $category, 'postmark', $metadata);
+                return false;
+            }
+
             // Fallback: SMTP (if configured).
             if (!empty($this->host) && !empty($this->username)) {
                 \Illuminate\Support\Facades\Log::warning(
@@ -715,6 +727,15 @@ class Mailer
             if ($result) {
                 self::logEmail($to, $subject, 'sent', null, null, $this->tenantId, $category, 'gmail_api', $metadata);
                 return true;
+            }
+
+            if ($category === 'admin_new_registration') {
+                \Illuminate\Support\Facades\Log::warning(
+                    'Mailer: registration staff alert primary outcome unconfirmed; SMTP fallback withheld',
+                    self::recipientLogContext($to, $metadata),
+                );
+                self::logEmail($to, $subject, 'failed', null, 'Primary provider outcome unconfirmed; SMTP fallback withheld', $this->tenantId, $category, 'gmail_api', $metadata);
+                return false;
             }
 
             if (!empty($this->host) && !empty($this->username)) {
@@ -773,7 +794,7 @@ class Mailer
      * Send email via the Postmark Email API (raw HTTP, no SDK dependency —
      * mirrors the Gmail API cURL path already used in this class).
      */
-    private function sendViaPostmark($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $category = null, ?array $metadata = null, ?string $textBody = null): bool
+    protected function sendViaPostmark($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $category = null, ?array $metadata = null, ?string $textBody = null): bool
     {
         try {
             // Prefer a caller-supplied text/plain part (proper html→text). Fall
@@ -888,7 +909,7 @@ class Mailer
     /**
      * Send email via Gmail API using OAuth 2.0.
      */
-    private function sendViaGmailApi($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
+    protected function sendViaGmailApi($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
     {
         try {
             $accessToken = $this->getGmailAccessToken();
@@ -1173,7 +1194,7 @@ class Mailer
         return $message;
     }
 
-    private function sendViaSmtp($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
+    protected function sendViaSmtp($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
     {
         try {
             $this->connect();

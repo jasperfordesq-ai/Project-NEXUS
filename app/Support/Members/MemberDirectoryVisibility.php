@@ -17,18 +17,21 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
  * that is, any query that can hand one member a list of other members they
  * did not already name.
  *
- * Two rules, and they are the member's and the community's respectively:
+ * Three rules apply to member discovery:
  *
- *  1. `users.privacy_search` is the member's own "do not list me in member
+ *  1. Only active, approved accounts may be listed. A pending registration
+ *     cannot become discoverable before staff approval simply because the
+ *     onboarding and search switches allow it.
+ *  2. `users.privacy_search` is the member's own "do not list me in member
  *     search" switch. NULL predates the column and means listed, so the
  *     predicate must be `= 1 OR IS NULL` — a bare `= 1` would silently hide
  *     every legacy member.
- *  2. `OnboardingConfigService::getVisibilitySqlConditions()` is the
+ *  3. `OnboardingConfigService::getVisibilitySqlConditions()` is the
  *     community's admin-configurable directory gating (a member may be
  *     required to have completed onboarding, or to have an avatar or a bio,
  *     before they are listed at all).
  *
- * Both rules already lived, spelled out by hand, in `UsersController`'s
+ * The privacy and onboarding rules already lived, spelled out by hand, in `UsersController`'s
  * directory listing and again in its counts — where a comment asks the second
  * copy to mirror the first "in the same order". This class exists so the next
  * surface does not become a third hand-written copy that drifts. The AI
@@ -109,6 +112,8 @@ final class MemberDirectoryVisibility
         int $tenantId,
         string $table,
     ): void {
+        $query->where(self::column($table, 'status'), 'active')
+            ->where(self::column($table, 'is_approved'), 1);
         $privacySearch = self::column($table, 'privacy_search');
 
         $query->where(static function ($builder) use ($privacySearch): void {

@@ -341,6 +341,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('emails-resend-stuck-activations');
 
+        // Recover only transactionally captured, never-attempted staff alerts.
+        // UNKNOWN or abandoned claims require operator/provider reconciliation.
+        $schedule->command('emails:recover-captured-registration-staff --limit=20')
+            ->everyFiveMinutes()
+            ->withoutOverlapping(10)
+            ->onOneServer()
+            ->name('emails-recover-captured-registration-staff');
+
         $schedule->command('safeguarding:purge-message-copies')
             ->weekly()
             ->withoutOverlapping()

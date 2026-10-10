@@ -190,17 +190,11 @@ class UsersController extends BaseApiController
         $q = $this->query('q', '');
         $limit = $this->queryInt('limit', 20, 1, 100);
 
-        $results = $this->userService->search($q, $limit);
+        $viewerId = $this->getOptionalUserId();
+        $results = $this->userService->search($q, $limit, $viewerId);
 
         // Hide surnames from non-admin viewers
-        $viewer = Auth::user();
-        $viewerIsAdmin = $viewer && (
-            in_array($viewer->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($viewer->is_admin ?? false)
-            || (bool) ($viewer->is_super_admin ?? false)
-            || (bool) ($viewer->is_tenant_super_admin ?? false)
-            || (bool) ($viewer->is_god ?? false)
-        );
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
         if (!$viewerIsAdmin && isset($results['items'])) {
             $results['items'] = array_map(static function (array $u): array {
                 unset($u['last_name']);
@@ -1508,13 +1502,7 @@ class UsersController extends BaseApiController
         $tenantId = $this->getTenantId();
         $viewerId = $this->getOptionalUserId();
         $viewer = Auth::user();
-        $viewerIsAdmin = $viewer && (
-            in_array($viewer->role ?? '', ['admin', 'tenant_admin', 'super_admin', 'god'], true)
-            || (bool) ($viewer->is_admin ?? false)
-            || (bool) ($viewer->is_super_admin ?? false)
-            || (bool) ($viewer->is_tenant_super_admin ?? false)
-            || (bool) ($viewer->is_god ?? false)
-        );
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
 
         $limit = min((int) $request->query('limit', 50), 100);
         $offset = max((int) $request->query('offset', 0), 0);
@@ -1540,6 +1528,10 @@ class UsersController extends BaseApiController
             );
 
             $totalCount = $ranked['total'];
+            // Offsets index the (possibly cached) ranking, so paging must
+            // follow that ranking's length. A member hidden since it was
+            // cached is filtered from the page, but must not end paging early.
+            $rankedTotal = (int) $ranked['total'];
             $orderedIds = array_map(
                 static fn (array $member): int => (int) ($member['user_id'] ?? 0),
                 $ranked['items']
@@ -1553,6 +1545,25 @@ class UsersController extends BaseApiController
             if (!empty($orderedIds)) {
                 $placeholders = implode(',', array_fill(0, count($orderedIds), '?'));
                 $orderPlaceholders = implode(',', array_fill(0, count($orderedIds), '?'));
+                // CommunityRank may return a three-minute cached ID list.
+                // Recheck the current directory policy before loading profile
+                // fields: a connection, approval or search opt-in may have
+                // changed since the cache was written.
+                $detailWhere = "u.tenant_id = ? AND u.status = 'active' AND u.is_approved = 1"
+                    . " AND u.id IN ($placeholders)"
+                    . ' AND (u.privacy_search = 1 OR u.privacy_search IS NULL)';
+                if ($viewerId) {
+                    $detailWhere .= ' AND u.id != ?';
+                }
+                foreach (OnboardingConfigService::getVisibilitySqlConditions($tenantId) as $condition) {
+                    $detailWhere .= " AND ($condition)";
+                }
+                [$profileSql, $profileParams] = MemberProfileVisibility::sqlCondition(
+                    $tenantId, $viewerId, 'u', $viewerIsAdmin
+                );
+                if ($profileSql !== '') {
+                    $detailWhere .= " AND ($profileSql)";
+                }
                 $sql = "SELECT u.id,
                                CASE
                                    WHEN u.profile_type = 'organisation' AND u.organization_name IS NOT NULL AND u.organization_name != '' THEN u.organization_name
@@ -1581,10 +1592,16 @@ class UsersController extends BaseApiController
                         LEFT JOIN (SELECT receiver_id, COALESCE(SUM(amount), 0) as total_received FROM transactions WHERE status = 'completed' AND transaction_type <> 'opening_balance' AND tenant_id = ? GROUP BY receiver_id) tr ON tr.receiver_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as offer_count FROM listings WHERE status = 'active' AND type = 'offer' AND tenant_id = ? GROUP BY user_id) lo ON lo.user_id = u.id
                         LEFT JOIN (SELECT user_id, COUNT(*) as request_count FROM listings WHERE status = 'active' AND type = 'request' AND tenant_id = ? GROUP BY user_id) lreq ON lreq.user_id = u.id
-                        WHERE u.tenant_id = ? AND u.id IN ($placeholders)
+                        WHERE $detailWhere
                         ORDER BY FIELD(u.id, $orderPlaceholders)";
 
-                $detailParams = array_merge([$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId], $orderedIds, $orderedIds);
+                $detailParams = array_merge(
+                    [$tenantId, $tenantId, $tenantId, $tenantId, $tenantId, $tenantId],
+                    $orderedIds,
+                    $viewerId ? [$viewerId] : [],
+                    $profileParams,
+                    $orderedIds
+                );
                 $users = DB::select($sql, $detailParams);
                 $users = array_map(fn ($u) => (array) $u, $users);
 
@@ -1660,12 +1677,14 @@ class UsersController extends BaseApiController
                 return $u;
             }, $users);
 
+            $visibilityStats = $this->directoryVisibilityStats($tenantId, $viewerId);
+            $totalCount = $search === '' ? $visibilityStats['directory_total'] : $totalCount;
             return $this->respondWithData($users, array_merge([
                 'total_items' => $totalCount,
                 'per_page'    => $limit,
                 'offset'      => $offset,
-                'has_more'    => ($offset + $limit) < $totalCount,
-            ], $this->directoryVisibilityStats($tenantId, $viewerId)));
+                'has_more'    => ($offset + $limit) < $rankedTotal,
+            ], $visibilityStats));
         }
 
         $validSorts = [
@@ -1678,7 +1697,7 @@ class UsersController extends BaseApiController
         $orderBy = "$orderByField $order";
 
         $params = [$tenantId, 'active'];
-        $whereClause = 'u.tenant_id = ? AND u.status = ?';
+        $whereClause = 'u.tenant_id = ? AND u.status = ? AND u.is_approved = 1';
 
         if ($search) {
             $memberIds = \App\Services\SearchService::searchUsersStatic($search, $tenantId);
@@ -1845,7 +1864,7 @@ class UsersController extends BaseApiController
      * Community-wide counts behind the member directory, so the directory can
      * explain in plain words why it lists fewer people than have joined.
      *
-     * `community_total` is every active member of the tenant; `directory_total`
+     * `community_total` is every active, approved member of the tenant; `directory_total`
      * is the subset the directory is allowed to list. Both exclude the viewer,
      * exactly as the listing query does, so the two are directly comparable and
      * are equal when nothing is being held back.
@@ -1859,7 +1878,7 @@ class UsersController extends BaseApiController
      */
     private function directoryVisibilityStats(int $tenantId, ?int $viewerId): array
     {
-        $where  = 'u.tenant_id = ? AND u.status = ?';
+        $where  = 'u.tenant_id = ? AND u.status = ? AND u.is_approved = 1';
         $params = [$tenantId, 'active'];
 
         if ($viewerId) {

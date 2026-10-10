@@ -125,6 +125,24 @@ class UserService
             return null;
         }
 
+        // A newly registered account is pending while its staff notice is
+        // being sent. The numeric URL is not a grant to every member who can
+        // guess or receive that ID. Preserve staff review and self access.
+        if (($user->status !== 'active' || ! $user->is_approved) && $viewerId !== $userId) {
+            $viewer = $viewerId ? User::withoutGlobalScope(TenantScope::class)
+                ->select(['id', 'tenant_id', 'role', 'status', 'is_approved'])
+                ->find($viewerId) : null;
+            $staffCanReview = $viewer?->status === 'active' && $viewer->is_approved && (
+                self::isViewerAdmin($viewerId)
+                || ((int) $viewer->tenant_id === (int) $user->tenant_id
+                    && in_array($viewer->role, ['broker', 'coordinator'], true))
+            );
+            if (!$staffCanReview) {
+                self::setError('PROFILE_PRIVATE', 'This profile is not available');
+                return null;
+            }
+        }
+
         // Check if either user has blocked the other
         if ($viewerId && $viewerId !== $userId) {
             if (BlockUserService::isBlockedEither($viewerId, $userId)) {
@@ -259,7 +277,7 @@ class UserService
      *
      * @return array{items: array, cursor: string|null, has_more: bool}
      */
-    public static function search(string $term, int $limit = 20): array
+    public static function search(string $term, int $limit = 20, ?int $viewerId = null): array
     {
         $limit = min($limit, 100);
         $like = '%' . $term . '%';
@@ -274,7 +292,10 @@ class UserService
                   ->orWhere('organization_name', 'LIKE', $like)
                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
             })
-            ->whereNotIn('status', ['banned', 'suspended', 'deleted'])
+            // Search must not bypass the pending/unapproved profile guard.
+            // Staff review has its own authenticated administration route.
+            ->where('status', 'active')
+            ->where('is_approved', true)
             // Soft-deleted accounts (status='inactive' + deleted_at) must
             // never surface as "Deleted User" rows in search
             ->whereNull('deleted_at')
@@ -287,6 +308,7 @@ class UserService
 
         // Apply onboarding visibility gating
         OnboardingConfigService::applyVisibilityScope($query);
+        MemberProfileVisibility::applyToQuery($query, TenantContext::getId(), $viewerId);
 
         $items = $query->get();
 
@@ -1078,6 +1100,7 @@ class UserService
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->where('status', 'active')
+            ->where('is_approved', true)
             ->where(function ($q) {
                 $q->where('privacy_search', 1)->orWhereNull('privacy_search');
             })

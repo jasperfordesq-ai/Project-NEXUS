@@ -106,11 +106,40 @@ class MemberActivityControllerTest extends TestCase
     public function test_public_dashboard_returns_data(): void
     {
         $this->authenticatedUser();
-        $other = User::factory()->forTenant($this->testTenantId)->create();
+        $other = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
 
         $response = $this->apiGet("/v2/users/{$other->id}/activity/dashboard");
 
         $response->assertStatus(200);
+    }
+
+    public function test_public_dashboard_hides_pending_and_unapproved_profiles(): void
+    {
+        $member = $this->authenticatedUser();
+
+        foreach ([
+            ['status' => 'pending', 'is_approved' => false],
+            ['status' => 'active', 'is_approved' => false],
+        ] as $state) {
+            $other = User::factory()->forTenant($this->testTenantId)->create($state + [
+                'privacy_profile' => 'public',
+            ]);
+
+            $this->apiGet("/v2/users/{$other->id}/activity/dashboard")
+                ->assertStatus(404)
+                ->assertJsonPath('errors.0.code', 'PROFILE_PRIVATE');
+
+            $staff = User::factory()->forTenant($this->testTenantId)->create([
+                'role' => 'coordinator', 'status' => 'active', 'is_approved' => true,
+            ]);
+            Sanctum::actingAs($staff, ['*']);
+            $this->apiGet("/v2/users/{$other->id}/activity/dashboard")
+                ->assertStatus(200);
+            Sanctum::actingAs($member, ['*']);
+        }
     }
 
     // ------------------------------------------------------------------
