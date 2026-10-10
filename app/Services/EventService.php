@@ -48,6 +48,23 @@ class EventService
 {
     public const MAX_BULK_ATTENDANCE = 100;
 
+    /**
+     * Member-visible content that a moderator approved. When the community
+     * requires event moderation, a non-admin may not change these on a
+     * published event (F-590): the publication state machine has no
+     * Published -> PendingReview transition, and unpublishing would hide the
+     * event from people already registered, so the edit is refused instead.
+     */
+    private const MODERATED_CONTENT_FIELDS = [
+        'title',
+        'description',
+        'location',
+        'online_link',
+        'video_url',
+        'image_url',
+        'cover_image',
+    ];
+
     public const RECURRENCE_OVERRIDE_FIELD_ALLOWLIST = [
         'title',
         'description',
@@ -1204,6 +1221,8 @@ class EventService
 
         $coordinationRootId = max(0, (int) $event->getRawOriginal('parent_event_id')) ?: $id;
         $editBlockedByReview = false;
+        $contentChangeNeedsReview = false;
+        $contentReviewApplies = self::contentEditsRequireReview($tenantId, $userId);
         $recurrenceScopeBlocked = false;
         $authorizationBlocked = false;
         DB::transaction(function () use (
@@ -1219,7 +1238,9 @@ class EventService
             $federationVisibleFields,
             $accessibilityColumns,
             $recurrenceScopeAuthorized,
+            $contentReviewApplies,
             &$editBlockedByReview,
+            &$contentChangeNeedsReview,
             &$recurrenceScopeBlocked,
             &$authorizationBlocked,
         ): void {
@@ -1277,6 +1298,13 @@ class EventService
                 $original[$key] = $current->getAttribute($key);
             }
             $current->forceFill($rebased);
+            if ($contentReviewApplies
+                && self::isPublishedEvent($current)
+                && $current->isDirty(self::MODERATED_CONTENT_FIELDS)) {
+                $contentChangeNeedsReview = true;
+                $event = $current;
+                return;
+            }
             self::$lastCanonicalUpdateFields = array_values(array_intersect(
                 self::RECURRENCE_OVERRIDE_FIELD_ALLOWLIST,
                 array_keys($current->getDirty()),
@@ -1415,6 +1443,17 @@ class EventService
             self::$errors[] = [
                 'code' => 'EVENT_REVIEW_PENDING',
                 'message' => __('api.invalid_status'),
+            ];
+            TenantContext::setById($tenantId);
+            return false;
+        }
+
+        if ($contentChangeNeedsReview) {
+            self::$lastMeaningfulUpdateChanges = [];
+            self::$lastCanonicalUpdateFields = [];
+            self::$errors[] = [
+                'code' => 'EVENT_REVIEW_REQUIRED',
+                'message' => __('api.event_edit_forbidden'),
             ];
             TenantContext::setById($tenantId);
             return false;
@@ -3334,6 +3373,15 @@ class EventService
             return false;
         }
 
+        // Refuse before the upload is stored: a new cover on an approved event
+        // is a content change the moderator has not seen (F-590). The canonical
+        // writer enforces the same rule; this only avoids an orphan upload.
+        if (self::isPublishedEvent($event)
+            && self::contentEditsRequireReview((int) TenantContext::getId(), $userId)) {
+            self::$errors[] = ['code' => 'EVENT_REVIEW_REQUIRED', 'message' => __('api.event_edit_forbidden')];
+            return false;
+        }
+
         return true;
     }
 
@@ -4609,6 +4657,22 @@ class EventService
         )";
 
         return [$sql, $bindings];
+    }
+
+    /**
+     * True when the community requires event moderation and the actor is not
+     * one of its admins — the same bypass EventPublicationWorkflowService
+     * applies to publish/submit (F-590).
+     */
+    private static function contentEditsRequireReview(int $tenantId, int $userId): bool
+    {
+        $moderationRequired = (bool) app(EventConfigurationService::class)->value(
+            'moderation_required',
+            false,
+            $tenantId,
+        );
+
+        return $moderationRequired && ! self::isTenantAdmin($userId);
     }
 
     private static function isTenantAdmin(?int $userId): bool

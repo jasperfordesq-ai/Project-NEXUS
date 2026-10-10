@@ -963,6 +963,10 @@ class EventsController extends BaseApiController
                     $status = 403;
                     break;
                 }
+                if ($error['code'] === 'EVENT_REVIEW_REQUIRED') {
+                    $status = 409;
+                    break;
+                }
             }
             return $this->respondWithErrors($errors, $status);
         }
@@ -2218,6 +2222,10 @@ class EventsController extends BaseApiController
                     $status = 403;
                     break;
                 }
+                if ($error['code'] === 'EVENT_REVIEW_REQUIRED') {
+                    $status = 409;
+                    break;
+                }
             }
             return $this->respondWithErrors($errors, $status);
         }
@@ -2258,7 +2266,9 @@ class EventsController extends BaseApiController
                 ? 404
                 : (collect($errors)->contains(fn (array $error): bool => ($error['code'] ?? null) === 'FORBIDDEN')
                     ? 403
-                    : 422);
+                    : (collect($errors)->contains(fn (array $error): bool => ($error['code'] ?? null) === 'EVENT_REVIEW_REQUIRED')
+                        ? 409
+                        : 422));
             return $this->respondWithErrors($errors, $status);
         }
 
@@ -2293,6 +2303,10 @@ class EventsController extends BaseApiController
                     }
                     if ($error['code'] === 'FORBIDDEN') {
                         $status = 403;
+                        break;
+                    }
+                    if ($error['code'] === 'EVENT_REVIEW_REQUIRED') {
+                        $status = 409;
                         break;
                     }
                 }
