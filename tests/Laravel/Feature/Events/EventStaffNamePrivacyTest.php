@@ -86,6 +86,25 @@ final class EventStaffNamePrivacyTest extends TestCase
         self::assertSame('Surname', $member['last_name']);
     }
 
+    public function test_a_community_administrator_reading_the_team_list_sees_full_names(): void
+    {
+        $owner = $this->user(['first_name' => 'Owner']);
+        $admin = $this->user(['first_name' => 'Ada', 'role' => 'admin']);
+        $person = $this->user(['first_name' => 'Staff', 'last_name' => 'Surname']);
+        $eventId = $this->event((int) $owner->id);
+        Sanctum::actingAs($owner, ['*']);
+        $this->apiPost("/v2/events/{$eventId}/staff", [
+            'user_id' => (int) $person->id,
+            'role' => EventStaffRole::CheckInStaff->value,
+        ], ['Idempotency-Key' => 'f591-admin-api'])->assertCreated();
+
+        Sanctum::actingAs($admin, ['*']);
+        $rows = collect($this->apiGet("/v2/events/{$eventId}/staff")->assertOk()->json('data'));
+        $member = $rows->firstWhere('member.id', (int) $person->id)['member'];
+        self::assertSame('Staff Surname', $member['name']);
+        self::assertSame('Surname', $member['last_name']);
+    }
+
     /** @param array<string,mixed> $overrides */
     private function user(array $overrides = []): User
     {

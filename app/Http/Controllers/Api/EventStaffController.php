@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Enums\EventStaffRole;
 use App\Exceptions\EventRoleAssignmentException;
 use App\Http\Resources\EventStaffResource;
+use App\Support\Members\MemberProfileVisibility;
 use App\Models\EventStaffAssignment;
 use App\Models\User;
 use App\Services\EventRoleService;
@@ -50,9 +51,16 @@ final class EventStaffController extends BaseApiController
             return $this->roleError($exception);
         }
 
+        $viewerId = $this->requireUserId();
+        $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
+
         return $this->respondWithData(
             $assignments
-                ->map(static fn (EventStaffAssignment $assignment): array => EventStaffResource::fromModel($assignment))
+                ->map(static fn (EventStaffAssignment $assignment): array => EventStaffResource::fromModel(
+                    $assignment,
+                    $viewerId,
+                    $viewerIsAdmin,
+                ))
                 ->values()
                 ->all(),
             [
@@ -219,7 +227,11 @@ final class EventStaffController extends BaseApiController
     private function mutationResponse(array $result, ?string $idempotencyKey): array
     {
         return [
-            'assignment' => EventStaffResource::fromModel($result['assignment']),
+            'assignment' => EventStaffResource::fromModel(
+                $result['assignment'],
+                $this->requireUserId(),
+                MemberProfileVisibility::viewerIsAdmin($this->requireUserId()),
+            ),
             'changed' => $result['changed'],
             'idempotent_replay' => ! $result['changed']
                 && $idempotencyKey !== null
