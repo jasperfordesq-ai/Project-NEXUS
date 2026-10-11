@@ -78,10 +78,8 @@ final class EventConfigurationService
         // requireAuth(), so this resolves the actor's own row and there is no
         // IDOR risk in dropping the tenant predicate. Scoping this lookup to the
         // event's tenant refused every actor whose home tenant differs from the
-        // tenant they are acting in — platform and network admins, and anyone
-        // acting on a sub-tenant — even when `creation_role` was 'members' and
-        // the community allowed everyone. The miss returned false before the
-        // 'members' short-circuit was ever reached.
+        // tenant they are acting in — platform admins included — even when
+        // `creation_role` was 'members' and the community allowed everyone.
         $user = DB::table('users')
             ->where('id', $userId)
             ->where('status', 'active')
@@ -90,6 +88,20 @@ final class EventConfigurationService
         if ($user === null) {
             return false;
         }
+
+        // 🔴 Only the platform owner acts outside its home community (owner
+        // decision, 11 Oct 2026 — tenant super admins and tenant admins included).
+        // The lookup above is global so a platform owner is FOUND; this is where a
+        // non-member of this community is refused. It must sit before the
+        // 'members' short-circuit, which otherwise admitted any active account on
+        // the platform — including a parent community's tenant super admin once
+        // TenantAdminScope stopped granting it subtree authority. For a
+        // cross-community actor TenantAdminScope is true only at the platform tier.
+        if ((int) ($user->tenant_id ?? 0) !== $tenantId
+            && ! TenantAdminScope::allows($user, $tenantId)) {
+            return false;
+        }
+
         if ($role === 'members') {
             return true;
         }
@@ -99,9 +111,8 @@ final class EventConfigurationService
         // broker/coordinator carrying a stale admin flag, AND confines a plain
         // community admin to their own community. AdminTier alone would let a
         // different community's admin create events here whenever this community
-        // restricted creation to admins. Note the 'members' setting above still
-        // short-circuits to true for everyone by design — the tenant question
-        // only arises once creation is restricted. The 'staff' option is labelled
+        // restricted creation to admins. The 'members' setting above admits every
+        // member OF THIS COMMUNITY (and the platform owner). The 'staff' option is labelled
         // "Brokers and administrators", so broker is additive here and
         // coordinator stays out.
         $isAdmin = TenantAdminScope::allows($user, $tenantId);

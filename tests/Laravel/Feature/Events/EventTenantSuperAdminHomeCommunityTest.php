@@ -180,6 +180,21 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
         self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
     }
 
+    /**
+     * The default setting, "all active members", means members OF THIS
+     * community. It used to admit any active account on the platform, which was
+     * the second door for this actor once admin authority stopped reaching down.
+     */
+    public function test_a_parent_tenant_super_admin_cannot_create_events_in_a_sub_community_open_to_all_members(): void
+    {
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'members']);
+        $tsa = $this->parentTenantSuperAdmin();
+
+        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
+        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->member(self::SUB_COMMUNITY)->id));
+        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->platformOwner()->id));
+    }
+
     public function test_a_parent_tenant_super_admin_cannot_open_a_sub_community_event_team(): void
     {
         $tsa = $this->parentTenantSuperAdmin();

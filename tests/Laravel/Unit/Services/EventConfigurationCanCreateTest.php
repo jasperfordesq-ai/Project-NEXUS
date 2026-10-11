@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\EventConfigurationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
@@ -29,6 +30,11 @@ use Tests\Laravel\TestCase;
  * The rule this pins: auth is GLOBAL, resources are tenant-scoped. Never add
  * `AND tenant_id = ?` to a lookup of the acting user's own row.
  *
+ * 🔴 Owner decision, 11 October 2026: only the platform owner acts outside its
+ * home community. The actor LOOKUP stays global (so a platform owner is found),
+ * but an actor who is not a member of this community and not a platform owner is
+ * now refused under every creation setting, 'members' included.
+ *
  * These assert the service directly rather than POSTing /v2/events, because
  * Sanctum::actingAs() takes the guard branch of the Authenticate middleware,
  * whose own cross-tenant check would 403 first and mask the behaviour under
@@ -37,6 +43,7 @@ use Tests\Laravel\TestCase;
 final class EventConfigurationCanCreateTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesNetworkAdminHierarchy;
 
     private EventConfigurationService $service;
 
@@ -84,31 +91,82 @@ final class EventConfigurationCanCreateTest extends TestCase
         ], $overrides));
     }
 
-    public function test_open_policy_admits_an_actor_whose_home_tenant_differs(): void
+    /** "All active members" means this community's members. */
+    public function test_open_policy_admits_a_local_member(): void
+    {
+        $this->setCreationRole('members');
+        $actor = $this->localUser();
+
+        self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /**
+     * 🔴 Reversed 11 October 2026. This was
+     * test_open_policy_admits_an_actor_whose_home_tenant_differs and asserted TRUE.
+     *
+     * Owner decision, 11 October 2026: "I don't want tenant admins to act outside
+     * of the home community or tenant super admins, or normal tenant admins." Only
+     * the platform owner keeps cross-community reach. The 'members' setting used
+     * to short-circuit to true for ANY active account on the platform, which was
+     * the door through which every actor below — including a tenant super admin
+     * of the parent community — could still create events in a community that is
+     * not theirs after TenantAdminScope stopped granting subtree authority.
+     *
+     * Defence in depth: Authenticate already refuses a non-platform actor whose
+     * account row is on another community (403 tenant_mismatch), so no real
+     * request loses anything. The service must not depend on that.
+     */
+    public function test_open_policy_refuses_a_member_of_another_community(): void
     {
         $this->setCreationRole('members');
         $actor = $this->crossTenantUser();
 
-        self::assertTrue(
+        self::assertFalse(
             $this->service->canCreate(self::ACTING_TENANT, (int) $actor->id),
-            'An active member acting on another community must be admitted when the policy is "members".',
+            'A member of another community must not create events here, even when the policy is "members".',
         );
     }
 
     /**
-     * The exact production shape: role='admin', is_tenant_super_admin=1,
-     * is_super_admin=0, home tenant != the tenant being acted on.
+     * The exact production shape of 578817aff: role='admin',
+     * is_tenant_super_admin=1, is_super_admin=0, home tenant is the PARENT of the
+     * tenant being acted on. 🔴 Reversed 11 October 2026 (owner decision, see
+     * above); it was test_open_policy_admits_a_network_admin_acting_on_a_sub_tenant.
      */
-    public function test_open_policy_admits_a_network_admin_acting_on_a_sub_tenant(): void
+    public function test_open_policy_refuses_a_network_admin_acting_on_a_sub_tenant(): void
     {
         $this->setCreationRole('members');
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
         $actor = $this->crossTenantUser([
             'role' => 'admin',
             'is_super_admin' => 0,
             'is_tenant_super_admin' => 1,
         ]);
 
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /** The platform owner still creates anywhere, wherever their account row sits. */
+    public function test_open_policy_admits_a_platform_owner_from_elsewhere(): void
+    {
+        $this->setCreationRole('members');
+        $actor = $this->crossTenantUser(['role' => 'admin', 'is_super_admin' => 1]);
+
         self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /** Same refusal when creation is restricted to administrators. */
+    public function test_admins_only_policy_refuses_a_network_admin_acting_on_a_sub_tenant(): void
+    {
+        $this->setCreationRole('admins');
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+        $actor = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
     public function test_open_policy_still_refuses_a_suspended_actor(): void
@@ -183,8 +241,9 @@ final class EventConfigurationCanCreateTest extends TestCase
      * What the surrounding tests legitimately pin is unchanged and still passes:
      * the actor LOOKUP is global, so a cross-tenant actor is found rather than
      * missed before the 'members' short-circuit (that was the real bug), and
-     * platform and network admins still reach this tenant. Only "any admin, any
-     * community" is refused.
+     * platform admins still reach this tenant. Only "any admin, any community" is
+     * refused. (Network admins of a parent community stopped reaching it on
+     * 11 October 2026 — owner decision.)
      */
     public function test_admins_only_policy_refuses_a_plain_admin_of_another_community(): void
     {
