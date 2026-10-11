@@ -54,11 +54,16 @@ final class EventStaffNamePrivacyTest extends TestCase
         $personRow = $rows[(int) $person->id]['member'];
         self::assertSame('Staff', $personRow['name']);
         self::assertSame('Staff', $personRow['first_name']);
-        self::assertArrayNotHasKey('last_name', $personRow);
+        // The key stays, empty: the store mobile app parses this list with
+        // `last_name: z.string().nullable()` and treats a missing key as
+        // contract drift (mobile/lib/api/eventStaff.ts).
+        self::assertArrayHasKey('last_name', $personRow);
+        self::assertNull($personRow['last_name']);
 
         $orgRow = $rows[(int) $organisation->id]['member'];
         self::assertSame('Riverside Repair Collective', $orgRow['name']);
-        self::assertArrayNotHasKey('last_name', $orgRow);
+        self::assertArrayHasKey('last_name', $orgRow);
+        self::assertNull($orgRow['last_name']);
         self::assertNull($orgRow['first_name'], 'The contact person must not be exposed for an organisation.');
 
         $encoded = (string) json_encode($rows->all());

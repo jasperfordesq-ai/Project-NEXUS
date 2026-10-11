@@ -60,6 +60,9 @@ final class EventStaffResource
                 'organization_name' => $user?->organization_name,
             ]);
             unset($member['profile_type'], $member['organization_name']);
+            // Keep the key, empty: the store mobile app requires it
+            // (mobile/lib/api/eventStaff.ts, `last_name: z.string().nullable()`).
+            $member['last_name'] = null;
             $member['name'] = ($member['name'] ?? '') !== '' ? $member['name'] : null;
             if ($isOrganisation) {
                 // The contact person behind an organisation account is not

@@ -51,7 +51,7 @@ final class EventStaffControllerTest extends TestCase
             ->assertJsonPath('data.assignment.member.id', (int) $staff->id)
             // An ordinary organiser sees the team by first name (F-084/F-591).
             ->assertJsonPath('data.assignment.member.name', 'Staff')
-            ->assertJsonMissingPath('data.assignment.member.last_name')
+            ->assertJsonPath('data.assignment.member.last_name', null)
             ->assertJsonPath('data.assignment.role', EventStaffRole::CommunicationsManager->value)
             ->assertJsonPath('data.assignment.version', 1)
             ->assertJsonPath('data.assignment.history_metadata.immutable', true)
