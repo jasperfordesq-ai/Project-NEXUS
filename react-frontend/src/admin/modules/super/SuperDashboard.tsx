@@ -74,9 +74,10 @@ export function SuperDashboard() {
   }, [loadData]);
 
   /*
-   * `master` sees the whole installation; `regional` sees its own community and
-   * the communities beneath it, and nothing else — the API enforces that, so the
-   * page must not describe itself as platform-wide to them. Calling a branch view
+   * `master` (the platform owner) sees the whole installation; `regional` sees
+   * its OWN community and nothing else (owner decision, 11 Oct 2026 — it saw the
+   * communities beneath it until then). The API enforces that, so the page must
+   * not describe itself as platform-wide to them. Calling a one-community view
    * "platform-wide" is how somebody concludes they are seeing everyone's data.
    */
   const isPlatformLevel = superPanelLevel(user) === 'master';
@@ -84,15 +85,19 @@ export function SuperDashboard() {
   /*
    * 🔴 Federation Controls is TIER B — platform-only. Its endpoints
    * (`/admin/super/federation/*`) sit behind `EnsureIsSuperAdmin` and answer 403
-   * to the super-admin of a branch, verified by hand on 2026-08-05. Offering the
-   * card to a `regional` user is a control the API will refuse, which is the one
-   * thing this panel must never do. Every other action here is tier A and is
-   * subtree-scoped server-side, so it is safe for both levels.
+   * to a tenant super-admin, verified by hand on 2026-08-05. Offering the card to
+   * a `regional` user is a control the API will refuse, which is the one thing
+   * this panel must never do. Creating a community and the bulk operations act
+   * on OTHER communities, so since 11 Oct 2026 they are platform-only too.
    */
   const quickActions = [
-    { label: t('super.create_tenant'), href: tenantPath('/super-admin/tenants/create'), icon: Plus },
+    ...(isPlatformLevel
+      ? [{ label: t('super.create_tenant'), href: tenantPath('/super-admin/tenants/create'), icon: Plus }]
+      : []),
     { label: t('super.view_hierarchy'), href: tenantPath('/super-admin/tenants/hierarchy'), icon: Network },
-    { label: t('super.bulk_operations'), href: tenantPath('/super-admin/bulk'), icon: ListChecks },
+    ...(isPlatformLevel
+      ? [{ label: t('super.bulk_operations'), href: tenantPath('/super-admin/bulk'), icon: ListChecks }]
+      : []),
     { label: t('super.cross_tenant_users'), href: tenantPath('/super-admin/users'), icon: Users },
     { label: t('super.audit_log'), href: tenantPath('/super-admin/audit'), icon: Activity },
     ...(isPlatformLevel

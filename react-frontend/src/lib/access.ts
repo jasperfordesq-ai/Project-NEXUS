@@ -113,7 +113,15 @@ export function isGodUser(user: UserLike): boolean {
   return userRole(user) === 'god' || user?.is_god === true;
 }
 
-/** How far the super panel reaches for this user. Server-resolved. */
+/**
+ * How far the super panel reaches for this user. Server-resolved.
+ *
+ * 'master' is the platform owner only. 'regional' is a tenant super-admin and,
+ * since the owner's decision of 11 Oct 2026, means its OWN community only — no
+ * longer the communities beneath it. Controls that act on another community
+ * (create, move, (de)activate, hub switching, bulk operations, moving members)
+ * are offered at 'master' only.
+ */
 export type SuperPanelLevel = 'master' | 'regional' | 'none';
 
 /**

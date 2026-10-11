@@ -31,6 +31,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast, useAuth } from '@/contexts';
+import { superPanelLevel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -85,6 +86,14 @@ export function TenantShow() {
   const userRecord = user as { is_god?: boolean; role?: string; tenant_id?: number } | null;
   const isGod = userRecord?.is_god === true || userRecord?.role === 'god';
   const viewerTenantId = userRecord?.tenant_id ?? null;
+  /*
+   * Owner decision, 11 Oct 2026: only the platform owner acts across
+   * communities. Creating a sub-community, switching hub mode, moving a
+   * community and (de)activating one are all refused by the API for a tenant
+   * super-admin (canManageTenant / hasPlatformReach), so they are offered at the
+   * platform level only.
+   */
+  const isPlatformLevel = superPanelLevel(user) === 'master';
 
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<SuperAdminTenantDetail | null>(null);
@@ -859,7 +868,7 @@ export function TenantShow() {
               >
                 {t('super.edit_tenant')}
               </Button>
-              {tenant.allows_subtenants && (
+              {isPlatformLevel && tenant.allows_subtenants && (
                 <Button
                   variant="secondary"
                   fullWidth
@@ -880,7 +889,8 @@ export function TenantShow() {
             </CardBody>
           </Card>
 
-          {/* Hub Settings */}
+          {/* Hub Settings — platform owner only (see isPlatformLevel). */}
+          {isPlatformLevel && (
           <Card>
             <CardHeader className="pb-0">
               <div className="flex items-center gap-2">
@@ -913,9 +923,10 @@ export function TenantShow() {
               )}
             </CardBody>
           </Card>
+          )}
 
-          {/* Move Tenant */}
-          {tenant.id !== 1 && (
+          {/* Move Tenant — platform owner only (see isPlatformLevel). */}
+          {isPlatformLevel && tenant.id !== 1 && (
             <Card>
               <CardHeader className="pb-0">
                 <div className="flex items-center gap-2">
@@ -959,8 +970,12 @@ export function TenantShow() {
                   * it with a 403, and a button that can only produce a refusal is
                   * worse than no button. Reactivation is unaffected, since a
                   * community you are signed in to is by definition already active.
+                  *
+                  * Since 11 Oct 2026 canManageTenant() also refuses every
+                  * non-platform caller on ANY community, so a tenant super-admin
+                  * is never offered the button.
                   */}
-                {(isGod || tenant.id !== viewerTenantId) ? (
+                {(isGod || (isPlatformLevel && tenant.id !== viewerTenantId)) ? (
                   <>
                     <Button
                       variant={tenant.is_active ? 'danger-soft' : 'secondary'}
@@ -978,11 +993,11 @@ export function TenantShow() {
                       </p>
                     )}
                   </>
-                ) : (
+                ) : tenant.id === viewerTenantId ? (
                   <p className="text-xs text-muted" data-testid="own-tenant-deactivate-notice">
                     {t('super.cannot_deactivate_own_tenant')}
                   </p>
-                )}
+                ) : null}
 
                 {/* Permanent purge — god-only, and only once the tenant is deactivated. */}
                 {isGod && (

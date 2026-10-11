@@ -14,12 +14,15 @@ use App\Core\TenantContext;
  *
  * Gatekeeper for the Super Admin Panel (Infrastructure Management)
  *
- * ACCESS RULES:
- * - Master Tenant (id=1) + is_tenant_super_admin: GLOBAL access (sees all tenants)
- * - Regional Tenant (allows_subtenants=1) + is_tenant_super_admin: SUBTREE access (sees own + descendants)
- * - Standard Tenant (allows_subtenants=0): NO Super Panel access (uses Platform Admin only)
+ * ACCESS RULES (owner decision, 11 October 2026 — mirrors app/Core/SuperPanelAccess.php):
+ * - Platform owner (is_super_admin / is_god / role super_admin|god): GLOBAL access
+ * - Hub tenant (allows_subtenants=1) + is_tenant_super_admin, INCLUDING the master
+ *   tenant (id=1): its OWN community only (level `regional`, scope `own`)
+ * - Anyone else: NO Super Panel access (uses Platform Admin only)
  *
- * KEY CONCEPT: Same panel, different data based on user's tenant position in hierarchy.
+ * 🔴 A tenant super admin on the master tenant was GLOBAL, and a hub's tenant
+ * super admin reached its whole subtree, until 11 October 2026. The owner
+ * decided a tenant super admin does not act outside its home community.
  */
 class SuperPanelAccess
 {
@@ -122,9 +125,9 @@ class SuperPanelAccess
             return self::$currentAccess;
         }
 
-        // A tenant super-admin ON the master tenant is global by design.
-        $isMaster = ((int)$user['tenant_id'] === 1);
-        $hasGlobalAccess = $isPlatformSuperAdmin || $isMaster;
+        // 🔴 Cross-community reach is the platform owner's alone (11 Oct 2026).
+        // A tenant super-admin on the master tenant is NOT global any more.
+        $hasGlobalAccess = $isPlatformSuperAdmin;
 
         // RULE 2: a REGIONAL grant needs a tenant that may have children.
         if (!$hasGlobalAccess && !$user['allows_subtenants']) {
@@ -160,8 +163,8 @@ class SuperPanelAccess
             'tenant_name' => $user['tenant_name'],
             'tenant_path' => $user['tenant_path'],
             'tenant_depth' => (int)$user['tenant_depth'],
-            'scope' => $hasGlobalAccess ? 'global' : 'subtree',
-            'can_create_tenants' => $hasGlobalAccess || (bool)$user['allows_subtenants'],
+            'scope' => $hasGlobalAccess ? 'global' : 'own',
+            'can_create_tenants' => $hasGlobalAccess,
             'max_depth' => (int)$user['max_depth'],
             'reason' => 'Access granted'
         ];
@@ -185,33 +188,8 @@ class SuperPanelAccess
             return true;
         }
 
-        // Own tenant is always accessible
-        if ($targetTenantId === $access['tenant_id']) {
-            return true;
-        }
-
-        // Regional: check if target is in their subtree
-        $rows = DB::select(
-            "SELECT path FROM tenants WHERE id = ?",
-            [$targetTenantId]
-        );
-        $target = !empty($rows) ? (array) $rows[0] : null;
-
-        if (!$target) {
-            return false;
-        }
-
-        // Target's path must START WITH user's tenant path
-        // e.g., user path /2/, target path /2/5/ = YES
-        // e.g., user path /2/, target path /3/ = NO
-        // 🔴 Fail closed on an empty prefix: str_starts_with($x, '') is TRUE, so
-        // without this an empty tenant_path would admit every tenant.
-        $prefix = trim((string) ($access['tenant_path'] ?? ''));
-        if ($prefix === '') {
-            return false;
-        }
-
-        return str_starts_with((string) $target['path'], $prefix);
+        // Everyone else: their own community only — no subtree (11 Oct 2026).
+        return !empty($access['tenant_id']) && $targetTenantId === (int) $access['tenant_id'];
     }
 
     /**
@@ -242,8 +220,8 @@ class SuperPanelAccess
             return true;
         }
 
-        // Regional: can only manage descendants
-        return self::canAccessTenant($targetTenantId);
+        // Not the platform owner: nothing to manage (own tenant refused above).
+        return false;
     }
 
     /**
@@ -255,6 +233,11 @@ class SuperPanelAccess
 
         if (!$access['granted']) {
             return ['allowed' => false, 'reason' => 'No Super Admin access'];
+        }
+
+        // A new community is another community: platform owner only (11 Oct 2026).
+        if ($access['level'] !== 'master') {
+            return ['allowed' => false, 'reason' => 'Only the platform owner can create communities'];
         }
 
         // First, can they even see this parent tenant?
@@ -320,10 +303,10 @@ class SuperPanelAccess
             ];
         }
 
-        // Regional: restrict to subtree using path LIKE.
-        // 🔴 An empty prefix yields `LIKE '%'` — every row. Deny instead.
-        $prefix = trim((string) ($access['tenant_path'] ?? ''));
-        if ($prefix === '') {
+        // Not the platform owner: own community only (was a `path LIKE` subtree
+        // until 11 Oct 2026).
+        $ownTenantId = (int) ($access['tenant_id'] ?? 0);
+        if ($ownTenantId <= 0) {
             return [
                 'sql' => "1 = 0",
                 'params' => []
@@ -331,8 +314,8 @@ class SuperPanelAccess
         }
 
         return [
-            'sql' => "{$tableAlias}.path LIKE ?",
-            'params' => [$prefix . '%']
+            'sql' => "{$tableAlias}.id = ?",
+            'params' => [$ownTenantId]
         ];
     }
 

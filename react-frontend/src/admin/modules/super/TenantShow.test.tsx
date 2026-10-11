@@ -457,7 +457,14 @@ describe('TenantShow', () => {
       expect(screen.getByTestId('own-tenant-deactivate-notice')).toBeInTheDocument();
     });
 
-    it('offers it to a branch super-admin viewing a community beneath them', async () => {
+    /*
+     * Owner decision, 11 Oct 2026: a tenant super-admin does not act outside its
+     * home community. This test was "offers it to a branch super-admin viewing a
+     * community beneath them" and expected the button; the server now refuses
+     * that (canManageTenant is platform-owner only), so the panel must not offer
+     * it — nor the other cross-community controls.
+     */
+    it('withholds it, and every cross-community control, from a tenant super-admin on another community', async () => {
       mockUser.current = { id: 9, tenant_id: 8, is_tenant_super_admin: true, super_panel_level: 'regional' };
       const { TenantShow } = await import('./TenantShow');
       render(<TenantShow />);
@@ -466,8 +473,40 @@ describe('TenantShow', () => {
         expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
       });
 
-      expect(findDeactivate()).toBeDefined();
+      expect(findDeactivate()).toBeUndefined();
       expect(screen.queryByTestId('own-tenant-deactivate-notice')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Create Sub Tenant/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Move to Different Parent/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('switch', { name: 'Toggle Hub Capability' })).not.toBeInTheDocument();
+    });
+
+    it('withholds the cross-community controls from a tenant super-admin on its own community', async () => {
+      mockUser.current = { id: 9, tenant_id: 5, is_tenant_super_admin: true, super_panel_level: 'regional' };
+      const { TenantShow } = await import('./TenantShow');
+      render(<TenantShow />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
+      });
+
+      expect(screen.queryByRole('button', { name: /Create Sub Tenant/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Move to Different Parent/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('switch', { name: 'Toggle Hub Capability' })).not.toBeInTheDocument();
+      // Editing its own community's details is still offered.
+      expect(screen.getAllByRole('button').some((b) => b.textContent?.includes('Edit'))).toBe(true);
+    });
+
+    it('still offers the platform owner every control on another community', async () => {
+      const { TenantShow } = await import('./TenantShow');
+      render(<TenantShow />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
+      });
+
+      expect(findDeactivate()).toBeDefined();
+      expect(screen.getByRole('button', { name: /Move to Different Parent/ })).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'Toggle Hub Capability' })).toBeInTheDocument();
     });
 
     it('still offers it to god on their own community, matching the server carve-out', async () => {

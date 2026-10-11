@@ -112,22 +112,37 @@ final class RegionalSuperAdminSubtreeControlTest extends TestCase
         $response->assertDontSee('e065d-sibling');
     }
 
-    /** CONTROL — the same call against its own descendant succeeds. */
-    public function test_regional_super_admin_can_read_its_own_descendant(): void
+    /**
+     * CONTROL — the same call against its OWN community succeeds.
+     *
+     * Was test_regional_super_admin_can_read_its_own_descendant (200 on the
+     * child). Owner decision, 11 Oct 2026: a tenant super admin does not act
+     * outside its home community, so the descendant is now refused too and the
+     * control is the hub itself.
+     */
+    public function test_regional_super_admin_reads_its_own_community_but_not_its_descendant(): void
     {
         Sanctum::actingAs(User::find($this->attackerId));
 
         $response = $this->getJson(
-            '/api/v2/admin/super/tenants/' . $this->childId,
+            '/api/v2/admin/super/tenants/' . $this->hubId,
             $this->withTenantHeader()
         );
 
         $this->assertSame(
             200,
             $response->getStatusCode(),
-            'CONTROL: the legitimate descendant read must succeed, or the attack case proves nothing.'
+            'CONTROL: the legitimate own-community read must succeed, or the attack case proves nothing.'
         );
-        $response->assertSee('e065d-child');
+        $response->assertSee('e065d-hub');
+
+        SuperPanelAccess::reset();
+        $descendant = $this->getJson(
+            '/api/v2/admin/super/tenants/' . $this->childId,
+            $this->withTenantHeader()
+        );
+        $this->assertNotSame(200, $descendant->getStatusCode(), 'A descendant is another community.');
+        $descendant->assertDontSee('e065d-child');
     }
 
     /** ATTACK — pull a member out of a sibling community (source end). */
@@ -168,10 +183,32 @@ final class RegionalSuperAdminSubtreeControlTest extends TestCase
         );
     }
 
-    /** CONTROL — a move wholly inside the subtree is allowed. */
-    public function test_regional_super_admin_can_move_inside_its_own_subtree(): void
+    /**
+     * Was "CONTROL — a move wholly inside the subtree is allowed". Owner
+     * decision, 11 Oct 2026: moving a member between communities is the platform
+     * owner's alone, so the regional admin is refused here too, and the control
+     * that proves the refusals above are not a broken endpoint is the platform
+     * owner making the same move.
+     */
+    public function test_only_the_platform_owner_moves_a_member_inside_the_subtree(): void
     {
         Sanctum::actingAs(User::find($this->attackerId));
+
+        $refused = $this->postJson(
+            '/api/v2/admin/super/users/' . $this->memberInChildId . '/move-tenant',
+            ['new_tenant_id' => $this->hubId],
+            $this->withTenantHeader()
+        );
+        $this->assertSame(403, $refused->getStatusCode());
+        $this->assertSame(
+            $this->childId,
+            (int) DB::table('users')->where('id', $this->memberInChildId)->value('tenant_id')
+        );
+
+        $ownerId = $this->makeUser($this->hubId, 'e065d.platform.owner');
+        DB::table('users')->where('id', $ownerId)->update(['is_super_admin' => 1, 'role' => 'admin']);
+        SuperPanelAccess::reset();
+        Sanctum::actingAs(User::find($ownerId));
 
         $response = $this->postJson(
             '/api/v2/admin/super/users/' . $this->memberInChildId . '/move-tenant',
@@ -182,7 +219,7 @@ final class RegionalSuperAdminSubtreeControlTest extends TestCase
         $this->assertSame(
             200,
             $response->getStatusCode(),
-            'CONTROL: an in-subtree move must succeed (body: ' . $response->getContent() . ')'
+            'CONTROL: the platform owner\'s move must succeed (body: ' . $response->getContent() . ')'
         );
         $this->assertSame(
             $this->hubId,

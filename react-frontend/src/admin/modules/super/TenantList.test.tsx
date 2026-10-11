@@ -8,7 +8,7 @@ import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Hoisted mocks (must be defined before vi.mock factories) ─────────────────
-const { mockAdminSuper, mockToast } = vi.hoisted(() => ({
+const { mockAdminSuper, mockToast, mockUser } = vi.hoisted(() => ({
   mockAdminSuper: {
     listTenants: vi.fn(),
     deleteTenant: vi.fn(),
@@ -17,6 +17,9 @@ const { mockAdminSuper, mockToast } = vi.hoisted(() => ({
     toggleHub: vi.fn(),
   },
   mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+  // The panel's viewer. Defaults to the platform owner in beforeEach; the
+  // create / hub / (de)activate controls are platform-only since 11 Oct 2026.
+  mockUser: { current: null as Record<string, unknown> | null },
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -32,6 +35,7 @@ vi.mock('@/lib/api', () => {
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({ user: mockUser.current as never, isAuthenticated: mockUser.current !== null }),
   })
 );
 
@@ -67,6 +71,7 @@ import { TenantList } from './TenantList';
 describe('TenantList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUser.current = { id: 1, is_super_admin: true, super_panel_level: 'master' };
     mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [] });
   });
 
@@ -182,6 +187,34 @@ describe('TenantList', () => {
       expect(screen.getAllByText(/deactivate/i).length).toBeGreaterThan(0);
     });
     expect(screen.queryByText(/^delete$/i)).toBeNull();
+  });
+
+  /*
+   * Owner decision, 11 Oct 2026: a tenant super-admin does not act outside its
+   * home community. The API refuses it every create, hub and (de)activate action
+   * (canManageTenant / hasPlatformReach), so the list must not offer them.
+   */
+  it('offers a tenant super-admin no create, hub or deactivate controls', async () => {
+    mockUser.current = { id: 9, is_tenant_super_admin: true, super_panel_level: 'regional' };
+    mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [TENANT_A] });
+
+    render(<TenantList />);
+    await waitFor(() => expect(screen.getByText('Alpha Timebank')).toBeInTheDocument());
+
+    expect(screen.queryByRole('button', { name: /create tenant/i })).toBeNull();
+
+    const menuBtn = screen.getAllByRole('button').find(
+      (b) => b.getAttribute('aria-label')?.toLowerCase().includes('actions')
+    );
+    expect(menuBtn).toBeTruthy();
+    fireEvent.click(menuBtn!);
+
+    // Wait for the menu to open (View is always offered), then check the rest.
+    await waitFor(() => {
+      expect(screen.getAllByText(/^view$/i).length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText(/deactivate/i)).toBeNull();
+    expect(screen.queryByText(/^(enable|disable) hub$/i)).toBeNull();
   });
 });
 

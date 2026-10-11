@@ -28,9 +28,13 @@ final class SuperPanelMoveDestinationConcurrencyTest extends TestCase
         $admin = User::factory()->forTenant($hubId)->admin()->create([
             'status' => 'active', 'is_approved' => true,
         ]);
+        // A platform super admin. Until 11 Oct 2026 this was the hub's tenant
+        // super admin, but moving members between communities is now the platform
+        // owner's alone, so that persona is refused before the race this test
+        // exists for. The destination re-check is identical for both.
         DB::table('users')->where('id', $admin->id)->update([
-            'is_tenant_super_admin' => 1,
-            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 0,
+            'is_super_admin' => 1,
             'is_god' => 0,
         ]);
         $admin->refresh();

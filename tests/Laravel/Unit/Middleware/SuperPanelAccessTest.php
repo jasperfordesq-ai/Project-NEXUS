@@ -117,7 +117,12 @@ class SuperPanelAccessTest extends TestCase
         $this->assertEquals('Not a Super Admin for any tenant', $access['reason']);
     }
 
-    public function test_getAccess_grants_master_tenant_super_admin(): void
+    /**
+     * Owner decision, 11 Oct 2026: a tenant super admin on the master tenant is
+     * NOT master any more — it reaches its own community only. This test was
+     * test_getAccess_grants_master_tenant_super_admin and asserted master/global.
+     */
+    public function test_getAccess_confines_a_master_tenant_super_admin_to_its_own_community(): void
     {
         $this->createMasterTenant();
 
@@ -139,9 +144,11 @@ class SuperPanelAccessTest extends TestCase
         $access = SuperPanelAccess::getAccess($userId);
 
         $this->assertTrue($access['granted']);
-        $this->assertEquals('master', $access['level']);
-        $this->assertEquals('global', $access['scope']);
-        $this->assertTrue($access['can_create_tenants']);
+        $this->assertEquals('regional', $access['level']);
+        $this->assertEquals('own', $access['scope']);
+        $this->assertFalse($access['can_create_tenants']);
+        $this->assertTrue(SuperPanelAccess::canAccessTenant(1));
+        $this->assertFalse(SuperPanelAccess::canAccessTenant(999));
     }
 
     public function test_getAccess_grants_regional_tenant_super_admin(): void
@@ -168,7 +175,8 @@ class SuperPanelAccessTest extends TestCase
 
         $this->assertTrue($access['granted']);
         $this->assertEquals('regional', $access['level']);
-        $this->assertEquals('subtree', $access['scope']);
+        // 'own' since 11 Oct 2026 (was 'subtree'): its own community only.
+        $this->assertEquals('own', $access['scope']);
     }
 
     public function test_getAccess_denies_super_admin_on_standard_tenant(): void
@@ -274,6 +282,8 @@ class SuperPanelAccessTest extends TestCase
     {
         $this->createMasterTenant();
 
+        // A platform super admin: since 11 Oct 2026 the only master-level caller
+        // (a tenant super admin on tenant 1 was master until then).
         $userId = DB::table('users')->insertGetId([
             'tenant_id' => 1,
             'first_name' => 'Master',
@@ -281,7 +291,7 @@ class SuperPanelAccessTest extends TestCase
             'email' => 'master-scope@test.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'is_tenant_super_admin' => true,
+            'is_super_admin' => true,
             'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
@@ -296,7 +306,11 @@ class SuperPanelAccessTest extends TestCase
         $this->assertEmpty($clause['params']);
     }
 
-    public function test_getScopeClause_returns_path_filter_for_regional(): void
+    /**
+     * Was test_getScopeClause_returns_path_filter_for_regional (`t.path LIKE
+     * '/1/10/%'`, its whole subtree). Since 11 Oct 2026: its own community only.
+     */
+    public function test_getScopeClause_returns_own_tenant_filter_for_regional(): void
     {
         $this->createMasterTenant();
         $this->createRegionalTenant();
@@ -319,8 +333,8 @@ class SuperPanelAccessTest extends TestCase
 
         $clause = SuperPanelAccess::getScopeClause('t');
 
-        $this->assertEquals('t.path LIKE ?', $clause['sql']);
-        $this->assertEquals(['/1/10/%'], $clause['params']);
+        $this->assertEquals('t.id = ?', $clause['sql']);
+        $this->assertEquals([10], $clause['params']);
     }
 
     public function test_canAccessTenant_master_sees_all(): void
@@ -334,7 +348,8 @@ class SuperPanelAccessTest extends TestCase
             'email' => 'master-access@test.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
-            'is_tenant_super_admin' => true,
+            // Platform super admin — the only master since 11 Oct 2026.
+            'is_super_admin' => true,
             'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),

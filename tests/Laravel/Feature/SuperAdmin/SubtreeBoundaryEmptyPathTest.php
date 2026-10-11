@@ -151,27 +151,31 @@ class SubtreeBoundaryEmptyPathTest extends TestCase
 
         $this->assertTrue($filter['deny'], 'An unusable path must deny, not fall through to no filter.');
         $this->assertFalse($filter['filter']);
-        $this->assertNull($filter['prefix']);
+        $this->assertNull($filter['tenant_id']);
     }
 
-    public function test_a_hub_tenant_with_a_real_path_still_gets_its_own_subtree(): void
+    public function test_a_hub_tenant_with_a_real_path_gets_its_own_community_only(): void
     {
-        // The fix must not break the legitimate case.
+        // The fix must not break the legitimate case. Since the owner's decision
+        // of 11 Oct 2026 that case is the caller's OWN community, not a subtree:
+        // the filter is the tenant id, and no `path LIKE prefix%` is built. (This
+        // test was ..._still_gets_its_own_subtree and asserted the prefix.)
         $user = $this->hubWithPath('/9001/');
         SuperPanelAccess::reset();
 
         $access = SuperPanelAccess::getAccess((int) $user->id);
         $this->assertTrue($access['granted']);
         $this->assertSame('regional', $access['level']);
+        $this->assertSame('own', $access['scope']);
 
         $filter = SuperPanelAccess::subtreeFilter((int) $user->id);
         $this->assertFalse($filter['deny']);
         $this->assertTrue($filter['filter']);
-        $this->assertSame('/9001/', $filter['prefix']);
+        $this->assertSame((int) $user->tenant_id, $filter['tenant_id']);
 
         $clause = SuperPanelAccess::getScopeClause('tenants');
-        $this->assertStringContainsString('path LIKE ?', $clause['sql']);
-        $this->assertSame(['/9001/%'], $clause['params']);
+        $this->assertSame('tenants.id = ?', $clause['sql']);
+        $this->assertSame([(int) $user->tenant_id], $clause['params']);
     }
 
     public function test_a_regional_admin_cannot_reach_a_sibling_branch(): void
@@ -200,8 +204,11 @@ class SubtreeBoundaryEmptyPathTest extends TestCase
         SuperPanelAccess::reset();
         SuperPanelAccess::getAccess((int) $user->id);
 
-        $this->assertTrue(SuperPanelAccess::canAccessTenant($childId), 'Own descendant must be reachable.');
+        // Owner decision, 11 Oct 2026: a descendant is another community, so it is
+        // refused too (this asserted it was reachable until then).
+        $this->assertFalse(SuperPanelAccess::canAccessTenant($childId), 'A descendant community must not be reachable.');
         $this->assertFalse(SuperPanelAccess::canAccessTenant($siblingId), 'A sibling branch must not be reachable.');
+        $this->assertTrue(SuperPanelAccess::canAccessTenant((int) $user->tenant_id), 'Its own community stays reachable.');
     }
 
     /**

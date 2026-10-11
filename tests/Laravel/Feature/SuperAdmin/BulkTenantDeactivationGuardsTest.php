@@ -77,7 +77,10 @@ final class BulkTenantDeactivationGuardsTest extends TestCase
 
     public function test_bulk_deactivation_refuses_a_parent_with_active_children(): void
     {
-        $this->actAsRegional();
+        // A platform owner since 11 Oct 2026: a regional caller can no longer
+        // manage the child at all, so it would be refused before the
+        // active-children guard this test exists for ever ran.
+        $this->actAsPlatformOwner();
 
         $response = $this->bulkDeactivate([$this->childId]);
 
@@ -88,13 +91,35 @@ final class BulkTenantDeactivationGuardsTest extends TestCase
 
     public function test_bulk_deactivation_still_deactivates_a_managed_leaf_tenant(): void
     {
+        // Owner decision, 11 Oct 2026: a tenant super admin does not act outside
+        // its home community, so the regional caller is now refused here (it
+        // deactivated the leaf until then) and only the platform owner succeeds.
         $this->actAsRegional();
+        $refused = $this->bulkDeactivate([$this->grandchildId]);
+        $refused->assertStatus(200);
+        $this->assertSame(0, (int) $refused->json('data.updated_count'));
+        $this->assertSame(1, $this->isActive($this->grandchildId));
 
+        $this->actAsPlatformOwner();
         $response = $this->bulkDeactivate([$this->grandchildId]);
 
         $response->assertStatus(200);
         $this->assertSame(1, (int) $response->json('data.updated_count'));
         $this->assertSame(0, $this->isActive($this->grandchildId));
+    }
+
+    private function actAsPlatformOwner(): void
+    {
+        $owner = User::factory()->forTenant($this->hubId)->admin()->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $owner->id)->update(['is_super_admin' => 1]);
+        $owner->refresh();
+
+        SuperPanelAccess::reset();
+        $this->withTenant($this->hubId);
+        Sanctum::actingAs($owner);
     }
 
     private function bulkDeactivate(array $tenantIds): \Illuminate\Testing\TestResponse

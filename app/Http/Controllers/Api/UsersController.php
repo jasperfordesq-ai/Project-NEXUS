@@ -73,8 +73,10 @@ class UsersController extends BaseApiController
          * SuperPanelAccess refuses outright. A sidebar that guessed from flags
          * alone would offer a link that 403s, which is worse than no link.
          *
-         * 'master'   — whole installation
-         * 'regional' — own tenant plus descendants only
+         * 'master'   — whole installation (the platform owner only)
+         * 'regional' — own community ONLY (since 11 Oct 2026; it was own tenant
+         *              plus descendants — the owner decided a tenant super admin
+         *              does not act outside its home community)
          * 'none'     — no super panel; hide the entry entirely
          */
         try {

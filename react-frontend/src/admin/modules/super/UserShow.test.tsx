@@ -446,4 +446,36 @@ describe('UserShow', () => {
       expect(findImpersonate()).toBeUndefined();
     });
   });
+
+  /*
+   * Owner decision, 11 Oct 2026: only the platform owner moves members between
+   * communities. The API refuses a tenant super-admin (hasPlatformReach), so the
+   * panel must not offer it the move controls.
+   */
+  describe('moving a member between communities is offered to the platform owner only', () => {
+    const findButton = (label: string) =>
+      screen.queryAllByRole('button').find((b) => b.textContent?.includes(label));
+
+    it('is withheld from a tenant super-admin', async () => {
+      mockViewer.current = {
+        id: 9, name: 'Rhona Regional', role: 'admin',
+        is_tenant_super_admin: true, super_panel_level: 'regional',
+      };
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findButton('Move to Different Tenant')).toBeUndefined();
+      expect(findButton('Move and Promote to Hub')).toBeUndefined();
+    });
+
+    it('is offered to the platform owner', async () => {
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findButton('Move to Different Tenant')).toBeDefined();
+      expect(findButton('Move and Promote to Hub')).toBeDefined();
+    });
+  });
 });

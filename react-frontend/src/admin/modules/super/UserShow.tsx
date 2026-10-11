@@ -22,7 +22,7 @@ import UserCog from 'lucide-react/icons/user-cog';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
-import { canAccessSuperPanel } from '@/lib/access';
+import { canAccessSuperPanel, superPanelLevel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -109,6 +109,10 @@ export function UserShow() {
     !targetIsPlatformAdmin &&
     user.id !== currentUser?.id &&
     user.status === 'active';
+
+  // Owner decision, 11 Oct 2026: only the platform owner moves members between
+  // communities. The server refuses everyone else (hasPlatformReach()).
+  const canMoveBetweenCommunities = superPanelLevel(currentUser) === 'master';
 
   // Confirm modal state
   const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(null);
@@ -435,23 +439,30 @@ export function UserShow() {
                   <p className="text-sm text-foreground">{user.tenant_id}</p>
                 </div>
               </div>
-              <Separator />
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="secondary"
-                  startContent={<ArrowRightLeft aria-hidden="true" size={16} />}
-                  onPress={() => setMoveModalOpen(true)}
-                >
-                  {t('super.move_to_different_tenant')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  startContent={<Crown aria-hidden="true" size={16} />}
-                  onPress={() => setPromoteModalOpen(true)}
-                >
-                  {t('super.move_and_promote_to_hub')}
-                </Button>
-              </div>
+              {/* Moving a member between communities is the platform owner's
+                  alone (owner decision, 11 Oct 2026); the API refuses a tenant
+                  super-admin, so the controls are not offered to one. */}
+              {canMoveBetweenCommunities && (
+                <>
+                  <Separator />
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="secondary"
+                      startContent={<ArrowRightLeft aria-hidden="true" size={16} />}
+                      onPress={() => setMoveModalOpen(true)}
+                    >
+                      {t('super.move_to_different_tenant')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      startContent={<Crown aria-hidden="true" size={16} />}
+                      onPress={() => setPromoteModalOpen(true)}
+                    >
+                      {t('super.move_and_promote_to_hub')}
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardBody>
           </Card>
         </div>

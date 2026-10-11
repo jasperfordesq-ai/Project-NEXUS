@@ -99,6 +99,14 @@ describe('SuperAdminSidebar', () => {
       expect(screen.queryByRole('link', { name: 'Provisioning Queue' })).toBeNull();
       expect(screen.queryByRole('link', { name: 'Pilot Inquiries' })).toBeNull();
     });
+
+    it('is not shown bulk operations', () => {
+      // Owner decision, 11 Oct 2026: bulk moves and bulk tenant updates act on
+      // other communities, which only the platform owner may do.
+      renderAsRegional();
+
+      expect(screen.queryByRole('link', { name: 'Bulk Ops' })).toBeNull();
+    });
   });
 
   it('keeps every section for an explicit platform-level caller', () => {
@@ -120,6 +128,7 @@ describe('SuperAdminSidebar', () => {
     // regional cases below pass vacuously.
     expect(screen.getByText('Federation')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Whitelist' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Bulk Ops' })).toBeInTheDocument();
   });
 
   // The backwards-compatibility fallback for a payload predating

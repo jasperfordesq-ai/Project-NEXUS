@@ -260,7 +260,13 @@ class AdminSuperController extends BaseApiController
 
         SuperPanelAccess::reset();
         $freshAccess = SuperPanelAccess::getAccess($actorId);
-        if (empty($freshAccess['granted']) || !SuperPanelAccess::canAccessTenant($destinationTenantId)) {
+        // Moving a member between communities is the platform owner's alone
+        // (owner decision, 11 Oct 2026) — re-checked here against fresh rows.
+        if (
+            empty($freshAccess['granted'])
+            || !SuperPanelAccess::hasPlatformReach()
+            || !SuperPanelAccess::canAccessTenant($destinationTenantId)
+        ) {
             return ['error' => 'destination_access_denied'];
         }
         if (empty($destination->is_active)) {
@@ -509,19 +515,17 @@ class AdminSuperController extends BaseApiController
 
         $input = $this->getAllInput();
 
+        // Creating a community creates ANOTHER community, so it is the platform
+        // owner's alone (owner decision, 11 Oct 2026). A tenant super admin of a
+        // hub could create sub-communities under its own community until then.
+        if (!SuperPanelAccess::hasPlatformReach()) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_parent_tenant'), null, 403);
+        }
+
         $parentId = (int) ($input['parent_id'] ?? 0);
         if (!$parentId) {
-            // Default to Master tenant (ID 1) for god/master-level admins
-            $access = SuperPanelAccess::getAccess();
-            if ($access['level'] === 'master') {
-                $parentId = 1;
-            } else {
-                // Regional admins must specify their own tenant as parent
-                $parentId = $access['tenant_id'] ?? 0;
-            }
-            if (!$parentId) {
-                return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.parent_id_required'), 'parent_id', 422);
-            }
+            // Default to the master tenant (ID 1) — only the platform owner gets here.
+            $parentId = 1;
         }
 
         // Verify access to parent tenant regardless of source
@@ -785,7 +789,11 @@ class AdminSuperController extends BaseApiController
      *
      * Deactivating the community you are operating from locks you and everyone
      * in it out of the platform, so "not your own root" is a real guard and not
-     * a formality. The service adds the rest: the master tenant can never be
+     * a formality.
+     *
+     * 🔴 Superseded in part, 11 Oct 2026 (owner: a tenant super admin does not
+     * act outside its home community): canManageTenant() now refuses every
+     * non-platform caller, so only the platform owner deactivates a community. The service adds the rest: the master tenant can never be
      * deactivated, and neither can a tenant that still has ACTIVE children —
      * they must be deactivated or moved first, so a whole network cannot be
      * taken down by one call.
@@ -976,7 +984,10 @@ class AdminSuperController extends BaseApiController
     {
         $this->requireSuperAdmin();
 
-        if (!SuperPanelAccess::canAccessTenant($id)) {
+        // Re-parenting a community restructures more than one community: the
+        // platform owner's alone (owner decision, 11 Oct 2026). Both ends are
+        // still checked below.
+        if (!SuperPanelAccess::hasPlatformReach() || !SuperPanelAccess::canAccessTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
         }
 
@@ -1586,8 +1597,9 @@ class AdminSuperController extends BaseApiController
      * The tenant-scoped /v2/admin/users/{id}/impersonate endpoint refuses any
      * target outside the current tenant, which made it useless from a panel
      * whose whole purpose is browsing other communities. Access here is bounded
-     * by SuperPanelAccess instead: a regional (hub) super admin stays inside its
-     * own subtree, master level sees everything.
+     * by SuperPanelAccess instead: a tenant super admin stays inside its own
+     * community (since 11 Oct 2026 — it reached its whole subtree before), and
+     * only the platform owner (master level) reaches other communities.
      */
     public function userImpersonate(int $id): JsonResponse
     {
@@ -1682,6 +1694,12 @@ class AdminSuperController extends BaseApiController
     public function userMoveTenant(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
+
+        // Moving a member between communities is the platform owner's alone
+        // (owner decision, 11 Oct 2026). Both ends are still checked below.
+        if (!SuperPanelAccess::hasPlatformReach()) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_destination'), null, 403);
+        }
 
         // Super-admin: cross-tenant by design — tenant scope enforced via SuperPanelAccess::canAccessTenant() below (both source and destination tenants)
         $user = User::findById($id, false);
@@ -1787,11 +1805,11 @@ class AdminSuperController extends BaseApiController
      * `/api/v2/super-admin/users/{id}/move-promote`, which does not exist — see
      * routes/api.php for the registered path.)
      *
-     * Scoping: SuperPanelAccess::canAccessTenant() is checked on BOTH the source
-     * and the destination tenant, so a `regional`-level super admin (a hub
-     * tenant's own super admin) can only move users within their own subtree.
-     * Only `master` level (god, or the master tenant's super admin) is
-     * unrestricted. Preserve that both-ends check in any change here.
+     * Scoping: platform owner only (owner decision, 11 Oct 2026 — a hub tenant's
+     * super admin could move users within its own subtree until then, and the
+     * master tenant's tenant super admin anywhere). SuperPanelAccess::
+     * canAccessTenant() is still checked on BOTH the source and the destination
+     * tenant. Preserve that both-ends check in any change here.
      *
      * 🔴 See User::moveTenant(): the move updates users.tenant_id ONLY. The
      * member's transactions, listings, messages and group memberships keep the
@@ -1804,6 +1822,12 @@ class AdminSuperController extends BaseApiController
     public function userMoveAndPromote(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
+
+        // Moving a member between communities is the platform owner's alone
+        // (owner decision, 11 Oct 2026). Both ends are still checked below.
+        if (!SuperPanelAccess::hasPlatformReach()) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_target'), null, 403);
+        }
 
         $user = User::findById($id, false);
 
@@ -1905,6 +1929,12 @@ class AdminSuperController extends BaseApiController
     public function bulkMoveUsers(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
+
+        // Moving members between communities is the platform owner's alone
+        // (owner decision, 11 Oct 2026). Both ends are still checked per user.
+        if (!SuperPanelAccess::hasPlatformReach()) {
+            return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_target'), null, 403);
+        }
 
         $input = $this->getAllInput();
 

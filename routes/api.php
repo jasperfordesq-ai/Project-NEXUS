@@ -3231,9 +3231,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 |--------------------------------------------------------------------------
 |
 | Reachable by a platform super-admin (whole installation) AND by the
-| super-admin of a tenant that has children, confined to its own tenant plus
-| descendants. That confinement is what makes a hub tenant its own panel
-| without leaking sibling branches.
+| super-admin of a tenant that has children, confined to its OWN tenant.
+|
+| 🔴 Owner decision, 11 October 2026: a tenant super-admin does not act outside
+| its home community. Until then it was confined to its own tenant PLUS its
+| descendants, and a tenant super-admin on the master tenant was platform-wide.
+| Both are gone: canAccessTenant() admits only the caller's own tenant for
+| anyone but the platform owner, canManageTenant() refuses them everywhere, and
+| creating/moving a community or moving a member between communities requires
+| SuperPanelAccess::hasPlatformReach(). Pinned by
+| tests/Laravel/Feature/SuperAdmin/TenantSuperAdminPanelHomeCommunityTest.php.
 |
 | 🔴 EVERY endpoint in this group must already scope itself, via
 | SuperPanelAccess::canAccessTenant() or SuperPanelAccess::subtreeFilter().
