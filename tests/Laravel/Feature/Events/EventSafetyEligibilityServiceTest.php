@@ -30,7 +30,7 @@ final class EventSafetyEligibilityServiceTest extends TestCase
     use DatabaseTransactions;
     use PublishesLegacyGuardianPolicy;
 
-    public function test_evaluator_fails_closed_for_unpublished_inactive_cross_tenant_and_unbound_users(): void
+    public function test_evaluator_opens_unruled_events_and_fails_closed_for_inactive_cross_tenant_and_unbound_users(): void
     {
         $owner = $this->user();
         $participant = $this->user();
@@ -42,9 +42,11 @@ final class EventSafetyEligibilityServiceTest extends TestCase
             $this->policy(SafeguardingInteractionDecision::ALLOW),
         );
 
+        // Owner decision 2026-10-10 (E-102, O-199): an event with no published
+        // rules is open; see EventSafetyEnforceWithoutRulesTest.
         $unpublished = $service->evaluate($eventId, $participant);
-        self::assertTrue($unpublished->isUnavailable());
-        self::assertSame(['event_safety_requirements_not_published'], $unpublished->reasonCodes);
+        self::assertTrue($unpublished->isAllowed());
+        self::assertNull($unpublished->requirementsVersion);
 
         $inactiveDecision = $service->evaluate($eventId, $inactive);
         self::assertTrue($inactiveDecision->isUnavailable());

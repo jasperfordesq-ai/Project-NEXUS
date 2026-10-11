@@ -49,7 +49,13 @@ final class EventSafetyEligibilityService
                 false,
                 'event_safety_organizer_not_active',
             );
-            [$requirements, $version] = $this->publishedRequirements($tenantId, $eventId);
+            // Owner decision 2026-10-10 (E-102, O-199): enforcement applies an
+            // event's own rules only where the organiser has published them. An
+            // event with no rules is still subject to blocks, the organiser's
+            // recorded refusals and the safeguarding policy below.
+            $published = $this->publishedRequirements($tenantId, $eventId);
+            [$requirements, $version] = $published ?? [null, null];
+            $versionNumber = $version !== null ? (int) $version->version_number : null;
             $start = $this->support->eventStartContext($event);
             if ($this->isBlocked(
                 $tenantId,
@@ -59,7 +65,7 @@ final class EventSafetyEligibilityService
                 return $this->deny(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_bilateral_user_block'],
                     ['event_safety_contact_organizer_unavailable'],
                 );
@@ -74,7 +80,7 @@ final class EventSafetyEligibilityService
                 return $this->deny(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_active_participation_denial', 'event_safety_denial_' . $denialReason],
                     ['event_safety_contact_organizer'],
                 );
@@ -88,13 +94,13 @@ final class EventSafetyEligibilityService
             // now ignored — it neither demands a date of birth nor blocks anyone
             // (an under-18 account cannot sign in at all). The minimum age and
             // the code of conduct still apply exactly as published.
-            if ($version->minimum_age !== null) {
+            if ($version !== null && $version->minimum_age !== null) {
                 $dateOfBirth = $participant->getRawOriginal('date_of_birth');
                 if (! is_string($dateOfBirth) || trim($dateOfBirth) === '') {
                     return $this->unavailable(
                         $eventId,
                         (int) $participant->id,
-                        (int) $version->version_number,
+                        $versionNumber,
                         ['event_safety_date_of_birth_required'],
                         ['event_safety_record_date_of_birth'],
                     );
@@ -105,7 +111,7 @@ final class EventSafetyEligibilityService
                     return $this->unavailable(
                         $eventId,
                         (int) $participant->id,
-                        (int) $version->version_number,
+                        $versionNumber,
                         ['event_safety_date_of_birth_invalid'],
                         ['event_safety_correct_date_of_birth'],
                     );
@@ -114,7 +120,7 @@ final class EventSafetyEligibilityService
                     return $this->deny(
                         $eventId,
                         (int) $participant->id,
-                        (int) $version->version_number,
+                        $versionNumber,
                         ['event_safety_minimum_age_not_met'],
                         [],
                         $age,
@@ -124,7 +130,8 @@ final class EventSafetyEligibilityService
                     );
                 }
             }
-            if ((bool) $version->code_of_conduct_required
+            if ($version !== null && $requirements !== null
+                && (bool) $version->code_of_conduct_required
                 && ! $this->hasCurrentCodeAcknowledgement(
                     $tenantId,
                     $eventId,
@@ -135,7 +142,7 @@ final class EventSafetyEligibilityService
                 return $this->deny(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_code_of_conduct_acknowledgement_required'],
                     ['event_safety_acknowledge_code_of_conduct'],
                     $age,
@@ -152,7 +159,7 @@ final class EventSafetyEligibilityService
                 return $this->unavailable(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_safeguarding_policy_unavailable'],
                     ['event_safety_contact_coordinator'],
                     $age,
@@ -164,7 +171,7 @@ final class EventSafetyEligibilityService
                 return $this->deny(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_safeguarding_policy_denied'],
                     $safeguarding->canRequestCoordinator
                         ? ['event_safety_contact_coordinator']
@@ -178,7 +185,7 @@ final class EventSafetyEligibilityService
                 return $this->unavailable(
                     $eventId,
                     (int) $participant->id,
-                    (int) $version->version_number,
+                    $versionNumber,
                     ['event_safety_safeguarding_policy_invalid'],
                     ['event_safety_contact_coordinator'],
                     $age,
@@ -193,7 +200,7 @@ final class EventSafetyEligibilityService
                 userId: (int) $participant->id,
                 reasonCodes: ['event_safety_eligible'],
                 requiredActions: [],
-                requirementsVersion: (int) $version->version_number,
+                requirementsVersion: $versionNumber,
                 ageAtEvent: $age,
                 minorAtEvent: $minor,
                 safeguardingPolicy: $policyEvidence,
@@ -242,15 +249,36 @@ final class EventSafetyEligibilityService
         );
     }
 
-    /** @return array{0:EventSafetyRequirement,1:EventSafetyRequirementVersion} */
-    private function publishedRequirements(int $tenantId, int $eventId): array
+    /**
+     * The event's published rules, or null when the event has none to apply:
+     * no rules were ever written, a draft was never published, or the
+     * organiser archived them. Rules that were published and are now being
+     * edited (saving a draft clears `published_version`) still fail closed, so
+     * an edit in progress never lifts them.
+     *
+     * @return array{0:EventSafetyRequirement,1:EventSafetyRequirementVersion}|null
+     */
+    private function publishedRequirements(int $tenantId, int $eventId): ?array
     {
         $requirements = EventSafetyRequirement::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId)
-            ->where('status', EventSafetyRequirementStatus::Published->value)
             ->first();
-        if ($requirements === null || $requirements->published_version === null) {
+        if ($requirements === null
+            || (string) $requirements->getRawOriginal('status') === EventSafetyRequirementStatus::Archived->value) {
+            return null;
+        }
+        if ((string) $requirements->getRawOriginal('status') !== EventSafetyRequirementStatus::Published->value
+            || $requirements->published_version === null) {
+            $everPublished = DB::table('event_safety_requirement_history')
+                ->where('tenant_id', $tenantId)
+                ->where('event_id', $eventId)
+                ->where('requirements_id', (int) $requirements->id)
+                ->where('action', 'published')
+                ->exists();
+            if (! $everPublished) {
+                return null;
+            }
             throw new EventSafetyException('event_safety_requirements_not_published');
         }
         $version = EventSafetyRequirementVersion::withoutGlobalScopes()
