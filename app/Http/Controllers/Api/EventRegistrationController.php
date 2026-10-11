@@ -1121,6 +1121,12 @@ final class EventRegistrationController extends BaseApiController
                 null,
                 409,
             ],
+            'event_attendance_required_answers_outstanding' => [
+                'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING',
+                __('event_registration.required_answers_outstanding'),
+                null,
+                409,
+            ],
             'event_attendance_too_early',
             'event_attendance_no_show_too_early' => [
                 'EVENT_ATTENDANCE_TOO_EARLY',

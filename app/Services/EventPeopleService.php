@@ -111,11 +111,12 @@ final class EventPeopleService
             ->offset(($request->page - 1) * $request->perPage)
             ->limit($request->perPage)
             ->get();
+        $outstanding = $this->outstandingAnswers($tenantId, $eventId, $facts);
 
         return [
             'items' => array_map(
                 static fn (array $person): array => EventRosterResource::canonicalFromArray($person),
-                $facts->map(fn (object $fact): array => $this->peopleRow($fact, $event))->all(),
+                $facts->map(fn (object $fact): array => $this->peopleRow($fact, $event, $outstanding))->all(),
             ),
             'total' => $total,
             'page' => $request->page,
@@ -183,10 +184,11 @@ final class EventPeopleService
             ->offset(($request->page - 1) * $request->perPage)
             ->limit($request->perPage)
             ->get();
+        $outstanding = $this->outstandingAnswers($tenantId, $eventId, $facts);
 
         return [
             'items' => $facts->map(fn (object $fact): array =>
-                EventRosterResource::attendanceFromArray($this->peopleRow($fact, $event)))
+                EventRosterResource::attendanceFromArray($this->peopleRow($fact, $event, $outstanding)))
                 ->all(),
             'total' => $total,
             'page' => $request->page,
@@ -248,6 +250,8 @@ final class EventPeopleService
             $request,
         );
 
+        // The export carries no action or answers columns, so the
+        // outstanding-answers lookup is not repeated per streamed row.
         foreach ($query->cursor() as $fact) {
             yield $this->peopleRow($fact, $event);
         }
@@ -602,8 +606,32 @@ SQL,
         $query->where($column, $value);
     }
 
-    /** @return array<string,mixed> */
-    private function peopleRow(object $fact, Event $event): array
+    /**
+     * Registrations on this page that still owe the event's required answers
+     * (see EventRegistrationSubmissionService). Check-in is refused for them,
+     * so the list must not offer it.
+     *
+     * @param \Illuminate\Support\Collection<int,object> $facts
+     * @return array<int,true>
+     */
+    private function outstandingAnswers(int $tenantId, int $eventId, \Illuminate\Support\Collection $facts): array
+    {
+        return app(EventRegistrationSubmissionService::class)->registrationsWithOutstandingRequiredAnswers(
+            $tenantId,
+            $eventId,
+            $facts->pluck('registration_id')
+                ->filter(static fn (mixed $id): bool => is_numeric($id))
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->values()
+                ->all(),
+        );
+    }
+
+    /**
+     * @param array<int,true> $outstandingAnswers
+     * @return array<string,mixed>
+     */
+    private function peopleRow(object $fact, Event $event, array $outstandingAnswers = []): array
     {
         $registrationState = EventCapacityRegistrationState::tryFrom(
             self::nullableString($fact->registration_state ?? null) ?? '',
@@ -627,6 +655,8 @@ SQL,
             $fact->attendance_activity_action ?? null,
         );
         $actionAvailability = $this->attendanceActionAvailability($event);
+        $answersOutstanding = is_numeric($fact->registration_id ?? null)
+            && isset($outstandingAnswers[(int) $fact->registration_id]);
 
         return [
             'user_id' => (int) $fact->user_id,
@@ -669,7 +699,8 @@ SQL,
                 && $registrationState->canTransitionTo(EventCapacityRegistrationState::Cancelled),
             'can_check_in' => $confirmed
                 && $attendanceState === EventAttendanceState::NotCheckedIn
-                && $actionAvailability['check_in'],
+                && $actionAvailability['check_in']
+                && ! $answersOutstanding,
             'can_check_out' => $attendanceState === EventAttendanceState::CheckedIn
                 && $actionAvailability['fact_mutation'],
             'can_no_show' => $confirmed

@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Hay plazas disponibles, por lo que la inscripción se puede confirmar directamente.',
     'already_confirmed' => 'Esta inscripción ya está confirmada.',
     'offer_acceptance_required' => 'Acepta la oferta activa de la lista de espera antes de confirmar esta inscripción.',
+    'required_answers_outstanding' => 'Este miembro aún no ha enviado las respuestas de inscripción obligatorias, por lo que no se puede registrar su asistencia.',
     'transition_invalid' => 'Este cambio no es válido para el estado actual de la inscripción.',
     'waitlist_offer_inactive' => 'Esta oferta de la lista de espera ya no está activa.',
     'waitlist_offer_expired' => 'Esta oferta de la lista de espera ha caducado.',

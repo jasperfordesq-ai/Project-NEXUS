@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'まだ空きがあるため、登録を直接確定できます。',
     'already_confirmed' => 'このメンバーのイベント参加はすでに確定しています。',
     'offer_acceptance_required' => '登録を確定するには、先に有効なキャンセル待ちオファーを承諾してください。',
+    'required_answers_outstanding' => 'このメンバーは必須の登録回答をまだ送信していないため、チェックインできません。',
     'transition_invalid' => '現在の状態では、この変更を行えません。',
     'waitlist_offer_inactive' => 'このキャンセル待ちオファーは現在有効ではありません。',
     'waitlist_offer_expired' => 'このキャンセル待ちオファーは期限切れです。',

@@ -95,6 +95,17 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
     )) ?? null;
   }, [activeRegistration, state?.form, state?.submissions]);
   const submission = submissionOverride ?? serverSubmission;
+  // Required answers bind at check-in: the server refuses to check in a member
+  // whose registration has no submitted answers while the published form has
+  // required questions. Say so before the member arrives at the door.
+  const requiredAnswersOutstanding = useMemo(() => {
+    if (!state?.form || !activeRegistration) return false;
+    if (!state.form.questions.some((question) => question.is_required)) return false;
+    return !state.submissions.some((candidate) => (
+      candidate.registration_id === activeRegistration.id
+      && (candidate.status === 'submitted' || candidate.status === 'anonymised')
+    ));
+  }, [activeRegistration, state?.form, state?.submissions]);
   const draftSubmissionId = submission?.status === 'draft' ? submission.id : null;
   const visibleQuestions = useMemo(
     () => state?.form ? visibleRegistrationQuestions(state.form.questions, answers) : [],
@@ -462,6 +473,9 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
               </div>
               {submission ? <Chip size="sm" variant="flat">{t(`statuses.${submission.status}`)}</Chip> : null}
             </div>
+            {requiredAnswersOutstanding ? (
+              <Alert color="warning" title={t('submissions.required_outstanding')} />
+            ) : null}
             {submission?.status === 'submitted' ? (
               <Button
                 variant="secondary"

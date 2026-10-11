@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Są dostępne miejsca, więc rejestrację można potwierdzić bezpośrednio.',
     'already_confirmed' => 'Ta rejestracja jest już potwierdzona.',
     'offer_acceptance_required' => 'Przed potwierdzeniem tej rejestracji zaakceptuj aktywną ofertę z listy oczekujących.',
+    'required_answers_outstanding' => 'Ten członek nie przesłał jeszcze wymaganych odpowiedzi rejestracyjnych, więc nie można go zameldować.',
     'transition_invalid' => 'Ta zmiana nie jest prawidłowa dla bieżącego stanu rejestracji.',
     'waitlist_offer_inactive' => 'Ta oferta z listy oczekujących nie jest już aktywna.',
     'waitlist_offer_expired' => 'Ta oferta z listy oczekujących wygasła.',

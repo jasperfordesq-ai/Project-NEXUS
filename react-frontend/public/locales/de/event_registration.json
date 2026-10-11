@@ -138,7 +138,8 @@
     "export_description": "Der Export ist begrenzt, formelsicher und wird im unveränderlichen Antwortzugriffsaudit aufgezeichnet.",
     "download_csv": "CSV herunterladen",
     "amend": "Antworten ändern",
-    "save_draft": "Entwurf speichern"
+    "save_draft": "Entwurf speichern",
+    "required_outstanding": "Reichen Sie Ihre Antworten auf die Pflichtfragen ein. Bis dahin können Sie bei der Veranstaltung nicht eingecheckt werden."
   },
   "invitations": {
     "builder_title": "Einladungsaktion",

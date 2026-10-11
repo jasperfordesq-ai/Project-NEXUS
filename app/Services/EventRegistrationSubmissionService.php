@@ -608,6 +608,84 @@ final class EventRegistrationSubmissionService
      * @param iterable<int,stdClass> $questions
      * @return array<string,array{question:stdClass,value:mixed,consented:bool}>
      */
+    /**
+     * Which of these registrations still owe the event's required answers.
+     *
+     * Answers can only be given once a registration exists, so confirming a
+     * place cannot demand them. Check-in is where they become binding: when
+     * the event's PUBLISHED form has at least one required question, a
+     * registration with no submitted answers is outstanding. A submission
+     * counts once submitted, including an attempt later superseded by an
+     * amendment or anonymised by retention; a draft or a withdrawn
+     * submission does not.
+     *
+     * @param list<int> $registrationIds
+     * @return array<int,true> Outstanding registration ids as keys.
+     */
+    public function registrationsWithOutstandingRequiredAnswers(
+        int $tenantId,
+        int $eventId,
+        array $registrationIds,
+    ): array {
+        $registrationIds = array_values(array_unique(array_filter(
+            array_map('intval', $registrationIds),
+            static fn (int $id): bool => $id > 0,
+        )));
+        if ($registrationIds === [] || ! $this->publishedFormHasRequiredQuestions($tenantId, $eventId)) {
+            return [];
+        }
+
+        $answered = DB::table('event_registration_form_submissions')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->whereIn('registration_id', $registrationIds)
+            ->whereIn('status', [
+                EventRegistrationSubmissionStatus::Submitted->value,
+                EventRegistrationSubmissionStatus::Anonymised->value,
+            ])
+            ->distinct()
+            ->pluck('registration_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+
+        return array_fill_keys(array_values(array_diff($registrationIds, $answered)), true);
+    }
+
+    public function requiredAnswersOutstanding(int $tenantId, int $eventId, int $registrationId): bool
+    {
+        return $this->registrationsWithOutstandingRequiredAnswers(
+            $tenantId,
+            $eventId,
+            [$registrationId],
+        ) !== [];
+    }
+
+    private function publishedFormHasRequiredQuestions(int $tenantId, int $eventId): bool
+    {
+        $settings = DB::table('event_registration_settings')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->first(['form_state', 'published_form_version']);
+        if ($settings === null
+            || (string) $settings->form_state !== 'published'
+            || $settings->published_form_version === null) {
+            return false;
+        }
+
+        return DB::table('event_registration_form_versions as form')
+            ->join('event_registration_form_questions as question', function ($join): void {
+                $join->on('question.form_version_id', '=', 'form.id')
+                    ->on('question.tenant_id', '=', 'form.tenant_id')
+                    ->on('question.event_id', '=', 'form.event_id');
+            })
+            ->where('form.tenant_id', $tenantId)
+            ->where('form.event_id', $eventId)
+            ->where('form.version_number', (int) $settings->published_form_version)
+            ->where('form.status', EventRegistrationFormStatus::Published->value)
+            ->where('question.is_required', 1)
+            ->exists();
+    }
+
     private function normalizeAnswers(array $answers, iterable $questions, bool $requireComplete): array
     {
         if (array_is_list($answers) && $answers !== []) {

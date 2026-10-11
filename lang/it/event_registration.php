@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Sono disponibili posti, quindi la registrazione può essere confermata direttamente.',
     'already_confirmed' => 'Questa registrazione è già confermata.',
     'offer_acceptance_required' => 'Accetta l\'offerta attiva della lista d\'attesa prima di confermare questa registrazione.',
+    'required_answers_outstanding' => 'Questo membro non ha ancora inviato le risposte di registrazione obbligatorie, quindi non è possibile registrarne l\'ingresso.',
     'transition_invalid' => 'Questa modifica non è valida per lo stato attuale della registrazione.',
     'waitlist_offer_inactive' => 'Questa offerta della lista d\'attesa non è più attiva.',
     'waitlist_offer_expired' => 'Questa offerta della lista d\'attesa è scaduta.',

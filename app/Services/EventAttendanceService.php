@@ -150,6 +150,7 @@ final class EventAttendanceService
             if ($existing !== null) {
                 return new EventAttendanceResult($existing, 'already_checked_in', 'disabled', null, null);
             }
+            $this->assertRequiredAnswersSubmitted($tenantId, $eventId, $canonicalRegistration);
 
             $now = now();
             $inserted = DB::table('event_attendance')->insertOrIgnore([
@@ -436,6 +437,9 @@ final class EventAttendanceService
             if (in_array($action, [EventAttendanceAction::CheckIn, EventAttendanceAction::NoShow], true)) {
                 $this->assertConfirmedRegistration($canonicalRegistration, $legacyRegistration);
             }
+            if ($action === EventAttendanceAction::CheckIn) {
+                $this->assertRequiredAnswersSubmitted($tenantId, $eventId, $canonicalRegistration);
+            }
 
             $undoes = null;
             $toState = match ($action) {
@@ -680,6 +684,30 @@ final class EventAttendanceService
                 true,
             )) {
             throw new EventAttendanceException('event_attendance_registration_required');
+        }
+    }
+
+    /**
+     * Required registration answers, including waiver and consent questions,
+     * bind at check-in: answers can only be given after a place exists, so the
+     * place itself is not refused, but a member who never submitted them is
+     * not admitted. Every check-in path (people list, signed code, offline
+     * scan, bulk, legacy marking) comes through record() or transition().
+     */
+    private function assertRequiredAnswersSubmitted(
+        int $tenantId,
+        int $eventId,
+        ?object $canonicalRegistration,
+    ): void {
+        if ($canonicalRegistration === null || ! is_numeric($canonicalRegistration->id ?? null)) {
+            return;
+        }
+        if (app(EventRegistrationSubmissionService::class)->requiredAnswersOutstanding(
+            $tenantId,
+            $eventId,
+            (int) $canonicalRegistration->id,
+        )) {
+            throw new EventAttendanceException('event_attendance_required_answers_outstanding');
         }
     }
 

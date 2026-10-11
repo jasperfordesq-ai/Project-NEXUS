@@ -138,7 +138,8 @@
     "export_description": "The export is limited, formula-safe and recorded in the immutable answer-access audit.",
     "download_csv": "Download CSV",
     "amend": "Amend answers",
-    "save_draft": "Save draft"
+    "save_draft": "Save draft",
+    "required_outstanding": "Submit your answers to the required questions. You cannot be checked in at the event until you do."
   },
   "invitations": {
     "builder_title": "Invitation campaign",

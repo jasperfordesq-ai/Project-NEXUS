@@ -138,7 +138,8 @@
     "export_description": "Tá an t-onnmhairiú teoranta, sábháilte ó thaobh foirmle agus taifeadtar é san iniúchadh ar rochtain ar fhreagraí do-aistrithe.",
     "download_csv": "Íoslódáil bileog eolais CSV",
     "amend": "Leasaigh freagraí",
-    "save_draft": "Sábháil dréacht"
+    "save_draft": "Sábháil dréacht",
+    "required_outstanding": "Seol do fhreagraí ar na ceisteanna riachtanacha. Ní féidir do theacht chuig an imeacht a chlárú go dtí go ndéanfaidh tú sin."
   },
   "invitations": {
     "builder_title": "Feachtas cuireadh",

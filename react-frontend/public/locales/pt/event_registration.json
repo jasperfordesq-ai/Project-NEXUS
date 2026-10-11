@@ -138,7 +138,8 @@
     "export_description": "A exportação é limitada, segura e registrada na auditoria imutável de acesso a respostas.",
     "download_csv": "Baixar CSV",
     "amend": "Alterar respostas",
-    "save_draft": "Salvar rascunho"
+    "save_draft": "Salvar rascunho",
+    "required_outstanding": "Envie as suas respostas às perguntas obrigatórias. Até lá, não será possível registar a sua entrada no evento."
   },
   "invitations": {
     "builder_title": "Campanha de convite",

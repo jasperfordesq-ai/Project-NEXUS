@@ -138,7 +138,8 @@
     "export_description": "エクスポートは制限されており、公式に安全であり、不変の回答アクセス監査に記録されます。",
     "download_csv": "CSVをダウンロード",
     "amend": "回答を修正する",
-    "save_draft": "下書きの保存"
+    "save_draft": "下書きの保存",
+    "required_outstanding": "必須の質問への回答を送信してください。送信するまで、イベントでチェックインできません。"
   },
   "invitations": {
     "builder_title": "ご招待キャンペーン",

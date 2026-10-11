@@ -138,7 +138,8 @@
     "export_description": "L'esportazione è limitata, sicura per le formule e registrata nel controllo di accesso alle risposte immutabili.",
     "download_csv": "Scarica CSV",
     "amend": "Modificare le risposte",
-    "save_draft": "Salva bozza"
+    "save_draft": "Salva bozza",
+    "required_outstanding": "Invia le tue risposte alle domande obbligatorie. Fino ad allora non sarà possibile registrare il tuo ingresso all’evento."
   },
   "invitations": {
     "builder_title": "Campagna di inviti",

@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Tá áit ar fáil fós; deimhnigh an clárú go díreach.',
     'already_confirmed' => 'Tá clárú an bhaill seo deimhnithe cheana.',
     'offer_acceptance_required' => 'Glac leis an tairiscint ghníomhach ón liosta feithimh ar dtús chun an clárú a dheimhniú.',
+    'required_answers_outstanding' => 'Níor sheol an ball seo na freagraí clárúcháin riachtanacha fós, mar sin ní féidir a theacht a chlárú.',
     'transition_invalid' => 'Ní féidir an t-athrú seo a dhéanamh ón staid reatha.',
     'waitlist_offer_inactive' => 'Níl an tairiscint seo ón liosta feithimh gníomhach a thuilleadh.',
     'waitlist_offer_expired' => 'Tá an tairiscint seo ón liosta feithimh imithe in éag.',

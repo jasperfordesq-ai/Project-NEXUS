@@ -138,7 +138,8 @@
     "export_description": "La exportación es limitada, segura para fórmulas y registrada en la auditoría de acceso a respuestas inmutable.",
     "download_csv": "Descargar CSV",
     "amend": "Modificar respuestas",
-    "save_draft": "Guardar borrador"
+    "save_draft": "Guardar borrador",
+    "required_outstanding": "Envía tus respuestas a las preguntas obligatorias. No se podrá registrar tu asistencia al evento hasta que lo hagas."
   },
   "invitations": {
     "builder_title": "Campaña de invitación",

@@ -138,7 +138,8 @@
     "export_description": "Eksport jest ograniczony, bezpieczny dla formuł i rejestrowany w audycie niezmiennego dostępu do odpowiedzi.",
     "download_csv": "Pobierz plik CSV",
     "amend": "Popraw odpowiedzi",
-    "save_draft": "Zapisz wersję roboczą"
+    "save_draft": "Zapisz wersję roboczą",
+    "required_outstanding": "Prześlij odpowiedzi na wymagane pytania. Do tego czasu nie będzie można zameldować Cię na wydarzeniu."
   },
   "invitations": {
     "builder_title": "Kampania zaproszeń",

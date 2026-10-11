@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Es sind Plätze verfügbar, daher kann die Registrierung direkt bestätigt werden.',
     'already_confirmed' => 'Diese Registrierung ist bereits bestätigt.',
     'offer_acceptance_required' => 'Nehmen Sie das aktive Wartelistenangebot an, bevor Sie diese Registrierung bestätigen.',
+    'required_answers_outstanding' => 'Dieses Mitglied hat die erforderlichen Registrierungsantworten noch nicht eingereicht und kann daher nicht eingecheckt werden.',
     'transition_invalid' => 'Diese Änderung ist für den aktuellen Registrierungsstatus nicht zulässig.',
     'waitlist_offer_inactive' => 'Dieses Wartelistenangebot ist nicht mehr aktiv.',
     'waitlist_offer_expired' => 'Dieses Wartelistenangebot ist abgelaufen.',

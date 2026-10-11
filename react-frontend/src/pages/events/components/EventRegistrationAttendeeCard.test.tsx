@@ -221,6 +221,33 @@ describe('EventRegistrationAttendeeCard', () => {
     expect(screen.queryByRole('textbox', { name: 'Meal notes' })).not.toBeInTheDocument();
   });
 
+  it('tells the member their required answers are outstanding until they submit them', async () => {
+    renderEventRoute(<EventRegistrationAttendeeCard eventId={42} />, {
+      path: '/events/42',
+      route: '/events/42',
+    });
+
+    expect(await screen.findByText(
+      'Submit your answers to the required questions. You cannot be checked in at the event until you do.',
+    )).toBeInTheDocument();
+  });
+
+  it('does not warn once the required answers are submitted', async () => {
+    vi.spyOn(eventRegistrationApi, 'attendeeState').mockResolvedValue({
+      success: true,
+      data: { ...stateFixture(), submissions: [submissionFixture('submitted')] },
+    });
+    renderEventRoute(<EventRegistrationAttendeeCard eventId={42} />, {
+      path: '/events/42',
+      route: '/events/42',
+    });
+
+    expect(await screen.findByRole('button', { name: 'Amend answers' })).toBeInTheDocument();
+    expect(screen.queryByText(
+      'Submit your answers to the required questions. You cannot be checked in at the event until you do.',
+    )).not.toBeInTheDocument();
+  });
+
   it('captures explicit guest privacy and notification consent', async () => {
     const user = userEvent.setup();
     const capture = vi.spyOn(eventRegistrationApi, 'captureGuest').mockResolvedValue({

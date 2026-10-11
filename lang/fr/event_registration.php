@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Des places sont disponibles ; l\'inscription peut donc être confirmée directement.',
     'already_confirmed' => 'Cette inscription est déjà confirmée.',
     'offer_acceptance_required' => 'Acceptez l\'offre active de la liste d\'attente avant de confirmer cette inscription.',
+    'required_answers_outstanding' => 'Ce membre n\'a pas encore envoyé les réponses d\'inscription obligatoires ; son arrivée ne peut donc pas être enregistrée.',
     'transition_invalid' => 'Cette modification n\'est pas valide pour l\'état actuel de l\'inscription.',
     'waitlist_offer_inactive' => 'Cette offre de la liste d\'attente n\'est plus active.',
     'waitlist_offer_expired' => 'Cette offre de la liste d\'attente a expiré.',

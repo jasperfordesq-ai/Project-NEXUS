@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Capacity is available, so registration can be confirmed directly.',
     'already_confirmed' => 'This registration is already confirmed.',
     'offer_acceptance_required' => 'Accept the active waitlist offer before confirming this registration.',
+    'required_answers_outstanding' => 'This member has not submitted the required registration answers yet, so they cannot be checked in.',
     'transition_invalid' => 'This change is not valid for the current registration state.',
     'waitlist_offer_inactive' => 'This waitlist offer is no longer active.',
     'waitlist_offer_expired' => 'This waitlist offer has expired.',

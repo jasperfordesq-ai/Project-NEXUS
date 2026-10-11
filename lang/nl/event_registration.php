@@ -357,6 +357,7 @@ return [
     'capacity_available' => 'Er zijn plaatsen beschikbaar, dus de registratie kan direct worden bevestigd.',
     'already_confirmed' => 'Deze registratie is al bevestigd.',
     'offer_acceptance_required' => 'Accepteer het actieve wachtlijstaanbod voordat u deze registratie bevestigt.',
+    'required_answers_outstanding' => 'Dit lid heeft de verplichte registratieantwoorden nog niet ingediend en kan daarom niet worden ingecheckt.',
     'transition_invalid' => 'Deze wijziging is niet geldig voor de huidige registratiestatus.',
     'waitlist_offer_inactive' => 'Dit wachtlijstaanbod is niet meer actief.',
     'waitlist_offer_expired' => 'Dit wachtlijstaanbod is verlopen.',

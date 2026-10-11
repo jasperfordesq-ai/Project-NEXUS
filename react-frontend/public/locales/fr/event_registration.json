@@ -138,7 +138,8 @@
     "export_description": "L'exportation est limitée, sécurisée pour les formules et enregistrée dans l'audit d'accès aux réponses immuable.",
     "download_csv": "Télécharger CSV",
     "amend": "Modifier les réponses",
-    "save_draft": "Enregistrer le brouillon"
+    "save_draft": "Enregistrer le brouillon",
+    "required_outstanding": "Envoyez vos réponses aux questions obligatoires. Votre arrivée à l’événement ne pourra pas être enregistrée tant que vous ne l’aurez pas fait."
   },
   "invitations": {
     "builder_title": "Campagne d'invitations",

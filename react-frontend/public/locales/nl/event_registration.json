@@ -138,7 +138,8 @@
     "export_description": "De export is beperkt, formuleveilig en vastgelegd in de onveranderlijke antwoordtoegangsaudit.",
     "download_csv": "CSV downloaden",
     "amend": "Antwoorden aanpassen",
-    "save_draft": "Concept opslaan"
+    "save_draft": "Concept opslaan",
+    "required_outstanding": "Dien je antwoorden op de verplichte vragen in. Tot die tijd kun je niet worden ingecheckt bij het evenement."
   },
   "invitations": {
     "builder_title": "Uitnodigingscampagne",
