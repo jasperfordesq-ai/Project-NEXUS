@@ -75,7 +75,7 @@ final class EventCalendarController extends BaseApiController
 
     public function eventFeed(int $id): Response|JsonResponse
     {
-        $projection = $this->calendars->projectionForEvent($this->actor(anyCommunity: true), $id);
+        $projection = $this->calendars->projectionForEvent($this->actor(), $id);
         if ($projection === null) {
             return $this->respondNotFound(__('api.event_not_found'), 'EVENT_NOT_FOUND');
         }
@@ -88,7 +88,7 @@ final class EventCalendarController extends BaseApiController
 
     public function actions(int $id): JsonResponse
     {
-        $projection = $this->calendars->projectionForEvent($this->actor(anyCommunity: true), $id);
+        $projection = $this->calendars->projectionForEvent($this->actor(), $id);
         if ($projection === null) {
             return $this->respondNotFound(__('api.event_not_found'), 'EVENT_NOT_FOUND');
         }
@@ -267,16 +267,7 @@ final class EventCalendarController extends BaseApiController
         return [$from, $until, $timezone];
     }
 
-    /**
-     * Resolve the calendar actor.
-     *
-     * The member's own calendar, tenant feed and feed tokens are personal to a
-     * member of this community, so those stay tenant-scoped. Only the
-     * per-event calendar actions pass $anyCommunity: auth is GLOBAL (766b867d2,
-     * 6adcd4ff6), and EventCalendarService admits a viewer from another
-     * community there only with management authority over that event.
-     */
-    private function actor(bool $allowManagementExit = false, bool $anyCommunity = false): User
+    private function actor(bool $allowManagementExit = false): User
     {
         $tenantId = TenantContext::currentId();
         abort_unless(
@@ -289,7 +280,7 @@ final class EventCalendarController extends BaseApiController
         $user = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
-                ->when(! $anyCommunity, static fn ($query) => $query->where('tenant_id', $tenantId))
+                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());

@@ -160,21 +160,13 @@ final class EventStaffController extends BaseApiController
         return $this->respondWithData($this->mutationResponse($result, $idempotencyKey));
     }
 
-    /**
-     * Resolve the acting user by authenticated id alone.
-     *
-     * Auth is GLOBAL; only resources are tenant-scoped (766b867d2, 6adcd4ff6).
-     * A tenant predicate here refused the Team tab to managers whose account
-     * row lives on another community. EventRoleService decides authority
-     * against the tenant-scoped event, with admin authority confined by
-     * TenantAdminScope; staff TARGETS stay members of the event's community.
-     */
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        $actor = $tenantId === null || $tenantId <= 0
+        $actor = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());

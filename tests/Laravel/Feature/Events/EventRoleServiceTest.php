@@ -416,11 +416,8 @@ final class EventRoleServiceTest extends TestCase
                 $owner,
             ),
         );
-        // A member of another community is still refused. The actor's own row
-        // is now resolved by id alone (auth is global), so the refusal comes
-        // from the authority check rather than the identity lookup — same 403.
         $this->assertReason(
-            'event_staff_role_authorization_denied',
+            'event_staff_role_actor_invalid',
             fn () => $this->service->grant(
                 $eventId,
                 (int) $staff->id,
