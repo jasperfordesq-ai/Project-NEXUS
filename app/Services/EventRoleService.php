@@ -15,7 +15,7 @@ use App\Enums\EventStaffRole;
 use App\Exceptions\EventRoleAssignmentException;
 use App\Models\EventStaffAssignment;
 use App\Models\User;
-use App\Support\Authorization\AdminTier;
+use App\Support\Authorization\TenantAdminScope;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Support\Collection;
@@ -428,9 +428,18 @@ final class EventRoleService
         $actorId = (int) $actor->getKey();
         $userIds = array_values(array_unique([$actorId, $targetUserId]));
         sort($userIds, SORT_NUMERIC);
+        // Auth is GLOBAL; only resources are tenant-scoped. The ACTOR's own row
+        // is locked by id alone — a tenant predicate here refused managers whose
+        // account row lives on another community (766b867d2, 6adcd4ff6). The
+        // TARGET must still belong to the event's community; that is checked
+        // below, after one ordered lock over both rows.
         $users = DB::table('users')
-            ->where('tenant_id', $tenantId)
-            ->whereIn('id', $userIds)
+            ->where(static function ($query) use ($tenantId, $actorId, $targetUserId): void {
+                $query->where('id', $actorId)
+                    ->orWhere(static function ($target) use ($tenantId, $targetUserId): void {
+                        $target->where('id', $targetUserId)->where('tenant_id', $tenantId);
+                    });
+            })
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->orderBy('id')
@@ -451,7 +460,7 @@ final class EventRoleService
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
         $target = $users->get($targetUserId);
-        if ($target === null) {
+        if ($target === null || (int) $target->tenant_id !== $tenantId) {
             throw new EventRoleAssignmentException('event_staff_role_target_invalid');
         }
 
@@ -475,13 +484,14 @@ final class EventRoleService
             throw new EventRoleAssignmentException('event_staff_role_event_not_found');
         }
 
+        // The actor's own row — never tenant-scoped (see lockMutationSubjects()).
         $actorRow = DB::table('users')
-            ->where('tenant_id', $tenantId)
             ->where('id', (int) $actor->getKey())
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->first([
                 'id',
+                'tenant_id',
                 'role',
                 'is_admin',
                 'is_super_admin',
@@ -536,7 +546,8 @@ final class EventRoleService
 
     private function hasImplicitFullAuthority(object $event, object $actor): bool
     {
-        return (int) $event->user_id === (int) $actor->id || $this->isTenantAdmin($actor);
+        return (int) $event->user_id === (int) $actor->id
+            || $this->isTenantAdmin($actor, (int) $event->tenant_id);
     }
 
     private function hasPersistedCapability(
@@ -565,9 +576,16 @@ final class EventRoleService
         return false;
     }
 
-    private function isTenantAdmin(object $actor): bool
+    /**
+     * Admin authority over THIS event's community, by the canonical confined
+     * predicate EventPolicy uses (f9b568a05). AdminTier alone is
+     * tenant-unaware: it was safe here only while the actor lookup was
+     * tenant-scoped, and would hand every community's admin this event's team
+     * once the actor is resolved by id alone.
+     */
+    private function isTenantAdmin(object $actor, int $eventTenantId): bool
     {
-        return AdminTier::allows($actor);
+        return TenantAdminScope::allows($actor, $eventTenantId);
     }
 
     /**
