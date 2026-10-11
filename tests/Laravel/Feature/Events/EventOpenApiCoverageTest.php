@@ -155,8 +155,10 @@ final class EventOpenApiCoverageTest extends TestCase
             ['daily', 'weekly', 'monthly', 'yearly'],
             $schema['properties']['supported_frequencies']['items']['enum'] ?? null,
         );
-        self::assertSame(4, $schema['properties']['supported_frequencies']['minItems'] ?? null);
+        // Empty when the community has switched recurring events off (446dbfccb).
+        self::assertSame(0, $schema['properties']['supported_frequencies']['minItems'] ?? null);
         self::assertSame(4, $schema['properties']['supported_frequencies']['maxItems'] ?? null);
+        self::assertSame(0, $schema['properties']['supported_end_types']['minItems'] ?? null);
         self::assertSame(1, $schema['properties']['max_occurrences']['minimum'] ?? null);
         self::assertSame(5000, $schema['properties']['max_occurrences']['maximum'] ?? null);
         self::assertSame(
@@ -173,6 +175,42 @@ final class EventOpenApiCoverageTest extends TestCase
         self::assertSame(['data', 'meta'], $envelope['required'] ?? null);
         self::assertSame(['data', 'meta'], array_keys($envelope['properties'] ?? []));
         self::assertFalse($envelope['properties']['meta']['additionalProperties'] ?? true);
+    }
+
+    public function test_explained_event_errors_document_the_reason_key(): void
+    {
+        $spec = $this->spec();
+        $item = $spec['components']['schemas']['ApiErrorItem'] ?? [];
+        self::assertSame('string', $item['properties']['reason']['type'] ?? null);
+        self::assertNotContains('reason', $item['required'] ?? []);
+
+        foreach ([
+            ['post', '/api/v2/events/{id}/ticket-types'],
+            ['put', '/api/v2/events/{id}/safety/requirements'],
+            ['post', '/api/v2/events/{id}/registration-product/campaigns/{campaignId}/issue'],
+            ['post', '/api/v2/events/{id}/registration/withdraw'],
+            ['delete', '/api/v2/events/{id}/rsvp'],
+        ] as [$method, $path]) {
+            $responses = $spec['paths'][$path][$method]['responses'] ?? [];
+            foreach (['409', '422'] as $status) {
+                self::assertSame(
+                    '#/components/schemas/ApiErrorResponse',
+                    $responses[$status]['content']['application/json']['schema']['$ref'] ?? null,
+                    strtoupper($method) . " {$path} {$status} does not document the error body",
+                );
+            }
+        }
+    }
+
+    public function test_people_include_parameter_is_documented_as_opt_in(): void
+    {
+        $parameters = collect(
+            $this->spec()['paths']['/api/v2/events/{id}/people']['get']['parameters'] ?? [],
+        )->keyBy('name');
+
+        self::assertSame('query', $parameters->get('include')['in'] ?? null);
+        self::assertFalse($parameters->get('include')['required'] ?? true);
+        self::assertSame(['required_answers'], $parameters->get('include')['schema']['enum'] ?? null);
     }
 
     /** @return array<string,mixed> */

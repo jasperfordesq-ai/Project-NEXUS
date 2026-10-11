@@ -856,7 +856,8 @@
           },
           "supported_frequencies": {
             "type": "array",
-            "minItems": 4,
+            "description": "Frequencies a new series may use. Empty when the community has switched recurring events off; a client must then not offer to repeat the event.",
+            "minItems": 0,
             "maxItems": 4,
             "uniqueItems": true,
             "items": {
@@ -876,7 +877,8 @@
           },
           "supported_end_types": {
             "type": "array",
-            "minItems": 2,
+            "description": "Ways a new series may end. Empty when the community has switched recurring events off.",
+            "minItems": 0,
             "maxItems": 3,
             "uniqueItems": true,
             "items": {
@@ -1804,6 +1806,10 @@
           "field": {
             "type": "string",
             "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "description": "Machine-readable cause of an explained refusal, in snake_case (for example event_ticket_timezone_offset_mismatch or event_registration_cancellation_cutoff_passed). Present only when the server can say what the caller should change; `message` is the translated explanation to show and `field`, when present, names the input at fault. Internal and integrity failures carry no reason."
           }
         }
       },
@@ -12268,8 +12274,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -22447,6 +22470,18 @@
               "type": "integer",
               "minimum": 1
             }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "required": false,
+            "description": "Opt-in additions to each row. `required_answers` adds `registration.required_answers_outstanding` (boolean): true when a confirmed or pending registration has not yet submitted the answers the event's published registration form requires, so check-in is refused. Never the answers themselves. Without this parameter the row shape is unchanged, which strict clients rely on. Any other value is refused with EVENT_PEOPLE_QUERY_INVALID.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "required_answers"
+              ]
+            }
           }
         ]
       }
@@ -22967,7 +23002,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23016,8 +23058,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23075,8 +23134,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23134,8 +23210,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23193,8 +23286,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23243,8 +23353,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23290,8 +23417,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23349,8 +23493,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23408,8 +23569,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23467,8 +23645,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23535,8 +23730,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23594,8 +23806,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23653,8 +23882,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23710,7 +23956,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23759,8 +24012,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23807,7 +24077,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23856,8 +24133,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23915,8 +24209,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -23972,7 +24283,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24021,8 +24339,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24068,8 +24403,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24118,8 +24470,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24168,8 +24537,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24218,8 +24604,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24277,8 +24680,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24336,8 +24756,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24395,8 +24832,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24645,8 +25099,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24740,7 +25211,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24789,8 +25267,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24836,8 +25331,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24895,11 +25407,28 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "410": {
             "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -24946,11 +25475,28 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "410": {
             "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25006,8 +25552,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25056,8 +25619,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25106,8 +25686,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25154,7 +25751,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25201,8 +25805,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25248,8 +25869,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25508,8 +26146,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25567,8 +26222,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25614,8 +26286,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25673,8 +26362,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25739,7 +26445,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25788,8 +26501,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25847,8 +26577,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25915,8 +26662,25 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -25972,7 +26736,14 @@
             "description": "Resource not found in the current tenant"
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
@@ -26361,11 +27132,28 @@
           "404": {
             "description": "Resource not found in the current tenant"
           },
+          "409": {
+            "description": "Conflict with the current state (for example a changed version, an exhausted allocation, or a cancellation cutoff that has passed). An explained refusal carries a translated `message` and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
           "410": {
             "description": "Guardian consent is retired: the platform is for adults aged 18 and over. Always returns error code GUARDIAN_CONSENT_RETIRED."
           },
           "422": {
-            "description": "Validation or state-transition failure"
+            "description": "Validation or state-transition failure. An explained refusal carries a translated `message`, the `field` at fault when there is one, and a `reason`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "429": {
             "description": "Rate limit exceeded"
