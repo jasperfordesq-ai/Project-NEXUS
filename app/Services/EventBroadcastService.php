@@ -589,18 +589,90 @@ final class EventBroadcastService
         }
         $reason = mb_substr($reason, 0, 500);
 
-        $cancellable = [
-            EventBroadcastStatus::Draft->value,
-            EventBroadcastStatus::Scheduled->value,
-        ];
-
         $broadcasts = DB::table('event_broadcasts')
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId)
-            ->whereIn('status', $cancellable)
+            ->whereIn('status', [
+                EventBroadcastStatus::Draft->value,
+                EventBroadcastStatus::Scheduled->value,
+            ])
             ->lockForUpdate()
             ->get();
 
+        return $this->cancelRowsForCascade(
+            $tenantId,
+            $broadcasts->all(),
+            (int) $actor->id,
+            $reason,
+            $idempotencyPrefix,
+            'event_lifecycle',
+        );
+    }
+
+    /**
+     * Cancel every scheduled, not-yet-sending broadcast in the community
+     * because an admin has switched organiser broadcasts off.
+     *
+     * Called from EventConfigurationService::update() inside the settings
+     * transaction. The setting was only checked when a broadcast was created,
+     * scheduled or retried, so anything already scheduled still went out even
+     * though the settings page counted it as the impact of switching off and
+     * asked for confirmation. Drafts are left alone: they cannot be scheduled
+     * while the setting is off. A broadcast already sending is skipped, as in
+     * the lifecycle cascade, and its remaining deliveries are suppressed by the
+     * delivery worker, which re-checks the setting.
+     *
+     * @return array{cancelled:int,deliveries_cancelled:int,skipped_in_flight:int}
+     */
+    public function cancelScheduledForConfigurationWithinTransaction(
+        int $tenantId,
+        int $actorId,
+        string $reason,
+        string $idempotencyPrefix,
+    ): array {
+        if (DB::transactionLevel() <= 0) {
+            throw new EventBroadcastException('event_broadcast_transaction_required');
+        }
+        if ($tenantId <= 0 || $actorId <= 0) {
+            throw new EventBroadcastException('event_broadcast_event_scope_invalid');
+        }
+        $reason = trim($reason);
+        if ($reason === '') {
+            $reason = 'organizer_broadcasts_disabled';
+        }
+        $reason = mb_substr($reason, 0, 500);
+
+        $broadcasts = DB::table('event_broadcasts')
+            ->where('tenant_id', $tenantId)
+            ->where('status', EventBroadcastStatus::Scheduled->value)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        return $this->cancelRowsForCascade(
+            $tenantId,
+            $broadcasts->all(),
+            $actorId,
+            $reason,
+            $idempotencyPrefix,
+            'events_configuration',
+        );
+    }
+
+    /**
+     * Shared body of the two cascades above. Rows must already be locked.
+     *
+     * @param list<object> $broadcasts
+     * @return array{cancelled:int,deliveries_cancelled:int,skipped_in_flight:int}
+     */
+    private function cancelRowsForCascade(
+        int $tenantId,
+        array $broadcasts,
+        int $actorId,
+        string $reason,
+        string $idempotencyPrefix,
+        string $cascade,
+    ): array {
         $now = CarbonImmutable::now('UTC');
         $cancelled = 0;
         $deliveriesCancelled = 0;
@@ -638,9 +710,9 @@ final class EventBroadcastService
                 ->update([
                     'status' => EventBroadcastStatus::Cancelled->value,
                     'broadcast_version' => $newVersion,
-                    'cancelled_by_user_id' => (int) $actor->id,
+                    'cancelled_by_user_id' => $actorId,
                     'cancelled_at' => $now,
-                    'updated_by_user_id' => (int) $actor->id,
+                    'updated_by_user_id' => $actorId,
                     'updated_at' => $now,
                 ]);
             if ($updated !== 1) {
@@ -651,7 +723,7 @@ final class EventBroadcastService
                 continue;
             }
 
-            $deliveriesCancelled += DB::table('event_broadcast_deliveries')
+            $rowDeliveriesCancelled = DB::table('event_broadcast_deliveries')
                 ->where('tenant_id', $tenantId)
                 ->where('broadcast_id', $broadcastId)
                 ->whereIn('status', [
@@ -666,6 +738,7 @@ final class EventBroadcastService
                     'next_attempt_at' => null,
                     'updated_at' => $now,
                 ]);
+            $deliveriesCancelled += $rowDeliveriesCancelled;
 
             $keyHash = $this->support->idempotencyHash(
                 $idempotencyPrefix . ':broadcast:' . $broadcastId,
@@ -673,28 +746,28 @@ final class EventBroadcastService
             $requestHash = $this->support->requestHash([
                 'action' => EventBroadcastAction::Cancelled->value,
                 'broadcast_id' => $broadcastId,
-                'actor_user_id' => (int) $actor->id,
+                'actor_user_id' => $actorId,
                 'expected_version' => $currentVersion,
                 'reason' => $reason,
             ]);
 
             $this->insertHistory(
                 $tenantId,
-                $eventId,
+                (int) $row->event_id,
                 $broadcastId,
                 $newVersion,
                 EventBroadcastAction::Cancelled,
                 $from,
                 EventBroadcastStatus::Cancelled,
-                (int) $actor->id,
+                $actorId,
                 $keyHash,
                 $requestHash,
                 (string) $row->content_hash,
                 [
                     'contract_version' => 1,
                     'reason_recorded' => true,
-                    'cascade' => 'event_lifecycle',
-                    'cancelled_delivery_count' => $deliveriesCancelled,
+                    'cascade' => $cascade,
+                    'cancelled_delivery_count' => $rowDeliveriesCancelled,
                 ],
                 $now,
             );

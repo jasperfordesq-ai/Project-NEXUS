@@ -182,6 +182,20 @@ final class EventConfigurationService
             $root['events'] = $events;
 
             DB::table('tenants')->where('id', $tenantId)->update(['configuration' => json_encode($root, JSON_THROW_ON_ERROR)]);
+            // Switching organiser broadcasts off takes the already-scheduled
+            // ones with it, in the same transaction as the setting itself.
+            // The settings page counts them as the impact of this change and
+            // asks for confirmation; before this they still went out.
+            if (($changes['organizer_broadcasts_enabled']['from'] ?? false) === true
+                && ($changes['organizer_broadcasts_enabled']['to'] ?? true) === false
+                && Schema::hasTable('event_broadcasts')) {
+                app(EventBroadcastService::class)->cancelScheduledForConfigurationWithinTransaction(
+                    $tenantId,
+                    $actorId,
+                    $reason,
+                    "events-configuration:{$tenantId}:v{$nextVersion}",
+                );
+            }
             app(AuditLogService::class)->logAdminAction('events_configuration_updated', $actorId, null, [
                 'reason' => $reason,
                 'version' => $nextVersion,

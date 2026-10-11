@@ -217,6 +217,23 @@ final class EventBroadcastDeliveryConsumer
             );
             return 'suppressed';
         }
+        // Switching organiser broadcasts off cancels scheduled broadcasts in
+        // the same save; this catches anything already claimed or sending
+        // when that happened, so nothing goes out once the switch is off.
+        if (! (bool) app(EventConfigurationService::class)->value(
+            'organizer_broadcasts_enabled',
+            true,
+            $tenantId,
+        )) {
+            $this->markSuppressed(
+                $tenantId,
+                $deliveryId,
+                $claimToken,
+                'organizer_broadcasts_disabled',
+                'tenant_setting',
+            );
+            return 'suppressed';
+        }
 
         $broadcast = DB::table('event_broadcasts')
             ->where('tenant_id', $tenantId)
