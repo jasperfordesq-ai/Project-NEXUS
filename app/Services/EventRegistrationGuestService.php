@@ -35,6 +35,8 @@ final class EventRegistrationGuestService
      * about the same room is the whole finding.
      */
     public const CAPACITY_CONSUMING_GUEST_STATES = ['captured'];
+    /** guest_number is TINYINT UNSIGNED. */
+    private const MAX_GUEST_NUMBER = 255;
     private const SUPPORTED_LOCALES = [
         'ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt',
     ];
@@ -154,11 +156,14 @@ final class EventRegistrationGuestService
             } elseif ($notificationText !== '' || $notificationVersion !== '') {
                 throw new EventRegistrationFoundationException('event_registration_guest_notification_consent_invalid');
             }
+            // Only guests who are still coming use the allowance. A guest
+            // withdrawn when the member cancelled (or removed by them) gave it
+            // back, so a member who registers again can bring a guest again.
             $guestCount = DB::table('event_registration_guests')
                 ->where('tenant_id', $tenantId)
                 ->where('event_id', $eventId)
                 ->where('registration_id', $registrationId)
-                ->where('status', '<>', 'anonymised')
+                ->whereIn('status', self::CAPACITY_CONSUMING_GUEST_STATES)
                 ->count();
             if ($guestCount >= (int) $settings->max_guests_per_registration) {
                 throw new EventRegistrationFoundationException('event_registration_guest_limit_reached');
@@ -219,7 +224,10 @@ final class EventRegistrationGuestService
                 ->where('tenant_id', $tenantId)
                 ->where('registration_id', $registrationId)
                 ->max('guest_number')) + 1;
-            if ($guestNumber > 10) {
+            // Numbers are never reused (the withdrawn row is the consent
+            // record), so they run on past the per-registration limit; the
+            // column type is the ceiling.
+            if ($guestNumber > self::MAX_GUEST_NUMBER) {
                 throw new EventRegistrationFoundationException('event_registration_guest_limit_reached');
             }
             if ($ticketEntitlementId !== null) {
@@ -253,6 +261,7 @@ final class EventRegistrationGuestService
                 ->where('tenant_id', $tenantId)
                 ->where('registration_id', $registrationId)
                 ->where('identity_fingerprint', $fingerprint)
+                ->whereIn('status', self::CAPACITY_CONSUMING_GUEST_STATES)
                 ->exists()) {
                 throw new EventRegistrationFoundationException('event_registration_guest_duplicate');
             }

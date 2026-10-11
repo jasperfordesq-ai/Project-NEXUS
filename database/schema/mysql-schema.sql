@@ -6429,7 +6429,6 @@ CREATE TABLE `event_registration_guests` (
   CONSTRAINT `fk_ev_reg_guest_settings` FOREIGN KEY (`tenant_id`, `event_id`) REFERENCES `event_registration_settings` (`tenant_id`, `event_id`),
   CONSTRAINT `fk_ev_reg_guest_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`),
   CONSTRAINT `fk_ev_reg_guest_ticket` FOREIGN KEY (`tenant_id`, `event_id`, `ticket_entitlement_id`) REFERENCES `event_ticket_entitlements` (`tenant_id`, `event_id`, `id`),
-  CONSTRAINT `chk_ev_reg_guest_number` CHECK (`guest_number` between 1 and 10 and `revision` > 0),
   CONSTRAINT `chk_ev_reg_guest_status` CHECK (`status` in ('captured','withdrawn','anonymised')),
   CONSTRAINT `chk_ev_reg_guest_identity` CHECK (`status` in ('captured','withdrawn') and `display_name_ciphertext` is not null and `identity_fingerprint` is not null and `anonymised_at` is null or `status` = 'anonymised' and `display_name_ciphertext` is null and `email_ciphertext` is null and `phone_ciphertext` is null and `identity_fingerprint` is null and `anonymised_at` is not null),
   CONSTRAINT `chk_ev_reg_guest_withdrawal` CHECK (`status` = 'captured' and `withdrawn_at` is null or `status` = 'withdrawn' and `withdrawn_at` is not null or `status` = 'anonymised'),
@@ -6445,7 +6444,7 @@ CREATE TABLE `event_registration_guests` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_insert_guard` BEFORE INSERT ON `event_registration_guests` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `status` = 'published' AND `guests_enabled` = 1 AND NEW.`guest_number` <= `max_guests_per_registration`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guests_disabled_or_unbounded'; END IF; IF (SELECT COUNT(*) FROM `event_registration_guests` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `registration_id` = NEW.`registration_id` AND `status` <> 'anonymised') >= (SELECT `max_guests_per_registration` FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_limit_reached'; END IF; END 
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_insert_guard` BEFORE INSERT ON `event_registration_guests` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `status` = 'published' AND `guests_enabled` = 1 AND `max_guests_per_registration` >= 1) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guests_disabled_or_unbounded'; END IF; IF NEW.`guest_number` < 1 OR NEW.`revision` < 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_number_invalid'; END IF; IF NEW.`status` = 'captured' AND (SELECT COUNT(*) FROM `event_registration_guests` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `registration_id` = NEW.`registration_id` AND `status` = 'captured') >= (SELECT `max_guests_per_registration` FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_limit_reached'; END IF; END 
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -6478,6 +6477,22 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_phase_b_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NOT (OLD.`preferred_locale` <=> NEW.`preferred_locale`) OR NOT (OLD.`notification_consent` <=> NEW.`notification_consent`) OR NOT (OLD.`notification_consent_version` <=> NEW.`notification_consent_version`) OR NOT (OLD.`notification_consent_text_hash` <=> NEW.`notification_consent_text_hash`) OR NOT (OLD.`notification_consented_at` <=> NEW.`notification_consented_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_notification_evidence_immutable'; END IF; IF OLD.`ticket_entitlement_id` IS NOT NULL AND NOT (OLD.`ticket_entitlement_id` <=> NEW.`ticket_entitlement_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_ticket_link_immutable'; END IF; END 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_revision_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NEW.`revision` < 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_number_invalid'; END IF; END 
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -21958,7 +21973,8 @@ INSERT INTO `laravel_migrations` VALUES
 (477,'2026_10_06_120000_create_vol_incident_timeline_and_shares',149),
 (482,'2026_10_09_100000_create_member_invitation_outbox_table',153),
 (483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153),
-(484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154);
+(484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154),
+(485,'2026_10_11_180000_let_withdrawn_event_guests_be_re_added',155);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
