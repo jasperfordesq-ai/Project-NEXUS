@@ -11,10 +11,13 @@ namespace App\Services;
 use App\Enums\EventInvitationCampaignStatus;
 use App\Enums\EventInvitationCampaignType;
 use App\Enums\EventInvitationStatus;
+use App\Enums\EventOperationalState;
+use App\Enums\EventPublicationState;
 use App\Enums\EventWaitlistQueueState;
 use App\Exceptions\EventRegistrationException;
 use App\Exceptions\EventRegistrationFoundationException;
 use App\Exceptions\EventWaitlistException;
+use App\Models\Event;
 use App\Models\EventInvitation;
 use App\Models\EventInvitationCampaign;
 use App\Models\EventRegistration;
@@ -22,6 +25,7 @@ use App\Models\EventWaitlistEntry;
 use App\Models\User;
 use App\Support\Events\EventInvitationRecipientAuthorizer;
 use App\Support\Events\EventInvitationRecipientExpander;
+use App\Support\Events\EventLifecycleCompatibility;
 use App\Support\Events\EventRegistrationFoundationSupport;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -169,6 +173,13 @@ final class EventInvitationService
             }
             // An exact replay only returns the saved result. Time-window changes must
             // prevent new issuance, not obscure a successful earlier request.
+            // Recipient eligibility checks publication only, so the event's own
+            // lifecycle is checked here: nobody is invited to an event that is
+            // cancelled, completed or archived, whether issued by hand or by
+            // the scheduler.
+            if (! self::eventAcceptsInvitations($event)) {
+                throw new EventRegistrationFoundationException('event_registration_event_unavailable');
+            }
             if (! $expiry->greaterThan($now)
                 || $expiry->greaterThan($this->support->eventStart($event))) {
                 throw new EventRegistrationFoundationException('event_invitation_expiry_invalid');
@@ -411,6 +422,12 @@ final class EventInvitationService
                     'changed' => false,
                     'participation' => $this->participation($eventId, (int) $persistedActor->id),
                 ];
+            }
+            // After replay, so a lost acknowledgement of an earlier acceptance
+            // still resolves. An invitation issued before the event was called
+            // off must not be usable afterwards.
+            if (! self::eventAcceptsInvitations($event)) {
+                throw new EventRegistrationFoundationException('event_registration_event_unavailable');
             }
             $invitation = DB::table('event_invitations')
                 ->where('tenant_id', $tenantId)
@@ -753,6 +770,41 @@ final class EventInvitationService
         }
 
         return $results;
+    }
+
+    /**
+     * Whether the event is still going ahead, so invitations to it may be
+     * issued, delivered and accepted.
+     *
+     * Matches EventRegistrationAvailability's lifecycle rule: a scheduled or
+     * postponed event still takes registrations, so it still takes
+     * invitations; a cancelled, completed or archived one does not. An event
+     * whose lifecycle columns cannot be resolved is treated as unavailable.
+     */
+    public static function eventAcceptsInvitations(Event $event): bool
+    {
+        $state = static function (mixed $value): ?string {
+            if ($value instanceof \BackedEnum) {
+                $value = $value->value;
+            }
+
+            return $value === null ? null : strtolower(trim((string) $value));
+        };
+        try {
+            $lifecycle = EventLifecycleCompatibility::resolve(
+                $state($event->getRawOriginal('publication_status')),
+                $state($event->getRawOriginal('operational_status')),
+                $state($event->getRawOriginal('status')),
+            );
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $lifecycle['publication'] !== EventPublicationState::Archived
+            && in_array($lifecycle['operational'], [
+                EventOperationalState::Scheduled,
+                EventOperationalState::Postponed,
+            ], true);
     }
 
     /** Non-enumerable lookup: every invalid, expired, used, or cross-event token is null. */

@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Enums\EventInvitationCampaignStatus;
 use App\Enums\EventInvitationCampaignType;
 use App\Exceptions\EventRegistrationFoundationException;
+use App\Models\Event;
 use App\Models\EventInvitationCampaign;
 use App\Models\User;
 use App\Support\Events\EventInvitationRecipientAuthorizer;
@@ -369,6 +370,102 @@ final class EventInvitationCampaignService
 
             return ['campaign' => $this->campaignModel($tenantId, $campaignId), 'changed' => true];
         }, 3);
+    }
+
+    /**
+     * Cancel this event's not-yet-issued campaigns because the event itself is
+     * being cancelled or archived.
+     *
+     * Sibling of EventBroadcastService::cancelPendingForLifecycleWithinTransaction
+     * and called from the same EventLifecycleService cascade. Without it a
+     * campaign scheduled before the cancellation was still issued afterwards,
+     * inviting people to an event that is no longer happening.
+     *
+     * Like the broadcast cascade it reads each row's current revision under
+     * lock instead of taking an expected one, and does not authorise against
+     * the actor: the caller has already authorised cancelling the whole event.
+     * A campaign that is mid-issue or already issued is left alone; issued
+     * invitations are stopped at delivery and acceptance instead.
+     */
+    public function cancelOpenForLifecycleWithinTransaction(
+        Event $event,
+        User $actor,
+        string $reason,
+        string $idempotencyPrefix,
+    ): int {
+        if (DB::transactionLevel() <= 0) {
+            throw new EventRegistrationFoundationException('event_invitation_campaign_transaction_required');
+        }
+        $this->assertSchema();
+        $tenantId = (int) $event->tenant_id;
+        $eventId = (int) $event->getKey();
+        if ($tenantId <= 0 || $eventId <= 0) {
+            throw new EventRegistrationFoundationException('event_invitation_campaign_not_found');
+        }
+        $reason = mb_substr(trim($reason) === '' ? 'event_cancelled' : trim($reason), 0, 500);
+        $open = [
+            EventInvitationCampaignStatus::Previewed->value,
+            EventInvitationCampaignStatus::Scheduled->value,
+        ];
+        $campaigns = DB::table('event_invitation_campaigns')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->whereIn('status', $open)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get(['id', 'status', 'revision']);
+        $now = CarbonImmutable::now('UTC');
+        $cancelled = 0;
+        foreach ($campaigns as $campaign) {
+            $campaignId = (int) $campaign->id;
+            $currentRevision = (int) $campaign->revision;
+            $revision = $currentRevision + 1;
+            if (DB::table('event_invitation_campaigns')
+                ->where('tenant_id', $tenantId)
+                ->where('event_id', $eventId)
+                ->where('id', $campaignId)
+                ->whereIn('status', $open)
+                ->where('revision', $currentRevision)
+                ->update([
+                    'status' => EventInvitationCampaignStatus::Cancelled->value,
+                    'revision' => $revision,
+                    'scheduled_for_utc' => null,
+                    'cancelled_at' => $now,
+                    'cancelled_reason' => $reason,
+                    'updated_by' => (int) $actor->id,
+                    'updated_at' => $now,
+                ]) !== 1) {
+                continue;
+            }
+            $this->recordHistory(
+                $tenantId,
+                $eventId,
+                $campaignId,
+                $revision,
+                EventInvitationCampaignStatus::Cancelled->value,
+                (int) $actor->id,
+                $this->support->idempotencyHash(
+                    $idempotencyPrefix . ':event:' . $eventId . ':invitation-campaign:' . $campaignId,
+                ),
+                $this->support->requestHash([
+                    'action' => EventInvitationCampaignStatus::Cancelled->value,
+                    'event_id' => $eventId,
+                    'campaign_id' => $campaignId,
+                    'actor_id' => (int) $actor->id,
+                    'expected_revision' => $currentRevision,
+                    'reason' => $reason,
+                ]),
+                [
+                    'reason' => $reason,
+                    'cascade' => 'event_lifecycle',
+                    'from_status' => (string) $campaign->status,
+                ],
+                $now,
+            );
+            $cancelled++;
+        }
+
+        return $cancelled;
     }
 
     /** @return list<int> */

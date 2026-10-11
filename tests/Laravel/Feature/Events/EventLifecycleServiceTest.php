@@ -177,6 +177,7 @@ final class EventLifecycleServiceTest extends TestCase
                     'broadcasts_cancelled' => 0,
                     'broadcast_deliveries_cancelled' => 0,
                     'broadcasts_skipped_in_flight' => 0,
+                    'invitation_campaigns_cancelled' => 0,
                 ],
             ],
             json_decode((string) $history->metadata, true, 512, JSON_THROW_ON_ERROR),
@@ -622,6 +623,7 @@ final class EventLifecycleServiceTest extends TestCase
             'broadcasts_cancelled' => 0,
             'broadcast_deliveries_cancelled' => 0,
             'broadcasts_skipped_in_flight' => 0,
+            'invitation_campaigns_cancelled' => 0,
         ], $result->cascade);
         $recipients = $result->affectedRecipientUserIds;
         sort($recipients);
@@ -718,19 +720,35 @@ final class EventLifecycleServiceTest extends TestCase
             $waiter,
             'lifecycle-waiter',
         );
+        // Timed offers on (platform AND community) BEFORE the release, so the
+        // release itself makes the timed offer. With them off a released seat
+        // now promotes the waiter straight away and there is no offer to erase.
+        Config::set('events.registration.timed_waitlist_offers_enabled', true);
+        $tenantConfiguration = json_decode(
+            (string) DB::table('tenants')->where('id', $this->testTenantId)->value('configuration'),
+            true,
+        );
+        $tenantConfiguration = is_array($tenantConfiguration) ? $tenantConfiguration : [];
+        $tenantConfiguration['events']['timed_waitlist_offers_enabled'] = true;
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'configuration' => json_encode($tenantConfiguration, JSON_THROW_ON_ERROR),
+        ]);
         $registrations->withdraw(
             (int) $event->id,
             (int) $capacityHolder->id,
             $capacityHolder,
             'lifecycle-release-capacity',
         );
-        Config::set('events.registration.timed_waitlist_offers_enabled', true);
-        $offer = $waitlist->offerNext(
-            (int) $event->id,
-            $owner,
-            'lifecycle-offer',
-        );
-        self::assertNotNull($offer?->offerToken);
+        $offerEntryId = (int) DB::table('event_waitlist_entries')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('event_id', $event->id)
+            ->where('user_id', $waiter->id)
+            ->where('queue_state', 'offered')
+            ->value('id');
+        self::assertGreaterThan(0, $offerEntryId);
+        self::assertNotNull(DB::table('event_waitlist_entries')
+            ->where('id', $offerEntryId)
+            ->value('offer_token_hash'));
         DB::table('event_reminders')->insert([
             'tenant_id' => $this->testTenantId,
             'event_id' => $event->id,
@@ -758,6 +776,7 @@ final class EventLifecycleServiceTest extends TestCase
             'broadcasts_cancelled' => 0,
             'broadcast_deliveries_cancelled' => 0,
             'broadcasts_skipped_in_flight' => 0,
+            'invitation_campaigns_cancelled' => 0,
         ], $result->cascade);
         self::assertSame(3, DB::table('event_registrations')
             ->where('event_id', $event->id)
@@ -765,19 +784,19 @@ final class EventLifecycleServiceTest extends TestCase
             ->where('registration_state', 'cancelled')
             ->count());
         self::assertSame('cancelled', DB::table('event_waitlist_entries')
-            ->where('id', $offer->entry->id)
+            ->where('id', $offerEntryId)
             ->value('queue_state'));
         self::assertNull(DB::table('event_waitlist_entries')
-            ->where('id', $offer->entry->id)
+            ->where('id', $offerEntryId)
             ->value('offer_token_hash'));
         self::assertNotNull(DB::table('event_waitlist_entries')
-            ->where('id', $offer->entry->id)
+            ->where('id', $offerEntryId)
             ->value('offer_token_used_at'));
         self::assertSame('erased', DB::table('event_waitlist_offer_envelopes')
-            ->where('waitlist_entry_id', $offer->entry->id)
+            ->where('waitlist_entry_id', $offerEntryId)
             ->value('status'));
         self::assertNull(DB::table('event_waitlist_offer_envelopes')
-            ->where('waitlist_entry_id', $offer->entry->id)
+            ->where('waitlist_entry_id', $offerEntryId)
             ->value('token_ciphertext'));
         self::assertSame(3, DB::table('event_registration_history')
             ->where('event_id', $event->id)
@@ -785,7 +804,7 @@ final class EventLifecycleServiceTest extends TestCase
             ->where('action', 'cancelled')
             ->count());
         self::assertSame(1, DB::table('event_waitlist_entry_history')
-            ->where('waitlist_entry_id', $offer->entry->id)
+            ->where('waitlist_entry_id', $offerEntryId)
             ->where('action', 'cancelled')
             ->count());
         self::assertSame('cancelled', DB::table('event_reminders')
@@ -813,7 +832,7 @@ final class EventLifecycleServiceTest extends TestCase
             ->where('registration_state', 'cancelled')
             ->count());
         self::assertSame('cancelled', DB::table('event_waitlist_entries')
-            ->where('id', $offer->entry->id)
+            ->where('id', $offerEntryId)
             ->value('queue_state'));
     }
 

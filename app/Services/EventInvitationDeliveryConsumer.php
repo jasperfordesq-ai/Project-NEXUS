@@ -97,6 +97,14 @@ final class EventInvitationDeliveryConsumer
 
             return $this->complete($tenantId, $eventId, $campaignId, $invitationId, $rows);
         }
+        // An invitation queued before the event was cancelled (or completed,
+        // or archived) must not reach anyone afterwards. Recipient eligibility
+        // below checks publication only, so the lifecycle is checked here.
+        if (! EventInvitationService::eventAcceptsInvitations($event)) {
+            $this->suppressPending($tenantId, $rows, 'event_unavailable');
+
+            return $this->complete($tenantId, $eventId, $campaignId, $invitationId, $rows);
+        }
 
         // Locale is immutable send-time evidence: queue() resolves the member's
         // preferred language and records the same value in every channel row.

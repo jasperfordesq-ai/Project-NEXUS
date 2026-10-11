@@ -448,6 +448,19 @@ final class EventLifecycleService
                 $reason,
                 $idempotencyPrefix,
             );
+        // Not-yet-issued invitation campaigns die with the event for the same
+        // reason: a campaign scheduled before the cancellation was still
+        // issued afterwards. Issued invitations are stopped at delivery and
+        // acceptance, which both refuse an event that is no longer going ahead.
+        $invitationCampaignsCancelled = Schema::hasTable('event_invitation_campaigns')
+            ? app(EventInvitationCampaignService::class)
+                ->cancelOpenForLifecycleWithinTransaction(
+                    $event,
+                    $actor,
+                    $reason,
+                    $idempotencyPrefix,
+                )
+            : 0;
         $legacyWaitlistCancelled = DB::table('event_waitlist')
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId)
@@ -484,6 +497,7 @@ final class EventLifecycleService
                 'broadcasts_cancelled' => $broadcastCascade['cancelled'],
                 'broadcast_deliveries_cancelled' => $broadcastCascade['deliveries_cancelled'],
                 'broadcasts_skipped_in_flight' => $broadcastCascade['skipped_in_flight'],
+                'invitation_campaigns_cancelled' => $invitationCampaignsCancelled,
             ],
             'recipient_user_ids' => $recipientIds,
         ];

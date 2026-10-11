@@ -1486,9 +1486,9 @@
             "data_expression": "['link' => $message->path, 'type' => $message->notificationType, 'event_delivery_key' => $deliveryKey]"
         },
         {
-            "id": "app/Services/EventInvitationDeliveryConsumer.php:415:FCMPushService::sendToUser",
+            "id": "app/Services/EventInvitationDeliveryConsumer.php:423:FCMPushService::sendToUser",
             "file": "app/Services/EventInvitationDeliveryConsumer.php",
-            "line": 415,
+            "line": 423,
             "transport": "FCMPushService::sendToUser",
             "role": "producer",
             "recipient_expression": "$userId",
