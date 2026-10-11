@@ -4932,6 +4932,10 @@ class EventService
                 'message' => __('api.event_not_rsvped'),
                 'field' => 'user_id',
             ],
+            'event_attendance_required_answers_outstanding' => [
+                'code' => 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING',
+                'message' => __('event_registration.required_answers_outstanding'),
+            ],
             'event_attendance_too_early' => [
                 'code' => 'VALIDATION_ERROR',
                 'message' => __('api.event_too_early_checkin'),

@@ -386,6 +386,13 @@ class EventsController extends BaseApiController
                 'status' => 422,
                 'field' => 'user_id',
             ],
+            // Same answer as the people endpoint (EventRegistrationController).
+            'event_attendance_required_answers_outstanding' => [
+                'code' => 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING',
+                'message' => __('event_registration.required_answers_outstanding'),
+                'status' => 409,
+                'field' => null,
+            ],
             'event_attendance_too_early' => [
                 'code' => 'TOO_EARLY',
                 'message' => __('api.event_too_early_checkin'),

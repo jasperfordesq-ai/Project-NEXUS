@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\EventAttendanceService;
 use App\Services\EventPeopleService;
 use App\Services\EventRegistrationSubmissionService;
+use App\Services\EventService;
 use App\Support\Events\EventPeopleQuery;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Config;
@@ -156,6 +157,54 @@ final class EventCheckInRequiresSubmittedAnswersTest extends TestCase
             ->assertJsonPath('errors.0.code', 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING')
             ->assertJsonPath('errors.0.message', __('event_registration.required_answers_outstanding'));
         self::assertFalse(DB::table('event_attendance')->where('event_id', $eventId)->exists());
+    }
+
+    public function test_the_legacy_check_in_routes_refuse_with_the_same_clear_error(): void
+    {
+        [$eventId, $owner, $member] = $this->eventWithForm(true);
+        $this->startNow($eventId);
+        Sanctum::actingAs($owner, ['*']);
+
+        // Before the fix both routes answered 500 CHECKIN_ERROR ("check-in
+        // failed"), which tells the organiser nothing they can act on.
+        $this->apiPost(
+            "/v2/events/{$eventId}/attendees/{$member->id}/check-in",
+            [],
+            ['Idempotency-Key' => 'answers-outstanding-legacy-checkin'],
+        )->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING')
+            ->assertJsonPath('errors.0.message', __('event_registration.required_answers_outstanding'));
+
+        $this->apiPost(
+            "/v2/events/{$eventId}/attendance",
+            ['user_id' => (int) $member->id],
+            ['Idempotency-Key' => 'answers-outstanding-legacy-attendance'],
+        )->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING');
+
+        $bulk = $this->apiPost(
+            "/v2/events/{$eventId}/attendance/bulk",
+            ['user_ids' => [(int) $member->id]],
+            ['Idempotency-Key' => 'answers-outstanding-legacy-bulk'],
+        )->assertOk();
+        self::assertSame(
+            'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING',
+            $bulk->json('data.outcomes.0.error.code'),
+        );
+        self::assertSame(409, $bulk->json('data.outcomes.0.http_status'));
+
+        self::assertFalse(DB::table('event_attendance')->where('event_id', $eventId)->exists());
+    }
+
+    public function test_the_legacy_attendance_service_reports_the_clear_error(): void
+    {
+        [$eventId, $owner, $member] = $this->eventWithForm(true);
+        $this->startNow($eventId);
+
+        self::assertFalse(EventService::markAttended($eventId, (int) $member->id, (int) $owner->id));
+        $errors = EventService::getErrors();
+        self::assertSame('EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING', $errors[0]['code'] ?? null);
+        self::assertSame(__('event_registration.required_answers_outstanding'), $errors[0]['message'] ?? null);
     }
 
     public function test_the_people_list_does_not_offer_check_in_while_answers_are_outstanding(): void
