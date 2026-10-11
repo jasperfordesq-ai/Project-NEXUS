@@ -23,6 +23,23 @@ final class EventRegistrationFormsMigrationTest extends TestCase
 
     private const MIGRATION = '2026_07_11_000056_create_event_registration_forms_and_invitations.php';
 
+    /** Later migration that replaces this one's guest guard (E-102, guests can be re-added). */
+    private const LATER_GUEST_RULES = '2026_10_11_180000_let_withdrawn_event_guests_be_re_added.php';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Re-running the original up() recreates the old guest trigger and CHECK
+        // constraint, and DDL survives the test's rollback, so every later test
+        // would run against the pre-2026-10-11 guest rules. Put the newer rules
+        // back once this test's own data has been rolled back.
+        $this->beforeApplicationDestroyed(function (): void {
+            /** @var Migration $later */
+            $later = require database_path('migrations/' . self::LATER_GUEST_RULES);
+            $later->up();
+        });
+    }
+
     public function test_schema_is_idempotent_and_exposes_all_privacy_and_evidence_boundaries(): void
     {
         /** @var Migration $migration */

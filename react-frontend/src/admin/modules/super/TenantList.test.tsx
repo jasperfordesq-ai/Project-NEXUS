@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import type { User } from '@/types/api';
 
 // ── Hoisted mocks (must be defined before vi.mock factories) ─────────────────
 const { mockAdminSuper, mockToast, mockUser } = vi.hoisted(() => ({
@@ -35,7 +36,17 @@ vi.mock('@/lib/api', () => {
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useAuth: () => ({ user: mockUser.current as never, isAuthenticated: mockUser.current !== null }),
+    useAuth: () => ({
+      user: mockUser.current as unknown as User | null,
+      isAuthenticated: mockUser.current !== null,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
   })
 );
 
