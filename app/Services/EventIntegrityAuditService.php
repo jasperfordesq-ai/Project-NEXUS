@@ -1196,6 +1196,15 @@ final class EventIntegrityAuditService
                 'entry.id',
                 $sampleLimit,
             );
+            // An entry is accepted legitimately in exactly two ways:
+            //  - a member redeemed a timed offer: every offer column is set;
+            //  - the system moved the member up automatically because timed
+            //    offers were unavailable (EventWaitlistService::
+            //    promoteWaitingWithinTransaction): no offer column is set, no
+            //    person acted, and the immutable history row for the entry's
+            //    current version records the `promoted` waiting -> accepted step.
+            // Anything else accepted, or a mixture of the two, is reported.
+            $hasHistory = Schema::hasTable('event_waitlist_entry_history');
             $this->addQueryIssue(
                 $issues,
                 'event_waitlist_accepted_evidence_missing',
@@ -1204,12 +1213,20 @@ final class EventIntegrityAuditService
                     ->when($tenantId !== null, fn (Builder $q) => $q->where('entry.tenant_id', $tenantId))
                     ->where('entry.queue_state', 'accepted')
                     ->where(fn (Builder $q) => $q
-                        ->whereNull('entry.offered_at')
-                        ->orWhereNull('entry.offer_expires_at')
-                        ->orWhereNull('entry.offer_token_hash')
-                        ->orWhereNull('entry.accepted_at')
-                        ->orWhereNull('entry.offer_token_used_at')
-                        ->orWhereNull('entry.accepted_registration_id')),
+                        ->whereNull('entry.accepted_at')
+                        ->orWhereNull('entry.accepted_registration_id')
+                        ->orWhere(fn (Builder $shape) => $shape
+                            ->where(fn (Builder $offer) => $offer
+                                ->whereNull('entry.offered_at')
+                                ->orWhereNull('entry.offer_expires_at')
+                                ->orWhereNull('entry.offer_token_hash')
+                                ->orWhereNull('entry.offer_token_used_at'))
+                            ->when(
+                                $hasHistory,
+                                fn (Builder $notPromoted) => $notPromoted->whereNot(
+                                    fn (Builder $promotion) => $this->automaticPromotionEvidence($promotion),
+                                ),
+                            ))),
                 'entry.id',
                 $sampleLimit,
             );
@@ -1258,7 +1275,10 @@ final class EventIntegrityAuditService
                             ->orWhereColumn('registration.event_id', '!=', 'entry.event_id')
                             ->orWhereColumn('registration.user_id', '!=', 'entry.user_id')
                             ->orWhereColumn('registration.capacity_pool_key', '!=', 'entry.capacity_pool_key')
-                            ->orWhere('registration.registration_state', '!=', 'confirmed')),
+                            // `pending` is legitimate: under manual approval an
+                            // accepted offer or an automatic promotion becomes a
+                            // request for the organiser (F-587, E-102), not a place.
+                            ->orWhereNotIn('registration.registration_state', ['confirmed', 'pending'])),
                     'entry.id',
                     $sampleLimit,
                 );
@@ -1849,6 +1869,32 @@ final class EventIntegrityAuditService
     }
 
     /** @param list<array<string,mixed>> $issues */
+    /**
+     * The evidence an automatic waitlist promotion leaves on an accepted entry
+     * (aliased `entry`): no offer ever existed, no person acted, and the
+     * immutable history row for the entry's current version is the system's
+     * `promoted` waiting -> accepted step.
+     */
+    private function automaticPromotionEvidence(Builder $query): Builder
+    {
+        return $query
+            ->whereNull('entry.offered_at')
+            ->whereNull('entry.offer_expires_at')
+            ->whereNull('entry.offer_token_hash')
+            ->whereNull('entry.offer_token_used_at')
+            ->whereNull('entry.state_changed_by')
+            ->whereExists(fn (Builder $history) => $history
+                ->select(DB::raw(1))
+                ->from('event_waitlist_entry_history as promotion')
+                ->whereColumn('promotion.tenant_id', 'entry.tenant_id')
+                ->whereColumn('promotion.waitlist_entry_id', 'entry.id')
+                ->whereColumn('promotion.queue_version', 'entry.queue_version')
+                ->where('promotion.action', 'promoted')
+                ->where('promotion.from_state', 'waiting')
+                ->where('promotion.to_state', 'accepted')
+                ->whereNull('promotion.actor_user_id'));
+    }
+
     private function addQueryIssue(
         array &$issues,
         string $code,
