@@ -294,12 +294,12 @@ final class EventWaitlistOfferEnvelopeServiceTest extends TestCase
             $waiter,
             'envelope-join-waitlist',
         );
-        $this->registrations->withdraw(
-            $eventId,
-            (int) $holder->id,
-            $holder,
-            'envelope-release-capacity',
-        );
+        // E-102: free the seat without a release; a release with timed offers
+        // off now moves the head of the queue up itself (f50f60058).
+        DB::table('events')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('id', $eventId)
+            ->increment('max_attendees');
 
         return [$eventId, $holder, $waiter, $organizer];
     }
