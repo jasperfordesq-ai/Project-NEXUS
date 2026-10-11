@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Má chailltear gléas foirne, cúlghair é láithreach sa ghnáthlimistéar imeachtaí. Lean ar aghaidh anseo de réir ainm nó cód sínithe.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Cúlghaireadh an cód seiceála isteach seo nó cuireadh cód níos nuaí ina áit. Iarr a chód reatha ar an bhfreastalaí.',
+        'credential_expired' => 'Tá an cód seiceála isteach seo imithe in éag. Is féidir leis an bhfreastalaí ceann nua a chruthú ó leathanach na hócáide.',
+        'observed_at_outside_window' => 'Taifeadadh roinnt seiceálacha isteach sa bhaisc seo rófhada ó shin, nó le ham sa todhchaí, agus ní féidir glacadh leo. Seiceáil an dáta agus an t-am ar an ngléas seo.',
+        'manifest_out_of_date' => 'Tá liosta na bhfreastalaithe ar an ngléas seo as dáta. Íoslódáil an liosta arís agus tú ar líne, ansin sioncronaigh.',
+        'manifest_expired' => 'Tá liosta as líne na bhfreastalaithe ar an ngléas seo imithe in éag. Íoslódáil liosta nua agus tú ar líne.',
+        'duplicate' => 'Tá seiceáil isteach sa bhaisc seo a seoladh cheana. Athnuaigh an leathanach agus sioncronaigh arís.',
+        'device_not_active' => 'Cúlghaireadh an gléas seiceála isteach seo nó cuireadh gléas eile ina áit. Cláraigh an gléas arís chun leanúint ar aghaidh.',
+        'device_expired' => 'Tá údarú an ghléis seiceála isteach seo imithe in éag. Cláraigh an gléas arís chun leanúint ar aghaidh.',
+    ],
 ];

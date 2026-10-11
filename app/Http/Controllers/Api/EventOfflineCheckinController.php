@@ -31,6 +31,26 @@ final class EventOfflineCheckinController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * Refusals a person causes and can act on (a revoked code, an outdated
+     * roster, a device clock that is wrong, a check-in sent twice): the
+     * message that explains each. Codes and statuses are unchanged; the
+     * error gains a `reason` so the website can show the message.
+     *
+     * @var array<string, string>
+     */
+    private const EXPLAINED_ERRORS = [
+        'event_qr_credential_not_active' => 'event_offline_checkin.errors.credential_not_active',
+        'event_qr_credential_expired' => 'event_offline_checkin.errors.credential_expired',
+        'event_offline_observed_at_outside_window' => 'event_offline_checkin.errors.observed_at_outside_window',
+        'event_offline_manifest_version_ahead' => 'event_offline_checkin.errors.manifest_out_of_date',
+        'event_checkin_manifest_expired' => 'event_offline_checkin.errors.manifest_expired',
+        'event_offline_nonce_duplicate' => 'event_offline_checkin.errors.duplicate',
+        'event_offline_nonce_conflict' => 'event_offline_checkin.errors.duplicate',
+        'event_checkin_device_not_active' => 'event_offline_checkin.errors.device_not_active',
+        'event_checkin_device_expired' => 'event_offline_checkin.errors.device_expired',
+    ];
+
     public function __construct(
         private readonly EventCheckinCredentialService $credentials,
         private readonly EventCheckinDeviceService $devices,
@@ -635,9 +655,27 @@ final class EventOfflineCheckinController extends BaseApiController
             default => ['EVENT_CHECKIN_VALIDATION_FAILED', 422],
         };
 
+        $explained = self::EXPLAINED_ERRORS[$exception->reasonCode] ?? null;
+        if ($explained !== null) {
+            return $this->privateResponse($this->respondWithErrors([[
+                'code' => $code,
+                'message' => __($explained),
+                'reason' => $exception->reasonCode,
+            ]], $status));
+        }
+
+        // A refusal is not an input error: say "forbidden" / "not found"
+        // rather than "Invalid input" (E-102). Internal causes stay generic.
+        $message = match ($code) {
+            'EVENT_CHECKIN_FORBIDDEN' => __('api.forbidden'),
+            'EVENT_CHECKIN_NOT_FOUND' => __('api.resource_not_found'),
+            'EVENT_CHECKIN_UNAVAILABLE' => __('api.service_unavailable'),
+            default => __('api.invalid_input'),
+        };
+
         return $this->privateResponse($this->respondWithError(
             $code,
-            __('api.invalid_input'),
+            $message,
             null,
             $status,
         ));

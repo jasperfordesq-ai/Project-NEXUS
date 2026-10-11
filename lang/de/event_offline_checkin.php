@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Widerrufen Sie ein verlorenes Mitarbeitergerät sofort im regulären Veranstaltungsbereich. Fahren Sie hier mit dem manuellen Namens- oder Code-Check-in fort.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Dieser Check-in-Code wurde widerrufen oder durch einen neueren ersetzt. Bitten Sie die teilnehmende Person um ihren aktuellen Code.',
+        'credential_expired' => 'Dieser Check-in-Code ist abgelaufen. Die teilnehmende Person kann auf der Veranstaltungsseite einen neuen erstellen.',
+        'observed_at_outside_window' => 'Einige Check-ins in diesem Stapel wurden vor zu langer Zeit oder mit einer Uhrzeit in der Zukunft erfasst und können nicht angenommen werden. Prüfen Sie Datum und Uhrzeit auf diesem Gerät.',
+        'manifest_out_of_date' => 'Die Teilnehmerliste auf diesem Gerät ist veraltet. Laden Sie die Teilnehmerliste online erneut herunter und synchronisieren Sie dann.',
+        'manifest_expired' => 'Die Offline-Teilnehmerliste auf diesem Gerät ist abgelaufen. Laden Sie online eine neue Liste herunter.',
+        'duplicate' => 'Dieser Stapel enthält einen Check-in, der bereits gesendet wurde. Laden Sie die Seite neu und synchronisieren Sie erneut.',
+        'device_not_active' => 'Dieses Check-in-Gerät wurde widerrufen oder ersetzt. Registrieren Sie das Gerät erneut, um fortzufahren.',
+        'device_expired' => 'Die Autorisierung dieses Check-in-Geräts ist abgelaufen. Registrieren Sie das Gerät erneut, um fortzufahren.',
+    ],
 ];

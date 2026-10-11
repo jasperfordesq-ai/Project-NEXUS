@@ -35,12 +35,15 @@ import {
   activateOfflineCheckinSession,
   enqueueOfflineCredential,
   loadOfflineCheckinSession,
+  offlineCheckinExplanation,
+  OfflineCheckinRequestError,
   purgeOfflineCheckinSession,
   refreshOfflineCheckinManifest,
   removeSyncedOfflineCheckinItems,
   synchronizeOfflineCheckin,
   type OfflineCheckinSession,
 } from '@/lib/event-offline-checkin-store';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { EventCheckInWorkspace } from './EventCheckInWorkspace';
@@ -216,7 +219,9 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
 
   const activate = async (secret: string) => {
     const response = await eventOfflineCheckinApi.manifest(eventId, secret);
-    if (!response.success || !response.data) throw new Error(response.code ?? 'generic');
+    if (!response.success || !response.data) {
+      throw new OfflineCheckinRequestError(response.code ?? 'generic', explainedApiError(response));
+    }
     const next = await activateOfflineCheckinSession(secret, response.data);
     setSession(next);
     toast.success(t('workspace.offline_ready'));
@@ -233,13 +238,15 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
         mutationKey('offline-device'),
       );
       const secret = response.data?.device.secret;
-      if (!response.success || !response.data || !secret) throw new Error(response.code ?? 'generic');
+      if (!response.success || !response.data || !secret) {
+        throw new OfflineCheckinRequestError(response.code ?? 'generic', explainedApiError(response));
+      }
       await activate(secret);
       setDeviceLabel('');
       await load();
     } catch (error) {
       logError('Failed to authorize Event check-in device', error);
-      toast.error(t('errors.generic'));
+      toast.error(offlineCheckinExplanation(error) ?? t('errors.generic'));
     } finally {
       setIsBusy(false);
     }
@@ -354,12 +361,15 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
       await loadConflicts();
     } catch (error) {
       const code = errorCode(error);
+      // The server's own explanation (a revoked code, an outdated roster, a
+      // check-in already sent) beats a generic "could not sync".
+      const explanation = offlineCheckinExplanation(error);
       if (code === 'EVENT_CHECKIN_FORBIDDEN' || code === 'device_revoked' || code === 'device_expired') {
         await purgeOfflineCheckinSession(session.eventId, session.deviceId);
         setSession(null);
-        toast.error(t(code.includes('expired') ? 'errors.device_expired' : 'errors.device_revoked'));
+        toast.error(explanation ?? t(code.includes('expired') ? 'errors.device_expired' : 'errors.device_revoked'));
       } else {
-        toast.error(t('queue.sync_error'));
+        toast.error(explanation ?? t('queue.sync_error'));
       }
     } finally {
       setIsBusy(false);

@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'If a staff device is lost, revoke it immediately in the standard events workspace. Continue here with manual name or signed-code check-in.',
     ],
+    'errors' => [
+        'credential_not_active' => 'This check-in code has been revoked or replaced by a newer one. Ask the attendee for their current code.',
+        'credential_expired' => 'This check-in code has expired. The attendee can create a new one from the event page.',
+        'observed_at_outside_window' => 'Some check-ins in this batch were recorded too long ago, or at a time in the future, to be accepted. Check the date and time on this device.',
+        'manifest_out_of_date' => 'This device\'s attendee list is out of date. Download the attendee list again while online, then sync.',
+        'manifest_expired' => 'This device\'s offline attendee list has expired. Download a fresh list while online.',
+        'duplicate' => 'This batch contains a check-in that has already been sent. Refresh the page and sync again.',
+        'device_not_active' => 'This check-in device has been revoked or replaced. Register the device again to continue.',
+        'device_expired' => 'This check-in device\'s authorisation has expired. Register the device again to continue.',
+    ],
 ];

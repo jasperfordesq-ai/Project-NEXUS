@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Se perder um dispositivo da equipa, revogue-o imediatamente na área de eventos padrão. Continue aqui por nome ou código assinado.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Este código de check-in foi revogado ou substituído por um mais recente. Peça à pessoa participante o código atual.',
+        'credential_expired' => 'Este código de check-in expirou. A pessoa participante pode criar um novo na página do evento.',
+        'observed_at_outside_window' => 'Alguns check-ins deste lote foram registados há demasiado tempo, ou com uma hora futura, e não podem ser aceites. Verifique a data e a hora deste dispositivo.',
+        'manifest_out_of_date' => 'A lista de participantes deste dispositivo está desatualizada. Transfira-a novamente enquanto estiver online e depois sincronize.',
+        'manifest_expired' => 'A lista de participantes offline deste dispositivo expirou. Transfira uma lista nova enquanto estiver online.',
+        'duplicate' => 'Este lote contém um check-in que já foi enviado. Atualize a página e sincronize novamente.',
+        'device_not_active' => 'Este dispositivo de check-in foi revogado ou substituído. Registe o dispositivo novamente para continuar.',
+        'device_expired' => 'A autorização deste dispositivo de check-in expirou. Registe o dispositivo novamente para continuar.',
+    ],
 ];

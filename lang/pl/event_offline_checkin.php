@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'W razie zgubienia urządzenia personelu natychmiast cofnij jego dostęp w standardowym obszarze wydarzeń. Tutaj kontynuuj według nazwiska lub podpisanego kodu.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Ten kod odprawy został unieważniony lub zastąpiony nowszym. Poproś uczestnika o aktualny kod.',
+        'credential_expired' => 'Ten kod odprawy wygasł. Uczestnik może utworzyć nowy na stronie wydarzenia.',
+        'observed_at_outside_window' => 'Niektóre odprawy w tej partii zostały zapisane zbyt dawno lub z godziną z przyszłości i nie mogą zostać przyjęte. Sprawdź datę i godzinę na tym urządzeniu.',
+        'manifest_out_of_date' => 'Lista uczestników na tym urządzeniu jest nieaktualna. Pobierz ją ponownie w trybie online, a następnie zsynchronizuj.',
+        'manifest_expired' => 'Lista uczestników offline na tym urządzeniu wygasła. Pobierz nową listę w trybie online.',
+        'duplicate' => 'Ta partia zawiera odprawę, która została już wysłana. Odśwież stronę i zsynchronizuj ponownie.',
+        'device_not_active' => 'To urządzenie do odprawy zostało unieważnione lub zastąpione. Zarejestruj urządzenie ponownie, aby kontynuować.',
+        'device_expired' => 'Autoryzacja tego urządzenia do odprawy wygasła. Zarejestruj urządzenie ponownie, aby kontynuować.',
+    ],
 ];

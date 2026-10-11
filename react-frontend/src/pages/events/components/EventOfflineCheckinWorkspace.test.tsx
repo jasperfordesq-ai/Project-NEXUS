@@ -201,4 +201,43 @@ describe('EventOfflineCheckinWorkspace', () => {
 
     await waitFor(() => expect(eventOfflineCheckinApi.conflicts).toHaveBeenLastCalledWith(42, 2));
   });
+
+  it("shows the server's explanation when it says why a device was refused", async () => {
+    const user = userEvent.setup();
+    const explanation = 'This check-in device has been revoked or replaced. Register the device again to continue.';
+    vi.mocked(eventOfflineCheckinApi.workspace).mockResolvedValue({ success: true, data: workspaceFixture });
+    vi.mocked(eventOfflineCheckinApi.registerDevice).mockResolvedValue({ success: true, data: {
+      contract_version: 1,
+      event_id: 42,
+      device: { id: 7, label: 'Front desk', version: 1, status: 'active', expires_at: '2035-01-01T00:00:00Z', secret: 'nxd1_secret', secret_one_shot: true },
+      manifest_version: 1,
+    } });
+    vi.mocked(eventOfflineCheckinApi.manifest).mockResolvedValue({
+      success: false,
+      code: 'EVENT_CHECKIN_VALIDATION_FAILED',
+      errors: [{ code: 'EVENT_CHECKIN_VALIDATION_FAILED', message: explanation, reason: 'event_checkin_device_not_active' }],
+    });
+    renderEventComponent(<EventOfflineCheckinWorkspace eventId={42} />);
+
+    await user.type(await screen.findByLabelText('Device label'), 'Front desk');
+    await user.click(screen.getByRole('button', { name: 'Authorize device' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(explanation));
+  });
+
+  it('keeps its own wording when the refusal carries no explanation', async () => {
+    const user = userEvent.setup();
+    vi.mocked(eventOfflineCheckinApi.workspace).mockResolvedValue({ success: true, data: workspaceFixture });
+    vi.mocked(eventOfflineCheckinApi.registerDevice).mockResolvedValue({
+      success: false,
+      code: 'EVENT_CHECKIN_FORBIDDEN',
+      errors: [{ code: 'EVENT_CHECKIN_FORBIDDEN', message: 'Forbidden' }],
+    });
+    renderEventComponent(<EventOfflineCheckinWorkspace eventId={42} />);
+
+    await user.type(await screen.findByLabelText('Device label'), 'Front desk');
+    await user.click(screen.getByRole('button', { name: 'Authorize device' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('errors.generic'));
+  });
 });

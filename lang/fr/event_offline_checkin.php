@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Si un appareil du personnel est perdu, révoquez-le immédiatement dans l’espace événements standard. Continuez ici avec le nom ou le code signé.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Ce code d’enregistrement a été révoqué ou remplacé par un code plus récent. Demandez à la personne participante son code actuel.',
+        'credential_expired' => 'Ce code d’enregistrement a expiré. La personne participante peut en créer un nouveau depuis la page de l’événement.',
+        'observed_at_outside_window' => 'Certains enregistrements de ce lot ont été effectués il y a trop longtemps, ou à une heure future, pour être acceptés. Vérifiez la date et l’heure de cet appareil.',
+        'manifest_out_of_date' => 'La liste des participants de cet appareil n’est plus à jour. Téléchargez-la à nouveau en ligne, puis synchronisez.',
+        'manifest_expired' => 'La liste hors ligne des participants de cet appareil a expiré. Téléchargez une nouvelle liste en ligne.',
+        'duplicate' => 'Ce lot contient un enregistrement qui a déjà été envoyé. Actualisez la page et synchronisez à nouveau.',
+        'device_not_active' => 'Cet appareil d’enregistrement a été révoqué ou remplacé. Enregistrez à nouveau l’appareil pour continuer.',
+        'device_expired' => 'L’autorisation de cet appareil d’enregistrement a expiré. Enregistrez à nouveau l’appareil pour continuer.',
+    ],
 ];

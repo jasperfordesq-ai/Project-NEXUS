@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Si se pierde un dispositivo del personal, revócalo de inmediato en el espacio de eventos estándar. Continúa aquí por nombre o código firmado.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Este código de registro se ha revocado o se ha sustituido por uno más reciente. Pide a la persona asistente su código actual.',
+        'credential_expired' => 'Este código de registro ha caducado. La persona asistente puede crear uno nuevo desde la página del evento.',
+        'observed_at_outside_window' => 'Algunos registros de este lote se hicieron hace demasiado tiempo, o con una hora futura, y no se pueden aceptar. Comprueba la fecha y la hora de este dispositivo.',
+        'manifest_out_of_date' => 'La lista de asistentes de este dispositivo está desactualizada. Vuelve a descargarla con conexión y después sincroniza.',
+        'manifest_expired' => 'La lista de asistentes sin conexión de este dispositivo ha caducado. Descarga una lista nueva con conexión.',
+        'duplicate' => 'Este lote contiene un registro que ya se ha enviado. Actualiza la página y vuelve a sincronizar.',
+        'device_not_active' => 'Este dispositivo de registro se ha revocado o sustituido. Vuelve a registrar el dispositivo para continuar.',
+        'device_expired' => 'La autorización de este dispositivo de registro ha caducado. Vuelve a registrar el dispositivo para continuar.',
+    ],
 ];

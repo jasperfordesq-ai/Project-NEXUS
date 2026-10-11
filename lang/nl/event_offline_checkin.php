@@ -63,4 +63,14 @@ return [
     'device' => [
         'lost' => 'Trek bij verlies van een personeelsapparaat de toegang direct in via de gewone evenementenomgeving. Ga hier verder op naam of met een ondertekende code.',
     ],
+    'errors' => [
+        'credential_not_active' => 'Deze incheckcode is ingetrokken of vervangen door een nieuwere. Vraag de deelnemer om de huidige code.',
+        'credential_expired' => 'Deze incheckcode is verlopen. De deelnemer kan op de evenementpagina een nieuwe maken.',
+        'observed_at_outside_window' => 'Sommige check-ins in deze batch zijn te lang geleden, of met een tijd in de toekomst, vastgelegd en kunnen niet worden geaccepteerd. Controleer de datum en tijd op dit apparaat.',
+        'manifest_out_of_date' => 'De deelnemerslijst op dit apparaat is verouderd. Download de lijst opnieuw terwijl u online bent en synchroniseer daarna.',
+        'manifest_expired' => 'De offline deelnemerslijst op dit apparaat is verlopen. Download een nieuwe lijst terwijl u online bent.',
+        'duplicate' => 'Deze batch bevat een check-in die al is verzonden. Vernieuw de pagina en synchroniseer opnieuw.',
+        'device_not_active' => 'Dit incheckapparaat is ingetrokken of vervangen. Registreer het apparaat opnieuw om verder te gaan.',
+        'device_expired' => 'De autorisatie van dit incheckapparaat is verlopen. Registreer het apparaat opnieuw om verder te gaan.',
+    ],
 ];

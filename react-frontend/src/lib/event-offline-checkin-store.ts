@@ -10,6 +10,27 @@ import {
   type OfflineOperation,
 } from '@/lib/event-offline-checkin-api';
 import { tokenManager } from '@/lib/api';
+import { explainedApiError } from '@/lib/explained-api-error';
+
+/**
+ * A refusal from the check-in API. `message` stays the response code so
+ * callers can branch on it; `explanation` is the server's translated message
+ * when it said specifically what is wrong (a revoked code, an outdated roster).
+ */
+export class OfflineCheckinRequestError extends Error {
+  readonly explanation: string | null;
+
+  constructor(code: string, explanation: string | null) {
+    super(code);
+    this.name = 'OfflineCheckinRequestError';
+    this.explanation = explanation;
+  }
+}
+
+/** The server's explanation carried by an error, or null. */
+export function offlineCheckinExplanation(error: unknown): string | null {
+  return error instanceof OfflineCheckinRequestError ? error.explanation : null;
+}
 
 const DATABASE_NAME = 'nexus-event-checkin-v1';
 const DATABASE_VERSION = 1;
@@ -330,7 +351,7 @@ export async function synchronizeOfflineCheckin(
       updatedAt: new Date().toISOString(),
     };
     await saveSession(next);
-    throw new Error(staged.code ?? 'sync_failed');
+    throw new OfflineCheckinRequestError(staged.code ?? 'sync_failed', explainedApiError(staged));
   }
   const states = new Map(staged.data.items.map((item) => [item.client_nonce, item]));
   const next: OfflineCheckinSession = {

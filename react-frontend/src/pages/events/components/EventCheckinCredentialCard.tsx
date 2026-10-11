@@ -23,6 +23,8 @@ import {
   eventOfflineCheckinApi,
   type EventCheckinCredential,
 } from '@/lib/event-offline-checkin-api';
+import { OfflineCheckinRequestError, offlineCheckinExplanation } from '@/lib/event-offline-checkin-store';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
@@ -92,11 +94,11 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
         null,
         mutationKey('event-checkin-code'),
       );
-      if (!response.success || !response.data?.credential) throw new Error(response.code ?? 'issue_failed');
+      if (!response.success || !response.data?.credential) throw new OfflineCheckinRequestError(response.code ?? 'issue_failed', explainedApiError(response));
       applyResponse(response.data.credential);
     } catch (error) {
       logError('Failed to issue private Event check-in credential', error);
-      toast.error(t('credential.unavailable'));
+      toast.error(offlineCheckinExplanation(error) ?? t('credential.unavailable'));
       await load();
     } finally {
       setBusy(false);
@@ -120,12 +122,12 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
         credential.version,
         mutationKey('event-checkin-code-rotate'),
       );
-      if (!response.success || !response.data?.credential) throw new Error(response.code ?? 'rotate_failed');
+      if (!response.success || !response.data?.credential) throw new OfflineCheckinRequestError(response.code ?? 'rotate_failed', explainedApiError(response));
       applyResponse(response.data.credential);
       setReason('');
     } catch (error) {
       logError('Failed to rotate private Event check-in credential', error);
-      toast.error(t('credential.unavailable'));
+      toast.error(offlineCheckinExplanation(error) ?? t('credential.unavailable'));
       await load();
     } finally {
       setBusy(false);
@@ -153,13 +155,13 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
         credential.version,
         reason.trim(),
       );
-      if (!response.success || !response.data?.credential) throw new Error(response.code ?? 'revoke_failed');
+      if (!response.success || !response.data?.credential) throw new OfflineCheckinRequestError(response.code ?? 'revoke_failed', explainedApiError(response));
       applyResponse(response.data.credential);
       setReason('');
       toast.success(t('credential.revoked'));
     } catch (error) {
       logError('Failed to revoke private Event check-in credential', error);
-      toast.error(t('credential.unavailable'));
+      toast.error(offlineCheckinExplanation(error) ?? t('credential.unavailable'));
       await load();
     } finally {
       setBusy(false);
