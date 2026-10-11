@@ -870,6 +870,15 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             return ['kind' => 'registration', 'state' => $state, 'notification_type' => 'event_registration', 'offer_secret' => false];
         }
 
+        if ($action === 'event.waitlist.promoted') {
+            // An automatic promotion (EventWaitlistService::promoteWaitingWithinTransaction)
+            // also records event.registration.confirmed/.pending for the same
+            // member, which already tells them (and the organiser) what
+            // happened. The waitlist "accepted" wording ("You accepted your
+            // place") would be a second, inaccurate message: nobody accepted.
+            return null;
+        }
+
         if (str_starts_with($action, 'event.waitlist.')) {
             $state = (string) ($payload['to_state'] ?? substr($action, strlen('event.waitlist.')));
             if (! in_array($state, ['waiting', 'offered', 'accepted', 'expired', 'cancelled'], true)) {

@@ -1499,9 +1499,9 @@
             "data_expression": "['link' => $rendered['path'], 'type' => self::TYPE]"
         },
         {
-            "id": "app/Services/EventNotificationOutboxActionHandler.php:1720:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/EventNotificationOutboxActionHandler.php:1729:NotificationDispatcher::fanOutPush",
             "file": "app/Services/EventNotificationOutboxActionHandler.php",
-            "line": 1720,
+            "line": 1729,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -1512,9 +1512,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/EventNotificationOutboxActionHandler.php:1794:FCMPushService::sendToUser",
+            "id": "app/Services/EventNotificationOutboxActionHandler.php:1803:FCMPushService::sendToUser",
             "file": "app/Services/EventNotificationOutboxActionHandler.php",
-            "line": 1794,
+            "line": 1803,
             "transport": "FCMPushService::sendToUser",
             "role": "producer",
             "recipient_expression": "$userId",
