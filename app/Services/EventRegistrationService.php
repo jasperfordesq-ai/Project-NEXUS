@@ -721,11 +721,14 @@ final class EventRegistrationService
                     $idempotencyKey,
                 );
 
-            // F-356, part (b): give the guests' seats back too. Ticket
-            // entitlements were released here and reminders cancelled above,
-            // but guests were not, so a cancelled member's guest went on
-            // occupying a place for ever and could deny one to a member who
-            // really was coming.
+        }
+        // F-356, part (b): give the guests' seats back too, so a cancelled
+        // member's guest does not go on occupying a place. E-102: also when a
+        // request that never held a seat (pending or invited) is withdrawn or
+        // declined — its guests used to stay captured and came back attached
+        // if the member asked again.
+        if (($wasConsuming && ! $target->consumesCapacity())
+            || in_array($target, [EventCapacityRegistrationState::Cancelled, EventCapacityRegistrationState::Declined], true)) {
             $withdrawnGuests = $this->guests->withdrawForRegistrationExitWithinTransaction(
                 $eventId,
                 (int) $registration->getKey(),

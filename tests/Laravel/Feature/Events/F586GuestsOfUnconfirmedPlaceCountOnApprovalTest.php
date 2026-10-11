@@ -124,6 +124,52 @@ final class F586GuestsOfUnconfirmedPlaceCountOnApprovalTest extends TestCase
     // ── fixtures ────────────────────────────────────────────────────────────
 
     /** @return array{0:int,1:User,2:User,3:User} */
+    /**
+     * E-102 follow-up: guests were withdrawn only when a CONFIRMED place was
+     * given up. A pending request that was withdrawn by the member or declined
+     * by the organiser kept its guests `captured`, and they came back attached
+     * if the member asked again.
+     */
+    public function test_withdrawing_a_pending_request_also_withdraws_its_guests(): void
+    {
+        [$eventId, , $memberA] = $this->manualApprovalEvent(2);
+        $registrationA = $this->requestPlace($eventId, $memberA);
+        $this->captureGuest($eventId, $registrationA, $memberA, 'Ann Guest');
+
+        (new EventRegistrationService())->withdraw($eventId, (int) $memberA->getKey(), $memberA, 'e102-withdraw-pending-' . $eventId);
+
+        self::assertSame('cancelled', $this->state($eventId, $memberA));
+        self::assertSame(0, $this->capturedGuests($registrationA), 'BAD OUTCOME: the guest of a withdrawn request is still captured.');
+    }
+
+    public function test_declining_a_pending_request_also_withdraws_its_guests(): void
+    {
+        [$eventId, $owner, $memberA] = $this->manualApprovalEvent(2);
+        $registrationA = $this->requestPlace($eventId, $memberA);
+        $this->captureGuest($eventId, $registrationA, $memberA, 'Ann Guest');
+
+        (new EventRegistrationService())->transition(
+            $eventId,
+            (int) $memberA->getKey(),
+            EventCapacityRegistrationState::Declined,
+            $owner,
+            'e102-decline-pending-' . $eventId,
+            reason: 'Event is for members of the walking group only.',
+        );
+
+        self::assertSame('declined', $this->state($eventId, $memberA));
+        self::assertSame(0, $this->capturedGuests($registrationA), 'BAD OUTCOME: the guest of a declined request is still captured.');
+    }
+
+    private function capturedGuests(int $registrationId): int
+    {
+        return (int) DB::table('event_registration_guests')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('registration_id', $registrationId)
+            ->where('status', 'captured')
+            ->count();
+    }
+
     private function manualApprovalEvent(int $capacity, string $approvalMode = 'manual'): array
     {
         $owner = $this->eventUser();
