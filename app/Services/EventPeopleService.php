@@ -611,7 +611,7 @@ SQL,
      * (see EventRegistrationSubmissionService). Check-in is refused for them,
      * so the list must not offer it.
      *
-     * @param \Illuminate\Support\Collection<int,object> $facts
+     * @param \Illuminate\Support\Collection<int,\stdClass> $facts
      * @return array<int,true>
      */
     private function outstandingAnswers(int $tenantId, int $eventId, \Illuminate\Support\Collection $facts): array
