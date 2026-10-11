@@ -36,6 +36,11 @@ use Tests\Laravel\TestCase;
  * The rule this pins: auth is GLOBAL, resources are tenant-scoped. Never add
  * `AND tenant_id = ?` to a lookup of the acting user's own row.
  *
+ * 🔴 Since 11 October 2026 (owner decision) a network admin — a tenant super
+ * admin of the PARENT community — no longer holds authority here at all; only
+ * the platform owner, and the event's own organiser, act across communities.
+ * The network-admin case below is therefore a refusal.
+ *
  * These assert the services directly rather than POSTing the check-in
  * endpoint, because Sanctum::actingAs() takes the guard branch of the
  * Authenticate middleware, whose own cross-tenant check would 403 first and
@@ -58,11 +63,12 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         Config::set('events.attendance_credit_mode', 'off');
-        // The actor in these tests is a NETWORK admin — an admin who oversees the
-        // community being acted on from a different home tenant. Build that
-        // relationship for real: the home tenant becomes the parent of the acting
-        // tenant, so the actor's authority over it is genuine rather than assumed
-        // from an admin flag alone. Rolls back with the transaction.
+        // The home tenant becomes the PARENT of the acting tenant, so a network
+        // admin (tenant super admin) of the home tenant really does oversee it.
+        // Since 11 October 2026 that confers no authority here (owner decision:
+        // tenant super admins act in their own community only), and the refusal
+        // cases assert it against this closest-possible relationship. Rolls back
+        // with the transaction.
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
 
         $this->service = app(EventAttendanceService::class);
@@ -148,9 +154,15 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
 
     /**
      * The exact production shape: role='admin', is_tenant_super_admin=1,
-     * home tenant != the tenant being acted on.
+     * home tenant is the PARENT of the tenant being acted on.
+     *
+     * 🔴 Reversed 11 October 2026 (owner decision: a tenant super admin acts in
+     * its own community only). This was test_cross_tenant_network_admin_can_record_attendance
+     * and asserted 'checked_in'. The actor-is-global regression it was written
+     * for is still pinned, by the platform-owner case below and by the organiser
+     * cases in this file.
      */
-    public function test_cross_tenant_network_admin_can_record_attendance(): void
+    public function test_cross_tenant_network_admin_cannot_record_attendance(): void
     {
         $admin = $this->crossTenantUser([
             'role' => 'admin',
@@ -162,7 +174,29 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
         $eventId = $this->event((int) $organizer->id);
         $this->rsvp($eventId, $attendee);
 
-        $result = $this->service->record($eventId, (int) $attendee->id, $admin);
+        try {
+            $this->service->record($eventId, (int) $attendee->id, $admin);
+            self::fail('A parent community\'s tenant super admin must not check anyone in on a sub-community event.');
+        } catch (EventAttendanceException $exception) {
+            self::assertSame('event_attendance_authorization_denied', $exception->reasonCode);
+        }
+        self::assertNull($this->attendanceStatus($eventId, $attendee));
+    }
+
+    /** The platform owner is the one tier that still crosses communities. */
+    public function test_cross_tenant_platform_owner_can_record_attendance(): void
+    {
+        $owner = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 1,
+            'is_tenant_super_admin' => 0,
+        ]);
+        $organizer = $this->localUser();
+        $attendee = $this->localUser();
+        $eventId = $this->event((int) $organizer->id);
+        $this->rsvp($eventId, $attendee);
+
+        $result = $this->service->record($eventId, (int) $attendee->id, $owner);
 
         self::assertSame('checked_in', $result->outcome);
     }

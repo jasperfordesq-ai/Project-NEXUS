@@ -8,9 +8,6 @@ declare(strict_types=1);
 
 namespace App\Support\Authorization;
 
-use Illuminate\Support\Facades\DB;
-use Throwable;
-
 /**
  * Canonical predicate for "does this actor hold admin authority over THIS tenant".
  *
@@ -31,15 +28,28 @@ use Throwable;
  * it per tier:
  *
  *   - platform (is_super_admin / is_god, or those role strings) — every tenant
- *   - network  (is_tenant_super_admin) — own tenant plus its subtree, by
- *     materialised-path prefix, matching SuperPanelAccess's `regional` level
- *   - tenant   (role 'admin'/'tenant_admin', or is_admin) — own tenant ONLY
+ *   - tenant super admin (is_tenant_super_admin) — own tenant ONLY
+ *   - tenant admin (role 'admin'/'tenant_admin', or is_admin) — own tenant ONLY
  *   - anyone else, including broker/coordinator via AdminTier — nothing
  *
- * Deliberately does NOT reuse SuperPanelAccess::canAccessTenant() despite the
- * identical subtree rule: that reads $_SESSION['user_id'] and memoises the first
- * answer in a static, so inside a policy evaluating several users in one request
- * it returns the wrong actor's access. This takes the actor explicitly.
+ * 🔴 OWNER DECISION, 11 October 2026 (verbatim): "I don't want tenant admins to
+ * act outside of the home community or tenant super admins, or normal tenant
+ * admins." Only the platform owner (is_super_admin / is_god, or the
+ * 'super_admin' / 'god' role strings) keeps cross-community reach.
+ *
+ * Until that date a tenant super admin (a "network admin") also reached every
+ * sub-tenant beneath its own, by materialised-path prefix on `tenants.path`,
+ * mirroring SuperPanelAccess's `regional` level. That subtree reach is removed:
+ * a tenant super admin now holds exactly a tenant admin's authority, over its
+ * own community and nothing else. Do not reintroduce a hierarchy rule here — a
+ * sub-community's records are acted on by that community's own admins or by the
+ * platform owner. SuperPanelAccess (the super-admin panel's own gate) is a
+ * separate decision and was deliberately not changed by this one.
+ *
+ * This class takes the actor explicitly. Never swap it for
+ * SuperPanelAccess::canAccessTenant(): that reads $_SESSION['user_id'] and
+ * memoises the first answer in a static, so inside a policy evaluating several
+ * users in one request it returns the wrong actor's access.
  */
 final class TenantAdminScope
 {
@@ -73,16 +83,9 @@ final class TenantAdminScope
             return false;
         }
 
-        if ($homeTenantId === $tenantId) {
-            return true;
-        }
-
-        // A network admin reaches its own subtree, and nothing above or beside it.
-        if ((bool) data_get($user, 'is_tenant_super_admin', false)) {
-            return self::isDescendant($homeTenantId, $tenantId);
-        }
-
-        return false;
+        // Own community only — for a tenant super admin exactly as for a tenant
+        // admin. No reach into sub-communities (owner decision, 11 Oct 2026).
+        return $homeTenantId === $tenantId;
     }
 
     /** @param object|array<string,mixed> $user */
@@ -91,34 +94,5 @@ final class TenantAdminScope
         return (bool) data_get($user, 'is_super_admin', false)
             || (bool) data_get($user, 'is_god', false)
             || in_array((string) data_get($user, 'role', ''), self::PLATFORM_ROLES, true);
-    }
-
-    /**
-     * Is $tenantId at or below $ancestorTenantId in the tenant tree?
-     *
-     * Uses the materialised `tenants.path` ('/1/2/5/'). The trailing slash is what
-     * makes a prefix test safe: '/1/20/' does not start with '/1/2/'. Fails closed
-     * on a missing or empty path, because str_starts_with($x, '') is TRUE and an
-     * empty prefix would otherwise admit every tenant.
-     */
-    private static function isDescendant(int $ancestorTenantId, int $tenantId): bool
-    {
-        try {
-            $rows = DB::table('tenants')
-                ->whereIn('id', [$ancestorTenantId, $tenantId])
-                ->pluck('path', 'id');
-
-            $prefix = trim((string) ($rows[$ancestorTenantId] ?? ''));
-            $target = trim((string) ($rows[$tenantId] ?? ''));
-
-            if ($prefix === '' || $target === '') {
-                return false;
-            }
-
-            return str_starts_with($target, $prefix);
-        } catch (Throwable) {
-            // Never widen authority because a lookup failed.
-            return false;
-        }
     }
 }

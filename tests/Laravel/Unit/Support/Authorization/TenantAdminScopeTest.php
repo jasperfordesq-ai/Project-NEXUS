@@ -22,11 +22,14 @@ use Tests\Laravel\TestCase;
  * measured as all nineteen event abilities, including exportPeople, manageFinance
  * and transferOwnership. These tests pin the tenant half of that decision.
  *
- * 🔴 The subtree cases are the ones most likely to be broken by a well-meaning
- * simplification. A network admin reaches DOWN its own branch only: not up to its
- * parent, and not sideways to a sibling. Collapsing that to "same tenant" locks
- * hub admins out of their own branches; collapsing it to "any admin" is the
- * escalation this class exists to stop.
+ * 🔴 Owner decision, 11 October 2026: "I don't want tenant admins to act outside
+ * of the home community or tenant super admins, or normal tenant admins." A
+ * tenant super admin (network admin) used to reach DOWN its own branch of the
+ * tenant tree; it now reaches its own community only, exactly like a tenant
+ * admin. The hub-with-branches fixture is kept deliberately: it is the closest
+ * relationship a tenant super admin can have to another community, so refusing
+ * it there is the strongest form of the rule. Only the platform tier crosses
+ * communities.
  */
 final class TenantAdminScopeTest extends TestCase
 {
@@ -123,15 +126,33 @@ final class TenantAdminScopeTest extends TestCase
     }
 
     // ---------------------------------------------------------------- tier 2
-    // Network: own tenant plus its subtree, and nothing else.
+    // Tenant super admin: own tenant ONLY (owner decision, 11 October 2026).
 
-    public function test_network_admin_reaches_its_own_branches(): void
+    /**
+     * 🔴 This was test_network_admin_reaches_its_own_branches and asserted TRUE
+     * for both branches. Reversed on the owner's instruction: a hub's tenant super
+     * admin keeps authority over the hub and loses it over every branch beneath.
+     */
+    public function test_tenant_super_admin_does_not_reach_down_into_its_own_branches(): void
     {
-        $hubNetworkAdmin = $this->actor(['tenant_id' => $this->hubId, 'is_tenant_super_admin' => 1]);
+        $hubTenantSuperAdmin = $this->actor(['tenant_id' => $this->hubId, 'is_tenant_super_admin' => 1]);
 
-        $this->assertTrue(TenantAdminScope::allows($hubNetworkAdmin, $this->hubId));
-        $this->assertTrue(TenantAdminScope::allows($hubNetworkAdmin, $this->branchAId));
-        $this->assertTrue(TenantAdminScope::allows($hubNetworkAdmin, $this->branchBId));
+        $this->assertTrue(TenantAdminScope::allows($hubTenantSuperAdmin, $this->hubId));
+        $this->assertFalse(TenantAdminScope::allows($hubTenantSuperAdmin, $this->branchAId));
+        $this->assertFalse(TenantAdminScope::allows($hubTenantSuperAdmin, $this->branchBId));
+    }
+
+    public function test_tenant_super_admin_holding_admin_role_too_still_reaches_only_its_own_tenant(): void
+    {
+        $actor = $this->actor([
+            'tenant_id' => $this->hubId,
+            'role' => 'admin',
+            'is_admin' => 1,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        $this->assertTrue(TenantAdminScope::allows($actor, $this->hubId));
+        $this->assertFalse(TenantAdminScope::allows($actor, $this->branchAId));
     }
 
     public function test_network_admin_does_not_reach_upwards_to_its_parent(): void
@@ -227,7 +248,7 @@ final class TenantAdminScopeTest extends TestCase
 
     public function test_unknown_target_tenant_fails_closed_for_a_network_admin(): void
     {
-        // No path row to compare against; must not fall through to allow.
+        // A tenant that does not exist is never the actor's own; must not allow.
         $this->assertFalse(TenantAdminScope::allows(
             $this->actor(['tenant_id' => $this->hubId, 'is_tenant_super_admin' => 1]),
             2147483600

@@ -56,11 +56,12 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         $this->workflow = app(EventPublicationWorkflowService::class);
-        // The actor in these tests is a NETWORK admin — an admin who oversees the
-        // community being acted on from a different home tenant. Build that
-        // relationship for real: the home tenant becomes the parent of the acting
-        // tenant, so the actor's authority over it is genuine rather than assumed
-        // from an admin flag alone. Rolls back with the transaction.
+        // The home tenant becomes the PARENT of the acting tenant, so a network
+        // admin (tenant super admin) of the home tenant really does oversee it.
+        // Since 11 October 2026 that confers no authority here (owner decision:
+        // tenant super admins act in their own community only), and the refusal
+        // cases assert it against this closest-possible relationship. Rolls back
+        // with the transaction.
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
 
     }
@@ -155,15 +156,14 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
     }
 
     /**
-     * The security property the network-admin cases above must not blur.
+     * Being an admin of a community above this one is not authority over this one.
      *
-     * This actor is an admin of the PARENT community, but a plain one — no
-     * is_tenant_super_admin. Being an admin of a community above this one is not
-     * authority over this one; only the network tier reaches down the tree. Note
-     * setUp() has made the home tenant the parent, so this is the strongest form
-     * of the case: even the closest possible relationship is not enough without
-     * the network flag. Before TenantAdminScope this actor could publish, and so
-     * could an admin of a completely unrelated community.
+     * This actor is a plain admin of the PARENT community. setUp() has made the
+     * home tenant the parent, so this is the strongest form of the case. Before
+     * TenantAdminScope this actor could publish, and so could an admin of a
+     * completely unrelated community. Since 11 October 2026 (owner decision) the
+     * same is true of the parent's tenant super admin — see
+     * test_cross_tenant_network_admin_cannot_publish_someone_elses_draft.
      */
     public function test_plain_admin_of_another_community_cannot_publish_here(): void
     {
@@ -191,6 +191,51 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
     }
 
     /**
+     * A tenant super admin of the PARENT community may not publish this
+     * community's drafts (owner decision, 11 October 2026: tenant super admins
+     * act in their own community only). Only the event's own organiser and the
+     * platform owner cross communities.
+     */
+    public function test_cross_tenant_network_admin_cannot_publish_someone_elses_draft(): void
+    {
+        $this->setModerationRequired(false);
+        $organizer = User::factory()->forTenant(self::ACTING_TENANT)->create(['status' => 'active']);
+        $event = $this->draftEvent((int) $organizer->id);
+        $networkAdmin = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        try {
+            $this->workflow->publish((int) $event->id, $networkAdmin);
+            self::fail('A parent community\'s tenant super admin must not publish a sub-community draft.');
+        } catch (EventLifecycleTransitionException) {
+            self::assertSame('draft', $this->publicationStateOf($event));
+        }
+    }
+
+    /** Same rule on the moderation decision: approve() refuses the parent's tenant super admin. */
+    public function test_cross_tenant_network_admin_cannot_approve_a_pending_review_event(): void
+    {
+        $this->setModerationRequired(true);
+        $organizer = User::factory()->forTenant(self::ACTING_TENANT)->create(['status' => 'active']);
+        $event = $this->draftEvent((int) $organizer->id, 'pending_review');
+        $networkAdmin = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        try {
+            $this->workflow->approve((int) $event->id, $networkAdmin);
+            self::fail('A parent community\'s tenant super admin must not approve a sub-community event.');
+        } catch (EventLifecycleTransitionException) {
+            self::assertSame('pending_review', $this->publicationStateOf($event));
+        }
+    }
+
+    /**
      * approve() takes the locked actor re-read inside transitionSeries(),
      * which carried its own tenant-scoped predicate.
      */
@@ -199,17 +244,17 @@ final class EventPublicationWorkflowCrossTenantActorTest extends TestCase
         $this->setModerationRequired(true);
         $organizer = User::factory()->forTenant(self::ACTING_TENANT)->create(['status' => 'active']);
         $event = $this->draftEvent((int) $organizer->id, 'pending_review');
-        // A network admin, not a bare role='admin' on an unrelated tenant. What
-        // this test exists to pin is the LOCKED ACTOR RE-READ — that it does not
-        // refuse an actor authorisation has already granted — and the persona is
-        // incidental to that. It has to be someone who genuinely holds authority
-        // here, or the test passes for the wrong reason: a plain admin of another
-        // community has no authority over this one (TenantAdminScope), so using
-        // one would assert a cross-tenant escalation rather than the re-read.
+        // What this test exists to pin is the LOCKED ACTOR RE-READ — that it does
+        // not refuse an actor authorisation has already granted — and the persona
+        // is incidental to that. It has to be someone who genuinely holds
+        // authority here from another community, or the test passes for the wrong
+        // reason. Since 11 October 2026 (owner decision) the only such admin is
+        // the PLATFORM owner: a tenant super admin of the parent community no
+        // longer reaches this one (it was the persona here until then).
         $admin = $this->crossTenantUser([
             'role' => 'admin',
-            'is_super_admin' => 0,
-            'is_tenant_super_admin' => 1,
+            'is_super_admin' => 1,
+            'is_tenant_super_admin' => 0,
         ]);
 
         $this->workflow->approve((int) $event->id, $admin);

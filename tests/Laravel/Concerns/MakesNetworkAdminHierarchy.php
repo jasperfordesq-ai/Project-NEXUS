@@ -36,6 +36,13 @@ use Illuminate\Support\Str;
  * 🔴 Do not "simplify" this by giving the actor `is_super_admin`. That is the
  * platform tier, which reaches every tenant unconditionally and would pass no
  * matter how broken the tenant scoping became — it would test nothing.
+ *
+ * 🔴 Since 11 October 2026 the hierarchy is used the other way round. The owner
+ * decided a tenant super admin acts in its OWN community only, so overseeing a
+ * sub-community no longer confers any authority over it. The fixture stays
+ * because it is the closest relationship a tenant super admin can have to
+ * another community: a refusal asserted on top of it is the strongest form of
+ * that rule, not merely an unrelated stranger being turned away.
  */
 trait MakesNetworkAdminHierarchy
 {
