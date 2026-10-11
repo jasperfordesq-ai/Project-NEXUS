@@ -291,6 +291,9 @@ function NewEventScreen() {
         if (!isMounted) return;
         const capabilities = response.data;
         setRecurrenceCapabilities(capabilities);
+        // No frequency offered = the community has switched recurring events
+        // off, and the server refuses a new series.
+        if (capabilities.supported_frequencies.length === 0) setIsRecurring(false);
         setRecurrenceFrequency((current) => {
           const serverFrequency = current === 'biweekly' ? 'weekly' : current;
           return capabilities.supported_frequencies.includes(serverFrequency)
@@ -778,6 +781,7 @@ function NewEventScreen() {
         id,
         label: t(`category.${id}`),
       }));
+  const recurrenceAvailable = recurrenceCapabilities.supported_frequencies.length > 0;
   const supportedRecurrenceFrequencies = recurrenceCapabilities.supported_frequencies
     .flatMap<RecurrenceFrequency>((frequency) => frequency === 'weekly' ? ['weekly', 'biweekly'] : [frequency]);
   const supportedRecurrenceEndTypes = recurrenceCapabilities.supported_end_types.filter(
@@ -924,7 +928,8 @@ function NewEventScreen() {
             />
             <FormField label={t('create.startLabel')} value={startTime} onChangeText={setStartTime} placeholder={t(allDay ? 'create.dateOnlyPlaceholder' : 'create.datePlaceholder')} theme={theme} />
             <FormField label={t(allDay ? 'create.allDayEndLabel' : 'create.endLabel')} value={endTime} onChangeText={setEndTime} placeholder={t(allDay ? 'create.dateOnlyPlaceholder' : 'create.optionalDatePlaceholder')} theme={theme} />
-            {!isEditing ? (
+            {/* Hidden when the community has switched recurring events off. */}
+            {!isEditing && recurrenceAvailable ? (
               <View className="gap-3 rounded-panel-inner border p-3" style={{ borderColor: theme.border, backgroundColor: withAlpha(primary, 0.06) }}>
                 <Text className="text-sm font-bold" style={{ color: theme.text }}>{t('create.recurrenceTitle')}</Text>
                 <ToggleChip label={t('create.recurrenceToggle')} selected={isRecurring} onPress={() => setIsRecurring((value) => !value)} primary={primary} />

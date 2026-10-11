@@ -535,6 +535,49 @@ describe('NewEventRoute', () => {
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)/events'));
   });
 
+  it('hides the repeat control when the community offers no recurrence frequency', async () => {
+    // A community with recurring events switched off: the capability endpoint
+    // offers no frequency, and the server refuses a new series.
+    mockGetEventRecurrenceCapabilities.mockResolvedValueOnce({
+      data: { ...v2RecurrenceCapabilitiesResponse.data, supported_frequencies: [], supported_end_types: [] },
+    });
+    const { getByPlaceholderText, getByText, queryByText } = render(<NewEventRoute />);
+    expect(getByText('Make this a recurring event')).toBeTruthy();
+
+    await waitFor(() => expect(queryByText('Make this a recurring event')).toBeNull());
+    expect(queryByText('Repeating schedule')).toBeNull();
+
+    fireEvent.changeText(getByPlaceholderText('What is happening?'), 'One-off repair workshop');
+    fireEvent.changeText(getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend together.');
+    fireEvent.press(getByText('Create event'));
+
+    await waitFor(() => expect(mockCreateEvent).toHaveBeenCalled());
+    expect(mockCreateRecurringEvent).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ description: 'Choose valid recurrence details.' }));
+  });
+
+  it('turns the repeat choice off if recurrence becomes unavailable after it was chosen', async () => {
+    let resolveCapabilities: (value: unknown) => void = () => undefined;
+    mockGetEventRecurrenceCapabilities.mockReturnValueOnce(new Promise((resolve) => { resolveCapabilities = resolve; }));
+    const { getByPlaceholderText, getByText, queryByText } = render(<NewEventRoute />);
+    fireEvent.press(getByText('Make this a recurring event'));
+    expect(getByText('Frequency')).toBeTruthy();
+
+    await act(async () => {
+      resolveCapabilities({
+        data: { ...v2RecurrenceCapabilitiesResponse.data, supported_frequencies: [], supported_end_types: [] },
+      });
+    });
+    expect(queryByText('Frequency')).toBeNull();
+
+    fireEvent.changeText(getByPlaceholderText('What is happening?'), 'One-off repair workshop');
+    fireEvent.changeText(getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend together.');
+    fireEvent.press(getByText('Create event'));
+
+    await waitFor(() => expect(mockCreateEvent).toHaveBeenCalled());
+    expect(mockCreateRecurringEvent).not.toHaveBeenCalled();
+  });
+
   it('falls back to legacy recurrence limits when runtime capability negotiation fails', async () => {
     mockGetEventRecurrenceCapabilities.mockRejectedValueOnce(new Error('offline'));
 
