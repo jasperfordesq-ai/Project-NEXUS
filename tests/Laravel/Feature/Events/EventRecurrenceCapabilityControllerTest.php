@@ -68,28 +68,32 @@ final class EventRecurrenceCapabilityControllerTest extends TestCase
         $this->apiGet('/v2/events/recurrence-capabilities')->assertUnauthorized();
     }
 
-    public function test_legacy_response_is_exact_private_and_non_sensitive(): void
+    public function test_engine_flag_off_response_is_v2_exact_private_and_non_sensitive(): void
     {
+        // E-102: the legacy engine no longer exists, so the flag being off
+        // must not make the contract claim it (52 occurrences, "legacy").
+        config()->set('events.recurrence.max_occurrences', 366);
         $user = User::factory()->forTenant($this->testTenantId)->create([
             'status' => 'active',
             'is_approved' => true,
         ]);
         Sanctum::actingAs($user, ['*']);
+        $schemaReady = app(EventRecurrenceMaterializationService::class)->schemaAvailable();
 
         $response = $this->apiGet('/v2/events/recurrence-capabilities')
             ->assertOk()
             ->assertHeader('Pragma', 'no-cache')
             ->assertJsonPath('data.contract_version', 1)
-            ->assertJsonPath('data.engine', 'legacy')
+            ->assertJsonPath('data.engine', 'v2')
             ->assertJsonPath('data.structured_input', true)
             ->assertJsonPath('data.supported_frequencies', ['daily', 'weekly', 'monthly', 'yearly'])
-            ->assertJsonPath('data.max_occurrences', 52)
+            ->assertJsonPath('data.max_occurrences', 366)
             ->assertJsonPath('data.supported_end_types', ['after_count', 'on_date'])
             ->assertJsonPath('data.supports_rolling_never', false)
             ->assertJsonPath('data.supports_effective_revisions', false)
             ->assertJsonPath('data.supports_definition_blueprints', false)
-            ->assertJsonPath('data.schema_ready', true)
-            ->assertJsonPath('data.rollout_state', 'legacy');
+            ->assertJsonPath('data.schema_ready', $schemaReady)
+            ->assertJsonPath('data.rollout_state', $schemaReady ? 'v2_finite' : 'v2_degraded');
 
         $cacheControl = (string) $response->headers->get('Cache-Control');
         self::assertStringContainsString('private', $cacheControl);
@@ -151,6 +155,30 @@ final class EventRecurrenceCapabilityControllerTest extends TestCase
                 'data.rollout_state',
                 $schemaReady ? 'v2_rolling' : 'v2_degraded',
             );
+    }
+
+    public function test_a_community_with_recurring_events_switched_off_is_offered_nothing_to_create(): void
+    {
+        // E-102: the create page offered "Repeat this event" and the save was
+        // then refused with a 403 by EventsController::createRecurring().
+        config()->set('events.recurrence.engine_v2_enabled', true);
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $configuration = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $configuration['events'] = array_merge($configuration['events'] ?? [], ['recurrence_enabled' => false]);
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'configuration' => json_encode($configuration),
+        ]);
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+
+        $this->apiGet('/v2/events/recurrence-capabilities')
+            ->assertOk()
+            ->assertJsonPath('data.engine', 'v2')
+            ->assertJsonPath('data.supported_frequencies', [])
+            ->assertJsonPath('data.supported_end_types', []);
     }
 
     public function test_feature_gate_is_resolved_for_the_authenticated_tenant(): void

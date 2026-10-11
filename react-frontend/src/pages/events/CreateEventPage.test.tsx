@@ -351,6 +351,39 @@ describe('CreateEventPage', () => {
     expect(recurringPayload).not.toHaveProperty('recurrence_days');
   });
 
+  it('does not offer a repeating event when the community has switched recurring events off', async () => {
+    // E-102: the server offers no frequency when the tenant setting is off;
+    // the page used to offer the toggle anyway and the save was refused (403).
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve({
+      success: true,
+      data: endpoint === '/v2/events/recurrence-capabilities'
+        ? {
+            contract_version: 1,
+            engine: 'v2',
+            structured_input: true,
+            supported_frequencies: [],
+            max_occurrences: 366,
+            supported_end_types: [],
+            supports_rolling_never: false,
+            supports_effective_revisions: true,
+            supports_definition_blueprints: false,
+            schema_ready: true,
+            rollout_state: 'v2_finite',
+          }
+        : [],
+    }));
+    await renderCreateEventPage();
+
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
+      '/v2/events/recurrence-capabilities',
+      expect.any(Object),
+    ));
+    await waitFor(() => {
+      expect(screen.queryByRole('switch', { name: 'Toggle recurring event' })).not.toBeInTheDocument();
+    });
+    expect(mockLogError).not.toHaveBeenCalled();
+  });
+
   it('renders the legacy runtime maximum in both the input and translated helper copy', async () => {
     mockApi.get.mockImplementation((endpoint: string) => Promise.resolve({
       success: endpoint !== '/v2/events/recurrence-capabilities',

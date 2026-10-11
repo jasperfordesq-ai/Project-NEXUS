@@ -52,10 +52,6 @@ final class PlatformCapabilityService
             'values' => ['off', 'treasury'],
             'off' => 'off',
         ],
-        'recurrence_v2' => [
-            'config' => 'events.recurrence.engine_v2_enabled',
-            'type' => 'bool',
-        ],
         'rolling_recurrence' => [
             'config' => 'events.recurrence.materialization.enabled',
             'type' => 'bool',
@@ -72,6 +68,23 @@ final class PlatformCapabilityService
             'config' => 'events.analytics.optional_capture_enabled',
             'type' => 'bool',
         ],
+    ];
+
+    /**
+     * E-102: `recurrence_v2` was a switch until the legacy recurrence engine
+     * was deleted (1e419abd5). v2 is now the only engine, so the switch is no
+     * longer offered, settable or clearable, and the recurrence capability
+     * always reports v2. A row an installation stored while it was a switch
+     * is not deleted. A stored "on" is still applied, because the shipped
+     * environment default (.env.example) is false and the flag still gates
+     * v2 series edits — ignoring it would quietly switch series edits off on
+     * an installation that had turned them on. A stored "off" is ignored:
+     * the only engine cannot be switched off from here.
+     *
+     * @var array<string, string> capability => config path (boolean, on-only)
+     */
+    private const RETIRED_ON_ONLY = [
+        'recurrence_v2' => 'events.recurrence.engine_v2_enabled',
     ];
 
     /**
@@ -98,7 +111,8 @@ final class PlatformCapabilityService
             $rows = DB::table('platform_capability_overrides')
                 ->pluck('value', 'capability')
                 ->filter(static fn (mixed $value, mixed $key): bool => is_string($key)
-                    && array_key_exists($key, self::CAPABILITIES))
+                    && (array_key_exists($key, self::CAPABILITIES)
+                        || array_key_exists($key, self::RETIRED_ON_ONLY)))
                 ->map(static fn (mixed $value): string => (string) $value)
                 ->all();
 
@@ -125,6 +139,14 @@ final class PlatformCapabilityService
     public function applyToConfig(): void
     {
         foreach ($this->overrides() as $capability => $value) {
+            if (array_key_exists($capability, self::RETIRED_ON_ONLY)) {
+                if ($value === '1') {
+                    config([self::RETIRED_ON_ONLY[$capability] => true]);
+                }
+
+                continue;
+            }
+
             $definition = self::CAPABILITIES[$capability] ?? null;
             if ($definition === null) {
                 continue;

@@ -23,23 +23,50 @@ final class EventRecurrenceCapabilityServiceTest extends TestCase
         config()->set('events.recurrence.definition_blueprints.enabled', false);
     }
 
-    public function test_legacy_contract_is_bounded_and_all_advanced_flags_default_false(): void
+    /**
+     * E-102: the legacy engine was deleted (1e419abd5), so creation always
+     * writes v2 and the runtime contract must never claim "legacy" (52
+     * occurrences). With the engine flag off, only series edits — which
+     * EventRecurrenceRevisionService still gates on that flag — and the
+     * rolling writer are reported unavailable.
+     */
+    public function test_engine_flag_off_still_reports_the_only_engine_v2(): void
     {
-        $capabilities = $this->service(true, true, true, true, true, true)->capabilities();
+        $capabilities = $this->service(true, true, false, true, true, true)->capabilities();
 
         self::assertSame([
             'contract_version' => 1,
-            'engine' => 'legacy',
+            'engine' => 'v2',
             'structured_input' => true,
             'supported_frequencies' => ['daily', 'weekly', 'monthly', 'yearly'],
-            'max_occurrences' => 52,
+            'max_occurrences' => 366,
             'supported_end_types' => ['after_count', 'on_date'],
             'supports_rolling_never' => false,
             'supports_effective_revisions' => false,
             'supports_definition_blueprints' => false,
             'schema_ready' => true,
-            'rollout_state' => 'legacy',
+            'rollout_state' => 'v2_finite',
         ], $capabilities);
+        self::assertSame('v2', EventRecurrenceCapabilityResource::fromCapabilities($capabilities)['engine']);
+    }
+
+    /**
+     * E-102: a community that switched recurring events off was still offered
+     * "Repeat this event", and the organiser got a 403 on save. The contract
+     * now offers nothing to create (no frequency, no end type) while keeping
+     * what an existing series can do.
+     */
+    public function test_tenant_with_recurrence_switched_off_is_offered_nothing_to_create(): void
+    {
+        config()->set('events.recurrence.engine_v2_enabled', true);
+
+        $capabilities = $this->service(true, false, true, true, true, true, false)->capabilities();
+        $resource = EventRecurrenceCapabilityResource::fromCapabilities($capabilities);
+
+        self::assertSame([], $resource['supported_frequencies']);
+        self::assertSame([], $resource['supported_end_types']);
+        self::assertSame('v2', $resource['engine']);
+        self::assertTrue($resource['supports_effective_revisions']);
     }
 
     public function test_v2_finite_contract_exposes_revisions_but_not_unavailable_never_or_blueprints(): void
@@ -163,16 +190,12 @@ final class EventRecurrenceCapabilityServiceTest extends TestCase
             'supports_effective_revisions' => false,
             'supports_definition_blueprints' => false,
         ]];
-        yield 'non-boolean engine flag falls back to legacy' => [[
+        yield 'non-boolean engine flag still reports the only engine, v2' => [[
             ...$base,
             'v2_flag' => 'true',
         ], [
-            'engine' => 'legacy',
-            'max_occurrences' => 52,
-            'rollout_state' => 'legacy',
-            'supports_rolling_never' => false,
-            'supports_effective_revisions' => false,
-            'supports_definition_blueprints' => false,
+            'engine' => 'v2',
+            'max_occurrences' => 366,
         ]];
     }
 
@@ -223,6 +246,7 @@ final class EventRecurrenceCapabilityServiceTest extends TestCase
         bool $materializationValid,
         bool $revisionSchemaAvailable,
         bool $blueprintSchemaAvailable,
+        bool $tenantRecurrenceEnabled = true,
     ): EventRecurrenceCapabilityService {
         return new class(
             $schemaAvailable,
@@ -231,6 +255,7 @@ final class EventRecurrenceCapabilityServiceTest extends TestCase
             $materializationValid,
             $revisionSchemaAvailable,
             $blueprintSchemaAvailable,
+            $tenantRecurrenceEnabled,
         ) extends EventRecurrenceCapabilityService {
             public function __construct(
                 private readonly bool $schemaAvailable,
@@ -239,7 +264,13 @@ final class EventRecurrenceCapabilityServiceTest extends TestCase
                 private readonly bool $materializationValid,
                 private readonly bool $revisionSchemaAvailable,
                 private readonly bool $blueprintSchemaAvailable,
+                private readonly bool $tenantRecurrenceEnabled,
             ) {}
+
+            protected function tenantRecurrenceEnabled(): bool
+            {
+                return $this->tenantRecurrenceEnabled;
+            }
 
             protected function materializationState(): array
             {

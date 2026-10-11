@@ -386,7 +386,14 @@ export function CreateEventPage() {
           ? String(capabilities.max_occurrences)
           : current.recurrenceCount;
 
-        return { ...current, recurrenceFrequency, recurrenceEndType, recurrenceCount };
+        return {
+          ...current,
+          // No frequency offered = the community has switched recurring events off.
+          isRecurring: current.isRecurring && capabilities.supported_frequencies.length > 0,
+          recurrenceFrequency,
+          recurrenceEndType,
+          recurrenceCount,
+        };
       });
     }).catch((error) => {
       if (!controller.signal.aborted) {
@@ -970,6 +977,7 @@ export function CreateEventPage() {
   const selectedCategoryLabel = formData.category
     ? categories.find((category) => String(category.id) === formData.category)?.name ?? t('form.summary_not_set')
     : t('form.summary_not_set');
+  const recurrenceAvailable = recurrenceCapabilities.supported_frequencies.length > 0;
   const supportedRecurrenceFrequencies = recurrenceCapabilities.supported_frequencies
     .flatMap<RecurrenceFrequency>((frequency) => frequency === 'weekly' ? ['weekly', 'biweekly'] : [frequency]);
   const supportedRecurrenceEndTypes = recurrenceCapabilities.supported_end_types.filter(
@@ -1284,6 +1292,9 @@ export function CreateEventPage() {
 
           {/* Recurring Event Toggle */}
           <div className="space-y-4">
+            {/* Hidden when the community has switched recurring events off:
+                the server then offers no frequency and refuses a new series. */}
+            {recurrenceAvailable && (
             <div className="flex items-center justify-between p-4 rounded-xl bg-theme-elevated border border-theme-default">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-accent/20">
@@ -1307,6 +1318,7 @@ export function CreateEventPage() {
                 }}
               />
             </div>
+            )}
 
             {/* Recurrence Options (shown when toggled on) */}
             {formData.isRecurring && (

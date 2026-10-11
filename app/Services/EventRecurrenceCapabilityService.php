@@ -20,7 +20,6 @@ use Throwable;
 class EventRecurrenceCapabilityService
 {
     public const CONTRACT_VERSION = 1;
-    public const LEGACY_MAX_OCCURRENCES = 52;
 
     /** @var list<string> */
     private const FREQUENCIES = ['daily', 'weekly', 'monthly', 'yearly'];
@@ -45,24 +44,16 @@ class EventRecurrenceCapabilityService
      */
     public function capabilities(): array
     {
-        $v2Flag = config('events.recurrence.engine_v2_enabled', false);
-        $v2Enabled = is_bool($v2Flag) && $v2Flag;
+        // E-102: v2 is the only engine — the legacy generator was deleted
+        // (1e419abd5) and creation always writes v2 — so the contract always
+        // says so. The engine flag now only gates v2 extras: series edits
+        // (EventRecurrenceRevisionService, read exactly as it reads it) and
+        // the rolling writer (via materializationState()).
+        $revisionsEnabled = (bool) config('events.recurrence.engine_v2_enabled', false);
         $rawMaxOccurrences = config('events.recurrence.max_occurrences', 366);
         $maxConfigurationValid = is_int($rawMaxOccurrences)
             && $rawMaxOccurrences >= 1
             && $rawMaxOccurrences <= 5000;
-
-        if (! $v2Enabled) {
-            return $this->result(
-                'legacy',
-                self::LEGACY_MAX_OCCURRENCES,
-                false,
-                false,
-                false,
-                true,
-                'legacy',
-            );
-        }
 
         $maxOccurrences = $maxConfigurationValid ? $rawMaxOccurrences : 1;
         $materialization = $this->materializationState();
@@ -73,7 +64,7 @@ class EventRecurrenceCapabilityService
             && $materialization['configuration']['enabled']
             && $materialization['configuration']['engine_v2_writer_enabled']
             && $materialization['configuration']['valid'];
-        $supportsEffectiveRevisions = $finiteReady;
+        $supportsEffectiveRevisions = $finiteReady && $revisionsEnabled;
         $blueprintFlag = config('events.recurrence.definition_blueprints.enabled', false);
         $supportsDefinitionBlueprints = $supportsRollingNever
             && is_bool($blueprintFlag)
@@ -91,7 +82,20 @@ class EventRecurrenceCapabilityService
             $supportsDefinitionBlueprints,
             $schemaReady,
             $rolloutState,
+            $this->tenantRecurrenceEnabled(),
         );
+    }
+
+    /**
+     * The community's own "recurring events" setting. When it is off,
+     * EventsController::createRecurring() refuses every new series, so the
+     * contract offers nothing to create (no frequency, no end type) and
+     * clients do not show "Repeat this event". What an EXISTING series can do
+     * is unaffected, because that setting does not gate it.
+     */
+    protected function tenantRecurrenceEnabled(): bool
+    {
+        return (bool) app(EventConfigurationService::class)->value('recurrence_enabled', true);
     }
 
     /**
@@ -173,6 +177,7 @@ class EventRecurrenceCapabilityService
         bool $supportsDefinitionBlueprints,
         bool $schemaReady,
         string $rolloutState,
+        bool $creationEnabled,
     ): array {
         $endTypes = self::FINITE_END_TYPES;
         if ($supportsRollingNever) {
@@ -183,9 +188,9 @@ class EventRecurrenceCapabilityService
             'contract_version' => self::CONTRACT_VERSION,
             'engine' => $engine,
             'structured_input' => true,
-            'supported_frequencies' => self::FREQUENCIES,
+            'supported_frequencies' => $creationEnabled ? self::FREQUENCIES : [],
             'max_occurrences' => $maxOccurrences,
-            'supported_end_types' => $endTypes,
+            'supported_end_types' => $creationEnabled ? $endTypes : [],
             'supports_rolling_never' => $supportsRollingNever,
             'supports_effective_revisions' => $supportsEffectiveRevisions,
             'supports_definition_blueprints' => $supportsDefinitionBlueprints,

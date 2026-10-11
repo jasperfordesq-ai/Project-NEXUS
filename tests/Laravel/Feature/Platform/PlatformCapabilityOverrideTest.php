@@ -87,13 +87,55 @@ final class PlatformCapabilityOverrideTest extends TestCase
 
     public function test_a_boolean_capability_becomes_a_real_boolean(): void
     {
-        config(['events.recurrence.engine_v2_enabled' => false]);
+        config(['events.recurrence.materialization.enabled' => false]);
 
-        $this->service()->set('recurrence_v2', '1', 1);
+        $this->service()->set('rolling_recurrence', '1', 1);
         $this->service()->applyToConfig();
 
+        self::assertTrue(config('events.recurrence.materialization.enabled'));
+        self::assertIsBool(config('events.recurrence.materialization.enabled'));
+    }
+
+    /**
+     * E-102: the legacy recurrence engine was deleted (1e419abd5), so the
+     * "recurrence v2" switch no longer chooses an engine — switching it off
+     * only made the contract claim an engine that does not exist. It is no
+     * longer offered, set or listed. A row an installation stored while it was
+     * a switch is handled harmlessly: a stored "on" keeps the v2 extras (series
+     * edits) exactly as they are, because the shipped environment default
+     * (.env.example) is still false; a stored "off" is ignored.
+     */
+    public function test_the_retired_recurrence_v2_switch_is_not_offered_and_old_rows_are_harmless(): void
+    {
+        self::assertArrayNotHasKey('recurrence_v2', PlatformCapabilityService::CAPABILITIES);
+        self::assertFalse($this->service()->set('recurrence_v2', '0', 1), 'It cannot be set any more.');
+        self::assertFalse($this->service()->clear('recurrence_v2'));
+        self::assertNotContains(
+            'recurrence_v2',
+            array_column($this->service()->inspect(), 'capability'),
+            'The platform switches screen must not offer it.',
+        );
+
+        // A row stored while it was still a switch, switched ON.
+        DB::table('platform_capability_overrides')->insert([
+            'capability' => 'recurrence_v2',
+            'value' => '1',
+            'updated_by_user_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Cache::forget('platform_capability_overrides');
+        config(['events.recurrence.engine_v2_enabled' => false]);
+        $this->service()->applyToConfig();
         self::assertTrue(config('events.recurrence.engine_v2_enabled'));
-        self::assertIsBool(config('events.recurrence.engine_v2_enabled'));
+        self::assertNotContains('recurrence_v2', array_column($this->service()->inspect(), 'capability'));
+
+        // The same row switched OFF cannot switch the only engine's extras off.
+        DB::table('platform_capability_overrides')->where('capability', 'recurrence_v2')->update(['value' => '0']);
+        Cache::forget('platform_capability_overrides');
+        config(['events.recurrence.engine_v2_enabled' => true]);
+        $this->service()->applyToConfig();
+        self::assertTrue(config('events.recurrence.engine_v2_enabled'));
     }
 
     public function test_only_allowlisted_capabilities_and_values_are_accepted(): void
@@ -113,7 +155,7 @@ final class PlatformCapabilityOverrideTest extends TestCase
             'A mode outside the declared values must be refused.',
         );
         self::assertFalse(
-            $this->service()->set('recurrence_v2', 'yes-please', 1),
+            $this->service()->set('rolling_recurrence', 'yes-please', 1),
             'A boolean capability takes only 0 or 1.',
         );
 
@@ -176,26 +218,26 @@ final class PlatformCapabilityOverrideTest extends TestCase
         // A boolean switch sent as a real JSON boolean must work too — that is
         // what the UI's toggle sends.
         $this->apiPut('/v2/admin/super/platform-capabilities', [
-            'capability' => 'recurrence_v2',
+            'capability' => 'rolling_recurrence',
             'value' => true,
         ])->assertStatus(200);
 
         self::assertSame(
             '1',
             (string) DB::table('platform_capability_overrides')
-                ->where('capability', 'recurrence_v2')
+                ->where('capability', 'rolling_recurrence')
                 ->value('value'),
         );
 
         // And reverting must clear it.
         $this->apiPut('/v2/admin/super/platform-capabilities', [
-            'capability' => 'recurrence_v2',
+            'capability' => 'rolling_recurrence',
             'clear' => true,
         ])->assertStatus(200);
 
         self::assertSame(
             0,
-            (int) DB::table('platform_capability_overrides')->where('capability', 'recurrence_v2')->count(),
+            (int) DB::table('platform_capability_overrides')->where('capability', 'rolling_recurrence')->count(),
         );
     }
 
