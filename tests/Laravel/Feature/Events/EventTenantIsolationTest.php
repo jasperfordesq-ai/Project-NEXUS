@@ -25,8 +25,9 @@ use Tests\Laravel\TestCase;
  * isolation." 05a3ee713 and c79a86590 opened an event's Team tab, lifecycle
  * history and calendar actions to managers from other communities; they were
  * reverted before deployment. These tests pin the isolation so it cannot come
- * back: an administrator of another community — with every community-level
- * admin flag, or as a platform administrator — is refused, and nothing is written.
+ * back: an administrator of another community — a community admin or a tenant
+ * super admin — is refused, and nothing is written. Owner, same day: "God can
+ * still do everything" — the platform owner keeps cross-community reach.
  */
 final class EventTenantIsolationTest extends TestCase
 {
@@ -36,8 +37,36 @@ final class EventTenantIsolationTest extends TestCase
     public static function foreignAdministrators(): iterable
     {
         yield 'community admin of another community' => [['role' => 'admin', 'is_admin' => 1], 999];
-        yield 'network admin of another community' => [['role' => 'admin', 'is_admin' => 1, 'is_tenant_super_admin' => 1], 999];
-        yield 'platform administrator' => [['role' => 'admin', 'is_admin' => 1, 'is_super_admin' => 1, 'is_god' => 1], 1];
+        yield 'tenant super admin of another community' => [['role' => 'admin', 'is_admin' => 1, 'is_tenant_super_admin' => 1], 999];
+    }
+
+    public function test_the_platform_owner_can_manage_another_communitys_event_team_and_read_its_history(): void
+    {
+        $owner = $this->member();
+        $staff = $this->member();
+        $eventId = $this->event((int) $owner->id);
+        $god = $this->member(['role' => 'admin', 'is_admin' => 1, 'is_super_admin' => 1, 'is_god' => 1], 1);
+        $roles = app(EventRoleService::class);
+
+        TenantContext::setById($this->testTenantId);
+        $roles->grant($eventId, (int) $staff->id, EventStaffRole::CheckInStaff, $god);
+        self::assertTrue(
+            $roles->list($eventId, $god)->contains(fn ($assignment): bool => (int) $assignment->user_id === (int) $staff->id),
+            'The platform owner should see the team they just changed.',
+        );
+        app(EventLifecycleHistoryQueryService::class)->index($eventId, $god);
+        self::assertTrue(true);
+    }
+
+    public function test_the_platform_owner_cannot_put_someone_from_another_community_on_the_team(): void
+    {
+        $owner = $this->member();
+        $eventId = $this->event((int) $owner->id);
+        $god = $this->member(['role' => 'admin', 'is_admin' => 1, 'is_super_admin' => 1, 'is_god' => 1], 1);
+        $outsider = $this->member([], 999);
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertRefused(fn () => app(EventRoleService::class)->grant($eventId, (int) $outsider->id, EventStaffRole::CheckInStaff, $god));
     }
 
     /**

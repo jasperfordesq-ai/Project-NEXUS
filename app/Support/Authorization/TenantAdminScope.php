@@ -88,6 +88,19 @@ final class TenantAdminScope
         return $homeTenantId === $tenantId;
     }
 
+    /**
+     * The platform owner (is_super_admin / is_god, or those role strings): the
+     * only account that may act across communities (owner decision,
+     * 11 Oct 2026). For callers that look an actor up outside the record's own
+     * community before asking {@see allows()}.
+     *
+     * @param object|array<string,mixed>|null $user
+     */
+    public static function isPlatformOwner(object|array|null $user): bool
+    {
+        return $user !== null && AdminTier::allows($user) && self::isPlatformAdmin($user);
+    }
+
     /** @param object|array<string,mixed> $user */
     private static function isPlatformAdmin(object|array $user): bool
     {

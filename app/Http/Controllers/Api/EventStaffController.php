@@ -15,6 +15,7 @@ use App\Http\Resources\EventStaffResource;
 use App\Support\Members\MemberProfileVisibility;
 use App\Models\EventStaffAssignment;
 use App\Models\User;
+use App\Support\Authorization\TenantAdminScope;
 use App\Services\EventRoleService;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -163,13 +164,19 @@ final class EventStaffController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
+        // Own community only, except the platform owner (owner decision,
+        // 11 Oct 2026); what the actor may do is still EventRoleService's call.
         $actor = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());
+        if ($actor instanceof User
+            && (int) $actor->tenant_id !== (int) $tenantId
+            && ! TenantAdminScope::isPlatformOwner($actor)) {
+            $actor = null;
+        }
         if (! $actor instanceof User) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }

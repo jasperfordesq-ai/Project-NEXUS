@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\Schema;
 
 /** Transactional write and capability boundary for delegated event staff. */
@@ -428,8 +429,10 @@ final class EventRoleService
         $actorId = (int) $actor->getKey();
         $userIds = array_values(array_unique([$actorId, $targetUserId]));
         sort($userIds, SORT_NUMERIC);
+        // The target must belong to this community; the actor too, unless they
+        // are the platform owner (owner decision, 11 Oct 2026). Both rows are
+        // locked in id order and checked below.
         $users = DB::table('users')
-            ->where('tenant_id', $tenantId)
             ->whereIn('id', $userIds)
             ->where('status', 'active')
             ->whereNull('deleted_at')
@@ -447,11 +450,12 @@ final class EventRoleService
             ->keyBy('id');
 
         $persistedActor = $users->get($actorId);
-        if ($persistedActor === null) {
+        if ($persistedActor === null
+            || ((int) $persistedActor->tenant_id !== $tenantId && ! TenantAdminScope::isPlatformOwner($persistedActor))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
         $target = $users->get($targetUserId);
-        if ($target === null) {
+        if ($target === null || (int) $target->tenant_id !== $tenantId) {
             throw new EventRoleAssignmentException('event_staff_role_target_invalid');
         }
 
@@ -475,20 +479,22 @@ final class EventRoleService
             throw new EventRoleAssignmentException('event_staff_role_event_not_found');
         }
 
+        // Own community only, except the platform owner (owner decision, 11 Oct 2026).
         $actorRow = DB::table('users')
-            ->where('tenant_id', $tenantId)
             ->where('id', (int) $actor->getKey())
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->first([
                 'id',
+                'tenant_id',
                 'role',
                 'is_admin',
                 'is_super_admin',
                 'is_tenant_super_admin',
                 'is_god',
             ]);
-        if ($actorRow === null) {
+        if ($actorRow === null
+            || ((int) $actorRow->tenant_id !== $tenantId && ! TenantAdminScope::isPlatformOwner($actorRow))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
 

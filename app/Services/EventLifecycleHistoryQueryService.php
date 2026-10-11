@@ -13,6 +13,7 @@ use App\Exceptions\EventLifecycleHistoryException;
 use App\Models\Event;
 use App\Models\EventStatusHistory;
 use App\Models\User;
+use App\Support\Authorization\TenantAdminScope;
 use App\Policies\EventPolicy;
 use App\Support\Events\EventLifecycleHistoryCursor;
 use Illuminate\Support\Facades\Schema;
@@ -63,11 +64,16 @@ final class EventLifecycleHistoryQueryService
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->first();
+        // Own community only, except the platform owner (owner decision, 11 Oct 2026).
+        if ($persistedActor !== null
+            && (int) $persistedActor->tenant_id !== $tenantId
+            && ! TenantAdminScope::isPlatformOwner($persistedActor)) {
+            $persistedActor = null;
+        }
         if ($persistedActor === null || ! $this->policy->manage($persistedActor, $event)) {
             throw new EventLifecycleHistoryException('event_lifecycle_history_authorization_denied');
         }
