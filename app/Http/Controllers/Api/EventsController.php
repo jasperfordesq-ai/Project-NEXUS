@@ -1318,7 +1318,8 @@ class EventsController extends BaseApiController
         } catch (SafeguardingPolicyException $exception) {
             return $this->safeguardingPolicyError($exception);
         } catch (EventRegistrationException|EventWaitlistException|EventParticipationException $exception) {
-            return $this->legacyCanonicalMutationError($exception, 'rsvp');
+            return ($status !== 'going' ? $this->legacyCutoffRefusal($exception, $id, $userId) : null)
+                ?? $this->legacyCanonicalMutationError($exception, 'rsvp');
         } catch (\RuntimeException $exception) {
             if ($exception->getMessage() === 'legacy_event_rsvp_mutation_failed') {
                 return $this->legacyRsvpFailureResponse();
@@ -1391,7 +1392,8 @@ class EventsController extends BaseApiController
             // the generic clause used to swallow and rethrow them — a member
             // withdrawing from another community's event got a 500 instead of
             // the canonical not-found (CrossCommunityAccessSweepTest, 2026-09-10).
-            return $this->legacyCanonicalMutationError($exception, 'remove_rsvp');
+            return $this->legacyCutoffRefusal($exception, $id, $userId)
+                ?? $this->legacyCanonicalMutationError($exception, 'remove_rsvp');
         } catch (\RuntimeException $exception) {
             if ($exception->getMessage() !== 'legacy_event_rsvp_remove_failed') {
                 throw $exception;
@@ -1401,6 +1403,45 @@ class EventsController extends BaseApiController
         }
 
         return $this->noContent();
+    }
+
+    /**
+     * EventRegistrationService refuses a member's own cancellation of a
+     * confirmed place after the organiser's published cancellation cutoff
+     * with the generic transition refusal. Recognise that case so the member
+     * is told why; the code and status stay those of the generic refusal.
+     */
+    private function legacyCutoffRefusal(
+        EventRegistrationException|EventWaitlistException|EventParticipationException $exception,
+        int $eventId,
+        int $userId,
+    ): ?JsonResponse {
+        if ($exception->reasonCode !== 'event_registration_transition_invalid'
+            || ! $this->cancellationCutoffRefused($eventId, $userId)) {
+            return null;
+        }
+
+        return $this->respondWithErrors([[
+            'code' => 'RSVP_FAILED',
+            'message' => __('event_registration.cancellation_cutoff_passed'),
+            'reason' => 'event_registration_cancellation_cutoff_passed',
+        ]], 422);
+    }
+
+    private function cancellationCutoffRefused(int $eventId, int $userId): bool
+    {
+        if ($this->eventRegistrationService->stateFor($eventId, $userId)
+            !== EventCapacityRegistrationState::Confirmed) {
+            return false;
+        }
+        $cutoff = DB::table('event_registration_settings')
+            ->where('tenant_id', (int) TenantContext::getId())
+            ->where('event_id', $eventId)
+            ->where('status', 'published')
+            ->value('cancellation_cutoff_at_utc');
+
+        return is_string($cutoff) && $cutoff !== ''
+            && \Carbon\CarbonImmutable::now('UTC')->greaterThan(\Carbon\CarbonImmutable::parse($cutoff, 'UTC'));
     }
 
     // ================================================================

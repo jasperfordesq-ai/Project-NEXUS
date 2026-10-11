@@ -405,4 +405,14 @@ return [
         'success' => 'Akcja rejestracyjna została zakończona.',
         'validation_error' => 'Sprawdź wprowadzone informacje i spróbuj ponownie.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Wpisz pełną datę i godzinę wraz z przesunięciem strefy czasowej.',
+    'timezone_offset_mismatch' => 'Daty muszą używać przesunięcia strefy czasowej wydarzenia. Sprawdź strefę czasową i spróbuj ponownie.',
+    'registration_window_invalid' => 'Rejestracja musi się rozpocząć przed jej zakończeniem. Podaj obie daty albo pozostaw obie puste.',
+    'window_after_event_start' => 'Data zamknięcia rejestracji i termin anulowania nie mogą być późniejsze niż rozpoczęcie wydarzenia.',
+    'invitation_expiry_invalid' => 'Termin wygaśnięcia zaproszenia musi przypadać w przyszłości i nie później niż rozpoczęcie wydarzenia.',
+    'campaign_schedule_invalid' => 'Czas wysyłki musi przypadać w przyszłości i przed rozpoczęciem wydarzenia.',
+    'invitation_event_unavailable' => 'Nie można wysyłać ani przyjmować zaproszeń, ponieważ to wydarzenie zostało odwołane, zakończyło się lub zostało zarchiwizowane.',
+    'cancellation_cutoff_passed' => 'Termin anulowania wyznaczony przez organizatora minął, więc nie możesz już samodzielnie anulować tego miejsca. Skontaktuj się z organizatorem.',
 ];

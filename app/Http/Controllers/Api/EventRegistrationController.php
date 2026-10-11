@@ -34,6 +34,7 @@ use App\Support\Events\EventPeopleQuery;
 use App\Support\Events\EventPeopleBulkOperation;
 use App\Support\Events\EventRegistrationTransitionResult;
 use App\Support\Events\EventWaitlistTransitionResult;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
@@ -96,9 +97,44 @@ final class EventRegistrationController extends BaseApiController
             );
 
             return $this->registrationMutation($event, $actor, $result);
-        } catch (EventRegistrationException|EventWaitlistException|EventParticipationException|SafeguardingPolicyException $exception) {
+        } catch (EventRegistrationException $exception) {
+            if ($exception->reasonCode === 'event_registration_transition_invalid'
+                && isset($event, $actor)
+                && $this->cancellationCutoffRefused($event, $actor)) {
+                // Same code and status as any refused transition, but say why.
+                return $this->respondWithErrors([[
+                    'code' => 'EVENT_REGISTRATION_TRANSITION_INVALID',
+                    'message' => __('event_registration.cancellation_cutoff_passed'),
+                    'reason' => 'event_registration_cancellation_cutoff_passed',
+                ]], 409);
+            }
+
+            return $this->registrationError($exception);
+        } catch (EventWaitlistException|EventParticipationException|SafeguardingPolicyException $exception) {
             return $this->registrationError($exception);
         }
+    }
+
+    /**
+     * EventRegistrationService refuses a member's own cancellation of a
+     * confirmed place after the organiser's published cancellation cutoff
+     * with the generic transition refusal. Recognise that case so the member
+     * is told why.
+     */
+    private function cancellationCutoffRefused(Event $event, User $actor): bool
+    {
+        if ($this->registrations->stateFor((int) $event->getKey(), (int) $actor->getKey())
+            !== EventCapacityRegistrationState::Confirmed) {
+            return false;
+        }
+        $cutoff = DB::table('event_registration_settings')
+            ->where('tenant_id', (int) $event->getAttribute('tenant_id'))
+            ->where('event_id', (int) $event->getKey())
+            ->where('status', 'published')
+            ->value('cancellation_cutoff_at_utc');
+
+        return is_string($cutoff) && $cutoff !== ''
+            && CarbonImmutable::now('UTC')->greaterThan(CarbonImmutable::parse($cutoff, 'UTC'));
     }
 
     public function joinWaitlist(int $id): JsonResponse

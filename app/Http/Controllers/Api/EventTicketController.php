@@ -24,6 +24,25 @@ final class EventTicketController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * Refusals an organiser or member causes by what they entered or when
+     * they acted: the input to fix and the message that explains it.
+     *
+     * @var array<string, array{0:?string,1:string}>
+     */
+    private const EXPLAINED_ERRORS = [
+        'event_ticket_sales_open_invalid' => ['sales_opens_at', 'api.event_ticket_date_invalid'],
+        'event_ticket_sales_close_invalid' => ['sales_closes_at', 'api.event_ticket_date_invalid'],
+        'event_ticket_timezone_offset_mismatch' => [null, 'api.event_ticket_timezone_offset_mismatch'],
+        'event_ticket_sales_window_invalid' => ['sales_closes_at', 'api.event_ticket_sales_window_invalid'],
+        'event_ticket_refund_cutoff_invalid' => ['refund_cutoff_at', 'api.event_ticket_refund_cutoff_invalid'],
+        'event_ticket_per_member_limit_invalid' => ['per_member_limit', 'api.event_ticket_per_member_limit_invalid'],
+        'event_ticket_sales_window_closed' => [null, 'api.event_ticket_sales_window_closed'],
+        'event_ticket_per_member_limit_exceeded' => ['units', 'api.event_ticket_per_member_limit_exceeded'],
+        'event_ticket_confirmed_registration_required' => [null, 'api.event_ticket_confirmed_registration_required'],
+        'event_ticket_allocation_exhausted' => ['units', 'api.event_ticket_allocation_exhausted'],
+    ];
+
     public function __construct(
         private readonly EventTicketQueryService $queries,
         private readonly EventTicketQuoteService $quotes,
@@ -297,6 +316,21 @@ final class EventTicketController extends BaseApiController
     private function ticketError(EventTicketingException $exception): JsonResponse
     {
         $reason = $exception->reasonCode;
+        if (isset(self::EXPLAINED_ERRORS[$reason])) {
+            // Same code and status as before; the message now says what is wrong.
+            [$field, $messageKey] = self::EXPLAINED_ERRORS[$reason];
+            $conflict = $reason === 'event_ticket_allocation_exhausted';
+            $error = [
+                'code' => $conflict ? 'EVENT_TICKET_CONFLICT' : 'EVENT_TICKET_VALIDATION_FAILED',
+                'message' => __($messageKey),
+                'reason' => $reason,
+            ];
+            if ($field !== null) {
+                $error['field'] = $field;
+            }
+
+            return $this->respondWithErrors([$error], $conflict ? 409 : 422);
+        }
         if (in_array($reason, [
             'event_ticket_type_not_found',
             'event_ticket_entitlement_not_found',

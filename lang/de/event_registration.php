@@ -405,4 +405,14 @@ return [
         'success' => 'Die Registrierungsaktion wurde abgeschlossen.',
         'validation_error' => 'Überprüfen Sie die eingegebenen Informationen und versuchen Sie es erneut.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Geben Sie ein vollständiges Datum mit Uhrzeit einschließlich der Zeitzonenverschiebung ein.',
+    'timezone_offset_mismatch' => 'Datumsangaben müssen die Zeitzonenverschiebung der Veranstaltung verwenden. Prüfen Sie die Zeitzone und versuchen Sie es erneut.',
+    'registration_window_invalid' => 'Die Registrierung muss beginnen, bevor sie endet. Geben Sie beide Daten an oder lassen Sie beide leer.',
+    'window_after_event_start' => 'Das Ende der Registrierung und die Stornierungsfrist dürfen nicht nach dem Beginn der Veranstaltung liegen.',
+    'invitation_expiry_invalid' => 'Der Ablauf der Einladung muss in der Zukunft liegen und darf nicht nach dem Beginn der Veranstaltung sein.',
+    'campaign_schedule_invalid' => 'Der Sendezeitpunkt muss in der Zukunft und vor dem Beginn der Veranstaltung liegen.',
+    'invitation_event_unavailable' => 'Einladungen können nicht gesendet oder angenommen werden, weil diese Veranstaltung abgesagt, beendet oder archiviert wurde.',
+    'cancellation_cutoff_passed' => 'Die Stornierungsfrist des Veranstalters ist abgelaufen, daher können Sie diesen Platz nicht mehr selbst stornieren. Wenden Sie sich an den Veranstalter.',
 ];

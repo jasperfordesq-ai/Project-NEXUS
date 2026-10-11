@@ -405,4 +405,14 @@ return [
         'success' => 'De registratieactie is voltooid.',
         'validation_error' => 'Controleer de door u ingevoerde gegevens en probeer het opnieuw.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Voer een volledige datum en tijd in, inclusief de tijdzoneverschuiving.',
+    'timezone_offset_mismatch' => 'Datums moeten de tijdzoneverschuiving van het evenement zelf gebruiken. Controleer de tijdzone en probeer het opnieuw.',
+    'registration_window_invalid' => 'De registratie moet openen voordat die sluit. Vul beide datums in of laat beide leeg.',
+    'window_after_event_start' => 'De sluitingsdatum van de registratie en de annuleringstermijn mogen niet na het begin van het evenement liggen.',
+    'invitation_expiry_invalid' => 'De vervaldatum van de uitnodiging moet in de toekomst liggen, uiterlijk bij het begin van het evenement.',
+    'campaign_schedule_invalid' => 'Het verzendtijdstip moet in de toekomst liggen en vóór het begin van het evenement.',
+    'invitation_event_unavailable' => 'Uitnodigingen kunnen niet worden verzonden of geaccepteerd, omdat dit evenement is geannuleerd, is afgelopen of is gearchiveerd.',
+    'cancellation_cutoff_passed' => 'De annuleringstermijn van de organisator is verstreken, dus u kunt deze plaats niet meer zelf annuleren. Neem contact op met de organisator.',
 ];

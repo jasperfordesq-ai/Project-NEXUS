@@ -32,6 +32,7 @@ import {
   visibleRegistrationAnswers,
   visibleRegistrationQuestions,
 } from '@/lib/event-registration-form-rules';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
 interface EventRegistrationAttendeeCardProps {
@@ -156,14 +157,18 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
 
   const acceptInvitation = useCallback(async (invitationId: number) => {
     setPendingAction(`invitation-${invitationId}`);
+    let explained: string | null = null;
     try {
       const response = await eventRegistrationApi.acceptMemberInvitation(eventId, invitationId);
-      if (!response.success) throw new Error(response.message);
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.message);
+      }
       toast.success(t('messages.invitation_accepted'));
       await load();
     } catch (error) {
       logError('Failed to accept event invitation', error);
-      toast.error(t('messages.invitation_accept_error'));
+      toast.error(explained ?? t('messages.invitation_accept_error'));
     } finally {
       setPendingAction(null);
     }

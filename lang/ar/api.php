@@ -2980,4 +2980,19 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
         'reason_offers_what_you_need' => 'يقدّم المساعدة في شيء تحتاجه',
     ],
 
+    // Event ticket and safety refusals that say what is wrong (E-102).
+    'event_ticket_date_invalid' => 'أدخل تاريخًا ووقتًا كاملين يتضمنان فرق المنطقة الزمنية.',
+    'event_ticket_timezone_offset_mismatch' => 'يجب أن تستخدم التواريخ فرق المنطقة الزمنية الخاص بالحدث نفسه. تحقق من المنطقة الزمنية وحاول مرة أخرى.',
+    'event_ticket_sales_window_invalid' => 'يجب أن يبدأ بيع التذاكر قبل انتهائه، وأن ينتهي في موعد لا يتجاوز بداية الحدث.',
+    'event_ticket_refund_cutoff_invalid' => 'يجب أن يكون الموعد النهائي لاسترداد المبلغ تاريخًا ووقتًا صالحين لا يتجاوزان بداية الحدث.',
+    'event_ticket_per_member_limit_invalid' => 'يجب أن يكون الحد لكل عضو عددًا صحيحًا من 1 إلى 1000، وألا يزيد على عدد التذاكر المعروضة.',
+    'event_ticket_sales_window_closed' => 'نوع التذكرة هذا خارج فترة البيع الخاصة به حاليًا.',
+    'event_ticket_per_member_limit_exceeded' => 'سيؤدي ذلك إلى تجاوزك عدد التذاكر من هذا النوع المسموح به لكل عضو.',
+    'event_ticket_confirmed_registration_required' => 'تحتاج إلى مكان مؤكد في هذا الحدث قبل أن تتمكن من أخذ تذكرة.',
+    'event_ticket_allocation_exhausted' => 'لم يتبقَّ عدد كافٍ من التذاكر من هذا النوع.',
+    'event_safety_minimum_age_invalid' => 'يجب أن يكون الحد الأدنى للعمر عددًا صحيحًا من 0 إلى 125، أو أن يُترك فارغًا.',
+    'event_safety_code_of_conduct_invalid' => 'لاشتراط مدونة سلوك، أضف نصها وتسمية إصدار لا تتجاوز 64 حرفًا. لإيقافها، احذف الاثنين.',
+    'event_safety_publish_draft_required' => 'لا يمكن نشر إلا المسودة. احفظ تغييراتك كمسودة أولًا، ثم انشرها.',
+    'event_safety_code_of_conduct_changed' => 'تغيّرت مدونة السلوك منذ أن فتحتها. أعد تحميل الصفحة، واقرأ الإصدار الحالي، ثم وافق عليها مرة أخرى.',
+    'event_safety_code_of_conduct_not_required' => 'لا توجد لهذا الحدث مدونة سلوك للموافقة عليها في الوقت الحالي.',
 ];

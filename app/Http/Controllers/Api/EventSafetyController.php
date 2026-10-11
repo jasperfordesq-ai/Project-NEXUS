@@ -28,6 +28,21 @@ final class EventSafetyController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * Refusals an organiser or member causes by what they entered or when
+     * they acted: the input to fix and the message that explains it.
+     *
+     * @var array<string, array{0:?string,1:string}>
+     */
+    private const EXPLAINED_ERRORS = [
+        'event_safety_age_requirement_invalid' => ['minimum_age', 'api.event_safety_minimum_age_invalid'],
+        'event_safety_code_of_conduct_invalid' => ['code_of_conduct_text', 'api.event_safety_code_of_conduct_invalid'],
+        'event_safety_requirements_publish_invalid' => [null, 'api.event_safety_publish_draft_required'],
+        'event_safety_code_of_conduct_evidence_mismatch' => ['text_version', 'api.event_safety_code_of_conduct_changed'],
+        'event_safety_requirements_not_published' => [null, 'api.event_safety_code_of_conduct_not_required'],
+        'event_safety_code_of_conduct_not_required' => [null, 'api.event_safety_code_of_conduct_not_required'],
+    ];
+
     public function __construct(
         private readonly EventSafetyProjectionService $projection,
         private readonly EventSafetyRequirementService $requirements,
@@ -378,6 +393,16 @@ final class EventSafetyController extends BaseApiController
                 ],
             default => ['EVENT_SAFETY_VALIDATION_FAILED', __('api.validation_failed'), 422],
         };
+        if (isset(self::EXPLAINED_ERRORS[$exception->reasonCode])) {
+            // Same code and status as before; the message now says what is wrong.
+            [$field, $messageKey] = self::EXPLAINED_ERRORS[$exception->reasonCode];
+            $error = ['code' => $code, 'message' => __($messageKey), 'reason' => $exception->reasonCode];
+            if ($field !== null) {
+                $error['field'] = $field;
+            }
+
+            return $this->privateResponse($this->respondWithErrors([$error], $status));
+        }
 
         return $this->privateResponse($this->respondWithError($code, $message, null, $status));
     }

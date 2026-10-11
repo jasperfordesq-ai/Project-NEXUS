@@ -31,6 +31,7 @@ import {
   type EventTicketTypePayload,
 } from '@/lib/event-tickets-api';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
@@ -183,6 +184,7 @@ export function EventTicketsPanel({
     }
     setBusy('save-type');
     setFormError(null);
+    let explained: string | null = null;
     try {
       const response = editingType
         ? await eventTicketsApi.updateType(
@@ -193,7 +195,10 @@ export function EventTicketsPanel({
           key('ticket-type-update'),
         )
         : await eventTicketsApi.createType(eventId, data, key('ticket-type-create'));
-      if (!response.success) throw new Error(response.code ?? 'ticket_create_failed');
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.code ?? 'ticket_create_failed');
+      }
       toast.success(t(editingType ? 'tickets.updated' : 'tickets.created'));
       setEditorOpen(false);
       setEditingType(null);
@@ -201,7 +206,7 @@ export function EventTicketsPanel({
       await load();
     } catch (error) {
       logError('Failed to create Event ticket type', error);
-      setFormError(t('tickets.save_error'));
+      setFormError(explained ?? t('tickets.save_error'));
     } finally {
       setBusy(null);
     }
@@ -236,6 +241,7 @@ export function EventTicketsPanel({
   ) => {
     const reason = action === 'activate' ? null : suppliedReason?.trim() || null;
     setBusy(`${action}-${type.id}`);
+    let explained: string | null = null;
     try {
       const response = await eventTicketsApi.transitionType(
         eventId,
@@ -245,14 +251,17 @@ export function EventTicketsPanel({
         reason,
         key(`ticket-type-${action}`),
       );
-      if (!response.success) throw new Error(response.code ?? 'ticket_transition_failed');
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.code ?? 'ticket_transition_failed');
+      }
       toast.success(t(`tickets.${action}d`));
       setTypeAction(null);
       setTypeActionReason('');
       await load();
     } catch (error) {
       logError('Failed to transition Event ticket type', error);
-      toast.error(t('tickets.action_error'));
+      toast.error(explained ?? t('tickets.action_error'));
     } finally {
       setBusy(null);
     }
@@ -260,14 +269,18 @@ export function EventTicketsPanel({
 
   const allocate = async (type: EventTicketType) => {
     setBusy(`allocate-${type.id}`);
+    let explained: string | null = null;
     try {
       const response = await eventTicketsApi.allocateSelf(eventId, type.id, 1, key('ticket-allocate'));
-      if (!response.success) throw new Error(response.code ?? 'ticket_allocate_failed');
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.code ?? 'ticket_allocate_failed');
+      }
       toast.success(t('tickets.allocated'));
       await load();
     } catch (error) {
       logError('Failed to allocate Event ticket', error);
-      toast.error(t('tickets.allocate_error'));
+      toast.error(explained ?? t('tickets.allocate_error'));
     } finally {
       setBusy(null);
     }
@@ -276,6 +289,7 @@ export function EventTicketsPanel({
   const cancel = async () => {
     if (!cancelTarget || !cancelReason.trim()) return;
     setBusy(`cancel-${cancelTarget.id}`);
+    let explained: string | null = null;
     try {
       const response = await eventTicketsApi.cancel(
         eventId,
@@ -284,14 +298,17 @@ export function EventTicketsPanel({
         cancelReason.trim(),
         key('ticket-cancel'),
       );
-      if (!response.success) throw new Error(response.code ?? 'ticket_cancel_failed');
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.code ?? 'ticket_cancel_failed');
+      }
       toast.success(t('tickets.cancelled'));
       setCancelTarget(null);
       setCancelReason('');
       await load();
     } catch (error) {
       logError('Failed to cancel Event ticket entitlement', error);
-      toast.error(t('tickets.cancel_error'));
+      toast.error(explained ?? t('tickets.cancel_error'));
     } finally {
       setBusy(null);
     }

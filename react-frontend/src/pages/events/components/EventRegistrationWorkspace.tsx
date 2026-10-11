@@ -48,6 +48,7 @@ import {
   type RegistrationSettings,
   type RegistrationSubmission,
 } from '@/lib/event-registration-api';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale } from '@/lib/helpers';
 
@@ -372,6 +373,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
       return;
     }
     setSettingsAction('save');
+    let explained: string | null = null;
     try {
       const response = await eventRegistrationApi.saveSettings(eventId, {
         approval_mode: registrationSettings.approvalMode,
@@ -384,12 +386,15 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
         guest_retention_days: retentionDays,
         expected_revision: overview?.settings?.revision ?? 0,
       });
-      if (!response.success) throw new Error(response.message);
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.message);
+      }
       toast.success(t('messages.settings_saved'));
       await loadOverview();
     } catch (error) {
       logError('Failed to save event registration settings', error);
-      toast.error(t('messages.settings_save_error'));
+      toast.error(explained ?? t('messages.settings_save_error'));
     } finally {
       setSettingsAction(null);
     }
@@ -398,17 +403,21 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   async function publishRegistrationSettings() {
     if (!overview?.settings || overview.settings.status !== 'draft') return;
     setSettingsAction('publish');
+    let explained: string | null = null;
     try {
       const response = await eventRegistrationApi.publishSettings(
         eventId,
         overview.settings.revision,
       );
-      if (!response.success) throw new Error(response.message);
+      if (!response.success) {
+        explained = explainedApiError(response);
+        throw new Error(response.message);
+      }
       toast.success(t('messages.settings_published'));
       await loadOverview();
     } catch (error) {
       logError('Failed to publish event registration settings', error);
-      toast.error(t('messages.settings_publish_error'));
+      toast.error(explained ?? t('messages.settings_publish_error'));
     } finally {
       setSettingsAction(null);
     }
@@ -611,7 +620,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.issueCampaign(eventId, campaign.id, campaign.revision, expiry);
       if (!response.success) {
-        toast.error(t('messages.issue_error'));
+        toast.error(explainedApiError(response) ?? t('messages.issue_error'));
         return;
       }
       setPreviewCampaign(null);
@@ -632,7 +641,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.scheduleCampaign(eventId, campaign.id, campaign.revision, scheduled);
       if (!response.success) {
-        toast.error(t('messages.schedule_error'));
+        toast.error(explainedApiError(response) ?? t('messages.schedule_error'));
         return;
       }
       setPreviewCampaign(null);

@@ -405,4 +405,14 @@ return [
         'success' => 'Críochnaíodh an gníomh clárúcháin.',
         'validation_error' => 'Seiceáil an fhaisnéis a d\'iontráil tú agus bain triail eile as.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Iontráil dáta agus am iomlán a chuimsíonn fritháireamh an chriosa ama.',
+    'timezone_offset_mismatch' => 'Ní mór do na dátaí fritháireamh an chriosa ama atá ag an imeacht féin a úsáid. Seiceáil an crios ama agus bain triail eile as.',
+    'registration_window_invalid' => 'Ní mór don chlárú oscailt sula ndúnann sé. Tabhair an dá dháta, nó fág an dá cheann bán.',
+    'window_after_event_start' => 'Ní féidir le dáta dúnta an chláraithe ná leis an spriocdháta cealaithe a bheith níos déanaí ná tús an imeachta.',
+    'invitation_expiry_invalid' => 'Ní mór do dháta éaga an chuiridh a bheith sa todhchaí agus gan a bheith níos déanaí ná tús an imeachta.',
+    'campaign_schedule_invalid' => 'Ní mór don am seolta a bheith sa todhchaí agus roimh thús an imeachta.',
+    'invitation_event_unavailable' => 'Ní féidir cuirí a sheoladh ná glacadh leo mar gur cealaíodh an t-imeacht seo, gur tháinig deireadh leis nó gur cartlannaíodh é.',
+    'cancellation_cutoff_passed' => 'Tá spriocdháta cealaithe an eagraí caite, mar sin ní féidir leat an áit seo a chealú tú féin a thuilleadh. Déan teagmháil leis an eagraí.',
 ];

@@ -36,6 +36,8 @@ import {
   type ParticipationReviewRequest,
 } from '@/lib/event-safety-api';
 import { eventsApi, type EventMemberSearchResult } from '@/lib/events-api';
+import { explainedApiError } from '@/lib/explained-api-error';
+import type { ApiErrorDetail } from '@/lib/api';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
@@ -198,13 +200,13 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
 
   const runSafetyMutation = async (
     action: string,
-    request: () => Promise<{ success: boolean; data?: EventSafety }>,
+    request: () => Promise<{ success: boolean; data?: EventSafety; errors?: ApiErrorDetail[] }>,
   ) => {
     setPendingAction(action);
     try {
       const response = await request();
       if (!response.success || !response.data) {
-        toast.error(t('safety.organizer.action_error'));
+        toast.error(explainedApiError(response) ?? t('safety.organizer.action_error'));
         return;
       }
       applySafety(response.data);

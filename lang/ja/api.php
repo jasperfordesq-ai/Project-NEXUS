@@ -2980,4 +2980,19 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
         'reason_offers_what_you_need' => 'あなたが必要としていることを手伝えます',
     ],
 
+    // Event ticket and safety refusals that say what is wrong (E-102).
+    'event_ticket_date_invalid' => 'タイムゾーンのオフセットを含む完全な日時を入力してください。',
+    'event_ticket_timezone_offset_mismatch' => '日時にはイベント自体のタイムゾーンのオフセットを使用する必要があります。タイムゾーンを確認して、もう一度お試しください。',
+    'event_ticket_sales_window_invalid' => 'チケットの販売は終了より前に開始し、イベント開始までに終了する必要があります。',
+    'event_ticket_refund_cutoff_invalid' => '返金期限は、イベント開始以前の有効な日時である必要があります。',
+    'event_ticket_per_member_limit_invalid' => 'メンバーごとの上限は1から1,000までの整数で、提供するチケット数を超えないようにしてください。',
+    'event_ticket_sales_window_closed' => 'このチケットの種類は現在、販売期間外です。',
+    'event_ticket_per_member_limit_exceeded' => 'この操作を行うと、1人のメンバーが持てるこの種類のチケット数の上限を超えます。',
+    'event_ticket_confirmed_registration_required' => 'チケットを取得するには、このイベントで確定済みの参加枠が必要です。',
+    'event_ticket_allocation_exhausted' => 'この種類のチケットの残りが足りません。',
+    'event_safety_minimum_age_invalid' => '最低年齢は0から125までの整数にするか、空欄のままにしてください。',
+    'event_safety_code_of_conduct_invalid' => '行動規範を必須にするには、本文と64文字以内のバージョン名を追加してください。無効にするには、両方を削除してください。',
+    'event_safety_publish_draft_required' => '公開できるのは下書きだけです。まず変更を下書きとして保存してから公開してください。',
+    'event_safety_code_of_conduct_changed' => '開いた後に行動規範が変更されました。ページを再読み込みし、最新版を読んでから、もう一度同意してください。',
+    'event_safety_code_of_conduct_not_required' => 'このイベントには現在、同意が必要な行動規範はありません。',
 ];

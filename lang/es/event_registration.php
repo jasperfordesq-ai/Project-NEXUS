@@ -405,4 +405,14 @@ return [
         'success' => 'Se completó la acción de registro.',
         'validation_error' => 'Verifique la información que ingresó y vuelva a intentarlo.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Introduce una fecha y una hora completas que incluyan el desfase de zona horaria.',
+    'timezone_offset_mismatch' => 'Las fechas deben usar el desfase de zona horaria del propio evento. Comprueba la zona horaria e inténtalo de nuevo.',
+    'registration_window_invalid' => 'La inscripción debe abrirse antes de cerrarse. Indica ambas fechas o deja ambas en blanco.',
+    'window_after_event_start' => 'La fecha de cierre de la inscripción y el plazo de cancelación no pueden ser posteriores al comienzo del evento.',
+    'invitation_expiry_invalid' => 'La caducidad de la invitación debe ser futura y no posterior al comienzo del evento.',
+    'campaign_schedule_invalid' => 'La hora de envío debe ser futura y anterior al comienzo del evento.',
+    'invitation_event_unavailable' => 'No se pueden enviar ni aceptar invitaciones porque este evento se ha cancelado, ha terminado o se ha archivado.',
+    'cancellation_cutoff_passed' => 'El plazo de cancelación del organizador ha vencido, así que ya no puedes cancelar esta plaza por tu cuenta. Ponte en contacto con el organizador.',
 ];

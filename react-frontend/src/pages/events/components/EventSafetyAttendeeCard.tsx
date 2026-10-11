@@ -22,6 +22,8 @@ import {
   eventSafetyApi,
   type EventSafety,
 } from '@/lib/event-safety-api';
+import type { ApiErrorDetail } from '@/lib/api';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
 interface EventSafetyAttendeeCardProps {
@@ -75,7 +77,10 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
     void load();
   }, [load]);
 
-  const complete = async (action: string, request: () => Promise<{ success: boolean; data?: EventSafety }>): Promise<boolean> => {
+  const complete = async (
+    action: string,
+    request: () => Promise<{ success: boolean; data?: EventSafety; errors?: ApiErrorDetail[] }>,
+  ): Promise<boolean> => {
     setPendingAction(action);
     try {
       const response = await request();
@@ -84,7 +89,7 @@ export function EventSafetyAttendeeCard({ eventId, onChanged }: EventSafetyAtten
         toast.success(t(`safety.attendee.success.${action}`));
         return true;
       }
-      toast.error(t('safety.attendee.action_error'));
+      toast.error(explainedApiError(response) ?? t('safety.attendee.action_error'));
       return false;
     } catch (caught) {
       logError('Attendee Event Safety mutation failed', { action, caught });

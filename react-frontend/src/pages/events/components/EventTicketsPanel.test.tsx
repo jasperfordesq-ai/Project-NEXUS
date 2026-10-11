@@ -90,6 +90,49 @@ describe('EventTicketsPanel', () => {
     expect(mockToast.success).toHaveBeenCalledWith('Ticket reserved.');
   });
 
+  it('shows the server explanation when a reservation is refused for a stated reason', async () => {
+    vi.spyOn(eventTicketsApi, 'get').mockResolvedValue({ success: true, data: catalogue() });
+    vi.spyOn(eventTicketsApi, 'allocateSelf').mockResolvedValue({
+      success: false,
+      code: 'EVENT_TICKET_VALIDATION_FAILED',
+      error: 'You need a confirmed place at this event before you can take a ticket.',
+      errors: [{
+        code: 'EVENT_TICKET_VALIDATION_FAILED',
+        message: 'You need a confirmed place at this event before you can take a ticket.',
+        reason: 'event_ticket_confirmed_registration_required',
+      }],
+    });
+    const user = userEvent.setup();
+
+    renderEventComponent(
+      <EventTicketsPanel eventId={1} eventStart="2030-01-02T10:00:00+00:00" eventTimezone="UTC" />,
+    );
+    await user.click(await screen.findByRole('button', { name: 'Reserve ticket' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+      'You need a confirmed place at this event before you can take a ticket.',
+    ));
+  });
+
+  it('keeps its own message when the refusal carries no stated reason', async () => {
+    vi.spyOn(eventTicketsApi, 'get').mockResolvedValue({ success: true, data: catalogue() });
+    vi.spyOn(eventTicketsApi, 'allocateSelf').mockResolvedValue({
+      success: false,
+      code: 'EVENT_TICKET_VALIDATION_FAILED',
+      error: 'Validation failed',
+      errors: [{ code: 'EVENT_TICKET_VALIDATION_FAILED', message: 'Validation failed' }],
+    });
+    const user = userEvent.setup();
+
+    renderEventComponent(
+      <EventTicketsPanel eventId={1} eventStart="2030-01-02T10:00:00+00:00" eventTimezone="UTC" />,
+    );
+    await user.click(await screen.findByRole('button', { name: 'Reserve ticket' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    expect(mockToast.error).not.toHaveBeenCalledWith('Validation failed');
+  });
+
   it('keeps time-credit materialisation visibly unavailable', async () => {
     const value = catalogue();
     value.ticket_types[0] = {

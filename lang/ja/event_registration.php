@@ -405,4 +405,14 @@ return [
         'success' => '登録アクションが完了しました。',
         'validation_error' => '入力した情報を確認して、もう一度お試しください。',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'タイムゾーンのオフセットを含む完全な日時を入力してください。',
+    'timezone_offset_mismatch' => '日時にはイベント自体のタイムゾーンのオフセットを使用する必要があります。タイムゾーンを確認して、もう一度お試しください。',
+    'registration_window_invalid' => '登録の受付開始は締切より前にする必要があります。両方の日付を入力するか、両方とも空欄にしてください。',
+    'window_after_event_start' => '登録の締切日とキャンセル期限は、イベント開始より後に設定できません。',
+    'invitation_expiry_invalid' => '招待の有効期限は、未来の日時で、かつイベント開始以前である必要があります。',
+    'campaign_schedule_invalid' => '送信日時は、未来の日時で、かつイベント開始より前である必要があります。',
+    'invitation_event_unavailable' => 'このイベントは中止、終了、またはアーカイブされたため、招待の送信や承諾はできません。',
+    'cancellation_cutoff_passed' => '主催者が設定したキャンセル期限を過ぎているため、この参加枠をご自身でキャンセルすることはできません。主催者に連絡してください。',
 ];

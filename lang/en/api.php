@@ -3504,4 +3504,19 @@ return [
         'reason_offers_what_you_need' => 'Offers help with something you need',
     ],
 
+    // Event ticket and safety refusals that say what is wrong (E-102).
+    'event_ticket_date_invalid' => 'Enter a full date and time that includes the time zone offset.',
+    'event_ticket_timezone_offset_mismatch' => 'Dates must use the event\'s own time zone offset. Check the time zone and try again.',
+    'event_ticket_sales_window_invalid' => 'Ticket sales must open before they close, and close no later than the start of the event.',
+    'event_ticket_refund_cutoff_invalid' => 'The refund deadline must be a valid date and time no later than the start of the event.',
+    'event_ticket_per_member_limit_invalid' => 'The limit per member must be a whole number from 1 to 1,000, and no more than the number of tickets on offer.',
+    'event_ticket_sales_window_closed' => 'This ticket type is outside its sales period right now.',
+    'event_ticket_per_member_limit_exceeded' => 'That would take you over the number of tickets one member may hold for this type.',
+    'event_ticket_confirmed_registration_required' => 'You need a confirmed place at this event before you can take a ticket.',
+    'event_ticket_allocation_exhausted' => 'There are not enough tickets of this type left.',
+    'event_safety_minimum_age_invalid' => 'The minimum age must be a whole number from 0 to 125, or left blank.',
+    'event_safety_code_of_conduct_invalid' => 'To require a code of conduct, add its text and a version label of up to 64 characters. To turn it off, remove both.',
+    'event_safety_publish_draft_required' => 'Only a draft can be published. Save your changes as a draft first, then publish.',
+    'event_safety_code_of_conduct_changed' => 'The code of conduct has changed since you opened it. Reload the page, read the current version and agree again.',
+    'event_safety_code_of_conduct_not_required' => 'This event has no code of conduct to agree to at the moment.',
 ];

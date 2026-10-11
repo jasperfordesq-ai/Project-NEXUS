@@ -405,4 +405,14 @@ return [
         'success' => 'A ação de registro foi concluída.',
         'validation_error' => 'Verifique as informações inseridas e tente novamente.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Informe uma data e hora completas, incluindo o deslocamento do fuso horário.',
+    'timezone_offset_mismatch' => 'As datas devem usar o deslocamento do fuso horário do próprio evento. Verifique o fuso horário e tente novamente.',
+    'registration_window_invalid' => 'As inscrições devem abrir antes de fechar. Informe as duas datas ou deixe ambas em branco.',
+    'window_after_event_start' => 'A data de encerramento das inscrições e o prazo de cancelamento não podem ser posteriores ao início do evento.',
+    'invitation_expiry_invalid' => 'A expiração do convite deve estar no futuro e não pode ser posterior ao início do evento.',
+    'campaign_schedule_invalid' => 'O horário de envio deve estar no futuro e antes do início do evento.',
+    'invitation_event_unavailable' => 'Não é possível enviar nem aceitar convites porque este evento foi cancelado, terminou ou foi arquivado.',
+    'cancellation_cutoff_passed' => 'O prazo de cancelamento definido pelo organizador já passou, por isso você não pode mais cancelar esta vaga por conta própria. Entre em contato com o organizador.',
 ];

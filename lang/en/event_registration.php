@@ -405,4 +405,14 @@ return [
         'success' => 'The registration action was completed.',
         'validation_error' => 'Check the information you entered and try again.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Enter a full date and time that includes the time zone offset.',
+    'timezone_offset_mismatch' => 'Dates must use the event\'s own time zone offset. Check the time zone and try again.',
+    'registration_window_invalid' => 'Registration must open before it closes. Give both dates, or leave both blank.',
+    'window_after_event_start' => 'The registration closing date and the cancellation deadline must be no later than the start of the event.',
+    'invitation_expiry_invalid' => 'The invitation expiry must be in the future and no later than the start of the event.',
+    'campaign_schedule_invalid' => 'The send time must be in the future and before the event starts.',
+    'invitation_event_unavailable' => 'Invitations cannot be sent or accepted because this event has been cancelled, has finished or has been archived.',
+    'cancellation_cutoff_passed' => 'The organiser\'s cancellation deadline has passed, so you can no longer cancel this place yourself. Contact the organiser.',
 ];

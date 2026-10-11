@@ -405,4 +405,14 @@ return [
         'success' => 'L\'action d\'enregistrement a été complétée.',
         'validation_error' => 'Vérifiez les informations que vous avez saisies et réessayez.',
     ],
+
+    // Registration, invitation and cancellation refusals that say what is wrong (E-102).
+    'date_invalid' => 'Saisissez une date et une heure complètes, avec le décalage du fuseau horaire.',
+    'timezone_offset_mismatch' => 'Les dates doivent utiliser le décalage horaire propre à l\'événement. Vérifiez le fuseau horaire et réessayez.',
+    'registration_window_invalid' => 'Les inscriptions doivent ouvrir avant de fermer. Indiquez les deux dates, ou laissez-les toutes deux vides.',
+    'window_after_event_start' => 'La date de clôture des inscriptions et la date limite d\'annulation ne peuvent pas être postérieures au début de l\'événement.',
+    'invitation_expiry_invalid' => 'L\'expiration de l\'invitation doit se situer dans le futur et au plus tard au début de l\'événement.',
+    'campaign_schedule_invalid' => 'L\'heure d\'envoi doit se situer dans le futur et avant le début de l\'événement.',
+    'invitation_event_unavailable' => 'Les invitations ne peuvent être ni envoyées ni acceptées, car cet événement a été annulé, est terminé ou a été archivé.',
+    'cancellation_cutoff_passed' => 'La date limite d\'annulation fixée par l\'organisateur est dépassée : vous ne pouvez plus annuler cette place vous-même. Contactez l\'organisateur.',
 ];

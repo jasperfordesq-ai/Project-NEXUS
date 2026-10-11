@@ -31,6 +31,25 @@ final class EventRegistrationProductController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /**
+     * Refusals an organiser or member causes by what they entered or when
+     * they acted: the input to fix and the message that explains it.
+     *
+     * @var array<string, array{0:?string,1:string}>
+     */
+    private const EXPLAINED_ERRORS = [
+        'event_registration_opens_at_invalid' => ['opens_at', 'event_registration.date_invalid'],
+        'event_registration_closes_at_invalid' => ['closes_at', 'event_registration.date_invalid'],
+        'event_registration_cutoff_invalid' => ['cancellation_cutoff_at', 'event_registration.date_invalid'],
+        'event_registration_timezone_offset_mismatch' => [null, 'event_registration.timezone_offset_mismatch'],
+        'event_registration_window_invalid' => ['opens_at', 'event_registration.registration_window_invalid'],
+        // Either the closing date or the cancellation deadline; the service does not say which.
+        'event_registration_window_after_event_start' => [null, 'event_registration.window_after_event_start'],
+        'event_invitation_expiry_invalid' => ['expires_at', 'event_registration.invitation_expiry_invalid'],
+        'event_invitation_campaign_schedule_invalid' => ['scheduled_for', 'event_registration.campaign_schedule_invalid'],
+        'event_registration_event_unavailable' => [null, 'event_registration.invitation_event_unavailable'],
+    ];
+
     public function __construct(
         private readonly EventRegistrationProductQueryService $queries,
         private readonly EventRegistrationSettingsService $settings,
@@ -740,6 +759,23 @@ final class EventRegistrationProductController extends BaseApiController
     private function productError(EventRegistrationFoundationException $exception): JsonResponse
     {
         $reason = $exception->getMessage();
+        if (isset(self::EXPLAINED_ERRORS[$reason])) {
+            [$field, $messageKey] = self::EXPLAINED_ERRORS[$reason];
+            // An invitation to an event that is no longer going ahead is a
+            // conflict with the event's state, not bad input (was 422). The
+            // code is unchanged; every other explained refusal keeps its 422.
+            $status = $reason === 'event_registration_event_unavailable' ? 409 : 422;
+            $error = [
+                'code' => 'EVENT_REGISTRATION_VALIDATION_FAILED',
+                'message' => __($messageKey),
+                'reason' => $reason,
+            ];
+            if ($field !== null) {
+                $error['field'] = $field;
+            }
+
+            return $this->respondWithErrors([$error], $status);
+        }
         if ($reason === 'event_registration_retention_settings_required') {
             return $this->respondWithError('EVENT_REGISTRATION_VALIDATION_FAILED', __('api.validation_failed'), 'registration_settings', 422);
         }
