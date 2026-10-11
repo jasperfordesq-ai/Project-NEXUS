@@ -188,9 +188,19 @@ final class EventCalendarService
     /** @return array<string, int|string|bool|null>|null */
     public function projectionForEvent(User $viewer, int $eventId): ?array
     {
+        // Auth is GLOBAL; only resources are tenant-scoped (766b867d2,
+        // 6adcd4ff6). A viewer whose account row lives on another community is
+        // admitted here only with management authority over the event (decided
+        // by EventPolicy, admin authority confined by TenantAdminScope); any
+        // other viewer from elsewhere is refused exactly as before.
+        $crossCommunity = false;
         $tenantId = $this->validTenantFor($viewer);
         if ($tenantId === null) {
-            return null;
+            $tenantId = $this->validTenantFor($viewer, true);
+            if ($tenantId === null) {
+                return null;
+            }
+            $crossCommunity = true;
         }
 
         /** @var Event|null $event */
@@ -203,7 +213,8 @@ final class EventCalendarService
         }
 
         $abilities = $this->policy->abilitiesForEvents($viewer, [$event]);
-        if (! ($abilities[$eventId]['view'] ?? false)) {
+        if (! ($abilities[$eventId]['view'] ?? false)
+            || ($crossCommunity && ! ($abilities[$eventId]['manage'] ?? false))) {
             return null;
         }
 
@@ -660,13 +671,17 @@ final class EventCalendarService
         }
     }
 
-    private function validTenantFor(User $viewer): ?int
+    /**
+     * $anyCommunity skips only the viewer's home-community comparison; the
+     * caller must then require management authority over the event.
+     */
+    private function validTenantFor(User $viewer, bool $anyCommunity = false): ?int
     {
         $tenantId = TenantContext::currentId();
         if ($tenantId === null
             || $tenantId <= 0
             || (int) $viewer->getKey() <= 0
-            || (int) $viewer->getAttribute('tenant_id') !== $tenantId
+            || (! $anyCommunity && (int) $viewer->getAttribute('tenant_id') !== $tenantId)
             || (string) $viewer->getAttribute('status') !== 'active'
             || $viewer->getAttribute('deleted_at') !== null) {
             return null;

@@ -61,9 +61,12 @@ final class EventLifecycleHistoryQueryService
         }
 
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
+        // Auth is GLOBAL; only resources are tenant-scoped (766b867d2,
+        // 6adcd4ff6). The actor's own row is resolved by id alone; a tenant
+        // predicate here refused managers whose account row lives on another
+        // community. EventPolicy::manage decides against the tenant-scoped event.
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
