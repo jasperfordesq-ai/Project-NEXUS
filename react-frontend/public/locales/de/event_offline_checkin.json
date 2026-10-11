@@ -103,7 +103,20 @@
     "purge_title": "Offlinedaten dieses Geräts entfernen?",
     "purge_description": "Der verschlüsselte Dienstplan, das Gerätegeheimnis und alle nicht synchronisierten Aktionen werden dauerhaft aus diesem Browser entfernt.",
     "confirm_purge": "Offlinedaten entfernen",
-    "keep_data": "Behalten Sie Offline-Daten"
+    "keep_data": "Behalten Sie Offline-Daten",
+    "decisions": {
+      "attendance_applied": "Übernommen",
+      "credential_invalid": "Ausweis nicht erkannt",
+      "credential_revoked": "Ausweis wurde widerrufen",
+      "credential_rotated": "Ausweis wurde durch einen neueren ersetzt",
+      "credential_expired": "Ausweis ist abgelaufen",
+      "manifest_rotated": "Die Teilnehmerliste hat sich geändert – bitte erneut herunterladen",
+      "event_attendance_version_conflict": "Jemand anderes hat den Check-in dieser Person gleichzeitig geändert",
+      "event_attendance_transition_invalid": "Beim aktuellen Check-in-Status dieser Person nicht möglich",
+      "event_attendance_undo_unavailable": "Kann nicht mehr rückgängig gemacht werden",
+      "already_recorded": "Bereits erfasst",
+      "unknown": "Nicht übernommen (Referenz: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Check-in-Konflikte",

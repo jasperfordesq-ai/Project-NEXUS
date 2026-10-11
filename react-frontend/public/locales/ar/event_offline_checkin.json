@@ -103,7 +103,20 @@
     "purge_title": "هل تريد إزالة البيانات غير المتصلة بالإنترنت لهذا الجهاز؟",
     "purge_description": "ستتم إزالة القائمة المشفرة وسر الجهاز وأي إجراءات غير متزامنة نهائيًا من هذا المتصفح.",
     "confirm_purge": "إزالة البيانات دون اتصال",
-    "keep_data": "احتفظ بالبيانات دون اتصال بالإنترنت"
+    "keep_data": "احتفظ بالبيانات دون اتصال بالإنترنت",
+    "decisions": {
+      "attendance_applied": "تم التطبيق",
+      "credential_invalid": "لم يتم التعرّف على التصريح",
+      "credential_revoked": "تم إلغاء التصريح",
+      "credential_rotated": "تم استبدال التصريح بآخر أحدث",
+      "credential_expired": "انتهت صلاحية التصريح",
+      "manifest_rotated": "تغيّرت القائمة — نزّلها مرة أخرى",
+      "event_attendance_version_conflict": "غيّر شخص آخر تسجيل حضور هذا الشخص في الوقت نفسه",
+      "event_attendance_transition_invalid": "غير ممكن مع حالة تسجيل الحضور الحالية لهذا الشخص",
+      "event_attendance_undo_unavailable": "لم يعد بالإمكان التراجع عنه",
+      "already_recorded": "مسجّل بالفعل",
+      "unknown": "لم يُطبَّق (المرجع: {{code}})"
+    }
   },
   "conflicts": {
     "title": "تعارضات تسجيل الوصول",

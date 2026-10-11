@@ -103,7 +103,20 @@
     "purge_title": "¿Eliminar los datos sin conexión de este dispositivo?",
     "purge_description": "La lista cifrada, el secreto del dispositivo y cualquier acción no sincronizada se eliminarán permanentemente de este navegador.",
     "confirm_purge": "Eliminar datos sin conexión",
-    "keep_data": "Mantener datos sin conexión"
+    "keep_data": "Mantener datos sin conexión",
+    "decisions": {
+      "attendance_applied": "Aplicado",
+      "credential_invalid": "Pase no reconocido",
+      "credential_revoked": "El pase fue cancelado",
+      "credential_rotated": "El pase fue sustituido por uno más reciente",
+      "credential_expired": "El pase ha caducado",
+      "manifest_rotated": "La lista ha cambiado: descárgala de nuevo",
+      "event_attendance_version_conflict": "Otra persona cambió el registro de esta persona al mismo tiempo",
+      "event_attendance_transition_invalid": "No es posible con el estado de registro actual de esta persona",
+      "event_attendance_undo_unavailable": "Ya no se puede deshacer",
+      "already_recorded": "Ya registrado",
+      "unknown": "No aplicado (referencia: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Conflictos de check-in",

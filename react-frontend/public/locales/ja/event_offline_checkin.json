@@ -103,7 +103,20 @@
     "purge_title": "このデバイスのオフライン データを削除しますか?",
     "purge_description": "暗号化された名簿、デバイス シークレット、および同期されていないアクションは、このブラウザーから完全に削除されます。",
     "confirm_purge": "オフラインデータを削除する",
-    "keep_data": "オフラインデータを保持する"
+    "keep_data": "オフラインデータを保持する",
+    "decisions": {
+      "attendance_applied": "反映済み",
+      "credential_invalid": "パスを認識できません",
+      "credential_revoked": "パスは取り消されました",
+      "credential_rotated": "パスは新しいものに置き換えられました",
+      "credential_expired": "パスの有効期限が切れています",
+      "manifest_rotated": "名簿が変更されました。もう一度ダウンロードしてください",
+      "event_attendance_version_conflict": "同じ時間に別の人がこの人のチェックインを変更しました",
+      "event_attendance_transition_invalid": "この人の現在のチェックイン状況では行えません",
+      "event_attendance_undo_unavailable": "取り消しできなくなりました",
+      "already_recorded": "記録済み",
+      "unknown": "反映されませんでした（参照: {{code}}）"
+    }
   },
   "conflicts": {
     "title": "チェックインの競合",

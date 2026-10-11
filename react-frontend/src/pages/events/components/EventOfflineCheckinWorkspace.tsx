@@ -36,6 +36,7 @@ import {
   enqueueOfflineCredential,
   loadOfflineCheckinSession,
   offlineCheckinExplanation,
+  offlineDecisionMessage,
   OfflineCheckinRequestError,
   purgeOfflineCheckinSession,
   refreshOfflineCheckinManifest,
@@ -536,7 +537,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
                       <div>
                         <p className="font-medium text-theme-primary">{item.displayName}</p>
                         <p className="text-xs text-theme-muted">{t(`scan.operations.${item.operation}`)} · {t('queue.observed', { date: localDate(item.observedAt) })}</p>
-                        {item.code && <p className="text-xs text-theme-muted">{t('queue.code', { code: item.code })}</p>}
+                        {item.code && <p className="text-xs text-theme-muted">{t(offlineDecisionMessage(item.code).key, offlineDecisionMessage(item.code).params)}</p>}
                       </div>
                       <Chip size="sm" color={item.state === 'synced' ? 'success' : item.state === 'conflict' ? 'warning' : item.state === 'rejected' ? 'danger' : 'default'}>{t(`queue.states.${item.state}`)}</Chip>
                     </li>

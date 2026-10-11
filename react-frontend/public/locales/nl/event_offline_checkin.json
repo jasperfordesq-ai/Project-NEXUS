@@ -103,7 +103,20 @@
     "purge_title": "De offline gegevens van dit apparaat verwijderen?",
     "purge_description": "Het gecodeerde rooster, het apparaatgeheim en eventuele niet-gesynchroniseerde acties worden permanent uit deze browser verwijderd.",
     "confirm_purge": "Offlinegegevens verwijderen",
-    "keep_data": "Bewaar offline gegevens"
+    "keep_data": "Bewaar offline gegevens",
+    "decisions": {
+      "attendance_applied": "Toegepast",
+      "credential_invalid": "Pas niet herkend",
+      "credential_revoked": "Pas is ingetrokken",
+      "credential_rotated": "Pas is vervangen door een nieuwere",
+      "credential_expired": "Pas is verlopen",
+      "manifest_rotated": "De lijst is gewijzigd — download deze opnieuw",
+      "event_attendance_version_conflict": "Iemand anders heeft de aanmelding van deze persoon tegelijkertijd gewijzigd",
+      "event_attendance_transition_invalid": "Niet mogelijk met de huidige aanmeldstatus van deze persoon",
+      "event_attendance_undo_unavailable": "Kan niet meer ongedaan worden gemaakt",
+      "already_recorded": "Al geregistreerd",
+      "unknown": "Niet toegepast (referentie: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Conflicten bij het inchecken",

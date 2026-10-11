@@ -103,7 +103,20 @@
     "purge_title": "Supprimer les données hors connexion de cet appareil ?",
     "purge_description": "La liste cryptée, le secret de l'appareil et toute action non synchronisée seront définitivement supprimés de ce navigateur.",
     "confirm_purge": "Supprimer les données hors ligne",
-    "keep_data": "Conserver les données hors ligne"
+    "keep_data": "Conserver les données hors ligne",
+    "decisions": {
+      "attendance_applied": "Appliqué",
+      "credential_invalid": "Pass non reconnu",
+      "credential_revoked": "Le pass a été annulé",
+      "credential_rotated": "Le pass a été remplacé par un plus récent",
+      "credential_expired": "Le pass a expiré",
+      "manifest_rotated": "La liste a changé — téléchargez-la à nouveau",
+      "event_attendance_version_conflict": "Quelqu'un d'autre a modifié l'enregistrement de cette personne au même moment",
+      "event_attendance_transition_invalid": "Impossible avec le statut d'enregistrement actuel de cette personne",
+      "event_attendance_undo_unavailable": "Ne peut plus être annulé",
+      "already_recorded": "Déjà enregistré",
+      "unknown": "Non appliqué (référence : {{code}})"
+    }
   },
   "conflicts": {
     "title": "Conflits d'enregistrement",

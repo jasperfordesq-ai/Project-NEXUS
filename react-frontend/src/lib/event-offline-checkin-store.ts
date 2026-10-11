@@ -561,3 +561,31 @@ function transactionComplete(transaction: IDBTransaction): Promise<void> {
     transaction.onabort = () => reject(transaction.error ?? new Error('offline_store_failed'));
   });
 }
+
+const KNOWN_OFFLINE_DECISIONS = new Set([
+  'attendance_applied',
+  'credential_invalid',
+  'credential_revoked',
+  'credential_rotated',
+  'credential_expired',
+  'manifest_rotated',
+  'event_attendance_version_conflict',
+  'event_attendance_transition_invalid',
+  'event_attendance_undo_unavailable',
+]);
+
+/**
+ * The translation key (and parameters) for a server decision on a queued
+ * offline action, so staff read "Pass was replaced by a newer one" rather than
+ * a raw code such as `credential_rotated` (E-102).
+ */
+export function offlineDecisionMessage(code: string): { key: string; params?: Record<string, string> } {
+  if (code === 'event_attendance_history_conflict' || code === 'event_attendance_idempotency_conflict') {
+    return { key: 'queue.decisions.already_recorded' };
+  }
+  if (KNOWN_OFFLINE_DECISIONS.has(code)) {
+    return { key: `queue.decisions.${code}` };
+  }
+
+  return { key: 'queue.decisions.unknown', params: { code } };
+}

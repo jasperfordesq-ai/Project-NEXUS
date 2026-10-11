@@ -103,7 +103,20 @@
     "purge_title": "Bain sonraí as líne an ghléis seo?",
     "purge_description": "Bainfear an t-uainchlár criptithe, rún an ghléis agus aon ghníomhartha gan sioncronaithe go buan den bhrabhsálaí seo.",
     "confirm_purge": "Bain sonraí as líne",
-    "keep_data": "Coinnigh sonraí as líne"
+    "keep_data": "Coinnigh sonraí as líne",
+    "decisions": {
+      "attendance_applied": "Curtha i bhfeidhm",
+      "credential_invalid": "Níor aithníodh an pas",
+      "credential_revoked": "Cuireadh an pas ar ceal",
+      "credential_rotated": "Cuireadh pas níos nuaí in áit an phas seo",
+      "credential_expired": "Tá an pas imithe in éag",
+      "manifest_rotated": "Tá an liosta athraithe — íoslódáil arís é",
+      "event_attendance_version_conflict": "D'athraigh duine eile clárú an duine seo ag an am céanna",
+      "event_attendance_transition_invalid": "Ní féidir é sin a dhéanamh le stádas cláraithe reatha an duine seo",
+      "event_attendance_undo_unavailable": "Ní féidir é a chealú a thuilleadh",
+      "already_recorded": "Taifeadta cheana",
+      "unknown": "Níor cuireadh i bhfeidhm é (tagairt: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Seiceáil isteach coinbhleachtaí",

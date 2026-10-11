@@ -103,7 +103,20 @@
     "purge_title": "Remove this device's offline data?",
     "purge_description": "The encrypted roster, device secret and any unsynced actions will be permanently removed from this browser.",
     "confirm_purge": "Remove offline data",
-    "keep_data": "Keep offline data"
+    "keep_data": "Keep offline data",
+    "decisions": {
+      "attendance_applied": "Applied",
+      "credential_invalid": "Pass not recognised",
+      "credential_revoked": "Pass was cancelled",
+      "credential_rotated": "Pass was replaced by a newer one",
+      "credential_expired": "Pass has expired",
+      "manifest_rotated": "The roster changed — download it again",
+      "event_attendance_version_conflict": "Someone else changed this person's check-in at the same time",
+      "event_attendance_transition_invalid": "Not possible for this person's current check-in status",
+      "event_attendance_undo_unavailable": "Can no longer be undone",
+      "already_recorded": "Already recorded",
+      "unknown": "Not applied (reference: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Check-in conflicts",

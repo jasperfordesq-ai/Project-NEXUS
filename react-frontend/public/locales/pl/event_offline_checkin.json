@@ -103,7 +103,20 @@
     "purge_title": "Usunąć dane offline tego urządzenia?",
     "purge_description": "Zaszyfrowana lista, sekret urządzenia i wszelkie niezsynchronizowane działania zostaną trwale usunięte z tej przeglądarki.",
     "confirm_purge": "Usuń dane offline",
-    "keep_data": "Przechowuj dane offline"
+    "keep_data": "Przechowuj dane offline",
+    "decisions": {
+      "attendance_applied": "Zastosowano",
+      "credential_invalid": "Nie rozpoznano przepustki",
+      "credential_revoked": "Przepustka została anulowana",
+      "credential_rotated": "Przepustka została zastąpiona nowszą",
+      "credential_expired": "Przepustka wygasła",
+      "manifest_rotated": "Lista się zmieniła — pobierz ją ponownie",
+      "event_attendance_version_conflict": "Ktoś inny w tym samym czasie zmienił odprawę tej osoby",
+      "event_attendance_transition_invalid": "Niemożliwe przy obecnym statusie odprawy tej osoby",
+      "event_attendance_undo_unavailable": "Nie można już cofnąć",
+      "already_recorded": "Już zarejestrowano",
+      "unknown": "Nie zastosowano (odniesienie: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Konflikty dotyczące zameldowania",

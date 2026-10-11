@@ -103,7 +103,20 @@
     "purge_title": "Rimuovere i dati offline di questo dispositivo?",
     "purge_description": "L'elenco crittografato, il segreto del dispositivo e qualsiasi azione non sincronizzata verranno rimossi definitivamente da questo browser.",
     "confirm_purge": "Rimuovi i dati offline",
-    "keep_data": "Conserva i dati offline"
+    "keep_data": "Conserva i dati offline",
+    "decisions": {
+      "attendance_applied": "Applicato",
+      "credential_invalid": "Pass non riconosciuto",
+      "credential_revoked": "Il pass è stato annullato",
+      "credential_rotated": "Il pass è stato sostituito da uno più recente",
+      "credential_expired": "Il pass è scaduto",
+      "manifest_rotated": "L'elenco è cambiato: scaricalo di nuovo",
+      "event_attendance_version_conflict": "Qualcun altro ha modificato la registrazione di questa persona nello stesso momento",
+      "event_attendance_transition_invalid": "Non possibile con lo stato di registrazione attuale di questa persona",
+      "event_attendance_undo_unavailable": "Non può più essere annullato",
+      "already_recorded": "Già registrato",
+      "unknown": "Non applicato (riferimento: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Conflitti di check-in",

@@ -103,7 +103,20 @@
     "purge_title": "Remover os dados off-line deste dispositivo?",
     "purge_description": "A lista criptografada, o segredo do dispositivo e quaisquer ações não sincronizadas serão removidos permanentemente deste navegador.",
     "confirm_purge": "Remover dados off-line",
-    "keep_data": "Mantenha dados off-line"
+    "keep_data": "Mantenha dados off-line",
+    "decisions": {
+      "attendance_applied": "Aplicado",
+      "credential_invalid": "Passe não reconhecido",
+      "credential_revoked": "O passe foi cancelado",
+      "credential_rotated": "O passe foi substituído por um mais recente",
+      "credential_expired": "O passe expirou",
+      "manifest_rotated": "A lista mudou — transfira-a novamente",
+      "event_attendance_version_conflict": "Outra pessoa alterou o registo desta pessoa ao mesmo tempo",
+      "event_attendance_transition_invalid": "Não é possível com o estado de registo atual desta pessoa",
+      "event_attendance_undo_unavailable": "Já não pode ser anulado",
+      "already_recorded": "Já registado",
+      "unknown": "Não aplicado (referência: {{code}})"
+    }
   },
   "conflicts": {
     "title": "Conflitos de check-in",

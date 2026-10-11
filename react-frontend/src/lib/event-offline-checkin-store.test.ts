@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { OfflineCheckinManifest } from '@/lib/event-offline-checkin-api';
 import {
   deriveOfflineTransition,
+  offlineDecisionMessage,
   verifyOfflineCredential,
 } from '@/lib/event-offline-checkin-store';
 
@@ -118,5 +119,21 @@ describe('event offline check-in store', () => {
       .toBe('no_show');
     expect(deriveOfflineTransition('checked_in', [], 'undo')).toBe('not_checked_in');
     expect(() => deriveOfflineTransition('checked_out', [], 'check_in')).toThrow('transition_invalid');
+  });
+});
+
+describe('offlineDecisionMessage (E-102)', () => {
+  it('turns a known server decision into a translation key', () => {
+    expect(offlineDecisionMessage('credential_rotated')).toEqual({ key: 'queue.decisions.credential_rotated' });
+    expect(offlineDecisionMessage('attendance_applied')).toEqual({ key: 'queue.decisions.attendance_applied' });
+  });
+
+  it('reads both replay conflicts as already recorded', () => {
+    expect(offlineDecisionMessage('event_attendance_idempotency_conflict')).toEqual({ key: 'queue.decisions.already_recorded' });
+    expect(offlineDecisionMessage('event_attendance_history_conflict')).toEqual({ key: 'queue.decisions.already_recorded' });
+  });
+
+  it('falls back to a generic message that still carries the reference', () => {
+    expect(offlineDecisionMessage('something_new')).toEqual({ key: 'queue.decisions.unknown', params: { code: 'something_new' } });
   });
 });
