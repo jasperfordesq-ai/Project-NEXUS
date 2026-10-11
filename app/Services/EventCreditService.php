@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Enums\EventAttendanceState;
 use App\I18n\LocaleContext;
 use App\Models\Event;
 use App\Models\EventAttendance;
@@ -307,6 +308,8 @@ final class EventCreditService
 
         // XP and challenge progress were recorded on the first mint and are
         // not taken back by the undo, so they are not recorded a second time.
+        // A claim closed while still unpaid (failed, then undone) never
+        // recorded them, so this mint is its first and does.
         return $this->attemptMint(
             (int) $claim->id,
             $tenantId,
@@ -314,7 +317,7 @@ final class EventCreditService
             $attendeeId,
             $this->clampToCeiling((float) $claim->amount),
             $eventTitle,
-            false,
+            $metadata['previous_transaction_ids'] === [],
         );
     }
 
@@ -498,34 +501,76 @@ final class EventCreditService
             return $this->outcome('not_retryable', $claimId);
         }
 
-        $resumed = DB::table('event_attendance_credit_claims')
-            ->where('tenant_id', $tenantId)
-            ->where('id', $claimId)
-            ->where('status', 'failed')
-            ->update([
-                'status' => 'pending',
-                'failure_code' => null,
-                'failed_at' => null,
-                'updated_at' => now(),
-            ]);
+        // E-102: the reward is for attendance, so it is paid only while the
+        // member still counts as present. Undo closes a failed claim itself;
+        // this refuses one that was left `failed` anyway (e.g. undone before
+        // that existed). The attendance row stays locked until the mint has
+        // committed, so an undo cannot slip in between check and payment.
+        return DB::transaction(function () use ($tenantId, $claimId, $claim): array {
+            if (! $this->attendanceStillPresent($tenantId, (int) $claim->event_id, (int) $claim->user_id)) {
+                return $this->outcome('not_retryable', $claimId);
+            }
 
-        if ($resumed !== 1) {
-            return $this->outcome('not_retryable', $claimId);
+            $resumed = DB::table('event_attendance_credit_claims')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $claimId)
+                ->where('status', 'failed')
+                ->update([
+                    'status' => 'pending',
+                    'failure_code' => null,
+                    'failed_at' => null,
+                    'updated_at' => now(),
+                ]);
+
+            if ($resumed !== 1) {
+                return $this->outcome('not_retryable', $claimId);
+            }
+
+            $eventTitle = (string) (DB::table('events')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $claim->event_id)
+                ->value('title') ?? '');
+
+            return $this->attemptMint(
+                $claimId,
+                $tenantId,
+                (int) $claim->event_id,
+                (int) $claim->user_id,
+                $this->clampToCeiling((float) $claim->amount),
+                $eventTitle,
+            );
+        });
+    }
+
+    /**
+     * Whether the member's attendance fact still says they were there
+     * (checked in, checked out, or attended), read under a row lock. Mirrors
+     * EventAttendanceService's reading of the fact: the stored status when it
+     * is a known state, otherwise the check-in/out timestamps.
+     */
+    private function attendanceStillPresent(int $tenantId, int $eventId, int $userId): bool
+    {
+        $attendance = DB::table('event_attendance')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->where('user_id', $userId)
+            ->lockForUpdate()
+            ->first(['attendance_status', 'checked_in_at', 'checked_out_at']);
+
+        if ($attendance === null) {
+            return false;
         }
 
-        $eventTitle = (string) (DB::table('events')
-            ->where('tenant_id', $tenantId)
-            ->where('id', (int) $claim->event_id)
-            ->value('title') ?? '');
+        $state = EventAttendanceState::tryFrom(strtolower(trim((string) ($attendance->attendance_status ?? ''))));
+        if ($state !== null) {
+            return in_array($state, [
+                EventAttendanceState::CheckedIn,
+                EventAttendanceState::CheckedOut,
+                EventAttendanceState::Attended,
+            ], true);
+        }
 
-        return $this->attemptMint(
-            $claimId,
-            $tenantId,
-            (int) $claim->event_id,
-            (int) $claim->user_id,
-            $this->clampToCeiling((float) $claim->amount),
-            $eventTitle,
-        );
+        return $attendance->checked_in_at !== null || $attendance->checked_out_at !== null;
     }
 
     /**
@@ -550,8 +595,8 @@ final class EventCreditService
      * genuine re-check-in can pay again. Runs inside the caller's attendance
      * transaction: if the undo rolls back, so does the reversal.
      *
-     * Outcomes: `no_reward` (nothing completed to reverse: never paid, still
-     * failed, or already reversed by an admin), `reversed`, `reverse_failed`
+     * Outcomes: `no_reward` (nothing completed to reverse: never paid, a
+     * failed claim now closed, or already reversed by an admin), `reversed`, `reverse_failed`
      * (ledger refused; the failed child claim is the durable record and the
      * admin reverse action resumes it), or `not_reversible` (lost a race).
      * Deliberately not gated on the credit mode, like reverseClaim().
@@ -567,6 +612,30 @@ final class EventCreditService
             ->where('user_id', $attendeeId)
             ->where('claim_type', self::CLAIM_TYPE)
             ->first(['id', 'status', 'reversed_at']);
+
+        if ($claim !== null && (string) $claim->status === 'failed') {
+            // Never paid (wallet outage, monthly cap), so there is no money
+            // to take back — but left `failed`, an admin "retry" would still
+            // pay a member whose attendance has just been undone. Close it
+            // the same way a paid reward is closed (reversed, tagged
+            // attendance_undone, no transaction), so a genuine re-check-in
+            // reopens it through reopenUndoneClaim() and nothing else can.
+            // The conditional UPDATE is the race guard; a `pending` claim is
+            // left alone: retryClaim() holds this attendance row's lock while
+            // it mints, so a pending one here is stranded, never in flight.
+            DB::table('event_attendance_credit_claims')
+                ->where('tenant_id', $tenantId)
+                ->where('id', (int) $claim->id)
+                ->where('status', 'failed')
+                ->update([
+                    'status' => 'reversed',
+                    'reversed_at' => now(),
+                    'reversal_code' => self::UNDO_REVERSAL_CODE,
+                    'updated_at' => now(),
+                ]);
+
+            return $this->outcome('no_reward', (int) $claim->id);
+        }
 
         if ($claim === null || (string) $claim->status !== 'completed' || $claim->reversed_at !== null) {
             return $this->outcome('no_reward', $claim !== null ? (int) $claim->id : null);
