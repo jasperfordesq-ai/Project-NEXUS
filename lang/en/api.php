@@ -2376,6 +2376,7 @@ return [
 
     // EventService — authorization
     'event_edit_forbidden'              => 'You do not have permission to edit this event',
+    'event_approved_content_admin_only' => 'This event has been approved, so its title, description, place, links and picture can only be changed by an administrator. Ask an administrator to make the change.',
     'event_delete_forbidden'            => 'Only the event organizer can delete this event',
     'event_modify_forbidden'            => 'You do not have permission to modify this event',
     'event_cancel_forbidden'            => 'You do not have permission to cancel this event',

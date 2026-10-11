@@ -1261,6 +1261,7 @@ return [
         'gdpr_request_submitted' => 'リクエストは送信され、30 日以内に処理されます。',
     ],
     'event_edit_forbidden' => 'このイベントを編集する権限がありません',
+    'event_approved_content_admin_only' => 'このイベントは承認済みのため、タイトル、説明、場所、リンク、画像は管理者のみが変更できます。変更は管理者に依頼してください。',
     'event_delete_forbidden' => 'このイベントを削除できるのはイベント主催者のみです',
     'event_modify_forbidden' => 'このイベントを変更する権限がありません',
     'event_cancel_forbidden' => 'このイベントをキャンセルする権限がありません',

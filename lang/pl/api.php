@@ -1261,6 +1261,7 @@ return [
         'gdpr_request_submitted' => 'Twoja prośba została przesłana i zostanie rozpatrzona w ciągu 30 dni.',
     ],
     'event_edit_forbidden' => 'Nie masz uprawnień do edycji tego wydarzenia',
+    'event_approved_content_admin_only' => 'To wydarzenie zostało zatwierdzone, więc jego tytuł, opis, miejsce, linki i zdjęcie może zmienić tylko administrator. Poproś administratora o wprowadzenie zmiany.',
     'event_delete_forbidden' => 'Tylko organizator wydarzenia może usunąć to wydarzenie',
     'event_modify_forbidden' => 'Nie masz uprawnień do modyfikowania tego wydarzenia',
     'event_cancel_forbidden' => 'Nie masz uprawnień do anulowania tego wydarzenia',

@@ -1259,6 +1259,7 @@ return [
         'gdpr_request_submitted' => 'Ihre Anfrage wurde übermittelt und wird innerhalb von 30 Tagen bearbeitet.',
     ],
     'event_edit_forbidden' => 'Sie sind nicht berechtigt, dieses Ereignis zu bearbeiten',
+    'event_approved_content_admin_only' => 'Diese Veranstaltung wurde genehmigt, daher können Titel, Beschreibung, Ort, Links und Bild nur von einem Administrator geändert werden. Bitten Sie einen Administrator, die Änderung vorzunehmen.',
     'event_delete_forbidden' => 'Nur der Veranstalter kann dieses Event löschen',
     'event_modify_forbidden' => 'Sie sind nicht berechtigt, dieses Ereignis zu ändern',
     'event_cancel_forbidden' => 'Sie sind nicht berechtigt, diese Veranstaltung abzusagen',

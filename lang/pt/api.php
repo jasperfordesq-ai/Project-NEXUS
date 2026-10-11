@@ -1259,6 +1259,7 @@ return [
         'gdpr_request_submitted' => 'Sua solicitação foi enviada e será processada em 30 dias.',
     ],
     'event_edit_forbidden' => 'Você não tem permissão para editar este evento',
+    'event_approved_content_admin_only' => 'Este evento já foi aprovado, por isso o título, a descrição, o local, os links e a imagem só podem ser alterados por um administrador. Peça a um administrador para fazer a alteração.',
     'event_delete_forbidden' => 'Somente o organizador do evento pode excluir este evento',
     'event_modify_forbidden' => 'Você não tem permissão para modificar este evento',
     'event_cancel_forbidden' => 'Você não tem permissão para cancelar este evento',

@@ -1259,6 +1259,7 @@ return [
         'gdpr_request_submitted' => 'Tá d’iarratas curtha isteach agus próiseálfar é laistigh de 30 lá.',
     ],
     'event_edit_forbidden' => 'Níl cead agat an t-imeacht seo a chur in eagar',
+    'event_approved_content_admin_only' => 'Tá an t-imeacht seo ceadaithe, mar sin ní féidir ach le riarthóir a theideal, a chur síos, a áit, a naisc agus a phictiúr a athrú. Iarr ar riarthóir an t-athrú a dhéanamh.',
     'event_delete_forbidden' => 'Ní féidir ach le heagraí an imeachta an imeacht seo a scriosadh',
     'event_modify_forbidden' => 'Níl cead agat an t-imeacht seo a mhodhnú',
     'event_cancel_forbidden' => 'Níl cead agat an t-imeacht seo a chur ar ceal',

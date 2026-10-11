@@ -51,7 +51,13 @@ final class EventPublishedEditModerationTest extends TestCase
         ] as $change) {
             $this->apiPut("/v2/events/{$eventId}", $change)
                 ->assertStatus(409)
-                ->assertJsonPath('errors.0.code', 'EVENT_REVIEW_REQUIRED');
+                ->assertJsonPath('errors.0.code', 'EVENT_REVIEW_REQUIRED')
+                // The reason, not a generic "no permission" (F-590 follow-up).
+                ->assertJsonPath(
+                    'errors.0.message',
+                    'This event has been approved, so its title, description, place, links and picture '
+                    . 'can only be changed by an administrator. Ask an administrator to make the change.',
+                );
         }
 
         $row = DB::table('events')->where('id', $eventId)->first(['title', 'description', 'location', 'publication_status']);
@@ -73,7 +79,8 @@ final class EventPublishedEditModerationTest extends TestCase
             ['image' => UploadedFile::fake()->image('cover.jpg', 40, 40)],
             ['X-Tenant-ID' => (string) $this->testTenantId, 'Accept' => 'application/json'],
         )->assertStatus(409)
-            ->assertJsonPath('errors.0.code', 'EVENT_REVIEW_REQUIRED');
+            ->assertJsonPath('errors.0.code', 'EVENT_REVIEW_REQUIRED')
+            ->assertJsonPath('errors.0.message', __('api.event_approved_content_admin_only'));
 
         self::assertNull(DB::table('events')->where('id', $eventId)->value('cover_image'));
     }

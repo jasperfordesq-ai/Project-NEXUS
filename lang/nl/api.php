@@ -1261,6 +1261,7 @@ return [
         'gdpr_request_submitted' => 'Uw aanvraag is ingediend en wordt binnen 30 dagen verwerkt.',
     ],
     'event_edit_forbidden' => 'Je hebt geen toestemming om dit evenement te bewerken',
+    'event_approved_content_admin_only' => 'Dit evenement is goedgekeurd, dus de titel, beschrijving, locatie, links en afbeelding kunnen alleen door een beheerder worden gewijzigd. Vraag een beheerder om de wijziging aan te brengen.',
     'event_delete_forbidden' => 'Alleen de organisator van het evenement kan dit evenement verwijderen',
     'event_modify_forbidden' => 'U heeft geen toestemming om dit evenement te wijzigen',
     'event_cancel_forbidden' => 'U heeft geen toestemming om dit evenement te annuleren',

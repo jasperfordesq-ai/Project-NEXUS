@@ -1491,7 +1491,7 @@ class EventService
             self::$lastCanonicalUpdateFields = [];
             self::$errors[] = [
                 'code' => 'EVENT_REVIEW_REQUIRED',
-                'message' => __('api.event_edit_forbidden'),
+                'message' => __('api.event_approved_content_admin_only'),
             ];
             TenantContext::setById($tenantId);
             return false;
@@ -3423,7 +3423,7 @@ class EventService
         // writer enforces the same rule; this only avoids an orphan upload.
         if (self::isPublishedEvent($event)
             && self::contentEditsRequireReview((int) TenantContext::getId(), $userId)) {
-            self::$errors[] = ['code' => 'EVENT_REVIEW_REQUIRED', 'message' => __('api.event_edit_forbidden')];
+            self::$errors[] = ['code' => 'EVENT_REVIEW_REQUIRED', 'message' => __('api.event_approved_content_admin_only')];
             return false;
         }
 
