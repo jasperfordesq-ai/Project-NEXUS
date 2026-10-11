@@ -99,6 +99,49 @@ final class EventErrorsSayWhatIsWrongTest extends TestCase
         );
     }
 
+    /** @return array<string,array{0:string,1:\Closure(CarbonImmutable):CarbonImmutable}> */
+    public static function ticketDateFields(): array
+    {
+        return [
+            'sales opening' => ['sales_opens_at', static fn (CarbonImmutable $start): CarbonImmutable => CarbonImmutable::now('UTC')->subDay()],
+            'sales closing' => ['sales_closes_at', static fn (CarbonImmutable $start): CarbonImmutable => $start->subDay()],
+            'refund cutoff' => ['refund_cutoff_at', static fn (CarbonImmutable $start): CarbonImmutable => $start->subDays(2)],
+        ];
+    }
+
+    /**
+     * A ticket date sent with an offset other than the event's own was
+     * refused with no `field`: the offset check did not know which input it
+     * was checking, so the organiser was not told which date to correct.
+     *
+     * @dataProvider ticketDateFields
+     * @param \Closure(CarbonImmutable):CarbonImmutable $instant
+     */
+    public function test_ticket_date_with_the_wrong_offset_names_the_date(string $field, \Closure $instant): void
+    {
+        $owner = $this->ticketUser();
+        [$eventId, $start] = $this->ticketEvent((int) $owner->id);
+        Sanctum::actingAs($owner, ['*']);
+
+        // The event is in UTC; the same instant written as +05:00 is refused.
+        $response = $this->apiPost(
+            "/v2/events/{$eventId}/ticket-types",
+            $this->ticketTypePayload($start, [
+                $field => $instant($start)->setTimezone('+05:00')->format('Y-m-d\TH:i:sP'),
+            ]),
+            ['Idempotency-Key' => 'specific-error-offset-' . $field],
+        );
+
+        $this->assertSpecific(
+            $response,
+            422,
+            'EVENT_TICKET_VALIDATION_FAILED',
+            $field,
+            'event_ticket_timezone_offset_mismatch',
+            __('api.event_ticket_timezone_offset_mismatch'),
+        );
+    }
+
     public function test_safety_minimum_age_that_is_not_a_number_is_named(): void
     {
         $owner = $this->eventUser();

@@ -18,6 +18,8 @@ final class EventTicketingException extends RuntimeException
         public readonly string $reasonCode,
         int $code = 0,
         ?Throwable $previous = null,
+        /** The input at fault, when the thrower knows which one it was checking. */
+        public readonly ?string $field = null,
     ) {
         parent::__construct($reasonCode, $code, $previous);
     }

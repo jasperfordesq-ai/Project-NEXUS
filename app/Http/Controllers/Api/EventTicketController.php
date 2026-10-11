@@ -319,6 +319,9 @@ final class EventTicketController extends BaseApiController
         if (isset(self::EXPLAINED_ERRORS[$reason])) {
             // Same code and status as before; the message now says what is wrong.
             [$field, $messageKey] = self::EXPLAINED_ERRORS[$reason];
+            // A check shared by several inputs (the timezone offset) names
+            // the one it was checking on the exception itself.
+            $field = $exception->field ?? $field;
             $conflict = $reason === 'event_ticket_allocation_exhausted';
             $error = [
                 'code' => $conflict ? 'EVENT_TICKET_CONFLICT' : 'EVENT_TICKET_VALIDATION_FAILED',

@@ -119,8 +119,16 @@ final class EventTicketingSupport
         }
     }
 
-    public function inputInstant(mixed $value, string $timezone, string $reason): ?CarbonImmutable
-    {
+    /**
+     * @param string|null $field The input being checked, so an offset
+     *                           mismatch can name it to the organiser.
+     */
+    public function inputInstant(
+        mixed $value,
+        string $timezone,
+        string $reason,
+        ?string $field = null,
+    ): ?CarbonImmutable {
         if ($value === null || $value === '') {
             return null;
         }
@@ -140,7 +148,7 @@ final class EventTicketingSupport
             throw new EventTicketingException($reason);
         }
         if ($instant->getOffset() !== $instant->setTimezone($timezone)->getOffset()) {
-            throw new EventTicketingException('event_ticket_timezone_offset_mismatch');
+            throw new EventTicketingException('event_ticket_timezone_offset_mismatch', field: $field);
         }
 
         return $instant->utc();

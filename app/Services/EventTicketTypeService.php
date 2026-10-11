@@ -530,6 +530,7 @@ final class EventTicketTypeService
                 $attributes[$utcField],
                 'UTC',
                 $reason,
+                $localField,
             );
         }
         if (array_key_exists($localField, $attributes)) {
@@ -537,6 +538,7 @@ final class EventTicketTypeService
                 $attributes[$localField],
                 $timezone,
                 $reason,
+                $localField,
             );
         }
         if ($current === null) {
