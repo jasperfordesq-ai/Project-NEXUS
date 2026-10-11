@@ -751,6 +751,29 @@ final class EventInvitationService
         foreach ($campaigns as $campaign) {
             try {
                 $event = $this->support->concreteEvent($tenantId, (int) $campaign->event_id, false);
+                // E-102: an event cancelled, completed or archived before the
+                // cancel cascade existed (571cf7b45) left its campaign
+                // `scheduled`; close it instead of failing on every run.
+                if (! self::eventAcceptsInvitations($event)) {
+                    $actor = User::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->find((int) $campaign->updated_by);
+                    if ($actor instanceof User) {
+                        DB::transaction(fn (): int => app(EventInvitationCampaignService::class)
+                            ->cancelOpenForLifecycleWithinTransaction(
+                                $event,
+                                $actor,
+                                'event_no_longer_going_ahead',
+                                "scheduled-sweep:{$campaign->id}:{$campaign->revision}",
+                            ));
+                        $results[] = [
+                            'campaign_id' => (int) $campaign->id,
+                            'status' => 'cancelled',
+                            'reason' => 'event_registration_event_unavailable',
+                        ];
+                        continue;
+                    }
+                }
                 $this->issueCampaign(
                     (int) $campaign->event_id,
                     (int) $campaign->id,

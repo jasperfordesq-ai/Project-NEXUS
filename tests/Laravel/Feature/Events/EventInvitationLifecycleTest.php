@@ -161,11 +161,19 @@ final class EventInvitationLifecycleTest extends TestCase
 
         $results = (new EventInvitationService())->issueDueScheduled();
 
+        // E-102: a campaign whose event stopped going ahead before the cancel
+        // cascade existed is closed by the sweep instead of reporting "failed"
+        // on every scheduler run.
         self::assertContains(
-            ['campaign_id' => $campaignId, 'status' => 'failed', 'reason' => 'event_registration_event_unavailable'],
+            ['campaign_id' => $campaignId, 'status' => 'cancelled', 'reason' => 'event_registration_event_unavailable'],
             $results,
         );
+        self::assertSame('cancelled', DB::table('event_invitation_campaigns')->where('id', $campaignId)->value('status'));
         self::assertSame(0, DB::table('event_invitations')->where('event_id', $eventId)->count());
+        self::assertSame([], array_values(array_filter(
+            (new EventInvitationService())->issueDueScheduled(),
+            static fn (array $row): bool => $row['campaign_id'] === $campaignId,
+        )), 'The next sweep must not pick the campaign up again.');
     }
 
     public function test_a_queued_invitation_for_an_event_cancelled_after_issue_is_suppressed(): void
