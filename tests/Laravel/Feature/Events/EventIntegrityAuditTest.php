@@ -313,7 +313,8 @@ final class EventIntegrityAuditTest extends TestCase
         $registrations->confirm($eventId, (int) $active->id, $active, 'integrity-active');
         $registrations->confirm($eventId, (int) $holder->id, $holder, 'integrity-holder');
         $waitlist->join($eventId, (int) $waiter->id, $waiter, 'integrity-waiter');
-        $registrations->withdraw($eventId, (int) $holder->id, $holder, 'integrity-release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $this->testTenantId)->where('id', $eventId)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $waitlist->offerNext($eventId, $organizer, 'integrity-offer');
         self::assertNotNull($offer);

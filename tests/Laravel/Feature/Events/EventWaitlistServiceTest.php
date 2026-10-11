@@ -115,12 +115,8 @@ final class EventWaitlistServiceTest extends TestCase
     public function test_timed_offer_is_disabled_by_default_and_when_enabled_is_oldest_first_and_hash_only(): void
     {
         [$eventId, $holder, $first, $second, $organizer] = $this->fullEventWithTwoWaiters();
-        $this->registrations->withdraw(
-            $eventId,
-            (int) $holder->id,
-            $holder,
-            'release-capacity',
-        );
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        $this->freeSeat($eventId);
 
         $this->assertRejected(
             'event_waitlist_timed_offers_disabled',
@@ -235,7 +231,8 @@ final class EventWaitlistServiceTest extends TestCase
     public function test_single_use_offer_acceptance_atomically_confirms_registration_and_replays_once(): void
     {
         [$eventId, $holder, $first, , $organizer] = $this->fullEventWithTwoWaiters();
-        $this->registrations->withdraw($eventId, (int) $holder->id, $holder, 'release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        $this->freeSeat($eventId);
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $this->waitlist->offerNext($eventId, $organizer, 'offer-first');
         self::assertNotNull($offer?->offerToken);
@@ -293,7 +290,8 @@ final class EventWaitlistServiceTest extends TestCase
         [$eventId, $holder, $first, $second, $organizer] = $this->fullEventWithTwoWaiters();
         $third = $this->member();
         $this->waitlist->join($eventId, (int) $third->id, $third, 'join-third');
-        $this->registrations->withdraw($eventId, (int) $holder->id, $holder, 'release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        $this->freeSeat($eventId);
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $this->waitlist->offerNext($eventId, $organizer, 'offer-first');
         self::assertSame((int) $first->id, (int) $offer?->entry->user_id);
@@ -320,7 +318,8 @@ final class EventWaitlistServiceTest extends TestCase
     public function test_expiry_is_single_shot_and_advances_one_place(): void
     {
         [$eventId, $holder, $first, $second, $organizer] = $this->fullEventWithTwoWaiters();
-        $this->registrations->withdraw($eventId, (int) $holder->id, $holder, 'release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        $this->freeSeat($eventId);
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $this->waitlist->offerNext($eventId, $organizer, 'offer-first');
         DB::table('event_waitlist_entries')->where('id', $offer?->entry->id)->update([
@@ -460,12 +459,8 @@ final class EventWaitlistServiceTest extends TestCase
             $subject,
             'subject-rejoins-self',
         );
-        $this->registrations->withdraw(
-            $eventId,
-            (int) $holder->id,
-            $holder,
-            'authorization-release-capacity',
-        );
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        $this->freeSeat($eventId);
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $this->assertRejected(
             'event_registration_authorization_denied',
@@ -512,6 +507,14 @@ final class EventWaitlistServiceTest extends TestCase
         $this->waitlist->join($eventId, (int) $second->id, $second, 'join-second');
 
         return [$eventId, $holder, $first, $second, $organizer];
+    }
+
+    private function freeSeat(int $eventId): void
+    {
+        DB::table('events')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('id', $eventId)
+            ->increment('max_attendees');
     }
 
     private function member(): User

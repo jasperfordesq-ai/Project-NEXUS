@@ -630,7 +630,8 @@ final class EventNotificationOutboxProcessorTest extends TestCase
         $waitlist = new EventWaitlistService($registrations);
         $registrations->confirm($eventId, (int) $holder->id, $holder, 'superseded-holder');
         $waitlist->join($eventId, (int) $waiter->id, $waiter, 'superseded-waiter');
-        $registrations->withdraw($eventId, (int) $holder->id, $holder, 'superseded-release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $this->testTenantId)->where('id', $eventId)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $this->enableTenantTimedWaitlistOffers();
         $offer = $waitlist->offerNext($eventId, $organizer, 'superseded-offer');
@@ -726,7 +727,8 @@ final class EventNotificationOutboxProcessorTest extends TestCase
         $waitlist = new EventWaitlistService($registrations);
         $registrations->confirm($eventId, (int) $holder->id, $holder, 'processor-holder');
         $waitlist->join($eventId, (int) $waiter->id, $waiter, 'processor-waiter');
-        $registrations->withdraw($eventId, (int) $holder->id, $holder, 'processor-release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $this->testTenantId)->where('id', $eventId)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $this->enableTenantTimedWaitlistOffers();
         $offer = $waitlist->offerNext($eventId, $organizer, 'processor-offer');

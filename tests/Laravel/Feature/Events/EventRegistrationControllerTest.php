@@ -314,12 +314,8 @@ final class EventRegistrationControllerTest extends TestCase
         )->assertCreated()
             ->assertJsonPath('data.relationship.waitlist.state', 'waiting');
 
-        $this->registrations->withdraw(
-            $eventId,
-            (int) $holder->id,
-            $holder,
-            'controller-release-capacity',
-        );
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $this->testTenantId)->where('id', $eventId)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $this->waitlist->offerNext(
             $eventId,

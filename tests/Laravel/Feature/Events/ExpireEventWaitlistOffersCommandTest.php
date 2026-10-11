@@ -138,7 +138,8 @@ final class ExpireEventWaitlistOffersCommandTest extends TestCase
         $waitlist = new EventWaitlistService($registrations);
         $registrations->confirm($eventId, (int) $holder->id, $holder, 'expiry-fill');
         $waitlist->join($eventId, (int) $waiter->id, $waiter, 'expiry-join');
-        $registrations->withdraw($eventId, (int) $holder->id, $holder, 'expiry-release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $tenantId)->where('id', $eventId)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $waitlist->offerNext($eventId, $organizer, 'expiry-offer');
         self::assertNotNull($offer);

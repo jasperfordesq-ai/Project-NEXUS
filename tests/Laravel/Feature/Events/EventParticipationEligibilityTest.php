@@ -238,7 +238,8 @@ final class EventParticipationEligibilityTest extends TestCase
         $waitlist = new EventWaitlistService($registrations);
         $registrations->confirm((int) $event->id, (int) $holder->id, $holder, 'offer-fill');
         $waitlist->join((int) $event->id, (int) $waiter->id, $waiter, 'offer-join');
-        $registrations->withdraw((int) $event->id, (int) $holder->id, $holder, 'offer-release');
+        // E-102: free the seat without a release; a release with timed offers off now moves the head of the queue up itself.
+        DB::table('events')->where('tenant_id', $this->testTenantId)->where('id', (int) $event->id)->increment('max_attendees');
         Config::set('events.registration.timed_waitlist_offers_enabled', true);
         $offer = $waitlist->offerNext((int) $event->id, $organizer, 'offer-create');
         self::assertNotNull($offer?->offerToken);

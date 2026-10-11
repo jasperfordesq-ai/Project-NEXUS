@@ -797,9 +797,21 @@ final class EventRegistrationService
         $released = $wasConsuming && ! $target->consumesCapacity();
         $offered = null;
         $offerToken = null;
-        if ($released
+        $timedOffers = $released
             && $advanceWaitlistOnRelease
-            && app(EventWaitlistService::class)->timedOffersEnabled()) {
+            && app(EventWaitlistService::class)->timedOffersEnabled();
+        if ($released && $advanceWaitlistOnRelease && ! $timedOffers) {
+            // Without timed offers nobody was ever moved up: the seat sat free
+            // until the next person to press Register took it, and the people
+            // waiting were never told. Move the head of the queue into the
+            // place instead, through the normal confirm rules.
+            app(EventWaitlistService::class)->promoteWaitingWithinTransaction(
+                $event,
+                $pool,
+                "registration-release:{$historyId}",
+            );
+        }
+        if ($timedOffers) {
             try {
                 $offer = app(EventWaitlistService::class)->offerNextWithinTransaction(
                     $event,

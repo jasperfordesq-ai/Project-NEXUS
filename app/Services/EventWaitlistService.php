@@ -12,7 +12,10 @@ use App\Core\TenantContext;
 use App\Enums\EventCapacityRegistrationState;
 use App\Enums\EventNotificationDeliveryMode;
 use App\Enums\EventWaitlistQueueState;
+use App\Exceptions\EventParticipationException;
+use App\Exceptions\EventRegistrationException;
 use App\Exceptions\EventWaitlistException;
+use App\Exceptions\SafeguardingPolicyException;
 use App\Models\Event;
 use App\Models\EventWaitlistEntry;
 use App\Models\User;
@@ -570,6 +573,170 @@ final class EventWaitlistService
             $result->historyId,
             $result->outboxId,
             $token,
+        );
+    }
+
+    /**
+     * Move waiting members into places freed by a release when timed offers
+     * are unavailable. Caller must hold the Event row lock in a transaction.
+     *
+     * Each member goes through the same confirm path as registering for
+     * themselves (confirmFromWaitlistLocked, acting as the member), so
+     * capacity including their captured guests, manual approval (the place
+     * becomes `pending`), the published registration window and participation
+     * eligibility all apply. A member who fails a check is skipped and keeps
+     * their place in the queue; they never block the people behind them.
+     * Each promotion uses one freed seat, whether it confirms or (under manual
+     * approval) becomes a request for the organiser.
+     *
+     * The member is told through the registration fact the confirm path
+     * records (`event.registration.confirmed` / `.pending`).
+     *
+     * @return list<EventWaitlistTransitionResult>
+     */
+    public function promoteWaitingWithinTransaction(
+        Event $event,
+        string $capacityPoolKey,
+        string $idempotencyPrefix,
+    ): array {
+        if (DB::transactionLevel() <= 0) {
+            throw new EventWaitlistException('event_waitlist_transaction_required');
+        }
+        if ($this->timedOffersEnabled()) {
+            return [];
+        }
+        $tenantId = $this->tenantId();
+        $eventId = (int) $event->getKey();
+        $pool = $this->capacityPool($capacityPoolKey);
+        if ((int) $event->tenant_id !== $tenantId || $eventId <= 0) {
+            throw new EventWaitlistException('event_waitlist_event_scope_invalid');
+        }
+        // A release may happen after the event started (an organiser tidying
+        // the list); nobody can be moved into a place then.
+        if (EventRegistrationAvailability::evaluate($event) !== EventRegistrationAvailability::AVAILABLE) {
+            return [];
+        }
+        $seats = $this->registrations->availableSlotsLocked($event, $pool);
+        if ($seats === null || $seats < 1) {
+            return [];
+        }
+
+        /** @var list<EventWaitlistEntry> $entries */
+        $entries = EventWaitlistEntry::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->where('capacity_pool_key', $pool)
+            ->where('queue_state', EventWaitlistQueueState::Waiting->value)
+            ->orderBy('queue_sequence')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->all();
+
+        $promoted = [];
+        foreach ($entries as $entry) {
+            if ($seats < 1) {
+                break;
+            }
+            /** @var User|null $subject */
+            $subject = User::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->whereKey((int) $entry->user_id)
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->first();
+            if ($subject === null) {
+                continue;
+            }
+            $key = $this->idempotencyKey(
+                "{$idempotencyPrefix}:promote:{$entry->getKey()}:v{$entry->queue_version}",
+                "promote:{$tenantId}:{$eventId}:{$pool}",
+            );
+
+            try {
+                // A savepoint, so a member who fails a check leaves nothing
+                // half-written behind before the next member is tried.
+                $result = DB::transaction(
+                    fn (): EventWaitlistTransitionResult => $this->promoteEntryLocked($event, $entry, $subject, $key),
+                    1,
+                );
+            } catch (EventRegistrationException|EventParticipationException|SafeguardingPolicyException $exception) {
+                $reasonCode = $exception instanceof SafeguardingPolicyException
+                    ? 'safeguarding_policy'
+                    : $exception->reasonCode;
+                Log::info('Event waitlist member skipped for automatic promotion', [
+                    'tenant_id' => $tenantId,
+                    'event_id' => $eventId,
+                    'waitlist_entry_id' => (int) $entry->getKey(),
+                    'reason_code' => $reasonCode,
+                ]);
+                if ($reasonCode === 'event_registration_window_closed') {
+                    // The window is the event's, not the member's: nobody can move up.
+                    break;
+                }
+                continue;
+            }
+
+            $promoted[] = $result;
+            $seats--;
+            if ($result->registration?->registration_state?->consumesCapacity()) {
+                $seats = min($seats, $this->registrations->availableSlotsLocked($event, $pool) ?? $seats);
+            }
+        }
+
+        return $promoted;
+    }
+
+    /** One member off the queue and into a place; the caller holds the locks. */
+    private function promoteEntryLocked(
+        Event $event,
+        EventWaitlistEntry $entry,
+        User $subject,
+        string $key,
+    ): EventWaitlistTransitionResult {
+        $registration = $this->registrations->confirmFromWaitlistLocked(
+            $event,
+            $entry,
+            $subject,
+            "waitlist-promote:{$key}",
+        );
+        $now = now();
+        $version = (int) $entry->queue_version + 1;
+        $entry->forceFill([
+            'queue_state' => EventWaitlistQueueState::Accepted->value,
+            'queue_version' => $version,
+            'state_changed_at' => $now,
+            'state_changed_by' => null,
+            'accepted_at' => $now,
+            'accepted_registration_id' => (int) $registration->registration->getKey(),
+        ])->save();
+
+        $result = $this->recordMutation(
+            $event,
+            $entry,
+            null,
+            EventWaitlistQueueState::Waiting,
+            EventWaitlistQueueState::Accepted,
+            'promoted',
+            $key,
+            $version,
+            null,
+            [
+                'automatic_promotion' => true,
+                'registration_id' => (int) $registration->registration->getKey(),
+                'registration_state' => $registration->registration->registration_state->value,
+            ],
+            $now,
+        );
+
+        return new EventWaitlistTransitionResult(
+            $result->entry,
+            true,
+            false,
+            $result->historyId,
+            $result->outboxId,
+            null,
+            $registration->registration,
         );
     }
 
