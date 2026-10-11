@@ -87,6 +87,43 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
         }
     }
 
+    /**
+     * E-102 (11 Oct 2026): the website schedules with `new Date(x).toISOString()`,
+     * which ends in "Z" ("2026-10-11T17:36:59.000Z"). The request rule accepted
+     * only a numeric offset, so every "send later" from the website failed with
+     * a bare "Validation failed". Reproduced live on the pen-test server.
+     */
+    public function test_a_schedule_time_ending_in_z_from_the_website_is_accepted(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'features' => json_encode(['events' => true], JSON_THROW_ON_ERROR),
+        ]);
+        TenantContext::reset();
+        TenantContext::setById($this->testTenantId);
+        $organizer = $this->user('Zulu Schedule Organizer', 'en');
+        $recipient = $this->user('Zulu Schedule Recipient', 'en');
+        $eventId = $this->event((int) $organizer->id);
+        $this->confirmedRegistration($eventId, (int) $recipient->id, (int) $organizer->id);
+        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
+        $policy->shouldReceive('assertManyLocalContactsAllowed')->zeroOrMoreTimes();
+        App::instance(SafeguardingInteractionPolicy::class, $policy);
+        $created = app(EventBroadcastService::class)->createDraft($eventId, $organizer, 'announcement',
+            ['registration_confirmed'], ['in_app'], 'Zulu schedule fixture', 'zulu-schedule-create');
+        $broadcastId = (int) $created['broadcast']->id;
+        $at = CarbonImmutable::now('UTC')->addMinutes(30)->startOfSecond();
+
+        Sanctum::actingAs($organizer, ['*']);
+        $this->apiPost("/v2/event-broadcasts/{$broadcastId}/schedule", [
+            'expected_version' => 1,
+            'scheduled_at' => $at->format('Y-m-d\TH:i:s.v') . 'Z',
+        ], ['Idempotency-Key' => 'zulu-schedule'])->assertOk();
+
+        self::assertSame(
+            $at->format('Y-m-d H:i:s'),
+            CarbonImmutable::parse((string) DB::table('event_broadcasts')->where('id', $broadcastId)->value('scheduled_at'), 'UTC')->format('Y-m-d H:i:s'),
+        );
+    }
+
     public function test_individual_broadcast_history_is_bounded_and_independently_paginated(): void
     {
         DB::table('tenants')->where('id', $this->testTenantId)->update([

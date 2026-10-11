@@ -10,6 +10,20 @@ namespace App\Http\Requests\Events;
 
 final class ScheduleEventBroadcastRequest extends EventBroadcastMutationRequest
 {
+    /**
+     * Browsers send `Date.prototype.toISOString()`, which ends in "Z"; the
+     * `P` format below only reads a numeric offset. "Z" means UTC, so it is
+     * read as "+00:00" (E-102: every website "send later" was refused).
+     */
+    protected function prepareForValidation(): void
+    {
+        parent::prepareForValidation();
+        $scheduledAt = $this->input('scheduled_at');
+        if (is_string($scheduledAt) && preg_match('/^(.+\d)[Zz]$/', trim($scheduledAt), $match) === 1) {
+            $this->merge(['scheduled_at' => $match[1] . '+00:00']);
+        }
+    }
+
     /** @return array<string,mixed> */
     public function rules(): array
     {
