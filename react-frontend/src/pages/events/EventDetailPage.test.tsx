@@ -848,6 +848,82 @@ describe('EventDetailPage', () => {
     expect(mockToast.success).not.toHaveBeenCalledWith("You're going!");
   });
 
+  it('shows the server\'s reason when cancelling a confirmed place is refused', async () => {
+    const confirmedEvent = createCanonicalEventFixture({
+      relationship: {
+        ...mockEvent.relationship,
+        registration: {
+          ...mockEvent.relationship.registration,
+          state: 'confirmed',
+          can_register: false,
+          can_withdraw: true,
+        },
+      },
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees') || url.startsWith('/v2/polls?')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
+      return Promise.resolve({ success: true, data: confirmedEvent });
+    });
+    mockConfirm.mockResolvedValueOnce(true);
+    mockApi.post.mockResolvedValueOnce({
+      success: false,
+      error: 'Validation failed',
+      errors: [{
+        code: 'RSVP_FAILED',
+        message: 'The deadline for cancelling has passed. Contact the organiser.',
+        reason: 'event_registration_cancellation_cutoff_passed',
+      }],
+    });
+    const user = userEvent.setup();
+    await renderLoadedEvent();
+
+    await user.click(screen.getByRole('radio', { name: 'Mark yourself as not going' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+      'The deadline for cancelling has passed. Contact the organiser.',
+    ));
+    expect(mockToast.error).not.toHaveBeenCalledWith('Failed to update RSVP');
+  });
+
+  it('shows the server\'s reason when removing an RSVP is refused, and the generic text otherwise', async () => {
+    const interestedEvent = createCanonicalEventFixture({
+      relationship: {
+        ...mockEvent.relationship,
+        engagement: { state: 'interested', can_change: true },
+      },
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees') || url.startsWith('/v2/polls?')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
+      return Promise.resolve({ success: true, data: interestedEvent });
+    });
+    mockApi.delete
+      .mockResolvedValueOnce({
+        success: false,
+        errors: [{
+          code: 'RSVP_FAILED',
+          message: 'The deadline for cancelling has passed. Contact the organiser.',
+          reason: 'event_registration_cancellation_cutoff_passed',
+        }],
+      })
+      .mockResolvedValueOnce({ success: false, errors: [{ code: 'RSVP_FAILED', message: 'Validation failed' }] });
+    const user = userEvent.setup();
+    await renderLoadedEvent();
+
+    const interested = screen.getByRole('radio', { name: 'Mark yourself as interested' });
+    await user.click(interested);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+      'The deadline for cancelling has passed. Contact the organiser.',
+    ));
+
+    // A refusal without an explained reason keeps the local, generic text.
+    await user.click(interested);
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Failed to cancel RSVP'));
+  });
+
   it('confirms before leaving the waitlist and does not mutate when dismissed', async () => {
     const waitlistedEvent = createCanonicalEventFixture({
       relationship: {

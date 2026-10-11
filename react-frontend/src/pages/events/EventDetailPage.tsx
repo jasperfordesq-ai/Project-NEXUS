@@ -82,6 +82,7 @@ import {
   type EventCalendarActions,
 } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { EventReminderPanel } from './EventReminderPanel';
 import { formatDateTime, formatDateValue, getFormattingLocale, resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps } from '@/lib/helpers';
 
@@ -457,7 +458,9 @@ export function EventDetailPage() {
           await loadEvent();
           toastRef.current.success(tRef.current('toast.rsvp_removed'));
         } else {
-          toastRef.current.error(tRef.current('toast.rsvp_cancel_failed'));
+          // The server says why when it can (e.g. the organizer's
+          // cancellation deadline has passed); a bare "failed" hides that.
+          toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.rsvp_cancel_failed'));
         }
       } catch (err) {
         logError('Failed to cancel RSVP', err);
@@ -496,7 +499,7 @@ export function EventDetailPage() {
         };
         toastRef.current.success(messages[newStatus]);
       } else {
-        toastRef.current.error(tRef.current('toast.rsvp_failed'));
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.rsvp_failed'));
       }
     } catch (err) {
       logError('Failed to update RSVP', err);
