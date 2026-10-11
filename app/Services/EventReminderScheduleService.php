@@ -84,7 +84,7 @@ final class EventReminderScheduleService
                 ->where('user_id', $userId)
                 ->where('id', $registrationId)
                 ->lockForUpdate()
-                ->first(['id', 'registration_state', 'registration_version']);
+                ->first(['id', 'registration_state', 'registration_version', 'confirmed_at', 'state_changed_at']);
             if ($registration === null || (string) $registration->registration_state !== 'confirmed') {
                 throw new InvalidArgumentException('event_reminder_confirmed_registration_required');
             }
@@ -110,6 +110,21 @@ final class EventReminderScheduleService
                 $this->closeActiveSchedules($tenantId, $eventId, $userId, 'cancelled', 'reminders_disabled');
                 return [];
             }
+
+            // A reminder that was already due when the member's place was
+            // confirmed has nothing to tell them: they have just registered.
+            // That comparison only holds for the occurrence they registered
+            // for. Once the event has been rescheduled since (an earlier
+            // calendar generation exists for this registration), a reminder
+            // the new time makes overdue is a genuine catch-up.
+            $rescheduledSinceRegistration = $existing->contains(static fn (object $schedule): bool =>
+                (int) ($schedule->registration_id ?? 0) === $registrationId
+                && (int) $schedule->registration_version === $registrationVersion
+                && (int) $schedule->event_calendar_sequence !== (int) $event->calendar_sequence);
+            $confirmedAtRaw = $registration->confirmed_at ?? $registration->state_changed_at ?? null;
+            $confirmedAt = $rescheduledSinceRegistration || $confirmedAtRaw === null
+                ? null
+                : CarbonImmutable::parse((string) $confirmedAtRaw, 'UTC')->utc();
 
             $rules = $this->preferences->activeRules($eventId, $userId, true);
             $desired = $rules !== [] ? $rules : $this->defaultRules();
@@ -152,7 +167,7 @@ final class EventReminderScheduleService
                 $scheduleVersion = (int) $existing
                     ->where('offset_minutes', $offset)
                     ->max('schedule_version') + 1;
-                $timing = $this->timing($event, $offset);
+                $timing = $this->timing($event, $offset, $confirmedAt);
                 $id = (int) DB::table('event_reminder_schedules')->insertGetId([
                     'tenant_id' => $tenantId,
                     'event_id' => $eventId,
@@ -567,7 +582,7 @@ final class EventReminderScheduleService
     }
 
     /** @return array{scheduled_for:CarbonImmutable,deliver_until:CarbonImmutable,status:string,reason_code:?string} */
-    private function timing(object $event, int $offset): array
+    private function timing(object $event, int $offset, ?CarbonImmutable $confirmedAt = null): array
     {
         $start = CarbonImmutable::parse((string) $event->start_time, 'UTC')->utc();
         $scheduled = $start->subMinutes($offset);
@@ -588,6 +603,9 @@ final class EventReminderScheduleService
         } elseif ($scheduled->lessThanOrEqualTo($now) && $now->greaterThan($deliverUntil)) {
             $status = 'suppressed';
             $reason = 'outside_recovery_horizon';
+        } elseif ($confirmedAt !== null && $scheduled->lessThanOrEqualTo($confirmedAt)) {
+            $status = 'suppressed';
+            $reason = 'registered_after_due';
         } elseif ($scheduled->lessThanOrEqualTo($now)) {
             $reason = 'catch_up_due';
         }

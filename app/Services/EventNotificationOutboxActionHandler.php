@@ -33,6 +33,8 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
 {
     private const TERMINAL = ['delivered', 'suppressed'];
     private const EMAIL_CATEGORY = 'event_outbox';
+    /** Scheduler lag up to this many minutes still counts as an on-time reminder. */
+    private const REMINDER_ON_TIME_TOLERANCE_MINUTES = 5;
 
     public function __construct(
         private readonly ?EventDomainOutboxService $outbox = null,
@@ -1388,6 +1390,27 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
     }
 
     /**
+     * The lead time a reminder states. On time it is the member's chosen
+     * offset ("1 hour"). A reminder delivered late (the scheduler was down,
+     * or it was caught up) states the time actually left at send time instead,
+     * in minutes under an hour and whole hours otherwise, so it never claims
+     * an hour when fifteen minutes remain.
+     */
+    private function reminderLeadTime(int $offsetMinutes, CarbonImmutable $start): CarbonInterval
+    {
+        $remainingMinutes = (int) round(max(0, $start->getTimestamp() - now()->getTimestamp()) / 60);
+        $tolerance = min(self::REMINDER_ON_TIME_TOLERANCE_MINUTES, intdiv($offsetMinutes, 10));
+        if ($remainingMinutes >= $offsetMinutes - $tolerance) {
+            return CarbonInterval::minutes($offsetMinutes);
+        }
+        if ($remainingMinutes < 60) {
+            return CarbonInterval::minutes(max(1, $remainingMinutes));
+        }
+
+        return CarbonInterval::hours((int) round($remainingMinutes / 60));
+    }
+
+    /**
      * @param array{kind:string,state:string,notification_type:string,offer_secret:bool} $descriptor
      * @param array<string,mixed> $payload
      * @return array{subject:string,message:string,path:string,html:string}
@@ -1411,7 +1434,10 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             $when = (bool) ($event->all_day ?? false)
                 ? $start->isoFormat('LL')
                 : $start->isoFormat('LLLL') . ' (' . $timezone . ')';
-            $offset = CarbonInterval::minutes(max(1, (int) ($payload['offset_minutes'] ?? 1)))
+            $offset = $this->reminderLeadTime(
+                max(1, (int) ($payload['offset_minutes'] ?? 1)),
+                CarbonImmutable::parse((string) $event->start_time, 'UTC'),
+            )
                 ->cascade()
                 ->locale(\App\I18n\FormattingLocale::carbon())
                 ->forHumans();
