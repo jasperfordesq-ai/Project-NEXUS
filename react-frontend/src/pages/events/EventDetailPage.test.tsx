@@ -789,6 +789,65 @@ describe('EventDetailPage', () => {
     }));
   });
 
+  it('shows a request awaiting the organizer as pending, never as going', async () => {
+    const pendingEvent = createCanonicalEventFixture({
+      relationship: {
+        ...mockEvent.relationship,
+        registration: {
+          ...mockEvent.relationship.registration,
+          state: 'pending',
+          can_register: false,
+          can_withdraw: true,
+        },
+      },
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees') || url.startsWith('/v2/polls?')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
+      return Promise.resolve({ success: true, data: pendingEvent });
+    });
+    await renderLoadedEvent();
+
+    expect(screen.getByText('Requested — waiting for the organizer to approve')).toBeInTheDocument();
+    expect(screen.queryByText("You're Going")).not.toBeInTheDocument();
+  });
+
+  it('does not say "You\'re going!" when an RSVP only creates a request for approval', async () => {
+    const pendingRelationship = {
+      ...mockEvent.relationship,
+      registration: {
+        ...mockEvent.relationship.registration,
+        state: 'pending' as const,
+        can_register: false,
+        can_withdraw: true,
+      },
+    };
+    installSuccessfulEventResponses();
+    mockApi.post.mockResolvedValueOnce({
+      success: true,
+      data: {
+        contract_version: 2,
+        event_id: 1,
+        relationship: pendingRelationship,
+        metrics: mockEvent.metrics,
+        status: 'pending',
+        rsvp_counts: { going: 0, interested: 0 },
+        waitlist_position: null,
+        message: null,
+      },
+    });
+    const user = userEvent.setup();
+    await renderLoadedEvent();
+
+    await user.click(screen.getByRole('radio', { name: 'Mark yourself as going' }));
+
+    await waitFor(() => expect(mockToast.info).toHaveBeenCalledWith(
+      'Request sent. The organizer needs to approve your place.',
+    ));
+    expect(mockToast.success).not.toHaveBeenCalledWith("You're going!");
+  });
+
   it('confirms before leaving the waitlist and does not mutate when dismissed', async () => {
     const waitlistedEvent = createCanonicalEventFixture({
       relationship: {

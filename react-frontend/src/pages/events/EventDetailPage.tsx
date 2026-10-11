@@ -484,6 +484,11 @@ export function EventDetailPage() {
 
         await loadEvent();
 
+        if (rsvpData.relationship.registration.state === 'pending') {
+          toastRef.current.info(tRef.current('toast.rsvp_pending'));
+          return;
+        }
+
         const messages: Record<RsvpOption, string> = {
           going: tRef.current('toast.rsvp_going'),
           interested: tRef.current('toast.rsvp_interested'),
@@ -707,6 +712,9 @@ export function EventDetailPage() {
   const isPendingReview = event?.schedule.publication_state === 'pending_review';
   const isDraft = event?.schedule.publication_state === 'draft';
   const hasActiveWaitlistOffer = event?.relationship.registration.state === 'offered';
+  // A request waiting for the organizer's approval is not a place yet — it
+  // must never be shown as "You're going".
+  const isAwaitingApproval = event?.relationship.registration.state === 'pending';
   const getAttendeeName = (attendee: EventRosterMember) =>
     attendee.member.display_name || t('detail.community_member');
 
@@ -1069,8 +1077,18 @@ export function EventDetailPage() {
               )}
             </div>
 
-            {isAuthenticated && (rsvpStatus || isWaitlisted) && (
+            {isAuthenticated && (rsvpStatus || isWaitlisted || isAwaitingApproval) && (
               <div className="flex flex-wrap gap-2 lg:max-w-xs lg:justify-end">
+                {isAwaitingApproval && (
+                  <Chip
+                    variant="flat"
+                    color="warning"
+                    size="lg"
+                    startContent={<Clock className="w-4 h-4" aria-hidden="true" />}
+                  >
+                    {t('detail.rsvp_pending')}
+                  </Chip>
+                )}
                 {rsvpStatus && (
                   <Chip
                     variant="flat"
