@@ -32,7 +32,10 @@ final class EventNotificationOutboxScope
             });
     }
 
-    /** Select authoritative facts that no active Event outbox consumer owns. */
+    /**
+     * Select authoritative facts that no active Event outbox consumer owns,
+     * other than the audit-only facts that are not meant to be consumed.
+     */
     public static function applyUnowned(Builder $query, string $alias = ''): Builder
     {
         [$column, $modeColumn] = self::columns($alias);
@@ -47,6 +50,7 @@ final class EventNotificationOutboxScope
                             ->where($column, '<>', 'event.reminder.due')
                             ->whereNotIn($column, self::GUARDIAN_CONSENT_ACTIONS)
                             ->whereNotIn($column, self::DELEGATED_ACTIONS)
+                            ->whereNotIn($column, self::AUDIT_ONLY_ACTIONS)
                             ->where($column, 'not like', 'event.registration.%')
                             ->where($column, 'not like', 'event.waitlist.%')
                             ->where($column, 'not like', 'event.staff_role.%');
@@ -86,6 +90,24 @@ final class EventNotificationOutboxScope
     private const DELEGATED_ACTIONS = [
         'event.invitation.issued',
         'event.registration_guest.withdrawn',
+    ];
+
+    /**
+     * Facts written as a durable audit record that no consumer is meant to
+     * claim. EventAttendanceService records one per check-in / attendance
+     * transition, but nothing notifies anyone about attendance and the
+     * member-facing history is event_attendance_activity. Under the default
+     * outbox_authoritative mode these rows stay `pending`, inert: they are
+     * outside apply() (never claimed), and listed here so applyUnowned() and
+     * the event health check stop reporting them as an unowned backlog. A
+     * genuinely unknown action is still unowned. If a consumer for one of
+     * these is ever built, move it into apply() and off this list.
+     *
+     * @var list<string>
+     */
+    private const AUDIT_ONLY_ACTIONS = [
+        'event.attendance.recorded',
+        'event.attendance.transitioned',
     ];
 
     /** @return array{string,string} */

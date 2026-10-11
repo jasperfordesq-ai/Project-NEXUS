@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\EventWaitlistEntry;
 use App\Services\EventDomainOutboxService;
 use App\Services\EventHealthService;
+use App\Services\EventNotificationOutboxScope;
 use App\Services\EventRecurrenceService;
 use App\Services\EventWaitlistOfferEnvelopeService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -149,7 +150,7 @@ final class EventHealthCommandTest extends TestCase
             (int) $tenant->id,
             $eventId,
             1,
-            'event.attendance.recorded',
+            'event.unowned.fixture',
             'health-unowned:' . bin2hex(random_bytes(8)),
             [
                 'schema_version' => 1,
@@ -232,6 +233,69 @@ final class EventHealthCommandTest extends TestCase
         self::assertStringNotContainsString($invalidGlobalValue, $invalidGlobalJson);
     }
 
+    /**
+     * E-102: attendance facts are an audit record — nothing consumes them,
+     * by design (the attendance history itself lives in
+     * event_attendance_activity). Written as outbox_authoritative under the
+     * default delivery mode they sat `pending` for ever and the health check
+     * reported them as an unowned backlog blocking cutover. They no longer
+     * count; a genuinely unowned action still does.
+     */
+    public function test_audit_only_attendance_facts_are_not_an_unowned_backlog(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $organizer = User::factory()->forTenant((int) $tenant->id)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $eventId = $this->event(
+            (int) $tenant->id,
+            (int) $organizer->id,
+            'Audit-only attendance health fixture',
+        );
+        config()->set('events.notification_delivery.mode', 'outbox_authoritative');
+        config()->set('events.notification_delivery.consumer_enabled', true);
+        foreach (['event.attendance.recorded', 'event.attendance.transitioned'] as $version => $action) {
+            (new EventDomainOutboxService())->record(
+                (int) $tenant->id,
+                $eventId,
+                $version + 1,
+                $action,
+                'health-audit-only:' . bin2hex(random_bytes(8)),
+                [
+                    'schema_version' => 2,
+                    'tenant_id' => (int) $tenant->id,
+                    'event_id' => $eventId,
+                    'attendance_id' => 1,
+                ],
+                EventNotificationDeliveryMode::OutboxAuthoritative,
+            );
+        }
+
+        $snapshot = app(EventHealthService::class)->snapshot((int) $tenant->id, 600);
+
+        self::assertSame(0, $snapshot['domain_outbox']['unowned_authoritative_facts']);
+        self::assertFalse($snapshot['domain_outbox']['unhealthy']);
+        // Still never claimed by the notification consumer.
+        self::assertFalse(EventNotificationOutboxScope::includes('event.attendance.transitioned'));
+        self::assertFalse(EventNotificationOutboxScope::includes('event.attendance.recorded'));
+
+        (new EventDomainOutboxService())->record(
+            (int) $tenant->id,
+            $eventId,
+            3,
+            'event.unowned.fixture',
+            'health-audit-only-control:' . bin2hex(random_bytes(8)),
+            ['schema_version' => 1, 'tenant_id' => (int) $tenant->id, 'event_id' => $eventId],
+            EventNotificationDeliveryMode::OutboxAuthoritative,
+        );
+
+        $control = app(EventHealthService::class)->snapshot((int) $tenant->id, 600);
+
+        self::assertSame(1, $control['domain_outbox']['unowned_authoritative_facts']);
+        self::assertTrue($control['domain_outbox']['unhealthy']);
+    }
+
     public function test_tenant_health_excludes_other_tenant_backlogs(): void
     {
         $healthyTenant = Tenant::factory()->create();
@@ -264,7 +328,7 @@ final class EventHealthCommandTest extends TestCase
             (int) $backloggedTenant->id,
             $eventId,
             1,
-            'event.attendance.recorded',
+            'event.unowned.fixture',
             'health-cross-tenant:' . bin2hex(random_bytes(8)),
             [
                 'schema_version' => 1,
