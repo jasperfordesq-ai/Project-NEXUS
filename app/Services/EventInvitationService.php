@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventCapacityRegistrationState;
 use App\Enums\EventInvitationCampaignStatus;
 use App\Enums\EventInvitationCampaignType;
 use App\Enums\EventInvitationStatus;
@@ -844,7 +845,7 @@ final class EventInvitationService
             );
 
             return [
-                'status' => 'confirmed',
+                'status' => $this->placeStatus($accepted->registration),
                 'registration' => $accepted->registration,
                 'waitlist' => $accepted->entry,
             ];
@@ -866,7 +867,7 @@ final class EventInvitationService
             );
 
             return [
-                'status' => 'confirmed',
+                'status' => $this->placeStatus($confirmed->registration),
                 'registration' => $confirmed->registration,
                 'waitlist' => null,
             ];
@@ -880,7 +881,7 @@ final class EventInvitationService
                 );
 
                 return [
-                    'status' => 'confirmed',
+                    'status' => $this->placeStatus($accepted->registration),
                     'registration' => $accepted->registration,
                     'waitlist' => $accepted->entry,
                 ];
@@ -909,13 +910,24 @@ final class EventInvitationService
             );
 
             return [
-                'status' => 'confirmed',
+                'status' => $this->placeStatus($confirmed->registration),
                 'registration' => $confirmed->registration,
                 'waitlist' => null,
             ];
         }
 
         return ['status' => 'waitlisted', 'registration' => null, 'waitlist' => $joined->entry];
+    }
+
+    /**
+     * Under the organiser's manual approval a confirm records a pending
+     * request, not a place; report what was actually recorded.
+     */
+    private function placeStatus(?EventRegistration $registration): string
+    {
+        return $registration?->registration_state === EventCapacityRegistrationState::Pending
+            ? 'pending'
+            : 'confirmed';
     }
 
     /** @return array{status:string,registration:mixed,waitlist:mixed} */
@@ -925,6 +937,9 @@ final class EventInvitationService
         $registration = $this->registrationModel($eventId, $userId);
         if ($registrationState?->consumesCapacity()) {
             return ['status' => 'confirmed', 'registration' => $registration, 'waitlist' => null];
+        }
+        if ($registrationState === EventCapacityRegistrationState::Pending) {
+            return ['status' => 'pending', 'registration' => $registration, 'waitlist' => null];
         }
         $waitlistState = $this->waitlist->stateFor($eventId, $userId);
         $waitlist = $this->waitlistModel($eventId, $userId);

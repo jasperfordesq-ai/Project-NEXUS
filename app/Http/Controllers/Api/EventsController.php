@@ -30,6 +30,7 @@ use App\Services\EventPublicationWorkflowService;
 use App\Services\EventWaitlistService;
 use App\Services\EventReminderPreferenceService;
 use App\Services\EventReminderScheduleService;
+use App\Enums\EventCapacityRegistrationState;
 use App\Enums\EventNotificationDeliveryMode;
 use App\Support\Events\EventAttendanceResult;
 use App\Support\Events\EventLifecycleCompatibility;
@@ -1206,6 +1207,10 @@ class EventsController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.event_not_found'), null, 404);
         }
 
+        // Under the organiser's manual approval "going" records a pending
+        // request, not a place: report that, and leave the attend_event XP to
+        // the organiser's approval (EventRegistrationController::manageState).
+        $placePending = false;
         try {
             $requestKey = $this->legacyCompatibilityIdempotencyKey();
             $actor = $this->legacyRegistrationActor($userId);
@@ -1252,6 +1257,8 @@ class EventsController extends BaseApiController
                         (int) $waitlisted->entry->queue_sequence,
                     );
                 }
+                $placePending = $registration->registration->registration_state
+                    === EventCapacityRegistrationState::Pending;
 
                 if ($registration->changed
                     && EventNotificationDeliveryModeResolver::resolve(
@@ -1327,7 +1334,7 @@ class EventsController extends BaseApiController
         // Routed through EngagementService so admin-defined challenges on
         // attend_event actually progress — XP is unchanged (same XP_VALUES
         // lookup), challenge progress is what the direct awardXP call lacked.
-        if ($status === 'going') {
+        if ($status === 'going' && ! $placePending) {
             try {
                 \App\Services\EngagementService::record(
                     $userId,
@@ -1341,7 +1348,7 @@ class EventsController extends BaseApiController
         }
 
         $payload = [
-            'status'      => $status,
+            'status'      => $placePending ? 'pending' : $status,
             'rsvp_counts' => $event['rsvp_counts'] ?? ['going' => 0, 'interested' => 0],
         ];
 

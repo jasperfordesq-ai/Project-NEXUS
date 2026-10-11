@@ -17,9 +17,11 @@ use App\Exceptions\EventOfflineCheckinException;
 use App\Exceptions\EventRegistrationException;
 use App\Exceptions\EventWaitlistException;
 use App\Exceptions\SafeguardingPolicyException;
+use App\I18n\LocaleContext;
 use App\Models\Event;
 use App\Models\User;
 use App\Policies\EventPolicy;
+use App\Services\EngagementService;
 use App\Services\EventAttendanceService;
 use App\Services\EventCheckinCredentialService;
 use App\Services\EventPeopleBulkService;
@@ -651,11 +653,35 @@ final class EventRegistrationController extends BaseApiController
                 null,
                 $reason,
             );
+            if ($target === EventCapacityRegistrationState::Confirmed
+                && $result->changed
+                && $result->registration->registration_state === EventCapacityRegistrationState::Confirmed) {
+                $this->awardAttendXp($event, $member);
+            }
 
             return $this->registrationMutation($event, $member, $result);
         } catch (EventRegistrationException|EventWaitlistException|EventParticipationException|SafeguardingPolicyException $exception) {
             return $this->registrationError($exception);
         }
+    }
+
+    /**
+     * The legacy "going" RSVP pays attend_event only for a confirmed place, so
+     * a request held for manual approval earns it here, when the organiser
+     * approves. Keyed by the same `event:{id}` reference, so it is paid once.
+     * EngagementService logs and absorbs its own failures, so an XP problem
+     * never undoes the approval.
+     */
+    private function awardAttendXp(Event $event, User $member): void
+    {
+        LocaleContext::withLocale($member, static function () use ($event, $member): void {
+            EngagementService::record(
+                (int) $member->getKey(),
+                'attend_event',
+                'event:' . (int) $event->getKey(),
+                __('govuk_alpha.profile.activity_types.event_rsvp'),
+            );
+        });
     }
 
     /** @return array{Event,User} */
