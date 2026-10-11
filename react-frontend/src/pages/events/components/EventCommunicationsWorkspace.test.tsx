@@ -291,4 +291,40 @@ describe('EventCommunicationsWorkspace', () => {
     await waitFor(() => expect(list).toHaveBeenLastCalledWith(42, 2));
     expect(await screen.findByText('2 recipients')).toBeInTheDocument();
   });
+
+  it("shows the server's explanation when scheduling is refused (E-102)", async () => {
+    const user = userEvent.setup();
+    const explanation = 'Nobody would receive this message. Choose an audience that includes at least one person.';
+    vi.spyOn(eventCommunicationsApi, 'schedule').mockResolvedValue({
+      success: false,
+      code: 'EVENT_BROADCAST_VALIDATION_FAILED',
+      errors: [{
+        code: 'EVENT_BROADCAST_VALIDATION_FAILED',
+        message: explanation,
+        field: 'segments',
+        reason: 'event_broadcast_audience_empty',
+      }],
+    });
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+
+    await user.click(await screen.findByRole('button', { name: 'Schedule' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'confirm_schedule' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(explanation));
+  });
+
+  it('keeps its own wording when a scheduling refusal carries no explanation', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(eventCommunicationsApi, 'schedule').mockResolvedValue({
+      success: false,
+      code: 'EVENT_BROADCAST_VALIDATION_FAILED',
+      errors: [{ code: 'EVENT_BROADCAST_VALIDATION_FAILED', message: 'Validation failed', field: 'variant' }],
+    });
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+
+    await user.click(await screen.findByRole('button', { name: 'Schedule' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'confirm_schedule' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('schedule_error'));
+  });
 });

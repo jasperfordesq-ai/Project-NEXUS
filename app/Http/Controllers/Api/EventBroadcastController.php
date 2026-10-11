@@ -12,12 +12,14 @@ use App\Exceptions\EventBroadcastException;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Http\Requests\Events\CancelEventBroadcastRequest;
 use App\Http\Requests\Events\CreateEventBroadcastRequest;
+use App\Http\Requests\Events\EventBroadcastFormRequest;
 use App\Http\Requests\Events\PreviewEventBroadcastRequest;
 use App\Http\Requests\Events\RetryEventBroadcastRequest;
 use App\Http\Requests\Events\ReviseEventBroadcastRequest;
 use App\Http\Requests\Events\ScheduleEventBroadcastRequest;
 use App\Services\EventBroadcastQueryService;
 use App\Services\EventBroadcastService;
+use App\Support\Events\EventBroadcastFoundationSupport;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -276,6 +278,19 @@ final class EventBroadcastController extends BaseApiController
                 ['EVENT_BROADCAST_VALIDATION_FAILED', __('api.validation_failed'), 'idempotency_key', 422],
             default => ['EVENT_BROADCAST_VALIDATION_FAILED', __('api.validation_failed'), null, 422],
         };
+        $explained = EventBroadcastFormRequest::EXPLAINED_ERRORS[$exception->reasonCode] ?? null;
+        if ($explained !== null) {
+            $error = [
+                'code' => $code,
+                'message' => __($explained, ['max' => EventBroadcastFoundationSupport::MAX_BODY_LENGTH]),
+                'reason' => $exception->reasonCode,
+            ];
+            if ($field !== null) {
+                $error['field'] = $field;
+            }
+
+            return $this->privateResponse($this->respondWithErrors([$error], $status));
+        }
 
         return $this->privateResponse($this->respondWithError($code, $message, $field, $status));
     }

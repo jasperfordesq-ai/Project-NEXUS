@@ -35,6 +35,7 @@ import {
   type EventBroadcastSegment,
   type EventBroadcastVariant,
 } from '@/lib/event-communications-api';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 
@@ -200,7 +201,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
         channels: content.channels,
       });
       if (!response.success || !response.data) {
-        toast.error(t('preview_error'));
+        toast.error(explainedApiError(response) ?? t('preview_error'));
         return;
       }
       setPreview(response.data);
@@ -229,7 +230,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
           newIdempotencyKey('create'),
         );
       if (!response.success || !response.data) {
-        toast.error(t('save_error'));
+        toast.error(explainedApiError(response) ?? t('save_error'));
         return;
       }
       const saved = response.data.broadcast;
@@ -263,7 +264,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
         newIdempotencyKey('schedule'),
       );
       if (!response.success || !response.data) {
-        toast.error(t('schedule_error'));
+        toast.error(explainedApiError(response) ?? t('schedule_error'));
         return;
       }
       replaceBroadcast(response.data.broadcast);

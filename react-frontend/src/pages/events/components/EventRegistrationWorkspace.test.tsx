@@ -418,6 +418,30 @@ describe('EventRegistrationWorkspace', () => {
     }));
   });
 
+  it("shows the server's explanation when a retention preview is refused (E-102)", async () => {
+    const user = userEvent.setup();
+    const explanation = 'Registration data can only be reviewed for removal after the event has ended.';
+    vi.spyOn(eventRegistrationApi, 'retentionDryRun').mockResolvedValue({
+      success: false,
+      code: 'EVENT_REGISTRATION_VALIDATION_FAILED',
+      errors: [{
+        code: 'EVENT_REGISTRATION_VALIDATION_FAILED',
+        message: explanation,
+        field: 'as_of',
+        reason: 'event_registration_retention_post_event_only',
+      }],
+    });
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+      path: '/events/42/manage/registration',
+      route: '/events/42/manage/registration',
+    });
+
+    await user.click(await screen.findByRole('tab', { name: 'Retention' }));
+    await user.click(await screen.findByRole('button', { name: 'Run preview' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(explanation));
+  });
+
   describe('F-161: bulk invitation types are for community admins', () => {
     async function openCampaignTypes(user: ReturnType<typeof userEvent.setup>) {
       renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {

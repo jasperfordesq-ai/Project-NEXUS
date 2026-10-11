@@ -48,6 +48,8 @@ final class EventRegistrationProductController extends BaseApiController
         'event_invitation_expiry_invalid' => ['expires_at', 'event_registration.invitation_expiry_invalid'],
         'event_invitation_campaign_schedule_invalid' => ['scheduled_for', 'event_registration.campaign_schedule_invalid'],
         'event_registration_event_unavailable' => [null, 'event_registration.invitation_event_unavailable'],
+        'event_registration_retention_post_event_only' => ['as_of', 'event_errors.retention.post_event_only'],
+        'event_registration_retention_settings_required' => ['registration_settings', 'event_errors.retention.settings_required'],
     ];
 
     public function __construct(
@@ -775,9 +777,6 @@ final class EventRegistrationProductController extends BaseApiController
             }
 
             return $this->respondWithErrors([$error], $status);
-        }
-        if ($reason === 'event_registration_retention_settings_required') {
-            return $this->respondWithError('EVENT_REGISTRATION_VALIDATION_FAILED', __('api.validation_failed'), 'registration_settings', 422);
         }
         if ($reason === 'event_registration_published_form_immutable') {
             return $this->respondWithError('EVENT_REGISTRATION_CONFLICT', __('api.invalid_input'), 'form_status', 409);

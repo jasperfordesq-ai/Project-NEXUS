@@ -708,7 +708,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.retentionDryRun(eventId, `${retentionAsOf}T23:59:59Z`);
       if (!response.success || !response.data) {
-        toast.error(t('messages.retention_preview_error'));
+        toast.error(explainedApiError(response) ?? t('messages.retention_preview_error'));
         return;
       }
       setRetentionRun(response.data.value);
@@ -740,7 +740,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.retentionApply(eventId, retentionRun.id);
       if (!response.success || !response.data) {
-        toast.error(t('messages.retention_apply_error'));
+        toast.error(explainedApiError(response) ?? t('messages.retention_apply_error'));
         return;
       }
       setRetentionRun(response.data.value);
