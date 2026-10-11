@@ -839,6 +839,8 @@ export const eventPeopleFullPersonSchema = z.object({
     allocation_key: nullableString,
     changed_at: nullableString,
     confirmed_at: nullableString,
+    // Sent only when the request asks for include=required_answers.
+    required_answers_outstanding: z.boolean().optional(),
   }).strict(),
   waitlist: z.object({
     id: z.number().int().positive().nullable(),
@@ -863,6 +865,8 @@ export const eventPeopleAttendancePersonSchema = z.object({
   member: eventPeopleMemberSchema,
   registration: z.object({
     state: z.enum(['invited', 'pending', 'confirmed', 'declined', 'cancelled']).nullable(),
+    // Sent only when the request asks for include=required_answers.
+    required_answers_outstanding: z.boolean().optional(),
   }).strict(),
   attendance: eventPeopleAttendanceFactSchema,
   management_actions: eventPeopleAttendanceActionsSchema,
@@ -1108,6 +1112,8 @@ export interface EventPeopleQueryParams {
   engagement_state?: string;
   sort?: 'name' | 'registration_changed' | 'queue_rank' | 'attendance_changed';
   direction?: 'asc' | 'desc';
+  /** Opt-in row additions; the store mobile app never sends this. */
+  include?: 'required_answers';
 }
 
 export type EventPeopleBulkAction =

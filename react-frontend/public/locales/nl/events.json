@@ -483,6 +483,7 @@
       "select_member": "Selecteer{{name}}",
       "member_fallback": "Lid #{{id}}",
       "queue_position": "Positie {{position}}",
+      "required_answers_outstanding": "Antwoorden ontbreken",
       "actions": {
         "approve": "Goedkeuren",
         "reject": "Afwijzen",

@@ -125,6 +125,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
       engagement_state: engagementState === 'all' ? undefined : engagementState,
       sort: sortField,
       direction,
+      include: 'required_answers',
     };
   }, [attendanceState, engagementState, page, registrationState, search, sort, waitlistState]);
 
@@ -647,7 +648,16 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
                           <span className="font-medium text-theme-primary">{name}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{stateChip('registration', person.registration.state)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-1">
+                          {stateChip('registration', person.registration.state)}
+                          {person.registration.required_answers_outstanding && (
+                            <Chip size="sm" variant="flat" color="warning">
+                              {t('manage.people.required_answers_outstanding')}
+                            </Chip>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col items-start gap-1">
                           {stateChip('waitlist', person.waitlist.state)}

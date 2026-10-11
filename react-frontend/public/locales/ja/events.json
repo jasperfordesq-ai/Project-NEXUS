@@ -483,6 +483,7 @@
       "select_member": "{{name}}を選択します",
       "member_fallback": "メンバー #{{id}}",
       "queue_position": "位置 {{position}}",
+      "required_answers_outstanding": "回答未提出",
       "actions": {
         "approve": "承認する",
         "reject": "拒否する",

@@ -483,6 +483,7 @@
       "select_member": "Wählen Sie{{name}}",
       "member_fallback": "Mitglied #{{id}}",
       "queue_position": "Platz {{position}}",
+      "required_answers_outstanding": "Antworten ausstehend",
       "actions": {
         "approve": "Genehmigen",
         "reject": "Ablehnen",

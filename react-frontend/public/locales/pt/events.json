@@ -492,6 +492,7 @@
       "select_member": "Selecione{{name}}",
       "member_fallback": "Membro #{{id}}",
       "queue_position": "Posição {{position}}",
+      "required_answers_outstanding": "Respostas pendentes",
       "actions": {
         "approve": "Aprovar",
         "reject": "Rejeitar",

@@ -33,6 +33,14 @@ final readonly class EventPeopleQuery
     /** @var list<string> */
     private const ENGAGEMENT_STATES = ['none', 'interested'];
 
+    /**
+     * Opt-in additions to the People projection. Each is absent by default
+     * because the store mobile app parses the response with strict schemas.
+     *
+     * @var list<string>
+     */
+    private const INCLUDES = ['required_answers'];
+
     /** @var list<string> */
     private const SORTS = [
         'name', 'registration_changed', 'queue_rank', 'attendance_changed',
@@ -48,6 +56,7 @@ final readonly class EventPeopleQuery
         public ?string $engagementState = null,
         public string $sort = 'name',
         public string $direction = 'asc',
+        public bool $includeRequiredAnswers = false,
     ) {
         if ($page < 1 || $perPage < 1 || $perPage > 100) {
             throw new EventRegistrationException('event_registration_people_query_invalid');
@@ -82,7 +91,29 @@ final readonly class EventPeopleQuery
             engagementState: self::filter($input['engagement_state'] ?? null),
             sort: self::nullable($input['sort'] ?? null) ?? 'name',
             direction: strtolower(self::nullable($input['direction'] ?? null) ?? 'asc'),
+            includeRequiredAnswers: in_array(
+                'required_answers',
+                self::includes($input['include'] ?? null),
+                true,
+            ),
         );
+    }
+
+    /** @return list<string> */
+    private static function includes(mixed $value): array
+    {
+        $value = self::nullable($value);
+        if ($value === null) {
+            return [];
+        }
+        $includes = array_map('trim', explode(',', strtolower($value)));
+        foreach ($includes as $include) {
+            if (! in_array($include, self::INCLUDES, true)) {
+                throw new EventRegistrationException('event_registration_people_query_invalid');
+            }
+        }
+
+        return $includes;
     }
 
     /** @return array<string,string|int|null> */

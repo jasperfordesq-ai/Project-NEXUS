@@ -483,6 +483,7 @@
       "select_member": "Select {{name}}",
       "member_fallback": "Member #{{id}}",
       "queue_position": "Position {{position}}",
+      "required_answers_outstanding": "Answers outstanding",
       "actions": {
         "approve": "Approve",
         "reject": "Reject",

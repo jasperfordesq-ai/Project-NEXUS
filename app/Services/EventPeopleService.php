@@ -115,7 +115,10 @@ final class EventPeopleService
 
         return [
             'items' => array_map(
-                static fn (array $person): array => EventRosterResource::canonicalFromArray($person),
+                static fn (array $person): array => EventRosterResource::canonicalFromArray(
+                    $person,
+                    $request->includeRequiredAnswers,
+                ),
                 $facts->map(fn (object $fact): array => $this->peopleRow($fact, $event, $outstanding))->all(),
             ),
             'total' => $total,
@@ -188,7 +191,10 @@ final class EventPeopleService
 
         return [
             'items' => $facts->map(fn (object $fact): array =>
-                EventRosterResource::attendanceFromArray($this->peopleRow($fact, $event, $outstanding)))
+                EventRosterResource::attendanceFromArray(
+                    $this->peopleRow($fact, $event, $outstanding),
+                    $request->includeRequiredAnswers,
+                ))
                 ->all(),
             'total' => $total,
             'page' => $request->page,
@@ -688,6 +694,13 @@ SQL,
             'attendance_changed_at' => $fact->attendance_changed_at ?? null,
             'checked_in_at' => $fact->checked_in_at ?? null,
             'checked_out_at' => $fact->checked_out_at ?? null,
+            // Only a member holding or seeking a place owes answers; a
+            // declined or cancelled registration is not waiting on anything.
+            'required_answers_outstanding' => $answersOutstanding
+                && in_array($registrationState, [
+                    EventCapacityRegistrationState::Confirmed,
+                    EventCapacityRegistrationState::Pending,
+                ], true),
             'can_approve' => $registrationState !== null
                 && $registrationState !== EventCapacityRegistrationState::Confirmed
                 && $registrationState->canTransitionTo(EventCapacityRegistrationState::Confirmed),

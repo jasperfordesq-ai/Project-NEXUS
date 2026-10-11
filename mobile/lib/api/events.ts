@@ -394,6 +394,8 @@ const eventPeopleAttendancePersonSchema = z.object({
   member: eventPeopleMemberSchema,
   registration: z.object({
     state: z.enum(['invited', 'pending', 'confirmed', 'declined', 'cancelled']).nullable(),
+    // Opt-in (include=required_answers, sent by the website only); tolerated here.
+    required_answers_outstanding: z.boolean().optional(),
   }).strict(),
   attendance: eventPeopleAttendanceFactSchema,
   management_actions: eventPeopleAttendanceActionsSchema,
@@ -417,6 +419,8 @@ const eventPeopleFullPersonSchema = z.object({
     allocation_key: nullableString,
     changed_at: nullableString,
     confirmed_at: nullableString,
+    // Opt-in (include=required_answers, sent by the website only); tolerated here.
+    required_answers_outstanding: z.boolean().optional(),
   }).strict(),
   waitlist: z.object({
     id: z.number().int().positive().nullable(),

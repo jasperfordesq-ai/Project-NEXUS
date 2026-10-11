@@ -128,6 +128,42 @@ it('retains full registration and waitlist facts but rejects unexpected contact 
   await expect(getEventPeople(7)).rejects.toMatchObject({ code: 'EVENTS_PEOPLE_CONTRACT_DRIFT' });
 });
 
+it('tolerates the opt-in required-answers flag on both projections without requesting it', async () => {
+  // The website asks for include=required_answers; this app does not, but a
+  // future build must not reject the flag if a response carries it.
+  const person = {
+    member: { id: 44, display_name: 'Alex Member', avatar_url: null },
+    engagement: { state: 'none', consumes_capacity: false },
+    registration: { id: 12, state: 'confirmed', version: 2, capacity_pool_key: 'event', allocation_key: null, changed_at: null, confirmed_at: null, required_answers_outstanding: true },
+    waitlist: { id: null, state: null, version: null, position: null, sequence: null, offered_at: null, offer_expires_at: null, accepted_at: null },
+    attendance: { id: null, state: 'not_checked_in', version: null, changed_at: null, checked_in_at: null, checked_out_at: null },
+    management_actions: { approve: false, reject: false, cancel: true, check_in: false, check_out: false, no_show: true, undo_attendance: false, idempotency_key_required: true },
+    privacy: { sensitive_fields_redacted: true },
+  };
+  const value = { ...roster(), data: [person] };
+  jest.mocked(api.get).mockResolvedValue(value);
+  await expect(getEventPeople(7)).resolves.toEqual(value);
+  expect(jest.mocked(api.get).mock.calls[0][1]).not.toHaveProperty('include');
+
+  const base = roster();
+  const { waitlisted: _waitlisted, ...metrics } = base.meta.metrics;
+  const attendanceOnly = {
+    data: [{
+      member: person.member,
+      registration: { state: 'confirmed', required_answers_outstanding: true },
+      attendance: person.attendance,
+      management_actions: { check_in: false, check_out: false, no_show: true, undo_attendance: false, idempotency_key_required: true },
+      privacy: { projection: 'attendance', sensitive_fields_redacted: true },
+    }],
+    meta: { ...base.meta, total: 1, total_pages: 1, projection: 'attendance', metrics, capabilities: { ...base.meta.capabilities, view_waitlist: false, manage_registration: false, manage_attendance: true } },
+  };
+  jest.mocked(api.get).mockResolvedValue(attendanceOnly);
+  await expect(getEventPeople(7)).resolves.toEqual(attendanceOnly);
+
+  jest.mocked(api.get).mockResolvedValue({ ...value, data: [{ ...person, registration: { ...person.registration, required_answers_outstanding: 'yes' } }] });
+  await expect(getEventPeople(7)).rejects.toMatchObject({ code: 'EVENTS_PEOPLE_CONTRACT_DRIFT' });
+});
+
 it('preserves partial results and each item retry key/version', async () => {
   await expect(mutateEventRegistrations(7, operations)).resolves.toEqual(response().data);
   expect(api.post).toHaveBeenCalledWith('/api/v2/events/7/people/bulk', { operations }, { headers: { 'X-Events-Contract': '2' } });

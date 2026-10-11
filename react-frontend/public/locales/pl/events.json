@@ -501,6 +501,7 @@
       "select_member": "Wybierz{{name}}",
       "member_fallback": "Członek nr {{id}}",
       "queue_position": "Pozycja {{position}}",
+      "required_answers_outstanding": "Brak wymaganych odpowiedzi",
       "actions": {
         "approve": "Zatwierdź",
         "reject": "Odrzuć",

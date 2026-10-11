@@ -510,6 +510,7 @@
       "select_member": "Roghnaigh {{name}}",
       "member_fallback": "Ball #{{id}}",
       "queue_position": "Áit {{position}}",
+      "required_answers_outstanding": "Freagraí le tabhairt fós",
       "actions": {
         "approve": "Ceadaigh",
         "reject": "Diúltaigh",

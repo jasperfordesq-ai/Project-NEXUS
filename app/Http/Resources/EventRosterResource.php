@@ -38,11 +38,16 @@ final class EventRosterResource
      * Explicit People projection. The whitelist deliberately excludes email,
      * phone, notes, registration answers, token material, and audit reasons.
      *
+     * `$includeRequiredAnswers` adds registration.required_answers_outstanding
+     * (a yes/no flag, never the answers). It is opt-in (`include=required_answers`)
+     * because the store mobile app parses this projection with strict schemas
+     * and rejects any field it does not know.
+     *
      * @return array<string,mixed>
      */
-    public static function canonicalFromArray(array $person): array
+    public static function canonicalFromArray(array $person, bool $includeRequiredAnswers = false): array
     {
-        return [
+        $projection = [
             'member' => [
                 'id' => (int) ($person['user_id'] ?? 0),
                 'display_name' => self::nullableString($person['display_name'] ?? null),
@@ -100,6 +105,8 @@ final class EventRosterResource
                 'sensitive_fields_redacted' => true,
             ],
         ];
+
+        return self::withRequiredAnswers($projection, $person, $includeRequiredAnswers);
     }
 
     /**
@@ -108,9 +115,9 @@ final class EventRosterResource
      *
      * @return array<string,mixed>
      */
-    public static function attendanceFromArray(array $person): array
+    public static function attendanceFromArray(array $person, bool $includeRequiredAnswers = false): array
     {
-        return [
+        $projection = [
             'member' => [
                 'id' => (int) ($person['user_id'] ?? 0),
                 'display_name' => self::nullableString($person['display_name'] ?? null),
@@ -142,6 +149,23 @@ final class EventRosterResource
                 'sensitive_fields_redacted' => true,
             ],
         ];
+
+        return self::withRequiredAnswers($projection, $person, $includeRequiredAnswers);
+    }
+
+    /**
+     * @param array<string,mixed> $projection
+     * @param array<string,mixed> $person
+     * @return array<string,mixed>
+     */
+    private static function withRequiredAnswers(array $projection, array $person, bool $include): array
+    {
+        if ($include) {
+            $projection['registration']['required_answers_outstanding']
+                = (bool) ($person['required_answers_outstanding'] ?? false);
+        }
+
+        return $projection;
     }
 
     private static function nullableInt(mixed $value): ?int

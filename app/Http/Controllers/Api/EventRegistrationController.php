@@ -232,6 +232,9 @@ final class EventRegistrationController extends BaseApiController
                 'engagement_state',
                 'sort',
                 'direction',
+                // Opt-in only: the store app's strict schemas reject unknown
+                // fields, so additions to a row must be asked for.
+                'include',
             ]);
             $query = EventPeopleQuery::fromArray($input);
             $result = $this->people->paginateForActor($event, $actor, $query);

@@ -519,6 +519,7 @@
       "select_member": "حدد{{name}}",
       "member_fallback": "العضو رقم {{id}}",
       "queue_position": "الموضع {{position}}",
+      "required_answers_outstanding": "إجابات لم تُقدَّم بعد",
       "actions": {
         "approve": "اعتماد",
         "reject": "رفض",

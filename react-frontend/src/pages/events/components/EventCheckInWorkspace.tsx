@@ -68,6 +68,7 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
     attendance_state: attendanceState === 'all' ? undefined : attendanceState,
     sort: attendanceState === 'all' ? 'name' : 'attendance_changed',
     direction: attendanceState === 'all' ? 'asc' : 'desc',
+    include: 'required_answers',
   }), [attendanceState, page, search]);
 
   const loadPeople = useCallback(async (signal?: AbortSignal) => {
@@ -242,9 +243,16 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Chip size="sm" variant="flat">
-                          {t(`manage.people.states.registration.${person.registration.state ?? 'none'}`)}
-                        </Chip>
+                        <div className="flex flex-col items-start gap-1">
+                          <Chip size="sm" variant="flat">
+                            {t(`manage.people.states.registration.${person.registration.state ?? 'none'}`)}
+                          </Chip>
+                          {person.registration.required_answers_outstanding && (
+                            <Chip size="sm" variant="flat" color="warning">
+                              {t('manage.people.required_answers_outstanding')}
+                            </Chip>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Chip size="sm" variant="flat">
