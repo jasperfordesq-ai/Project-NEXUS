@@ -93,10 +93,11 @@ export function isSuperAdminUser(user: UserLike): boolean {
  *
  * Deliberately EXCLUDES `is_tenant_super_admin`. Since 12 October 2026 a tenant
  * super admin's token is also accepted in a community BELOW its own, but only
- * for administration requests (`/api/v2/admin/*` and `GET /api/v2/users/me`);
- * every member request there (posting, messaging, transfers, event sign-up)
- * still gets the 403, and any community above or beside its own refuses
- * everything. That is not "can cross tenants", so it is not this predicate.
+ * for management requests (`/api/v2/admin/*`, the event team and organiser
+ * views, and `GET /api/v2/users/me`); every member request there (posting,
+ * messaging, transfers, event sign-up) still gets the 403, and any community
+ * above or beside its own refuses everything. That is not "can cross tenants",
+ * so it is not this predicate — see isVisitingManager().
  * Which communities are below is the server's decision — never infer it here.
  */
 export function isPlatformSuperAdminUser(user: UserLike): boolean {
@@ -107,6 +108,32 @@ export function isPlatformSuperAdminUser(user: UserLike): boolean {
     user?.is_super_admin === true ||
     user?.is_god === true
   );
+}
+
+/**
+ * Is this signed-in account MANAGING a community other than its own — a tenant
+ * super admin working in a community below its home community?
+ *
+ * Owner, 12 October 2026: "If they're allowed to sign in, they're allowed to
+ * sign in to manage those communities if they're a super admin." Whether the
+ * account may be here at all is the server's decision, taken on every request
+ * (CrossTenantEntry): by the time this is asked, `GET /v2/users/me` has
+ * already succeeded in this community. This only answers "is it a visit?", so
+ * the website sends the visitor to the admin panel rather than to member pages
+ * the server would refuse.
+ *
+ * The platform super admin is never a "visitor": its token works for every
+ * request in every community, member pages included.
+ */
+export function isVisitingManager(
+  user: (UserLike & { tenant_id?: unknown }) | null | undefined,
+  currentTenantId: unknown,
+): boolean {
+  if (!user || isPlatformSuperAdminUser(user)) return false;
+  const home = Number(user.tenant_id);
+  const here = Number(currentTenantId);
+  if (!Number.isInteger(home) || home <= 0 || !Number.isInteger(here) || here <= 0) return false;
+  return home !== here;
 }
 
 /**

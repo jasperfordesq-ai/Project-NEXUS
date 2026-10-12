@@ -42,7 +42,7 @@ import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMenuContext } from '@/contexts/MenuContextCore';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
-import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess, isPlatformSuperAdminUser } from '@/lib/access';
+import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess } from '@/lib/access';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopMenuItems } from '@/components/navigation';
@@ -488,35 +488,24 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   );
   const tenantSwitcherItems = tenant?.tenant_switcher?.items ?? [];
   const hasTenantSwitcherItems = tenantSwitcherItems.length > 0;
-  const handleTenantSwitch = useCallback(async (url: string) => {
+  const handleTenantSwitch = useCallback((url: string) => {
     closeAllDropdowns();
-    // Switching to a different community must start a clean session. The access
-    // token is scoped to the current tenant, and the API rejects it with 403
-    // `tenant_mismatch` against any other community (see CrossTenantEntry.php),
-    // so a logged-in member who switches would otherwise land in a broken,
-    // half-authenticated state — errors on every tenant-scoped request. Sign out
-    // first so the destination boots logged-out and the user re-authenticates
-    // against the new community. Platform super admins can legitimately cross
-    // tenants with their token, so they keep their session.
+    // The session travels with the switch, and the SERVER decides whether it
+    // may stay (owner, 12 Oct 2026: "If a user tries to sign in to a community
+    // that they're not allowed to sign in to, it should sign them out. If
+    // they're allowed to sign in, they're allowed to sign in to manage those
+    // communities"). When the destination boots, TenantContext notices the
+    // community changed and AuthContext asks `GET /v2/users/me` there: the
+    // platform super admin and a tenant super admin of a community above keep
+    // the session (the latter lands in the admin panel — ProtectedRoute); any
+    // other account gets 403 `tenant_mismatch` and is signed out. A switch to a
+    // community on another web address carries no session at all.
     //
-    // A tenant super admin is still signed out here, even though the server now
-    // admits its token to the ADMIN requests of communities below its own
-    // (owner rule, 12 Oct 2026). Every member page of the destination would
-    // still 403, the switcher items come from the anonymous bootstrap call so
-    // the server cannot say per item whether the session would survive, and
-    // TenantContext's loadTenant() clears the stored tokens when the community
-    // it boots differs from the stored one. Keeping the session would only
-    // produce the half-authenticated state described above.
-    if (isAuthenticated && !isPlatformSuperAdminUser(user)) {
-      try {
-        await logout();
-      } catch {
-        // logout() already clears local tokens in its own finally path; never
-        // let a failed sign-out block the community switch.
-      }
-    }
+    // Until 12 Oct 2026 everyone but the platform super admin was signed out
+    // here before leaving, and TenantContext then cleared even the platform
+    // super admin's tokens on arrival.
     window.open(url, '_self');
-  }, [closeAllDropdowns, isAuthenticated, user, logout]);
+  }, [closeAllDropdowns]);
 
   return (
     <>
@@ -554,7 +543,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         base: 'bg-[var(--surface-dropdown)] border border-[var(--border-default)] shadow-xl max-h-[70vh] overflow-y-auto',
                       }}
                       onAction={(key) => {
-                        void handleTenantSwitch(String(key));
+                        handleTenantSwitch(String(key));
                       }}
                     >
                       {tenantSwitcherItems.map((item) => (

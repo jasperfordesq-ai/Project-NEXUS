@@ -84,6 +84,7 @@ vi.mock('@/lib/api', () => ({
   },
   tokenManager: mockTokenManager,
   fetchCsrfToken: () => mockFetchCsrfToken(),
+  COMMUNITY_CHANGED_EVENT: 'nexus:community_changed',
 }));
 
 import { TenantProvider, useTenant } from '../TenantContext';
@@ -283,16 +284,25 @@ describe('TenantContext', () => {
       expect(mockTokenManager.setTenantId).toHaveBeenCalledWith(2);
     });
 
-    it('clears tenant-bound auth tokens when bootstrap resolves a different tenant', async () => {
+    it('keeps the session when bootstrap resolves a different tenant and asks for it to be re-checked', async () => {
+      // Owner, 12 Oct 2026: whether the account may be signed in to the new
+      // community is the server's decision. The tokens used to be cleared
+      // here, which signed out even the platform super admin; now AuthContext
+      // re-asks the server and a `tenant_mismatch` answer ends the session.
       mockTokenManager.getTenantId.mockReturnValue('1');
+      mockTokenManager.hasAccessToken.mockReturnValue(true);
+      const heard = vi.fn();
+      window.addEventListener('nexus:community_changed', heard);
 
       const { result } = renderHook(() => useTenant(), { wrapper: tenantWrapper });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(mockTokenManager.clearTokens).toHaveBeenCalledOnce();
+      expect(mockTokenManager.clearTokens).not.toHaveBeenCalled();
       expect(mockApiClearInflight).toHaveBeenCalledOnce();
       expect(mockTokenManager.setTenantId).toHaveBeenCalledWith(2);
+      expect(heard).toHaveBeenCalledOnce();
+      window.removeEventListener('nexus:community_changed', heard);
     });
   });
 

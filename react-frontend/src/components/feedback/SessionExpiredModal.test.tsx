@@ -34,6 +34,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 vi.mock('@/lib/api', () => ({
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
+  COMMUNITY_CHANGED_EVENT: 'nexus:community_changed',
   api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
 }));

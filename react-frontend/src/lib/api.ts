@@ -77,6 +77,12 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID || null;
 // Custom events
 export const SESSION_EXPIRED_EVENT = 'nexus:session_expired';
 /**
+ * The website now works in a different community while a session is held.
+ * AuthContext re-asks the server who this account is HERE; a 403
+ * `tenant_mismatch` means it may not be signed in here, and ends the session.
+ */
+export const COMMUNITY_CHANGED_EVENT = 'nexus:community_changed';
+/**
  * Why a session ended: plain expiry, the server now requiring a second factor,
  * or the account being under the platform's minimum age (adults-only decision
  * 2026-09-25) — which no sign-in can fix.

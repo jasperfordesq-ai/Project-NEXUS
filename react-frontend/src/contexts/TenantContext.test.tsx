@@ -33,6 +33,7 @@ vi.mock('@/lib/api', () => ({
     clearTokens: vi.fn(),
   },
   fetchCsrfToken: (...args: unknown[]) => mockFetchCsrfToken(...args),
+  COMMUNITY_CHANGED_EVENT: 'nexus:community_changed',
 }));
 
 vi.mock('@/lib/tenant-routing', () => ({
@@ -134,6 +135,49 @@ describe('TenantContext', () => {
 
     expect(tokenManager.clearTokens).not.toHaveBeenCalled();
     expect(tokenManager.setTenantId).not.toHaveBeenCalledWith(3);
+  });
+
+  it('keeps the session when the community changes and asks for it to be re-checked', async () => {
+    // Owner, 12 Oct 2026: the server decides who may be signed in where. The
+    // tokens are no longer cleared here; AuthContext re-asks the server.
+    vi.mocked(tokenManager.getTenantId).mockReturnValue('2');
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+    mockApiGet.mockResolvedValue({ success: true, data: { ...mockTenantConfig, id: 101, slug: 'child-community' } });
+    const heard = vi.fn();
+    window.addEventListener('nexus:community_changed', heard);
+
+    render(
+      <TenantProvider>
+        <TestConsumer />
+      </TenantProvider>,
+    );
+
+    await waitFor(() => expect(tokenManager.setTenantId).toHaveBeenCalledWith(101));
+    await waitFor(() => expect(heard).toHaveBeenCalledTimes(1));
+    expect(tokenManager.clearTokens).not.toHaveBeenCalled();
+    window.removeEventListener('nexus:community_changed', heard);
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+    vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
+  });
+
+  it('does not ask for a re-check when the community is unchanged', async () => {
+    vi.mocked(tokenManager.getTenantId).mockReturnValue('2');
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+    mockApiGet.mockResolvedValue({ success: true, data: mockTenantConfig });
+    const heard = vi.fn();
+    window.addEventListener('nexus:community_changed', heard);
+
+    render(
+      <TenantProvider>
+        <TestConsumer />
+      </TenantProvider>,
+    );
+
+    await waitFor(() => expect(tokenManager.setTenantId).toHaveBeenCalledWith(2));
+    expect(heard).not.toHaveBeenCalled();
+    window.removeEventListener('nexus:community_changed', heard);
+    vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+    vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
   });
 
   it('shows loading state initially', async () => {

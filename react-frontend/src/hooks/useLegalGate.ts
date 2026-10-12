@@ -78,8 +78,16 @@ export interface LegalGateState {
 
 type LegalRequestState = 'idle' | 'loading' | 'ready' | 'error';
 
-export function useLegalGate(): LegalGateState {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+/**
+ * @param options.enabled false skips the check entirely (no request, nothing
+ *   pending). Used for an account managing a community below its own: it is
+ *   not a member there, so that community's member terms are not its to
+ *   accept, and the server refuses the status call to it anyway.
+ */
+export function useLegalGate(options: { enabled?: boolean } = {}): LegalGateState {
+  const enabled = options.enabled !== false;
+  const { isAuthenticated: authenticated, isLoading: authLoading } = useAuth();
+  const isAuthenticated = authenticated && enabled;
   const [hasPending, setHasPending] = useState(false);
   const [pendingDocs, setPendingDocs] = useState<PendingDocument[]>([]);
   const [requestState, setRequestState] = useState<LegalRequestState>('idle');

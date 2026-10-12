@@ -9,10 +9,11 @@ import React from 'react';
 
 // Mock react-router-dom to prevent heavy bundle import
 const mockNavigate = vi.fn();
+let mockPathname = '/dashboard';
 vi.mock('react-router-dom', () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
   useNavigate: () => mockNavigate,
-  useLocation: () => ({ pathname: '/dashboard', search: '', hash: '', state: null, key: 'default' }),
+  useLocation: () => ({ pathname: mockPathname, search: '', hash: '', state: null, key: 'default' }),
   Outlet: () => <div data-testid="outlet" />,
 }));
 
@@ -87,6 +88,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 describe('ProtectedRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPathname = '/dashboard';
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
       isLoading: false,
@@ -104,6 +106,81 @@ describe('ProtectedRoute', () => {
       isLoading: false,
       error: null,
       refresh: vi.fn(),
+    });
+  });
+
+  describe('a tenant super admin managing a community below its own', () => {
+    // Owner, 12 Oct 2026: "If they're allowed to sign in, they're allowed to
+    // sign in to manage those communities." The server has already accepted the
+    // session here; the website sends the visitor to what it may use.
+    const visitor = {
+      id: 7,
+      first_name: 'Hub',
+      last_name: 'Admin',
+      role: 'admin',
+      is_tenant_super_admin: true,
+      tenant_id: 2,
+      onboarding_completed: false,
+    };
+
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: true, isLoading: false, status: 'authenticated', user: visitor });
+      mockUseTenant.mockReturnValue({ tenantPath: (p: string) => `/child${p}`, tenant: { id: 101 } });
+    });
+
+    it('sends the visitor from a member page to the admin panel', () => {
+      mockPathname = '/child/feed';
+      render(<ProtectedRoute><div>Protected Content</div></ProtectedRoute>);
+      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/admin');
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    });
+
+    it('opens an event organiser page without member terms or onboarding', () => {
+      mockPathname = '/child/events/55/manage/team';
+      mockUseLegalGate.mockReturnValue({
+        hasPending: true,
+        pendingDocs: [],
+        acceptAll: vi.fn(),
+        isAccepting: false,
+        isLoading: false,
+        error: null,
+        refresh: vi.fn(),
+      });
+      render(<ProtectedRoute><div>Organiser tools</div></ProtectedRoute>);
+      expect(screen.getByText('Organiser tools')).toBeInTheDocument();
+      expect(mockUseLegalGate).toHaveBeenCalledWith({ enabled: false });
+    });
+
+    it("sends an event's own page on to its organiser page", () => {
+      mockPathname = '/child/events/55';
+      render(<ProtectedRoute><div>Event page</div></ProtectedRoute>);
+      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/events/55/manage');
+    });
+
+    it('treats the same account in its own community as a member as usual', () => {
+      mockUseTenant.mockReturnValue({ tenantPath: (p: string) => `/hub${p}`, tenant: { id: 2 } });
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        status: 'authenticated',
+        user: { ...visitor, onboarding_completed: true },
+      });
+      mockPathname = '/hub/feed';
+      render(<ProtectedRoute><div>Feed</div></ProtectedRoute>);
+      expect(screen.getByText('Feed')).toBeInTheDocument();
+      expect(mockUseLegalGate).toHaveBeenCalledWith({ enabled: true });
+    });
+
+    it('never treats a platform super admin as a visitor', () => {
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        status: 'authenticated',
+        user: { id: 1, role: 'admin', is_super_admin: true, tenant_id: 1, onboarding_completed: true },
+      });
+      mockPathname = '/child/feed';
+      render(<ProtectedRoute><div>Feed</div></ProtectedRoute>);
+      expect(screen.getByText('Feed')).toBeInTheDocument();
     });
   });
 

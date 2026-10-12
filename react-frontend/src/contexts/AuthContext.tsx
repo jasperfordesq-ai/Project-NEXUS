@@ -24,7 +24,7 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, SESSION_REPLACED_EVENT, type SessionExpiredDetail, type SessionReplacedDetail } from '@/lib/api';
+import { api, tokenManager, isImpersonatedTab, isClientBuildStale, recoverStaleClient, COMMUNITY_CHANGED_EVENT, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT, SESSION_REPLACED_EVENT, type SessionExpiredDetail, type SessionReplacedDetail } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import i18n from '@/i18n';
 import { ACCOUNT_UNDER_MINIMUM_AGE, serverMessageFor } from '@/lib/minimum-age';
@@ -152,6 +152,12 @@ const INVALID_SESSION_CODES = new Set([
   'UNAUTHENTICATED',
   'AUTH_UNAUTHENTICATED',
   'HTTP_401',
+  // This account may not be signed in to the community the website is now
+  // in (CrossTenantEntry). Owner, 12 Oct 2026: "If a user tries to sign in to
+  // a community that they're not allowed to sign in to, it should sign them
+  // out." The bearer and session gates spell the code differently.
+  'TENANT_MISMATCH',
+  'tenant_mismatch',
 ]);
 
 function isInvalidSessionCode(code: string | undefined): boolean {
@@ -1014,6 +1020,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
       window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
     };
   }, [clearSessionWarningTimer]);
+
+  // The website moved to another community while signed in. Ask the server
+  // who this account is THERE: a platform super admin, or a tenant super admin
+  // of a community above, keeps its session; anyone else gets 403
+  // `tenant_mismatch`, which refreshUser treats as an ended session.
+  useEffect(() => {
+    const handleCommunityChanged = () => {
+      void refreshUser();
+    };
+    window.addEventListener(COMMUNITY_CHANGED_EVENT, handleCommunityChanged);
+    return () => {
+      window.removeEventListener(COMMUNITY_CHANGED_EVENT, handleCommunityChanged);
+    };
+  }, [refreshUser]);
 
   useEffect(() => {
     const handleSessionReplaced = (event: Event) => {

@@ -109,6 +109,7 @@ vi.mock('@/lib/api', () => ({
   isImpersonatedTab: () => false,
   tokenManager: mockTokenManager,
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
+  COMMUNITY_CHANGED_EVENT: 'nexus:community_changed',
   SESSION_REPLACED_EVENT: 'nexus:session_replaced',
 }));
 

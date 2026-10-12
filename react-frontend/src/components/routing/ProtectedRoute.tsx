@@ -18,6 +18,7 @@ import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { AuthUnavailableScreen } from './AuthUnavailableScreen';
 import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
+import { isVisitingManager } from '@/lib/access';
 
 const LegalAcceptanceGate = lazy(() =>
   import('@/components/legal/LegalAcceptanceGate').then((module) => ({ default: module.LegalAcceptanceGate }))
@@ -40,11 +41,24 @@ const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
   'versions', 'compare',
 ]);
 
+/**
+ * Event organiser pages a manager from a community above may open here:
+ * `/events/:id/manage` and its sections. Matched on the path after any tenant
+ * slug prefix.
+ */
+const EVENT_MANAGE_PATH = /\/events\/\d+\/manage(?:\/[^/]*)?$/;
+/** An event's own page — sent on to its organiser page for a visiting manager. */
+const EVENT_DETAIL_PATH = /\/events\/(\d+)$/;
+
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation('common');
   const { isAuthenticated, isLoading, status, user } = useAuth();
   const { tenantPath, tenant } = useTenant();
   const location = useLocation();
+  // A tenant super admin managing a community below its own (owner rule,
+  // 12 Oct 2026). It is not a member here: member pages would be refused by
+  // the server, and this community's member terms and onboarding are not its.
+  const visiting = isAuthenticated && isVisitingManager(user, tenant?.id);
   const {
     hasPending,
     pendingDocs,
@@ -53,7 +67,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     isLoading: legalLoading,
     error: legalError,
     refresh: refreshLegalStatus,
-  } = useLegalGate();
+  } = useLegalGate({ enabled: !visiting });
 
   // Show loading while checking auth status
   if (isLoading || status === 'loading') {
@@ -91,6 +105,18 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // The tenant bootstrap payload includes onboarding settings. When
   // onboarding.enabled=false or onboarding.mandatory=false, we skip the
   // redirect entirely so members can use the platform without onboarding.
+  if (visiting) {
+    const path = location.pathname.replace(/\/+$/, '');
+    if (EVENT_MANAGE_PATH.test(path)) {
+      return children ? <>{children}</> : <Outlet />;
+    }
+    const detail = EVENT_DETAIL_PATH.exec(path);
+    if (detail) {
+      return <Navigate to={tenantPath(`/events/${detail[1]}/manage`)} replace />;
+    }
+    return <Navigate to={tenantPath('/admin')} replace />;
+  }
+
   const pathSegments = location.pathname.replace(/\/+$/, '').split('/');
   const lastSegment = pathSegments[pathSegments.length - 1] ?? '';
   const onboardingSettings = tenant?.settings as Record<string, unknown> | undefined;

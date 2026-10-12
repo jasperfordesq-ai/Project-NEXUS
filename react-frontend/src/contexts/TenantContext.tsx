@@ -28,7 +28,7 @@ import {
   type ReactNode,
 } from 'react';
 import i18n from '@/i18n';
-import { api, tokenManager, fetchCsrfToken } from '@/lib/api';
+import { api, tokenManager, fetchCsrfToken, COMMUNITY_CHANGED_EVENT } from '@/lib/api';
 import { detectTenantFromUrl, tenantPath as buildTenantPath } from '@/lib/tenant-routing';
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { tenantBootstrapSchema } from '@/lib/api-schemas';
@@ -400,6 +400,7 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
         const responseMatchesRequest = !effectiveTenantSlug
           || (tenant.slug && tenant.slug === effectiveTenantSlug);
 
+        let communityChanged = false;
         const contextCommitted = await tokenManager.runIfSessionCurrent(
           sessionGenerationAtStart,
           () => {
@@ -410,9 +411,17 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
                   `[TenantContext] Overriding stale localStorage tenant_id. ` +
                   `Stored: ${storedTenantId}, URL-resolved: ${tenant.id}`
                 );
-                // This clear is safe inside the same origin-wide ownership lock.
-                tokenManager.clearTokens();
+                // The session is KEPT. Whether this account may be signed in
+                // to the new community is the server's decision, not this
+                // file's (owner, 12 Oct 2026: "If a user tries to sign in to a
+                // community that they're not allowed to sign in to, it should
+                // sign them out. If they're allowed to sign in, they're allowed
+                // to sign in to manage those communities"). AuthContext asks
+                // again below; a `tenant_mismatch` answer ends the session.
+                // Until 12 Oct 2026 this cleared the tokens unconditionally,
+                // which signed out even the platform super admin.
                 api.clearInflightRequests();
+                communityChanged = true;
               }
               tokenManager.setTenantId(tenant.id);
             }
@@ -423,6 +432,9 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
           },
         );
         if (!contextCommitted) return;
+        if (communityChanged && (tokenManager.hasAccessToken() || tokenManager.hasRefreshToken())) {
+          window.dispatchEvent(new CustomEvent(COMMUNITY_CHANGED_EVENT));
+        }
         if (tenant.slug && !responseMatchesRequest) {
           console.warn(
             `[TenantContext] Bootstrap response slug "${tenant.slug}" does not match ` +

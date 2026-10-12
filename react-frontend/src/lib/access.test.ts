@@ -11,6 +11,7 @@ import {
   hasPartnerPanelAccess,
   canAccessSuperPanel,
   isPlatformSuperAdminUser,
+  isVisitingManager,
   isRegionalSuperPanelUser,
   adminSecurityTier,
   canImpersonateTarget,
@@ -354,5 +355,32 @@ describe('isAdminTierUser', () => {
   it('requires the flag to be strictly true and is null safe', () => {
     expect(isAdminTierUser({ role: 'member', is_admin: 1 })).toBe(false);
     expect(isAdminTierUser(null)).toBe(false);
+  });
+});
+
+describe('isVisitingManager', () => {
+  const tsa = { role: 'admin', is_tenant_super_admin: true, tenant_id: 2 };
+
+  it('is true for an account working in a community other than its own', () => {
+    expect(isVisitingManager(tsa, 101)).toBe(true);
+    expect(isVisitingManager(tsa, '101')).toBe(true);
+  });
+
+  it('is false in the home community of the account', () => {
+    expect(isVisitingManager(tsa, 2)).toBe(false);
+    expect(isVisitingManager({ ...tsa, tenant_id: '2' }, 2)).toBe(false);
+  });
+
+  it('is never true for a platform super admin, whose session works everywhere', () => {
+    expect(isVisitingManager({ ...tsa, is_super_admin: true }, 101)).toBe(false);
+    expect(isVisitingManager({ role: 'god', tenant_id: 1 }, 101)).toBe(false);
+  });
+
+  it('fails closed on missing or malformed ids', () => {
+    expect(isVisitingManager(null, 101)).toBe(false);
+    expect(isVisitingManager({ ...tsa, tenant_id: undefined }, 101)).toBe(false);
+    expect(isVisitingManager(tsa, undefined)).toBe(false);
+    expect(isVisitingManager(tsa, 0)).toBe(false);
+    expect(isVisitingManager(tsa, 'abc')).toBe(false);
   });
 });

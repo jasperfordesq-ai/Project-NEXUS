@@ -55,7 +55,7 @@ vi.mock('@/lib/api', async () => {
 });
 
 // Import api after mocking
-import { api, recoverStaleClient } from '@/lib/api';
+import { api, recoverStaleClient, COMMUNITY_CHANGED_EVENT } from '@/lib/api';
 
 // Test component that displays auth state
 function TestAuthDisplay() {
@@ -351,6 +351,71 @@ describe('AuthContext', () => {
         expect(screen.getByTestId('user')).toHaveTextContent('none');
       });
 
+      expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
+    });
+
+    // Owner, 12 Oct 2026: "If a user tries to sign in to a community that
+    // they're not allowed to sign in to, it should sign them out."
+    it.each(['TENANT_MISMATCH', 'tenant_mismatch'])(
+      'signs out when the server answers %s for this community',
+      async (code) => {
+        vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+        vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'Tenant mismatch', code });
+
+        render(
+          <AuthProvider>
+            <TestAuthDisplay />
+          </AuthProvider>
+        );
+
+        await waitFor(() => {
+          expect(screen.getByTestId('status')).toHaveTextContent('idle');
+          expect(screen.getByTestId('user')).toHaveTextContent('none');
+        });
+        expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
+      },
+    );
+
+    it('re-asks the server when the community changes, and keeps an account it accepts', async () => {
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get)
+        .mockResolvedValueOnce({ success: true, data: { id: 7, first_name: 'Hub', tenant_id: 2 } })
+        .mockResolvedValueOnce({ success: true, data: { id: 7, first_name: 'Hub', tenant_id: 2 } });
+
+      render(
+        <AuthProvider>
+          <TestAuthDisplay />
+        </AuthProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent(COMMUNITY_CHANGED_EVENT));
+      });
+
+      await waitFor(() => expect(vi.mocked(api.get).mock.calls.filter(([url]) => url === '/v2/users/me')).toHaveLength(2));
+      expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      expect(tokenManager.clearSession).not.toHaveBeenCalled();
+    });
+
+    it('signs out on a community change the server refuses', async () => {
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(true);
+      vi.mocked(api.get)
+        .mockResolvedValueOnce({ success: true, data: { id: 3, first_name: 'Reg', tenant_id: 2 } })
+        .mockResolvedValueOnce({ success: false, error: 'Tenant mismatch', code: 'TENANT_MISMATCH' });
+
+      render(
+        <AuthProvider>
+          <TestAuthDisplay />
+        </AuthProvider>
+      );
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'));
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent(COMMUNITY_CHANGED_EVENT));
+      });
+
+      await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('idle'));
       expect(tokenManager.clearSession).toHaveBeenCalledWith('test-session');
     });
   });

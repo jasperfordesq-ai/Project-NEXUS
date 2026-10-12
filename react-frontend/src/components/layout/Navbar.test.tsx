@@ -517,7 +517,10 @@ describe('Navbar', () => {
       openSpy.mockRestore();
     });
 
-    it('signs a logged-in member out before switching communities', async () => {
+    it('does not sign anyone out before switching: the destination community decides', async () => {
+      // Owner, 12 Oct 2026: the server decides who may be signed in where. The
+      // session travels with the switch; on arrival AuthContext asks the
+      // server, and an account that may not be there is signed out then.
       const user = userEvent.setup();
       const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
       const logoutSpy = vi.fn().mockResolvedValue(undefined);
@@ -547,8 +550,8 @@ describe('Navbar', () => {
       await user.click(screen.getByRole('button', { name: 'Switch community' }));
       await user.click(await screen.findByText('Cardiff Timebank'));
 
-      await waitFor(() => expect(logoutSpy).toHaveBeenCalledTimes(1));
-      expect(openSpy).toHaveBeenCalledWith('https://uk.timebank.global/cardiff-timebank-test', '_self');
+      await waitFor(() => expect(openSpy).toHaveBeenCalledWith('https://uk.timebank.global/cardiff-timebank-test', '_self'));
+      expect(logoutSpy).not.toHaveBeenCalled();
       openSpy.mockRestore();
     });
 
