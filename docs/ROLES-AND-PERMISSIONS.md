@@ -70,24 +70,42 @@ the rule above.
   `app/Http/Middleware/Authenticate.php` (`403 tenant_mismatch` /
   `token_tenant_mismatch`). A global super admin or god may enter any tenant for
   any request. A tenant super admin may enter a tenant **strictly below** its
-  home tenant, and only for administration requests — `/api/v2/admin/*` plus a
-  read-only `GET`/`HEAD /api/v2/users/me` — with a token issued for its home
+  home tenant, and only for management requests
+  (`CrossTenantEntry::isManagementRequest()`): `/api/v2/admin/*`; read-only
+  `GET`/`HEAD /api/v2/users/me` and the member-directory search
+  `GET /api/v2/users`; the event team (`GET`/`POST /api/v2/events/{id}/staff`,
+  `DELETE …/staff/{id}`); and the event organiser views that write nothing (an
+  explicit list, `EVENT_ORGANISER_ROUTES`) — with a token issued for its home
   tenant. Everything else (posting, messaging, wallet, registering for events,
-  the organiser tools under `/v2/events/*`) is still refused there, so a parent
-  tenant super admin administers a sub-community but never acts in it as a
-  member. Tenant admins, brokers and members are always pinned to their home
-  tenant. Admin controllers that load "the acting admin" now load that account
+  and most event organiser *changes*) is still refused there, so a parent tenant
+  super admin manages a sub-community but never acts in it as a member. Tenant
+  admins, brokers and members are always pinned to their home tenant. Admin controllers that load "the acting admin" now load that account
   by id and check it with `CrossTenantEntry`/`TenantAdminScope`; the members and
   records being administered stay confined to the request's tenant.
-- 🔴 **The website does not take a tenant super admin there yet.** Switching
-  community in the React app signs the account out (only a global super admin
-  keeps its session, and even that is dropped when the app loads the new
-  community's settings), refresh tokens work only in the tenant that issued
-  them, and the login page of a sub-community does not accept an account from
-  the community above it. Until that browser flow is built, the API rule above is
-  reachable from API clients and tests, and a tenant super admin administers a
-  sub-community through the super-admin panel (including "log in as" a member
-  there).
+- 🔴 **Why most event organiser changes are refused below.** About 45 event
+  tables record the acting account with a composite foreign key
+  `(<actor column>, tenant_id) → users(id, tenant_id)`, so the database refuses
+  to record an account from another community as having acted. Broadcasts,
+  tickets, registration forms and settings, safety requirements, agenda
+  sessions, templates, check-in devices, offline sync and even the analytics
+  view (it writes an access audit) are therefore not admitted, and cancelling or
+  rejecting can cascade into those tables. Widening the list needs a decision on
+  that schema rule. A global super admin or god acting in another community
+  meets the same constraint today.
+- **Signing in below.** Owner, 12 Oct 2026: "If a user tries to sign in to a
+  community that they're not allowed to sign in to, it should sign them out. If
+  they're allowed to sign in, they're allowed to sign in to manage those
+  communities." `CrossTenantEntry::mayEnter()` is the same rule without a
+  request: the global super admin anywhere, an admin-tier tenant super admin
+  strictly below its home tenant. The login page of a sub-community finds such
+  an account from above (login priority 4, after every existing match), and a
+  refresh token keeps working in a tenant the account may enter. The React app
+  no longer signs anyone out on a community switch, and no longer clears the
+  stored session when it boots a different community: it asks
+  `GET /v2/users/me` there (`COMMUNITY_CHANGED_EVENT`), and a `tenant_mismatch`
+  answer ends the session. A visiting tenant super admin (`isVisitingManager()`)
+  is sent to the admin panel, an event's page opens on its organiser page, and
+  that community's member terms and onboarding are not asked of it.
 
 ### Flags each level needs
 
