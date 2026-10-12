@@ -62,20 +62,32 @@ the rule above.
   (used by `EventPolicy` and other services to ask "is this actor an admin of
   this record's tenant?") applies the same rule: own tenant, plus descendants for
   a tenant super admin, failing closed on a missing path.
-- 🔴 **Ordinary admin screens (`/v2/admin/*` and the rest of the API): a tenant
-  super admin is still confined to its home tenant.** Before any controller or
-  policy runs, the HTTP layer pins every account that is not a global super admin
-  or god to the tenant its account belongs to:
-  `TenantContext::isTokenUserSuperAdmin()` refuses to switch tenant (by header,
-  token or slug) for anyone else, and `app/Http/Middleware/Authenticate.php`
-  answers `403 tenant_mismatch` / `token_tenant_mismatch` when the account's or
-  token's tenant differs from the request's tenant. In the ordinary API a tenant super
-  admin therefore always works in its home tenant's context, whatever
-  `TenantAdminScope` would allow. So to administer a
-  sub-community's members, listings or events, a tenant super admin today uses
-  the super-admin panel (including "log in as" a member there), not the ordinary
-  admin screens. Extending the ordinary admin screens to the tenants below is a
-  pending, owner-approved design item from the E-103 audit — it is not built.
+- **Ordinary admin screens (`/v2/admin/*`): applies the rule at the API.**
+  Before any controller runs, the HTTP layer decides whether a signed-in account
+  may work inside a tenant other than its own:
+  `app/Support/Authorization/CrossTenantEntry.php`, called from
+  `TenantContext` (tenant chosen by header, slug or custom domain) and
+  `app/Http/Middleware/Authenticate.php` (`403 tenant_mismatch` /
+  `token_tenant_mismatch`). A global super admin or god may enter any tenant for
+  any request. A tenant super admin may enter a tenant **strictly below** its
+  home tenant, and only for administration requests — `/api/v2/admin/*` plus a
+  read-only `GET`/`HEAD /api/v2/users/me` — with a token issued for its home
+  tenant. Everything else (posting, messaging, wallet, registering for events,
+  the organiser tools under `/v2/events/*`) is still refused there, so a parent
+  tenant super admin administers a sub-community but never acts in it as a
+  member. Tenant admins, brokers and members are always pinned to their home
+  tenant. Admin controllers that load "the acting admin" now load that account
+  by id and check it with `CrossTenantEntry`/`TenantAdminScope`; the members and
+  records being administered stay confined to the request's tenant.
+- 🔴 **The website does not take a tenant super admin there yet.** Switching
+  community in the React app signs the account out (only a global super admin
+  keeps its session, and even that is dropped when the app loads the new
+  community's settings), refresh tokens work only in the tenant that issued
+  them, and the login page of a sub-community does not accept an account from
+  the community above it. Until that browser flow is built, the API rule above is
+  reachable from API clients and tests, and a tenant super admin administers a
+  sub-community through the super-admin panel (including "log in as" a member
+  there).
 
 ### Flags each level needs
 

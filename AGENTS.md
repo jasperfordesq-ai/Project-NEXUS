@@ -677,11 +677,15 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   sibling, never another root. A tenant super admin on the master tenant (id 1)
   gets **no** special level — it reaches `/1/…` descendants only (which in
   production is most communities, because the panel creates them under tenant 1).
-- 🔴 **Where that rule is live today:** the super-admin panel and the
-  `TenantAdminScope` predicate. The ordinary admin screens still pin every
-  non-global account to its **home tenant** at the HTTP layer
-  (`TenantContext::isTokenUserSuperAdmin()`, `Authenticate` → `tenant_mismatch`).
-  Extending them below is a pending owner-approved design item (E-103), not built.
+- 🔴 **Where that rule is live:** the super-admin panel, the `TenantAdminScope`
+  predicate, and the HTTP layer (`app/Support/Authorization/CrossTenantEntry.php`,
+  called from `TenantContext` and `Authenticate`): a tenant super admin may enter
+  a tenant strictly below its home tenant **for `/api/v2/admin/*` (plus read-only
+  `GET /api/v2/users/me`) only** — every member-facing endpoint there still
+  answers `403 tenant_mismatch`. 🔴 The React app does not take it there yet
+  (community switch signs out; refresh tokens are home-tenant only; a
+  sub-community's login page refuses the parent's account) — see
+  `docs/ROLES-AND-PERMISSIONS.md`.
 - 🔴 God accounts need `is_super_admin` too: `BaseApiController::requireSuperAdmin()`
   (first check on every super-panel endpoint) does not read `is_god`, and
   `requireGod()` reads only the `is_god` column, not `role = 'god'`.
