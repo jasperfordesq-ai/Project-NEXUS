@@ -26,6 +26,7 @@ use App\Services\TenantSettingsService;
 use App\Services\TokenService;
 use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Tenancy\UserTenantResolver;
 use App\Support\UserDisplayName;
 
@@ -2244,8 +2245,13 @@ class AdminUsersController extends BaseApiController
      */
     private function canManageSecurityTarget(int $adminId, array $targetUser): bool
     {
-        $actor = User::findById($adminId, true);
-        if (!$actor) {
+        // The ACTOR is looked up by id alone: a tenant super admin working in a
+        // community below its own has its account row in its home community
+        // (owner rule, 12 Oct 2026). CrossTenantEntry decides whether that row
+        // may act here. The TARGET stays confined to this community (callers
+        // check $targetUser['tenant_id']).
+        $actor = User::findByIdGlobal($adminId);
+        if (!$actor || !CrossTenantEntry::actorMayActIn($actor, (int) $this->getTenantId())) {
             return false;
         }
 

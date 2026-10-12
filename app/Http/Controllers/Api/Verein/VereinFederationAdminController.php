@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Models\User;
 use App\Services\CaringCommunity\VereinMemberImportService;
 use App\Services\Verein\VereinFederationService;
+use App\Support\Authorization\CrossTenantEntry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -124,10 +125,16 @@ class VereinFederationAdminController extends BaseApiController
     private function canAdministerVerein(int $userId, int $organizationId): bool
     {
         $tenantId = TenantContext::getId();
-        $actor = User::query()
-            ->where('tenant_id', $tenantId)
+        // The ACTOR is looked up by id alone and then admitted by
+        // CrossTenantEntry: a tenant super admin working in a community below
+        // its own has its account row in its home community (owner rule,
+        // 12 Oct 2026).
+        $actor = User::withoutGlobalScopes()
             ->where('id', $userId)
-            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            ->first(CrossTenantEntry::actorColumns());
+        if ($actor !== null && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            $actor = null;
+        }
 
         if ($actor && (
             in_array((string) $actor->role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)

@@ -12,6 +12,7 @@ use App\I18n\LocaleContext;
 use App\Services\EmailDispatchService;
 use App\Services\GuardianArrangementService;
 use App\Services\SafeguardingSupportNeedsService;
+use App\Support\Authorization\CrossTenantEntry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -1501,10 +1502,15 @@ class AdminSafeguardingController extends BaseApiController
         $userId = $this->requireAuth();
         $tenantId = $this->getTenantId();
 
+        // The ACTOR is looked up by id alone and then admitted by
+        // CrossTenantEntry: a tenant super admin working in a community below its
+        // own has its account row in its home community (owner rule, 12 Oct 2026).
         $user = DB::table('users')
             ->where('id', $userId)
-            ->where('tenant_id', $tenantId)
-            ->first(['role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+            ->first(CrossTenantEntry::actorColumns());
+        if ($user !== null && ! CrossTenantEntry::actorMayActIn($user, (int) $tenantId)) {
+            $user = null;
+        }
 
         if ($user) {
             $role = (string) ($user->role ?? 'member');

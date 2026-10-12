@@ -23,6 +23,7 @@ use App\Services\EventNotificationService;
 use App\Services\EventPublicationWorkflowService;
 use App\Services\EventService;
 use App\Services\NotificationDispatcher;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Events\EventLifecycleCompatibility;
 use App\Support\Events\EventLifecycleTransitionResult;
 use Illuminate\Database\Query\Builder;
@@ -624,11 +625,15 @@ class AdminEventsController extends BaseApiController
     {
         $adminId = $this->requireAdmin();
         $tenantId = $this->getTenantId();
-        /** @var User $actor */
-        $actor = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->whereKey($adminId)
-            ->firstOrFail();
+        // The ACTOR is looked up by id alone: a tenant super admin working in a
+        // community below its own has its account row in its home community
+        // (owner rule, 12 Oct 2026). CrossTenantEntry decides whether that row may
+        // act here; the event below stays confined to this community.
+        /** @var User|null $actor */
+        $actor = User::withoutGlobalScopes()->whereKey($adminId)->first();
+        if ($actor === null || ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            throw (new \Illuminate\Database\Eloquent\ModelNotFoundException())->setModel(User::class, [$adminId]);
+        }
         $snapshot = Event::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($eventId)
