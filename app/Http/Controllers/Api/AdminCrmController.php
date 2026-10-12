@@ -601,7 +601,7 @@ class AdminCrmController extends BaseApiController
         $tenantId = TenantContext::getId();
 
         // F-467: admin authority is all FOUR boolean flags as well as the role
-        // string — a network administrator is granted is_tenant_super_admin and
+        // string — a tenant super admin is granted is_tenant_super_admin and
         // no role at all (AdminTier, docs/ROLES-AND-PERMISSIONS.md). Only
         // is_admin was read here, so a real administrator was missing from the
         // roster and no work could be routed to them. Brokers and coordinators

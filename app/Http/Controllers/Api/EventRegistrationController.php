@@ -789,8 +789,8 @@ final class EventRegistrationController extends BaseApiController
      *
      * Auth is GLOBAL; only resources are tenant-scoped. This lookup carried
      * `AND tenant_id = ?` against the current tenant and therefore refused
-     * every actor whose account row lives on another tenant — network admins,
-     * platform admins, and an event's own cross-tenant organiser were locked
+     * every actor whose account row lives on another tenant — tenant super admins,
+     * global super admins, and an event's own cross-tenant organiser were locked
      * out of approve / reject / cancel, the bulk people endpoint, the roster
      * and the participation history. Same bug family as 5373940c8 and
      * 766b867d2. There is no IDOR risk: the id comes from requireUserId().

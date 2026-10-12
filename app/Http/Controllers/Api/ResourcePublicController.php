@@ -391,7 +391,7 @@ class ResourcePublicController extends BaseApiController
         $isOwner = (int) $resource->user_id === $userId;
         $user = \Illuminate\Support\Facades\Auth::user();
         // Admin authority is the four boolean flags as well as the role string
-        // — a network administrator holds the flag alone — so AdminTier is the
+        // — a tenant super admin holds the flag alone — so AdminTier is the
         // only safe predicate. It still refuses broker and coordinator.
         $isAdmin = AdminTier::allows($user);
 
@@ -467,7 +467,7 @@ class ResourcePublicController extends BaseApiController
         }
 
         // Check ownership or admin authority. AdminTier honours the four
-        // boolean flags as well as the role string — a network administrator
+        // boolean flags as well as the role string — a tenant super admin
         // holds the flag alone — and still refuses broker and coordinator.
         $isOwner = (int) $resource->user_id === $userId;
         $user = \Illuminate\Support\Facades\Auth::user();

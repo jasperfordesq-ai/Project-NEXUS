@@ -50,7 +50,7 @@ class KnowledgeBaseController extends BaseApiController
         }
 
         // Admins can see unpublished articles. Admin authority is the four
-        // boolean flags as well as the role string — a network administrator
+        // boolean flags as well as the role string — a tenant super admin
         // is granted the flag alone — so AdminTier is the only safe predicate.
         if ($this->queryBool('include_unpublished') && $userId) {
             $user = \Illuminate\Support\Facades\Auth::user();

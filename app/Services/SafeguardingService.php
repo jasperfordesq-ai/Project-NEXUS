@@ -56,9 +56,9 @@ class SafeguardingService
      * AdminTier::allows().
      *
      * The three callers used to list role strings alone. Admin authority is the
-     * four boolean flags as well as the role string — a network administrator
+     * four boolean flags as well as the role string — a tenant super admin
      * is granted the flag and no role (AdminTier, docs/ROLES-AND-PERMISSIONS.md)
-     * — so without the flags a real network administrator could not be given a
+     * — so without the flags a real tenant super admin could not be given a
      * safeguarding case at all, and the incident was left with nobody
      * responsible for it. Ordinary members remain excluded.
      *

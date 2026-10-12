@@ -92,7 +92,7 @@ class VolunteerCheckInController extends BaseApiController
             }
 
             // Admin authority is the four boolean flags as well as the role
-            // string — a network administrator holds is_tenant_super_admin and
+            // string — a tenant super admin holds is_tenant_super_admin and
             // role 'member' — so the flags have to be selected and AdminTier
             // asked. It still refuses broker and coordinator.
             $roleRow = DB::selectOne(

@@ -334,8 +334,9 @@ class EventPolicy
         // Auth is GLOBAL; only resources are tenant-scoped. The EVENT must
         // belong to the current tenant, but the ACTING user's home tenant must
         // not be compared against it: that refused organisers and admins whose
-        // account row lives on another tenant (network admins, anyone acting on
-        // a sub-tenant) — including the creator of the very event being checked.
+        // account row lives on another tenant (global super admins, tenant
+        // super admins acting on a tenant below their own) — including the
+        // creator of the very event being checked.
         if ($tenantId === null || $tenantId <= 0
             || (int) $user->getKey() <= 0
             || (int) $event->getKey() <= 0

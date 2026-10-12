@@ -597,7 +597,7 @@ class SafeguardingService
     {
         // F-213: alert the people who can actually open reports —
         // AdminCaringCommunityController::guardSafeguarding('view') admits
-        // admins, tenant admins, network admins, brokers and coordinators — plus
+        // admins, tenant admins, tenant super admins, brokers and coordinators — plus
         // anyone given `safeguarding.view` or `.manage` individually. The individual grant
         // alone matched nobody in practice (O-040), so reports alerted no one.
         $ids = [];

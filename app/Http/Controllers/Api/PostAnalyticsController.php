@@ -45,7 +45,7 @@ class PostAnalyticsController extends BaseApiController
 
         // Check ownership or admin
         // F-466: admin authority is the four boolean flags as well as the role
-        // string — a network administrator is granted the flag alone — so
+        // string — a tenant super admin is granted the flag alone — so
         // AdminTier is the only safe predicate. It still refuses broker and
         // coordinator.
         $user = \Illuminate\Support\Facades\Auth::user();

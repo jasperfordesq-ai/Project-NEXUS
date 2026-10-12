@@ -185,7 +185,7 @@ class EmergencyAlertController extends BaseApiController
     private function hasAnnouncerAccess(int $userId, int $tenantId): bool
     {
         // F-466: admin authority is the four boolean flags as well as the role
-        // string — a network administrator is granted the flag alone — so
+        // string — a tenant super admin is granted the flag alone — so
         // AdminTier is the only safe predicate. These routes sit inside the
         // EnsureIsAdmin group, which already uses AdminTier, so without this the
         // account passed the gate at the door and was refused here. AdminTier

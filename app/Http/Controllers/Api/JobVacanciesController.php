@@ -708,7 +708,7 @@ class JobVacanciesController extends BaseApiController
 
         if (!$isApplicant && !$isPoster) {
             // F-466: admin authority is the four boolean flags as well as the
-            // role string — a network administrator is granted the flag alone —
+            // role string — a tenant super admin is granted the flag alone —
             // so AdminTier is the only safe predicate, and the flag columns
             // have to be selected for it to read. The file's two other admin
             // helpers (canManageVacancy, canSearchTalent) already did both.

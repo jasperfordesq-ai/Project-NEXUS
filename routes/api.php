@@ -3230,17 +3230,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 | Super panel — TIER A: subtree-scoped
 |--------------------------------------------------------------------------
 |
-| Reachable by a platform super-admin (whole installation) AND by the
-| super-admin of a tenant that has children, confined to its OWN tenant.
+| Reachable by a global super admin or god (whole installation) AND by a
+| tenant super admin (is_tenant_super_admin) on a tenant that may have
+| children, confined to its own tenant PLUS every tenant below it.
 |
-| 🔴 Owner decision, 11 October 2026: a tenant super-admin does not act outside
-| its home community. Until then it was confined to its own tenant PLUS its
-| descendants, and a tenant super-admin on the master tenant was platform-wide.
-| Both are gone: canAccessTenant() admits only the caller's own tenant for
-| anyone but the platform owner, canManageTenant() refuses them everywhere, and
-| creating/moving a community or moving a member between communities requires
-| SuperPanelAccess::hasPlatformReach(). Pinned by
-| tests/Laravel/Feature/SuperAdmin/TenantSuperAdminPanelHomeCommunityTest.php.
+| 🔴 Owner rule, 12 October 2026: "A tenant super admin can administer all
+| communities below it in the hierarchy, but not above it." Below = a
+| trailing-slash-anchored prefix match on tenants.path; never a parent, a
+| sibling or another root. A tenant super admin on the master tenant (id 1) is
+| no exception — it reaches the /1/ subtree and is never `master`. (Until
+| 11 October a tenant-1 tenant super admin was platform-wide; on 11 October the
+| reach below was removed; the 12 October rule supersedes both.) Pinned by
+| tests/Laravel/Feature/SuperAdmin/TenantSuperAdminPanelSubtreeTest.php.
 |
 | 🔴 EVERY endpoint in this group must already scope itself, via
 | SuperPanelAccess::canAccessTenant() or SuperPanelAccess::subtreeFilter().
@@ -3253,8 +3254,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 |
 | 🔴 Do NOT add an endpoint here for convenience. Several endpoints in tier B
 | read a tenant id straight from the request body and check only that the caller
-| is a super-admin — moving one of those here would let a branch admin act on
-| another branch. Harden first, then move.
+| is a super-admin — moving one of those here would let a tenant super admin
+| act on another branch. Harden first, then move.
 */
 Route::middleware(['auth:sanctum', 'super-panel'])->group(function () {
 
@@ -3285,14 +3286,14 @@ Route::post('/v2/admin/super/bulk/update-tenants', [\App\Http\Controllers\Api\Ad
 
 /*
  * DEACTIVATE a tenant. Reversible — it sets is_active = 0, and the reactivate
- * endpoint above is its mirror. Admitted here on 2026-08-06 so the super-admin
- * of a network can retire one of its own communities without the platform owner
+ * endpoint above is its mirror. Admitted here on 2026-08-06 so a tenant super
+ * admin can retire a community below its own without the platform owner
  * doing it for them; until then they could reactivate a community but not
  * deactivate one, which was an accident of tiering rather than a decision.
  *
  * 🔴 Guarded by canManageTenant(), which — unlike canAccessTenant() — refuses
- * the caller's OWN tenant. A branch admin may retire a community BENEATH them,
- * never the one they operate from. The service refuses the master tenant and
+ * the caller's OWN tenant. A tenant super admin may retire a community BELOW it,
+ * never the one it operates from. The service refuses the master tenant and
  * any tenant that still has active children.
  *
  * The irreversible PURGE stays in tier B and is god-only. Deactivation can be
@@ -3314,7 +3315,7 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 | Super panel — TIER B: PLATFORM ONLY
 |--------------------------------------------------------------------------
 |
-| Platform super-admins and god only. EnsureIsSuperAdmin explicitly refuses
+| Global super admins and god only. EnsureIsSuperAdmin explicitly refuses
 | is_tenant_super_admin, and that is the point: the powers below are
 | installation-wide, not branch-wide.
 |
@@ -3322,12 +3323,12 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 |
 | 1. The power itself is platform-wide — platform revenue and pricing, the
 |    external-federation kill switches, platform rollout capabilities, and
-|    granting PLATFORM super-admin (a branch admin who could mint one would
+|    granting global super admin (a tenant super admin who could mint one would
 |    escape their own branch entirely).
 |
-| 2. It is NOT SAFE for a branch admin yet. Verified 2026-08-05: the billing
+| 2. It is NOT SAFE for a tenant super admin yet. Verified 2026-08-05: the billing
 |    endpoints take a tenant id straight from the request body and check only
-|    requireSuperAdmin() — no canAccessTenant(). A branch admin admitted here
+|    requireSuperAdmin() — no canAccessTenant(). A tenant super admin admitted here
 |    could set another branch billing plan. They need that check adding before
 |    they could ever move to tier A.
 |
@@ -3336,9 +3337,9 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 |
 | 🔴 Tenant DELETE moved to tier A on 2026-08-06 (owner's decision). That was a
 | conscious change, and it is defensible only because "delete" here DEACTIVATES
-| — is_active = 0, mirrored by the reactivate endpoint a branch admin already
-| had. It is guarded by canManageTenant(), so a branch admin can retire a
-| community beneath them but never the one they operate from. Do not read that
+| — is_active = 0, mirrored by the reactivate endpoint a tenant super admin already
+| had. It is guarded by canManageTenant(), so a tenant super admin can retire a
+| community below it but never the one it operates from. Do not read that
 | move as a precedent for the purge below.
 */
 Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
