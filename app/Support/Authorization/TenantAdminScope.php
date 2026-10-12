@@ -140,9 +140,13 @@ final class TenantAdminScope
      * to end in exactly one '/', so the prefix test is anchored: '/1/20/' does
      * not start with '/1/2/'. Fails closed on a missing, empty or root-only path,
      * because str_starts_with($x, '/') is TRUE for every tenant and an empty
-     * prefix would otherwise admit everything.
+     * prefix would otherwise admit everything. A tenant is never its own
+     * descendant.
+     *
+     * Public so the request-level gate (CrossTenantEntry) uses this exact test
+     * rather than a second copy of it.
      */
-    private static function isDescendant(int $ancestorTenantId, int $tenantId): bool
+    public static function isDescendant(int $ancestorTenantId, int $tenantId): bool
     {
         try {
             $rows = DB::table('tenants')

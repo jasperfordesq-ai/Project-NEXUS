@@ -8,6 +8,7 @@ namespace App\Http\Middleware;
 
 use App\Core\ApiErrorCodes;
 use App\Services\TokenService;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Authorization\MinimumAge;
 use Closure;
 use Illuminate\Http\Request;
@@ -51,10 +52,15 @@ class Authenticate
                 // Validate that the authenticated user belongs to the resolved tenant.
                 // Without this check, Sanctum tokens work across any tenant since they
                 // bypass the JWT tenant_id mismatch detection in TenantContext::resolve().
+                //
+                // Exceptions, both decided by CrossTenantEntry (the same rule
+                // TenantContext applies to a bearer token): the platform owner
+                // in any community; a tenant super admin, on an administration
+                // request, in a community below its own (owner rule, 12 Oct 2026).
                 $user = $guardInstance->user();
                 $tenantId = \App\Core\TenantContext::getId();
                 if ($user && $tenantId && (int) $user->tenant_id !== $tenantId) {
-                    if (!$user->is_super_admin && !$user->is_god && !in_array($user->role ?? '', ['super_admin', 'god'], true)) {
+                    if (!CrossTenantEntry::allowsForRequest($user, (int) $tenantId, $request)) {
                         \Illuminate\Support\Facades\Log::debug('[Auth] Sanctum user tenant mismatch', [
                             'user_id' => $user->id,
                             'user_tenant' => $user->tenant_id,
@@ -80,7 +86,13 @@ class Authenticate
 
                     if ($tokenTenantId !== null && $currentTenantId !== null
                         && (int) $tokenTenantId !== (int) $currentTenantId) {
-                        if (!$user->is_super_admin && !$user->is_god && !in_array($user->role ?? '', ['super_admin', 'god'], true)) {
+                        // Below the platform tier the token must belong to the
+                        // account's home community before any crossing is
+                        // considered (mirrors TenantContext::tokenUserMayEnter()).
+                        $mayCross = CrossTenantEntry::isPlatformOwner($user)
+                            || ((int) $tokenTenantId === (int) $user->tenant_id
+                                && CrossTenantEntry::allowsForRequest($user, (int) $currentTenantId, $request));
+                        if (!$mayCross) {
                             \Illuminate\Support\Facades\Log::debug('[Auth] Sanctum token tenant mismatch', [
                                 'user_id'        => $user->id,
                                 'token_tenant'   => $tokenTenantId,
@@ -257,9 +269,12 @@ class Authenticate
 
             $tenantId = \App\Core\TenantContext::getId();
             if ($tenantId && (int) $eloquentUser->tenant_id !== $tenantId) {
-                // Allow platform super admins to access any tenant. Tenant
-                // super-admins are still scoped to their own tenant.
-                if (!$eloquentUser->is_super_admin && !$eloquentUser->is_god && !in_array($eloquentUser->role ?? '', ['super_admin', 'god'], true)) {
+                // The platform owner may work in any community. A tenant super
+                // admin may work in a community below its own, on an
+                // administration request only (owner rule, 12 Oct 2026). Decided
+                // by CrossTenantEntry, the same rule TenantContext applied to
+                // this token a moment earlier.
+                if (!CrossTenantEntry::allowsForRequest($eloquentUser, (int) $tenantId, $request)) {
                     \Illuminate\Support\Facades\Log::debug('[Auth] User tenant mismatch', ['user_id' => $userId, 'user_tenant' => $eloquentUser->tenant_id, 'request_tenant' => $tenantId]);
                     return false;
                 }

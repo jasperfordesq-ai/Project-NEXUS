@@ -186,7 +186,7 @@ class TenantContext
                     if ($childRow && $isDescendant) {
                         $tokenTenantId = self::extractTenantIdFromBearerToken();
                         if ($tokenTenantId !== null && $tokenTenantId !== (int) $childRow->id
-                            && !self::isTokenUserSuperAdmin()) {
+                            && !self::tokenUserMayEnter((int) $childRow->id)) {
                             return self::respondWithTenantMismatchError();
                         }
                         self::$headerTenantId = (int) $childRow->id;
@@ -249,14 +249,14 @@ class TenantContext
             if ($tokenTenantId !== null) {
                 self::$tokenTenantId = $tokenTenantId;
 
-                // Check for mismatch: header and token must agree if both present
-                // EXCEPTION: Super admins can access any tenant (cross-tenant access)
+                // Check for mismatch: header and token must agree if both present.
+                // EXCEPTIONS (CrossTenantEntry): the platform owner, anywhere;
+                // a tenant super admin, on an administration request, into a
+                // community below its own.
                 if ($tokenTenantId !== $headerTenantId) {
-                    // Check if user is a super admin before rejecting
-                    if (!self::isTokenUserSuperAdmin()) {
+                    if (!self::tokenUserMayEnter($headerTenantId)) {
                         return self::respondWithTenantMismatchError();
                     }
-                    // Super admin accessing different tenant - this is allowed
                 }
             }
 
@@ -291,7 +291,7 @@ class TenantContext
                 $tokenTenantId = self::extractTenantIdFromBearerToken();
                 if ($tokenTenantId !== null) {
                     self::$tokenTenantId = $tokenTenantId;
-                    if ($tokenTenantId !== $slugTenantId && !self::isTokenUserSuperAdmin()) {
+                    if ($tokenTenantId !== $slugTenantId && !self::tokenUserMayEnter($slugTenantId)) {
                         return self::respondWithTenantMismatchError();
                     }
                 }
@@ -1107,12 +1107,20 @@ class TenantContext
     }
 
     /**
-     * Check if the user from the Bearer token is a super admin
-     * Super admins can access any tenant regardless of their home tenant
+     * May the user named by the Bearer token have this request resolved to
+     * $targetTenantId, a community other than the one the token names?
      *
-     * @return bool True if user is a super admin
+     * The decision is App\Support\Authorization\CrossTenantEntry's, the same
+     * one the Authenticate middleware takes afterwards: the platform owner may
+     * enter any community on any request; a tenant super admin may enter a
+     * community strictly below its home community, on an administration request
+     * only (owner rule, 12 Oct 2026). Everyone else is refused.
+     *
+     * Until 12 October 2026 this was isTokenUserSuperAdmin(), which admitted the
+     * platform owner only — so a parent community's tenant super admin could
+     * not use the ordinary admin screens of the communities below it.
      */
-    private static function isTokenUserSuperAdmin(): bool
+    private static function tokenUserMayEnter(int $targetTenantId): bool
     {
         // Get Authorization header
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -1130,18 +1138,29 @@ class TenantContext
                 $payload = $tokenService->validateToken($token);
                 $userId = $payload['user_id'] ?? $payload['sub'] ?? null;
                 if ($payload && $userId) {
-                    // Look up user to check super admin status
+                    // Look up the account behind the signed token. Not tenant-scoped:
+                    // the account lives in its home community, which is exactly the
+                    // community this request is NOT resolving to.
                     $userRow = DB::table('users')
                         ->where('id', $userId)
-                        ->first(['is_super_admin', 'is_god', 'is_tenant_super_admin', 'role']);
+                        ->first(\App\Support\Authorization\CrossTenantEntry::USER_COLUMNS);
 
                     if ($userRow) {
-                        // SECURITY: Only actual super admins can access cross-tenant data.
-                        // Regular admins (role=admin, role=tenant_admin) must NOT be allowed
-                        // to spoof X-Tenant-ID headers to access other tenants' data.
-                        return !empty($userRow->is_super_admin)
-                            || !empty($userRow->is_god)
-                            || in_array(($userRow->role ?? ''), ['super_admin', 'god'], true);
+                        // SECURITY: regular admins (role=admin, role=tenant_admin),
+                        // brokers and members must NOT be able to spoof X-Tenant-ID /
+                        // X-Tenant-Slug to reach another community's data.
+                        if (\App\Support\Authorization\CrossTenantEntry::isPlatformOwner($userRow)) {
+                            return true;
+                        }
+                        // Below the platform tier the subtree is measured from the
+                        // account's home community, so the token must have been
+                        // minted for that home: a token left over from before the
+                        // account was moved never reaches anything new.
+                        if ((int) ($payload['tenant_id'] ?? 0) !== (int) ($userRow->tenant_id ?? 0)) {
+                            return false;
+                        }
+
+                        return \App\Support\Authorization\CrossTenantEntry::allowsForRequest($userRow, $targetTenantId);
                     }
                 }
             }
