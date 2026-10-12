@@ -394,14 +394,14 @@ describe('AuthContext', () => {
     });
 
     /*
-     * 🔴 Regression, reported 2026-08-05: the super-admin of a branch community
+     * 🔴 Regression, reported 2026-08-05: a tenant super admin
      * saw no super-panel entry in the admin sidebar after logging in, and it
      * appeared only after a full page refresh.
      *
      * Cause: the login response carries a MINIMAL user record with no
      * `super_panel_level`, and `superPanelLevel()` reads an absent field as a
      * pre-field payload and falls back to the platform flags — which resolve a
-     * branch super-admin to 'none'. The refresh "fixed" it because checkAuth()
+     * tenant super admin to 'none'. The refresh "fixed" it because checkAuth()
      * re-hydrates from /me. Assert the hydration, not the sidebar: this context
      * is where the thin record used to survive the whole session.
      */

@@ -492,12 +492,21 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     closeAllDropdowns();
     // Switching to a different community must start a clean session. The access
     // token is scoped to the current tenant, and the API rejects it with 403
-    // `tenant_mismatch` against any other community (see Authenticate.php), so a
-    // logged-in member who switches would otherwise land in a broken,
+    // `tenant_mismatch` against any other community (see CrossTenantEntry.php),
+    // so a logged-in member who switches would otherwise land in a broken,
     // half-authenticated state — errors on every tenant-scoped request. Sign out
     // first so the destination boots logged-out and the user re-authenticates
     // against the new community. Platform super admins can legitimately cross
     // tenants with their token, so they keep their session.
+    //
+    // A tenant super admin is still signed out here, even though the server now
+    // admits its token to the ADMIN requests of communities below its own
+    // (owner rule, 12 Oct 2026). Every member page of the destination would
+    // still 403, the switcher items come from the anonymous bootstrap call so
+    // the server cannot say per item whether the session would survive, and
+    // TenantContext's loadTenant() clears the stored tokens when the community
+    // it boots differs from the stored one. Keeping the session would only
+    // produce the half-authenticated state described above.
     if (isAuthenticated && !isPlatformSuperAdminUser(user)) {
       try {
         await logout();

@@ -83,16 +83,21 @@ export function isSuperAdminUser(user: UserLike): boolean {
 }
 
 /**
- * Platform super admin — the only role permitted to cross tenants with a
- * single access token. This MUST mirror the server-side cross-tenant rule in
- * `app/Http/Middleware/Authenticate.php` (both the Sanctum and legacy-JWT
- * branches): a token whose user's `tenant_id` differs from the resolved
- * tenant is rejected with 403 `tenant_mismatch` UNLESS the user is
- * `is_super_admin`, `is_god`, or has role `super_admin`/`god`.
+ * Platform super admin — the only role whose access token works in EVERY
+ * community, for EVERY request. Mirrors the platform-owner arm of the
+ * server-side rule (`app/Support/Authorization/CrossTenantEntry.php`, applied
+ * by `TenantContext` and `Authenticate.php`): a request whose user's
+ * `tenant_id` differs from the resolved community is refused with 403
+ * `tenant_mismatch` unless the user is `is_super_admin`, `is_god`, or has role
+ * `super_admin`/`god` — or the narrower tenant-super-admin case below.
  *
- * Deliberately EXCLUDES `is_tenant_super_admin` — a tenant super-admin is
- * scoped to their own tenant and hits the same 403 on any other community,
- * so they must be treated like any other user when switching communities.
+ * Deliberately EXCLUDES `is_tenant_super_admin`. Since 12 October 2026 a tenant
+ * super admin's token is also accepted in a community BELOW its own, but only
+ * for administration requests (`/api/v2/admin/*` and `GET /api/v2/users/me`);
+ * every member request there (posting, messaging, transfers, event sign-up)
+ * still gets the 403, and any community above or beside its own refuses
+ * everything. That is not "can cross tenants", so it is not this predicate.
+ * Which communities are below is the server's decision — never infer it here.
  */
 export function isPlatformSuperAdminUser(user: UserLike): boolean {
   const role = userRole(user);

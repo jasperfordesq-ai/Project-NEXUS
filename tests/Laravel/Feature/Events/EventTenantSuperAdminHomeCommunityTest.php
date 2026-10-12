@@ -52,11 +52,12 @@ use Tests\Laravel\TestCase;
  * super admin on the event — so "allowed" cannot mean that the fixture lets
  * everyone through.
  *
- * Services are driven directly rather than over HTTP: Authenticate/TenantContext
- * still pin a non-platform request to the actor's home community (403
- * tenant_mismatch) — whether HTTP should follow this rule is a separate, later
- * decision — so an HTTP test would stop there and prove nothing about the
- * service-layer authority decision this pins.
+ * Services are driven directly rather than over HTTP, so this pins the
+ * service-layer authority decision on its own. Over HTTP, a tenant super admin
+ * reaches a community below its own only on ADMINISTRATION requests
+ * (/api/v2/admin/*); member endpoints such as /api/v2/events/* still answer
+ * 403 tenant mismatch at the door (CrossTenantEntry, since 12 Oct 2026 — see
+ * tests/Laravel/Feature/Security/TenantSuperAdminCrossTenantEntryTest.php).
  */
 final class EventTenantSuperAdminHomeCommunityTest extends TestCase
 {

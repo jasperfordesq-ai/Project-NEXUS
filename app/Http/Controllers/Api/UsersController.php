@@ -74,9 +74,11 @@ class UsersController extends BaseApiController
          * alone would offer a link that 403s, which is worse than no link.
          *
          * 'master'   — whole installation (the platform owner only)
-         * 'regional' — own community ONLY (since 11 Oct 2026; it was own tenant
-         *              plus descendants — the owner decided a tenant super admin
-         *              does not act outside its home community)
+         * 'regional' — a tenant super admin: its own community and every
+         *              community below it, never one above or beside it
+         *              (owner rule, 12 Oct 2026 — this read "own community
+         *              ONLY" for one day, 11 Oct, under a reading the owner
+         *              then reversed)
          * 'none'     — no super panel; hide the entry entirely
          */
         try {
