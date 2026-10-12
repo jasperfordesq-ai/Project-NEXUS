@@ -1,6 +1,6 @@
 # Roles & Permissions
 
-Last reviewed: 2026-08-04
+Last reviewed: 2026-10-12
 
 This page describes the authorisation model as it exists in code. It was written
 by reading `app/Support/Authorization/AdminTier.php`, the `app/Http/Middleware/EnsureIs*.php`
@@ -15,15 +15,84 @@ below maps the common UK terms onto them.
 
 ---
 
-## The five tiers
+## The access levels
 
-| Common term | NEXUS role / flag | Gate |
-|---|---|---|
-| member | `role = 'member'` | — (default) |
-| broker / coordinator | `role = 'broker'`, `role = 'coordinator'` | `app/Http/Middleware/EnsureIsBrokerOrAdmin.php` |
-| administrator | `role = 'admin'`, `role = 'tenant_admin'`, `is_admin` | `app/Http/Middleware/EnsureIsAdmin.php` |
-| network administrator | `is_tenant_super_admin` (+ Hub/sub-tenant hierarchy) | `EnsureIsAdmin`, scoped by `app/Services/TenantHierarchyService.php` |
-| platform administrator | `is_super_admin`, `role = 'god'` | `app/Http/Middleware/EnsureIsSuperAdmin.php` |
+These are the owner's names for the levels (12 October 2026). Use them. The
+older name "network administrator" for a tenant super admin is retired — it
+appears only in historical records and in the names of some older test files.
+
+| Level | What it reaches | Flags / role on `users` | Gate |
+|---|---|---|---|
+| member | own content | `role = 'member'` | — (default) |
+| broker / coordinator | operational work in **own tenant** | `role = 'broker'` / `'coordinator'` | `app/Http/Middleware/EnsureIsBrokerOrAdmin.php` |
+| tenant admin | **own tenant** | `role = 'admin'` (or `'tenant_admin'`), or legacy `is_admin = 1` | `app/Http/Middleware/EnsureIsAdmin.php` |
+| tenant super admin | **own tenant + every tenant below it** in the hierarchy | `is_tenant_super_admin = 1`, on a tenant with `allows_subtenants = 1` | `EnsureIsAdmin`; super-admin panel tier A (`EnsureSuperPanelAccess`) |
+| global super admin | **every tenant** (platform-wide) | `is_super_admin = 1` (or `role = 'super_admin'`) | `app/Http/Middleware/EnsureIsSuperAdmin.php` |
+| global super admin with "god" status | every tenant, plus the god-only actions | `is_god = 1` **and** `is_super_admin = 1` (see below) | `EnsureIsSuperAdmin`, plus `requireGod()` in `AdminSuperController` |
+
+### The reach rule (owner, 12 October 2026)
+
+> "A tenant super admin can administer all communities below it in the
+> hierarchy, but not above it."
+
+- A **tenant admin** acts on its own tenant only.
+- A **tenant super admin** acts on its own tenant and on every tenant **below**
+  it — children, grandchildren and so on. Never on a tenant above it (its
+  parent), never on a tenant beside it (a sibling), never on an unrelated tree.
+  "Below" is a prefix match on the materialised path `tenants.path`, anchored on
+  the trailing slash so `/1/4/1/` can never match `/1/4/11/`.
+- 🔴 **There is no special level for a tenant super admin on the master tenant
+  (id 1).** It follows the same rule: it reaches tenants whose path is under
+  `/1/`, and not a separate root such as `/3/`. Be aware that the super-admin
+  panel creates new communities beneath tenant 1, so in production a tenant
+  super admin on tenant 1 does reach most communities. Grant it there sparingly.
+- A **global super admin** and a **god** account act on every tenant.
+
+Until 12 October 2026 two other readings applied, and older code comments,
+register entries and tests may still describe them: before 11 October a tenant
+super admin on tenant 1 was treated as platform-wide (`master`); on 11 October
+the reach below was removed entirely (own tenant only). Both are superseded by
+the rule above.
+
+### Where the rule is applied today — and where it is not yet
+
+- **Super-admin panel:** applies the rule. A tenant super admin sees and acts on
+  its own tenant and its sub-tenants (see "Hierarchy scoping" below).
+- **The per-record predicate** `app/Support/Authorization/TenantAdminScope.php`
+  (used by `EventPolicy` and other services to ask "is this actor an admin of
+  this record's tenant?") applies the same rule: own tenant, plus descendants for
+  a tenant super admin, failing closed on a missing path.
+- 🔴 **Ordinary admin screens (`/v2/admin/*` and the rest of the API): a tenant
+  super admin is still confined to its home tenant.** Before any controller or
+  policy runs, the HTTP layer pins every account that is not a global super admin
+  or god to the tenant its account belongs to:
+  `TenantContext::isTokenUserSuperAdmin()` refuses to switch tenant (by header,
+  token or slug) for anyone else, and `app/Http/Middleware/Authenticate.php`
+  answers `403 tenant_mismatch` / `token_tenant_mismatch` when the account's or
+  token's tenant differs from the request's tenant. In the ordinary API a tenant super
+  admin therefore always works in its home tenant's context, whatever
+  `TenantAdminScope` would allow. So to administer a
+  sub-community's members, listings or events, a tenant super admin today uses
+  the super-admin panel (including "log in as" a member there), not the ordinary
+  admin screens. Extending the ordinary admin screens to the tenants below is a
+  pending, owner-approved design item from the E-103 audit — it is not built.
+
+### Flags each level needs
+
+- **Tenant admin:** `role = 'admin'`. `is_admin` is legacy (see caveats) but is
+  still honoured.
+- **Tenant super admin:** `is_tenant_super_admin = 1`. The flag alone is enough —
+  `AdminTier` accepts it without an admin role string, and that is how the grant
+  endpoint writes it. It can only be granted on a tenant with
+  `allows_subtenants = 1`.
+- **Global super admin:** `is_super_admin = 1` (the god-only grant endpoint writes
+  the flag only; `role = 'super_admin'` is also honoured).
+- **God:** `is_god = 1` **and** `is_super_admin = 1`. 🔴 `is_god` on its own is
+  not enough everywhere: the shared `BaseApiController::requireSuperAdmin()` —
+  the first check on every super-admin panel endpoint — accepts
+  `is_super_admin`, `is_tenant_super_admin` or a `super_admin`/`god` role
+  string, but **not** the `is_god` flag. Conversely `requireGod()` reads only
+  the `is_god` column, not `role = 'god'`. Give god accounts both flags.
 
 ### A broker is not a junior administrator
 
@@ -57,19 +126,25 @@ not outrank.
   authority attestations and vetting (brokers also set the vetting
   jurisdiction; coordinators make no vetting decisions), keep member notes,
   adjust a member's balance. Scoped to one tenant.
-- **Administrator** — everything a broker can do, plus tenant configuration:
+- **Tenant admin** — everything a broker can do, plus tenant configuration:
   module and feature flags, categories, legal documents, registration policy,
   pages and branding. Scoped to one tenant. Cannot move users between tenants or
   grant platform privileges.
-- **Network administrator** (`is_tenant_super_admin`) — an administrator whose
-  scope extends to their tenant *and its sub-tenants*. Only grantable where the
-  parent tenant has `allows_subtenants`. Accepted by `EnsureIsAdmin` and, since
-  2026-08-05, by the subtree tier of the super panel (`EnsureSuperPanelAccess`).
-  Still **not** accepted by `EnsureIsSuperAdmin` — a compromised network admin
-  cannot become a platform compromise. See "The panel has two tiers" below.
-- **Platform administrator** — cross-tenant: tenant CRUD, moving users between
-  tenants, platform-wide federation controls, the super-admin panel. `god` is the
-  break-glass tier and is the only one with an unconditional allow.
+- **Tenant super admin** (`is_tenant_super_admin`) — a tenant admin of its own
+  tenant which, through the super-admin panel, also administers every tenant
+  below it in the hierarchy: see and edit those communities, deactivate them,
+  create sub-communities, move members between its own tenant and the tenants
+  below it, and log in as their members. Only grantable where the tenant has
+  `allows_subtenants`. Accepted by `EnsureIsAdmin` and by the subtree tier of
+  the super panel (`EnsureSuperPanelAccess`). **Not** accepted by
+  `EnsureIsSuperAdmin` — a compromised tenant super admin cannot become a
+  platform compromise. In the ordinary admin screens it is still held to its
+  home tenant (see "Where the rule is applied today").
+- **Global super admin** — platform-wide: tenant CRUD, moving users between any
+  tenants, platform-wide federation controls, the whole super-admin panel.
+- **God** — a global super admin with `is_god`. The break-glass tier: the only
+  one with an unconditional allow, and the only one that can grant or revoke
+  global super admin.
 
 ### Hierarchy scoping in the super-admin panel
 
@@ -78,15 +153,19 @@ resolves an access *level* and every cross-tenant action is checked against it:
 
 | Who | Level | Scope |
 |---|---|---|
-| `is_super_admin` / `is_god` / `role = 'super_admin'`\|`'god'` | `master` | Platform-global, **wherever their account sits** |
-| `is_tenant_super_admin` on the **master** tenant (id 1) | `master` | Platform-global |
-| `is_tenant_super_admin` on a **hub** tenant (`allows_subtenants = 1`) | `regional` | That tenant **and its descendants only** |
+| global super admin or god (`is_super_admin` / `is_god` / `role = 'super_admin'`\|`'god'`) | `master` | Platform-global, **wherever their account sits** |
+| tenant super admin (`is_tenant_super_admin`) on a hub tenant (`allows_subtenants = 1`) — **including the master tenant, id 1** | `regional` | That tenant **and the tenants below it only** |
 | anyone else | `none` | No panel |
 
+`master` belongs to global super admins and god alone. A tenant super admin on
+tenant 1 is `regional` like any other: before 11 October 2026 it was resolved to
+`master` (every community), and that is no longer true.
+
 `SuperPanelAccess::canAccessTenant()` implements the subtree test as a
-materialised-path prefix match (`str_starts_with($target->path, $access['tenant_path'])`),
-and `getScopeClause()` gives the equivalent `path LIKE ?` predicate for list
-queries.
+materialised-path prefix match anchored on the trailing slash, and
+`getScopeClause()` / `subtreeFilter()` give the equivalent `path LIKE ?`
+predicate for list queries. A tenant above or beside the caller's own never
+matches.
 
 > 🔴 **`tenants.path` is nullable, and an empty prefix means EVERYTHING, not
 > nothing.** `str_starts_with($x, '')` is `true` and `LIKE '%'` matches every row.
@@ -105,11 +184,11 @@ Endpoints are split by **what the power reaches**, not by convenience:
 | Tier | Gate | Contents |
 |---|---|---|
 | **A — subtree** | `super-panel` (`EnsureSuperPanelAccess`) | Tenant/user lists, hierarchy, dashboard, audit, and the tenant/user mutations — all of which confine themselves via `canAccessTenant()` or `subtreeFilter()`. Admits `master` **and** `regional`. |
-| **B — platform only** | `super-admin` (`EnsureIsSuperAdmin`) | Platform revenue/pricing, external-federation kill switches, platform capabilities, provisioning queue, granting PLATFORM super-admin, and tenant delete/purge. `master` only. |
+| **B — platform only** | `super-admin` (`EnsureIsSuperAdmin`) | Platform revenue/pricing, external-federation kill switches, platform capabilities, provisioning queue, granting global super admin, and tenant delete/purge. `master` only. |
 
 🔴 Two reasons something is in tier B, and both matter:
 
-1. The power is platform-wide. Granting PLATFORM super-admin especially — that is
+1. The power is platform-wide. Granting global super admin especially — that is
    the escape hatch out of one's own branch.
 2. It is **not yet safe** for a regional caller. The billing endpoints read
    `tenant_id` from the request body and check only `requireSuperAdmin()`, with no
@@ -126,12 +205,13 @@ so a bookmarked URL refuses cleanly instead of rendering a page whose every requ
 403s; and `SuperAdminSidebar` hides the tier-B sections. Isolation is proven by
 `tests/Laravel/Feature/SuperAdmin/RegionalPanelIsolationTest.php`.
 
-**This is what keeps a network administrator inside their own network.** A hub
-tenant's super admin sees and acts on their own tenant and the children beneath
-it, and nothing else. Moving a user is checked at **both ends** — source tenant
-*and* destination tenant — in `AdminSuperController::userMoveTenant()`, so a
-network administrator cannot move a member out of, or into, someone else's
-hierarchy. The platform (`god`/`master`) tier is unrestricted by design.
+**This is what keeps a tenant super admin inside its own branch.** A tenant
+super admin sees and acts on its own tenant and the tenants below it, and
+nothing else — not its parent, not a sibling. Moving a user is checked at
+**both ends** — source tenant *and* destination tenant — in
+`AdminSuperController::userMoveTenant()`, so a tenant super admin cannot move a
+member out of, or into, a tenant outside its branch. The global super admin and
+god (`master`) level is unrestricted by design.
 
 > ⚠️ **The authorisation on moving a user is correct. What the move does to the
 > member's data is not.** `User::moveTenant()` updates `users.tenant_id` and

@@ -659,13 +659,32 @@ $stmt = Database::query(
 - **Authentication**: `Auth::user()`, `ApiAuth::authenticate()` (token-based), `Csrf::token()`
 - **Feature gating**: `TenantContext::hasFeature('events')` (PHP) / `useTenant().hasFeature('events')` (React)
 
-### 🔴 Authorisation — there are FIVE tiers, and `broker` is not a junior admin
+### 🔴 Authorisation — the access levels, and `broker` is not a junior admin
 
 Full reference: [docs/ROLES-AND-PERMISSIONS.md](docs/ROLES-AND-PERMISSIONS.md).
-Summary, because getting this wrong is common:
+Summary, because getting this wrong is common. Use the owner's names (12 Oct
+2026); 🔴 **never say "network admin(istrator)"** — that name is retired.
 
-`member` → `broker`/`coordinator` → `admin`/`tenant_admin` → `is_tenant_super_admin`
-(network admin: own tenant **+ its sub-tenants**) → `is_super_admin`/`god` (platform).
+`member` → `broker`/`coordinator` (operational, own tenant) → **tenant admin**
+(`role = 'admin'` or legacy `is_admin`: own tenant) → **tenant super admin**
+(`is_tenant_super_admin`: own tenant **+ every tenant below it**) → **global super
+admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
+`is_super_admin`: platform-wide plus the god-only actions).
+
+- 🔴 **The reach rule (owner, 12 Oct 2026): "A tenant super admin can administer
+  all communities below it in the hierarchy, but not above it."** Below = a
+  trailing-slash-anchored prefix match on `tenants.path`. Never a parent, never a
+  sibling, never another root. A tenant super admin on the master tenant (id 1)
+  gets **no** special level — it reaches `/1/…` descendants only (which in
+  production is most communities, because the panel creates them under tenant 1).
+- 🔴 **Where that rule is live today:** the super-admin panel and the
+  `TenantAdminScope` predicate. The ordinary admin screens still pin every
+  non-global account to its **home tenant** at the HTTP layer
+  (`TenantContext::isTokenUserSuperAdmin()`, `Authenticate` → `tenant_mismatch`).
+  Extending them below is a pending owner-approved design item (E-103), not built.
+- 🔴 God accounts need `is_super_admin` too: `BaseApiController::requireSuperAdmin()`
+  (first check on every super-panel endpoint) does not read `is_god`, and
+  `requireGod()` reads only the `is_god` column, not `role = 'god'`.
 
 - `app/Support/Authorization/AdminTier.php` is the canonical predicate. It
   **deliberately returns `false` for `broker`/`coordinator`** — a broker is an
@@ -680,9 +699,10 @@ Summary, because getting this wrong is common:
 - Gates: `EnsureIsBrokerOrAdmin`, `EnsureIsAdmin`, `EnsureIsSuperAdmin`.
   `EnsureIsSuperAdmin` deliberately rejects `is_tenant_super_admin`.
 - Cross-tenant scoping in the super-admin panel is `app/Core/SuperPanelAccess.php`:
-  level `master` (god, or master-tenant super admin) sees everything; level
-  `regional` (hub-tenant super admin) is confined to its own subtree by a
-  materialised-path prefix match. Cross-tenant actions must check
+  level `master` (global super admin or god **only**) sees everything; level
+  `regional` (a tenant super admin on a hub tenant — tenant 1 included) is
+  confined to its own subtree by a materialised-path prefix match. A tenant super
+  admin on tenant 1 is **not** `master` (it was until 11 Oct 2026). Cross-tenant actions must check
   `canAccessTenant()` **at both ends** — see `AdminSuperController::userMoveTenant()`.
 - 🔴 `super_admin`, `god`, `tenant_admin` and `coordinator` are **never written to
   `users.role`** by the API — they are expressed as boolean flags. A gate that

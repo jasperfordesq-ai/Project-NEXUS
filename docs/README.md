@@ -34,7 +34,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [api-reference.md](api-reference.md) | Interactive, browsable API reference (Redoc) — rendered on the documentation site. |
 | [I18N.md](I18N.md) | Internationalisation: 11 languages, the recipient-locale rule, and the i18n quality gates. |
 | [DATABASE.md](DATABASE.md) | Database, the two migration systems, the schema dump, and tenant scoping. |
-| [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | The five authorisation tiers, why a broker is not a junior admin, hierarchy scoping in the super-admin panel, and the caveats to know before writing a permission check. |
+| [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | The access levels (tenant admin, tenant super admin, global super admin, god) and which communities each reaches, why a broker is not a junior admin, hierarchy scoping in the super-admin panel, and the caveats to know before writing a permission check. |
 | [PRODUCT-AUDIENCE.md](PRODUCT-AUDIENCE.md) | Who the platform is for: the adults-only (18+) position, the three sign-up doors that state it, what is enforced versus declared, and how the guardian capabilities should be described. |
 | [SAFEGUARDING-AND-CONSENT.md](SAFEGUARDING-AND-CONSENT.md) | Guardian relationships, versioned consent records, the safeguarding case workflow, vetting attestations, and the current state of acting on behalf of a member. |
 | [SECURITY-ASSURANCE.md](SECURITY-ASSURANCE.md) | How security assessment works: route-table-wide sweeps, the finding register and its status vocabulary, evidence handling, and what a customer with a supplier-assurance obligation can ask for. |
