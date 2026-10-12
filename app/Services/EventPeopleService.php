@@ -818,10 +818,13 @@ SQL,
     private function assertActorScope(Event $event, User $actor): void
     {
         // Auth is GLOBAL; only resources are tenant-scoped. This compared the
-        // ACTOR's home tenant against the event's and so hid the roster from
-        // network admins, platform admins and an event's own cross-tenant
-        // organiser. The event is still scope-asserted, and EventPolicy still
-        // decides which projection the actor may see.
+        // ACTOR's home tenant against the event's and so hid the roster from a
+        // tenant super admin of a community above the event's, from platform
+        // admins and from an event's own cross-tenant organiser. The event is
+        // still scope-asserted, and EventPolicy (via TenantAdminScope) still
+        // decides which projection the actor may see: a tenant super admin
+        // reaches its own community plus every community below it, never one
+        // above or beside it (owner rule, 12 Oct 2026).
         $this->assertScope($event);
         if ((int) $actor->getKey() <= 0
             || (string) $actor->status !== 'active'

@@ -29,17 +29,17 @@ use Tests\Laravel\TestCase;
  * EventAttendanceService::record() and ::transition(). Together they refused
  * event check-in / attendance marking (event_attendance_authorization_denied)
  * to any actor whose account row lives on a different tenant than the one
- * being acted in — platform admins and network admins acting on a sub-tenant,
+ * being acted in — platform admins and tenant super admins acting on a sub-tenant,
  * and cross-tenant organisers of the event itself. Commit 5373940c8 fixed the
  * same bug class across the publish path but left attendance out of scope.
  *
  * The rule this pins: auth is GLOBAL, resources are tenant-scoped. Never add
  * `AND tenant_id = ?` to a lookup of the acting user's own row.
  *
- * 🔴 Since 11 October 2026 (owner decision) a network admin — a tenant super
- * admin of the PARENT community — no longer holds authority here at all; only
- * the platform owner, and the event's own organiser, act across communities.
- * The network-admin case below is therefore a refusal.
+ * 🔴 Owner rule, 12 October 2026: a tenant super admin administers every
+ * community below its own and none above it. A tenant super admin of the PARENT
+ * community therefore records attendance here; one of an unrelated community
+ * does not. (From 11 to 12 October the parent case was a refusal.)
  *
  * These assert the services directly rather than POSTing the check-in
  * endpoint, because Sanctum::actingAs() takes the guard branch of the
@@ -63,12 +63,10 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         Config::set('events.attendance_credit_mode', 'off');
-        // The home tenant becomes the PARENT of the acting tenant, so a network
-        // admin (tenant super admin) of the home tenant really does oversee it.
-        // Since 11 October 2026 that confers no authority here (owner decision:
-        // tenant super admins act in their own community only), and the refusal
-        // cases assert it against this closest-possible relationship. Rolls back
-        // with the transaction.
+        // The home tenant becomes the PARENT of the acting tenant, so a tenant
+        // super admin of the home tenant genuinely administers it (owner rule,
+        // 12 October 2026: a tenant super admin administers every community
+        // below it, never above). Rolls back with the transaction.
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
 
         $this->service = app(EventAttendanceService::class);
@@ -156,13 +154,11 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
      * The exact production shape: role='admin', is_tenant_super_admin=1,
      * home tenant is the PARENT of the tenant being acted on.
      *
-     * 🔴 Reversed 11 October 2026 (owner decision: a tenant super admin acts in
-     * its own community only). This was test_cross_tenant_network_admin_can_record_attendance
-     * and asserted 'checked_in'. The actor-is-global regression it was written
-     * for is still pinned, by the platform-owner case below and by the organiser
-     * cases in this file.
+     * Restored 12 October 2026 (owner rule: a tenant super admin administers
+     * every community below it). From 11 to 12 October this was
+     * test_cross_tenant_network_admin_cannot_record_attendance.
      */
-    public function test_cross_tenant_network_admin_cannot_record_attendance(): void
+    public function test_parent_tenant_super_admin_can_record_attendance(): void
     {
         $admin = $this->crossTenantUser([
             'role' => 'admin',
@@ -174,16 +170,35 @@ final class EventAttendanceCrossTenantActorTest extends TestCase
         $eventId = $this->event((int) $organizer->id);
         $this->rsvp($eventId, $attendee);
 
+        $result = $this->service->record($eventId, (int) $attendee->id, $admin);
+
+        self::assertSame('checked_in', $result->outcome);
+    }
+
+    /** Upwards is refused: the sub-community's tenant super admin has no authority over its parent. */
+    public function test_child_tenant_super_admin_cannot_record_attendance_on_the_parent(): void
+    {
+        $childAdmin = $this->localUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+        $organizer = $this->crossTenantUser();
+        $attendee = $this->crossTenantUser();
+        TenantContext::setById(self::HOME_TENANT);
+        $eventId = $this->event((int) $organizer->id, self::HOME_TENANT);
+        $this->rsvp($eventId, $attendee, self::HOME_TENANT);
+
         try {
-            $this->service->record($eventId, (int) $attendee->id, $admin);
-            self::fail('A parent community\'s tenant super admin must not check anyone in on a sub-community event.');
+            $this->service->record($eventId, (int) $attendee->id, $childAdmin);
+            self::fail('A sub-community\'s tenant super admin must not check anyone in on its parent community\'s event.');
         } catch (EventAttendanceException $exception) {
             self::assertSame('event_attendance_authorization_denied', $exception->reasonCode);
         }
         self::assertNull($this->attendanceStatus($eventId, $attendee));
     }
 
-    /** The platform owner is the one tier that still crosses communities. */
+    /** The platform owner reaches every community. */
     public function test_cross_tenant_platform_owner_can_record_attendance(): void
     {
         $owner = $this->crossTenantUser([

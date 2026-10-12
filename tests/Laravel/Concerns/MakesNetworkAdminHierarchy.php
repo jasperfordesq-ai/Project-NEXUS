@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Make a "network admin acting on a community it oversees" fixture real.
+ * Make a "tenant super admin acting on a community below its own" fixture real.
  *
  * The cross-tenant actor tests describe their subject as "the exact production
  * shape: role='admin', is_tenant_super_admin=1, home tenant elsewhere" — a
- * NETWORK admin, someone who legitimately administers a community other than the
+ * TENANT SUPER ADMIN, someone who legitimately administers a community other than the
  * one their own account row sits on. But they expressed it only as "an admin whose
  * tenant_id is 999", and tenant 999 had no row at all, let alone any relationship
  * to the tenant being acted on. That describes an unrelated stranger who happens
@@ -37,12 +37,12 @@ use Illuminate\Support\Str;
  * platform tier, which reaches every tenant unconditionally and would pass no
  * matter how broken the tenant scoping became — it would test nothing.
  *
- * 🔴 Since 11 October 2026 the hierarchy is used the other way round. The owner
- * decided a tenant super admin acts in its OWN community only, so overseeing a
- * sub-community no longer confers any authority over it. The fixture stays
- * because it is the closest relationship a tenant super admin can have to
- * another community: a refusal asserted on top of it is the strongest form of
- * that rule, not merely an unrelated stranger being turned away.
+ * 🔴 Owner rule, 12 October 2026: "A tenant super admin can administer all
+ * communities below it in the hierarchy, but not above it." So this fixture
+ * backs GRANTS for the parent's tenant super admin, and — called with the two
+ * ids swapped — REFUSALS for the child's tenant super admin acting upwards.
+ * (From 11 to 12 October 2026 it backed refusals only, under an "own community
+ * only" reading the owner then reversed.)
  */
 trait MakesNetworkAdminHierarchy
 {

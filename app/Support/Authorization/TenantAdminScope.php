@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace App\Support\Authorization;
 
+use Illuminate\Support\Facades\DB;
+use Throwable;
+
 /**
  * Canonical predicate for "does this actor hold admin authority over THIS tenant".
  *
@@ -28,23 +31,34 @@ namespace App\Support\Authorization;
  * it per tier:
  *
  *   - platform (is_super_admin / is_god, or those role strings) — every tenant
- *   - tenant super admin (is_tenant_super_admin) — own tenant ONLY
+ *   - tenant super admin (is_tenant_super_admin) — own tenant PLUS every
+ *     descendant tenant, by materialised-path prefix; never an ancestor, never a
+ *     sibling, never a separate root
  *   - tenant admin (role 'admin'/'tenant_admin', or is_admin) — own tenant ONLY
  *   - anyone else, including broker/coordinator via AdminTier — nothing
  *
- * 🔴 OWNER DECISION, 11 October 2026 (verbatim): "I don't want tenant admins to
- * act outside of the home community or tenant super admins, or normal tenant
- * admins." Only the platform owner (is_super_admin / is_god, or the
- * 'super_admin' / 'god' role strings) keeps cross-community reach.
+ * 🔴 OWNER RULE, 12 October 2026 (verbatim): "A tenant super admin can
+ * administer all communities below it in the hierarchy, but not above it." and
+ * "A tenant super admin should be able to administer all tenants below it, but
+ * not above it."
  *
- * Until that date a tenant super admin (a "network admin") also reached every
- * sub-tenant beneath its own, by materialised-path prefix on `tenants.path`,
- * mirroring SuperPanelAccess's `regional` level. That subtree reach is removed:
- * a tenant super admin now holds exactly a tenant admin's authority, over its
- * own community and nothing else. Do not reintroduce a hierarchy rule here — a
- * sub-community's records are acted on by that community's own admins or by the
- * platform owner. SuperPanelAccess (the super-admin panel's own gate) is a
- * separate decision and was deliberately not changed by this one.
+ * "Below" is decided by `tenants.path` ('/1/4/11/'): the target's path must start
+ * with the actor's home path, anchored on the trailing slash so '/1/2/' never
+ * admits '/1/20/'. A tenant super admin on the master tenant (id 1) is no
+ * exception: it reaches tenants whose path is under '/1/', not separate roots
+ * such as '/3/'. There is no "master" level for a tenant super admin — reaching
+ * everything is the platform tier's alone. A missing or empty path on either
+ * side fails closed (an empty prefix would match every tenant), and so does a
+ * failed lookup.
+ *
+ * History, so the record stays honest: until 11 October 2026 this class already
+ * gave a tenant super admin its subtree. On 11 October an "own community only"
+ * reading removed that (commit dc6acfd0a). The owner corrected it on 12 October
+ * with the rule quoted above, and the subtree reach was restored.
+ *
+ * Deliberately not TenantSubtree::descendantIds(): that helper serves sign-in,
+ * so it falls back to a parent_id walk when a path is missing and skips inactive
+ * tenants. An authority check must instead fail closed on a missing path.
  *
  * This class takes the actor explicitly. Never swap it for
  * SuperPanelAccess::canAccessTenant(): that reads $_SESSION['user_id'] and
@@ -83,16 +97,26 @@ final class TenantAdminScope
             return false;
         }
 
-        // Own community only — for a tenant super admin exactly as for a tenant
-        // admin. No reach into sub-communities (owner decision, 11 Oct 2026).
-        return $homeTenantId === $tenantId;
+        if ($homeTenantId === $tenantId) {
+            return true;
+        }
+
+        // A tenant super admin reaches every community below its own, and
+        // nothing above or beside it (owner rule, 12 Oct 2026). A tenant admin
+        // stops at its own community.
+        if ((bool) data_get($user, 'is_tenant_super_admin', false)) {
+            return self::isDescendant($homeTenantId, $tenantId);
+        }
+
+        return false;
     }
 
     /**
      * The platform owner (is_super_admin / is_god, or those role strings): the
-     * only account that may act across communities (owner decision,
-     * 11 Oct 2026). For callers that look an actor up outside the record's own
-     * community before asking {@see allows()}.
+     * only account that reaches EVERY community. A tenant super admin also acts
+     * outside its home community, but only below it — ask {@see allows()} for
+     * that. Callers that look an actor up outside the record's own community
+     * should ask allows(), not this.
      *
      * @param object|array<string,mixed>|null $user
      */
@@ -107,5 +131,43 @@ final class TenantAdminScope
         return (bool) data_get($user, 'is_super_admin', false)
             || (bool) data_get($user, 'is_god', false)
             || in_array((string) data_get($user, 'role', ''), self::PLATFORM_ROLES, true);
+    }
+
+    /**
+     * Is $tenantId strictly below $ancestorTenantId in the tenant tree?
+     *
+     * Uses the materialised `tenants.path` ('/1/2/5/'). Both paths are normalised
+     * to end in exactly one '/', so the prefix test is anchored: '/1/20/' does
+     * not start with '/1/2/'. Fails closed on a missing, empty or root-only path,
+     * because str_starts_with($x, '/') is TRUE for every tenant and an empty
+     * prefix would otherwise admit everything.
+     */
+    private static function isDescendant(int $ancestorTenantId, int $tenantId): bool
+    {
+        try {
+            $rows = DB::table('tenants')
+                ->whereIn('id', [$ancestorTenantId, $tenantId])
+                ->pluck('path', 'id');
+
+            $prefix = self::normalisedPath($rows[$ancestorTenantId] ?? null);
+            $target = self::normalisedPath($rows[$tenantId] ?? null);
+
+            if ($prefix === null || $target === null || $target === $prefix) {
+                return false;
+            }
+
+            return str_starts_with($target, $prefix);
+        } catch (Throwable) {
+            // Never widen authority because a lookup failed.
+            return false;
+        }
+    }
+
+    /** '/1/4' or '/1/4/' becomes '/1/4/'; null, '' and '/' become null. */
+    private static function normalisedPath(mixed $path): ?string
+    {
+        $trimmed = trim(is_string($path) ? $path : '', " \t\n\r\0\x0B/");
+
+        return $trimmed === '' ? null : '/' . $trimmed . '/';
     }
 }

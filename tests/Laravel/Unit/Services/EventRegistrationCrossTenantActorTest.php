@@ -33,11 +33,11 @@ use Tests\Laravel\TestCase;
  *
  *  - The ACTOR (whoever performs the write) is GLOBAL. Tenant-scoping the
  *    acting user's own row refused every manager whose account row lives on
- *    another tenant — network admins and platform admins acting on a
+ *    another tenant — tenant super admins and platform admins acting on a
  *    sub-tenant — from approve / reject / cancel, the bulk people endpoint and
- *    the roster. (Since 11 October 2026 a network admin holds no authority
- *    outside its own community at all — owner decision — so the platform owner
- *    is now the cross-tenant persona here.) Four lookups did this: EventRegistrationController::actor(),
+ *    the roster. (The platform owner is the cross-tenant persona of the four
+ *    "can" cases; the parent's tenant super admin is pinned separately — owner
+ *    rule, 12 October 2026.) Four lookups did this: EventRegistrationController::actor(),
  *    the persisted-actor re-read in EventRegistrationService::lockActor(), the
  *    same re-read in EventWaitlistService::lockActor(), and the actor-tenant
  *    comparison in EventPeopleService::assertActorScope(). Fixing only the
@@ -90,12 +90,10 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
         parent::setUp();
         TenantContext::setById(self::ACTING_TENANT);
         $this->registrations = app(EventRegistrationService::class);
-        // The home tenant becomes the PARENT of the acting tenant, so a network
-        // admin (tenant super admin) of the home tenant really does oversee it.
-        // Since 11 October 2026 that confers no authority here (owner decision:
-        // tenant super admins act in their own community only), and the refusal
-        // cases assert it against this closest-possible relationship. Rolls back
-        // with the transaction.
+        // The home tenant becomes the PARENT of the acting tenant, so a tenant
+        // super admin of the home tenant genuinely administers it (owner rule,
+        // 12 October 2026: a tenant super admin administers every community
+        // below it, never above). Rolls back with the transaction.
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
 
         $this->waitlist = app(EventWaitlistService::class);
@@ -118,7 +116,7 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
     }
 
     /** The production shape: role='admin', is_tenant_super_admin=1, home tenant elsewhere. */
-    private function crossTenantNetworkAdmin(): User
+    private function crossTenantTenantSuperAdmin(): User
     {
         return $this->crossTenantUser([
             'role' => 'admin',
@@ -130,9 +128,9 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
     /**
      * A platform owner whose account row lives on another tenant.
      *
-     * Since 11 October 2026 (owner decision) the platform tier is the only admin
-     * that holds authority outside its home community, so it is the persona the
-     * ACTOR-IS-GLOBAL cases below use. They used the network admin until then.
+     * The persona of the ACTOR-IS-GLOBAL cases below. They used the parent's
+     * tenant super admin until 11 October 2026; that actor is now pinned by its
+     * own cases further down (owner rule, 12 October 2026).
      */
     private function crossTenantPlatformOwner(): User
     {
@@ -328,18 +326,61 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
     }
 
     // ================================================================
-    // A tenant super admin of the PARENT community holds no authority here
-    // (owner decision, 11 October 2026)
+    // A tenant super admin of the PARENT community administers this one
+    // (owner rule, 12 October 2026: below it, never above it)
     // ================================================================
 
     /**
-     * 🔴 Until 11 October 2026 the network admin was the persona of the four
-     * "can" cases above and was admitted. The owner decided tenant super admins
-     * act in their own community only, so the same actor is now refused.
+     * From 11 to 12 October 2026 this was a refusal
+     * (test_cross_tenant_network_admin_cannot_approve_a_members_registration).
      */
-    public function test_cross_tenant_network_admin_cannot_approve_a_members_registration(): void
+    public function test_parent_tenant_super_admin_can_approve_a_members_registration(): void
     {
-        $networkAdmin = $this->crossTenantNetworkAdmin();
+        $tenantSuperAdmin = $this->crossTenantTenantSuperAdmin();
+        $organizer = $this->localUser();
+        $member = $this->localUser();
+        $eventId = $this->event((int) $organizer->id);
+        $this->pendingRegistration($eventId, $member);
+
+        $this->registrations->transition(
+            $eventId,
+            (int) $member->id,
+            EventCapacityRegistrationState::Confirmed,
+            $tenantSuperAdmin,
+            'approve-parent-tenant-super-admin',
+        );
+
+        self::assertSame('confirmed', $this->registrationState($eventId, $member));
+    }
+
+    public function test_parent_tenant_super_admin_can_view_the_roster(): void
+    {
+        $tenantSuperAdmin = $this->crossTenantTenantSuperAdmin();
+        $organizer = $this->localUser();
+        $member = $this->localUser();
+        $eventId = $this->event((int) $organizer->id);
+        $this->pendingRegistration($eventId, $member);
+        /** @var Event $event */
+        $event = Event::withoutGlobalScopes()->whereKey($eventId)->firstOrFail();
+
+        $roster = app(EventPeopleService::class)->paginateForActor(
+            $event,
+            $tenantSuperAdmin,
+            EventPeopleQuery::fromArray([]),
+        );
+
+        self::assertContains((int) $member->id, array_map(
+            static fn (array $person): int => (int) ($person['member']['id'] ?? 0),
+            $roster['items'],
+        ));
+    }
+
+    /** Upwards is refused: a tenant super admin of a community BELOW this one. */
+    public function test_child_tenant_super_admin_cannot_approve_a_registration_on_the_parent(): void
+    {
+        // Turn the relationship round: the acting tenant is now the PARENT.
+        $this->makeHomeTenantOversee(self::ACTING_TENANT, self::HOME_TENANT);
+        $childTenantSuperAdmin = $this->crossTenantTenantSuperAdmin();
         $organizer = $this->localUser();
         $member = $this->localUser();
         $eventId = $this->event((int) $organizer->id);
@@ -350,36 +391,15 @@ final class EventRegistrationCrossTenantActorTest extends TestCase
                 $eventId,
                 (int) $member->id,
                 EventCapacityRegistrationState::Confirmed,
-                $networkAdmin,
-                'approve-cross-tenant-network-admin',
+                $childTenantSuperAdmin,
+                'approve-child-tenant-super-admin',
             );
-            self::fail('A parent community\'s tenant super admin must not approve a sub-community registration.');
+            self::fail('A sub-community\'s tenant super admin must not approve a registration on its parent community.');
         } catch (EventRegistrationException $exception) {
             self::assertSame('event_registration_authorization_denied', $exception->reasonCode);
         }
 
         self::assertSame('pending', $this->registrationState($eventId, $member));
-    }
-
-    public function test_cross_tenant_network_admin_cannot_view_the_roster(): void
-    {
-        $networkAdmin = $this->crossTenantNetworkAdmin();
-        $organizer = $this->localUser();
-        $eventId = $this->event((int) $organizer->id);
-        $this->pendingRegistration($eventId, $this->localUser());
-        /** @var Event $event */
-        $event = Event::withoutGlobalScopes()->whereKey($eventId)->firstOrFail();
-
-        try {
-            app(EventPeopleService::class)->paginateForActor(
-                $event,
-                $networkAdmin,
-                EventPeopleQuery::fromArray([]),
-            );
-            self::fail('A parent community\'s tenant super admin must not read a sub-community roster.');
-        } catch (EventRegistrationException $exception) {
-            self::assertSame('event_registration_authorization_denied', $exception->reasonCode);
-        }
     }
 
     // ================================================================

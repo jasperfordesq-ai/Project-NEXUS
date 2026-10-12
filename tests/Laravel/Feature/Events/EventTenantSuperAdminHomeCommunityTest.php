@@ -10,11 +10,13 @@ namespace Tests\Laravel\Feature\Events;
 
 use App\Core\TenantContext;
 use App\Enums\EventCapacityRegistrationState;
+use App\Enums\EventStaffRole;
 use App\Exceptions\EventAttendanceException;
 use App\Exceptions\EventLifecycleTransitionException;
 use App\Exceptions\EventRegistrationException;
 use App\Exceptions\EventRoleAssignmentException;
 use App\Models\Event;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use App\Services\EventAttendanceService;
@@ -31,29 +33,30 @@ use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
- * A tenant super admin acts in its OWN community only.
+ * A tenant super admin acts in its own community AND every community below it
+ * in the hierarchy — never above it, never beside it.
  *
- * Owner, 11 October 2026: "I don't want tenant admins to act outside of the home
- * community or tenant super admins, or normal tenant admins." Only the platform
- * owner (is_super_admin / is_god) keeps cross-community reach.
+ * Owner rule, 12 October 2026 (verbatim): "A tenant super admin can administer
+ * all communities below it in the hierarchy, but not above it." Tenant admins
+ * act in their own community only; the platform owner (is_super_admin / is_god)
+ * acts everywhere.
  *
- * Until then App\Support\Authorization\TenantAdminScope gave a tenant super admin
- * (`is_tenant_super_admin`, a "network admin") admin authority over every
- * sub-community beneath its own, by materialised-path prefix. This suite builds
- * that exact relationship for real — the actor's home community is made the
- * PARENT of the community the event lives in (MakesNetworkAdminHierarchy) — so
- * each refusal below is the strongest form of the case, not an unrelated
- * stranger being turned away.
+ * (From 11 to 12 October 2026 this suite asserted the opposite — that the
+ * parent's tenant super admin was refused on a sub-community event — under an
+ * earlier "own community only" reading. The owner reversed that on 12 October.)
  *
- * Every refusal is paired with a control: the same action by a platform owner
- * from elsewhere on the same event succeeds, and the same tenant super admin on
- * an event in its own community succeeds. Without those, "refused" could mean
- * only that the fixture was broken.
+ * The relationship is built for real: the tenant super admin's home community is
+ * made the PARENT of the community the event lives in (MakesNetworkAdminHierarchy).
+ * Each grant is paired with refusals on the same fixture: the CHILD community's
+ * tenant super admin on the parent's event, and a SIBLING community's tenant
+ * super admin on the event — so "allowed" cannot mean that the fixture lets
+ * everyone through.
  *
- * Services are driven directly rather than over HTTP: Authenticate already
- * returns 403 tenant_mismatch to a non-platform actor whose account row is on
- * another community, so an HTTP test would stop there and prove nothing about
- * the service-layer authority decision this pins.
+ * Services are driven directly rather than over HTTP: Authenticate/TenantContext
+ * still pin a non-platform request to the actor's home community (403
+ * tenant_mismatch) — whether HTTP should follow this rule is a separate, later
+ * decision — so an HTTP test would stop there and prove nothing about the
+ * service-layer authority decision this pins.
  */
 final class EventTenantSuperAdminHomeCommunityTest extends TestCase
 {
@@ -74,41 +77,124 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
         TenantContext::setById(self::SUB_COMMUNITY);
     }
 
-    // ------------------------------------------------------------ refusals
+    // ------------------------------------------------------------ grants: parent over child
 
-    public function test_a_parent_tenant_super_admin_holds_no_management_ability_on_a_sub_community_event(): void
+    public function test_a_parent_tenant_super_admin_holds_every_ability_on_a_sub_community_event(): void
     {
         $tsa = $this->parentTenantSuperAdmin();
         $event = $this->eventModel($this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY)));
 
         $abilities = app(EventPolicy::class)->abilitiesForEvents($tsa, [$event])[(int) $event->id];
-        $granted = array_keys(array_filter($abilities));
 
-        // 'view' only: the event is published, and a published event is visible
-        // to anyone in the community — exactly what a plain member gets.
-        self::assertSame(['view'], $granted, 'BAD OUTCOME: a parent community\'s tenant super admin holds management abilities on a sub-community event.');
+        self::assertSame([], array_keys(array_filter($abilities, static fn (bool $granted): bool => ! $granted)), 'A tenant super admin must hold every ability on an event in a community below its own.');
     }
 
-    public function test_a_parent_tenant_super_admin_cannot_view_a_sub_community_roster(): void
-    {
-        $tsa = $this->parentTenantSuperAdmin();
-        $eventId = $this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
-        $this->pending($eventId, $this->member(self::SUB_COMMUNITY));
-
-        self::assertFalse(app(EventPolicy::class)->viewRoster($tsa, $this->eventModel($eventId)));
-        try {
-            app(EventPeopleService::class)->paginateForActor($this->eventModel($eventId), $tsa, EventPeopleQuery::fromArray([]));
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin read a sub-community event roster.');
-        } catch (EventRegistrationException $exception) {
-            self::assertSame('event_registration_authorization_denied', $exception->reasonCode);
-        }
-    }
-
-    public function test_a_parent_tenant_super_admin_cannot_approve_a_sub_community_registration(): void
+    public function test_a_parent_tenant_super_admin_can_view_a_sub_community_roster(): void
     {
         $tsa = $this->parentTenantSuperAdmin();
         $member = $this->member(self::SUB_COMMUNITY);
         $eventId = $this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
+        $this->pending($eventId, $member);
+
+        self::assertTrue(app(EventPolicy::class)->viewRoster($tsa, $this->eventModel($eventId)));
+        $roster = app(EventPeopleService::class)->paginateForActor($this->eventModel($eventId), $tsa, EventPeopleQuery::fromArray([]));
+        self::assertContains((int) $member->id, array_map(
+            static fn (array $person): int => (int) ($person['member']['id'] ?? 0),
+            $roster['items'],
+        ));
+    }
+
+    public function test_a_parent_tenant_super_admin_can_approve_a_sub_community_registration(): void
+    {
+        $tsa = $this->parentTenantSuperAdmin();
+        $member = $this->member(self::SUB_COMMUNITY);
+        $eventId = $this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
+        $this->pending($eventId, $member);
+
+        app(EventRegistrationService::class)->transition(
+            $eventId,
+            (int) $member->id,
+            EventCapacityRegistrationState::Confirmed,
+            $tsa,
+            'tsa-approve-' . $eventId,
+        );
+
+        self::assertSame('confirmed', $this->registrationState($eventId, $member));
+    }
+
+    public function test_a_parent_tenant_super_admin_can_check_someone_in_on_a_sub_community_event(): void
+    {
+        $tsa = $this->parentTenantSuperAdmin();
+        $attendee = $this->member(self::SUB_COMMUNITY);
+        $eventId = $this->startedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
+        $this->going($eventId, $attendee, self::SUB_COMMUNITY);
+
+        self::assertSame('checked_in', app(EventAttendanceService::class)->record($eventId, (int) $attendee->id, $tsa)->outcome);
+    }
+
+    public function test_a_parent_tenant_super_admin_can_publish_a_sub_community_draft(): void
+    {
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['moderation_required' => false]);
+        $tsa = $this->parentTenantSuperAdmin();
+        $eventId = $this->draftEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY), 'draft');
+
+        app(EventPublicationWorkflowService::class)->publish($eventId, $tsa);
+
+        self::assertSame('published', $this->publicationState($eventId));
+    }
+
+    public function test_a_parent_tenant_super_admin_can_approve_a_sub_community_event_awaiting_review(): void
+    {
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['moderation_required' => true]);
+        $tsa = $this->parentTenantSuperAdmin();
+        $eventId = $this->draftEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY), 'pending_review');
+
+        app(EventPublicationWorkflowService::class)->approve($eventId, $tsa);
+
+        self::assertSame('published', $this->publicationState($eventId));
+    }
+
+    public function test_a_parent_tenant_super_admin_can_create_events_in_a_sub_community_restricted_to_admins(): void
+    {
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'admins']);
+        $tsa = $this->parentTenantSuperAdmin();
+
+        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
+        // A plain admin of the parent is not a tenant super admin: own community only.
+        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->parentPlainAdmin()->id));
+    }
+
+    public function test_a_parent_tenant_super_admin_can_create_events_in_a_sub_community_open_to_all_members(): void
+    {
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'members']);
+        $tsa = $this->parentTenantSuperAdmin();
+
+        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
+        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->member(self::SUB_COMMUNITY)->id));
+        // A plain member of the parent community is not a member of this one.
+        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->member(self::PARENT_COMMUNITY)->id));
+    }
+
+    // ------------------------------------------------------------ refusals: upwards and sideways
+
+    public function test_a_child_tenant_super_admin_holds_no_management_ability_on_the_parent_communitys_event(): void
+    {
+        $childTsa = $this->tenantSuperAdminOf(self::SUB_COMMUNITY);
+        TenantContext::setById(self::PARENT_COMMUNITY);
+        $event = $this->eventModel($this->publishedEvent(self::PARENT_COMMUNITY, $this->member(self::PARENT_COMMUNITY)));
+
+        $abilities = app(EventPolicy::class)->abilitiesForEvents($childTsa, [$event])[(int) $event->id];
+
+        self::assertSame(['view'], array_keys(array_filter($abilities)), 'BAD OUTCOME: a sub-community\'s tenant super admin holds management abilities on its parent community\'s event.');
+    }
+
+    public function test_a_child_tenant_super_admin_cannot_act_on_the_parent_communitys_event(): void
+    {
+        $childTsa = $this->tenantSuperAdminOf(self::SUB_COMMUNITY);
+        TenantContext::setById(self::PARENT_COMMUNITY);
+        $this->setEventsConfig(self::PARENT_COMMUNITY, ['creation_role' => 'admins', 'moderation_required' => false]);
+        $member = $this->member(self::PARENT_COMMUNITY);
+        $eventId = $this->publishedEvent(self::PARENT_COMMUNITY, $this->member(self::PARENT_COMMUNITY));
         $this->pending($eventId, $member);
 
         try {
@@ -116,97 +202,45 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
                 $eventId,
                 (int) $member->id,
                 EventCapacityRegistrationState::Confirmed,
-                $tsa,
-                'tsa-approve-' . $eventId,
+                $childTsa,
+                'child-tsa-approve-' . $eventId,
             );
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin approved a sub-community registration.');
+            self::fail('BAD OUTCOME: a sub-community\'s tenant super admin approved a registration on its parent community\'s event.');
         } catch (EventRegistrationException $exception) {
             self::assertSame('event_registration_authorization_denied', $exception->reasonCode);
         }
         self::assertSame('pending', $this->registrationState($eventId, $member));
-    }
 
-    public function test_a_parent_tenant_super_admin_cannot_check_someone_in_on_a_sub_community_event(): void
-    {
-        $tsa = $this->parentTenantSuperAdmin();
-        $attendee = $this->member(self::SUB_COMMUNITY);
-        $eventId = $this->startedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
-        $this->going($eventId, $attendee, self::SUB_COMMUNITY);
-
+        $draftId = $this->draftEvent(self::PARENT_COMMUNITY, $this->member(self::PARENT_COMMUNITY), 'draft');
         try {
-            app(EventAttendanceService::class)->record($eventId, (int) $attendee->id, $tsa);
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin checked someone in on a sub-community event.');
-        } catch (EventAttendanceException $exception) {
-            self::assertSame('event_attendance_authorization_denied', $exception->reasonCode);
-        }
-        self::assertNull($this->attendanceStatus($eventId, $attendee));
-    }
-
-    public function test_a_parent_tenant_super_admin_cannot_publish_a_sub_community_draft(): void
-    {
-        $this->setEventsConfig(self::SUB_COMMUNITY, ['moderation_required' => false]);
-        $tsa = $this->parentTenantSuperAdmin();
-        $eventId = $this->draftEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY), 'draft');
-
-        try {
-            app(EventPublicationWorkflowService::class)->publish($eventId, $tsa);
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin published a sub-community draft.');
+            app(EventPublicationWorkflowService::class)->publish($draftId, $childTsa);
+            self::fail('BAD OUTCOME: a sub-community\'s tenant super admin published its parent community\'s draft.');
         } catch (EventLifecycleTransitionException) {
-            self::assertTrue(true);
+            self::assertSame('draft', $this->publicationState($draftId));
         }
-        self::assertSame('draft', $this->publicationState($eventId));
+
+        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::PARENT_COMMUNITY, (int) $childTsa->id));
     }
 
-    public function test_a_parent_tenant_super_admin_cannot_approve_a_sub_community_event_awaiting_review(): void
+    public function test_a_sibling_communitys_tenant_super_admin_cannot_act_on_the_sub_community_event(): void
     {
-        $this->setEventsConfig(self::SUB_COMMUNITY, ['moderation_required' => true]);
-        $tsa = $this->parentTenantSuperAdmin();
-        $eventId = $this->draftEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY), 'pending_review');
-
-        try {
-            app(EventPublicationWorkflowService::class)->approve($eventId, $tsa);
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin approved a sub-community event for publication.');
-        } catch (EventLifecycleTransitionException) {
-            self::assertTrue(true);
-        }
-        self::assertSame('pending_review', $this->publicationState($eventId));
-    }
-
-    public function test_a_parent_tenant_super_admin_cannot_create_events_in_a_sub_community_restricted_to_admins(): void
-    {
-        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'admins']);
-        $tsa = $this->parentTenantSuperAdmin();
-
-        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
-    }
-
-    /**
-     * The default setting, "all active members", means members OF THIS
-     * community. It used to admit any active account on the platform, which was
-     * the second door for this actor once admin authority stopped reaching down.
-     */
-    public function test_a_parent_tenant_super_admin_cannot_create_events_in_a_sub_community_open_to_all_members(): void
-    {
-        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'members']);
-        $tsa = $this->parentTenantSuperAdmin();
-
-        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $tsa->id));
-        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->member(self::SUB_COMMUNITY)->id));
-        self::assertTrue(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->platformOwner()->id));
-    }
-
-    public function test_a_parent_tenant_super_admin_cannot_open_a_sub_community_event_team(): void
-    {
-        $tsa = $this->parentTenantSuperAdmin();
+        $siblingTsa = $this->tenantSuperAdminOf($this->siblingCommunity());
+        $member = $this->member(self::SUB_COMMUNITY);
         $eventId = $this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
+        $this->pending($eventId, $member);
 
-        self::assertFalse(app(EventPolicy::class)->manageStaff($tsa, $this->eventModel($eventId)));
+        $abilities = app(EventPolicy::class)->abilitiesForEvents($siblingTsa, [$this->eventModel($eventId)])[$eventId];
+        self::assertSame(['view'], array_keys(array_filter($abilities)), 'BAD OUTCOME: a sibling community\'s tenant super admin holds management abilities here.');
+
         try {
-            app(EventRoleService::class)->list($eventId, $tsa);
-            self::fail('BAD OUTCOME: a parent community\'s tenant super admin opened a sub-community event\'s Team tab.');
-        } catch (EventRoleAssignmentException) {
-            self::assertTrue(true);
+            app(EventPeopleService::class)->paginateForActor($this->eventModel($eventId), $siblingTsa, EventPeopleQuery::fromArray([]));
+            self::fail('BAD OUTCOME: a sibling community\'s tenant super admin read this roster.');
+        } catch (EventRegistrationException $exception) {
+            self::assertSame('event_registration_authorization_denied', $exception->reasonCode);
         }
+
+        $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'members']);
+        self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $siblingTsa->id));
     }
 
     // ------------------------------------------- control: own community
@@ -276,13 +310,47 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
     /** The production shape: role='admin', is_tenant_super_admin=1, no platform flag. */
     private function parentTenantSuperAdmin(): User
     {
-        return $this->member(self::PARENT_COMMUNITY, [
+        return $this->tenantSuperAdminOf(self::PARENT_COMMUNITY);
+    }
+
+    private function tenantSuperAdminOf(int $tenantId): User
+    {
+        return $this->member($tenantId, [
             'role' => 'admin',
             'is_admin' => 1,
             'is_super_admin' => 0,
             'is_god' => 0,
             'is_tenant_super_admin' => 1,
         ]);
+    }
+
+    /** A plain community admin of the parent: own community only. */
+    private function parentPlainAdmin(): User
+    {
+        return $this->member(self::PARENT_COMMUNITY, [
+            'role' => 'admin',
+            'is_admin' => 1,
+            'is_super_admin' => 0,
+            'is_god' => 0,
+            'is_tenant_super_admin' => 0,
+        ]);
+    }
+
+    /** A second community under the same parent, beside SUB_COMMUNITY. */
+    private function siblingCommunity(): int
+    {
+        $sibling = Tenant::factory()->create([
+            'domain' => null,
+            'parent_id' => self::PARENT_COMMUNITY,
+            'depth' => 1,
+            'allows_subtenants' => false,
+            'is_active' => true,
+        ]);
+        $id = (int) $sibling->id;
+        Tenant::withoutGlobalScopes()->whereKey($id)->update(['path' => '/' . self::PARENT_COMMUNITY . '/' . $id . '/']);
+        TenantContext::setById(self::SUB_COMMUNITY);
+
+        return $id;
     }
 
     private function platformOwner(): User
@@ -344,8 +412,8 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
         return (int) DB::table('events')->insertGetId([
             'tenant_id' => $tenantId,
             'user_id' => (int) $organizer->id,
-            'title' => 'Tenant super admin confinement fixture',
-            'description' => 'Tenant super admin confinement fixture.',
+            'title' => 'Tenant super admin hierarchy fixture',
+            'description' => 'Tenant super admin hierarchy fixture.',
             'start_time' => $start,
             'end_time' => \Carbon\Carbon::instance($start)->addHours(2),
             'status' => $published ? 'active' : 'draft',
