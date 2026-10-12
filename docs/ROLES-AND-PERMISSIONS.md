@@ -73,25 +73,43 @@ the rule above.
   home tenant, and only for management requests
   (`CrossTenantEntry::isManagementRequest()`): `/api/v2/admin/*`; read-only
   `GET`/`HEAD /api/v2/users/me` and the member-directory search
-  `GET /api/v2/users`; the event team (`GET`/`POST /api/v2/events/{id}/staff`,
-  `DELETE …/staff/{id}`); and the event organiser views that write nothing (an
-  explicit list, `EVENT_ORGANISER_ROUTES`) — with a token issued for its home
-  tenant. Everything else (posting, messaging, wallet, registering for events,
-  and most event organiser *changes*) is still refused there, so a parent tenant
-  super admin manages a sub-community but never acts in it as a member. Tenant
+  `GET /api/v2/users`; and the event organiser tools, views and changes alike (an
+  explicit method + path list, `EVENT_ORGANISER_ROUTES`) — with a token issued
+  for its home tenant. Everything else (posting, messaging, wallet, registering
+  for events) is still refused there, so a parent tenant super admin manages a
+  sub-community but never acts in it as a member. Tenant
   admins, brokers and members are always pinned to their home tenant. Admin controllers that load "the acting admin" now load that account
   by id and check it with `CrossTenantEntry`/`TenantAdminScope`; the members and
   records being administered stay confined to the request's tenant.
-- 🔴 **Why most event organiser changes are refused below.** About 45 event
-  tables record the acting account with a composite foreign key
-  `(<actor column>, tenant_id) → users(id, tenant_id)`, so the database refuses
-  to record an account from another community as having acted. Broadcasts,
-  tickets, registration forms and settings, safety requirements, agenda
-  sessions, templates, check-in devices, offline sync and even the analytics
-  view (it writes an access audit) are therefore not admitted, and cancelling or
-  rejecting can cascade into those tables. Widening the list needs a decision on
-  that schema rule. A global super admin or god acting in another community
-  meets the same constraint today.
+- 🔴 **A manager from another community acts below as its DELEGATE** (owner,
+  12 Oct 2026: "Go with option 3"). About 45 event tables record the acting
+  account with a composite foreign key `(<actor column>, tenant_id) →
+  users(id, tenant_id)`, so the database only accepts an actor of the record's
+  own community. A tenant super admin from above — or the global super admin
+  from any other community — therefore acts there through a `users` row of that
+  community with `status = 'delegate'`
+  (`app/Support/Authorization/ManagerDelegate.php`; link table
+  `tenant_manager_delegates`): role admin, the manager's name, no password, a
+  non-deliverable `@delegate.invalid` email. `CrossTenantEntry::activeActor()`
+  and `BaseApiController::getActingUserId()` swap it in on event organiser
+  requests; records then name the delegate.
+  - It is **usable only while** the manager is still active and still admitted
+    to that community (`ManagerDelegate::isUsable()`, checked on every use):
+    revoking the flag stops it at once.
+  - It **never signs in**: `Authenticate` refuses every status but `active`,
+    and `TokenService` refuses to mint any token for one.
+  - It **cannot be taken over**: database triggers
+    (`trg_users_delegate_*_guard`) refuse a password, an email, role, community
+    or platform-flag change, turning it into an ordinary account, and turning an
+    ordinary account into one.
+  - It is **not a member**: member-facing queries filter `status = 'active'`
+    and never see it; the admin user list, admin user detail and member export
+    exclude it. 🔴 Actor checks that read `status = 'active'` must use
+    `ManagerDelegate::isActingAccount()` to accept it; a member being acted ON
+    (registrant, ticket recipient, team member, attendee) must stay strictly
+    `active` and in-community.
+  - Personal data: the manager's name is copied into each community it changes
+    something in — DPO register item DPO-11.
 - **Signing in below.** Owner, 12 Oct 2026: "If a user tries to sign in to a
   community that they're not allowed to sign in to, it should sign them out. If
   they're allowed to sign in, they're allowed to sign in to manage those

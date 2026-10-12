@@ -682,15 +682,16 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   called from `TenantContext` and `Authenticate`): a tenant super admin may enter
   a tenant strictly below its home tenant **for management requests only**
   (`/api/v2/admin/*`, read-only `GET /api/v2/users/me` and `GET /api/v2/users`,
-  the event team, and the event organiser views that write nothing) — every
-  member-facing endpoint there still answers `403 tenant_mismatch`. It can sign
-  in on a sub-community's login page and keep its session there; the React app
-  sends it to the admin panel, and signs out any account the server refuses in
-  the community it moved to. 🔴 Most event organiser *changes* are still refused
-  below: 45 event tables carry composite `(actor, tenant_id) → users(id,
-  tenant_id)` foreign keys, so the database cannot record an account from
-  another community as having acted — widening needs an owner decision. See
-  `docs/ROLES-AND-PERMISSIONS.md`.
+  and the event organiser tools) — every member-facing endpoint there still
+  answers `403 tenant_mismatch`. It can sign in on a sub-community's login page
+  and keep its session there; the React app sends it to the admin panel, and
+  signs out any account the server refuses in the community it moved to.
+  🔴 Below, it ACTS as its **delegate** (`ManagerDelegate`, `status =
+  'delegate'`), because 45 event tables only accept an actor of the record's own
+  community. A delegate never signs in, cannot be taken over (DB triggers), and
+  is never a member. An actor check reading `status = 'active'` must use
+  `ManagerDelegate::isActingAccount()`; a member acted ON stays strictly active
+  and in-community. See `docs/ROLES-AND-PERMISSIONS.md`.
 - 🔴 God accounts need `is_super_admin` too: `BaseApiController::requireSuperAdmin()`
   (first check on every super-panel endpoint) does not read `is_god`, and
   `requireGod()` reads only the `is_god` column, not `role = 'god'`.
