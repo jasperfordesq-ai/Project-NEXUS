@@ -106,20 +106,20 @@ else
 fi
 
 # Run SuperPanelAccess tests
-echo "  Running SuperPanelAccessTest (@group security)..."
+echo "  Running TenantSuperAdminPanelSubtreeTest..."
 if [ "$USE_DOCKER_EXEC" = true ]; then
-    RESULT=$(docker exec nexus-php-app bash -c "cd /var/www/html && vendor/bin/phpunit tests/Middleware/SuperPanelAccessTest.php --teamcity 2>/dev/null" 2>&1)
+    RESULT=$(docker exec nexus-php-app bash -c "cd /var/www/html && vendor/bin/phpunit tests/Laravel/Feature/SuperAdmin/TenantSuperAdminPanelSubtreeTest.php --teamcity 2>/dev/null" 2>&1)
 else
-    RESULT=$(vendor/bin/phpunit tests/Middleware/SuperPanelAccessTest.php --teamcity 2>/dev/null 2>&1)
+    RESULT=$(vendor/bin/phpunit tests/Laravel/Feature/SuperAdmin/TenantSuperAdminPanelSubtreeTest.php --teamcity 2>/dev/null 2>&1)
 fi
 
 FAILURES=$(echo "$RESULT" | grep -c 'testFailed' || true)
 FINISHED=$(echo "$RESULT" | grep -c 'testFinished' || true)
 
-if [ "$FAILURES" -eq 0 ] && [ "$FINISHED" -ge 20 ]; then
-    check_pass "SuperPanelAccessTest: $FINISHED tests passed, 0 failures"
+if [ "$FAILURES" -eq 0 ] && [ "$FINISHED" -ge 15 ]; then
+    check_pass "TenantSuperAdminPanelSubtreeTest: $FINISHED tests passed, 0 failures"
 else
-    check_fail "SuperPanelAccessTest: $FINISHED finished, $FAILURES failures"
+    check_fail "TenantSuperAdminPanelSubtreeTest: $FINISHED finished, $FAILURES failures"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ else
 fi
 
 # 2d: SuperPanelAccess checks allows_subtenants
-SPA_FILE="$PROJECT_ROOT/app/Middleware/SuperPanelAccess.php"
+SPA_FILE="$PROJECT_ROOT/app/Core/SuperPanelAccess.php"
 if [ -f "$SPA_FILE" ]; then
     if grep -q "allows_subtenants" "$SPA_FILE"; then
         check_pass "SuperPanelAccess: Checks allows_subtenants flag"
