@@ -45,7 +45,7 @@ final class EventRecurrenceDefinitionBlueprintController extends BaseApiControll
         try {
             $history = $this->blueprints->history(
                 $id,
-                $this->requireAuth(),
+                $this->getActingUserId(),
                 $limit,
                 $beforeVersion,
             );
@@ -95,7 +95,7 @@ final class EventRecurrenceDefinitionBlueprintController extends BaseApiControll
         try {
             $preview = $this->blueprints->preview(
                 $id,
-                $this->requireAuth(),
+                $this->getActingUserId(),
                 $request->effectiveFromRecurrenceId(),
                 $request->selectedSections(),
             );
@@ -117,7 +117,7 @@ final class EventRecurrenceDefinitionBlueprintController extends BaseApiControll
         try {
             $result = $this->blueprints->commit(
                 $id,
-                $this->requireAuth(),
+                $this->getActingUserId(),
                 $request->effectiveFromRecurrenceId(),
                 $request->selectedSections(),
                 $request->previewToken(),

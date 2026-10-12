@@ -18,6 +18,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Throwable;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Fail-closed tenant, policy, hashing, and scheduling primitives for templates. */
 final class EventTemplateFoundationSupport
@@ -54,7 +55,7 @@ final class EventTemplateFoundationSupport
         $query = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at');
         if ($lock) {
             $query->lockForUpdate();

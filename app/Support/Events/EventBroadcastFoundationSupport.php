@@ -17,6 +17,7 @@ use App\Services\EventConfigurationService;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use App\Support\Authorization\CrossTenantEntry;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Shared tenant, authorization, validation, and hashing boundary for broadcasts. */
 final class EventBroadcastFoundationSupport
@@ -127,17 +128,21 @@ final class EventBroadcastFoundationSupport
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
         $query = User::withoutGlobalScopes()
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS])
             ->whereNull('deleted_at');
         if ($lock) {
             $query->lockForUpdate();
         }
         $persisted = $query->first();
-        // Own community, or a crossing CrossTenantEntry admits: a tenant super
-        // admin managing a community below its own (owner rule, 12 Oct 2026).
-        // Looked up by id, because that account's row is not in this community;
-        // outside an HTTP request no crossing is ever admitted.
-        if ($persisted !== null && ! CrossTenantEntry::actorMayActIn($persisted, $tenantId)) {
+        // A member of this community acts as itself (unchanged). A delegate
+        // acts only while usable. A manager from another community whose
+        // crossing the door admitted acts as its delegate here, so the
+        // record names an account of THIS community (owner, 12 Oct 2026,
+        // option 3). Outside an HTTP request no crossing is ever admitted.
+        if ($persisted !== null && (int) $persisted->tenant_id !== $tenantId) {
+            $persisted = CrossTenantEntry::activeActor((int) $persisted->getKey(), $tenantId, $lock);
+        } elseif ($persisted !== null && ManagerDelegate::isDelegate($persisted)
+            && ! ManagerDelegate::isUsable($persisted, $tenantId)) {
             $persisted = null;
         }
         if ($persisted === null) {

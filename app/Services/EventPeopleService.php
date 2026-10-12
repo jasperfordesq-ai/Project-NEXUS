@@ -28,6 +28,7 @@ use Generator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Canonical, redacted relationship and People read model across three axes. */
 final class EventPeopleService
@@ -827,8 +828,8 @@ SQL,
         // above or beside it (owner rule, 12 Oct 2026).
         $this->assertScope($event);
         if ((int) $actor->getKey() <= 0
-            || (string) $actor->status !== 'active'
-            || $actor->deleted_at !== null) {
+            // Active, or a manager's usable delegate (ManagerDelegate).
+            || ! ManagerDelegate::isActingAccount($actor)) {
             throw new EventRegistrationException('event_registration_authorization_denied');
         }
     }

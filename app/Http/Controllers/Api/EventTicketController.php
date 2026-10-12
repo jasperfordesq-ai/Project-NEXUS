@@ -262,17 +262,13 @@ final class EventTicketController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        $actor = $tenantId === null ? null : User::withoutGlobalScopes()
-            ->where('status', 'active')
-            ->whereNull('deleted_at')
-            ->find($this->requireUserId());
-        // Own community, or a crossing CrossTenantEntry admits: a tenant super
-        // admin managing a community below its own (owner rule, 12 Oct 2026).
-        // Looked up by id, because that account's row is not in this community.
-        // What the actor may do to the event is still the event policy's call.
-        if ($actor instanceof User && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
-            $actor = null;
-        }
+        // The acting account: a member of this community, or — for a manager
+        // from another community that the door admitted — its delegate here
+        // (CrossTenantEntry::activeActor(); owner, 12 Oct 2026, option 3).
+        // What it may do to the event is still the event policy's call.
+        $actor = $tenantId === null || $tenantId <= 0
+            ? null
+            : CrossTenantEntry::activeActor($this->getActingUserId(), (int) $tenantId);
         if (! $actor instanceof User) {
             throw new EventTicketingException('event_ticket_actor_invalid');
         }

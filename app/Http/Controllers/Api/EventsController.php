@@ -271,7 +271,7 @@ class EventsController extends BaseApiController
         // decides authority against the tenant-scoped event.
         $actor = User::withoutGlobalScopes()
             ->whereKey($userId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', \App\Support\Authorization\ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
 
@@ -519,7 +519,7 @@ class EventsController extends BaseApiController
         $actor = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($userId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', \App\Support\Authorization\ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         if ($event === null || $actor === null || ! $this->eventPolicy->manage($actor, $event)) {
@@ -689,7 +689,7 @@ class EventsController extends BaseApiController
      */
     public function index(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $filters = [
             'limit' => $this->queryInt('per_page', 20, 1, 100),
@@ -768,7 +768,7 @@ class EventsController extends BaseApiController
      */
     public function show(int $id): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $event = $this->eventService->getById($id, $userId);
 
@@ -790,7 +790,7 @@ class EventsController extends BaseApiController
      */
     public function nearby(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $lat = $this->query('lat');
         $lon = $this->query('lon');
 
@@ -872,7 +872,7 @@ class EventsController extends BaseApiController
      */
     public function store(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_create', 10, 60);
 
         $tenantId = (int) TenantContext::getId();
@@ -943,7 +943,7 @@ class EventsController extends BaseApiController
      */
     public function update(int $id): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_update', 20, 60);
 
         $data = $this->getAllInput();
@@ -1036,7 +1036,7 @@ class EventsController extends BaseApiController
 
     private function publicationTransition(int $id, string $action): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_publish', 10, 60);
         // Auth is GLOBAL; only resources are tenant-scoped. `$userId` comes
         // from requireAuth(), so this resolves the caller's own row — a tenant
@@ -1045,7 +1045,7 @@ class EventsController extends BaseApiController
         /** @var User|null $actor */
         $actor = User::withoutGlobalScopes()
             ->whereKey($userId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', \App\Support\Authorization\ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         if ($actor === null) {
@@ -1110,7 +1110,7 @@ class EventsController extends BaseApiController
      */
     public function destroy(int $id): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_delete', 10, 60);
 
         $reason = $this->lifecycleReason($this->archiveReasonRequired($id, $userId));
@@ -1181,7 +1181,7 @@ class EventsController extends BaseApiController
     public function rsvp($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_rsvp', 30, 60);
 
         $status = $this->input('status');
@@ -1364,7 +1364,7 @@ class EventsController extends BaseApiController
     public function removeRsvp($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_rsvp', 30, 60);
 
         try {
@@ -1454,7 +1454,7 @@ class EventsController extends BaseApiController
     public function attendees($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $event = $this->eventService->getById($id, $userId);
         if (!$event) {
@@ -1493,7 +1493,7 @@ class EventsController extends BaseApiController
     {
         $id = (int) $id;
         $attendeeId = (int) $attendeeId;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_checkin', 30, 60);
 
         try {
@@ -1535,7 +1535,7 @@ class EventsController extends BaseApiController
     public function cancel($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_cancel', 5, 60);
 
         $reason = $this->lifecycleReason(true);
@@ -1588,7 +1588,7 @@ class EventsController extends BaseApiController
     public function waitlist($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $event = $this->eventService->getById($id, $userId);
         if (!$event) {
@@ -1613,7 +1613,7 @@ class EventsController extends BaseApiController
     public function joinWaitlist($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_waitlist', 30, 60);
 
         if (! (bool) $this->eventConfiguration->value('waitlist_enabled', true)) {
@@ -1663,7 +1663,7 @@ class EventsController extends BaseApiController
     public function leaveWaitlist($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_waitlist', 30, 60);
 
         // Resolve the event inside this community first. A foreign or missing
@@ -1706,7 +1706,7 @@ class EventsController extends BaseApiController
     public function getReminders($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         if (! (bool) $this->eventConfiguration->value('reminders_enabled', true)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
@@ -1727,7 +1727,7 @@ class EventsController extends BaseApiController
     public function updateReminders($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_reminders', 20, 60);
 
         if (! (bool) $this->eventConfiguration->value('reminders_enabled', true)) {
@@ -1771,7 +1771,7 @@ class EventsController extends BaseApiController
     public function deleteReminders($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_reminders', 20, 60);
         if (! (bool) $this->eventConfiguration->value('reminders_enabled', true)) {
             return $this->respondWithError('FORBIDDEN', __('api.forbidden'), null, 403);
@@ -1856,7 +1856,7 @@ class EventsController extends BaseApiController
     public function getAttendance($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $event = $this->eventService->getById($id, $userId);
         if (!$event) {
@@ -1877,7 +1877,7 @@ class EventsController extends BaseApiController
     public function markAttendance($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_attendance', 30, 60);
 
         $attendeeId = $this->inputInt('user_id');
@@ -1920,7 +1920,7 @@ class EventsController extends BaseApiController
     public function bulkMarkAttendance($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_attendance', 10, 60);
 
         // Resolve the event inside this community before reading the body. A
@@ -2065,7 +2065,7 @@ class EventsController extends BaseApiController
      */
     public function listSeries(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $filters = [
             'limit' => $this->queryInt('per_page', 20, 1, 100),
         ];
@@ -2096,7 +2096,7 @@ class EventsController extends BaseApiController
      */
     public function createSeries(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_series', 10, 60);
 
         $title = $this->input('title');
@@ -2134,7 +2134,7 @@ class EventsController extends BaseApiController
     public function showSeries($seriesId): JsonResponse
     {
         $seriesId = (int) $seriesId;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
 
         $series = $this->eventService->getSeriesInfo($seriesId, $userId);
         if (!$series) {
@@ -2156,7 +2156,7 @@ class EventsController extends BaseApiController
     public function linkToSeries($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_series', 20, 60);
 
         $seriesId = $this->inputInt('series_id');
@@ -2194,7 +2194,7 @@ class EventsController extends BaseApiController
      */
     public function createRecurring(): JsonResponse
     {
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_create', 5, 60);
 
         $tenantId = (int) TenantContext::getId();
@@ -2253,7 +2253,7 @@ class EventsController extends BaseApiController
     public function updateRecurring($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $this->rateLimit('events_update', 20, 60);
 
         $data = $this->getAllInput();
@@ -2308,7 +2308,7 @@ class EventsController extends BaseApiController
     public function uploadImage($id): JsonResponse
     {
         $id = (int) $id;
-        $userId = $this->requireAuth();
+        $userId = $this->getActingUserId();
         $rawScope = request()->input('scope');
         $scope = is_string($rawScope) && trim($rawScope) !== '' ? trim($rawScope) : null;
         $this->rateLimit('events_image_upload', 10, 60);

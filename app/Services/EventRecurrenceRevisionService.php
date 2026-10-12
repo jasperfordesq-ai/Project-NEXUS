@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use JsonException;
 use Throwable;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Preview-first, effective-dated recurring-series blueprint revisions.
@@ -670,7 +671,7 @@ final class EventRecurrenceRevisionService
         $actor = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         $selectedProbe = Event::withoutGlobalScopes()

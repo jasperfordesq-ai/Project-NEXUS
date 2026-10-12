@@ -22,6 +22,7 @@ use DateTimeInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use stdClass;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Issuance and verification boundary for opaque, registration-scoped QR credentials. */
 final class EventCheckinCredentialService
@@ -540,7 +541,7 @@ final class EventCheckinCredentialService
             ? User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorUserId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first()
             : null;

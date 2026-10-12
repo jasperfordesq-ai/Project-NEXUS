@@ -22,6 +22,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Transactional write and capability boundary for delegated event staff. */
 final class EventRoleService
@@ -436,13 +437,15 @@ final class EventRoleService
         // checked below.
         $users = DB::table('users')
             ->whereIn('id', $userIds)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS])
             ->whereNull('deleted_at')
             ->orderBy('id')
             ->lockForUpdate()
             ->get([
                 'id',
                 'tenant_id',
+                'status',
+                'deleted_at',
                 'role',
                 'is_admin',
                 'is_super_admin',
@@ -451,13 +454,17 @@ final class EventRoleService
             ])
             ->keyBy('id');
 
+        // The actor may be a manager's usable delegate in this community
+        // (ManagerDelegate; owner, 12 Oct 2026, option 3).
         $persistedActor = $users->get($actorId);
         if ($persistedActor === null
+            || ! ManagerDelegate::isActingAccount($persistedActor)
             || ((int) $persistedActor->tenant_id !== $tenantId && ! TenantAdminScope::allows($persistedActor, $tenantId))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
+        // The member given a role is always a real, active member here.
         $target = $users->get($targetUserId);
-        if ($target === null || (int) $target->tenant_id !== $tenantId) {
+        if ($target === null || (int) $target->tenant_id !== $tenantId || (string) $target->status !== 'active') {
             throw new EventRoleAssignmentException('event_staff_role_target_invalid');
         }
 
@@ -486,11 +493,13 @@ final class EventRoleService
         // community above this one (owner rule, 12 Oct 2026).
         $actorRow = DB::table('users')
             ->where('id', (int) $actor->getKey())
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS])
             ->whereNull('deleted_at')
             ->first([
                 'id',
                 'tenant_id',
+                'status',
+                'deleted_at',
                 'role',
                 'is_admin',
                 'is_super_admin',
@@ -498,6 +507,7 @@ final class EventRoleService
                 'is_god',
             ]);
         if ($actorRow === null
+            || ! ManagerDelegate::isActingAccount($actorRow)
             || ((int) $actorRow->tenant_id !== $tenantId && ! TenantAdminScope::allows($actorRow, $tenantId))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }

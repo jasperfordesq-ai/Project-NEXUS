@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use App\Support\UserDisplayName;
+use App\Support\Authorization\ManagerDelegate;
 /**
  * EventService — Laravel DI-based service for event operations.
  *
@@ -3568,7 +3569,7 @@ class EventService
         /** @var User|null $actor */
         $actor = User::withoutGlobalScopes()
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
             ->whereNull('deleted_at')
             ->first();
         if ($actor === null) {
@@ -4899,7 +4900,7 @@ class EventService
         // decides authority against the tenant-scoped event.
         $actor = User::withoutGlobalScopes()
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
             ->whereNull('deleted_at')
             ->first();
         if ($actor === null) {

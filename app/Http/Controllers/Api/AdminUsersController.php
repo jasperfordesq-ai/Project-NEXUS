@@ -82,7 +82,9 @@ class AdminUsersController extends BaseApiController
             $sort = 'created_at';
         }
 
-        $conditions = ['u.tenant_id = ?'];
+        // A manager's delegate (ManagerDelegate) is a recorded identity, not a
+        // member: never listed here.
+        $conditions = ['u.tenant_id = ?', "(u.status IS NULL OR u.status <> 'delegate')"];
         $params = [$tenantId];
 
         if ($status && $status !== 'all') {
@@ -229,7 +231,7 @@ class AdminUsersController extends BaseApiController
                     u.tenant_id, t.name as tenant_name
              FROM users u
              LEFT JOIN tenants t ON u.tenant_id = t.id
-             WHERE u.id = ? AND u.tenant_id = ?",
+             WHERE u.id = ? AND u.tenant_id = ? AND (u.status IS NULL OR u.status <> 'delegate')",
             [$id, $tenantId]
         );
 

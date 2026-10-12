@@ -664,6 +664,46 @@ abstract class BaseApiController extends Controller
     }
 
     /**
+     * The id of the account ACTING on this request, for writing records.
+     *
+     * Normally the signed-in account. On a request that crosses into another
+     * community (a tenant super admin below its home community, or the platform
+     * owner anywhere) and that is an event organiser request, it is that
+     * manager's DELEGATE in this community (App\Support\Authorization\
+     * ManagerDelegate; owner, 12 Oct 2026: option 3) — because event records
+     * may only name an account of the event's own community. Every other
+     * request keeps the signed-in account, so a person's own pages, sign-ups
+     * and profile never change identity.
+     */
+    protected function getActingUserId(): int
+    {
+        $userId = $this->getUserId();
+        $tenantId = (int) (\App\Core\TenantContext::currentId() ?? 0);
+        if ($tenantId <= 0) {
+            return $userId;
+        }
+
+        $homeTenantId = (int) (\Illuminate\Support\Facades\DB::table('users')->where('id', $userId)->value('tenant_id') ?? 0);
+        if ($homeTenantId === $tenantId) {
+            return $userId;
+        }
+
+        [$method, $path] = \App\Support\Authorization\CrossTenantEntry::describeRequest();
+        if (! \App\Support\Authorization\CrossTenantEntry::isEventOrganiserRequest($method, $path)) {
+            return $userId;
+        }
+
+        $actor = \App\Support\Authorization\CrossTenantEntry::activeActor($userId, $tenantId);
+        if ($actor === null) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->error(__('api.forbidden'), 403, 'FORBIDDEN')
+            );
+        }
+
+        return (int) $actor->id;
+    }
+
+    /**
      * Alias for respondWithData() — used by group controllers.
      *
      * @param mixed $data Response data

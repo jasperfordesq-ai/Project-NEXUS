@@ -27,6 +27,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Serialized canonical waitlist writer with expiring, single-use capacity offers. */
 final class EventWaitlistService
@@ -1474,7 +1475,7 @@ final class EventWaitlistService
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
             ->whereKey((int) $actor->getKey())
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->lockForUpdate()
             ->first();

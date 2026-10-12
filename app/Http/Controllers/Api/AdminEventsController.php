@@ -634,6 +634,16 @@ class AdminEventsController extends BaseApiController
         if ($actor === null || ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
             throw (new \Illuminate\Database\Eloquent\ModelNotFoundException())->setModel(User::class, [$adminId]);
         }
+        // From another community (a tenant super admin above, or the platform
+        // owner), the change is made by the admin's DELEGATE here: event records
+        // may only name an account of the event's own community (owner, 12 Oct
+        // 2026, option 3; register O-209).
+        if ((int) $actor->tenant_id !== (int) $tenantId) {
+            $actor = CrossTenantEntry::activeActor((int) $adminId, (int) $tenantId);
+            if ($actor === null) {
+                throw (new \Illuminate\Database\Eloquent\ModelNotFoundException())->setModel(User::class, [$adminId]);
+            }
+        }
         $snapshot = Event::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($eventId)

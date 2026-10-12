@@ -47,7 +47,7 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->queries->paginateForEvent(
                 $eventId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $page,
                 min(100, $perPage),
             );
@@ -77,7 +77,7 @@ final class EventBroadcastController extends BaseApiController
         try {
             $detail = $this->queries->detail(
                 $broadcastId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $historyPage,
                 min(100, $historyPerPage),
             );
@@ -96,7 +96,7 @@ final class EventBroadcastController extends BaseApiController
         try {
             $preview = $this->broadcasts->preview(
                 $eventId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (string) $validated['variant'],
                 (array) $validated['segments'],
                 (array) $validated['channels'],
@@ -118,14 +118,14 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->broadcasts->createDraft(
                 $eventId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (string) $validated['variant'],
                 (array) $validated['segments'],
                 (array) $validated['channels'],
                 (string) $validated['body'],
                 $request->idempotencyKey(),
             );
-            $detail = $this->queries->detail((int) $result['broadcast']->id, $this->requireUserId());
+            $detail = $this->queries->detail((int) $result['broadcast']->id, $this->getActingUserId());
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
         } catch (Throwable $exception) {
@@ -141,7 +141,7 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->broadcasts->reviseDraft(
                 $broadcastId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $validated['expected_version'],
                 (string) $validated['variant'],
                 (array) $validated['segments'],
@@ -149,7 +149,7 @@ final class EventBroadcastController extends BaseApiController
                 (string) $validated['body'],
                 $request->idempotencyKey(),
             );
-            $detail = $this->queries->detail($broadcastId, $this->requireUserId());
+            $detail = $this->queries->detail($broadcastId, $this->getActingUserId());
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
         } catch (Throwable $exception) {
@@ -168,12 +168,12 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->broadcasts->schedule(
                 $broadcastId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $validated['expected_version'],
                 $scheduledAt,
                 $request->idempotencyKey(),
             );
-            $detail = $this->queries->detail($broadcastId, $this->requireUserId());
+            $detail = $this->queries->detail($broadcastId, $this->getActingUserId());
         } catch (SafeguardingPolicyException $exception) {
             return $this->privateResponse($this->safeguardingPolicyError($exception));
         } catch (EventBroadcastException $exception) {
@@ -191,12 +191,12 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->broadcasts->cancel(
                 $broadcastId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $validated['expected_version'],
                 (string) $validated['reason'],
                 $request->idempotencyKey(),
             );
-            $detail = $this->queries->detail($broadcastId, $this->requireUserId());
+            $detail = $this->queries->detail($broadcastId, $this->getActingUserId());
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
         } catch (Throwable $exception) {
@@ -212,11 +212,11 @@ final class EventBroadcastController extends BaseApiController
         try {
             $result = $this->broadcasts->retryFailed(
                 $broadcastId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $validated['expected_version'],
                 $request->idempotencyKey(),
             );
-            $detail = $this->queries->detail($broadcastId, $this->requireUserId());
+            $detail = $this->queries->detail($broadcastId, $this->getActingUserId());
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
         } catch (Throwable $exception) {

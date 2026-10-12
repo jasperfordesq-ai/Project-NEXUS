@@ -18,6 +18,7 @@ use App\Policies\EventPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Read-only, ledger-derived Events analytics for authorised organisers.
@@ -486,7 +487,7 @@ SQL)
         $persisted = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey((int) $actor->getKey())
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         $event = Event::withoutGlobalScopes()

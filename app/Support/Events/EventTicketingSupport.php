@@ -18,6 +18,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use App\Support\Authorization\CrossTenantEntry;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Tenant, policy, time, idempotency, and decimal primitives for ticketing. */
 final class EventTicketingSupport
@@ -48,14 +49,18 @@ final class EventTicketingSupport
             $query->lockForUpdate();
         }
         $persisted = $query->first();
-        // Own community, or a crossing CrossTenantEntry admits: a tenant super
-        // admin managing a community below its own (owner rule, 12 Oct 2026).
-        // Looked up by id, because that account's row is not in this community;
-        // outside an HTTP request no crossing is ever admitted.
-        if ($persisted !== null && ! CrossTenantEntry::actorMayActIn($persisted, $tenantId)) {
+        // A member of this community acts as itself (unchanged). A delegate
+        // acts only while usable. A manager from another community whose
+        // crossing the door admitted acts as its delegate here, so the
+        // record names an account of THIS community (owner, 12 Oct 2026,
+        // option 3). Outside an HTTP request no crossing is ever admitted.
+        if ($persisted !== null && (int) $persisted->tenant_id !== $tenantId) {
+            $persisted = CrossTenantEntry::activeActor((int) $persisted->getKey(), $tenantId, $lock);
+        } elseif ($persisted !== null && ManagerDelegate::isDelegate($persisted)
+            && ! ManagerDelegate::isUsable($persisted, $tenantId)) {
             $persisted = null;
         }
-        if ($persisted === null || (string) $persisted->status !== 'active') {
+        if ($persisted === null || ! in_array((string) $persisted->status, ['active', ManagerDelegate::STATUS], true)) {
             throw new EventTicketingException('event_ticket_actor_not_found');
         }
 

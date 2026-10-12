@@ -95,10 +95,25 @@ class TokenService
     }
 
     /**
+     * A manager's delegate (App\Support\Authorization\ManagerDelegate) is a
+     * recorded identity, never a sign-in: no token of any kind is ever minted
+     * for one. Authenticate refuses its status anyway; this stops the token
+     * existing at all.
+     */
+    private function refuseManagerDelegate(int $userId): void
+    {
+        $status = DB::table('users')->where('id', $userId)->value('status');
+        if ($status === \App\Support\Authorization\ManagerDelegate::STATUS) {
+            throw new \RuntimeException('A manager delegate cannot be signed in.');
+        }
+    }
+
+    /**
      * Generate an access token for a user.
      */
     public function generateToken(int $userId, int $tenantId, array $additionalClaims = [], ?bool $isMobile = null): string
     {
+        $this->refuseManagerDelegate($userId);
         $expiry = $this->getAccessTokenExpiry($isMobile);
         $platform = ($isMobile ?? $this->isMobileRequest()) ? 'mobile' : 'web';
 
@@ -118,6 +133,7 @@ class TokenService
      */
     public function generateRefreshToken(int $userId, int $tenantId, ?bool $isMobile = null, array $assurance = []): string
     {
+        $this->refuseManagerDelegate($userId);
         $familyId = bin2hex(random_bytes(32));
         $familyExpiresAt = time() + self::REFRESH_TOKEN_EXPIRY;
 

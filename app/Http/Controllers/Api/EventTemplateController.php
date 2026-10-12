@@ -40,7 +40,7 @@ final class EventTemplateController extends BaseApiController
         $validated = $request->validated();
         try {
             $result = $this->queries->index(
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (string) ($validated['status'] ?? 'active'),
                 isset($validated['source_event_id']) ? (int) $validated['source_event_id'] : null,
                 isset($validated['search']) ? (string) $validated['search'] : null,
@@ -62,7 +62,7 @@ final class EventTemplateController extends BaseApiController
     public function show(int $templateId): JsonResponse
     {
         try {
-            $record = $this->queries->show($templateId, $this->requireUserId());
+            $record = $this->queries->show($templateId, $this->getActingUserId());
         } catch (EventTemplateException $exception) {
             return $this->templateError($exception);
         } catch (Throwable $exception) {
@@ -82,7 +82,7 @@ final class EventTemplateController extends BaseApiController
         try {
             $result = $this->queries->history(
                 $templateId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 isset($validated['cursor']) ? (int) $validated['cursor'] : null,
                 (int) ($validated['per_page'] ?? 50),
             );
@@ -103,7 +103,7 @@ final class EventTemplateController extends BaseApiController
         try {
             $preview = $this->templates->previewCapture(
                 $sourceEventId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
             );
         } catch (EventTemplateException $exception) {
             return $this->templateError($exception);
@@ -123,12 +123,12 @@ final class EventTemplateController extends BaseApiController
         try {
             $result = $this->templates->capture(
                 $sourceEventId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $request->idempotencyKey(),
             );
             $record = $this->queries->show(
                 (int) $result['template']->id,
-                $this->requireUserId(),
+                $this->getActingUserId(),
             );
         } catch (EventTemplateException $exception) {
             return $this->templateError($exception);
@@ -150,11 +150,11 @@ final class EventTemplateController extends BaseApiController
         try {
             $result = $this->templates->revise(
                 $templateId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $request->validated('expected_version'),
                 $request->idempotencyKey(),
             );
-            $record = $this->queries->show($templateId, $this->requireUserId());
+            $record = $this->queries->show($templateId, $this->getActingUserId());
         } catch (EventTemplateException $exception) {
             return $this->templateError($exception);
         } catch (Throwable $exception) {
@@ -175,12 +175,12 @@ final class EventTemplateController extends BaseApiController
         try {
             $result = $this->templates->archive(
                 $templateId,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 (int) $request->validated('expected_version'),
                 trim((string) $request->validated('reason')),
                 $request->idempotencyKey(),
             );
-            $record = $this->queries->show($templateId, $this->requireUserId());
+            $record = $this->queries->show($templateId, $this->getActingUserId());
         } catch (EventTemplateException $exception) {
             return $this->templateError($exception);
         } catch (Throwable $exception) {
@@ -203,7 +203,7 @@ final class EventTemplateController extends BaseApiController
             $preview = $this->templates->previewMaterialization(
                 $templateId,
                 $input['template_version'],
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $input['start_time'],
                 $input['end_time'],
                 $input['overrides'],
@@ -228,7 +228,7 @@ final class EventTemplateController extends BaseApiController
             $result = $this->templates->materialize(
                 $templateId,
                 $input['template_version'],
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $input['start_time'],
                 $input['end_time'],
                 $input['overrides'],

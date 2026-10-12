@@ -86,13 +86,11 @@ final class EventAnalyticsController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        $actor = $tenantId === null
+        // A member of this community, or a manager's delegate here
+        // (CrossTenantEntry::activeActor(); owner, 12 Oct 2026, option 3).
+        $actor = $tenantId === null || $tenantId <= 0
             ? null
-            : User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'active')
-                ->whereNull('deleted_at')
-                ->find($this->requireUserId());
+            : \App\Support\Authorization\CrossTenantEntry::activeActor($this->getActingUserId(), (int) $tenantId);
         if (! $actor instanceof User) {
             throw new EventAnalyticsException('event_analytics_actor_invalid');
         }

@@ -25,6 +25,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use JsonException;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Serialized, tenant-safe attendance recording boundary. */
 final class EventAttendanceService
@@ -93,7 +94,7 @@ final class EventAttendanceService
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
                 ->whereKey((int) $actor->getKey())
-                ->where('status', 'active')
+                ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
                 ->whereNull('deleted_at')
                 ->first();
             if ($persistedActor === null || ! $this->policy->manageAttendance($persistedActor, $event)) {
@@ -334,7 +335,7 @@ final class EventAttendanceService
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
                 ->whereKey((int) $actor->getKey())
-                ->where('status', 'active')
+                ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
                 ->whereNull('deleted_at')
                 ->first();
             if ($persistedActor === null

@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use UnexpectedValueException;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Serialized write boundary for Event publication and operational lifecycle.
@@ -121,7 +122,7 @@ final class EventLifecycleService
             /** @var User|null $persistedActor */
             $persistedActor = User::withoutGlobalScopes()
                 ->whereKey((int) $actor->getKey())
-                ->where('status', 'active')
+                ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
                 ->whereNull('deleted_at')
                 ->first();
             if ($persistedActor === null || ! $this->policy->manage($persistedActor, $event)) {

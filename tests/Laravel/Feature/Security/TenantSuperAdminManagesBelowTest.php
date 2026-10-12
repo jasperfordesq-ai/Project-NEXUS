@@ -214,32 +214,14 @@ final class TenantSuperAdminManagesBelowTest extends TestCase
         self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'));
     }
 
-    /**
-     * Organiser changes whose records the database cannot attribute to an
-     * account from another community. Refused cleanly at the door — never a
-     * half-done write or a server error.
-     *
-     * @return array<string, array{0:string,1:string}>
-     */
-    public static function organiserWritesNotAdmitted(): array
+    public function test_a_parent_tenant_super_admin_cannot_read_its_own_relationship_to_a_child_event(): void
     {
-        return [
-            'cancel the event' => ['POST', '/cancel'],
-            'edit the event' => ['PUT', ''],
-            'send a broadcast' => ['POST', '/broadcasts'],
-            'view analytics (writes an access audit)' => ['GET', '/analytics'],
-            'create a ticket type' => ['POST', '/ticket-types'],
-            'federation status (not yet checked for a visitor)' => ['GET', '/federation-status'],
-            'own relationship to the event' => ['GET', '/relationship'],
-        ];
-    }
-
-    /** @dataProvider organiserWritesNotAdmitted */
-    public function test_a_parent_tenant_super_admin_is_refused_organiser_changes_the_database_cannot_record(string $method, string $suffix): void
-    {
+        // "My" registration state is a member's own view, not an organiser
+        // tool: refused below. Organiser CHANGES are covered, and admitted, in
+        // TenantSuperAdminOrganiserChangesBelowTest (owner, 12 Oct 2026: option 3).
         $eventId = $this->childEvent();
 
-        $response = $this->jwt($method, "/api/v2/events/{$eventId}{$suffix}", $this->tenantSuperAdmin(self::PARENT), self::CHILD);
+        $response = $this->jwt('GET', "/api/v2/events/{$eventId}/relationship", $this->tenantSuperAdmin(self::PARENT), self::CHILD);
 
         $response->assertStatus(403);
         self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'));
@@ -285,13 +267,7 @@ final class TenantSuperAdminManagesBelowTest extends TestCase
             ['GET', 'api/v2/events/{id}/people/{userId}/history'],
             ['GET', 'api/v2/events/55/lifecycle-history'],
             ['GET', 'api/v2/events/55/people/9/history'],
-        ] as [$method, $path]) {
-            self::assertTrue(CrossTenantEntry::isManagementRequest($method, $path), "{$method} {$path} is an organiser tool.");
-        }
-
-        foreach ([
-            // Organiser writes the database cannot record for an account from
-            // another community (composite actor foreign keys) — not admitted.
+            // Organiser changes, admitted since the delegate (owner, 12 Oct 2026: option 3).
             ['PUT', 'api/v2/events/{id}'],
             ['DELETE', 'api/v2/events/{id}'],
             ['POST', 'api/v2/events/{id}/cancel'],
@@ -299,10 +275,18 @@ final class TenantSuperAdminManagesBelowTest extends TestCase
             ['POST', 'api/v2/events/{id}/attendees/{attendeeId}/check-in'],
             ['POST', 'api/v2/events/{eventId}/broadcasts'],
             ['POST', 'api/v2/events/{id}/ticket-types'],
+            ['POST', 'api/v2/events/{id}/ticket-types/{ticketTypeId}/{action}'],
+            ['POST', 'api/v2/events/{id}/tickets/{ticketTypeId}/allocate/{userId}'],
             ['GET', 'api/v2/events/{id}/analytics'],
             ['GET', 'api/v2/events/{id}/tickets/reconciliation'],
             ['POST', 'api/v2/events/{id}/registration-product/submissions/export'],
+        ] as [$method, $path]) {
+            self::assertTrue(CrossTenantEntry::isManagementRequest($method, $path), "{$method} {$path} is an organiser tool.");
+        }
+
+        foreach ([
             // Taking part.
+            ['GET', 'api/v2/events/{id}/relationship'],
             ['POST', 'api/v2/events/{id}/rsvp'],
             ['DELETE', 'api/v2/events/{id}/rsvp'],
             ['POST', 'api/v2/events/{id}/waitlist'],

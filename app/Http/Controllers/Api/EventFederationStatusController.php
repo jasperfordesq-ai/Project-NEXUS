@@ -53,7 +53,7 @@ final class EventFederationStatusController extends BaseApiController
             ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
-            ->find($this->requireUserId());
+            ->find($this->getActingUserId());
         if (! $actor instanceof User || ! $this->policy->viewStatus($actor, $event)) {
             return $this->noStore($this->respondWithError(
                 'EVENT_FEDERATION_FORBIDDEN',

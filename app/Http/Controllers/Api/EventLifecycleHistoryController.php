@@ -31,7 +31,7 @@ final class EventLifecycleHistoryController extends BaseApiController
         try {
             $result = $this->history->index(
                 $id,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 isset($validated['cursor']) ? (string) $validated['cursor'] : null,
                 (int) ($validated['per_page'] ?? 20),
             );

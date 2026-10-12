@@ -18531,6 +18531,26 @@ CREATE TABLE `tenant_invite_codes` (
   CONSTRAINT `fk_tic_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tenant_manager_delegates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tenant_manager_delegates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `delegate_user_id` int(11) NOT NULL,
+  `principal_user_id` int(11) DEFAULT NULL,
+  `principal_tenant_id` int(11) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_manager_delegate_user` (`delegate_user_id`),
+  UNIQUE KEY `uniq_manager_delegate_principal` (`tenant_id`,`principal_user_id`),
+  KEY `idx_manager_delegate_principal` (`principal_user_id`),
+  KEY `fk_manager_delegate_user` (`delegate_user_id`,`tenant_id`),
+  CONSTRAINT `fk_manager_delegate_principal` FOREIGN KEY (`principal_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_manager_delegate_user` FOREIGN KEY (`delegate_user_id`, `tenant_id`) REFERENCES `users` (`id`, `tenant_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tenant_plan_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -19775,7 +19795,7 @@ CREATE TABLE `users` (
   `verification_status` enum('none','pending','passed','failed','expired') NOT NULL DEFAULT 'none',
   `verification_provider` varchar(50) DEFAULT NULL,
   `verification_completed_at` datetime DEFAULT NULL,
-  `status` enum('active','inactive','suspended','banned','pending','rejected') DEFAULT 'active',
+  `status` enum('active','inactive','suspended','banned','pending','rejected','delegate') DEFAULT 'active',
   `rejection_reason` varchar(500) DEFAULT NULL COMMENT 'Why a pending registration was rejected; set with status = rejected',
   `rejected_at` timestamp NULL DEFAULT NULL,
   `rejected_by` int(11) DEFAULT NULL COMMENT 'Broker/admin who rejected the registration',
@@ -19921,6 +19941,36 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=990015 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_users_delegate_insert_guard` BEFORE INSERT ON `users` FOR EACH ROW BEGIN IF NEW.`status` = 'delegate' AND (NEW.`password_hash` IS NOT NULL OR COALESCE(NEW.`is_super_admin`, 0) <> 0 OR COALESCE(NEW.`is_god`, 0) <> 0 OR COALESCE(NEW.`is_tenant_super_admin`, 0) <> 0) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'user_delegate_invalid'; END IF; END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_users_delegate_update_guard` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN IF OLD.`status` = 'delegate' AND (NOT (NEW.`status` <=> 'delegate') OR NEW.`password_hash` IS NOT NULL OR NOT (NEW.`email` <=> OLD.`email`) OR NOT (NEW.`role` <=> OLD.`role`) OR NOT (NEW.`tenant_id` <=> OLD.`tenant_id`) OR COALESCE(NEW.`is_super_admin`, 0) <> 0 OR COALESCE(NEW.`is_god`, 0) <> 0 OR COALESCE(NEW.`is_tenant_super_admin`, 0) <> 0) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'user_delegate_immutable'; ELSEIF NOT (OLD.`status` <=> 'delegate') AND NEW.`status` = 'delegate' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'user_delegate_conversion_refused'; END IF; END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 DROP TABLE IF EXISTS `v_active_listings_with_coords`;
 /*!50001 DROP VIEW IF EXISTS `v_active_listings_with_coords`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -21977,7 +22027,8 @@ INSERT INTO `laravel_migrations` VALUES
 (483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153),
 (484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154),
 (485,'2026_10_11_180000_let_withdrawn_event_guests_be_re_added',155),
-(486,'2026_10_12_120000_add_target_tenant_id_to_super_admin_audit_log',156);
+(486,'2026_10_12_120000_add_target_tenant_id_to_super_admin_audit_log',156),
+(487,'2026_10_12_180000_create_tenant_manager_delegates',157);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

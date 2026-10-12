@@ -19,6 +19,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use JsonException;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Explicit, versioned definition capture for newly materialized V2 occurrences.
@@ -440,7 +441,7 @@ final class EventRecurrenceDefinitionBlueprintService
         $actor = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorUserId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         if ($root === null || ! (bool) $root->getRawOriginal('is_recurring_template')) {
@@ -662,7 +663,7 @@ final class EventRecurrenceDefinitionBlueprintService
         $actor = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorUserId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->when($lock, static fn ($query) => $query->lockForUpdate())
             ->first();

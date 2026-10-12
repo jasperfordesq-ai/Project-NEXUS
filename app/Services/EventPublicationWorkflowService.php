@@ -19,6 +19,7 @@ use App\Support\Events\EventLifecycleTransitionContext;
 use App\Support\Events\EventLifecycleTransitionGuard;
 use App\Support\Events\EventLifecycleTransitionResult;
 use Illuminate\Support\Facades\DB;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Canonical moderation-aware publication boundary for standalone and recurring Events.
@@ -184,7 +185,7 @@ final class EventPublicationWorkflowService
         /** @var User|null $persistedActor */
         $persistedActor = User::withoutGlobalScopes()
             ->whereKey((int) $actor->getKey())
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
             ->whereNull('deleted_at')
             ->first();
         /** @var Event|null $event */
@@ -278,11 +279,12 @@ final class EventPublicationWorkflowService
                 /** @var User|null $lockedActor */
                 $lockedActor = User::withoutGlobalScopes()
                     ->whereKey((int) $actor->getKey())
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate (ManagerDelegate)
                     ->whereNull('deleted_at')
                     ->lockForUpdate()
                     ->first();
                 if ($lockedActor === null
+                    || ! ManagerDelegate::isActingAccount($lockedActor)
                     || ! TenantAdminScope::allows($lockedActor, (int) $lockedRoot->getAttribute('tenant_id'))) {
                     throw new EventLifecycleTransitionException('event_lifecycle_authorization_denied');
                 }

@@ -67,7 +67,7 @@ final class EventParticipationDenialService
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
             $persistedUser = $this->support->activeUser($tenantId, $user, true);
-            $persistedReviewer = $this->support->activeUser(
+            $persistedReviewer = $this->support->activeActor(
                 $tenantId,
                 $reviewer,
                 true,
@@ -238,7 +238,7 @@ final class EventParticipationDenialService
             $idempotencyHash,
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
-            $persistedReviewer = $this->support->activeUser(
+            $persistedReviewer = $this->support->activeActor(
                 $tenantId,
                 $reviewer,
                 true,

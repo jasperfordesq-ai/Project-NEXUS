@@ -23,6 +23,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use JsonException;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Consent boundary for optional Event funnel analytics.
@@ -380,7 +381,7 @@ final class EventAnalyticsService
         $persisted = User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first();
         if ($persisted === null || (int) $actor->getAttribute('tenant_id') !== $tenantId) {

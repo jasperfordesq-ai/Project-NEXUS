@@ -121,46 +121,115 @@ final class CrossTenantEntry
         'GET' => [
             '',
             'agenda',
+            'analytics',
+            'analytics/export.csv',
             'attendance',
             'attendees',
             'broadcasts',
+            'federation-status',
             'lifecycle-history',
             'offline-checkin',
+            'offline-checkin/batches/lookup',
+            'offline-checkin/batches/#',
+            'offline-checkin/conflicts',
             'people',
+            'people/export.csv',
             'people/#/history',
+            'recurrence-definition-blueprints',
             'registration-product/invitations',
             'registration-product/manage',
+            'registration-product/retention',
             'safety',
             'safety/reviews',
             'staff',
             'tickets',
+            'tickets/reconciliation',
             'waitlist',
         ],
+        'PUT' => [
+            '',
+            'agenda/order',
+            'agenda/sessions/#',
+            'recurring',
+            'registration-product/forms/#',
+            'registration-product/settings',
+            'safety/requirements',
+            'ticket-types/#',
+        ],
         'DELETE' => [
+            '',
+            'safety/reviews/#',
             'staff/#',
         ],
         'POST' => [
+            'agenda/sessions',
+            'agenda/sessions/#/cancel',
+            'attendance',
+            'attendance/bulk',
+            'attendance/code',
+            'attendees/#/check-in',
+            'broadcasts',
+            'broadcasts/preview',
+            'cancel',
+            'image',
+            'offline-checkin/conflicts/#',
+            'offline-checkin/credentials',
+            'offline-checkin/credentials/#/revoke',
+            'offline-checkin/credentials/#/rotate',
+            'offline-checkin/devices',
+            'offline-checkin/devices/#/revoke',
+            'offline-checkin/devices/#/rotate',
+            'offline-checkin/manifest',
+            'offline-checkin/scan',
+            'offline-checkin/sync',
+            'people/bulk',
+            'people/#/approve',
+            'people/#/attendance',
+            'people/#/cancel',
+            'people/#/reject',
+            'publish',
+            'recurrence-definition-blueprints/commit',
+            'recurrence-definition-blueprints/preview',
+            'recurrence-revisions/commit',
+            'recurrence-revisions/preview',
+            'registration-product/campaigns/preview',
+            'registration-product/campaigns/#/cancel',
+            'registration-product/campaigns/#/issue',
+            'registration-product/campaigns/#/schedule',
+            'registration-product/forms',
+            'registration-product/forms/#/fork',
+            'registration-product/forms/#/publish',
+            'registration-product/guests/#/attendance/+',
+            'registration-product/guests/#/cancel',
+            'registration-product/invitations/#/revoke',
+            'registration-product/retention/dry-run',
+            'registration-product/retention/#/apply',
+            'registration-product/settings/publish',
+            'registration-product/submissions/export',
+            'safety/requirements/archive',
+            'safety/requirements/publish',
+            'safety/reviews',
+            'series',
             'staff',
+            'submit',
+            'template-preview',
+            'templates',
+            'ticket-entitlements/#/cancel',
+            'ticket-types',
+            'ticket-types/#/+',
+            'tickets/#/allocate/#',
         ],
     ];
 
     /*
-     * 🔴 WHY THE LIST ABOVE IS SHORT (12 Oct 2026). Most event organiser WRITES
-     * cannot be admitted for an account from another community, because the
-     * database forbids it: 45 event tables carry composite foreign keys
-     * (<actor column>, tenant_id) → users(id, tenant_id), so the account
-     * recorded as having acted must belong to the event's community. A visiting
-     * tenant super admin's row does not, and the write fails with SQLSTATE 1452
-     * — broadcasts, tickets, registration forms/settings, safety requirements,
-     * agenda sessions, templates, check-in devices/credentials, offline sync,
-     * invitations, and even the analytics READ (it writes an access audit).
-     * Cancelling, rejecting or cancelling a registration can cascade into those
-     * tables too (pending broadcasts/campaigns, ticket entitlements), so they
-     * are out as well. Admitted: the organiser READS that write nothing, and the
-     * event team (event_staff_assignments carries no such key). Widening this
-     * needs the owner's decision on the schema rule — see the E-103 register
-     * entry. Never add a route here without a test that the write succeeds for
-     * a visiting tenant super admin.
+     * 🔴 HOW ORGANISER CHANGES BELOW ARE RECORDED (owner, 12 Oct 2026: option 3).
+     * About 45 event tables carry composite foreign keys (<actor column>,
+     * tenant_id) → users(id, tenant_id): the account recorded as having acted
+     * must belong to the event's community. A manager from another community
+     * therefore acts here as its DELEGATE (ManagerDelegate; activeActor();
+     * BaseApiController::getActingUserId()). Never add a route here without a
+     * test, in TenantSuperAdminManagesBelowTest or beside it, that the action
+     * succeeds for a visiting tenant super admin and names the delegate.
      */
 
     /**
@@ -273,9 +342,10 @@ final class CrossTenantEntry
     }
 
     /**
-     * The ACTING account for work in community $tenantId: active, not deleted,
-     * looked up by id alone, and then admitted only if it is in $tenantId or
-     * actorMayActIn() admits the crossing. Null otherwise.
+     * The ACTING account for work in community $tenantId: an active member of
+     * it; a usable delegate of it (ManagerDelegate); or, for a manager from
+     * another community whose crossing actorMayActIn() admits, that manager's
+     * delegate here (created on first use). Null otherwise.
      *
      * 🔴 For the actor ONLY. A member being acted ON (the person registered,
      * given a ticket, reviewed, named as a speaker) must still be looked up
@@ -290,18 +360,35 @@ final class CrossTenantEntry
 
         $query = \App\Models\User::withoutGlobalScopes()
             ->whereKey($userId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS])
             ->whereNull('deleted_at');
         if ($lock) {
             $query->lockForUpdate();
         }
 
         $actor = $query->first();
-        if (! $actor instanceof \App\Models\User || ! self::actorMayActIn($actor, $tenantId)) {
+        if (! $actor instanceof \App\Models\User) {
             return null;
         }
 
-        return $actor;
+        // A delegate already inside this community: usable only while the
+        // manager it stands for is still active and still admitted here.
+        if (ManagerDelegate::isDelegate($actor)) {
+            return ManagerDelegate::isUsable($actor, $tenantId) ? $actor : null;
+        }
+
+        if ((int) $actor->tenant_id === $tenantId) {
+            return $actor;
+        }
+
+        // A manager from another community, on a request the door admitted:
+        // it acts here as its delegate, so what it does can be recorded
+        // against an account of THIS community (owner, 12 Oct 2026: option 3).
+        if (! self::actorMayActIn($actor, $tenantId)) {
+            return null;
+        }
+
+        return ManagerDelegate::forPrincipal($actor, $tenantId, $lock);
     }
 
     /**

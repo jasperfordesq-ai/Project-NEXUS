@@ -102,6 +102,11 @@ final class MemberExportCsv
             ->whereNull('deleted_at')
             ->whereNull('anonymized_at')
             ->where('email', 'not like', '%@anonymized.local')
-            ->where('email', 'not like', '%@anonymized.invalid');
+            ->where('email', 'not like', '%@anonymized.invalid')
+            // A manager's delegate is a recorded identity, not a member: it
+            // must never be exported and re-imported as a real account.
+            ->where(static function (Builder $query): void {
+                $query->whereNull('status')->orWhere('status', '<>', \App\Support\Authorization\ManagerDelegate::STATUS);
+            });
     }
 }

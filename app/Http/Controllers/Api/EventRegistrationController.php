@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Thin canonical registration, waitlist, and organiser People API. */
 final class EventRegistrationController extends BaseApiController
@@ -801,12 +802,13 @@ final class EventRegistrationController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
+        // The acting account: a member of this community, or — for a manager
+        // from another community that the door admitted — its delegate here
+        // (CrossTenantEntry::activeActor(); owner, 12 Oct 2026, option 3).
+        // What it may do to the event is still the event policy's call.
         $actor = $tenantId === null || $tenantId <= 0
             ? null
-            : User::withoutGlobalScopes()
-                ->where('status', 'active')
-                ->whereNull('deleted_at')
-                ->find($this->requireUserId());
+            : CrossTenantEntry::activeActor($this->getActingUserId(), (int) $tenantId);
         if (! $actor instanceof User) {
             throw new EventRegistrationException('event_registration_actor_invalid');
         }

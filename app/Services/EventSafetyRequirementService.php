@@ -62,7 +62,7 @@ final class EventSafetyRequirementService
             $idempotencyHash,
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
-            $persistedActor = $this->support->activeUser(
+            $persistedActor = $this->support->activeActor(
                 $tenantId,
                 $actor,
                 true,
@@ -242,7 +242,7 @@ final class EventSafetyRequirementService
             $idempotencyHash,
         ): array {
             $event = $this->support->concreteEvent($tenantId, $eventId, true);
-            $persistedActor = $this->support->activeUser(
+            $persistedActor = $this->support->activeActor(
                 $tenantId,
                 $actor,
                 true,

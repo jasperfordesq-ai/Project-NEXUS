@@ -17,6 +17,7 @@ use App\Support\Authorization\TenantAdminScope;
 use App\Policies\EventPolicy;
 use App\Support\Events\EventLifecycleHistoryCursor;
 use Illuminate\Support\Facades\Schema;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Tenant-safe, policy-scoped query boundary for immutable Event lifecycle history. */
 final class EventLifecycleHistoryQueryService
@@ -62,19 +63,25 @@ final class EventLifecycleHistoryQueryService
         }
 
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
-        /** @var User|null $persistedActor */
-        $persistedActor = User::withoutGlobalScopes()
-            ->whereKey($actorId)
-            ->where('status', 'active')
-            ->whereNull('deleted_at')
-            ->first();
-        // Own community, or admin authority here from outside per
-        // TenantAdminScope: the platform owner, or a tenant super admin of a
-        // community above this one (owner rule, 12 Oct 2026).
-        if ($persistedActor !== null
-            && (int) $persistedActor->tenant_id !== $tenantId
-            && ! TenantAdminScope::allows($persistedActor, $tenantId)) {
-            $persistedActor = null;
+        // A member of this community, a manager's usable delegate here, or a
+        // manager from above (acting as its delegate) — CrossTenantEntry::
+        // activeActor(); owner, 12 Oct 2026. EventPolicy still decides.
+        $persistedActor = CrossTenantEntry::activeActor($actorId, $tenantId);
+        if ($persistedActor === null) {
+            // Reading history writes nothing, so a manager from above may read
+            // it as itself even outside an HTTP request (where no delegate is
+            // ever handed out): TenantAdminScope decides, as before 12 Oct.
+            /** @var User|null $manager */
+            $manager = User::withoutGlobalScopes()
+                ->whereKey($actorId)
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->first();
+            if ($manager !== null
+                && (int) $manager->tenant_id !== $tenantId
+                && TenantAdminScope::allows($manager, $tenantId)) {
+                $persistedActor = $manager;
+            }
         }
         if ($persistedActor === null || ! $this->policy->manage($persistedActor, $event)) {
             throw new EventLifecycleHistoryException('event_lifecycle_history_authorization_denied');

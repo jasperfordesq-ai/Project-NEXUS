@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Http\JsonResponse;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Canonical management API for tenant-scoped Events staff assignments. */
 final class EventStaffController extends BaseApiController
@@ -52,7 +53,7 @@ final class EventStaffController extends BaseApiController
             return $this->roleError($exception);
         }
 
-        $viewerId = $this->requireUserId();
+        $viewerId = $this->getActingUserId();
         $viewerIsAdmin = MemberProfileVisibility::viewerIsAdmin($viewerId);
 
         return $this->respondWithData(
@@ -164,21 +165,13 @@ final class EventStaffController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        // Own community, or admin authority here from outside per
-        // TenantAdminScope: the platform owner, or a tenant super admin of a
-        // community above this one (owner rule, 12 Oct 2026). What the actor
-        // may do is still EventRoleService's call.
-        $actor = $tenantId === null
+        // The acting account: a member of this community, or — for a manager
+        // from another community that the door admitted — its delegate here
+        // (CrossTenantEntry::activeActor(); owner, 12 Oct 2026, option 3).
+        // What it may do to the event is still the event policy's call.
+        $actor = $tenantId === null || $tenantId <= 0
             ? null
-            : User::withoutGlobalScopes()
-                ->where('status', 'active')
-                ->whereNull('deleted_at')
-                ->find($this->requireUserId());
-        if ($actor instanceof User
-            && (int) $actor->tenant_id !== (int) $tenantId
-            && ! TenantAdminScope::allows($actor, (int) $tenantId)) {
-            $actor = null;
-        }
+            : CrossTenantEntry::activeActor($this->getActingUserId(), (int) $tenantId);
         if (! $actor instanceof User) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
@@ -238,8 +231,8 @@ final class EventStaffController extends BaseApiController
         return [
             'assignment' => EventStaffResource::fromModel(
                 $result['assignment'],
-                $this->requireUserId(),
-                MemberProfileVisibility::viewerIsAdmin($this->requireUserId()),
+                $this->getActingUserId(),
+                MemberProfileVisibility::viewerIsAdmin($this->getActingUserId()),
             ),
             'changed' => $result['changed'],
             'idempotent_replay' => ! $result['changed']

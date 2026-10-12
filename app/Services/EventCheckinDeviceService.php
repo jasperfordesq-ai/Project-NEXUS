@@ -22,6 +22,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use stdClass;
+use App\Support\Authorization\ManagerDelegate;
 
 /** Registration and revocation boundary for event-scoped offline staff devices. */
 final class EventCheckinDeviceService
@@ -392,7 +393,7 @@ final class EventCheckinDeviceService
             ? User::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereKey($actorUserId)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', ManagerDelegate::STATUS]) // or a manager's delegate
             ->whereNull('deleted_at')
             ->first()
             : null;

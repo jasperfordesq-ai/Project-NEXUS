@@ -19,6 +19,7 @@ use App\Support\Authorization\TenantAdminScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
+use App\Support\Authorization\ManagerDelegate;
 
 /**
  * Tenant-safe, fail-closed authorization boundary for Events.
@@ -341,8 +342,8 @@ class EventPolicy
             || (int) $user->getKey() <= 0
             || (int) $event->getKey() <= 0
             || (int) $event->getAttribute('tenant_id') !== $tenantId
-            || (string) $user->getAttribute('status') !== 'active'
-            || $user->getAttribute('deleted_at') !== null) {
+            // Active, or a manager's usable delegate (ManagerDelegate).
+            || ! ManagerDelegate::isActingAccount($user)) {
             return false;
         }
 
@@ -640,8 +641,8 @@ class EventPolicy
         // cost lazy lookups, but the predicates must stay aligned.
         if ($tenantId === null
             || (int) $user->getKey() <= 0
-            || (string) $user->getAttribute('status') !== 'active'
-            || $user->getAttribute('deleted_at') !== null) {
+            // Active, or a manager's usable delegate (ManagerDelegate).
+            || ! ManagerDelegate::isActingAccount($user)) {
             return;
         }
 

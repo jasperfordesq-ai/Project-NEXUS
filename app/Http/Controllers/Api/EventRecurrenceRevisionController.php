@@ -32,7 +32,7 @@ final class EventRecurrenceRevisionController extends BaseApiController
         try {
             $preview = $this->revisions->preview(
                 $id,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $request->revisionPatch(),
             );
         } catch (EventRecurrenceRevisionException $exception) {
@@ -53,7 +53,7 @@ final class EventRecurrenceRevisionController extends BaseApiController
         try {
             $result = $this->revisions->commit(
                 $id,
-                $this->requireUserId(),
+                $this->getActingUserId(),
                 $request->revisionPatch(),
                 $request->previewToken(),
                 $request->idempotencyKey(),
