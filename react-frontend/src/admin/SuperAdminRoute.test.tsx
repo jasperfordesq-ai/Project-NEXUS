@@ -233,7 +233,7 @@ describe('SuperAdminRoute', () => {
       expect(screen.getByTestId('outlet')).toBeInTheDocument();
     });
 
-    it('sends a branch admin back to the panel dashboard, not to a broken page', async () => {
+    it('sends a tenant super admin back to the panel dashboard, not to a broken page', async () => {
       mockAuth.user = { id: 31, is_tenant_super_admin: true, super_panel_level: 'regional' };
       const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
       render(<PlatformOnlyRoute />);

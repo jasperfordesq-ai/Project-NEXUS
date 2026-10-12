@@ -17,7 +17,7 @@
  *     provisioning queue and pilot enquiries. Platform super-admins only.
  *
  * Why both are needed. The panel's sidebar hides the platform-only sections from
- * a branch admin, but a hidden nav item is a convention, not a control: a
+ * a tenant super admin, but a hidden nav item is a convention, not a control: a
  * bookmark, a pasted URL or a stale link still routes straight to the page, which
  * then fires API calls that are refused one by one and looks broken. The API is
  * the authority — it is tiered and tested — so nothing leaks either way. These
@@ -63,7 +63,7 @@ export function SuperAdminRoute() {
 /**
  * Guard for the platform-wide screens inside the panel.
  *
- * Fail closed: requires an explicit 'master'. A branch admin — or anyone whose
+ * Fail closed: requires an explicit 'master'. A tenant super admin — or anyone whose
  * level cannot be established — is sent to the panel dashboard rather than shown
  * a page whose every request will be refused.
  */

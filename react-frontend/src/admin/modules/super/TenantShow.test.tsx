@@ -434,7 +434,7 @@ describe('TenantShow', () => {
   });
 
   /*
-   * 🔴 Deactivation was opened to branch super-admins on 2026-08-06, guarded on
+   * 🔴 Deactivation was opened to tenant super admins on 2026-08-06, guarded on
    * the server by `SuperPanelAccess::canManageTenant()` — which refuses the
    * caller's OWN community. These pin the button to that same rule, so the panel
    * never offers a control the API would answer 403 to, and never hides one it

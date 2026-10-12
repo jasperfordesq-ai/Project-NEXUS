@@ -778,7 +778,7 @@ class AdminSuperController extends BaseApiController
      * is no "hard delete via query param" any more.
      *
      * 🔴 Guarded by canManageTenant(), NOT canAccessTenant(). The difference is
-     * the whole point of admitting branch admins here (2026-08-06, owner's
+     * the whole point of admitting tenant super admins here (2026-08-06, owner's
      * decision: "tenant super admins should be able to do this for their
      * children"):
      *
@@ -924,7 +924,7 @@ class AdminSuperController extends BaseApiController
      * POST /api/v2/super-admin/tenants/{id}/reactivate
      *
      * F-251: the reverse of tenantDelete(), so the same canManageTenant() guard —
-     * a regional super-admin may not change the activation of its own root.
+     * a tenant super admin may not change the activation of its own root.
      */
     public function tenantReactivate(int $id): JsonResponse
     {
@@ -1654,7 +1654,7 @@ class AdminSuperController extends BaseApiController
 
         // F-168: impersonation must never let an actor borrow the authority of a
         // same-rank or higher peer. The platform-super-admin/god block above stops
-        // the obvious case, but a REGIONAL super-admin could otherwise impersonate a
+        // the obvious case, but a tenant super admin (regional level) could otherwise impersonate a
         // peer tenant-super-admin (or another admin) inside its own subtree, because
         // this endpoint checked only canAccessTenant() and not rank. Apply the same
         // locked outrank check the community impersonation endpoint uses, evaluated
@@ -2139,7 +2139,7 @@ class AdminSuperController extends BaseApiController
 
             // F-060 / F-251: every bulk action changes activation or hub mode,
             // both hierarchy-structural, so the caller must be able to MANAGE
-            // the tenant — a regional super-admin cannot change its own root
+            // the tenant — a tenant super admin cannot change its own root
             // (the single-tenant endpoints apply the same canManageTenant()).
             if (!SuperPanelAccess::canManageTenant($tid)) {
                 $errors[] = ['code' => 'TENANT_ACCESS_DENIED', 'params' => ['tenant_id' => $tid]];

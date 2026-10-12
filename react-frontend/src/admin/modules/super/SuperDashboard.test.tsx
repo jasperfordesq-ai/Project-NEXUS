@@ -87,7 +87,7 @@ describe('SuperDashboard', () => {
   });
 
   /*
-   * 🔴 Tier-B controls must not be offered to a branch super-admin.
+   * 🔴 Tier-B controls must not be offered to a tenant super admin.
    *
    * Federation Controls is platform-only: `/admin/super/federation/*` sits behind
    * `EnsureIsSuperAdmin` and answers 403 to a `regional` caller — confirmed by

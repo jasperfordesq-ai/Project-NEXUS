@@ -69,7 +69,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
    * The API enforces this regardless (tier B sits behind EnsureIsSuperAdmin, which
    * refuses tenant super-admins). Hiding it here is so the panel does not show
    * controls that can only fail. If you add a section, decide which tier it is in
-   * and gate it — an ungated addition shows a branch admin a dead end.
+   * and gate it — an ungated addition shows a tenant super admin a dead end.
    *
    * Fail closed: ask for an explicit 'master'. An earlier version asked "is this
    * caller regional?" and hid the sections if so — which meant a caller resolving
@@ -118,7 +118,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
     }] : []),
     // Platform-only: platform income and pricing. The billing endpoints also take
     // the community they act on from the request without a branch check, which is
-    // the concrete reason a branch admin must not reach them.
+    // the concrete reason a tenant super admin must not reach them.
     ...(showPlatformSections ? [{
       key: 'commercial',
       title: t('sidebar.section_commercial'),

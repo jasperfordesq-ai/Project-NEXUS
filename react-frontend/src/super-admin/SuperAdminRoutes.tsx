@@ -70,7 +70,7 @@ export function SuperAdminRoutes() {
       <Route path="audit" element={<Lazy><SuperAuditLog /></Lazy>} />
 
       {/* Per-community federation feature toggles are subtree-scoped by the API
-          (canAccessTenant), so a branch admin may use them. */}
+          (canAccessTenant), so a tenant super admin may use them. */}
       <Route path="federation/tenant/:tenantId/features" element={<Lazy><FederationTenantFeatures /></Lazy>} />
       <Route path="tenants/:tenantId/features" element={<SuperAdminTenantFeatureRedirect />} />
 
@@ -78,7 +78,7 @@ export function SuperAdminRoutes() {
         🔴 PLATFORM-ONLY screens. Hiding these from the sidebar is not enough — a
         bookmark, a pasted URL or a stale link routes straight here, and the page
         then fires requests the API refuses one by one, which looks broken rather
-        than refused. PlatformOnlyRoute sends a branch admin back to the panel
+        than refused. PlatformOnlyRoute sends a tenant super admin back to the panel
         dashboard instead.
 
         The API remains the authority: these endpoints sit behind

@@ -75,7 +75,7 @@ describe('SuperAdminSidebar', () => {
       renderAsRegional();
 
       // 🔴 The billing endpoints take the community they act on from the request
-      // with no branch check, which is why a branch admin must never reach them.
+      // with no branch check, which is why a tenant super admin must never reach them.
       expect(screen.queryByText('Commercial')).toBeNull();
       expect(screen.queryByRole('link', { name: 'Billing Control' })).toBeNull();
       expect(screen.queryByRole('link', { name: 'Revenue Dashboard' })).toBeNull();

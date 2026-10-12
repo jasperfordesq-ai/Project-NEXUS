@@ -380,9 +380,9 @@ describe('UserShow', () => {
    * `POST /v2/admin/super/users/{id}/impersonate` is tier A: it admits the
    * super-admin of a branch and confines them with canAccessTenant() on the
    * target's tenant. Gating the button on `is_super_admin` alone made the client
-   * stricter than the endpoint, so a network administrator could not reach a
+   * stricter than the endpoint, so a tenant super admin could not reach a
    * power they hold — the defect James Ryan needs working. These pin both
-   * directions: offered to a branch admin, and still withheld where the server
+   * directions: offered to a tenant super admin, and still withheld where the server
    * would refuse.
    */
   describe('impersonation button follows the server rule', () => {

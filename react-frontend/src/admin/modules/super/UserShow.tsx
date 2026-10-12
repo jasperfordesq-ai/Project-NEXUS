@@ -78,12 +78,12 @@ export function UserShow() {
    * `POST /v2/admin/super/users/{id}/impersonate` is tier A: it admits the
    * super-admin of a branch community and scopes them with
    * `SuperPanelAccess::canAccessTenant()` on the TARGET's tenant. Verified by
-   * hand on 2026-08-06 as a regional super-admin: a member of their own branch
+   * hand on 2026-08-06 as a tenant super admin: a member of their own branch
    * is allowed, a member of an unrelated community is 403, the platform owner
    * is 403, and themselves is 422.
    *
    * Gating the button on `is_super_admin` alone made the client STRICTER than
-   * the endpoint, so a network administrator could not reach a power they are
+   * the endpoint, so a tenant super admin could not reach a power they are
    * entitled to. A client gate must never be stricter than its server — the
    * server is the authority, and a hidden-but-permitted action is simply
    * invisible with nothing to explain it.
