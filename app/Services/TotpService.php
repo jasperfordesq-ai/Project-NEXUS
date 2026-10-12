@@ -513,11 +513,16 @@ class TotpService
                 : self::generateSecret();
             $encryptedSecret = TotpEncryption::encrypt($secret);
 
+            // user_totp_settings is unique on user_id ALONE. A row left on a
+            // community the account has since moved away from must be re-homed
+            // here, or completeSetup() (keyed user + tenant) never finds it and
+            // the account can never finish setting up its second factor.
             DB::insert(
                 "INSERT INTO user_totp_settings
                  (user_id, tenant_id, totp_secret_encrypted, is_enabled, is_pending_setup, setup_revocation_version)
                  VALUES (?, ?, ?, 0, 1, ?)
                  ON DUPLICATE KEY UPDATE
+                    tenant_id = VALUES(tenant_id),
                     totp_secret_encrypted = VALUES(totp_secret_encrypted),
                     is_enabled = 0,
                     is_pending_setup = 1,

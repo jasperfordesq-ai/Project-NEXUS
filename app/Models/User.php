@@ -742,6 +742,25 @@ class User extends Authenticatable
                     'is_tenant_super_admin' => 0,
                 ]);
 
+            // The account's own second factor follows it. Every check is keyed
+            // (user_id, tenant_id), so a factor left on the old community is
+            // invisible: users.totp_enabled stayed 1 while sign-in, the
+            // high-risk-action prompt and 2FA setup all found nothing. The
+            // authenticator secret and unused recovery codes belong to the
+            // person, not the community, so they move. Remembered devices do
+            // not: a move is a security-boundary change, like the sessions
+            // revoked above, so the next sign-in asks for a code again.
+            DB::table('user_totp_settings')
+                ->where('user_id', $userId)
+                ->update(['tenant_id' => $newTenantId]);
+            DB::table('user_backup_codes')
+                ->where('user_id', $userId)
+                ->update(['tenant_id' => $newTenantId]);
+            DB::table('user_trusted_devices')
+                ->where('user_id', $userId)
+                ->where('is_revoked', 0)
+                ->update(['is_revoked' => 1, 'revoked_at' => now(), 'revoked_reason' => 'tenant_moved']);
+
             // Solely-owned content follows the member in the SAME transaction:
             // listings (categories remapped into the destination taxonomy),
             // skills, interests; open no-money-yet exchange requests are
