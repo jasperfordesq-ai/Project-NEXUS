@@ -32,15 +32,6 @@ use Tests\Laravel\TestCase;
  * so admitting a regional caller there would let one branch set another branch's
  * billing plan. And granting platform super-admin is the escape hatch out of a
  * branch entirely.
- *
- * 🔴 Owner decision, 11 October 2026: "I don't want tenant admins to act outside
- * of the home community or tenant super admins, or normal tenant admins." The
- * hub's tenant super admin ("regional") now reaches its OWN community only — the
- * child beneath it is another community. Tests in this file that asserted reach
- * into the child were flipped to assert refusal, and tests whose point is a RANK
- * rule (who may edit/promote whom) now use a target in the hub itself, so the
- * rank check is still what refuses them rather than the community boundary.
- * See TenantSuperAdminPanelHomeCommunityTest for the dedicated coverage.
  */
 class RegionalPanelIsolationTest extends TestCase
 {
@@ -130,7 +121,7 @@ class RegionalPanelIsolationTest extends TestCase
 
     // ── Tier A: admitted, and confined ──────────────────────────────────────
 
-    public function test_the_tenant_list_contains_its_own_community_only(): void
+    public function test_the_tenant_list_contains_its_own_branch_and_no_sibling(): void
     {
         $this->actAsRegional();
 
@@ -138,8 +129,7 @@ class RegionalPanelIsolationTest extends TestCase
         $body = json_encode($response->json('data'));
 
         $this->assertStringContainsString('Branch A Hub', $body);
-        // 11 Oct 2026: the child beneath the hub is another community.
-        $this->assertStringNotContainsString('Branch A Child', $body);
+        $this->assertStringContainsString('Branch A Child', $body);
         // 🔴 The leakage assertion.
         $this->assertStringNotContainsString('Branch B Hub', $body);
         $this->assertStringNotContainsString('Branch B Child', $body);
@@ -158,13 +148,8 @@ class RegionalPanelIsolationTest extends TestCase
     public function test_the_user_list_contains_no_member_of_a_sibling_branch(): void
     {
         // The largest cross-tenant PII surface in the panel.
-        User::factory()->forTenant($this->hubId)->create([
-            'first_name' => 'Owen', 'last_name' => 'Ourbranch',
-            'status' => 'active', 'is_approved' => true,
-        ]);
-        // 11 Oct 2026: a member of the community BENEATH the hub is out of reach too.
         User::factory()->forTenant($this->childId)->create([
-            'first_name' => 'Cara', 'last_name' => 'Belowhub',
+            'first_name' => 'Owen', 'last_name' => 'Ourbranch',
             'status' => 'active', 'is_approved' => true,
         ]);
         User::factory()->forTenant($this->siblingChildId)->create([
@@ -176,7 +161,6 @@ class RegionalPanelIsolationTest extends TestCase
         $body = json_encode($this->apiGet('/v2/admin/super/users')->assertStatus(200)->json('data'));
 
         $this->assertStringContainsString('Ourbranch', $body);
-        $this->assertStringNotContainsString('Belowhub', $body);
         $this->assertStringNotContainsString('Sibling', $body);
     }
 
@@ -186,9 +170,7 @@ class RegionalPanelIsolationTest extends TestCase
         $this->actAsRegional();
 
         $this->apiGet("/v2/admin/super/tenants/{$this->siblingId}")->assertStatus(404);
-        // 11 Oct 2026: the child beneath the hub is another community (was 200).
-        $this->apiGet("/v2/admin/super/tenants/{$this->childId}")->assertStatus(404);
-        $this->apiGet("/v2/admin/super/tenants/{$this->hubId}")->assertStatus(200);
+        $this->apiGet("/v2/admin/super/tenants/{$this->childId}")->assertStatus(200);
     }
 
     public function test_a_sibling_tenant_cannot_be_modified(): void
@@ -208,25 +190,17 @@ class RegionalPanelIsolationTest extends TestCase
         );
     }
 
-    public function test_its_own_community_can_be_modified_but_not_the_child_beneath_it(): void
+    public function test_its_own_child_can_be_modified(): void
     {
-        // Was test_its_own_child_can_be_modified: 200 on the child. Since the
-        // owner's decision of 11 Oct 2026 the child is another community.
+        // The fix must not break the legitimate case.
         $this->actAsRegional();
 
         $this->apiPut("/v2/admin/super/tenants/{$this->childId}", ['name' => 'Branch A Child Renamed'])
-            ->assertStatus(403);
-        $this->assertSame(
-            'Branch A Child',
-            DB::table('tenants')->where('id', $this->childId)->value('name')
-        );
-
-        // The legitimate case: its own community.
-        $this->apiPut("/v2/admin/super/tenants/{$this->hubId}", ['name' => 'Branch A Hub Renamed'])
             ->assertStatus(200);
+
         $this->assertSame(
-            'Branch A Hub Renamed',
-            DB::table('tenants')->where('id', $this->hubId)->value('name')
+            'Branch A Child Renamed',
+            DB::table('tenants')->where('id', $this->childId)->value('name')
         );
     }
 
@@ -278,10 +252,8 @@ class RegionalPanelIsolationTest extends TestCase
         $email = 'regional-platform-' . uniqid('', false) . '@example.test';
         $this->actAsRegional();
 
-        // Own community (was the child, which is out of reach since 11 Oct 2026),
-        // so the role check is still what refuses this.
         $this->apiPost('/v2/admin/super/users', [
-            'tenant_id' => $this->hubId,
+            'tenant_id' => $this->childId,
             'email' => $email,
             'first_name' => 'Platform',
             'last_name' => 'Escalation',
@@ -296,14 +268,13 @@ class RegionalPanelIsolationTest extends TestCase
         ]);
     }
 
-    public function test_a_regional_admin_can_still_create_a_tenant_admin_in_its_own_community(): void
+    public function test_a_regional_admin_can_still_create_a_tenant_admin_in_its_branch(): void
     {
         $email = 'regional-tenant-admin-' . uniqid('', false) . '@example.test';
         $this->actAsRegional();
 
-        // Own community (was the child; out of reach since 11 Oct 2026).
         $response = $this->apiPost('/v2/admin/super/users', [
-            'tenant_id' => $this->hubId,
+            'tenant_id' => $this->childId,
             'email' => $email,
             'first_name' => 'Tenant',
             'last_name' => 'Administrator',
@@ -313,7 +284,7 @@ class RegionalPanelIsolationTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'id' => $response->json('data.user_id'),
-            'tenant_id' => $this->hubId,
+            'tenant_id' => $this->childId,
             'email' => $email,
             'role' => 'admin',
             'is_super_admin' => 0,
@@ -338,11 +309,9 @@ class RegionalPanelIsolationTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_a_regional_admin_cannot_promote_a_member_to_platform_super_admin(): void
+    public function test_a_regional_admin_cannot_promote_another_branch_user_to_platform_super_admin(): void
     {
-        // A member of its own community (was the child, out of reach since
-        // 11 Oct 2026), so the role check is still what refuses this.
-        $member = User::factory()->forTenant($this->hubId)->create([
+        $member = User::factory()->forTenant($this->childId)->create([
             'role' => 'member',
             'status' => 'active',
             'is_approved' => true,
@@ -361,9 +330,7 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_regional_admin_cannot_change_a_platform_admin_email(): void
     {
-        // Rank rule, so the target sits in the hub itself (the child has been out
-        // of reach since 11 Oct 2026 and would refuse for the wrong reason).
-        $platformAdmin = User::factory()->forTenant($this->hubId)->admin()->create([
+        $platformAdmin = User::factory()->forTenant($this->childId)->admin()->create([
             'email' => 'platform-original-' . uniqid('', false) . '@example.test',
             'status' => 'active',
             'is_approved' => true,
@@ -384,8 +351,7 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_regional_admin_cannot_edit_a_higher_tier_profile(): void
     {
-        // Rank rule — target in the hub itself (see the test above).
-        $platformAdmin = User::factory()->forTenant($this->hubId)->admin()->create([
+        $platformAdmin = User::factory()->forTenant($this->childId)->admin()->create([
             'first_name' => 'Protected',
             'last_name' => 'Platform',
             'location' => 'Original location',
@@ -420,8 +386,7 @@ class RegionalPanelIsolationTest extends TestCase
         ];
         $users = [];
         foreach ($targets as $index => $authority) {
-            // Rank rule — targets in the hub itself (the child is out of reach).
-            $user = User::factory()->forTenant($this->hubId)->admin()->create([
+            $user = User::factory()->forTenant($this->childId)->admin()->create([
                 'email' => "platform-encoding-{$index}-" . uniqid('', false) . '@example.test',
                 'status' => 'active',
                 'is_approved' => true,
@@ -517,8 +482,7 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_regional_admin_can_update_a_lower_tier_user_and_the_change_is_audited(): void
     {
-        // A member of its own community (was the child; out of reach since 11 Oct 2026).
-        $member = User::factory()->forTenant($this->hubId)->create([
+        $member = User::factory()->forTenant($this->childId)->create([
             'first_name' => 'Lower',
             'last_name' => 'Member',
             'role' => 'member',
@@ -552,23 +516,18 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_bulk_update_rejects_a_sibling_id_mixed_in_with_its_own(): void
     {
-        // 🔴 The interesting case: an id beneath the hub alongside one from another
-        // branch. A check on only the first element would let the second through.
-        // Since 11 Oct 2026 the child beneath the hub is another community too,
-        // so BOTH are refused (the child used to be deactivated here).
+        // 🔴 The interesting case: a valid id alongside one from another branch.
+        // A check on only the first element would let the sibling through.
         $this->actAsRegional();
 
-        $response = $this->apiPost('/v2/admin/super/bulk/update-tenants', [
+        $this->apiPost('/v2/admin/super/bulk/update-tenants', [
             'tenant_ids' => [$this->childId, $this->siblingId],
             'action' => 'deactivate',
         ])->assertStatus(200);
 
-        $this->assertSame(1, (int) DB::table('tenants')->where('id', $this->childId)->value('is_active'));
+        // Own child updated; sibling untouched and reported as denied.
+        $this->assertSame(0, (int) DB::table('tenants')->where('id', $this->childId)->value('is_active'));
         $this->assertSame(1, (int) DB::table('tenants')->where('id', $this->siblingId)->value('is_active'));
-        $this->assertSame(
-            ['TENANT_ACCESS_DENIED', 'TENANT_ACCESS_DENIED'],
-            array_column((array) $response->json('data.errors'), 'code')
-        );
     }
 
     public function test_a_bulk_move_cannot_pull_a_member_out_of_a_sibling_branch(): void
@@ -584,21 +543,15 @@ class RegionalPanelIsolationTest extends TestCase
 
         $this->actAsRegional();
 
-        // 403 since 11 Oct 2026: moving members between communities is the
-        // platform owner's alone (it used to be 200 with the sibling skipped).
         $this->apiPost('/v2/admin/super/bulk/move-users', [
             'user_ids' => [$ownMember->id, $siblingMember->id],
             'target_tenant_id' => $this->hubId,
-        ])->assertStatus(403);
+        ])->assertStatus(200);
 
         $this->assertSame(
             $this->siblingChildId,
             (int) DB::table('users')->where('id', $siblingMember->id)->value('tenant_id'),
             'A member of another branch must not be moved.'
-        );
-        $this->assertSame(
-            $this->childId,
-            (int) DB::table('users')->where('id', $ownMember->id)->value('tenant_id')
         );
     }
 
@@ -769,9 +722,6 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_regional_admin_cannot_move_a_peer_or_higher_tier_account(): void
     {
-        // Since 11 Oct 2026 a regional admin may not move anyone between
-        // communities, so this is now refused before the rank check runs. The
-        // rank rule for moves is still pinned below, with a platform-owner actor.
         $peer = User::factory()->forTenant($this->childId)->admin()->create([
             'status' => 'active', 'is_approved' => true,
         ]);
@@ -815,35 +765,13 @@ class RegionalPanelIsolationTest extends TestCase
 
     public function test_a_bulk_move_skips_a_peer_but_still_moves_a_lower_tier_member(): void
     {
-        /*
-         * Since 11 Oct 2026 only the platform owner may move members between
-         * communities, so the rank rule is pinned with a platform super admin
-         * (tier 3): a member moves, a peer platform super admin does not. The
-         * regional admin is refused outright.
-         */
         $member = User::factory()->forTenant($this->childId)->create([
             'role' => 'member', 'status' => 'active', 'is_approved' => true,
         ]);
         $peer = User::factory()->forTenant($this->childId)->admin()->create([
             'status' => 'active', 'is_approved' => true,
         ]);
-        DB::table('users')->where('id', $peer->id)->update(['is_super_admin' => 1]);
-
         $this->actAsRegional();
-        $this->apiPost('/v2/admin/super/bulk/move-users', [
-            'user_ids' => [$member->id],
-            'target_tenant_id' => $this->hubId,
-        ])->assertStatus(403);
-        $this->assertSame($this->childId, (int) DB::table('users')->where('id', $member->id)->value('tenant_id'));
-
-        $platform = User::factory()->forTenant($this->hubId)->admin()->create([
-            'status' => 'active', 'is_approved' => true,
-        ]);
-        DB::table('users')->where('id', $platform->id)->update(['is_super_admin' => 1]);
-        $platform->refresh();
-        SuperPanelAccess::reset();
-        $this->withTenant($this->hubId);
-        Sanctum::actingAs($platform);
 
         $response = $this->apiPost('/v2/admin/super/bulk/move-users', [
             'user_ids' => [$member->id, $peer->id],
@@ -941,9 +869,8 @@ class RegionalPanelIsolationTest extends TestCase
 
         $data = $this->apiGet('/v2/admin/super/dashboard')->assertStatus(200)->json('data');
 
-        // Its own community only — the hub. (Was 2, hub plus child, until the
-        // owner's decision of 11 Oct 2026 removed reach into sub-communities.)
-        $this->assertSame(1, (int) ($data['total_tenants'] ?? -1), 'The dashboard must count only the caller\'s own community.');
+        // Branch A is exactly two tenants: the hub and its child.
+        $this->assertSame(2, (int) ($data['total_tenants'] ?? -1), 'The dashboard must count only the caller\'s branch.');
     }
 
     public function test_the_audit_log_shows_no_sibling_branch_activity(): void
@@ -1044,20 +971,17 @@ class RegionalPanelIsolationTest extends TestCase
     // canAccessTenant() — refuses the caller's OWN tenant. All four cases below
     // are pinned because relaxing any one of them is a plausible "tidy-up".
 
-    public function test_a_regional_admin_cannot_deactivate_a_community_beneath_it(): void
+    public function test_a_regional_admin_can_deactivate_a_community_beneath_it(): void
     {
-        // Was test_a_regional_admin_can_deactivate_a_community_beneath_it (200).
-        // Owner decision, 11 Oct 2026: a tenant super admin does not act outside
-        // its home community, so only the platform owner deactivates one.
         $this->actAsRegional();
 
         $this->apiDelete("/v2/admin/super/tenants/{$this->childId}")
-            ->assertStatus(403);
+            ->assertStatus(200);
 
         $this->assertSame(
-            1,
+            0,
             (int) DB::table('tenants')->where('id', $this->childId)->value('is_active'),
-            'the community beneath the hub must stay active'
+            'the branch beneath the hub should now be inactive'
         );
     }
 
@@ -1190,16 +1114,11 @@ class RegionalPanelIsolationTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_a_regional_admin_can_impersonate_inside_its_own_community_only(): void
+    public function test_a_regional_admin_can_impersonate_inside_its_own_branch(): void
     {
         // The complement of the test above: confinement must not be so tight
-        // that the panel's own community stops working. Since 11 Oct 2026 that
-        // is the hub itself; a member of the child beneath it is refused (this
-        // test used the child member and expected 200 until then).
-        $ownMember = User::factory()->forTenant($this->hubId)->create([
-            'status' => 'active', 'is_approved' => true,
-        ]);
-        $childMember = User::factory()->forTenant($this->childId)->create([
+        // that the panel's own branch stops working.
+        $ownMember = User::factory()->forTenant($this->childId)->create([
             'status' => 'active', 'is_approved' => true,
         ]);
         $this->actAsRegional();
@@ -1208,9 +1127,7 @@ class RegionalPanelIsolationTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertNotEmpty($response->json('data.token'));
-        $this->assertSame($this->hubId, (int) $response->json('data.tenant_id'));
-
-        $this->apiPost("/v2/admin/super/users/{$childMember->id}/impersonate", [])->assertStatus(403);
+        $this->assertSame($this->childId, (int) $response->json('data.tenant_id'));
     }
 
     // ── A platform super-admin keeps everything ─────────────────────────────

@@ -44,11 +44,19 @@ class TenantVisibilityService
                     ->all();
             }
 
-            // Not the platform owner: its own community only (owner decision,
-            // 11 October 2026 — this returned the whole sub-community subtree).
-            $ownTenantId = (int) ($access['tenant_id'] ?? 0);
+            // A tenant super admin: its own tenant plus descendants, by the
+            // trailing-slash-anchored prefix subtreeFilter() resolves. Fail
+            // closed on an unusable path.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny'] || !$filter['filter'] || $filter['prefix'] === null) {
+                return [];
+            }
 
-            return $ownTenantId > 0 ? [$ownTenantId] : [];
+            return DB::table('tenants')
+                ->where('path', 'LIKE', $filter['prefix'] . '%')
+                ->pluck('id')
+                ->map(fn($id) => (int) $id)
+                ->all();
         } catch (\Throwable $e) {
             Log::error('TenantVisibilityService::getVisibleTenantIds failed', ['error' => $e->getMessage()]);
             return [];
@@ -84,7 +92,7 @@ class TenantVisibilityService
             if ($filter['deny']) {
                 $query->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $query->where('id', $filter['tenant_id']);
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             if (isset($filters['is_active'])) {
@@ -203,7 +211,7 @@ class TenantVisibilityService
             if ($filter['deny']) {
                 $query->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $query->where('users.tenant_id', $filter['tenant_id']);
+                $query->where('tenants.path', 'LIKE', $filter['prefix'] . '%');
             }
 
             if (!empty($filters['tenant_id'])) {
@@ -303,7 +311,7 @@ class TenantVisibilityService
             if ($filter['deny']) {
                 $query->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $query->where('id', $filter['tenant_id']);
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             $tenants = $query->get()->map(fn($t) => (array) $t)->all();
@@ -460,7 +468,7 @@ class TenantVisibilityService
             if ($filter['deny']) {
                 $query->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $query->where('id', $filter['tenant_id']);
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             return $query->get()->map(function ($tenant) {

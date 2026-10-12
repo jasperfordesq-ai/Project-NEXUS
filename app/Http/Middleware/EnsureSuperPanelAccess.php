@@ -16,14 +16,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Admits two kinds of caller:
  *   - `master`   — a platform super-admin or god: sees the whole installation;
- *   - `regional` — a tenant super-admin of a hub tenant: sees its OWN community
- *                  and nothing else.
- *
- * 🔴 Owner decision, 11 October 2026: a tenant super admin does not act outside
- * its home community. `regional` reached the caller's whole sub-community subtree
- * until then, and a tenant super admin on the master tenant was `master`. Both
- * are gone; the "subtree" wording below is historical — the confinement is now
- * the caller's own tenant id.
+ *   - `regional` — a tenant super-admin of a tenant that has children: sees its
+ *                  own tenant and its descendants, and nothing else — never an
+ *                  ancestor or a sibling. On the master tenant (id 1) that is the
+ *                  `/1/` subtree, not the whole installation (owner rule,
+ *                  12 October 2026).
  *
  * 🔴 Why this exists, and what it is NOT for.
  *

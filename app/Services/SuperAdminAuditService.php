@@ -209,19 +209,28 @@ class SuperAdminAuditService
             $query = DB::table('super_admin_audit_log')
                 ->orderByDesc('created_at');
 
-            // Scope by access level — a non-platform caller sees its own
-            // community's activity only (11 Oct 2026; was its whole subtree).
+            // Scope by access level — regional admins only see their subtree
             /*
              * 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This block
-             * once had TWO fail-open branches: an empty tenant_path skipped the
-             * filter entirely, and so did an empty subtree id list. Either one
-             * handed a non-platform caller the whole platform's audit log.
+             * had TWO fail-open branches: an empty tenant_path skipped the filter
+             * entirely, and so did an empty $subtreeIds. Either one handed a
+             * regional caller the whole platform's audit log.
              */
             $filter = SuperPanelAccess::subtreeFilter();
             if ($filter['deny']) {
                 $query->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $query->where('actor_tenant_id', $filter['tenant_id']);
+                // Get all tenant IDs in the subtree
+                $subtreeIds = DB::table('tenants')
+                    ->where('path', 'LIKE', $filter['prefix'] . '%')
+                    ->pluck('id')
+                    ->all();
+
+                if (empty($subtreeIds)) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereIn('actor_tenant_id', $subtreeIds);
+                }
             }
 
             if (!empty($filters['action_type'])) {
@@ -281,13 +290,21 @@ class SuperAdminAuditService
             $baseQuery = DB::table('super_admin_audit_log')
                 ->where('created_at', '>=', $since);
 
-            // Scope for a non-platform caller: its own community only.
-            // 🔴 Fail closed — see getLog() above.
+            // Scope for regional admins
+            // 🔴 Fail closed — same two fail-open branches as getLog() above.
             $filter = SuperPanelAccess::subtreeFilter();
             if ($filter['deny']) {
                 $baseQuery->whereRaw('1 = 0');
             } elseif ($filter['filter']) {
-                $baseQuery->where('actor_tenant_id', $filter['tenant_id']);
+                $subtreeIds = DB::table('tenants')
+                    ->where('path', 'LIKE', $filter['prefix'] . '%')
+                    ->pluck('id')
+                    ->all();
+                if (empty($subtreeIds)) {
+                    $baseQuery->whereRaw('1 = 0');
+                } else {
+                    $baseQuery->whereIn('actor_tenant_id', $subtreeIds);
+                }
             }
 
             $totalActions = (clone $baseQuery)->count();

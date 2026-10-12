@@ -58,6 +58,7 @@ export function SuperAdminRoutes() {
     <>
       <Route index element={<Lazy><SuperDashboard /></Lazy>} />
       <Route path="tenants" element={<Lazy><TenantListAdmin /></Lazy>} />
+      <Route path="tenants/create" element={<Lazy><TenantForm /></Lazy>} />
       <Route path="tenants/hierarchy" element={<Lazy><TenantHierarchy /></Lazy>} />
       <Route path="tenants/:id" element={<Lazy><TenantShow /></Lazy>} />
       <Route path="tenants/:id/edit" element={<Lazy><TenantForm /></Lazy>} />
@@ -65,11 +66,11 @@ export function SuperAdminRoutes() {
       <Route path="users/create" element={<Lazy><SuperUserForm /></Lazy>} />
       <Route path="users/:id" element={<Lazy><UserShow /></Lazy>} />
       <Route path="users/:id/edit" element={<Lazy><SuperUserForm /></Lazy>} />
+      <Route path="bulk" element={<Lazy><BulkOperations /></Lazy>} />
       <Route path="audit" element={<Lazy><SuperAuditLog /></Lazy>} />
 
-      {/* Per-community federation feature toggles are scoped by the API
-          (canAccessTenant): a tenant super-admin may use them for its OWN
-          community only (owner decision, 11 Oct 2026). */}
+      {/* Per-community federation feature toggles are subtree-scoped by the API
+          (canAccessTenant), so a branch admin may use them. */}
       <Route path="federation/tenant/:tenantId/features" element={<Lazy><FederationTenantFeatures /></Lazy>} />
       <Route path="tenants/:tenantId/features" element={<SuperAdminTenantFeatureRedirect />} />
 
@@ -86,12 +87,6 @@ export function SuperAdminRoutes() {
         cleanly. If you add a platform-wide screen, add it INSIDE this block.
       */}
       <Route element={<PlatformOnlyRoute />}>
-        {/* Creating a community and the bulk moves/updates act on OTHER
-            communities, which only the platform owner may do since the owner's
-            decision of 11 Oct 2026 (a tenant super-admin stays in its home
-            community). The API refuses them; this refuses cleanly. */}
-        <Route path="tenants/create" element={<Lazy><TenantForm /></Lazy>} />
-        <Route path="bulk" element={<Lazy><BulkOperations /></Lazy>} />
         <Route path="federation" element={<Lazy><FederationControls /></Lazy>} />
         <Route path="federation/whitelist" element={<Lazy><FederationWhitelist /></Lazy>} />
         <Route path="federation/partnerships" element={<Lazy><SuperPartnerships /></Lazy>} />

@@ -448,15 +448,16 @@ describe('UserShow', () => {
   });
 
   /*
-   * Owner decision, 11 Oct 2026: only the platform owner moves members between
-   * communities. The API refuses a tenant super-admin (hasPlatformReach), so the
-   * panel must not offer it the move controls.
+   * Owner rule, 12 Oct 2026: a tenant super-admin moves members between its own
+   * community and the communities beneath it; the API checks both ends of every
+   * move against its subtree. So the move controls are offered to it as well as
+   * to the platform owner.
    */
-  describe('moving a member between communities is offered to the platform owner only', () => {
+  describe('moving a member between communities is offered to a tenant super-admin and the platform owner', () => {
     const findButton = (label: string) =>
       screen.queryAllByRole('button').find((b) => b.textContent?.includes(label));
 
-    it('is withheld from a tenant super-admin', async () => {
+    it('is offered to a tenant super-admin', async () => {
       mockViewer.current = {
         id: 9, name: 'Rhona Regional', role: 'admin',
         is_tenant_super_admin: true, super_panel_level: 'regional',
@@ -465,8 +466,8 @@ describe('UserShow', () => {
       render(<UserShow />);
 
       await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
-      expect(findButton('Move to Different Tenant')).toBeUndefined();
-      expect(findButton('Move and Promote to Hub')).toBeUndefined();
+      expect(findButton('Move to Different Tenant')).toBeDefined();
+      expect(findButton('Move and Promote to Hub')).toBeDefined();
     });
 
     it('is offered to the platform owner', async () => {

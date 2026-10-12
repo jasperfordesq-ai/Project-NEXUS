@@ -24,8 +24,7 @@ import Plus from 'lucide-react/icons/plus';
 import List from 'lucide-react/icons/list';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
-import { useAuth, useTenant, useToast } from '@/contexts';
-import { superPanelLevel } from '@/lib/access';
+import { useTenant, useToast } from '@/contexts';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import type { TenantHierarchyNode } from '../../api/types';
@@ -119,9 +118,6 @@ export function TenantHierarchy() {
   usePageTitle(t('super.super_dashboard_title'));
   const { tenantPath } = useTenant();
   const toast = useToast();
-  const { user } = useAuth();
-  // Creating a community is the platform owner's alone (owner decision, 11 Oct 2026).
-  const isPlatformLevel = superPanelLevel(user) === 'master';
   const navigate = useNavigate();
 
   const [hierarchy, setHierarchy] = useState<TenantHierarchyNode[]>([]);
@@ -227,16 +223,14 @@ export function TenantHierarchy() {
             >
               {t('super.view_all_tenants')}
             </Button>
-            {isPlatformLevel && (
-              <Button
-                as={Link}
-                to={tenantPath('/super-admin/tenants/create')}
-                startContent={<Plus size={16} />}
-                size="sm"
-              >
-                {t('super.create_tenant')}
-              </Button>
-            )}
+            <Button
+              as={Link}
+              to={tenantPath('/super-admin/tenants/create')}
+              startContent={<Plus size={16} />}
+              size="sm"
+            >
+              {t('super.create_tenant')}
+            </Button>
             <Button
               variant="tertiary"
               startContent={<RefreshCw size={16} />}

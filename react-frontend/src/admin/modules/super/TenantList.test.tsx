@@ -201,18 +201,19 @@ describe('TenantList', () => {
   });
 
   /*
-   * Owner decision, 11 Oct 2026: a tenant super-admin does not act outside its
-   * home community. The API refuses it every create, hub and (de)activate action
-   * (canManageTenant / hasPlatformReach), so the list must not offer them.
+   * Owner rule, 12 Oct 2026: a tenant super-admin administers every community
+   * beneath it. The list only contains its own subtree (the API scopes it), and
+   * create / hub / (de)activate are subtree-scoped server-side, so they are
+   * offered. (The server still refuses them on the caller's own community.)
    */
-  it('offers a tenant super-admin no create, hub or deactivate controls', async () => {
+  it('offers a tenant super-admin the create, hub and deactivate controls', async () => {
     mockUser.current = { id: 9, is_tenant_super_admin: true, super_panel_level: 'regional' };
     mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [TENANT_A] });
 
     render(<TenantList />);
     await waitFor(() => expect(screen.getByText('Alpha Timebank')).toBeInTheDocument());
 
-    expect(screen.queryByRole('button', { name: /create tenant/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /create tenant/i })).toBeInTheDocument();
 
     const menuBtn = screen.getAllByRole('button').find(
       (b) => b.getAttribute('aria-label')?.toLowerCase().includes('actions')
@@ -220,12 +221,10 @@ describe('TenantList', () => {
     expect(menuBtn).toBeTruthy();
     fireEvent.click(menuBtn!);
 
-    // Wait for the menu to open (View is always offered), then check the rest.
     await waitFor(() => {
-      expect(screen.getAllByText(/^view$/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/deactivate/i).length).toBeGreaterThan(0);
     });
-    expect(screen.queryByText(/deactivate/i)).toBeNull();
-    expect(screen.queryByText(/^(enable|disable) hub$/i)).toBeNull();
+    expect(screen.getAllByText(/^(enable|disable) hub$/i).length).toBeGreaterThan(0);
   });
 });
 

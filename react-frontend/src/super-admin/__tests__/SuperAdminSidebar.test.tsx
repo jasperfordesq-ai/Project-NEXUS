@@ -100,12 +100,12 @@ describe('SuperAdminSidebar', () => {
       expect(screen.queryByRole('link', { name: 'Pilot Inquiries' })).toBeNull();
     });
 
-    it('is not shown bulk operations', () => {
-      // Owner decision, 11 Oct 2026: bulk moves and bulk tenant updates act on
-      // other communities, which only the platform owner may do.
+    it('is shown bulk operations', () => {
+      // Owner rule, 12 Oct 2026: bulk moves and bulk tenant updates are scoped
+      // to the tenant super-admin's own subtree by the API, so they are offered.
       renderAsRegional();
 
-      expect(screen.queryByRole('link', { name: 'Bulk Ops' })).toBeNull();
+      expect(screen.getByRole('link', { name: 'Bulk Ops' })).toBeInTheDocument();
     });
   });
 

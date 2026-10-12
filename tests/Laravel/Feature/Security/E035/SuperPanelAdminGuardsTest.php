@@ -100,13 +100,7 @@ class SuperPanelAdminGuardsTest extends TestCase
 
     public function test_a_regional_admin_can_still_impersonate_a_lower_tier_member(): void
     {
-        // A member of its OWN community. Until the owner's decision of 11 Oct
-        // 2026 this used a member of the child beneath the hub; that community is
-        // now out of reach, which is pinned at the end.
-        $member = User::factory()->forTenant($this->hubId)->create([
-            'status' => 'active', 'is_approved' => true,
-        ]);
-        $childMember = User::factory()->forTenant($this->childId)->create([
+        $member = User::factory()->forTenant($this->childId)->create([
             'status' => 'active', 'is_approved' => true,
         ]);
 
@@ -115,10 +109,7 @@ class SuperPanelAdminGuardsTest extends TestCase
         $response = $this->apiPost("/v2/admin/super/users/{$member->id}/impersonate", []);
         $response->assertStatus(200);
         $this->assertNotEmpty($response->json('data.token'));
-        $this->assertSame($this->hubId, (int) $response->json('data.tenant_id'));
-
-        SuperPanelAccess::reset();
-        $this->apiPost("/v2/admin/super/users/{$childMember->id}/impersonate", [])->assertStatus(403);
+        $this->assertSame($this->childId, (int) $response->json('data.tenant_id'));
     }
 
     // ── F-172: structural tenant changes ──────────────────────────────────────
@@ -150,17 +141,11 @@ class SuperPanelAdminGuardsTest extends TestCase
         $this->assertSame(1, (int) DB::table('tenants')->where('id', $this->hubId)->value('allows_subtenants'));
     }
 
-    public function test_a_parent_with_active_children_cannot_be_deactivated_via_update(): void
+    public function test_a_regional_admin_cannot_deactivate_a_parent_with_active_children_via_update(): void
     {
-        // childId still has the active grandchild beneath it. Since the owner's
-        // decision of 11 Oct 2026 the regional admin is refused the child outright
-        // (403), so the active-children guard (422) is exercised by the platform
-        // owner. This test was ..._a_regional_admin_cannot_... and expected 422.
+        // childId still has the active grandchild beneath it.
         $this->actAsRegional();
-        $this->apiPut("/v2/admin/super/tenants/{$this->childId}", ['is_active' => 0])
-            ->assertStatus(403);
 
-        $this->actAsPlatformOwner();
         $this->apiPut("/v2/admin/super/tenants/{$this->childId}", ['is_active' => 0])
             ->assertStatus(422);
 
@@ -170,19 +155,10 @@ class SuperPanelAdminGuardsTest extends TestCase
         );
     }
 
-    public function test_only_the_platform_owner_deactivates_a_childless_descendant_via_update(): void
+    public function test_a_regional_admin_can_still_deactivate_a_childless_descendant_via_update(): void
     {
-        // Was ..._a_regional_admin_can_still_deactivate_... (200). The regional
-        // admin is now refused: the descendant is another community.
         $this->actAsRegional();
-        $this->apiPut("/v2/admin/super/tenants/{$this->grandchildId}", ['is_active' => 0])
-            ->assertStatus(403);
-        $this->assertSame(
-            1,
-            (int) DB::table('tenants')->where('id', $this->grandchildId)->value('is_active')
-        );
 
-        $this->actAsPlatformOwner();
         $this->apiPut("/v2/admin/super/tenants/{$this->grandchildId}", ['is_active' => 0])
             ->assertStatus(200);
 
@@ -190,19 +166,6 @@ class SuperPanelAdminGuardsTest extends TestCase
             0,
             (int) DB::table('tenants')->where('id', $this->grandchildId)->value('is_active')
         );
-    }
-
-    private function actAsPlatformOwner(): void
-    {
-        $owner = User::factory()->forTenant($this->hubId)->admin()->create([
-            'status' => 'active', 'is_approved' => true,
-        ]);
-        DB::table('users')->where('id', $owner->id)->update(['is_super_admin' => 1]);
-        $owner->refresh();
-
-        SuperPanelAccess::reset();
-        $this->withTenant($this->hubId);
-        Sanctum::actingAs($owner);
     }
 
     public function test_an_ordinary_field_edit_on_the_own_root_still_works(): void

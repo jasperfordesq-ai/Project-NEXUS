@@ -11,21 +11,22 @@ use Illuminate\Support\Facades\DB;
 /**
  * SuperPanelAccess Middleware - Gatekeeper for the Super Admin Panel.
  *
- * ACCESS RULES (owner decision, 11 October 2026):
+ * ACCESS RULES (owner rule, 12 October 2026: "A tenant super admin can
+ * administer all communities below it in the hierarchy, but not above it."):
  * - Platform owner (is_super_admin / is_god, or role super_admin / god), on any
  *   tenant: level `master` — every community.
  * - is_tenant_super_admin on a hub tenant (allows_subtenants=1) with a usable
- *   path — INCLUDING the master tenant (id=1): level `regional`, which now means
- *   its OWN community only. Not the sub-communities beneath it, not a sibling.
+ *   materialised path: level `regional`, scope `subtree` — its own community
+ *   and every DESCENDANT (`tenants.path` prefix, anchored on the trailing
+ *   slash). Never an ancestor, a sibling or an unrelated root. This includes
+ *   the master tenant (id=1): its tenant super admin reaches communities under
+ *   `/1/`, not separate roots, and is never `master`.
  * - Anyone else: NO Super Panel access.
  *
- * 🔴 "I don't want tenant admins to act outside of the home community or tenant
- * super admins, or normal tenant admins." Until 11 October 2026 a hub's tenant
- * super admin had `regional` reach over its whole sub-community subtree (by
- * materialised-path prefix), and a tenant super admin on the master tenant was
- * `master` over every community. Both are gone: only the platform owner acts
- * across communities. The wire value `regional` is kept so GET /v2/users/me and
- * the React panel keep their contract; its meaning narrowed.
+ * History: until 11 October 2026 a tenant super admin on the master tenant was
+ * `master` over every community; 5a7778d8b (11 Oct) then confined every tenant
+ * super admin to its own community only. The owner reversed that the next day
+ * in favour of the subtree rule above, with no master-tenant exception.
  */
 class SuperPanelAccess
 {
@@ -148,16 +149,14 @@ class SuperPanelAccess
          *
          * This was `$isPlatformSuperAdmin || tenant_id === 1`: a tenant super
          * admin whose account sat on the master tenant was master over every
-         * community. Owner decision, 11 October 2026 — a tenant super admin acts
-         * in its own community only, wherever that community sits.
+         * community, including separate roots. Owner rule, 12 October 2026: a
+         * tenant super admin administers the communities BELOW it — on tenant 1
+         * that is the `/1/` subtree, resolved below like any other hub.
          */
         $hasGlobalAccess = $isPlatformSuperAdmin;
 
-        // RULE 2: a non-platform grant still needs a hub tenant. It now confers
-        // only the caller's own community, but dropping the requirement would
-        // hand the panel to every tenant super admin on the platform — this
-        // change narrows who reaches what and never widens it. Platform access
-        // is unaffected.
+        // RULE 2: a REGIONAL grant needs a tenant that may actually have children.
+        // Platform/master access is unaffected by this.
         if (!$hasGlobalAccess && !$user->allows_subtenants) {
             self::$currentAccess['reason'] = 'Tenant does not have sub-tenant capability';
             return self::$currentAccess;
@@ -179,13 +178,8 @@ class SuperPanelAccess
          * is_tenant_super_admin, but it must never become the reason a
          * hierarchical panel leaks. Deny, loudly, rather than resolve to a
          * wildcard. Master/god access is path-independent and unaffected.
-         *
-         * Since 11 October 2026 a non-platform grant no longer reads the path at
-         * all (it is confined to its own tenant id), so this rule no longer
-         * guards a boundary. It is kept so that change narrows the set of
-         * accounts admitted to the panel and never widens it.
          */
-        if (!$hasGlobalAccess && trim((string) ($user->tenant_path ?? '')) === '') {
+        if (!$hasGlobalAccess && self::normalisePrefix($user->tenant_path ?? null) === null) {
             self::$currentAccess['reason'] = 'Tenant has no materialised path; refusing subtree access';
             return self::$currentAccess;
         }
@@ -199,10 +193,8 @@ class SuperPanelAccess
             'tenant_name' => $user->tenant_name,
             'tenant_path' => $user->tenant_path,
             'tenant_depth' => (int)$user->tenant_depth,
-            // 'own' — the caller's own community only (11 Oct 2026; was 'subtree').
-            'scope' => $hasGlobalAccess ? 'global' : 'own',
-            // Creating a community creates ANOTHER community: platform owner only.
-            'can_create_tenants' => $hasGlobalAccess,
+            'scope' => $hasGlobalAccess ? 'global' : 'subtree',
+            'can_create_tenants' => $hasGlobalAccess || (bool)$user->allows_subtenants,
             'max_depth' => (int)$user->max_depth,
             'reason' => 'Access granted'
         ];
@@ -211,10 +203,10 @@ class SuperPanelAccess
     }
 
     /**
-     * True only for the platform owner — the one caller with cross-community
-     * reach in the super panel. Use it to refuse actions that by their nature
-     * span communities (creating or moving a community, moving a member between
-     * communities) before any per-tenant check runs.
+     * True only for the platform owner — the one caller whose super-panel reach
+     * is not bounded by a subtree. Use it for actions that are platform-wide by
+     * nature; anything a tenant super admin may do within its subtree must be
+     * gated by canAccessTenant()/canManageTenant() instead.
      */
     public static function hasPlatformReach(): bool
     {
@@ -224,12 +216,28 @@ class SuperPanelAccess
     }
 
     /**
+     * The caller's subtree prefix, anchored on a trailing slash, or null when the
+     * path is unusable.
+     *
+     * 🔴 Anchoring matters: a raw `/1/4/1` prefix would also match `/1/4/11/`.
+     * `/` alone (or empty) would match every tenant, so both resolve to null and
+     * every caller treats null as "deny".
+     */
+    private static function normalisePrefix(mixed $path): ?string
+    {
+        $path = trim((string) ($path ?? ''));
+        if ($path === '' || trim($path, '/') === '') {
+            return null;
+        }
+
+        return rtrim($path, '/') . '/';
+    }
+
+    /**
      * Check if current user can view/manage a specific tenant.
      *
-     * 🔴 Platform owner: any tenant. Everyone else: their OWN tenant only. This
-     * used to admit a `regional` caller's whole sub-community subtree by a
-     * materialised-path prefix match; owner decision 11 October 2026 removed
-     * that reach. A sub-community is another community.
+     * Platform owner: any tenant. A tenant super admin: its own tenant and its
+     * descendants by materialised path — never an ancestor or a sibling.
      */
     public static function canAccessTenant(int $targetTenantId): bool
     {
@@ -239,13 +247,41 @@ class SuperPanelAccess
             return false;
         }
 
-        // The platform owner sees all.
+        // Master sees all
         if ($access['level'] === 'master') {
             return true;
         }
 
-        // Everyone else: their own community, and nothing beneath or beside it.
-        return !empty($access['tenant_id']) && $targetTenantId === (int) $access['tenant_id'];
+        // Own tenant is always accessible
+        if ($targetTenantId === $access['tenant_id']) {
+            return true;
+        }
+
+        // Regional: check if target is in their subtree
+        $results = DB::select(
+            "SELECT path FROM tenants WHERE id = ?",
+            [$targetTenantId]
+        );
+
+        $target = $results[0] ?? null;
+
+        if (!$target) {
+            return false;
+        }
+
+        /*
+         * 🔴 Fail closed on an empty prefix. `str_starts_with($x, '')` is TRUE, so
+         * without this an empty tenant_path admits every tenant. getAccess() now
+         * refuses to grant `regional` without a path, so this is defence in depth —
+         * keep both, because this method is public and callers may construct an
+         * access array by other means.
+         */
+        $prefix = self::normalisePrefix($access['tenant_path'] ?? null);
+        if ($prefix === null) {
+            return false;
+        }
+
+        return str_starts_with((string) $target->path, $prefix);
     }
 
     /**
@@ -276,10 +312,8 @@ class SuperPanelAccess
             return true;
         }
 
-        // Not the platform owner. The only tenant canAccessTenant() still admits
-        // is the caller's own, refused above, so a non-platform caller may not
-        // manage (deactivate, reactivate, restructure) any community.
-        return false;
+        // Regional: can only manage descendants
+        return self::canAccessTenant($targetTenantId);
     }
 
     /**
@@ -291,11 +325,6 @@ class SuperPanelAccess
 
         if (!$access['granted']) {
             return ['allowed' => false, 'reason' => 'No Super Admin access'];
-        }
-
-        // A new community is another community: platform owner only.
-        if ($access['level'] !== 'master') {
-            return ['allowed' => false, 'reason' => 'Only the platform owner can create communities'];
         }
 
         if (!self::canAccessTenant($parentTenantId)) {
@@ -355,10 +384,9 @@ class SuperPanelAccess
             ];
         }
 
-        // Not the platform owner: the caller's own community only (11 Oct 2026;
-        // this was a `path LIKE prefix%` subtree).
-        $ownTenantId = (int) ($access['tenant_id'] ?? 0);
-        if ($ownTenantId <= 0) {
+        // 🔴 An empty prefix would produce `LIKE '%'` — every row. Deny instead.
+        $prefix = self::normalisePrefix($access['tenant_path'] ?? null);
+        if ($prefix === null) {
             return [
                 'sql' => "1 = 0",
                 'params' => []
@@ -366,8 +394,8 @@ class SuperPanelAccess
         }
 
         return [
-            'sql' => "{$tableAlias}.id = ?",
-            'params' => [$ownTenantId]
+            'sql' => "{$tableAlias}.path LIKE ?",
+            'params' => [$prefix . '%']
         ];
     }
 
@@ -387,37 +415,30 @@ class SuperPanelAccess
      *
      * Use this instead, and handle all three outcomes:
      *   - deny   => the caller gets nothing (add `1 = 0`)
-     *   - filter => confine to the single community `tenant_id`
-     *   - neither => platform owner; no confinement needed
+     *   - filter => confine to `prefix`
+     *   - neither => master; no confinement needed
      *
-     * 🔴 Since 11 October 2026 the confinement is the caller's OWN community, not
-     * a materialised-path subtree (owner decision: a tenant super admin does not
-     * act outside its home community). The method keeps its name so the call
-     * sites stay findable, but the `prefix` key is gone on purpose: a caller
-     * still building `path LIKE prefix%` now fails loudly instead of quietly
-     * reaching into sub-communities.
-     *
-     * @return array{deny:bool, filter:bool, tenant_id:?int}
+     * @return array{deny:bool, filter:bool, prefix:?string}
      */
     public static function subtreeFilter(?int $userId = null): array
     {
         $access = self::getAccess($userId);
 
         if (empty($access['granted'])) {
-            return ['deny' => true, 'filter' => false, 'tenant_id' => null];
+            return ['deny' => true, 'filter' => false, 'prefix' => null];
         }
 
         if (($access['level'] ?? null) === 'master') {
-            return ['deny' => false, 'filter' => false, 'tenant_id' => null];
+            return ['deny' => false, 'filter' => false, 'prefix' => null];
         }
 
-        $ownTenantId = (int) ($access['tenant_id'] ?? 0);
-        if ($ownTenantId <= 0) {
-            // No identifiable home community. Never widen to everything.
-            return ['deny' => true, 'filter' => false, 'tenant_id' => null];
+        $prefix = self::normalisePrefix($access['tenant_path'] ?? null);
+        if ($prefix === null) {
+            // Regional without a usable path. Never widen to everything.
+            return ['deny' => true, 'filter' => false, 'prefix' => null];
         }
 
-        return ['deny' => false, 'filter' => true, 'tenant_id' => $ownTenantId];
+        return ['deny' => false, 'filter' => true, 'prefix' => $prefix];
     }
 
     /**

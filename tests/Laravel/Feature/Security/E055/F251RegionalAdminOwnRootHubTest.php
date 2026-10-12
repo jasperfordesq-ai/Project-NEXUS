@@ -97,29 +97,9 @@ final class F251RegionalAdminOwnRootHubTest extends TestCase
             ->assertJsonPath('errors.0.code', 'SUPER_PANEL_ACCESS_DENIED');
     }
 
-    /**
-     * Was test_control_regional_admin_still_manages_its_child_tenant. Owner
-     * decision, 11 Oct 2026: a tenant super admin does not act outside its home
-     * community, so the regional admin is now refused on its child as well, and
-     * the control (the guards still let a legitimate manager through) runs as
-     * the platform owner.
-     */
-    public function test_control_only_the_platform_owner_manages_the_child_tenant(): void
+    public function test_control_regional_admin_still_manages_its_child_tenant(): void
     {
         $this->actAs($this->regional, $this->hubId);
-        $this->apiPost("/v2/admin/super/tenants/{$this->childId}/toggle-hub", ['enable' => true])->assertStatus(403);
-        $this->assertSame(0, $this->tenantValue($this->childId, 'allows_subtenants'));
-        DB::table('tenants')->where('id', $this->childId)->update(['is_active' => 0]);
-        $this->apiPost("/v2/admin/super/tenants/{$this->childId}/reactivate", [])->assertStatus(403);
-        $this->assertSame(0, $this->tenantValue($this->childId, 'is_active'));
-        DB::table('tenants')->where('id', $this->childId)->update(['is_active' => 1]);
-
-        $owner = User::factory()->forTenant(1)->admin()->create(['status' => 'active', 'is_approved' => true]);
-        DB::table('users')->where('id', $owner->id)->update([
-            'is_super_admin' => 1, 'is_tenant_super_admin' => 0, 'is_god' => 0,
-        ]);
-        $owner->refresh();
-        $this->actAs($owner, 1);
 
         $this->apiPost("/v2/admin/super/tenants/{$this->childId}/toggle-hub", ['enable' => true])->assertStatus(200);
         $this->assertSame(1, $this->tenantValue($this->childId, 'allows_subtenants'));

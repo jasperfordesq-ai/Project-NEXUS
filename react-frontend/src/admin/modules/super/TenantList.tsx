@@ -22,9 +22,8 @@ import ToggleLeft from 'lucide-react/icons/toggle-left';
 import ToggleRight from 'lucide-react/icons/toggle-right';
 import Network from 'lucide-react/icons/network';
 import { usePageTitle } from '@/hooks';
-import { useAuth, useTenant,
+import { useTenant,
   useToast } from '@/contexts';
-import { superPanelLevel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
@@ -44,11 +43,9 @@ interface TenantActionsMenuProps {
   navigate: (path: string) => void;
   tenantPath: (path: string) => string;
   setConfirmAction: React.Dispatch<React.SetStateAction<TenantConfirmAction | null>>;
-  /** Hub switching and (de)activation are platform-owner actions (11 Oct 2026). */
-  canManage: boolean;
 }
 
-function TenantActionsMenu({ tenant, t, navigate, tenantPath, setConfirmAction, canManage }: TenantActionsMenuProps) {
+function TenantActionsMenu({ tenant, t, navigate, tenantPath, setConfirmAction }: TenantActionsMenuProps) {
   type ActionKey = 'view' | 'edit' | 'toggle-hub' | 'deactivate' | 'reactivate';
 
   const handleMenuAction = (key: React.Key) => {
@@ -76,21 +73,18 @@ function TenantActionsMenu({ tenant, t, navigate, tenantPath, setConfirmAction, 
         <DropdownItem key="edit" id="edit" startContent={<Edit aria-hidden="true" size={14} />}>
           {t('common.edit')}
         </DropdownItem>
-        {canManage ? (
-          <DropdownItem key="toggle-hub" id="toggle-hub" startContent={tenant.allows_subtenants ? <ToggleLeft aria-hidden="true" size={14} /> : <ToggleRight aria-hidden="true" size={14} />}>
-            {tenant.allows_subtenants ? t('super.disable_hub') : t('super.enable_hub')}
-          </DropdownItem>
-        ) : null}
-        {canManage && tenant.is_active ? (
+        <DropdownItem key="toggle-hub" id="toggle-hub" startContent={tenant.allows_subtenants ? <ToggleLeft aria-hidden="true" size={14} /> : <ToggleRight aria-hidden="true" size={14} />}>
+          {tenant.allows_subtenants ? t('super.disable_hub') : t('super.enable_hub')}
+        </DropdownItem>
+        {tenant.is_active ? (
           <DropdownItem key="deactivate" id="deactivate" startContent={<Shield aria-hidden="true" size={14} />} className="text-warning" color="warning">
             {t('super.deactivate')}
           </DropdownItem>
-        ) : null}
-        {canManage && !tenant.is_active ? (
+        ) : (
           <DropdownItem key="reactivate" id="reactivate" startContent={<Shield aria-hidden="true" size={14} />} className="text-success" color="success">
             {t('super.reactivate')}
           </DropdownItem>
-        ) : null}
+        )}
       </DropdownMenu>
     </Dropdown>
   );
@@ -102,14 +96,6 @@ export function TenantList() {
   const { tenantPath } = useTenant();
   const toast = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  /*
-   * Owner decision, 11 Oct 2026: only the platform owner acts on other
-   * communities. A tenant super-admin sees just its own community here, and the
-   * API refuses it every create / hub / (de)activate action, so those controls
-   * are offered at the platform level only.
-   */
-  const isPlatformLevel = superPanelLevel(user) === 'master';
 
   const [tenants, setTenants] = useState<SuperAdminTenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -278,7 +264,6 @@ export function TenantList() {
           navigate={navigate}
           tenantPath={tenantPath}
           setConfirmAction={setConfirmAction}
-          canManage={isPlatformLevel}
         />
       ),
     },
@@ -310,14 +295,12 @@ export function TenantList() {
             >
               {t('super.view_hierarchy')}
             </Button>
-            {isPlatformLevel && (
-              <Button
-                startContent={<Plus aria-hidden="true" size={16} />}
-                onPress={() => navigate(tenantPath('/super-admin/tenants/create'))}
-              >
-                {t('super.create_tenant')}
-              </Button>
-            )}
+            <Button
+              startContent={<Plus aria-hidden="true" size={16} />}
+              onPress={() => navigate(tenantPath('/super-admin/tenants/create'))}
+            >
+              {t('super.create_tenant')}
+            </Button>
           </div>
         }
       />

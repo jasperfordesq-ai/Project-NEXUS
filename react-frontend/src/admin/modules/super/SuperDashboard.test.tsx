@@ -115,16 +115,16 @@ describe('SuperDashboard', () => {
       expect(screen.queryByRole('link', { name: /federation/i })).not.toBeInTheDocument();
     });
 
-    it('hides Create Tenant and Bulk Operations from a tenant super-admin', async () => {
-      // Owner decision, 11 Oct 2026: creating a community and the bulk moves act
-      // on other communities, which only the platform owner may do.
+    it('offers Create Tenant and Bulk Operations to a tenant super-admin', async () => {
+      // Owner rule, 12 Oct 2026: a tenant super-admin administers the
+      // communities beneath it. Creating one and the bulk operations are scoped
+      // to that subtree by the API, so both are offered.
       mockUser.current = { id: 2, super_panel_level: 'regional', is_tenant_super_admin: true };
       render(<SuperDashboard />);
       await waitFor(() => {
-        expect(screen.getByRole('link', { name: /hierarchy/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /create tenant/i })).toBeInTheDocument();
       });
-      expect(screen.queryByRole('link', { name: /create tenant/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: /bulk operations/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /bulk operations/i })).toBeInTheDocument();
     });
 
     it('offers Create Tenant and Bulk Operations to the platform owner', async () => {

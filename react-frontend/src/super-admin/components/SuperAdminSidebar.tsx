@@ -100,11 +100,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'tenants', label: t('nav.tenants'), icon: Building2, path: '/super-admin/tenants' },
         { key: 'hierarchy', label: t('nav.hierarchy'), icon: Network, path: '/super-admin/tenants/hierarchy' },
         { key: 'users', label: t('nav.users'), icon: Users, path: '/super-admin/users' },
-        // Platform-only since 11 Oct 2026: bulk moves and bulk tenant updates act
-        // on other communities, and a tenant super-admin stays in its own.
-        ...(showPlatformSections ? [
-          { key: 'bulk', label: t('nav.bulk_ops'), icon: ListChecks, path: '/super-admin/bulk' },
-        ] : []),
+        { key: 'bulk', label: t('nav.bulk_ops'), icon: ListChecks, path: '/super-admin/bulk' },
         { key: 'audit', label: t('nav.audit_log'), icon: ScrollText, path: '/super-admin/audit' },
       ],
     },

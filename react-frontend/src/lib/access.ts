@@ -116,11 +116,10 @@ export function isGodUser(user: UserLike): boolean {
 /**
  * How far the super panel reaches for this user. Server-resolved.
  *
- * 'master' is the platform owner only. 'regional' is a tenant super-admin and,
- * since the owner's decision of 11 Oct 2026, means its OWN community only — no
- * longer the communities beneath it. Controls that act on another community
- * (create, move, (de)activate, hub switching, bulk operations, moving members)
- * are offered at 'master' only.
+ * 'master' is the platform owner only. 'regional' is a tenant super-admin: its
+ * own community and every community BENEATH it — never one above or beside it
+ * (owner rule, 12 Oct 2026). That includes a tenant super-admin on the master
+ * community, which is 'regional' over the communities under it, never 'master'.
  */
 export type SuperPanelLevel = 'master' | 'regional' | 'none';
 
