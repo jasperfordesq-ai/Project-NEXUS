@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\SuperPanelAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use App\Support\UserDisplayName;
 
 /**
@@ -95,6 +96,187 @@ class SuperAdminAuditService
         return array_keys(self::ACTION_LABELS);
     }
 
+    private static ?bool $hasTargetTenantColumn = null;
+
+    /**
+     * Whether the F-593 `target_tenant_id` column exists yet. Cached per process.
+     * Without this guard a database that has not run the migration would lose
+     * every audit row (the insert would throw and log() returns false).
+     */
+    private static function hasTargetTenantColumn(): bool
+    {
+        if (self::$hasTargetTenantColumn === null) {
+            try {
+                self::$hasTargetTenantColumn = Schema::hasColumn('super_admin_audit_log', 'target_tenant_id');
+            } catch (\Throwable $e) {
+                self::$hasTargetTenantColumn = false;
+            }
+        }
+
+        return self::$hasTargetTenantColumn;
+    }
+
+    /**
+     * The one community an audited action affected — or, when it affected
+     * several (a move), their lowest common ancestor in the tenant tree — or
+     * NULL when no single community can be named (bulk rows, unknown tenants,
+     * tenants in separate roots).
+     *
+     * 🔴 F-593. This is what the log is scoped by for a tenant super admin: a row
+     * is shown only when this tenant is inside the caller's subtree. A subtree
+     * contains a lowest common ancestor exactly when it contains every tenant
+     * beneath it, so "the LCA is in my subtree" means "every community this
+     * action touched is in my subtree" — both ends of a move, never just one.
+     * NULL is never in any subtree, so it fails closed: platform-only.
+     *
+     * @param array<string,mixed>|null $oldValues
+     * @param array<string,mixed>|null $newValues
+     */
+    public static function resolveTargetTenantId(
+        string $actionType,
+        string $targetType,
+        ?int $targetId,
+        ?array $oldValues,
+        ?array $newValues
+    ): ?int {
+        if ($targetType === 'tenant') {
+            if ($targetId === null || $targetId <= 0) {
+                return null;
+            }
+            // A re-parenting touches the old position and the new one. Both
+            // paths are recorded on the row itself, so use them as written.
+            if ($actionType === 'tenant_moved') {
+                $oldPath = is_string($oldValues['path'] ?? null) ? $oldValues['path'] : '';
+                $newPath = is_string($newValues['path'] ?? null) ? $newValues['path'] : '';
+
+                return ($oldPath !== '' && $newPath !== '')
+                    ? self::lowestCommonAncestor([$oldPath, $newPath])
+                    : null;
+            }
+
+            return $targetId;
+        }
+
+        if ($targetType === 'user') {
+            $tenantIds = [];
+            foreach ([$oldValues, $newValues] as $values) {
+                $tid = (int) ($values['tenant_id'] ?? 0);
+                if ($tid > 0) {
+                    $tenantIds[] = $tid;
+                }
+            }
+            if ($tenantIds === [] && $targetId !== null && $targetId > 0) {
+                // Super panel: cross-tenant by design — a primary-key read of the
+                // target account's own community, nothing else.
+                $tid = (int) (DB::table('users')->where('id', $targetId)->value('tenant_id') ?? 0);
+                if ($tid > 0) {
+                    $tenantIds[] = $tid;
+                }
+            }
+
+            $tenantIds = array_values(array_unique($tenantIds));
+            if ($tenantIds === []) {
+                return null;
+            }
+            if (count($tenantIds) === 1) {
+                return $tenantIds[0];
+            }
+
+            $paths = DB::table('tenants')->whereIn('id', $tenantIds)->pluck('path', 'id')->all();
+            if (count($paths) !== count($tenantIds)) {
+                return null;
+            }
+
+            return self::lowestCommonAncestor(array_values(array_map(
+                static fn ($p): string => (string) $p,
+                $paths
+            )));
+        }
+
+        // 'bulk' and anything unrecognised: no single community. Platform-only.
+        return null;
+    }
+
+    /**
+     * Deepest tenant id shared by every materialised path ('/1/4/11/' style), or
+     * null when they share none or any path is unusable.
+     *
+     * @param list<string> $paths
+     */
+    private static function lowestCommonAncestor(array $paths): ?int
+    {
+        $common = null;
+        foreach ($paths as $path) {
+            $segments = array_values(array_filter(
+                explode('/', trim($path, '/')),
+                static fn (string $s): bool => $s !== ''
+            ));
+            if ($segments === []) {
+                return null;
+            }
+            if ($common === null) {
+                $common = $segments;
+                continue;
+            }
+            $shared = [];
+            foreach ($common as $i => $segment) {
+                if (!isset($segments[$i]) || $segments[$i] !== $segment) {
+                    break;
+                }
+                $shared[] = $segment;
+            }
+            $common = $shared;
+            if ($common === []) {
+                return null;
+            }
+        }
+
+        if ($common === null || $common === []) {
+            return null;
+        }
+        $last = (int) $common[count($common) - 1];
+
+        return $last > 0 ? $last : null;
+    }
+
+    /**
+     * F-593: confine an audit-log query for the current caller. The platform
+     * owner sees every row; a tenant super admin sees only rows whose target
+     * community (see resolveTargetTenantId()) is inside its subtree; anyone
+     * else sees nothing. Fail closed throughout.
+     *
+     * Until 12 Oct 2026 this filtered on actor_tenant_id — where the ACTOR's
+     * account sat — so rows about other communities leaked whenever a platform
+     * admin was homed on the caller's tenant, and rows about the caller's own
+     * subtree were hidden whenever the actor was homed elsewhere.
+     */
+    private static function applyCallerScope(\Illuminate\Database\Query\Builder $query): void
+    {
+        $filter = SuperPanelAccess::subtreeFilter();
+        if ($filter['deny']) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+        if (!$filter['filter']) {
+            return; // the platform owner
+        }
+        if (empty($filter['prefix'])) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $subtreeIds = DB::table('tenants')
+            ->where('path', 'LIKE', $filter['prefix'] . '%')
+            ->pluck('id')
+            ->all();
+
+        if (empty($subtreeIds)) {
+            $query->whereRaw('1 = 0');
+        } else {
+            $query->whereIn('target_tenant_id', $subtreeIds);
+        }
+    }
+
     /**
      * Log an audit entry to super_admin_audit_log.
      *
@@ -166,7 +348,7 @@ class SuperAdminAuditService
                 : 'System';
             $actorEmail = $actor->email ?? 'system@project-nexus.ie';
 
-            DB::table('super_admin_audit_log')->insert([
+            $row = [
                 'actor_user_id'  => $actorUserId,
                 'actor_tenant_id' => $actorTenantId,
                 'actor_name'     => $actorName,
@@ -184,7 +366,21 @@ class SuperAdminAuditService
                 'ip_address'     => $actorOverride['ip_address'] ?? request()->ip(),
                 'user_agent'     => $actorOverride['user_agent'] ?? request()->userAgent(),
                 'created_at'     => now(),
-            ]);
+            ];
+
+            // F-593: record WHICH community the action was about, so the log can
+            // be scoped by target rather than by where the actor's account sits.
+            if (self::hasTargetTenantColumn()) {
+                $row['target_tenant_id'] = self::resolveTargetTenantId(
+                    $faithful ? $actionType : self::UNKNOWN_ACTION,
+                    $targetType,
+                    $targetId,
+                    $oldValues,
+                    $newValues
+                );
+            }
+
+            DB::table('super_admin_audit_log')->insert($row);
 
             return $faithful;
         } catch (\Throwable $e) {
@@ -209,29 +405,8 @@ class SuperAdminAuditService
             $query = DB::table('super_admin_audit_log')
                 ->orderByDesc('created_at');
 
-            // Scope by access level — regional admins only see their subtree
-            /*
-             * 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This block
-             * had TWO fail-open branches: an empty tenant_path skipped the filter
-             * entirely, and so did an empty $subtreeIds. Either one handed a
-             * regional caller the whole platform's audit log.
-             */
-            $filter = SuperPanelAccess::subtreeFilter();
-            if ($filter['deny']) {
-                $query->whereRaw('1 = 0');
-            } elseif ($filter['filter']) {
-                // Get all tenant IDs in the subtree
-                $subtreeIds = DB::table('tenants')
-                    ->where('path', 'LIKE', $filter['prefix'] . '%')
-                    ->pluck('id')
-                    ->all();
-
-                if (empty($subtreeIds)) {
-                    $query->whereRaw('1 = 0');
-                } else {
-                    $query->whereIn('actor_tenant_id', $subtreeIds);
-                }
-            }
+            // Scope by the community each row is ABOUT (F-593) — fail closed.
+            self::applyCallerScope($query);
 
             if (!empty($filters['action_type'])) {
                 $query->where('action_type', $filters['action_type']);
@@ -290,22 +465,8 @@ class SuperAdminAuditService
             $baseQuery = DB::table('super_admin_audit_log')
                 ->where('created_at', '>=', $since);
 
-            // Scope for regional admins
-            // 🔴 Fail closed — same two fail-open branches as getLog() above.
-            $filter = SuperPanelAccess::subtreeFilter();
-            if ($filter['deny']) {
-                $baseQuery->whereRaw('1 = 0');
-            } elseif ($filter['filter']) {
-                $subtreeIds = DB::table('tenants')
-                    ->where('path', 'LIKE', $filter['prefix'] . '%')
-                    ->pluck('id')
-                    ->all();
-                if (empty($subtreeIds)) {
-                    $baseQuery->whereRaw('1 = 0');
-                } else {
-                    $baseQuery->whereIn('actor_tenant_id', $subtreeIds);
-                }
-            }
+            // Same scope as getLog() (F-593).
+            self::applyCallerScope($baseQuery);
 
             $totalActions = (clone $baseQuery)->count();
 

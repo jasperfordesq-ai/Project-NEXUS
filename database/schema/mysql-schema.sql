@@ -18094,12 +18094,14 @@ CREATE TABLE `super_admin_audit_log` (
   `ip_address` varchar(45) DEFAULT NULL,
   `user_agent` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `target_tenant_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_actor` (`actor_user_id`),
   KEY `idx_action` (`action_type`),
   KEY `idx_target` (`target_type`,`target_id`),
   KEY `idx_created` (`created_at`),
-  KEY `idx_actor_tenant` (`actor_tenant_id`)
+  KEY `idx_actor_tenant` (`actor_tenant_id`),
+  KEY `idx_target_tenant` (`target_tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2140 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit trail for Super Admin Panel hierarchy changes';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `support_authority_attestation_events`;
@@ -21974,7 +21976,8 @@ INSERT INTO `laravel_migrations` VALUES
 (482,'2026_10_09_100000_create_member_invitation_outbox_table',153),
 (483,'2026_10_09_100100_add_geocode_attempted_at_to_users',153),
 (484,'2026_10_09_120000_create_vol_org_retired_volunteers_table',154),
-(485,'2026_10_11_180000_let_withdrawn_event_guests_be_re_added',155);
+(485,'2026_10_11_180000_let_withdrawn_event_guests_be_re_added',155),
+(486,'2026_10_12_120000_add_target_tenant_id_to_super_admin_audit_log',156);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
