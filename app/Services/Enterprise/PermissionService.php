@@ -350,25 +350,33 @@ class PermissionService
     }
 
     /**
-     * Check if user is a super admin
+     * Check if user is a PLATFORM super admin — the only tier that bypasses
+     * every permission check.
+     *
+     * 🔴 A tenant super admin is deliberately NOT included (E-103, 12 Oct 2026):
+     * its reach is its own community and the communities beneath it, so it can
+     * never hold "every permission". This used to accept is_tenant_super_admin
+     * from the session and from the users row.
      */
     private function isSuperAdmin(int $userId): bool
     {
         // Check session first for performance
         if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $userId
-            && (!empty($_SESSION['is_super_admin']) || !empty($_SESSION['is_tenant_super_admin']))) {
+            && (!empty($_SESSION['is_super_admin']) || !empty($_SESSION['is_god']))) {
             return true;
         }
 
         // Check database
         $result = DB::statement("
-            SELECT is_super_admin, is_tenant_super_admin
+            SELECT is_super_admin, is_god, role
             FROM users
             WHERE id = ?
             LIMIT 1
         ", [$userId])->fetch();
 
-        return !empty($result['is_super_admin']) || !empty($result['is_tenant_super_admin']);
+        return !empty($result['is_super_admin'])
+            || !empty($result['is_god'])
+            || in_array($result['role'] ?? '', ['super_admin', 'god'], true);
     }
 
     /**

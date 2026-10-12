@@ -605,7 +605,7 @@ class AdminSuperServiceTest extends \Tests\Laravel\TestCase
     private function setUpSuperAdminSession(): void
     {
         // Reset cached access from prior tests
-        \App\Middleware\SuperPanelAccess::reset();
+        \App\Core\SuperPanelAccess::reset();
 
         // Ensure the test user has is_super_admin flag
         Database::query(
@@ -666,7 +666,7 @@ class AdminSuperServiceTest extends \Tests\Laravel\TestCase
 
         // Clean up session and cached access
         unset($_SESSION['user_id'], $_SESSION['is_super_admin']);
-        \App\Middleware\SuperPanelAccess::reset();
+        \App\Core\SuperPanelAccess::reset();
 
         parent::tearDown();
     }

@@ -62,7 +62,7 @@ class PermissionServiceTest extends \Tests\Laravel\TestCase
         $emptyStmt->shouldReceive('fetch')->andReturn(false);
         $emptyStmt->shouldReceive('fetchAll')->andReturn([]);
         $emptyStmt->shouldReceive('fetchColumn')->andReturn(false);
-        DB::shouldReceive('statement')->andReturn($emptyStmt);
+        DB::shouldReceive('statement')->andReturn($emptyStmt)->byDefault();
 
         $this->service = new PermissionService();
     }
@@ -426,6 +426,61 @@ class PermissionServiceTest extends \Tests\Laravel\TestCase
         $result = $method->invoke($this->service, 1);
 
         $this->assertTrue($result);
+    }
+
+    /**
+     * E-103: the all-permissions bypass is the PLATFORM tier's alone. A tenant
+     * super admin's reach is bounded by a subtree, so it must never be treated
+     * as holding every permission (it was, via the session flag and the
+     * is_tenant_super_admin column, until 12 Oct 2026).
+     */
+    public function testATenantSuperAdminSessionIsNotASuperAdminBypass(): void
+    {
+        $ref = new \ReflectionClass(PermissionService::class);
+        $method = $ref->getMethod('isSuperAdmin');
+        $method->setAccessible(true);
+
+        $_SESSION['user_id'] = 7;
+        $_SESSION['is_super_admin'] = false;
+        $_SESSION['is_tenant_super_admin'] = 1;
+
+        try {
+            $this->assertFalse($method->invoke($this->service, 7));
+        } finally {
+            unset($_SESSION['is_tenant_super_admin']);
+        }
+    }
+
+    public function testATenantSuperAdminRowIsNotASuperAdminBypass(): void
+    {
+        $row = Mockery::mock(\PDOStatement::class);
+        $row->shouldReceive('fetch')->andReturn([
+            'is_super_admin' => 0, 'is_tenant_super_admin' => 1, 'is_god' => 0, 'role' => 'admin',
+        ]);
+        // Overrides setUp()'s empty-result double, which is only a default.
+        DB::shouldReceive('statement')->andReturn($row);
+
+        $ref = new \ReflectionClass(PermissionService::class);
+        $method = $ref->getMethod('isSuperAdmin');
+        $method->setAccessible(true);
+
+        $this->assertFalse($method->invoke(new PermissionService(), 8));
+    }
+
+    public function testAPlatformSuperAdminRowStillBypasses(): void
+    {
+        $row = Mockery::mock(\PDOStatement::class);
+        $row->shouldReceive('fetch')->andReturn([
+            'is_super_admin' => 0, 'is_tenant_super_admin' => 0, 'is_god' => 1, 'role' => 'member',
+        ]);
+        // Overrides setUp()'s empty-result double, which is only a default.
+        DB::shouldReceive('statement')->andReturn($row);
+
+        $ref = new \ReflectionClass(PermissionService::class);
+        $method = $ref->getMethod('isSuperAdmin');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke(new PermissionService(), 9));
     }
 
     // =========================================================================

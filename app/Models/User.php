@@ -565,34 +565,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is a tenant super admin (can access Super Admin Panel).
-     */
-    public static function isTenantSuperAdmin(int $userId): bool
-    {
-        $user = DB::table('users')
-            ->where('id', $userId)
-            ->select(['is_tenant_super_admin', 'is_super_admin'])
-            ->first();
-
-        return $user && ($user->is_tenant_super_admin || $user->is_super_admin);
-    }
-
-    /**
-     * Check if user is the Master super admin (tenant_id = 1 + super admin).
-     */
-    public static function isMasterSuperAdmin(int $userId): bool
-    {
-        $user = DB::table('users')
-            ->where('id', $userId)
-            ->select(['tenant_id', 'is_tenant_super_admin', 'is_super_admin'])
-            ->first();
-
-        return $user
-            && (int) $user->tenant_id === 1
-            && ($user->is_tenant_super_admin || $user->is_super_admin);
-    }
-
-    /**
      * Move a user to a different tenant.
      *
      * Moves the users row plus the member's solely-owned content — listings
