@@ -175,6 +175,19 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
         self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $this->member(self::PARENT_COMMUNITY)->id));
     }
 
+    public function test_a_parent_tenant_super_admin_can_open_and_change_a_sub_community_event_team(): void
+    {
+        $tsa = $this->parentTenantSuperAdmin();
+        $staff = $this->member(self::SUB_COMMUNITY);
+        $eventId = $this->publishedEvent(self::SUB_COMMUNITY, $this->member(self::SUB_COMMUNITY));
+
+        self::assertTrue(app(EventPolicy::class)->manageStaff($tsa, $this->eventModel($eventId)));
+        app(EventRoleService::class)->grant($eventId, (int) $staff->id, EventStaffRole::CheckInStaff, $tsa);
+        self::assertTrue(app(EventRoleService::class)->list($eventId, $tsa)->contains(
+            static fn ($assignment): bool => (int) $assignment->user_id === (int) $staff->id,
+        ));
+    }
+
     // ------------------------------------------------------------ refusals: upwards and sideways
 
     public function test_a_child_tenant_super_admin_holds_no_management_ability_on_the_parent_communitys_event(): void
@@ -222,6 +235,21 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
         self::assertFalse(app(EventConfigurationService::class)->canCreate(self::PARENT_COMMUNITY, (int) $childTsa->id));
     }
 
+    public function test_a_child_tenant_super_admin_cannot_open_the_parent_communitys_event_team(): void
+    {
+        $childTsa = $this->tenantSuperAdminOf(self::SUB_COMMUNITY);
+        TenantContext::setById(self::PARENT_COMMUNITY);
+        $eventId = $this->publishedEvent(self::PARENT_COMMUNITY, $this->member(self::PARENT_COMMUNITY));
+
+        self::assertFalse(app(EventPolicy::class)->manageStaff($childTsa, $this->eventModel($eventId)));
+        try {
+            app(EventRoleService::class)->list($eventId, $childTsa);
+            self::fail('BAD OUTCOME: a sub-community\'s tenant super admin opened its parent community\'s event Team tab.');
+        } catch (EventRoleAssignmentException) {
+            self::assertTrue(true);
+        }
+    }
+
     public function test_a_sibling_communitys_tenant_super_admin_cannot_act_on_the_sub_community_event(): void
     {
         $siblingTsa = $this->tenantSuperAdminOf($this->siblingCommunity());
@@ -241,6 +269,13 @@ final class EventTenantSuperAdminHomeCommunityTest extends TestCase
 
         $this->setEventsConfig(self::SUB_COMMUNITY, ['creation_role' => 'members']);
         self::assertFalse(app(EventConfigurationService::class)->canCreate(self::SUB_COMMUNITY, (int) $siblingTsa->id));
+
+        try {
+            app(EventRoleService::class)->list($eventId, $siblingTsa);
+            self::fail('BAD OUTCOME: a sibling community\'s tenant super admin opened this event\'s Team tab.');
+        } catch (EventRoleAssignmentException) {
+            self::assertTrue(true);
+        }
     }
 
     // ------------------------------------------- control: own community

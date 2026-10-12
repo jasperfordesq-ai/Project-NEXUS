@@ -429,9 +429,11 @@ final class EventRoleService
         $actorId = (int) $actor->getKey();
         $userIds = array_values(array_unique([$actorId, $targetUserId]));
         sort($userIds, SORT_NUMERIC);
-        // The target must belong to this community; the actor too, unless they
-        // are the platform owner (owner decision, 11 Oct 2026). Both rows are
-        // locked in id order and checked below.
+        // The target must belong to this community. The actor must too, unless
+        // TenantAdminScope gives them admin authority here from outside: the
+        // platform owner, or a tenant super admin of a community above this one
+        // (owner rule, 12 Oct 2026). Both rows are locked in id order and
+        // checked below.
         $users = DB::table('users')
             ->whereIn('id', $userIds)
             ->where('status', 'active')
@@ -451,7 +453,7 @@ final class EventRoleService
 
         $persistedActor = $users->get($actorId);
         if ($persistedActor === null
-            || ((int) $persistedActor->tenant_id !== $tenantId && ! TenantAdminScope::isPlatformOwner($persistedActor))) {
+            || ((int) $persistedActor->tenant_id !== $tenantId && ! TenantAdminScope::allows($persistedActor, $tenantId))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
         $target = $users->get($targetUserId);
@@ -479,7 +481,9 @@ final class EventRoleService
             throw new EventRoleAssignmentException('event_staff_role_event_not_found');
         }
 
-        // Own community only, except the platform owner (owner decision, 11 Oct 2026).
+        // Own community, or admin authority here from outside per
+        // TenantAdminScope: the platform owner, or a tenant super admin of a
+        // community above this one (owner rule, 12 Oct 2026).
         $actorRow = DB::table('users')
             ->where('id', (int) $actor->getKey())
             ->where('status', 'active')
@@ -494,7 +498,7 @@ final class EventRoleService
                 'is_god',
             ]);
         if ($actorRow === null
-            || ((int) $actorRow->tenant_id !== $tenantId && ! TenantAdminScope::isPlatformOwner($actorRow))) {
+            || ((int) $actorRow->tenant_id !== $tenantId && ! TenantAdminScope::allows($actorRow, $tenantId))) {
             throw new EventRoleAssignmentException('event_staff_role_actor_invalid');
         }
 

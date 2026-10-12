@@ -164,8 +164,10 @@ final class EventStaffController extends BaseApiController
     private function actor(): User
     {
         $tenantId = TenantContext::currentId();
-        // Own community only, except the platform owner (owner decision,
-        // 11 Oct 2026); what the actor may do is still EventRoleService's call.
+        // Own community, or admin authority here from outside per
+        // TenantAdminScope: the platform owner, or a tenant super admin of a
+        // community above this one (owner rule, 12 Oct 2026). What the actor
+        // may do is still EventRoleService's call.
         $actor = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
@@ -174,7 +176,7 @@ final class EventStaffController extends BaseApiController
                 ->find($this->requireUserId());
         if ($actor instanceof User
             && (int) $actor->tenant_id !== (int) $tenantId
-            && ! TenantAdminScope::isPlatformOwner($actor)) {
+            && ! TenantAdminScope::allows($actor, (int) $tenantId)) {
             $actor = null;
         }
         if (! $actor instanceof User) {

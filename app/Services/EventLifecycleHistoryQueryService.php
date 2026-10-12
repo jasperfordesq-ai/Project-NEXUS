@@ -68,10 +68,12 @@ final class EventLifecycleHistoryQueryService
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->first();
-        // Own community only, except the platform owner (owner decision, 11 Oct 2026).
+        // Own community, or admin authority here from outside per
+        // TenantAdminScope: the platform owner, or a tenant super admin of a
+        // community above this one (owner rule, 12 Oct 2026).
         if ($persistedActor !== null
             && (int) $persistedActor->tenant_id !== $tenantId
-            && ! TenantAdminScope::isPlatformOwner($persistedActor)) {
+            && ! TenantAdminScope::allows($persistedActor, $tenantId)) {
             $persistedActor = null;
         }
         if ($persistedActor === null || ! $this->policy->manage($persistedActor, $event)) {

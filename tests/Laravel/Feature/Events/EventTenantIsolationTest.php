@@ -17,6 +17,7 @@ use App\Services\EventLifecycleHistoryQueryService;
 use App\Services\EventRoleService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Tests\Laravel\Concerns\MakesNetworkAdminHierarchy;
 use Tests\Laravel\TestCase;
 
 /**
@@ -28,10 +29,21 @@ use Tests\Laravel\TestCase;
  * back: an administrator of another community — a community admin or a tenant
  * super admin — is refused, and nothing is written. Owner, same day: "God can
  * still do everything" — the platform owner keeps cross-community reach.
+ *
+ * Owner rule, 12 October 2026: "A tenant super admin can administer all
+ * communities below it in the hierarchy, but not above it." So a tenant super
+ * admin of the PARENT community manages this event's team and reads its history;
+ * one of an unrelated community (999), or of a community BELOW this one, is still
+ * refused. Staff TARGETS stay confined to the event's own community whoever
+ * grants the role.
  */
 final class EventTenantIsolationTest extends TestCase
 {
     use DatabaseTransactions;
+    use MakesNetworkAdminHierarchy;
+
+    /** A second community, placed above or below the test tenant per case. */
+    private const OTHER_COMMUNITY = 998;
 
     /** @return iterable<string,array{array<string,mixed>,int}> */
     public static function foreignAdministrators(): iterable
@@ -105,6 +117,70 @@ final class EventTenantIsolationTest extends TestCase
         try {
             app(EventLifecycleHistoryQueryService::class)->index($eventId, $foreignAdmin);
             self::fail('BAD OUTCOME: an administrator from another community read an event\'s lifecycle history.');
+        } catch (EventLifecycleHistoryException) {
+            self::assertTrue(true);
+        }
+    }
+
+    public function test_a_tenant_super_admin_of_the_parent_community_manages_the_event_team_and_reads_its_history(): void
+    {
+        $this->makeHomeTenantOversee(self::OTHER_COMMUNITY, $this->testTenantId);
+        $owner = $this->member();
+        $staff = $this->member();
+        $eventId = $this->event((int) $owner->id);
+        $tenantSuperAdmin = $this->member(['role' => 'admin', 'is_admin' => 1, 'is_tenant_super_admin' => 1], self::OTHER_COMMUNITY);
+        $roles = app(EventRoleService::class);
+
+        TenantContext::setById($this->testTenantId);
+        $granted = $roles->grant($eventId, (int) $staff->id, EventStaffRole::CheckInStaff, $tenantSuperAdmin);
+        self::assertTrue($granted['changed']);
+        self::assertSame((int) $tenantSuperAdmin->id, (int) DB::table('event_staff_assignments')->where('id', $granted['assignment']->id)->value('granted_by'));
+        self::assertTrue(
+            $roles->list($eventId, $tenantSuperAdmin)->contains(fn ($assignment): bool => (int) $assignment->user_id === (int) $staff->id),
+            'The parent community\'s tenant super admin should see the team they just changed.',
+        );
+        $revoked = $roles->revoke($eventId, (int) $staff->id, EventStaffRole::CheckInStaff, $tenantSuperAdmin);
+        self::assertTrue($revoked['changed']);
+
+        app(EventLifecycleHistoryQueryService::class)->index($eventId, $tenantSuperAdmin);
+        self::assertTrue(true);
+    }
+
+    public function test_a_tenant_super_admin_of_the_parent_community_cannot_put_its_own_member_on_the_team(): void
+    {
+        $this->makeHomeTenantOversee(self::OTHER_COMMUNITY, $this->testTenantId);
+        $owner = $this->member();
+        $eventId = $this->event((int) $owner->id);
+        $tenantSuperAdmin = $this->member(['role' => 'admin', 'is_admin' => 1, 'is_tenant_super_admin' => 1], self::OTHER_COMMUNITY);
+        $parentMember = $this->member([], self::OTHER_COMMUNITY);
+        $assignments = DB::table('event_staff_assignments')->count();
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertRefused(fn () => app(EventRoleService::class)->grant($eventId, (int) $parentMember->id, EventStaffRole::CheckInStaff, $tenantSuperAdmin));
+        self::assertSame($assignments, DB::table('event_staff_assignments')->count());
+    }
+
+    /** Upwards is refused: a tenant super admin of a community BELOW this one. */
+    public function test_a_tenant_super_admin_of_a_child_community_cannot_manage_the_event_team_or_read_its_history(): void
+    {
+        // Create the other community first, then turn the relationship round so
+        // the test tenant is the PARENT and the other community sits below it.
+        $this->makeHomeTenantOversee(self::OTHER_COMMUNITY, $this->testTenantId);
+        $this->makeHomeTenantOversee($this->testTenantId, self::OTHER_COMMUNITY);
+        $owner = $this->member();
+        $staff = $this->member();
+        $eventId = $this->event((int) $owner->id);
+        $childTenantSuperAdmin = $this->member(['role' => 'admin', 'is_admin' => 1, 'is_tenant_super_admin' => 1], self::OTHER_COMMUNITY);
+        $assignments = DB::table('event_staff_assignments')->count();
+        $roles = app(EventRoleService::class);
+
+        TenantContext::setById($this->testTenantId);
+        $this->assertRefused(fn () => $roles->list($eventId, $childTenantSuperAdmin));
+        $this->assertRefused(fn () => $roles->grant($eventId, (int) $staff->id, EventStaffRole::CoOrganizer, $childTenantSuperAdmin));
+        self::assertSame($assignments, DB::table('event_staff_assignments')->count());
+        try {
+            app(EventLifecycleHistoryQueryService::class)->index($eventId, $childTenantSuperAdmin);
+            self::fail('BAD OUTCOME: a sub-community\'s tenant super admin read its parent community\'s event history.');
         } catch (EventLifecycleHistoryException) {
             self::assertTrue(true);
         }
