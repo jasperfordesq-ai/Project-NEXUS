@@ -16,6 +16,7 @@ use App\Models\EventOfflineSyncBatch;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use Illuminate\Support\Facades\DB;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Private, secret-free organizer projection for offline check-in operations. */
 final class EventOfflineCheckinProjectionService
@@ -293,13 +294,9 @@ final class EventOfflineCheckinProjectionService
         if ($tenantId === null || $tenantId <= 0) {
             throw new EventOfflineCheckinException('event_checkin_tenant_context_missing');
         }
-        /** @var User|null $persisted */
-        $persisted = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->whereKey((int) $actor->id)
-            ->where('status', 'active')
-            ->whereNull('deleted_at')
-            ->first();
+        // Acting account: own community, or a tenant super admin managing it
+        // from above (CrossTenantEntry; owner rule, 12 Oct 2026).
+        $persisted = CrossTenantEntry::activeActor((int) $actor->id, (int) $tenantId);
         /** @var Event|null $event */
         $event = Event::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\UserDisplayName;
 
 /**
@@ -183,9 +184,32 @@ class AuthController extends BaseApiController
                 }
             }
 
+            // Priority 4: a tenant super admin of a community ABOVE this one.
+            // Owner, 12 Oct 2026: "If they're allowed to sign in, they're
+            // allowed to sign in to manage those communities if they're a super
+            // admin." The SQL narrows to the flag on an ancestor; the full rule
+            // (admin-tier, strictly below by path) is CrossTenantEntry::mayEnter(),
+            // applied to the chosen row below. Same timing argument as the
+            // other arms: the ancestor list does not depend on the email.
+            $ancestorIds = \App\Support\Tenancy\TenantSubtree::ancestorIds((int) $tenantId);
+            if ($ancestorIds !== []) {
+                $placeholders = implode(',', array_fill(0, count($ancestorIds), '?'));
+                $sql .= "
+                 UNION
+                 SELECT u.*, t.configuration, 4 AS _match_priority
+                 FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id
+                 WHERE u.email = ? AND u.is_tenant_super_admin = 1
+                   AND u.tenant_id IN ({$placeholders}) AND u.deleted_at IS NULL";
+                $bindings[] = $email;
+                foreach ($ancestorIds as $ancestorId) {
+                    $bindings[] = $ancestorId;
+                }
+            }
+
             // Deterministic tie-break: exact tenant wins, then platform admin,
-            // then the lowest-numbered sub-community. Fetch two rows so an
-            // ambiguous sub-community match is visible rather than silent.
+            // then the lowest-numbered sub-community, then a tenant super admin
+            // above. Fetch two rows so an ambiguous sub-community match is
+            // visible rather than silent.
             $sql .= "
                  ORDER BY _match_priority ASC, tenant_id ASC
                  LIMIT 2";
@@ -209,6 +233,18 @@ class AuthController extends BaseApiController
                     'resolved_tenant_id' => (int) $tenantId,
                     'chosen_tenant_id' => (int) ($user['tenant_id'] ?? 0),
                 ]);
+            }
+
+            if (
+                $user
+                && (int) ($user['_match_priority'] ?? 0) === 4
+                && ! CrossTenantEntry::mayEnter($user, (int) $tenantId)
+            ) {
+                // The flag alone is not the rule: a broker/coordinator row
+                // carrying it, or a stale path, is not admitted. Treated exactly
+                // like "no such account" — the password is still checked against
+                // the dummy hash below, so the timing does not change.
+                $user = null;
             }
 
             // Remove internal sorting column from user array
@@ -661,9 +697,18 @@ class AuthController extends BaseApiController
             );
         }
 
-        // A refresh token is a tenant-bound capability. Reject a valid token
-        // presented through another tenant before rotation can mutate it.
-        if ((int) TenantContext::getId() !== (int) $tenantId) {
+        // A refresh token is a tenant-bound capability: it is issued by, and
+        // rotates in, the account's home community. Presented through another
+        // community it is refused before rotation can mutate it — unless the
+        // account may be signed in there at all (CrossTenantEntry::mayEnter():
+        // the platform owner anywhere; an admin-tier tenant super admin in a
+        // community strictly below its home). Owner, 12 Oct 2026: "If they're
+        // allowed to sign in, they're allowed to sign in to manage those
+        // communities". Decided on the LOCKED row below, so a flag removed by a
+        // concurrent change cannot slip through.
+        $requestTenantId = (int) TenantContext::getId();
+        $isCrossing = $requestTenantId !== (int) $tenantId;
+        if ($isCrossing && $requestTenantId <= 0) {
             return $this->authError(
                 __('api.invalid_or_expired_refresh_token'),
                 ApiErrorCodes::AUTH_TOKEN_INVALID,
@@ -681,7 +726,9 @@ class AuthController extends BaseApiController
             $refreshToken,
             $userId,
             $tenantId,
-            $isMobile
+            $isMobile,
+            $isCrossing,
+            $requestTenantId
         ): array {
             $userRow = DB::table('users')
                 ->where('id', (int) $userId)
@@ -694,6 +741,9 @@ class AuthController extends BaseApiController
                     'status',
                     'is_super_admin',
                     'is_tenant_super_admin',
+                    // Read by CrossTenantEntry::mayEnter() on a crossing.
+                    'is_admin',
+                    'is_god',
                     'tenant_id',
                     'email_verified_at',
                     'is_approved',
@@ -704,6 +754,10 @@ class AuthController extends BaseApiController
                 return ['status' => 'user_not_found'];
             }
             $user = (array) $userRow;
+
+            if ($isCrossing && ! CrossTenantEntry::mayEnter($user, $requestTenantId)) {
+                return ['status' => 'tenant_refused'];
+            }
 
             if (($user['status'] ?? 'active') === 'suspended') {
                 return ['status' => 'suspended'];
@@ -756,6 +810,15 @@ class AuthController extends BaseApiController
             ];
         }, 3);
 
+        if (($issuance['status'] ?? null) === 'tenant_refused') {
+            // Byte-for-byte the response a cross-community refresh got before
+            // mayEnter() existed.
+            return $this->authError(
+                __('api.invalid_or_expired_refresh_token'),
+                ApiErrorCodes::AUTH_TOKEN_INVALID,
+                401
+            );
+        }
         if (($issuance['status'] ?? null) === 'user_not_found') {
             return $this->authError(
                 __('api.user_not_found'),

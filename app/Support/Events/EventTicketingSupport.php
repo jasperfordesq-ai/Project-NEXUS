@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Tenant, policy, time, idempotency, and decimal primitives for ticketing. */
 final class EventTicketingSupport
@@ -42,12 +43,37 @@ final class EventTicketingSupport
     {
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
         $query = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId);
         if ($lock) {
             $query->lockForUpdate();
         }
         $persisted = $query->first();
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community;
+        // outside an HTTP request no crossing is ever admitted.
+        if ($persisted !== null && ! CrossTenantEntry::actorMayActIn($persisted, $tenantId)) {
+            $persisted = null;
+        }
+        if ($persisted === null || (string) $persisted->status !== 'active') {
+            throw new EventTicketingException('event_ticket_actor_not_found');
+        }
+
+        return $persisted;
+    }
+
+    /**
+     * The MEMBER a ticket is for — strictly a member of this community. Unlike
+     * actor(), no crossing is ever admitted: a tenant super admin managing this
+     * community from above may allocate tickets, but never receive one here.
+     */
+    public function member(int $tenantId, User|int $member): User
+    {
+        $memberId = $member instanceof User ? (int) $member->getKey() : $member;
+        $persisted = User::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereKey($memberId)
+            ->first();
         if ($persisted === null || (string) $persisted->status !== 'active') {
             throw new EventTicketingException('event_ticket_actor_not_found');
         }

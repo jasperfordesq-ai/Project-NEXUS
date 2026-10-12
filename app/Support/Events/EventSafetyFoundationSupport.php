@@ -18,6 +18,7 @@ use DateTimeInterface;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Shared fail-closed primitives for the isolated event-safety foundation. */
 final class EventSafetyFoundationSupport
@@ -66,6 +67,27 @@ final class EventSafetyFoundationSupport
             $query->lockForUpdate();
         }
         $persisted = $query->first();
+        if ($persisted === null) {
+            throw new EventSafetyException($reason);
+        }
+
+        return $persisted;
+    }
+
+    /**
+     * The ACTING account (organiser, reviewer): its own community, or a tenant
+     * super admin managing this community from above (CrossTenantEntry; owner
+     * rule, 12 Oct 2026). Members acted ON keep activeUser(), which is strictly
+     * this community's.
+     */
+    public function activeActor(
+        int $tenantId,
+        User|int $user,
+        bool $lock = false,
+        string $reason = 'event_safety_actor_not_active',
+    ): User {
+        $userId = $user instanceof User ? (int) $user->getKey() : $user;
+        $persisted = CrossTenantEntry::activeActor($userId, $tenantId, $lock);
         if ($persisted === null) {
             throw new EventSafetyException($reason);
         }

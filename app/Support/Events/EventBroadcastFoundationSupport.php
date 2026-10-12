@@ -16,6 +16,7 @@ use App\Policies\EventPolicy;
 use App\Services\EventConfigurationService;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Shared tenant, authorization, validation, and hashing boundary for broadcasts. */
 final class EventBroadcastFoundationSupport
@@ -125,7 +126,6 @@ final class EventBroadcastFoundationSupport
     {
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
         $query = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId)
             ->where('status', 'active')
             ->whereNull('deleted_at');
@@ -133,6 +133,13 @@ final class EventBroadcastFoundationSupport
             $query->lockForUpdate();
         }
         $persisted = $query->first();
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community;
+        // outside an HTTP request no crossing is ever admitted.
+        if ($persisted !== null && ! CrossTenantEntry::actorMayActIn($persisted, $tenantId)) {
+            $persisted = null;
+        }
         if ($persisted === null) {
             throw new EventBroadcastException('event_broadcast_actor_invalid');
         }

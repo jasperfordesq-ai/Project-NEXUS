@@ -61,7 +61,7 @@ final class EventSafetyProjectionService
         $this->assertSchema();
         $tenantId = $this->support->tenantId();
         $event = $this->support->concreteEvent($tenantId, $eventId);
-        $persistedActor = $this->support->activeUser(
+        $persistedActor = $this->support->activeActor(
             $tenantId,
             $actor,
             false,
@@ -136,7 +136,7 @@ final class EventSafetyProjectionService
         $this->assertSchema();
         $tenantId = $this->support->tenantId();
         $event = $this->support->concreteEvent($tenantId, $eventId);
-        $persistedActor = $this->support->activeUser(
+        $persistedActor = $this->support->activeActor(
             $tenantId,
             $actor,
             false,

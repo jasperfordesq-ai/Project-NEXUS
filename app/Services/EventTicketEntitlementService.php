@@ -122,7 +122,9 @@ final class EventTicketEntitlementService
             ): array {
                 $event = $this->support->concreteEvent($tenantId, $eventId, false);
                 $persistedActor = $this->support->actor($tenantId, $actorId, false);
-                $member = $this->support->actor($tenantId, $targetId, false);
+                // The recipient is always a member of this community, even
+                // when the organiser is managing it from a community above.
+                $member = $this->support->member($tenantId, $targetId);
             if ($organizerOperation) {
                 $this->support->authorizeManageFinance($persistedActor, $event);
             } else {

@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Shared fail-closed primitives for the isolated registration foundation. */
 final class EventRegistrationFoundationSupport
@@ -42,12 +43,18 @@ final class EventRegistrationFoundationSupport
     {
         $actorId = $actor instanceof User ? (int) $actor->getKey() : $actor;
         $query = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->whereKey($actorId);
         if ($lock) {
             $query->lockForUpdate();
         }
         $persisted = $query->first();
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community;
+        // outside an HTTP request no crossing is ever admitted.
+        if ($persisted !== null && ! CrossTenantEntry::actorMayActIn($persisted, $tenantId)) {
+            $persisted = null;
+        }
         if ($persisted === null) {
             throw new EventRegistrationFoundationException('event_registration_actor_not_found');
         }

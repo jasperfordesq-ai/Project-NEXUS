@@ -22,6 +22,7 @@ use App\Support\Authorization\MinimumAge;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Versioned, private API for Event Safety policy, evidence, and reviews. */
 final class EventSafetyController extends BaseApiController
@@ -296,10 +297,16 @@ final class EventSafetyController extends BaseApiController
         $actor = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community.
+        // What the actor may do to the event is still the event policy's call.
+        if ($actor instanceof User && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            $actor = null;
+        }
         if (! $actor instanceof User) {
             throw new EventSafetyException('event_safety_actor_not_active');
         }

@@ -25,6 +25,7 @@ use App\Services\EventOfflineCheckinSyncService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Private v2 API surface for signed and offline-capable event check-in. */
 final class EventOfflineCheckinController extends BaseApiController
@@ -491,12 +492,18 @@ final class EventOfflineCheckinController extends BaseApiController
         }
         $actor = $tenantId !== null
             ? User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->whereKey($this->requireUserId())
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->first()
             : null;
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community.
+        // What the actor may do to the event is still the event policy's call.
+        if ($actor instanceof User && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            $actor = null;
+        }
         if (! $actor instanceof User) {
             throw new EventOfflineCheckinException('event_checkin_actor_invalid');
         }

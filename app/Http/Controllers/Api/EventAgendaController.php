@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\EventSessionService;
 use App\Support\Events\EventSessionContractMapper;
 use Illuminate\Http\JsonResponse;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Canonical tenant-safe API for a concrete event's agenda and speakers. */
 final class EventAgendaController extends BaseApiController
@@ -235,10 +236,16 @@ final class EventAgendaController extends BaseApiController
         $actor = $tenantId === null
             ? null
             : User::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
                 ->where('status', 'active')
                 ->whereNull('deleted_at')
                 ->find($this->requireUserId());
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community.
+        // What the actor may do to the event is still the event policy's call.
+        if ($actor instanceof User && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            $actor = null;
+        }
         if (! $actor instanceof User) {
             throw new EventSessionException('event_agenda_actor_invalid');
         }

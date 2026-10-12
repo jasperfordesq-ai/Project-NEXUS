@@ -18,6 +18,7 @@ use App\Services\EventTicketQuoteService;
 use App\Services\EventTicketReconciliationService;
 use App\Services\EventTicketTypeService;
 use Illuminate\Http\JsonResponse;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Canonical free-ticket API; time-credit materialisation remains fail-closed. */
 final class EventTicketController extends BaseApiController
@@ -262,10 +263,16 @@ final class EventTicketController extends BaseApiController
     {
         $tenantId = TenantContext::currentId();
         $actor = $tenantId === null ? null : User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNull('deleted_at')
             ->find($this->requireUserId());
+        // Own community, or a crossing CrossTenantEntry admits: a tenant super
+        // admin managing a community below its own (owner rule, 12 Oct 2026).
+        // Looked up by id, because that account's row is not in this community.
+        // What the actor may do to the event is still the event policy's call.
+        if ($actor instanceof User && ! CrossTenantEntry::actorMayActIn($actor, (int) $tenantId)) {
+            $actor = null;
+        }
         if (! $actor instanceof User) {
             throw new EventTicketingException('event_ticket_actor_invalid');
         }

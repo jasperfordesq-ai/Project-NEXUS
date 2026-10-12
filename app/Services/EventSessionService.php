@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
+use App\Support\Authorization\CrossTenantEntry;
 
 /** Serialized, tenant-safe domain boundary for a concrete event's agenda. */
 final class EventSessionService
@@ -1666,15 +1667,9 @@ final class EventSessionService
 
     private function actorOrFail(int $tenantId, User $actor, bool $lock): User
     {
-        $query = User::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->whereKey((int) $actor->getKey())
-            ->where('status', 'active')
-            ->whereNull('deleted_at');
-        if ($lock) {
-            $query->lockForUpdate();
-        }
-        $persisted = $query->first();
+        // Acting account: own community, or a tenant super admin managing it
+        // from above (CrossTenantEntry; owner rule, 12 Oct 2026).
+        $persisted = CrossTenantEntry::activeActor((int) $actor->getKey(), $tenantId, $lock);
         if ($persisted === null) {
             throw new EventSessionException('event_agenda_actor_invalid');
         }
