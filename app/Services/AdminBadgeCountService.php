@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Support\Members\PendingApproval;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -75,16 +76,14 @@ class AdminBadgeCountService
      * `is_approved = 0`. Those two can disagree — the same controller carries a
      * repair for approvals that left `status` stuck at 'pending' — so a badge
      * saying "1" could open a screen showing nothing, which is worse than no
-     * badge at all. Keep this predicate identical to that filter; if the filter
-     * changes, change this in the same commit.
+     * badge at all. Both now read App\Support\Members\PendingApproval.
      */
     private function countPendingUsers(int $tenantId): int
     {
         try {
-            return (int) DB::table('users')
-                ->where('tenant_id', $tenantId)
-                ->where('is_approved', 0)
-                ->count();
+            return (int) PendingApproval::apply(
+                DB::table('users')->where('tenant_id', $tenantId)
+            )->count();
         } catch (\Exception $e) {
             Log::warning('[AdminBadgeCount] Failed to count pending users: ' . $e->getMessage());
             return 0;

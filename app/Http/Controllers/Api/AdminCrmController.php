@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
 use App\Services\ProfileEditRecorder;
 use App\Support\Authorization\AdminTier;
+use App\Support\Members\PendingApproval;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -1730,7 +1731,7 @@ class AdminCrmController extends BaseApiController
             "SELECT COUNT(*) as cnt
              FROM users u
              WHERE u.tenant_id = ?
-               AND u.is_approved = 0",
+               AND " . PendingApproval::sql('u'),
             [$tenantId]
         )->cnt;
 

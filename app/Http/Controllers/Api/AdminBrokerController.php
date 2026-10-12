@@ -22,6 +22,7 @@ use App\Services\NotificationDispatcher;
 use App\Models\Notification;
 use App\Support\UserDisplayName;
 use App\Support\Authorization\AdminTier;
+use App\Support\Members\PendingApproval;
 
 /**
  * AdminBrokerController -- Admin time-broker exchange monitoring and risk management.
@@ -229,7 +230,7 @@ class AdminBrokerController extends BaseApiController
         $messageParams = array_merge($tenantParams, [$viewerId, $viewerId]);
         $unreviewedQueueWhere = "{$tenantWhere} AND reviewed_at IS NULL AND {$messageSelfExclusion}";
         $urgentQueueWhere = "{$tenantWhere} AND flagged = 1 AND reviewed_at IS NULL AND {$messageSelfExclusion}";
-        $pendingMembersWhere = "{$tenantWhere} AND is_approved = 0";
+        $pendingMembersWhere = "{$tenantWhere} AND " . PendingApproval::sql();
         $openReportsWhere = "{$tenantWhere} AND status IN ('open', 'pending')";
 
         // When each queue's oldest item arrived (ISO-8601), or null when the

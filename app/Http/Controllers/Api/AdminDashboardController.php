@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use App\Services\SocialValueService;
 use App\Services\UserInsightsService;
+use App\Support\Members\PendingApproval;
 use App\Support\UserDisplayName;
 
 /**
@@ -110,7 +111,7 @@ class AdminDashboardController extends BaseApiController
         // Same predicate as AdminBadgeCountService::countPendingUsers and the
         // Users page's `filter=pending`, so the number and the list agree.
         $pendingUsers = $metric('pending_users', fn () => (int) DB::selectOne(
-            "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND is_approved = 0",
+            "SELECT COUNT(*) as cnt FROM users WHERE tenant_id = ? AND " . PendingApproval::sql(),
             [$tenantId]
         )->cnt);
 

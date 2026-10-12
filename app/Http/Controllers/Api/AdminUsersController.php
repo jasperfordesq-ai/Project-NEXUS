@@ -28,6 +28,7 @@ use App\Core\EmailTemplateBuilder;
 use Illuminate\Support\Facades\Log;
 use App\Support\Authorization\CrossTenantEntry;
 use App\Support\Tenancy\UserTenantResolver;
+use App\Support\Members\PendingApproval;
 use App\Support\UserDisplayName;
 
 /**
@@ -90,7 +91,9 @@ class AdminUsersController extends BaseApiController
         if ($status && $status !== 'all') {
             switch ($status) {
                 case 'pending':
-                    $conditions[] = 'u.is_approved = 0';
+                    // Waiting for a decision only: deleted, banned, suspended
+                    // and rejected applicants leave the queue (PendingApproval).
+                    $conditions[] = PendingApproval::sql('u');
                     break;
                 case 'active':
                     $conditions[] = "u.is_approved = 1 AND (u.status IS NULL OR u.status = 'active')";
