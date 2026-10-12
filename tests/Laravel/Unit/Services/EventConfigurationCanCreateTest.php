@@ -21,8 +21,8 @@ use Tests\Laravel\TestCase;
  * The actor's own identity lookup was scoped to the EVENT's tenant
  * (`WHERE id = ? AND tenant_id = ?`) and returned false on a miss BEFORE the
  * 'members' short-circuit. So every actor whose home tenant differed from the
- * tenant they were acting in was refused — platform admins, network
- * (`is_tenant_super_admin`) admins, and anyone administering a sub-tenant —
+ * tenant they were acting in was refused — platform admins, tenant super
+ * admins (`is_tenant_super_admin`), and anyone administering a sub-tenant —
  * while the admin UI correctly showed "All active members". Observed on
  * production against tenant `partner-demo` (id 5, a sub-tenant of 4) by an
  * actor whose only account row lives on tenant 2.
@@ -30,10 +30,14 @@ use Tests\Laravel\TestCase;
  * The rule this pins: auth is GLOBAL, resources are tenant-scoped. Never add
  * `AND tenant_id = ?` to a lookup of the acting user's own row.
  *
- * 🔴 Owner decision, 11 October 2026: only the platform owner acts outside its
- * home community. The actor LOOKUP stays global (so a platform owner is found),
- * but an actor who is not a member of this community and not a platform owner is
- * now refused under every creation setting, 'members' included.
+ * 🔴 Owner rule, 12 October 2026: "A tenant super admin can administer all
+ * communities below it in the hierarchy, but not above it." The actor LOOKUP
+ * stays global (so a platform owner or a parent's tenant super admin is found),
+ * and an actor who is not a member of this community is refused under every
+ * creation setting, 'members' included, UNLESS TenantAdminScope admits them:
+ * the platform owner anywhere, a tenant super admin of this community or of any
+ * community above it. (From 11 to 12 October only the platform owner was
+ * admitted; the parent's tenant super admin cases below were refusals then.)
  *
  * These assert the service directly rather than POSTing /v2/events, because
  * Sanctum::actingAs() takes the guard branch of the Authenticate middleware,
@@ -130,13 +134,73 @@ final class EventConfigurationCanCreateTest extends TestCase
     /**
      * The exact production shape of 578817aff: role='admin',
      * is_tenant_super_admin=1, is_super_admin=0, home tenant is the PARENT of the
-     * tenant being acted on. 🔴 Reversed 11 October 2026 (owner decision, see
-     * above); it was test_open_policy_admits_a_network_admin_acting_on_a_sub_tenant.
+     * tenant being acted on. Admitted: a tenant super admin administers every
+     * community below it (owner rule, 12 October 2026). It was reversed to a
+     * refusal on 11 October and restored on 12 October.
      */
-    public function test_open_policy_refuses_a_network_admin_acting_on_a_sub_tenant(): void
+    public function test_open_policy_admits_a_tenant_super_admin_of_the_parent_community(): void
     {
         $this->setCreationRole('members');
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+        $actor = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /** A plain member of the parent community is not a member of this one. */
+    public function test_open_policy_refuses_a_plain_member_of_the_parent_community(): void
+    {
+        $this->setCreationRole('members');
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+        $actor = $this->crossTenantUser(['role' => 'member']);
+
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /** Nor is a plain admin of the parent: only the tenant super admin reaches down. */
+    public function test_admins_only_policy_refuses_a_plain_admin_of_the_parent_community(): void
+    {
+        $this->setCreationRole('admins');
+        $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
+        $actor = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 0,
+        ]);
+
+        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+    }
+
+    /**
+     * Upwards is refused: a tenant super admin of a community BELOW this one has
+     * no authority here, under any setting.
+     */
+    public function test_a_tenant_super_admin_of_a_child_community_is_refused_upwards(): void
+    {
+        $this->makeHomeTenantOversee(self::ACTING_TENANT, self::HOME_TENANT);
+        $actor = $this->crossTenantUser([
+            'role' => 'admin',
+            'is_super_admin' => 0,
+            'is_tenant_super_admin' => 1,
+        ]);
+
+        foreach (['members', 'staff', 'admins'] as $role) {
+            $this->setCreationRole($role);
+            self::assertFalse(
+                $this->service->canCreate(self::ACTING_TENANT, (int) $actor->id),
+                "creation_role={$role}: a child community's tenant super admin must not create events in its parent.",
+            );
+        }
+    }
+
+    /** A tenant super admin of an unrelated community (no hierarchy link) is refused. */
+    public function test_open_policy_refuses_a_tenant_super_admin_of_an_unrelated_community(): void
+    {
+        $this->setCreationRole('members');
         $actor = $this->crossTenantUser([
             'role' => 'admin',
             'is_super_admin' => 0,
@@ -155,10 +219,9 @@ final class EventConfigurationCanCreateTest extends TestCase
         self::assertTrue($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
     }
 
-    /** Same refusal when creation is restricted to administrators. */
-    public function test_admins_only_policy_refuses_a_network_admin_acting_on_a_sub_tenant(): void
+    /** Same answer when creation is restricted to administrators, or to staff. */
+    public function test_restricted_policies_admit_a_tenant_super_admin_of_the_parent_community(): void
     {
-        $this->setCreationRole('admins');
         $this->makeHomeTenantOversee(self::HOME_TENANT, self::ACTING_TENANT);
         $actor = $this->crossTenantUser([
             'role' => 'admin',
@@ -166,7 +229,13 @@ final class EventConfigurationCanCreateTest extends TestCase
             'is_tenant_super_admin' => 1,
         ]);
 
-        self::assertFalse($this->service->canCreate(self::ACTING_TENANT, (int) $actor->id));
+        foreach (['admins', 'staff'] as $role) {
+            $this->setCreationRole($role);
+            self::assertTrue(
+                $this->service->canCreate(self::ACTING_TENANT, (int) $actor->id),
+                "creation_role={$role}: the parent's tenant super admin administers this community.",
+            );
+        }
     }
 
     public function test_open_policy_still_refuses_a_suspended_actor(): void
@@ -242,8 +311,8 @@ final class EventConfigurationCanCreateTest extends TestCase
      * the actor LOOKUP is global, so a cross-tenant actor is found rather than
      * missed before the 'members' short-circuit (that was the real bug), and
      * platform admins still reach this tenant. Only "any admin, any community" is
-     * refused. (Network admins of a parent community stopped reaching it on
-     * 11 October 2026 — owner decision.)
+     * refused. (A tenant super admin of a community ABOVE this one does reach it -
+     * owner rule, 12 October 2026 - and is pinned separately above.)
      */
     public function test_admins_only_policy_refuses_a_plain_admin_of_another_community(): void
     {
@@ -280,7 +349,7 @@ final class EventConfigurationCanCreateTest extends TestCase
      * but the broker half stayed a bare role-string comparison, so "is a broker
      * somewhere" satisfied a community that had restricted creation to its own
      * brokers and administrators. A broker is an operational role with no
-     * hierarchy — unlike a network admin it reaches no subtree, so this is a
+     * hierarchy — unlike a tenant super admin it reaches no subtree, so this is a
      * plain same-community test.
      *
      * Defence in depth rather than a reachable API hole: Authenticate rejects a

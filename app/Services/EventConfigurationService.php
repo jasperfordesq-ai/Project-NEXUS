@@ -89,14 +89,16 @@ final class EventConfigurationService
             return false;
         }
 
-        // 🔴 Only the platform owner acts outside its home community (owner
-        // decision, 11 Oct 2026 — tenant super admins and tenant admins included).
-        // The lookup above is global so a platform owner is FOUND; this is where a
-        // non-member of this community is refused. It must sit before the
-        // 'members' short-circuit, which otherwise admitted any active account on
-        // the platform — including a parent community's tenant super admin once
-        // TenantAdminScope stopped granting it subtree authority. For a
-        // cross-community actor TenantAdminScope is true only at the platform tier.
+        // 🔴 Someone whose account row is on another community creates events
+        // here only if TenantAdminScope gives them admin authority over this
+        // one: the platform owner anywhere, or a tenant super admin of a
+        // community ABOVE this one (owner rule, 12 Oct 2026: "A tenant super
+        // admin can administer all communities below it in the hierarchy, but
+        // not above it."). Tenant admins, brokers and plain members of other
+        // communities — the parent included — are refused. The lookup above is
+        // global so such an actor is FOUND; this is where everyone else is
+        // refused. It must sit before the 'members' short-circuit, which
+        // otherwise admits any active account on the platform.
         if ((int) ($user->tenant_id ?? 0) !== $tenantId
             && ! TenantAdminScope::allows($user, $tenantId)) {
             return false;
@@ -112,7 +114,8 @@ final class EventConfigurationService
         // community admin to their own community. AdminTier alone would let a
         // different community's admin create events here whenever this community
         // restricted creation to admins. The 'members' setting above admits every
-        // member OF THIS COMMUNITY (and the platform owner). The 'staff' option is labelled
+        // member OF THIS COMMUNITY, plus the platform owner and a tenant super
+        // admin of a community above this one. The 'staff' option is labelled
         // "Brokers and administrators", so broker is additive here and
         // coordinator stays out.
         $isAdmin = TenantAdminScope::allows($user, $tenantId);
