@@ -64,7 +64,9 @@ use Throwable;
  *     invitations, reminders, calendar files) is deliberately absent. EventPolicy
  *     still decides, per event, what the account may actually do;
  *   - GET /api/v2/users/me, the read-only identity call the website cannot load
- *     without.
+ *     without;
+ *   - the "Confirm it is you" step-up calls (STEP_UP_CONFIRMATION_ROUTES), so a
+ *     high-risk admin action admitted above can actually be confirmed.
  *
  * mayEnter() is the same rule without a request: "may this account be signed
  * in to community T at all?" — for the places with no route to look at yet
@@ -97,6 +99,22 @@ final class CrossTenantEntry
     ];
 
     private const READ_METHODS = ['GET', 'HEAD'];
+
+    /**
+     * The two calls behind the "Confirm it is you" prompt that guards high-risk
+     * admin actions (RequireRecentSecondFactor). Without them a manager working
+     * below could reach a guarded admin route but never confirm it: the prompt
+     * reported "no authenticator app" and the code was refused at this door.
+     * Both concern only the signed-in account's own second factor, and the
+     * confirmation they mint is bound to the community the request resolved
+     * to. Exact method + path.
+     *
+     * @var array<string, string>
+     */
+    private const STEP_UP_CONFIRMATION_ROUTES = [
+        'api/webauthn/status' => 'GET',
+        'api/webauthn/security-confirm' => 'POST',
+    ];
 
     /** The event organiser surface. Matched segment by segment, see isEventOrganiserRequest(). */
     private const EVENTS_PREFIX = 'api/v2/events/';
@@ -509,6 +527,10 @@ final class CrossTenantEntry
         }
 
         if (str_starts_with($normalised, self::ADMIN_PREFIX) && strlen($normalised) > strlen(self::ADMIN_PREFIX)) {
+            return true;
+        }
+
+        if ((self::STEP_UP_CONFIRMATION_ROUTES[$normalised] ?? null) === strtoupper($method)) {
             return true;
         }
 

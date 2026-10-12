@@ -101,6 +101,52 @@ class CrossTenantStepUpTest extends TwoFactorAuditTestCase
             ->assertJsonPath('errors.0.code', 'SECURITY_CONFIRMATION_REQUIRED');
     }
 
+    private function tenantSuperAdminAbove(): User
+    {
+        return User::factory()->forTenant(self::HOME)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'email_verified_at' => now(),
+            'role' => 'admin',
+            'is_admin' => 1,
+            'is_tenant_super_admin' => 1,
+        ]);
+    }
+
+    public function test_a_tenant_super_admin_from_above_confirms_with_own_code_and_deletes_a_member(): void
+    {
+        $tsa = $this->tenantSuperAdminAbove();
+        $secret = $this->enrol($tsa);
+        $target = $this->member();
+        $session = $this->staleSession($tsa);
+
+        $this->apiGet('/webauthn/status', $session)
+            ->assertOk()
+            ->assertJsonPath('data.confirmation_methods.totp', true);
+
+        $this->apiDelete("/v2/admin/users/{$target->id}", [], $session)
+            ->assertStatus(403)
+            ->assertJsonPath('errors.0.code', 'AUTH_STEP_UP_REQUIRED');
+
+        $confirm = $this->apiPost('/webauthn/security-confirm', ['totp_code' => $this->code($secret)], $session);
+        $confirm->assertOk();
+        $proof = $confirm->json('data.security_confirmation_token') ?? $confirm->json('security_confirmation_token');
+        $this->assertIsString($proof);
+
+        $this->apiDelete("/v2/admin/users/{$target->id}", [], $session + ['X-Security-Confirmation' => $proof])
+            ->assertOk();
+    }
+
+    public function test_a_tenant_super_admin_from_above_still_cannot_manage_its_passkeys_from_below(): void
+    {
+        // Only the two step-up calls are admitted, not the rest of /webauthn.
+        $tsa = $this->tenantSuperAdminAbove();
+
+        $this->apiGet('/webauthn/credentials', $this->staleSession($tsa))
+            ->assertStatus(403)
+            ->assertJsonPath('errors.0.code', 'TENANT_MISMATCH');
+    }
+
     public function test_a_code_from_a_member_of_another_community_mints_nothing_here(): void
     {
         // An ordinary member elsewhere is not admitted to this community, so
