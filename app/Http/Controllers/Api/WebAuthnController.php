@@ -27,6 +27,7 @@ use Illuminate\Database\QueryException;
 use App\Core\ApiErrorCodes;
 use App\Core\TenantContext;
 use lbuchs\WebAuthn\WebAuthnException;
+use App\Support\Authorization\CrossTenantEntry;
 use App\Support\UserDisplayName;
 
 /**
@@ -1040,12 +1041,19 @@ class WebAuthnController extends BaseApiController
             // Keep factor verification and confirmation issuance under it so a
             // credential proven before revocation cannot mint a fresh token
             // after the revocation transaction commits.
+            //
+            // The actor is looked up by id alone: staff working in a community
+            // below their own (or the platform owner anywhere) keep their row,
+            // password and authenticator in their HOME community. The factor is
+            // checked there; the confirmation stays bound to THIS community,
+            // which is where RequireRecentSecondFactor checks it.
             $user = DB::table('users')
                 ->where('id', $userId)
-                ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
-                ->first(['password_hash', 'status']);
-            if ($user === null || strtolower((string) $user->status) !== 'active') {
+                ->first([...CrossTenantEntry::USER_COLUMNS, 'password_hash', 'status']);
+            if ($user === null
+                || !CrossTenantEntry::actorMayActIn($user, (int) $tenantId)
+                || strtolower((string) $user->status) !== 'active') {
                 return $this->noStore($this->respondWithError(
                     ApiErrorCodes::AUTH_ACCOUNT_SUSPENDED,
                     __('api.account_suspended'),
@@ -1069,14 +1077,14 @@ class WebAuthnController extends BaseApiController
                 $verified = TotpService::verifyLogin(
                     $userId,
                     preg_replace('/\s+/', '', $totpCode),
-                    $tenantId
+                    (int) $user->tenant_id
                 );
                 if (($verified['success'] ?? false) !== true) {
                     return $this->securityConfirmationFailed();
                 }
                 $method = 'totp';
             } elseif (is_string($backupCode) && $backupCode !== '') {
-                $verified = TotpService::verifyBackupCode($userId, $backupCode, $tenantId);
+                $verified = TotpService::verifyBackupCode($userId, $backupCode, (int) $user->tenant_id);
                 if (($verified['success'] ?? false) !== true) {
                     return $this->securityConfirmationFailed();
                 }
@@ -1505,15 +1513,18 @@ class WebAuthnController extends BaseApiController
             "SELECT COUNT(*) as count FROM webauthn_credentials WHERE user_id = ? AND tenant_id = ?",
             [$userId, $tenantId]
         );
+        // The password and authenticator belong to the account's home
+        // community, which differs from this one while staff work below it.
+        $factorTenantId = $this->factorTenantId($userId, (int) $tenantId);
         $hasPassword = DB::table('users')
             ->where('id', $userId)
-            ->where('tenant_id', $tenantId)
+            ->where('tenant_id', $factorTenantId)
             ->whereNotNull('password_hash')
             ->where('password_hash', '!=', '')
             ->exists();
         $hasTotp = Schema::hasTable('user_totp_settings') && DB::table('user_totp_settings')
             ->where('user_id', $userId)
-            ->where('tenant_id', $tenantId)
+            ->where('tenant_id', $factorTenantId)
             ->where('is_enabled', 1)
             ->exists();
 
@@ -1535,6 +1546,23 @@ class WebAuthnController extends BaseApiController
     // ========================================================================
     // HELPER METHODS
     // ========================================================================
+
+    /**
+     * The community holding this account's own password and authenticator:
+     * its home community. That differs from the current one only while staff
+     * work in a community CrossTenantEntry admits them to; for anyone else the
+     * current community is returned, so nothing about an account outside it
+     * is reported.
+     */
+    private function factorTenantId(int $userId, int $tenantId): int
+    {
+        $actor = DB::table('users')->where('id', $userId)->first(CrossTenantEntry::USER_COLUMNS);
+        if ($actor === null || (int) $actor->tenant_id === $tenantId) {
+            return $tenantId;
+        }
+
+        return CrossTenantEntry::actorMayActIn($actor, $tenantId) ? (int) $actor->tenant_id : $tenantId;
+    }
 
     private function getWebAuthnUser(int $userId): ?array
     {
