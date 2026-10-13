@@ -41,6 +41,43 @@ final class EventLifecycleCompatibility
         ];
     }
 
+    /**
+     * Resolve for read-only listings that must not fail as a whole because one
+     * stored row is internally inconsistent (E-104, 13 Oct 2026: a single row
+     * whose legacy `status` disagreed with its canonical columns made the
+     * admin events list answer 500). The canonical axes win when both are
+     * stored; the mismatch is reported in `inconsistent` so the caller can
+     * flag the row instead of hiding it. Rows that carry no canonical columns
+     * resolve exactly as {@see resolve()} does.
+     *
+     * @return array{publication: EventPublicationState, operational: EventOperationalState, inconsistent: bool}
+     */
+    public static function resolveForListing(
+        ?string $publication,
+        ?string $operational,
+        ?string $legacyStatus,
+    ): array {
+        try {
+            return self::resolve($publication, $operational, $legacyStatus) + ['inconsistent' => false];
+        } catch (UnexpectedValueException $exception) {
+            if ($exception->getMessage() !== 'event_lifecycle_legacy_projection_mismatch'
+                || $publication === null
+                || $operational === null) {
+                throw $exception;
+            }
+        }
+
+        $publicationState = self::publicationFromStored($publication, $legacyStatus);
+        $operationalState = self::operationalFromStored($operational, $legacyStatus);
+        self::assertCompatible($publicationState, $operationalState);
+
+        return [
+            'publication' => $publicationState,
+            'operational' => $operationalState,
+            'inconsistent' => true,
+        ];
+    }
+
     public static function assertCompatible(
         EventPublicationState $publication,
         EventOperationalState $operational,

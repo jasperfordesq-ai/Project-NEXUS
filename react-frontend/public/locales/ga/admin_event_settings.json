@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Cuir cúis leis thuas chun Sábháil a chumasú.",
   "reason_help": "Ag teastáil. Taifeadta sa loga iniúchta ionas gur féidir leis an bpobal a fheiceáil cé a d'athraigh polasaí agus cén fáth.",
   "reason_required_error": "Tá cúis ag teastáil sular féidir do chuid athruithe a shábháil.",
-  "restore_needs_reason": "Cuir cúis leis faoi Rialú Athraithe chun an chuid seo a athchóiriú."
+  "restore_needs_reason": "Cuir cúis leis faoi Rialú Athraithe chun an chuid seo a athchóiriú.",
+  "stale_reload": "D’athraigh duine eile na socruithe seo. Athlódáladh an leathanach; déan athbhreithniú air agus sábháil arís.",
+  "nothing_to_restore": "Níl aon rud le hathchóiriú: úsáideann an chuid seo na réamhshocruithe cheana.",
+  "blocked_by_platform": "Múchta ar leibhéal an ardáin, mar sin tá sé múchta anseo freisin.",
+  "capability_recurrence_definition_blueprints": "Treoirphleananna sraithe"
 }

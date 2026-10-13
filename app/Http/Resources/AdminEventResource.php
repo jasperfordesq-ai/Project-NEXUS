@@ -17,7 +17,7 @@ final class AdminEventResource
     public static function fromRow(object|array $row): array
     {
         $event = (array) $row;
-        $lifecycle = EventLifecycleCompatibility::resolve(
+        $lifecycle = EventLifecycleCompatibility::resolveForListing(
             self::nullableString($event['publication_status'] ?? null),
             self::nullableString($event['operational_status'] ?? null),
             self::nullableString($event['status'] ?? null),
@@ -34,8 +34,11 @@ final class AdminEventResource
             'publication_state' => $lifecycle['publication']->value,
             'operational_state' => $lifecycle['operational']->value,
             'lifecycle_version' => self::int($event['lifecycle_version'] ?? 0),
-            'start_at' => self::nullableString($event['start_time'] ?? null),
-            'end_at' => self::nullableString($event['end_time'] ?? null),
+            // True when the legacy `status` column disagrees with the canonical
+            // lifecycle columns; the canonical state is what is reported above.
+            'lifecycle_inconsistent' => $lifecycle['inconsistent'],
+            'start_at' => self::utcIso($event['start_time'] ?? null),
+            'end_at' => self::utcIso($event['end_time'] ?? null),
             'timezone' => self::nullableString($event['timezone'] ?? null),
             'all_day' => (bool) ($event['all_day'] ?? false),
             'location' => self::nullableString($event['location'] ?? null),
@@ -81,13 +84,13 @@ final class AdminEventResource
                 'reason' => self::nullableString($event['moderation_reason'] ?? null),
             ],
             'lifecycle_reason' => self::nullableString($event['lifecycle_reason'] ?? null),
-            'created_at' => self::nullableString($event['created_at'] ?? null),
-            'updated_at' => self::nullableString($event['updated_at'] ?? null),
+            'created_at' => self::utcIso($event['created_at'] ?? null),
+            'updated_at' => self::utcIso($event['updated_at'] ?? null),
 
             // Compatibility aliases for the maintained admin client during its
             // lifecycle-aware table migration.
-            'start_date' => self::nullableString($event['start_time'] ?? null),
-            'end_date' => self::nullableString($event['end_time'] ?? null),
+            'start_date' => self::utcIso($event['start_time'] ?? null),
+            'end_date' => self::utcIso($event['end_time'] ?? null),
             'created_by' => self::int($event['user_id'] ?? 0),
             'creator_name' => self::nullableString($event['organizer_name'] ?? null),
             'organizer_name' => self::nullableString($event['organizer_name'] ?? null),
@@ -104,6 +107,23 @@ final class AdminEventResource
     private static function nullableInt(mixed $value): ?int
     {
         return $value !== null && $value !== '' && is_numeric($value) ? (int) $value : null;
+    }
+
+    /**
+     * Timestamps are stored as zone-less UTC strings. Emitting them unchanged
+     * made the admin client parse them as browser-local time and label them
+     * with the event's zone, so every time read an hour off in summer (E-104).
+     */
+    private static function utcIso(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        try {
+            return \Illuminate\Support\Carbon::parse((string) $value, 'UTC')->toIso8601String();
+        } catch (\Throwable) {
+            return self::nullableString($value);
+        }
     }
 
     private static function nullableString(mixed $value): ?string

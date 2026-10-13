@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Add a reason above to enable Save.",
   "reason_help": "Required. Recorded in the audit log so the community can see who changed a policy and why.",
   "reason_required_error": "A reason is required before your changes can be saved.",
-  "restore_needs_reason": "Add a reason under Change control to restore this section."
+  "restore_needs_reason": "Add a reason under Change control to restore this section.",
+  "stale_reload": "Someone else changed these settings. The page has been reloaded; review it and save again.",
+  "nothing_to_restore": "Nothing to restore: this section already uses the defaults.",
+  "blocked_by_platform": "Switched off at platform level, so it is off here too.",
+  "capability_recurrence_definition_blueprints": "Series blueprints"
 }

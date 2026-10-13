@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Voeg hierboven een reden toe om Opslaan in te schakelen.",
   "reason_help": "Vereist. Opgenomen in het auditlogboek, zodat de community kan zien wie een beleid heeft gewijzigd en waarom.",
   "reason_required_error": "Er is een reden vereist voordat uw wijzigingen kunnen worden opgeslagen.",
-  "restore_needs_reason": "Voeg een reden toe onder Wijzigingsbeheer om deze sectie te herstellen."
+  "restore_needs_reason": "Voeg een reden toe onder Wijzigingsbeheer om deze sectie te herstellen.",
+  "stale_reload": "Iemand anders heeft deze instellingen gewijzigd. De pagina is opnieuw geladen; controleer haar en sla opnieuw op.",
+  "nothing_to_restore": "Niets te herstellen: dit onderdeel gebruikt al de standaardwaarden.",
+  "blocked_by_platform": "Op platformniveau uitgeschakeld, dus hier ook uit.",
+  "capability_recurrence_definition_blueprints": "Reeksblauwdrukken"
 }

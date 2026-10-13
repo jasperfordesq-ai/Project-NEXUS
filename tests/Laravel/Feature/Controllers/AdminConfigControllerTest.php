@@ -223,7 +223,10 @@ class AdminConfigControllerTest extends TestCase
             ->assertJsonPath('data.0.action', 'events_configuration_defaults_restored')
             ->assertJsonPath('data.0.actor_id', $admin->id)
             ->assertJsonPath('data.0.reason', 'Return all remaining settings to inherited policy.')
-            ->assertJsonPath('data.0.version', 6);
+            ->assertJsonPath('data.0.version', 6)
+            // E-104: the timestamp must carry an explicit UTC offset, or the
+            // settings screen shows every history entry an hour off in summer.
+            ->assertJsonPath('data.0.created_at', fn (string $value): bool => (bool) preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/', $value));
 
         $this->apiPost('/v2/admin/config/events/restore-defaults', [
             'version' => 6,

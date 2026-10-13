@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Dodaj powód powyżej, aby włączyć funkcję Zapisz.",
   "reason_help": "Wymagany. Zapisywane w dzienniku audytu, aby społeczność mogła zobaczyć, kto i dlaczego zmienił politykę.",
   "reason_required_error": "Aby zmiany mogły zostać zapisane, wymagany jest powód.",
-  "restore_needs_reason": "Dodaj powód w obszarze Kontrola zmian, aby przywrócić tę sekcję."
+  "restore_needs_reason": "Dodaj powód w obszarze Kontrola zmian, aby przywrócić tę sekcję.",
+  "stale_reload": "Ktoś inny zmienił te ustawienia. Strona została przeładowana; sprawdź ją i zapisz ponownie.",
+  "nothing_to_restore": "Nie ma czego przywracać: ta sekcja już używa wartości domyślnych.",
+  "blocked_by_platform": "Wyłączone na poziomie platformy, więc tutaj również jest wyłączone.",
+  "capability_recurrence_definition_blueprints": "Szablony serii"
 }

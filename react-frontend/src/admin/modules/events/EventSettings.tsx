@@ -15,6 +15,8 @@ import { PageHeader } from '../../components/PageHeader';
 import { adminConfig, type EventConfiguration, type EventConfigurationAuditEntry, type EventConfigurationResponse } from '../../api/adminApi';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+import { useAdminPageMeta } from '../../AdminMetaContext';
+import type { ApiResponse } from '@/lib/api';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { getFormattingLocale } from '@/lib/helpers';
 import {
@@ -39,9 +41,28 @@ const POLICY_SECTIONS: Array<{ title: string; description: string; keys: Boolean
   { title: 'delivery', description: 'delivery_desc', keys: ['recurrence_enabled', 'reminders_enabled', 'organizer_broadcasts_enabled', 'offline_checkin_enabled', 'calendar_feeds_enabled', 'federation_sharing_enabled'] },
 ];
 
+/**
+ * The API renders a refused settings change as a generic "validation failed"
+ * with the real reason under errors[0].details (field => messages). Read it,
+ * so "stale version", "needs platform readiness" and "not a whole number"
+ * stop all looking like "could not be saved" (E-104).
+ */
+function settingsRefusal(response: ApiResponse<unknown>): { field: string | null; message: string | null } {
+  const first = response.errors?.[0];
+  const details = first && typeof first === 'object' ? (first as { details?: unknown }).details : undefined;
+  if (details && typeof details === 'object') {
+    for (const [field, messages] of Object.entries(details as Record<string, unknown>)) {
+      const message = Array.isArray(messages) ? messages.find((item): item is string => typeof item === 'string') : null;
+      return { field, message: message ?? null };
+    }
+  }
+  return { field: null, message: null };
+}
+
 export default function EventSettings() {
   const { t } = useTranslation('admin_event_settings');
   usePageTitle(t('title'));
+  useAdminPageMeta({ title: t('title') });
   const toast = useToast();
   const confirm = useConfirm();
   const navigate = useNavigate();
@@ -118,8 +139,35 @@ export default function EventSettings() {
     }
     setSaving(true);
     try {
-      const response = await adminConfig.updateEventConfig(snapshot.version, draft, reason.trim(), hasDisruptiveChange);
-      if (!response.success || !response.data) throw new Error(t('save_failed'));
+      // A switch the platform has capped cannot be on; sending a stored "on"
+      // back made every save fail once the platform switch was turned off.
+      const payload: EventConfiguration = {
+        ...draft,
+        timed_waitlist_offers_enabled: draft.timed_waitlist_offers_enabled && snapshot.capabilities.timed_waitlist_offers,
+      };
+      let response = await adminConfig.updateEventConfig(snapshot.version, payload, reason.trim(), hasDisruptiveChange);
+      let refusal = response.success ? null : settingsRefusal(response);
+      if (refusal?.field === 'confirm_disruptive' && !hasDisruptiveChange) {
+        // Records appeared since the page loaded; ask now, then resend.
+        const approved = await confirm({
+          title: t('impact_confirm_title'),
+          body: t('impact_confirm_body'),
+          confirmLabel: t('save'),
+          status: 'warning',
+        });
+        if (!approved) return;
+        response = await adminConfig.updateEventConfig(snapshot.version, payload, reason.trim(), true);
+        refusal = response.success ? null : settingsRefusal(response);
+      }
+      if (refusal?.field === 'version') {
+        toast.error(refusal.message ?? t('stale_reload'));
+        await load();
+        return;
+      }
+      if (!response.success || !response.data) {
+        toast.error(refusal?.message ?? t('save_failed'));
+        return;
+      }
       setSnapshot(response.data);
       setDraft(response.data.config);
       setCapText(response.data.config.attendance_credit_monthly_cap !== null ? String(response.data.config.attendance_credit_monthly_cap) : '');
@@ -146,7 +194,16 @@ export default function EventSettings() {
     setSaving(true);
     try {
       const response = await adminConfig.restoreEventConfigDefaults(snapshot.version, reason.trim(), keys);
-      if (!response.success || !response.data) throw new Error(t('restore_failed'));
+      if (!response.success || !response.data) {
+        const refusal = settingsRefusal(response);
+        toast.error(refusal.message ?? t('restore_failed'));
+        if (refusal.field === 'version') await load();
+        return;
+      }
+      if (response.data.restored === false) {
+        toast.info(t('nothing_to_restore'));
+        return;
+      }
       setSnapshot(response.data);
       setDraft(response.data.config);
       setCapText(response.data.config.attendance_credit_monthly_cap !== null ? String(response.data.config.attendance_credit_monthly_cap) : '');
@@ -202,6 +259,7 @@ export default function EventSettings() {
           {([
             ['recurrence_v2', capabilities.recurrence_v2],
             ['rolling_recurrence', capabilities.rolling_recurrence],
+            ['recurrence_definition_blueprints', capabilities.recurrence_definition_blueprints],
             ['timed_waitlist_offers', capabilities.timed_waitlist_offers],
             ['notification_consumer', capabilities.notification_consumer],
             ['attendance_credits', capabilities.attendance_credits],
@@ -256,7 +314,7 @@ export default function EventSettings() {
               <SelectItem id="staff">{t('creation_role_staff')}</SelectItem>
               <SelectItem id="admins">{t('creation_role_admins')}</SelectItem>
             </Select>
-            <Input label={t('default_capacity')} type="number" min={0} max={100000} value={String(draft.default_capacity)} onValueChange={(value) => setDraft({ ...draft, default_capacity: Math.max(0, Math.min(100000, Number(value) || 0)) })} aria-label={t('default_capacity')} />
+            <Input label={t('default_capacity')} type="number" min={0} max={100000} step={1} value={String(draft.default_capacity)} onValueChange={(value) => setDraft({ ...draft, default_capacity: Math.max(0, Math.min(100000, Math.trunc(Number(value)) || 0)) })} aria-label={t('default_capacity')} />
             <div className="flex items-start justify-between gap-6 border-t border-border pt-4 md:col-span-2">
               <div><p className="text-sm font-medium">{t('moderation_required')}</p><p className="mt-1 text-xs leading-5 text-muted">{t('moderation_required_desc')}</p></div>
               <Switch isSelected={draft.moderation_required} onValueChange={value => updateBoolean('moderation_required', value)} aria-label={t('moderation_required')} />
@@ -273,8 +331,12 @@ export default function EventSettings() {
                 const blocked = key === 'timed_waitlist_offers_enabled' && !capabilities.timed_waitlist_offers;
                 return (
                   <div key={key} className="flex items-start justify-between gap-6 py-4 first:pt-0 last:pb-0">
-                    <div><p className="text-sm font-medium">{t(key)}</p><p className="mt-1 text-xs leading-5 text-muted">{t(`${key}_desc`)}</p></div>
-                    <Switch isSelected={draft[key]} isDisabled={blocked} onValueChange={value => updateBoolean(key, value)} aria-label={t(key)} />
+                    <div>
+                      <p className="text-sm font-medium">{t(key)}</p>
+                      <p className="mt-1 text-xs leading-5 text-muted">{t(`${key}_desc`)}</p>
+                      {blocked && <p className="mt-1 text-xs leading-5 text-warning">{t('blocked_by_platform')}</p>}
+                    </div>
+                    <Switch isSelected={blocked ? false : draft[key]} isDisabled={blocked} onValueChange={value => updateBoolean(key, value)} aria-label={t(key)} />
                   </div>
                 );
               })}
@@ -290,7 +352,7 @@ export default function EventSettings() {
               <SelectItem id="global">{t('use_platform_default')}</SelectItem><SelectItem id="off">{t('safety_off')}</SelectItem><SelectItem id="shadow">{t('safety_shadow')}</SelectItem><SelectItem id="enforce">{t('safety_enforce')}</SelectItem>
             </Select>
             <Select label={t('notification_delivery_mode')} aria-label={t('notification_delivery_mode')} selectedKeys={[draft.notification_delivery_mode ?? 'global']} onSelectionChange={(keys) => { const value = Array.from(keys)[0]; setDraft({ ...draft, notification_delivery_mode: value === 'global' ? null : value as EventConfiguration['notification_delivery_mode'] }); }}>
-              <SelectItem id="global">{t('use_platform_default')}</SelectItem><SelectItem id="direct">{t('notifications_direct')}</SelectItem><SelectItem id="shadow_outbox">{t('notifications_shadow')}</SelectItem><SelectItem id="outbox_authoritative">{t('notifications_outbox')}</SelectItem>
+              <SelectItem id="global">{t('use_platform_default')}</SelectItem><SelectItem id="direct">{t('notifications_direct')}</SelectItem><SelectItem id="shadow_outbox">{t('notifications_shadow')}</SelectItem>{capabilities.notification_consumer || draft.notification_delivery_mode === 'outbox_authoritative' ? <SelectItem id="outbox_authoritative">{t('notifications_outbox')}</SelectItem> : null}
             </Select>
           </Card.Content>
           <Card.Footer className="flex flex-wrap items-center justify-end gap-3">{reasonMissing && <p className="mr-auto text-xs text-muted">{t('restore_needs_reason')}</p>}<Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(['safety_enforcement_mode', 'notification_delivery_mode'])}>{t('restore_section')}</Button></Card.Footer>

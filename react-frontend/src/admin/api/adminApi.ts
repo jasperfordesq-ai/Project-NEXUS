@@ -428,6 +428,8 @@ export interface EventConfigurationCapabilities {
 }
 
 export interface EventConfigurationResponse {
+  /** Present on restore-defaults: false when nothing was stored to restore. */
+  restored?: boolean;
   config: EventConfiguration;
   defaults: EventConfiguration;
   version: number;

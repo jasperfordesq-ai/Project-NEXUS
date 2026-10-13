@@ -29,6 +29,7 @@ import { DataTable, type Column } from '../../components/DataTable';
 import { EmptyState } from '../../components/EmptyState';
 import { adminEventRewards, type AdminAttendanceRewardInfo } from '../../api/adminApi';
 import {
+  Alert,
   Button,
   Checkbox,
   Chip,
@@ -87,6 +88,7 @@ interface AdminEvent {
   publication_state: PublicationState;
   operational_state: OperationalState;
   lifecycle_version: number;
+  lifecycle_inconsistent: boolean;
   is_recurring_template: boolean;
   occurrence_count: number;
   future_occurrence_count: number;
@@ -112,6 +114,7 @@ interface RawAdminEvent {
   publication_state?: PublicationState;
   operational_state?: OperationalState;
   lifecycle_version?: number;
+  lifecycle_inconsistent?: boolean;
   is_recurring_template?: boolean | number;
   occurrence_count?: number;
   future_occurrence_count?: number;
@@ -169,6 +172,7 @@ function normalizeAdminEvent(item: RawAdminEvent): AdminEvent {
     operational_state: item.operational_state
       ?? (item.status === 'cancelled' ? 'cancelled' : item.status === 'completed' ? 'completed' : 'scheduled'),
     lifecycle_version: item.lifecycle_version ?? 0,
+    lifecycle_inconsistent: item.lifecycle_inconsistent === true,
     is_recurring_template: item.is_recurring_template === true || item.is_recurring_template === 1,
     occurrence_count: Math.max(0, item.series?.occurrence_count ?? item.occurrence_count ?? 0),
     future_occurrence_count: Math.max(
@@ -222,6 +226,7 @@ export function EventsAdmin() {
   const [items, setItems] = useState<AdminEvent[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [publicationState, setPublicationState] = useState<'all' | PublicationState>(requestedPublicationState);
   const [search, setSearch] = useState('');
@@ -267,7 +272,11 @@ export function EventsAdmin() {
     if (!rewardModal) return;
     const trimmed = rewardAmount.trim();
     const amount = trimmed === '' ? null : Number(trimmed);
-    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
+    if (amount !== null && (
+      !Number.isFinite(amount)
+      || amount < 0
+      || (rewardInfo?.ceiling !== undefined && rewardInfo.ceiling !== null && amount > rewardInfo.ceiling)
+    )) {
       toast.error(t('events.reward_invalid_amount'));
       return;
     }
@@ -279,7 +288,7 @@ export function EventsAdmin() {
         toast.success(t('events.reward_saved'));
         setRewardModal(null);
       } else {
-        toast.error(t('events.reward_save_failed'));
+        toast.error(res.error ?? t('events.reward_save_failed'));
       }
     } finally {
       setRewardSaving(false);
@@ -312,10 +321,15 @@ export function EventsAdmin() {
           : [];
         setItems(items);
         setTotal(res.meta?.total ?? 0);
+        setLoadError(null);
+      } else {
+        // A failed load must never read as "no events" (E-104): keep the last
+        // list and show the failure with a retry.
+        setLoadError(res.error ?? t('events.failed_to_load_events'));
       }
     } catch {
       if (generation === loadGenerationRef.current) {
-        toast.error(t('events.failed_to_load_events'));
+        setLoadError(t('events.failed_to_load_events'));
       }
     } finally {
       if (generation === loadGenerationRef.current) {
@@ -371,9 +385,12 @@ export function EventsAdmin() {
         }));
         await loadItems();
       } else {
-        toast.error(t('events.action_failed', {
+        // The usual cause is another admin having moved the event already
+        // (409); show the server's reason and refresh the row (E-104).
+        toast.error(res?.error ?? t('events.action_failed', {
           action: t(`events.action_${actionModal.action}`),
         }));
+        await loadItems();
       }
     } catch {
       toast.error(t('events.an_unexpected_error_occurred'));
@@ -418,7 +435,6 @@ export function EventsAdmin() {
     {
       key: 'title',
       label: t('events.col_title'),
-      sortable: true,
       render: (item) => (
         <span className="font-medium text-foreground">{item.title}</span>
       ),
@@ -426,7 +442,6 @@ export function EventsAdmin() {
     {
       key: 'start_date',
       label: t('events.col_date_time'),
-      sortable: true,
       render: (item) => (
         <div className="text-sm text-muted">
           <time dateTime={item.start_date}>
@@ -457,7 +472,6 @@ export function EventsAdmin() {
     {
       key: 'organizer_name',
       label: t('events.col_organizer'),
-      sortable: true,
       render: (item) => (
         <span className="text-sm text-muted">
           {item.organizer_name || t('events.unknown')}
@@ -467,7 +481,6 @@ export function EventsAdmin() {
     {
       key: 'status',
       label: t('events.col_status'),
-      sortable: true,
       render: (item) => (
         <div className="flex min-w-[150px] flex-col items-start gap-1">
           <Chip
@@ -484,13 +497,17 @@ export function EventsAdmin() {
           >
             {t(`events.operational_${item.operational_state}`)}
           </Chip>
+          {item.lifecycle_inconsistent && (
+            <Chip size="sm" variant="soft" color="warning" title={t('events.lifecycle_inconsistent_hint')}>
+              {t('events.lifecycle_inconsistent')}
+            </Chip>
+          )}
         </div>
       ),
     },
     {
       key: 'attendees_count',
       label: t('events.col_attendees'),
-      sortable: true,
       render: (item) => (
         <div className="text-sm text-muted">
           <span className="flex items-center gap-1">
@@ -622,14 +639,23 @@ export function EventsAdmin() {
         </Tabs>
       </div>
 
-      {!loading && items.length === 0 && !search ? (
+      {loadError && (
+        <Alert color="danger" title={t('events.failed_to_load_events')} className="mb-4">
+          <p className="text-sm">{loadError}</p>
+          <Button size="sm" variant="secondary" className="mt-2" onPress={() => { void loadItems(); }}>
+            {t('events.retry')}
+          </Button>
+        </Alert>
+      )}
+
+      {!loading && !loadError && items.length === 0 && !search ? (
         <EmptyState
           icon={Calendar}
           title={t('events.no_events_found')}
           description={
             publicationState === 'all'
               ? t('events.no_events_desc')
-              : t('events.no_status_events')
+              : t('events.no_events_in_tab')
           }
         />
       ) : (

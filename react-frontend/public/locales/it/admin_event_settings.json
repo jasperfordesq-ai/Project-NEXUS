@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Aggiungi un motivo qui sopra per abilitare il salvataggio.",
   "reason_help": "Necessario. Registrato nel registro di controllo in modo che la comunità possa vedere chi ha modificato una politica e perché.",
   "reason_required_error": "È necessario un motivo prima che le modifiche possano essere salvate.",
-  "restore_needs_reason": "Aggiungi un motivo in Modifica controllo per ripristinare questa sezione."
+  "restore_needs_reason": "Aggiungi un motivo in Modifica controllo per ripristinare questa sezione.",
+  "stale_reload": "Qualcun altro ha modificato queste impostazioni. La pagina è stata ricaricata; controllala e salva di nuovo.",
+  "nothing_to_restore": "Niente da ripristinare: questa sezione usa già i valori predefiniti.",
+  "blocked_by_platform": "Disattivato a livello di piattaforma, quindi disattivato anche qui.",
+  "capability_recurrence_definition_blueprints": "Modelli di serie"
 }

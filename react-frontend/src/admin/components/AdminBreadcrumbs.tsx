@@ -178,6 +178,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
 
   // Events, Polls, Goals, Resources, Jobs, Ideation
   events: 'breadcrumbs.events',
+  'attendance-rewards': 'breadcrumbs.attendance_rewards',
   polls: 'breadcrumbs.polls',
   goals: 'breadcrumbs.goals',
   resources: 'breadcrumbs.resources',

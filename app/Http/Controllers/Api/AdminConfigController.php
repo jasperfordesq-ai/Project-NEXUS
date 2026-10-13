@@ -2903,7 +2903,9 @@ class AdminConfigController extends BaseApiController
                     'changes' => is_array($details) && is_array($details['changes'] ?? null)
                         ? $details['changes']
                         : [],
-                    'created_at' => (string) $entry->created_at,
+                    // Stored as zone-less UTC; emit an explicit offset or the
+                    // admin client parses it as browser-local time (E-104).
+                    'created_at' => \Illuminate\Support\Carbon::parse((string) $entry->created_at, 'UTC')->toIso8601String(),
                 ];
             })
             ->all();

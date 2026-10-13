@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Ajoutez une raison ci-dessus pour activer Enregistrer.",
   "reason_help": "Requis. Enregistré dans le journal d'audit afin que la communauté puisse voir qui a modifié une politique et pourquoi.",
   "reason_required_error": "Une raison est requise avant que vos modifications puissent être enregistrées.",
-  "restore_needs_reason": "Ajoutez une raison sous Contrôle des modifications pour restaurer cette section."
+  "restore_needs_reason": "Ajoutez une raison sous Contrôle des modifications pour restaurer cette section.",
+  "stale_reload": "Quelqu’un d’autre a modifié ces paramètres. La page a été rechargée ; vérifiez-la puis enregistrez à nouveau.",
+  "nothing_to_restore": "Rien à restaurer : cette section utilise déjà les valeurs par défaut.",
+  "blocked_by_platform": "Désactivé au niveau de la plateforme, donc désactivé ici aussi.",
+  "capability_recurrence_definition_blueprints": "Modèles de série"
 }

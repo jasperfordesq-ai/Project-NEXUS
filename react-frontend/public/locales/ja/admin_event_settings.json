@@ -161,5 +161,9 @@
   "save_hint_reason_required": "保存を有効にする理由を上に追加します。",
   "reason_help": "必須。監査ログに記録されるため、コミュニティは誰が、なぜポリシーを変更したかを確認できます。",
   "reason_required_error": "変更を保存するには理由が必要です。",
-  "restore_needs_reason": "このセクションを復元する理由を「変更制御」の下に追加します。"
+  "restore_needs_reason": "このセクションを復元する理由を「変更制御」の下に追加します。",
+  "stale_reload": "別の人がこの設定を変更しました。ページを再読み込みしたので、確認してからもう一度保存してください。",
+  "nothing_to_restore": "復元するものはありません。このセクションは既に既定値を使用しています。",
+  "blocked_by_platform": "プラットフォームでオフになっているため、ここでもオフです。",
+  "capability_recurrence_definition_blueprints": "シリーズの設計図"
 }

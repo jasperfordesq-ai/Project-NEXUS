@@ -18,7 +18,7 @@ import Gift from 'lucide-react/icons/gift';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Undo2 from 'lucide-react/icons/undo-2';
 import { useAdminPageMeta } from '../../AdminMetaContext';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { PageHeader } from '../../components/PageHeader';
 import { DataTable, type Column } from '../../components/DataTable';
 import { EmptyState } from '../../components/EmptyState';
@@ -56,6 +56,10 @@ export default function EventRewardClaimsAdmin() {
   useAdminPageMeta({ title: t('claims_title') });
   const toast = useToast();
   const confirm = useConfirm();
+  // Retrying a failed mint is behind the community's attendance-credits
+  // feature; without it the server refuses every retry (E-104).
+  const { hasFeature } = useTenant();
+  const canRetry = hasFeature('event_attendance_credits');
 
   const [claims, setClaims] = useState<AdminAttendanceClaim[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +111,7 @@ export default function EventRewardClaimsAdmin() {
       if (res.success && res.data?.status === 'settled') {
         toast.success(t('claims_retry_success'));
       } else {
-        toast.error(t('claims_retry_failed'));
+        toast.error(res.error ?? t('claims_retry_failed'));
       }
       await load();
     } finally {
@@ -124,7 +128,7 @@ export default function EventRewardClaimsAdmin() {
       if (res.success && res.data?.status === 'reversed') {
         toast.success(t('claims_reverse_success'));
       } else {
-        toast.error(t('claims_reverse_failed'));
+        toast.error(res.error ?? t('claims_reverse_failed'));
       }
       setReverseTarget(null);
       setReverseReason('');
@@ -189,7 +193,7 @@ export default function EventRewardClaimsAdmin() {
       label: t('claims_col_actions'),
       render: (item) => (
         <div className="flex gap-1">
-          {item.claim_type === 'attendance_reward' && item.status === 'failed' && (
+          {canRetry && item.claim_type === 'attendance_reward' && item.status === 'failed' && (
             <Button
               size="sm"
               variant="secondary"
@@ -301,6 +305,7 @@ export default function EventRewardClaimsAdmin() {
               value={reverseReason}
               onValueChange={setReverseReason}
               minRows={2}
+              maxLength={200}
               isRequired
               aria-label={t('claims_reverse_reason')}
             />

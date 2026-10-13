@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Adicione um motivo acima para ativar Salvar.",
   "reason_help": "Obrigatório. Registrado no log de auditoria para que a comunidade possa ver quem alterou uma política e por quê.",
   "reason_required_error": "É necessário um motivo antes que suas alterações possam ser salvas.",
-  "restore_needs_reason": "Adicione um motivo em Controle de alterações para restaurar esta seção."
+  "restore_needs_reason": "Adicione um motivo em Controle de alterações para restaurar esta seção.",
+  "stale_reload": "Outra pessoa alterou estas definições. A página foi recarregada; reveja-a e guarde novamente.",
+  "nothing_to_restore": "Nada a restaurar: esta secção já usa os valores predefinidos.",
+  "blocked_by_platform": "Desativado ao nível da plataforma, por isso também está desativado aqui.",
+  "capability_recurrence_definition_blueprints": "Modelos de série"
 }

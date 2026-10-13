@@ -240,14 +240,14 @@ describe('EventsAdmin', () => {
     expect(screen.getByText('No events match your current filters')).toBeInTheDocument();
   });
 
-  it('shows a toast error when the fetch rejects', async () => {
+  // E-104: a failed load is shown as a failure with Retry, never as "No events found".
+  it('shows a load error with retry when the fetch rejects', async () => {
     mockApi.get.mockRejectedValue(new Error('Network error'));
     renderEventRoute(<EventsAdmin />, { route: '/admin/events', path: '/admin/events' });
 
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Failed to load events');
-    });
-    await screen.findByRole('heading', { name: 'No events found' });
+    expect((await screen.findAllByText('Failed to load events')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'No events found' })).not.toBeInTheDocument();
   });
 
   it('archives an event instead of presenting destructive deletion', async () => {
@@ -400,11 +400,12 @@ describe('EventsAdmin', () => {
     });
   });
 
-  it('finishes loading and shows the empty state for success:false responses', async () => {
-    mockApi.get.mockResolvedValue({ success: false, data: null });
+  it('finishes loading and reports the server error for success:false responses', async () => {
+    mockApi.get.mockResolvedValue({ success: false, data: null, error: 'Server error' });
     renderEventRoute(<EventsAdmin />, { route: '/admin/events', path: '/admin/events' });
 
-    expect(await screen.findByRole('heading', { name: 'No events found' })).toBeInTheDocument();
+    expect(await screen.findByText('Server error')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'No events found' })).not.toBeInTheDocument();
     expect(screen.queryByRole('status', { name: 'Loading' })).not.toBeInTheDocument();
   });
 });

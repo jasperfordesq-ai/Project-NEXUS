@@ -161,5 +161,9 @@
   "save_hint_reason_required": "Agregue un motivo arriba para habilitar Guardar.",
   "reason_help": "Requerido. Registrado en el registro de auditoría para que la comunidad pueda ver quién cambió una política y por qué.",
   "reason_required_error": "Se requiere un motivo antes de que se puedan guardar los cambios.",
-  "restore_needs_reason": "Agregue un motivo en Control de cambios para restaurar esta sección."
+  "restore_needs_reason": "Agregue un motivo en Control de cambios para restaurar esta sección.",
+  "stale_reload": "Otra persona ha cambiado esta configuración. La página se ha recargado; revísala y vuelve a guardar.",
+  "nothing_to_restore": "Nada que restaurar: esta sección ya usa los valores predeterminados.",
+  "blocked_by_platform": "Desactivado a nivel de plataforma, así que también está desactivado aquí.",
+  "capability_recurrence_definition_blueprints": "Plantillas de serie"
 }

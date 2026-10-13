@@ -106,12 +106,59 @@ class AdminEventsControllerTest extends TestCase
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
-        $this->createEvent($this->testTenantId);
+        $this->createEvent($this->testTenantId, [
+            'start_time' => '2026-07-01 13:00:00',
+            'end_time' => '2026-07-01 15:00:00',
+        ]);
 
         $response = $this->apiGet('/v2/admin/events');
 
         $response->assertStatus(200);
         $response->assertJsonPath('meta.total', 1);
+        // Stored timestamps are zone-less UTC; the client must receive them
+        // with an explicit offset or it parses them as browser-local time
+        // (E-104: the admin list showed 13:00 IST for a 14:00 IST event).
+        $response->assertJsonPath('data.0.start_at', '2026-07-01T13:00:00+00:00');
+        $response->assertJsonPath('data.0.start_date', '2026-07-01T13:00:00+00:00');
+        $response->assertJsonPath('data.0.end_date', '2026-07-01T15:00:00+00:00');
+    }
+
+    /**
+     * E-104 (13 Oct 2026): one row whose legacy `events.status` disagreed with
+     * its canonical lifecycle columns made the whole admin list answer 500, so
+     * the moderation queue was unusable. The list must degrade per row.
+     */
+    public function test_index_lists_an_event_whose_legacy_status_disagrees_with_its_lifecycle(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $healthy = $this->createEvent($this->testTenantId, [
+            'publication_status' => 'published',
+            'operational_status' => 'scheduled',
+        ]);
+        $inconsistent = $this->createEvent($this->testTenantId, [
+            'title' => 'Archived but still active',
+            'status' => 'active',
+            'publication_status' => 'archived',
+            'operational_status' => 'scheduled',
+        ]);
+
+        $response = $this->apiGet('/v2/admin/events');
+
+        $response->assertStatus(200);
+        $rows = collect($response->json('data'))->keyBy('id');
+        $this->assertTrue($rows->has($healthy) && $rows->has($inconsistent));
+        $this->assertSame('published', $rows[$healthy]['publication_state']);
+        $this->assertFalse($rows[$healthy]['lifecycle_inconsistent']);
+        // The canonical columns win; the row is flagged, not hidden and not fatal.
+        $this->assertSame('archived', $rows[$inconsistent]['publication_state']);
+        $this->assertSame('scheduled', $rows[$inconsistent]['operational_state']);
+        $this->assertTrue($rows[$inconsistent]['lifecycle_inconsistent']);
+
+        $this->apiGet('/v2/admin/events/' . $inconsistent)
+            ->assertStatus(200)
+            ->assertJsonPath('data.lifecycle_inconsistent', true);
     }
 
     public function test_index_returns_403_for_regular_member(): void
