@@ -90,6 +90,36 @@ describe('EventTicketsPanel', () => {
     expect(mockToast.success).toHaveBeenCalledWith('Ticket reserved.');
   });
 
+  it('sends ticket sale dates with the event zone offset, not as UTC', async () => {
+    // The server refuses an instant whose written offset differs from the event
+    // zone's (event_ticket_timezone_offset_mismatch), so a `Z` string fails for
+    // every event outside UTC — an Irish event in summer is +01:00.
+    vi.spyOn(eventTicketsApi, 'get').mockResolvedValue({
+      success: true,
+      data: catalogue({
+        permissions: { manage: true, reconcile: false, allocate_self: false },
+        ticket_types: [],
+      }),
+    });
+    const createType = vi.spyOn(eventTicketsApi, 'createType').mockResolvedValue({
+      success: true,
+      data: catalogue().ticket_types[0],
+    } as Awaited<ReturnType<typeof eventTicketsApi.createType>>);
+    const user = userEvent.setup();
+
+    renderEventComponent(
+      <EventTicketsPanel eventId={1} eventStart="2030-07-02T10:00:00+01:00" eventTimezone="Europe/Dublin" />,
+    );
+    await user.click(await screen.findByRole('button', { name: 'Add ticket type' }));
+    await user.type(await screen.findByRole('textbox', { name: /Name/ }), 'Community ticket');
+    await user.click(screen.getByRole('button', { name: 'Create ticket type' }));
+
+    await waitFor(() => expect(createType).toHaveBeenCalledTimes(1));
+    const payload = createType.mock.calls[0]?.[1];
+    expect(payload?.sales_closes_at).toBe('2030-07-02T09:55:00+01:00');
+    expect(payload?.sales_opens_at).toMatch(/\+0[01]:00$/);
+  });
+
   it('shows the server explanation when a reservation is refused for a stated reason', async () => {
     vi.spyOn(eventTicketsApi, 'get').mockResolvedValue({ success: true, data: catalogue() });
     vi.spyOn(eventTicketsApi, 'allocateSelf').mockResolvedValue({

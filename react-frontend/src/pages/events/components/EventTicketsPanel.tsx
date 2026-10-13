@@ -30,7 +30,7 @@ import {
   type EventTicketType,
   type EventTicketTypePayload,
 } from '@/lib/event-tickets-api';
-import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
+import { eventIsoToLocalInput, eventLocalInputToOffsetIso } from '@/lib/eventLocalDateTime';
 import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
@@ -135,10 +135,10 @@ export function EventTicketsPanel({
   ), [catalogue]);
 
   const payload = (): EventTicketTypePayload | null => {
-    const opens = eventLocalInputToIso(draft.salesOpen, eventTimezone);
-    const closes = eventLocalInputToIso(draft.salesClose, eventTimezone);
+    const opens = eventLocalInputToOffsetIso(draft.salesOpen, eventTimezone);
+    const closes = eventLocalInputToOffsetIso(draft.salesClose, eventTimezone);
     const refund = draft.kind === 'time_credit' && draft.refundCutoff
-      ? eventLocalInputToIso(draft.refundCutoff, eventTimezone)
+      ? eventLocalInputToOffsetIso(draft.refundCutoff, eventTimezone)
       : null;
     const allocation = Number(draft.allocation);
     const perMember = Number(draft.perMember);
