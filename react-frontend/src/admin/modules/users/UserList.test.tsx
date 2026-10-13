@@ -351,6 +351,7 @@ describe('UserList', () => {
     await waitFor(() => expect(screen.getAllByTestId('table-row')).toHaveLength(2));
 
     const [deletedRow, liveRow] = screen.getAllByTestId('table-row');
+    if (!deletedRow || !liveRow) throw new Error('expected two rows');
     expect(deletedRow.querySelector('[data-testid="cell-actions"]')?.childElementCount).toBe(0);
     expect(deletedRow.querySelector('a')).toBeNull();
     expect(liveRow.querySelector('[data-testid="cell-actions"] button')).not.toBeNull();
